@@ -31,8 +31,7 @@ function generateSitemap() {
         // Ignoriere . und .. Verzeichnisse sowie Unterverzeichnisse
         if ($file != '.' && $file != '..' && !is_dir($directory . $file)) {
 
-            // NEU: Überspringe Dateien im Format YYYYMMDD.php (z.B. 20031022.php)
-            if (preg_match('/^\d{8}\.php$/', $file)) {
+            if (preg_match('/^\d{8}\.php$/', $file) || $file == 'google5c760f191f071105.html') {
                 continue; // Diese Datei überspringen und zur nächsten gehen
             }
 
@@ -43,38 +42,34 @@ function generateSitemap() {
                 $priority = '0.8'; // Standardwert für priority
 
             // Spezielle Zuweisungen für bestimmte URLs/Dateien
-            // Beachte: '20031022.php' wird jetzt durch die obige Prüfung übersprungen, daher ist diese Bedingung hier nicht mehr notwendig.
             if ($file == 'about.php') {
-                $changefreq = 'yearly';
-                $priority = '0.8';
-            } elseif ($file == 'archiv.php') {
-                $changefreq = 'weekly';
-                $priority = '0.9';
-            } elseif ($file == 'charaktere.php') {
-                $changefreq = 'yearly';
-                $priority = '0.7';
-            } elseif ($file == 'faq.php') {
-                $changefreq = 'yearly';
-                $priority = '0.1';
-            } elseif ($file == 'google5c760f191f071105.html') {
-                $changefreq = 'never';
-                $priority = '0.0';
-            } elseif ($file == 'impressum.php') {
-                $changefreq = 'yearly';
-                $priority = '0.1';
-            } elseif ($file == 'index.php') {
-                $changefreq = 'daily';
-                $priority = '1.0';
-            } elseif ($file == 'lizenz.php') {
-                $changefreq = 'yearly';
-                $priority = '0.1';
-            } elseif ($file == 'sitemap.xml') {
-                $changefreq = 'weekly';
-                $priority = '0.3';
-            } elseif ($file == 'comic.php') { 
-                $changefreq = 'never';
-                $priority = '0.0';
-            }
+                    $changefreq = 'yearly';
+                    $priority = '0.8';
+                } elseif ($file == 'archiv.php') {
+                    $changefreq = 'weekly';
+                    $priority = '0.9';
+                } elseif ($file == 'charaktere.php') {
+                    $changefreq = 'yearly';
+                    $priority = '0.7';
+                } elseif ($file == 'faq.php') {
+                    $changefreq = 'yearly';
+                    $priority = '0.1';
+                } elseif ($file == 'impressum.php') {
+                    $changefreq = 'yearly';
+                    $priority = '0.1';
+                } elseif ($file == 'index.php') {
+                    $changefreq = 'daily';
+                    $priority = '1.0';
+                } elseif ($file == 'lizenz.php') {
+                    $changefreq = 'yearly';
+                    $priority = '0.1';
+                } elseif ($file == 'sitemap.xml') {
+                    $changefreq = 'weekly';
+                    $priority = '0.3';
+                } elseif ($file == 'comic.php') { 
+                    $changefreq = 'never';
+                    $priority = '0.0';
+                }
 
 
                 $sitemap .= "\t<url>" . PHP_EOL;
