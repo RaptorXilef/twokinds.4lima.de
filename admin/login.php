@@ -1,0 +1,77 @@
+<?php
+session_start();
+
+
+
+
+// ANALYSTIC BEREICH
+include_once('includes/analystic/analystic.php');
+
+
+
+
+
+// LOGINBEREICH
+
+
+// Überprüfung der Anmeldeinformationen
+function checkCredentials($username, $password) {
+    // Definieren Sie hier Ihre vordefinierten Benutzerdaten
+    $validUsernames = array('Felix Maywald');
+    $validPasswords = array('$2y$10$cGpThhDVwrS3Ow4QFtTAperjAJpbYmY95tuhkFCcu8b5G4af8kM8a'); // Beispiel-Hash
+    $validSalts = array('$::e=4{}5Cp/?c.c.+!),ReY5){2u]@9[KQf}cePE\g.[?%E'); // Beispiel-Salt
+
+    // Überprüfen, ob der Benutzername existiert und das Passwort übereinstimmt
+    $index = array_search($username, $validUsernames);
+    if ($index !== false) {
+        $hashedPassword = $validPasswords[$index];
+        $salt = $validSalts[$index]; // Salt-Wert
+        if (password_verify($password . $username . $salt, $hashedPassword)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Überprüfen, ob das Anmeldeformular gesendet wurde
+if (isset($_POST['submit'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    // Überprüfen der Anmeldeinformationen
+    if (checkCredentials($username, $password)) {
+        // Authentifizierung erfolgreich, Sitzung starten und zur index.php weiterleiten
+        $_SESSION['username'] = $username;
+        header('Location: index.php');
+        exit();
+    } else {
+        // Authentifizierung fehlgeschlagen, setzen Sie die Fehlermeldung
+        $errorMessage = "Ungültige Anmeldeinformationen. Bitte versuchen Sie es erneut.";
+    }
+}
+
+// Anmeldeformular anzeigen
+
+if (isset($errorMessage)) {
+    echo "<h1 style='color: red;'>$errorMessage</h1>";
+    echo "<br>";
+}
+?>
+<form method="post" action="login.php">
+    <input type="text" name="username" placeholder="Benutzername" required><br>
+    <input type="password" name="password" placeholder="Passwort" required><br>
+    <input type="checkbox" onclick="showPassword()"> Passwort anzeigen<br>
+    <input type="submit" name="submit" value="Anmelden">
+</form>
+
+<script>
+    function showPassword() {
+        var passwordInput = document.querySelector('input[name="password"]');
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+        } else {
+            passwordInput.type = "password";
+        }
+    }
+</script>
