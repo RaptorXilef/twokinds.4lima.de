@@ -15,7 +15,7 @@ require_once('includes/design/header.php');
 function generateSitemap() {
     $baseURLs = array(
         'https://twokinds.4lima.de',
-//        'https://www.twokinds.4lima.de',
+//        'https://www.twokinds.4lima.de', // Diese Zeile bleibt auskommentiert, da du keine www-URLs mehr aufnehmen möchtest
     );
 
     // Verzeichnis oder Dateien aus dem Dateisystem auslesen
@@ -28,7 +28,14 @@ function generateSitemap() {
 
     // URLs zur Sitemap hinzufügen
     foreach ($files as $file) {
+        // Ignoriere . und .. Verzeichnisse sowie Unterverzeichnisse
         if ($file != '.' && $file != '..' && !is_dir($directory . $file)) {
+
+            // NEU: Überspringe Dateien im Format YYYYMMDD.php (z.B. 20031022.php)
+            if (preg_match('/^\d{8}\.php$/', $file)) {
+                continue; // Diese Datei überspringen und zur nächsten gehen
+            }
+
             foreach ($baseURLs as $baseURL) {
                 $url = $baseURL . '/' . $file;
                 $lastmod = date('Y-m-d\TH:i:sP', filemtime($directory . $file)); // Letzter Bearbeitungszeitpunkt
@@ -36,6 +43,7 @@ function generateSitemap() {
                 $priority = '0.8'; // Standardwert für priority
 
             // Spezielle Zuweisungen für bestimmte URLs/Dateien
+            // Beachte: '20031022.php' wird jetzt durch die obige Prüfung übersprungen, daher ist diese Bedingung hier nicht mehr notwendig.
             if ($file == 'about.php') {
                 $changefreq = 'yearly';
                 $priority = '0.3';
@@ -63,13 +71,11 @@ function generateSitemap() {
             } elseif ($file == 'sitemap.xml') {
                 $changefreq = 'weekly';
                 $priority = '0.3';
-            } elseif ($file == '20031022.php') {
-                $changefreq = 'yearly';
-                $priority = '0.8';
-            } elseif ($file == 'comic.php') {
+            } elseif ($file == 'comic.php') { 
                 $changefreq = 'never';
                 $priority = '0.0';
             }
+
 
                 $sitemap .= "\t<url>" . PHP_EOL;
                 $sitemap .= "\t\t<loc>" . $url . "</loc>" . PHP_EOL;
