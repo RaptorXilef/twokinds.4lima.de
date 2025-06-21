@@ -15,7 +15,7 @@ require_once('includes/design/header.php');
 function generateSitemap() {
     $baseURLs = array(
         'https://twokinds.4lima.de',
-        'https://www.twokinds.4lima.de',
+//        'https://www.twokinds.4lima.de',
     );
 
     // Verzeichnis oder Dateien aus dem Dateisystem auslesen
