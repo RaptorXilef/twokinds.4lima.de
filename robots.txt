@@ -7,13 +7,3 @@ Disallow: /comic_hires/
 Disallow: /e-mail/
 Disallow: /includes/
 Disallow: /thumbnails/
-
-User-agent: Googlebot
-Sitemap: https://twokinds.4lima.de//sitemap.xml
-Disallow: /admin/
-Disallow: /analystic/
-Disallow: /comic/
-Disallow: /comic_hires/
-Disallow: /e-mail/
-Disallow: /includes/
-Disallow: /thumbnails/
