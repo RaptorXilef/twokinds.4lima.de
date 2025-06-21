@@ -1,0 +1,19 @@
+# Dateien in Comic Ordnern nicht beachten
+comic/*.png
+comic/*.jpg
+comic/*.gif
+comic_hires/*.png
+comic_hires/*.jpg
+comic_hires/*.gif
+
+# Dateien in Thumbnails Ordnern nicht beachten
+thumbnails/*.png
+thumbnails/*.jpg
+thumbnails/*.gif
+
+# Dateien in e-mails Ordnern nicht beachten
+e-mails/*.csv
+
+# Dateien in analystic Ordnern nicht beachten
+analystic/*.csv
+admin/analystic/*.csv
