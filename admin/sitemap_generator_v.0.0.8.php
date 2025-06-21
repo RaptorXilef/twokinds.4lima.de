@@ -46,13 +46,13 @@ function generateSitemap() {
             // Beachte: '20031022.php' wird jetzt durch die obige Prüfung übersprungen, daher ist diese Bedingung hier nicht mehr notwendig.
             if ($file == 'about.php') {
                 $changefreq = 'yearly';
-                $priority = '0.3';
+                $priority = '0.8';
             } elseif ($file == 'archiv.php') {
                 $changefreq = 'weekly';
                 $priority = '0.9';
             } elseif ($file == 'charaktere.php') {
                 $changefreq = 'yearly';
-                $priority = '0.3';
+                $priority = '0.7';
             } elseif ($file == 'faq.php') {
                 $changefreq = 'yearly';
                 $priority = '0.1';
