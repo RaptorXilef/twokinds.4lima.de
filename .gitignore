@@ -14,9 +14,9 @@ thumbnails/*.gif
 # Dateien in e-mails Ordnern nicht beachten
 e-mail/*.csv
 
-# Dateien in analystic Ordnern nicht beachten
-analystic/*.csv
-admin/analystic/*.csv
+# Dateien in analytics Ordnern nicht beachten
+analytics/*.csv
+admin/analytics/*.csv
 
 # Zip-Archive
 *.zip

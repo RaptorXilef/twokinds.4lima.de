@@ -4,8 +4,8 @@ session_start();
 
 
 
-// ANALYSTIC BEREICH
-include_once('includes/analystic/analystic.php');
+// analytics BEREICH
+include_once('includes/analytics/analytics.php');
 
 
 
