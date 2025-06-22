@@ -248,6 +248,7 @@ $pageHeader = 'Adminbereich';
 $siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung. Hier können administrative Aufgaben durchgeführt werden。';
 
 // Binde den gemeinsamen Header ein。
+$robotsContent = 'noindex, nofollow';
 include __DIR__ . '/../src/layout/header.php';
 ?>
 

@@ -96,6 +96,7 @@ $additionalHeadContent = '
 $viewportContent = 'width=1099';
 
 // Binde den gemeinsamen Header ein.
+$robotsContent = 'noindex, follow';
 include __DIR__ . '/src/layout/header.php';
 ?>
 
