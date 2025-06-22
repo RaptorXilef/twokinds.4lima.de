@@ -1,0 +1,55 @@
+/
+├── index.php                 # Die öffentliche Startseite (wird hier nicht detailliert gezeigt)
+├── about.php                 # Die öffentliche About-Seite (wird hier nicht detailliert gezeigt)
+├── archiv.php                # Die öffentliche Archiv-Seite (wird hier nicht detailliert gezeigt)
+├── 20250312.php              # Beispiel einer öffentlichen Comic-Seite (wird hier nicht detailliert gezeigt)
+│
+├── admin/
+│   ├── index.php             # Haupt-Dashboard des Admin-Bereichs
+│   ├── login.php             # Deine Login-Seite
+│   ├── archive_generator.php # Einstiegspunkt für den Archiv-Generator
+│   ├── archive_generator_start.php # Startseite des Archiv-Generators (ehemals archive_generator_start_v.0.0.4.php)
+│   └── ...                   # Weitere Generator-Einstiegspunkte (z.B. comicpages_generator.php, sitemap_generator.php)
+│
+└── src/
+    ├── admin/
+    │   ├── core/
+    │   │   └── auth_helper.php           # NEU: Enthält Login-Prüfung und Session-Handling
+    │   ├── archive_generator/
+    │   │   ├── generator_logic.php       # NEU: Enthält die Hauptlogik des Archiv-Generators (aus main-function.php)
+    │   │   └── data_loader.php           # NEU: Lädt spezifische Archivdaten (ersetzt variables-XX.php)
+    │   └── ...
+    ├── config/
+    │   └── app_config.php            # NEU: Globale Konfiguration (ersetzt Teile von config.php und andere fixe Pfade)
+    ├── data/
+    │   ├── comic_names.php         # Angepasst: Dein aktuelles comicnamen.php (als PHP-Array, nicht JSON wie vorgeschlagen)
+    │   ├── archive_vars/           # NEU: Verzeichnis für Archiv-Variablen (ersetzt variables-XX.php-Dateien)
+    │   │   ├── 01.php              # NEU: Daten für Archiv 01 (aus variables-01.php)
+    │   │   └── 02.php              # NEU: Daten für Archiv 02 (aus variables-02.php)
+    │   └── ...
+    ├── includes/
+    │   ├── functions.php           # NEU: Allgemeine Hilfsfunktionen (z.B. für Pfade, Analytik)
+    │   └── analystic/              # NEU: Ein eigener Ordner für die Analystic-Funktionen
+    │       └── analystic.php
+    ├── templates/
+    │   ├── admin/
+    │   │   ├── dashboard.php         # NEU: Template für das Admin-Dashboard
+    │   │   ├── nav_menu.php          # NEU: Admin-spezifisches Navigationsmenü (ersetzt config-menue.php)
+    │   │   ├── instructions.php      # NEU: Anleitung für den Admin-Bereich (ersetzt anleitung.php)
+    │   │   ├── archive_generator/
+    │   │   │   ├── form.php          # NEU: Formular für den Archiv-Generator Start
+    │   │   │   └── output.php        # NEU: Output-Template für den laufenden Archiv-Generator
+    │   │   └── ...
+    │   ├── layout/
+    │   │   ├── header.php            # NEU: Gemeinsamer HTML <head> und Start-HTML (ersetzt common_header.php)
+    │   │   └── footer.php            # NEU: Gemeinsamer HTML <footer> und End-HTML (ersetzt common_footer.php)
+    │   ├── public/                 # NEU: Templates für den Public-Bereich
+    │   │   ├── nav_menu.php          # NEU: Public-spezifisches Navigationsmenü (ersetzt menue_config.php)
+    │   │   └── ...
+    │   └── ...
+    └── ...
+
+
+
+
+löschen: D:\mayfe\Visual Studio Code\GitHub Projekte\RaptorXilef\twokinds.4lima.de\src\admin\generator\generator_comicname_from_php_to_json.php

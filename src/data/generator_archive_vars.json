@@ -1,0 +1,327 @@
+{
+    "01": {
+        "startupPictures": {
+            "01": "20031022"
+        },
+        "pictureStartNumber": 1,
+        "headings": {
+            "01": {
+                "ueberschrift": "Prolog (Oktober 2003 - November 2003)",
+                "text": "Unser Held erwacht!",
+                "anzahlBilder": 5
+            }
+        }
+    },
+    "02": {
+        "startupPictures": {
+            "02": "20031104"
+        },
+        "pictureStartNumber": 6,
+        "headings": {
+            "02": {
+                "ueberschrift": "Kapitel 1 (Nov 2003 - Dez 2003)",
+                "text": "Der Mensch Trace und die Keidran Flora verbringen die <a href=\"20031117.php\">erste gemeinsame Nacht</a>. Floras Ex, Sythe, hat seinen <a href=\"20031128.php\">ersten Auftritt!</a>",
+                "anzahlBilder": 15
+            }
+        }
+    },
+    "03": {
+        "startupPictures": {
+            "03": "20031213"
+        },
+        "pictureStartNumber": 21,
+        "headings": {
+            "03": {
+                "ueberschrift": "Kapitel 2 (Dezember 2003 - Februar 2004)",
+                "text": "Unser Duo erreicht sein erstes Dorf und trifft auf einen neuen Verbündeten: den Basitin-Ausgestoßenen <a href=\"20031222.php\">Keith</a>. Trace trifft auch zum ersten Mal auf einige Leute aus seiner Vergangenheit: die Tavernenschwestern <a href=\"20031215.php\">Maren und Karen</a> und Traces alten Freund <a href=\"20031219.php\">Red</a>. Das <a href=\"20031231.php\">Ziel</a> ist klar: ein Schiff finden und zu den Basitin-Inseln segeln. Aber <a href=\"20040109.php\">Vertrauen ist schwer</a>, wenn es zwischen drei sehr unterschiedlichen Arten entsteht.",
+                "anzahlBilder": 28
+            }
+        }
+    },
+    "04": {
+        "startupPictures": {
+            "04": "20040301"
+        },
+        "pictureStartNumber": 49,
+        "headings": {
+            "04": {
+                "ueberschrift": "Kapitel 3 (März 2004 - Mai 2004)",
+                "text": "Auf der Suche nach Hilfe und Vorräten lassen Trace und Flora Keith zurück und machen einen Zwischenstopp in einer <a href=\"20040308.php\">neuen Stadt</a>, die größer ist als die letzte. Doch Trace‘s Freunde aus der Vergangenheit sind ihm hierher <a href=\"20040315.php\">gefolgt</a>, um ihn zurückzuholen und seine Erinnerungen wiederherzustellen!",
+                "anzahlBilder": 27
+            }
+        }
+    },
+    "05": {
+        "startupPictures": {
+            "05": "20040521"
+        },
+        "pictureStartNumber": 76,
+        "headings": {
+            "05": {
+                "ueberschrift": "Kapitel 4 (Mai 2004 - August 2004)",
+                "text": "Die Gruppe schließt sich wieder <a href=\"20040604.php\">mit Keith zusammen</a>, der versprochen hat, Flora nicht mehr zu verärgern. Als sie gehen, trifft Flora auf <a href=\"20040607.php\">Euchre</a>, einen Freund aus ihrer Zeit als Sklavin. Als sie versuchen, ihn zu befreien, <a href=\"20040623.php\">geht alles schief</a>. Trace <a href=\"20040802.php\">verliert zum ersten Mal die Kontrolle</a>.",
+                "anzahlBilder": 31
+            }
+        }
+    },
+    "06": {
+        "startupPictures": {
+            "06": "20040825"
+        },
+        "pictureStartNumber": 107,
+        "headings": {
+            "06": {
+                "ueberschrift": "Kapitel 5 (August 2004 - Dezember 2004)",
+                "text": "Flora und Trace <a href=\"20040906.php\">versöhnen sich</a>, und <a href=\"20040910.php\">romantische Gefühle</a> beginnen zu erblühen. Die Wege von Euchre und der Gruppe trennen sich. Sie <a href=\"20041011.php\">verlaufen</a> sich fast sofort, während Euchre <a href=\"20041029.php\">andeutet</a>, dass er nicht ganz so gutmütig ist. Das Konzept der <a href=\"20041025.php\">wilden Keidran</a> und des <a href=\"20041108.php\">Geschlechtsverkehrs</a> wird zum ersten Mal erwähnt. Es wird mehr über <a href=\"20041201.php\">Keiths Vergangenheit</a> und seine Feindseligkeit gegenüber Keidran enthüllt.",
+                "anzahlBilder": 38
+            }
+        }
+    },
+    "07": {
+        "startupPictures": {
+            "07": "20041206"
+        },
+        "pictureStartNumber": 145,
+        "headings": {
+            "07": {
+                "ueberschrift": "Kapitel 6, Teil 1 (Dezember 2004 - Januar 2005)",
+                "text": "Die Gruppe glaubt, dass sie eine <a href=\"20041210.php\">Hafenstadt</a> erreicht hat, aber irgendetwas stimmt nicht. <a href=\"20041227.php\">Saria</a>, Traces frühere Frau, taucht zum ersten Mal auf. Flora erlebt Gefühle der <a href=\"20050114.php\">Eifersucht</a> und des Selbsthasses, die sie <a href=\"20050123.php\">anfällig für Ephemeral</a>, einen maskenartigen Geist, machen.",
+                "anzahlBilder": 20
+            }
+        }
+    },
+    "08": {
+        "startupPictures": {
+            "08": "20050128"
+        },
+        "pictureStartNumber": 165,
+        "headings": {
+            "08": {
+                "ueberschrift": "Kapitel 6, Teil 2 (Januar 2005 - Juni 2005)",
+                "text": "Flora wird von Ephemeral <a href=\"20050131.php\">besessen</a>, der ihren Körper benutzt, um die Gruppe zu <a href=\"20050304.php\">bekämpfen</a>. Trace beginnt ein zweites Mal, <a href=\"20050325.php\">die Kontrolle zu verlieren</a>, aber <a href=\"20050404.php\">Euchre schreitet ein</a>. Trace verbindet sich geistig mit Flora, was Ephemerals Macht so weit schwächt, dass sie <a href=\"20050425.php\">gebrochen</a> werden kann. Es stellt sich heraus, dass die Hafenstadt eine riesige, von der Maske gestellte <a href=\"20050525.php\">Illusionsfalle</a> war, und <a href=\"20050606.php\">Saria verabschiedet sich</a>.",
+                "anzahlBilder": 34
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "10": {
+        "startupPictures": {
+            "09": "20060310"
+        },
+        "pictureStartNumber": 250,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 8 (März 2006 - August 2006)",
+                "text": "Die Wolfsassassine Natani <a href=\"20050923\" >schließt sich der Gruppe an</a>! Die vier erreichen <a href=\"20060505\" >Wreathwood</a> rechtzeitig zu einem Fest. Der dort ansässige Perverse namens <a href=\"20060529\" >Eric</a>, stellt der Gruppe ein <a href=\"20060621\" >Schiff</a> zur Verfügung. <a href=\"20060719\" >Kathrin</a> erscheint! Und es werden Dinge über Natani enthüllt. <a href=\"20060804\" >Zwei Dinge</a>.",
+                "anzahlBilder": 39
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    },
+    "09": {
+        "startupPictures": {
+            "09": "20050615"
+        },
+        "pictureStartNumber": 199,
+        "headings": {
+            "09": {
+                "ueberschrift": "Kapitel 7 (Juni 2005 - März 2006)",
+                "text": "Die Gruppe reist in den Süden nahe der Wolfsgrenze, um die echte Hafenstadt Wreathwood zu erreichen. Trace und Flora verbringen ihre <a href=\"20050706\">erste gemeinsame Nacht</a>, und die Masken <a href=\"20050715\">mischen sich wie üblich ein</a>. Wolfs-Attentäter <a href=\"20050803\">greifen an</a>! Trace wendet zum ersten Mal versehentlich <a href=\"20050917\">schwarze Magie</a> an und beschwört einen Dämon, der den Kampf beendet. Die Drachendame, <a href=\"20051007\">Lady Nora</a>, hat ihren ersten Auftritt, sehr zum Entsetzen aller.",
+                "anzahlBilder": 51
+            }
+        }
+    }
+}
