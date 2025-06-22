@@ -1,12 +1,12 @@
 <?php
 /**
- * Diese Datei zeigt das Archiv der Twokinds-Comics an.
+ * Diese Datei zeigt das Archiv der TwoKinds-Comics an.
  * Sie bindet verschiedene Archiv-Teile ein.
  */
 
-// Setze Parameter für den Header
+// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Archiv';
-$pageHeader = 'Twokinds Archiv'; // Dieser Wert wird im Header angezeigt
+$pageHeader = 'TwoKinds Archiv'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
 $additionalScripts = '<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><script type="text/javascript" src="https://cdn.twokinds.keenspot.com/js/archive.js?c=20201116"></script>';
 include __DIR__ . "/src/layout/header.php";
 ?>
@@ -41,12 +41,13 @@ include "src/components/archive/archive-22.php";
 include "src/components/archive/archive-23.php";
 include "src/components/archive/archive-24.php";
 include "src/components/archive/archive-25.php";
-include "src/components/archive/archive-26.php";
-include "src/components/archive/archive-27.php";
-include "src/components/archive/archive-28.php";
-include "src/components/archive/archive-29.php";
-include "src/components/archive/archive-30.php";
+//include "src/components/archive/archive-26.php";
+//include "src/components/archive/archive-27.php";
+//include "src/components/archive/archive-28.php";
+//include "src/components/archive/archive-29.php";
+//include "src/components/archive/archive-30.php";
 ?>
 <?php
+// Binde den gemeinsamen Footer ein.
 include __DIR__ . "/src/layout/footer.php";
 ?>

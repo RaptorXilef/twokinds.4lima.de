@@ -3,6 +3,9 @@
  * Verwaltet und zeigt die Comic-Navigationslinks an.
  * Ermittelt die Links zur vorherigen, nächsten, ersten und letzten Seite.
  *
+ * Diese Datei generiert NUR die Navigations-Links (<a>-Tags) OHNE den umgebenden Div-Container.
+ * Der Container wird in der aufrufenden Comic-Seite (z.B. 20250312.php) hinzugefügt.
+ *
  * Benötigt das $comicData Array und $currentComicId.
  *
  * @param array $comicData Asssoziatives Array aller Comic-Metadaten, sortiert nach ID.
@@ -21,11 +24,11 @@ if (!empty($comicData)) {
     $currentIndex = array_search($currentComicId, $comicKeys);
 
     if ($currentIndex !== false) {
-        // Erste Seite
+        // Erste Seite: Nimm den ersten Schlüssel im sortierten Array
         $firstPage = $comicKeys[0] . '.php';
 
-        // Letzte Seite
-        $lastPage = end($comicKeys) . '.php'; // Nutze den letzten Schlüssel
+        // Letzte Seite: Nimm den letzten Schlüssel im sortierten Array
+        $lastPage = end($comicKeys) . '.php';
 
         // Vorherige Seite
         if ($currentIndex > 0) {
@@ -36,39 +39,24 @@ if (!empty($comicData)) {
         if ($currentIndex < count($comicKeys) - 1) {
             $nextPage = $comicKeys[$currentIndex + 1] . '.php';
         } else {
-            // Wenn es die letzte Seite ist, soll der "Nächste Seite"-Link auf die aktuelle Seite zeigen,
-            // oder leer bleiben, je nach gewünschtem Verhalten.
-            // Hier leer gelassen, damit der Link deaktiviert wird.
+            // Wenn es die letzte Seite ist, gibt es keine nächste Seite.
             $nextPage = '';
         }
     }
 }
 ?>
-
-<div class='comicnav'>
-    <a href="<?php echo !empty($firstPage) ? $firstPage : '#'; ?>" class="navarrow navbegin <?php echo empty($firstPage) ? 'disabled' : ''; ?>">
-        <span class="nav-wrapper">Erste Seite</span>
+    <a href="<?php echo !empty($firstPage) ? htmlspecialchars($firstPage) : '#'; ?>" class="navarrow navbegin <?php echo empty($firstPage) ? 'disabled' : ''; ?>">
+        <span class="nav-wrapper"><span class="nav-text">Erste Seite</span></span>
     </a>
-    <a href="<?php echo !empty($prevPage) ? $prevPage : '#'; ?>" class="navarrow navprev <?php echo empty($prevPage) ? 'disabled' : ''; ?>">
-        <span class="nav-wrapper">Vorherige Seite</span>
+    <a href="<?php echo !empty($prevPage) ? htmlspecialchars($prevPage) : '#'; ?>" class="navarrow navprev <?php echo empty($prevPage) ? 'disabled' : ''; ?>">
+        <span class="nav-wrapper"><span class="nav-text">Vorherige Seite</span></span>
     </a>
     <a href="/archiv.php" class="navarchive">
         <span class="nav-wrapper">Archiv</span>
     </a>
-    <a href="<?php echo !empty($nextPage) ? $nextPage : '#'; ?>" class="navarrow navnext <?php echo empty($nextPage) ? 'disabled' : ''; ?>">
-        <span class="nav-wrapper">Nächste Seite</span>
+    <a href="<?php echo !empty($nextPage) ? htmlspecialchars($nextPage) : '#'; ?>" class="navarrow navnext <?php echo empty($nextPage) ? 'disabled' : ''; ?>">
+        <span class="nav-wrapper"><span class="nav-text">Nächste Seite</span></span>
     </a>
-    <a href="<?php echo !empty($lastPage) ? $lastPage : '#'; ?>" class="navarrow navend <?php echo empty($lastPage) ? 'disabled' : ''; ?>">
-        <span class="nav-wrapper">Letzte Seite</span>
+    <a href="<?php echo !empty($lastPage) ? htmlspecialchars($lastPage) : '#'; ?>" class="navarrow navend <?php echo empty($lastPage) ? 'disabled' : ''; ?>">
+        <span class="nav-wrapper"><span class="nav-text">Letzte Seite</span></span>
     </a>
-</div>
-
-<div class="below-nav">
-    <i class="jsdep">Sie können auch mit den Pfeiltasten oder den Tasten J und K navigieren.</i>
-    <?php /*
-    <p class="permalink">
-        <a href="/feed.xml" class="rss">RSS</a>
-        &middot; <a href="/comic/1082_16thanniversary/">Permalink</a>
-    </p>
-    */ ?>
-</div>

@@ -3,9 +3,9 @@
  * Diese Datei zeigt Details zu den Charakteren des Comics an.
  */
 
-// Setze Parameter für den Header
+// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Charaktere';
-// Der H1-Header für diese Seite ist im Body der Datei selbst (header hidden)
+// Der H1-Header für diese Seite ist im Body der Datei selbst (header hidden), daher bleibt $pageHeader leer.
 $pageHeader = '';
 include __DIR__ . "/src/layout/header.php";
 ?>
@@ -279,7 +279,7 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Mensch, Keidran<br>
             </p>
             <p><b>Persönlichkeit:</b> Früher war er vollkommen zufrieden mit seinem Schicksal, bis er an dem schicksalhaften Tag einem Basitin begegnete, der schwarze Magie beherrschte.</p>
-            <p>Mike ist einer von mehreren Sklaven, die unter Eric arbeiten. Seine Aufgabe besteht hauptsächlich darin, Erics Schiff zu warten. Er ist gut mit Evals befreundet, einem weiteren Sklaven auf Erics Schiff.</p>
+            <p>Mike ist einer von mehreren Sklaven, die unter Eric arbeiten. Seine Aufgabe besteht hauptsächlich darin, Erics Schiff zu warten. Er ist gut mit Evals befreundet, einem weiteren Sklaven auf Erics Schiff. Obwohl Evals größer ist als Mike, ist Mike normalerweise derjenige, der die Führung übernimmt.</p>
 		</div>
 		<div class="clear"></div>
 	</section>
@@ -468,5 +468,6 @@ include __DIR__ . "/src/layout/header.php";
 </section>
 
 <?php
+// Binde den gemeinsamen Footer ein.
 include __DIR__ . "/src/layout/footer.php";
 ?>

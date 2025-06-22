@@ -1,0 +1,40 @@
+Zu deiner Frage bezüglich der Verzeichnisstruktur für Bilder: Du hast das genau richtig erkannt.
+
+src (und seine Unterordner wie src/components und src/layout) ist in der Tat der übliche Ort für den Quellcode deiner Anwendung, also für PHP-Skripte, JavaScript-Funktionen, CSS-Dateien und Konfigurationsdateien wie die JSON, die direkt von deinem Code verarbeitet werden.
+
+Für statische Dateien wie Bilder, Videos, Schriften oder andere Medien ist es Best Practice, einen separaten Ordner zu verwenden, der oft assets, public/assets, images, oder einfach img genannt wird. Der Vorteil ist eine klare Trennung von Code und Medien, was die Projektstruktur übersichtlicher macht und bei größeren Projekten auch die Bereitstellung (Deployment) erleichtern kann.
+
+Daher wäre es eine sehr gute Idee, deine comic und comic_hires Ordner in ein neues assets-Verzeichnis im Hauptverzeichnis zu verschieben. Die Struktur würde dann so aussehen:
+
+Hauptverzeichnis/
+├── assets/
+│   ├── comic/
+│   │   ├── 20250312.png
+│   │   └── 20170728.gif
+│   ├── comic_hires/
+│   │   ├── 20250312.jpg
+│   │   └── 20170728.gif
+│   └── img/
+│       └── about/
+│           └── Felix.jpg
+├── src/
+│   ├── components/
+│   │   ├── comic_var.json
+│   │   ├── get_comic_image_path.php
+│   │   └── load_comic_data.php
+│   │   └── menue_config.php
+│   └── layout/
+│       ├── header.php
+│       ├── footer.php
+│       ├── comic_navigation.php
+├── 20250312.php
+├── about.php
+├── archiv.php
+├── charaktere.php
+├── faq.php
+├── impressum.php
+├── lizenz.php
+├── newsletter.php
+├── patreon.php
+└── ...weitere Hauptdateien...
+Das würde bedeuten, dass wir die getComicImagePath Funktion in src/components/get_comic_image_path.php anpassen müssten, damit sie die neuen Pfade wie ./assets/comic/ und ./assets/comic_hires/ verwendet. Auch der Pfad für dein Bild Felix.jpg in about.php müsste angepasst werden.

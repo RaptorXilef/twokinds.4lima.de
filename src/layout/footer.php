@@ -2,8 +2,6 @@
 /**
  * Gemeinsamer Footer für alle Seiten.
  * Enthält Copyright-Informationen und schließt die HTML-Struktur ab.
- *
- * Die Analyselogik wurde entfernt, wie gewünscht.
  */
 ?>
                 </article>

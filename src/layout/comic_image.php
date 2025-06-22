@@ -16,9 +16,9 @@ if (!isset($currentComicId) || !isset($comicName)) {
 ?>
 <a href="<?php echo $imageHiresPath; ?>" target="_blank">
     <img src="<?php echo $imagePath; ?>"
-         title="<?php echo htmlspecialchars($comicName); ?>"
-         alt="Comic Page: <?php echo htmlspecialchars($comicName); ?>"
-         width="825">
+        title="<?php echo htmlspecialchars($comicName); ?>"
+        alt="Comic Page: <?php echo htmlspecialchars($comicName); ?>"
+        width="825">
 </a>
 <?php
 }

@@ -3,10 +3,10 @@
  * Diese Datei enthält das Impressum der Webseite.
  */
 
-// JavaScript für die E-Mail-Anzeige (als zusätzliche Skripte an den Header übergeben)
+// JavaScript für die E-Mail-Anzeige als zusätzliche Skripte an den Header übergeben.
 $emailScript = '
 <script type="text/javascript">
-  // JavaScript-Code zur Generierung der E-Mail-Adresse
+  // JavaScript-Code zur Generierung der E-Mail-Adresse, um Spam-Bots zu vermeiden.
   function zeigeEmail() {
     var email = \'MCRaptorDragon\' + \'@\' + \'gmail.com\';
     document.getElementById(\'email-link\').innerHTML = \'<a href="mailto:\' + email + \'">\' + email + \'</a>\';
@@ -14,10 +14,10 @@ $emailScript = '
 </script>
 ';
 
-// Setze Parameter für den Header
+// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Impressum';
-$pageHeader = 'Impressum'; // Dieser Wert wird im Header angezeigt
-$additionalScripts = $emailScript; // Füge das E-Mail-Skript hinzu
+$pageHeader = 'Impressum'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
+$additionalScripts = $emailScript; // Füge das E-Mail-Skript hinzu.
 include __DIR__ . "/src/layout/header.php";
 ?>
     <p>
@@ -40,19 +40,19 @@ include __DIR__ . "/src/layout/header.php";
             oder E-mail erreichen: 
             
             <div id="email-link">
-  <button onclick="zeigeEmail()">E-Mail anzeigen</button>
-</div>
+                <button onclick="zeigeEmail()">E-Mail anzeigen</button>
+            </div>
             <br>
         </span>
     </p><br>
     <p>
         <h3>Haftungsausschluss:</h3>
         Ich möchte Sie darauf Hinweisen, dass ich keinen Einfluss auf die hier durch Links oder Banner eingebundenen Seiten oder deren Inhalte haben.<br>
-        Ebenso lehnen ich jegliche Haftung für Schäden, die Ihnen oder Drittpersonen durch die Nutzung oder nicht-Nutzung dieses Internetauftrittes entstehen, ab.<br>
-        Im Falle eines Missbrauchs der auf dieser Webseite zur Verfügung gestellten Informationen behalte ich mir vor, jener missbrauch betreibenden Person Sanktionen aufzuerlegen oder die Person von einem Teil beziehungsweise der gesammten Webseite auszuschliessen.<br>
+        Ebenso lehne ich jegliche Haftung für Schäden, die Ihnen oder Drittpersonen durch die Nutzung oder nicht-Nutzung dieses Internetauftrittes entstehen, ab.<br>
+        Im Falle eines Missbrauchs der auf dieser Webseite zur Verfügung gestellten Informationen behalte ich mir vor, jener missbrauch betreibenden Person Sanktionen aufzuerlegen oder die Person von einem Teil beziehungsweise der gesamten Webseite auszuschliessen.<br>
         Es kann keinen Anspruch auf dauerhafte und unterbrechungsfreie Verfügbarkeit der Webseite oder deren Inhalte erhoben werden.<br>
         Änderungen vorbehalten.<br>
-        Eine detailierte Beschreibung bezüglich der Verwendungsrechte des hier zur Verfügung gestellten Inhalts finden Sie unter dem Punkt "Verwendungsrechte (Copyright)".
+        Eine detaillierte Beschreibung bezüglich der Verwendungsrechte des hier zur Verfügung gestellten Inhalts finden Sie unter dem Punkt "Verwendungsrechte (Copyright)".
     </p>
     <p>
         <h3>Verwendungsrechte (Copyright):</h3>
@@ -61,5 +61,6 @@ include __DIR__ . "/src/layout/header.php";
     </p>
 
 <?php
+// Binde den gemeinsamen Footer ein.
 include __DIR__ . "/src/layout/footer.php";
 ?>
