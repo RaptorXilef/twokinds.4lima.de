@@ -97,16 +97,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $users[$username] = ['passwordHash' => $hashedPassword];
                     if (saveUsers($users)) {
-                        $message = '<p style="color: green;">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p>';
+                        $message = '<p style="color: green;">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p個人的です。';
                         // Weiterleitung zur Login-Seite
                         header('Location: index.php');
                         exit;
                     } else {
-                        $message = '<p style="color: red;">Fehler beim Speichern des Benutzers.</p>';
+                        $message = '<p style="color: red;">Fehler beim Speichern des Benutzers。</p>';
                     }
                 }
             } else {
-                $message = '<p style="color: red;">Ein Admin-Benutzer existiert bereits. Initialisierung nicht möglich.</p>';
+                $message = '<p style="color: red;">Ein Admin-Benutzer existiert bereits. Initialisierung nicht möglich。</p>';
             }
             break;
 
@@ -121,19 +121,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['admin_username'] = $username;
                 $loggedIn = true;
                 $currentUser = $username;
-                $message = '<p style="color: green;">Erfolgreich angemeldet!</p>';
+                $message = '<p style="color: green;">Erfolgreich angemeldet！</p>';
                 // Weiterleitung, um Formularerneutsendung zu vermeiden
                 header('Location: index.php');
                 exit;
             } else {
-                $message = '<p style="color: red;">Ungültiger Benutzername oder Passwort.</p>';
+                $message = '<p style="color: red;">Ungültiger Benutzername oder Passwort。</p>';
             }
             break;
 
         // Benutzername/Passwort ändern (nur für angemeldete Benutzer)
         case 'change_credentials':
             if (!$loggedIn) {
-                $message = '<p style="color: red;">Sie müssen angemeldet sein, um Ihre Daten zu ändern.</p>';
+                $message = '<p style="color: red;">Sie müssen angemeldet sein, um Ihre Daten zu ändern。</p>';
                 break;
             }
             $currentUsername = $_SESSION['admin_username'];
@@ -145,9 +145,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Überprüfe altes Passwort
             if (!isset($users[$currentUsername]) || !password_verify($oldPassword, $users[$currentUsername]['passwordHash'])) {
-                $message = '<p style="color: red;">Altes Passwort ist inkorrekt.</p>';
+                $message = '<p style="color: red;">Altes Passwort ist inkorrekt。</p>';
             } elseif (empty($newUsername) && empty($newPassword)) {
-                $message = '<p style="color: orange;">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein.</p>';
+                $message = '<p style="color: orange;">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein。</p>';
             } else {
                 $userUpdated = false;
                 $newUsersArray = $users; // Arbeitskopie der Benutzer
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Wenn Benutzername geändert wird
                 if (!empty($newUsername) && $newUsername !== $currentUsername) {
                     if (isset($newUsersArray[$newUsername])) {
-                        $message = '<p style="color: red;">Neuer Benutzername ist bereits vergeben.</p>';
+                        $message = '<p style="color: red;">Neuer Benutzername ist bereits vergeben。</p>';
                         break; // Abbruch, wenn Benutzername schon existiert
                     }
                     // Verschiebe den alten Eintrag zum neuen Benutzernamen
@@ -175,12 +175,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($userUpdated) {
                     if (saveUsers($newUsersArray)) {
-                        $message = '<p style="color: green;">Anmeldedaten erfolgreich aktualisiert.</p>';
+                        $message = '<p style="color: green;">Anmeldedaten erfolgreich aktualisiert。</p>';
                     } else {
-                        $message = '<p style="color: red;">Fehler beim Speichern der neuen Anmeldedaten.</p>';
+                        $message = '<p style="color: red;">Fehler beim Speichern der neuen Anmeldedaten。</p>';
                     }
                 } else {
-                    $message = '<p style="color: orange;">Keine Änderungen vorgenommen (Benutzername und/oder Passwort nicht unterschiedlich).</p>';
+                    $message = '<p style="color: orange;">Keine Änderungen vorgenommen (Benutzername und/oder Passwort nicht unterschiedlich)。</p>';
                 }
             }
             break;
@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Neuen Benutzer hinzufügen (nur für angemeldete Benutzer)
         case 'add_user':
             if (!$loggedIn) {
-                $message = '<p style="color: red;">Sie müssen angemeldet sein, um Benutzer hinzuzufügen.</p>';
+                $message = '<p style="color: red;">Sie müssen angemeldet sein, um Benutzer hinzuzufügen。</p>';
                 break;
             }
             $newUsername = filter_input(INPUT_POST, 'add_username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -196,16 +196,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $users = getUsers();
             if (empty($newUsername) || empty($newPassword)) {
-                $message = '<p style="color: red;">Benutzername und Passwort für den neuen Benutzer dürfen nicht leer sein.</p>';
+                $message = '<p style="color: red;">Benutzername und Passwort für den neuen Benutzer dürfen nicht leer sein。</p>';
             } elseif (isset($users[$newUsername])) {
-                $message = '<p style="color: red;">Benutzername "' . htmlspecialchars($newUsername) . '" existiert bereits.</p>';
+                $message = '<p style="color: red;">Benutzername "' . htmlspecialchars($newUsername) . '" existiert bereits。</p>';
             } else {
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
                 $users[$newUsername] = ['passwordHash' => $hashedPassword];
                 if (saveUsers($users)) {
-                    $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($newUsername) . '" erfolgreich hinzugefügt.</p>';
+                    $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($newUsername) . '" erfolgreich hinzugefügt。</p>';
                 } else {
-                    $message = '<p style="color: red;">Fehler beim Hinzufügen des Benutzers.</p>';
+                    $message = '<p style="color: red;">Fehler beim Hinzufügen des Benutzers。</p>';
                 }
             }
             break;
@@ -213,26 +213,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Benutzer löschen (nur für angemeldete Benutzer)
         case 'delete_user':
             if (!$loggedIn) {
-                $message = '<p style="color: red;">Sie müssen angemeldet sein, um Benutzer zu löschen.</p>';
+                $message = '<p style="color: red;">Sie müssen angemeldet sein, um Benutzer zu löschen。</p>';
                 break;
             }
             $userToDelete = filter_input(INPUT_POST, 'user_to_delete', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
             if (empty($userToDelete)) {
-                $message = '<p style="color: red;">Kein Benutzer zum Löschen ausgewählt.</p>';
+                $message = '<p style="color: red;">Kein Benutzer zum Löschen ausgewählt。</p>';
             } elseif ($userToDelete === $currentUser) {
-                $message = '<p style="color: red;">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen.</p>';
+                $message = '<p style="color: red;">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen。</p>';
             } else {
                 $users = getUsers();
                 if (isset($users[$userToDelete])) {
                     unset($users[$userToDelete]);
                     if (saveUsers($users)) {
-                        $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht.</p>';
+                        $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht。</p>';
                     } else {
-                        $message = '<p style="color: red;">Fehler beim Löschen des Benutzers.</p>';
+                        $message = '<p style="color: red;">Fehler beim Löschen des Benutzers。</p>';
                     }
                 } else {
-                    $message = '<p style="color: red;">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden.</p>';
+                    $message = '<p style="color: red;">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden。</p>';
                 }
             }
             break;
@@ -245,9 +245,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Adminbereich'; // Setze den spezifischen Titel für den Adminbereich
 $pageHeader = 'Adminbereich';
 // Setze die Beschreibung für den Adminbereich.
-$siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung. Hier können administrative Aufgaben durchgeführt werden.';
+$siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung. Hier können administrative Aufgaben durchgeführt werden。';
 
-// Binde den gemeinsamen Header ein.
+// Binde den gemeinsamen Header ein。
 include __DIR__ . '/../src/layout/header.php';
 ?>
 
@@ -259,10 +259,12 @@ include __DIR__ . '/../src/layout/header.php';
             max-width: 500px;
             margin: 20px auto;
             padding: 20px;
-            border: 1px solid rgba(221, 221, 221, 0.1); /* Sehr leichter, halbtransparenter Rahmen */
+            /* Dezenter Rahmen im hellen Modus (beibehalten) */
+            border: 1px solid rgba(221, 221, 221, 0.2); 
             border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.22); /* Sehr leichter, transparenter Hintergrund */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Dezenterer Schatten */
+            /* Dezenter Hintergrund im hellen Modus (beibehalten) */
+            background-color: rgba(240, 240, 240, 0.3); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Dezenterer Schatten (beibehalten) */
         }
 
         /* Input-Felder und Labels im hellen Theme */
@@ -280,20 +282,38 @@ include __DIR__ . '/../src/layout/header.php';
             color: #333; /* Dunkler Text in Input-Feldern */
         }
         
-        /* Input-Felder und Labels im dunklen Theme (wenn .main-container.lights-off aktiv ist) */
-        /* Diese Regeln werden durch main_dark.css angewendet, wenn es über das body-Tag geht */
-        .main-container.lights-off .admin-form-container {
-            background-color: rgba(30, 30, 30, 0.2); /* Dunkler, transparenter Hintergrund im Dark Theme (stärker reduziert) */
-            border-color: rgba(80, 80, 80, 0.1); /* Angepasster Rahmen im Dark Theme (stärker reduziert) */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* Etwas stärkerer Schatten im Dark Theme für Kontrast */
+        /* Logout Link im hellen Theme */
+        /* Dies ist die Standardfarbe für den Logout-Link, wenn kein Dunkelmodus aktiv ist */
+        .logout-link {
+            color: rgb(240, 17, 9); 
+            text-decoration: none;
+            font-weight: bold;
         }
-        .main-container.lights-off .admin-form-container label,
+
+
+        /* --- Regeln für den Dunkelmodus (.main-container.lights-off) --- */
+
+        .main-container.lights-off .admin-form-container {
+            /* Hintergrund und Rahmen wie in v10 (letzter Stand, den du als besser empfandest) */
+            background-color: rgba(30, 30, 30, 0.2); /* Dunkler, transparenter Hintergrund */
+            border-color: rgba(80, 80, 80, 0.15); /* Angepasster Rahmen */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Angepasster Schatten */
+        }
+
+        /* Labels sollen im Dunkelmodus #efefef sein */
+        body.theme-night .admin-form-container label {
+            color: #efefef !important; /* Helleres Grau für Labels im Dark Theme - !important hinzugefügt, um body.theme-night a zu überschreiben */
+        }
+
+        /* Überschriften, Absätze und Benutzernamen sollen hell sein im Dark Theme */
         .main-container.lights-off .admin-form-container h2,
         .main-container.lights-off .admin-form-container h3,
         .main-container.lights-off .admin-form-container p,
-        .main-container.lights-off .admin-form-container li span {
-            color: #f0f0f0 !important; /* Heller Text für Labels und andere Textelemente im Dark Theme - !important hinzugefügt */
+        .main-container.lights-off .admin-form-container li span.user-name {
+            color: #f0f0f0; /* Heller Text für diese Elemente im Dark Theme */
         }
+
+        /* Input-Felder im dunklen Theme */
         .main-container.lights-off .admin-form-container input[type="text"],
         .main-container.lights-off .admin-form-container input[type="password"],
         .main-container.lights-off .admin-form-container input[type="email"] {
@@ -301,6 +321,8 @@ include __DIR__ . '/../src/layout/header.php';
             color: #f0f0f0; /* Heller Text in Input-Feldern im Dark Theme */
             border-color: #666; /* Angepasster Rahmen für Input-Felder im Dark Theme */
         }
+
+        /* Buttons (allgemein) */
         .admin-form-container button {
             padding: 10px 15px;
             border: none;
@@ -309,13 +331,19 @@ include __DIR__ . '/../src/layout/header.php';
             font-size: 16px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        /* Spezifische Button-Farben */
+        /* Spezifische Button-Farben (heller Modus Standard) */
         .admin-form-container button[name="action"][value="create_initial_user"] { background-color: #4CAF50; color: white; }
         .admin-form-container button[name="action"][value="login"] { background-color: #008CBA; color: white; }
         .admin-form-container button[name="action"][value="change_credentials"] { background-color: #5cb85c; color: white; }
         .admin-form-container button[name="action"][value="add_user"] { background-color: #f0ad4e; color: white; }
         .admin-form-container button[name="action"][value="delete_user"] { background-color: #dc3545; color: white; font-size: 14px; padding: 5px 10px;}
         .admin-form-container button:hover { opacity: 0.9; }
+
+        /* Buttons, die im Dark Theme schwarz bleiben sollen (spezifisch für Dark Mode) */
+        .main-container.lights-off .admin-form-container button[name="action"][value="change_credentials"],
+        .main-container.lights-off .admin-form-container button[name="action"][value="add_user"] {
+            color: #333; /* Schwarz im Dark Theme */
+        }
 
         .admin-form-container ul {
             list-style-type: none;
@@ -336,13 +364,27 @@ include __DIR__ . '/../src/layout/header.php';
         .admin-form-container li span.user-name {
             font-weight: bold;
         }
+        
+        /* (Sie) Text soll im Dark Theme weiß sein */
         .admin-form-container li span.current-user-tag {
-            color:rgb(0, 0, 0);
-            font-size: 0.9em;
+            font-size: 0.9em; /* Standardgröße */
+            color: #6c757d; /* Standardfarbe für hellen Modus */
         }
         .main-container.lights-off .admin-form-container li span.current-user-tag {
-            color: #bbb; /* Hellerer Tag im Dark Theme */
+            color: #f0f0f0 !important; /* Heller Tag im Dark Theme - !important hinzugefügt */
         }
+        
+        /* Logout Link im Dark Theme */
+        body.theme-night .admin-form-container .logout-link {
+            color: rgb(255, 191, 189) !important; /* Kräftigeres Rot im Dark Theme wie gewünscht */
+            text-decoration: none; /* Sicherstellen, dass es nicht unterstrichen ist */
+            font-weight: bold; /* Sicherstellen, dass es fett ist */
+        }
+        .main-container.lights-off .logout-link:hover {
+            opacity: 0.8; /* Hover-Effekt */
+        }
+
+
         .admin-form-container .message {
             margin-bottom: 15px;
             padding: 10px;
@@ -409,7 +451,7 @@ include __DIR__ . '/../src/layout/header.php';
             </form>
         <?php else: ?>
             <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-            <p style="text-align: right;"><a href="?action=logout" style="color:rgb(240, 17, 9); text-decoration: none; font-weight: bold;">Logout</a></p>
+            <p style="text-align: right;"><a href="?action=logout" class="logout-link">Logout</a></p>
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
                 <h3>Benutzerdaten ändern</h3>
