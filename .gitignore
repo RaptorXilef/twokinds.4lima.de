@@ -20,3 +20,6 @@ admin/analytics/*.csv
 
 # Zip-Archive
 *.zip
+
+# Temp
+_old-löschen_wenn_fertig/*.*

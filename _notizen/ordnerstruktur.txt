@@ -1,0 +1,56 @@
+/
+├── public/                # Öffentliche Dateien (direkt über Browser erreichbar)
+│   ├── index.php          # Startseite
+│   ├── about.php
+│   ├── archiv.php
+│   ├── charaktere.php
+│   ├── comic.php          # Hauptseite für Comic-Anzeige
+│   ├── faq.php
+│   ├── google5c760f191f071105.html
+│   ├── impressum.php
+│   ├── lizenz.php
+│   ├── newsletter.php
+│   ├── patreon.php
+│   ├── robots.txt
+│   ├── sitemap.xml
+│   ├── assets/            # CSS, JS, Bilder etc.
+│   │   ├── css/
+│   │   │   └── style.css
+│   │   ├── js/
+│   │   │   └── script.js
+│   │   ├── img/            # Allgemeine Bilder (Logos, Icons etc.)
+│   │   │   └── logo.png
+│   │   ├── comic/          # Comic-Bilder (verschiedene Auflösungen)
+│   │   │   ├── high/         # Hochauflösende Bilder (comic_hires/*)
+│   │   │   │   └── 001.jpg
+│   │   │   ├── low/          # Niedrigauflösende Bilder (comic/*.jpg, *.gif, *.png)
+│   │   │   │   └── 001.jpg
+│   │   │   └── thumbnails/   # Thumbnails (thumbnails/*.jpg)
+│   │   │       └── 001.jpg
+│   │   └── admin/           # Admin-Bereich (optional, wenn du öffentliche Admin-Tools hast)
+│   │       └── index.php
+│   ├── .htaccess          # Apache Konfiguration (falls möglich)
+│
+├── src/                   # PHP-Logik
+│   ├── config/            # Konfigurationsdateien
+│   │   └── config.php    # Allgemeine Konfiguration (Pfade, etc.)
+│   ├── includes/          # Wiederverwendbare PHP-Dateien (Header, Footer, Navigation)
+│   │   ├── header.php
+│   │   ├── footer.php
+│   │   └── navigation.php
+│   ├── templates/         # HTML-Strukturen und Seiten-Layouts
+│   │   ├── comic_page.php   # Template für die Anzeige einer einzelnen Comicseite
+│   │   └── admin/           # Templates für den Admin-Bereich
+│   │       └── generator_form.php # Formular für den Seitengenerator
+│   │       └── generator_result.php # Anzeige des Generator-Ergebnisses
+│   ├── classes/           # PHP-Klassen (optional, für komplexere Logik)
+│   │   └── ImageHelper.php  # Beispiel: Klasse für Bildverarbeitung
+│   ├── functions.php      # Hilfsfunktionen
+│   └── admin/             # PHP-Logik für den Admin-Bereich
+│       ├── generator.php    # Der Seitengenerator selbst
+│       └── ...
+│
+├── vendor/                # Externe Bibliotheken (via Composer)
+├── .env                   # Umgebungsvariablen
+├── composer.json          # Composer Konfigurationsdatei
+├── README.md              # Projektbeschreibung
