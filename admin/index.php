@@ -337,7 +337,7 @@ include __DIR__ . '/../src/layout/header.php';
             font-weight: bold;
         }
         .admin-form-container li span.current-user-tag {
-            color: #6c757d;
+            color:rgb(255, 255, 255);
             font-size: 0.9em;
         }
         .main-container.lights-off .admin-form-container li span.current-user-tag {
@@ -409,7 +409,7 @@ include __DIR__ . '/../src/layout/header.php';
             </form>
         <?php else: ?>
             <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-            <p style="text-align: right;"><a href="?action=logout" style="color: #d9534f; text-decoration: none; font-weight: bold;">Logout</a></p>
+            <p style="text-align: right;"><a href="?action=logout" style="color:rgb(240, 17, 9); text-decoration: none; font-weight: bold;">Logout</a></p>
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
                 <h3>Benutzerdaten ändern</h3>
