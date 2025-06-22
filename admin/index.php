@@ -252,102 +252,224 @@ include __DIR__ . '/../src/layout/header.php';
 ?>
 
 <article>
-    <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <?php echo $message; // Zeigt Nachrichten an ?>
+    <!-- CSS für das Admin-Formular, um Theme-Anpassungen zu ermöglichen -->
+    <style>
+        /* Container für das Formularfeld */
+        .admin-form-container {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid rgba(221, 221, 221, 0.1); /* Sehr leichter, halbtransparenter Rahmen */
+            border-radius: 8px;
+            background-color: rgba(240, 240, 240, 0.1); /* Sehr leichter, transparenter Hintergrund */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Dezenterer Schatten */
+        }
+
+        /* Input-Felder und Labels im hellen Theme */
+        .admin-form-container label {
+            color: #333; /* Dunkler Text für Labels */
+        }
+        .admin-form-container input[type="text"],
+        .admin-form-container input[type="password"],
+        .admin-form-container input[type="email"] {
+            width: calc(100% - 18px); /* Breite anpassen */
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff; /* Weißer Hintergrund für Input-Felder */
+            color: #333; /* Dunkler Text in Input-Feldern */
+        }
+        
+        /* Input-Felder und Labels im dunklen Theme (wenn .main-container.lights-off aktiv ist) */
+        /* Diese Regeln werden durch main_dark.css angewendet, wenn es über das body-Tag geht */
+        .main-container.lights-off .admin-form-container {
+            background-color: rgba(30, 30, 30, 0.2); /* Dunkler, transparenter Hintergrund im Dark Theme (stärker reduziert) */
+            border-color: rgba(80, 80, 80, 0.1); /* Angepasster Rahmen im Dark Theme (stärker reduziert) */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* Etwas stärkerer Schatten im Dark Theme für Kontrast */
+        }
+        .main-container.lights-off .admin-form-container label,
+        .main-container.lights-off .admin-form-container h2,
+        .main-container.lights-off .admin-form-container h3,
+        .main-container.lights-off .admin-form-container p,
+        .main-container.lights-off .admin-form-container li span {
+            color: #f0f0f0 !important; /* Heller Text für Labels und andere Textelemente im Dark Theme - !important hinzugefügt */
+        }
+        .main-container.lights-off .admin-form-container input[type="text"],
+        .main-container.lights-off .admin-form-container input[type="password"],
+        .main-container.lights-off .admin-form-container input[type="email"] {
+            background-color: #444; /* Dunklerer Hintergrund für Input-Felder im Dark Theme */
+            color: #f0f0f0; /* Heller Text in Input-Feldern im Dark Theme */
+            border-color: #666; /* Angepasster Rahmen für Input-Felder im Dark Theme */
+        }
+        .admin-form-container button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* Spezifische Button-Farben */
+        .admin-form-container button[name="action"][value="create_initial_user"] { background-color: #4CAF50; color: white; }
+        .admin-form-container button[name="action"][value="login"] { background-color: #008CBA; color: white; }
+        .admin-form-container button[name="action"][value="change_credentials"] { background-color: #5cb85c; color: white; }
+        .admin-form-container button[name="action"][value="add_user"] { background-color: #f0ad4e; color: white; }
+        .admin-form-container button[name="action"][value="delete_user"] { background-color: #dc3545; color: white; font-size: 14px; padding: 5px 10px;}
+        .admin-form-container button:hover { opacity: 0.9; }
+
+        .admin-form-container ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .admin-form-container li {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-bottom: 1px dotted #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .main-container.lights-off .admin-form-container li {
+            border-bottom: 1px dotted #555; /* Angepasster Trenner im Dark Theme */
+        }
+        .admin-form-container li span.user-name {
+            font-weight: bold;
+        }
+        .admin-form-container li span.current-user-tag {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .main-container.lights-off .admin-form-container li span.current-user-tag {
+            color: #bbb; /* Hellerer Tag im Dark Theme */
+        }
+        .admin-form-container .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .admin-form-container .message p {
+            margin: 0;
+        }
+        .admin-form-container .message p[style*="color: red"] {
+            color: #a94442;
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
+        }
+        .admin-form-container .message p[style*="color: green"] {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border: 1px solid #d6e9c6;
+        }
+        .admin-form-container .message p[style*="color: orange"] {
+            color: #8a6d3b;
+            background-color: #fcf8e3;
+            border: 1px solid #faebcc;
+        }
+
+    </style>
+
+    <div class="admin-form-container">
+        <?php if (!empty($message)): ?>
+            <div class="message">
+                <?php echo $message; // Zeigt Nachrichten an ?>
+            </div>
+        <?php endif; ?>
 
         <?php
         $existingUsers = getUsers(); // Lade Benutzer jedes Mal neu, um aktuelle Liste zu haben
         if (empty($existingUsers)):
         ?>
-            <h2 style="color: #333;">Ersten Admin-Benutzer erstellen</h2>
-            <p style="color: #333;">Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
+            <h2>Ersten Admin-Benutzer erstellen</h2>
+            <p>Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
-                    <label for="create_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Benutzername:</label>
-                    <input type="text" id="create_username" name="username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                    <label for="create_username">Benutzername:</label>
+                    <input type="text" id="create_username" name="username" required>
                 </div>
                 <div>
-                    <label for="create_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Passwort:</label>
-                    <input type="password" id="create_password" name="password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                    <label for="create_password">Passwort:</label>
+                    <input type="password" id="create_password" name="password" required>
                 </div>
-                <button type="submit" name="action" value="create_initial_user" style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Admin erstellen</button>
+                <button type="submit" name="action" value="create_initial_user">Admin erstellen</button>
             </form>
         <?php elseif (!$loggedIn): ?>
-            <h2 style="color: #333;">Login</h2>
+            <h2>Login</h2>
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
-                    <label for="login_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Benutzername:</label>
-                    <input type="text" id="login_username" name="username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                    <label for="login_username">Benutzername:</label>
+                    <input type="text" id="login_username" name="username" required>
                 </div>
                 <div>
-                    <label for="login_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Passwort:</label>
-                    <input type="password" id="login_password" name="password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                    <label for="login_password">Passwort:</label>
+                    <input type="password" id="login_password" name="password" required>
                 </div>
-                <button type="submit" name="action" value="login" style="padding: 10px 15px; background-color: #008CBA; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Login</button>
+                <button type="submit" name="action" value="login">Login</button>
             </form>
         <?php else: ?>
-            <h2 style="color: #333;">Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
+            <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
             <p style="text-align: right;"><a href="?action=logout" style="color: #d9534f; text-decoration: none; font-weight: bold;">Logout</a></p>
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
-                <h3 style="color: #333;">Benutzerdaten ändern</h3>
+                <h3>Benutzerdaten ändern</h3>
                 <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
-                        <label for="old_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Altes Passwort (Bestätigung):</label>
-                        <input type="password" id="old_password" name="old_password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                        <label for="old_password">Altes Passwort (Bestätigung):</label>
+                        <input type="password" id="old_password" name="old_password" required>
                     </div>
                     <div>
-                        <label for="new_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Neuer Benutzername (optional):</label>
-                        <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($currentUser); ?>" style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                        <label for="new_username">Neuer Benutzername (optional):</label>
+                        <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($currentUser); ?>">
                     </div>
                     <div>
-                        <label for="new_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Neues Passwort (optional):</label>
-                        <input type="password" id="new_password" name="new_password" style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                        <label for="new_password">Neues Passwort (optional):</label>
+                        <input type="password" id="new_password" name="new_password">
                     </div>
-                    <button type="submit" name="action" value="change_credentials" style="padding: 10px 15px; background-color: #5cb85c; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Daten ändern</button>
+                    <button type="submit" name="action" value="change_credentials">Daten ändern</button>
                 </form>
             </section>
 
             <section id="manage-users" style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
-                <h3 style="color: #333;">Neuen Benutzer hinzufügen</h3>
+                <h3>Neuen Benutzer hinzufügen</h3>
                 <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
-                        <label for="add_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Benutzername für neuen Benutzer:</label>
-                        <input type="text" id="add_username" name="add_username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                        <label for="add_username">Benutzername für neuen Benutzer:</label>
+                        <input type="text" id="add_username" name="add_username" required>
                     </div>
                     <div>
-                        <label for="add_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Passwort für neuen Benutzer:</label>
-                        <input type="password" id="add_password" name="add_password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
+                        <label for="add_password">Passwort für neuen Benutzer:</label>
+                        <input type="password" id="add_password" name="add_password" required>
                     </div>
-                    <button type="submit" name="action" value="add_user" style="padding: 10px 15px; background-color: #f0ad4e; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Benutzer hinzufügen</button>
+                    <button type="submit" name="action" value="add_user">Benutzer hinzufügen</button>
                 </form>
             </section>
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
-                <h3 style="color: #333;">Verfügbare Benutzer</h3>
-                <ul style="list-style-type: none; padding-left: 0;">
+                <h3>Verfügbare Benutzer</h3>
+                <ul>
                     <?php
                     $allUsers = getUsers(); // Lade die aktuelle Benutzerliste
                     if (!empty($allUsers)):
                         foreach ($allUsers as $user => $data):
                     ?>
-                        <li style="margin-bottom: 8px; padding: 5px; border-bottom: 1px dotted #eee; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #333; font-weight: bold;"><?php echo htmlspecialchars($user); ?></span>
+                        <li>
+                            <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
                             <?php if ($user !== $currentUser): // Verhindere, dass der aktuelle Benutzer sich selbst löscht ?>
                                 <form action="index.php" method="POST" style="margin: 0;">
                                     <input type="hidden" name="action" value="delete_user">
                                     <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
-                                    <button type="submit" style="padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.3s ease;" onclick="return confirm('Sind Sie sicher, dass Sie den Benutzer <?php echo htmlspecialchars($user); ?> löschen möchten?');">Löschen</button>
+                                    <button type="submit" onclick="return confirm('Sind Sie sicher, dass Sie den Benutzer <?php echo htmlspecialchars($user); ?> löschen möchten?');">Löschen</button>
                                 </form>
                             <?php else: ?>
-                                <span style="color: #6c757d; font-size: 0.9em;">(Sie)</span>
+                                <span class="current-user-tag">(Sie)</span>
                             <?php endif; ?>
                         </li>
                     <?php
                         endforeach;
                     else:
                     ?>
-                        <li style="color: #333;">Keine weiteren Benutzer vorhanden.</li>
+                        <li>Keine weiteren Benutzer vorhanden.</li>
                     <?php endif; ?>
                 </ul>
             </section>
