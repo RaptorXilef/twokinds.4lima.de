@@ -14,6 +14,11 @@
  * @param bool $isCurrentPageLatest Optional, ob die aktuelle Seite der allerneueste Comic ist (standardmäßig false).
  */
 
+// Lade die Hilfsfunktion zum Rendern der Navigationsbuttons.
+// 'require_once' stellt sicher, dass die Funktion nur einmal deklariert wird,
+// auch wenn diese Datei mehrfach inkludiert wird.
+require_once __DIR__ . '/../components/nav_link_helper.php';
+
 // Initialisiere Navigations-Variablen
 $prevPage = '';
 $nextPage = '';
@@ -22,7 +27,7 @@ $lastPageLink = './'; // Die letzte Seite ist immer die index.php (neuester Comi
 
 // Standardwerte für die Flags, falls nicht von der aufrufenden Seite gesetzt.
 $isCurrentPageLatest = isset($isCurrentPageLatest) ? $isCurrentPageLatest : false;
-$isCurrentPageFirst = false; // Neu: Flag, ob die aktuelle Seite der allererste Comic ist.
+$isCurrentPageFirst = false; // Flag, ob die aktuelle Seite der allererste Comic ist.
 
 // Wenn Comic-Daten verfügbar sind, berechne die Navigationslinks.
 if (!empty($comicData)) {
@@ -70,26 +75,6 @@ if (!empty($comicData)) {
     $prevPage = '';
     $nextPage = '';
     $lastPageLink = '#';
-}
-
-/**
- * Hilfsfunktion zum Rendern eines Navigationsbuttons.
- * Erzeugt entweder einen <a>-Tag (wenn nicht deaktiviert) oder einen <span>-Tag (wenn deaktiviert)
- * mit den entsprechenden Klassen und Texten.
- *
- * @param string $href Der href-Wert des Links oder '#' wenn deaktiviert.
- * @param string $class Die CSS-Klasse(n) für den Button (z.B. 'navbegin', 'navprev').
- * @param string $text Der angezeigte Text des Buttons.
- * @param bool $isDisabled Ob der Button deaktiviert sein soll.
- * @return string Der generierte HTML-String für den Navigationsbutton.
- */
-function renderNavLink(string $href, string $class, string $text, bool $isDisabled): string {
-    $tag = $isDisabled ? 'span' : 'a'; // Tag ist <span> wenn deaktiviert, sonst <a>
-    $linkAttr = $isDisabled ? '' : ' href="' . htmlspecialchars($href) . '"'; // href nur für <a>
-    $disabledClass = $isDisabled ? ' disabled' : ''; // 'disabled' Klasse hinzufügen, wenn deaktiviert
-    return '<' . $tag . $linkAttr . ' class="navarrow ' . $class . $disabledClass . '">' .
-            '    <span class="nav-wrapper"><span class="nav-text">' . htmlspecialchars($text) . '</span></span>' .
-            '</' . $tag . '>';
 }
 ?>
     <?php echo renderNavLink($firstPageLink, 'navbegin', 'Erste Seite', $isCurrentPageFirst); ?>
