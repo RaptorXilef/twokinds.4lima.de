@@ -1,22 +1,22 @@
 # Dateien in Comic Ordnern nicht beachten
-comic/*.png
-comic/*.jpg
-comic/*.gif
-comic_hires/*.png
-comic_hires/*.jpg
-comic_hires/*.gif
+assets/comic/low-res/*.png
+assets/comic/low-res/*.jpg
+assets/comic/low-res/*.gif
+assets/comic/hi-res/*.png
+assets/comic/hi-res/*.jpg
+assets/comic/hi-res/*.gif
 
 # Dateien in Thumbnails Ordnern nicht beachten
-thumbnails/*.png
-thumbnails/*.jpg
-thumbnails/*.gif
+assets/comic/thumbnails/*.png
+assets/comic/thumbnails/*.jpg
+assets/comic/thumbnails/*.gif
 
 # Dateien in e-mails Ordnern nicht beachten
-e-mail/*.csv
+src/data/e-mail/*.csv
 
 # Dateien in analytics Ordnern nicht beachten
-analytics/*.csv
-admin/analytics/*.csv
+src/data/analytics/*.csv
+src/data/admin/analytics/*.csv
 
 # Zip-Archive
 *.zip
