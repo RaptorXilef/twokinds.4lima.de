@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $users[$username] = ['passwordHash' => $hashedPassword];
                     if (saveUsers($users)) {
-                        $message = '<p style="color: green;">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p個人的です。';
+                        $message = '<p style="color: green;">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p>';
                         // Weiterleitung zur Login-Seite
                         header('Location: index.php');
                         exit;
@@ -263,7 +263,7 @@ include __DIR__ . '/../src/layout/header.php';
             border: 1px solid rgba(221, 221, 221, 0.2); 
             border-radius: 8px;
             /* Dezenter Hintergrund im hellen Modus (beibehalten) */
-            background-color: rgba(240, 240, 240, 0.3); 
+            background-color: rgba(240, 240, 240, 0.05); 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Dezenterer Schatten (beibehalten) */
         }
 
@@ -365,13 +365,13 @@ include __DIR__ . '/../src/layout/header.php';
             font-weight: bold;
         }
         
-        /* (Sie) Text soll im Dark Theme weiß sein */
+        /* (Sie) Text soll im hellen Modus schwarz sein und im Dark Theme weiß */
         .admin-form-container li span.current-user-tag {
             font-size: 0.9em; /* Standardgröße */
-            color: #6c757d; /* Standardfarbe für hellen Modus */
+            color: rgb(0, 0, 0); /* Schwarz im hellen Modus für deutlichen Kontrast */
         }
-        .main-container.lights-off .admin-form-container li span.current-user-tag {
-            color: #f0f0f0 !important; /* Heller Tag im Dark Theme - !important hinzugefügt */
+        body.theme-night .admin-form-container li span.current-user-tag {
+            color: #f0f0f0 !important; /* Heller Tag im Dark Theme - !important hinzugefügt für höchste Priorität */
         }
         
         /* Logout Link im Dark Theme */
