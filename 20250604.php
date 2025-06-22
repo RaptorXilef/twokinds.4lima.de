@@ -5,14 +5,16 @@
  * Die Bookmark-Funktion und externe Analytics-Dienste wurden entfernt.
  * Datum und Comic-Titel werden dynamisch aus der JSON im deutschen Format geladen.
  * Der Seitentitel im Browser-Tab ist für eine bessere Sortierbarkeit formatiert.
- * Die Bildpfade unterstützen nun verschiedene Dateiformate (.jpg, .png, .gif) und
- * werden aus dem neuen 'assets'-Verzeichnis geladen.
+ * Die Bildpfade unterstützen nun verschiedene Dateiformate (.jpg, .png, .gif).
+ * Es wird ein Lückenfüller-Bild angezeigt, wenn das eigentliche Comic-Bild noch nicht vorhanden ist.
  */
 
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 require_once __DIR__ . '/src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
+// Diese muss hier eingebunden werden, da sie vor dem Header benötigt wird.
 require_once __DIR__ . '/src/components/get_comic_image_path.php';
+
 
 // Die ID der aktuellen Comic-Seite wird aus dem Dateinamen extrahiert.
 $currentComicId = basename(__FILE__, '.php');
@@ -27,7 +29,7 @@ if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
-    // Die Preview-URL wird nun lokal aus dem thumbnails-Ordner geladen.
+    // Die Preview-URL wird lokal aus dem thumbnails-Ordner geladen.
     $comicPreviewUrl = getComicImagePath($currentComicId, './assets/comic_thumbnails/', '_preview');
     // Fallback falls kein spezifisches Preview-Bild gefunden wird
     if (empty($comicPreviewUrl)) {
@@ -42,14 +44,31 @@ if (isset($comicData[$currentComicId])) {
     $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
 }
 
+// Definiere die Pfade zu den Lückenfüller-Bildern.
+$inTranslationLowres = './assets/comic_lowres/in_translation.png';
+$inTranslationHires = './assets/comic_hires/in_translation.jpg';
+
 // Ermittle die Pfade zu den Comic-Bildern mit der Helferfunktion und den neuen Asset-Pfaden.
 $comicImagePath = getComicImagePath($currentComicId, './assets/comic_lowres/');
 $comicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/');
 
+// Prüfe, ob die tatsächlichen Bilder existieren. Wenn nicht, verwende die Lückenfüller.
+if (empty($comicImagePath)) {
+    $comicImagePath = $inTranslationLowres;
+    // Wenn das Low-Res-Bild nicht existiert, gehe davon aus, dass auch das Hi-Res-Bild nicht existiert.
+    // Daher wird auch der Hi-Res-Pfad auf den Lückenfüller gesetzt.
+    $comicHiresPath = $inTranslationHires;
+    // Hier können auch der Comic-Typ und Name angepasst werden, um den "in Übersetzung"-Status im H1 und Titel widerzuspiegeln.
+    // Dies ist optional, kann aber die Benutzererfahrung verbessern.
+    // $comicTyp = 'Seite in Übersetzung vom ';
+    // $comicName = 'Noch nicht verfügbar';
+    // $comicTranscript = '<p>Diese Comicseite befindet sich noch in Bearbeitung und ist bald verfügbar!</p>';
+}
+
 
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
-// Konvertiere die Comic-ID (Datum) ins englische Format für den Original-Header-Stil "Month Day, Year"
+// Konvertiere die Comic-ID (Datum) ins englische Format für den Original-H1-Header-Stil "Month Day, Year"
 $formattedDateEnglish = date('F d, Y', strtotime($currentComicId));
 
 // Die allgemeine Seitenbeschreibung, die in header.php verwendet wird.
@@ -57,6 +76,7 @@ $siteDescription = 'Ein Webcomic über einen ahnungslosen Helden, eine schelmisc
 
 // Setze Parameter für den Header.
 // Der Seitentitel für den Browser-Tab wird für bessere Sortierbarkeit formatiert: "TwoKinds auf Deutsch - Comicseite vom JJJJ.MM.TT - Comic Name".
+// Der Präfix "TwoKinds auf Deutsch - " wird von header.php hinzugefügt.
 $pageTitle = $comicTyp . date('Y.m.d', strtotime($currentComicId)) . ' - ' . $comicName;
 // H1-Header bleibt hier leer, da er direkt im article-Tag definiert wird (Original-Stil).
 $pageHeader = '';
@@ -93,7 +113,8 @@ include __DIR__ . '/src/layout/header.php';
     </div>
 
     <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version.
-         Die Dateierweiterung wird dynamisch über die getComicImagePath-Funktion ermittelt. -->
+         Die Dateierweiterung wird dynamisch über die getComicImagePath-Funktion ermittelt,
+         oder ein Lückenfüller-Bild, falls das Original nicht existiert. -->
     <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
         <img src="<?php echo htmlspecialchars($comicImagePath); ?>"
              title="<?php echo htmlspecialchars($comicName); ?>"

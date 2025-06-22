@@ -8,6 +8,7 @@
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 require_once __DIR__ . '/src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
+// Diese muss hier eingebunden werden, da sie vor dem Header benötigt wird.
 require_once __DIR__ . '/src/components/get_comic_image_path.php';
 
 // Ermittle die ID des neuesten Comics. Da $comicData nach Datum sortiert ist,
@@ -43,10 +44,28 @@ if (isset($comicData[$currentComicId])) {
     $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
 }
 
+// Definiere die Pfade zu den Lückenfüller-Bildern.
+$inTranslationLowres = './assets/comic_lowres/in_translation.png';
+$inTranslationHires = './assets/comic_hires/in_translation.jpg';
+
+// Ermittle die Pfade zu den Comic-Bildern mit der Helferfunktion und den neuen Asset-Pfaden.
+$comicImagePath = getComicImagePath($currentComicId, './assets/comic_lowres/');
+$comicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/');
+
+// Prüfe, ob die tatsächlichen Bilder existieren. Wenn nicht, verwende die Lückenfüller.
+if (empty($comicImagePath)) {
+    $comicImagePath = $inTranslationLowres;
+    $comicHiresPath = $inTranslationHires;
+}
+
+
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 // Konvertiere die Comic-ID (Datum) ins englische Format für den H1-Header (Original-Stil).
 $formattedDateEnglish = date('F d, Y', strtotime($currentComicId));
+
+// Die allgemeine Seitenbeschreibung, die in header.php verwendet wird.
+$siteDescription = 'Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.';
 
 // Setze Parameter für den Header.
 // Der Seitentitel für den Browser-Tab ist spezifisch für die Startseite.
@@ -89,8 +108,8 @@ include __DIR__ . '/src/layout/header.php';
     </div>
 
     <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
-    <a href="<?php echo htmlspecialchars(getComicImagePath($currentComicId, './assets/comic_hires/')); ?>">
-        <img src="<?php echo htmlspecialchars(getComicImagePath($currentComicId, './assets/comic_lowres/')); ?>"
+    <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
+        <img src="<?php echo htmlspecialchars($comicImagePath); ?>"
              title="<?php echo htmlspecialchars($comicName); ?>"
              alt="Comic Page"
         >
