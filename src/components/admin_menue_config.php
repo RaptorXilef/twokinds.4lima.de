@@ -6,5 +6,8 @@
 ?>
 <a href="./index.php">Dashboard</a>
 <a href="./index.php#manage-users">Benutzer verwalten</a>
+</br>
+<a href="./initial_setup.php">Webseiten-Ersteinrichtung</a>
+</br>
 <!-- Weitere Admin-Links können hier später hinzugefügt werden -->
 <a href="?action=logout">Logout</a>
