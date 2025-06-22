@@ -261,7 +261,7 @@ include __DIR__ . '/../src/layout/header.php';
             padding: 20px;
             border: 1px solid rgba(221, 221, 221, 0.1); /* Sehr leichter, halbtransparenter Rahmen */
             border-radius: 8px;
-            background-color: rgba(240, 240, 240, 0.1); /* Sehr leichter, transparenter Hintergrund */
+            background-color: rgba(255, 255, 255, 0.22); /* Sehr leichter, transparenter Hintergrund */
             box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Dezenterer Schatten */
         }
 
@@ -337,7 +337,7 @@ include __DIR__ . '/../src/layout/header.php';
             font-weight: bold;
         }
         .admin-form-container li span.current-user-tag {
-            color:rgb(255, 255, 255);
+            color:rgb(0, 0, 0);
             font-size: 0.9em;
         }
         .main-container.lights-off .admin-form-container li span.current-user-tag {
