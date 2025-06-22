@@ -225,10 +225,9 @@ include __DIR__ . '/../src/layout/header.php';
 ?>
 
 <article>
-    <header>
-        <h1 class="page-header"><?php echo htmlspecialchars($pageHeader); ?></h1>
-    </header>
-
+    <!-- Der H1-Header wird nun nur noch über den globalen Header eingebunden.
+         Der folgende <header>-Block wird entfernt, um die Doppelung zu vermeiden. -->
+    
     <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <?php echo $message; // Zeigt Nachrichten an ?>
 
@@ -236,73 +235,73 @@ include __DIR__ . '/../src/layout/header.php';
         $existingUsers = getUsers(); // Lade Benutzer jedes Mal neu, um aktuelle Liste zu haben
         if (empty($existingUsers)):
         ?>
-            <h2>Ersten Admin-Benutzer erstellen</h2>
-            <p>Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
+            <h2 style="color: #333;">Ersten Admin-Benutzer erstellen</h2>
+            <p style="color: #333;">Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
-                    <label for="create_username" style="display: block; margin-bottom: 5px; font-weight: bold;">Benutzername:</label>
-                    <input type="text" id="create_username" name="username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label for="create_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Benutzername:</label>
+                    <input type="text" id="create_username" name="username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                 </div>
                 <div>
-                    <label for="create_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Passwort:</label>
-                    <input type="password" id="create_password" name="password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label for="create_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Passwort:</label>
+                    <input type="password" id="create_password" name="password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                 </div>
                 <button type="submit" name="action" value="create_initial_user" style="padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Admin erstellen</button>
             </form>
         <?php elseif (!$loggedIn): ?>
-            <h2>Login</h2>
+            <h2 style="color: #333;">Login</h2>
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
-                    <label for="login_username" style="display: block; margin-bottom: 5px; font-weight: bold;">Benutzername:</label>
-                    <input type="text" id="login_username" name="username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label for="login_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Benutzername:</label>
+                    <input type="text" id="login_username" name="username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                 </div>
                 <div>
-                    <label for="login_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Passwort:</label>
-                    <input type="password" id="login_password" name="password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <label for="login_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Passwort:</label>
+                    <input type="password" id="login_password" name="password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                 </div>
                 <button type="submit" name="action" value="login" style="padding: 10px 15px; background-color: #008CBA; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Login</button>
             </form>
         <?php else: ?>
-            <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
+            <h2 style="color: #333;">Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
             <p style="text-align: right;"><a href="?action=logout" style="color: #d9534f; text-decoration: none; font-weight: bold;">Logout</a></p>
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
-                <h3>Benutzerdaten ändern</h3>
+                <h3 style="color: #333;">Benutzerdaten ändern</h3>
                 <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
-                        <label for="old_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Altes Passwort (Bestätigung):</label>
-                        <input type="password" id="old_password" name="old_password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <label for="old_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Altes Passwort (Bestätigung):</label>
+                        <input type="password" id="old_password" name="old_password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                     </div>
                     <div>
-                        <label for="new_username" style="display: block; margin-bottom: 5px; font-weight: bold;">Neuer Benutzername (optional):</label>
-                        <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($currentUser); ?>" style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <label for="new_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Neuer Benutzername (optional):</label>
+                        <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($currentUser); ?>" style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                     </div>
                     <div>
-                        <label for="new_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Neues Passwort (optional):</label>
-                        <input type="password" id="new_password" name="new_password" style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <label for="new_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Neues Passwort (optional):</label>
+                        <input type="password" id="new_password" name="new_password" style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                     </div>
                     <button type="submit" name="action" value="change_credentials" style="padding: 10px 15px; background-color: #5cb85c; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Daten ändern</button>
                 </form>
             </section>
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
-                <h3>Neuen Benutzer hinzufügen</h3>
+                <h3 style="color: #333;">Neuen Benutzer hinzufügen</h3>
                 <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
-                        <label for="add_username" style="display: block; margin-bottom: 5px; font-weight: bold;">Benutzername für neuen Benutzer:</label>
-                        <input type="text" id="add_username" name="add_username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <label for="add_username" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Benutzername für neuen Benutzer:</label>
+                        <input type="text" id="add_username" name="add_username" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                     </div>
                     <div>
-                        <label for="add_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Passwort für neuen Benutzer:</label>
-                        <input type="password" id="add_password" name="add_password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <label for="add_password" style="display: block; margin-bottom: 5px; font-weight: bold; color: #333;">Passwort für neuen Benutzer:</label>
+                        <input type="password" id="add_password" name="add_password" required style="width: calc(100% - 18px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; color: #333;">
                     </div>
                     <button type="submit" name="action" value="add_user" style="padding: 10px 15px; background-color: #f0ad4e; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;">Benutzer hinzufügen</button>
                 </form>
             </section>
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
-                <h3>Verfügbare Benutzer</h3>
-                <ul style="list-style-type: disc; padding-left: 20px;">
+                <h3 style="color: #333;">Verfügbare Benutzer</h3>
+                <ul style="list-style-type: disc; padding-left: 20px; color: #333;">
                     <?php
                     $allUsers = getUsers(); // Lade die aktuelle Benutzerliste
                     if (!empty($allUsers)):
