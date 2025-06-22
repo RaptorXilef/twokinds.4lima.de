@@ -1,0 +1,82 @@
+{
+    "20250209": {
+        "type": "Comicseite vom ",
+        "name": "Nora erwacht 3",
+        "transcript": "<p><b>Nora:</b> Blablabla...</p><p><b>Charakter B:</b> Lorem ipsum dolor sit amet.</p>"
+    },
+    "20250219": {
+        "type": "Comicseite vom ",
+        "name": "Nora erwacht 4",
+        "transcript": "<p><b>Nora:</b> Weitere Zeilen hier.</p>"
+    },
+    "20250223": {
+        "type": "Comicseite vom ",
+        "name": "Nora erwacht 5 - Geröstet",
+        "transcript": "<p><b>Erzähler:</b> Die Hitze stieg.</p>"
+    },
+    "20250301": {
+        "type": "Comicseite vom ",
+        "name": "Nora erwacht 6",
+        "transcript": "<p><b>Nora:</b> Es ist geschafft!</p>"
+    },
+    "20250305": {
+        "type": "Comicseite vom ",
+        "name": "Noras Futter",
+        "transcript": "<p><b>Nora:</b> Ich habe Hunger.</p>"
+    },
+    "20250309": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 1 - Ehrliche Worte",
+        "transcript": "<p><b>Maeve:</b> Das ist die Wahrheit.</p>"
+    },
+    "20250312": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 2 - Höflichkeits-Paradoxon",
+        "transcript": "<p><b>Reed:</b> Eine schwierige Situation.</p>"
+    },
+    "20250315": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 3 - Komplimente",
+        "transcript": "<p><b>Maeve:</b> Du siehst gut aus.</p>"
+    },
+    "20250320": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 4 - Oberschwester Edith",
+        "transcript": "<p><b>Edith:</b> Regeln sind Regeln.</p>"
+    },
+    "20250326": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 5 - Die Waisenkinder",
+        "transcript": "<p><b>Reed:</b> Arme Kinder.</p>"
+    },
+    "20250403": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 6 - Nach Hause gehen",
+        "transcript": "<p><b>Maeve:</b> Der Weg ist lang.</p>"
+    },
+    "20250410": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 7 - Entführung für einen guten Zweck",
+        "transcript": "<p><b>Erzähler:</b> Eine unkonventionelle Methode.</p>"
+    },
+    "20250507": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 8 - Gute Nacht Mave",
+        "transcript": "<p><b>Maeve:</b> Schlafe gut.</p>"
+    },
+    "20250513": {
+        "type": "Comicseite vom ",
+        "name": "Maeve und Reed 9 - Gemeinsames Bett",
+        "transcript": "<p><b>Reed:</b> Ein unerwarteter Abend.</p>"
+    },
+    "20250531": {
+        "type": "Comicseite vom ",
+        "name": "Wache gegen Templer",
+        "transcript": "<p><b>Wache:</b> Achtung!</p>"
+    },
+    "20250604": {
+        "type": "Comicseite vom ",
+        "name": "Durch die Tür kommen",
+        "transcript": "<p><b>Charakter:</b> Fast geschafft.</p>"
+    }
+}
