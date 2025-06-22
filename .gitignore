@@ -22,4 +22,4 @@ src/data/admin/analytics/*.csv
 *.zip
 
 # Temp
-_old-löschen_wenn_fertig/*.*
+_old-löschen_wenn_fertig
