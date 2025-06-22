@@ -1,7 +1,7 @@
 <?php
 /**
  * Dies ist die Hauptseite des Admin-Bereichs.
- * Sie verwaltet die Anmeldung, Abmeldung, die Änderung der Benutzerdaten und das Hinzufügen neuer Benutzer.
+ * Sie verwaltet die Anmeldung, Abmeldung, die Änderung der Benutzerdaten, das Hinzufügen und Löschen neuer Benutzer.
  * Daten werden zu Demonstrationszwecken in einer lokalen JSON-Datei gespeichert.
  *
  * SICHERHEITSHINWEIS: Diese Dateispeicherung ist NICHT SICHER für eine Produktionsumgebung!
@@ -209,6 +209,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             break;
+
+        // Benutzer löschen (nur für angemeldete Benutzer)
+        case 'delete_user':
+            if (!$loggedIn) {
+                $message = '<p style="color: red;">Sie müssen angemeldet sein, um Benutzer zu löschen.</p>';
+                break;
+            }
+            $userToDelete = filter_input(INPUT_POST, 'user_to_delete', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            if (empty($userToDelete)) {
+                $message = '<p style="color: red;">Kein Benutzer zum Löschen ausgewählt.</p>';
+            } elseif ($userToDelete === $currentUser) {
+                $message = '<p style="color: red;">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen.</p>';
+            } else {
+                $users = getUsers();
+                if (isset($users[$userToDelete])) {
+                    unset($users[$userToDelete]);
+                    if (saveUsers($users)) {
+                        $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht.</p>';
+                    } else {
+                        $message = '<p style="color: red;">Fehler beim Löschen des Benutzers.</p>';
+                    }
+                } else {
+                    $message = '<p style="color: red;">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden.</p>';
+                }
+            }
+            break;
     }
 }
 
@@ -225,9 +252,6 @@ include __DIR__ . '/../src/layout/header.php';
 ?>
 
 <article>
-    <!-- Der H1-Header wird nun nur noch über den globalen Header eingebunden.
-         Der folgende <header>-Block wird entfernt, um die Doppelung zu vermeiden. -->
-    
     <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <?php echo $message; // Zeigt Nachrichten an ?>
 
@@ -284,7 +308,7 @@ include __DIR__ . '/../src/layout/header.php';
                 </form>
             </section>
 
-            <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
+            <section id="manage-users" style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
                 <h3 style="color: #333;">Neuen Benutzer hinzufügen</h3>
                 <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
@@ -301,18 +325,29 @@ include __DIR__ . '/../src/layout/header.php';
 
             <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
                 <h3 style="color: #333;">Verfügbare Benutzer</h3>
-                <ul style="list-style-type: disc; padding-left: 20px; color: #333;">
+                <ul style="list-style-type: none; padding-left: 0;">
                     <?php
                     $allUsers = getUsers(); // Lade die aktuelle Benutzerliste
                     if (!empty($allUsers)):
                         foreach ($allUsers as $user => $data):
                     ?>
-                        <li style="margin-bottom: 5px;"><?php echo htmlspecialchars($user); ?></li>
+                        <li style="margin-bottom: 8px; padding: 5px; border-bottom: 1px dotted #eee; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #333; font-weight: bold;"><?php echo htmlspecialchars($user); ?></span>
+                            <?php if ($user !== $currentUser): // Verhindere, dass der aktuelle Benutzer sich selbst löscht ?>
+                                <form action="index.php" method="POST" style="margin: 0;">
+                                    <input type="hidden" name="action" value="delete_user">
+                                    <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
+                                    <button type="submit" style="padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.3s ease;" onclick="return confirm('Sind Sie sicher, dass Sie den Benutzer <?php echo htmlspecialchars($user); ?> löschen möchten?');">Löschen</button>
+                                </form>
+                            <?php else: ?>
+                                <span style="color: #6c757d; font-size: 0.9em;">(Sie)</span>
+                            <?php endif; ?>
+                        </li>
                     <?php
                         endforeach;
                     else:
                     ?>
-                        <li>Keine weiteren Benutzer vorhanden.</li>
+                        <li style="color: #333;">Keine weiteren Benutzer vorhanden.</li>
                     <?php endif; ?>
                 </ul>
             </section>

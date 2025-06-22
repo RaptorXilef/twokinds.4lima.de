@@ -18,6 +18,9 @@ set_time_limit(300);
 // Basis-Dateiname der aktuellen PHP-Datei ohne Erweiterung, wird für den Standard-Titel verwendet.
 $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
 
+// Ermittle, ob sich die aktuelle Seite im Admin-Bereich befindet.
+$isAdminSection = (strpos($_SERVER['REQUEST_URI'], '/admin/') !== false);
+
 // Standardpräfix für den Seitentitel. Dieser kann in einzelnen Seiten vor dem Include überschrieben werden,
 // falls ein spezifischerer Präfix gewünscht ist.
 $pageTitlePrefix = 'TwoKinds auf Deutsch - ';
@@ -88,8 +91,13 @@ $siteDescription = isset($siteDescription) ? $siteDescription : 'Ein Webcomic ü
                     <nav id="menu" class="menu">
                         <br>
                         <?php
-                        // Das Menü-Konfigurationsskript einbinden.
-                        require(__DIR__ . '/../components/menue_config.php');
+                        // Lade das Menü basierend darauf, ob es sich um den Admin-Bereich handelt.
+                        if ($isAdminSection) {
+                            require(__DIR__ . '/../components/admin_menue_config.php');
+                        } else {
+                            // Korrigierter Pfad: Hier war der Fehler mit dem doppelten 'src/'.
+                            require(__DIR__ . '/../components/menue_config.php');
+                        }
                         ?>
                         <br>
                         <a id="toggle_lights" class="theme jsdep" href=""><span class="themelabel">Theme</span><span class="themename">LICHT AUS</span></a>
