@@ -14,6 +14,7 @@ require_once __DIR__ . '/../src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
 require_once __DIR__ . '/../src/components/get_comic_image_path.php';
 
+
 // Die ID der aktuellen Comic-Seite wird aus dem Dateinamen extrahiert.
 $currentComicId = basename(__FILE__, '.php');
 
@@ -27,121 +28,125 @@ if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
+
     // Die Preview-URL wird nun lokal aus dem 'comic_socialmedia'-Ordner geladen (relativ zum Projekt-Root).
     $rawComicPreviewPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
 
-    // Pfad für die Vorschau-URL (relativ zur aktuellen Datei)
+    // Pfad für die Vorschau-URL (relativ zur aktuellen Datei, d.h., comic/20250604.php)
+    // Wir müssen einen Schritt zurückgehen, um aus 'comic/' in den Root-Ordner zu gelangen,
+    // um dann auf 'assets/comic_socialmedia/' zuzugreifen.
     if (!empty($rawComicPreviewPath) && file_exists(realpath(__DIR__ . '/../' . $rawComicPreviewPath))) {
         $comicPreviewUrl = '../' . $rawComicPreviewPath;
-        error_log("DEBUG: Comic Preview Bild gefunden: " . realpath(__DIR__ . '/' . $comicPreviewUrl));
+        error_log("DEBUG: Comic Preview Bild gefunden (Comic-Seite): " . realpath(__DIR__ . '/../' . $comicPreviewUrl));
     } else {
         $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
-        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview: " . $comicPreviewUrl);
+        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview (Comic-Seite): " . $comicPreviewUrl);
     }
 } else {
-    // Fallback-Werte, falls die Comic-ID nicht in der JSON-Datei gefunden wird.
-    error_log("Warnung: Comic-Daten für ID '{$currentComicId}' nicht in comic_var.json gefunden.");
-    $comicTyp = 'Comicseite vom ';
-    $comicName = 'Unbekannter Comic';
-    $comicTranscript = '<p>Für diese Seite ist kein Transkript verfügbar.</p>';
-    $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
+    // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
+    error_log("Fehler: Daten für Comic ID '{$currentComicId}' nicht in comic_var.json gefunden.");
+    $comicTyp = 'Fehler auf Seite vom ';
+    $comicName = 'Comic nicht gefunden';
+    $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
+    $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
 }
 
-// Define paths for fallback "in translation" images relative to the current file (e.g., comic/20250604.php)
+// Definiere die Pfade zu den Lückenfüller-Bildern (relativ zur aktuellen Comic-Seite).
 $inTranslationLowres = '../assets/comic_lowres/in_translation.png';
 $inTranslationHires = '../assets/comic_hires/in_translation.jpg';
 
-// Get paths from the helper function (these are relative to the project root, e.g., 'assets/comic_lowres/20250604.png')
+// Ermittle die Pfade zu den Comic-Bildern mit der Helferfunktion.
+// Die Helferfunktion gibt Pfade relativ zum Projekt-Root zurück (z.B. 'assets/comic_lowres/20250604.png').
 $rawComicLowresPath = getComicImagePath($currentComicId, './assets/comic_lowres/');
 $rawComicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/');
 
-// Initialize the final paths that will be used in HTML
+// Initialisiere die finalen Pfade, die im HTML verwendet werden.
 $comicImagePath = '';
 $comicHiresPath = '';
 
-// Check if the actual comic image exists on disk
+// Prüfe, ob die tatsächlichen Comic-Bilder existieren (Pfade sind relativ zum Projekt-Root).
+// Da die Comic-Seiten in einem Unterordner (comic/) liegen, müssen wir "../" voranstellen.
 if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/../' . $rawComicLowresPath))) {
-    // If original comic exists, use its path (relative to current file)
+    // Wenn Original-Comic existiert, nutze dessen Pfad (relativ zur aktuellen Comic-Seite).
     $comicImagePath = '../' . $rawComicLowresPath;
     $comicHiresPath = '../' . $rawComicHiresPath;
-    error_log("DEBUG: Original Comic Bild gefunden: " . realpath(__DIR__ . '/' . $comicImagePath));
+    error_log("DEBUG: Original Comic Bild gefunden (Comic-Seite): " . realpath(__DIR__ . '/../' . $comicImagePath));
 } else {
-    // If original comic does not exist, try "in translation" image
-    error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer. Versuche In Translation.");
-    // Check if the "in translation" fallback exists
+    // Wenn Original-Comic nicht existiert, versuche "in translation" Bild.
+    error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Comic-Seite). Versuche In Translation.");
+    // Prüfe, ob der "in translation" Fallback existiert.
     if (file_exists(realpath(__DIR__ . '/' . $inTranslationLowres))) {
         $comicImagePath = $inTranslationLowres;
         $comicHiresPath = $inTranslationHires;
-        error_log("DEBUG: In Translation Bild gefunden: " . realpath(__DIR__ . '/' . $comicImagePath));
+        error_log("DEBUG: In Translation Bild gefunden (Comic-Seite): " . realpath(__DIR__ . '/' . $comicImagePath));
     } else {
-        // If "in translation" also doesn't exist, use generic placeholder URL
-        error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad: " . realpath(__DIR__ . '/' . $inTranslationLowres));
+        // Wenn auch "in translation" nicht existiert, nutze generischen Placeholder-URL.
+        error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad (Comic-Seite): " . realpath(__DIR__ . '/' . $inTranslationLowres));
         $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
         $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
-        error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild: " . $comicImagePath);
+        error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild (Comic-Seite): " . $comicImagePath);
     }
 }
-error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird: " . $comicImagePath);
+error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird (Comic-Seite): " . $comicImagePath);
 
 
-// Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ
+// Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
-// Konvertiere die Comic-ID (Datum) ins englische Format für den Original-H1-Header-Stil "Month Day, Year"
+// Konvertiere die Comic-ID (Datum) ins englische Format für den H1-Header (Original-Stil).
 $formattedDateEnglish = date('F d, Y', strtotime($currentComicId));
 
 // Die allgemeine Seitenbeschreibung, die in header.php verwendet wird.
 $siteDescription = 'Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.';
 
-// === Dynamische Basis-URL Bestimmung ===
+// === Dynamische Basis-URL Bestimmung für Comic-Seiten ===
 $isLocal = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
 if ($isLocal) {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'];
     // Beispiel: /twokinds/default-website/twokinds/comic/20250604.php
-    // Wir wollen: /twokinds/default-website/twokinds/
+    // Wir wollen die Basis-URL des Projekts: /twokinds/default-website/twokinds/
     $pathParts = explode('/', $_SERVER['SCRIPT_NAME']);
     array_pop($pathParts); // Entfernt '20250604.php'
     array_pop($pathParts); // Entfernt 'comic'
     $basePath = implode('/', $pathParts);
     $baseUrl = $protocol . $host . $basePath . '/';
-    error_log("DEBUG: Lokale Basis-URL: " . $baseUrl);
+    error_log("DEBUG: Lokale Basis-URL (Comic-Seite): " . $baseUrl);
 } else {
     $baseUrl = 'https://twokinds.4lima.de/';
-    error_log("DEBUG: Live Basis-URL: " . $baseUrl);
+    error_log("DEBUG: Live Basis-URL (Comic-Seite): " . $baseUrl);
 }
 
+// Setze Parameter für den Header.
+$pageTitle = 'Comic ' . $formattedDateGerman . ': ' . $comicName; // Seitentitel für den Browser-Tab
+$pageHeader = 'Comic for ' . $formattedDateEnglish . ': ' . htmlspecialchars($comicName); // H1-Header auf der Seite
+$additionalScripts = "<script type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
 
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
-// Für Open Graph URLs muss der Pfad absolut sein.
-// Korrektur für ltrim(): Verwende substr und str_starts_with zum Entfernen des Präfixes.
-$tempPreviewUrl = $comicPreviewUrl;
-if (str_starts_with($tempPreviewUrl, '../')) {
-    $tempPreviewUrl = substr($tempPreviewUrl, 3); // Entferne die ersten 3 Zeichen ('../')
-}
-$absoluteComicPreviewUrl = $baseUrl . htmlspecialchars($tempPreviewUrl);
-
-error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph: " . $absoluteComicPreviewUrl);
-
+// Die og:image URL muss absolut sein. Wir müssen den Pfad anpassen, da die Comic-Seiten in einem Unterordner liegen.
+// Der $comicPreviewUrl ist relativ zur aktuellen Datei (z.B. ../assets/comic_socialmedia/...)
+// Wir müssen den Teil vor 'assets/' entfernen und mit $baseUrl konkatenieren.
+$absoluteComicPreviewUrl = $baseUrl . ltrim($comicPreviewUrl, './'); // Entfernt './' oder '../' vom Anfang des Pfades
+error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Comic-Seite): " . $absoluteComicPreviewUrl);
 
 $additionalHeadContent = '
-    <link rel="canonical" href="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '">
-    <meta property="og:title" content="' . htmlspecialchars($comicName) . ' - TwoKinds auf Deutsch - Deine Fan Übersetzung">
+    <link rel="canonical" href="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '.php">
+    <meta property="og:title" content="TwoKinds auf Deutsch - Comic ' . htmlspecialchars($formattedDateGerman) . ': ' . htmlspecialchars($comicName) . '">
     <meta property="og:description" content="' . htmlspecialchars($siteDescription) . '">
-    <meta property="og:image" content="' . $absoluteComicPreviewUrl . '">
+    <meta property="og:image" content="' . htmlspecialchars($absoluteComicPreviewUrl) . '">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '">
+    <meta property="og:url" content="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '.php">
 ';
 // Viewport-Meta-Tag an Original angepasst.
-$viewportContent = 'width=1099';
+$viewportContent = 'width=1099'; // Konsistent mit Original für das Design.
+
 
 // Binde den gemeinsamen Header ein.
-$robotsContent = 'noindex, follow'; // Für lokale Tests sollte noindex,nofollow verwendet werden.
 include __DIR__ . '/../src/layout/header.php';
 ?>
 
 <article class="comic">
     <header>
-        <!-- H1-Tag im Format des Originals, verwendet Comic-Typ, Datum (englisches Format) und Comic-Namen aus der JSON. -->
+        <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->
         <h1><?php echo htmlspecialchars($comicTyp) . $formattedDateEnglish; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
     </header>
 
@@ -152,9 +157,7 @@ include __DIR__ . '/../src/layout/header.php';
         ?>
     </div>
 
-    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version.
-         Die Dateierweiterung wird dynamisch über die getComicImagePath-funktion ermittelt,
-         oder ein Lückenfüller-Bild, falls das Original nicht existiert. -->
+    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
     <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
         <img src="<?php echo htmlspecialchars($comicImagePath); ?>"
              title="<?php echo htmlspecialchars($comicName); ?>"
