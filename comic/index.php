@@ -1,23 +1,25 @@
 <?php
 /**
- * Dies ist eine Comicseite. Sie lädt Comic-Metadaten und zeigt das Comic-Bild,
- * Navigation und Transkript an. Das Design ist an das Original von Tom Fischbach angepasst.
- * Die Bookmark-Funktion und externe Analytics-Dienste wurden entfernt.
- * Datum und Comic-Titel werden dynamisch aus der JSON im deutschen Format geladen.
- * Der Seitentitel im Browser-Tab ist für eine bessere Sortierbarkeit formatiert.
- * Die Bildpfade unterstützen nun verschiedene Dateiformate (.jpg, .png, .gif).
- * Es wird ein Lückenfüller-Bild angezeigt, falls das Original nicht existiert.
+ * Dies ist die Startseite des Comic-Bereichs.
+ * Sie lädt dynamisch den neuesten Comic und zeigt ihn an.
+ * Der Seitentitel und Open Graph Metadaten werden spezifisch für die Startseite gesetzt.
  */
 
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 require_once __DIR__ . '/../src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
+// Diese muss hier eingebunden werden, da sie vor dem Header benötigt wird.
 require_once __DIR__ . '/../src/components/get_comic_image_path.php';
 
-// Die ID der aktuellen Comic-Seite wird aus dem Dateinamen extrahiert.
-$currentComicId = basename(__FILE__, '.php');
+// Ermittle die ID des neuesten Comics. Da $comicData nach Datum sortiert ist,
+// ist der letzte Schlüssel im Array der neueste Comic.
+$comicKeys = array_keys($comicData);
+$latestComicId = !empty($comicKeys) ? end($comicKeys) : '';
 
-// Hole die Daten für die aktuelle Comic-Seite
+// Setze die aktuelle Comic-ID für diese Seite auf die ID des neuesten Comics.
+$currentComicId = $latestComicId;
+
+// Hole die Daten für den neuesten Comic.
 $comicTyp = '';
 $comicName = '';
 $comicTranscript = '';
@@ -33,21 +35,21 @@ if (isset($comicData[$currentComicId])) {
     // Pfad für die Vorschau-URL (relativ zur aktuellen Datei)
     if (!empty($rawComicPreviewPath) && file_exists(realpath(__DIR__ . '/../' . $rawComicPreviewPath))) {
         $comicPreviewUrl = '../' . $rawComicPreviewPath;
-        error_log("DEBUG: Comic Preview Bild gefunden: " . realpath(__DIR__ . '/' . $comicPreviewUrl));
+        error_log("DEBUG: Comic Preview Bild gefunden (Index): " . realpath(__DIR__ . '/' . $comicPreviewUrl));
     } else {
         $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
-        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview: " . $comicPreviewUrl);
+        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview (Index): " . $comicPreviewUrl);
     }
 } else {
-    // Fallback-Werte, falls die Comic-ID nicht in der JSON-Datei gefunden wird.
-    error_log("Warnung: Comic-Daten für ID '{$currentComicId}' nicht in comic_var.json gefunden.");
+    // Fallback-Werte, falls keine Comic-Daten oder der neueste Comic nicht gefunden wird.
+    error_log("Fehler: Daten für den neuesten Comic (ID '{$currentComicId}') nicht in comic_var.json gefunden.");
     $comicTyp = 'Comicseite vom ';
-    $comicName = 'Unbekannter Comic';
-    $comicTranscript = '<p>Für diese Seite ist kein Transkript verfügbar.</p>';
-    $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
+    $comicName = 'Willkommen';
+    $comicTranscript = '<p>Willkommen auf TwoKinds auf Deutsch! Leider konnte der neueste Comic nicht geladen werden.</p>';
+    $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
 }
 
-// Define paths for fallback "in translation" images relative to the current file (e.g., comic/20250604.php)
+// Define paths for fallback "in translation" images relative to the current file (e.g., comic/index.php)
 $inTranslationLowres = '../assets/comic_lowres/in_translation.png';
 $inTranslationHires = '../assets/comic_hires/in_translation.jpg';
 
@@ -64,29 +66,29 @@ if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/../' . $rawC
     // If original comic exists, use its path (relative to current file)
     $comicImagePath = '../' . $rawComicLowresPath;
     $comicHiresPath = '../' . $rawComicHiresPath;
-    error_log("DEBUG: Original Comic Bild gefunden: " . realpath(__DIR__ . '/' . $comicImagePath));
+    error_log("DEBUG: Original Comic Bild gefunden (Index): " . realpath(__DIR__ . '/' . $comicImagePath));
 } else {
     // If original comic does not exist, try "in translation" image
-    error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer. Versuche In Translation.");
+    error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Index). Versuche In Translation.");
     // Check if the "in translation" fallback exists
     if (file_exists(realpath(__DIR__ . '/' . $inTranslationLowres))) {
         $comicImagePath = $inTranslationLowres;
         $comicHiresPath = $inTranslationHires;
-        error_log("DEBUG: In Translation Bild gefunden: " . realpath(__DIR__ . '/' . $comicImagePath));
+        error_log("DEBUG: In Translation Bild gefunden (Index): " . realpath(__DIR__ . '/' . $comicImagePath));
     } else {
         // If "in translation" also doesn't exist, use generic placeholder URL
-        error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad: " . realpath(__DIR__ . '/' . $inTranslationLowres));
+        error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad (Index): " . realpath(__DIR__ . '/' . $inTranslationLowres));
         $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
         $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
-        error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild: " . $comicImagePath);
+        error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild (Index): " . $comicImagePath);
     }
 }
-error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird: " . $comicImagePath);
+error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird (Index): " . $comicImagePath);
 
 
-// Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ
+// Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
-// Konvertiere die Comic-ID (Datum) ins englische Format für den Original-H1-Header-Stil "Month Day, Year"
+// Konvertiere die Comic-ID (Datum) ins englische Format für den H1-Header (Original-Stil).
 $formattedDateEnglish = date('F d, Y', strtotime($currentComicId));
 
 // Die allgemeine Seitenbeschreibung, die in header.php verwendet wird.
@@ -97,19 +99,27 @@ $isLocal = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SER
 if ($isLocal) {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'];
-    // Beispiel: /twokinds/default-website/twokinds/comic/20250604.php
+    // Beispiel: /twokinds/default-website/twokinds/comic/index.php
     // Wir wollen: /twokinds/default-website/twokinds/
     $pathParts = explode('/', $_SERVER['SCRIPT_NAME']);
-    array_pop($pathParts); // Entfernt '20250604.php'
+    array_pop($pathParts); // Entfernt 'index.php'
     array_pop($pathParts); // Entfernt 'comic'
     $basePath = implode('/', $pathParts);
     $baseUrl = $protocol . $host . $basePath . '/';
-    error_log("DEBUG: Lokale Basis-URL: " . $baseUrl);
+    error_log("DEBUG: Lokale Basis-URL (Index): " . $baseUrl);
 } else {
     $baseUrl = 'https://twokinds.4lima.de/';
-    error_log("DEBUG: Live Basis-URL: " . $baseUrl);
+    error_log("DEBUG: Live Basis-URL (Index): " . $baseUrl);
 }
 
+
+// Setze Parameter für den Header.
+// Der Seitentitel für den Browser-Tab ist spezifisch für die Startseite.
+$pageTitle = 'Startseite'; // Der Präfix "TwoKinds auf Deutsch - " wird automatisch von header.php hinzugefügt.
+// H1-Header für die Startseite. Er zeigt den Titel des neuesten Comics.
+$pageHeader = 'Comic for ' . $formattedDateEnglish . ': ' . htmlspecialchars($comicName);
+// Füge comic.js als zusätzliches Skript hinzu.
+$additionalScripts = "<script type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
 
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
 // Für Open Graph URLs muss der Pfad absolut sein.
@@ -120,41 +130,42 @@ if (str_starts_with($tempPreviewUrl, '../')) {
 }
 $absoluteComicPreviewUrl = $baseUrl . htmlspecialchars($tempPreviewUrl);
 
-error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph: " . $absoluteComicPreviewUrl);
+error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Index): " . $absoluteComicPreviewUrl);
 
 
 $additionalHeadContent = '
-    <link rel="canonical" href="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '">
-    <meta property="og:title" content="' . htmlspecialchars($comicName) . ' - TwoKinds auf Deutsch - Deine Fan Übersetzung">
-    <meta property="og:description" content="' . htmlspecialchars($siteDescription) . '">
+    <link rel="canonical" href="' . $baseUrl . 'comic/">
+    <meta property="og:title" content="TwoKinds auf Deutsch - Startseite (Comic)">
+    <meta property="og:description" content="Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.">
     <meta property="og:image" content="' . $absoluteComicPreviewUrl . '">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="' . $baseUrl . 'comic/">
 ';
 // Viewport-Meta-Tag an Original angepasst.
-$viewportContent = 'width=1099';
+$viewportContent = 'width=1099'; // Konsistent mit Comic-Seiten für das Design.
 
 // Binde den gemeinsamen Header ein.
-$robotsContent = 'noindex, follow'; // Für lokale Tests sollte noindex,nofollow verwendet werden.
+$robotsContent = 'noindex, follow';
 include __DIR__ . '/../src/layout/header.php';
 ?>
 
 <article class="comic">
     <header>
-        <!-- H1-Tag im Format des Originals, verwendet Comic-Typ, Datum (englisches Format) und Comic-Namen aus der JSON. -->
+        <!-- H1-Tag im Format des Originals, zeigt den Titel des neuesten Comics. -->
         <h1><?php echo htmlspecialchars($comicTyp) . $formattedDateEnglish; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
     </header>
 
     <div class='comicnav'>
         <?php
         // Binde die obere Comic-Navigation ein.
+        // Hier wird $isCurrentPageLatest auf TRUE gesetzt, um den "Letzte Seite" Button zu deaktivieren.
+        $isCurrentPageLatest = true;
         include __DIR__ . '/../src/layout/comic_navigation.php';
+        unset($isCurrentPageLatest); // Variable wieder zurücksetzen, um andere Seiten nicht zu beeinflussen
         ?>
     </div>
 
-    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version.
-         Die Dateierweiterung wird dynamisch über die getComicImagePath-funktion ermittelt,
-         oder ein Lückenfüller-Bild, falls das Original nicht existiert. -->
+    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
     <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
         <img src="<?php echo htmlspecialchars($comicImagePath); ?>"
              title="<?php echo htmlspecialchars($comicName); ?>"
@@ -165,7 +176,10 @@ include __DIR__ . '/../src/layout/header.php';
     <div class='comicnav bottomnav'>
         <?php
         // Binde die untere Comic-Navigation ein (identisch zur oberen Navigation).
+        // Hier wird $isCurrentPageLatest auf TRUE gesetzt, um den "Letzte Seite" Button zu deaktivieren.
+        $isCurrentPageLatest = true;
         include __DIR__ . '/../src/layout/comic_navigation.php';
+        unset($isCurrentPageLatest); // Variable wieder zurücksetzen
         ?>
     </div>
 
