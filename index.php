@@ -29,9 +29,10 @@ if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
-    // Die Preview-URL wird lokal aus dem thumbnails-Ordner geladen.
-    $comicPreviewUrl = getComicImagePath($currentComicId, './assets/comic_thumbnails/', '_preview');
-    // Fallback falls kein spezifisches Preview-Bild gefunden wird.
+    // Die Preview-URL wird nun lokal aus dem 'comic_socialmedia'-Ordner geladen.
+    // Es wird angenommen, dass die Dateien dort denselben Namen wie die Comic-ID haben (ohne Suffix).
+    $comicPreviewUrl = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
+    // Fallback falls kein spezifisches Social Media Bild gefunden wird.
     if (empty($comicPreviewUrl)) {
         $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
     }
@@ -49,8 +50,6 @@ $inTranslationLowres = './assets/comic_lowres/in_translation.png';
 $inTranslationHires = './assets/comic_hires/in_translation.jpg';
 
 // Ermittle die Pfade zu den Comic-Bildern mit der Helferfunktion und den neuen Asset-Pfaden.
-// Pfade angepasst, da Comic-Seiten und Assets nun im Unterverzeichnis 'comic/' liegen würden,
-// aber index.php selbst bleibt im Hauptverzeichnis.
 $comicImagePath = getComicImagePath($currentComicId, './assets/comic_lowres/');
 $comicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/');
 
@@ -59,6 +58,7 @@ if (empty($comicImagePath)) {
     $comicImagePath = $inTranslationLowres;
     $comicHiresPath = $inTranslationHires;
 }
+
 
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
@@ -102,7 +102,6 @@ include __DIR__ . '/src/layout/header.php';
         <?php
         // Binde die obere Comic-Navigation ein.
         // Hier wird $isCurrentPageLatest auf TRUE gesetzt, um den "Letzte Seite" Button zu deaktivieren.
-        // Der Link zur letzten Seite zeigt auf die Haupt-index.php (./), welche der neueste Comic ist.
         $isCurrentPageLatest = true;
         include __DIR__ . '/src/layout/comic_navigation.php';
         unset($isCurrentPageLatest); // Variable wieder zurücksetzen, um andere Seiten nicht zu beeinflussen

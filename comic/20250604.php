@@ -27,10 +27,9 @@ if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
-    // Die Preview-URL wird lokal aus dem thumbnails-Ordner geladen.
-    // Pfad relativ zum Hauptverzeichnis, da getComicImagePath so funktioniert.
-    $comicPreviewUrl = getComicImagePath($currentComicId, './assets/comic_thumbnails/', '_preview');
-    // Fallback falls kein spezifisches Preview-Bild gefunden wird
+    // Die Preview-URL wird nun lokal aus dem 'comic_socialmedia'-Ordner geladen.
+    $comicPreviewUrl = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
+    // Fallback falls kein spezifisches Social Media Bild gefunden wird
     if (empty($comicPreviewUrl)) {
         $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
     }
@@ -112,7 +111,7 @@ include __DIR__ . '/../src/layout/header.php';
     </div>
 
     <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version.
-         Die Dateierweiterung wird dynamisch über die getComicImagePath-Funktion ermittelt,
+         Die Dateierweiterung wird dynamisch über die getComicImagePath-funktion ermittelt,
          oder ein Lückenfüller-Bild, falls das Original nicht existiert. -->
     <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
         <img src="<?php echo htmlspecialchars($comicImagePath); ?>"
