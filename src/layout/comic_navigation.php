@@ -8,15 +8,10 @@
  *
  * Benötigt das $comicData Array und $currentComicId.
  * Optional kann $isCurrentPageLatest von der aufrufenden Seite gesetzt werden (z.B. von index.php).
- *
- * @param array $comicData Assoziatives Array aller Comic-Metadaten, sortiert nach ID.
- * @param string $currentComicId Die ID (Datum) des aktuell angezeigten Comics.
- * @param bool $isCurrentPageLatest Optional, ob die aktuelle Seite der allerneueste Comic ist (standardmäßig false).
  */
 
 // Lade die Hilfsfunktion zum Rendern der Navigationsbuttons.
-// 'require_once' stellt sicher, dass die Funktion nur einmal deklariert wird,
-// auch wenn diese Datei mehrfach inkludiert wird.
+// Diese Datei sollte nur einmal pro Request eingebunden werden, um den "Cannot redeclare function"-Fehler zu vermeiden.
 require_once __DIR__ . '/../components/nav_link_helper.php';
 
 // Initialisiere Navigations-Variablen
@@ -25,9 +20,18 @@ $nextPage = '';
 $firstPageLink = ''; // Wird der Link oder '#' sein
 $lastPageLink = './'; // Die letzte Seite ist immer die index.php (neuester Comic)
 
+// Bestimme den Basispfad für Comic-Dateien.
+// Wenn die aktuelle Seite nicht im '/comic/' Verzeichnis liegt (z.B. index.php im Hauptverzeichnis),
+// dann müssen alle Comic-Links mit 'comic/' präfixiert werden.
+// Dies wird anhand von $_SERVER['PHP_SELF'] überprüft.
+$comicFilePrefix = '';
+if (strpos($_SERVER['PHP_SELF'], '/comic/') === false) {
+    $comicFilePrefix = 'comic/';
+}
+
 // Standardwerte für die Flags, falls nicht von der aufrufenden Seite gesetzt.
 $isCurrentPageLatest = isset($isCurrentPageLatest) ? $isCurrentPageLatest : false;
-$isCurrentPageFirst = false; // Flag, ob die aktuelle Seite der allererste Comic ist.
+$isCurrentPageFirst = false; // Neu: Flag, ob die aktuelle Seite der allererste Comic ist.
 
 // Wenn Comic-Daten verfügbar sind, berechne die Navigationslinks.
 if (!empty($comicData)) {
@@ -41,11 +45,17 @@ if (!empty($comicData)) {
         }
 
         // Link für "Erste Seite": Wenn es die erste Seite ist, deaktiviere den Link.
-        $firstPageLink = $isCurrentPageFirst ? '#' : $comicKeys[0] . '.php';
+        // Ansonsten füge den Präfix hinzu.
+        if ($isCurrentPageFirst) {
+            $firstPageLink = '#'; // Deaktiviert
+        } else {
+            $firstPageLink = $comicFilePrefix . $comicKeys[0] . '.php'; // Pfad mit/ohne Prefix
+        }
 
-        // Link für "Vorherige Seite": Wenn es nicht die erste Seite ist, nimm die vorherige Seite.
+        // Link für "Vorherige Seite": Wenn es nicht die erste Seite ist, nimm die vorherige Seite
+        // und füge den Präfix hinzu.
         if ($currentIndex > 0) {
-            $prevPage = $comicKeys[$currentIndex - 1] . '.php';
+            $prevPage = $comicFilePrefix . $comicKeys[$currentIndex - 1] . '.php';
         } else {
             // Wenn es die erste Seite ist, gibt es keine vorherige Seite, Link deaktivieren.
             $prevPage = '';
@@ -53,10 +63,11 @@ if (!empty($comicData)) {
 
         // Link für "Nächste Seite": Wenn es die neueste Seite ist (index.php-Szenario)
         // oder wenn es die letzte Seite in der Comic-Liste ist, deaktiviere den Link.
+        // Ansonsten füge den Präfix hinzu.
         if ($isCurrentPageLatest || ($currentIndex === count($comicKeys) - 1)) {
             $nextPage = '';
         } else {
-            $nextPage = $comicKeys[$currentIndex + 1] . '.php';
+            $nextPage = $comicFilePrefix . $comicKeys[$currentIndex + 1] . '.php';
         }
     } else {
         // Fallback, falls die aktuelle Comic-ID nicht gefunden wird (sollte bei korrekter Logik nicht passieren).

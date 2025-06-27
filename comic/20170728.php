@@ -6,15 +6,13 @@
  * Datum und Comic-Titel werden dynamisch aus der JSON im deutschen Format geladen.
  * Der Seitentitel im Browser-Tab ist für eine bessere Sortierbarkeit formatiert.
  * Die Bildpfade unterstützen nun verschiedene Dateiformate (.jpg, .png, .gif).
- * Es wird ein Lückenfüller-Bild angezeigt, wenn das eigentliche Comic-Bild noch nicht vorhanden ist.
+ * Es wird ein Lückenfüller-Bild angezeigt, falls das Original nicht existiert.
  */
 
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
-require_once __DIR__ . '/src/components/load_comic_data.php';
+require_once __DIR__ . '/../src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
-// Diese muss hier eingebunden werden, da sie vor dem Header benötigt wird.
-require_once __DIR__ . '/src/components/get_comic_image_path.php';
-
+require_once __DIR__ . '/../src/components/get_comic_image_path.php';
 
 // Die ID der aktuellen Comic-Seite wird aus dem Dateinamen extrahiert.
 $currentComicId = basename(__FILE__, '.php');
@@ -30,6 +28,7 @@ if (isset($comicData[$currentComicId])) {
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
     // Die Preview-URL wird lokal aus dem thumbnails-Ordner geladen.
+    // Pfad relativ zum Hauptverzeichnis, da getComicImagePath so funktioniert.
     $comicPreviewUrl = getComicImagePath($currentComicId, './assets/comic_thumbnails/', '_preview');
     // Fallback falls kein spezifisches Preview-Bild gefunden wird
     if (empty($comicPreviewUrl)) {
@@ -45,24 +44,25 @@ if (isset($comicData[$currentComicId])) {
 }
 
 // Definiere die Pfade zu den Lückenfüller-Bildern.
+// Diese Pfade sind relativ zum Hauptverzeichnis.
 $inTranslationLowres = './assets/comic_lowres/in_translation.png';
 $inTranslationHires = './assets/comic_hires/in_translation.jpg';
 
-// Ermittle die Pfade zu den Comic-Bildern mit der Helferfunktion und den neuen Asset-Pfaden.
-$comicImagePath = getComicImagePath($currentComicId, './assets/comic_lowres/');
-$comicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/');
+// Ermittle die Pfade zu den Comic-Bildern mit der Helferfunktion.
+// Die Funktion getComicImagePath gibt Pfade relativ zum Hauptverzeichnis zurück.
+// Da diese Datei im Unterordner 'comic/' liegt, müssen wir '../' voranstellen,
+// um vom aktuellen Standort ins Hauptverzeichnis zu gelangen und dann den von getComicImagePath
+// zurückgegebenen Pfad anzuhängen.
+$comicImagePath = '../' . getComicImagePath($currentComicId, './assets/comic_lowres/');
+$comicHiresPath = '../' . getComicImagePath($currentComicId, './assets/comic_hires/');
 
-// Prüfe, ob die tatsächlichen Bilder existieren. Wenn nicht, verwende die Lückenfüller.
-if (empty($comicImagePath)) {
-    $comicImagePath = $inTranslationLowres;
-    // Wenn das Low-Res-Bild nicht existiert, gehe davon aus, dass auch das Hi-Res-Bild nicht existiert.
-    // Daher wird auch der Hi-Res-Pfad auf den Lückenfüller gesetzt.
-    $comicHiresPath = $inTranslationHires;
-    // Hier können auch der Comic-Typ und Name angepasst werden, um den "in Übersetzung"-Status im H1 und Titel widerzuspiegeln.
-    // Dies ist optional, kann aber die Benutzererfahrung verbessern.
-    // $comicTyp = 'Seite in Übersetzung vom ';
-    // $comicName = 'Noch nicht verfügbar';
-    // $comicTranscript = '<p>Diese Comicseite befindet sich noch in Bearbeitung und ist bald verfügbar!</p>';
+// Prüfe, ob die tatsächlichen Bilder existieren (unter Berücksichtigung des Prefixes).
+// Hier müssen wir file_exists mit dem korrekten, vom Dateisystem aus gesehenen Pfad prüfen.
+// ACHTUNG: getComicImagePath prüft bereits, ob die Datei existiert und gibt bei Nicht-Existenz einen leeren String zurück.
+// Daher ist der ursprüngliche if-Block, der Lückenfüller setzt, immer noch wichtig.
+if (empty($comicImagePath)) { // Wenn getComicImagePath einen leeren String zurückgab
+    $comicImagePath = '../' . $inTranslationLowres;
+    $comicHiresPath = '../' . $inTranslationHires;
 }
 
 
@@ -76,7 +76,6 @@ $siteDescription = 'Ein Webcomic über einen ahnungslosen Helden, eine schelmisc
 
 // Setze Parameter für den Header.
 // Der Seitentitel für den Browser-Tab wird für bessere Sortierbarkeit formatiert: "TwoKinds auf Deutsch - Comicseite vom JJJJ.MM.TT - Comic Name".
-// Der Präfix "TwoKinds auf Deutsch - " wird von header.php hinzugefügt.
 $pageTitle = $comicTyp . date('Y.m.d', strtotime($currentComicId)) . ' - ' . $comicName;
 // H1-Header bleibt hier leer, da er direkt im article-Tag definiert wird (Original-Stil).
 $pageHeader = '';
@@ -97,7 +96,7 @@ $viewportContent = 'width=1099';
 
 // Binde den gemeinsamen Header ein.
 $robotsContent = 'noindex, follow';
-include __DIR__ . '/src/layout/header.php';
+include __DIR__ . '/../src/layout/header.php';
 ?>
 
 <article class="comic">
@@ -109,13 +108,11 @@ include __DIR__ . '/src/layout/header.php';
     <div class='comicnav'>
         <?php
         // Binde die obere Comic-Navigation ein.
-        include __DIR__ . '/src/layout/comic_navigation.php';
+        include __DIR__ . '/../src/layout/comic_navigation.php';
         ?>
     </div>
 
-    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version.
-         Die Dateierweiterung wird dynamisch über die getComicImagePath-Funktion ermittelt,
-         oder ein Lückenfüller-Bild, falls das Original nicht existiert. -->
+    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
     <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
         <img src="<?php echo htmlspecialchars($comicImagePath); ?>"
              title="<?php echo htmlspecialchars($comicName); ?>"
@@ -126,7 +123,7 @@ include __DIR__ . '/src/layout/header.php';
     <div class='comicnav bottomnav'>
         <?php
         // Binde die untere Comic-Navigation ein (identisch zur oberen Navigation).
-        include __DIR__ . '/src/layout/comic_navigation.php';
+        include __DIR__ . '/../src/layout/comic_navigation.php';
         ?>
     </div>
 
@@ -147,5 +144,5 @@ include __DIR__ . '/src/layout/header.php';
 
 <?php
 // Binde den gemeinsamen Footer ein.
-include __DIR__ . '/src/layout/footer.php';
+include __DIR__ . '/../src/layout/footer.php';
 ?>
