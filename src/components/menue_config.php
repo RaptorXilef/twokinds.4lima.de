@@ -15,7 +15,7 @@ if (!isset($baseUrl)) {
     $baseUrl = '/'; // Setze einen Fallback auf den Server-Root, dies könnte aber Fehler verursachen.
 }
 ?>
-<a href="https://www.patreon.com/c/raptorxilef/posts?filters%5Btag%5D=TwoKinds&redirect=true" target="_blank">Patreon</a>
+<a href="https://www.patreon.com/c/raptorxilef/posts?filters%5Btag%5D=TwoKinds&redirect=true" target="_blank"><img src="https://c5.patreon.com/external/favicon/rebrand/favicon.ico?v=af5597c2ef" alt="Patreon-Logo" width="15" style="float: left; margin-left: 15px; margin-right: -30px;"> Patreon <img src="https://c5.patreon.com/external/favicon/rebrand/favicon.ico?v=af5597c2ef" alt="Patreon-Logo" width="15" style="float: right; margin-left: -30px; margin-right: 15px;"></a>
 <br>
 <a href="<?php echo htmlspecialchars($baseUrl); ?>comic/">Comic</a>
 <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv.php">Archiv</a>
