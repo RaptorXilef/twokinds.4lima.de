@@ -9,5 +9,7 @@
 </br>
 <a href="./initial_setup.php">Webseiten-Ersteinrichtung</a>
 </br>
+<a href="./comic_generator.php">Comic-Seiten-Generator</a>
+</br>
 <!-- Weitere Admin-Links können hier später hinzugefügt werden -->
 <a href="?action=logout">Logout</a>
