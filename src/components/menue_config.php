@@ -17,5 +17,5 @@
 <br>
 <a href="./impressum.php">Impressum</a>
 <br>
-<a href="./newsletter.php"><img src="https://www.shareicon.net/data/128x128/2016/11/22/854957_email_512x512.png" alt="E-Mail-Logo" width="15"> Newsletter<p><img src="https://static-00.iconduck.com/assets.00/paypal-icon-429x512-0v44ywze.png" alt="PayPal-Logo" width="15">  Spenden  <img src="https://upload.wikimedia.org/wikipedia/commons/9/94/Patreon_logo.svg" alt="Patreon-Logo" width="15"></a></p>
+<a href="./newsletter.php"><img src="https://fonts.gstatic.com/s/i/productlogos/gmail_2020q4/v8/web-64dp/logo_gmail_2020q4_color_1x_web_64dp.png" alt="E-Mail-Logo" width="15"> Newsletter <img src="https://ow2.res.office365.com/owalanding/2023.8.17.01/images/favicon.ico?v=4" alt="E-Mail-Logo" width="15"><p><img src="https://www.paypalobjects.com/marketing/web/logos/paypal-mark-color_new.svg" alt="PayPal-Logo" width="15">  Spenden  <img src="https://upload.wikimedia.org/wikipedia/commons/9/94/Patreon_logo.svg" alt="Patreon-Logo" width="15"></a></p>
 
