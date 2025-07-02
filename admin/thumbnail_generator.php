@@ -1,7 +1,7 @@
 <?php
 /**
  * Dies ist die Administrationsseite für den Thumbnail-Generator.
- * Sie überprüft, welche Comic-Thumbnails fehlen und bietet die Möglichkeit, diese zu erstellen.
+ * Sie überprüft, welche Thumbnails fehlen und bietet die Möglichkeit, diese zu erstellen.
  * Die Generierung erfolgt nun schrittweise über AJAX, um Speicherprobleme bei vielen Bildern zu vermeiden.
  */
 
@@ -19,9 +19,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 // Die 'assets'-Ordner liegen eine Ebene über 'admin'.
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
-$lowresDir = __DIR__ . '/../assets/comic_lowres/';
-$hiresDir = __DIR__ . '/../assets/comic_hires/';
-$thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/'; // Verzeichnis für Thumbnails
+$lowresDir = __DIR__ . '/../assets/comic_lowres/'; // Quellverzeichnis für Comic-Bilder
+$hiresDir = __DIR__ . '/../assets/comic_hires/';   // Optionales Quellverzeichnis für Hi-Res Comic-Bilder
+$thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/'; // Zielverzeichnis für Thumbnails
 
 // Stelle sicher, dass die GD-Bibliothek geladen ist.
 if (!extension_loaded('gd')) {
@@ -67,12 +67,12 @@ function getExistingComicIds(string $lowresDir, string $hiresDir): array {
 }
 
 /**
- * Scannt das Thumbnail-Verzeichnis nach vorhandenen Bildern.
+ * Scannt das Thumbnail-Verzeichnis nach vorhandenen Thumbnails.
  * @param string $thumbnailDir Pfad zum Thumbnail-Verzeichnis.
  * @return array Eine Liste vorhandener Thumbnail-IDs (Dateinamen ohne Erweiterung).
  */
 function getExistingThumbnailIds(string $thumbnailDir): array {
-    $imageIds = [];
+    $thumbnailIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif']; // Prüfe auf gängige Bild-Erweiterungen
 
     if (is_dir($thumbnailDir)) {
@@ -80,11 +80,11 @@ function getExistingThumbnailIds(string $thumbnailDir): array {
         foreach ($files as $file) {
             $fileInfo = pathinfo($file);
             if (isset($fileInfo['extension']) && in_array(strtolower($fileInfo['extension']), $imageExtensions)) {
-                $imageIds[] = $fileInfo['filename'];
+                $thumbnailIds[] = $fileInfo['filename'];
             }
         }
     }
-    return $imageIds;
+    return $thumbnailIds;
 }
 
 /**
@@ -99,7 +99,7 @@ function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds):
 
 /**
  * Generiert ein einzelnes Thumbnail aus einem Quellbild.
- * Zielgröße: 200x260 Pixel (Annahme, basierend auf typischen Comic-Thumbnail-Größen).
+ * Zielgröße: 150x150 Pixel, das Bild wird zentriert und proportional skaliert.
  * @param string $comicId Die ID des Comics, für das ein Thumbnail erstellt werden soll.
  * @param string $lowresDir Pfad zum lowres-Verzeichnis.
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
@@ -110,43 +110,43 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
     $errors = [];
     $createdPath = '';
 
-    // Erstelle den Thumbnail-Ordner, falls er nicht existiert.
+    // Erstelle den Zielordner, falls er nicht existiert.
     if (!is_dir($thumbnailDir)) {
         if (!mkdir($thumbnailDir, 0755, true)) {
-            $errors[] = "Fehler: Thumbnail-Verzeichnis '$thumbnailDir' konnte nicht erstellt werden. Bitte Berechtigungen prüfen.";
+            $errors[] = "Fehler: Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden. Bitte Berechtigungen prüfen.";
             return ['created' => $createdPath, 'errors' => $errors];
         }
     } elseif (!is_writable($thumbnailDir)) {
-        $errors[] = "Fehler: Thumbnail-Verzeichnis '$thumbnailDir' ist nicht beschreibbar. Bitte Berechtigungen prüfen.";
+        $errors[] = "Fehler: Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar. Bitte Berechtigungen prüfen.";
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
     // Definiere die Zielabmessungen für Thumbnails
-    $targetWidth = 200;
-    $targetHeight = 260;
+    $targetWidth = 150;
+    $targetHeight = 150;
 
     $sourceImagePath = '';
     $sourceImageExtension = '';
 
-    // Priorisiere lowres-Bild, ansonsten suche nach hires-Bild
+    // Priorisiere hires-Bild, ansonsten lowres-Bild
     $possibleExtensions = ['jpg', 'jpeg', 'png', 'gif'];
     foreach ($possibleExtensions as $ext) {
-        $lowresPath = $lowresDir . $comicId . '.' . $ext;
         $hiresPath = $hiresDir . $comicId . '.' . $ext;
+        $lowresPath = $lowresDir . $comicId . '.' . $ext;
 
-        if (file_exists($lowresPath)) {
-            $sourceImagePath = $lowresPath;
+        if (file_exists($hiresPath)) {
+            $sourceImagePath = $hiresPath;
             $sourceImageExtension = $ext;
             break;
-        } elseif (file_exists($hiresPath)) {
-            $sourceImagePath = $hiresPath;
+        } elseif (file_exists($lowresPath)) {
+            $sourceImagePath = $lowresPath;
             $sourceImageExtension = $ext;
             break;
         }
     }
 
     if (empty($sourceImagePath)) {
-        $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden in '$lowresDir' oder '$hiresDir'.";
+        $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden in '$hiresDir' oder '$lowresDir'.";
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -180,11 +180,10 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
-        // Berechne die Abmessungen, um das Bild proportional in die Zielgröße zu skalieren,
-        // ohne es hochzuskalieren. Wenn das Bild kleiner ist, wird es zentriert.
-        $scale = min($targetWidth / $width, $targetHeight / $height);
-        $newWidth = $width * $scale;
-        $newHeight = $height * $scale;
+        // Berechne die Abmessungen, um das Bild proportional in die Zielgröße zu skalieren
+        $ratio = max($targetWidth / $width, $targetHeight / $height);
+        $newWidth = $width * $ratio;
+        $newHeight = $height * $ratio;
 
         // Erstelle ein neues True-Color-Bild für das Thumbnail
         $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
@@ -194,16 +193,9 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
-        // Fülle den Hintergrund mit Weiß für JPGs, bewahre Transparenz für PNG/GIF
-        if ($type == IMAGETYPE_PNG || $type == IMAGETYPE_GIF) {
-            imagealphablending($tempImage, false);
-            imagesavealpha($tempImage, true);
-            $transparent = imagecolorallocatealpha($tempImage, 255, 255, 255, 127);
-            imagefilledrectangle($tempImage, 0, 0, $targetWidth, $targetHeight, $transparent);
-        } else {
-            $white = imagecolorallocate($tempImage, 255, 255, 255);
-            imagefilledrectangle($tempImage, 0, 0, $targetWidth, $targetHeight, $white);
-        }
+        // Fülle den Hintergrund mit Weiß (oder einer anderen passenden Farbe)
+        $backgroundColor = imagecolorallocate($tempImage, 255, 255, 255); // Weißer Hintergrund
+        imagefilledrectangle($tempImage, 0, 0, $targetWidth, $targetHeight, $backgroundColor);
 
         // Berechne Offsets, um das Bild auf dem neuen Canvas zu zentrieren
         $offsetX = ($targetWidth - $newWidth) / 2;
@@ -219,11 +211,11 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         }
 
         // Bild als JPG speichern (für Thumbnails empfohlen)
-        $thumbnailImagePath = $thumbnailDir . $comicId . '.jpg';
-        if (imagejpeg($tempImage, $thumbnailImagePath, 90)) { // 90% Qualität
-            $createdPath = $thumbnailImagePath;
+        $thumbnailPath = $thumbnailDir . $comicId . '.jpg';
+        if (imagejpeg($tempImage, $thumbnailPath, 90)) { // 90% Qualität
+            $createdPath = $thumbnailPath;
         } else {
-            $errors[] = "Fehler beim Speichern des Thumbnails für Comic-ID '$comicId' nach '$thumbnailImagePath'.";
+            $errors[] = "Fehler beim Speichern des Thumbnails für Comic-ID '$comicId' nach '$thumbnailPath'.";
         }
 
         // Speicher freigeben
@@ -256,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         exit;
     }
 
-    // Pfade für die einzelne Generierung
+    // Pfade für die einzelne Generierung (müssen hier neu definiert werden, da es ein separater Request ist)
     $lowresDir = __DIR__ . '/../assets/comic_lowres/';
     $hiresDir = __DIR__ . '/../assets/comic_hires/';
     $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/';
@@ -292,7 +284,6 @@ if (file_exists($headerPath)) {
 }
 
 // Basis-URL für die Bildanzeige bestimmen
-// Setze den Pfad relativ zum aktuellen Skript (admin/thumbnail_generator.php)
 $thumbnailWebPath = '../assets/comic_thumbnails/';
 ?>
 
@@ -308,7 +299,7 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
 
         <h2>Status der Thumbnails</h2>
         <?php if (empty($allComicIds)): ?>
-            <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden.</p>
+            <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden, die als Basis dienen könnten.</p>
         <?php elseif (empty($missingThumbnails)): ?>
             <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Thumbnails sind vorhanden.</p>
         <?php else: ?>
@@ -330,10 +321,10 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
 
         <!-- Ergebnisse der Generierung -->
         <div id="generation-results-section" style="margin-top: 20px; display: none;">
-            <h2 style="margin-top: 20px;">Ergebnisse der Thumbnail-Generierung</h2>
+            <h2 style="margin-top: 20px;">Ergebnisse der Generierung</h2>
             <p id="overall-status-message" class="status-message"></p>
-            <div id="created-thumbnails-container" class="thumbnail-grid">
-                <!-- Hier werden die erfolgreich generierten Thumbnails angezeigt -->
+            <div id="created-images-container" class="image-grid">
+                <!-- Hier werden die erfolgreich generierten Bilder angezeigt -->
             </div>
             <p class="status-message status-red" style="display: none;" id="error-header-message">Fehler bei der Generierung:</p>
             <ul id="generation-errors-list">
@@ -342,14 +333,6 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
         </div>
     </div>
 </article>
-
-<!-- Modal für Nachrichten -->
-<div id="message-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;">
-    <div style="background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-        <p id="modal-message" style="font-size: 1.1em; margin-bottom: 20px;"></p>
-        <button onclick="document.getElementById('message-modal').style.display='none'" style="padding: 10px 20px; border-radius: 5px; border: none; background-color: #007bff; color: white; cursor: pointer; font-size: 1em;">OK</button>
-    </div>
-</div>
 
 <style>
     /* Allgemeine Statusmeldungen */
@@ -389,57 +372,38 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
         100% { transform: rotate(360deg); }
     }
 
-    /* Thumbnail Grid Layout */
-    .thumbnail-grid {
+    /* Image Grid Layout (für Thumbnails) */
+    .image-grid {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
         margin-top: 15px;
         padding-bottom: 20px;
     }
-    .thumbnail-item {
+    .image-item {
         text-align: center;
         border: 1px solid #ccc;
         padding: 5px;
         border-radius: 8px;
-        width: calc(25% - 7.5px); /* Für 4 Bilder pro Reihe mit 10px Abstand */
-        min-width: 180px; /* Mindestbreite für Responsivität */
-        height: 260px;
+        width: 150px; /* Feste Breite für Thumbnails */
+        height: 180px; /* Feste Höhe, um Platz für Text zu lassen */
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between; /* Bild oben, Text unten */
         align-items: center;
         box-sizing: border-box;
         overflow: hidden;
     }
-    .thumbnail-item img {
+    .image-item img {
         display: block;
         max-width: 100%;
-        max-height: calc(100% - 20px); /* Platz für Text unten */
+        height: auto; /* Wichtig für proportionale Skalierung */
         object-fit: contain;
         border-radius: 4px;
-        margin-bottom: 5px;
     }
-    .thumbnail-item span {
+    .image-item span {
         word-break: break-all;
         font-size: 0.8em;
-    }
-
-    /* Responsive Anpassungen für den Thumbnail-Grid */
-    @media (max-width: 1200px) {
-        .thumbnail-item {
-            width: calc(33.333% - 6.666px); /* 3 pro Reihe */
-        }
-    }
-    @media (max-width: 800px) {
-        .thumbnail-item {
-            width: calc(50% - 5px); /* 2 pro Reihe */
-        }
-    }
-    @media (max-width: 500px) {
-        .thumbnail-item {
-            width: 100%; /* 1 pro Reihe */
-        }
     }
 </style>
 
@@ -449,17 +413,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingSpinner = document.getElementById('loading-spinner');
     const progressText = document.getElementById('progress-text');
     const missingThumbnailsList = document.getElementById('missing-thumbnails-list');
-    const createdThumbnailsContainer = document.getElementById('created-thumbnails-container');
+    const createdImagesContainer = document.getElementById('created-images-container');
     const generationResultsSection = document.getElementById('generation-results-section');
     const overallStatusMessage = document.getElementById('overall-status-message');
     const errorHeaderMessage = document.getElementById('error-header-message');
     const errorsList = document.getElementById('generation-errors-list');
-
-    // Funktion zum Anzeigen einer benutzerdefinierten Modal-Nachricht
-    function showMessage(message) {
-        document.getElementById('modal-message').textContent = message;
-        document.getElementById('message-modal').style.display = 'flex';
-    }
 
     // Die Liste der fehlenden IDs, direkt von PHP übergeben
     const initialMissingIds = <?php echo json_encode($missingThumbnails); ?>;
@@ -470,7 +428,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (generateButton) {
         generateButton.addEventListener('click', function() {
             if (remainingIds.length === 0) {
-                showMessage('Es sind keine Thumbnails zu generieren.');
+                // Wenn keine Thumbnails zu generieren sind, mache nichts oder gib eine Konsolenmeldung aus.
+                // Das Modal wird nicht mehr angezeigt.
+                console.log('No thumbnails to generate.');
                 return;
             }
 
@@ -480,18 +440,18 @@ document.addEventListener('DOMContentLoaded', function() {
             generationResultsSection.style.display = 'block';
             overallStatusMessage.textContent = '';
             overallStatusMessage.className = 'status-message'; // Reset class
-            createdThumbnailsContainer.innerHTML = '';
+            createdImagesContainer.innerHTML = '';
             errorsList.innerHTML = '';
             errorHeaderMessage.style.display = 'none'; // Hide error header initially
 
             createdCount = 0;
             errorCount = 0;
 
-            processNextThumbnail();
+            processNextImage();
         });
     }
 
-    async function processNextThumbnail() {
+    async function processNextImage() {
         if (remainingIds.length === 0) {
             // Alle Bilder verarbeitet
             loadingSpinner.style.display = 'none';
@@ -528,16 +488,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (data.success) {
                 createdCount++;
-                // Füge das neue Thumbnail zur Anzeige hinzu
-                const thumbnailDiv = document.createElement('div');
-                thumbnailDiv.className = 'thumbnail-item';
-                thumbnailDiv.innerHTML = `
+                // Füge das neue Bild zur Anzeige hinzu
+                const imageDiv = document.createElement('div');
+                imageDiv.className = 'image-item';
+                imageDiv.innerHTML = `
                     <img src="${data.imageUrl}" alt="Thumbnail ${data.comicId}">
                     <span>${data.comicId}</span>
                 `;
-                createdThumbnailsContainer.appendChild(thumbnailDiv);
+                createdImagesContainer.appendChild(imageDiv);
 
-                // Entferne die ID aus der Liste der fehlenden Thumbnails (visuell)
+                // Entferne die ID aus der Liste der fehlenden Bilder (visuell)
                 if (missingThumbnailsList) {
                     const listItem = missingThumbnailsList.querySelector(`li`); // find first li
                     if (listItem && listItem.textContent.includes(data.comicId)) { // check if it contains the comicId
@@ -560,8 +520,8 @@ document.addEventListener('DOMContentLoaded', function() {
             errorHeaderMessage.style.display = 'block'; // Zeige den Fehler-Header an
         }
 
-        // Fahre mit dem nächsten Thumbnail fort (rekursiver Aufruf)
-        processNextThumbnail();
+        // Fahre mit dem nächsten Bild fort (rekursiver Aufruf)
+        processNextImage();
     }
 });
 </script>

@@ -5,12 +5,21 @@
  * Die Generierung erfolgt nun schrittweise über AJAX, um Speicherprobleme bei vielen Bildern zu vermeiden.
  */
 
+// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
+ob_start();
+
+// Erhöhe das PHP-Speicherlimit, um Probleme mit großen Bildern zu vermeiden.
+// Dies ist oft die Ursache für "Unexpected end of JSON input" bei Bildoperationen.
+ini_set('memory_limit', '1G'); // Kann bei Bedarf weiter erhöht werden (z.B. '1G' für 1 Gigabyte)
+
 // Starte die PHP-Sitzung. Notwendig für die Admin-Anmeldung.
 session_start();
 
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    // Beende den Output Buffer, da wir umleiten und keine weitere Ausgabe wollen.
+    ob_end_clean();
     header('Location: index.php');
     exit;
 }
@@ -21,11 +30,12 @@ $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $lowresDir = __DIR__ . '/../assets/comic_lowres/'; // Quellverzeichnis für Comic-Bilder
 $hiresDir = __DIR__ . '/../assets/comic_hires/';   // Optionales Quellverzeichnis für Hi-Res Comic-Bilder
-$socialMediaImageDir = __DIR__ . '/../assets/socialmedia_images/'; // Zielverzeichnis für Social Media Bilder
+$socialMediaImageDir = __DIR__ . '/../assets/comic_socialmedia/'; // Zielverzeichnis für Social Media Bilder
 
 // Stelle sicher, dass die GD-Bibliothek geladen ist.
 if (!extension_loaded('gd')) {
     $gdError = "FEHLER: Die GD-Bibliothek ist nicht geladen. Social Media Bilder können nicht generiert werden. Bitte PHP-Konfiguration prüfen.";
+    error_log("GD-Bibliothek nicht geladen in socialmedia_image_generator.php");
 } else {
     $gdError = null;
 }
@@ -115,10 +125,12 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
     if (!is_dir($socialMediaImageDir)) {
         if (!mkdir($socialMediaImageDir, 0755, true)) {
             $errors[] = "Fehler: Zielverzeichnis '$socialMediaImageDir' konnte nicht erstellt werden. Bitte Berechtigungen prüfen.";
+            error_log("Fehler: Zielverzeichnis '$socialMediaImageDir' konnte nicht erstellt werden für Comic-ID $comicId.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
     } elseif (!is_writable($socialMediaImageDir)) {
         $errors[] = "Fehler: Zielverzeichnis '$socialMediaImageDir' ist nicht beschreibbar. Bitte Berechtigungen prüfen.";
+        error_log("Fehler: Zielverzeichnis '$socialMediaImageDir' ist nicht beschreibbar für Comic-ID $comicId.");
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -148,6 +160,7 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
 
     if (empty($sourceImagePath)) {
         $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden in '$hiresDir' oder '$lowresDir'.";
+        error_log("Quellbild für Comic-ID '$comicId' nicht gefunden.");
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -155,7 +168,8 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
         // Bildinformationen abrufen
         $imageInfo = @getimagesize($sourceImagePath); // @ unterdrückt Warnungen
         if ($imageInfo === false) {
-            $errors[] = "Kann Bildinformationen für '$sourceImagePath' nicht abrufen (Comic-ID: $comicId).";
+            $errors[] = "Kann Bildinformationen für '$sourceImagePath' nicht abrufen (Comic-ID: $comicId). Möglicherweise ist die Datei beschädigt oder kein gültiges Bild.";
+            error_log("Kann Bildinformationen für '$sourceImagePath' nicht abrufen (Comic-ID: $comicId).");
             return ['created' => $createdPath, 'errors' => $errors];
         }
         list($width, $height, $type) = $imageInfo;
@@ -173,11 +187,13 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
                 break;
             default:
                 $errors[] = "Nicht unterstütztes Bildformat für Comic-ID '$comicId': " . $sourceImageExtension . ". Erwartet: JPG, PNG, GIF.";
+                error_log("Nicht unterstütztes Bildformat für Comic-ID '$comicId': " . $sourceImageExtension);
                 return ['created' => $createdPath, 'errors' => $errors];
         }
 
         if (!$sourceImage) {
-            $errors[] = "Fehler beim Laden des Bildes für Comic-ID '$comicId' von '$sourceImagePath'.";
+            $errors[] = "Fehler beim Laden des Bildes für Comic-ID '$comicId' von '$sourceImagePath'. Möglicherweise ist der Speicher erschöpft oder das Bild ist korrupt.";
+            error_log("Fehler beim Laden des Bildes für Comic-ID '$comicId' von '$sourceImagePath'.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
@@ -191,8 +207,15 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
         $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
         if ($tempImage === false) {
             $errors[] = "Fehler beim Erstellen des temporären Bildes für Comic-ID '$comicId'.";
+            error_log("Fehler beim Erstellen des temporären Bildes für Comic-ID '$comicId'.");
             imagedestroy($sourceImage);
             return ['created' => $createdPath, 'errors' => $errors];
+        }
+
+        // Für PNGs: Transparenz erhalten
+        if ($type == IMAGETYPE_PNG) {
+            imagealphablending($tempImage, false);
+            imagesavealpha($tempImage, true);
         }
 
         // Fülle den Hintergrund mit Weiß (oder einer anderen passenden Farbe)
@@ -207,25 +230,29 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
         if (!imagecopyresampled($tempImage, $sourceImage, (int)$offsetX, (int)$offsetY, 0, 0,
                                (int)$newWidth, (int)$newHeight, $width, $height)) {
             $errors[] = "Fehler beim Resampling des Bildes für Comic-ID '$comicId'.";
+            error_log("Fehler beim Resampling des Bildes für Comic-ID '$comicId'.");
             imagedestroy($sourceImage);
             imagedestroy($tempImage);
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
         // Bild als JPG speichern (für Social Media empfohlen)
+        // PNGs können sehr groß sein, JPG ist effizienter für Social Media
         $socialMediaImagePath = $socialMediaImageDir . $comicId . '.jpg';
         if (imagejpeg($tempImage, $socialMediaImagePath, 90)) { // 90% Qualität
             $createdPath = $socialMediaImagePath;
         } else {
-            $errors[] = "Fehler beim Speichern des Social Media Bildes für Comic-ID '$comicId' nach '$socialMediaImagePath'.";
+            $errors[] = "Fehler beim Speichern des Social Media Bildes für Comic-ID '$comicId' nach '$socialMediaImagePath'. Möglicherweise sind die Dateiberechtigungen falsch oder das Verzeichnis existiert nicht.";
+            error_log("Fehler beim Speichern des Social Media Bildes für Comic-ID '$comicId' nach '$socialMediaImagePath'.");
         }
 
         // Speicher freigeben
         imagedestroy($sourceImage);
         imagedestroy($tempImage);
 
-    } catch (Exception $e) {
-        $errors[] = "Ausnahme bei Comic-ID '$comicId': " . $e->getMessage();
+    } catch (Throwable $e) { // Throwable fängt auch Errors (z.B. Memory Exhaustion) ab
+        $errors[] = "Ausnahme/Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " (Code: " . $e->getCode() . " in " . $e->getFile() . " Zeile " . $e->getLine() . ")";
+        error_log("Kritischer Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " in " . $e->getFile() . " Zeile " . $e->getLine());
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }
@@ -233,12 +260,21 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
 // --- AJAX-Anfrage-Handler ---
 // Dieser Block wird nur ausgeführt, wenn eine POST-Anfrage mit der Aktion 'generate_single_social_media_image' gesendet wird.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_social_media_image') {
-    header('Content-Type: application/json'); // Wichtig für JSON-Antwort
+    // Leere und beende den Output Buffer, um sicherzustellen, dass keine unerwünschten Ausgaben gesendet werden.
+    ob_end_clean();
+    // Temporär Fehleranzeige deaktivieren und Error Reporting unterdrücken, um JSON-Ausgabe nicht zu stören.
+    ini_set('display_errors', 0);
+    error_reporting(0);
+
+    // Setze den Content-Type für die JSON-Antwort.
+    header('Content-Type: application/json');
+
     $response = ['success' => false, 'message' => ''];
 
     // Prüfe, ob GD geladen ist, bevor Bildoperationen versucht werden.
     if (!extension_loaded('gd')) {
         $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen. Social Media Bilder können nicht generiert werden.";
+        error_log("AJAX-Anfrage: GD-Bibliothek nicht geladen.");
         echo json_encode($response);
         exit;
     }
@@ -246,6 +282,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $comicId = $_POST['comic_id'] ?? '';
     if (empty($comicId)) {
         $response['message'] = 'Keine Comic-ID für die Generierung angegeben.';
+        error_log("AJAX-Anfrage: Keine Comic-ID angegeben.");
         echo json_encode($response);
         exit;
     }
@@ -253,25 +290,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Pfade für die einzelne Generierung (müssen hier neu definiert werden, da es ein separater Request ist)
     $lowresDir = __DIR__ . '/../assets/comic_lowres/';
     $hiresDir = __DIR__ . '/../assets/comic_hires/';
-    $socialMediaImageDir = __DIR__ . '/../assets/socialmedia_images/';
+    $socialMediaImageDir = __DIR__ . '/../assets/comic_socialmedia/';
 
     $result = generateSocialMediaImage($comicId, $lowresDir, $hiresDir, $socialMediaImageDir);
 
     if (empty($result['errors'])) {
         $response['success'] = true;
         $response['message'] = 'Social Media Bild für ' . $comicId . ' erfolgreich erstellt.';
-        $response['imageUrl'] = '../assets/socialmedia_images/' . $comicId . '.jpg?' . time(); // Cache-Buster
+        $response['imageUrl'] = '../assets/comic_socialmedia/' . $comicId . '.jpg?' . time(); // Korrigierter Pfad
         $response['comicId'] = $comicId;
     } else {
+        // Gib die spezifischen Fehlermeldungen aus der Generierungsfunktion zurück
         $response['message'] = 'Fehler bei der Erstellung für ' . $comicId . ': ' . implode(', ', $result['errors']);
+        error_log("AJAX-Anfrage: Fehler bei der Generierung für Comic-ID '$comicId': " . implode(', ', $result['errors']));
     }
-    echo json_encode($response);
+
+    // Überprüfe, ob json_encode einen Fehler hatte
+    $jsonOutput = json_encode($response);
+    if ($jsonOutput === false) {
+        $jsonError = json_last_error_msg();
+        error_log("AJAX-Anfrage: json_encode Fehler für Comic-ID '$comicId': " . $jsonError);
+        // Fallback, falls json_encode fehlschlägt (sehr unwahrscheinlich, wenn $response ein einfaches Array ist)
+        echo json_encode(['success' => false, 'message' => 'Interner Serverfehler: JSON-Encoding fehlgeschlagen.']);
+    } else {
+        echo $jsonOutput;
+    }
     exit; // WICHTIG: Beende die Skriptausführung für AJAX-Anfragen hier!
 }
 // --- Ende AJAX-Anfrage-Handler ---
 
 
 // --- Normaler Seitenaufbau (wenn keine AJAX-Anfrage vorliegt) ---
+// Leere den Output Buffer und sende den Inhalt, der bis hierhin gesammelt wurde.
+ob_end_flush();
+
 // Variablen für die Anzeige initialisieren
 $allComicIds = getExistingComicIds($lowresDir, $hiresDir);
 $existingSocialMediaImageIds = getExistingSocialMediaImageIds($socialMediaImageDir);
@@ -286,7 +338,7 @@ if (file_exists($headerPath)) {
 }
 
 // Basis-URL für die Bildanzeige bestimmen
-$socialMediaImageWebPath = '../assets/socialmedia_images/';
+$socialMediaImageWebPath = '../assets/comic_socialmedia/';
 ?>
 
 <article>
@@ -335,14 +387,6 @@ $socialMediaImageWebPath = '../assets/socialmedia_images/';
         </div>
     </div>
 </article>
-
-<!-- Modal für Nachrichten -->
-<div id="message-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;">
-    <div style="background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-        <p id="modal-message" style="font-size: 1.1em; margin-bottom: 20px;"></p>
-        <button onclick="document.getElementById('message-modal').style.display='none'" style="padding: 10px 20px; border-radius: 5px; border: none; background-color: #007bff; color: white; cursor: pointer; font-size: 1em;">OK</button>
-    </div>
-</div>
 
 <style>
     /* Allgemeine Statusmeldungen */
@@ -438,12 +482,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorHeaderMessage = document.getElementById('error-header-message');
     const errorsList = document.getElementById('generation-errors-list');
 
-    // Funktion zum Anzeigen einer benutzerdefinierten Modal-Nachricht
-    function showMessage(message) {
-        document.getElementById('modal-message').textContent = message;
-        document.getElementById('message-modal').style.display = 'flex';
-    }
-
     // Die Liste der fehlenden IDs, direkt von PHP übergeben
     const initialMissingIds = <?php echo json_encode($missingSocialMediaImages); ?>;
     let remainingIds = [...initialMissingIds];
@@ -453,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (generateButton) {
         generateButton.addEventListener('click', function() {
             if (remainingIds.length === 0) {
-                showMessage('Es sind keine Social Media Bilder zu generieren.');
+                console.log('No social media images to generate.');
                 return;
             }
 
@@ -507,7 +545,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            const data = await response.json(); // JSON-Antwort parsen
+            // Versuche, die Antwort als Text zu lesen, falls JSON-Parsing fehlschlägt
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                const responseText = await response.text();
+                throw new Error(`Failed to parse JSON for ${currentId}: ${jsonError.message}. Response was: ${responseText.substring(0, 200)}...`);
+            }
+
 
             if (data.success) {
                 createdCount++;
