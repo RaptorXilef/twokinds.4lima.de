@@ -1,3 +1,5 @@
+$robotsContent = 'noindex, follow';
+
 Zu deiner Frage bezüglich der Verzeichnisstruktur für Bilder: Du hast das genau richtig erkannt.
 
 src (und seine Unterordner wie src/components und src/layout) ist in der Tat der übliche Ort für den Quellcode deiner Anwendung, also für PHP-Skripte, JavaScript-Funktionen, CSS-Dateien und Konfigurationsdateien wie die JSON, die direkt von deinem Code verarbeitet werden.
