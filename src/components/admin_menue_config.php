@@ -11,5 +11,8 @@
 </br>
 <a href="./comic_generator.php">Comic-Seiten-Generator</a>
 </br>
-<!-- Weitere Admin-Links können hier später hinzugefügt werden -->
+<a href="./thumbnail_generator.php">Thumbnail-Generator</a>
+</br>
+<a href="./socialmedia_image_generator.php">Social Media Bild-Generator</a>
+</br>
 <a href="?action=logout">Logout</a>
