@@ -13,6 +13,7 @@
 </br>
 <a href="./thumbnail_generator.php">Thumbnail-Generator</a>
 </br>
+<a href="./socialmedia_image_generator_crop.php">Social Media Bild-Generator Crop</a>
 <a href="./socialmedia_image_generator.php">Social Media Bild-Generator</a>
 </br>
 <a href="?action=logout">Logout</a>
