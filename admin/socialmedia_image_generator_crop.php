@@ -96,7 +96,7 @@ function getExistingSocialMediaImageIds(string $socialMediaImageDir): array {
 /**
  * Vergleicht alle vorhandenen Comic-IDs mit bereits vorhandenen Social Media Bild-IDs.
  * @param array $allComicIds Alle gefundenen Comic-IDs.
- * @param array $existingSocialMediaImageIds Alle gefundenen Social Media Bild-IDs.
+ * @param array $existingSocial MediaImageIds Alle gefundenen Social Media Bild-IDs.
  * @return array Eine Liste von Comic-IDs, für die Social Media Bilder fehlen.
  */
 function findMissingSocialMediaImages(array $allComicIds, array $existingSocialMediaImageIds): array {
@@ -369,7 +369,11 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
                     <li><?php echo htmlspecialchars($id); ?></li>
                 <?php endforeach; ?>
             </ul>
-            <button type="button" id="generate-images-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
+            <!-- Container für die fest positionierten Buttons -->
+            <div id="fixed-buttons-container">
+                <button type="button" id="generate-images-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
+                <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
+            </div>
         <?php endif; ?>
 
         <!-- Lade-Indikator und Fortschrittsanzeige -->
@@ -473,11 +477,29 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
             width: 100%; /* 1 pro Reihe auf kleineren Bildschirmen */
         }
     }
+
+    /* Stil für den fest positionierten Button-Container */
+    #fixed-buttons-container {
+        position: fixed; /* Fixiert die Position relativ zum Viewport */
+        z-index: 1000; /* Stellt sicher, dass die Buttons über anderen Inhalten liegen */
+        display: flex; /* Für nebeneinanderliegende Buttons */
+        gap: 10px; /* Abstand zwischen den Buttons */
+        /* top und right werden dynamisch per JavaScript gesetzt */
+    }
+
+    /* Anpassung für kleinere Bildschirme, falls die Buttons zu viel Platz einnehmen */
+    @media (max-width: 768px) {
+        #fixed-buttons-container {
+            flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
+            gap: 5px;
+        }
+    }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const generateButton = document.getElementById('generate-images-button');
+    const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
     const loadingSpinner = document.getElementById('loading-spinner');
     const progressText = document.getElementById('progress-text');
     const missingImagesList = document.getElementById('missing-images-list');
@@ -492,37 +514,118 @@ document.addEventListener('DOMContentLoaded', function() {
     let remainingIds = [...initialMissingIds];
     let createdCount = 0;
     let errorCount = 0;
+    let isPaused = false; // Status für die Pause-Funktion
+
+    // Elemente für die Positionierung der Buttons
+    // Annahme: Es gibt ein <main id="content" class="content"> Element, das das <article> umschließt.
+    // Falls nicht vorhanden, wird ein Fallback auf die Viewport-Position verwendet.
+    const mainContent = document.getElementById('content');
+    const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
+
+    /**
+     * Setzt die feste Position des Button-Containers basierend auf dem Main-Content-Element.
+     * Wird beim Laden der Seite und bei Größenänderung des Fensters aufgerufen.
+     */
+    function setFixedButtonPosition() {
+        if (mainContent && fixedButtonsContainer) {
+            const mainRect = mainContent.getBoundingClientRect();
+            // Berechne die absolute Top-Position im Viewport:
+            // Top des Main-Elements + gewünschter Abstand (18px)
+            const calculatedTop = mainRect.top + 18;
+            // Berechne die absolute Right-Position im Viewport:
+            // Breite des Viewports - (Rechte Kante des Main-Elements + gewünschter Abstand (24px))
+            const calculatedRight = window.innerWidth - mainRect.right + 24;
+
+            fixedButtonsContainer.style.top = `${calculatedTop}px`;
+            fixedButtonsContainer.style.right = `${calculatedRight}px`;
+        } else if (fixedButtonsContainer) {
+            console.warn("Main content element with ID 'content' not found. Fixed buttons might not be positioned correctly. Falling back to viewport top-right.");
+            // Fallback: Wenn das Main-Element nicht gefunden wird, positioniere relativ zum Viewport
+            fixedButtonsContainer.style.top = `18px`;
+            fixedButtonsContainer.style.right = `24px`;
+        }
+    }
+
+    // Funktion zum Aktualisieren des Button-Zustands (Text und Sichtbarkeit)
+    function updateButtonState() {
+        if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) { // Generierung abgeschlossen
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = false;
+            togglePauseResumeButton.style.display = 'none';
+        } else if (remainingIds.length === initialMissingIds.length && createdCount === 0 && errorCount === 0) { // Initialer Zustand, nichts gestartet
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = false;
+            togglePauseResumeButton.style.display = 'none';
+        }
+        else { // Generierung ist aktiv oder pausiert
+            generateButton.style.display = 'none'; // Generieren-Button ausblenden, sobald gestartet
+            togglePauseResumeButton.style.display = 'inline-block';
+            if (isPaused) {
+                togglePauseResumeButton.textContent = 'Generierung fortsetzen';
+            } else {
+                togglePauseResumeButton.textContent = 'Generierung pausieren';
+            }
+        }
+    }
+
+    // Initialen Zustand der Buttons beim Laden der Seite setzen
+    updateButtonState(); // Rufe die Funktion auf, um den korrekten Startzustand zu setzen
+    setFixedButtonPosition(); // Setze die initiale Position der Buttons
+
+    // Recalculate only on resize, not on scroll, to keep them truly "fixed" on screen
+    window.addEventListener('resize', setFixedButtonPosition);
 
     if (generateButton) {
         generateButton.addEventListener('click', function() {
-            if (remainingIds.length === 0) {
-                console.log('No social media images to generate.');
+            if (initialMissingIds.length === 0) { // Prüfe initialMissingIds, da remainingIds geleert wird
+                console.log('Keine Social Media Bilder zum Generieren vorhanden.');
                 return;
             }
 
             // UI zurücksetzen und Ladezustand anzeigen
-            generateButton.disabled = true;
             loadingSpinner.style.display = 'block';
             generationResultsSection.style.display = 'block';
             overallStatusMessage.textContent = '';
-            overallStatusMessage.className = 'status-message'; // Reset class
+            overallStatusMessage.className = 'status-message'; // Klasse zurücksetzen
             createdImagesContainer.innerHTML = '';
             errorsList.innerHTML = '';
-            errorHeaderMessage.style.display = 'none'; // Hide error header initially
+            errorHeaderMessage.style.display = 'none'; // Fehler-Header initial ausblenden
 
+            // Setze remainingIds neu, falls der Button erneut geklickt wird nach Abschluss
+            remainingIds = [...initialMissingIds];
             createdCount = 0;
             errorCount = 0;
+            isPaused = false; // Sicherstellen, dass der Status nicht pausiert ist
 
+            updateButtonState(); // Buttons anpassen (Generieren aus, Pause an)
             processNextImage();
         });
     }
 
+    if (togglePauseResumeButton) {
+        togglePauseResumeButton.addEventListener('click', function() {
+            isPaused = !isPaused; // Zustand umschalten
+            if (isPaused) {
+                progressText.textContent = `Generierung pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
+            }
+            updateButtonState(); // Button-Text und Sichtbarkeit aktualisieren
+            if (!isPaused) { // Wenn gerade fortgesetzt wurde
+                processNextImage(); // Generierung fortsetzen
+            }
+        });
+    }
+
     async function processNextImage() {
+        if (isPaused) {
+            // Wenn pausiert, beende die Ausführung, bis fortgesetzt wird
+            return;
+        }
+
         if (remainingIds.length === 0) {
             // Alle Bilder verarbeitet
             loadingSpinner.style.display = 'none';
-            generateButton.disabled = false;
             progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+            updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
 
             if (errorCount > 0) {
                 overallStatusMessage.textContent = `Generierung abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
@@ -555,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data = await response.json();
             } catch (jsonError) {
                 const responseText = await response.text();
-                throw new Error(`Failed to parse JSON for ${currentId}: ${jsonError.message}. Response was: ${responseText.substring(0, 200)}...`);
+                throw new Error(`Fehler beim Parsen der JSON-Antwort für ${currentId}: ${jsonError.message}. Antwort war: ${responseText.substring(0, 200)}...`);
             }
 
 
