@@ -3,14 +3,20 @@
  * Dies ist die Administrationsseite für den Social Media Bild-Generator.
  * Sie überprüft, welche Social Media Bilder fehlen und bietet die Möglichkeit, diese zu erstellen.
  * Die Generierung erfolgt nun schrittweise über AJAX, um Speicherprobleme bei vielen Bildern zu vermeiden.
- * Eine kleine Verzögerung zwischen den Generierungen entlastet die CPU.
+ * Eine Verzögerung von 1000ms zwischen den Generierungen entlastet das System.
+ * Zusätzlich wird nach jeder Generierung eine explizite Garbage Collection durchgeführt,
+ * um Speicherressourcen effizienter freizugeben.
  */
 
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
 ob_start();
 
 // Erhöhe das PHP-Speicherlimit, um Probleme mit großen Bildern zu vermeiden.
-ini_set('memory_limit', '1G'); // Kann bei Bedarf weiter erhöht werden (z.B. '1G' für 1 Gigabyte)
+// 1G hat sich als optimaler Wert erwiesen, um Ruckeln zu vermeiden.
+ini_set('memory_limit', '1G');
+
+// Aktiviere die explizite Garbage Collection, um Speicher effizienter zu verwalten.
+gc_enable();
 
 // Starte die PHP-Sitzung. Notwendig für die Admin-Anmeldung.
 session_start();
@@ -253,6 +259,9 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
     } catch (Throwable $e) { // Throwable fängt auch Errors (z.B. Memory Exhaustion) ab
         $errors[] = "Ausnahme/Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " (Code: " . $e->getCode() . " in " . $e->getFile() . " Zeile " . $e->getLine() . ")";
         error_log("Kritischer Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " in " . $e->getFile() . " Zeile " . $e->getLine());
+    } finally {
+        // Führe nach jeder Bildgenerierung eine explizite Garbage Collection durch
+        gc_collect_cycles();
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }
@@ -588,7 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fügen Sie hier eine kleine Verzögerung ein, bevor das nächste Bild verarbeitet wird
         setTimeout(() => {
             processNextImage();
-        }, 50); // 50 Millisekunden Verzögerung
+        }, 1000); // 1000 Millisekunden (1 Sekunde) Verzögerung
     }
 });
 </script>
