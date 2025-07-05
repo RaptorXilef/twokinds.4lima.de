@@ -366,7 +366,7 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
 
         <!-- Container für die Buttons - JETZT HIER PLATZIERT -->
         <div id="fixed-buttons-container">
-            <button type="button" id="generate-images-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
+            <button type="button" id="generate-images-button" <?php echo $gdError || empty($missingSocialMediaImages) ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
             <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
         </div>
 
@@ -426,6 +426,47 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         background-color: #f8d7da;
         color: #721c24;
         border: 1px solid #f5c6cb;
+    }
+
+    /* Neue Button-Stile */
+    .status-red-button {
+        background-color: #dc3545; /* Bootstrap-Rot */
+        color: white;
+        border: 1px solid #dc3545;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.2s ease;
+    }
+    .status-red-button:hover {
+        background-color: #c82333;
+    }
+    .status-red-button:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        border-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+    .status-green-button {
+        background-color: #28a745; /* Bootstrap-Grün */
+        color: white;
+        border: 1px solid #28a745;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.2s ease;
+    }
+    .status-green-button:hover {
+        background-color: #218838;
+    }
+    .status-green-button:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        border-color: #e9ecef;
+        cursor: not-allowed;
     }
 
     /* Spinner CSS */
@@ -526,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let createdCount = 0;
     let errorCount = 0;
     let isPaused = false; // Status für die Pause-Funktion
+    let isGenerationActive = false; // Neuer Flag, um zu verfolgen, ob die Generierung läuft
 
     // Elemente für die Positionierung der Buttons
     const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
@@ -560,9 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
         stickyThreshold = initialButtonTopOffset - stickyOffset;
 
-        console.log('--- calculateInitialPositions ---');
-        console.log('Initial Button Top (Document):', initialButtonTopOffset);
-        console.log('Sticky Threshold (ScrollY):', stickyThreshold);
         if (!mainContent) {
             console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
         }
@@ -591,7 +630,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
                     fixedButtonsContainer.style.right = `${rightOffset}px`;
                 }
-                console.log('Buttons sind jetzt FIXED. Top:', fixedButtonsContainer.style.top, 'Right:', fixedButtonsContainer.style.right);
             }
         } else {
             // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
@@ -599,7 +637,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 fixedButtonsContainer.style.position = 'static'; // Zurück zum normalen Fluss
                 fixedButtonsContainer.style.top = 'auto';
                 fixedButtonsContainer.style.right = 'auto';
-                console.log('Buttons sind jetzt STATIC.');
             }
         }
     }
@@ -621,27 +658,35 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
 
-    // --- Der Rest des JavaScript-Codes für die Generierungslogik bleibt unverändert ---
-
-    // Funktion zum Aktualisieren des Button-Zustands (Text und Sichtbarkeit)
+    // Funktion zum Aktualisieren des Button-Zustands (Text, Farbe und Sichtbarkeit)
     function updateButtonState() {
-        if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) { // Generierung abgeschlossen
+        if (initialMissingIds.length === 0) {
+            // Keine Bilder zum Generieren vorhanden
             generateButton.style.display = 'inline-block';
-            generateButton.disabled = false;
+            generateButton.disabled = true;
             togglePauseResumeButton.style.display = 'none';
-        } else if (remainingIds.length === initialMissingIds.length && createdCount === 0 && errorCount === 0) { // Initialer Zustand, nichts gestartet
-            generateButton.style.display = 'inline-block';
-            generateButton.disabled = false;
-            togglePauseResumeButton.style.display = 'none';
-        }
-        else { // Generierung ist aktiv oder pausiert
-            generateButton.style.display = 'none'; // Generieren-Button ausblenden, sobald gestartet
+        } else if (isGenerationActive) {
+            // Generierung ist aktiv oder pausiert
+            generateButton.style.display = 'none';
             togglePauseResumeButton.style.display = 'inline-block';
             if (isPaused) {
                 togglePauseResumeButton.textContent = 'Generierung fortsetzen';
+                togglePauseResumeButton.className = 'status-green-button';
             } else {
                 togglePauseResumeButton.textContent = 'Generierung pausieren';
+                togglePauseResumeButton.className = 'status-red-button';
             }
+            togglePauseResumeButton.disabled = false;
+        } else if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) {
+            // Alle Bilder verarbeitet (Generierung abgeschlossen)
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = true; // Nichts mehr zu generieren
+            togglePauseResumeButton.style.display = 'none';
+        } else {
+            // Initialer Zustand: Bilder zum Generieren vorhanden, aber noch nicht gestartet
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = false;
+            togglePauseResumeButton.style.display = 'none';
         }
     }
 
@@ -650,7 +695,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (generateButton) {
         generateButton.addEventListener('click', function() {
-            if (initialMissingIds.length === 0) { // Prüfe initialMissingIds, da remainingIds geleert wird
+            if (initialMissingIds.length === 0) {
                 console.log('Keine Social Media Bilder zum Generieren vorhanden.');
                 return;
             }
@@ -668,8 +713,9 @@ document.addEventListener('DOMContentLoaded', function() {
             remainingIds = [...initialMissingIds];
             createdCount = 0;
             errorCount = 0;
-            isPaused = false; // Sicherstellen, dass der Status nicht pausiert ist
+            isPaused = false;
 
+            isGenerationActive = true; // Generierung starten
             updateButtonState(); // Buttons anpassen (Generieren aus, Pause an)
             processNextImage();
         });
@@ -698,6 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Alle Bilder verarbeitet
             loadingSpinner.style.display = 'none';
             progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+            isGenerationActive = false; // Generierung beendet
             updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
 
             if (errorCount > 0) {

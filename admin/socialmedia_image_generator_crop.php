@@ -38,7 +38,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 // Die 'assets'-Ordner liegen eine Ebene über 'admin'.
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
-$hiresDir = __DIR__ . '/../assets/comic_hires/';   // Quellverzeichnis für Hi-Res Comic-Bilder (ausschließlich für diesen Generator)
+$hiresDir = __DIR__ . '/../assets/comic_hires/';   // Quellverzeichnis für Hi-Res Comic-Bilder
 $socialMediaImageDir = __DIR__ . '/../assets/comic_socialmedia/'; // Zielverzeichnis für Social Media Bilder
 
 // Stelle sicher, dass die GD-Bibliothek geladen ist.
@@ -50,8 +50,7 @@ if (!extension_loaded('gd')) {
 }
 
 /**
- * Scannt das Hi-Res Comic-Verzeichnis nach vorhandenen Comic-Bildern.
- * Für diesen Generator werden nur Bilder aus dem hires-Ordner berücksichtigt.
+ * Scannt das hires-Verzeichnis nach vorhandenen Comic-Bildern.
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
  * @return array Eine Liste eindeutiger Comic-IDs (Dateinamen ohne Erweiterung).
  */
@@ -59,13 +58,12 @@ function getExistingComicIds(string $hiresDir): array {
     $comicIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
 
-    // Scan hires-Verzeichnis nach Bildern
     if (is_dir($hiresDir)) {
         $files = scandir($hiresDir);
         foreach ($files as $file) {
             $fileInfo = pathinfo($file);
             if (isset($fileInfo['extension']) && in_array(strtolower($fileInfo['extension']), $imageExtensions)) {
-                $comicIds[$fileInfo['filename']] = true;
+                $comicIds[$fileInfo['filename']] = true; // Assoziatives Array für Eindeutigkeit
             }
         }
     }
@@ -104,8 +102,9 @@ function findMissingSocialMediaImages(array $allComicIds, array $existingSocialM
 }
 
 /**
- * Generiert ein einzelnes Social Media Bild aus einem Quellbild durch Zuschneiden des oberen Teils.
+ * Generiert ein einzelnes Social Media Bild aus einem Quellbild durch Beschneiden.
  * Zielgröße: 1200x630 Pixel (typisches Open Graph Bildformat).
+ * Das Bild wird vom oberen Rand des Quellbildes beschnitten, um das Zielformat zu erreichen.
  * @param string $comicId Die ID des Comics, für das ein Social Media Bild erstellt werden soll.
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
  * @param string $socialMediaImageDir Pfad zum Social Media Bild-Verzeichnis.
@@ -131,12 +130,11 @@ function generateSocialMediaImage(string $comicId, string $hiresDir, string $soc
     // Definiere die Zielabmessungen für Social Media Bilder
     $targetWidth = 1200;
     $targetHeight = 630;
-    $targetRatio = $targetWidth / $targetHeight;
 
     $sourceImagePath = '';
     $sourceImageExtension = '';
 
-    // Suche das Quellbild ausschließlich im hires-Ordner
+    // Bild muss aus dem hires-Ordner kommen
     $possibleExtensions = ['jpg', 'jpeg', 'png', 'gif'];
     foreach ($possibleExtensions as $ext) {
         $hiresPath = $hiresDir . $comicId . '.' . $ext;
@@ -148,8 +146,8 @@ function generateSocialMediaImage(string $comicId, string $hiresDir, string $soc
     }
 
     if (empty($sourceImagePath)) {
-        $errors[] = "Quellbild für Comic-ID '$comicId' nicht im '$hiresDir'-Verzeichnis gefunden.";
-        error_log("Quellbild für Comic-ID '$comicId' nicht im hires-Verzeichnis gefunden.");
+        $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden im '$hiresDir' Verzeichnis.";
+        error_log("Quellbild für Comic-ID '$comicId' nicht gefunden.");
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -162,7 +160,6 @@ function generateSocialMediaImage(string $comicId, string $hiresDir, string $soc
             return ['created' => $createdPath, 'errors' => $errors];
         }
         list($width, $height, $type) = $imageInfo;
-        $sourceRatio = $width / $height;
 
         $sourceImage = null;
         switch ($type) {
@@ -187,25 +184,20 @@ function generateSocialMediaImage(string $comicId, string $hiresDir, string $soc
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
-        // --- Zuschneide-Logik für den oberen Teil des Bildes ---
-        $src_x = 0;
-        $src_y = 0; // Immer von oben beginnen
+        // Berechne die Skalierung, um die Zielbreite zu erreichen
+        $scale = $targetWidth / $width;
+        $scaledHeight = $height * $scale;
 
-        // Berechne die Quellbreite und -höhe, die dem Ziel-Seitenverhältnis entsprechen
-        // und aus dem Quellbild entnommen werden können.
-        if ($sourceRatio > $targetRatio) {
-            // Quellbild ist breiter als das Zielverhältnis (relativ flacher)
-            // Wir nutzen die volle Quellhöhe und berechnen die entsprechende Breite.
-            $src_h = $height;
-            $src_w = $height * $targetRatio;
-            // Da wir den oberen Teil nehmen, bleibt src_x = 0 (von links zuschneiden)
-        } else {
-            // Quellbild ist schmaler oder gleich dem Zielverhältnis (relativ höher oder quadratisch)
-            // Wir nutzen die volle Quellbreite und berechnen die entsprechende Höhe.
-            $src_w = $width;
-            $src_h = $width / $targetRatio;
-            // Da wir den oberen Teil nehmen, bleibt src_y = 0 (von oben zuschneiden)
+        // Berechne den Y-Offset für den Crop, um den oberen Teil zu erhalten
+        // Wenn die skalierte Höhe größer als die Zielhöhe ist, schneiden wir von oben ab.
+        // Andernfalls zentrieren wir vertikal, um keine schwarzen Balken zu haben.
+        $srcY = 0; // Standardmäßig von oben croppen
+        if ($scaledHeight < $targetHeight) {
+            // Wenn das Bild nach Skalierung zu kurz ist, zentriere es vertikal
+            $srcY = ($height - ($targetHeight / $scale)) / 2;
+            $scaledHeight = $targetHeight; // Setze skalierte Höhe auf Zielhöhe, um den gesamten Canvas zu füllen
         }
+
 
         // Erstelle ein neues True-Color-Bild für das Social Media Bild
         $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
@@ -226,13 +218,12 @@ function generateSocialMediaImage(string $comicId, string $hiresDir, string $soc
         $backgroundColor = imagecolorallocate($tempImage, 255, 255, 255); // Weißer Hintergrund
         imagefilledrectangle($tempImage, 0, 0, $targetWidth, $targetHeight, $backgroundColor);
 
-        // Bild von der Quelle auf das temporäre Bild resamplen und kopieren
-        // Hier wird der obere Teil des Quellbildes (src_x, src_y, src_w, src_h)
-        // auf die Zielgröße (targetWidth, targetHeight) skaliert.
-        if (!imagecopyresampled($tempImage, $sourceImage, 0, 0, (int)$src_x, (int)$src_y,
-                               $targetWidth, $targetHeight, (int)$src_w, (int)$src_h)) {
-            $errors[] = "Fehler beim Resampling des Bildes für Comic-ID '$comicId'.";
-            error_log("Fehler beim Resampling des Bildes für Comic-ID '$comicId'.");
+        // Bild auf die neue Größe und Position resamplen und kopieren
+        // crop von srcY, srcX ist 0
+        if (!imagecopyresampled($tempImage, $sourceImage, 0, 0, 0, (int)$srcY,
+                               $targetWidth, $scaledHeight, $width, $height - (2 * (int)$srcY))) { // Adjust source height for crop
+            $errors[] = "Fehler beim Resampling/Cropping des Bildes für Comic-ID '$comicId'.";
+            error_log("Fehler beim Resampling/Cropping des Bildes für Comic-ID '$comicId'.");
             imagedestroy($sourceImage);
             imagedestroy($tempImage);
             return ['created' => $createdPath, 'errors' => $errors];
@@ -329,7 +320,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 ob_end_flush();
 
 // Variablen für die Anzeige initialisieren
-// Beachte: getExistingComicIds wird hier nur mit $hiresDir aufgerufen
 $allComicIds = getExistingComicIds($hiresDir);
 $existingSocialMediaImageIds = getExistingSocialMediaImageIds($socialMediaImageDir);
 $missingSocialMediaImages = findMissingSocialMediaImages($allComicIds, $existingSocialMediaImageIds);
@@ -348,7 +338,7 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
 
 <article>
     <header>
-        <h1>Social Media Bild-Generator (Crop von oben)</h1>
+        <h1>Social Media Bild-Generator (Crop)</h1>
     </header>
 
     <div class="content-section">
@@ -356,20 +346,20 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
             <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p>
         <?php endif; ?>
 
-        <h2>Status der Social Media Bilder</h2>
+        <h2>Status der Social Media Bilder (Crop)</h2>
 
         <!-- Container für die Buttons - JETZT HIER PLATZIERT -->
         <div id="fixed-buttons-container">
-            <button type="button" id="generate-images-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
+            <button type="button" id="generate-images-button" <?php echo $gdError || empty($missingSocialMediaImages) ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
             <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
         </div>
 
         <?php if (empty($allComicIds)): ?>
             <p class="status-message status-orange">Es wurden keine Comic-Bilder im Verzeichnis `<?php echo htmlspecialchars($hiresDir); ?>` gefunden, die als Basis dienen könnten.</p>
         <?php elseif (empty($missingSocialMediaImages)): ?>
-            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Social Media Bilder sind vorhanden.</p>
+            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Social Media Bilder (Crop) sind vorhanden.</p>
         <?php else: ?>
-            <p class="status-message status-red">Es fehlen <?php echo count($missingSocialMediaImages); ?> Social Media Bilder.</p>
+            <p class="status-message status-red">Es fehlen <?php echo count($missingSocialMediaImages); ?> Social Media Bilder (Crop).</p>
             <h3>Fehlende Social Media Bilder (IDs):</h3>
             <ul id="missing-images-list">
                 <?php foreach ($missingSocialMediaImages as $id): ?>
@@ -420,6 +410,47 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         background-color: #f8d7da;
         color: #721c24;
         border: 1px solid #f5c6cb;
+    }
+
+    /* Neue Button-Stile */
+    .status-red-button {
+        background-color: #dc3545; /* Bootstrap-Rot */
+        color: white;
+        border: 1px solid #dc3545;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.2s ease;
+    }
+    .status-red-button:hover {
+        background-color: #c82333;
+    }
+    .status-red-button:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        border-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+    .status-green-button {
+        background-color: #28a745; /* Bootstrap-Grün */
+        color: white;
+        border: 1px solid #28a745;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.2s ease;
+    }
+    .status-green-button:hover {
+        background-color: #218838;
+    }
+    .status-green-button:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        border-color: #e9ecef;
+        cursor: not-allowed;
     }
 
     /* Spinner CSS */
@@ -487,7 +518,7 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         gap: 10px; /* Abstand zwischen den Buttons */
         margin-top: 20px; /* Fügt etwas Abstand hinzu, wenn die Buttons statisch sind */
         margin-bottom: 20px; /* Abstand nach unten, wenn statisch */
-        justify-content: flex-end; /* NEU: Richtet die Buttons im statischen Zustand am rechten Rand aus */
+        justify-content: flex-end; /* Richtet die Buttons im statischen Zustand am rechten Rand aus */
         /* top und right werden dynamisch per JavaScript gesetzt, position wird auch per JS gesetzt */
     }
 
@@ -496,7 +527,7 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         #fixed-buttons-container {
             flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
             gap: 5px;
-            align-items: flex-end; /* NEU: Auch im Spalten-Layout rechts ausrichten */
+            align-items: flex-end; /* Auch im Spalten-Layout rechts ausrichten */
         }
     }
 </style>
@@ -520,6 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let createdCount = 0;
     let errorCount = 0;
     let isPaused = false; // Status für die Pause-Funktion
+    let isGenerationActive = false; // Neuer Flag, um zu verfolgen, ob die Generierung läuft
 
     // Elemente für die Positionierung der Buttons
     const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
@@ -554,9 +586,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
         stickyThreshold = initialButtonTopOffset - stickyOffset;
 
-        console.log('--- calculateInitialPositions ---');
-        console.log('Initial Button Top (Document):', initialButtonTopOffset);
-        console.log('Sticky Threshold (ScrollY):', stickyThreshold);
         if (!mainContent) {
             console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
         }
@@ -585,7 +614,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
                     fixedButtonsContainer.style.right = `${rightOffset}px`;
                 }
-                console.log('Buttons sind jetzt FIXED. Top:', fixedButtonsContainer.style.top, 'Right:', fixedButtonsContainer.style.right);
             }
         } else {
             // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
@@ -593,7 +621,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 fixedButtonsContainer.style.position = 'static'; // Zurück zum normalen Fluss
                 fixedButtonsContainer.style.top = 'auto';
                 fixedButtonsContainer.style.right = 'auto';
-                console.log('Buttons sind jetzt STATIC.');
             }
         }
     }
@@ -615,27 +642,35 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
 
-    // --- Der Rest des JavaScript-Codes für die Generierungslogik bleibt unverändert ---
-
-    // Funktion zum Aktualisieren des Button-Zustands (Text und Sichtbarkeit)
+    // Funktion zum Aktualisieren des Button-Zustands (Text, Farbe und Sichtbarkeit)
     function updateButtonState() {
-        if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) { // Generierung abgeschlossen
+        if (initialMissingIds.length === 0) {
+            // Keine Bilder zum Generieren vorhanden
             generateButton.style.display = 'inline-block';
-            generateButton.disabled = false;
+            generateButton.disabled = true;
             togglePauseResumeButton.style.display = 'none';
-        } else if (remainingIds.length === initialMissingIds.length && createdCount === 0 && errorCount === 0) { // Initialer Zustand, nichts gestartet
-            generateButton.style.display = 'inline-block';
-            generateButton.disabled = false;
-            togglePauseResumeButton.style.display = 'none';
-        }
-        else { // Generierung ist aktiv oder pausiert
-            generateButton.style.display = 'none'; // Generieren-Button ausblenden, sobald gestartet
+        } else if (isGenerationActive) {
+            // Generierung ist aktiv oder pausiert
+            generateButton.style.display = 'none';
             togglePauseResumeButton.style.display = 'inline-block';
             if (isPaused) {
                 togglePauseResumeButton.textContent = 'Generierung fortsetzen';
+                togglePauseResumeButton.className = 'status-green-button';
             } else {
                 togglePauseResumeButton.textContent = 'Generierung pausieren';
+                togglePauseResumeButton.className = 'status-red-button';
             }
+            togglePauseResumeButton.disabled = false;
+        } else if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) {
+            // Alle Bilder verarbeitet (Generierung abgeschlossen)
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = true; // Nichts mehr zu generieren
+            togglePauseResumeButton.style.display = 'none';
+        } else {
+            // Initialer Zustand: Bilder zum Generieren vorhanden, aber noch nicht gestartet
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = false;
+            togglePauseResumeButton.style.display = 'none';
         }
     }
 
@@ -644,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (generateButton) {
         generateButton.addEventListener('click', function() {
-            if (initialMissingIds.length === 0) { // Prüfe initialMissingIds, da remainingIds geleert wird
+            if (initialMissingIds.length === 0) {
                 console.log('Keine Social Media Bilder zum Generieren vorhanden.');
                 return;
             }
@@ -662,8 +697,9 @@ document.addEventListener('DOMContentLoaded', function() {
             remainingIds = [...initialMissingIds];
             createdCount = 0;
             errorCount = 0;
-            isPaused = false; // Sicherstellen, dass der Status nicht pausiert ist
+            isPaused = false;
 
+            isGenerationActive = true; // Generierung starten
             updateButtonState(); // Buttons anpassen (Generieren aus, Pause an)
             processNextImage();
         });
@@ -692,6 +728,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Alle Bilder verarbeitet
             loadingSpinner.style.display = 'none';
             progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+            isGenerationActive = false; // Generierung beendet
             updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
 
             if (errorCount > 0) {
