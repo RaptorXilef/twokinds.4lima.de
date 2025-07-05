@@ -2,10 +2,11 @@
 /**
  * Dies ist die Administrationsseite für den Social Media Bild-Generator.
  * Sie überprüft, welche Social Media Bilder fehlen und bietet die Möglichkeit, diese zu erstellen.
- * Die Generierung erfolgt nun schrittweise über AJAX, um Speicherprobleme bei vielen Bildern zu vermeiden.
+ * Die Generierung erfolgt nun schrittweise über AJAX, um Speicherprobleme zu vermeiden.
  * Eine Verzögerung von 1000ms zwischen den Generierungen entlastet das System.
  * Zusätzlich wird nach jeder Generierung eine explizite Garbage Collection durchgeführt,
- * um Speicherressourcen effizienter freizugeben.
+ * und eine kurze PHP-Pause eingefügt, um Speicherressourcen effizienter freizugeben
+ * und das Betriebssystem zu entlasten.
  */
 
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
@@ -262,6 +263,8 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
     } finally {
         // Führe nach jeder Bildgenerierung eine explizite Garbage Collection durch
         gc_collect_cycles();
+        // Füge eine kurze Pause ein, um dem System Zeit zur Ressourcenfreigabe zu geben
+        usleep(50000); // 50 Millisekunden Pause
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }

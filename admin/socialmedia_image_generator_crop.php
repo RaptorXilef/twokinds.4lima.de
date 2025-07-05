@@ -8,7 +8,8 @@
  * Die Generierung erfolgt schrittweise über AJAX, um Speicherprobleme zu vermeiden.
  * Eine Verzögerung von 1000ms zwischen den Generierungen entlastet das System.
  * Zusätzlich wird nach jeder Generierung eine explizite Garbage Collection durchgeführt,
- * um Speicherressourcen effizienter freizugeben.
+ * und eine kurze PHP-Pause eingefügt, um Speicherressourcen effizienter freizugeben
+ * und das Betriebssystem zu entlasten.
  */
 
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
@@ -16,7 +17,7 @@ ob_start();
 
 // Erhöhe das PHP-Speicherlimit, um Probleme mit großen Bildern zu vermeiden.
 // 1G hat sich als optimaler Wert erwiesen, um Ruckeln zu vermeiden.
-ini_set('memory_limit', '512M');
+ini_set('memory_limit', '1G');
 
 // Aktiviere die explizite Garbage Collection, um Speicher effizienter zu verwalten.
 gc_enable();
@@ -256,6 +257,8 @@ function generateSocialMediaImage(string $comicId, string $hiresDir, string $soc
     } finally {
         // Führe nach jeder Bildgenerierung eine explizite Garbage Collection durch
         gc_collect_cycles();
+        // Füge eine kurze Pause ein, um dem System Zeit zur Ressourcenfreigabe zu geben
+        usleep(50000); // 50 Millisekunden Pause
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }
