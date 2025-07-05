@@ -3,13 +3,13 @@
  * Dies ist die Administrationsseite für den Social Media Bild-Generator.
  * Sie überprüft, welche Social Media Bilder fehlen und bietet die Möglichkeit, diese zu erstellen.
  * Die Generierung erfolgt nun schrittweise über AJAX, um Speicherprobleme bei vielen Bildern zu vermeiden.
+ * Eine kleine Verzögerung zwischen den Generierungen entlastet die CPU.
  */
 
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
 ob_start();
 
 // Erhöhe das PHP-Speicherlimit, um Probleme mit großen Bildern zu vermeiden.
-// Dies ist oft die Ursache für "Unexpected end of JSON input" bei Bildoperationen.
 ini_set('memory_limit', '1G'); // Kann bei Bedarf weiter erhöht werden (z.B. '1G' für 1 Gigabyte)
 
 // Starte die PHP-Sitzung. Notwendig für die Admin-Anmeldung.
@@ -297,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (empty($result['errors'])) {
         $response['success'] = true;
         $response['message'] = 'Social Media Bild für ' . $comicId . ' erfolgreich erstellt.';
-        $response['imageUrl'] = '../assets/comic_socialmedia/' . $comicId . '.jpg?' . time(); // Korrigierter Pfad
+        $response['imageUrl'] = '../assets/comic_socialmedia/' . $comicId . '.jpg?' . time();
         $response['comicId'] = $comicId;
     } else {
         // Gib die spezifischen Fehlermeldungen aus der Generierungsfunktion zurück
@@ -310,7 +310,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($jsonOutput === false) {
         $jsonError = json_last_error_msg();
         error_log("AJAX-Anfrage: json_encode Fehler für Comic-ID '$comicId': " . $jsonError);
-        // Fallback, falls json_encode fehlschlägt (sehr unwahrscheinlich, wenn $response ein einfaches Array ist)
         echo json_encode(['success' => false, 'message' => 'Interner Serverfehler: JSON-Encoding fehlgeschlagen.']);
     } else {
         echo $jsonOutput;
@@ -545,7 +544,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            // Versuche, die Antwort als Text zu lesen, falls JSON-Parsing fehlschlägt
             let data;
             try {
                 data = await response.json();
@@ -557,7 +555,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (data.success) {
                 createdCount++;
-                // Füge das neue Bild zur Anzeige hinzu
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'image-item';
                 imageDiv.innerHTML = `
@@ -566,10 +563,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 createdImagesContainer.appendChild(imageDiv);
 
-                // Entferne die ID aus der Liste der fehlenden Bilder (visuell)
                 if (missingImagesList) {
-                    const listItem = missingImagesList.querySelector(`li`); // find first li
-                    if (listItem && listItem.textContent.includes(data.comicId)) { // check if it contains the comicId
+                    const listItem = missingImagesList.querySelector(`li`);
+                    if (listItem && listItem.textContent.includes(data.comicId)) {
                         listItem.remove();
                     }
                 }
@@ -579,18 +575,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const errorItem = document.createElement('li');
                 errorItem.textContent = `Fehler für ${currentId}: ${data.message}`;
                 errorsList.appendChild(errorItem);
-                errorHeaderMessage.style.display = 'block'; // Zeige den Fehler-Header an
+                errorHeaderMessage.style.display = 'block';
             }
         } catch (error) {
             errorCount++;
             const errorItem = document.createElement('li');
             errorItem.textContent = `Netzwerkfehler oder unerwartete Antwort für ${currentId}: ${error.message}`;
             errorsList.appendChild(errorItem);
-            errorHeaderMessage.style.display = 'block'; // Zeige den Fehler-Header an
+            errorHeaderMessage.style.display = 'block';
         }
 
-        // Fahre mit dem nächsten Bild fort (rekursiver Aufruf)
-        processNextImage();
+        // Fügen Sie hier eine kleine Verzögerung ein, bevor das nächste Bild verarbeitet wird
+        setTimeout(() => {
+            processNextImage();
+        }, 50); // 50 Millisekunden Verzögerung
     }
 });
 </script>
