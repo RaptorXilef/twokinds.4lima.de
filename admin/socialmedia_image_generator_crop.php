@@ -96,7 +96,7 @@ function getExistingSocialMediaImageIds(string $socialMediaImageDir): array {
 /**
  * Vergleicht alle vorhandenen Comic-IDs mit bereits vorhandenen Social Media Bild-IDs.
  * @param array $allComicIds Alle gefundenen Comic-IDs.
- * @param array $existingSocial MediaImageIds Alle gefundenen Social Media Bild-IDs.
+ * @param array $existingSocialMediaImageIds Alle gefundenen Social Media Bild-IDs.
  * @return array Eine Liste von Comic-IDs, für die Social Media Bilder fehlen.
  */
 function findMissingSocialMediaImages(array $allComicIds, array $existingSocialMediaImageIds): array {
@@ -357,6 +357,13 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         <?php endif; ?>
 
         <h2>Status der Social Media Bilder</h2>
+
+        <!-- Container für die Buttons - JETZT HIER PLATZIERT -->
+        <div id="fixed-buttons-container">
+            <button type="button" id="generate-images-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
+            <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
+        </div>
+
         <?php if (empty($allComicIds)): ?>
             <p class="status-message status-orange">Es wurden keine Comic-Bilder im Verzeichnis `<?php echo htmlspecialchars($hiresDir); ?>` gefunden, die als Basis dienen könnten.</p>
         <?php elseif (empty($missingSocialMediaImages)): ?>
@@ -369,11 +376,6 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
                     <li><?php echo htmlspecialchars($id); ?></li>
                 <?php endforeach; ?>
             </ul>
-            <!-- Container für die fest positionierten Buttons -->
-            <div id="fixed-buttons-container">
-                <button type="button" id="generate-images-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Social Media Bilder erstellen</button>
-                <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
-            </div>
         <?php endif; ?>
 
         <!-- Lade-Indikator und Fortschrittsanzeige -->
@@ -478,13 +480,15 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         }
     }
 
-    /* Stil für den fest positionierten Button-Container */
+    /* Stil für den Button-Container - initial statisch, wird per JS zu 'fixed' */
     #fixed-buttons-container {
-        position: fixed; /* Fixiert die Position relativ zum Viewport */
         z-index: 1000; /* Stellt sicher, dass die Buttons über anderen Inhalten liegen */
         display: flex; /* Für nebeneinanderliegende Buttons */
         gap: 10px; /* Abstand zwischen den Buttons */
-        /* top und right werden dynamisch per JavaScript gesetzt */
+        margin-top: 20px; /* Fügt etwas Abstand hinzu, wenn die Buttons statisch sind */
+        margin-bottom: 20px; /* Abstand nach unten, wenn statisch */
+        justify-content: flex-end; /* NEU: Richtet die Buttons im statischen Zustand am rechten Rand aus */
+        /* top und right werden dynamisch per JavaScript gesetzt, position wird auch per JS gesetzt */
     }
 
     /* Anpassung für kleinere Bildschirme, falls die Buttons zu viel Platz einnehmen */
@@ -492,6 +496,7 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         #fixed-buttons-container {
             flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
             gap: 5px;
+            align-items: flex-end; /* NEU: Auch im Spalten-Layout rechts ausrichten */
         }
     }
 </style>
@@ -517,34 +522,100 @@ document.addEventListener('DOMContentLoaded', function() {
     let isPaused = false; // Status für die Pause-Funktion
 
     // Elemente für die Positionierung der Buttons
-    // Annahme: Es gibt ein <main id="content" class="content"> Element, das das <article> umschließt.
-    // Falls nicht vorhanden, wird ein Fallback auf die Viewport-Position verwendet.
-    const mainContent = document.getElementById('content');
+    const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
     const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
 
-    /**
-     * Setzt die feste Position des Button-Containers basierend auf dem Main-Content-Element.
-     * Wird beim Laden der Seite und bei Größenänderung des Fensters aufgerufen.
-     */
-    function setFixedButtonPosition() {
-        if (mainContent && fixedButtonsContainer) {
-            const mainRect = mainContent.getBoundingClientRect();
-            // Berechne die absolute Top-Position im Viewport:
-            // Top des Main-Elements + gewünschter Abstand (18px)
-            const calculatedTop = mainRect.top + 18;
-            // Berechne die absolute Right-Position im Viewport:
-            // Breite des Viewports - (Rechte Kante des Main-Elements + gewünschter Abstand (24px))
-            const calculatedRight = window.innerWidth - mainRect.right + 24;
+    // Sicherheitscheck: Wenn der Button-Container nicht gefunden wird, breche ab.
+    if (!fixedButtonsContainer) {
+        console.error("Fehler: Das Element '#fixed-buttons-container' wurde nicht gefunden. Die Buttons können nicht positioniert werden.");
+        return;
+    }
 
-            fixedButtonsContainer.style.top = `${calculatedTop}px`;
-            fixedButtonsContainer.style.right = `${calculatedRight}px`;
-        } else if (fixedButtonsContainer) {
-            console.warn("Main content element with ID 'content' not found. Fixed buttons might not be positioned correctly. Falling back to viewport top-right.");
-            // Fallback: Wenn das Main-Element nicht gefunden wird, positioniere relativ zum Viewport
-            fixedButtonsContainer.style.top = `18px`;
-            fixedButtonsContainer.style.right = `24px`;
+    let initialButtonTopOffset; // Die absolute Top-Position der Buttons im Dokument, wenn sie nicht fixed sind
+    let stickyThreshold; // Der Scroll-Y-Wert, ab dem die Buttons fixiert werden sollen
+    const stickyOffset = 18; // Gewünschter Abstand vom oberen Viewport-Rand, wenn sticky
+    const rightOffset = 24; // Gewünschter Abstand vom rechten Rand des Main-Elements, wenn sticky
+
+    /**
+     * Berechnet die initialen Positionen und den Schwellenwert für das "Klebenbleiben".
+     * Diese Funktion muss aufgerufen werden, wenn sich das Layout ändert (z.B. bei Fenstergröße).
+     */
+    function calculateInitialPositions() {
+        // Sicherstellen, dass die Buttons nicht 'fixed' sind, um ihre natürliche Position zu ermitteln
+        // Die CSS-Eigenschaft justify-content: flex-end; kümmert sich jetzt um die horizontale Ausrichtung im statischen Zustand.
+        fixedButtonsContainer.style.position = 'static';
+        fixedButtonsContainer.style.top = 'auto';
+        fixedButtonsContainer.style.right = 'auto';
+
+        // Die absolute Top-Position des Button-Containers im Dokument
+        initialButtonTopOffset = fixedButtonsContainer.getBoundingClientRect().top + window.scrollY;
+
+        // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
+        // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
+        stickyThreshold = initialButtonTopOffset - stickyOffset;
+
+        console.log('--- calculateInitialPositions ---');
+        console.log('Initial Button Top (Document):', initialButtonTopOffset);
+        console.log('Sticky Threshold (ScrollY):', stickyThreshold);
+        if (!mainContent) {
+            console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
         }
     }
+
+    /**
+     * Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
+     */
+    function handleScroll() {
+        if (!fixedButtonsContainer) return; // Sicherheitscheck
+
+        const currentScrollY = window.scrollY; // Aktuelle Scroll-Position
+
+        if (currentScrollY >= stickyThreshold) {
+            // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
+            if (fixedButtonsContainer.style.position !== 'fixed') {
+                fixedButtonsContainer.style.position = 'fixed';
+                fixedButtonsContainer.style.top = `${stickyOffset}px`; // 18px vom oberen Viewport-Rand
+
+                // Berechne die rechte Position:
+                if (mainContent) {
+                    const mainRect = mainContent.getBoundingClientRect();
+                    // Abstand vom rechten Viewport-Rand zum rechten Rand des Main-Elements + gewünschter Offset
+                    fixedButtonsContainer.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
+                } else {
+                    // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
+                    fixedButtonsContainer.style.right = `${rightOffset}px`;
+                }
+                console.log('Buttons sind jetzt FIXED. Top:', fixedButtonsContainer.style.top, 'Right:', fixedButtonsContainer.style.right);
+            }
+        } else {
+            // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
+            if (fixedButtonsContainer.style.position === 'fixed') {
+                fixedButtonsContainer.style.position = 'static'; // Zurück zum normalen Fluss
+                fixedButtonsContainer.style.top = 'auto';
+                fixedButtonsContainer.style.right = 'auto';
+                console.log('Buttons sind jetzt STATIC.');
+            }
+        }
+    }
+
+    /**
+     * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
+     */
+    function handleResize() {
+        calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
+        handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
+    }
+
+    // Initiales Setup beim Laden der Seite
+    // Zuerst Positionen berechnen, dann den Scroll-Status anpassen
+    calculateInitialPositions();
+    handleScroll(); // Setze den initialen Zustand basierend auf der aktuellen Scroll-Position
+
+    // Event Listener für Scroll- und Resize-Ereignisse
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+
+    // --- Der Rest des JavaScript-Codes für die Generierungslogik bleibt unverändert ---
 
     // Funktion zum Aktualisieren des Button-Zustands (Text und Sichtbarkeit)
     function updateButtonState() {
@@ -569,11 +640,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initialen Zustand der Buttons beim Laden der Seite setzen
-    updateButtonState(); // Rufe die Funktion auf, um den korrekten Startzustand zu setzen
-    setFixedButtonPosition(); // Setze die initiale Position der Buttons
-
-    // Recalculate only on resize, not on scroll, to keep them truly "fixed" on screen
-    window.addEventListener('resize', setFixedButtonPosition);
+    updateButtonState();
 
     if (generateButton) {
         generateButton.addEventListener('click', function() {
