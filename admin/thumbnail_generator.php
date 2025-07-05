@@ -3,7 +3,21 @@
  * Dies ist die Administrationsseite für den Thumbnail-Generator.
  * Sie überprüft, welche Thumbnails fehlen und bietet die Möglichkeit, diese zu erstellen.
  * Die Generierung erfolgt nun schrittweise über AJAX, um Speicherprobleme bei vielen Bildern zu vermeiden.
+ * Eine Verzögerung von 1000ms zwischen den Generierungen entlastet das System.
+ * Zusätzlich wird nach jeder Generierung eine explizite Garbage Collection durchgeführt,
+ * und eine kurze PHP-Pause eingefügt, um Speicherressourcen effizienter freizugeben
+ * und das Betriebssystem zu entlasten.
  */
+
+// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
+ob_start();
+
+// Erhöhe das PHP-Speicherlimit, um Probleme mit großen Bildern zu vermeiden.
+// 512M sollte für Thumbnails ausreichend sein, aber 1G ist auch möglich für Konsistenz.
+ini_set('memory_limit', '512M');
+
+// Aktiviere die explizite Garbage Collection, um Speicher effizienter zu verwalten.
+gc_enable();
 
 // Starte die PHP-Sitzung. Notwendig für die Admin-Anmeldung.
 session_start();
@@ -11,6 +25,8 @@ session_start();
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    // Beende den Output Buffer, da wir umleiten und keine weitere Ausgabe wollen.
+    ob_end_clean();
     header('Location: index.php');
     exit;
 }
@@ -26,6 +42,7 @@ $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/'; // Zielverzeichnis fü
 // Stelle sicher, dass die GD-Bibliothek geladen ist.
 if (!extension_loaded('gd')) {
     $gdError = "FEHLER: Die GD-Bibliothek ist nicht geladen. Thumbnails können nicht generiert werden. Bitte PHP-Konfiguration prüfen.";
+    error_log("GD-Bibliothek nicht geladen in thumbnail_generator.php");
 } else {
     $gdError = null;
 }
@@ -114,10 +131,12 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
     if (!is_dir($thumbnailDir)) {
         if (!mkdir($thumbnailDir, 0755, true)) {
             $errors[] = "Fehler: Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden. Bitte Berechtigungen prüfen.";
+            error_log("Fehler: Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden für Comic-ID $comicId.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
     } elseif (!is_writable($thumbnailDir)) {
         $errors[] = "Fehler: Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar. Bitte Berechtigungen prüfen.";
+        error_log("Fehler: Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar für Comic-ID $comicId.");
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -147,6 +166,7 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
 
     if (empty($sourceImagePath)) {
         $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden in '$hiresDir' oder '$lowresDir'.";
+        error_log("Quellbild für Comic-ID '$comicId' nicht gefunden.");
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -155,6 +175,7 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         $imageInfo = @getimagesize($sourceImagePath); // @ unterdrückt Warnungen
         if ($imageInfo === false) {
             $errors[] = "Kann Bildinformationen für '$sourceImagePath' nicht abrufen (Comic-ID: $comicId).";
+            error_log("Kann Bildinformationen für '$sourceImagePath' nicht abrufen (Comic-ID: $comicId).");
             return ['created' => $createdPath, 'errors' => $errors];
         }
         list($width, $height, $type) = $imageInfo;
@@ -172,11 +193,13 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
                 break;
             default:
                 $errors[] = "Nicht unterstütztes Bildformat für Comic-ID '$comicId': " . $sourceImageExtension . ". Erwartet: JPG, PNG, GIF.";
+                error_log("Nicht unterstütztes Bildformat für Comic-ID '$comicId': " . $sourceImageExtension);
                 return ['created' => $createdPath, 'errors' => $errors];
         }
 
         if (!$sourceImage) {
             $errors[] = "Fehler beim Laden des Bildes für Comic-ID '$comicId' von '$sourceImagePath'.";
+            error_log("Fehler beim Laden des Bildes für Comic-ID '$comicId' von '$sourceImagePath'.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
@@ -189,6 +212,7 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
         if ($tempImage === false) {
             $errors[] = "Fehler beim Erstellen des temporären Bildes für Comic-ID '$comicId'.";
+            error_log("Fehler beim Erstellen des temporären Bildes für Comic-ID '$comicId'.");
             imagedestroy($sourceImage);
             return ['created' => $createdPath, 'errors' => $errors];
         }
@@ -205,6 +229,7 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         if (!imagecopyresampled($tempImage, $sourceImage, (int)$offsetX, (int)$offsetY, 0, 0,
                                (int)$newWidth, (int)$newHeight, $width, $height)) {
             $errors[] = "Fehler beim Resampling des Bildes für Comic-ID '$comicId'.";
+            error_log("Fehler beim Resampling des Bildes für Comic-ID '$comicId'.");
             imagedestroy($sourceImage);
             imagedestroy($tempImage);
             return ['created' => $createdPath, 'errors' => $errors];
@@ -216,14 +241,21 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
             $createdPath = $thumbnailPath;
         } else {
             $errors[] = "Fehler beim Speichern des Thumbnails für Comic-ID '$comicId' nach '$thumbnailPath'.";
+            error_log("Fehler beim Speichern des Thumbnails für Comic-ID '$comicId' nach '$thumbnailPath'.");
         }
 
         // Speicher freigeben
         imagedestroy($sourceImage);
         imagedestroy($tempImage);
 
-    } catch (Exception $e) {
-        $errors[] = "Ausnahme bei Comic-ID '$comicId': " . $e->getMessage();
+    } catch (Throwable $e) { // Throwable fängt auch Errors (z.B. Memory Exhaustion) ab
+        $errors[] = "Ausnahme/Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " (Code: " . $e->getCode() . " in " . $e->getFile() . " Zeile " . $e->getLine() . ")";
+        error_log("Kritischer Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " in " . $e->getFile() . " Zeile " . $e->getLine());
+    } finally {
+        // Führe nach jeder Bildgenerierung eine explizite Garbage Collection durch
+        gc_collect_cycles();
+        // Füge eine kurze Pause ein, um dem System Zeit zur Ressourcenfreigabe zu geben
+        usleep(50000); // 50 Millisekunden Pause
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }
@@ -231,12 +263,19 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
 // --- AJAX-Anfrage-Handler ---
 // Dieser Block wird nur ausgeführt, wenn eine POST-Anfrage mit der Aktion 'generate_single_thumbnail' gesendet wird.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_thumbnail') {
+    // Leere und beende den Output Buffer, um sicherzustellen, dass keine unerwünschten Ausgaben gesendet werden.
+    ob_end_clean();
+    // Temporär Fehleranzeige deaktivieren und Error Reporting unterdrücken, um JSON-Ausgabe nicht zu stören.
+    ini_set('display_errors', 0);
+    error_reporting(0);
+
     header('Content-Type: application/json'); // Wichtig für JSON-Antwort
     $response = ['success' => false, 'message' => ''];
 
     // Prüfe, ob GD geladen ist, bevor Bildoperationen versucht werden.
     if (!extension_loaded('gd')) {
         $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen. Thumbnails können nicht generiert werden.";
+        error_log("AJAX-Anfrage: GD-Bibliothek nicht geladen.");
         echo json_encode($response);
         exit;
     }
@@ -244,6 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $comicId = $_POST['comic_id'] ?? '';
     if (empty($comicId)) {
         $response['message'] = 'Keine Comic-ID für die Generierung angegeben.';
+        error_log("AJAX-Anfrage: Keine Comic-ID angegeben.");
         echo json_encode($response);
         exit;
     }
@@ -262,14 +302,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $response['comicId'] = $comicId;
     } else {
         $response['message'] = 'Fehler bei der Erstellung für ' . $comicId . ': ' . implode(', ', $result['errors']);
+        error_log("AJAX-Anfrage: Fehler bei der Generierung für Comic-ID '$comicId': " . implode(', ', $result['errors']));
     }
-    echo json_encode($response);
+    // Überprüfe, ob json_encode einen Fehler hatte
+    $jsonOutput = json_encode($response);
+    if ($jsonOutput === false) {
+        $jsonError = json_last_error_msg();
+        error_log("AJAX-Anfrage: json_encode Fehler für Comic-ID '$comicId': " . $jsonError);
+        echo json_encode(['success' => false, 'message' => 'Interner Serverfehler: JSON-Encoding fehlgeschlagen.']);
+    } else {
+        echo $jsonOutput;
+    }
     exit; // WICHTIG: Beende die Skriptausführung für AJAX-Anfragen hier!
 }
 // --- Ende AJAX-Anfrage-Handler ---
 
 
 // --- Normaler Seitenaufbau (wenn keine AJAX-Anfrage vorliegt) ---
+// Leere den Output Buffer und sende den Inhalt, der bis hierhin gesammelt wurde.
+ob_end_flush();
+
 // Variablen für die Anzeige initialisieren
 $allComicIds = getExistingComicIds($lowresDir, $hiresDir);
 $existingThumbnailIds = getExistingThumbnailIds($thumbnailDir);
@@ -298,6 +350,13 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
         <?php endif; ?>
 
         <h2>Status der Thumbnails</h2>
+
+        <!-- Container für die Buttons - JETZT HIER PLATZIERT -->
+        <div id="fixed-buttons-container">
+            <button type="button" id="generate-thumbnails-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Thumbnails erstellen</button>
+            <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
+        </div>
+
         <?php if (empty($allComicIds)): ?>
             <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden, die als Basis dienen könnten.</p>
         <?php elseif (empty($missingThumbnails)): ?>
@@ -310,7 +369,6 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
                     <li><?php echo htmlspecialchars($id); ?></li>
                 <?php endforeach; ?>
             </ul>
-            <button type="button" id="generate-thumbnails-button" <?php echo $gdError ? 'disabled' : ''; ?>>Fehlende Thumbnails erstellen</button>
         <?php endif; ?>
 
         <!-- Lade-Indikator und Fortschrittsanzeige -->
@@ -405,11 +463,32 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
         word-break: break-all;
         font-size: 0.8em;
     }
+
+    /* Stil für den Button-Container - initial statisch, wird per JS zu 'fixed' */
+    #fixed-buttons-container {
+        z-index: 1000; /* Stellt sicher, dass die Buttons über anderen Inhalten liegen */
+        display: flex; /* Für nebeneinanderliegende Buttons */
+        gap: 10px; /* Abstand zwischen den Buttons */
+        margin-top: 20px; /* Fügt etwas Abstand hinzu, wenn die Buttons statisch sind */
+        margin-bottom: 20px; /* Abstand nach unten, wenn statisch */
+        justify-content: flex-end; /* Richtet die Buttons im statischen Zustand am rechten Rand aus */
+        /* top und right werden dynamisch per JavaScript gesetzt, position wird auch per JS gesetzt */
+    }
+
+    /* Anpassung für kleinere Bildschirme, falls die Buttons zu viel Platz einnehmen */
+    @media (max-width: 768px) {
+        #fixed-buttons-container {
+            flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
+            gap: 5px;
+            align-items: flex-end; /* Auch im Spalten-Layout rechts ausrichten */
+        }
+    }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const generateButton = document.getElementById('generate-thumbnails-button');
+    const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
     const loadingSpinner = document.getElementById('loading-spinner');
     const progressText = document.getElementById('progress-text');
     const missingThumbnailsList = document.getElementById('missing-thumbnails-list');
@@ -424,39 +503,180 @@ document.addEventListener('DOMContentLoaded', function() {
     let remainingIds = [...initialMissingIds];
     let createdCount = 0;
     let errorCount = 0;
+    let isPaused = false; // Status für die Pause-Funktion
+
+    // Elemente für die Positionierung der Buttons
+    const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
+    const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
+
+    // Sicherheitscheck: Wenn der Button-Container nicht gefunden wird, breche ab.
+    if (!fixedButtonsContainer) {
+        console.error("Fehler: Das Element '#fixed-buttons-container' wurde nicht gefunden. Die Buttons können nicht positioniert werden.");
+        return;
+    }
+
+    let initialButtonTopOffset; // Die absolute Top-Position der Buttons im Dokument, wenn sie nicht fixed sind
+    let stickyThreshold; // Der Scroll-Y-Wert, ab dem die Buttons fixiert werden sollen
+    const stickyOffset = 18; // Gewünschter Abstand vom oberen Viewport-Rand, wenn sticky
+    const rightOffset = 24; // Gewünschter Abstand vom rechten Rand des Main-Elements, wenn sticky
+
+    /**
+     * Berechnet die initialen Positionen und den Schwellenwert für das "Klebenbleiben".
+     * Diese Funktion muss aufgerufen werden, wenn sich das Layout ändert (z.B. bei Fenstergröße).
+     */
+    function calculateInitialPositions() {
+        // Sicherstellen, dass die Buttons nicht 'fixed' sind, um ihre natürliche Position zu ermitteln
+        // Die CSS-Eigenschaft justify-content: flex-end; kümmert sich jetzt um die horizontale Ausrichtung im statischen Zustand.
+        fixedButtonsContainer.style.position = 'static';
+        fixedButtonsContainer.style.top = 'auto';
+        fixedButtonsContainer.style.right = 'auto';
+
+        // Die absolute Top-Position des Button-Containers im Dokument
+        initialButtonTopOffset = fixedButtonsContainer.getBoundingClientRect().top + window.scrollY;
+
+        // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
+        // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
+        stickyThreshold = initialButtonTopOffset - stickyOffset;
+
+        console.log('--- calculateInitialPositions ---');
+        console.log('Initial Button Top (Document):', initialButtonTopOffset);
+        console.log('Sticky Threshold (ScrollY):', stickyThreshold);
+        if (!mainContent) {
+            console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
+        }
+    }
+
+    /**
+     * Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
+     */
+    function handleScroll() {
+        if (!fixedButtonsContainer) return; // Sicherheitscheck
+
+        const currentScrollY = window.scrollY; // Aktuelle Scroll-Position
+
+        if (currentScrollY >= stickyThreshold) {
+            // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
+            if (fixedButtonsContainer.style.position !== 'fixed') {
+                fixedButtonsContainer.style.position = 'fixed';
+                fixedButtonsContainer.style.top = `${stickyOffset}px`; // 18px vom oberen Viewport-Rand
+
+                // Berechne die rechte Position:
+                if (mainContent) {
+                    const mainRect = mainContent.getBoundingClientRect();
+                    // Abstand vom rechten Viewport-Rand zum rechten Rand des Main-Elements + gewünschter Offset
+                    fixedButtonsContainer.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
+                } else {
+                    // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
+                    fixedButtonsContainer.style.right = `${rightOffset}px`;
+                }
+                console.log('Buttons sind jetzt FIXED. Top:', fixedButtonsContainer.style.top, 'Right:', fixedButtonsContainer.style.right);
+            }
+        } else {
+            // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
+            if (fixedButtonsContainer.style.position === 'fixed') {
+                fixedButtonsContainer.style.position = 'static'; // Zurück zum normalen Fluss
+                fixedButtonsContainer.style.top = 'auto';
+                fixedButtonsContainer.style.right = 'auto';
+                console.log('Buttons sind jetzt STATIC.');
+            }
+        }
+    }
+
+    /**
+     * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
+     */
+    function handleResize() {
+        calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
+        handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
+    }
+
+    // Initiales Setup beim Laden der Seite
+    // Zuerst Positionen berechnen, dann den Scroll-Status anpassen
+    calculateInitialPositions();
+    handleScroll(); // Setze den initialen Zustand basierend auf der aktuellen Scroll-Position
+
+    // Event Listener für Scroll- und Resize-Ereignisse
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+
+    // --- Der Rest des JavaScript-Codes für die Generierungslogik bleibt unverändert ---
+
+    // Funktion zum Aktualisieren des Button-Zustands (Text und Sichtbarkeit)
+    function updateButtonState() {
+        if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) { // Generierung abgeschlossen
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = false;
+            togglePauseResumeButton.style.display = 'none';
+        } else if (remainingIds.length === initialMissingIds.length && createdCount === 0 && errorCount === 0) { // Initialer Zustand, nichts gestartet
+            generateButton.style.display = 'inline-block';
+            generateButton.disabled = false;
+            togglePauseResumeButton.style.display = 'none';
+        }
+        else { // Generierung ist aktiv oder pausiert
+            generateButton.style.display = 'none'; // Generieren-Button ausblenden, sobald gestartet
+            togglePauseResumeButton.style.display = 'inline-block';
+            if (isPaused) {
+                togglePauseResumeButton.textContent = 'Generierung fortsetzen';
+            } else {
+                togglePauseResumeButton.textContent = 'Generierung pausieren';
+            }
+        }
+    }
+
+    // Initialen Zustand der Buttons beim Laden der Seite setzen
+    updateButtonState();
 
     if (generateButton) {
         generateButton.addEventListener('click', function() {
-            if (remainingIds.length === 0) {
-                // Wenn keine Thumbnails zu generieren sind, mache nichts oder gib eine Konsolenmeldung aus.
-                // Das Modal wird nicht mehr angezeigt.
-                console.log('No thumbnails to generate.');
+            if (initialMissingIds.length === 0) { // Prüfe initialMissingIds, da remainingIds geleert wird
+                console.log('Keine Thumbnails zum Generieren vorhanden.');
                 return;
             }
 
             // UI zurücksetzen und Ladezustand anzeigen
-            generateButton.disabled = true;
             loadingSpinner.style.display = 'block';
             generationResultsSection.style.display = 'block';
             overallStatusMessage.textContent = '';
-            overallStatusMessage.className = 'status-message'; // Reset class
+            overallStatusMessage.className = 'status-message'; // Klasse zurücksetzen
             createdImagesContainer.innerHTML = '';
             errorsList.innerHTML = '';
-            errorHeaderMessage.style.display = 'none'; // Hide error header initially
+            errorHeaderMessage.style.display = 'none'; // Fehler-Header initial ausblenden
 
+            // Setze remainingIds neu, falls der Button erneut geklickt wird nach Abschluss
+            remainingIds = [...initialMissingIds];
             createdCount = 0;
             errorCount = 0;
+            isPaused = false; // Sicherstellen, dass der Status nicht pausiert ist
 
+            updateButtonState(); // Buttons anpassen (Generieren aus, Pause an)
             processNextImage();
         });
     }
 
+    if (togglePauseResumeButton) {
+        togglePauseResumeButton.addEventListener('click', function() {
+            isPaused = !isPaused; // Zustand umschalten
+            if (isPaused) {
+                progressText.textContent = `Generierung pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
+            }
+            updateButtonState(); // Button-Text und Sichtbarkeit aktualisieren
+            if (!isPaused) { // Wenn gerade fortgesetzt wurde
+                processNextImage(); // Generierung fortsetzen
+            }
+        });
+    }
+
     async function processNextImage() {
+        if (isPaused) {
+            // Wenn pausiert, beende die Ausführung, bis fortgesetzt wird
+            return;
+        }
+
         if (remainingIds.length === 0) {
             // Alle Bilder verarbeitet
             loadingSpinner.style.display = 'none';
-            generateButton.disabled = false;
             progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+            updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
 
             if (errorCount > 0) {
                 overallStatusMessage.textContent = `Generierung abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
@@ -484,11 +704,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            const data = await response.json(); // JSON-Antwort parsen
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                const responseText = await response.text();
+                throw new Error(`Fehler beim Parsen der JSON-Antwort für ${currentId}: ${jsonError.message}. Antwort war: ${responseText.substring(0, 200)}...`);
+            }
+
 
             if (data.success) {
                 createdCount++;
-                // Füge das neue Bild zur Anzeige hinzu
                 const imageDiv = document.createElement('div');
                 imageDiv.className = 'image-item';
                 imageDiv.innerHTML = `
@@ -497,10 +723,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 createdImagesContainer.appendChild(imageDiv);
 
-                // Entferne die ID aus der Liste der fehlenden Bilder (visuell)
                 if (missingThumbnailsList) {
-                    const listItem = missingThumbnailsList.querySelector(`li`); // find first li
-                    if (listItem && listItem.textContent.includes(data.comicId)) { // check if it contains the comicId
+                    const listItem = missingThumbnailsList.querySelector(`li`);
+                    if (listItem && listItem.textContent.includes(data.comicId)) {
                         listItem.remove();
                     }
                 }
@@ -510,18 +735,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const errorItem = document.createElement('li');
                 errorItem.textContent = `Fehler für ${currentId}: ${data.message}`;
                 errorsList.appendChild(errorItem);
-                errorHeaderMessage.style.display = 'block'; // Zeige den Fehler-Header an
+                errorHeaderMessage.style.display = 'block';
             }
         } catch (error) {
             errorCount++;
             const errorItem = document.createElement('li');
             errorItem.textContent = `Netzwerkfehler oder unerwartete Antwort für ${currentId}: ${error.message}`;
             errorsList.appendChild(errorItem);
-            errorHeaderMessage.style.display = 'block'; // Zeige den Fehler-Header an
+            errorHeaderMessage.style.display = 'block';
         }
 
-        // Fahre mit dem nächsten Bild fort (rekursiver Aufruf)
-        processNextImage();
+        // Fügen Sie hier eine kleine Verzögerung ein, bevor das nächste Bild verarbeitet wird
+        setTimeout(() => {
+            processNextImage();
+        }, 1000); // 1000 Millisekunden (1 Sekunde) Verzögerung
     }
 });
 </script>
