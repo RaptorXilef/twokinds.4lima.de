@@ -377,11 +377,12 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         <?php else: ?>
             <p class="status-message status-red">Es fehlen <?php echo count($missingSocialMediaImages); ?> Social Media Bilder.</p>
             <h3>Fehlende Social Media Bilder (IDs):</h3>
-            <ul id="missing-images-list">
+            <!-- Geänderter Bereich für die Anzeige der fehlenden Bilder -->
+            <div id="missing-images-grid" class="missing-items-grid">
                 <?php foreach ($missingSocialMediaImages as $id): ?>
-                    <li><?php echo htmlspecialchars($id); ?></li>
+                    <span class="missing-item"><?php echo htmlspecialchars($id); ?></span>
                 <?php endforeach; ?>
-            </ul>
+            </div>
         <?php endif; ?>
 
         <!-- Lade-Indikator und Fortschrittsanzeige -->
@@ -546,6 +547,31 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
             align-items: flex-end; /* Auch im Spalten-Layout rechts ausrichten */
         }
     }
+
+    /* NEUE STILE FÜR DIE KOMPAKTE LISTE DER FEHLENDEN ELEMENTE */
+    .missing-items-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px; /* Abstand zwischen den Elementen */
+        max-height: 300px; /* Maximale Höhe */
+        overflow-y: auto; /* Scrollbar, wenn Inhalt die Höhe überschreitet */
+        border: 1px solid #e0e0e0; /* Leichter Rahmen zur Abgrenzung */
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .missing-item {
+        background-color: #e9e9e9;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 0.9em;
+        white-space: nowrap; /* Verhindert Zeilenumbruch innerhalb eines Eintrags */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Fügt "..." hinzu, wenn der Text zu lang ist */
+        max-width: 150px; /* Begrenzt die Breite jedes Eintrags */
+        flex-shrink: 0; /* Verhindert, dass Elemente schrumpfen */
+    }
 </style>
 
 <script>
@@ -554,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
     const loadingSpinner = document.getElementById('loading-spinner');
     const progressText = document.getElementById('progress-text');
-    const missingImagesList = document.getElementById('missing-images-list');
+    const missingImagesGrid = document.getElementById('missing-images-grid'); // ID geändert
     const createdImagesContainer = document.getElementById('created-images-container');
     const generationResultsSection = document.getElementById('generation-results-section');
     const overallStatusMessage = document.getElementById('overall-status-message');
@@ -792,10 +818,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 createdImagesContainer.appendChild(imageDiv);
 
-                if (missingImagesList) {
-                    const listItem = missingImagesList.querySelector(`li`);
-                    if (listItem && listItem.textContent.includes(data.comicId)) {
-                        listItem.remove();
+                // Entferne das Element aus dem Grid der fehlenden Bilder
+                if (missingImagesGrid) {
+                    const missingItemSpan = missingImagesGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
+                    if (missingItemSpan) {
+                        missingItemSpan.remove();
                     }
                 }
 
