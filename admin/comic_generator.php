@@ -447,7 +447,7 @@ if (file_exists($headerPath)) {
         padding: 20px;
         border: 1px solid rgba(221, 221, 221, 0.2);
         border-radius: 8px;
-        background-color: rgba(240, 240, 240, 0.3);
+        background-color: rgba(240, 240, 240, 0.2);
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
