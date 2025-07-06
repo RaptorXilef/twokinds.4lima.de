@@ -116,7 +116,7 @@ function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds):
 
 /**
  * Generiert ein einzelnes Thumbnail aus einem Quellbild.
- * Zielgröße: 150x150 Pixel, das Bild wird zentriert und proportional skaliert.
+ * Zielgröße: 187x250 Pixel, das Bild wird zentriert und proportional skaliert.
  * @param string $comicId Die ID des Comics, für das ein Thumbnail erstellt werden soll.
  * @param string $lowresDir Pfad zum lowres-Verzeichnis.
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
@@ -141,8 +141,8 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
     }
 
     // Definiere die Zielabmessungen für Thumbnails
-    $targetWidth = 150;
-    $targetHeight = 150;
+    $targetWidth = 187; // Korrigierte Breite
+    $targetHeight = 250; // Korrigierte Höhe
 
     $sourceImagePath = '';
     $sourceImageExtension = '';
@@ -204,7 +204,8 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         }
 
         // Berechne die Abmessungen, um das Bild proportional in die Zielgröße zu skalieren
-        $ratio = max($targetWidth / $width, $targetHeight / $height);
+        // Verwende min, um sicherzustellen, dass das gesamte Bild sichtbar ist (Letterboxing falls nötig)
+        $ratio = min($targetWidth / $width, $targetHeight / $height); // GEÄNDERT: von max zu min
         $newWidth = $width * $ratio;
         $newHeight = $height * $ratio;
 
@@ -500,8 +501,8 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
         border: 1px solid #ccc;
         padding: 5px;
         border-radius: 8px;
-        width: 150px; /* Feste Breite für Thumbnails */
-        height: 180px; /* Feste Höhe, um Platz für Text zu lassen */
+        width: 187px; /* Feste Breite für Thumbnails */
+        height: 260px; /* Feste Höhe, um Platz für Text zu lassen */
         display: flex;
         flex-direction: column;
         justify-content: space-between; /* Bild oben, Text unten */
