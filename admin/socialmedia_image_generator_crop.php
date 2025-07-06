@@ -400,7 +400,7 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         --missing-item-text-color: #333; /* Standardtextfarbe */
     }
 
-    body.dark-mode {
+    body.theme-night { /* GEÄNDERT: von body.dark-mode zu body.theme-night */
         /* Dark Mode Overrides */
         --missing-grid-border-color: #045d81;
         --missing-grid-bg-color: #03425b;
