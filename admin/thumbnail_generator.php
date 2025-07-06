@@ -355,27 +355,6 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
             <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
         </div>
 
-        <?php if (empty($allComicIds)): ?>
-            <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden, die als Basis dienen könnten.</p>
-        <?php elseif (empty($missingThumbnails)): ?>
-            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Thumbnails sind vorhanden.</p>
-        <?php else: ?>
-            <p class="status-message status-red">Es fehlen <?php echo count($missingThumbnails); ?> Thumbnails.</p>
-            <h3>Fehlende Thumbnails (IDs):</h3>
-            <!-- Geänderter Bereich für die Anzeige der fehlenden Bilder -->
-            <div id="missing-thumbnails-grid" class="missing-items-grid">
-                <?php foreach ($missingThumbnails as $id): ?>
-                    <span class="missing-item"><?php echo htmlspecialchars($id); ?></span>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-
-        <!-- Lade-Indikator und Fortschrittsanzeige -->
-        <div id="loading-spinner" style="display: none; text-align: center; margin-top: 20px;">
-            <div class="spinner"></div>
-            <p id="progress-text">Generiere Thumbnails...</p>
-        </div>
-
         <!-- Ergebnisse der Generierung -->
         <div id="generation-results-section" style="margin-top: 20px; display: none;">
             <h2 style="margin-top: 20px;">Ergebnisse der Generierung</h2>
@@ -388,10 +367,48 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
                 <!-- Hier werden Fehler angezeigt -->
             </ul>
         </div>
+
+        <!-- Lade-Indikator und Fortschrittsanzeige (JETZT ZWISCHEN ERGEBNISSEN UND FEHLENDEN BILDERN) -->
+        <div id="loading-spinner" style="display: none; text-align: center; margin-top: 20px;">
+            <div class="spinner"></div>
+            <p id="progress-text">Generiere Thumbnails...</p>
+        </div>
+
+        <?php if (empty($allComicIds)): ?>
+            <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden, die als Basis dienen könnten.</p>
+        <?php elseif (empty($missingThumbnails)): ?>
+            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Thumbnails sind vorhanden.</p>
+        <?php else: ?>
+            <p class="status-message status-red">Es fehlen <?php echo count($missingThumbnails); ?> Thumbnails.</p>
+            <h3>Fehlende Thumbnails (IDs):</h3>
+            <!-- Geänderter Bereich für die Anzeige der fehlenden Bilder -->
+            <div id="missing-thumbnails-grid" class="missing-items-grid">
+                <?php foreach ($missingThumbnails as $id): ?>
+                    <span class="missing-item" data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
 </article>
 
 <style>
+    /* CSS-Variablen für Light- und Dark-Mode */
+    :root {
+        /* Light Mode Defaults */
+        --missing-grid-border-color: #e0e0e0;
+        --missing-grid-bg-color: #f9f9f9;
+        --missing-item-bg-color: #e9e9e9;
+        --missing-item-text-color: #333; /* Standardtextfarbe */
+    }
+
+    body.dark-mode {
+        /* Dark Mode Overrides */
+        --missing-grid-border-color: #045d81;
+        --missing-grid-bg-color: #03425b;
+        --missing-item-bg-color: #025373;
+        --missing-item-text-color: #f0f0f0; /* Hellerer Text für Dark Mode */
+    }
+
     /* Allgemeine Statusmeldungen */
     .status-message {
         padding: 8px 12px;
@@ -531,14 +548,15 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
         gap: 8px; /* Abstand zwischen den Elementen */
         max-height: 300px; /* Maximale Höhe */
         overflow-y: auto; /* Scrollbar, wenn Inhalt die Höhe überschreitet */
-        border: 1px solid #e0e0e0; /* Leichter Rahmen zur Abgrenzung */
+        border: 1px solid var(--missing-grid-border-color); /* Dynamischer Rahmen */
         padding: 10px;
         border-radius: 5px;
-        background-color: #f9f9f9;
+        background-color: var(--missing-grid-bg-color); /* Dynamischer Hintergrund */
     }
 
     .missing-item {
-        background-color: #e9e9e9;
+        background-color: var(--missing-item-bg-color); /* Dynamischer Hintergrund */
+        color: var(--missing-item-text-color); /* Dynamische Textfarbe */
         padding: 4px 8px;
         border-radius: 3px;
         font-size: 0.9em;
