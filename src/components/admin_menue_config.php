@@ -16,4 +16,10 @@
 <a href="./socialmedia_image_generator_crop.php">Social Media Bild-Generator Crop</a>
 <a href="./socialmedia_image_generator.php">Social Media Bild-Generator</a>
 </br>
+<a href="./sitemap_generator.php">Sitemap Generator</a>
+<a href="./sitemap_editor.php">Sitemap Editor</a>
+</br>
+<a href="./comic_data_editor.php">Comic Daten Editor</a>
+</br>
 <a href="?action=logout">Logout</a>
+
