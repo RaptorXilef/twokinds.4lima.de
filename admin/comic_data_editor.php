@@ -289,6 +289,19 @@ foreach ($incompleteInfoReportFull as $id => $fields) {
     }
 }
 
+// Ermittle, welche Seiten in der Paginierung unvollständige Daten haben
+$pagesWithIncompleteData = [];
+if (!empty($incompleteInfoReportFull)) {
+    $allComicIds = array_keys($fullComicData);
+    foreach ($incompleteInfoReportFull as $id => $fields) {
+        $index = array_search($id, $allComicIds);
+        if ($index !== false) {
+            $pageNumber = floor($index / ITEMS_PER_PAGE) + 1;
+            $pagesWithIncompleteData[$pageNumber] = true;
+        }
+    }
+}
+
 
 // Binde den gemeinsamen Header ein.
 if (file_exists($headerPath)) {
@@ -516,6 +529,7 @@ if (file_exists($headerPath)) {
         align-items: center;
         margin-top: 20px;
         gap: 5px;
+        flex-wrap: wrap; /* Added for line break */
     }
     .pagination a, .pagination span {
         padding: 5px 10px;
@@ -538,6 +552,15 @@ if (file_exists($headerPath)) {
         pointer-events: none;
         opacity: 0.5;
     }
+    .pagination a.incomplete-page,
+    .pagination span.incomplete-page {
+        background-color: #f8d7da; /* Light red */
+        color: #721c24; /* Dark red text */
+        border-color: #f5c6cb;
+    }
+    .pagination a.incomplete-page:hover {
+        background-color: #f5c6cb;
+    }
 
     /* Dark Theme Pagination */
     body.theme-night .pagination a,
@@ -553,6 +576,15 @@ if (file_exists($headerPath)) {
         background-color: #48778a;
         color: #fff;
         border-color: #48778a;
+    }
+    body.theme-night .pagination a.incomplete-page,
+    body.theme-night .pagination span.incomplete-page {
+        background-color: #5a0000; /* Darker red */
+        color: #f5c6cb; /* Lighter red text */
+        border-color: #721c24;
+    }
+    body.theme-night .pagination a.incomplete-page:hover {
+        background-color: #721c24;
     }
 
     /* In-place editing specific styles */
@@ -755,11 +787,16 @@ if (file_exists($headerPath)) {
             <span class="prev-page disabled">Zurück</span>
         <?php endif; ?>
 
-        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <?php for ($i = 1; $i <= $totalPages; $i++):
+            $pageLinkClass = '';
+            if (isset($pagesWithIncompleteData[$i])) {
+                $pageLinkClass = 'incomplete-page';
+            }
+        ?>
             <?php if ($i == $currentPage): ?>
-                <span class="current-page"><?php echo $i; ?></span>
+                <span class="current-page <?php echo $pageLinkClass; ?>"><?php echo $i; ?></span>
             <?php else: ?>
-                <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>"><?php echo $i; ?></a>
             <?php endif; ?>
         <?php endfor; ?>
 
@@ -929,17 +966,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </td>
             <td>
+                <span class="display-mode">${nameDisplay}</span>
+                <div class="edit-mode">
+                    <input type="text" name="comic_name[]" value="${htmlspecialchars(comic.name)}">
+                </div>
+            </td>
+            <td>
                 <span class="display-mode">${typeDisplay}</span>
                 <div class="edit-mode">
                     <select name="comic_type[]">
                         ${typeOptionsHtml}
                     </select>
-                </div>
-            </td>
-            <td>
-                <span class="display-mode">${nameDisplay}</span>
-                <div class="edit-mode">
-                    <input type="text" name="comic_name[]" value="${htmlspecialchars(comic.name)}">
                 </div>
             </td>
             <td>
@@ -1051,8 +1088,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     setUnsavedChanges(false);
                     // Aktualisiere die angezeigten Werte und schalte den Modus um
                     row.querySelector('.display-mode:nth-child(1)').textContent = dataToSave.comic_id;
-                    row.querySelector('.display-mode:nth-child(2)').textContent = dataToSave.comic_type;
-                    row.querySelector('.display-mode:nth-child(3)').textContent = dataToSave.comic_name;
+                    // Die Reihenfolge der Spalten hat sich geändert, daher angepasste Selektoren
+                    row.querySelector('.display-mode:nth-child(2)').textContent = dataToSave.comic_name; // Name ist jetzt an 2. Stelle
+                    row.querySelector('.display-mode:nth-child(3)').textContent = dataToSave.comic_type; // Type ist jetzt an 3. Stelle
                     row.querySelector('.transcript-display').innerHTML = dataToSave.comic_transcript; // Use innerHTML for HTML content
                     row.querySelector('.display-mode:nth-child(5)').textContent = dataToSave.comic_chapter;
                     
@@ -1196,21 +1234,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initialisiere die Vollständigkeitsprüfung für alle vorhandenen Zeilen im Anzeigemodus
-    document.querySelectorAll('#comic-data-editor-table tbody tr').forEach(row => {
+    // Exkludiere die "no-entries-row"
+    document.querySelectorAll('#comic-data-editor-table tbody tr:not(#no-entries-row)').forEach(row => {
         // Initial die Vollständigkeit der Zeile prüfen (für Anzeigemodus)
         // Die Bearbeitungsfelder sind noch nicht initialisiert, daher prüfen wir die angezeigten Spans
-        const comicIdDisplay = row.querySelector('.display-mode:nth-child(1)').textContent.trim();
-        const typeDisplay = row.querySelector('.display-mode:nth-child(2)').textContent.trim();
-        const nameDisplay = row.querySelector('.display-mode:nth-child(3)').textContent.trim();
-        const transcriptDisplay = row.querySelector('.transcript-display').innerHTML.trim();
-        const chapterDisplay = row.querySelector('.display-mode:nth-child(5)').textContent.trim();
+        const comicIdDisplay = row.querySelector('td:nth-child(1) .display-mode');
+        const nameDisplay = row.querySelector('td:nth-child(3) .display-mode'); // Name ist jetzt an 3. Stelle
+        const typeDisplay = row.querySelector('td:nth-child(2) .display-mode'); // Type ist jetzt an 2. Stelle
+        const transcriptDisplay = row.querySelector('.transcript-display');
+        const chapterDisplay = row.querySelector('td:nth-child(5) .display-mode');
 
-        const isComplete = comicIdDisplay !== '' &&
-                           typeDisplay !== '---' && // Prüfe auf Standard-Platzhalter
-                           nameDisplay !== '---' &&
-                           transcriptDisplay !== '---' &&
-                           chapterDisplay !== '---' &&
-                           parseInt(chapterDisplay) > 0;
+        // Sicherstellen, dass alle Elemente gefunden wurden, bevor textContent/innerHTML abgerufen wird
+        const isComplete = comicIdDisplay && comicIdDisplay.textContent.trim() !== '' &&
+                           typeDisplay && typeDisplay.textContent.trim() !== '---' && // Prüfe auf Standard-Platzhalter
+                           nameDisplay && nameDisplay.textContent.trim() !== '---' &&
+                           transcriptDisplay && transcriptDisplay.innerHTML.trim() !== '---' &&
+                           chapterDisplay && chapterDisplay.textContent.trim() !== '---' &&
+                           parseInt(chapterDisplay.textContent.trim()) > 0;
 
         if (isComplete) {
             row.classList.remove('incomplete-entry');
