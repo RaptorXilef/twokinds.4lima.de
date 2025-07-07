@@ -127,8 +127,10 @@ if ($isLocal) {
 }
 
 // Setze Parameter für den Header.
-$pageTitle = 'Comic ' . $formattedDateGerman . ': ' . $comicName; // Seitentitel für den Browser-Tab
-$pageHeader = 'Comic for ' . $formattedDateEnglish . ': ' . htmlspecialchars($comicName); // H1-Header auf der Seite
+// Seitentitel für den Browser-Tab: YYYY.MM.DD
+$pageTitle = 'Comic ' . substr($currentComicId, 0, 4) . '.' . substr($currentComicId, 4, 2) . '.' . substr($currentComicId, 6, 2) . ': ' . $comicName;
+// H1-Header auf der Seite: TT.MM.JJJJ
+$pageHeader = 'Comic vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
 $additionalScripts = "<script type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
 
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
@@ -159,7 +161,7 @@ include __DIR__ . '/../layout/header.php';
 <article class="comic">
     <header>
         <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->
-        <h1><?php echo htmlspecialchars($comicTyp) . $formattedDateEnglish; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
+        <h1><?php echo htmlspecialchars($comicTyp) . $formattedDateGerman; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
     </header>
 
     <div class='comicnav'>
