@@ -62,7 +62,6 @@ $message = '';
 $messageType = ''; // 'success' or 'error'
 
 // Optionen für 'type' und 'chapter'
-// Korrektur: "Comicseite vom" zu "Comicseite" geändert
 $comicTypeOptions = ['Comicseite', 'Lückenfüller']; 
 $chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
 
@@ -255,13 +254,17 @@ $paginatedComicData = array_slice($fullComicData, $offset, ITEMS_PER_PAGE, true)
 $incompleteInfoReportFull = [];
 foreach ($fullComicData as $id => $data) {
     $missingFields = [];
+    // Korrektur für leere Transkripte: <p><br></p> als leer behandeln
+    $transcriptContent = trim(strip_tags($data['transcript'], '<br>')); // Entferne HTML-Tags, außer <br>
+    $isTranscriptEffectivelyEmpty = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
+
     if (empty($data['type'])) {
         $missingFields[] = 'type';
     }
     if (empty($data['name'])) {
         $missingFields[] = 'name';
     }
-    if (empty($data['transcript'])) {
+    if ($isTranscriptEffectivelyEmpty) { // Verwende die korrigierte Prüfung
         $missingFields[] = 'transcript';
     }
     if ($data['chapter'] === null || $data['chapter'] <= 0) {
@@ -312,381 +315,9 @@ if (file_exists($headerPath)) {
 }
 ?>
 
-<style>
-    /* Allgemeine Tabellenstile */
-    .comic-data-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-    .comic-data-table th, .comic-data-table td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: left;
-        vertical-align: top; /* Für Textarea */
-    }
-    .comic-data-table th {
-        background-color: #ddead7;
-    }
-    .comic-data-table tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-    .comic-data-table input[type="text"],
-    .comic-data-table input[type="number"],
-    .comic-data-table select {
-        width: 100%;
-        padding: 5px;
-        box-sizing: border-box;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-    }
-    .comic-data-table textarea {
-        min-height: 80px; /* Mindesthöhe für Transcript */
-        resize: both; /* Vertikal und Horizontal skalierbar */
-        font-family: 'Open Sans', sans-serif; /* Konsistente Schriftart */
-        font-size: 15px;
-    }
-    .comic-data-table button.remove-row {
-        background-color: #f44336;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
-    }
-    .comic-data-table button.remove-row:hover {
-        background-color: #d32f2f;
-    }
-    .button-container {
-        margin-top: 20px;
-        text-align: right;
-    }
-    .button-container .button {
-        margin-left: 10px;
-    }
-    .message-box {
-        margin-top: 20px;
-        padding: 10px;
-        border-radius: 5px;
-        color: #155724; /* Standardfarbe für Erfolg */
-        border: 1px solid #c3e6cb; /* Standardfarbe für Erfolg */
-        background-color: #d4edda; /* Standardfarbe für Erfolg */
-    }
-    .message-box.error {
-        color: #721c24;
-        border-color: #f5c6cb;
-        background-color: #f8d7da;
-    }
-    /* Hervorhebung für unvollständige Einträge */
-    .incomplete-entry {
-        background-color: #f8d7da !important; /* Rosa/Rot */
-    }
-    /* Dark Theme Anpassungen */
-    body.theme-night .comic-data-table th {
-        background-color: #48778a;
-        color: #fff;
-        border-color: #002b3c;
-    }
-    body.theme-night .comic-data-table td {
-        border-color: #002b3c;
-    }
-    body.theme-night .comic-data-table tr:nth-child(even) {
-        background-color: #00334c;
-    }
-    body.theme-night .comic-data-table input[type="text"],
-    body.theme-night .comic-data-table input[type="number"],
-    body.theme-night .comic-data-table select,
-    body.theme-night .comic-data-table textarea {
-        background-color: #2a6177;
-        color: #fff;
-        border-color: #002b3c;
-    }
-    body.theme-night .comic-data-table button.remove-row {
-        background-color: #a00;
-    }
-    body.theme-night .comic-data-table button.remove-row:hover {
-        background-color: #c00;
-    }
-    body.theme-night .message-box {
-        color: #d4edda; /* Textfarbe für Erfolg im Dark Theme */
-        border-color: #2a6177;
-        background-color: #00334c;
-    }
-    body.theme-night .message-box.error {
-        color: #f5c6cb;
-        border-color: #721c24;
-        background-color: #5a0000;
-    }
-    body.theme-night .incomplete-entry {
-        background-color: #721c24 !important; /* Dunkleres Rot für Dark Mode */
-    }
-
-    /* Summernote Styles */
-    .note-editor.note-frame {
-        border-radius: 3px;
-        border: 1px solid #ddd; /* Match existing input borders */
-    }
-    body.theme-night .note-editor.note-frame {
-        background-color: #2a6177; /* Darker background for editor frame */
-        border-color: #002b3c;
-    }
-    body.theme-night .note-editor .note-toolbar {
-        background-color: #2a6177; /* Darker toolbar */
-        border-bottom: 1px solid #002b3c;
-    }
-    body.theme-night .note-editor .note-editing-area .note-editable {
-        background-color: #00334c; /* Darker editing area */
-        color: #fff;
-    }
-    body.theme-night .note-editor .note-statusbar {
-        background-color: #2a6177;
-        border-top: 1px solid #002b3c;
-        color: #fff;
-    }
-    body.theme-night .note-editor .btn-group .btn {
-        background-color: #48778a; /* Button background */
-        color: #fff; /* Button text */
-        border-color: #002b3c;
-    }
-    body.theme-night .note-editor .btn-group .btn:hover {
-        background-color: #628492; /* Button hover */
-    }
-    body.theme-night .note-editor .btn-group .btn.active {
-        background-color: #628492; /* Active button */
-    }
-    body.theme-night .note-editor .dropdown-menu {
-        background-color: #2a6177;
-        border-color: #002b3c;
-    }
-    body.theme-night .note-editor .dropdown-menu a {
-        color: #fff;
-    }
-    body.theme-night .note-editor .dropdown-menu a:hover {
-        background-color: #48778a;
-    }
-    body.theme-night .note-popover .popover-content {
-        background-color: #2a6177;
-        color: #fff;
-    }
-    body.theme-night .note-popover .popover-content .btn-group .btn {
-        background-color: #48778a;
-        color: #fff;
-    }
-    body.theme-night .note-popover .popover-content .btn-group .btn:hover {
-        background-color: #628492;
-    }
-
-
-    /* Incomplete Report Table */
-    .incomplete-report-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-    .incomplete-report-table th,
-    .incomplete-report-table td {
-        border: 1px solid #f5c6cb;
-        padding: 6px;
-        text-align: center;
-        font-size: 0.9em;
-    }
-    .incomplete-report-table th {
-        background-color: #f5c6cb;
-        color: #721c24;
-    }
-    .incomplete-report-table td {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-    body.theme-night .incomplete-report-table th {
-        background-color: #721c24;
-        color: #f5c6cb;
-    }
-    body.theme-night .incomplete-report-table td {
-        background-color: #5a0000;
-        color: #f5c6cb;
-    }
-    .status-icon {
-        font-weight: bold;
-        font-size: 1.1em;
-    }
-    .status-icon.complete {
-        color: #28a745; /* Grün für Haken */
-    }
-    .status-icon.incomplete {
-        color: #dc3545; /* Rot für Kreuz */
-    }
-    body.theme-night .status-icon.complete {
-        color: #90ee90; /* Helleres Grün für Dark Mode */
-    }
-    body.theme-night .status-icon.incomplete {
-        color: #ff6347; /* Helleres Rot für Dark Mode */
-    }
-
-    /* Pagination Styles */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 20px;
-        gap: 5px;
-        flex-wrap: wrap; /* Added for line break */
-    }
-    .pagination a, .pagination span {
-        padding: 5px 10px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        text-decoration: none;
-        color: #333;
-        background-color: #f0f0f0;
-    }
-    .pagination a:hover {
-        background-color: #e0e0e0;
-    }
-    .pagination span.current-page {
-        background-color: #ddead7;
-        font-weight: bold;
-        color: #333;
-        border-color: #ddead7;
-    }
-    .pagination a.disabled {
-        pointer-events: none;
-        opacity: 0.5;
-    }
-    .pagination a.incomplete-page,
-    .pagination span.incomplete-page {
-        background-color: #f8d7da; /* Light red */
-        color: #721c24; /* Dark red text */
-        border-color: #f5c6cb;
-    }
-    .pagination a.incomplete-page:hover {
-        background-color: #f5c6cb;
-    }
-
-    /* Dark Theme Pagination */
-    body.theme-night .pagination a,
-    body.theme-night .pagination span {
-        background-color: #2a6177;
-        color: #fff;
-        border-color: #002b3c;
-    }
-    body.theme-night .pagination a:hover {
-        background-color: #48778a;
-    }
-    body.theme-night .pagination span.current-page {
-        background-color: #48778a;
-        color: #fff;
-        border-color: #48778a;
-    }
-    body.theme-night .pagination a.incomplete-page,
-    body.theme-night .pagination span.incomplete-page {
-        background-color: #5a0000; /* Darker red */
-        color: #f5c6cb; /* Lighter red text */
-        border-color: #721c24;
-    }
-    body.theme-night .pagination a.incomplete-page:hover {
-        background-color: #721c24;
-    }
-
-    /* In-place editing specific styles */
-    .comic-data-table .display-mode,
-    .comic-data-table .edit-mode {
-        display: block; /* Default to block for proper layout */
-    }
-
-    .comic-data-table .edit-mode {
-        display: none; /* Hidden by default */
-    }
-
-    .comic-data-table tr.editing .display-mode {
-        display: none; /* Hide display elements when editing */
-    }
-
-    .comic-data-table tr.editing .edit-mode {
-        display: block; /* Show edit elements when editing */
-    }
-
-    /* Adjust Summernote for edit mode */
-    .comic-data-table .edit-mode .note-editor {
-        display: block !important; /* Ensure Summernote is visible in edit mode */
-    }
-
-    .comic-data-table .action-buttons {
-        display: flex;
-        gap: 5px;
-        justify-content: flex-end;
-    }
-    .comic-data-table .action-buttons .edit-button,
-    .comic-data-table .action-buttons .save-button,
-    .comic-data-table .action-buttons .cancel-button {
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 0.9em;
-        white-space: nowrap; /* Prevent buttons from wrapping */
-    }
-    .comic-data-table .action-buttons .edit-button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-    }
-    body.theme-night .comic-data-table .action-buttons .edit-button {
-        background-color: #48778a;
-    }
-    .comic-data-table .action-buttons .edit-button:hover {
-        background-color: #0056b3;
-    }
-    body.theme-night .comic-data-table .action-buttons .edit-button:hover {
-        background-color: #628492;
-    }
-    .comic-data-table .action-buttons .save-button {
-        background-color: #28a745;
-        color: white;
-        border: none;
-    }
-    body.theme-night .comic-data-table .action-buttons .save-button {
-        background-color: #2a6177;
-    }
-    .comic-data-table .action-buttons .save-button:hover {
-        background-color: #218838;
-    }
-    body.theme-night .comic-data-table .action-buttons .save-button:hover {
-        background-color: #48778a;
-    }
-    .comic-data-table .action-buttons .cancel-button {
-        background-color: #6c757d;
-        color: white;
-        border: none;
-    }
-    body.theme-night .comic-data-table .action-buttons .cancel-button {
-        background-color: #6c757d;
-    }
-    .comic-data-table .action-buttons .cancel-button:hover {
-        background-color: #5a6268;
-    }
-    body.theme-night .comic-data-table .action-buttons .cancel-button:hover {
-        background-color: #5a6268;
-    }
-    /* Hide save/cancel buttons in display mode */
-    .comic-data-table .action-buttons .save-button,
-    .comic-data-table .action-buttons .cancel-button {
-        display: none;
-    }
-    .comic-data-table tr.editing .action-buttons .edit-button {
-        display: none;
-    }
-    .comic-data-table tr.editing .action-buttons .save-button,
-    .comic-data-table tr.editing .action-buttons .cancel-button {
-        display: inline-block; /* Show in edit mode */
-    }
-
-    /* Fix for main-container overflow */
-    .main-container {
-        overflow: hidden; /* This forces the container to wrap its floated children */
-    }
-
-</style>
-
+<!-- Font Awesome für Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0x0hrubo0q1m/sO+F/x7T+zQ/J5E+w+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t+p+g+t.
+    </style>
 <section>
     <h2 class="page-header">Comic Daten bearbeiten</h2>
 
@@ -699,9 +330,9 @@ if (file_exists($headerPath)) {
     <!-- Pagination Buttons above content -->
     <div class="pagination">
         <?php if ($currentPage > 1): ?>
-            <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page">Zurück</a>
+            <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page" title="Zurück zur vorherigen Seite">Zurück</a>
         <?php else: ?>
-            <span class="prev-page disabled">Zurück</span>
+            <span class="prev-page disabled" title="Dies ist die erste Seite">Zurück</span>
         <?php endif; ?>
 
         <?php for ($i = 1; $i <= $totalPages; $i++):
@@ -711,19 +342,22 @@ if (file_exists($headerPath)) {
             }
         ?>
             <?php if ($i == $currentPage): ?>
-                <span class="current-page <?php echo $pageLinkClass; ?>"><?php echo $i; ?></span>
+                <span class="current-page <?php echo $pageLinkClass; ?>" title="Aktuelle Seite"><?php echo $i; ?></span>
             <?php else: ?>
-                <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>"><?php echo $i; ?></a>
+                <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>" title="Gehe zu Seite <?php echo $i; ?>"><?php echo $i; ?></a>
             <?php endif; ?>
         <?php endfor; ?>
 
         <?php if ($currentPage < $totalPages): ?>
-            <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page">Weiter</a>
+            <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page" title="Weiter zur nächsten Seite">Weiter</a>
         <?php else: ?>
-            <span class="next-page disabled">Weiter</span>
+            <span class="next-page disabled" title="Dies ist die letzte Seite">Weiter</span>
         <?php endif; ?>
     </div>
-    <br><br><br> <!-- Drei Leerzeilen -->
+    
+    <div class="button-container" style="text-align: center; margin-top: 10px;">
+        <button type="button" id="add-new-comic-entry" class="button">Neuen Comic-Eintrag hinzufügen (+)</button>
+    </div>
 
     <form id="comic-data-form">
         <table class="comic-data-table" id="comic-data-editor-table">
@@ -741,9 +375,14 @@ if (file_exists($headerPath)) {
                 <?php if (!empty($paginatedComicData)): ?>
                     <?php foreach ($paginatedComicData as $id => $data):
                         // Bestimme, ob der Eintrag unvollständig ist, um die Klasse zu setzen
+                        // Korrektur für leere Transkripte in PHP-Logik bereits erfolgt
                         $isTypeMissing = empty($data['type']);
                         $isNameMissing = empty($data['name']);
-                        $isTranscriptMissing = empty($data['transcript']);
+                        
+                        // Prüfe, ob Transkript wirklich leer ist (inkl. <p><br></p>)
+                        $transcriptContentForCheck = trim(strip_tags($data['transcript'], '<br>'));
+                        $isTranscriptMissing = (empty($transcriptContentForCheck) || $transcriptContentForCheck === '<br>' || $transcriptContentForCheck === '&nbsp;');
+
                         $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
                         $rowClass = ($isTypeMissing || $isNameMissing || $isTranscriptMissing || $isChapterMissing) ? 'incomplete-entry' : '';
                     ?>
@@ -788,10 +427,10 @@ if (file_exists($headerPath)) {
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <button type="button" class="edit-button">Bearbeiten</button>
-                                    <button type="button" class="save-button">Speichern</button>
-                                    <button type="button" class="cancel-button">Abbrechen</button>
-                                    <button type="button" class="remove-row">Entfernen</button>
+                                    <button type="button" class="edit-button" title="Eintrag bearbeiten"><i class="fas fa-edit"></i></button>
+                                    <button type="button" class="save-button" title="Änderungen speichern"><i class="fas fa-save"></i></button>
+                                    <button type="button" class="cancel-button" title="Bearbeitung abbrechen"><i class="fas fa-times"></i></button>
+                                    <button type="button" class="remove-row" title="Eintrag entfernen"><i class="fas fa-trash-alt"></i></button>
                                 </div>
                             </td>
                         </tr>
@@ -804,39 +443,6 @@ if (file_exists($headerPath)) {
             </tbody>
         </table>
 
-        <!-- Pagination Buttons below table -->
-        <div class="pagination">
-            <?php if ($currentPage > 1): ?>
-                <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page">Zurück</a>
-            <?php else: ?>
-                <span class="prev-page disabled">Zurück</span>
-            <?php endif; ?>
-
-            <?php for ($i = 1; $i <= $totalPages; $i++):
-                $pageLinkClass = '';
-                if (isset($pagesWithIncompleteData[$i])) {
-                    $pageLinkClass = 'incomplete-page';
-                }
-            ?>
-                <?php if ($i == $currentPage): ?>
-                    <span class="current-page <?php echo $pageLinkClass; ?>"><?php echo $i; ?></span>
-                <?php else: ?>
-                    <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>"><?php echo $i; ?></a>
-                <?php endif; ?>
-            <?php endfor; ?>
-
-            <?php if ($currentPage < $totalPages): ?>
-                <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page">Weiter</a>
-            <?php else: ?>
-                <span class="next-page disabled">Weiter</span>
-            <?php endif; ?>
-        </div>
-        <br><br><br> <!-- Drei Leerzeilen -->
-
-        <div class="button-container">
-            <button type="button" id="add-new-comic-entry" class="button">Neuen Comic-Eintrag hinzufügen (+)</button>
-            <!-- Der globale Speichern-Button wurde entfernt, da das Speichern pro Zeile erfolgt. -->
-        </div>
     </form>
 
     <?php if (!empty($incompleteInfoReportFull)): ?>
@@ -856,9 +462,14 @@ if (file_exists($headerPath)) {
                     </thead>
                     <tbody>
                         <?php foreach ($paginatedComicData as $id => $data): // Hier paginierte Daten nutzen
+                            // Korrektur für leere Transkripte in PHP-Logik bereits erfolgt
                             $isTypeMissing = empty($data['type']);
                             $isNameMissing = empty($data['name']);
-                            $isTranscriptMissing = empty($data['transcript']);
+                            
+                            // Prüfe, ob Transkript wirklich leer ist (inkl. <p><br></p>)
+                            $transcriptContentForCheck = trim(strip_tags($data['transcript'], '<br>'));
+                            $isTranscriptMissing = (empty($transcriptContentForCheck) || $transcriptContentForCheck === '<br>' || $transcriptContentForCheck === '&nbsp;');
+
                             $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
                             
                             // Nur Zeilen anzeigen, die tatsächlich unvollständig sind
@@ -884,6 +495,35 @@ if (file_exists($headerPath)) {
             <?php endif; ?>
         </div>
     <?php endif; ?>
+
+    <!-- Pagination Buttons below incomplete report -->
+    <div class="pagination" style="margin-top: 20px;">
+        <?php if ($currentPage > 1): ?>
+            <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page" title="Zurück zur vorherigen Seite">Zurück</a>
+        <?php else: ?>
+            <span class="prev-page disabled" title="Dies ist die erste Seite">Zurück</span>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $totalPages; $i++):
+            $pageLinkClass = '';
+            if (isset($pagesWithIncompleteData[$i])) {
+                $pageLinkClass = 'incomplete-page';
+            }
+        ?>
+            <?php if ($i == $currentPage): ?>
+                <span class="current-page <?php echo $pageLinkClass; ?>" title="Aktuelle Seite"><?php echo $i; ?></span>
+            <?php else: ?>
+                <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>" title="Gehe zu Seite <?php echo $i; ?>"><?php echo $i; ?></a>
+            <?php endif; ?>
+        <?php endfor; ?>
+
+        <?php if ($currentPage < $totalPages): ?>
+            <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page" title="Weiter zur nächsten Seite">Weiter</a>
+        <?php else: ?>
+            <span class="next-page disabled" title="Dies ist die letzte Seite">Weiter</span>
+        <?php endif; ?>
+    </div>
+
 </section>
 
 <!-- jQuery (Summernote Dependency) -->
@@ -965,8 +605,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funktion zum Hinzufügen einer neuen Zeile
     function addRow(comic = {id: '', type: '', name: '', transcript: '', chapter: null}, isNew = true) {
-        if (noEntriesRow) {
-            noEntriesRow.remove();
+        // Korrektur: Prüfe, ob die "no-entries-row" existiert, bevor versucht wird, sie zu entfernen
+        const noEntriesRowElement = document.getElementById('no-entries-row');
+        if (noEntriesRowElement) {
+            noEntriesRowElement.remove();
         }
 
         const newRow = document.createElement('tr');
@@ -1025,10 +667,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
             <td>
                 <div class="action-buttons">
-                    <button type="button" class="edit-button">Bearbeiten</button>
-                    <button type="button" class="save-button">Speichern</button>
-                    <button type="button" class="cancel-button">Abbrechen</button>
-                    <button type="button" class="remove-row">Entfernen</button>
+                    <button type="button" class="edit-button" title="Eintrag bearbeiten"><i class="fas fa-edit"></i></button>
+                    <button type="button" class="save-button" title="Änderungen speichern"><i class="fas fa-save"></i></button>
+                    <button type="button" class="cancel-button" title="Bearbeitung abbrechen"><i class="fas fa-times"></i></button>
+                    <button type="button" class="remove-row" title="Eintrag entfernen"><i class="fas fa-trash-alt"></i></button>
                 </div>
             </td>
         `;
@@ -1256,11 +898,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Für Summernote: Inhalt über den Editor abrufen
         const transcriptContent = $(transcriptTextarea).summernote('isEmpty') ? '' : $(transcriptTextarea).summernote('code'); // Get HTML content
+        // Korrektur: Prüfe auf leeren Inhalt oder nur <p><br></p>
+        const isTranscriptEffectivelyEmpty = (transcriptContent.trim() === '' || transcriptContent.trim() === '<p><br></p>' || transcriptContent.trim() === '<p>&nbsp;</p>');
+
 
         const isComplete = comicIdInput.value.trim() !== '' &&
                            typeSelect.value.trim() !== '' &&
                            nameInput.value.trim() !== '' &&
-                           transcriptContent.trim() !== '' && // Prüfe den HTML-Inhalt des Editors
+                           !isTranscriptEffectivelyEmpty && // Verwende die korrigierte Prüfung
                            chapterInput.value.trim() !== '' &&
                            parseInt(chapterInput.value) > 0;
 
@@ -1282,11 +927,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const transcriptDisplay = row.querySelector('.transcript-display');
         const chapterDisplay = row.querySelector('td:nth-child(5) .display-mode');
 
+        // Prüfe auf leeren Inhalt oder nur <p><br></p> für die Anzeige
+        const currentTranscriptContent = transcriptDisplay ? transcriptDisplay.innerHTML.trim() : '';
+        const isTranscriptEffectivelyEmptyDisplay = (currentTranscriptContent === '' || currentTranscriptContent === '<p><br></p>' || currentTranscriptContent === '<p>&nbsp;</p>' || currentTranscriptContent === '---');
+
+
         // Sicherstellen, dass alle Elemente gefunden wurden, bevor textContent/innerHTML abgerufen wird
         const isComplete = comicIdDisplay && comicIdDisplay.textContent.trim() !== '' &&
                            typeDisplay && typeDisplay.textContent.trim() !== '---' && // Prüfe auf Standard-Platzhalter
                            nameDisplay && nameDisplay.textContent.trim() !== '---' &&
-                           transcriptDisplay && transcriptDisplay.innerHTML.trim() !== '---' &&
+                           transcriptDisplay && !isTranscriptEffectivelyEmptyDisplay && // Verwende die korrigierte Prüfung
                            chapterDisplay && chapterDisplay.textContent.trim() !== '---' &&
                            parseInt(chapterDisplay.textContent.trim()) > 0;
 
