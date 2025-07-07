@@ -65,6 +65,11 @@ $messageType = ''; // 'success' or 'error'
 $comicTypeOptions = ['Comicseite vom ', 'Lückenfüller']; // "Comicseite vom " ist der Standard für neue Seiten
 $chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
 
+// --- Paginierungseinstellungen ---
+const ITEMS_PER_PAGE = 50;
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($currentPage < 1) $currentPage = 1;
+
 /**
  * Lädt Comic-Metadaten aus einer JSON-Datei.
  * @param string $path Der Pfad zur JSON-Datei.
@@ -85,14 +90,27 @@ function loadComicData(string $path): array {
 
 /**
  * Speichert Comic-Daten in die JSON-Datei, alphabetisch sortiert.
+ * Diese Funktion führt nun ein Merge durch, um nur die übergebenen Daten zu aktualisieren.
  * @param string $path Der Pfad zur JSON-Datei.
- * @param array $data Die zu speichernden Daten.
+ * @param array $newData Die neuen oder aktualisierten Daten.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveComicData(string $path, array $data): bool {
+function saveComicData(string $path, array $newData): bool {
+    $existingData = loadComicData($path); // Lade die bestehenden Daten
+    
+    // Mergen der neuen Daten mit den bestehenden.
+    // Neue Einträge werden hinzugefügt, bestehende aktualisiert.
+    // Einträge, die in $newData fehlen, aber in $existingData sind, bleiben erhalten.
+    $mergedData = array_merge($existingData, $newData);
+
+    // Entferne Einträge, die explizit zum Löschen markiert wurden (z.B. leere comic_id)
+    // Dies erfordert eine Anpassung im Frontend, um gelöschte Zeilen zu kennzeichnen.
+    // Fürs Erste: Wenn eine ID im Frontend gesendet wird, aber leer ist, wird sie ignoriert.
+    // Wenn eine Zeile entfernt wird, wird sie nicht an den Server gesendet und somit nicht gespeichert.
+
     // Sortiere das Array alphabetisch nach Schlüsseln (Comic-IDs)
-    ksort($data);
-    $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    ksort($mergedData);
+    $jsonContent = json_encode($mergedData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     if ($jsonContent === false) {
         error_log("Fehler beim Kodieren von Comic-Daten: " . json_last_error_msg());
         return false;
@@ -148,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         exit;
     }
 
-    $updatedComicData = [];
+    $updatedComicDataSubset = [];
     if (isset($requestData['pages']) && is_array($requestData['pages'])) {
         foreach ($requestData['pages'] as $page) {
             $comicId = trim($page['comic_id']);
@@ -166,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
                 $chapter = null; // Setze auf null oder einen Standardwert, wenn ungültig
             }
 
-            $updatedComicData[$comicId] = [
+            $updatedComicDataSubset[$comicId] = [
                 'type' => $type,
                 'name' => $name,
                 'transcript' => $transcript,
@@ -175,7 +193,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         }
     }
 
-    if (saveComicData($comicVarJsonPath, $updatedComicData)) {
+    // Speichere nur das Subset der Daten. Die saveComicData-Funktion mergt es.
+    if (saveComicData($comicVarJsonPath, $updatedComicDataSubset)) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!']);
         exit;
@@ -186,14 +205,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
     }
 }
 
-// Lade die aktuelle Konfiguration für die Anzeige (für GET-Anfragen)
-$currentComicData = loadComicData($comicVarJsonPath);
+// Lade die gesamte Comic-Datenbank für Paginierung und fehlende IDs
+$fullComicData = loadComicData($comicVarJsonPath);
 $imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath);
 
 // Füge fehlende Comic-IDs aus den Bildern hinzu
 foreach ($imageComicIds as $id) {
-    if (!isset($currentComicData[$id])) {
-        $currentComicData[$id] = [
+    if (!isset($fullComicData[$id])) {
+        $fullComicData[$id] = [
             'type' => '', // Leer lassen für neue Einträge
             'name' => '', // Leer lassen
             'transcript' => '', // Leer lassen
@@ -202,12 +221,26 @@ foreach ($imageComicIds as $id) {
     }
 }
 
-// Sortiere die Daten für die Anzeige nach Comic-ID
-ksort($currentComicData);
+// Sortiere die gesamten Daten nach Comic-ID, bevor paginiert wird
+ksort($fullComicData);
 
-// Bericht über unvollständige Informationen
+// --- Paginierungslogik anwenden ---
+$totalItems = count($fullComicData);
+$totalPages = ceil($totalItems / ITEMS_PER_PAGE);
+
+// Sicherstellen, dass die aktuelle Seite nicht außerhalb des Bereichs liegt
+if ($currentPage > $totalPages && $totalPages > 0) {
+    $currentPage = $totalPages;
+} elseif ($totalPages == 0) {
+    $currentPage = 1; // Wenn keine Einträge, bleibe auf Seite 1
+}
+
+$offset = ($currentPage - 1) * ITEMS_PER_PAGE;
+$paginatedComicData = array_slice($fullComicData, $offset, ITEMS_PER_PAGE, true); // true, um Keys zu erhalten
+
+// Bericht über unvollständige Informationen (basierend auf allen Daten, nicht nur paginierten)
 $incompleteInfoReport = [];
-foreach ($currentComicData as $id => $data) {
+foreach ($fullComicData as $id => $data) {
     $missingFields = [];
     if (empty($data['type'])) {
         $missingFields[] = 'type';
@@ -446,6 +479,52 @@ if (file_exists($headerPath)) {
     body.theme-night .status-icon.incomplete {
         color: #ff6347; /* Helleres Rot für Dark Mode */
     }
+
+    /* Pagination Styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        gap: 5px;
+    }
+    .pagination a, .pagination span {
+        padding: 5px 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        text-decoration: none;
+        color: #333;
+        background-color: #f0f0f0;
+    }
+    .pagination a:hover {
+        background-color: #e0e0e0;
+    }
+    .pagination span.current-page {
+        background-color: #ddead7;
+        font-weight: bold;
+        color: #333;
+        border-color: #ddead7;
+    }
+    .pagination a.disabled {
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    /* Dark Theme Pagination */
+    body.theme-night .pagination a,
+    body.theme-night .pagination span {
+        background-color: #2a6177;
+        color: #fff;
+        border-color: #002b3c;
+    }
+    body.theme-night .pagination a:hover {
+        background-color: #48778a;
+    }
+    body.theme-night .pagination span.current-page {
+        background-color: #48778a;
+        color: #fff;
+        border-color: #48778a;
+    }
 </style>
 
 <section>
@@ -470,8 +549,8 @@ if (file_exists($headerPath)) {
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($currentComicData)): ?>
-                    <?php foreach ($currentComicData as $id => $data):
+                <?php if (!empty($paginatedComicData)): ?>
+                    <?php foreach ($paginatedComicData as $id => $data):
                         // Bestimme, ob der Eintrag unvollständig ist, um die Klasse zu setzen
                         $isTypeMissing = empty($data['type']);
                         $isNameMissing = empty($data['name']);
@@ -516,6 +595,28 @@ if (file_exists($headerPath)) {
         </div>
     </form>
 
+    <div class="pagination">
+        <?php if ($currentPage > 1): ?>
+            <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page">Zurück</a>
+        <?php else: ?>
+            <span class="prev-page disabled">Zurück</span>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <?php if ($i == $currentPage): ?>
+                <span class="current-page"><?php echo $i; ?></span>
+            <?php else: ?>
+                <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+            <?php endif; ?>
+        <?php endfor; ?>
+
+        <?php if ($currentPage < $totalPages): ?>
+            <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page">Weiter</a>
+        <?php else: ?>
+            <span class="next-page disabled">Weiter</span>
+        <?php endif; ?>
+    </div>
+
     <?php if (!empty($incompleteInfoReport)): ?>
         <div class="incomplete-report">
             <h3>Informationen fehlen bei:</h3>
@@ -530,7 +631,7 @@ if (file_exists($headerPath)) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($currentComicData as $id => $data):
+                    <?php foreach ($fullComicData as $id => $data): // Hier volle Daten für den Bericht nutzen
                         $isTypeMissing = empty($data['type']);
                         $isNameMissing = empty($data['name']);
                         $isTranscriptMissing = empty($data['transcript']);
@@ -569,6 +670,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const noEntriesRow = document.getElementById('no-entries-row');
     const messageBoxElement = document.querySelector('.message-box');
 
+    // Flag, um ungespeicherte Änderungen zu verfolgen
+    let hasUnsavedChanges = false;
+
     // Optionen für die Dropdowns (müssen im JS wiederholt werden, da PHP-Variablen nicht direkt zugänglich sind)
     const comicTypeOptions = <?php echo json_encode($comicTypeOptions); ?>;
     const chapterOptions = <?php echo json_encode($chapterOptions); ?>;
@@ -579,7 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
             height: 150, // Set initial height
             minHeight: null, // Set minimum height
             maxHeight: null, // Set maximum height
-            focus: true, // Set focus to editable area after initializing summernote
+            focus: false, // Don't set focus automatically
             toolbar: [
                 ['style', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
                 ['font', ['fontsize', 'color']],
@@ -587,22 +691,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['insert', ['link', 'hr']],
                 ['view', ['codeview', 'fullscreen', 'help']]
             ],
-            // Custom CSS for Dark Theme within Summernote iframe (if it creates an iframe)
-            // Summernote Lite does not create an iframe by default, so direct CSS is usually enough.
-            // If it behaves unexpectedly with dark theme, additional CSS might be needed for .note-editable
             callbacks: {
                 onChange: function(contents, $editable) {
                     // Update the underlying textarea value
                     $(this).val(contents);
                     // Trigger completeness check
                     updateRowCompleteness(this);
+                    setUnsavedChanges(true);
                 },
                 onKeyup: function(e) {
                     updateRowCompleteness(this);
+                    setUnsavedChanges(true);
                 },
                 onPaste: function(e) {
                     // Summernote has built-in paste cleanup for Word content
                     // You can add custom paste handling here if needed
+                    setUnsavedChanges(true);
                 }
             }
         });
@@ -660,10 +764,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Event Listener für Input-Änderungen, um die "incomplete-entry" Klasse zu aktualisieren
         newRow.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('input', () => updateRowCompleteness(input));
+            input.addEventListener('input', () => {
+                updateRowCompleteness(input);
+                setUnsavedChanges(true);
+            });
         });
         // Initial die Vollständigkeit der neuen Zeile prüfen
         updateRowCompleteness(newRow.querySelector('input, select, textarea'));
+        setUnsavedChanges(true); // Neue Zeile bedeutet ungespeicherte Änderungen
     }
 
     // Event Listener für "Neuen Comic-Eintrag hinzufügen" Button
@@ -680,6 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 $(textarea).summernote('destroy'); // Summernote Instanz zerstören
             }
             rowToRemove.remove();
+            setUnsavedChanges(true); // Löschen bedeutet ungespeicherte Änderungen
 
             // Wenn keine Zeilen mehr vorhanden, die "Keine Einträge vorhanden"-Zeile wieder hinzufügen
             if (tableBody.children.length === 0) {
@@ -693,7 +802,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funktion zur Überprüfung der Vollständigkeit einer Zeile
     function updateRowCompleteness(element) {
-        const row = $(element).closest('tr')[0]; // Get the native DOM element
+        // Find the closest row element, regardless of the input element type
+        let row;
+        if (element.jquery) { // If element is a jQuery object (from Summernote callback)
+            row = element[0].closest('tr');
+        } else { // If element is a native DOM element (from regular input event)
+            row = element.closest('tr');
+        }
+
         if (!row) return;
 
         const comicIdInput = row.querySelector('input[name="comic_id[]"]');
@@ -723,7 +839,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('#comic-data-editor-table tbody tr').forEach(row => {
         // Füge Event Listener für Input-Änderungen hinzu
         row.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('input', () => updateRowCompleteness(input));
+            input.addEventListener('input', () => {
+                updateRowCompleteness(input);
+                setUnsavedChanges(true);
+            });
         });
         // Summernote ruft onChange/onKeyup selbst auf, was updateRowCompleteness triggert
         // Initial die Vollständigkeit der Zeile prüfen
@@ -734,6 +853,13 @@ document.addEventListener('DOMContentLoaded', function() {
     saveButton.addEventListener('click', async function(event) {
         event.preventDefault(); // Standard-Formular-Submission verhindern
 
+        // Zerstöre alle Summernote-Instanzen, damit die Textareas ihre aktuellen Werte haben
+        document.querySelectorAll('textarea.transcript-textarea').forEach(textarea => {
+            if ($(textarea).data('summernote')) {
+                $(textarea).summernote('destroy');
+            }
+        });
+
         const allComicData = [];
         document.querySelectorAll('#comic-data-editor-table tbody tr').forEach(row => {
             const comicIdInput = row.querySelector('input[name="comic_id[]"]');
@@ -742,14 +868,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const transcriptTextarea = row.querySelector('textarea[name="comic_transcript[]"]');
             const chapterInput = row.querySelector('input[name="comic_chapter[]"]');
 
-            // Summernote Inhalt abrufen
-            const transcriptContent = $(transcriptTextarea).summernote('code'); // Get HTML content
-
             allComicData.push({
                 comic_id: comicIdInput.value.trim(),
                 comic_type: typeSelect.value.trim(),
                 comic_name: nameInput.value.trim(),
-                comic_transcript: transcriptContent,
+                comic_transcript: transcriptTextarea.value, // Jetzt den Wert direkt aus der Textarea
                 comic_chapter: chapterInput.value.trim() !== '' ? parseInt(chapterInput.value) : null
             });
         });
@@ -767,14 +890,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (result.status === 'success') {
                 showMessage(result.message, 'success');
-                // Optional: Seite neu laden, um die sortierte Liste zu sehen
-                // window.location.reload(); 
+                setUnsavedChanges(false); // Änderungen wurden gespeichert
+                // Nach dem Speichern Summernote neu initialisieren
+                document.querySelectorAll('textarea.transcript-textarea').forEach(textarea => {
+                    initializeSummernote('#' + textarea.id);
+                });
             } else {
                 showMessage(result.message, 'error');
+                // Bei Fehler Summernote auch neu initialisieren, falls zerstört
+                document.querySelectorAll('textarea.transcript-textarea').forEach(textarea => {
+                    initializeSummernote('#' + textarea.id);
+                });
             }
         } catch (error) {
             console.error('Fehler beim Speichern der Comic-Daten:', error);
             showMessage('Ein Netzwerkfehler ist aufgetreten oder der Server hat nicht geantwortet.', 'error');
+            // Bei Fehler Summernote auch neu initialisieren, falls zerstört
+            document.querySelectorAll('textarea.transcript-textarea').forEach(textarea => {
+                initializeSummernote('#' + textarea.id);
+            });
         }
     });
 
@@ -784,13 +918,29 @@ document.addEventListener('DOMContentLoaded', function() {
             messageBoxElement.textContent = msg;
             messageBoxElement.className = 'message-box ' + type;
             messageBoxElement.style.display = 'block';
+            setTimeout(() => {
+                messageBoxElement.style.display = 'none'; // Nachricht nach 5 Sekunden ausblenden
+            }, 5000);
         } else {
-            // Fallback, falls die Message Box nicht gefunden wird
             alert(msg);
         }
     }
 
-    // Hilfsfunktion für HTML-Escaping in JavaScript (für Input-Werte, nicht für TinyMCE-Inhalt)
+    // Funktion zum Setzen des "ungespeicherte Änderungen"-Flags
+    function setUnsavedChanges(status) {
+        hasUnsavedChanges = status;
+    }
+
+    // Warnung vor dem Verlassen der Seite bei ungespeicherten Änderungen
+    window.addEventListener('beforeunload', function(event) {
+        if (hasUnsavedChanges) {
+            event.preventDefault(); // Standardaktion (Seite verlassen) verhindern
+            event.returnValue = ''; // Für ältere Browser
+            return ''; // Für moderne Browser
+        }
+    });
+
+    // Hilfsfunktion für HTML-Escaping in JavaScript (für Input-Werte)
     function htmlspecialchars(str) {
         var div = document.createElement('div');
         div.appendChild(document.createTextNode(str));
