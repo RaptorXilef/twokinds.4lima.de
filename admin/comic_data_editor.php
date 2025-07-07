@@ -13,7 +13,7 @@
 ob_start();
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
-session_start();
+session_session_start();
 
 // Logout-Logik: Muss vor dem Sicherheitscheck erfolgen.
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
@@ -233,6 +233,11 @@ foreach ($imageComicIds as $id) {
 ksort($fullComicData);
 
 // --- Paginierungslogik anwenden ---
+const ITEMS_PER_PAGE = 50;
+$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($currentPage < 1) $currentPage = 1;
+
+
 $totalItems = count($fullComicData);
 $totalPages = ceil($totalItems / ITEMS_PER_PAGE);
 
@@ -362,6 +367,13 @@ if (file_exists($headerPath)) {
         border: 1px solid #bee5eb;
     }
 
+    .message-box.warning { /* Added warning message style */
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+
+
     body.theme-night .message-box.success {
         background-color: #28a745; /* Dunkelgrün */
         color: #fff;
@@ -380,32 +392,91 @@ if (file_exists($headerPath)) {
         border-color: #138496;
     }
 
-    /* Formular- und Button-Stile */
-    .form-section {
+    body.theme-night .message-box.warning { /* Dark mode for warning message */
+        background-color: #6c5b00;
+        color: #fff;
+        border-color: #927c00;
+    }
+
+    /* Collapsible Sections */
+    .collapsible-section {
         margin-bottom: 30px;
-        padding: 20px;
         background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        overflow: hidden; /* Ensures content doesn't spill during transition */
     }
 
-    body.theme-night .form-section {
-        background-color: #00425c; /* Dunklerer Hintergrund für Formularbereiche */
+    body.theme-night .collapsible-section {
+        background-color: #00425c;
     }
 
-    .form-section h2 {
-        color: #333;
-        margin-bottom: 20px;
-        font-size: 1.5em;
+    .collapsible-header {
+        cursor: pointer;
+        padding: 15px 20px; /* More padding for a better clickable area */
+        background-color: #f2f2f2; /* Light background for header */
         border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.5em; /* Match h2 font size */
+        font-weight: bold;
+        color: #333;
     }
 
-    body.theme-night .form-section h2 {
+    body.theme-night .collapsible-header {
+        background-color: #005a7e;
         color: #fff;
-        border-bottom-color: #005a7e;
+        border-bottom-color: #007bb5;
     }
 
+    .collapsible-header i {
+        transition: transform 0.3s ease;
+        margin-left: 10px; /* Space between text and icon */
+    }
+
+    .collapsible-section.expanded .collapsible-header i {
+        transform: rotate(0deg); /* Down arrow */
+    }
+
+    .collapsible-section:not(.expanded) .collapsible-header i {
+        transform: rotate(-90deg); /* Right arrow */
+    }
+
+    .collapsible-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        padding: 0 20px; /* Initial padding, will be adjusted when expanded */
+    }
+
+    .collapsible-section.expanded .collapsible-content {
+        max-height: 3000px; /* A large enough value to show content */
+        padding-top: 20px; /* Restore top padding */
+        padding-bottom: 20px; /* Restore bottom padding */
+    }
+
+    /* Remove padding from the section classes themselves as it's now on collapsible-content */
+    .form-section, .comic-list-section, .report-section {
+        padding: 0;
+    }
+
+    /* Restore border-radius for collapsed sections */
+    .collapsible-section:not(.expanded) {
+        border-radius: 8px;
+    }
+    /* Ensure header has rounded corners when section is collapsed */
+    .collapsible-section:not(.expanded) .collapsible-header {
+        border-radius: 8px;
+        border-bottom: none; /* No bottom border when collapsed */
+    }
+    /* Ensure header has rounded top corners when expanded */
+    .collapsible-section.expanded .collapsible-header {
+        border-radius: 8px 8px 0 0;
+    }
+
+
+    /* Formular- und Button-Stile */
     .form-group {
         margin-bottom: 15px;
     }
@@ -576,31 +647,7 @@ if (file_exists($headerPath)) {
     }
 
     /* Comic-Liste und Tabelle */
-    .comic-list-section {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    body.theme-night .comic-list-section {
-        background-color: #00425c;
-    }
-
-    .comic-list-section h2 {
-        color: #333;
-        margin-bottom: 20px;
-        font-size: 1.5em;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-    }
-
-    body.theme-night .comic-list-section h2 {
-        color: #fff;
-        border-bottom-color: #005a7e;
-    }
-
+    /* .comic-list-section padding is now handled by .collapsible-content */
     .comic-table-container {
         overflow-x: auto; /* Ermöglicht horizontales Scrollen bei kleinen Bildschirmen */
     }
@@ -781,30 +828,7 @@ if (file_exists($headerPath)) {
     }
 
     /* Bericht über fehlende Informationen */
-    .report-section {
-        margin-top: 30px;
-        padding: 20px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    body.theme-night .report-section {
-        background-color: #00425c;
-    }
-
-    .report-section h2 {
-        color: #333;
-        margin-bottom: 20px;
-        font-size: 1.5em;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-    }
-
-    body.theme-night .report-section h2 {
-        color: #fff;
-        border-bottom-color: #005a7e;
-    }
+    /* .report-section padding is now handled by .collapsible-content */
 
     /* Styles for the new report table with icons */
     .report-table {
@@ -960,6 +984,20 @@ if (file_exists($headerPath)) {
             width: 100% !important; /* Ensure full width */
         }
 
+        .collapsible-header {
+            padding: 10px 15px; /* Adjust padding for smaller screens */
+            font-size: 1.2em;
+        }
+
+        .collapsible-content {
+            padding: 0 15px; /* Adjust padding for smaller screens */
+        }
+        .collapsible-section.expanded .collapsible-content {
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
+
+
         .comic-table th, .comic-table td {
             padding: 6px;
             font-size: 0.9em;
@@ -993,137 +1031,53 @@ if (file_exists($headerPath)) {
 <div class="admin-container">
     <div id="message-box" class="message-box"></div>
 
-    <section class="form-section">
-        <h2>Comic-Eintrag bearbeiten / hinzufügen</h2>
-        <form id="comic-edit-form">
-            <input type="hidden" id="original-comic-id" name="original_comic_id" value="">
-            <div class="form-group">
-                <label for="comic-id">Comic ID (Datum JJJJMMTT):</label>
-                <input type="text" id="comic-id" name="comic_id" pattern="\d{8}" title="Bitte geben Sie eine 8-stellige Zahl (JJJJMMTT) ein." required>
-            </div>
-            <div class="form-group">
-                <label for="comic-type">Typ:</label>
-                <select id="comic-type" name="comic_type" required>
-                    <?php foreach ($comicTypeOptions as $option): ?>
-                        <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="comic-name">Name:</label>
-                <input type="text" id="comic-name" name="comic_name" required>
-            </div>
-            <div class="form-group">
-                <label for="comic-transcript">Transkript (HTML erlaubt):</label>
-                <textarea id="comic-transcript" name="comic_transcript"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="comic-chapter">Kapitel:</label>
-                <select id="comic-chapter" name="comic_chapter" required>
-                    <option value="">Bitte auswählen</option>
-                    <?php foreach ($chapterOptions as $option): ?>
-                        <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="button-group">
-                <button type="submit" id="save-single-button">Speichern</button>
-                <button type="button" id="cancel-edit-button">Abbrechen</button>
-            </div>
-        </form>
-    </section>
-
-    <section class="comic-list-section">
-        <h2>Bearbeitungsübersicht Comic-Daten</h2>
-        <div class="comic-table-container">
-            <table class="comic-table" id="comic-data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Typ</th>
-                        <th>Name</th>
-                        <th>Transkript</th>
-                        <th>Kapitel</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($paginatedComicData)): ?>
-                        <tr>
-                            <td colspan="6">Keine Comic-Daten gefunden oder auf dieser Seite verfügbar.</td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($paginatedComicData as $id => $data):
-                            $isMissingInfo = isset($incompleteInfoReportCurrentPage[$id]);
-                        ?>
-                            <tr data-comic-id="<?php echo htmlspecialchars($id); ?>" class="<?php echo $isMissingInfo ? 'missing-info-row' : ''; ?>">
-                                <td class="comic-id-display"><?php echo htmlspecialchars($id); ?></td>
-                                <td><span class="editable-field comic-type-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('type', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span></td>
-                                <td><span class="editable-field comic-name-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('name', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span></td>
-                                <td><span class="editable-field comic-transcript-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('transcript', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['transcript']); ?></span></td>
-                                <td><span class="editable-field comic-chapter-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('chapter', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span></td>
-                                <td class="actions">
-                                    <button type="button" class="edit-button button edit" title="Bearbeiten"><i class="fas fa-edit"></i></button>
-                                    <button type="button" class="delete-button button delete" title="Löschen"><i class="fas fa-trash-alt"></i></button>
-                                </td>
-                            </tr>
+    <section class="form-section collapsible-section expanded">
+        <h2 class="collapsible-header">Comic-Eintrag bearbeiten / hinzufügen <i class="fas fa-chevron-down"></i></h2>
+        <div class="collapsible-content">
+            <form id="comic-edit-form">
+                <input type="hidden" id="original-comic-id" name="original_comic_id" value="">
+                <div class="form-group">
+                    <label for="comic-id">Comic ID (Datum JJJJMMTT):</label>
+                    <input type="text" id="comic-id" name="comic_id" pattern="\d{8}" title="Bitte geben Sie eine 8-stellige Zahl (JJJJMMTT) ein." required>
+                </div>
+                <div class="form-group">
+                    <label for="comic-type">Typ:</label>
+                    <select id="comic-type" name="comic_type" required>
+                        <?php foreach ($comicTypeOptions as $option): ?>
+                            <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
                         <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-        <button type="button" id="add-new-comic-button" class="button"><i class="fas fa-plus"></i> Neuen Comic-Eintrag hinzufügen (+)</button>
-
-        <!-- Paginierung -->
-        <div class="pagination">
-            <?php if ($currentPage > 1): ?>
-                <a href="?page=1" title="Erste Seite"><i class="fas fa-angle-double-left"></i></a>
-                <a href="?page=<?php echo $currentPage - 1; ?>" title="Vorherige Seite"><i class="fas fa-angle-left"></i></a>
-            <?php else: ?>
-                <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
-                <span class="disabled"><i class="fas fa-angle-left"></i></span>
-            <?php endif; ?>
-
-            <?php
-            // Zeige nur einen Bereich von Seitenlinks an
-            $range = 2; // Zeigt 2 Seiten vor und nach der aktuellen Seite
-            $startPage = max(1, $currentPage - $range);
-            $endPage = min($totalPages, $currentPage + $range);
-
-            if ($startPage > 1) {
-                echo '<span>...</span>';
-            }
-
-            for ($i = $startPage; $i <= $endPage; $i++):
-                $pageClass = ($i == $currentPage) ? 'current-page' : '';
-                if (isset($pagesWithIncompleteData[$i])) {
-                    $pageClass .= ' incomplete-page';
-                }
-            ?>
-                <a href="?page=<?php echo $i; ?>" class="<?php echo $pageClass; ?>"><?php echo $i; ?></a>
-            <?php endfor; ?>
-
-            <?php
-            if ($endPage < $totalPages) {
-                echo '<span>...</span>';
-            }
-            ?>
-
-            <?php if ($currentPage < $totalPages): ?>
-                <a href="?page=<?php echo $currentPage + 1; ?>" title="Nächste Seite"><i class="fas fa-angle-right"></i></a>
-                <a href="?page=<?php echo $totalPages; ?>" title="Letzte Seite"><i class="fas fa-angle-double-right"></i></a>
-            <?php else: ?>
-                <span class="disabled"><i class="fas fa-angle-right"></i></span>
-                <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
-            <?php endif; ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="comic-name">Name:</label>
+                    <input type="text" id="comic-name" name="comic_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="comic-transcript">Transkript (HTML erlaubt):</label>
+                    <textarea id="comic-transcript" name="comic_transcript"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="comic-chapter">Kapitel:</label>
+                    <select id="comic-chapter" name="comic_chapter" required>
+                        <option value="">Bitte auswählen</option>
+                        <?php foreach ($chapterOptions as $option): ?>
+                            <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button type="submit" id="save-single-button">Speichern</button>
+                    <button type="button" id="cancel-edit-button">Abbrechen</button>
+                </div>
+            </form>
         </div>
     </section>
 
-    <section class="report-section">
-        <h2>Bericht über fehlende Comic-Informationen (Gesamt)</h2>
-        <?php if (!empty($fullComicData)): // Check if there's any comic data at all ?>
+    <section class="comic-list-section collapsible-section expanded">
+        <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-down"></i></h2>
+        <div class="collapsible-content">
             <div class="comic-table-container">
-                <table class="report-table">
+                <table class="comic-table" id="comic-data-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -1131,36 +1085,126 @@ if (file_exists($headerPath)) {
                             <th>Name</th>
                             <th>Transkript</th>
                             <th>Kapitel</th>
+                            <th>Aktionen</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($fullComicData as $id => $data):
-                            // Determine if each field is missing
-                            $isTypeMissing = empty($data['type']);
-                            $isNameMissing = empty($data['name']);
-                            $transcriptContent = trim(strip_tags($data['transcript'], '<br>'));
-                            $isTranscriptMissing = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
-                            $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
-                        ?>
+                        <?php if (empty($paginatedComicData)): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($id); ?></td>
-                                <td><?php echo $isTypeMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                <td><?php echo $isNameMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                <td><?php echo $isTranscriptMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                <td><?php echo $isChapterMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
+                                <td colspan="6">Keine Comic-Daten gefunden oder auf dieser Seite verfügbar.</td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php foreach ($paginatedComicData as $id => $data):
+                                $isMissingInfo = isset($incompleteInfoReportCurrentPage[$id]);
+                            ?>
+                                <tr data-comic-id="<?php echo htmlspecialchars($id); ?>" class="<?php echo $isMissingInfo ? 'missing-info-row' : ''; ?>">
+                                    <td class="comic-id-display"><?php echo htmlspecialchars($id); ?></td>
+                                    <td><span class="editable-field comic-type-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('type', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span></td>
+                                    <td><span class="editable-field comic-name-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('name', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span></td>
+                                    <td><span class="editable-field comic-transcript-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('transcript', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['transcript']); ?></span></td>
+                                    <td><span class="editable-field comic-chapter-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('chapter', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span></td>
+                                    <td class="actions">
+                                        <button type="button" class="edit-button button edit" title="Bearbeiten"><i class="fas fa-edit"></i></button>
+                                        <button type="button" class="delete-button button delete" title="Löschen"><i class="fas fa-trash-alt"></i></button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
-            <?php if ($hasIncompleteOtherPages): ?>
-                <p class="missing-other-pages-warning">
-                    <i class="fas fa-exclamation-triangle"></i> Hinweis: Es gibt auch unvollständige Comic-Einträge auf anderen Seiten. Bitte überprüfen Sie alle Seiten.
-                </p>
+            <button type="button" id="add-new-comic-button" class="button"><i class="fas fa-plus"></i> Neuen Comic-Eintrag hinzufügen (+)</button>
+
+            <!-- Paginierung -->
+            <div class="pagination">
+                <?php if ($currentPage > 1): ?>
+                    <a href="?page=1" title="Erste Seite"><i class="fas fa-angle-double-left"></i></a>
+                    <a href="?page=<?php echo $currentPage - 1; ?>" title="Vorherige Seite"><i class="fas fa-angle-left"></i></a>
+                <?php else: ?>
+                    <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
+                    <span class="disabled"><i class="fas fa-angle-left"></i></span>
+                <?php endif; ?>
+
+                <?php
+                // Zeige nur einen Bereich von Seitenlinks an
+                $range = 2; // Zeigt 2 Seiten vor und nach der aktuellen Seite
+                $startPage = max(1, $currentPage - $range);
+                $endPage = min($totalPages, $currentPage + $range);
+
+                if ($startPage > 1) {
+                    echo '<span>...</span>';
+                }
+
+                for ($i = $startPage; $i <= $endPage; $i++):
+                    $pageClass = ($i == $currentPage) ? 'current-page' : '';
+                    if (isset($pagesWithIncompleteData[$i])) {
+                        $pageClass .= ' incomplete-page';
+                    }
+                ?>
+                    <a href="?page=<?php echo $i; ?>" class="<?php echo $pageClass; ?>"><?php echo $i; ?></a>
+                <?php endfor; ?>
+
+                <?php
+                if ($endPage < $totalPages) {
+                    echo '<span>...</span>';
+                }
+                ?>
+
+                <?php if ($currentPage < $totalPages): ?>
+                    <a href="?page=<?php echo $currentPage + 1; ?>" title="Nächste Seite"><i class="fas fa-angle-right"></i></a>
+                    <a href="?page=<?php echo $totalPages; ?>" title="Letzte Seite"><i class="fas fa-angle-double-right"></i></a>
+                <?php else: ?>
+                    <span class="disabled"><i class="fas fa-angle-right"></i></span>
+                    <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+
+    <section class="report-section collapsible-section">
+        <h2 class="collapsible-header">Bericht über fehlende Comic-Informationen (Gesamt) <i class="fas fa-chevron-right"></i></h2>
+        <div class="collapsible-content">
+            <?php if (!empty($fullComicData)): // Check if there's any comic data at all ?>
+                <div class="comic-table-container">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Typ</th>
+                                <th>Name</th>
+                                <th>Transkript</th>
+                                <th>Kapitel</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($fullComicData as $id => $data):
+                                // Determine if each field is missing
+                                $isTypeMissing = empty($data['type']);
+                                $isNameMissing = empty($data['name']);
+                                $transcriptContent = trim(strip_tags($data['transcript'], '<br>'));
+                                $isTranscriptMissing = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
+                                $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
+                            ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($id); ?></td>
+                                    <td><?php echo $isTypeMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
+                                    <td><?php echo $isNameMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
+                                    <td><?php echo $isTranscriptMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
+                                    <td><?php echo $isChapterMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php if ($hasIncompleteOtherPages): ?>
+                    <p class="missing-other-pages-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Hinweis: Es gibt auch unvollständige Comic-Einträge auf anderen Seiten. Bitte überprüfen Sie alle Seiten.
+                    </p>
+                <?php endif; ?>
+            <?php else: ?>
+                <p>Keine Comic-Daten zum Berichten vorhanden.</p>
             <?php endif; ?>
-        <?php else: ?>
-            <p>Keine Comic-Daten zum Berichten vorhanden.</p>
-        <?php endif; ?>
+        </div>
     </section>
 </div>
 
@@ -1297,7 +1341,12 @@ document.addEventListener('DOMContentLoaded', function() {
             saveSingleButton.classList.add('edit');
             saveSingleButton.classList.remove('button');
 
-            comicEditForm.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
+            // Auto-expand form section and scroll to it
+            const formSection = document.querySelector('.form-section');
+            if (!formSection.classList.contains('expanded')) {
+                formSection.classList.add('expanded');
+            }
+            formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
         } else if (deleteButton) {
             console.log("Delete button clicked."); // Debug-Meldung
             const row = deleteButton.closest('tr');
@@ -1332,7 +1381,13 @@ document.addEventListener('DOMContentLoaded', function() {
         saveSingleButton.classList.add('button');
         saveSingleButton.classList.remove('edit');
         comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
-        comicEditForm.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
+
+        // Auto-expand form section and scroll to it
+        const formSection = document.querySelector('.form-section');
+        if (!formSection.classList.contains('expanded')) {
+            formSection.classList.add('expanded');
+        }
+        formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
     });
 
     // Event Listener für Abbrechen-Button
@@ -1443,7 +1498,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setUnsavedChanges(true);
         resetForm();
-        showMessage('Eintrag lokal gespeichert. Klicken Sie auf "Alle Änderungen speichern", um dies zu bestätigen.', 'success');
+        showMessage('Eintrag lokal gespeichert.', 'success');
+        showMessage('Ihre Änderungen sind lokal gespeichert. Bitte klicken Sie auf "Alle Änderungen speichern", um sie permanent zu sichern.', 'warning');
     });
 
     // Event Listener für den "Alle Änderungen speichern" Button
@@ -1501,7 +1557,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialer Status des "Alle Änderungen speichern" Buttons
     setUnsavedChanges(false);
 
-    // Live-Bearbeitung in der Tabelle
+    // Live-Bearbeitung in der Tabelle (Doppelklick)
     comicDataTable.addEventListener('dblclick', function(event) {
         const target = event.target;
         if (target.classList.contains('editable-field')) {
@@ -1531,8 +1587,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fieldName === 'comic-type') {
                 inputElement = document.createElement('select');
                 <?php foreach ($comicTypeOptions as $option): ?>
-                    // Use 'var' instead of 'let' here to avoid redeclaration issues
-                    var optionType = document.createElement('option');
+                    var optionType = document.createElement('option'); // Changed to var
                     optionType.value = "<?php echo htmlspecialchars($option); ?>";
                     optionType.textContent = "<?php echo htmlspecialchars($option); ?>";
                     inputElement.appendChild(optionType);
@@ -1540,22 +1595,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 inputElement.value = target.textContent;
             } else if (fieldName === 'comic-chapter') {
                 inputElement = document.createElement('select');
-                var defaultOption = document.createElement('option'); // Use 'var'
+                var defaultOption = document.createElement('option'); // Changed to var
                 defaultOption.value = "";
                 defaultOption.textContent = "Bitte auswählen";
                 inputElement.appendChild(defaultOption);
                 <?php foreach ($chapterOptions as $option): ?>
-                    // Use 'var' instead of 'let' here to avoid redeclaration issues
-                    var optionChapter = document.createElement('option');
+                    var optionChapter = document.createElement('option'); // Changed to var
                     optionChapter.value = "<?php echo htmlspecialchars($option); ?>";
                     optionChapter.textContent = "<?php echo htmlspecialchars($option); ?>";
                     inputElement.appendChild(optionChapter);
                 <?php endforeach; ?>
                 inputElement.value = target.textContent;
             } else if (fieldName === 'comic-transcript') {
-                // For live editing of transcript, we won't embed Summernote directly in table cell,
-                // but rather open the main form for full Summernote experience.
-                // For now, double-clicking transcript will trigger full form edit.
+                // Double-clicking transcript now triggers the main edit form
                 const editButton = row.querySelector('.edit-button');
                 if (editButton) {
                     editButton.click(); // Simulate click on edit button
@@ -1655,6 +1707,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+    });
+
+    // Add event listeners for collapsible headers
+    document.querySelectorAll('.collapsible-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const section = this.closest('.collapsible-section');
+            section.classList.toggle('expanded');
+            // If it's the form section and it's expanded, scroll to it
+            if (section.classList.contains('form-section') && section.classList.contains('expanded')) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+            console.log("Collapsible header clicked. Section expanded status:", section.classList.contains('expanded')); // Debug-Meldung
+        });
     });
 });
 </script>
