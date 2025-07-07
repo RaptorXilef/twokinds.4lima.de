@@ -148,7 +148,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_comic_data'])) {
 
             $type = isset($_POST['comic_type'][$index]) ? trim($_POST['comic_type'][$index]) : '';
             $name = isset($_POST['comic_name'][$index]) ? trim($_POST['comic_name'][$index]) : '';
-            $transcript = isset($_POST['comic_transcript'][$index]) ? $_POST['comic_transcript'][$index] : ''; // HTML-Inhalt
+            // TinyMCE sendet den HTML-Inhalt direkt, kein htmlspecialchars() hier
+            $transcript = isset($_POST['comic_transcript'][$index]) ? $_POST['comic_transcript'][$index] : '';
             $chapter = isset($_POST['comic_chapter'][$index]) ? (int)$_POST['comic_chapter'][$index] : null;
 
             // Validierung für Chapter (muss eine Zahl sein)
@@ -333,44 +334,165 @@ if (file_exists($headerPath)) {
         background-color: #721c24 !important; /* Dunkleres Rot für Dark Mode */
     }
 
-    /* Transcript Editor Buttons */
-    .transcript-editor-toolbar {
-        margin-bottom: 5px;
-        display: flex;
-        gap: 5px;
-        flex-wrap: wrap; /* Für kleinere Bildschirme */
-    }
-    .transcript-editor-toolbar button {
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        background-color: #f0f0f0;
+    /* Styles für die TinyMCE Integration */
+    .tox-tinymce {
         border-radius: 3px;
-        cursor: pointer;
+    }
+    body.theme-night .tox-tinymce {
+        background-color: #2a6177 !important;
+        border-color: #002b3c !important;
+    }
+    body.theme-night .tox-editor-header {
+        background-color: #2a6177 !important;
+        border-color: #002b3c !important;
+        color: #fff !important;
+    }
+    body.theme-night .tox-toolbar-group {
+        background-color: #2a6177 !important;
+        border-color: #002b3c !important;
+    }
+    body.theme-night .tox-toolbar-group button {
+        color: #fff !important;
+    }
+    body.theme-night .tox-statusbar {
+        background-color: #2a6177 !important;
+        border-color: #002b3c !important;
+        color: #fff !important;
+    }
+    body.theme-night .tox-edit-area__iframe {
+        background-color: #00334c !important;
+        color: #fff !important;
+    }
+    body.theme-night .tox-collection__item-label {
+        color: #fff !important;
+    }
+    body.theme-night .tox-menu {
+        background-color: #2a6177 !important;
+        border-color: #002b3c !important;
+    }
+    body.theme-night .tox-collection__item--active {
+        background-color: #48778a !important;
+    }
+    body.theme-night .tox-tbtn svg {
+        fill: #fff !important;
+    }
+    body.theme-night .tox-tbtn--enabled svg {
+        fill: #d4edda !important; /* Leichterer Ton für aktive Buttons */
+    }
+    body.theme-night .tox-tbtn:hover {
+        background-color: #48778a !important;
+    }
+    body.theme-night .tox-split-button__chevron {
+        fill: #fff !important;
+    }
+    body.theme-night .tox-dialog {
+        background-color: #00334c !important;
+        color: #fff !important;
+    }
+    body.theme-night .tox-dialog__header,
+    body.theme-night .tox-dialog__footer {
+        background-color: #2a6177 !important;
+    }
+    body.theme-night .tox-label,
+    body.theme-night .tox-dialog__title {
+        color: #fff !important;
+    }
+    body.theme-night .tox-textfield,
+    body.theme-night .tox-select {
+        background-color: #00425c !important;
+        color: #fff !important;
+        border-color: #002b3c !important;
+    }
+    body.theme-night .tox-button {
+        background-color: #48778a !important;
+        color: #fff !important;
+    }
+    body.theme-night .tox-button:hover {
+        background-color: #628492 !important;
+    }
+    body.theme-night .tox-checkbox__input:checked + .tox-checkbox__label::before {
+        background-color: #48778a !important;
+        border-color: #48778a !important;
+    }
+    body.theme-night .tox-popover {
+        background-color: #2a6177 !important;
+        border-color: #002b3c !important;
+    }
+    body.theme-night .tox-popover__arrow {
+        background-color: #2a6177 !important;
+    }
+    body.theme-night .tox-popover__body {
+        color: #fff !important;
+    }
+    body.theme-night .tox-popover__body button {
+        color: #fff !important;
+    }
+    body.theme-night .tox-color-picker-group__color-input {
+        background-color: #00425c !important;
+        color: #fff !important;
+        border-color: #002b3c !important;
+    }
+    body.theme-night .tox-swatch {
+        border-color: #002b3c !important;
+    }
+    body.theme-night .tox-swatch--active {
+        border-color: #fff !important;
+    }
+    body.theme-night .tox-menu-nav__js .tox-menu-nav__link {
+        color: #fff !important;
+    }
+    body.theme-night .tox-menu-nav__js .tox-menu-nav__link--active {
+        background-color: #48778a !important;
+    }
+    body.theme-night .tox-form__group--inline .tox-label {
+        color: #fff !important;
+    }
+
+
+    /* Incomplete Report Table */
+    .incomplete-report-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    .incomplete-report-table th,
+    .incomplete-report-table td {
+        border: 1px solid #f5c6cb;
+        padding: 6px;
+        text-align: center;
         font-size: 0.9em;
     }
-    .transcript-editor-toolbar button:hover {
-        background-color: #e0e0e0;
-    }
-    body.theme-night .transcript-editor-toolbar button {
-        background-color: #2a6177;
-        color: #fff;
-        border-color: #002b3c;
-    }
-    body.theme-night .transcript-editor-toolbar button:hover {
-        background-color: #48778a;
-    }
-    .incomplete-report {
-        margin-top: 30px;
-        padding: 15px;
-        border: 1px solid #f5c6cb;
-        background-color: #f8d7da;
-        border-radius: 5px;
+    .incomplete-report-table th {
+        background-color: #f5c6cb;
         color: #721c24;
     }
-    body.theme-night .incomplete-report {
-        background-color: #5a0000;
-        border-color: #721c24;
+    .incomplete-report-table td {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    body.theme-night .incomplete-report-table th {
+        background-color: #721c24;
         color: #f5c6cb;
+    }
+    body.theme-night .incomplete-report-table td {
+        background-color: #5a0000;
+        color: #f5c6cb;
+    }
+    .status-icon {
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+    .status-icon.complete {
+        color: #28a745; /* Grün für Haken */
+    }
+    .status-icon.incomplete {
+        color: #dc3545; /* Rot für Kreuz */
+    }
+    body.theme-night .status-icon.complete {
+        color: #90ee90; /* Helleres Grün für Dark Mode */
+    }
+    body.theme-night .status-icon.incomplete {
+        color: #ff6347; /* Helleres Rot für Dark Mode */
     }
 </style>
 
@@ -405,6 +527,7 @@ if (file_exists($headerPath)) {
                             <td><input type="text" name="comic_id[]" value="<?php echo htmlspecialchars($id); ?>" readonly></td>
                             <td>
                                 <select name="comic_type[]">
+                                    <option value="" <?php echo ($data['type'] == '') ? 'selected' : ''; ?>>-- Auswählen --</option>
                                     <?php foreach ($comicTypeOptions as $option): ?>
                                         <option value="<?php echo htmlspecialchars($option); ?>" <?php echo ($data['type'] == $option) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($option); ?>
@@ -414,14 +537,8 @@ if (file_exists($headerPath)) {
                             </td>
                             <td><input type="text" name="comic_name[]" value="<?php echo htmlspecialchars($data['name']); ?>"></td>
                             <td>
-                                <div class="transcript-editor-toolbar">
-                                    <button type="button" class="format-button" data-tag="b"><b>B</b></button>
-                                    <button type="button" class="format-button" data-tag="i"><i>I</i></button>
-                                    <button type="button" class="format-button" data-tag="u"><u>U</u></button>
-                                    <button type="button" class="format-button" data-tag="p">¶</button>
-                                    <button type="button" class="format-button" data-tag="br">↵</button>
-                                </div>
-                                <textarea name="comic_transcript[]" class="transcript-textarea"><?php echo htmlspecialchars($data['transcript']); ?></textarea>
+                                <!-- TinyMCE wird hier initialisiert. Der Wert ist reines HTML. -->
+                                <textarea name="comic_transcript[]" class="transcript-textarea"><?php echo $data['transcript']; ?></textarea>
                             </td>
                             <td>
                                 <input type="number" name="comic_chapter[]" value="<?php echo htmlspecialchars($data['chapter'] ?? ''); ?>" min="1">
@@ -446,15 +563,43 @@ if (file_exists($headerPath)) {
     <?php if (!empty($incompleteInfoReport)): ?>
         <div class="incomplete-report">
             <h3>Informationen fehlen bei:</h3>
-            <ul>
-                <?php foreach ($incompleteInfoReport as $id => $missingFields): ?>
-                    <li><strong><?php echo htmlspecialchars($id); ?></strong>: <?php echo implode(', ', $missingFields); ?></li>
-                <?php endforeach; ?>
-            </ul>
+            <table class="incomplete-report-table">
+                <thead>
+                    <tr>
+                        <th>Comic ID</th>
+                        <th>Typ</th>
+                        <th>Name</th>
+                        <th>Transkript</th>
+                        <th>Kapitel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($currentComicData as $id => $data):
+                        $isTypeMissing = empty($data['type']);
+                        $isNameMissing = empty($data['name']);
+                        $isTranscriptMissing = empty($data['transcript']);
+                        $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
+                        
+                        // Nur Zeilen anzeigen, die tatsächlich unvollständig sind
+                        if ($isTypeMissing || $isNameMissing || $isTranscriptMissing || $isChapterMissing):
+                    ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($id); ?></td>
+                            <td><span class="status-icon <?php echo $isTypeMissing ? 'incomplete' : 'complete'; ?>"><?php echo $isTypeMissing ? '❌' : '✔'; ?></span></td>
+                            <td><span class="status-icon <?php echo $isNameMissing ? 'incomplete' : 'complete'; ?>"><?php echo $isNameMissing ? '❌' : '✔'; ?></span></td>
+                            <td><span class="status-icon <?php echo $isTranscriptMissing ? 'incomplete' : 'complete'; ?>"><?php echo $isTranscriptMissing ? '❌' : '✔'; ?></span></td>
+                            <td><span class="status-icon <?php echo $isChapterMissing ? 'incomplete' : 'complete'; ?>"><?php echo $isChapterMissing ? '❌' : '✔'; ?></span></td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     <?php endif; ?>
 </section>
 
+<!-- TinyMCE CDN -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#comic-data-editor-table tbody');
@@ -464,6 +609,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // Optionen für die Dropdowns (müssen im JS wiederholt werden, da PHP-Variablen nicht direkt zugänglich sind)
     const comicTypeOptions = <?php echo json_encode($comicTypeOptions); ?>;
     const chapterOptions = <?php echo json_encode($chapterOptions); ?>;
+
+    // TinyMCE Initialisierung
+    function initializeTinyMCE(selector) {
+        tinymce.init({
+            selector: selector,
+            plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount',
+            toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | removeformat | code',
+            content_css: [
+                'https://cdn.twokinds.keenspot.com/css/main.css?c=20250524',
+                'https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524'
+            ],
+            // Custom CSS for Dark Theme within TinyMCE iframe
+            setup: function (editor) {
+                editor.on('init', function () {
+                    const isDarkTheme = document.body.classList.contains('theme-night');
+                    if (isDarkTheme) {
+                        editor.dom.addStyle('body { background-color: #00334c; color: #fff; }');
+                        // Optional: Adjust specific elements within the editor if needed
+                    }
+                });
+            },
+            // Paste options for better Word handling
+            paste_as_text: false, // Allow pasting rich text
+            paste_data_images: true, // Allow pasting images (will be base64 embedded, might need server-side handling)
+            // Ensure content_style is set to allow the editor to inherit styles
+            content_style: 'body { font-family:"Open Sans",Arial,sans-serif; font-size:15px; }'
+        });
+    }
+
+    // Initialisiere TinyMCE für alle vorhandenen Textareas
+    initializeTinyMCE('textarea.transcript-textarea');
 
     // Funktion zum Hinzufügen einer neuen Zeile
     function addRow(comic = {id: '', type: '', name: '', transcript: '', chapter: null}, isNew = true) {
@@ -478,15 +654,15 @@ document.addEventListener('DOMContentLoaded', function() {
             newRow.classList.add('incomplete-entry');
         }
         
+        // Generiere eine temporäre ID für das neue Textarea, bevor TinyMCE es übernimmt
+        const newTextareaId = 'transcript-textarea-' + Date.now();
+
         let typeOptionsHtml = '';
         comicTypeOptions.forEach(option => {
             typeOptionsHtml += `<option value="${htmlspecialchars(option)}" ${comic.type === option ? 'selected' : ''}>${htmlspecialchars(option)}</option>`;
         });
 
-        let chapterOptionsHtml = '';
-        chapterOptions.forEach(option => {
-            chapterOptionsHtml += `<option value="${htmlspecialchars(option)}" ${comic.chapter == option ? 'selected' : ''}>${htmlspecialchars(option)}</option>`;
-        });
+        let chapterInputHtml = `<input type="number" name="comic_chapter[]" value="${htmlspecialchars(comic.chapter ?? '')}" min="1">`;
 
         newRow.innerHTML = `
             <td><input type="text" name="comic_id[]" value="${htmlspecialchars(comic.id)}" ${isNew ? '' : 'readonly'}></td>
@@ -498,33 +674,27 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
             <td><input type="text" name="comic_name[]" value="${htmlspecialchars(comic.name)}"></td>
             <td>
-                <div class="transcript-editor-toolbar">
-                    <button type="button" class="format-button" data-tag="b"><b>B</b></button>
-                    <button type="button" class="format-button" data-tag="i"><i>I</i></button>
-                    <button type="button" class="format-button" data-tag="u"><u>U</u></button>
-                    <button type="button" class="format-button" data-tag="p">¶</button>
-                    <button type="button" class="format-button" data-tag="br">↵</button>
-                </div>
-                <textarea name="comic_transcript[]" class="transcript-textarea">${htmlspecialchars(comic.transcript)}</textarea>
+                <textarea name="comic_transcript[]" class="transcript-textarea" id="${newTextareaId}">${comic.transcript}</textarea>
             </td>
             <td>
-                <input type="number" name="comic_chapter[]" value="${htmlspecialchars(comic.chapter ?? '')}" min="1">
+                ${chapterInputHtml}
             </td>
             <td><button type="button" class="remove-row">Entfernen</button></td>
         `;
         tableBody.appendChild(newRow);
 
-        // Füge Event Listener für die neuen Format-Buttons hinzu
-        const newTextarea = newRow.querySelector('.transcript-textarea');
-        newRow.querySelectorAll('.format-button').forEach(button => {
-            button.addEventListener('click', function() {
-                applyFormatting(newTextarea, button.dataset.tag);
-            });
-        });
+        // Initialisiere TinyMCE für die neu hinzugefügte Textarea
+        initializeTinyMCE('#' + newTextareaId);
 
         // Event Listener für Input-Änderungen, um die "incomplete-entry" Klasse zu aktualisieren
         newRow.querySelectorAll('input, select, textarea').forEach(input => {
-            input.addEventListener('input', updateRowCompleteness);
+            // TinyMCE aktualisiert das zugrunde liegende Textarea bei 'change' und 'keyup'
+            if (input.classList.contains('transcript-textarea')) {
+                tinymce.get(newTextareaId).on('change', updateRowCompleteness);
+                tinymce.get(newTextareaId).on('keyup', updateRowCompleteness);
+            } else {
+                input.addEventListener('input', updateRowCompleteness);
+            }
         });
 
         // Initial die Vollständigkeit der neuen Zeile prüfen
@@ -539,7 +709,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event Listener für "Entfernen" Buttons (Delegation)
     tableBody.addEventListener('click', function(event) {
         if (event.target.classList.contains('remove-row')) {
-            event.target.closest('tr').remove();
+            const rowToRemove = event.target.closest('tr');
+            const textareaId = rowToRemove.querySelector('.transcript-textarea').id;
+            
+            // TinyMCE Instanz zerstören, bevor das Element entfernt wird
+            if (tinymce.get(textareaId)) {
+                tinymce.get(textareaId).destroy();
+            }
+            rowToRemove.remove();
+
             // Wenn keine Zeilen mehr vorhanden, die "Keine Einträge vorhanden"-Zeile wieder hinzufügen
             if (tableBody.children.length === 0) {
                 const emptyRow = document.createElement('tr');
@@ -547,50 +725,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 emptyRow.innerHTML = '<td colspan="6" style="text-align: center;">Keine Comic-Einträge vorhanden. Füge neue hinzu oder lade Bilder hoch.</td>';
                 tableBody.appendChild(emptyRow);
             }
-        }
-    });
-
-    // Funktion zum Anwenden von Formatierungen im Textarea
-    function applyFormatting(textarea, tag) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const selectedText = textarea.value.substring(start, end);
-        let replacement = '';
-
-        switch (tag) {
-            case 'b':
-                replacement = `<b>${selectedText}</b>`;
-                break;
-            case 'i':
-                replacement = `<i>${selectedText}</i>`;
-                break;
-            case 'u':
-                replacement = `<u>${selectedText}</u>`;
-                break;
-            case 'p':
-                replacement = `<p>${selectedText}</p>`;
-                break;
-            case 'br':
-                replacement = `${selectedText}<br>`;
-                break;
-            default:
-                return;
-        }
-
-        textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
-        textarea.focus();
-        textarea.setSelectionRange(start + replacement.length, start + replacement.length); // Cursor ans Ende der Formatierung setzen
-    }
-
-    // Initialisiere Formatierungs-Buttons für bereits vorhandene Textareas
-    document.querySelectorAll('.transcript-textarea').forEach(textarea => {
-        const toolbar = textarea.previousElementSibling; // Die Toolbar ist das vorherige Geschwisterelement
-        if (toolbar && toolbar.classList.contains('transcript-editor-toolbar')) {
-            toolbar.querySelectorAll('.format-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    applyFormatting(textarea, button.dataset.tag);
-                });
-            });
         }
     });
 
@@ -603,10 +737,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const transcriptTextarea = row.querySelector('textarea[name="comic_transcript[]"]');
         const chapterInput = row.querySelector('input[name="comic_chapter[]"]');
 
+        // Für TinyMCE: Inhalt über den Editor abrufen
+        const transcriptContent = tinymce.get(transcriptTextarea.id) ? tinymce.get(transcriptTextarea.id).getContent({format: 'text'}).trim() : transcriptTextarea.value.trim();
+
         const isComplete = comicIdInput.value.trim() !== '' &&
                            typeSelect.value.trim() !== '' &&
                            nameInput.value.trim() !== '' &&
-                           transcriptTextarea.value.trim() !== '' &&
+                           transcriptContent !== '' && // Prüfe den Inhalt des Editors
                            chapterInput.value.trim() !== '' &&
                            parseInt(chapterInput.value) > 0;
 
@@ -619,18 +756,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialisiere die Vollständigkeitsprüfung für alle vorhandenen Zeilen
     document.querySelectorAll('#comic-data-editor-table tbody tr').forEach(row => {
-        // Da die Zeilen bereits beim Laden die Klasse haben können,
-        // triggern wir die Prüfung, um sie ggf. zu entfernen, wenn alles ausgefüllt ist.
-        updateRowCompleteness.call({target: row.querySelector('input, select, textarea')});
-
         // Füge Event Listener für Input-Änderungen hinzu
-        row.querySelectorAll('input, select, textarea').forEach(input => {
+        row.querySelectorAll('input, select').forEach(input => {
             input.addEventListener('input', updateRowCompleteness);
         });
+        // Für TinyMCE: Event Listener nach Initialisierung hinzufügen
+        const textarea = row.querySelector('.transcript-textarea');
+        if (textarea && tinymce.get(textarea.id)) {
+            tinymce.get(textarea.id).on('change', updateRowCompleteness);
+            tinymce.get(textarea.id).on('keyup', updateRowCompleteness);
+        }
+        // Initial die Vollständigkeit der Zeile prüfen
+        updateRowCompleteness.call({target: row.querySelector('input, select, textarea')});
     });
 
 
-    // Hilfsfunktion für HTML-Escaping in JavaScript
+    // Hilfsfunktion für HTML-Escaping in JavaScript (für Input-Werte, nicht für TinyMCE-Inhalt)
     function htmlspecialchars(str) {
         var div = document.createElement('div');
         div.appendChild(document.createTextNode(str));
