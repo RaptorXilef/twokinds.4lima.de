@@ -62,7 +62,8 @@ $message = '';
 $messageType = ''; // 'success' or 'error'
 
 // Optionen für 'type' und 'chapter'
-$comicTypeOptions = ['Comicseite vom ', 'Lückenfüller']; // "Comicseite vom " ist der Standard für neue Seiten
+// Korrektur: "Comicseite vom" zu "Comicseite" geändert
+$comicTypeOptions = ['Comicseite', 'Lückenfüller']; 
 $chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
 
 // --- Paginierungseinstellungen ---
@@ -695,6 +696,35 @@ if (file_exists($headerPath)) {
         </div>
     <?php endif; ?>
 
+    <!-- Pagination Buttons above content -->
+    <div class="pagination">
+        <?php if ($currentPage > 1): ?>
+            <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page">Zurück</a>
+        <?php else: ?>
+            <span class="prev-page disabled">Zurück</span>
+        <?php endif; ?>
+
+        <?php for ($i = 1; $i <= $totalPages; $i++):
+            $pageLinkClass = '';
+            if (isset($pagesWithIncompleteData[$i])) {
+                $pageLinkClass = 'incomplete-page';
+            }
+        ?>
+            <?php if ($i == $currentPage): ?>
+                <span class="current-page <?php echo $pageLinkClass; ?>"><?php echo $i; ?></span>
+            <?php else: ?>
+                <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>"><?php echo $i; ?></a>
+            <?php endif; ?>
+        <?php endfor; ?>
+
+        <?php if ($currentPage < $totalPages): ?>
+            <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page">Weiter</a>
+        <?php else: ?>
+            <span class="next-page disabled">Weiter</span>
+        <?php endif; ?>
+    </div>
+    <br><br><br> <!-- Drei Leerzeilen -->
+
     <form id="comic-data-form">
         <table class="comic-data-table" id="comic-data-editor-table">
             <thead>
@@ -774,38 +804,40 @@ if (file_exists($headerPath)) {
             </tbody>
         </table>
 
+        <!-- Pagination Buttons below table -->
+        <div class="pagination">
+            <?php if ($currentPage > 1): ?>
+                <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page">Zurück</a>
+            <?php else: ?>
+                <span class="prev-page disabled">Zurück</span>
+            <?php endif; ?>
+
+            <?php for ($i = 1; $i <= $totalPages; $i++):
+                $pageLinkClass = '';
+                if (isset($pagesWithIncompleteData[$i])) {
+                    $pageLinkClass = 'incomplete-page';
+                }
+            ?>
+                <?php if ($i == $currentPage): ?>
+                    <span class="current-page <?php echo $pageLinkClass; ?>"><?php echo $i; ?></span>
+                <?php else: ?>
+                    <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>"><?php echo $i; ?></a>
+                <?php endif; ?>
+            <?php endfor; ?>
+
+            <?php if ($currentPage < $totalPages): ?>
+                <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page">Weiter</a>
+            <?php else: ?>
+                <span class="next-page disabled">Weiter</span>
+            <?php endif; ?>
+        </div>
+        <br><br><br> <!-- Drei Leerzeilen -->
+
         <div class="button-container">
             <button type="button" id="add-new-comic-entry" class="button">Neuen Comic-Eintrag hinzufügen (+)</button>
             <!-- Der globale Speichern-Button wurde entfernt, da das Speichern pro Zeile erfolgt. -->
         </div>
     </form>
-
-    <div class="pagination">
-        <?php if ($currentPage > 1): ?>
-            <a href="?page=<?php echo $currentPage - 1; ?>" class="prev-page">Zurück</a>
-        <?php else: ?>
-            <span class="prev-page disabled">Zurück</span>
-        <?php endif; ?>
-
-        <?php for ($i = 1; $i <= $totalPages; $i++):
-            $pageLinkClass = '';
-            if (isset($pagesWithIncompleteData[$i])) {
-                $pageLinkClass = 'incomplete-page';
-            }
-        ?>
-            <?php if ($i == $currentPage): ?>
-                <span class="current-page <?php echo $pageLinkClass; ?>"><?php echo $i; ?></span>
-            <?php else: ?>
-                <a href="?page=<?php echo $i; ?>" class="<?php echo $pageLinkClass; ?>"><?php echo $i; ?></a>
-            <?php endif; ?>
-        <?php endfor; ?>
-
-        <?php if ($currentPage < $totalPages): ?>
-            <a href="?page=<?php echo $currentPage + 1; ?>" class="next-page">Weiter</a>
-        <?php else: ?>
-            <span class="next-page disabled">Weiter</span>
-        <?php endif; ?>
-    </div>
 
     <?php if (!empty($incompleteInfoReportFull)): ?>
         <div class="incomplete-report">
@@ -966,17 +998,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </td>
             <td>
-                <span class="display-mode">${nameDisplay}</span>
-                <div class="edit-mode">
-                    <input type="text" name="comic_name[]" value="${htmlspecialchars(comic.name)}">
-                </div>
-            </td>
-            <td>
                 <span class="display-mode">${typeDisplay}</span>
                 <div class="edit-mode">
                     <select name="comic_type[]">
                         ${typeOptionsHtml}
                     </select>
+                </div>
+            </td>
+            <td>
+                <span class="display-mode">${nameDisplay}</span>
+                <div class="edit-mode">
+                    <input type="text" name="comic_name[]" value="${htmlspecialchars(comic.name)}">
                 </div>
             </td>
             <td>
@@ -1087,12 +1119,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     showMessage(result.message, 'success');
                     setUnsavedChanges(false);
                     // Aktualisiere die angezeigten Werte und schalte den Modus um
-                    row.querySelector('.display-mode:nth-child(1)').textContent = dataToSave.comic_id;
-                    // Die Reihenfolge der Spalten hat sich geändert, daher angepasste Selektoren
-                    row.querySelector('.display-mode:nth-child(2)').textContent = dataToSave.comic_name; // Name ist jetzt an 2. Stelle
-                    row.querySelector('.display-mode:nth-child(3)').textContent = dataToSave.comic_type; // Type ist jetzt an 3. Stelle
-                    row.querySelector('.transcript-display').innerHTML = dataToSave.comic_transcript; // Use innerHTML for HTML content
-                    row.querySelector('.display-mode:nth-child(5)').textContent = dataToSave.comic_chapter;
+                    // Korrigierte Selektoren für display-mode Elemente
+                    const displayComicId = row.querySelector('td:nth-child(1) .display-mode');
+                    const displayType = row.querySelector('td:nth-child(2) .display-mode');
+                    const displayName = row.querySelector('td:nth-child(3) .display-mode');
+                    const displayTranscript = row.querySelector('td:nth-child(4) .transcript-display');
+                    const displayChapter = row.querySelector('td:nth-child(5) .display-mode');
+
+                    if (displayComicId) displayComicId.textContent = dataToSave.comic_id;
+                    if (displayType) displayType.textContent = dataToSave.comic_type;
+                    if (displayName) displayName.textContent = dataToSave.comic_name;
+                    if (displayTranscript) displayTranscript.innerHTML = dataToSave.comic_transcript; // Use innerHTML for HTML content
+                    if (displayChapter) displayChapter.textContent = dataToSave.comic_chapter;
                     
                     // Aktualisiere die data-comic-id der Zeile, falls die ID geändert wurde
                     row.dataset.comicId = dataToSave.comic_id;
@@ -1239,8 +1277,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Initial die Vollständigkeit der Zeile prüfen (für Anzeigemodus)
         // Die Bearbeitungsfelder sind noch nicht initialisiert, daher prüfen wir die angezeigten Spans
         const comicIdDisplay = row.querySelector('td:nth-child(1) .display-mode');
-        const nameDisplay = row.querySelector('td:nth-child(3) .display-mode'); // Name ist jetzt an 3. Stelle
-        const typeDisplay = row.querySelector('td:nth-child(2) .display-mode'); // Type ist jetzt an 2. Stelle
+        const typeDisplay = row.querySelector('td:nth-child(2) .display-mode'); 
+        const nameDisplay = row.querySelector('td:nth-child(3) .display-mode'); 
         const transcriptDisplay = row.querySelector('.transcript-display');
         const chapterDisplay = row.querySelector('td:nth-child(5) .display-mode');
 
