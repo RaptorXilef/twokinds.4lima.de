@@ -21,7 +21,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000,
             $params["path"], $params["domain"],
-            $params["secure"], $params["httponly"]
+            $params["secure"], $params["httplly"]
         );
     }
 
@@ -161,7 +161,7 @@ if (file_exists($headerPath)) {
     </form>
 
     <?php if (!empty($generationMessage)): ?>
-        <div style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #e0ffe0; border-radius: 5px;">
+        <div style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #e0ffe0; border-radius: 5px; color: #155724;">
             <p><?php echo $generationMessage; ?></p>
         </div>
     <?php endif; ?>
