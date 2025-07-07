@@ -597,23 +597,41 @@ if (file_exists($headerPath)) {
         color: white;
         border: none;
     }
+    body.theme-night .comic-data-table .action-buttons .edit-button {
+        background-color: #48778a;
+    }
     .comic-data-table .action-buttons .edit-button:hover {
         background-color: #0056b3;
+    }
+    body.theme-night .comic-data-table .action-buttons .edit-button:hover {
+        background-color: #628492;
     }
     .comic-data-table .action-buttons .save-button {
         background-color: #28a745;
         color: white;
         border: none;
     }
+    body.theme-night .comic-data-table .action-buttons .save-button {
+        background-color: #2a6177;
+    }
     .comic-data-table .action-buttons .save-button:hover {
         background-color: #218838;
+    }
+    body.theme-night .comic-data-table .action-buttons .save-button:hover {
+        background-color: #48778a;
     }
     .comic-data-table .action-buttons .cancel-button {
         background-color: #6c757d;
         color: white;
         border: none;
     }
+    body.theme-night .comic-data-table .action-buttons .cancel-button {
+        background-color: #6c757d;
+    }
     .comic-data-table .action-buttons .cancel-button:hover {
+        background-color: #5a6268;
+    }
+    body.theme-night .comic-data-table .action-buttons .cancel-button:hover {
         background-color: #5a6268;
     }
     /* Hide save/cancel buttons in display mode */
@@ -629,24 +647,9 @@ if (file_exists($headerPath)) {
         display: inline-block; /* Show in edit mode */
     }
 
-    /* Dark Theme for action buttons */
-    body.theme-night .comic-data-table .action-buttons .edit-button {
-        background-color: #48778a;
-    }
-    body.theme-night .comic-data-table .action-buttons .edit-button:hover {
-        background-color: #628492;
-    }
-    body.theme-night .comic-data-table .action-buttons .save-button {
-        background-color: #2a6177;
-    }
-    body.theme-night .comic-data-table .action-buttons .save-button:hover {
-        background-color: #48778a;
-    }
-    body.theme-night .comic-data-table .action-buttons .cancel-button {
-        background-color: #6c757d;
-    }
-    body.theme-night .comic-data-table .action-buttons .cancel-button:hover {
-        background-color: #5a6268;
+    /* Fix for main-container overflow */
+    .main-container {
+        overflow: hidden; /* This forces the container to wrap its floated children */
     }
 
 </style>
@@ -866,10 +869,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (enable) {
             // Speichere die Originaldaten vor dem Bearbeiten
             const comicId = row.dataset.comicId;
-            const typeSelect = row.querySelector('select[name="comic_type[]"]');
-            const nameInput = row.querySelector('input[name="comic_name[]"]');
-            const transcriptTextarea = row.querySelector('textarea[name="comic_transcript[]"]');
-            const chapterInput = row.querySelector('input[name="comic_chapter[]"]');
+            const typeSelect = row.querySelector('.edit-mode select[name="comic_type[]"]');
+            const nameInput = row.querySelector('.edit-mode input[name="comic_name[]"]');
+            const transcriptTextarea = row.querySelector('.edit-mode textarea[name="comic_transcript[]"]');
+            const chapterInput = row.querySelector('.edit-mode input[name="comic_chapter[]"]');
 
             originalRowData.set(comicId, {
                 type: typeSelect.value,
@@ -884,7 +887,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             row.classList.remove('editing');
             // Zerstöre Summernote, wenn die Textarea ausgeblendet wird
-            const textarea = row.querySelector('.transcript-textarea');
+            const textarea = row.querySelector('.edit-mode textarea[name="comic_transcript[]"]');
             if (textarea && $(textarea).data('summernote')) {
                 $(textarea).summernote('destroy');
             }
@@ -973,14 +976,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Event Listener für Input-Änderungen, um die "incomplete-entry" Klasse zu aktualisieren
-        newRow.querySelectorAll('input, select').forEach(input => {
+        newRow.querySelectorAll('.edit-mode input, .edit-mode select').forEach(input => {
             input.addEventListener('input', () => {
                 updateRowCompleteness(input);
                 setUnsavedChanges(true);
             });
         });
         // Initial die Vollständigkeit der neuen Zeile prüfen
-        updateRowCompleteness(newRow.querySelector('input, select, textarea'));
+        updateRowCompleteness(newRow.querySelector('.edit-mode input, .edit-mode select, .edit-mode textarea'));
         setUnsavedChanges(true); // Neue Zeile bedeutet ungespeicherte Änderungen
     }
 
@@ -1002,11 +1005,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (target.classList.contains('save-button')) {
             event.preventDefault(); // Formular-Submission verhindern
 
-            const comicIdInput = row.querySelector('input[name="comic_id[]"]');
-            const typeSelect = row.querySelector('select[name="comic_type[]"]');
-            const nameInput = row.querySelector('input[name="comic_name[]"]');
-            const transcriptTextarea = row.querySelector('.transcript-textarea');
-            const chapterInput = row.querySelector('input[name="comic_chapter[]"]');
+            const comicIdInput = row.querySelector('.edit-mode input[name="comic_id[]"]');
+            const typeSelect = row.querySelector('.edit-mode select[name="comic_type[]"]');
+            const nameInput = row.querySelector('.edit-mode input[name="comic_name[]"]');
+            const transcriptTextarea = row.querySelector('.edit-mode .transcript-textarea');
+            const chapterInput = row.querySelector('.edit-mode input[name="comic_chapter[]"]');
 
             // Summernote Inhalt abrufen
             const transcriptContent = $(transcriptTextarea).summernote('code'); // Get HTML content
@@ -1072,13 +1075,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (originalData) {
                 // Setze die Felder auf die Originalwerte zurück
-                row.querySelector('select[name="comic_type[]"]').value = originalData.type;
-                row.querySelector('input[name="comic_name[]"]').value = originalData.name;
-                row.querySelector('textarea[name="comic_transcript[]"]').value = originalData.transcript;
-                row.querySelector('input[name="comic_chapter[]"]').value = originalData.chapter;
+                row.querySelector('.edit-mode select[name="comic_type[]"]').value = originalData.type;
+                row.querySelector('.edit-mode input[name="comic_name[]"]').value = originalData.name;
+                row.querySelector('.edit-mode textarea[name="comic_transcript[]"]').value = originalData.transcript;
+                // Summernote muss den Inhalt über seine API gesetzt bekommen
+                $(row.querySelector('.edit-mode textarea[name="comic_transcript[]"]')).summernote('code', originalData.transcript);
+                row.querySelector('.edit-mode input[name="comic_chapter[]"]').value = originalData.chapter;
             } else {
                 // Wenn keine Originaldaten vorhanden (z.B. neue, noch nicht gespeicherte Zeile), entfernen
-                const textarea = row.querySelector('.transcript-textarea');
+                const textarea = row.querySelector('.edit-mode .transcript-textarea');
                 if (textarea && $(textarea).data('summernote')) {
                     $(textarea).summernote('destroy');
                 }
@@ -1101,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const comicIdToDelete = row.dataset.comicId;
             if (!comicIdToDelete) { // Für neu hinzugefügte, noch nicht gespeicherte Zeilen
-                const textarea = row.querySelector('.transcript-textarea');
+                const textarea = row.querySelector('.edit-mode .transcript-textarea');
                 if (textarea && $(textarea).data('summernote')) {
                     $(textarea).summernote('destroy');
                 }
@@ -1130,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (result.status === 'success') {
                     showMessage('Eintrag erfolgreich gelöscht!', 'success');
                     setUnsavedChanges(false);
-                    const textarea = row.querySelector('.transcript-textarea');
+                    const textarea = row.querySelector('.edit-mode .transcript-textarea');
                     if (textarea && $(textarea).data('summernote')) {
                         $(textarea).summernote('destroy');
                     }
@@ -1167,11 +1172,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!row) return;
 
-        const comicIdInput = row.querySelector('input[name="comic_id[]"]');
-        const typeSelect = row.querySelector('select[name="comic_type[]"]');
-        const nameInput = row.querySelector('input[name="comic_name[]"]');
-        const transcriptTextarea = row.querySelector('textarea[name="comic_transcript[]"]');
-        const chapterInput = row.querySelector('input[name="comic_chapter[]"]');
+        const comicIdInput = row.querySelector('.edit-mode input[name="comic_id[]"]');
+        const typeSelect = row.querySelector('.edit-mode select[name="comic_type[]"]');
+        const nameInput = row.querySelector('.edit-mode input[name="comic_name[]"]');
+        const transcriptTextarea = row.querySelector('.edit-mode textarea[name="comic_transcript[]"]');
+        const chapterInput = row.querySelector('.edit-mode input[name="comic_chapter[]"]');
 
         // Für Summernote: Inhalt über den Editor abrufen
         const transcriptContent = $(transcriptTextarea).summernote('isEmpty') ? '' : $(transcriptTextarea).summernote('code'); // Get HTML content
