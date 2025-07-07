@@ -22,6 +22,15 @@ gc_enable();
 // Starte die PHP-Sitzung. Notwendig für die Admin-Anmeldung.
 session_start();
 
+// Logout-Funktion (wird über GET-Parameter ausgelöst)
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_unset();     // Entfernt alle Session-Variablen
+    session_destroy();   // Zerstört die Session
+    ob_end_clean(); // Output Buffer leeren, da wir umleiten
+    header('Location: index.php'); // Weiterleitung zur Login-Seite
+    exit;
+}
+
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {

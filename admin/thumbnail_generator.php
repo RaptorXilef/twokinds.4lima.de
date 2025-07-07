@@ -22,6 +22,15 @@ gc_enable();
 // Starte die PHP-Sitzung. Notwendig für die Admin-Anmeldung.
 session_start();
 
+// Logout-Funktion (wird über GET-Parameter ausgelöst)
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_unset();     // Entfernt alle Session-Variablen
+    session_destroy();   // Zerstört die Session
+    ob_end_clean(); // Output Buffer leeren, da wir umleiten
+    header('Location: index.php'); // Weiterleitung zur Login-Seite
+    exit;
+}
+
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -690,61 +699,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Generierung ist aktiv oder pausiert
             generateButton.style.display = 'none';
             togglePauseResumeButton.style.display = 'inline-block';
-            if (isPaused) {
-                togglePauseResumeButton.textContent = 'Generierung fortsetzen';
-                togglePauseResumeButton.className = 'status-green-button';
-            } else {
-                togglePauseResumeButton.textContent = 'Generierung pausieren';
-                togglePauseResumeButton.className = 'status-red-button';
-            }
-            togglePauseResumeButton.disabled = false;
-        } else if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) {
-            // Alle Thumbnails verarbeitet (Generierung abgeschlossen)
-            generateButton.style.display = 'inline-block';
-            generateButton.disabled = true; // Nichts mehr zu generieren
-            togglePauseResumeButton.style.display = 'none';
-        } else {
-            // Initialer Zustand: Thumbnails zum Generieren vorhanden, aber noch nicht gestartet
-            generateButton.style.display = 'inline-block';
-            generateButton.disabled = false;
-            togglePauseResumeButton.style.display = 'none';
-        }
-    }
-
-    // Initialen Zustand der Buttons beim Laden der Seite setzen
-    updateButtonState();
-
-    if (generateButton) {
-        generateButton.addEventListener('click', function() {
-            if (initialMissingIds.length === 0) {
-                console.log('Keine Thumbnails zum Generieren vorhanden.');
-                return;
-            }
-
-            // UI zurücksetzen und Ladezustand anzeigen
-            loadingSpinner.style.display = 'block';
-            generationResultsSection.style.display = 'block';
-            overallStatusMessage.textContent = '';
-            overallStatusMessage.className = 'status-message'; // Klasse zurücksetzen
-            createdImagesContainer.innerHTML = '';
-            errorsList.innerHTML = '';
-            errorHeaderMessage.style.display = 'none'; // Fehler-Header initial ausblenden
-
-            // Setze remainingIds neu, falls der Button erneut geklickt wird nach Abschluss
-            remainingIds = [...initialMissingIds];
-            createdCount = 0;
-            errorCount = 0;
-            isPaused = false;
-
-            isGenerationActive = true; // Generierung starten
-            updateButtonState(); // Buttons anpassen (Generieren aus, Pause an)
-            processNextImage();
-        });
-    }
-
-    if (togglePauseResumeButton) {
-        togglePauseResumeButton.addEventListener('click', function() {
-            isPaused = !isPaused; // Zustand umschalten
             if (isPaused) {
                 progressText.textContent = `Generierung pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
             }

@@ -14,6 +14,15 @@ ob_start();
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
 
+// Logout-Funktion (wird über GET-Parameter ausgelöst)
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_unset();     // Entfernt alle Session-Variablen
+    session_destroy();   // Zerstört die Session
+    ob_end_clean(); // Output Buffer leeren, da wir umleiten
+    header('Location: index.php'); // Weiterleitung zur Login-Seite
+    exit;
+}
+
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
@@ -69,7 +78,7 @@ function getComicIdsFromImages(string $dirPath): array {
             }
             // Extrahiere den Dateinamen ohne Erweiterung (z.B. "20250604" aus "20250604.png")
             $info = pathinfo($file);
-            // Stellt sicher, dass es ein Datum im Format YYYYMMDD ist und eine gültige Bild-Extension hat
+            // Stellt sicher, dass es ein Datum im FormatYYYYMMDD ist und eine gültige Bild-Extension hat
             if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), ['jpg', 'jpeg', 'png', 'gif'])) {
                 $imageIds[] = $info['filename'];
             }

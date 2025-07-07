@@ -11,6 +11,14 @@
 // Starte die PHP-Sitzung. Notwendig, wenn diese Seite in den Admin-Bereich eingebunden ist.
 session_start();
 
+// Logout-Funktion (wird über GET-Parameter ausgelöst)
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_unset();     // Entfernt alle Session-Variablen
+    session_destroy();   // Zerstört die Session
+    header('Location: index.php'); // Weiterleitung zur Login-Seite
+    exit;
+}
+
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
