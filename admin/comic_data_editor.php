@@ -13,7 +13,7 @@
 ob_start();
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
-session_session_start();
+session_start();
 
 // Logout-Logik: Muss vor dem Sicherheitscheck erfolgen.
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
@@ -66,7 +66,10 @@ $comicTypeOptions = ['Comicseite', 'Lückenfüller'];
 $chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
 
 // --- Paginierungseinstellungen ---
-const ITEMS_PER_PAGE = 50;
+// Konstante nur definieren, wenn sie noch nicht existiert, um "already defined" Warnung zu vermeiden
+if (!defined('ITEMS_PER_PAGE')) {
+    define('ITEMS_PER_PAGE', 50);
+}
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($currentPage < 1) $currentPage = 1;
 
@@ -233,7 +236,6 @@ foreach ($imageComicIds as $id) {
 ksort($fullComicData);
 
 // --- Paginierungslogik anwenden ---
-const ITEMS_PER_PAGE = 50;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($currentPage < 1) $currentPage = 1;
 
@@ -506,7 +508,7 @@ if (file_exists($headerPath)) {
 
     /* Summernote editor frame */
     .note-editor.note-frame {
-        width: 100% !important; /* Ensure full width */
+        width: calc(100% - 22px) !important; /* Ensure same width as other inputs */
         border: 1px solid #ccc;
         border-radius: 4px;
         box-sizing: border-box;
@@ -981,7 +983,7 @@ if (file_exists($headerPath)) {
         }
 
         .note-editor.note-frame { /* Summernote editor frame */
-            width: 100% !important; /* Ensure full width */
+            width: calc(100% - 20px) !important; /* Ensure same width as other inputs */
         }
 
         .collapsible-header {
@@ -1714,6 +1716,15 @@ document.addEventListener('DOMContentLoaded', function() {
         header.addEventListener('click', function() {
             const section = this.closest('.collapsible-section');
             section.classList.toggle('expanded');
+            // Update the icon based on the expanded state
+            const icon = this.querySelector('i');
+            if (section.classList.contains('expanded')) {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            }
             // If it's the form section and it's expanded, scroll to it
             if (section.classList.contains('form-section') && section.classList.contains('expanded')) {
                 section.scrollIntoView({ behavior: 'smooth' });
