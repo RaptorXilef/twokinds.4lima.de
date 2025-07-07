@@ -129,9 +129,9 @@ $robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
                 <article>
                     <?php
                     // Der Seiten-Header wird hier dynamisch eingefügt, wenn er übergeben wurde.
-                    if (!empty($pageHeader)) {
+                    /*if (!empty($pageHeader)) {
                         echo '<header>';
                         echo '    <h1 class="page-header">' . htmlspecialchars($pageHeader) . '</h1>';
                         echo '</header>';
-                    }
+                    }*/
                     ?>
