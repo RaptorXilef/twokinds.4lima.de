@@ -1033,8 +1033,8 @@ if (file_exists($headerPath)) {
 <div class="admin-container">
     <div id="message-box" class="message-box"></div>
 
-    <section class="form-section collapsible-section expanded">
-        <h2 class="collapsible-header">Comic-Eintrag bearbeiten / hinzufügen <i class="fas fa-chevron-down"></i></h2>
+    <section class="form-section collapsible-section"> <!-- 'expanded' Klasse entfernt -->
+        <h2 class="collapsible-header">Comic-Eintrag bearbeiten / hinzufügen <i class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
             <form id="comic-edit-form">
                 <input type="hidden" id="original-comic-id" name="original_comic_id" value="">
@@ -1076,7 +1076,7 @@ if (file_exists($headerPath)) {
     </section>
 
     <section class="comic-list-section collapsible-section expanded">
-        <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-down"></i></h2>
+        <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
             <div class="comic-table-container">
                 <table class="comic-table" id="comic-data-table">
