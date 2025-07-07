@@ -197,16 +197,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
     }
 
     $updatedComicDataSubset = [];
-    $deletedIds = [];
+    // Korrektur: deleted_ids direkt aus dem Request-Payload lesen
+    $deletedIdsFromRequest = $requestData['deleted_ids'] ?? [];
 
     if (isset($requestData['pages']) && is_array($requestData['pages'])) {
         foreach ($requestData['pages'] as $page) {
             $comicId = trim($page['comic_id']);
             if (empty($comicId)) {
-                // Wenn die ID leer ist, wurde die Zeile im Frontend als gelöscht markiert oder ist ungültig
-                // Wir fügen sie zur Liste der zu löschenden IDs hinzu, falls sie existiert
+                // Diese Logik ist für den Fall, dass eine ID im Frontend GEÄNDERT wurde,
+                // und die alte ID gelöscht werden muss.
+                // Die primäre Löschung erfolgt über $deletedIdsFromRequest.
                 if (isset($page['original_comic_id']) && !empty($page['original_comic_id'])) {
-                    $deletedIds[] = $page['original_comic_id'];
+                    $deletedIdsFromRequest[] = $page['original_comic_id'];
                 }
                 continue; // Überspringe leere IDs
             }
@@ -231,7 +233,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
     }
 
     // Speichere das Subset der Daten und verarbeite gelöschte IDs.
-    if (saveComicData($comicVarJsonPath, $updatedComicDataSubset, $deletedIds)) {
+    // Die $deletedIdsFromRequest enthält nun sowohl explizit gelöschte als auch durch ID-Änderung zu löschende IDs.
+    if (saveComicData($comicVarJsonPath, $updatedComicDataSubset, $deletedIdsFromRequest)) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!']);
         exit;
@@ -1260,7 +1263,7 @@ if (file_exists($headerPath)) {
                                     <td><?php echo htmlspecialchars($id); ?></td>
                                     <td><?php echo $isTypeMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
                                     <td><?php echo $isNameMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                    <td><?php echo $isTranscriptMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
+                                    <td><?php echo $isTranscriptEffectivelyEmpty ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
                                     <td><?php echo $isChapterMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
                                     <td><?php echo ($currentImageExistence['lowres'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?></td>
                                     <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?></td>
@@ -1575,213 +1578,6 @@ document.addEventListener('DOMContentLoaded', function() {
         resetForm();
         showMessage('Eintrag lokal gespeichert.', 'success');
         showMessage('Ihre Änderungen sind lokal gespeichert. Bitte klicken Sie auf "Alle Änderungen speichern", um sie permanent zu sichern.', 'warning');
-    });
-
-    // Event Listener für den "Alle Änderungen speichern" Button
-    saveAllButton.addEventListener('click', function() {
-        console.log("Save All button clicked."); // Debug-Meldung
-        if (!hasUnsavedChanges) {
-            showMessage('Keine ungespeicherten Änderungen vorhanden.', 'info');
-            return;
-        }
-
-        // Sammle alle zu speichernden/löschenden Daten
-        const dataToSend = {
-            pages: Array.from(editedRows.values()),
-            deleted_ids: Array.from(deletedRows)
-        };
-        console.log("Data to send to server:", dataToSend); // Debug-Meldung
-
-        // Sende Daten an den Server
-        fetch(window.location.href, { // Sendet an die aktuelle PHP-Datei
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dataToSend)
-        })
-        .then(response => {
-            if (!response.ok) {
-                // Wenn der Server einen HTTP-Fehlercode zurückgibt
-                throw new Error(`HTTP-Fehler! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                showMessage(data.message + ' Die Seite wird neu geladen, um die Änderungen anzuzeigen.', 'success');
-                setUnsavedChanges(false);
-                editedRows.clear(); // Lokale Änderungen löschen
-                deletedRows.clear(); // Lokale Löschungen löschen
-                console.log("Fetch successful, reloading page."); // Debug-Meldung
-                // Kurze Verzögerung vor dem Neuladen, damit die Nachricht sichtbar ist
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else {
-                showMessage('Fehler beim Speichern der Daten: ' + data.message, 'error');
-                console.error('Server responded with error:', data.message); // Debug-Meldung
-            }
-        })
-        .catch(error => {
-            console.error('Fetch error:', error); // Debug-Meldung
-            showMessage('Ein Netzwerkfehler ist aufgetreten oder die Serverantwort war unerwartet: ' + error.message, 'error');
-        });
-    });
-
-    // Initialer Status des "Alle Änderungen speichern" Buttons
-    setUnsavedChanges(false);
-
-    // Live-Bearbeitung in der Tabelle (Doppelklick)
-    comicDataTable.addEventListener('dblclick', function(event) {
-        const target = event.target;
-        if (target.classList.contains('editable-field')) {
-            const row = target.closest('tr');
-            const comicId = row.dataset.comicId;
-            const fieldName = target.classList[1].replace('-display', ''); // z.B. 'comic-type'
-            console.log("Double-clicked editable field:", fieldName, "for ID:", comicId); // Debug-Meldung
-
-            if (target.classList.contains('editing')) {
-                return; // Bereits im Bearbeitungsmodus
-            }
-
-            // Alle anderen Bearbeitungsfelder schließen
-            document.querySelectorAll('.editable-field.editing').forEach(field => {
-                field.classList.remove('editing');
-                const originalContent = field.dataset.originalContent;
-                if (originalContent !== undefined) {
-                    field.innerHTML = originalContent; // Setze den Inhalt zurück
-                }
-            });
-
-            // Speichere den Originalinhalt
-            target.dataset.originalContent = target.innerHTML;
-            target.classList.add('editing');
-
-            let inputElement;
-            if (fieldName === 'comic-type') {
-                inputElement = document.createElement('select');
-                <?php foreach ($comicTypeOptions as $option): ?>
-                    var optionType = document.createElement('option'); // Changed to var
-                    optionType.value = "<?php echo htmlspecialchars($option); ?>";
-                    optionType.textContent = "<?php echo htmlspecialchars($option); ?>";
-                    inputElement.appendChild(optionType);
-                <?php endforeach; ?>
-                inputElement.value = target.textContent;
-            } else if (fieldName === 'comic-chapter') {
-                inputElement = document.createElement('select');
-                var defaultOption = document.createElement('option'); // Changed to var
-                defaultOption.value = "";
-                defaultOption.textContent = "Bitte auswählen";
-                inputElement.appendChild(defaultOption);
-                <?php foreach ($chapterOptions as $option): ?>
-                    var optionChapter = document.createElement('option'); // Changed to var
-                    optionChapter.value = "<?php echo htmlspecialchars($option); ?>";
-                    optionChapter.textContent = "<?php echo htmlspecialchars($option); ?>";
-                    inputElement.appendChild(optionChapter);
-                <?php endforeach; ?>
-                inputElement.value = target.textContent;
-            } else if (fieldName === 'comic-transcript') {
-                // Double-clicking transcript now triggers the main edit form
-                const editButton = row.querySelector('.edit-button');
-                if (editButton) {
-                    editButton.click(); // Simulate click on edit button
-                    target.classList.remove('editing'); // Remove editing class from span
-                    console.log("Transcript double-clicked, redirecting to full form edit."); // Debug-Meldung
-                    return; // Exit here as editing happens in main form
-                }
-            } else {
-                inputElement = document.createElement('input');
-                inputElement.type = 'text';
-                inputElement.value = target.textContent;
-                inputElement.style.width = '100%';
-                inputElement.style.boxSizing = 'border-box';
-            }
-
-            // Only proceed if an input element was created (i.e., not for transcript field)
-            if (inputElement) {
-                target.innerHTML = '';
-                target.appendChild(inputElement);
-                inputElement.focus();
-
-                inputElement.addEventListener('blur', function() {
-                    // Überprüfe, ob sich der Wert geändert hat
-                    const newValue = inputElement.value.trim();
-                    const originalValue = target.dataset.originalContent.trim();
-                    console.log("Field blurred. New value:", newValue, "Original value:", originalValue); // Debug-Meldung
-
-                    target.classList.remove('editing');
-                    target.innerHTML = htmlspecialchars(newValue); // Zeige den neuen Wert an
-
-                    if (newValue !== originalValue) {
-                        // Daten für die Speicherung vorbereiten
-                        let currentData = editedRows.get(comicId) || {
-                            comic_id: comicId,
-                            comic_type: row.querySelector('.comic-type-display').textContent,
-                            comic_name: row.querySelector('.comic-name-display').textContent,
-                            comic_transcript: row.querySelector('.comic-transcript-display').textContent,
-                            comic_chapter: parseInt(row.querySelector('.comic-chapter-display').textContent)
-                        };
-
-                        if (fieldName === 'comic-type') currentData.comic_type = newValue;
-                        else if (fieldName === 'comic-name') currentData.comic_name = newValue;
-                        else if (fieldName === 'comic-transcript') currentData.comic_transcript = newValue; // Should not happen with current logic for transcript
-                        else if (fieldName === 'comic-chapter') currentData.comic_chapter = parseInt(newValue);
-
-                        editedRows.set(comicId, currentData);
-                        setUnsavedChanges(true);
-                        showMessage('Änderung für ' + comicId + ' (' + fieldName + ') lokal gespeichert. Klicken Sie auf "Alle Änderungen speichern".', 'info');
-                        console.log("Local change recorded:", currentData); // Debug-Meldung
-
-                        // Aktualisiere die "missing-info" Klasse basierend auf dem neuen Wert
-                        const isTranscriptEffectivelyEmpty = (currentData.comic_transcript === '' || currentData.comic_transcript === '<p><br></p>' || currentData.comic_transcript === '&nbsp;');
-                        const isChapterEffectivelyEmpty = (currentData.comic_chapter === null || isNaN(currentData.comic_chapter) || currentData.comic_chapter <= 0);
-
-                        if (fieldName === 'comic-type') {
-                            if (currentData.comic_type === '') target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        } else if (fieldName === 'comic-name') {
-                            if (currentData.comic_name === '') target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        } else if (fieldName === 'comic-transcript') { // Should not happen with current logic for transcript
-                            if (isTranscriptEffectivelyEmpty) target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        } else if (fieldName === 'comic-chapter') {
-                            if (isChapterEffectivelyEmpty) target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        }
-
-                        // Prüfe, ob die gesamte Zeile jetzt vollständig ist oder nicht
-                        const rowType = row.querySelector('.comic-type-display').textContent;
-                        const rowName = row.querySelector('.comic-name-display').textContent;
-                        const rowTranscript = row.querySelector('.comic-transcript-display').textContent;
-                        const rowChapter = row.querySelector('.comic-chapter-display').textContent;
-
-                        const rowIsTranscriptEffectivelyEmpty = (rowTranscript === '' || rowTranscript === '<p><br></p>' || rowTranscript === '&nbsp;');
-                        const rowIsChapterEffectivelyEmpty = (rowChapter === '' || parseInt(rowChapter) <= 0);
-
-                        if (rowType === '' || rowName === '' || rowIsTranscriptEffectivelyEmpty || rowIsChapterEffectivelyEmpty) {
-                            row.classList.add('missing-info-row');
-                        } else {
-                            row.classList.remove('missing-info-row');
-                        }
-
-                    } else {
-                        // Wenn keine Änderung, setze den Originalinhalt zurück (falls HTML-Tags entfernt wurden)
-                        target.innerHTML = originalValue;
-                    }
-                });
-
-                // Ermögliche Speichern mit Enter für Textfelder
-                if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
-                    inputElement.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter' && inputElement.tagName === 'INPUT') { // Nur für INPUT, nicht TEXTAREA
-                            inputElement.blur(); // Verlässt das Feld, was den blur-Event auslöst und speichert
-                        }
-                    });
-                }
-            }
-        }
     });
 
     // Event Listener für den "Alle Änderungen speichern" Button
