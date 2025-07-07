@@ -136,21 +136,30 @@ function getComicIdsFromImages(string $lowresDir, string $hiresDir): array {
 }
 
 
-// Verarbeite POST-Anfragen zum Speichern
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_comic_data'])) {
+// Verarbeite POST-Anfragen zum Speichern (AJAX-Handling)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
+    // JSON-Daten aus dem Request Body lesen
+    $input = file_get_contents('php://input');
+    $requestData = json_decode($input, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Fehler beim Dekodieren der JSON-Daten: ' . json_last_error_msg()]);
+        exit;
+    }
+
     $updatedComicData = [];
-    if (isset($_POST['comic_id']) && is_array($_POST['comic_id'])) {
-        foreach ($_POST['comic_id'] as $index => $comicId) {
-            $comicId = trim($comicId);
+    if (isset($requestData['pages']) && is_array($requestData['pages'])) {
+        foreach ($requestData['pages'] as $page) {
+            $comicId = trim($page['comic_id']);
             if (empty($comicId)) {
                 continue; // Überspringe leere IDs
             }
 
-            $type = isset($_POST['comic_type'][$index]) ? trim($_POST['comic_type'][$index]) : '';
-            $name = isset($_POST['comic_name'][$index]) ? trim($_POST['comic_name'][$index]) : '';
-            // TinyMCE sendet den HTML-Inhalt direkt, kein htmlspecialchars() hier
-            $transcript = isset($_POST['comic_transcript'][$index]) ? $_POST['comic_transcript'][$index] : '';
-            $chapter = isset($_POST['comic_chapter'][$index]) ? (int)$_POST['comic_chapter'][$index] : null;
+            $type = isset($page['comic_type']) ? trim($page['comic_type']) : '';
+            $name = isset($page['comic_name']) ? trim($page['comic_name']) : '';
+            $transcript = isset($page['comic_transcript']) ? $page['comic_transcript'] : '';
+            $chapter = isset($page['comic_chapter']) ? (int)$page['comic_chapter'] : null;
 
             // Validierung für Chapter (muss eine Zahl sein)
             if (!is_numeric($chapter) || $chapter <= 0) {
@@ -167,15 +176,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_comic_data'])) {
     }
 
     if (saveComicData($comicVarJsonPath, $updatedComicData)) {
-        $message = 'Comic-Daten erfolgreich gespeichert!';
-        $messageType = 'success';
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!']);
+        exit;
     } else {
-        $message = 'Fehler beim Speichern der Comic-Daten.';
-        $messageType = 'error';
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern der Comic-Daten.']);
+        exit;
     }
 }
 
-// Lade die aktuelle Konfiguration für die Anzeige
+// Lade die aktuelle Konfiguration für die Anzeige (für GET-Anfragen)
 $currentComicData = loadComicData($comicVarJsonPath);
 $imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath);
 
@@ -255,7 +266,7 @@ if (file_exists($headerPath)) {
     }
     .comic-data-table textarea {
         min-height: 80px; /* Mindesthöhe für Transcript */
-        resize: vertical; /* Nur vertikal skalierbar */
+        resize: both; /* Vertikal und Horizontal skalierbar */
         font-family: 'Open Sans', sans-serif; /* Konsistente Schriftart */
         font-size: 15px;
     }
@@ -334,118 +345,59 @@ if (file_exists($headerPath)) {
         background-color: #721c24 !important; /* Dunkleres Rot für Dark Mode */
     }
 
-    /* Styles für die TinyMCE Integration */
-    .tox-tinymce {
+    /* Summernote Styles */
+    .note-editor.note-frame {
         border-radius: 3px;
+        border: 1px solid #ddd; /* Match existing input borders */
     }
-    body.theme-night .tox-tinymce {
-        background-color: #2a6177 !important;
-        border-color: #002b3c !important;
+    body.theme-night .note-editor.note-frame {
+        background-color: #2a6177; /* Darker background for editor frame */
+        border-color: #002b3c;
     }
-    body.theme-night .tox-editor-header {
-        background-color: #2a6177 !important;
-        border-color: #002b3c !important;
-        color: #fff !important;
+    body.theme-night .note-editor .note-toolbar {
+        background-color: #2a6177; /* Darker toolbar */
+        border-bottom: 1px solid #002b3c;
     }
-    body.theme-night .tox-toolbar-group {
-        background-color: #2a6177 !important;
-        border-color: #002b3c !important;
+    body.theme-night .note-editor .note-editing-area .note-editable {
+        background-color: #00334c; /* Darker editing area */
+        color: #fff;
     }
-    body.theme-night .tox-toolbar-group button {
-        color: #fff !important;
+    body.theme-night .note-editor .note-statusbar {
+        background-color: #2a6177;
+        border-top: 1px solid #002b3c;
+        color: #fff;
     }
-    body.theme-night .tox-statusbar {
-        background-color: #2a6177 !important;
-        border-color: #002b3c !important;
-        color: #fff !important;
+    body.theme-night .note-editor .btn-group .btn {
+        background-color: #48778a; /* Button background */
+        color: #fff; /* Button text */
+        border-color: #002b3c;
     }
-    body.theme-night .tox-edit-area__iframe {
-        background-color: #00334c !important;
-        color: #fff !important;
+    body.theme-night .note-editor .btn-group .btn:hover {
+        background-color: #628492; /* Button hover */
     }
-    body.theme-night .tox-collection__item-label {
-        color: #fff !important;
+    body.theme-night .note-editor .btn-group .btn.active {
+        background-color: #628492; /* Active button */
     }
-    body.theme-night .tox-menu {
-        background-color: #2a6177 !important;
-        border-color: #002b3c !important;
+    body.theme-night .note-editor .dropdown-menu {
+        background-color: #2a6177;
+        border-color: #002b3c;
     }
-    body.theme-night .tox-collection__item--active {
-        background-color: #48778a !important;
+    body.theme-night .note-editor .dropdown-menu a {
+        color: #fff;
     }
-    body.theme-night .tox-tbtn svg {
-        fill: #fff !important;
+    body.theme-night .note-editor .dropdown-menu a:hover {
+        background-color: #48778a;
     }
-    body.theme-night .tox-tbtn--enabled svg {
-        fill: #d4edda !important; /* Leichterer Ton für aktive Buttons */
+    body.theme-night .note-popover .popover-content {
+        background-color: #2a6177;
+        color: #fff;
     }
-    body.theme-night .tox-tbtn:hover {
-        background-color: #48778a !important;
+    body.theme-night .note-popover .popover-content .btn-group .btn {
+        background-color: #48778a;
+        color: #fff;
     }
-    body.theme-night .tox-split-button__chevron {
-        fill: #fff !important;
-    }
-    body.theme-night .tox-dialog {
-        background-color: #00334c !important;
-        color: #fff !important;
-    }
-    body.theme-night .tox-dialog__header,
-    body.theme-night .tox-dialog__footer {
-        background-color: #2a6177 !important;
-    }
-    body.theme-night .tox-label,
-    body.theme-night .tox-dialog__title {
-        color: #fff !important;
-    }
-    body.theme-night .tox-textfield,
-    body.theme-night .tox-select {
-        background-color: #00425c !important;
-        color: #fff !important;
-        border-color: #002b3c !important;
-    }
-    body.theme-night .tox-button {
-        background-color: #48778a !important;
-        color: #fff !important;
-    }
-    body.theme-night .tox-button:hover {
-        background-color: #628492 !important;
-    }
-    body.theme-night .tox-checkbox__input:checked + .tox-checkbox__label::before {
-        background-color: #48778a !important;
-        border-color: #48778a !important;
-    }
-    body.theme-night .tox-popover {
-        background-color: #2a6177 !important;
-        border-color: #002b3c !important;
-    }
-    body.theme-night .tox-popover__arrow {
-        background-color: #2a6177 !important;
-    }
-    body.theme-night .tox-popover__body {
-        color: #fff !important;
-    }
-    body.theme-night .tox-popover__body button {
-        color: #fff !important;
-    }
-    body.theme-night .tox-color-picker-group__color-input {
-        background-color: #00425c !important;
-        color: #fff !important;
-        border-color: #002b3c !important;
-    }
-    body.theme-night .tox-swatch {
-        border-color: #002b3c !important;
-    }
-    body.theme-night .tox-swatch--active {
-        border-color: #fff !important;
-    }
-    body.theme-night .tox-menu-nav__js .tox-menu-nav__link {
-        color: #fff !important;
-    }
-    body.theme-night .tox-menu-nav__js .tox-menu-nav__link--active {
-        background-color: #48778a !important;
-    }
-    body.theme-night .tox-form__group--inline .tox-label {
-        color: #fff !important;
+    body.theme-night .note-popover .popover-content .btn-group .btn:hover {
+        background-color: #628492;
     }
 
 
@@ -505,7 +457,7 @@ if (file_exists($headerPath)) {
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="">
+    <form id="comic-data-form">
         <table class="comic-data-table" id="comic-data-editor-table">
             <thead>
                 <tr>
@@ -520,8 +472,12 @@ if (file_exists($headerPath)) {
             <tbody>
                 <?php if (!empty($currentComicData)): ?>
                     <?php foreach ($currentComicData as $id => $data):
-                        $isComplete = empty($incompleteInfoReport[$id]);
-                        $rowClass = $isComplete ? '' : 'incomplete-entry';
+                        // Bestimme, ob der Eintrag unvollständig ist, um die Klasse zu setzen
+                        $isTypeMissing = empty($data['type']);
+                        $isNameMissing = empty($data['name']);
+                        $isTranscriptMissing = empty($data['transcript']);
+                        $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
+                        $rowClass = ($isTypeMissing || $isNameMissing || $isTranscriptMissing || $isChapterMissing) ? 'incomplete-entry' : '';
                     ?>
                         <tr class="<?php echo $rowClass; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>">
                             <td><input type="text" name="comic_id[]" value="<?php echo htmlspecialchars($id); ?>" readonly></td>
@@ -537,8 +493,8 @@ if (file_exists($headerPath)) {
                             </td>
                             <td><input type="text" name="comic_name[]" value="<?php echo htmlspecialchars($data['name']); ?>"></td>
                             <td>
-                                <!-- TinyMCE wird hier initialisiert. Der Wert ist reines HTML. -->
-                                <textarea name="comic_transcript[]" class="transcript-textarea"><?php echo $data['transcript']; ?></textarea>
+                                <!-- Summernote wird hier initialisiert. Der Wert ist reines HTML. -->
+                                <textarea name="comic_transcript[]" class="transcript-textarea" id="transcript-<?php echo htmlspecialchars($id); ?>"><?php echo $data['transcript']; ?></textarea>
                             </td>
                             <td>
                                 <input type="number" name="comic_chapter[]" value="<?php echo htmlspecialchars($data['chapter'] ?? ''); ?>" min="1">
@@ -556,7 +512,7 @@ if (file_exists($headerPath)) {
 
         <div class="button-container">
             <button type="button" id="add-new-comic-entry" class="button">Neuen Comic-Eintrag hinzufügen (+)</button>
-            <button type="submit" name="save_comic_data" class="button">Änderungen speichern</button>
+            <button type="submit" id="save-comic-data" class="button">Änderungen speichern</button>
         </div>
     </form>
 
@@ -598,48 +554,64 @@ if (file_exists($headerPath)) {
     <?php endif; ?>
 </section>
 
-<!-- TinyMCE CDN -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- jQuery (Summernote Dependency) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<!-- Summernote CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
+<!-- Summernote JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#comic-data-editor-table tbody');
     const addEntryButton = document.getElementById('add-new-comic-entry');
+    const saveButton = document.getElementById('save-comic-data');
     const noEntriesRow = document.getElementById('no-entries-row');
+    const messageBoxElement = document.querySelector('.message-box');
 
     // Optionen für die Dropdowns (müssen im JS wiederholt werden, da PHP-Variablen nicht direkt zugänglich sind)
     const comicTypeOptions = <?php echo json_encode($comicTypeOptions); ?>;
     const chapterOptions = <?php echo json_encode($chapterOptions); ?>;
 
-    // TinyMCE Initialisierung
-    function initializeTinyMCE(selector) {
-        tinymce.init({
-            selector: selector,
-            plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste help wordcount',
-            toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | removeformat | code',
-            content_css: [
-                'https://cdn.twokinds.keenspot.com/css/main.css?c=20250524',
-                'https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524'
+    // Summernote Initialisierung
+    function initializeSummernote(selector) {
+        $(selector).summernote({
+            height: 150, // Set initial height
+            minHeight: null, // Set minimum height
+            maxHeight: null, // Set maximum height
+            focus: true, // Set focus to editable area after initializing summernote
+            toolbar: [
+                ['style', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['font', ['fontsize', 'color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link', 'hr']],
+                ['view', ['codeview', 'fullscreen', 'help']]
             ],
-            // Custom CSS for Dark Theme within TinyMCE iframe
-            setup: function (editor) {
-                editor.on('init', function () {
-                    const isDarkTheme = document.body.classList.contains('theme-night');
-                    if (isDarkTheme) {
-                        editor.dom.addStyle('body { background-color: #00334c; color: #fff; }');
-                        // Optional: Adjust specific elements within the editor if needed
-                    }
-                });
-            },
-            // Paste options for better Word handling
-            paste_as_text: false, // Allow pasting rich text
-            paste_data_images: true, // Allow pasting images (will be base64 embedded, might need server-side handling)
-            // Ensure content_style is set to allow the editor to inherit styles
-            content_style: 'body { font-family:"Open Sans",Arial,sans-serif; font-size:15px; }'
+            // Custom CSS for Dark Theme within Summernote iframe (if it creates an iframe)
+            // Summernote Lite does not create an iframe by default, so direct CSS is usually enough.
+            // If it behaves unexpectedly with dark theme, additional CSS might be needed for .note-editable
+            callbacks: {
+                onChange: function(contents, $editable) {
+                    // Update the underlying textarea value
+                    $(this).val(contents);
+                    // Trigger completeness check
+                    updateRowCompleteness(this);
+                },
+                onKeyup: function(e) {
+                    updateRowCompleteness(this);
+                },
+                onPaste: function(e) {
+                    // Summernote has built-in paste cleanup for Word content
+                    // You can add custom paste handling here if needed
+                }
+            }
         });
     }
 
-    // Initialisiere TinyMCE für alle vorhandenen Textareas
-    initializeTinyMCE('textarea.transcript-textarea');
+    // Initialisiere Summernote für alle vorhandenen Textareas
+    document.querySelectorAll('textarea.transcript-textarea').forEach(textarea => {
+        initializeSummernote('#' + textarea.id);
+    });
 
     // Funktion zum Hinzufügen einer neuen Zeile
     function addRow(comic = {id: '', type: '', name: '', transcript: '', chapter: null}, isNew = true) {
@@ -654,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function() {
             newRow.classList.add('incomplete-entry');
         }
         
-        // Generiere eine temporäre ID für das neue Textarea, bevor TinyMCE es übernimmt
+        // Generiere eine temporäre ID für das neue Textarea
         const newTextareaId = 'transcript-textarea-' + Date.now();
 
         let typeOptionsHtml = '';
@@ -683,22 +655,15 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         tableBody.appendChild(newRow);
 
-        // Initialisiere TinyMCE für die neu hinzugefügte Textarea
-        initializeTinyMCE('#' + newTextareaId);
+        // Initialisiere Summernote für die neu hinzugefügte Textarea
+        initializeSummernote('#' + newTextareaId);
 
         // Event Listener für Input-Änderungen, um die "incomplete-entry" Klasse zu aktualisieren
-        newRow.querySelectorAll('input, select, textarea').forEach(input => {
-            // TinyMCE aktualisiert das zugrunde liegende Textarea bei 'change' und 'keyup'
-            if (input.classList.contains('transcript-textarea')) {
-                tinymce.get(newTextareaId).on('change', updateRowCompleteness);
-                tinymce.get(newTextareaId).on('keyup', updateRowCompleteness);
-            } else {
-                input.addEventListener('input', updateRowCompleteness);
-            }
+        newRow.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', () => updateRowCompleteness(input));
         });
-
         // Initial die Vollständigkeit der neuen Zeile prüfen
-        updateRowCompleteness.call({target: newRow.querySelector('input, select, textarea')});
+        updateRowCompleteness(newRow.querySelector('input, select, textarea'));
     }
 
     // Event Listener für "Neuen Comic-Eintrag hinzufügen" Button
@@ -710,11 +675,9 @@ document.addEventListener('DOMContentLoaded', function() {
     tableBody.addEventListener('click', function(event) {
         if (event.target.classList.contains('remove-row')) {
             const rowToRemove = event.target.closest('tr');
-            const textareaId = rowToRemove.querySelector('.transcript-textarea').id;
-            
-            // TinyMCE Instanz zerstören, bevor das Element entfernt wird
-            if (tinymce.get(textareaId)) {
-                tinymce.get(textareaId).destroy();
+            const textarea = rowToRemove.querySelector('.transcript-textarea');
+            if (textarea && $(textarea).data('summernote')) { // Check if Summernote is initialized
+                $(textarea).summernote('destroy'); // Summernote Instanz zerstören
             }
             rowToRemove.remove();
 
@@ -729,21 +692,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Funktion zur Überprüfung der Vollständigkeit einer Zeile
-    function updateRowCompleteness() {
-        const row = this.closest('tr');
+    function updateRowCompleteness(element) {
+        const row = $(element).closest('tr')[0]; // Get the native DOM element
+        if (!row) return;
+
         const comicIdInput = row.querySelector('input[name="comic_id[]"]');
         const typeSelect = row.querySelector('select[name="comic_type[]"]');
         const nameInput = row.querySelector('input[name="comic_name[]"]');
         const transcriptTextarea = row.querySelector('textarea[name="comic_transcript[]"]');
         const chapterInput = row.querySelector('input[name="comic_chapter[]"]');
 
-        // Für TinyMCE: Inhalt über den Editor abrufen
-        const transcriptContent = tinymce.get(transcriptTextarea.id) ? tinymce.get(transcriptTextarea.id).getContent({format: 'text'}).trim() : transcriptTextarea.value.trim();
+        // Für Summernote: Inhalt über den Editor abrufen
+        const transcriptContent = $(transcriptTextarea).summernote('isEmpty') ? '' : $(transcriptTextarea).summernote('code'); // Get HTML content
 
         const isComplete = comicIdInput.value.trim() !== '' &&
                            typeSelect.value.trim() !== '' &&
                            nameInput.value.trim() !== '' &&
-                           transcriptContent !== '' && // Prüfe den Inhalt des Editors
+                           transcriptContent.trim() !== '' && // Prüfe den HTML-Inhalt des Editors
                            chapterInput.value.trim() !== '' &&
                            parseInt(chapterInput.value) > 0;
 
@@ -758,18 +723,72 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('#comic-data-editor-table tbody tr').forEach(row => {
         // Füge Event Listener für Input-Änderungen hinzu
         row.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('input', updateRowCompleteness);
+            input.addEventListener('input', () => updateRowCompleteness(input));
         });
-        // Für TinyMCE: Event Listener nach Initialisierung hinzufügen
-        const textarea = row.querySelector('.transcript-textarea');
-        if (textarea && tinymce.get(textarea.id)) {
-            tinymce.get(textarea.id).on('change', updateRowCompleteness);
-            tinymce.get(textarea.id).on('keyup', updateRowCompleteness);
-        }
+        // Summernote ruft onChange/onKeyup selbst auf, was updateRowCompleteness triggert
         // Initial die Vollständigkeit der Zeile prüfen
-        updateRowCompleteness.call({target: row.querySelector('input, select, textarea')});
+        updateRowCompleteness(row.querySelector('textarea.transcript-textarea'));
     });
 
+    // Event Listener für den Speichern-Button (AJAX-Submission)
+    saveButton.addEventListener('click', async function(event) {
+        event.preventDefault(); // Standard-Formular-Submission verhindern
+
+        const allComicData = [];
+        document.querySelectorAll('#comic-data-editor-table tbody tr').forEach(row => {
+            const comicIdInput = row.querySelector('input[name="comic_id[]"]');
+            const typeSelect = row.querySelector('select[name="comic_type[]"]');
+            const nameInput = row.querySelector('input[name="comic_name[]"]');
+            const transcriptTextarea = row.querySelector('textarea[name="comic_transcript[]"]');
+            const chapterInput = row.querySelector('input[name="comic_chapter[]"]');
+
+            // Summernote Inhalt abrufen
+            const transcriptContent = $(transcriptTextarea).summernote('code'); // Get HTML content
+
+            allComicData.push({
+                comic_id: comicIdInput.value.trim(),
+                comic_type: typeSelect.value.trim(),
+                comic_name: nameInput.value.trim(),
+                comic_transcript: transcriptContent,
+                comic_chapter: chapterInput.value.trim() !== '' ? parseInt(chapterInput.value) : null
+            });
+        });
+
+        try {
+            const response = await fetch(window.location.href, { // Sende an dieselbe Seite
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pages: allComicData }) // Sende als JSON
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                showMessage(result.message, 'success');
+                // Optional: Seite neu laden, um die sortierte Liste zu sehen
+                // window.location.reload(); 
+            } else {
+                showMessage(result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Fehler beim Speichern der Comic-Daten:', error);
+            showMessage('Ein Netzwerkfehler ist aufgetreten oder der Server hat nicht geantwortet.', 'error');
+        }
+    });
+
+    // Funktion zum Anzeigen von Nachrichten
+    function showMessage(msg, type) {
+        if (messageBoxElement) {
+            messageBoxElement.textContent = msg;
+            messageBoxElement.className = 'message-box ' + type;
+            messageBoxElement.style.display = 'block';
+        } else {
+            // Fallback, falls die Message Box nicht gefunden wird
+            alert(msg);
+        }
+    }
 
     // Hilfsfunktion für HTML-Escaping in JavaScript (für Input-Werte, nicht für TinyMCE-Inhalt)
     function htmlspecialchars(str) {
