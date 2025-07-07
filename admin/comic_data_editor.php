@@ -243,19 +243,34 @@ if ($currentPage < 1) $currentPage = 1;
 $totalItems = count($fullComicData);
 $totalPages = ceil($totalItems / ITEMS_PER_PAGE);
 
+// Debugging output in den Error-Log
+error_log("DEBUG: Total Items: " . $totalItems);
+error_log("DEBUG: Items Per Page: " . ITEMS_PER_PAGE);
+error_log("DEBUG: Calculated Total Pages: " . $totalPages);
+error_log("DEBUG: Current Page (before adjustment): " . $currentPage);
+
 // Sicherstellen, dass die aktuelle Seite nicht außerhalb des Bereichs liegt
 if ($currentPage > $totalPages && $totalPages > 0) {
     $currentPage = $totalPages;
-} elseif ($totalPages == 0 && $totalItems > 0) { // Fallback, wenn totalPages 0 ist aber Items da sind (sollte nicht passieren)
-     $currentPage = 1;
-} elseif ($totalItems == 0) { // Wenn gar keine Items da sind
+    error_log("DEBUG: Current Page adjusted to Total Pages: " . $currentPage);
+} elseif ($totalPages == 0 && $totalItems > 0) {
+     $currentPage = 1; // Sollte nicht passieren, wenn totalItems > 0 und ITEMS_PER_PAGE > 0
+     error_log("DEBUG: Current Page adjusted to 1 (totalPages 0, totalItems > 0): " . $currentPage);
+} elseif ($totalItems == 0) {
     $currentPage = 1;
-    $totalPages = 1;
+    $totalPages = 1; // Sicherstellen, dass mindestens 1 Seite angezeigt wird, wenn keine Items vorhanden sind
+    error_log("DEBUG: Current Page and Total Pages adjusted to 1 (no items): " . $currentPage);
 }
+
+error_log("DEBUG: Final Current Page: " . $currentPage);
+error_log("DEBUG: Final Total Pages: " . $totalPages);
 
 
 $offset = ($currentPage - 1) * ITEMS_PER_PAGE;
+error_log("DEBUG: Offset: " . $offset);
+
 $paginatedComicData = array_slice($fullComicData, $offset, ITEMS_PER_PAGE, true); // true, um Keys zu erhalten
+error_log("DEBUG: Paginated Comic Data Count: " . count($paginatedComicData));
 
 // Bericht über unvollständige Informationen (basierend auf allen Daten)
 $incompleteInfoReportFull = [];
@@ -1033,7 +1048,7 @@ if (file_exists($headerPath)) {
 <div class="admin-container">
     <div id="message-box" class="message-box"></div>
 
-    <section class="form-section collapsible-section"> <!-- 'expanded' Klasse entfernt -->
+    <section class="form-section collapsible-section"> <!-- Standardmäßig eingeklappt -->
         <h2 class="collapsible-header">Comic-Eintrag bearbeiten / hinzufügen <i class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
             <form id="comic-edit-form">
@@ -1075,8 +1090,8 @@ if (file_exists($headerPath)) {
         </div>
     </section>
 
-    <section class="comic-list-section collapsible-section expanded">
-        <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-right"></i></h2>
+    <section class="comic-list-section collapsible-section expanded"> <!-- Standardmäßig ausgeklappt, wie gewünscht -->
+        <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-down"></i></h2> <!-- Pfeil nach unten für ausgeklappten Zustand -->
         <div class="collapsible-content">
             <div class="comic-table-container">
                 <table class="comic-table" id="comic-data-table">
@@ -1163,7 +1178,7 @@ if (file_exists($headerPath)) {
         </div>
     </section>
 
-    <section class="report-section collapsible-section">
+    <section class="report-section collapsible-section"> <!-- Standardmäßig eingeklappt -->
         <h2 class="collapsible-header">Bericht über fehlende Comic-Informationen (Gesamt) <i class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
             <?php if (!empty($fullComicData)): // Check if there's any comic data at all ?>
@@ -1713,11 +1728,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add event listeners for collapsible headers
     document.querySelectorAll('.collapsible-header').forEach(header => {
+        const section = header.closest('.collapsible-section');
+        const icon = header.querySelector('i');
+
+        // Set initial icon based on HTML class
+        if (section.classList.contains('expanded')) {
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
+        } else {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+        }
+
         header.addEventListener('click', function() {
-            const section = this.closest('.collapsible-section');
             section.classList.toggle('expanded');
             // Update the icon based on the expanded state
-            const icon = this.querySelector('i');
             if (section.classList.contains('expanded')) {
                 icon.classList.remove('fa-chevron-right');
                 icon.classList.add('fa-chevron-down');
