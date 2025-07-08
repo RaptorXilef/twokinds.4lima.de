@@ -36,6 +36,27 @@ $siteDescription = isset($siteDescription) ? $siteDescription : 'Ein Webcomic ü
 // Standardwert für den robots-Meta-Tag, der bei Comicseiten oder Adminseiten überschrieben wird.
 $robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
 
+// Starte die PHP-Sitzung, falls noch keine aktiv ist.
+// Dies verhindert die "Notice: session_start(): Ignoring session_start() because a session is already active" Meldung.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// --- Dynamische Pfadbestimmung für common.js ---
+// Ermittelt den absoluten Dateisystempfad der aktuellen header.php
+$headerFilePath = str_replace('\\', '/', __FILE__); // Normalisiere Backslashes für Windows
+// Ermittelt den absoluten Dateisystempfad des Webserver-Dokumenten-Roots
+$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+
+// Berechnet den relativen Pfad von der Webserver-Wurzel zur header.php
+$relativePathToHeader = substr($headerFilePath, strlen($documentRoot));
+// Der Pfad zur common.js ist relativ zur header.php: 'js/common.js'
+// Also ersetze 'header.php' im Pfad durch 'js/common.js'
+$commonJsWebPath = str_replace('header.php', 'js/common.js', $relativePathToHeader);
+// Füge einen Cache-Buster hinzu, basierend auf der letzten Änderungszeit der common.js Datei
+$commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ . '/js/common.js');
+// --- Ende Dynamische Pfadbestimmung ---
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -71,8 +92,9 @@ $robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
     <link rel="shortcut icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
     <link rel="apple-touch-icon-precomposed" type="image/png" href="https://cdn.twokinds.keenspot.com/appleicon.png">
 
-    <!-- Standard-JavaScript-Dateien. -->
-    <script type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/common.js?c=20201116'></script>
+    <!-- Standard-JavaScript-Dateien. common.js wird nun vom lokalen Server geladen. -->
+    <script type='text/javascript' src='<?php echo htmlspecialchars($commonJsWebPathWithCacheBuster); ?>'></script>
+
     <?php
     // Hier können zusätzliche Skripte eingefügt werden, die spezifisch für die aufrufende Seite sind.
     echo $additionalScripts;
@@ -94,16 +116,6 @@ $robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
                     <nav id="menu" class="menu">
                         <br>
                         <?php
-                        // Debugging paths - UNCOMMENT THESE LINES TO DEBUG PATHS IF YOU ENCOUNTER AN ERROR
-                        // $adminMenuPath = __DIR__ . '/../components/admin_menue_config.php'; // Korrigierter Pfad
-                        // $publicMenuPath = __DIR__ . '/../components/menue_config.php';
-                        // echo "<!-- Debug: Is Admin Page? " . (strpos($_SERVER['PHP_SELF'], '/admin/') !== false ? 'Yes' : 'No') . " -->\n";
-                        // echo "<!-- Debug: Admin Menu Path: " . htmlspecialchars($adminMenuPath) . " -->\n";
-                        // echo "<!-- Debug: Public Menu Path: " . htmlspecialchars($publicMenuPath) . " -->\n";
-                        // echo "<!-- Debug: Current PHP_SELF: " . htmlspecialchars($_SERVER['PHP_SELF']) . " -->\n";
-                        // echo "<!-- Debug: Admin menu file_exists: " . (file_exists($adminMenuPath) ? 'Yes' : 'No') . " -->\n";
-                        // echo "<!-- Debug: Public menu file_exists: " . (file_exists($publicMenuPath) ? 'Yes' : 'No') . " -->\n";
-
                         // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
                         // __DIR__ ist das Verzeichnis der aktuellen Datei (src/layout)
                         // $_SERVER['PHP_SELF'] ist der Pfad zum aktuell aufgerufenen Skript (z.B. /admin/index.php oder /index.php)
