@@ -160,6 +160,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_archive'])) 
         // --- Generiere die komplette archive.php Datei ---
         ob_start(); // Starte einen neuen Output Buffer für die archive.php
 
+        // Speichere die ursprünglichen Werte von $_SERVER, um sie später wiederherzustellen
+        $originalPhpSelf = $_SERVER['PHP_SELF'];
+        $originalDocumentRoot = $_SERVER['DOCUMENT_ROOT'];
+        $originalScriptFileName = $_SERVER['SCRIPT_FILENAME'];
+        $originalScriptPath = $_SERVER['SCRIPT_NAME'];
+
+        // Temporäre Anpassung von $_SERVER-Variablen für die Generierung von archive.php
+        // Diese Manipulation ist weiterhin notwendig, damit header.php das normale Menü lädt
+        // und die Pfade zu CSS/JS korrekt sind, als ob archive.php direkt aufgerufen würde.
+        // Auch für die korrekte canonical URL.
+        $_SERVER['PHP_SELF'] = '/archive.php'; // Simuliert, dass archive.php im Web-Root liegt
+        $_SERVER['SCRIPT_NAME'] = '/archive.php'; // Wichtig für die baseUrl-Berechnung in header.php
+        $_SERVER['SCRIPT_FILENAME'] = dirname(__DIR__) . '/archive.php'; // Simuliert den absoluten Pfad
+        $_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__); // Setzt den Document Root auf den Anwendungs-Root
+
         // Setze Parameter für den Header der generierten archive.php
         $pageTitle = 'Archiv';
         $pageHeader = 'TwoKinds Archiv';
@@ -171,25 +186,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_archive'])) 
             <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
             <script type="text/javascript" src="https://cdn.twokinds.keenspot.com/js/archive.js?c=20201116"></script>';
 
-        // Setze die Basis-URL dynamisch für die generierte archive.php (gleiche Logik wie in index.php)
-        $isLocal = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
-        if ($isLocal) {
-            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-            $host = $_SERVER['HTTP_HOST'];
-            $pathParts = explode('/', $_SERVER['SCRIPT_NAME']);
-            // Von /admin/generate_archive.php zu /
-            array_pop($pathParts); // Entfernt 'generate_archive.php'
-            array_pop($pathParts); // Entfernt 'admin'
-            $basePath = implode('/', $pathParts);
-            $baseUrl = $protocol . $host . $basePath . '/';
-        } else {
-            $baseUrl = 'https://twokinds.4lima.de/';
-        }
-        $additionalHeadContent = '<link rel="canonical" href="' . $baseUrl . 'archive.php">';
-        $viewportContent = 'width=1099'; // Konsistent mit Comic-Seiten
-
-        // Header der generierten archive.php
+        // Die $baseUrl wird nun automatisch von der inkludierten header.php gesetzt.
+        // Daher muss hier keine explizite $baseUrl-Berechnung mehr erfolgen.
+        // Wir verwenden die von header.php gesetzte $baseUrl für die canonical URL.
+        // Es ist wichtig, dass header.php VOR diesem Punkt inkludiert wird, damit $baseUrl verfügbar ist.
+        // Da header.php die $baseUrl selbst definiert, ist sie nach dem Include verfügbar.
         include __DIR__ . '/../src/layout/header.php'; // Pfad relativ zur generator-Datei
+
+        // Da $baseUrl jetzt in header.php gesetzt wird, können wir sie hier verwenden.
+        $additionalHeadContent = '<link rel="canonical" href="' . htmlspecialchars($baseUrl) . 'archive.php">';
+        $viewportContent = 'width=1099'; // Konsistent mit Comic-Seiten
 
         echo '<div class="instructions jsdep">Klicken Sie auf eine Kapitelüberschrift, um das Kapitel zu erweitern.</div>';
 
@@ -199,6 +205,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_archive'])) 
         include __DIR__ . '/../src/layout/footer.php'; // Pfad relativ zur generator-Datei
 
         $finalArchiveContent = ob_get_clean(); // Hole den gesamten Inhalt
+
+        // Setze $_SERVER-Variablen auf ihre ursprünglichen Werte zurück
+        $_SERVER['PHP_SELF'] = $originalPhpSelf;
+        $_SERVER['DOCUMENT_ROOT'] = $originalDocumentRoot;
+        $_SERVER['SCRIPT_FILENAME'] = $originalScriptFileName;
+        $_SERVER['SCRIPT_NAME'] = $originalScriptPath;
 
         // Speichere den generierten Inhalt in die Datei archive.php
         file_put_contents($archiveFilePath, $finalArchiveContent);

@@ -16,6 +16,50 @@
 // Setzt das maximale Ausführungszeitlimit für das Skript, um Timeouts bei größeren Operationen zu vermeiden.
 set_time_limit(300);
 
+// Starte die PHP-Sitzung, falls noch keine aktiv ist.
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
+// Diese Logik ist nun zentral in header.php und wird für alle Seiten verwendet.
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+
+$isLocal = (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false);
+
+if ($isLocal) {
+    // Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
+    // __FILE__ ist der absolute Pfad zu header.php (z.B. /var/www/html/deinprojekt/src/layout/header.php)
+    // dirname(__FILE__) ist /var/www/html/deinprojekt/src/layout
+    // dirname(dirname(__FILE__)) ist /var/www/html/deinprojekt/src
+    // dirname(dirname(dirname(__FILE__))) ist /var/www/html/deinprojekt (dies ist der Anwendungs-Root)
+    $appRootAbsPath = str_replace('\\', '/', dirname(dirname(dirname(__FILE__))));
+
+    // Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
+    $documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+
+    // Berechne den Unterordner-Pfad relativ zum Dokumenten-Root des Webservers.
+    // Wenn documentRoot /var/www/html ist und appRootAbsPath /var/www/html/deinprojekt,
+    // dann wird subfolderPath /deinprojekt.
+    $subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+
+    // Stelle sicher, dass der Unterordner-Pfad mit einem Schrägstrich beginnt und endet.
+    if (!empty($subfolderPath) && $subfolderPath !== '/') {
+        $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+    } elseif (empty($subfolderPath)) {
+        $subfolderPath = '/'; // Wenn der Anwendungs-Root GLEICH dem Dokumenten-Root ist.
+    }
+
+    $baseUrl = $protocol . $host . $subfolderPath;
+    error_log("DEBUG: Lokale Basis-URL (Header - Refined): " . $baseUrl);
+} else {
+    $baseUrl = 'https://twokinds.4lima.de/';
+    error_log("DEBUG: Live Basis-URL (Header): " . $baseUrl);
+}
+// === Ende Dynamische Basis-URL Bestimmung ===
+
+
 // Basis-Dateiname der aktuellen PHP-Datei ohne Erweiterung, wird für den Standard-Titel verwendet.
 $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
 
@@ -36,24 +80,12 @@ $siteDescription = isset($siteDescription) ? $siteDescription : 'Ein Webcomic ü
 // Standardwert für den robots-Meta-Tag, der bei Comicseiten oder Adminseiten überschrieben wird.
 $robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
 
-// Starte die PHP-Sitzung, falls noch keine aktiv ist.
-// Dies verhindert die "Notice: session_start(): Ignoring session_start() because a session is already active" Meldung.
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 // --- Dynamische Pfadbestimmung für common.js ---
-// Ermittelt den absoluten Dateisystempfad der aktuellen header.php
-$headerFilePath = str_replace('\\', '/', __FILE__); // Normalisiere Backslashes für Windows
-// Ermittelt den absoluten Dateisystempfad des Webserver-Dokumenten-Roots
-$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
-
-// Berechnet den relativen Pfad von der Webserver-Wurzel zur header.php
-$relativePathToHeader = substr($headerFilePath, strlen($documentRoot));
-// Der Pfad zur common.js ist relativ zur header.php: 'js/common.js'
-// Also ersetze 'header.php' im Pfad durch 'js/common.js'
-$commonJsWebPath = str_replace('header.php', 'js/common.js', $relativePathToHeader);
+// Der Pfad zur common.js ist relativ zum Anwendungs-Root: src/layout/js/common.js
+$commonJsWebPath = $baseUrl . 'src/layout/js/common.js';
 // Füge einen Cache-Buster hinzu, basierend auf der letzten Änderungszeit der common.js Datei
+// Pfad zur Datei auf dem Dateisystem: dirname(__FILE__) ist src/layout/, also ../js/common.js
 $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ . '/js/common.js');
 // --- Ende Dynamische Pfadbestimmung ---
 
@@ -79,7 +111,7 @@ $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ .
     ?>
     <link rel="sitemap" type="application/xml" title="Sitemap" href="<?php echo htmlspecialchars($sitemapURL); ?>">
     <meta name="google-site-verification" content="61orCNrFH-sm-pPvwWMM8uEH8OAnJDeKtI9yzVL3ico" />
-    
+
     <!-- Robots Meta Tag für Indexierungssteuerung -->
     <meta name="robots" content="<?php echo htmlspecialchars($robotsContent); ?>">
 

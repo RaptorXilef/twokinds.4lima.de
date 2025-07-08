@@ -4,21 +4,14 @@
  * Enthält Links zu den verschiedenen Bereichen der Webseite.
  */
 
-// Stellen Sie sicher, dass $baseUrl hier verfügbar ist.
-// Diese Variable sollte in einer übergeordneten Datei (z.B. header.php) gesetzt werden,
-// die auch die comic_page_renderer.php inkludiert, wo $baseUrl definiert wird.
-if (!isset($baseUrl)) {
-    // Fallback oder Fehlerbehandlung, falls $baseUrl nicht definiert ist.
-    // In einer gut strukturierten Anwendung sollte dies nicht notwendig sein,
-    // da $baseUrl im header.php (via comic_page_renderer.php) definiert wird.
-    error_log("FEHLER: \$baseUrl ist in menue_config.php nicht definiert.");
-    $baseUrl = '/'; // Setze einen Fallback auf den Server-Root, dies könnte aber Fehler verursachen.
-}
+// Die Variable $baseUrl wird nun IMMER von header.php gesetzt.
+// Der Fallback-Block ist nicht mehr notwendig.
+
 ?>
 <a href="https://www.patreon.com/c/raptorxilef/posts?filters%5Btag%5D=TwoKinds&redirect=true" target="_blank"><img src="https://c5.patreon.com/external/favicon/rebrand/favicon.ico?v=af5597c2ef" alt="Patreon-Logo" width="15" style="float: left; margin-left: 15px; margin-right: -30px;"> Patreon <img src="https://c5.patreon.com/external/favicon/rebrand/favicon.ico?v=af5597c2ef" alt="Patreon-Logo" width="15" style="float: right; margin-left: -30px; margin-right: 15px;"></a>
 <br>
 <a href="<?php echo htmlspecialchars($baseUrl); ?>comic/">Comic</a>
-<a href="<?php echo htmlspecialchars($baseUrl); ?>archiv.php">Archiv</a>
+<a href="<?php echo htmlspecialchars($baseUrl); ?>archive.php">Archiv</a>
 <br>
 <a href="<?php echo htmlspecialchars($baseUrl); ?>about.php">Infos</a>
 <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
