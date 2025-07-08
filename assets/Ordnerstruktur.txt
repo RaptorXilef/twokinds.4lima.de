@@ -1,0 +1,57 @@
+Öffentlicher WWW Ordner
+˫---admin
+˫---assets
+|   ˫---comic_hires
+|   ˫---comic_lowres
+|   |   ˪---x
+|   ˫---comic_socialmedia
+|   ˫---comic_thumbnails
+|   ˫---icons
+|   ˪---img
+|       ˪---about
+˫---comic
+˫---src
+|   ˫---components
+|   |   ˪---archive
+|   ˪---layout
+|       ˪---css_backup
+˪---_alt
+    ˫---admin
+    |   ˫---analystic
+    |   ˫---includes
+    |   |   ˫---analystic
+    |   |   ˫---design
+    |   |   |   ˪---_müll
+    |   |   ˪---homepage-generators
+    |   |       ˫---adminbereich
+    |   |       ˪---archive
+    |   ˫---templates
+    |   ˫---_müll
+    |   ˪---_Verlauf_vor_2025
+    ˫---analystic
+    |   ˪---2025
+    |       ˪---06
+    ˫---e-mail
+    |   ˪---old
+    ˫---img
+    |   ˫---comic
+    |   ˫---comic_hires
+    |   ˪---comic_thumbnails
+    ˫---includes
+    |   ˫---archive
+    |   ˫---design
+    |   ˫---images
+    |   ˫---originaldateien
+    |   |   ˫---cdn.twokinds.keenspot.com
+    |   |   |   ˫---css
+    |   |   |   ˫---img
+    |   |   |   |   ˪---charaktere
+    |   |   |   ˪---js
+    |   |   ˪---code.jquery.com
+    |   ˪---_müll
+    ˫---src
+    |   ˫---admin
+    |   ˫---data
+    |   ˪---templates
+    |       ˪---admin
+    ˪---x
