@@ -43,7 +43,7 @@ if (isset($comicData[$currentComicId])) {
 } else {
     // Fallback-Werte, falls keine Comic-Daten oder der neueste Comic nicht gefunden wird.
     error_log("Fehler: Daten für den neuesten Comic (ID '{$currentComicId}') nicht in comic_var.json gefunden.");
-    $comicTyp = 'Comicseite vom ';
+    $comicTyp = 'Comicseite'; // Angepasst, da "vom" nun im H1 hinzugefügt wird
     $comicName = 'Willkommen';
     $comicTranscript = '<p>Willkommen auf TwoKinds auf Deutsch! Leider konnte der neueste Comic nicht geladen werden.</p>';
     $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
@@ -117,7 +117,8 @@ if ($isLocal) {
 // Der Seitentitel für den Browser-Tab ist spezifisch für die Startseite.
 $pageTitle = 'Startseite'; // Der Präfix "TwoKinds auf Deutsch - " wird automatisch von header.php hinzugefügt.
 // H1-Header für die Startseite. Er zeigt den Titel des neuesten Comics.
-$pageHeader = 'Comic for ' . $formattedDateEnglish . ': ' . htmlspecialchars($comicName);
+// Angepasst, um " vom " und das deutsche Datumsformat zu verwenden.
+$pageHeader = htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
 // Füge comic.js als zusätzliches Skript hinzu.
 $additionalScripts = "<script type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
 
@@ -152,7 +153,7 @@ include __DIR__ . '/../src/layout/header.php';
 <article class="comic">
     <header>
         <!-- H1-Tag im Format des Originals, zeigt den Titel des neuesten Comics. -->
-        <h1><?php echo htmlspecialchars($comicTyp) . $formattedDateEnglish; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
+        <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
     </header>
 
     <div class='comicnav'>
