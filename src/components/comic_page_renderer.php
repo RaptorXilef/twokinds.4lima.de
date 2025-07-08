@@ -52,7 +52,7 @@ if (isset($comicData[$currentComicId])) {
 } else {
     // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
     error_log("FEHLER: Daten für Comic ID '{$currentComicId}' nicht in comic_var.json gefunden.");
-    $comicTyp = 'Fehler auf Seite vom ';
+    $comicTyp = 'Fehler auf Seite'; // Angepasst, da "vom" nun im H1 hinzugefügt wird
     $comicName = 'Comic nicht gefunden';
     $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
     $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
@@ -127,10 +127,11 @@ if ($isLocal) {
 }
 
 // Setze Parameter für den Header.
-// Seitentitel für den Browser-Tab: YYYY.MM.DD
+// Seitentitel für den Browser-Tab: JJJJ.MM.DD
 $pageTitle = 'Comic ' . substr($currentComicId, 0, 4) . '.' . substr($currentComicId, 4, 2) . '.' . substr($currentComicId, 6, 2) . ': ' . $comicName;
 // H1-Header auf der Seite: TT.MM.JJJJ
-$pageHeader = 'Comic vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
+// Hinzufügen von " vom " zwischen Comic-Typ und Datum
+$pageHeader = htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
 $additionalScripts = "<script type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
 
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
@@ -161,7 +162,7 @@ include __DIR__ . '/../layout/header.php';
 <article class="comic">
     <header>
         <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->
-        <h1><?php echo htmlspecialchars($comicTyp) . $formattedDateGerman; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
+        <h1><?php echo $pageHeader; ?></h1>
     </header>
 
     <div class='comicnav'>

@@ -1,0 +1,17 @@
+[
+    {
+        "chapterId": 1,
+        "title": "Prolog: Die Anfänge",
+        "description": "Die ersten Schritte unserer Helden und die Einführung in die Welt von TwoKinds. Eine Zeit der Entdeckungen und unerwarteten Begegnungen."
+    },
+    {
+        "chapterId": 2,
+        "title": "Kapitel 2: Neue Allianzen",
+        "description": "Während alte Konflikte schwelen, schmieden sich neue Bündnisse. Vertrauen wird aufgebaut, aber auch auf die Probe gestellt."
+    },
+    {
+        "chapterId": 22,
+        "title": "Kapitel 22: Maeves und Reeds Abenteuer",
+        "description": "Maeve und Reed begeben sich auf eine unerwartete Reise, die sie vor neue Herausforderungen stellt und ihre Freundschaft vertieft."
+    }
+]
