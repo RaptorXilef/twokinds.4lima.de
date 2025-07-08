@@ -25,7 +25,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000,
             $params["path"], $params["domain"],
-            $params["secure"], $params["httponly"]
+            $params["secure"], $params["httpholy"]
         );
     }
 
@@ -55,6 +55,11 @@ $comicHiresDirPath = __DIR__ . '/../assets/comic_hires/';
 $comicThumbnailsDirPath = __DIR__ . '/../assets/comic_thumbnails/'; // Neuer Pfad
 $comicSocialMediaDirPath = __DIR__ . '/../assets/comic_socialmedia/'; // Neuer Pfad
 
+// Konstante für die Anzahl der Elemente pro Seite definieren, falls noch nicht geschehen
+if (!defined('ITEMS_PER_PAGE')) {
+    define('ITEMS_PER_PAGE', 50);
+}
+
 // Setze Parameter für den Header.
 $pageTitle = 'Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
@@ -66,14 +71,6 @@ $messageType = ''; // 'success' or 'error'
 // Optionen für 'type' und 'chapter'
 $comicTypeOptions = ['Comicseite', 'Lückenfüller'];
 $chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
-
-// --- Paginierungseinstellungen ---
-// Konstante nur definieren, wenn sie noch nicht existiert, um "already defined" Warnung zu vermeiden
-if (!defined('ITEMS_PER_PAGE')) {
-    define('ITEMS_PER_PAGE', 50);
-}
-$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($currentPage < 1) $currentPage = 1;
 
 /**
  * Lädt Comic-Metadaten aus einer JSON-Datei.
@@ -197,18 +194,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
     }
 
     $updatedComicDataSubset = [];
-    // Korrektur: deleted_ids direkt aus dem Request-Payload lesen
-    $deletedIdsFromRequest = $requestData['deleted_ids'] ?? [];
+    $deletedIds = [];
 
     if (isset($requestData['pages']) && is_array($requestData['pages'])) {
         foreach ($requestData['pages'] as $page) {
             $comicId = trim($page['comic_id']);
             if (empty($comicId)) {
-                // Diese Logik ist für den Fall, dass eine ID im Frontend GEÄNDERT wurde,
-                // und die alte ID gelöscht werden muss.
-                // Die primäre Löschung erfolgt über $deletedIdsFromRequest.
+                // Wenn die ID leer ist, wurde die Zeile im Frontend als gelöscht markiert oder ist ungültig
+                // Wir fügen sie zur Liste der zu löschenden IDs hinzu, falls sie existiert
                 if (isset($page['original_comic_id']) && !empty($page['original_comic_id'])) {
-                    $deletedIdsFromRequest[] = $page['original_comic_id'];
+                    $deletedIds[] = $page['original_comic_id'];
                 }
                 continue; // Überspringe leere IDs
             }
@@ -233,8 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
     }
 
     // Speichere das Subset der Daten und verarbeite gelöschte IDs.
-    // Die $deletedIdsFromRequest enthält nun sowohl explizit gelöschte als auch durch ID-Änderung zu löschende IDs.
-    if (saveComicData($comicVarJsonPath, $updatedComicDataSubset, $deletedIdsFromRequest)) {
+    if (saveComicData($comicVarJsonPath, $updatedComicDataSubset, $deletedIds)) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!']);
         exit;
@@ -1162,14 +1156,20 @@ if (file_exists($headerPath)) {
                             </tr>
                         <?php else: ?>
                             <?php foreach ($paginatedComicData as $id => $data):
-                                $isMissingInfo = isset($incompleteInfoReportCurrentPage[$id]);
+                                $isTypeMissing = empty($data['type']);
+                                $isNameMissing = empty($data['name']);
+                                $transcriptContent = trim(strip_tags($data['transcript'], '<br>'));
+                                $isTranscriptEffectivelyEmpty = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
+                                $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
+
+                                $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                             ?>
-                                <tr data-comic-id="<?php echo htmlspecialchars($id); ?>" class="<?php echo $isMissingInfo ? 'missing-info-row' : ''; ?>">
+                                <tr data-comic-id="<?php echo htmlspecialchars($id); ?>" class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td class="comic-id-display"><?php echo htmlspecialchars($id); ?></td>
-                                    <td><span class="editable-field comic-type-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('type', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span></td>
-                                    <td><span class="editable-field comic-name-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('name', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span></td>
-                                    <td><span class="editable-field comic-transcript-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('transcript', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['transcript']); ?></span></td>
-                                    <td><span class="editable-field comic-chapter-display <?php echo (isset($incompleteInfoReportCurrentPage[$id]) && in_array('chapter', $incompleteInfoReportCurrentPage[$id])) ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span></td>
+                                    <td><span class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span></td>
+                                    <td><span class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span></td>
+                                    <td><span class="editable-field comic-transcript-display <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['transcript']); ?></span></td>
+                                    <td><span class="editable-field comic-chapter-display <?php echo $isChapterMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span></td>
                                     <td class="actions">
                                         <button type="button" class="edit-button button edit" title="Bearbeiten"><i class="fas fa-edit"></i></button>
                                         <button type="button" class="delete-button button delete" title="Löschen"><i class="fas fa-trash-alt"></i></button>
@@ -1312,26 +1312,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const comicDataTable = document.getElementById('comic-data-table');
     const messageBoxElement = document.getElementById('message-box');
     const saveAllButton = document.getElementById('save-all-button');
+    const formSection = document.querySelector('.form-section'); // Referenz zum Formular-Abschnitt
 
     let hasUnsavedChanges = false;
     let editedRows = new Map(); // Speichert die IDs der bearbeiteten Zeilen und ihre Daten
     let deletedRows = new Set(); // Speichert die IDs der gelöschten Zeilen
+    let summernoteInitialized = false; // Neues Flag für Summernote-Initialisierung
 
-    // Initialisiere Summernote
-    $('#comic-transcript').summernote({
-        height: 150,
-        toolbar: [
-            ['style', ['bold', 'italic', 'underline', 'clear']],
-            ['font', ['strikethrough', 'superscript', 'subscript']],
-            ['fontsize', ['fontsize']],
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['height', ['height']],
-            ['insert', ['link']],
-            ['view', ['fullscreen', 'codeview', 'help']]
-        ]
-    });
-    console.log("Summernote initialized."); // Debug-Meldung
+    // Funktion zur Initialisierung von Summernote
+    function initializeSummernote() {
+        if (!summernoteInitialized) {
+            console.log("Initializing Summernote..."); // Debug-Meldung
+            $('#comic-transcript').summernote({
+                height: 150,
+                toolbar: [
+                    ['style', ['bold', 'italic', 'underline', 'clear']],
+                    ['font', ['strikethrough', 'superscript', 'subscript']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['height', ['height']],
+                    ['insert', ['link']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+            summernoteInitialized = true;
+            console.log("Summernote initialized."); // Debug-Meldung
+        }
+    }
 
     // Initialisiere Formularfelder mit Standardwerten oder leere sie
     function resetForm() {
@@ -1342,8 +1350,13 @@ document.addEventListener('DOMContentLoaded', function() {
         saveSingleButton.textContent = 'Speichern';
         saveSingleButton.classList.remove('edit');
         saveSingleButton.classList.add('button');
-        $('#comic-transcript').summernote('code', ''); // Summernote leeren
-        comicEditForm.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
+        if (summernoteInitialized) { // Nur Summernote leeren, wenn es initialisiert ist
+            $('#comic-transcript').summernote('code', '');
+        } else {
+            // Wenn Summernote noch nicht initialisiert ist, leere das normale Textarea
+            comicTranscriptTextarea.value = '';
+        }
+        formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
         console.log("Form reset."); // Debug-Meldung
     }
 
@@ -1412,7 +1425,11 @@ document.addEventListener('DOMContentLoaded', function() {
             comicIdInput.readOnly = true; // ID ist nicht bearbeitbar im Bearbeitungsmodus
             comicTypeSelect.value = comicType;
             comicNameInput.value = comicName;
+            
+            // Summernote initialisieren und Inhalt füllen
+            initializeSummernote();
             $('#comic-transcript').summernote('code', comicTranscript); // Summernote mit Inhalt füllen
+
             comicChapterSelect.value = comicChapter;
 
             saveSingleButton.textContent = 'Änderungen speichern';
@@ -1420,7 +1437,6 @@ document.addEventListener('DOMContentLoaded', function() {
             saveSingleButton.classList.remove('button');
 
             // Auto-expand form section and scroll to it
-            const formSection = document.querySelector('.form-section');
             if (!formSection.classList.contains('expanded')) {
                 formSection.classList.add('expanded');
             }
@@ -1460,8 +1476,10 @@ document.addEventListener('DOMContentLoaded', function() {
         saveSingleButton.classList.remove('edit');
         comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
 
+        // Summernote initialisieren, falls noch nicht geschehen
+        initializeSummernote();
+
         // Auto-expand form section and scroll to it
-        const formSection = document.querySelector('.form-section');
         if (!formSection.classList.contains('expanded')) {
             formSection.classList.add('expanded');
         }
@@ -1484,7 +1502,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalComicId = originalComicIdInput.value.trim(); // Die ID, die tatsächlich bearbeitet wird (falls ID geändert wurde)
         const comicType = comicTypeSelect.value.trim();
         const comicName = comicNameInput.value.trim();
-        const comicTranscript = $('#comic-transcript').summernote('code').trim(); // Inhalt von Summernote holen
+        // Inhalt von Summernote holen (oder vom Textarea, falls Summernote nicht initialisiert wurde)
+        const comicTranscript = summernoteInitialized ? $('#comic-transcript').summernote('code').trim() : comicTranscriptTextarea.value.trim();
         const comicChapter = comicChapterSelect.value.trim();
 
         // Einfache Validierung
@@ -1510,7 +1529,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (originalComicId && originalComicId !== comicId) {
             // Markiere die alte ID als zu löschen
             deletedRows.add(originalComicId);
-            // Entferne die alte ID aus editedRows, falls vorhanden
+            // Entferne die alte ID aus editedRows, falls sie dort war
             editedRows.delete(originalComicId);
             console.log("Original ID marked for deletion due to ID change:", originalComicId); // Debug-Meldung
         }
@@ -1802,18 +1821,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         header.addEventListener('click', function() {
+            const wasExpanded = section.classList.contains('expanded'); // Zustand vor dem Toggle speichern
             section.classList.toggle('expanded');
-            // Update the icon based on the expanded state
+            // Update the icon based on the new expanded state
             if (section.classList.contains('expanded')) {
                 icon.classList.remove('fa-chevron-right');
                 icon.classList.add('fa-chevron-down');
+                // Wenn es der Formular-Abschnitt ist und er gerade aufgeklappt wurde, Summernote initialisieren
+                if (section.classList.contains('form-section') && !wasExpanded) {
+                    initializeSummernote();
+                }
+                // Zum Formular scrollen, wenn es aufgeklappt wird
+                if (section.classList.contains('form-section')) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
             } else {
                 icon.classList.remove('fa-chevron-down');
                 icon.classList.add('fa-chevron-right');
-            }
-            // If it's the form section and it's expanded, scroll to it
-            if (section.classList.contains('form-section') && section.classList.contains('expanded')) {
-                section.scrollIntoView({ behavior: 'smooth' });
             }
             console.log("Collapsible header clicked. Section expanded status:", section.classList.contains('expanded')); // Debug-Meldung
         });
