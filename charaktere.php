@@ -3,7 +3,7 @@
  * Diese Datei zeigt Details zu den Charakteren des Comics an.
  */
 
-// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
+// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versesehen.
 $pageTitle = 'Charaktere';
 // Der H1-Header für diese Seite ist im Body der Datei selbst (header hidden), daher bleibt $pageHeader leer.
 $pageHeader = '';
@@ -23,30 +23,30 @@ include __DIR__ . "/src/layout/header.php";
 </header>
 <section>
     <div class="char-head">
-        <a href="#trace"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_trace.gif'); ?>" alt="Trace"></a>
-        <a href="#flora"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_flora.gif'); ?>" alt="Flora"></a>
-        <a href="#keith"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_keith.gif'); ?>" alt="Keith"></a>
-        <a href="#natani"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_natani.gif'); ?>" alt="Natani"></a>
-        <a href="#zen"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_zen.gif'); ?>" alt="Zen"></a>
-        <a href="#sythe"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_sythe.gif'); ?>" alt="Sythe"></a>
-        <a href="#mrsnibbly"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_nibbly.gif'); ?>" alt="Nibbly the Great and Powerful"></a>
-        <a href="#raine"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_raine.gif'); ?>" alt="Raine"></a>
-        <a href="#laura"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_laura.gif'); ?>" alt="Laura"></a>
-        <a href="#saria"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_saria.gif'); ?>" alt="Saria"></a>
-        <a href="#eric"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_eric.gif'); ?>" alt="Eric"></a>
-        <a href="#kathrin"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_kathrin.gif'); ?>" alt="Kathrin"></a>
-        <a href="#mike"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_mike.gif'); ?>" alt="Mike"></a>
-        <a href="#evals"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_evals.gif'); ?>" alt="Evals"></a>
-        <a href="#maddie"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_maddie.gif'); ?>" alt="Madelyn Adelaide"></a>
-        <a href="#maren"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_maren.gif'); ?>" alt="Maren"></a>
-        <a href="#karen"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_karen.gif'); ?>" alt="Karen"></a>
-        <a href="#red"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_red.gif'); ?>" alt="Red-haired guy"></a>
-        <a href="#alaric"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_alaric.gif'); ?>" alt="Alaric"></a>
-        <a href="#nora"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_nora.gif'); ?>" alt="Nora"></a>
-        <a href="#reni"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_reni.gif'); ?>" alt="Reni"></a>
-        <a href="#adira"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_adira.gif'); ?>" alt="Adira"></a>
-        <a href="#maeve"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_maeve.gif'); ?>" alt="Maeve"></a>
-        <a href="#mask"><img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['faces']['original'] . 'icon_mask.gif'); ?>" alt="Mask"></a>
+        <a href="#trace"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_trace.gif" alt="Trace"></a>
+        <a href="#flora"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_flora.gif" alt="Flora"></a>
+        <a href="#keith"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_keith.gif" alt="Keith"></a>
+        <a href="#natani"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_natani.gif" alt="Natani"></a>
+        <a href="#zen"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_zen.gif" alt="Zen"></a>
+        <a href="#sythe"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_sythe.gif" alt="Sythe"></a>
+        <a href="#mrsnibbly"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_nibbly.gif" alt="Nibbly the Great and Powerful"></a>
+        <a href="#raine"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_raine.gif" alt="Raine"></a>
+        <a href="#laura"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_laura.gif" alt="Laura"></a>
+        <a href="#saria"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_saria.gif" alt="Saria"></a>
+        <a href="#eric"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_eric.gif" alt="Eric"></a>
+        <a href="#kathrin"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_kathrin.gif" alt="Kathrin"></a>
+        <a href="#mike"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_mike.gif" alt="Mike"></a>
+        <a href="#evals"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_evals.gif" alt="Evals"></a>
+        <a href="#maddie"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maddie.gif" alt="Madelyn Adelaide"></a>
+        <a href="#maren"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maren.gif" alt="Maren"></a>
+        <a href="#karen"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_karen.gif" alt="Karen"></a>
+        <a href="#red"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_red.gif" alt="Red-haired guy"></a>
+        <a href="#alaric"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_alaric.gif" alt="Alaric"></a>
+        <a href="#nora"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_nora.gif" alt="Nora"></a>
+        <a href="#reni"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_reni.gif" alt="Reni"></a>
+        <a href="#adira"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_adira.gif" alt="Adira"></a>
+        <a href="#maeve"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maeve.gif" alt="Maeve"></a>
+        <a href="#mask"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_mask.gif" alt="Mask"></a>
     </div>
     <header>
         <h2 class="page-header">Hauptcharaktere</h2>
@@ -54,11 +54,10 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="trace">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['trace_portrait']['original']); ?>" class="portrait" alt="Trace"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['trace_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['trace_ref_sheet']['original'] || $assetPaths['images']['characters']['trace_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['trace_ref_sheet']['original'] ?? $assetPaths['images']['characters']['trace_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Trace2025.png" class="portrait" alt="Trace"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/traceref_thumbnail.png" alt="Ref Sheet"></a>
+            <a href="https://www.patreon.com/posts/tiger-trace-22635887" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/tigertraceref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Trace Legacy</h3>
@@ -78,11 +77,10 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="flora">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['flora_portrait']['original']); ?>" class="portrait" alt="Flora"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['flora_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['flora_ref_sheet']['original'] || $assetPaths['images']['characters']['flora_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['flora_ref_sheet']['original'] ?? $assetPaths['images']['characters']['flora_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Flora2025.png" class="portrait" alt="Flora"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/FloraSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/flora-character-127534701" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/floraref_thumbnail.png" alt="Ref Sheet"></a>
+            <a href="https://www.patreon.com/posts/flora-ref-sheet-26619874" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/flora-oldref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Flora des Regenwald-Tigerstammes</h3>
@@ -103,11 +101,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="keith">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['keith_portrait']['original']); ?>" class="portrait" alt="Keith"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['keith_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['keith_ref_sheet']['original'] || $assetPaths['images']['characters']['keith_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['keith_ref_sheet']['original'] ?? $assetPaths['images']['characters']['keith_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Keith2025.png" class="portrait" alt="Keith"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KeithSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/keith-ref-sheet-26845156" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/keithref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Keith Keiser</h3>
@@ -126,11 +122,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="natani">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['natani_portrait']['original']); ?>" class="portrait" alt="Natani"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['natani_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['natani_ref_sheet']['original'] || $assetPaths['images']['characters']['natani_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['natani_ref_sheet']['original'] ?? $assetPaths['images']['characters']['natani_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Natani2025.png" class="portrait" alt="Natani"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/NataniSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/natani-ref-sheet-25812950" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/nataniref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Natani</h3>
@@ -150,11 +144,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="zen">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['zen_portrait']['original']); ?>" class="portrait" alt="Zen"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['zen_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['zen_ref_sheet']['original'] || $assetPaths['images']['characters']['zen_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['zen_ref_sheet']['original'] ?? $assetPaths['images']['characters']['zen_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Zen2025.png" class="portrait" alt="Zen"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/ZenSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/zen-ref-sheet-82651895" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/zenref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Zen</h3>
@@ -173,11 +165,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="sythe">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['sythe_portrait']['original']); ?>" class="portrait" alt="Sythe"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['sythe_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['sythe_ref_sheet']['original'] || $assetPaths['images']['characters']['sythe_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['sythe_ref_sheet']['original'] ?? $assetPaths['images']['characters']['sythe_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Sythe2025.png" class="portrait" alt="Sythe"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SytheSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/sytheref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Sythe</h3>
@@ -196,11 +186,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="mrsnibbly">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nibbly_portrait']['original']); ?>" class="portrait" alt="Mrs Nibbly"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nibbly_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['nibbly_ref_sheet']['original'] || $assetPaths['images']['characters']['nibbly_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['nibbly_ref_sheet']['original'] ?? $assetPaths['images']['characters']['nibbly_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Nibbly2025.png" class="portrait" alt="Mrs Nibbly"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MrsNibblySwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/sytheref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Mrs. Nibbly</h3>
@@ -221,11 +209,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="raine">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['raine_portrait']['original']); ?>" class="portrait" alt="Raine"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['raine_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['raine_ref_sheet']['original'] || $assetPaths['images']['characters']['raine_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['raine_ref_sheet']['original'] ?? $assetPaths['images']['characters']['raine_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Raine2025.png" class="portrait" alt="Raine"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RaineSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/raine-reference-25826733" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/raineref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Raine</h3>
@@ -244,11 +230,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="laura">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['laura_portrait']['original']); ?>" class="portrait" alt="Laura"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['laura_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['laura_ref_sheet']['original'] || $assetPaths['images']['characters']['laura_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['laura_ref_sheet']['original'] ?? $assetPaths['images']['characters']['laura_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Laura2025.png" class="portrait" alt="Laura"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LauraSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/laura-reference-30562240" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/lauraref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Laura vom Stamm der Küstenfuchse</h3>
@@ -267,11 +251,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="saria">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['saria_portrait']['original']); ?>" class="portrait" alt="Saria"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['saria_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['saria_ref_sheet']['original'] || $assetPaths['images']['characters']['saria_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['saria_ref_sheet']['original'] ?? $assetPaths['images']['characters']['saria_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Saria.jpg" class="portrait" alt="Saria"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SariaSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/saria-ref-sheet-60925868" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/sariaref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Saria au Gruhen</h3>
@@ -290,11 +272,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="eric">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['eric_portrait']['original']); ?>" class="portrait" alt="Eric"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['eric_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['eric_ref_sheet']['original'] || $assetPaths['images']['characters']['eric_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['eric_ref_sheet']['original'] ?? $assetPaths['images']['characters']['eric_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Eric.jpg" class="portrait" alt="Eric"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EricSwatch.gif" alt="Color Swatch">
+            <!--<a href="" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/ericref_thumbnail.png" alt="Ref Sheet"></a>-->
         </div>
         <div class="char-info">
             <h3>Eric Vaughan</h3>
@@ -313,11 +293,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="kathrin">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['kathrin_portrait']['original']); ?>" class="portrait" alt="Kathrin"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['kathrin_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['kathrin_ref_sheet']['original'] || $assetPaths['images']['characters']['kathrin_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['kathrin_ref_sheet']['original'] ?? $assetPaths['images']['characters']['kathrin_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Kathrin.jpg" class="portrait" alt="Kathrin"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KathrinSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/kathrin-ref-26592787" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/kathrinref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Kathrin "Spots" Vaughan</h3>
@@ -336,11 +314,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="mike">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['mike_portrait']['original']); ?>" class="portrait" alt="Mike"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['mike_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['mike_ref_sheet']['original'] || $assetPaths['images']['characters']['mike_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['mike_ref_sheet']['original'] ?? $assetPaths['images']['characters']['mike_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Mike.jpg" class="portrait" alt="Mike"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MikeSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/mikeandevalsref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Mike</h3>
@@ -359,11 +335,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="evals">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evals_portrait']['original']); ?>" class="portrait" alt="Evals"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evals_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['evals_ref_sheet']['original'] || $assetPaths['images']['characters']['evals_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['evals_ref_sheet']['original'] ?? $assetPaths['images']['characters']['evals_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Evals.jpg" class="portrait" alt="Evals"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EvalsSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/mikeandevalsref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Evals</h3>
@@ -382,11 +356,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="maddie">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maddie_portrait']['original']); ?>" class="portrait" alt="Madelyn Adelaide"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maddie_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['maddie_ref_sheet']['original'] || $assetPaths['images']['characters']['maddie_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['maddie_ref_sheet']['original'] ?? $assetPaths['images']['characters']['maddie_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Maddie.png" class="portrait" alt="Madelyn Adelaide"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MaddySwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/madelyn-ref-34828699" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/madelynref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Madelyn Adelaide</h3>
@@ -405,11 +377,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="maren">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maren_portrait']['original']); ?>" class="portrait" alt="Maren"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maren_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['maren_ref_sheet']['original'] || $assetPaths['images']['characters']['maren_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['maren_ref_sheet']['original'] ?? $assetPaths['images']['characters']['maren_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Maren.jpg" class="portrait" alt="Maren"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MarenSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/marenkarenref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Maren Taverndatter</h3>
@@ -428,11 +398,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="karen">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['karen_portrait']['original']); ?>" class="portrait" alt="Karen"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['karen_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['karen_ref_sheet']['original'] || $assetPaths['images']['characters']['karen_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['karen_ref_sheet']['original'] ?? $assetPaths['images']['characters']['karen_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Karen.jpg" class="portrait" alt="Karen"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KarenSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/marenkarenref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Karen Taverndatter</h3>
@@ -451,11 +419,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="red">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['red_portrait']['original']); ?>" class="portrait" alt="Red Haired Guy"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['red_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['red_ref_sheet']['original'] || $assetPaths['images']['characters']['red_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['red_ref_sheet']['original'] ?? $assetPaths['images']['characters']['red_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/RedHairedGuy.jpg" class="portrait" alt="Red Haired Guy"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RedHairedGuySwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/red-ref-sheet-90801686" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/redref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>[Datenbankfehler]</h3>
@@ -474,11 +440,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="alaric">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['alaric_portrait']['original']); ?>" class="portrait" alt="Alaric"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['alaric_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['alaric_ref_sheet']['original'] || $assetPaths['images']['characters']['alaric_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['alaric_ref_sheet']['original'] ?? $assetPaths['images']['characters']['alaric_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Alaric.jpg" class="portrait" alt="Alaric"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/AlaricSwatch.gif" alt="Color Swatch">
+            <!--<a href="" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/alaricref_thumbnail.png" alt="Ref Sheet"></a>-->
         </div>
         <div class="char-info">
             <h3>Nickolai Alaric</h3>
@@ -497,11 +461,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="nora">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nora_portrait']['original']); ?>" class="portrait" alt="Nora"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nora_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['nora_ref_sheet']['original'] || $assetPaths['images']['characters']['nora_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['nora_ref_sheet']['original'] ?? $assetPaths['images']['characters']['nora_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/LadyNora.jpg" class="portrait" alt="Nora"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LadyNoraSwatch.gif" alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/lady-nora-ref-26898478" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/noraref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Lady Nora</h3>
@@ -520,11 +482,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="reni">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['reni_portrait']['original']); ?>" class="portrait" alt="Reni"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['reni_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['reni_ref_sheet']['original'] || $assetPaths['images']['characters']['reni_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['reni_ref_sheet']['original'] ?? $assetPaths['images']['characters']['reni_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Reni2025.png" class="portrait" alt="Reni"><br>
+            <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/reniref_thumbnail.png" alt="Color Swatch">-->
+            <a href="https://www.patreon.com/posts/reni-ref-sheet-50534633" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/reniref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Prinzessin Reni</h3>
@@ -545,11 +505,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="adira">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_portrait']['original']); ?>" class="portrait" alt="Adira"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_maeve_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['adira_ref_sheet']['original'] || $assetPaths['images']['characters']['adira_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_ref_sheet']['original'] ?? $assetPaths['images']['characters']['adira_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Adira2025.png" class="portrait" alt="Adira"><br>
+            <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/adiramaeveref_thumbnail.png" alt="Color Swatch">-->
+            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/adiramaeveref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Adira von der Riftwall</h3>
@@ -569,11 +527,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="maeve">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maeve_portrait']['original']); ?>" class="portrait" alt="Maeve"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_maeve_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['maeve_ref_sheet']['original'] || $assetPaths['images']['characters']['maeve_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['maeve_ref_sheet']['original'] ?? $assetPaths['images']['characters']['maeve_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Maeve2025.png" class="portrait" alt="Maeve"><br>
+            <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/adiramaeveref_thumbnail.png" alt="Color Swatch">-->
+            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/adiramaeveref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Maeve von der Riftwall</h3>
@@ -598,7 +554,7 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="mask">
         <div class="center" style="margin-bottom: 10px;">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['mask_image']['original']); ?>" alt="Die Masken">
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/mask.png" alt="Die Masken">
         </div>
         <div class="char-info" style="width: 800px;">
             <h3>Die Masken</h3>
@@ -613,7 +569,7 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail">
         <div class="center" style="margin-bottom: 10px;">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['villains_image']['original']); ?>" alt="Bösewichte" style="width: 500px;">
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" alt="Bösewichte" style="width: 500px;">
         </div>
         <div class="char-info" style="width: 800px;">
             <h3>Die Meistertempler: Meisterspion, Architekt, Stratege, Seher und Magier.</h3>
@@ -628,11 +584,9 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail" id="evil-trace">
         <div class="char-img">
-            <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evil_trace_portrait']['original']); ?>" class="portrait" alt="Böser Trace"><br>
-            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evil_trace_swatch']['original']); ?>" alt="Color Swatch">
-            <?php if ($assetPaths['images']['characters']['evil_trace_ref_sheet']['original'] || $assetPaths['images']['characters']['evil_trace_ref_sheet']['local']): ?>
-                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['evil_trace_ref_sheet']['original'] ?? $assetPaths['images']['characters']['evil_trace_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
-            <?php endif; ?>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/EvilTrace.jpg" class="portrait" alt="Böser Trace"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif" alt="Color Swatch"><br>
+            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/traceref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Trace Legacy (Böse)</h3>
