@@ -3,9 +3,9 @@
  */
 (() => {
 	var themes = [
-		{ id: 0, name: "Default", class: null },
-		{ id: 1, name: "Lights On", class: null },
-		{ id: 2, name: "Lights Off", class: "theme-night" }
+		{ id: 0, name: "Standard", class: null }, // Geändert von "Default" zu "Standard"
+		{ id: 1, name: "Licht AN", class: null },   // Geändert von "Lights On" zu "Licht AN"
+		{ id: 2, name: "Licht AUS", class: "theme-night" } // Geändert von "Lights Off" zu "Licht AUS"
 	];
 	var systemThemeId = 0;
 	var systemLightThemeId = 1;
@@ -31,11 +31,12 @@
 		}
 
 		// Theme also toggles on 'i' keypress.
-		body.addEventListener("keyup", e => {
-			if (e.which == 73) {
-				toggleTheme(e);
-			}
-		});
+		// DIESER BLOCK WURDE ENTFERNT, um die 'i'-Tastenfunktion zu deaktivieren.
+		// body.addEventListener("keyup", e => {
+		// 	if (e.which == 73) {
+		// 		toggleTheme(e);
+		// 	}
+		// });
 
 		// Watch the system theme change event and automatically change with it.
 		if (window.matchMedia) {
@@ -97,6 +98,7 @@
 		}
 
 		// Update the toggle button.
+		// Dieser Code bleibt, da die Theme-Namen jetzt auf Deutsch sind.
 		document.querySelector("#toggle_lights .themename").innerHTML = theme.name;
 
 		// Store the theme selection in localstorage if enabled.
