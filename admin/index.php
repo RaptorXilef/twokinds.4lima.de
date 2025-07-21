@@ -249,7 +249,7 @@ $siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung. H
 
 // Binde den gemeinsamen Header ein。
 $robotsContent = 'noindex, nofollow';
-include __DIR__ . '/../src/layout/header_admin.php';
+include __DIR__ . '/../src/layout/header.php';
 ?>
 
 <article>

@@ -42,7 +42,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 // Pfade zu den benötigten Ressourcen und Verzeichnissen.
 // Die 'assets'-Ordner liegen eine Ebene über 'admin'.
-$headerPath = __DIR__ . '/../src/layout/header_admin.php';
+$headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $lowresDir = __DIR__ . '/../assets/comic_lowres/'; // Quellverzeichnis für Comic-Bilder
 $hiresDir = __DIR__ . '/../assets/comic_hires/';   // Optionales Quellverzeichnis für Hi-Res Comic-Bilder

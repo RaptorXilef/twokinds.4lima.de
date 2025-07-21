@@ -1,0 +1,1 @@
+Der verwendete Texteditor ist Summernote

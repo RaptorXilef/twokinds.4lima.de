@@ -44,7 +44,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 // Pfade zu den benötigten Ressourcen
-$headerPath = __DIR__ . '/../src/layout/header_admin.php';
+$headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $sitemapConfigPath = __DIR__ . '/../src/components/sitemap.json';
 $sitemapOutputPath = __DIR__ . '/../sitemap.xml'; // Sitemap im öffentlichen Hauptverzeichnis

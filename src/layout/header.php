@@ -22,150 +22,149 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
-// Diese Logik ist nun zentral in header.php und wird für alle Seiten
-// vor dem Laden anderer Komponenten ausgeführt, die $baseUrl benötigen.
-if (!isset($baseUrl)) {
-    // Bestimme das Protokoll (http oder https)
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-    // Bestimme den Hostnamen
-    $host = $_SERVER['HTTP_HOST'];
-    // Bestimme den Pfad zum aktuellen Skript
-    $scriptPath = $_SERVER['PHP_SELF'];
-    // Ermittle das Verzeichnis des aktuellen Skripts relativ zum Document Root
-    $path = dirname($scriptPath);
-    // Wenn das Skript im Root-Verzeichnis liegt, ist der Pfad '/'
-    if ($path === '/' || $path === '\\') { // '\\' für Windows-Systeme
-        $baseUrl = $protocol . '://' . $host . '/';
-    } else {
-        // Sicherstellen, dass der Pfad mit einem Slash endet
-        $baseUrl = $protocol . '://' . $host . rtrim($path, '/\\') . '/';
+// Diese Logik ist nun zentral in header_admin.php und wird für alle Seiten verwendet.
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+
+$isLocal = (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false);
+
+if ($isLocal) {
+    // Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
+    // __FILE__ ist der absolute Pfad zu header_admin.php (z.B. /var/www/html/deinprojekt/src/layout/header_admin.php)
+    // dirname(__FILE__) ist /var/www/html/deinprojekt/src/layout
+    // dirname(dirname(__FILE__)) ist /var/www/html/deinprojekt/src
+    // dirname(dirname(dirname(__FILE__))) ist /var/www/html/deinprojekt (dies ist der Anwendungs-Root)
+    $appRootAbsPath = str_replace('\\', '/', dirname(dirname(dirname(__FILE__))));
+
+    // Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
+    $documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+
+    // Berechne den Unterordner-Pfad relativ zum Dokumenten-Root des Webservers.
+    // Wenn documentRoot /var/www/html ist und appRootAbsPath /var/www/html/deinprojekt,
+    // dann wird subfolderPath /deinprojekt.
+    $subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+
+    // Stelle sicher, dass der Unterordner-Pfad mit einem Schrägstrich beginnt und endet.
+    if (!empty($subfolderPath) && $subfolderPath !== '/') {
+        $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+    } elseif (empty($subfolderPath)) {
+        $subfolderPath = '/'; // Wenn der Anwendungs-Root GLEICH dem Dokumenten-Root ist.
     }
+
+    $baseUrl = $protocol . $host . $subfolderPath;
+    error_log("DEBUG: Lokale Basis-URL (Header - Refined): " . $baseUrl);
+} else {
+    $baseUrl = 'https://twokinds.4lima.de/';
+    error_log("DEBUG: Live Basis-URL (Header): " . $baseUrl);
 }
+// === Ende Dynamische Basis-URL Bestimmung ===
 
-// === Lade globale Einstellungen ===
-// Diese Datei enthält den Schalter $useLocalAssets
-require_once __DIR__ . '/../../config/settings.php';
 
-// === Lade Asset-Pfade ===
-// Diese Datei gibt ein Array zurück, das die Pfade zu CSS- und JS-Dateien enthält.
-$assetPaths = require_once __DIR__ . '/../../config/asset_paths.php';
+
+
+
+
+
+
 
 // Basis-Dateiname der aktuellen PHP-Datei ohne Erweiterung, wird für den Standard-Titel verwendet.
 $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
 
 // Standardpräfix für den Seitentitel. Dieser kann in einzelnen Seiten vor dem Include überschrieben werden,
-// falls ein spezifischerer Titel gewünscht ist.
+// falls ein spezifischerer Präfix gewünscht ist.
 $pageTitlePrefix = 'TwoKinds auf Deutsch - ';
 
-// Setze Standardwerte, falls nicht übergeben
-if (!isset($pageTitle)) {
-    $pageTitle = ucfirst($filenameWithoutExtension);
-}
-if (!isset($pageHeader)) {
-    $pageHeader = ucfirst($filenameWithoutExtension);
-}
-if (!isset($bodyClass)) {
-    $bodyClass = 'preload'; // Standardklasse für Body
-}
-if (!isset($additionalScripts)) {
-    $additionalScripts = '';
-}
-if (!isset($additionalHeadContent)) {
-    $additionalHeadContent = '';
-}
-if (!isset($viewportContent)) {
-    $viewportContent = 'width=1099'; // Standard-Viewport für Desktop-optimierte Seiten
-}
-if (!isset($siteDescription)) {
-    $siteDescription = 'TwoKinds ist ein Fantasy-Webcomic von Tom Fischbach, fanübersetzt auf Deutsch.';
-}
-if (!isset($robotsContent)) {
-    $robotsContent = 'index, follow';
-}
+// Standardwerte für Parameter, falls sie in der aufrufenden Datei nicht gesetzt werden.
+// Der Seiten-Titel wird aus dem Präfix und dem übergebenen $pageTitle zusammengesetzt.
+$pageTitle = $pageTitlePrefix . (isset($pageTitle) ? $pageTitle : ucfirst($filenameWithoutExtension));
+$pageHeader = isset($pageHeader) ? $pageHeader : ''; // Standardmäßig leer, da viele Seiten einen eigenen Header haben.
+$bodyClass = isset($bodyClass) ? $bodyClass : 'preload';
+$additionalScripts = isset($additionalScripts) ? $additionalScripts : '';
+$additionalHeadContent = isset($additionalHeadContent) ? $additionalHeadContent : '';
+$viewportContent = isset($viewportContent) ? $viewportContent : 'width=device-width, initial-scale=1.0';
+// Standardbeschreibung der Webseite, kann von einzelnen Seiten überschrieben werden.
+$siteDescription = isset($siteDescription) ? $siteDescription : 'Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.';
+// Standardwert für den robots-Meta-Tag, der bei Comicseiten oder Adminseiten überschrieben wird.
+$robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
 
-// Ermittle die Pfade für die Assets basierend auf $useLocalAssets
-$cssMainPath = $useLocalAssets ? $assetPaths['css']['main']['local'] : $assetPaths['css']['main']['original'];
-$cssMainDarkPath = $useLocalAssets ? $assetPaths['css']['main_dark']['local'] : $assetPaths['css']['main_dark']['original'];
 
-// jQuery-Pfad und Attribute
-$jsJqueryPath = $useLocalAssets ? $assetPaths['js']['jquery']['local'] : $assetPaths['js']['jquery']['original'];
-$jqueryIntegrity = $useLocalAssets ? '' : ' integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="';
-$jqueryCrossorigin = $useLocalAssets ? '' : ' crossorigin="anonymous"';
-
-$jsCommonPath = $useLocalAssets ? $assetPaths['js']['common']['local'] : $assetPaths['js']['common']['original'];
-$jsArchivePath = $useLocalAssets ? $assetPaths['js']['archive']['local'] : $assetPaths['js']['archive']['original'];
-$jsComicPath = $useLocalAssets ? $assetPaths['js']['comic']['local'] : $assetPaths['js']['comic']['original'];
-
-// Aktualisiere den $additionalScripts String, um die neuen dynamischen Pfade zu verwenden
-// und stelle sicher, dass jQuery zuerst geladen wird.
-$additionalScripts = '
-    <script src="' . htmlspecialchars($jsJqueryPath) . '"' . $jqueryIntegrity . $jqueryCrossorigin . '></script>
-    <script type="text/javascript" src="' . htmlspecialchars($jsCommonPath) . '"></script>
-    <script type="text/javascript" src="' . htmlspecialchars($jsArchivePath) . '"></script>
-    <script type="text/javascript" src="' . htmlspecialchars($jsComicPath) . '"></script>
-' . $additionalScripts; // Füge eventuell vorhandene zusätzliche Skripte hinzu
-
+// --- Dynamische Pfadbestimmung für common.js ---
+// Der Pfad zur common.js ist relativ zum Anwendungs-Root: src/layout/js/common.js
+$commonJsWebPath = $baseUrl . 'src/layout/js/common.js';
+// Füge einen Cache-Buster hinzu, basierend auf der letzten Änderungszeit der common.js Datei
+// Pfad zur Datei auf dem Dateisystem: dirname(__FILE__) ist src/layout/, also ../js/common.js
+$commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ . '/js/common.js');
+// --- Ende Dynamische Pfadbestimmung ---
 ?>
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
     <title>
-        <?php echo htmlspecialchars($pageTitlePrefix . $pageTitle); ?>
+        <?php echo htmlspecialchars($pageTitle); ?>
     </title>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-
-    <meta name="description" content="<?php echo htmlspecialchars($siteDescription); ?>">
-    <meta name="keywords"
-        content="TwoKinds, in, auf, deutsch, übersetzt, uebersetzt, Web, Comic, Tom, Fischbach, RaptorXilef, Felix, Maywald, Reni, Nora, Trace, Flora, Keith, Natani, Zen, Sythe, Nibbly, Raine, Laura, Saria, Eric, Kathrin, Mike, Evals, Madelyn, Maren, Karen, Red, Templer, Keidran, Basitin, Mensch">
+    <meta name="keywords" content="TwoKinds, in, auf, deutsch, übersetzt, uebersetzt, Web, Comic, Tom, Fischbach, RaptorXilef, Felix, Maywald, Reni, Nora, Trace, Flora, Keith, Natani, Zen, Sythe, Nibbly, Raine, Laura, Saria, Eric, Kathrin, Mike, Evals, Madelyn, Maren, Karen, Red, Templer, Keidran, Basitin, Mensch">
     <meta name="author" content="Felix Maywald, Design und Rechte by Thomas J. Fischbach & Brandon J. Dusseau">
     <meta name="viewport" content="<?php echo htmlspecialchars($viewportContent); ?>">
-    <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s'); ?>">
-    <meta name="robots" content="<?php echo htmlspecialchars($robotsContent); ?>">
+    <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s', filemtime(__FILE__)); ?>">
 
-    <link rel="sitemap" type="application/xml" title="Sitemap"
-        href="<?php echo htmlspecialchars($baseUrl); ?>sitemap.xml">
+    <?php
+    // Pfad zur Sitemap-Datei.
+    $sitemapURL = 'https://twokinds.4lima.de/sitemap.xml';
+    ?>
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="<?php echo htmlspecialchars($sitemapURL); ?>">
     <meta name="google-site-verification" content="61orCNrFH-sm-pPvwWMM8uEH8OAnJDeKtI9yzVL3ico" />
 
-    <!-- Dynamisch geladene CSS-Dateien -->
-    <link rel="stylesheet" href="<?php echo htmlspecialchars($cssMainPath); ?>">
-    <link rel="stylesheet" href="<?php echo htmlspecialchars($cssMainDarkPath); ?>">
+    <!-- Robots Meta Tag für Indexierungssteuerung -->
+    <meta name="robots" content="<?php echo htmlspecialchars($robotsContent); ?>">
+
+    <!-- Standard-Stylesheets für das Hauptdesign. -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main.css?c=20250524">
+    <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524">
+
+
+
 
     <!-- Favicons für verschiedene Browser und Geräte. -->
     <link rel="icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
     <link rel="shortcut icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
     <link rel="apple-touch-icon-precomposed" type="image/png" href="https://cdn.twokinds.keenspot.com/appleicon.png">
 
-    <?php echo $additionalScripts; // Zusätzliche Skripte ?>
-    <?php echo $additionalHeadContent; // Zusätzlicher Head-Inhalt ?>
-</head>
+    <!-- Standard-JavaScript-Dateien. common.js wird nun vom lokalen Server geladen. -->
+    <script type='text/javascript' src='<?php echo htmlspecialchars($commonJsWebPathWithCacheBuster); ?>'></script>
 
+    <?php
+    // Hier können zusätzliche Skripte eingefügt werden, die spezifisch für die aufrufende Seite sind.
+    echo $additionalScripts;
+    // Hier können zusätzliche Meta-Tags, Links etc. eingefügt werden, die spezifisch für die aufrufende Seite sind.
+    echo $additionalHeadContent;
+    ?>
+</head>
 <body class="<?php echo htmlspecialchars($bodyClass); ?>">
     <div id="mainContainer" class="main-container">
         <!-- Hinweis auf das Fanprojekt und Link zum Original. -->
-        <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
-                target="_blank">twokinds.keenspot.com</a></center>
+        <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/" target="_blank">twokinds.keenspot.com</a></center>
         <div id="banner-lights-off" class="banner-lights-off"></div>
         <!-- Hauptbanner der Webseite. -->
         <div id="banner" class="banner">Twokinds</div>
         <div id="content-area" class="content-area">
             <div id="sidebar" class="sidebar">
 
-                <?php
-                // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
-                // __DIR__ ist das Verzeichnis der aktuellen Datei (src/layout)
-                // $_SERVER['PHP_SELF'] ist der Pfad zum aktuell aufgerufenen Skript (z.B. /admin/index.php oder /index.php)
-                if (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) {
-                    // Wenn sich die aufgerufene Seite im /admin/-Verzeichnis befindet, lade das Admin-Menü
-                    // Der Pfad ist von src/layout/ nach ../components/
-                    require(__DIR__ . '/../components/admin_menue_config.php');
-                } else {
-                    // Andernfalls lade das normale Seitenmenü
-                    // Der Pfad ist von src/layout/ nach ../components/
-                    require(__DIR__ . '/../components/menue_config.php');
-                }
-                ?>
+                        <?php
+                        // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
+                        // __DIR__ ist das Verzeichnis der aktuellen Datei (src/layout)
+                        // $_SERVER['PHP_SELF'] ist der Pfad zum aktuell aufgerufenen Skript (z.B. /admin/index.php oder /index.php)
+                        if (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) {
+                            // Wenn sich die aufgerufene Seite im /admin/-Verzeichnis befindet, lade das Admin-Menü
+                            // Der Pfad ist von src/layout/ nach ../components/
+                            require(__DIR__ . '/../components/admin_menue_config.php');
+                        } else {
+                            // Andernfalls lade das normale Seitenmenü
+                            // Der Pfad ist von src/layout/ nach ../components/
+                            require(__DIR__ . '/../components/menue_config.php');
+                        }
+                        ?>
 
             </div>
             <main id="content" class="content">
