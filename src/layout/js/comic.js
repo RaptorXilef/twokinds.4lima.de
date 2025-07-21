@@ -1,384 +1,346 @@
 (() => {
-	const bookmarkButtonId = "add-bookmark";
-	const activeBookmarkClass = "bookmarked";
-	const bookmarkMaxEntries = 50;
-
-	document.addEventListener("DOMContentLoaded", async () => {
-		// Bind the left and right arrow keys and j/k to comic navigation
-		var body = document.getElementsByTagName('body')[0];
-		var navprev = document.querySelector("a.navprev");
-		var navnext = document.querySelector("a.navnext");
-		body.addEventListener("keyup", e => {
-			if ((e.key == "ArrowLeft" || e.key == "j" || e.key == "J") && navprev) {
-				parent.location = navprev.getAttribute("href");
-			} else if ((e.key == "ArrowRight" || e.key == "k" || e.key == "k") && navnext)	{
-				parent.location = navnext.getAttribute("href");
-			}
-		});
-
-		const bookmarkButton = document.getElementById(bookmarkButtonId);
-		const bookmarks = await getStoredBookmarks();
-		if (bookmarkButton) {
-			bookmarkButton.addEventListener("click", async (e) => {
-				await toggleBookmark(e.target);
-			});
-			if (bookmarks.has(bookmarkButton.dataset.id)) {
-				setBookmarkButtonActive();
-			}
-		} else if (document.getElementById("bookmarksPage")) {
-			populateBookmarksPage(bookmarks);
-			document.getElementById("removeAll").addEventListener("click", handleRemoveAllBookmarks);
-			document.getElementById("export").addEventListener("click", handleExportBookmarks);
-			document.getElementById("import").addEventListener("click", handleImportBookmarks);
-			document.getElementById("fileImport").addEventListener("change", handleFileImportStarted);
-			document.getElementById("fileImport").addEventListener("cancel", handleFileImportEnded);
-		}
-	});
-
-	async function toggleBookmark(element) {
-		if (typeof window.localStorage == "undefined") {
-			return;
-		}
-
-		const id = element.dataset.id;
-		const page = element.dataset.page;
-		const link = element.dataset.permalink;
-		const thumb = element.dataset.thumb;
-
-		let bookmarks = new Map();
-
-		try {
-			bookmarks = await getStoredBookmarks();
-		} catch (e) {
-			alertInsecureContext();
-			console.error("Failed to load bookmarks", e);
-			return;
-		}
-
-		let didAddBookmark = false;
-		if (bookmarks.has(id)) {
-			bookmarks.delete(id);
-		} else {
-			if (bookmarks.size >= bookmarkMaxEntries) {
-				alert("You've already bookmarked the maximum number of pages! Please remove a bookmark first.");
-				return;
-			}
-
-			bookmarks.set(id, {
-				"id": id,
-				"page": page,
-				"link": link,
-				"thumb": thumb
-			});
-			didAddBookmark = true;
-		}
-
-		try {
-			await storeBookmarks(bookmarks);
-		} catch (e) {
-			alertInsecureContext();
-			console.error("Failed to save bookmarks", e);
-			return;
-		}
-
-		if (didAddBookmark) {
-			setBookmarkButtonActive();
-		} else {
-			setBookmarkButtonInactive();
-		}
-	}
-
-	function removeStoredBookmarks() {
-		window.localStorage.removeItem("bookmarks");
-		window.localStorage.removeItem("bchk");
-	}
-
-	function setBookmarkButtonInactive() {
-		const button = document.getElementById(bookmarkButtonId);
-		const buttonLabel = "Bookmark this page";
-		button.classList.remove(activeBookmarkClass);
-		button.innerHTML = buttonLabel;
-		button.title = buttonLabel;
-	}
-
-	function setBookmarkButtonActive() {
-		const button = document.getElementById(bookmarkButtonId);
-		const buttonLabel = "Remove this bookmark";
-		button.classList.add(activeBookmarkClass);
-		button.innerHTML = buttonLabel;
-		button.title = buttonLabel;
-	}
-
-	async function hash(data) {
-		const enc = new TextEncoder();
-		const hashBuffer = await window.crypto.subtle.digest("SHA-1", enc.encode(data));
-		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-		return hashHex;
-	}
-
-	async function getStoredBookmarks() {
-		const bookmarks = new Map();
-
-		if (typeof window.localStorage === "undefined") {
-			return bookmarks;
-		}
-
-		if (typeof window.localStorage.bookmarks !== "undefined") {
-			try {
-				const bookmarkHash = window.localStorage.bchk;
-				const bookmarkData = window.localStorage.bookmarks;
-
-				if ((await hash(bookmarkData)) !== bookmarkHash) {
-					throw new Error("Bookmark checksum invalid");
-				}
-
-				const parsedBookmarks =  JSON.parse(window.localStorage.bookmarks);
-				if (parsedBookmarks.length > bookmarkMaxEntries) {
-					throw new Error("Stored bookmarks exceeds maximum size allowed");
-				}
-
-				parsedBookmarks.forEach((b) => {
-					if (b.id) {
-						bookmarks.set(b.id, b);
-					}
-				});
-			} catch (e) {
-				console.error("Unable to load stored bookmarks - data is invalid.", e);
-				removeStoredBookmarks();
-			}
-		}
-
-		return bookmarks;
-	}
-
-	async function storeBookmarks(bookmarkMap) {
-		if (typeof window.localStorage === "undefined") {
-			return;
-		}
-
-		const bookmarkData = JSON.stringify(bookmarkMap.values().toArray());
-		const bookmarkHash = await hash(bookmarkData);
-
-		window.localStorage.bookmarks = bookmarkData;
-		window.localStorage.bchk = bookmarkHash;
-	}
-
-	function handleRemoveAllBookmarks() {
-		const confirm = window.confirm("Are you sure you want to remove ALL of your bookmarks?");
-
-		if (confirm) {
-			removeStoredBookmarks();
-			populateBookmarksPage(new Map());
-		}
-	}
-
-	async function handleExportBookmarks() {
-		let bookmarks;
-		try {
-			bookmarks = await getStoredBookmarks();
-		} catch (e) {
-			alertInsecureContext();
-			console.error("Failed to load bookmarks", e);
-			return;
-		}
-
-		const bookmarkData = JSON.stringify(bookmarks.values().toArray());
-		const encodedBookmarkData = encodeURIComponent(bookmarkData);
-
-		var dlElement = document.createElement("a");
-		dlElement.setAttribute("href", "data:application/json;charset=utf-8," + encodedBookmarkData);
-		dlElement.setAttribute("download", "twokinds-bookmarks.json");
-
-		document.body.appendChild(dlElement);
-		dlElement.click();
-		document.body.removeChild(dlElement);
-	}
-
-	function validateBookmarkImport(parsedData) {
-		if (!Array.isArray(parsedData)) {
-			console.error("Parsed JSON is not an array");
-			return false;
-		}
-
-		if (parsedData.length > bookmarkMaxEntries) {
-			console.error("Parsed JSON contains too many entries");
-			return false;
-		}
-
-		for (i = 0; i < parsedData.length; i++) {
-			const entry = parsedData[i];
-			if (typeof entry !== "object") {
-				console.error("Array entry is not an object");
-				return false;
-			}
-
-			if (!('id' in entry) || !('page' in entry) || !('link' in entry) || !('thumb' in entry)) {
-				console.error("Array entry is missing a required key");
-				return false;
-			}
-
-			const values = Object.values(entry);
-			for (v = 0; v < values.length; v++) {
-				if (typeof values[v] !== "string" && typeof values[v] !== "undefined") {
-					console.error("Object value is not a string")
-					return false;
-				}
-			}
-
-			if (!entry.link.startsWith("/comic/") && !entry.link.startsWith(window.origin + "/comic/")) {
-				console.error("Invalid page link " + entry.link);
-				return false;
-			}
-
-			if (!entry.thumb.includes("/comics/thumbnails/")) {
-				console.error("Invalid thumbnail URL " + entry.thumb);
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	function alertNotValid() {
-		alert("Sorry, this file is not a valid bookmark file.");
-	}
-
-	function alertInsecureContext() {
-		alert("Failed to process bookmarks. Make sure you are using the HTTPS version of the website with an up-to-date browser!");
-	}
-
-	async function handleFileImportStarted(ev) {``
-		const file = ev.target.files[0];
-		if (!file) {
-			handleFileImportEnded();
-			return;
-		}
-
-		if (file.type !== "application/json") {
-			console.error("Selected file is type " + file.type + "but must be application/json");
-			alertNotValid();
-			handleFileImportEnded();
-			return;
-		}
-
-		if (file.size > 10240) {
-			console.error("Selected file is too large (" + file.size + " bytes)");
-			alertNotValid();
-			handleFileImportEnded();
-			return;
-		}
-
-		const reader = new FileReader();
-
-		reader.onload = async () => {
-			const fileContent = reader.result;
-
-			let parsedData = undefined;
-			try {
-				parsedData = JSON.parse(fileContent);
-			} catch (e) {
-				console.error("Input file could not be parsed as JSON", e);
-				alertNotValid();
-				handleFileImportEnded();
-				return;
-			}
-
-			if (!validateBookmarkImport(parsedData)) {
-				alertNotValid();
-			} else {
-				await storeImportedBookmarks(parsedData);
-			}
-
-			handleFileImportEnded();
-		};
-
-		reader.onerror = () => {
-			alert("Sorry, the file could not be read. Please try again.");
-			handleFileImportEnded();
-		};
-
-		reader.readAsText(file);
-	}
-
-	async function storeImportedBookmarks(parsedData) {
-		const bookmarksMap = new Map();
-
-		parsedData.forEach((entry) => {
-			bookmarksMap.set(entry.id, entry);
-		});
-
-		try {
-			await storeBookmarks(bookmarksMap);
-		} catch (e) {
-			alertInsecureContext();
-			console.error("Failed to save bookmarks", e);
-			return;
-		}
-		populateBookmarksPage(bookmarksMap);
-	}
-
-	function handleFileImportEnded() {
-		document.getElementById("import").disabled = false;
-	}
-
-	async function handleImportBookmarks() {
-		document.getElementById("import").disabled = true;
-		document.getElementById("fileImport").click();
-	}
-
-	async function handleRemoveBookmarkById(id) {
-		const bookmarks = await getStoredBookmarks();
-		if (!bookmarks.has(id)) {
-			return;
-		}
-
-		bookmarks.delete(id);
-		await storeBookmarks(bookmarks);
-		populateBookmarksPage(bookmarks);
-	}
-
-	function populateBookmarksPage(bookmarkMap) {
-		document.getElementById("removeAll").disabled = true;
-		document.getElementById("export").disabled = true;
-		const bookmarksSection = document.querySelector("#bookmarksWrapper");
-		const noBookmarksTemplate = document.querySelector("#noBookmarks");
-		const bookmarkWrapperTemplate = document.querySelector("#pageBookmarkWrapper");
-		const pageBookmarkTemplate = document.querySelector("#pageBookmark");
-		bookmarksSection.innerHTML = "";
-
-		if (!bookmarkMap.size) {
-			const noBookmarksElement = noBookmarksTemplate.content.cloneNode(true);
-			bookmarksSection.appendChild(noBookmarksElement);
-			return;
-		}
-
-		const wrapper = bookmarkWrapperTemplate.content.cloneNode(true);
-		bookmarksSection.appendChild(wrapper);
-
-		const bookmarksSorted = new Map([...bookmarkMap].sort((a, b) => a[1].id.localeCompare(b[1].id)));
-
-		bookmarksSorted.values().forEach((b) => {
-			const bookmark = pageBookmarkTemplate.content.cloneNode(true);
-			const link = bookmark.querySelector("a");
-			link.href = b.link;
-			const pageNum = bookmark.querySelector("span");
-			const pageNumTextNode = document.createTextNode(b.page || "");
-			pageNum.appendChild(pageNumTextNode);
-			const image = bookmark.querySelector("img");
-			image.src = b.thumb;
-			image.alt = b.page || "Page";
-
-			pageNum.querySelector(".delete").addEventListener('click', async (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				await handleRemoveBookmarkById(b.id);
-			});
-
-			document.querySelector(".chapter-links").appendChild(bookmark);
-		});
-
-		document.getElementById("removeAll").disabled = false;
-		document.getElementById("export").disabled = false;
-	}
+  const bookmarkButtonId = "add-bookmark";
+  const activeBookmarkClass = "bookmarked";
+  const bookmarkMaxEntries = 50;
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Bind the left and right arrow keys and j/k to comic navigation
+    var body = document.getElementsByTagName("body")[0];
+    var navprev = document.querySelector("a.navprev");
+    var navnext = document.querySelector("a.navnext");
+    body.addEventListener("keyup", (e) => {
+      if ((e.key == "ArrowLeft" || e.key == "j" || e.key == "J") && navprev) {
+        parent.location = navprev.getAttribute("href");
+      } else if (
+        (e.key == "ArrowRight" || e.key == "k" || e.key == "k") &&
+        navnext
+      ) {
+        parent.location = navnext.getAttribute("href");
+      }
+    });
+
+    const bookmarkButton = document.getElementById(bookmarkButtonId);
+    const bookmarks = await getStoredBookmarks();
+
+    // Logic for the individual comic page bookmark button
+    if (bookmarkButton) {
+      bookmarkButton.addEventListener("click", async (e) => {
+        await toggleBookmark(e.target);
+      });
+      if (bookmarks.has(bookmarkButton.dataset.id)) {
+        setBookmarkButtonActive();
+      }
+    }
+    // Logic for the bookmarks page (lesezeichen.php)
+    else if (document.getElementById("bookmarksPage")) {
+      populateBookmarksPage(bookmarks);
+      document
+        .getElementById("removeAll")
+        .addEventListener("click", handleRemoveAllBookmarks);
+      document
+        .getElementById("export")
+        .addEventListener("click", handleExportBookmarks);
+      document
+        .getElementById("importButton")
+        .addEventListener("click", () =>
+          document.getElementById("import").click()
+        ); // Trigger file input click
+      document
+        .getElementById("import")
+        .addEventListener("change", handleImportBookmarks);
+    }
+  });
+
+  /**
+   * Toggles the bookmark status for the current comic page.
+   * @param {HTMLElement} button The bookmark button element.
+   */
+  async function toggleBookmark(button) {
+    const comicId = button.dataset.id;
+    const comicName = button.dataset.name;
+    const comicType = button.dataset.type;
+    const comicChapter = button.dataset.chapter;
+    const comicLink = window.location.href; // Get the current page URL
+    const comicThumb = button.dataset.thumb; // Thumbnail URL from data-thumb
+
+    let bookmarks = await getStoredBookmarks();
+
+    if (bookmarks.has(comicId)) {
+      // Remove bookmark
+      bookmarks.delete(comicId);
+      setBookmarkButtonInactive();
+    } else {
+      // Add bookmark
+      if (bookmarks.size >= bookmarkMaxEntries) {
+        alert(
+          "Du hast die maximale Anzahl von Lesezeichen erreicht (" +
+            bookmarkMaxEntries +
+            "). Bitte entferne zuerst einige, bevor du neue hinzufügst."
+        );
+        return;
+      }
+      bookmarks.set(comicId, {
+        id: comicId,
+        name: comicName,
+        type: comicType,
+        chapter: comicChapter,
+        link: comicLink,
+        thumb: comicThumb, // Store the thumbnail URL
+      });
+      setBookmarkButtonActive();
+    }
+    await storeBookmarks(bookmarks);
+  }
+
+  /**
+   * Sets the bookmark button to active state (e.g., changes color).
+   */
+  function setBookmarkButtonActive() {
+    const bookmarkButton = document.getElementById(bookmarkButtonId);
+    if (bookmarkButton) {
+      bookmarkButton.classList.add(activeBookmarkClass);
+      bookmarkButton.title = "Lesezeichen entfernen";
+    }
+  }
+
+  /**
+   * Sets the bookmark button to inactive state.
+   */
+  function setBookmarkButtonInactive() {
+    const bookmarkButton = document.getElementById(bookmarkButtonId);
+    if (bookmarkButton) {
+      bookmarkButton.classList.remove(activeBookmarkClass);
+      bookmarkButton.title = "Lesezeichen hinzufügen";
+    }
+  }
+
+  /**
+   * Retrieves stored bookmarks from localStorage.
+   * @returns {Promise<Map<string, Object>>} A map of bookmarks.
+   */
+  async function getStoredBookmarks() {
+    return new Promise((resolve) => {
+      if (typeof window.localStorage !== "undefined") {
+        try {
+          const stored = window.localStorage.getItem("comicBookmarks");
+          if (stored) {
+            // Convert plain object back to Map
+            resolve(new Map(Object.entries(JSON.parse(stored))));
+          }
+        } catch (e) {
+          console.error(
+            "Fehler beim Laden der Lesezeichen aus localStorage:",
+            e
+          );
+        }
+      }
+      resolve(new Map()); // Return empty map if no localStorage or error
+    });
+  }
+
+  /**
+   * Stores bookmarks to localStorage.
+   * @param {Map<string, Object>} bookmarks The map of bookmarks to store.
+   * @returns {Promise<void>}
+   */
+  async function storeBookmarks(bookmarks) {
+    return new Promise((resolve) => {
+      if (typeof window.localStorage !== "undefined") {
+        try {
+          // Convert Map to plain object for localStorage storage
+          window.localStorage.setItem(
+            "comicBookmarks",
+            JSON.stringify(Object.fromEntries(bookmarks))
+          );
+        } catch (e) {
+          console.error(
+            "Fehler beim Speichern der Lesezeichen in localStorage:",
+            e
+          );
+        }
+      }
+      resolve();
+    });
+  }
+
+  /**
+   * Populates the bookmarks page with stored bookmarks.
+   * @param {Map<string, Object>} bookmarkMap The map of bookmarks to display.
+   */
+  function populateBookmarksPage(bookmarkMap) {
+    const bookmarksSection = document.querySelector("#bookmarksWrapper"); // This is the main container
+    const noBookmarksTemplate = document.querySelector("#noBookmarks");
+    const pageBookmarkTemplate = document.querySelector("#pageBookmark");
+
+    // Clear existing content
+    bookmarksSection.innerHTML = "";
+
+    if (bookmarkMap.size === 0) {
+      const noBookmarksElement = noBookmarksTemplate.content.cloneNode(true);
+      bookmarksSection.appendChild(noBookmarksElement);
+      // Disable action buttons if no bookmarks
+      document.getElementById("removeAll").disabled = true;
+      document.getElementById("export").disabled = true;
+      return;
+    }
+
+    // Sort bookmarks by ID (comic date) for consistent display
+    const bookmarksSorted = new Map(
+      [...bookmarkMap].sort((a, b) => a[1].id.localeCompare(b[1].id))
+    );
+
+    bookmarksSorted.values().forEach((b) => {
+      const bookmark = pageBookmarkTemplate.content.cloneNode(true);
+      const link = bookmark.querySelector("a");
+      link.href = b.link;
+
+      const image = bookmark.querySelector("img");
+      image.src =
+        b.thumb || "https://placehold.co/96x96/cccccc/333333?text=No+Thumb"; // Fallback thumbnail
+      image.alt = b.name || "Comic Page";
+
+      const pageNum = bookmark.querySelector("span");
+      pageNum.textContent = b.name || b.id; // Display comic name or ID
+
+      const deleteButton = bookmark.querySelector(".delete");
+      deleteButton.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Prevent the link from being followed
+        // Use custom confirmation instead of alert/confirm
+        showCustomConfirm(
+          "Möchten Sie dieses Lesezeichen wirklich entfernen?",
+          async () => {
+            await handleRemoveBookmarkById(b.id);
+            // Re-populate the page after deletion
+            populateBookmarksPage(await getStoredBookmarks());
+          }
+        );
+      });
+
+      bookmarksSection.querySelector(".chapter-links").appendChild(bookmark);
+    });
+
+    // Enable action buttons if bookmarks exist
+    document.getElementById("removeAll").disabled = false;
+    document.getElementById("export").disabled = false;
+  }
+
+  /**
+   * Handles removing a single bookmark by its ID.
+   * @param {string} id The ID of the bookmark to remove.
+   */
+  async function handleRemoveBookmarkById(id) {
+    let bookmarks = await getStoredBookmarks();
+    if (bookmarks.has(id)) {
+      bookmarks.delete(id);
+      await storeBookmarks(bookmarks);
+      // Re-populate the page to reflect the change
+      populateBookmarksPage(bookmarks);
+    }
+  }
+
+  /**
+   * Handles removing all bookmarks.
+   */
+  async function handleRemoveAllBookmarks() {
+    showCustomConfirm(
+      "Möchten Sie wirklich ALLE Lesezeichen entfernen?",
+      async () => {
+        await storeBookmarks(new Map()); // Store an empty map
+        populateBookmarksPage(new Map()); // Update the display
+      }
+    );
+  }
+
+  /**
+   * Handles exporting bookmarks to a JSON file.
+   */
+  async function handleExportBookmarks() {
+    const bookmarks = await getStoredBookmarks();
+    const dataStr = JSON.stringify(Object.fromEntries(bookmarks), null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "twokinds_bookmarks.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Handles importing bookmarks from a JSON file.
+   * @param {Event} event The change event from the file input.
+   */
+  async function handleImportBookmarks(event) {
+    const file = event.target.files[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const importedData = JSON.parse(e.target.result);
+        // Convert imported object back to Map
+        let newBookmarks = new Map(Object.entries(importedData));
+        await storeBookmarks(newBookmarks);
+        populateBookmarksPage(newBookmarks);
+        alert("Lesezeichen erfolgreich importiert!"); // Use custom alert if available
+      } catch (error) {
+        console.error("Fehler beim Importieren der Lesezeichen:", error);
+        alert(
+          "Fehler beim Importieren der Lesezeichen. Bitte stellen Sie sicher, dass die Datei ein gültiges JSON-Format hat."
+        ); // Use custom alert
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  /**
+   * Displays a custom confirmation modal.
+   * @param {string} message The message to display.
+   * @param {function} onConfirm Callback function if user confirms.
+   */
+  function showCustomConfirm(message, onConfirm) {
+    const modal = document.getElementById("customConfirmModal");
+    const confirmMessage = document.getElementById("confirmMessage");
+    const confirmYes = document.getElementById("confirmYes");
+    const confirmNo = document.getElementById("confirmNo");
+
+    if (!modal || !confirmMessage || !confirmYes || !confirmNo) {
+      console.error(
+        "Custom confirmation modal elements not found. Falling back to alert/confirm."
+      );
+      if (confirm(message)) {
+        onConfirm();
+      }
+      return;
+    }
+
+    confirmMessage.textContent = message;
+    modal.style.display = "block"; // Show the modal
+
+    const handleYes = () => {
+      onConfirm();
+      modal.style.display = "none";
+      confirmYes.removeEventListener("click", handleYes);
+      confirmNo.removeEventListener("click", handleNo);
+    };
+
+    const handleNo = () => {
+      modal.style.display = "none";
+      confirmYes.removeEventListener("click", handleYes);
+      confirmNo.removeEventListener("click", handleNo);
+    };
+
+    confirmYes.addEventListener("click", handleYes);
+    confirmNo.addEventListener("click", handleNo);
+  }
+
+  // Add a custom confirmation modal to lesezeichen.php
+  // This modal needs to be present in lesezeichen.php HTML
+  // I'll add a check here in JS to ensure it exists before trying to use it.
+  // The HTML for this modal is already in lesezeichen.php from the previous step.
 })();

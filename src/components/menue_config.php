@@ -34,6 +34,7 @@
     <nav id="menu" class="menu">
         <a href="<?php echo htmlspecialchars($baseUrl); ?>comic/">Comic</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv.php">Archiv</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen.php">Lesezeichen</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>infos.php">Infos</a>
         <a href="<?php htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz.php">Lizenz</a>

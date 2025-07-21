@@ -36,18 +36,19 @@ if (isset($comicData[$currentComicId])) {
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
 
-    // Die Preview-URL wird nun lokal aus dem 'comic_socialmedia'-Ordner geladen (relativ zum Projekt-Root).
-    $rawComicPreviewRootPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
+    // Die Preview-URL wird nun lokal aus dem 'comic_thumbnails'-Ordner geladen (relativ zum Projekt-Root).
+    // Hier verwenden wir den Suffix '_preview' für die Thumbnails.
+    $rawComicThumbnailRootPath = getComicImagePath($currentComicId, './assets/comic_thumbnails/', '_preview');
 
-    // Pfad für die Vorschau-URL (relativ zur aktuellen Comic-Seite, d.h., comic/YYYYMMDD.php)
-    // realpath(__DIR__ . '/../../' . $rawComicPreviewRootPath) konstruiert den absoluten Pfad zur Datei.
-    if (!empty($rawComicPreviewRootPath) && file_exists(realpath(__DIR__ . '/../../' . $rawComicPreviewRootPath))) {
+    // Pfad für die Vorschaubild-URL (relativ zur aktuellen Comic-Seite, d.h., comic/YYYYMMDD.php)
+    // realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath) konstruiert den absoluten Pfad zur Datei.
+    if (!empty($rawComicThumbnailRootPath) && file_exists(realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath))) {
         // Pfad von src/components/ zu assets/
-        $comicPreviewUrl = '../' . $rawComicPreviewRootPath; // Pfad relativ zum Comic-Ordner
-        error_log("DEBUG: Comic Preview Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicPreviewRootPath));
+        $comicPreviewUrl = '../' . $rawComicThumbnailRootPath; // Pfad relativ zum Comic-Ordner
+        error_log("DEBUG: Comic Thumbnail Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath));
     } else {
-        $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
-        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview (Renderer): " . $comicPreviewUrl);
+        $comicPreviewUrl = 'https://placehold.co/200x100/cccccc/333333?text=Thumbnail+Fehler'; // Kleinerer Placeholder für Thumbnails
+        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
     }
 } else {
     // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
@@ -55,7 +56,7 @@ if (isset($comicData[$currentComicId])) {
     $comicTyp = 'Fehler auf Seite'; // Angepasst, da "vom" nun im H1 hinzugefügt wird
     $comicName = 'Comic nicht gefunden';
     $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
-    $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
+    $comicPreviewUrl = 'https://placehold.co/200x100/cccccc/333333?text=Fehler'; // Kleinerer Placeholder
 }
 
 // Definiere die Pfade zu den Lückenfüller-Bildern (relativ zum Projekt-Root).
@@ -132,11 +133,12 @@ $pageTitle = 'Comic ' . substr($currentComicId, 0, 4) . '.' . substr($currentCom
 // H1-Header auf der Seite: TT.MM.JJJJ
 // Hinzufügen von " vom " zwischen Comic-Typ und Datum
 $pageHeader = htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
-$additionalScripts = "<script type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
+// Die comic.js ist für die Lesezeichen-Funktion notwendig
+$additionalScripts = "<script type='text/javascript' src='../src/layout/js/comic.js?c=20250722'></script>";
 
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
 // Die og:image URL muss absolut sein.
-// $comicPreviewUrl ist bereits relativ zur aktuellen Comic-Seite (z.B. ../assets/comic_socialmedia/...)
+// $comicPreviewUrl ist bereits relativ zur aktuellen Comic-Seite (z.B. ../assets/comic_thumbnails/...)
 // Wir müssen den Teil vor 'assets/' entfernen und mit $baseUrl konkatenieren.
 $absoluteComicPreviewUrl = $baseUrl . ltrim($comicPreviewUrl, './'); // Entfernt './' oder '../' vom Anfang des Pfades
 error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Renderer): " . $absoluteComicPreviewUrl);
@@ -160,9 +162,11 @@ include __DIR__ . '/../layout/header.php';
 ?>
 
 <article class="comic">
-    <header>
+    <header style="position: relative;">
         <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->
         <h1><?php echo $pageHeader; ?></h1>
+        <!-- Der Lesezeichen-Button wird nun im comicnav-Container platziert,
+             damit die CSS-Regeln aus main.css korrekt angewendet werden können. -->
     </header>
 
     <div class='comicnav'>
@@ -171,6 +175,14 @@ include __DIR__ . '/../layout/header.php';
         // Pfad von src/components/ zu src/layout/
         include __DIR__ . '/../layout/comic_navigation.php';
         ?>
+        <!-- Lesezeichen-Button mit der Original-Klasse und den Datenattributen -->
+        <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
+            data-id="<?php echo htmlspecialchars($currentComicId); ?>"
+            data-page="<?php echo htmlspecialchars($currentComicId); ?>"
+            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>"
+            data-thumb="<?php echo htmlspecialchars($baseUrl . ltrim($comicPreviewUrl, './')); ?>">
+            Bookmark this page
+        </button>
     </div>
 
     <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
@@ -192,6 +204,12 @@ include __DIR__ . '/../layout/header.php';
             <!-- Hinweis zur Navigation mit Tastaturpfeilen auf Deutsch. -->
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
+        </div>
+        <!-- Link zur Lesezeichen-Seite (wie im Original verfügbar) -->
+        <div class="bookmark-control">
+            <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen.php" class="view-bookmarks-link">
+                Lesezeichen anzeigen
+            </a>
         </div>
     </div>
 
