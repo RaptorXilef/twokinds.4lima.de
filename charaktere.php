@@ -14,14 +14,9 @@ $pageHeader = '';
 
 include __DIR__ . "/src/layout/header.php";
 
-// Zugriff auf die Bildpfade über die $assetPaths Variable
-$characterImageUrlBase = $assetPaths['images']['characters']['base']['original']; // Standardmäßig Original
-$characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']; // Standardmäßig Original
-
-// Wenn du lokale Bilder verwenden möchtest, kannst du die folgenden Zeilen aktivieren
-// $characterImageUrlBase = $assetPaths['images']['characters']['base']['local'];
-// $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['local'];
-
+// Standardmäßig die Original-Pfade verwenden.
+// Um lokale Bilder zu verwenden, ändere 'original' zu 'local' in den Pfaden unten.
+// Beispiel: $assetPaths['images']['characters']['trace_portrait']['local']
 ?>
 <header hidden>
     <h1 class="page-header">Charaktere</h1>
@@ -61,6 +56,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['trace_portrait']['original']); ?>" class="portrait" alt="Trace"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['trace_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['trace_ref_sheet']['original'] || $assetPaths['images']['characters']['trace_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['trace_ref_sheet']['original'] ?? $assetPaths['images']['characters']['trace_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Trace Legacy</h3>
@@ -82,6 +80,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['flora_portrait']['original']); ?>" class="portrait" alt="Flora"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['flora_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['flora_ref_sheet']['original'] || $assetPaths['images']['characters']['flora_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['flora_ref_sheet']['original'] ?? $assetPaths['images']['characters']['flora_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Flora des Regenwald-Tigerstammes</h3>
@@ -104,6 +105,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['keith_portrait']['original']); ?>" class="portrait" alt="Keith"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['keith_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['keith_ref_sheet']['original'] || $assetPaths['images']['characters']['keith_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['keith_ref_sheet']['original'] ?? $assetPaths['images']['characters']['keith_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Keith Keiser</h3>
@@ -124,6 +128,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['natani_portrait']['original']); ?>" class="portrait" alt="Natani"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['natani_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['natani_ref_sheet']['original'] || $assetPaths['images']['characters']['natani_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['natani_ref_sheet']['original'] ?? $assetPaths['images']['characters']['natani_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Natani</h3>
@@ -145,6 +152,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['zen_portrait']['original']); ?>" class="portrait" alt="Zen"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['zen_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['zen_ref_sheet']['original'] || $assetPaths['images']['characters']['zen_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['zen_ref_sheet']['original'] ?? $assetPaths['images']['characters']['zen_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Zen</h3>
@@ -165,6 +175,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['sythe_portrait']['original']); ?>" class="portrait" alt="Sythe"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['sythe_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['sythe_ref_sheet']['original'] || $assetPaths['images']['characters']['sythe_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['sythe_ref_sheet']['original'] ?? $assetPaths['images']['characters']['sythe_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Sythe</h3>
@@ -185,6 +198,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nibbly_portrait']['original']); ?>" class="portrait" alt="Mrs Nibbly"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nibbly_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['nibbly_ref_sheet']['original'] || $assetPaths['images']['characters']['nibbly_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['nibbly_ref_sheet']['original'] ?? $assetPaths['images']['characters']['nibbly_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Mrs. Nibbly</h3>
@@ -206,7 +222,10 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
     <section class="char-detail" id="raine">
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['raine_portrait']['original']); ?>" class="portrait" alt="Raine"><br>
-            <a href="https://www.deviantart.com/twokinds/art/Reni-Ref-Sheet-877690024" target="_blank"><img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['raine_swatch']['original']); ?>" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['raine_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['raine_ref_sheet']['original'] || $assetPaths['images']['characters']['raine_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['raine_ref_sheet']['original'] ?? $assetPaths['images']['characters']['raine_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Raine</h3>
@@ -227,6 +246,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['laura_portrait']['original']); ?>" class="portrait" alt="Laura"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['laura_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['laura_ref_sheet']['original'] || $assetPaths['images']['characters']['laura_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['laura_ref_sheet']['original'] ?? $assetPaths['images']['characters']['laura_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Laura vom Stamm der Küstenfuchse</h3>
@@ -247,6 +269,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['saria_portrait']['original']); ?>" class="portrait" alt="Saria"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['saria_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['saria_ref_sheet']['original'] || $assetPaths['images']['characters']['saria_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['saria_ref_sheet']['original'] ?? $assetPaths['images']['characters']['saria_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Saria au Gruhen</h3>
@@ -267,6 +292,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['eric_portrait']['original']); ?>" class="portrait" alt="Eric"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['eric_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['eric_ref_sheet']['original'] || $assetPaths['images']['characters']['eric_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['eric_ref_sheet']['original'] ?? $assetPaths['images']['characters']['eric_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Eric Vaughan</h3>
@@ -287,6 +315,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['kathrin_portrait']['original']); ?>" class="portrait" alt="Kathrin"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['kathrin_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['kathrin_ref_sheet']['original'] || $assetPaths['images']['characters']['kathrin_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['kathrin_ref_sheet']['original'] ?? $assetPaths['images']['characters']['kathrin_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Kathrin "Spots" Vaughan</h3>
@@ -307,6 +338,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['mike_portrait']['original']); ?>" class="portrait" alt="Mike"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['mike_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['mike_ref_sheet']['original'] || $assetPaths['images']['characters']['mike_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['mike_ref_sheet']['original'] ?? $assetPaths['images']['characters']['mike_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Mike</h3>
@@ -327,6 +361,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evals_portrait']['original']); ?>" class="portrait" alt="Evals"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evals_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['evals_ref_sheet']['original'] || $assetPaths['images']['characters']['evals_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['evals_ref_sheet']['original'] ?? $assetPaths['images']['characters']['evals_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Evals</h3>
@@ -347,6 +384,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maddie_portrait']['original']); ?>" class="portrait" alt="Madelyn Adelaide"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maddie_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['maddie_ref_sheet']['original'] || $assetPaths['images']['characters']['maddie_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['maddie_ref_sheet']['original'] ?? $assetPaths['images']['characters']['maddie_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Madelyn Adelaide</h3>
@@ -367,6 +407,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maren_portrait']['original']); ?>" class="portrait" alt="Maren"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maren_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['maren_ref_sheet']['original'] || $assetPaths['images']['characters']['maren_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['maren_ref_sheet']['original'] ?? $assetPaths['images']['characters']['maren_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Maren Taverndatter</h3>
@@ -387,6 +430,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['karen_portrait']['original']); ?>" class="portrait" alt="Karen"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['karen_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['karen_ref_sheet']['original'] || $assetPaths['images']['characters']['karen_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['karen_ref_sheet']['original'] ?? $assetPaths['images']['characters']['karen_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Karen Taverndatter</h3>
@@ -407,6 +453,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['red_portrait']['original']); ?>" class="portrait" alt="Red Haired Guy"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['red_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['red_ref_sheet']['original'] || $assetPaths['images']['characters']['red_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['red_ref_sheet']['original'] ?? $assetPaths['images']['characters']['red_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>[Datenbankfehler]</h3>
@@ -427,6 +476,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['alaric_portrait']['original']); ?>" class="portrait" alt="Alaric"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['alaric_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['alaric_ref_sheet']['original'] || $assetPaths['images']['characters']['alaric_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['alaric_ref_sheet']['original'] ?? $assetPaths['images']['characters']['alaric_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Nickolai Alaric</h3>
@@ -447,6 +499,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nora_portrait']['original']); ?>" class="portrait" alt="Nora"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['nora_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['nora_ref_sheet']['original'] || $assetPaths['images']['characters']['nora_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['nora_ref_sheet']['original'] ?? $assetPaths['images']['characters']['nora_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Lady Nora</h3>
@@ -466,7 +521,10 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
     <section class="char-detail" id="reni">
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['reni_portrait']['original']); ?>" class="portrait" alt="Reni"><br>
-            <a href="https://www.deviantart.com/twokinds/art/Reni-Ref-Sheet-877690024" target="_blank"><img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['reni_swatch']['original']); ?>" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['reni_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['reni_ref_sheet']['original'] || $assetPaths['images']['characters']['reni_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['reni_ref_sheet']['original'] ?? $assetPaths['images']['characters']['reni_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Prinzessin Reni</h3>
@@ -488,7 +546,10 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
     <section class="char-detail" id="adira">
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_portrait']['original']); ?>" class="portrait" alt="Adira"><br>
-            <a href="https://www.deviantart.com/twokinds/art/Adira-Reference-Sheet-803158843" target="_blank"><img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_swatch']['original']); ?>" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_maeve_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['adira_ref_sheet']['original'] || $assetPaths['images']['characters']['adira_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_ref_sheet']['original'] ?? $assetPaths['images']['characters']['adira_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Adira von der Riftwall</h3>
@@ -509,7 +570,10 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
     <section class="char-detail" id="maeve">
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maeve_portrait']['original']); ?>" class="portrait" alt="Maeve"><br>
-            <a href="https://www.deviantart.com/twokinds/art/Adira-Reference-Sheet-803158843" target="_blank"><img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['maeve_swatch']['original']); ?>" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['adira_maeve_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['maeve_ref_sheet']['original'] || $assetPaths['images']['characters']['maeve_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['maeve_ref_sheet']['original'] ?? $assetPaths['images']['characters']['maeve_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Maeve von der Riftwall</h3>
@@ -566,6 +630,9 @@ $characterFaceUrlBase = $assetPaths['images']['characters']['faces']['original']
         <div class="char-img">
             <img src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evil_trace_portrait']['original']); ?>" class="portrait" alt="Böser Trace"><br>
             <img class="char-swatch" src="<?php echo htmlspecialchars($assetPaths['images']['characters']['evil_trace_swatch']['original']); ?>" alt="Color Swatch">
+            <?php if ($assetPaths['images']['characters']['evil_trace_ref_sheet']['original'] || $assetPaths['images']['characters']['evil_trace_ref_sheet']['local']): ?>
+                <br><a href="<?php echo htmlspecialchars($assetPaths['images']['characters']['evil_trace_ref_sheet']['original'] ?? $assetPaths['images']['characters']['evil_trace_ref_sheet']['local']); ?>" target="_blank">Ref Sheet</a>
+            <?php endif; ?>
         </div>
         <div class="char-info">
             <h3>Trace Legacy (Böse)</h3>
