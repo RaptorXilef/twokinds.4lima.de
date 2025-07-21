@@ -8,13 +8,18 @@
 // Dies ist notwendig, um die Titel der Lesezeichen korrekt anzuzeigen.
 require_once __DIR__ . '/src/components/load_comic_data.php';
 
+// Da der config/ Ordner verworfen wurde, müssen wir die Pfade manuell setzen oder direkt verwenden.
+// Für dieses Beispiel gehen wir davon aus, dass comic.js direkt unter src/layout/js/ liegt.
+// In einer echten Anwendung solltest du eine konsistente Methode zur Pfadverwaltung haben.
+$baseUrl = '/'; // Annahme: Deine Basis-URL ist der Root deines Servers. Passe dies ggf. an.
+
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Deine Lesezeichen';
 $pageHeader = 'Deine Lesezeichen'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
 
 // Füge die comic.js als zusätzliches Skript hinzu, da sie die Lesezeichen-Logik enthält.
-// Der Cache-Buster (c=20250531) sollte beibehalten werden, um Browser-Caching zu umgehen.
-$additionalScripts = "<script type='text/javascript' src='src/layout/js/comic.js?c=20250722'></script>";
+// Der Cache-Buster (c=20250722) sollte beibehalten werden, um Browser-Caching zu umgehen.
+$additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($baseUrl) . "src/layout/js/comic.js?c=20250722'></script>";
 
 // Die allgemeine Seitenbeschreibung für SEO und Social Media.
 $siteDescription = 'Verwalte und zeige deine gespeicherten Comic-Lesezeichen an.';
@@ -27,31 +32,18 @@ include __DIR__ . "/src/layout/header.php";
 ?>
 
 <section id="bookmarksPage" class="bookmarks-page">
-    <h2 class="page-header">Gespeicherte Comic-Lesezeichen</h2>
+    <h2 class="page-header">Deine gespeicherten Lesezeichen</h2>
 
-    <p>Hier siehst du alle Comic-Seiten, die du als Lesezeichen gespeichert hast. Du kannst sie einzeln entfernen oder
-        alle auf einmal löschen.</p>
-
-    <div id="bookmarksWrapper" class="flex flex-wrap gap-4 p-4 justify-center">
-        <!-- Lesezeichen werden hier von comic.js dynamisch eingefügt -->
+    <div class="flex justify-center gap-4 mb-4">
+        <button id="removeAll" class="button delete">Alle Lesezeichen entfernen</button>
+        <button id="export" class="button">Lesezeichen exportieren</button>
+        <input type="file" id="import" accept=".json" class="hidden">
+        <button id="importButton" class="button">Lesezeichen importieren</button>
     </div>
 
-    <div class="bookmark-actions mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
-        <button id="removeAll"
-            class="button bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-colors duration-200 ease-in-out"
-            disabled>
-            Alle Lesezeichen entfernen
-        </button>
-        <button id="export"
-            class="button bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-colors duration-200 ease-in-out"
-            disabled>
-            Lesezeichen exportieren
-        </button>
-        <input type="file" id="import" accept=".json" class="hidden" />
-        <button id="importButton"
-            class="button bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition-colors duration-200 ease-in-out">
-            Lesezeichen importieren
-        </button>
+    <!-- Container für die Lesezeichen-Anzeige -->
+    <div id="bookmarksWrapper" class="flex flex-wrap justify-center gap-4 mt-4">
+        <!-- Lesezeichen werden hier von comic.js eingefügt -->
     </div>
 
     <!-- Templates für die Lesezeichen-Anzeige (von comic.js verwendet) -->
@@ -72,14 +64,21 @@ include __DIR__ . "/src/layout/header.php";
             <img src="" alt="Comic Thumbnail" class="w-24 h-auto rounded-md mb-2">
             <span class="text-xs font-semibold text-gray-700 group-hover:text-blue-600"></span>
             <button type="button"
-                class="delete absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                title="Lesezeichen entfernen">
+                class="delete absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 &times;
             </button>
         </a>
     </template>
-
 </section>
+
+<!-- Custom Confirmation Modal -->
+<div id="customConfirmModal" class="modal">
+    <div class="modal-content">
+        <p id="confirmMessage"></p>
+        <button id="confirmYes" class="button">Ja</button>
+        <button id="confirmNo" class="button delete">Nein</button>
+    </div>
+</div>
 
 <?php
 // Binde den gemeinsamen Footer ein.

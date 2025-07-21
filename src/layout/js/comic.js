@@ -170,6 +170,9 @@
   function populateBookmarksPage(bookmarkMap) {
     const bookmarksSection = document.querySelector("#bookmarksWrapper"); // This is the main container
     const noBookmarksTemplate = document.querySelector("#noBookmarks");
+    const pageBookmarkWrapperTemplate = document.querySelector(
+      "#pageBookmarkWrapper"
+    ); // Get the wrapper template
     const pageBookmarkTemplate = document.querySelector("#pageBookmark");
 
     // Clear existing content
@@ -182,6 +185,21 @@
       document.getElementById("removeAll").disabled = true;
       document.getElementById("export").disabled = true;
       return;
+    }
+
+    // Append the wrapper template's content to the bookmarksSection
+    // This ensures .chapter-links exists before trying to query it
+    const wrapperContent = pageBookmarkWrapperTemplate.content.cloneNode(true);
+    bookmarksSection.appendChild(wrapperContent);
+
+    // Now, get the actual .chapter-links element that was just added to the DOM
+    const chapterLinksContainer =
+      bookmarksSection.querySelector(".chapter-links");
+    if (!chapterLinksContainer) {
+      console.error(
+        "Fehler: .chapter-links Container wurde nicht gefunden, obwohl das Wrapper-Template hinzugefügt wurde."
+      );
+      return; // Exit if the container is still not found
     }
 
     // Sort bookmarks by ID (comic date) for consistent display
@@ -217,7 +235,7 @@
         );
       });
 
-      bookmarksSection.querySelector(".chapter-links").appendChild(bookmark);
+      chapterLinksContainer.appendChild(bookmark); // Append to the actual container
     });
 
     // Enable action buttons if bookmarks exist
@@ -287,12 +305,14 @@
         let newBookmarks = new Map(Object.entries(importedData));
         await storeBookmarks(newBookmarks);
         populateBookmarksPage(newBookmarks);
-        alert("Lesezeichen erfolgreich importiert!"); // Use custom alert if available
+        // Using the custom confirm modal for alerts too
+        showCustomConfirm("Lesezeichen erfolgreich importiert!", () => {});
       } catch (error) {
         console.error("Fehler beim Importieren der Lesezeichen:", error);
-        alert(
-          "Fehler beim Importieren der Lesezeichen. Bitte stellen Sie sicher, dass die Datei ein gültiges JSON-Format hat."
-        ); // Use custom alert
+        showCustomConfirm(
+          "Fehler beim Importieren der Lesezeichen. Bitte stellen Sie sicher, dass die Datei ein gültiges JSON-Format hat.",
+          () => {}
+        );
       }
     };
     reader.readAsText(file);
@@ -338,9 +358,4 @@
     confirmYes.addEventListener("click", handleYes);
     confirmNo.addEventListener("click", handleNo);
   }
-
-  // Add a custom confirmation modal to lesezeichen.php
-  // This modal needs to be present in lesezeichen.php HTML
-  // I'll add a check here in JS to ensure it exists before trying to use it.
-  // The HTML for this modal is already in lesezeichen.php from the previous step.
 })();
