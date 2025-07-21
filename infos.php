@@ -3,6 +3,20 @@
  * Diese Datei enthält Informationen über den Comic, den Künstler und den Übersetzer.
  */
 
+// Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
+// Der Pfad ist relativ zum aktuellen Verzeichnis (infos.php liegt im Root-Verzeichnis).
+$comicDataPath = __DIR__ . '/src/components/comic_var.json';
+$comicData = [];
+if (file_exists($comicDataPath)) {
+    $comicData = json_decode(file_get_contents($comicDataPath), true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("Fehler beim Dekodieren von comic_var.json: " . json_last_error_msg());
+        $comicData = []; // Setze auf leeres Array bei Fehler
+    }
+} else {
+    error_log("comic_var.json nicht gefunden unter: " . $comicDataPath);
+}
+
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Über';
 $pageHeader = 'Über'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
@@ -14,27 +28,26 @@ include __DIR__ . "/src/layout/header.php";
 	<p>
 		<b>Name:</b> TwoKinds (2kinds)<br>
 		<b>Begonnen:</b> 22. Oktober 2003<br>
+		<b>Übersetzt seit:</b> 2021<br>
 		<b>Art:</b> Fantasy Manga<br>
         
 <?php
-// Ermittelt die Anzahl der Comic-Seiten (PHP-Dateien mit 8-stelligen Ziffern im Namen).
-$directory = './'; // Verzeichnis, in dem die Dateien gesucht werden sollen.
-$files = scandir($directory); // Alle Dateien im Verzeichnis auflisten.
+// Ermittelt die Anzahl der Comic-Seiten und Lückenfüller aus comic_var.json.
+$comicPageCount = 0;
+$fillerPageCount = 0;
 
-$count = 0; // Zähler für die Anzahl der passenden Dateien.
-
-foreach ($files as $file) {
-    if (is_file($directory . $file) && pathinfo($file, PATHINFO_EXTENSION) == 'php') {
-        // Überprüfen, ob die Datei ein regulärer Dateityp ist (kein Verzeichnis) und die Dateiendung 'php' hat.
-        $filename = pathinfo($file, PATHINFO_FILENAME); // Dateinamen ohne Erweiterung erhalten.
-        if (preg_match('/^\d{8}$/', $filename)) {
-            // Überprüfen, ob der Dateiname aus genau 8 Ziffern besteht.
-            $count++; // Zähler erhöhen.
+foreach ($comicData as $comicId => $details) {
+    if (isset($details['type'])) {
+        if ($details['type'] === 'Comicseite') {
+            $comicPageCount++;
+        } elseif ($details['type'] === 'Lückenfüller') {
+            $fillerPageCount++;
         }
     }
 }
 
-echo '<b>Seiten:</b> ' . $count . ' (inklusive der Bonusseiten)';
+echo '<b>Comicseiten:</b> ' . $comicPageCount . '<br>';
+echo '<b>Lückenfüller:</b> ' . $fillerPageCount;
 ?>
 	</p>
 

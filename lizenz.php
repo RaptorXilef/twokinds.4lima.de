@@ -34,7 +34,7 @@ include __DIR__ . "/src/layout/header.php";
 <p>Warum macht er das? Weil es seiner Meinung nach so ist, wie es sein sollte. Er stellt seine Arbeit öffentlich zur Verfügung, damit die Leute sie genießen können, und es stört ihn nicht, wenn Leute beschließen, seine Arbeit auf andere Weise zu ergänzen oder anzupassen. Das ist also seine offizielle Art zu verkünden, dass er damit einverstanden ist. Er verzichtet nicht auf alle Rechte an seiner Arbeit, aber er gibt Ihnen einige davon frei.</p>
 
 
-Quelle: <a href="https://twokinds.4lima.de/lizenz.php"> https://twokinds.4lima.de/lizenz.php </a>
+Quelle: <a href="https://twokinds.keenspot.com/license/"> https://twokinds.keenspot.com/license/ </a>
 
 <?php
 // Binde den gemeinsamen Footer ein.
