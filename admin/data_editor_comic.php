@@ -47,7 +47,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 // Pfade zu den benötigten Ressourcen
-$headerPath = __DIR__ . '/../src/layout/header.php';
+$headerPath = __DIR__ . '/../src/layout/header_admin.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $comicVarJsonPath = __DIR__ . '/../src/components/comic_var.json';
 $comicLowresDirPath = __DIR__ . '/../assets/comic_lowres/';

@@ -1039,7 +1039,7 @@ EOT;
 $viewportContent = 'width=device-width, initial-scale=1.0'; // Standard Viewport für Admin-Bereich
 
 // Binde den gemeinsamen Header ein. Pfad relativ zu admin/
-include __DIR__ . '/../src/layout/header.php';
+include __DIR__ . '/../src/layout/header_admin.php';
 ?>
 
 <div class="admin-container">
