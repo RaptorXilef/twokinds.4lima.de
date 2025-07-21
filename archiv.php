@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 /**
  * Dies ist die Archivseite der TwoKinds-Webseite.
  * Sie zeigt die Comics nach Kapiteln gruppiert an und lädt Informationen
@@ -26,6 +28,9 @@ $pageTitle = 'Archiv';
 $pageHeader = 'TwoKinds Archiv'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
 $siteDescription = 'Das Archiv der TwoKinds Comics, fanübersetzt auf Deutsch.';
 $robotsContent = 'index, follow'; // Diese Seite soll von Suchmaschinen indexiert werden
+
+// Setze den Seitentyp, damit der Header die richtigen Skripte lädt
+$current_page_type = 'archive';
 
 // Pfade zu den JSON-Dateien
 $archiveChaptersJsonPath = __DIR__ . '/src/components/archive_chapters.json';
@@ -97,13 +102,10 @@ usort($archiveChapters, function($a, $b) {
 });
 
 
-// JavaScript für aufklappbare Sektionen und Lazy Loading
-// Lade die originalen JS-Dateien in der korrekten Reihenfolge
-$additionalScripts = <<<EOT
-<script src="{$baseUrl}src/layout/js/jquery-3.3.1.min.js"></script>
-<script type="text/javascript" src="{$baseUrl}src/layout/js/archive.js"></script>
-<script type="text/javascript" src="{$baseUrl}src/layout/js/common.js"></script>
-EOT;
+// === WICHTIG: Entferne die explizite JS-Einbindung hier! ===
+// Die JavaScript-Dateien werden nun über den header.php geladen,
+// basierend auf dem oben gesetzten $current_page_type.
+$additionalScripts = ''; // Leere diesen String, damit keine doppelten Skripte geladen werden.
 
 // Zusätzliche Styles für das Archiv
 // Hier wird kein Font Awesome mehr geladen, da das Original-Design eigene Pfeile hat.

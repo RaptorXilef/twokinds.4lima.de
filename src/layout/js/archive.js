@@ -32,34 +32,28 @@
 	});
 
 	/**
-	 * Displays the thumbnails under a chapter
-	 * @param {Element} element The chapter heading to expand.
-	 * @param {bool} noAnimation If true, the heading is expanded with no animation.
-	 * @param {bool} noStore Don't store the expansion in local storage.
+	 * Displays the thumbnails of a given chapter.
+	 * @param {HTMLElement} chapter The chapter element.
+	 * @param {bool} noStore If true, the chapter's expanded state will not be stored in local storage.
 	 * @returns {undefined}
 	 */
-	function showThumbnails(element, noAnimation, noStore) {
-		if (!element) {
+	function showThumbnails(chapter, noStore) {
+		if (chapter == null) {
 			return;
 		}
 
-		const chapterHeader = element.querySelector("h2");
-		const linkContainer = element.querySelector(".chapter-links");
+		var linkContainer = chapter.querySelector(".chapter-links");
+		var arrow = chapter.querySelector(".arrow-left, .arrow-down");
 
-		// If the links are hidden, load the thumbnails and display them. Otherwise collapse the section.
-		const arrow = chapterHeader.querySelector(".arrow-down, .arrow-left");
-		if (linkContainer.style.display === "none") {
+		if (linkContainer.style.display == "none") {
 			// Switch arrow direction and animate the container
-			if (!noAnimation) {
-				arrow.classList.add("animate");
-			}
 			arrow.classList.remove("arrow-left");
 			arrow.classList.add("arrow-down");
-
+			arrow.classList.add("animate");
 			setTimeout(() => { arrow.classList.remove("animate"); }, 1500);
 
 			linkContainer.closest(".chapter").classList.add("expanded");
-			linkContainer.style.display = "flex";
+			linkContainer.style.display = "flex"; // Changed from "block" to "flex" for better layout
 
 			// Dynamically load images
 			if (!linkContainer.dataset.loaded) {
@@ -94,12 +88,12 @@
 			});
 
 			var storageObj = {
-				// 10 minute expire time
-				"expireTime": (new Date).getTime() + 1000000,
-				"expandedChapters": chapterArray
+				// 10 minutes from now
+				expireTime: (new Date).getTime() + 600000,
+				expandedChapters: chapterArray
 			};
 
-			window.localStorage.setItem("archiveExpansion", JSON.stringify(storageObj));
+			window.localStorage.archiveExpansion = JSON.stringify(storageObj);
 		}
 	}
 })();
