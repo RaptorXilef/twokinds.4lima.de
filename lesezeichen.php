@@ -42,118 +42,56 @@ $viewportContent = 'width=1099'; // Konsistent mit Original für das Design.
 include __DIR__ . "/src/layout/header.php";
 ?>
 
-<style>
-    /* Felix's Custom CSS für Lesezeichencontainer und Bilder */
-    /* Stellt sicher, dass der Container immer als Flexbox angezeigt wird */
-    .bookmarks-flex-container {
-        display: flex !important;
-        /* Überschreibt alle display: none; */
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        /* Richtet die Lesezeichen-Elemente als Gruppe linksbündig aus */
-        gap: 1rem;
-        /* Entspricht Tailwind 'gap-4' */
-        margin-top: 1rem;
-        /* Entspricht Tailwind 'mt-4' */
-    }
 
-    /* Stellt sicher, dass das Bild sichtbar ist und eine Mindestgröße hat */
-    .bookmark-thumbnail-image {
-        width: 100%;
-        /* Füllt die Breite des Elternelements (bookmark-item) */
-        height: auto;
-        /* Behält das Seitenverhältnis bei */
-        /*min-width: 96px;*/
-        /* Entspricht Tailwind 'w-24' (96px) */
-        /*min-height: 96px;*/
-        /* Eine Mindesthöhe, um es sichtbar zu machen */
-        /*border-radius: 0.5rem;*/
-        /* Abgerundete Ecken */
-        margin-bottom: 0.5rem;
-        /* Abstand nach unten */
-        display: block !important;
-        /* Stellt sicher, dass es ein Blockelement ist und überschreibt ggf. display: none; */
-        object-fit: cover;
-        /* Bildausschnitt, der den Bereich füllt */
-        background-color: #e0e0e0;
-        /* Ein leichter Grauton als Platzhalter/Hintergrund */
-        /*border: 1px solid #ccc;*/
-        /* Rand zur besseren Sichtbarkeit des Kastens */
-        opacity: 1 !important;
-        /* WICHTIG: Überschreibt opacity: 0 aus main.css */
-        position: static !important;
-        /* WICHTIG: Überschreibt absolute Positionierung */
-        transform: none !important;
-        /* WICHTIG: Entfernt jegliche Transformation */
-    }
-
-    /* Stil für das Lesezeichen-Element selbst, um die Breite zu fixieren und Inhalt linksbündig zu machen */
-    .bookmark-item {
-        /*width: 96px;*/
-        /* Entspricht Tailwind 'w-24' */
-        flex-shrink: 0;
-        /* Verhindert, dass Elemente schrumpfen */
-        /* Inhalt linksbündig ausrichten */
-        align-items: flex-start;
-        /* Für Flexbox-Container (bookmark-item ist flex-col) */
-        text-align: left;
-        /* Für Text innerhalb des Elements */
-    }
-</style>
-
-<section id="bookmarksPage" class="bookmarks-page">
-    <h2 class="page-header">Deine gespeicherten Lesezeichen</h2>
-
-    <div class="flex justify-center gap-4 mb-4">
-        <button id="removeAll" class="button delete">Alle Lesezeichen entfernen</button>
-        <button id="export" class="button">Lesezeichen exportieren</button>
-        <input type="file" id="import" accept=".json" class="hidden">
-        <button id="importButton" class="button">Lesezeichen importieren</button>
+<div id="bookmarksPage" class="bookmarks-page">
+    <!-- Bookmark example as seen in the original screenshot -->
+    <div class="bookmark-example">
+        <span>Klicke auf das Lesezeichen-Symbol auf jeder Comic-Seite, um sie hier hinzuzufügen.</span>
+        <div class="ribbon"></div>
     </div>
 
-    <!-- Container für die Lesezeichen-Anzeige -->
-    <div id="bookmarksWrapper">
-        <!-- Lesezeichen werden hier von comic.js eingefügt -->
+    <h2 class="page-header"><?php echo htmlspecialchars($pageHeader); ?></h2>
+    <noscript>Entschuldigung, diese Funktion erfordert aktiviertes JavaScript.</noscript>
+
+    <div>
+        <div id="bookmarksWrapper" class="bookmarks">
+            <!-- Lesezeichen werden hier von JavaScript eingefügt -->
+            <div class="no-bookmarks">Du hast noch keine Lesezeichen!</div>
+        </div>
+        <hr>
+        <button type="button" id="removeAll">Alle Lesezeichen entfernen</button>
+        <button type="button" id="export">Exportieren</button>
+        <button type="button" id="importButton">Importieren</button>
+        <input type="file" id="import" accept=".json,application/json" style="display: none;">
     </div>
 
-    <!-- Templates für die Lesezeichen-Anzeige (von comic.js verwendet) -->
+    <!-- Templates for JavaScript to clone -->
     <template id="noBookmarks">
-        <p class="text-center text-gray-600 mt-8">Du hast noch keine Lesezeichen gespeichert. Besuche eine Comic-Seite
-            und klicke auf das Lesezeichen-Symbol, um eine Seite hinzuzufügen.</p>
+        <div class="no-bookmarks">Du hast noch keine Lesezeichen!</div>
     </template>
 
     <template id="pageBookmarkWrapper">
-        <!-- Die Klasse "chapter-links" wird beibehalten, da comic.js sie als Selektor verwendet. -->
-        <!-- Zusätzliche Klasse "bookmarks-flex-container" für spezifisches Styling. -->
-        <div class="chapter-links bookmarks-flex-container">
-            <!-- Lesezeichen-Elemente werden hier eingefügt -->
+        <div class="chapter-links">
+            <!-- Bookmarks are dynamically inserted here by JS -->
         </div>
     </template>
 
     <template id="pageBookmark">
-        <a href="#"
-            class="bookmark-item relative flex flex-col p-2 bg-gray-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ease-in-out group">
-            <!-- src wird von comic.js gesetzt -->
-            <img src="" alt="Comic Thumbnail" class="bookmark-thumbnail-image">
-            <span class="text-xs font-semibold text-gray-700 group-hover:text-blue-600"></span>
-            <button type="button"
-                class="delete absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                &times;
+        <a href="#">
+            <img src="" alt="Comic Thumbnail">
+            <span></span>
+            <button type="button" class="delete" title="Lesezeichen entfernen">
+                <!-- SVG for trash can icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 41.336 41.336">
+                    <path
+                        d="M36.335 5.668h-8.167V1.5a1.5 1.5 0 00-1.5-1.5h-12a1.5 1.5 0 00-1.5 1.5v4.168H5.001a2 2 0 000 4h2.001v29.168a2.5 2.5 0 002.5 2.5h22.332a2.5 2.5 0 002.5-2.5V9.668h2.001a2 2 0 000-4zM14.168 35.67a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm8 0a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm3-30.002h-9V3h9v2.668zm5 30.002a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21z"
+                        fill="currentColor"></path>
+                </svg>
             </button>
+            <div class="bookmark-icon"></div>
         </a>
     </template>
-</section>
-
-<!-- Custom Confirmation Modal -->
-<div id="customConfirmModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <p id="confirmMessage"></p>
-        <button id="confirmYes" class="button">Ja</button>
-        <button id="confirmNo" class="button delete">Nein</button>
-    </div>
 </div>
 
-<?php
-// Binde den gemeinsamen Footer ein.
-include __DIR__ . "/src/layout/footer.php";
-?>
+
+<?php include __DIR__ . "/src/layout/footer.php"; ?>
