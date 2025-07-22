@@ -41,10 +41,10 @@
         .getElementById("export")
         .addEventListener("click", handleExportBookmarks);
       document
-        .getElementById("importButton")
-        .addEventListener("click", () =>
-          document.getElementById("import").click()
-        ); // Trigger file input click
+        .getElementById("importButton") // Changed to importButton
+        .addEventListener("click", () => {
+          document.getElementById("import").click();
+        });
       document
         .getElementById("import")
         .addEventListener("change", handleImportBookmarks);
@@ -52,56 +52,113 @@
   });
 
   /**
-   * Toggles the bookmark status for the current comic page.
-   * @param {HTMLElement} button The bookmark button element.
+   * Retrieves stored bookmarks from local storage.
+   * @returns {Promise<Map<string, object>>} A map of bookmarks.
    */
-  async function toggleBookmark(button) {
-    const comicId = button.dataset.id;
-    const comicName = button.dataset.name;
-    const comicType = button.dataset.type;
-    const comicChapter = button.dataset.chapter;
-    const comicLink = window.location.href; // Get the current page URL
-    const comicThumb = button.dataset.thumb; // Thumbnail URL from data-thumb
-
-    let bookmarks = await getStoredBookmarks();
-
-    if (bookmarks.has(comicId)) {
-      // Remove bookmark
-      bookmarks.delete(comicId);
-      setBookmarkButtonInactive();
-    } else {
-      // Add bookmark
-      if (bookmarks.size >= bookmarkMaxEntries) {
-        // Using the custom confirm modal for alerts too
-        showCustomConfirm(
-          "Du hast die maximale Anzahl von Lesezeichen erreicht (" +
-            bookmarkMaxEntries +
-            "). Bitte entferne zuerst einige, bevor du neue hinzufügst.",
-          () => {}
-        );
-        return;
-      }
-      bookmarks.set(comicId, {
-        id: comicId,
-        name: comicName,
-        type: comicType,
-        chapter: comicChapter,
-        link: comicLink,
-        thumb: comicThumb, // Store the thumbnail URL
-      });
-      setBookmarkButtonActive();
+  async function getStoredBookmarks() {
+    if (typeof window.localStorage == "undefined") {
+      return new Map();
     }
-    await storeBookmarks(bookmarks);
+    try {
+      const stored = window.localStorage.getItem("comicBookmarks");
+      return stored ? new Map(JSON.parse(stored)) : new Map();
+    } catch (e) {
+      console.error("Error parsing bookmarks from localStorage:", e);
+      return new Map();
+    }
   }
 
   /**
-   * Sets the bookmark button to active state (e.g., changes color).
+   * Stores bookmarks in local storage.
+   * @param {Map<string, object>} bookmarkMap The map of bookmarks to store.
+   * @returns {Promise<void>}
+   */
+  async function storeBookmarks(bookmarkMap) {
+    if (typeof window.localStorage == "undefined") {
+      return;
+    }
+    try {
+      window.localStorage.setItem(
+        "comicBookmarks",
+        JSON.stringify(Array.from(bookmarkMap.entries()))
+      );
+    } catch (e) {
+      console.error("Error storing bookmarks to localStorage:", e);
+    }
+  }
+
+  /**
+   * Toggles a bookmark for the current page.
+   * @param {HTMLElement} button The bookmark button element.
+   * @returns {Promise<void>}
+   */
+  async function toggleBookmark(button) {
+    const comicId = button.dataset.id;
+    const page = button.dataset.page;
+    const permalink = button.dataset.permalink;
+    const thumb = button.dataset.thumb;
+
+    const bookmarks = await getStoredBookmarks();
+
+    if (bookmarks.has(comicId)) {
+      // Remove bookmark
+      showCustomConfirm(
+        "Möchten Sie dieses Lesezeichen wirklich entfernen?",
+        async () => {
+          bookmarks.delete(comicId);
+          await storeBookmarks(bookmarks);
+          setBookmarkButtonInactive();
+          // If on bookmarks page, refresh the list
+          if (document.getElementById("bookmarksPage")) {
+            populateBookmarksPage(bookmarks);
+          }
+        }
+      );
+    } else {
+      // Add bookmark
+      if (bookmarks.size >= bookmarkMaxEntries) {
+        showCustomConfirm(
+          `Sie haben die maximale Anzahl von ${bookmarkMaxEntries} Lesezeichen erreicht. Möchten Sie das älteste Lesezeichen entfernen, um dieses hinzuzufügen?`,
+          async () => {
+            // Find the oldest bookmark (first in sorted order by ID/date)
+            const bookmarksSorted = new Map(
+              [...bookmarks].sort((a, b) => a[1].id.localeCompare(b[1].id))
+            );
+            const oldestId = bookmarksSorted.keys().next().value;
+            bookmarks.delete(oldestId);
+
+            bookmarks.set(comicId, { id: comicId, page, permalink, thumb });
+            await storeBookmarks(bookmarks);
+            setBookmarkButtonActive();
+            // If on bookmarks page, refresh the list
+            if (document.getElementById("bookmarksPage")) {
+              populateBookmarksPage(bookmarks);
+            }
+          },
+          () => {
+            // User cancelled, do nothing
+          }
+        );
+      } else {
+        bookmarks.set(comicId, { id: comicId, page, permalink, thumb });
+        await storeBookmarks(bookmarks);
+        setBookmarkButtonActive();
+        // If on bookmarks page, refresh the list
+        if (document.getElementById("bookmarksPage")) {
+          populateBookmarksPage(bookmarks);
+        }
+      }
+    }
+  }
+
+  /**
+   * Sets the bookmark button to active state.
    */
   function setBookmarkButtonActive() {
     const bookmarkButton = document.getElementById(bookmarkButtonId);
     if (bookmarkButton) {
       bookmarkButton.classList.add(activeBookmarkClass);
-      bookmarkButton.title = "Lesezeichen entfernen";
+      bookmarkButton.title = "Lesezeichen entfernt"; // German text
     }
   }
 
@@ -112,135 +169,69 @@
     const bookmarkButton = document.getElementById(bookmarkButtonId);
     if (bookmarkButton) {
       bookmarkButton.classList.remove(activeBookmarkClass);
-      bookmarkButton.title = "Lesezeichen hinzufügen";
+      bookmarkButton.title = "Diese Seite mit Lesezeichen versehen"; // German text
     }
-  }
-
-  /**
-   * Retrieves stored bookmarks from localStorage.
-   * @returns {Promise<Map<string, Object>>} A map of bookmarks.
-   */
-  async function getStoredBookmarks() {
-    return new Promise((resolve) => {
-      if (typeof window.localStorage !== "undefined") {
-        try {
-          const stored = window.localStorage.getItem("comicBookmarks");
-          if (stored) {
-            // Convert plain object back to Map
-            resolve(new Map(Object.entries(JSON.parse(stored))));
-          }
-        } catch (e) {
-          console.error(
-            "Fehler beim Laden der Lesezeichen aus localStorage:",
-            e
-          );
-        }
-      }
-      resolve(new Map()); // Return empty map if no localStorage or error
-    });
-  }
-
-  /**
-   * Stores bookmarks to localStorage.
-   * @param {Map<string, Object>} bookmarks The map of bookmarks to store.
-   * @returns {Promise<void>}
-   */
-  async function storeBookmarks(bookmarks) {
-    return new Promise((resolve) => {
-      if (typeof window.localStorage !== "undefined") {
-        try {
-          // Convert Map to plain object for localStorage storage
-          window.localStorage.setItem(
-            "comicBookmarks",
-            JSON.stringify(Object.fromEntries(bookmarks))
-          );
-        } catch (e) {
-          console.error(
-            "Fehler beim Speichern der Lesezeichen in localStorage:",
-            e
-          );
-        }
-      }
-      resolve();
-    });
   }
 
   /**
    * Populates the bookmarks page with stored bookmarks.
-   * @param {Map<string, Object>} bookmarkMap The map of bookmarks to display.
+   * @param {Map<string, object>} bookmarkMap The map of bookmarks to display.
    */
   function populateBookmarksPage(bookmarkMap) {
-    const bookmarksSection = document.querySelector("#bookmarksWrapper"); // This is the main container
+    const bookmarksSection = document.querySelector("#bookmarksWrapper");
     const noBookmarksTemplate = document.querySelector("#noBookmarks");
-    const pageBookmarkWrapperTemplate = document.querySelector(
+    const bookmarkWrapperTemplate = document.querySelector(
       "#pageBookmarkWrapper"
-    ); // Get the wrapper template
+    );
     const pageBookmarkTemplate = document.querySelector("#pageBookmark");
+    bookmarksSection.innerHTML = ""; // Clear existing content
 
-    // Clear existing content
-    bookmarksSection.innerHTML = "";
-
-    if (bookmarkMap.size === 0) {
+    if (!bookmarkMap.size) {
       const noBookmarksElement = noBookmarksTemplate.content.cloneNode(true);
       bookmarksSection.appendChild(noBookmarksElement);
-      // Disable action buttons if no bookmarks
-      document.getElementById("removeAll").disabled = true;
-      document.getElementById("export").disabled = true;
       return;
     }
 
-    // Append the wrapper template's content to the bookmarksSection
-    // This ensures .chapter-links exists before trying to query it
-    const wrapperContent = pageBookmarkWrapperTemplate.content.cloneNode(true);
-    bookmarksSection.appendChild(wrapperContent);
+    const wrapper = bookmarkWrapperTemplate.content.cloneNode(true);
+    // Append the wrapper to the main section first, so its elements are in the DOM
+    bookmarksSection.appendChild(wrapper);
 
-    // Now, get the actual .chapter-links element that was just added to the DOM
+    // Now query for the .chapter-links inside the appended wrapper
     const chapterLinksContainer =
       bookmarksSection.querySelector(".chapter-links");
-    if (!chapterLinksContainer) {
-      console.error(
-        "Fehler: .chapter-links Container wurde nicht gefunden, obwohl das Wrapper-Template hinzugefügt wurde."
-      );
-      return; // Exit if the container is still not found
-    }
 
-    // Sort bookmarks by ID (comic date) for consistent display
     const bookmarksSorted = new Map(
-      [...bookmarkMap].sort((a, b) => a[1].id.localeCompare(b[1].id))
-    );
+      [...bookmarkMap].sort((a, b) => b[1].id.localeCompare(a[1].id))
+    ); // Sort descending by ID (newest first)
 
     bookmarksSorted.values().forEach((b) => {
       const bookmark = pageBookmarkTemplate.content.cloneNode(true);
       const link = bookmark.querySelector("a");
-      link.href = b.link;
-
-      const image = bookmark.querySelector("img");
-      // b.thumb sollte nun immer eine gültige absolute URL sein (echtes Thumbnail oder Platzhalter)
-      image.src = b.thumb;
-      image.alt = b.name || "Comic Page";
-
+      link.href = b.permalink;
       const pageNum = bookmark.querySelector("span");
-      pageNum.textContent = b.name || b.id; // Display comic name or ID
+      const pageNumTextNode = document.createTextNode(b.page || "");
+      pageNum.appendChild(pageNumTextNode);
+      const image = bookmark.querySelector("img");
+      image.src = b.thumb; // This is where the thumbnail URL is set
+      image.alt = b.page || "Page";
 
-      const deleteButton = bookmark.querySelector(".delete");
-      deleteButton.addEventListener("click", async (e) => {
+      // Add event listener to the delete button within the cloned bookmark item
+      bookmark.querySelector(".delete").addEventListener("click", async (e) => {
         e.preventDefault();
         e.stopPropagation(); // Prevent the link from being followed
-        // Use custom confirmation instead of alert/confirm
-        showCustomConfirm(
-          "Möchten Sie dieses Lesezeichen wirklich entfernen?",
-          async () => {
-            await handleRemoveBookmarkById(b.id);
-            // Re-populate the page after deletion
-            populateBookmarksPage(await getStoredBookmarks());
-          }
-        );
+        await handleRemoveBookmarkById(b.id);
       });
 
-      chapterLinksContainer.appendChild(bookmark); // Append to the actual container
+      // Append the individual bookmark item to the chapterLinksContainer
+      if (chapterLinksContainer) {
+        chapterLinksContainer.appendChild(bookmark);
+      } else {
+        console.error(
+          "chapterLinksContainer not found, cannot append bookmark."
+        );
+      }
     });
 
-    // Enable action buttons if bookmarks exist
     document.getElementById("removeAll").disabled = false;
     document.getElementById("export").disabled = false;
   }
@@ -250,13 +241,15 @@
    * @param {string} id The ID of the bookmark to remove.
    */
   async function handleRemoveBookmarkById(id) {
-    let bookmarks = await getStoredBookmarks();
-    if (bookmarks.has(id)) {
-      bookmarks.delete(id);
-      await storeBookmarks(bookmarks);
-      // Re-populate the page to reflect the change
-      populateBookmarksPage(bookmarks);
-    }
+    showCustomConfirm(
+      "Möchten Sie dieses Lesezeichen wirklich entfernen?",
+      async () => {
+        const bookmarks = await getStoredBookmarks();
+        bookmarks.delete(id);
+        await storeBookmarks(bookmarks);
+        populateBookmarksPage(bookmarks); // Refresh the display
+      }
+    );
   }
 
   /**
@@ -264,10 +257,12 @@
    */
   async function handleRemoveAllBookmarks() {
     showCustomConfirm(
-      "Möchten Sie wirklich ALLE Lesezeichen entfernen?",
+      "Möchten Sie wirklich alle Lesezeichen entfernen?",
       async () => {
-        await storeBookmarks(new Map()); // Store an empty map
-        populateBookmarksPage(new Map()); // Update the display
+        await storeBookmarks(new Map()); // Clear all bookmarks
+        populateBookmarksPage(new Map()); // Refresh the display
+        document.getElementById("removeAll").disabled = true;
+        document.getElementById("export").disabled = true;
       }
     );
   }
@@ -277,7 +272,11 @@
    */
   async function handleExportBookmarks() {
     const bookmarks = await getStoredBookmarks();
-    const dataStr = JSON.stringify(Object.fromEntries(bookmarks), null, 2);
+    if (bookmarks.size === 0) {
+      showCustomConfirm("Es gibt keine Lesezeichen zum Exportieren.", () => {});
+      return;
+    }
+    const dataStr = JSON.stringify(Array.from(bookmarks.entries()), null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -303,14 +302,34 @@
     reader.onload = async (e) => {
       try {
         const importedData = JSON.parse(e.target.result);
-        // Convert imported object back to Map
-        let newBookmarks = new Map(Object.entries(importedData));
-        await storeBookmarks(newBookmarks);
-        populateBookmarksPage(newBookmarks);
-        // Using the custom confirm modal for alerts too
+        if (!Array.isArray(importedData)) {
+          throw new Error("Invalid JSON format. Expected an array.");
+        }
+        const newBookmarks = new Map(importedData);
+
+        // Optional: Merge with existing bookmarks or overwrite
+        const currentBookmarks = await getStoredBookmarks();
+        newBookmarks.forEach((value, key) => {
+          if (currentBookmarks.size < bookmarkMaxEntries) {
+            currentBookmarks.set(key, value);
+          } else {
+            // If max entries reached, replace oldest with new one
+            const bookmarksSorted = new Map(
+              [...currentBookmarks].sort((a, b) =>
+                a[1].id.localeCompare(b[1].id)
+              )
+            );
+            const oldestId = bookmarksSorted.keys().next().value;
+            currentBookmarks.delete(oldestId);
+            currentBookmarks.set(key, value);
+          }
+        });
+
+        await storeBookmarks(currentBookmarks);
+        populateBookmarksPage(currentBookmarks);
         showCustomConfirm("Lesezeichen erfolgreich importiert!", () => {});
       } catch (error) {
-        console.error("Fehler beim Importieren der Lesezeichen:", error);
+        console.error("Error importing bookmarks:", error);
         showCustomConfirm(
           "Fehler beim Importieren der Lesezeichen. Bitte stellen Sie sicher, dass die Datei ein gültiges JSON-Format hat.",
           () => {}
@@ -324,8 +343,9 @@
    * Displays a custom confirmation modal.
    * @param {string} message The message to display.
    * @param {function} onConfirm Callback function if user confirms.
+   * @param {function} onCancel Callback function if user cancels.
    */
-  function showCustomConfirm(message, onConfirm) {
+  function showCustomConfirm(message, onConfirm, onCancel = () => {}) {
     const modal = document.getElementById("customConfirmModal");
     const confirmMessage = document.getElementById("confirmMessage");
     const confirmYes = document.getElementById("confirmYes");
@@ -337,6 +357,8 @@
       );
       if (confirm(message)) {
         onConfirm();
+      } else {
+        onCancel();
       }
       return;
     }
@@ -352,6 +374,7 @@
     };
 
     const handleNo = () => {
+      onCancel();
       modal.style.display = "none";
       confirmYes.removeEventListener("click", handleYes);
       confirmNo.removeEventListener("click", handleNo);

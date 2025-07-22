@@ -41,8 +41,8 @@ if (isset($comicData[$currentComicId])) {
     $comicTranscript = $comicData[$currentComicId]['transcript'];
 
     // Die Preview-URL wird nun lokal aus dem 'comic_thumbnails'-Ordner geladen (relativ zum Projekt-Root).
-    // Hier verwenden wir den Suffix '_preview' für die Thumbnails.
-    $rawComicThumbnailRootPath = getComicImagePath($currentComicId, './assets/thumbnails/', '_preview'); // Korrigierter Pfad zu thumbnails
+    // Korrigierter Pfad zu 'assets/comic_thumbnails/' und ohne '_preview' Suffix.
+    $rawComicThumbnailRootPath = getComicImagePath($currentComicId, './assets/comic_thumbnails/');
 
     // Pfad für die Vorschaubild-URL (relativ zur aktuellen Comic-Seite, d.h., comic/YYYYMMDD.php)
     // realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath) konstruiert den absoluten Pfad zur Datei.
