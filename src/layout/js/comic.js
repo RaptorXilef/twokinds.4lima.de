@@ -215,8 +215,13 @@
       image.src = b.thumb; // This is where the thumbnail URL is set
       image.alt = b.page || "Page";
 
+      // Add the 'loaded' class to the link element to trigger CSS styling
+      // This will make the image visible and control the overlay visibility
+      link.classList.add("loaded"); // <--- NEU HINZUGEFÜGT
+
       // Add event listener to the delete button within the cloned bookmark item
-      bookmark.querySelector(".delete").addEventListener("click", async (e) => {
+      // The delete button is inside the span, which is a child of the link
+      pageNum.querySelector(".delete").addEventListener("click", async (e) => {
         e.preventDefault();
         e.stopPropagation(); // Prevent the link from being followed
         await handleRemoveBookmarkById(b.id);
