@@ -1,6 +1,6 @@
 {
     "20250209": {
-        "type": "Lückenfüller",
+        "type": "Comicseite",
         "name": "Nora erwacht 3",
         "transcript": "<p><b>Nora:</b> Blablabla...</p><p><b>Charakter B:</b> Lorem ipsum dolor sit amet.</p>",
         "chapter": 22
@@ -13,8 +13,8 @@
     },
     "20250223": {
         "type": "Comicseite",
-        "name": "Nora erwacht 5 - Geröstet",
-        "transcript": "<p><b>Erzähler:</b> Die Hitze stieg.</p>",
+        "name": "Nora erwacht 5 - Ger\u00f6stet",
+        "transcript": "<p><b>Erz\u00e4hler:</b> Die Hitze stieg.</p>",
         "chapter": 22
     },
     "20250301": {
@@ -37,8 +37,8 @@
     },
     "20250312": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 2 - Höflichkeits-Paradoxon",
-        "transcript": "<p><b>Reed:</b> Eine schwierige Situation.</p>",
+        "name": "Maeve und Reed 2 - H\u00f6flichkeits-Paradoxon (test)",
+        "transcript": "<p><b>Reed:</b> Eine schwierige Situation.</p><p>(test)</p>",
         "chapter": 22
     },
     "20250315": {
@@ -67,8 +67,8 @@
     },
     "20250410": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 7 - Entführung für einen guten Zweck",
-        "transcript": "<p><b>Erzähler:</b> Eine unkonventionelle Methode.</p>",
+        "name": "Maeve und Reed 7 - Entf\u00fchrung f\u00fcr einen guten Zweck",
+        "transcript": "<p><b>Erz\u00e4hler:</b> Eine unkonventionelle Methode.</p>",
         "chapter": 22
     },
     "20250507": {
@@ -91,7 +91,7 @@
     },
     "20250604": {
         "type": "Comicseite",
-        "name": "Durch die Tür kommen",
+        "name": "Durch die T\u00fcr kommen",
         "transcript": "<p><b>Charakter:</b> Fast geschafft.</p>",
         "chapter": 22
     }

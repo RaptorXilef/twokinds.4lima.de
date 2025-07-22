@@ -1,8 +1,30 @@
-# Dateien in Comic Ordnern nicht beachten
-assets/comic_lowres/
+# assets und Bilder
 assets/comic_hires/
+!assets/comic_hires/index.php
+!assets/comic_hires/in_translation.jpg
+!assets/comic_hires/.htaccess
+assets/comic_lowres/
+!assets/comic_lowres/index.php
+!assets/comic_lowres/in_translation.jpg
+!assets/comic_lowres/.htaccess
+assets/comic_socialmedia/
+!assets/comic_socialmedia/index.php
+!assets/comic_socialmedia/in_translation.jpg
+!assets/comic_socialmedia/.htaccess
 assets/comic_thumbnails/
+!assets/comic_thumbnails/index.php
+!assets/comic_thumbnails/in_translation.jpg
+!assets/comic_thumbnails/.htaccess
+
+# Nicht verwendete Icons
+assets/icons/nicht verwendet/*
+
+# Comic-Ordner
+comic/*
+!comic/20170728.php
+!comic/20250312.php
+!comic/20250604.php
+!comic/index.php
 
 # Zip-Archive
 *.zip
-_alt/
