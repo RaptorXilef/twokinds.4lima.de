@@ -31,6 +31,10 @@ $comicName = '';
 $comicTranscript = '';
 $comicPreviewUrl = ''; // URL für das Vorschaubild, z.B. für Social Media Meta-Tags.
 
+// Definiere die externe Platzhalter-URL für Thumbnails
+$externalPlaceholderThumbnailUrl = 'https://placehold.co/96x96/cccccc/333333?text=Vorschau%0Aaktuell%0Anicht%0Averf%C3%BCgbar';
+
+
 if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
@@ -38,7 +42,7 @@ if (isset($comicData[$currentComicId])) {
 
     // Die Preview-URL wird nun lokal aus dem 'comic_thumbnails'-Ordner geladen (relativ zum Projekt-Root).
     // Hier verwenden wir den Suffix '_preview' für die Thumbnails.
-    $rawComicThumbnailRootPath = getComicImagePath($currentComicId, './assets/comic_thumbnails/', '_preview');
+    $rawComicThumbnailRootPath = getComicImagePath($currentComicId, './assets/thumbnails/', '_preview'); // Korrigierter Pfad zu thumbnails
 
     // Pfad für die Vorschaubild-URL (relativ zur aktuellen Comic-Seite, d.h., comic/YYYYMMDD.php)
     // realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath) konstruiert den absoluten Pfad zur Datei.
@@ -47,8 +51,8 @@ if (isset($comicData[$currentComicId])) {
         $comicPreviewUrl = '../' . $rawComicThumbnailRootPath; // Pfad relativ zum Comic-Ordner
         error_log("DEBUG: Comic Thumbnail Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath));
     } else {
-        $comicPreviewUrl = 'https://placehold.co/200x100/cccccc/333333?text=Thumbnail+Fehler'; // Kleinerer Placeholder für Thumbnails
-        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
+        $comicPreviewUrl = $externalPlaceholderThumbnailUrl; // Neue, externe Platzhalter-URL
+        error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
     }
 } else {
     // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
@@ -56,7 +60,8 @@ if (isset($comicData[$currentComicId])) {
     $comicTyp = 'Fehler auf Seite'; // Angepasst, da "vom" nun im H1 hinzugefügt wird
     $comicName = 'Comic nicht gefunden';
     $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
-    $comicPreviewUrl = 'https://placehold.co/200x100/cccccc/333333?text=Fehler'; // Kleinerer Placeholder
+    $comicPreviewUrl = $externalPlaceholderThumbnailUrl; // Immer die externe Platzhalter-URL verwenden
+    error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
 }
 
 // Definiere die Pfade zu den Lückenfüller-Bildern (relativ zum Projekt-Root).
@@ -138,9 +143,14 @@ $additionalScripts = "<script type='text/javascript' src='../src/layout/js/comic
 
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
 // Die og:image URL muss absolut sein.
-// $comicPreviewUrl ist bereits relativ zur aktuellen Comic-Seite (z.B. ../assets/comic_thumbnails/...)
-// Wir müssen den Teil vor 'assets/' entfernen und mit $baseUrl konkatenieren.
-$absoluteComicPreviewUrl = $baseUrl . ltrim($comicPreviewUrl, './'); // Entfernt './' oder '../' vom Anfang des Pfades
+// Hier prüfen wir, ob $comicPreviewUrl bereits eine absolute URL ist
+if (strpos($comicPreviewUrl, 'http://') === 0 || strpos($comicPreviewUrl, 'https://') === 0) {
+    $absoluteComicPreviewUrl = $comicPreviewUrl; // Ist bereits absolut
+} else {
+    // Wenn es ein relativer Pfad ist (z.B. ../assets/thumbnails/...), müssen wir ihn absolut machen
+    // Dazu entfernen wir den '..' Teil und konkatenieren mit $baseUrl
+    $absoluteComicPreviewUrl = $baseUrl . ltrim($comicPreviewUrl, './');
+}
 error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Renderer): " . $absoluteComicPreviewUrl);
 
 $additionalHeadContent = '
@@ -179,8 +189,16 @@ include __DIR__ . '/../layout/header.php';
         <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
             data-id="<?php echo htmlspecialchars($currentComicId); ?>"
             data-page="<?php echo htmlspecialchars($currentComicId); ?>"
-            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>"
-            data-thumb="<?php echo htmlspecialchars($baseUrl . ltrim($comicPreviewUrl, './')); ?>">
+            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>" data-thumb="<?php
+                     // Hier prüfen wir erneut, ob $comicPreviewUrl bereits absolut ist
+                     if (strpos($comicPreviewUrl, 'http://') === 0 || strpos($comicPreviewUrl, 'https://') === 0) {
+                         echo htmlspecialchars($comicPreviewUrl); // Ist bereits absolut
+                     } else {
+                         // Wenn es ein relativer Pfad ist (z.B. ../assets/thumbnails/...), müssen wir ihn absolut machen
+                         // Dazu entfernen wir den '..' Teil und konkatenieren mit $baseUrl
+                         echo htmlspecialchars($baseUrl . ltrim($comicPreviewUrl, './'));
+                     }
+                     ?>">
             Bookmark this page
         </button>
     </div>

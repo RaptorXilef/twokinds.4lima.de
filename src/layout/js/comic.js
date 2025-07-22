@@ -72,10 +72,12 @@
     } else {
       // Add bookmark
       if (bookmarks.size >= bookmarkMaxEntries) {
-        alert(
+        // Using the custom confirm modal for alerts too
+        showCustomConfirm(
           "Du hast die maximale Anzahl von Lesezeichen erreicht (" +
             bookmarkMaxEntries +
-            "). Bitte entferne zuerst einige, bevor du neue hinzufügst."
+            "). Bitte entferne zuerst einige, bevor du neue hinzufügst.",
+          () => {}
         );
         return;
       }
@@ -213,8 +215,8 @@
       link.href = b.link;
 
       const image = bookmark.querySelector("img");
-      image.src =
-        b.thumb || "https://placehold.co/96x96/cccccc/333333?text=No+Thumb"; // Fallback thumbnail
+      // b.thumb sollte nun immer eine gültige absolute URL sein (echtes Thumbnail oder Platzhalter)
+      image.src = b.thumb;
       image.alt = b.name || "Comic Page";
 
       const pageNum = bookmark.querySelector("span");
