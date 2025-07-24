@@ -74,6 +74,7 @@ $messageType = ''; // 'success' or 'error'
 /**
  * Lädt Sitemap-Daten aus einer JSON-Datei und stellt sicher, dass alle notwendigen Schlüssel vorhanden sind.
  * Wenn 'loc' fehlt, wird es aus 'path' und 'name' zusammengesetzt.
+ * Wenn 'name' oder 'path' fehlen, werden sie aus 'loc' abgeleitet.
  * @param string $path Der Pfad zur JSON-Datei.
  * @return array Die dekodierten Daten als assoziatives Array oder ein leeres Array im Fehlerfall.
  */
@@ -94,36 +95,60 @@ function loadSitemapData(string $path): array
     $sanitizedPages = [];
 
     foreach ($pages as $page) {
-        // Sicherstellen, dass alle erwarteten Schlüssel vorhanden sind, mit Standardwerten
+        // Standardwerte für alle Felder
         $loc = isset($page['loc']) ? (string) $page['loc'] : '';
-        $path = isset($page['path']) ? (string) $page['path'] : './'; // Standardpfad
+        $name = isset($page['name']) ? (string) $page['name'] : '';
+        $path = isset($page['path']) ? (string) $page['path'] : './';
         $priority = isset($page['priority']) ? (float) $page['priority'] : 0.5;
         $changefreq = isset($page['changefreq']) ? (string) $page['changefreq'] : 'weekly';
 
-        // NEU: Wenn 'loc' fehlt, aber 'name' und 'path' vorhanden sind, 'loc' zusammensetzen
-        if (empty($loc) && isset($page['name']) && !empty($page['name'])) {
-            $normalizedPath = rtrim($path, '/\\');
-            if ($normalizedPath === '.') {
-                $normalizedPath = ''; // Wenn nur '.', dann ist der Pfad direkt im Webroot
+        // Logik zur Konsolidierung/Ableitung der Felder
+        if (empty($loc)) {
+            // Wenn 'loc' fehlt, aber 'name' vorhanden ist, 'loc' aus 'path' und 'name' zusammensetzen
+            if (!empty($name)) {
+                $normalizedPath = rtrim($path, '/\\');
+                if ($normalizedPath === '.') {
+                    $normalizedPath = '';
+                } else {
+                    $normalizedPath .= '/';
+                }
+                $loc = $normalizedPath . $name;
             } else {
-                $normalizedPath .= '/';
+                // Wenn weder 'loc' noch 'name' vorhanden sind, Eintrag überspringen
+                error_log("WARNUNG: loadSitemapData: Eintrag mit unzureichenden Daten übersprungen (weder 'loc' noch 'name' vorhanden): " . print_r($page, true));
+                continue;
             }
-            $loc = $normalizedPath . $page['name'];
+        } else { // 'loc' ist vorhanden
+            // Wenn 'name' fehlt, aus 'loc' ableiten
+            if (empty($name)) {
+                $name = basename($loc);
+            }
+            // Wenn 'path' fehlt oder nicht konsistent ist, aus 'loc' ableiten
+            // Nur ableiten, wenn der aktuelle Pfad nicht schon der erwartete Basispfad für Comic-Seiten ist
+            if ($path !== './comic/') { // Vermeide Überschreiben von explizitem './comic/'
+                $derivedPath = dirname($loc);
+                if ($derivedPath === '.') {
+                    $path = './';
+                } else if ($derivedPath === '/') { // Für Root-Pfade auf manchen Systemen
+                    $path = './';
+                } else {
+                    $path = $derivedPath . '/';
+                }
+            }
         }
 
-        $sanitizedPage = [
-            'loc' => $loc,
-            'path' => $path,
-            'priority' => $priority,
-            'changefreq' => $changefreq,
-        ];
-
-        // Nur hinzufügen, wenn 'loc' nicht leer ist
-        if (!empty($sanitizedPage['loc'])) {
+        // Sicherstellen, dass 'loc' und 'name' nicht leer sind, bevor hinzugefügt wird
+        if (!empty($loc) && !empty($name)) {
+            $sanitizedPage = [
+                'loc' => $loc,
+                'name' => $name,
+                'path' => $path,
+                'priority' => $priority,
+                'changefreq' => $changefreq,
+            ];
             $sanitizedPages[] = $sanitizedPage;
         } else {
-            // Dies sollte jetzt seltener passieren, da 'loc' zusammengesetzt wird
-            error_log("WARNUNG: loadSitemapData: Eintrag mit leerem 'loc' übersprungen: " . print_r($page, true));
+            error_log("WARNUNG: loadSitemapData: Eintrag nach Bereinigung immer noch unvollständig (loc oder name leer): " . print_r($sanitizedPage, true));
         }
     }
     return ['pages' => $sanitizedPages];
@@ -145,6 +170,19 @@ function saveSitemapData(string $path, array $data): bool
             return strcmp($locA, $locB);
         });
     }
+
+    // Sicherstellen, dass nur die relevanten Felder für die JSON-Ausgabe enthalten sind
+    $outputPages = [];
+    foreach ($data['pages'] as $page) {
+        $outputPages[] = [
+            'loc' => $page['loc'],
+            'name' => $page['name'], // 'name' Feld beibehalten
+            'path' => $page['path'], // 'path' Feld beibehalten
+            'priority' => $page['priority'],
+            'changefreq' => $page['changefreq'],
+        ];
+    }
+    $data['pages'] = $outputPages; // Überschreibe mit den bereinigten Daten
 
     $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     if ($jsonContent === false) {
@@ -205,28 +243,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
     // Verarbeite Daten aus dem Frontend
     if (isset($requestData['pages']) && is_array($requestData['pages'])) {
         foreach ($requestData['pages'] as $page) {
-            // "loc" ist der zentrale Identifier
+            // Alle Felder kommen jetzt vom Frontend
             $loc = isset($page['loc']) ? trim($page['loc']) : '';
-            $path = isset($page['path']) ? trim($page['path']) : ''; // Pfad wird aus Frontend mitgeliefert
+            $name = isset($page['name']) ? trim($page['name']) : '';
+            $path = isset($page['path']) ? trim($page['path']) : '';
             $priority = isset($page['priority']) ? (float) $page['priority'] : 0.5;
             $changefreq = isset($page['changefreq']) ? trim($page['changefreq']) : 'weekly';
 
-            // Validierung: loc darf nicht leer sein
-            if (empty($loc)) {
-                error_log("WARNUNG: Speichern: Eintrag mit leerem 'loc' übersprungen: " . print_r($page, true));
-                continue; // Zeile ignorieren, wenn loc leer ist
-            }
-
-            // Für Comic-Seiten, stelle sicher, dass der vollständige 'loc' korrekt ist,
-            // auch wenn nur der Dateiname im Frontend angezeigt/bearbeitet wurde.
-            // Die Frontend-Logik sollte sicherstellen, dass path für Comic-Seiten korrekt gesetzt ist.
-            if ($path === './comic/' && !str_starts_with($loc, './comic/')) {
-                // Wenn loc nur der Dateiname ist, prepend den comic-Pfad
-                $loc = './comic/' . basename($loc); // Sicherstellen, dass nur der Dateiname verwendet wird
+            // Validierung: loc und name dürfen nicht leer sein
+            if (empty($loc) || empty($name)) {
+                error_log("WARNUNG: Speichern: Eintrag mit leerem 'loc' oder 'name' übersprungen: " . print_r($page, true));
+                continue; // Zeile ignorieren, wenn loc oder name leer ist
             }
 
             $allPagesToSave[] = [
                 'loc' => $loc,
+                'name' => $name,
                 'path' => $path,
                 'priority' => $priority,
                 'changefreq' => $changefreq,
@@ -275,6 +307,7 @@ foreach ($foundComicFiles as $filename) {
     if (!isset($comicPages[$loc])) {
         $comicPages[$loc] = [
             'loc' => $loc, // Vollständiger Pfad
+            'name' => $filename, // Name hinzufügen
             'path' => './comic/',
             'priority' => 0.8,
             'changefreq' => 'never',
@@ -591,6 +624,20 @@ if (file_exists($headerPath)) {
         color: white;
         border-color: #2a6177;
     }
+
+    /* Hint text for path format */
+    .path-hint {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: -10px;
+        /* Adjust to position correctly */
+        margin-bottom: 10px;
+        text-align: left;
+    }
+
+    body.theme-night .path-hint {
+        color: #bbb;
+    }
 </style>
 
 <div class="admin-container">
@@ -603,14 +650,17 @@ if (file_exists($headerPath)) {
             <i class="fas fa-chevron-down"></i>
         </div>
         <div class="collapsible-content">
+            <p class="path-hint">Pfade sollten relativ zum Hauptverzeichnis beginnen, z.B.
+                <code>./meine-seite.php</code> oder <code>./ordner/datei.html</code>.
+            </p>
             <div class="sitemap-table-container">
                 <table class="sitemap-table" id="sitemap-table">
                     <thead>
                         <tr>
-                            <th>Vorhanden</th>
-                            <th>Loc (Pfad)</th>
-                            <th>Priorität</th>
-                            <th>Änderungsfrequenz</th>
+                            <th title="Hacken = Datei ist vorhanden; Kreuz = Datei fehlt">&#10003; / &#10007;</th>
+                            <th title="Dateipfad, relativ zum Hauptverzeichnis ./">Loc (Pfad)</th>
+                            <th title="Priorität (1.0=hoch; 0.5=normal; 0.1=niedrig)">Priorität</th>
+                            <th title="Änderungsfrequenz der Datei">Änderungsfrequenz</th>
                             <th>Aktionen</th>
                         </tr>
                     </thead>
@@ -623,7 +673,8 @@ if (file_exists($headerPath)) {
                         <?php else: ?>
                             <?php foreach ($generalPages as $index => $page): ?>
                                 <tr data-original-loc="<?php echo htmlspecialchars($page['loc']); ?>"
-                                    data-path="<?php echo htmlspecialchars($page['path']); ?>">
+                                    data-path="<?php echo htmlspecialchars($page['path']); ?>"
+                                    data-name="<?php echo htmlspecialchars($page['name']); ?>">
                                     <td>
                                         <?php
                                         // Prüfe, ob die Datei existiert
@@ -685,9 +736,9 @@ if (file_exists($headerPath)) {
                 <table class="comic-table" id="comic-table">
                     <thead>
                         <tr>
-                            <th>Loc (Pfad)</th> <!-- Spaltenname zurückgesetzt -->
-                            <th>Priorität</th>
-                            <th>Änderungsfrequenz</th>
+                            <th title="Dateipfad, relativ zum Hauptverzeichnis ./comic/">Loc (Pfad)</th>
+                            <th title="Priorität (1.0=hoch; 0.5=normal; 0.1=niedrig)">Priorität</th>
+                            <th title="Änderungsfrequenz der Datei">Änderungsfrequenz</th>
                             <th>Aktionen</th>
                         </tr>
                     </thead>
@@ -702,7 +753,8 @@ if (file_exists($headerPath)) {
                                 // Zeige nur den Dateinamen im Feld an
                                 $filename = basename($page['loc']);
                                 ?>
-                                <tr data-original-loc="<?php echo htmlspecialchars($loc); ?>" data-path="./comic/">
+                                <tr data-original-loc="<?php echo htmlspecialchars($loc); ?>" data-path="./comic/"
+                                    data-name="<?php echo htmlspecialchars($filename); ?>">
                                     <td>
                                         <div class="editable-field" data-field="loc" contenteditable="true">
                                             <?php echo htmlspecialchars($filename); ?>
@@ -804,16 +856,39 @@ if (file_exists($headerPath)) {
             });
         });
 
+        // Function to normalize path input (add ./ if missing)
+        function normalizePathInput(value) {
+            let processedValue = value.trim();
+            if (processedValue && !processedValue.startsWith('./') && !processedValue.startsWith('/')) {
+                // Prepend './' if it doesn't start with './' or '/'
+                processedValue = './' + processedValue;
+            } else if (processedValue.startsWith('/')) {
+                // Convert /path to ./path
+                processedValue = '.' + processedValue;
+            }
+            return processedValue;
+        }
+
         // Event Delegation for editable fields (both tables)
         $(document).on('click', '.editable-field:not(.select-field)', function () {
             if (!$(this).hasClass('editing')) {
                 $(this).addClass('editing').focus();
-                // Store original value to revert if needed (not implemented in save logic, but good practice)
                 $(this).data('original-value', $(this).text());
             }
         });
 
-        $(document).on('blur', '.editable-field:not(.select-field)', function () {
+        $(document).on('blur', '.editable-field[data-field="loc"]', function () {
+            // Apply normalization only to 'loc' fields
+            const originalValue = $(this).text();
+            const newValue = normalizePathInput(originalValue);
+            if (newValue !== originalValue) {
+                $(this).text(newValue);
+            }
+            $(this).removeClass('editing');
+        });
+
+        $(document).on('blur', '.editable-field:not(.select-field):not([data-field="loc"])', function () {
+            // For other editable fields, just remove editing class
             $(this).removeClass('editing');
         });
 
@@ -852,7 +927,7 @@ if (file_exists($headerPath)) {
                 noDataRow.remove();
             }
             const newRow = `
-            <tr data-original-loc="" data-path="./">
+            <tr data-original-loc="" data-path="./" data-name="">
                 <td><i class="fas fa-question-circle" style="color: gray;"></i></td>
                 <td><div class="editable-field" data-field="loc" contenteditable="true"></div></td>
                 <td><div class="editable-field" data-field="priority" contenteditable="true">0.5</div></td>
@@ -900,13 +975,19 @@ if (file_exists($headerPath)) {
             $('#sitemap-table tbody tr').each(function () {
                 if ($(this).hasClass('no-data-row')) return;
 
-                const loc = $(this).find('[data-field="loc"]').text().trim();
-                const path = $(this).data('path') || './'; // Standardpfad für allgemeine Seiten
+                // Apply normalization one last time before collecting for save
+                const locRaw = $(this).find('[data-field="loc"]').text().trim();
+                const loc = normalizePathInput(locRaw);
 
                 if (loc) { // Only add if loc is not empty
+                    const name = loc.substring(loc.lastIndexOf('/') + 1); // Extract filename from loc
+                    let path = loc.substring(0, loc.lastIndexOf('/') + 1); // Extract path from loc
+                    if (path === '') path = './'; // If root, set to ./
+
                     allPages.push({
                         loc: loc,
-                        path: path,
+                        name: name, // Derived name
+                        path: path, // Derived path
                         priority: parseFloat($(this).find('[data-field="priority"]').text()) || 0.5,
                         changefreq: $(this).find('[data-field="changefreq"] select').val() || $(this).find('[data-field="changefreq"]').text().trim() || 'weekly'
                     });
@@ -917,16 +998,16 @@ if (file_exists($headerPath)) {
             $('#comic-table tbody tr').each(function () {
                 if ($(this).hasClass('no-data-row')) return;
 
-                // Für Comic-Seiten ist das angezeigte Feld der Dateiname (z.B. 20250724.php)
-                // Der Pfad ist fest './comic/'
-                const filename = $(this).find('[data-field="loc"]').text().trim();
-                const path = './comic/';
-                const loc = path + filename; // Baue den vollständigen loc-Pfad zusammen
+                // For Comic-pages, 'loc' field in HTML holds the filename (e.g., 20250724.php)
+                const name = $(this).find('[data-field="loc"]').text().trim();
+                const path = './comic/'; // Fixed path for comic pages
+                const loc = path + name; // Reconstruct full loc
 
-                if (filename) { // Only add if filename is not empty
+                if (name) { // Only add if filename is not empty
                     allPages.push({
                         loc: loc,
-                        path: path,
+                        name: name, // 'name' is the filename
+                        path: path, // 'path' is fixed './comic/'
                         priority: parseFloat($(this).find('[data-field="priority"]').text()) || 0.8,
                         changefreq: $(this).find('[data-field="changefreq"] select').val() || $(this).find('[data-field="changefreq"]').text().trim() || 'never'
                     });
