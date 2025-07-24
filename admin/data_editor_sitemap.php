@@ -3,6 +3,9 @@
  * Dies ist die Administrationsseite zum Bearbeiten der sitemap.json Konfigurationsdatei.
  * Sie ermöglicht das Hinzufügen, Bearbeiten und Löschen von Sitemap-Einträgen
  * über eine benutzerfreundliche Oberfläche.
+ *
+ * Zusätzlich werden fehlende PHP-Dateien aus dem 'comic/'-Verzeichnis automatisch hinzugefügt
+ * und die Gesamt-Sitemap wird gespeichert.
  */
 
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
@@ -19,9 +22,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     // Lösche das Session-Cookie.
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000,
-            $params["path"], $params["domain"],
-            $params["secure"], $params["httponly"]
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httpholy"]
         );
     }
 
@@ -45,12 +53,15 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
-$sitemapConfigPath = __DIR__ . '/../src/components/sitemap.json';
+$sitemapJsonPath = __DIR__ . '/../src/components/sitemap.json';
+// Pfad zum Comic-Verzeichnis ist von Hauptverzeichnis/admin/ -> Hauptverzeichnis/comic/
+$webRootPath = realpath(__DIR__ . '/../'); // Der tatsächliche Webroot
+$comicDirPath = $webRootPath . '/comic/'; // Absoluter Pfad zum Comic-Verzeichnis
 
-// Bestimme das Webroot-Verzeichnis
-// Wenn sitemap_editor.php unter <webroot>/admin/sitemap_editor.php liegt,
-// dann ist das Webroot eine Ebene über dem aktuellen Skript.
-$webRootPath = realpath(__DIR__ . '/../');
+// Konstante für die Anzahl der Elemente pro Seite für die Comic-Tabelle
+if (!defined('COMIC_PAGES_PER_PAGE')) {
+    define('COMIC_PAGES_PER_PAGE', 50);
+}
 
 // Setze Parameter für den Header.
 $pageTitle = 'Sitemap Editor';
@@ -60,169 +71,242 @@ $robotsContent = 'noindex, nofollow'; // Admin-Seiten nicht crawlen
 $message = '';
 $messageType = ''; // 'success' or 'error'
 
-// Funktion zum Laden der Sitemap-Konfiguration
-function loadSitemapConfig(string $path): array {
+/**
+ * Lädt Sitemap-Daten aus einer JSON-Datei und stellt sicher, dass alle notwendigen Schlüssel vorhanden sind.
+ * Wenn 'loc' fehlt, wird es aus 'path' und 'name' zusammengesetzt.
+ * @param string $path Der Pfad zur JSON-Datei.
+ * @return array Die dekodierten Daten als assoziatives Array oder ein leeres Array im Fehlerfall.
+ */
+function loadSitemapData(string $path): array
+{
     if (!file_exists($path)) {
-        return ['pages' => []]; // Leeres Array, wenn Datei nicht existiert
+        return ['pages' => []];
     }
     $content = file_get_contents($path);
-    $config = json_decode($content, true);
+
+    $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log("Fehler beim Dekodieren von sitemap.json: " . json_last_error_msg());
-        return ['pages' => []]; // Leeres Array im Fehlerfall
+        error_log("FEHLER: loadSitemapData: Fehler beim Dekodieren von sitemap.json: " . json_last_error_msg());
+        return ['pages' => []];
     }
-    return $config;
+
+    $pages = isset($data['pages']) && is_array($data['pages']) ? $data['pages'] : [];
+    $sanitizedPages = [];
+
+    foreach ($pages as $page) {
+        // Sicherstellen, dass alle erwarteten Schlüssel vorhanden sind, mit Standardwerten
+        $loc = isset($page['loc']) ? (string) $page['loc'] : '';
+        $path = isset($page['path']) ? (string) $page['path'] : './'; // Standardpfad
+        $priority = isset($page['priority']) ? (float) $page['priority'] : 0.5;
+        $changefreq = isset($page['changefreq']) ? (string) $page['changefreq'] : 'weekly';
+
+        // NEU: Wenn 'loc' fehlt, aber 'name' und 'path' vorhanden sind, 'loc' zusammensetzen
+        if (empty($loc) && isset($page['name']) && !empty($page['name'])) {
+            $normalizedPath = rtrim($path, '/\\');
+            if ($normalizedPath === '.') {
+                $normalizedPath = ''; // Wenn nur '.', dann ist der Pfad direkt im Webroot
+            } else {
+                $normalizedPath .= '/';
+            }
+            $loc = $normalizedPath . $page['name'];
+        }
+
+        $sanitizedPage = [
+            'loc' => $loc,
+            'path' => $path,
+            'priority' => $priority,
+            'changefreq' => $changefreq,
+        ];
+
+        // Nur hinzufügen, wenn 'loc' nicht leer ist
+        if (!empty($sanitizedPage['loc'])) {
+            $sanitizedPages[] = $sanitizedPage;
+        } else {
+            // Dies sollte jetzt seltener passieren, da 'loc' zusammengesetzt wird
+            error_log("WARNUNG: loadSitemapData: Eintrag mit leerem 'loc' übersprungen: " . print_r($page, true));
+        }
+    }
+    return ['pages' => $sanitizedPages];
 }
 
-// Funktion zum Speichern der Sitemap-Konfiguration
-function saveSitemapConfig(string $path, array $config): bool {
-    $jsonContent = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+/**
+ * Speichert Sitemap-Daten in die JSON-Datei.
+ * @param string $path Der Pfad zur JSON-Datei.
+ * @param array $data Die zu speichernden Daten.
+ * @return bool True bei Erfolg, False bei Fehler.
+ */
+function saveSitemapData(string $path, array $data): bool
+{
+    if (isset($data['pages']) && is_array($data['pages'])) {
+        usort($data['pages'], function ($a, $b) {
+            // Sicherstellen, dass 'loc' existiert, bevor strcmp aufgerufen wird
+            $locA = isset($a['loc']) ? $a['loc'] : '';
+            $locB = isset($b['loc']) ? $b['loc'] : '';
+            return strcmp($locA, $locB);
+        });
+    }
+
+    $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     if ($jsonContent === false) {
-        error_log("Fehler beim Kodieren von Sitemap-Konfiguration: " . json_last_error_msg());
+        error_log("FEHLER: saveSitemapData: Fehler beim Kodieren von Sitemap-Daten: " . json_last_error_msg());
         return false;
     }
     if (file_put_contents($path, $jsonContent) === false) {
-        error_log("Fehler beim Schreiben der Sitemap-Konfiguration nach " . $path);
+        error_log("FEHLER: saveSitemapData: Fehler beim Schreiben der Sitemap-Daten nach " . $path);
         return false;
     }
     return true;
 }
 
 /**
- * Funktion zur Prüfung der Dateiexistenz eines Pfades relativ zum Webroot,
- * basierend auf dem Basis-Pfad aus der Sitemap (z.B. './') und dem Dateinamen.
- *
- * @param string $sitemapBasePath Der relative Basis-Pfad aus der Sitemap (z.B. './' oder 'bilder/')
- * @param string $fileName Der Dateiname (z.B. 'index.php' oder 'about.php')
- * @param string $webRootPath Das absolute Webroot-Verzeichnis
- * @return bool True, wenn die Datei existiert, false sonst.
+ * Scannt das Comic-Verzeichnis nach PHP-Dateien im YYYYMMDD.php Format.
+ * @param string $dirPath Der Pfad zum Comic-Verzeichnis.
+ * @return array Eine Liste von Dateinamen (z.B. '20250724.php'), alphabetisch sortiert.
  */
-function checkFileExists(string $sitemapBasePath, string $fileName, string $webRootPath): bool {
-    // Kombiniere sitemapBasePath und fileName, um den vollständigen relativen Pfad zu erhalten
-    // Normalisiere sitemapBasePath, um sicherzustellen, dass es einen nachgestellten Slash hat, wenn es nicht leer ist
-    $normalizedSitemapBasePath = rtrim($sitemapBasePath, '/\\'); // Entferne trailing slashes
-    if (!empty($normalizedSitemapBasePath) && $normalizedSitemapBasePath !== '.') { // Außer wenn es nur '.' ist
-        $normalizedSitemapBasePath .= '/';
-    } elseif ($normalizedSitemapBasePath === '.') {
-        $normalizedSitemapBasePath = ''; // Wenn nur '.', dann ist der Pfad direkt im Webroot
+function scanComicDirectory(string $dirPath): array
+{
+    $comicFiles = [];
+    if (!is_dir($dirPath)) {
+        error_log("WARNUNG: scanComicDirectory: Comic-Verzeichnis nicht gefunden: " . $dirPath);
+        return [];
     }
-
-    $fullRelativePath = $normalizedSitemapBasePath . $fileName;
-
-    // Spezieller Fall für das Root-Verzeichnis, wenn nur './' oder leer als $fileName gegeben ist
-    // Dies sollte nur passieren, wenn name auch leer ist oder "index.php" oder so
-    if (empty($fileName) || $fileName === '.' || $fileName === './' || $fullRelativePath === './' || empty($fullRelativePath)) {
-        // Prüfe auf gängige Index-Dateien im Webroot
-        $indexFiles = ['index.php', 'index.html', 'index.htm'];
-        foreach ($indexFiles as $indexFile) {
-            $testPath = realpath($webRootPath . '/' . $indexFile);
-            if ($testPath && is_file($testPath) && str_starts_with($testPath, $webRootPath)) {
-                return true;
-            }
+    $files = scandir($dirPath);
+    foreach ($files as $file) {
+        // Ignoriere . und ..
+        if ($file === '.' || $file === '..') {
+            continue;
         }
-        return false; // Keine Index-Datei im Root gefunden
-    }
-
-
-    // Versuche den vollständigen absoluten Pfad zu ermitteln
-    $absolutePath = realpath($webRootPath . '/' . $fullRelativePath);
-
-    // Prüfe, ob die Datei existiert und ob der Pfad innerhalb des Webroots liegt
-    if ($absolutePath && is_file($absolutePath) && str_starts_with($absolutePath, $webRootPath)) {
-        return true;
-    }
-
-    // Wenn der fileName keine Endung hat (schöne URLs), versuchen wir gängige Endungen anzuhängen
-    if (!str_contains($fileName, '.')) {
-        $potentialExtensions = ['.php', '.html', '.htm'];
-        foreach ($potentialExtensions as $extension) {
-            $testFullPath = realpath($webRootPath . '/' . $fullRelativePath . $extension);
-            if ($testFullPath && is_file($testFullPath) && str_starts_with($testFullPath, $webRootPath)) {
-                return true;
-            }
+        // Ignoriere comic/index.php
+        if ($file === 'index.php') {
+            continue;
+        }
+        // Prüfe auf YYYYMMDD.php Format
+        if (preg_match('/^\d{8}\.php$/', $file)) {
+            $comicFiles[] = $file;
         }
     }
-
-    return false;
+    sort($comicFiles); // Alphabetisch sortieren
+    return $comicFiles;
 }
 
+// Verarbeite POST-Anfragen zum Speichern (AJAX-Handling)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
+    $input = file_get_contents('php://input');
+    $requestData = json_decode($input, true);
 
-// Standardoptionen für Change Frequency und Priority
-$changeFreqOptions = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'];
-$priorityOptions = [];
-for ($i = 10; $i >= 0; $i--) {
-    $priorityOptions[] = sprintf('%.1f', $i / 10);
-}
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Fehler beim Dekodieren der JSON-Daten: ' . json_last_error_msg()]);
+        exit;
+    }
 
-// Verarbeite POST-Anfragen
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_sitemap_config'])) {
-    $updatedPages = [];
-    if (isset($_POST['page_name']) && is_array($_POST['page_name'])) {
-        foreach ($_POST['page_name'] as $index => $name) {
-            $name = trim($name);
-            $path = isset($_POST['page_path'][$index]) ? trim($_POST['page_path'][$index]) : '';
-            // Sicherstellen, dass Priorität immer als Float behandelt wird, Default ist 0.5
-            $priority = isset($_POST['page_priority'][$index]) ? (float)trim($_POST['page_priority'][$index]) : 0.5;
-            $changefreq = isset($_POST['page_changefreq'][$index]) ? trim($_POST['page_changefreq'][$index]) : 'monthly';
+    $allPagesToSave = [];
 
-            // Nur gültige Einträge hinzufügen (Name und Pfad dürfen nicht leer sein)
-            if (!empty($name) && !empty($path)) {
-                $updatedPages[] = [
-                    'name' => $name,
-                    'path' => $path,
-                    'priority' => $priority, // Bereits als Float
-                    'changefreq' => $changefreq
-                ];
+    // Verarbeite Daten aus dem Frontend
+    if (isset($requestData['pages']) && is_array($requestData['pages'])) {
+        foreach ($requestData['pages'] as $page) {
+            // "loc" ist der zentrale Identifier
+            $loc = isset($page['loc']) ? trim($page['loc']) : '';
+            $path = isset($page['path']) ? trim($page['path']) : ''; // Pfad wird aus Frontend mitgeliefert
+            $priority = isset($page['priority']) ? (float) $page['priority'] : 0.5;
+            $changefreq = isset($page['changefreq']) ? trim($page['changefreq']) : 'weekly';
+
+            // Validierung: loc darf nicht leer sein
+            if (empty($loc)) {
+                error_log("WARNUNG: Speichern: Eintrag mit leerem 'loc' übersprungen: " . print_r($page, true));
+                continue; // Zeile ignorieren, wenn loc leer ist
             }
+
+            // Für Comic-Seiten, stelle sicher, dass der vollständige 'loc' korrekt ist,
+            // auch wenn nur der Dateiname im Frontend angezeigt/bearbeitet wurde.
+            // Die Frontend-Logik sollte sicherstellen, dass path für Comic-Seiten korrekt gesetzt ist.
+            if ($path === './comic/' && !str_starts_with($loc, './comic/')) {
+                // Wenn loc nur der Dateiname ist, prepend den comic-Pfad
+                $loc = './comic/' . basename($loc); // Sicherstellen, dass nur der Dateiname verwendet wird
+            }
+
+            $allPagesToSave[] = [
+                'loc' => $loc,
+                'path' => $path,
+                'priority' => $priority,
+                'changefreq' => $changefreq,
+            ];
         }
     }
 
-    // Sortiere die aktualisierten Seiten: primär nach Priorität (absteigend), sekundär nach Name (aufsteigend)
-    usort($updatedPages, function($a, $b) {
-        // Priorität vergleichen (absteigend)
-        $priorityComparison = $b['priority'] <=> $a['priority'];
-
-        // Wenn Prioritäten gleich sind, nach Name sortieren (aufsteigend)
-        if ($priorityComparison === 0) {
-            return strnatcasecmp($a['name'], $b['name']); // Case-insensitive, natural string comparison
-        }
-        return $priorityComparison;
-    });
-
-    $sitemapConfig = ['pages' => $updatedPages];
-
-    if (saveSitemapConfig($sitemapConfigPath, $sitemapConfig)) {
-        $message = 'Sitemap-Konfiguration erfolgreich gespeichert!';
-        $messageType = 'success';
+    if (saveSitemapData($sitemapJsonPath, ['pages' => $allPagesToSave])) {
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'success', 'message' => 'Sitemap-Daten erfolgreich gespeichert!']);
+        exit;
     } else {
-        $message = 'Fehler beim Speichern der Sitemap-Konfiguration.';
-        $messageType = 'error';
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern der Sitemap-Daten.']);
+        exit;
     }
 }
 
-// Lade die aktuelle Konfiguration für die Anzeige
-$sitemapConfig = loadSitemapConfig($sitemapConfigPath);
+// Lade bestehende Sitemap-Daten
+$sitemapData = loadSitemapData($sitemapJsonPath);
+$existingPages = $sitemapData['pages'];
 
-// Hier die Existenzprüfung für jede Seite hinzufügen
-if (isset($sitemapConfig['pages']) && is_array($sitemapConfig['pages'])) {
-    foreach ($sitemapConfig['pages'] as &$page) { // Referenz (&) verwenden, um das Array direkt zu modifizieren
-        // Angepasster Aufruf von checkFileExists
-        $page['exists'] = checkFileExists($page['path'], $page['name'], $webRootPath);
+$generalPages = [];
+$comicPages = [];
+
+// Separiere bestehende Einträge in General und Comic basierend auf dem 'path'-Feld
+foreach ($existingPages as $page) {
+    // Sicherstellen, dass 'path' existiert und vergleichen, Standard ist './'
+    $pagePath = isset($page['path']) ? $page['path'] : './';
+
+    if ($pagePath === './comic/') {
+        // Verwende 'loc' als Schlüssel für einfachen Zugriff und um Duplikate zu vermeiden
+        $comicPages[$page['loc']] = $page;
+    } else {
+        $generalPages[] = $page;
     }
-    unset($page); // Referenz aufheben
-
-    // Sortiere die geladenen Seiten: primär nach Priorität (absteigend), sekundär nach Name (aufsteigend)
-    usort($sitemapConfig['pages'], function($a, $b) {
-        // Priorität vergleichen (absteigend)
-        $priorityComparison = $b['priority'] <=> $a['priority'];
-
-        // Wenn Prioritäten gleich sind, nach Name sortieren (aufsteigend)
-        if ($priorityComparison === 0) {
-            return strnatcasecmp($a['name'], $b['name']); // Case-insensitive, natural string comparison
-        }
-        return $priorityComparison;
-    });
 }
+
+// Scanne das Comic-Verzeichnis nach neuen PHP-Dateien
+$foundComicFiles = scanComicDirectory($comicDirPath);
+
+// Füge fehlende Comic-Dateien hinzu oder aktualisiere bestehende
+foreach ($foundComicFiles as $filename) {
+    $loc = './comic/' . $filename;
+    // Wenn der Eintrag noch nicht in comicPages ist, füge ihn mit Standardwerten hinzu
+    if (!isset($comicPages[$loc])) {
+        $comicPages[$loc] = [
+            'loc' => $loc, // Vollständiger Pfad
+            'path' => './comic/',
+            'priority' => 0.8,
+            'changefreq' => 'never',
+        ];
+    }
+    // Wenn er schon existiert, bleiben die manuell gesetzten Werte bestehen (Überschreiben durch manuelle Einträge).
+    // Es ist hier kein 'else' nötig, da die vorhandenen Einträge bereits in $comicPages sind.
+}
+
+// Sortiere comicPages alphabetisch nach 'loc' (was dem Dateinamen entspricht, da path gleich ist)
+// Dies wird beibehalten, da das Frontend keine eigene Sortierung mehr hat
+ksort($comicPages);
+
+// --- Paginierungslogik für Comic-Tabelle ---
+$comicCurrentPage = isset($_GET['comic_page']) ? (int) $_GET['comic_page'] : 1;
+if ($comicCurrentPage < 1)
+    $comicCurrentPage = 1;
+
+$totalComicItems = count($comicPages);
+$totalComicPages = ceil($totalComicItems / COMIC_PAGES_PER_PAGE);
+
+// Sicherstellen, dass die aktuelle Seite nicht außerhalb des Bereichs liegt
+if ($totalComicPages > 0 && $comicCurrentPage > $totalComicPages) {
+    $comicCurrentPage = $totalComicPages;
+} elseif ($totalComicItems === 0) { // Wenn keine Items vorhanden sind, gibt es auch nur 1 leere Seite
+    $comicCurrentPage = 1;
+    $totalComicPages = 1;
+}
+
+$comicOffset = ($comicCurrentPage - 1) * COMIC_PAGES_PER_PAGE;
+// array_slice behält hier die Keys, damit wir im Loop den ursprünglichen 'loc' Schlüssel verwenden können
+$paginatedComicPages = array_slice($comicPages, $comicOffset, COMIC_PAGES_PER_PAGE, true);
 
 
 // Binde den gemeinsamen Header ein.
@@ -233,474 +317,644 @@ if (file_exists($headerPath)) {
 }
 ?>
 
+<!-- Font Awesome für Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <style>
-    /* Grundlegende Stile für die Tabelle */
-    .sitemap-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-    .sitemap-table th, .sitemap-table td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: left;
-    }
-    .sitemap-table th {
-        background-color: #ddead7;
-    }
-    /* ORIGINAL CSS FÜR GERADE ZEILEN - WIEDER AKTIVIERT */
-    .sitemap-table tr:nth-child(even) {
+    /* Allgemeine Layout-Anpassungen (minimal, falls nicht in main.css) */
+    .admin-container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 20px auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         background-color: #f9f9f9;
-    }
-    /* NEUE KLASSEN FÜR JAVASCRIPT GESTEUERTE STREIFEN */
-    .sitemap-table .row-odd {
-        /* Keine spezifische Hintergrundfarbe hier, da dies der Standard ist (weiß oder theme-abhängig) */
-    }
-    .sitemap-table .row-even {
-        background-color: #f9f9f9; /* Standardfarbe für gerade Zeilen */
+        /* Standardwert, wird von main.css überschrieben, wenn dort definiert */
     }
 
+    body.theme-night .admin-container {
+        background-color: #00425c;
+        /* Von main_dark.css überschrieben */
+        color: #fff;
+    }
 
-    .sitemap-table th button.sort-button {
-        background: none;
-        border: none;
-        color: inherit;
-        font: inherit;
+    /* H1 Style für den Admin-Container */
+    .admin-container h1 {
+        font-size: 2em;
+        /* Explizite Schriftgröße */
+        margin-bottom: 20px;
+        /* Expliziter unterer Rand */
+        font-weight: bold;
+        /* Sicherstellen, dass es fett ist */
+        color: #333;
+        /* Standardfarbe */
+    }
+
+    body.theme-night .admin-container h1 {
+        color: #fff;
+        /* Dunkles Theme Farbe */
+    }
+
+    /* Message Box */
+    #message-box {
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        font-weight: bold;
+        display: none;
+        /* Standardmäßig ausgeblendet */
+    }
+
+    #message-box.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    #message-box.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    body.theme-night #message-box.success {
+        background-color: #218838;
+        color: #fff;
+        border-color: #1c7430;
+    }
+
+    body.theme-night #message-box.error {
+        background-color: #c82333;
+        color: #fff;
+        border-color: #bd2130;
+    }
+
+    /* Collapsible Sections */
+    .collapsible-section {
+        margin-bottom: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    body.theme-night .collapsible-section {
+        background-color: #00425c;
+    }
+
+    .collapsible-header {
         cursor: pointer;
-        padding: 0;
-        margin-left: 5px;
-        float: right; /* Positioniert den Button rechts im Header */
-        display: flex; /* Für Icon */
-        align-items: center; /* Für Icon */
-        gap: 2px;
-    }
-    .sitemap-table th button.sort-button:hover {
-        text-decoration: underline;
-    }
-    .sitemap-table th button.sort-button .sort-icon {
-        font-size: 0.8em;
-        vertical-align: middle;
-    }
-    .sitemap-table th button.sort-button.asc .sort-icon::before {
-        content: "▲";
-    }
-    .sitemap-table th button.sort-button.desc .sort-icon::before {
-        content: "▼";
-    }
-    .sitemap-table th button.sort-button:not(.asc):not(.desc) .sort-icon::before {
-        content: "◆"; /* Neutraler Pfeil, wenn nicht sortiert */
-        opacity: 0.5;
+        padding: 15px 20px;
+        background-color: #f2f2f2;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
     }
 
-    .sitemap-table input[type="text"],
-    .sitemap-table select {
-        width: 100%;
-        padding: 5px;
-        box-sizing: border-box;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-    }
-    /* Tooltip für Input-Felder */
-    .sitemap-table input[type="text"][title] {
-        overflow: hidden; /* Verhindert, dass der Text überläuft */
-        text-overflow: ellipsis; /* Fügt ... hinzu, wenn Text abgeschnitten wird */
-        white-space: nowrap; /* Hält den Text in einer Zeile */
+    body.theme-night .collapsible-header {
+        background-color: #005a7e;
+        color: #fff;
+        border-bottom-color: #007bb5;
     }
 
-    .sitemap-table button.remove-row {
-        background-color: #f44336;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
-        display: flex; /* Für SVG-Icon */
-        align-items: center; /* Zentriert SVG */
-        justify-content: center; /* Zentriert SVG */
-        width: 30px; /* Feste Breite für das Icon */
-        height: 30px; /* Feste Höhe für das Icon */
-        padding: 0; /* Kein Padding, da feste Größe */
-    }
-    .sitemap-table button.remove-row svg {
-        width: 20px; /* Größe der SVG anpassen */
-        height: 20px;
-        fill: currentColor; /* Verwendet die Textfarbe des Buttons */
-    }
-    .sitemap-table button.remove-row:hover {
-        background-color: #d32f2f;
-    }
-    .button-container {
-        margin-top: 20px;
-        text-align: right;
-    }
-    .button-container .button {
+    .collapsible-header i {
+        transition: transform 0.3s ease;
         margin-left: 10px;
     }
-    .message-box {
-        margin-top: 20px;
-        padding: 10px;
-        border-radius: 5px;
-        color: #155724; /* Standardfarbe für Erfolg */
-        border: 1px solid #c3e6cb; /* Standardfarbe für Erfolg */
-        background-color: #d4edda; /* Standardfarbe für Erfolg */
-    }
-    .message-box.error {
-        color: #721c24;
-        border-color: #f5c6cb;
-        background-color: #f8d7da;
+
+    .collapsible-section.expanded .collapsible-header i {
+        transform: rotate(0deg);
     }
 
-    /* Neue Stile für Existenzprüfung */
-    .status-icon {
-        font-size: 1.2em;
-        font-weight: bold;
-        text-align: center;
+    .collapsible-section:not(.expanded) .collapsible-header i {
+        transform: rotate(-90deg);
+    }
+
+    .collapsible-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        padding: 0 20px;
+    }
+
+    .collapsible-section.expanded .collapsible-content {
+        max-height: 4800px;
+        /* Adjust as needed for content */
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .collapsible-section:not(.expanded) {
+        border-radius: 8px;
+    }
+
+    .collapsible-section:not(.expanded) .collapsible-header {
+        border-radius: 8px;
+        border-bottom: none;
+    }
+
+    .collapsible-section.expanded .collapsible-header {
+        border-radius: 8px 8px 0 0;
+    }
+
+    /* Table Styles (Minimal, rely on main.css for general) */
+    .sitemap-table-container,
+    .comic-table-container {
+        overflow-x: auto;
+    }
+
+    .sitemap-table,
+    .comic-table {
         width: 100%;
-        display: block; /* Zentriert das Symbol */
-    }
-    .status-icon.exists {
-        color: #4CAF50; /* Grün */
-    }
-    .status-icon.not-exists {
-        color: #f44336; /* Rot */
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        /* Borders and background are largely defined in main.css for tables.
+           We'll add specific overrides or ensure default behavior. */
     }
 
-    /* Dark Theme Anpassungen */
-    body.theme-night .sitemap-table th {
-        background-color: #48778a;
-        color: #fff;
-        border-color: #002b3c;
-    }
-    body.theme-night .sitemap-table td {
-        border-color: #002b3c;
-    }
-    /* ORIGINAL DARK THEME CSS FÜR GERADE ZEILEN - WIEDER AKTIVIERT */
-    body.theme-night .sitemap-table tr:nth-child(even) {
-        background-color: #00334c;
-    }
-    /* NEUE KLASSEN FÜR JAVASCRIPT GESTEUERTE STREIFEN IM DARK THEME */
-    body.theme-night .sitemap-table .row-odd {
-        /* Keine spezifische Hintergrundfarbe hier */
-    }
-    body.theme-night .sitemap-table .row-even {
-        background-color: #00334c; /* Dunkle Farbe für gerade Zeilen im Dark Theme */
+    /* Specific overrides for editable fields */
+    .sitemap-table td .editable-field,
+    .comic-table td .editable-field {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #eee;
+        /* Default light border */
+        border-radius: 3px;
+        box-sizing: border-box;
+        background-color: transparent;
+        cursor: pointer;
+        min-height: 30px;
+        display: block;
+        color: inherit;
+        /* Inherit text color from parent */
     }
 
+    body.theme-night .sitemap-table td .editable-field,
+    body.theme-night .comic-table td .editable-field {
+        border-color: #005a7e;
+        /* Dark theme border */
+    }
 
-    body.theme-night .sitemap-table input[type="text"],
-    body.theme-night .sitemap-table select {
+    .sitemap-table td .editable-field:hover,
+    .comic-table td .editable-field:hover {
+        border-color: #ccc;
+        /* Hover border */
+    }
+
+    body.theme-night .sitemap-table td .editable-field:hover,
+    body.theme-night .comic-table td .editable-field:hover {
+        border-color: #007bb5;
+        /* Dark theme hover border */
+    }
+
+    .sitemap-table td .editable-field.editing,
+    .comic-table td .editable-field.editing {
+        border-color: #007bff;
+        /* Editing border */
+        background-color: #fff;
+        /* Editing background */
+        cursor: text;
+    }
+
+    body.theme-night .sitemap-table td .editable-field.editing,
+    body.theme-night .comic-table td .editable-field.editing {
+        background-color: #005a7e;
+        /* Dark theme editing background */
+        border-color: #007bff;
+    }
+
+    /* Button Group */
+    .button-group {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    /* Buttons (rely heavily on main.css for general button styles) */
+    /* Add specific icon spacing */
+    button i.fas {
+        margin-right: 5px;
+    }
+
+    /* Paginierung Styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        gap: 5px;
+        flex-wrap: wrap;
+        /* NEU: Ermöglicht Umbruch der Buttons */
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #007bff;
+        background-color: #fff;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .pagination a:hover {
+        background-color: #e9ecef;
+        color: #0056b3;
+    }
+
+    .pagination span.current-page {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        font-weight: bold;
+        cursor: default;
+    }
+
+    body.theme-night .pagination a,
+    body.theme-night .pagination span {
+        border-color: #005a7e;
+        color: #7bbdff;
+        background-color: #00425c;
+    }
+
+    body.theme-night .pagination a:hover {
+        background-color: #006690;
+        color: #a0d4ff;
+    }
+
+    body.theme-night .pagination span.current-page {
         background-color: #2a6177;
-        color: #fff;
-        border-color: #002b3c;
-    }
-    body.theme-night .sitemap-table button.remove-row {
-        background-color: #a00;
-    }
-    body.theme-night .sitemap-table button.remove-row:hover {
-        background-color: #c00;
-    }
-    body.theme-night .message-box {
-        color: #d4edda; /* Textfarbe für Erfolg im Dark Theme */
+        color: white;
         border-color: #2a6177;
-        background-color: #00334c;
-    }
-    body.theme-night .message-box.error {
-        color: #f5c6cb;
-        border-color: #721c24;
-        background-color: #5a0000;
-    }
-    body.theme-night .sitemap-table th button.sort-button {
-        color: #fff;
     }
 </style>
 
-<section>
-    <h2 class="page-header">Sitemap Konfiguration bearbeiten</h2>
+<div class="admin-container">
+    <h1><?php echo htmlspecialchars($pageHeader); ?></h1>
+    <div id="message-box" class="message-box"></div>
 
-    <?php if (!empty($message)): ?>
-        <div class="message-box <?php echo $messageType; ?>">
-            <p><?php echo htmlspecialchars($message); ?></p>
+    <section class="collapsible-section expanded" id="general-sitemap-section">
+        <div class="collapsible-header">
+            <h2>Allgemeine Sitemap-Seiten</h2>
+            <i class="fas fa-chevron-down"></i>
         </div>
-    <?php endif; ?>
-
-    <form method="POST" action="">
-        <table class="sitemap-table" id="sitemap-editor-table">
-            <thead>
-                <tr>
-                    <th title="Existiert die Datei?">&#10003; / &#10007;</th>
-                    <th title="Dateiname der PHP, HTML oder HTM Datei">Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
-                    <th title="Dateipfad, relativ zum Hauptverzeichnis ./">Pfad <button type="button" class="sort-button" data-sort-by="path"><span class="sort-icon"></span></button></th>
-                    <th title="Priorität (1.0=hoch; 0.5=normal; 0.1=niedrig)">Priorität <button type="button" class="sort-button" data-sort-by="priority"><span class="sort-icon"></span></button></th>
-                    <th title="Änderungsfrequenz der Datei">Änderungsfrequenz <button type="button" class="sort-button" data-sort-by="changefreq"><span class="sort-icon"></span></button></th>
-                    <th title="Aktion">Aktion</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($sitemapConfig['pages'])): ?>
-                    <?php foreach ($sitemapConfig['pages'] as $index => $page): ?>
-                        <tr class="<?php echo (($index + 1) % 2 === 0) ? 'row-even' : 'row-odd'; ?>">
-                            <td class="file-status-cell">
-                                <span class="status-icon <?php echo $page['exists'] ? 'exists' : 'not-exists'; ?>" data-path="<?php echo htmlspecialchars($page['name']); ?>">
-                                    <?php echo $page['exists'] ? '&#10003;' : '&#10007;'; ?>
-                                </span>
-                            </td>
-                            <td><input type="text" name="page_name[]" value="<?php echo htmlspecialchars($page['name']); ?>" title="<?php echo htmlspecialchars($page['name']); ?>"></td>
-                            <td><input type="text" name="page_path[]" value="<?php echo htmlspecialchars($page['path']); ?>" title="<?php echo htmlspecialchars($page['path']); ?>"></td>
-                            <td>
-                                <select name="page_priority[]" title="<?php echo htmlspecialchars($page['priority']); ?>">
-                                    <?php foreach ($priorityOptions as $option): ?>
-                                        <option value="<?php echo htmlspecialchars($option); ?>" <?php echo (isset($page['priority']) && (float)$page['priority'] == (float)$option) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($option); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                            <td>
-                                <select name="page_changefreq[]" title="<?php echo htmlspecialchars($page['changefreq']); ?>">
-                                    <?php foreach ($changeFreqOptions as $option): ?>
-                                        <option value="<?php echo htmlspecialchars($option); ?>" <?php echo (isset($page['changefreq']) && $page['changefreq'] == $option) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($option); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </td>
-                            <td>
-                                <button type="button" class="remove-row" title="Entfernen">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 41.336 41.336">
-                                        <path d="M36.335 5.668h-8.167V1.5a1.5 1.5 0 00-1.5-1.5h-12a1.5 1.5 0 00-1.5 1.5v4.168H5.001a2 2 0 000 4h2.001v29.168a2.5 2.5 0 002.5 2.5h22.332a2.5 2.5 0 002.5-2.5V9.668h2.001a2 2 0 000-4zM14.168 35.67a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm8 0a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm3-30.002h-9V3h9v2.668zm5 30.002a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21z" fill="currentColor"></path>
-                                    </svg>
-                                </button>
-                            </td>
+        <div class="collapsible-content">
+            <div class="sitemap-table-container">
+                <table class="sitemap-table" id="sitemap-table">
+                    <thead>
+                        <tr>
+                            <th>Vorhanden</th>
+                            <th>Loc (Pfad)</th>
+                            <th>Priorität</th>
+                            <th>Änderungsfrequenz</th>
+                            <th>Aktionen</th>
                         </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr id="no-entries-row">
-                        <td colspan="6" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($generalPages)): ?>
+                            <tr class="no-data-row">
+                                <td colspan="5" style="text-align: center;">Keine allgemeinen Sitemap-Einträge vorhanden.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($generalPages as $index => $page): ?>
+                                <tr data-original-loc="<?php echo htmlspecialchars($page['loc']); ?>"
+                                    data-path="<?php echo htmlspecialchars($page['path']); ?>">
+                                    <td>
+                                        <?php
+                                        // Prüfe, ob die Datei existiert
+                                        // $webRootPath ist bereits der absolute Pfad zum Hauptverzeichnis
+                                        $fileToCheck = $webRootPath . '/' . ltrim($page['loc'], './');
 
-        <div class="button-container">
-            <button type="button" id="add-new-entry" class="button">Neuen Eintrag hinzufügen (+)</button>
-            <button type="submit" name="save_sitemap_config" class="button">Änderungen speichern</button>
+                                        if (file_exists($fileToCheck) && is_file($fileToCheck)) {
+                                            echo '<i class="fas fa-check-circle" style="color: green;"></i>';
+                                        } else {
+                                            echo '<i class="fas fa-times-circle" style="color: red;"></i>';
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <div class="editable-field" data-field="loc" contenteditable="true">
+                                            <?php echo htmlspecialchars($page['loc']); ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="editable-field" data-field="priority" contenteditable="true">
+                                            <?php echo htmlspecialchars($page['priority']); ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="editable-field select-field" data-field="changefreq"
+                                            contenteditable="false">
+                                            <?php echo htmlspecialchars($page['changefreq']); ?>
+                                            <select style="display:none;">
+                                                <option value="always" <?php echo ($page['changefreq'] == 'always') ? 'selected' : ''; ?>>always</option>
+                                                <option value="hourly" <?php echo ($page['changefreq'] == 'hourly') ? 'selected' : ''; ?>>hourly</option>
+                                                <option value="daily" <?php echo ($page['changefreq'] == 'daily') ? 'selected' : ''; ?>>daily</option>
+                                                <option value="weekly" <?php echo ($page['changefreq'] == 'weekly') ? 'selected' : ''; ?>>weekly</option>
+                                                <option value="monthly" <?php echo ($page['changefreq'] == 'monthly') ? 'selected' : ''; ?>>monthly</option>
+                                                <option value="yearly" <?php echo ($page['changefreq'] == 'yearly') ? 'selected' : ''; ?>>yearly</option>
+                                                <option value="never" <?php echo ($page['changefreq'] == 'never') ? 'selected' : ''; ?>>never</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="button delete-row-btn"><i class="fas fa-trash-alt"></i> Löschen</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+            <button class="button add-row-btn"><i class="fas fa-plus-circle"></i> Zeile hinzufügen</button>
         </div>
-    </form>
-</section>
+    </section>
 
+    <section class="collapsible-section expanded" id="comic-sitemap-section">
+        <div class="collapsible-header">
+            <h2>Comic-Sitemap-Seiten</h2>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="collapsible-content">
+            <div class="comic-table-container">
+                <table class="comic-table" id="comic-table">
+                    <thead>
+                        <tr>
+                            <th>Loc (Pfad)</th> <!-- Spaltenname zurückgesetzt -->
+                            <th>Priorität</th>
+                            <th>Änderungsfrequenz</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($paginatedComicPages)): ?>
+                            <tr class="no-data-row">
+                                <td colspan="4" style="text-align: center;">Keine Comic-Sitemap-Einträge vorhanden.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($paginatedComicPages as $loc => $page): ?>
+                                <?php
+                                // Zeige nur den Dateinamen im Feld an
+                                $filename = basename($page['loc']);
+                                ?>
+                                <tr data-original-loc="<?php echo htmlspecialchars($loc); ?>" data-path="./comic/">
+                                    <td>
+                                        <div class="editable-field" data-field="loc" contenteditable="true">
+                                            <?php echo htmlspecialchars($filename); ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="editable-field" data-field="priority" contenteditable="true">
+                                            <?php echo htmlspecialchars($page['priority']); ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="editable-field select-field" data-field="changefreq"
+                                            contenteditable="false">
+                                            <?php echo htmlspecialchars($page['changefreq']); ?>
+                                            <select style="display:none;">
+                                                <option value="always" <?php echo ($page['changefreq'] == 'always') ? 'selected' : ''; ?>>always</option>
+                                                <option value="hourly" <?php echo ($page['changefreq'] == 'hourly') ? 'selected' : ''; ?>>hourly</option>
+                                                <option value="daily" <?php echo ($page['changefreq'] == 'daily') ? 'selected' : ''; ?>>daily</option>
+                                                <option value="weekly" <?php echo ($page['changefreq'] == 'weekly') ? 'selected' : ''; ?>>weekly</option>
+                                                <option value="monthly" <?php echo ($page['changefreq'] == 'monthly') ? 'selected' : ''; ?>>monthly</option>
+                                                <option value="yearly" <?php echo ($page['changefreq'] == 'yearly') ? 'selected' : ''; ?>>yearly</option>
+                                                <option value="never" <?php echo ($page['changefreq'] == 'never') ? 'selected' : ''; ?>>never</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="button delete-row-btn"><i class="fas fa-trash-alt"></i> Löschen</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginierung für Comic-Tabelle -->
+            <div class="pagination">
+                <?php if ($totalComicPages > 1): ?>
+                    <?php if ($comicCurrentPage > 1): ?>
+                        <a href="?comic_page=<?php echo $comicCurrentPage - 1; ?>">&laquo; Vorherige</a>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $totalComicPages; $i++): ?>
+                        <a href="?comic_page=<?php echo $i; ?>"
+                            class="<?php echo ($i == $comicCurrentPage) ? 'current-page' : ''; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($comicCurrentPage < $totalComicPages): ?>
+                        <a href="?comic_page=<?php echo $comicCurrentPage + 1; ?>">Nächste &raquo;</a>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+
+    <div class="button-group">
+        <button id="save-all-btn"><i class="fas fa-save"></i> Änderungen speichern</button>
+    </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tableBody = document.querySelector('#sitemap-editor-table tbody');
-    const addEntryButton = document.getElementById('add-new-entry');
-    const noEntriesRow = document.getElementById('no-entries-row');
-    const sortButtons = document.querySelectorAll('.sort-button');
+    $(document).ready(function () {
+        const messageBox = $('#message-box');
 
-    // PHP-Variablen für JavaScript verfügbar machen
-    const priorityOptions = <?php echo json_encode($priorityOptions); ?>;
-    const changeFreqOptions = <?php echo json_encode($changeFreqOptions); ?>;
-    // Map changeFreq options to an order index for sorting
-    const changeFreqOrder = {};
-    changeFreqOptions.forEach((freq, index) => {
-        changeFreqOrder[freq] = index;
-    });
-
-    // Hilfsfunktion für HTML-Escaping in JavaScript
-    function htmlspecialchars(str) {
-        var div = document.createElement('div');
-        div.appendChild(document.createTextNode(str));
-        return div.innerHTML;
-    }
-
-    // Funktion zum Hinzufügen einer neuen Zeile
-    // `page` Objekt ist jetzt so strukturiert, wie es vom PHP kommt
-    function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly', exists: false}) {
-        // Wenn die "Keine Einträge vorhanden"-Zeile existiert, entfernen
-        if (noEntriesRow && noEntriesRow.parentNode === tableBody) {
-            noEntriesRow.remove();
+        function showMessage(message, type) {
+            messageBox.removeClass('success error').addClass(type).text(message).fadeIn();
+            setTimeout(() => {
+                messageBox.fadeOut(() => messageBox.text(''));
+            }, 5000);
         }
 
-        const newRow = document.createElement('tr');
+        // Event Listener für collapsible sections
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            const section = header.closest('.collapsible-section');
+            const icon = header.querySelector('i');
 
-        let priorityOptionsHtml = '';
-        priorityOptions.forEach(option => {
-            // Vergleich als Float für korrekte Auswahl
-            const selected = (parseFloat(page.priority) === parseFloat(option)) ? 'selected' : '';
-            priorityOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
+            // Initial icon state
+            if (section.classList.contains('expanded')) {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            }
+
+            header.addEventListener('click', function () {
+                section.classList.toggle('expanded');
+                if (section.classList.contains('expanded')) {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-right');
+                }
+            });
         });
 
-        let changeFreqOptionsHtml = '';
-        changeFreqOptions.forEach(option => {
-            const selected = (page.changefreq === option) ? 'selected' : '';
-            changeFreqOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
+        // Event Delegation for editable fields (both tables)
+        $(document).on('click', '.editable-field:not(.select-field)', function () {
+            if (!$(this).hasClass('editing')) {
+                $(this).addClass('editing').focus();
+                // Store original value to revert if needed (not implemented in save logic, but good practice)
+                $(this).data('original-value', $(this).text());
+            }
         });
 
-        // Bestimme die Klassen und Symbole für den Existenzstatus basierend auf page.exists
-        const statusClass = page.exists ? 'exists' : 'not-exists';
-        const statusSymbol = page.exists ? '&#10003;' : '&#10007;';
+        $(document).on('blur', '.editable-field:not(.select-field)', function () {
+            $(this).removeClass('editing');
+        });
 
-        newRow.innerHTML = `
-            <td class="file-status-cell">
-                <span class="status-icon ${statusClass}" data-path="${htmlspecialchars(page.name)}">
-                    ${statusSymbol}
-                </span>
-            </td>
-            <td><input type="text" name="page_name[]" value="${htmlspecialchars(page.name)}" title="${htmlspecialchars(page.name)}"></td>
-            <td><input type="text" name="page_path[]" value="${htmlspecialchars(page.path)}" title="${htmlspecialchars(page.path)}"></td>
-            <td>
-                <select name="page_priority[]" title="${htmlspecialchars(page.priority)}">
-                    ${priorityOptionsHtml}
-                </select>
-            </td>
-            <td>
-                <select name="page_changefreq[]" title="${htmlspecialchars(page.changefreq)}">
-                    ${changeFreqOptionsHtml}
-                </select>
-            </td>
-            <td>
-                <button type="button" class="remove-row" title="Entfernen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 41.336 41.336">
-                        <path d="M36.335 5.668h-8.167V1.5a1.5 1.5 0 00-1.5-1.5h-12a1.5 1.5 0 00-1.5 1.5v4.168H5.001a2 2 0 000 4h2.001v29.168a2.5 2.5 0 002.5 2.5h22.332a2.5 2.5 0 002.5-2.5V9.668h2.001a2 2 0 000-4zM14.168 35.67a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm8 0a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm3-30.002h-9V3h9v2.668zm5 30.002a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21z" fill="currentColor"></path>
-                    </svg>
-                </button>
-            </td>
+        // Event Delegation for select fields (both tables)
+        $(document).on('click', '.editable-field.select-field', function () {
+            const $div = $(this);
+            const $select = $div.find('select');
+
+            // Hide div text, show select
+            $div.text('');
+            $select.show().focus();
+            $div.addClass('editing');
+
+            $select.off('change').on('change', function () {
+                $div.text($(this).val());
+                $select.hide();
+                $div.removeClass('editing');
+            });
+
+            $select.off('blur').on('blur', function () {
+                // If blurred without changing, restore original text or current selected value
+                if ($div.text() === '') { // If div is empty because select was shown
+                    $div.text($(this).val());
+                }
+                $select.hide();
+                $div.removeClass('editing');
+            });
+        });
+
+
+        // Add row to general sitemap table
+        $('.add-row-btn').on('click', function () {
+            const tableBody = $('#sitemap-table tbody');
+            const noDataRow = tableBody.find('.no-data-row');
+            if (noDataRow.length) {
+                noDataRow.remove();
+            }
+            const newRow = `
+            <tr data-original-loc="" data-path="./">
+                <td><i class="fas fa-question-circle" style="color: gray;"></i></td>
+                <td><div class="editable-field" data-field="loc" contenteditable="true"></div></td>
+                <td><div class="editable-field" data-field="priority" contenteditable="true">0.5</div></td>
+                <td>
+                    <div class="editable-field select-field" data-field="changefreq" contenteditable="false">weekly
+                        <select style="display:none;">
+                            <option value="always">always</option>
+                            <option value="hourly">hourly</option>
+                            <option value="daily">daily</option>
+                            <option value="weekly" selected>weekly</option>
+                            <option value="monthly">monthly</option>
+                            <option value="yearly">yearly</option>
+                            <option value="never">never</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <button class="button delete-row-btn"><i class="fas fa-trash-alt"></i> Löschen</button>
+                </td>
+            </tr>
         `;
-        tableBody.appendChild(newRow);
-        updateRowStriping();
-    }
+            tableBody.append(newRow);
+            // Focus the new 'loc' field
+            tableBody.find('tr:last .editable-field[data-field="loc"]').click();
+        });
 
-    tableBody.addEventListener('click', function(event) {
-        if (event.target.closest('.remove-row')) {
-            event.target.closest('tr').remove();
-            if (tableBody.children.length === 0) {
-                const emptyRow = document.createElement('tr');
-                emptyRow.id = 'no-entries-row';
-                emptyRow.innerHTML = '<td colspan="6" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>';
-                tableBody.appendChild(emptyRow);
+        // Delete row from either table
+        $(document).on('click', '.delete-row-btn', function () {
+            const row = $(this).closest('tr');
+            row.remove();
+            // Check if the table is empty and re-add no-data-row if necessary
+            if ($('#sitemap-table tbody tr').length === 0) {
+                $('#sitemap-table tbody').append('<tr class="no-data-row"><td colspan="5" style="text-align: center;">Keine allgemeinen Sitemap-Einträge vorhanden.</td></tr>');
             }
-            updateRowStriping();
-        }
+            if ($('#comic-table tbody tr').length === 0) {
+                $('#comic-table tbody').append('<tr class="no-data-row"><td colspan="4" style="text-align: center;">Keine Comic-Sitemap-Einträge vorhanden.</td></tr>');
+            }
+        });
+
+        // Save all changes
+        $('#save-all-btn').on('click', function () {
+            const allPages = [];
+
+            // Collect data from General Sitemap Table
+            $('#sitemap-table tbody tr').each(function () {
+                if ($(this).hasClass('no-data-row')) return;
+
+                const loc = $(this).find('[data-field="loc"]').text().trim();
+                const path = $(this).data('path') || './'; // Standardpfad für allgemeine Seiten
+
+                if (loc) { // Only add if loc is not empty
+                    allPages.push({
+                        loc: loc,
+                        path: path,
+                        priority: parseFloat($(this).find('[data-field="priority"]').text()) || 0.5,
+                        changefreq: $(this).find('[data-field="changefreq"] select').val() || $(this).find('[data-field="changefreq"]').text().trim() || 'weekly'
+                    });
+                }
+            });
+
+            // Collect data from Comic Sitemap Table
+            $('#comic-table tbody tr').each(function () {
+                if ($(this).hasClass('no-data-row')) return;
+
+                // Für Comic-Seiten ist das angezeigte Feld der Dateiname (z.B. 20250724.php)
+                // Der Pfad ist fest './comic/'
+                const filename = $(this).find('[data-field="loc"]').text().trim();
+                const path = './comic/';
+                const loc = path + filename; // Baue den vollständigen loc-Pfad zusammen
+
+                if (filename) { // Only add if filename is not empty
+                    allPages.push({
+                        loc: loc,
+                        path: path,
+                        priority: parseFloat($(this).find('[data-field="priority"]').text()) || 0.8,
+                        changefreq: $(this).find('[data-field="changefreq"] select').val() || $(this).find('[data-field="changefreq"]').text().trim() || 'never'
+                    });
+                }
+            });
+
+            $.ajax({
+                url: window.location.href, // Send to the same PHP script
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ pages: allPages }),
+                success: function (response) {
+                    if (response.status === 'success') {
+                        showMessage(response.message, 'success');
+                        // Optional: Seite neu laden, um die aktualisierten Daten anzuzeigen
+                        // window.location.reload();
+                    } else {
+                        showMessage(response.message, 'error');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', status, error);
+                    showMessage('Ein Fehler ist aufgetreten: ' + error, 'error');
+                }
+            });
+        });
+
     });
-
-    function updateRowStriping() {
-        const rows = tableBody.querySelectorAll('tr');
-        rows.forEach((row, index) => {
-            if (row.id === 'no-entries-row') {
-                row.classList.remove('row-odd', 'row-even');
-                return;
-            }
-            row.classList.remove('row-odd', 'row-even');
-            if (index % 2 === 0) {
-                row.classList.add('row-odd');
-            } else {
-                row.classList.add('row-even');
-            }
-        });
-    }
-
-
-    let currentSortColumn = null;
-    let currentSortDirection = 'asc';
-
-    function sortTable(column) {
-        const rows = Array.from(tableBody.querySelectorAll('tr:not(#no-entries-row)'));
-
-        if (currentSortColumn === column) {
-            currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
-        } else {
-            currentSortColumn = column;
-            if (column === 'priority' || column === 'exists') {
-                currentSortDirection = 'desc';
-            } else if (column === 'changefreq') {
-                 currentSortDirection = 'asc';
-            } else {
-                currentSortDirection = 'asc';
-            }
-        }
-
-        sortButtons.forEach(button => {
-            button.classList.remove('asc', 'desc');
-        });
-
-        const currentButton = document.querySelector(`.sort-button[data-sort-by="${column}"]`);
-        if (currentButton) {
-            currentButton.classList.add(currentSortDirection);
-        }
-
-        rows.sort((rowA, rowB) => {
-            let primaryComparisonResult = 0;
-            let valA, valB;
-
-            switch (column) {
-                case 'exists':
-                    const existsA = rowA.querySelector('.status-icon').classList.contains('exists');
-                    const existsB = rowB.querySelector('.status-icon').classList.contains('exists');
-                    primaryComparisonResult = (currentSortDirection === 'asc') ? (existsA - existsB) : (existsB - existsA);
-                    break;
-                case 'name':
-                    valA = rowA.querySelector('input[name="page_name[]"]').value;
-                    valB = rowB.querySelector('input[name="page_name[]"]').value;
-                    primaryComparisonResult = (currentSortDirection === 'asc') ? valA.localeCompare(valB, undefined, {sensitivity: 'base', numeric: true}) : valB.localeCompare(valA, undefined, {sensitivity: 'base', numeric: true});
-                    break;
-                case 'path':
-                    valA = rowA.querySelector('input[name="page_path[]"]').value;
-                    valB = rowB.querySelector('input[name="page_path[]"]').value;
-                    if (valA === './' && valB !== './') primaryComparisonResult = (currentSortDirection === 'asc') ? -1 : 1;
-                    else if (valA !== './' && valB === './') primaryComparisonResult = (currentSortDirection === 'asc') ? 1 : -1;
-                    else primaryComparisonResult = (currentSortDirection === 'asc') ? valA.localeCompare(valB, undefined, {sensitivity: 'base', numeric: true}) : valB.localeCompare(valA, undefined, {sensitivity: 'base', numeric: true});
-                    break;
-                case 'priority':
-                    valA = parseFloat(rowA.querySelector('select[name="page_priority[]"]').value);
-                    valB = parseFloat(rowB.querySelector('select[name="page_priority[]"]').value);
-                    primaryComparisonResult = (currentSortDirection === 'asc') ? valA - valB : valB - valA;
-                    break;
-                case 'changefreq':
-                    valA = rowA.querySelector('select[name="page_changefreq[]"]').value;
-                    valB = rowB.querySelector('select[name="page_changefreq[]"]').value;
-                    const orderA = changeFreqOrder[valA];
-                    const orderB = changeFreqOrder[valB];
-                    primaryComparisonResult = (currentSortDirection === 'asc') ? orderA - orderB : orderB - orderA;
-                    break;
-                default:
-                    primaryComparisonResult = 0;
-            }
-
-            // Wenn primäre Sortierung gleich ist, dann nach Name sortieren (alphabetisch aufsteigend)
-            if (primaryComparisonResult === 0) {
-                const nameA = rowA.querySelector('input[name="page_name[]"]').value;
-                const nameB = rowB.querySelector('input[name="page_name[]"]').value;
-                return nameA.localeCompare(nameB, undefined, {sensitivity: 'base', numeric: true});
-            }
-            return primaryComparisonResult;
-        });
-
-        tableBody.innerHTML = '';
-        rows.forEach(row => tableBody.appendChild(row));
-        updateRowStriping();
-    }
-
-    // Event Listener für Sortier-Buttons
-    sortButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const sortBy = this.dataset.sortBy;
-            sortTable(sortBy);
-        });
-    });
-
-    // Initialisierung: PHP sortiert bereits nach Priorität (desc) und Name (asc).
-    const initialSortButton = document.querySelector('.sort-button[data-sort-by="priority"]');
-    if (initialSortButton) {
-        initialSortButton.classList.add('desc');
-        currentSortColumn = 'priority';
-        currentSortDirection = 'desc';
-    }
-
-    updateRowStriping();
-
-    // Event Listener für "Neuen Eintrag hinzufügen" Button
-    addEntryButton.addEventListener('click', function() {
-        addRow();
-    });
-});
 </script>
 
 <?php
@@ -708,6 +962,6 @@ document.addEventListener('DOMContentLoaded', function() {
 if (file_exists($footerPath)) {
     include $footerPath;
 } else {
-    echo "</body></html>"; // HTML schließen, falls Footer fehlt.
+    die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));
 }
 ?>
