@@ -96,9 +96,6 @@ function checkFileExists(string $relativePath, string $basePath): bool {
 
     // Prüfe, ob der Pfad existiert und ob er unterhalb des Webroots liegt
     if ($fullPath && str_starts_with($fullPath, $basePath)) {
-        // file_exists funktioniert für Dateien und Verzeichnisse, wir brauchen es aber nur für "Dateien"
-        // In diesem Kontext geht es um URLs, die typischerweise auf Dateien (oder index.php etc.) zeigen.
-        // Ein einfaches file_exists() ist hier ausreichend.
         return file_exists($fullPath);
     }
     return false;
@@ -256,6 +253,13 @@ if (file_exists($headerPath)) {
         border: 1px solid #ddd;
         border-radius: 3px;
     }
+    /* Tooltip für Input-Felder */
+    .sitemap-table input[type="text"][title] {
+        overflow: hidden; /* Verhindert, dass der Text überläuft */
+        text-overflow: ellipsis; /* Fügt ... hinzu, wenn Text abgeschnitten wird */
+        white-space: nowrap; /* Hält den Text in einer Zeile */
+    }
+
     .sitemap-table button.remove-row {
         background-color: #f44336;
         color: white;
@@ -263,6 +267,17 @@ if (file_exists($headerPath)) {
         padding: 5px 10px;
         border-radius: 3px;
         cursor: pointer;
+        display: flex; /* Für SVG-Icon */
+        align-items: center; /* Zentriert SVG */
+        justify-content: center; /* Zentriert SVG */
+        width: 30px; /* Feste Breite für das Icon */
+        height: 30px; /* Feste Höhe für das Icon */
+        padding: 0; /* Kein Padding, da feste Größe */
+    }
+    .sitemap-table button.remove-row svg {
+        width: 20px; /* Größe der SVG anpassen */
+        height: 20px;
+        fill: currentColor; /* Verwendet die Textfarbe des Buttons */
     }
     .sitemap-table button.remove-row:hover {
         background-color: #d32f2f;
@@ -365,11 +380,11 @@ if (file_exists($headerPath)) {
         <table class="sitemap-table" id="sitemap-editor-table">
             <thead>
                 <tr>
-                    <th>Existiert?</th> <th>Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
-                    <th>Pfad <button type="button" class="sort-button" data-sort-by="path"><span class="sort-icon"></span></button></th>
-                    <th>Priorität <button type="button" class="sort-button" data-sort-by="priority"><span class="sort-icon"></span></button></th>
-                    <th>Änderungsfrequenz <button type="button" class="sort-button" data-sort-by="changefreq"><span class="sort-icon"></span></button></th>
-                    <th>Aktion</th>
+                    <th title="Existiert die Datei?">&#10003; / &#10007;</th> <th title="Dateiname der PHP, HTML oder HTM Datei">Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
+                    <th title="Dateipfad, relativ zum Hauptverzeichnis ./">Pfad <button type="button" class="sort-button" data-sort-by="path"><span class="sort-icon"></span></button></th>
+                    <th title="Priorität (1.0=hoch; 0.5=normal; 0.1=niedrig)">Priorität <button type="button" class="sort-button" data-sort-by="priority"><span class="sort-icon"></span></button></th>
+                    <th title="Änderungsfrequenz der Datei">Änderung <button type="button" class="sort-button" data-sort-by="changefreq"><span class="sort-icon"></span></button></th>
+                    <th title="Aktion">Aktion</th>
                 </tr>
             </thead>
             <tbody>
@@ -381,10 +396,10 @@ if (file_exists($headerPath)) {
                                     <?php echo $page['exists'] ? '&#10003;' : '&#10007;'; ?>
                                 </span>
                             </td>
-                            <td><input type="text" name="page_name[]" value="<?php echo htmlspecialchars($page['name']); ?>"></td>
-                            <td><input type="text" name="page_path[]" value="<?php echo htmlspecialchars($page['path']); ?>"></td>
+                            <td><input type="text" name="page_name[]" value="<?php echo htmlspecialchars($page['name']); ?>" title="<?php echo htmlspecialchars($page['name']); ?>"></td>
+                            <td><input type="text" name="page_path[]" value="<?php echo htmlspecialchars($page['path']); ?>" title="<?php echo htmlspecialchars($page['path']); ?>"></td>
                             <td>
-                                <select name="page_priority[]">
+                                <select name="page_priority[]" title="<?php echo htmlspecialchars($page['priority']); ?>">
                                     <?php foreach ($priorityOptions as $option): ?>
                                         <option value="<?php echo htmlspecialchars($option); ?>" <?php echo (isset($page['priority']) && (float)$page['priority'] == (float)$option) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($option); ?>
@@ -393,7 +408,7 @@ if (file_exists($headerPath)) {
                                 </select>
                             </td>
                             <td>
-                                <select name="page_changefreq[]">
+                                <select name="page_changefreq[]" title="<?php echo htmlspecialchars($page['changefreq']); ?>">
                                     <?php foreach ($changeFreqOptions as $option): ?>
                                         <option value="<?php echo htmlspecialchars($option); ?>" <?php echo (isset($page['changefreq']) && $page['changefreq'] == $option) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($option); ?>
@@ -401,7 +416,13 @@ if (file_exists($headerPath)) {
                                     <?php endforeach; ?>
                                 </select>
                             </td>
-                            <td><button type="button" class="remove-row">Entfernen</button></td>
+                            <td>
+                                <button type="button" class="remove-row" title="Entfernen">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 41.336 41.336">
+                                        <path d="M36.335 5.668h-8.167V1.5a1.5 1.5 0 00-1.5-1.5h-12a1.5 1.5 0 00-1.5 1.5v4.168H5.001a2 2 0 000 4h2.001v29.168a2.5 2.5 0 002.5 2.5h22.332a2.5 2.5 0 002.5-2.5V9.668h2.001a2 2 0 000-4zM14.168 35.67a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm8 0a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm3-30.002h-9V3h9v2.668zm5 30.002a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21z" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -443,7 +464,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Funktion zum Hinzufügen einer neuen Zeile
-    function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly', exists: false}) { // exists hinzugefügt
+    function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly', exists: false}) {
         // Wenn die "Keine Einträge vorhanden"-Zeile existiert, entfernen
         if (noEntriesRow && noEntriesRow.parentNode === tableBody) {
             noEntriesRow.remove();
@@ -453,7 +474,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let priorityOptionsHtml = '';
         priorityOptions.forEach(option => {
-            // Vergleich als Float, um 0.5 und "0.5" korrekt zu behandeln
             const selected = (parseFloat(page.priority) === parseFloat(option)) ? 'selected' : '';
             priorityOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
         });
@@ -474,41 +494,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${statusSymbol}
                 </span>
             </td>
-            <td><input type="text" name="page_name[]" value="${htmlspecialchars(page.name)}"></td>
-            <td><input type="text" name="page_path[]" value="${htmlspecialchars(page.path)}"></td>
+            <td><input type="text" name="page_name[]" value="${htmlspecialchars(page.name)}" title="${htmlspecialchars(page.name)}"></td>
+            <td><input type="text" name="page_path[]" value="${htmlspecialchars(page.path)}" title="${htmlspecialchars(page.path)}"></td>
             <td>
-                <select name="page_priority[]">
+                <select name="page_priority[]" title="${htmlspecialchars(page.priority)}">
                     ${priorityOptionsHtml}
                 </select>
             </td>
             <td>
-                <select name="page_changefreq[]">
+                <select name="page_changefreq[]" title="${htmlspecialchars(page.changefreq)}">
                     ${changeFreqOptionsHtml}
                 </select>
             </td>
-            <td><button type="button" class="remove-row">Entfernen</button></td>
+            <td>
+                <button type="button" class="remove-row" title="Entfernen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 41.336 41.336">
+                        <path d="M36.335 5.668h-8.167V1.5a1.5 1.5 0 00-1.5-1.5h-12a1.5 1.5 0 00-1.5 1.5v4.168H5.001a2 2 0 000 4h2.001v29.168a2.5 2.5 0 002.5 2.5h22.332a2.5 2.5 0 002.5-2.5V9.668h2.001a2 2 0 000-4zM14.168 35.67a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm8 0a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21zm3-30.002h-9V3h9v2.668zm5 30.002a1.5 1.5 0 01-3 0v-21a1.5 1.5 0 013 0v21z" fill="currentColor"></path>
+                    </svg>
+                </button>
+            </td>
         `;
         tableBody.appendChild(newRow);
-        updateRowStriping(); // Streifen nach dem Hinzufügen aktualisieren
+        updateRowStriping();
     }
 
-    // Event Listener für "Entfernen" Buttons (Delegation, da Buttons dynamisch hinzugefügt werden)
     tableBody.addEventListener('click', function(event) {
-        if (event.target.classList.contains('remove-row')) {
+        if (event.target.closest('.remove-row')) { // closest() verwenden, da Klick auch auf SVG-Path gehen könnte
             event.target.closest('tr').remove();
-            // Wenn keine Zeilen mehr vorhanden, die "Keine Einträge vorhanden"-Zeile wieder hinzufügen
             if (tableBody.children.length === 0) {
                 const emptyRow = document.createElement('tr');
                 emptyRow.id = 'no-entries-row';
-                // Spaltenanzahl für colspan angepasst
                 emptyRow.innerHTML = '<td colspan="6" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>';
                 tableBody.appendChild(emptyRow);
             }
-            updateRowStriping(); // Streifen nach dem Entfernen aktualisieren
+            updateRowStriping();
         }
     });
 
-    // Funktion zum Aktualisieren der Zeilenfärbung (Streifen)
     function updateRowStriping() {
         const rows = tableBody.querySelectorAll('tr');
         rows.forEach((row, index) => {
@@ -536,12 +558,10 @@ document.addEventListener('DOMContentLoaded', function() {
             currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
         } else {
             currentSortColumn = column;
-            if (column === 'priority') {
+            if (column === 'priority' || column === 'exists') { // Standard: Existierende und hohe Prio zuerst
                 currentSortDirection = 'desc';
             } else if (column === 'changefreq') {
-                 currentSortDirection = 'asc';
-            } else if (column === 'exists') { // Neue Sortierlogik für Existenz
-                 currentSortDirection = 'desc'; // Standard: Existierende zuerst (grüner Haken oben)
+                currentSortDirection = 'asc';
             } else {
                 currentSortDirection = 'asc';
             }
@@ -561,16 +581,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let valA, valB;
 
             switch (column) {
-                case 'exists': // Sortierung nach Existenz (Boolean-Wert)
-                    // Holen des 'exists'-Status. Da er nicht im Formularfeld ist, müssen wir ihn aus dem Symbol extrahieren.
-                    // Dies ist eine Näherung und nicht so robust wie direkt aus einem Datenfeld.
-                    // Für eine präzisere Sortierung müsste der 'exists'-Status in einem versteckten Input-Feld gespeichert werden,
-                    // oder die Daten direkt aus einem JavaScript-Array, das alle Seite-Objekte enthält, abgerufen werden.
-                    // Für diese Implementierung basieren wir auf der Klasse des Icons.
+                case 'exists':
                     const existsA = rowA.querySelector('.status-icon').classList.contains('exists');
                     const existsB = rowB.querySelector('.status-icon').classList.contains('exists');
-                    // true (existiert) ist größer als false (existiert nicht) für numerischen Vergleich
-                    // Wir wollen 'exists' zuerst (true > false), also absteigend sortieren
                     primaryComparisonResult = (currentSortDirection === 'asc') ? (existsA - existsB) : (existsB - existsA);
                     break;
                 case 'name':
@@ -637,11 +650,6 @@ document.addEventListener('DOMContentLoaded', function() {
     addEntryButton.addEventListener('click', function() {
         addRow();
     });
-
-    // Optional: Dateiexistenzprüfung im Frontend aktualisieren, wenn Pfad geändert wird (AJAX nötig)
-    // Dies ist komplexer und wird hier nicht direkt implementiert,
-    // da es einen Server-Request erfordern würde.
-    // Die aktuelle Implementierung prüft die Existenz nur beim Laden der Seite.
 });
 </script>
 
