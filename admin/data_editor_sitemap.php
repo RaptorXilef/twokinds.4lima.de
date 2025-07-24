@@ -67,7 +67,7 @@ function loadSitemapConfig(string $path): array {
         return ['pages' => []]; // Leeres Array im Fehlerfall
     }
     return $config;
-}
+    }
 
 // Funktion zum Speichern der Sitemap-Konfiguration
 function saveSitemapConfig(string $path, array $config): bool {
@@ -177,9 +177,50 @@ if (file_exists($headerPath)) {
     .sitemap-table th {
         background-color: #ddead7;
     }
+    /* ORIGINAL CSS FÜR GERADE ZEILEN - WIEDER AKTIVIERT */
     .sitemap-table tr:nth-child(even) {
         background-color: #f9f9f9;
     }
+    /* NEUE KLASSEN FÜR JAVASCRIPT GESTEUERTE STREIFEN */
+    .sitemap-table .row-odd {
+        /* Keine spezifische Hintergrundfarbe hier, da dies der Standard ist (weiß oder theme-abhängig) */
+    }
+    .sitemap-table .row-even {
+        background-color: #f9f9f9; /* Standardfarbe für gerade Zeilen */
+    }
+
+
+    .sitemap-table th button.sort-button {
+        background: none;
+        border: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 5px;
+        float: right; /* Positioniert den Button rechts im Header */
+        display: flex; /* Für Icon */
+        align-items: center; /* Für Icon */
+        gap: 2px;
+    }
+    .sitemap-table th button.sort-button:hover {
+        text-decoration: underline;
+    }
+    .sitemap-table th button.sort-button .sort-icon {
+        font-size: 0.8em;
+        vertical-align: middle;
+    }
+    .sitemap-table th button.sort-button.asc .sort-icon::before {
+        content: "▲";
+    }
+    .sitemap-table th button.sort-button.desc .sort-icon::before {
+        content: "▼";
+    }
+    .sitemap-table th button.sort-button:not(.asc):not(.desc) .sort-icon::before {
+        content: "◆"; /* Neutraler Pfeil, wenn nicht sortiert */
+        opacity: 0.5;
+    }
+
     .sitemap-table input[type="text"],
     .sitemap-table select {
         width: 100%;
@@ -228,9 +269,19 @@ if (file_exists($headerPath)) {
     body.theme-night .sitemap-table td {
         border-color: #002b3c;
     }
+    /* ORIGINAL DARK THEME CSS FÜR GERADE ZEILEN - WIEDER AKTIVIERT */
     body.theme-night .sitemap-table tr:nth-child(even) {
         background-color: #00334c;
     }
+    /* NEUE KLASSEN FÜR JAVASCRIPT GESTEUERTE STREIFEN IM DARK THEME */
+    body.theme-night .sitemap-table .row-odd {
+        /* Keine spezifische Hintergrundfarbe hier */
+    }
+    body.theme-night .sitemap-table .row-even {
+        background-color: #00334c; /* Dunkle Farbe für gerade Zeilen im Dark Theme */
+    }
+
+
     body.theme-night .sitemap-table input[type="text"],
     body.theme-night .sitemap-table select {
         background-color: #2a6177;
@@ -253,6 +304,9 @@ if (file_exists($headerPath)) {
         border-color: #721c24;
         background-color: #5a0000;
     }
+    body.theme-night .sitemap-table th button.sort-button {
+        color: #fff;
+    }
 </style>
 
 <section>
@@ -268,17 +322,17 @@ if (file_exists($headerPath)) {
         <table class="sitemap-table" id="sitemap-editor-table">
             <thead>
                 <tr>
-                    <th>Name (Dateiname)</th>
-                    <th>Pfad (relativ zum Root)</th>
-                    <th>Priorität</th>
-                    <th>Änderungsfrequenz</th>
+                    <th>Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
+                    <th>Pfad <button type="button" class="sort-button" data-sort-by="path"><span class="sort-icon"></span></button></th>
+                    <th>Priorität <button type="button" class="sort-button" data-sort-by="priority"><span class="sort-icon"></span></button></th>
+                    <th>Änderungsfrequenz <button type="button" class="sort-button" data-sort-by="changefreq"><span class="sort-icon"></span></button></th>
                     <th>Aktion</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (!empty($sitemapConfig['pages'])): ?>
                     <?php foreach ($sitemapConfig['pages'] as $index => $page): ?>
-                        <tr>
+                        <tr class="<?php echo (($index + 1) % 2 === 0) ? 'row-even' : 'row-odd'; ?>">
                             <td><input type="text" name="page_name[]" value="<?php echo htmlspecialchars($page['name']); ?>"></td>
                             <td><input type="text" name="page_path[]" value="<?php echo htmlspecialchars($page['path']); ?>"></td>
                             <td>
@@ -322,10 +376,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#sitemap-editor-table tbody');
     const addEntryButton = document.getElementById('add-new-entry');
     const noEntriesRow = document.getElementById('no-entries-row');
+    const sortButtons = document.querySelectorAll('.sort-button');
 
     // PHP-Variablen für JavaScript verfügbar machen
     const priorityOptions = <?php echo json_encode($priorityOptions); ?>;
     const changeFreqOptions = <?php echo json_encode($changeFreqOptions); ?>;
+    // Map changeFreq options to an order index for sorting
+    const changeFreqOrder = {};
+    changeFreqOptions.forEach((freq, index) => {
+        changeFreqOrder[freq] = index;
+    });
+
+    // Hilfsfunktion für HTML-Escaping in JavaScript
+    function htmlspecialchars(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
 
     // Funktion zum Hinzufügen einer neuen Zeile
     function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly'}) {
@@ -365,12 +432,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <td><button type="button" class="remove-row">Entfernen</button></td>
         `;
         tableBody.appendChild(newRow);
+        updateRowStriping(); // Streifen nach dem Hinzufügen aktualisieren
     }
-
-    // Event Listener für "Neuen Eintrag hinzufügen" Button
-    addEntryButton.addEventListener('click', function() {
-        addRow();
-    });
 
     // Event Listener für "Entfernen" Buttons (Delegation, da Buttons dynamisch hinzugefügt werden)
     tableBody.addEventListener('click', function(event) {
@@ -383,15 +446,136 @@ document.addEventListener('DOMContentLoaded', function() {
                 emptyRow.innerHTML = '<td colspan="5" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>';
                 tableBody.appendChild(emptyRow);
             }
+            updateRowStriping(); // Streifen nach dem Entfernen aktualisieren
         }
     });
 
-    // Hilfsfunktion für HTML-Escaping in JavaScript
-    function htmlspecialchars(str) {
-        var div = document.createElement('div');
-        div.appendChild(document.createTextNode(str));
-        return div.innerHTML;
+    // Funktion zum Aktualisieren der Zeilenfärbung (Streifen)
+    function updateRowStriping() {
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach((row, index) => {
+            if (row.id === 'no-entries-row') {
+                row.classList.remove('row-odd', 'row-even'); // Entferne Klassen, falls vorhanden
+                return; // Überspringe die "Keine Einträge"-Zeile
+            }
+            // Entferne alte Klassen und füge neue basierend auf dem Index hinzu
+            row.classList.remove('row-odd', 'row-even');
+            if (index % 2 === 0) { // JavaScript-Indizes starten bei 0, also ist 0, 2, 4... gerade
+                row.classList.add('row-odd'); // Erste Zeile (Index 0) ist ungerade (optisch 1.)
+            } else {
+                row.classList.add('row-even'); // Zweite Zeile (Index 1) ist gerade (optisch 2.)
+            }
+        });
     }
+
+
+    let currentSortColumn = null;
+    let currentSortDirection = 'asc'; // 'asc' oder 'desc'
+
+    function sortTable(column) {
+        const rows = Array.from(tableBody.querySelectorAll('tr:not(#no-entries-row)'));
+
+        // Wenn auf die gleiche Spalte geklickt wird, Richtung wechseln
+        if (currentSortColumn === column) {
+            currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
+        } else {
+            // Neue Spalte, Standardrichtung
+            currentSortColumn = column;
+            if (column === 'priority') {
+                currentSortDirection = 'desc'; // Priorität: Hohe Prio zuerst
+            } else if (column === 'changefreq') {
+                 currentSortDirection = 'asc'; // Änderungsfrequenz: Nach der $changeFreqOptions Reihenfolge
+            } else {
+                currentSortDirection = 'asc'; // Name, Pfad: Alphabetisch aufsteigend
+            }
+        }
+
+        // Alle Sortier-Icons zurücksetzen
+        sortButtons.forEach(button => {
+            button.classList.remove('asc', 'desc');
+        });
+
+        // Aktuelles Sortier-Icon aktualisieren
+        const currentButton = document.querySelector(`.sort-button[data-sort-by="${column}"]`);
+        if (currentButton) {
+            currentButton.classList.add(currentSortDirection);
+        }
+
+        rows.sort((rowA, rowB) => {
+            let primaryComparisonResult = 0;
+            let valA, valB;
+
+            switch (column) {
+                case 'name':
+                    valA = rowA.querySelector('input[name="page_name[]"]').value;
+                    valB = rowB.querySelector('input[name="page_name[]"]').value;
+                    primaryComparisonResult = (currentSortDirection === 'asc') ? valA.localeCompare(valB, undefined, {sensitivity: 'base', numeric: true}) : valB.localeCompare(valA, undefined, {sensitivity: 'base', numeric: true});
+                    break;
+                case 'path':
+                    valA = rowA.querySelector('input[name="page_path[]"]').value;
+                    valB = rowB.querySelector('input[name="page_path[]"]').value;
+                    // Sonderbehandlung für './' am Anfang
+                    if (valA === './' && valB !== './') primaryComparisonResult = (currentSortDirection === 'asc') ? -1 : 1;
+                    else if (valA !== './' && valB === './') primaryComparisonResult = (currentSortDirection === 'asc') ? 1 : -1;
+                    else primaryComparisonResult = (currentSortDirection === 'asc') ? valA.localeCompare(valB, undefined, {sensitivity: 'base', numeric: true}) : valB.localeCompare(valA, undefined, {sensitivity: 'base', numeric: true});
+                    break;
+                case 'priority':
+                    valA = parseFloat(rowA.querySelector('select[name="page_priority[]"]').value);
+                    valB = parseFloat(rowB.querySelector('select[name="page_priority[]"]').value);
+                    primaryComparisonResult = (currentSortDirection === 'asc') ? valA - valB : valB - valA; // Numerische Sortierung
+                    break;
+                case 'changefreq':
+                    valA = rowA.querySelector('select[name="page_changefreq[]"]').value;
+                    valB = rowB.querySelector('select[name="page_changefreq[]"]').value;
+                    // Sortierung basierend auf der vordefinierten Reihenfolge
+                    const orderA = changeFreqOrder[valA];
+                    const orderB = changeFreqOrder[valB];
+                    primaryComparisonResult = (currentSortDirection === 'asc') ? orderA - orderB : orderB - orderA;
+                    break;
+                default:
+                    primaryComparisonResult = 0; // Sollte nicht passieren
+            }
+
+            // Wenn primäre Sortierung gleich ist, dann nach Name sortieren (alphabetisch aufsteigend)
+            if (primaryComparisonResult === 0) {
+                const nameA = rowA.querySelector('input[name="page_name[]"]').value;
+                const nameB = rowB.querySelector('input[name="page_name[]"]').value;
+                return nameA.localeCompare(nameB, undefined, {sensitivity: 'base', numeric: true});
+            }
+            return primaryComparisonResult;
+        });
+
+
+        // DOM aktualisieren
+        tableBody.innerHTML = ''; // Entferne alle aktuellen Zeilen
+        rows.forEach(row => tableBody.appendChild(row)); // Füge sortierte Zeilen hinzu
+        updateRowStriping(); // Zeilenstreifen neu anwenden
+    }
+
+    // Event Listener für Sortier-Buttons
+    sortButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const sortBy = this.dataset.sortBy;
+            sortTable(sortBy);
+        });
+    });
+
+    // Initialisierung: Wenn die Seite geladen wird, sortiert PHP bereits nach Priorität (desc) und Name (asc).
+    // Setze den Pfeil für diese initiale Sortierung.
+    const initialSortButton = document.querySelector('.sort-button[data-sort-by="priority"]');
+    if (initialSortButton) {
+        initialSortButton.classList.add('desc');
+        currentSortColumn = 'priority';
+        currentSortDirection = 'desc';
+    }
+
+    // Initial die Zeilenstreifen anwenden (für die von PHP sortierte Tabelle)
+    updateRowStriping();
+
+    // Event Listener für "Neuen Eintrag hinzufügen" Button
+    addEntryButton.addEventListener('click', function() {
+        addRow();
+    });
 });
 </script>
 
