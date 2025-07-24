@@ -97,7 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_sitemap_config']
         foreach ($_POST['page_name'] as $index => $name) {
             $name = trim($name);
             $path = isset($_POST['page_path'][$index]) ? trim($_POST['page_path'][$index]) : '';
-            $priority = isset($_POST['page_priority'][$index]) ? trim($_POST['page_priority'][$index]) : '0.5';
+            // Sicherstellen, dass Priorität immer als Float behandelt wird, Default ist 0.5
+            $priority = isset($_POST['page_priority'][$index]) ? (float)trim($_POST['page_priority'][$index]) : 0.5;
             $changefreq = isset($_POST['page_changefreq'][$index]) ? trim($_POST['page_changefreq'][$index]) : 'monthly';
 
             // Nur gültige Einträge hinzufügen (Name und Pfad dürfen nicht leer sein)
@@ -105,12 +106,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_sitemap_config']
                 $updatedPages[] = [
                     'name' => $name,
                     'path' => $path,
-                    'priority' => (float)$priority,
+                    'priority' => $priority, // Bereits als Float
                     'changefreq' => $changefreq
                 ];
             }
         }
     }
+
+    // Sortiere die aktualisierten Seiten: primär nach Priorität (absteigend), sekundär nach Name (aufsteigend)
+    usort($updatedPages, function($a, $b) {
+        // Priorität vergleichen (absteigend)
+        $priorityComparison = $b['priority'] <=> $a['priority'];
+
+        // Wenn Prioritäten gleich sind, nach Name sortieren (aufsteigend)
+        if ($priorityComparison === 0) {
+            return strnatcasecmp($a['name'], $b['name']); // Case-insensitive, natural string comparison
+        }
+        return $priorityComparison;
+    });
 
     $sitemapConfig = ['pages' => $updatedPages];
 
@@ -125,6 +138,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_sitemap_config']
 
 // Lade die aktuelle Konfiguration für die Anzeige
 $sitemapConfig = loadSitemapConfig($sitemapConfigPath);
+
+// Sortiere die geladenen Seiten: primär nach Priorität (absteigend), sekundär nach Name (aufsteigend)
+if (isset($sitemapConfig['pages']) && is_array($sitemapConfig['pages'])) {
+    usort($sitemapConfig['pages'], function($a, $b) {
+        // Priorität vergleichen (absteigend)
+        $priorityComparison = $b['priority'] <=> $a['priority'];
+
+        // Wenn Prioritäten gleich sind, nach Name sortieren (aufsteigend)
+        if ($priorityComparison === 0) {
+            return strnatcasecmp($a['name'], $b['name']); // Case-insensitive, natural string comparison
+        }
+        return $priorityComparison;
+    });
+}
+
 
 // Binde den gemeinsamen Header ein.
 if (file_exists($headerPath)) {
@@ -256,7 +284,7 @@ if (file_exists($headerPath)) {
                             <td>
                                 <select name="page_priority[]">
                                     <?php foreach ($priorityOptions as $option): ?>
-                                        <option value="<?php echo htmlspecialchars($option); ?>" <?php echo ($page['priority'] == (float)$option) ? 'selected' : ''; ?>>
+                                        <option value="<?php echo htmlspecialchars($option); ?>" <?php echo (isset($page['priority']) && (float)$page['priority'] == (float)$option) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($option); ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -265,7 +293,7 @@ if (file_exists($headerPath)) {
                             <td>
                                 <select name="page_changefreq[]">
                                     <?php foreach ($changeFreqOptions as $option): ?>
-                                        <option value="<?php echo htmlspecialchars($option); ?>" <?php echo ($page['changefreq'] == $option) ? 'selected' : ''; ?>>
+                                        <option value="<?php echo htmlspecialchars($option); ?>" <?php echo (isset($page['changefreq']) && $page['changefreq'] == $option) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($option); ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -295,33 +323,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const addEntryButton = document.getElementById('add-new-entry');
     const noEntriesRow = document.getElementById('no-entries-row');
 
+    // PHP-Variablen für JavaScript verfügbar machen
+    const priorityOptions = <?php echo json_encode($priorityOptions); ?>;
+    const changeFreqOptions = <?php echo json_encode($changeFreqOptions); ?>;
+
     // Funktion zum Hinzufügen einer neuen Zeile
     function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly'}) {
         // Wenn die "Keine Einträge vorhanden"-Zeile existiert, entfernen
-        if (noEntriesRow) {
+        if (noEntriesRow && noEntriesRow.parentNode === tableBody) {
             noEntriesRow.remove();
         }
 
         const newRow = document.createElement('tr');
+
+        let priorityOptionsHtml = '';
+        priorityOptions.forEach(option => {
+            // Vergleich als Float, um 0.5 und "0.5" korrekt zu behandeln
+            const selected = (parseFloat(page.priority) === parseFloat(option)) ? 'selected' : '';
+            priorityOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
+        });
+
+        let changeFreqOptionsHtml = '';
+        changeFreqOptions.forEach(option => {
+            const selected = (page.changefreq === option) ? 'selected' : '';
+            changeFreqOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
+        });
+
         newRow.innerHTML = `
             <td><input type="text" name="page_name[]" value="${htmlspecialchars(page.name)}"></td>
             <td><input type="text" name="page_path[]" value="${htmlspecialchars(page.path)}"></td>
             <td>
                 <select name="page_priority[]">
-                    <?php foreach ($priorityOptions as $option): ?>
-                        <option value="<?php echo htmlspecialchars($option); ?>" ${page.priority == '<?php echo htmlspecialchars($option); ?>' ? 'selected' : ''}>
-                            <?php echo htmlspecialchars($option); ?>
-                        </option>
-                    <?php endforeach; ?>
+                    ${priorityOptionsHtml}
                 </select>
             </td>
             <td>
                 <select name="page_changefreq[]">
-                    <?php foreach ($changeFreqOptions as $option): ?>
-                        <option value="<?php echo htmlspecialchars($option); ?>" ${page.changefreq == '<?php echo htmlspecialchars($option); ?>' ? 'selected' : ''}>
-                            <?php echo htmlspecialchars($option); ?>
-                        </option>
-                    <?php endforeach; ?>
+                    ${changeFreqOptionsHtml}
                 </select>
             </td>
             <td><button type="button" class="remove-row">Entfernen</button></td>
@@ -348,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Hilfsfunktion für HTML-Escaping in JavaScript (da PHP htmlspecialchars nicht direkt in JS verwendet werden kann)
+    // Hilfsfunktion für HTML-Escaping in JavaScript
     function htmlspecialchars(str) {
         var div = document.createElement('div');
         div.appendChild(document.createTextNode(str));
