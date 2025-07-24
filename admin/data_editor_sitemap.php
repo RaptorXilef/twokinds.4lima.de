@@ -46,6 +46,10 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $sitemapConfigPath = __DIR__ . '/../src/components/sitemap.json';
+// Basisverzeichnis für die Pfadprüfung (das Root-Verzeichnis der Website)
+// Annahme: admin/sitemap_editor.php ist unter <webroot>/admin/sitemap_editor.php
+// Daher ist das Webroot zwei Ebenen über dem aktuellen Skript
+$webRootPath = realpath(__DIR__ . '/../..');
 
 // Setze Parameter für den Header.
 $pageTitle = 'Sitemap Editor';
@@ -67,7 +71,7 @@ function loadSitemapConfig(string $path): array {
         return ['pages' => []]; // Leeres Array im Fehlerfall
     }
     return $config;
-    }
+}
 
 // Funktion zum Speichern der Sitemap-Konfiguration
 function saveSitemapConfig(string $path, array $config): bool {
@@ -81,6 +85,23 @@ function saveSitemapConfig(string $path, array $config): bool {
         return false;
     }
     return true;
+}
+
+// Funktion zur Prüfung der Dateiexistenz
+function checkFileExists(string $relativePath, string $basePath): bool {
+    // Entferne führenden Slash für relative Pfade (außer wenn es nur ein Slash ist)
+    $normalizedPath = ltrim($relativePath, '/');
+    // Konstruiere den absoluten Pfad zur Datei
+    $fullPath = realpath($basePath . '/' . $normalizedPath);
+
+    // Prüfe, ob der Pfad existiert und ob er unterhalb des Webroots liegt
+    if ($fullPath && str_starts_with($fullPath, $basePath)) {
+        // file_exists funktioniert für Dateien und Verzeichnisse, wir brauchen es aber nur für "Dateien"
+        // In diesem Kontext geht es um URLs, die typischerweise auf Dateien (oder index.php etc.) zeigen.
+        // Ein einfaches file_exists() ist hier ausreichend.
+        return file_exists($fullPath);
+    }
+    return false;
 }
 
 // Standardoptionen für Change Frequency und Priority
@@ -139,8 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_sitemap_config']
 // Lade die aktuelle Konfiguration für die Anzeige
 $sitemapConfig = loadSitemapConfig($sitemapConfigPath);
 
-// Sortiere die geladenen Seiten: primär nach Priorität (absteigend), sekundär nach Name (aufsteigend)
+// Hier die Existenzprüfung für jede Seite hinzufügen
 if (isset($sitemapConfig['pages']) && is_array($sitemapConfig['pages'])) {
+    foreach ($sitemapConfig['pages'] as &$page) { // Referenz (&) verwenden, um das Array direkt zu modifizieren
+        $page['exists'] = checkFileExists($page['path'], $webRootPath);
+    }
+    unset($page); // Referenz aufheben
+
+    // Sortiere die geladenen Seiten: primär nach Priorität (absteigend), sekundär nach Name (aufsteigend)
     usort($sitemapConfig['pages'], function($a, $b) {
         // Priorität vergleichen (absteigend)
         $priorityComparison = $b['priority'] <=> $a['priority'];
@@ -260,6 +287,22 @@ if (file_exists($headerPath)) {
         border-color: #f5c6cb;
         background-color: #f8d7da;
     }
+
+    /* Neue Stile für Existenzprüfung */
+    .status-icon {
+        font-size: 1.2em;
+        font-weight: bold;
+        text-align: center;
+        width: 100%;
+        display: block; /* Zentriert das Symbol */
+    }
+    .status-icon.exists {
+        color: #4CAF50; /* Grün */
+    }
+    .status-icon.not-exists {
+        color: #f44336; /* Rot */
+    }
+
     /* Dark Theme Anpassungen */
     body.theme-night .sitemap-table th {
         background-color: #48778a;
@@ -322,7 +365,7 @@ if (file_exists($headerPath)) {
         <table class="sitemap-table" id="sitemap-editor-table">
             <thead>
                 <tr>
-                    <th>Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
+                    <th>Existiert?</th> <th>Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
                     <th>Pfad <button type="button" class="sort-button" data-sort-by="path"><span class="sort-icon"></span></button></th>
                     <th>Priorität <button type="button" class="sort-button" data-sort-by="priority"><span class="sort-icon"></span></button></th>
                     <th>Änderungsfrequenz <button type="button" class="sort-button" data-sort-by="changefreq"><span class="sort-icon"></span></button></th>
@@ -333,6 +376,11 @@ if (file_exists($headerPath)) {
                 <?php if (!empty($sitemapConfig['pages'])): ?>
                     <?php foreach ($sitemapConfig['pages'] as $index => $page): ?>
                         <tr class="<?php echo (($index + 1) % 2 === 0) ? 'row-even' : 'row-odd'; ?>">
+                            <td class="file-status-cell">
+                                <span class="status-icon <?php echo $page['exists'] ? 'exists' : 'not-exists'; ?>" data-path="<?php echo htmlspecialchars($page['path']); ?>">
+                                    <?php echo $page['exists'] ? '&#10003;' : '&#10007;'; ?>
+                                </span>
+                            </td>
                             <td><input type="text" name="page_name[]" value="<?php echo htmlspecialchars($page['name']); ?>"></td>
                             <td><input type="text" name="page_path[]" value="<?php echo htmlspecialchars($page['path']); ?>"></td>
                             <td>
@@ -358,7 +406,7 @@ if (file_exists($headerPath)) {
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr id="no-entries-row">
-                        <td colspan="5" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>
+                        <td colspan="6" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -395,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Funktion zum Hinzufügen einer neuen Zeile
-    function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly'}) {
+    function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly', exists: false}) { // exists hinzugefügt
         // Wenn die "Keine Einträge vorhanden"-Zeile existiert, entfernen
         if (noEntriesRow && noEntriesRow.parentNode === tableBody) {
             noEntriesRow.remove();
@@ -416,7 +464,16 @@ document.addEventListener('DOMContentLoaded', function() {
             changeFreqOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
         });
 
+        // Bestimme die Klassen und Symbole für den Existenzstatus
+        const statusClass = page.exists ? 'exists' : 'not-exists';
+        const statusSymbol = page.exists ? '&#10003;' : '&#10007;';
+
         newRow.innerHTML = `
+            <td class="file-status-cell">
+                <span class="status-icon ${statusClass}" data-path="${htmlspecialchars(page.path)}">
+                    ${statusSymbol}
+                </span>
+            </td>
             <td><input type="text" name="page_name[]" value="${htmlspecialchars(page.name)}"></td>
             <td><input type="text" name="page_path[]" value="${htmlspecialchars(page.path)}"></td>
             <td>
@@ -443,7 +500,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tableBody.children.length === 0) {
                 const emptyRow = document.createElement('tr');
                 emptyRow.id = 'no-entries-row';
-                emptyRow.innerHTML = '<td colspan="5" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>';
+                // Spaltenanzahl für colspan angepasst
+                emptyRow.innerHTML = '<td colspan="6" style="text-align: center;">Keine Einträge vorhanden. Fügen Sie neue hinzu.</td>';
                 tableBody.appendChild(emptyRow);
             }
             updateRowStriping(); // Streifen nach dem Entfernen aktualisieren
@@ -455,47 +513,44 @@ document.addEventListener('DOMContentLoaded', function() {
         const rows = tableBody.querySelectorAll('tr');
         rows.forEach((row, index) => {
             if (row.id === 'no-entries-row') {
-                row.classList.remove('row-odd', 'row-even'); // Entferne Klassen, falls vorhanden
-                return; // Überspringe die "Keine Einträge"-Zeile
+                row.classList.remove('row-odd', 'row-even');
+                return;
             }
-            // Entferne alte Klassen und füge neue basierend auf dem Index hinzu
             row.classList.remove('row-odd', 'row-even');
-            if (index % 2 === 0) { // JavaScript-Indizes starten bei 0, also ist 0, 2, 4... gerade
-                row.classList.add('row-odd'); // Erste Zeile (Index 0) ist ungerade (optisch 1.)
+            if (index % 2 === 0) {
+                row.classList.add('row-odd');
             } else {
-                row.classList.add('row-even'); // Zweite Zeile (Index 1) ist gerade (optisch 2.)
+                row.classList.add('row-even');
             }
         });
     }
 
 
     let currentSortColumn = null;
-    let currentSortDirection = 'asc'; // 'asc' oder 'desc'
+    let currentSortDirection = 'asc';
 
     function sortTable(column) {
         const rows = Array.from(tableBody.querySelectorAll('tr:not(#no-entries-row)'));
 
-        // Wenn auf die gleiche Spalte geklickt wird, Richtung wechseln
         if (currentSortColumn === column) {
             currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
         } else {
-            // Neue Spalte, Standardrichtung
             currentSortColumn = column;
             if (column === 'priority') {
-                currentSortDirection = 'desc'; // Priorität: Hohe Prio zuerst
+                currentSortDirection = 'desc';
             } else if (column === 'changefreq') {
-                 currentSortDirection = 'asc'; // Änderungsfrequenz: Nach der $changeFreqOptions Reihenfolge
+                 currentSortDirection = 'asc';
+            } else if (column === 'exists') { // Neue Sortierlogik für Existenz
+                 currentSortDirection = 'desc'; // Standard: Existierende zuerst (grüner Haken oben)
             } else {
-                currentSortDirection = 'asc'; // Name, Pfad: Alphabetisch aufsteigend
+                currentSortDirection = 'asc';
             }
         }
 
-        // Alle Sortier-Icons zurücksetzen
         sortButtons.forEach(button => {
             button.classList.remove('asc', 'desc');
         });
 
-        // Aktuelles Sortier-Icon aktualisieren
         const currentButton = document.querySelector(`.sort-button[data-sort-by="${column}"]`);
         if (currentButton) {
             currentButton.classList.add(currentSortDirection);
@@ -506,6 +561,18 @@ document.addEventListener('DOMContentLoaded', function() {
             let valA, valB;
 
             switch (column) {
+                case 'exists': // Sortierung nach Existenz (Boolean-Wert)
+                    // Holen des 'exists'-Status. Da er nicht im Formularfeld ist, müssen wir ihn aus dem Symbol extrahieren.
+                    // Dies ist eine Näherung und nicht so robust wie direkt aus einem Datenfeld.
+                    // Für eine präzisere Sortierung müsste der 'exists'-Status in einem versteckten Input-Feld gespeichert werden,
+                    // oder die Daten direkt aus einem JavaScript-Array, das alle Seite-Objekte enthält, abgerufen werden.
+                    // Für diese Implementierung basieren wir auf der Klasse des Icons.
+                    const existsA = rowA.querySelector('.status-icon').classList.contains('exists');
+                    const existsB = rowB.querySelector('.status-icon').classList.contains('exists');
+                    // true (existiert) ist größer als false (existiert nicht) für numerischen Vergleich
+                    // Wir wollen 'exists' zuerst (true > false), also absteigend sortieren
+                    primaryComparisonResult = (currentSortDirection === 'asc') ? (existsA - existsB) : (existsB - existsA);
+                    break;
                 case 'name':
                     valA = rowA.querySelector('input[name="page_name[]"]').value;
                     valB = rowB.querySelector('input[name="page_name[]"]').value;
@@ -514,7 +581,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'path':
                     valA = rowA.querySelector('input[name="page_path[]"]').value;
                     valB = rowB.querySelector('input[name="page_path[]"]').value;
-                    // Sonderbehandlung für './' am Anfang
                     if (valA === './' && valB !== './') primaryComparisonResult = (currentSortDirection === 'asc') ? -1 : 1;
                     else if (valA !== './' && valB === './') primaryComparisonResult = (currentSortDirection === 'asc') ? 1 : -1;
                     else primaryComparisonResult = (currentSortDirection === 'asc') ? valA.localeCompare(valB, undefined, {sensitivity: 'base', numeric: true}) : valB.localeCompare(valA, undefined, {sensitivity: 'base', numeric: true});
@@ -522,18 +588,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'priority':
                     valA = parseFloat(rowA.querySelector('select[name="page_priority[]"]').value);
                     valB = parseFloat(rowB.querySelector('select[name="page_priority[]"]').value);
-                    primaryComparisonResult = (currentSortDirection === 'asc') ? valA - valB : valB - valA; // Numerische Sortierung
+                    primaryComparisonResult = (currentSortDirection === 'asc') ? valA - valB : valB - valA;
                     break;
                 case 'changefreq':
                     valA = rowA.querySelector('select[name="page_changefreq[]"]').value;
                     valB = rowB.querySelector('select[name="page_changefreq[]"]').value;
-                    // Sortierung basierend auf der vordefinierten Reihenfolge
                     const orderA = changeFreqOrder[valA];
                     const orderB = changeFreqOrder[valB];
                     primaryComparisonResult = (currentSortDirection === 'asc') ? orderA - orderB : orderB - orderA;
                     break;
                 default:
-                    primaryComparisonResult = 0; // Sollte nicht passieren
+                    primaryComparisonResult = 0;
             }
 
             // Wenn primäre Sortierung gleich ist, dann nach Name sortieren (alphabetisch aufsteigend)
@@ -545,11 +610,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return primaryComparisonResult;
         });
 
-
-        // DOM aktualisieren
-        tableBody.innerHTML = ''; // Entferne alle aktuellen Zeilen
-        rows.forEach(row => tableBody.appendChild(row)); // Füge sortierte Zeilen hinzu
-        updateRowStriping(); // Zeilenstreifen neu anwenden
+        tableBody.innerHTML = '';
+        rows.forEach(row => tableBody.appendChild(row));
+        updateRowStriping();
     }
 
     // Event Listener für Sortier-Buttons
@@ -560,8 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Initialisierung: Wenn die Seite geladen wird, sortiert PHP bereits nach Priorität (desc) und Name (asc).
-    // Setze den Pfeil für diese initiale Sortierung.
+    // Initialisierung: PHP sortiert bereits nach Priorität (desc) und Name (asc).
     const initialSortButton = document.querySelector('.sort-button[data-sort-by="priority"]');
     if (initialSortButton) {
         initialSortButton.classList.add('desc');
@@ -569,13 +631,17 @@ document.addEventListener('DOMContentLoaded', function() {
         currentSortDirection = 'desc';
     }
 
-    // Initial die Zeilenstreifen anwenden (für die von PHP sortierte Tabelle)
     updateRowStriping();
 
     // Event Listener für "Neuen Eintrag hinzufügen" Button
     addEntryButton.addEventListener('click', function() {
         addRow();
     });
+
+    // Optional: Dateiexistenzprüfung im Frontend aktualisieren, wenn Pfad geändert wird (AJAX nötig)
+    // Dies ist komplexer und wird hier nicht direkt implementiert,
+    // da es einen Server-Request erfordern würde.
+    // Die aktuelle Implementierung prüft die Existenz nur beim Laden der Seite.
 });
 </script>
 
