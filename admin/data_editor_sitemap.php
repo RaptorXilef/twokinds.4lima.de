@@ -46,10 +46,11 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $sitemapConfigPath = __DIR__ . '/../src/components/sitemap.json';
-// Basisverzeichnis für die Pfadprüfung (das Root-Verzeichnis der Website)
-// Annahme: admin/sitemap_editor.php ist unter <webroot>/admin/sitemap_editor.php
-// Daher ist das Webroot zwei Ebenen über dem aktuellen Skript
-$webRootPath = realpath(__DIR__ . '/../..');
+
+// Bestimme das Webroot-Verzeichnis
+// Wenn sitemap_editor.php unter <webroot>/admin/sitemap_editor.php liegt,
+// dann ist das Webroot eine Ebene über dem aktuellen Skript.
+$webRootPath = realpath(__DIR__ . '/../');
 
 // Setze Parameter für den Header.
 $pageTitle = 'Sitemap Editor';
@@ -87,19 +88,64 @@ function saveSitemapConfig(string $path, array $config): bool {
     return true;
 }
 
-// Funktion zur Prüfung der Dateiexistenz
-function checkFileExists(string $relativePath, string $basePath): bool {
-    // Entferne führenden Slash für relative Pfade (außer wenn es nur ein Slash ist)
-    $normalizedPath = ltrim($relativePath, '/');
-    // Konstruiere den absoluten Pfad zur Datei
-    $fullPath = realpath($basePath . '/' . $normalizedPath);
-
-    // Prüfe, ob der Pfad existiert und ob er unterhalb des Webroots liegt
-    if ($fullPath && str_starts_with($fullPath, $basePath)) {
-        return file_exists($fullPath);
+/**
+ * Funktion zur Prüfung der Dateiexistenz eines Pfades relativ zum Webroot,
+ * basierend auf dem Basis-Pfad aus der Sitemap (z.B. './') und dem Dateinamen.
+ *
+ * @param string $sitemapBasePath Der relative Basis-Pfad aus der Sitemap (z.B. './' oder 'bilder/')
+ * @param string $fileName Der Dateiname (z.B. 'index.php' oder 'about.php')
+ * @param string $webRootPath Das absolute Webroot-Verzeichnis
+ * @return bool True, wenn die Datei existiert, false sonst.
+ */
+function checkFileExists(string $sitemapBasePath, string $fileName, string $webRootPath): bool {
+    // Kombiniere sitemapBasePath und fileName, um den vollständigen relativen Pfad zu erhalten
+    // Normalisiere sitemapBasePath, um sicherzustellen, dass es einen nachgestellten Slash hat, wenn es nicht leer ist
+    $normalizedSitemapBasePath = rtrim($sitemapBasePath, '/\\'); // Entferne trailing slashes
+    if (!empty($normalizedSitemapBasePath) && $normalizedSitemapBasePath !== '.') { // Außer wenn es nur '.' ist
+        $normalizedSitemapBasePath .= '/';
+    } elseif ($normalizedSitemapBasePath === '.') {
+        $normalizedSitemapBasePath = ''; // Wenn nur '.', dann ist der Pfad direkt im Webroot
     }
+
+    $fullRelativePath = $normalizedSitemapBasePath . $fileName;
+
+    // Spezieller Fall für das Root-Verzeichnis, wenn nur './' oder leer als $fileName gegeben ist
+    // Dies sollte nur passieren, wenn name auch leer ist oder "index.php" oder so
+    if (empty($fileName) || $fileName === '.' || $fileName === './' || $fullRelativePath === './' || empty($fullRelativePath)) {
+        // Prüfe auf gängige Index-Dateien im Webroot
+        $indexFiles = ['index.php', 'index.html', 'index.htm'];
+        foreach ($indexFiles as $indexFile) {
+            $testPath = realpath($webRootPath . '/' . $indexFile);
+            if ($testPath && is_file($testPath) && str_starts_with($testPath, $webRootPath)) {
+                return true;
+            }
+        }
+        return false; // Keine Index-Datei im Root gefunden
+    }
+
+
+    // Versuche den vollständigen absoluten Pfad zu ermitteln
+    $absolutePath = realpath($webRootPath . '/' . $fullRelativePath);
+
+    // Prüfe, ob die Datei existiert und ob der Pfad innerhalb des Webroots liegt
+    if ($absolutePath && is_file($absolutePath) && str_starts_with($absolutePath, $webRootPath)) {
+        return true;
+    }
+
+    // Wenn der fileName keine Endung hat (schöne URLs), versuchen wir gängige Endungen anzuhängen
+    if (!str_contains($fileName, '.')) {
+        $potentialExtensions = ['.php', '.html', '.htm'];
+        foreach ($potentialExtensions as $extension) {
+            $testFullPath = realpath($webRootPath . '/' . $fullRelativePath . $extension);
+            if ($testFullPath && is_file($testFullPath) && str_starts_with($testFullPath, $webRootPath)) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
+
 
 // Standardoptionen für Change Frequency und Priority
 $changeFreqOptions = ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'];
@@ -160,7 +206,8 @@ $sitemapConfig = loadSitemapConfig($sitemapConfigPath);
 // Hier die Existenzprüfung für jede Seite hinzufügen
 if (isset($sitemapConfig['pages']) && is_array($sitemapConfig['pages'])) {
     foreach ($sitemapConfig['pages'] as &$page) { // Referenz (&) verwenden, um das Array direkt zu modifizieren
-        $page['exists'] = checkFileExists($page['path'], $webRootPath);
+        // Angepasster Aufruf von checkFileExists
+        $page['exists'] = checkFileExists($page['path'], $page['name'], $webRootPath);
     }
     unset($page); // Referenz aufheben
 
@@ -380,10 +427,11 @@ if (file_exists($headerPath)) {
         <table class="sitemap-table" id="sitemap-editor-table">
             <thead>
                 <tr>
-                    <th title="Existiert die Datei?">&#10003; / &#10007;</th> <th title="Dateiname der PHP, HTML oder HTM Datei">Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
+                    <th title="Existiert die Datei?">&#10003; / &#10007;</th>
+                    <th title="Dateiname der PHP, HTML oder HTM Datei">Name <button type="button" class="sort-button" data-sort-by="name"><span class="sort-icon"></span></button></th>
                     <th title="Dateipfad, relativ zum Hauptverzeichnis ./">Pfad <button type="button" class="sort-button" data-sort-by="path"><span class="sort-icon"></span></button></th>
                     <th title="Priorität (1.0=hoch; 0.5=normal; 0.1=niedrig)">Priorität <button type="button" class="sort-button" data-sort-by="priority"><span class="sort-icon"></span></button></th>
-                    <th title="Änderungsfrequenz der Datei">Änderung <button type="button" class="sort-button" data-sort-by="changefreq"><span class="sort-icon"></span></button></th>
+                    <th title="Änderungsfrequenz der Datei">Änderungsfrequenz <button type="button" class="sort-button" data-sort-by="changefreq"><span class="sort-icon"></span></button></th>
                     <th title="Aktion">Aktion</th>
                 </tr>
             </thead>
@@ -392,7 +440,7 @@ if (file_exists($headerPath)) {
                     <?php foreach ($sitemapConfig['pages'] as $index => $page): ?>
                         <tr class="<?php echo (($index + 1) % 2 === 0) ? 'row-even' : 'row-odd'; ?>">
                             <td class="file-status-cell">
-                                <span class="status-icon <?php echo $page['exists'] ? 'exists' : 'not-exists'; ?>" data-path="<?php echo htmlspecialchars($page['path']); ?>">
+                                <span class="status-icon <?php echo $page['exists'] ? 'exists' : 'not-exists'; ?>" data-path="<?php echo htmlspecialchars($page['name']); ?>">
                                     <?php echo $page['exists'] ? '&#10003;' : '&#10007;'; ?>
                                 </span>
                             </td>
@@ -464,6 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Funktion zum Hinzufügen einer neuen Zeile
+    // `page` Objekt ist jetzt so strukturiert, wie es vom PHP kommt
     function addRow(page = {name: '', path: './', priority: '0.5', changefreq: 'monthly', exists: false}) {
         // Wenn die "Keine Einträge vorhanden"-Zeile existiert, entfernen
         if (noEntriesRow && noEntriesRow.parentNode === tableBody) {
@@ -474,6 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let priorityOptionsHtml = '';
         priorityOptions.forEach(option => {
+            // Vergleich als Float für korrekte Auswahl
             const selected = (parseFloat(page.priority) === parseFloat(option)) ? 'selected' : '';
             priorityOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
         });
@@ -484,13 +534,13 @@ document.addEventListener('DOMContentLoaded', function() {
             changeFreqOptionsHtml += `<option value="${htmlspecialchars(option)}" ${selected}>${htmlspecialchars(option)}</option>`;
         });
 
-        // Bestimme die Klassen und Symbole für den Existenzstatus
+        // Bestimme die Klassen und Symbole für den Existenzstatus basierend auf page.exists
         const statusClass = page.exists ? 'exists' : 'not-exists';
         const statusSymbol = page.exists ? '&#10003;' : '&#10007;';
 
         newRow.innerHTML = `
             <td class="file-status-cell">
-                <span class="status-icon ${statusClass}" data-path="${htmlspecialchars(page.path)}">
+                <span class="status-icon ${statusClass}" data-path="${htmlspecialchars(page.name)}">
                     ${statusSymbol}
                 </span>
             </td>
@@ -519,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     tableBody.addEventListener('click', function(event) {
-        if (event.target.closest('.remove-row')) { // closest() verwenden, da Klick auch auf SVG-Path gehen könnte
+        if (event.target.closest('.remove-row')) {
             event.target.closest('tr').remove();
             if (tableBody.children.length === 0) {
                 const emptyRow = document.createElement('tr');
@@ -558,10 +608,10 @@ document.addEventListener('DOMContentLoaded', function() {
             currentSortDirection = (currentSortDirection === 'asc') ? 'desc' : 'asc';
         } else {
             currentSortColumn = column;
-            if (column === 'priority' || column === 'exists') { // Standard: Existierende und hohe Prio zuerst
+            if (column === 'priority' || column === 'exists') {
                 currentSortDirection = 'desc';
             } else if (column === 'changefreq') {
-                currentSortDirection = 'asc';
+                 currentSortDirection = 'asc';
             } else {
                 currentSortDirection = 'asc';
             }
