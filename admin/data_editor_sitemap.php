@@ -651,14 +651,14 @@ if (file_exists($headerPath)) {
         </div>
         <div class="collapsible-content">
             <p class="path-hint">Pfade sollten relativ zum Hauptverzeichnis beginnen, z.B.
-                <code>./meine-seite.php</code> oder <code>./ordner/datei.html</code>.
-            </p>
+                <code>./meine-seite.php</code> oder <code>./ordner/datei.html</code>. Ein fehlendes <code>./</code> wird
+                automatisch ergänzt.</p>
             <div class="sitemap-table-container">
                 <table class="sitemap-table" id="sitemap-table">
                     <thead>
                         <tr>
                             <th title="Hacken = Datei ist vorhanden; Kreuz = Datei fehlt">&#10003; / &#10007;</th>
-                            <th title="Dateipfad, relativ zum Hauptverzeichnis ./">Loc (Pfad)</th>
+                            <th title="Dateipfad, relativ zum Hauptverzeichnis ./">Pfad/Name (Loc)</th>
                             <th title="Priorität (1.0=hoch; 0.5=normal; 0.1=niedrig)">Priorität</th>
                             <th title="Änderungsfrequenz der Datei">Änderungsfrequenz</th>
                             <th>Aktionen</th>
@@ -690,13 +690,11 @@ if (file_exists($headerPath)) {
                                     </td>
                                     <td>
                                         <div class="editable-field" data-field="loc" contenteditable="true">
-                                            <?php echo htmlspecialchars($page['loc']); ?>
-                                        </div>
+                                            <?php echo htmlspecialchars($page['loc']); ?></div>
                                     </td>
                                     <td>
                                         <div class="editable-field" data-field="priority" contenteditable="true">
-                                            <?php echo htmlspecialchars($page['priority']); ?>
-                                        </div>
+                                            <?php echo htmlspecialchars($page['priority']); ?></div>
                                     </td>
                                     <td>
                                         <div class="editable-field select-field" data-field="changefreq"
@@ -736,7 +734,7 @@ if (file_exists($headerPath)) {
                 <table class="comic-table" id="comic-table">
                     <thead>
                         <tr>
-                            <th title="Dateipfad, relativ zum Hauptverzeichnis ./comic/">Loc (Pfad)</th>
+                            <th title="Dateipfad, relativ zum Hauptverzeichnis ./comic/">Pfad/Name (Loc)</th>
                             <th title="Priorität (1.0=hoch; 0.5=normal; 0.1=niedrig)">Priorität</th>
                             <th title="Änderungsfrequenz der Datei">Änderungsfrequenz</th>
                             <th>Aktionen</th>
@@ -757,13 +755,11 @@ if (file_exists($headerPath)) {
                                     data-name="<?php echo htmlspecialchars($filename); ?>">
                                     <td>
                                         <div class="editable-field" data-field="loc" contenteditable="true">
-                                            <?php echo htmlspecialchars($filename); ?>
-                                        </div>
+                                            <?php echo htmlspecialchars($filename); ?></div>
                                     </td>
                                     <td>
                                         <div class="editable-field" data-field="priority" contenteditable="true">
-                                            <?php echo htmlspecialchars($page['priority']); ?>
-                                        </div>
+                                            <?php echo htmlspecialchars($page['priority']); ?></div>
                                     </td>
                                     <td>
                                         <div class="editable-field select-field" data-field="changefreq"
@@ -856,20 +852,37 @@ if (file_exists($headerPath)) {
             });
         });
 
-        // Function to normalize path input (add ./ if missing)
+        // --- Globale Datenhaltung für alle Sitemap-Einträge ---
+        // Initialisierung der Daten aus PHP
+        const initialGeneralPages = <?php echo json_encode($generalPages, JSON_UNESCAPED_SLASHES); ?>;
+        // Achtung: $comicPages ist ein assoziatives Array (PHP), json_encode macht es zu einem Objekt.
+        // Für JS-Array-Methoden besser zu einem numerisch indizierten Array konvertieren.
+        const initialComicPages = <?php echo json_encode(array_values($comicPages), JSON_UNESCAPED_SLASHES); ?>;
+
+        let allSitemapPages = [...initialGeneralPages, ...initialComicPages];
+        // Map für schnellen Zugriff und Aktualisierung nach 'loc'
+        const sitemapMap = new Map();
+        allSitemapPages.forEach(page => sitemapMap.set(page.loc, page));
+
+        // Funktion zur Normalisierung des Pfad-Inputs (fügt './' hinzu, falls fehlt)
         function normalizePathInput(value) {
             let processedValue = value.trim();
-            if (processedValue && !processedValue.startsWith('./') && !processedValue.startsWith('/')) {
-                // Prepend './' if it doesn't start with './' or '/'
-                processedValue = './' + processedValue;
-            } else if (processedValue.startsWith('/')) {
-                // Convert /path to ./path
+            // Wenn es mit einem Laufwerksbuchstaben (z.B. C:/) beginnt, als absoluten Pfad annehmen und nicht ändern
+            if (/^[a-zA-Z]:[\\\/]/.test(processedValue)) {
+                return processedValue;
+            }
+            // Wenn es mit '/' beginnt, in './' umwandeln
+            if (processedValue.startsWith('/')) {
                 processedValue = '.' + processedValue;
+            }
+            // Wenn es nicht mit './' beginnt, './' voranstellen
+            else if (!processedValue.startsWith('./')) {
+                processedValue = './' + processedValue;
             }
             return processedValue;
         }
 
-        // Event Delegation for editable fields (both tables)
+        // Event Delegation für bearbeitbare Felder (beide Tabellen)
         $(document).on('click', '.editable-field:not(.select-field)', function () {
             if (!$(this).hasClass('editing')) {
                 $(this).addClass('editing').focus();
@@ -877,62 +890,155 @@ if (file_exists($headerPath)) {
             }
         });
 
-        $(document).on('blur', '.editable-field[data-field="loc"]', function () {
-            // Apply normalization only to 'loc' fields
-            const originalValue = $(this).text();
-            const newValue = normalizePathInput(originalValue);
-            if (newValue !== originalValue) {
-                $(this).text(newValue);
+        // Spezielle Logik für 'loc' Felder in der allgemeinen Sitemap-Tabelle (inkl. Normalisierung und Map-Update)
+        $(document).on('blur', '#sitemap-table .editable-field[data-field="loc"]', function () {
+            const $this = $(this);
+            const $row = $this.closest('tr');
+            const oldLoc = $row.data('original-loc');
+            const newLocRaw = $this.text().trim();
+            const newLoc = normalizePathInput(newLocRaw);
+
+            if (newLoc !== oldLoc) {
+                // Angezeigten Text aktualisieren
+                $this.text(newLoc);
+
+                // Daten im Map aktualisieren
+                if (sitemapMap.has(oldLoc)) {
+                    const pageData = sitemapMap.get(oldLoc);
+                    sitemapMap.delete(oldLoc); // Alten Eintrag entfernen
+
+                    pageData.loc = newLoc; // 'loc' Eigenschaft aktualisieren
+                    pageData.name = newLoc.substring(newLoc.lastIndexOf('/') + 1); // 'name' ableiten
+                    let path = newLoc.substring(0, newLoc.lastIndexOf('/') + 1);
+                    if (path === '') path = './';
+                    pageData.path = path; // 'path' ableiten
+
+                    sitemapMap.set(newLoc, pageData); // Neuen Eintrag mit neuem Schlüssel hinzufügen
+                    $row.data('original-loc', newLoc); // data-Attribut der Zeile aktualisieren
+                    $row.data('name', pageData.name); // data-name aktualisieren
+                    $row.data('path', pageData.path); // data-path aktualisieren
+                }
             }
-            $(this).removeClass('editing');
+            $this.removeClass('editing');
         });
 
+        // Logik für 'loc' Felder in der Comic-Sitemap-Tabelle (nur Dateiname, kein './' Präfix)
+        $(document).on('blur', '#comic-table .editable-field[data-field="loc"]', function () {
+            const $this = $(this);
+            const $row = $this.closest('tr');
+            const oldLoc = $row.data('original-loc'); // Dies ist der volle Pfad ./comic/YYYYMMDD.php
+            const newFilename = $this.text().trim(); // Der Benutzer bearbeitet nur den Dateinamen
+
+            // Den vollständigen neuen Loc-Pfad zusammensetzen
+            const newLoc = './comic/' + newFilename;
+
+            if (newLoc !== oldLoc) {
+                // Angezeigten Text aktualisieren (sollte schon der neue Dateiname sein)
+                $this.text(newFilename);
+
+                // Daten im Map aktualisieren
+                if (sitemapMap.has(oldLoc)) {
+                    const pageData = sitemapMap.get(oldLoc);
+                    sitemapMap.delete(oldLoc); // Alten Eintrag entfernen
+
+                    pageData.loc = newLoc; // 'loc' Eigenschaft aktualisieren
+                    pageData.name = newFilename; // 'name' ist der Dateiname
+                    pageData.path = './comic/'; // 'path' bleibt fest
+
+                    sitemapMap.set(newLoc, pageData); // Neuen Eintrag mit neuem Schlüssel hinzufügen
+                    $row.data('original-loc', newLoc); // data-Attribut der Zeile aktualisieren
+                    $row.data('name', pageData.name); // data-name aktualisieren
+                }
+            }
+            $this.removeClass('editing');
+        });
+
+
+        // Für andere bearbeitbare Felder (nicht 'loc' und nicht Select)
         $(document).on('blur', '.editable-field:not(.select-field):not([data-field="loc"])', function () {
-            // For other editable fields, just remove editing class
-            $(this).removeClass('editing');
+            const $this = $(this);
+            const $row = $this.closest('tr');
+            const loc = $row.data('original-loc'); // Schlüssel für den Map-Eintrag
+            const field = $this.data('field');
+            let value = $this.text().trim();
+
+            if (field === 'priority') {
+                value = parseFloat(value) || 0.5;
+                $this.text(value); // Sicherstellen, dass der angezeigte Wert numerisch ist
+            }
+
+            if (sitemapMap.has(loc)) {
+                sitemapMap.get(loc)[field] = value;
+            }
+            $this.removeClass('editing');
         });
 
-        // Event Delegation for select fields (both tables)
+        // Event Delegation für Select-Felder (beide Tabellen)
         $(document).on('click', '.editable-field.select-field', function () {
             const $div = $(this);
             const $select = $div.find('select');
 
-            // Hide div text, show select
+            // Div-Text ausblenden, Select anzeigen
             $div.text('');
             $select.show().focus();
             $div.addClass('editing');
 
             $select.off('change').on('change', function () {
-                $div.text($(this).val());
-                $select.hide();
-                $div.removeClass('editing');
+                const $selectChanged = $(this);
+                const $divParent = $selectChanged.parent();
+                const $row = $selectChanged.closest('tr');
+                const loc = $row.data('original-loc');
+                const field = $divParent.data('field');
+                const value = $selectChanged.val();
+
+                $divParent.text(value);
+                $selectChanged.hide();
+                $divParent.removeClass('editing');
+
+                if (sitemapMap.has(loc)) {
+                    sitemapMap.get(loc)[field] = value;
+                }
             });
 
             $select.off('blur').on('blur', function () {
-                // If blurred without changing, restore original text or current selected value
-                if ($div.text() === '') { // If div is empty because select was shown
-                    $div.text($(this).val());
+                const $selectBlurred = $(this);
+                const $divParent = $selectBlurred.parent();
+                // Wenn Div leer ist, weil Select angezeigt wurde, den aktuell ausgewählten Wert wiederherstellen
+                if ($divParent.text() === '') {
+                    $divParent.text($selectBlurred.val());
                 }
-                $select.hide();
-                $div.removeClass('editing');
+                $selectBlurred.hide();
+                $divParent.removeClass('editing');
             });
         });
 
 
-        // Add row to general sitemap table
+        // Zeile zur allgemeinen Sitemap-Tabelle hinzufügen
         $('.add-row-btn').on('click', function () {
             const tableBody = $('#sitemap-table tbody');
             const noDataRow = tableBody.find('.no-data-row');
             if (noDataRow.length) {
                 noDataRow.remove();
             }
+            // Temporäre eindeutige ID für neue Zeile generieren
+            const newTempLoc = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const newPage = {
+                loc: newTempLoc, // Temporärer loc
+                name: '',
+                path: './',
+                priority: 0.5,
+                changefreq: 'weekly'
+            };
+            sitemapMap.set(newPage.loc, newPage); // Zum Map hinzufügen
+            allSitemapPages = Array.from(sitemapMap.values()); // Array neu aufbauen
+
             const newRow = `
-            <tr data-original-loc="" data-path="./" data-name="">
+            <tr data-original-loc="${newPage.loc}" data-path="${newPage.path}" data-name="${newPage.name}">
                 <td><i class="fas fa-question-circle" style="color: gray;"></i></td>
                 <td><div class="editable-field" data-field="loc" contenteditable="true"></div></td>
-                <td><div class="editable-field" data-field="priority" contenteditable="true">0.5</div></td>
+                <td><div class="editable-field" data-field="priority" contenteditable="true">${newPage.priority}</div></td>
                 <td>
-                    <div class="editable-field select-field" data-field="changefreq" contenteditable="false">weekly
+                    <div class="editable-field select-field" data-field="changefreq" contenteditable="false">${newPage.changefreq}
                         <select style="display:none;">
                             <option value="always">always</option>
                             <option value="hourly">hourly</option>
@@ -950,15 +1056,21 @@ if (file_exists($headerPath)) {
             </tr>
         `;
             tableBody.append(newRow);
-            // Focus the new 'loc' field
+            // Fokus auf das neue 'loc'-Feld setzen
             tableBody.find('tr:last .editable-field[data-field="loc"]').click();
         });
 
-        // Delete row from either table
+        // Zeile aus einer der Tabellen löschen
         $(document).on('click', '.delete-row-btn', function () {
             const row = $(this).closest('tr');
-            row.remove();
-            // Check if the table is empty and re-add no-data-row if necessary
+            const locToDelete = row.data('original-loc');
+
+            sitemapMap.delete(locToDelete); // Aus dem Daten-Speicher entfernen
+            allSitemapPages = Array.from(sitemapMap.values()); // Array neu aufbauen
+
+            row.remove(); // Aus dem DOM entfernen
+
+            // Prüfen, ob die Tabelle leer ist und ggf. 'no-data-row' wieder hinzufügen
             if ($('#sitemap-table tbody tr').length === 0) {
                 $('#sitemap-table tbody').append('<tr class="no-data-row"><td colspan="5" style="text-align: center;">Keine allgemeinen Sitemap-Einträge vorhanden.</td></tr>');
             }
@@ -967,63 +1079,21 @@ if (file_exists($headerPath)) {
             }
         });
 
-        // Save all changes
+        // Alle Änderungen speichern
         $('#save-all-btn').on('click', function () {
-            const allPages = [];
-
-            // Collect data from General Sitemap Table
-            $('#sitemap-table tbody tr').each(function () {
-                if ($(this).hasClass('no-data-row')) return;
-
-                // Apply normalization one last time before collecting for save
-                const locRaw = $(this).find('[data-field="loc"]').text().trim();
-                const loc = normalizePathInput(locRaw);
-
-                if (loc) { // Only add if loc is not empty
-                    const name = loc.substring(loc.lastIndexOf('/') + 1); // Extract filename from loc
-                    let path = loc.substring(0, loc.lastIndexOf('/') + 1); // Extract path from loc
-                    if (path === '') path = './'; // If root, set to ./
-
-                    allPages.push({
-                        loc: loc,
-                        name: name, // Derived name
-                        path: path, // Derived path
-                        priority: parseFloat($(this).find('[data-field="priority"]').text()) || 0.5,
-                        changefreq: $(this).find('[data-field="changefreq"] select').val() || $(this).find('[data-field="changefreq"]').text().trim() || 'weekly'
-                    });
-                }
-            });
-
-            // Collect data from Comic Sitemap Table
-            $('#comic-table tbody tr').each(function () {
-                if ($(this).hasClass('no-data-row')) return;
-
-                // For Comic-pages, 'loc' field in HTML holds the filename (e.g., 20250724.php)
-                const name = $(this).find('[data-field="loc"]').text().trim();
-                const path = './comic/'; // Fixed path for comic pages
-                const loc = path + name; // Reconstruct full loc
-
-                if (name) { // Only add if filename is not empty
-                    allPages.push({
-                        loc: loc,
-                        name: name, // 'name' is the filename
-                        path: path, // 'path' is fixed './comic/'
-                        priority: parseFloat($(this).find('[data-field="priority"]').text()) || 0.8,
-                        changefreq: $(this).find('[data-field="changefreq"] select').val() || $(this).find('[data-field="changefreq"]').text().trim() || 'never'
-                    });
-                }
-            });
+            // Filtere temporäre Einträge, die nicht bearbeitet wurden (loc ist immer noch 'temp_...')
+            const pagesToSave = Array.from(sitemapMap.values()).filter(page => !page.loc.startsWith('temp_') || page.name !== '');
 
             $.ajax({
-                url: window.location.href, // Send to the same PHP script
+                url: window.location.href, // An dasselbe PHP-Skript senden
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ pages: allPages }),
+                data: JSON.stringify({ pages: pagesToSave }), // Alle gesammelten Daten senden
                 success: function (response) {
                     if (response.status === 'success') {
                         showMessage(response.message, 'success');
-                        // Optional: Seite neu laden, um die aktualisierten Daten anzuzeigen
-                        // window.location.reload();
+                        // Seite neu laden, um gespeicherte Änderungen und neue temporäre IDs zu reflektieren
+                        window.location.reload();
                     } else {
                         showMessage(response.message, 'error');
                     }
