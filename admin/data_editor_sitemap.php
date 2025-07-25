@@ -318,7 +318,6 @@ foreach ($foundComicFiles as $filename) {
 }
 
 // Sortiere comicPages alphabetisch nach 'loc' (was dem Dateinamen entspricht, da path gleich ist)
-// Dies wird beibehalten, da das Frontend keine eigene Sortierung mehr hat
 ksort($comicPages);
 
 // --- Paginierungslogik für Comic-Tabelle ---
@@ -638,6 +637,46 @@ if (file_exists($headerPath)) {
     body.theme-night .path-hint {
         color: #bbb;
     }
+
+    /* Styles for select-field to make it work as a native dropdown */
+    .editable-field.select-field {
+        position: relative;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        /* Remove ::after custom arrow if it was here */
+    }
+
+    .editable-field.select-field .changefreq-select {
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        border: 1px solid #eee;
+        /* Default light border */
+        border-radius: 3px;
+        font-size: inherit;
+        color: inherit;
+        padding: 5px;
+        box-sizing: border-box;
+        /* Re-enable native dropdown arrow */
+        -webkit-appearance: menulist;
+        -moz-appearance: menulist;
+        appearance: menulist;
+        background-color: #fff;
+        /* Default light theme background */
+    }
+
+    body.theme-night .editable-field.select-field .changefreq-select {
+        background-color: #005a7e;
+        /* Dark theme background */
+        border-color: #007bb5;
+        /* Dark theme border */
+        color: #fff;
+        /* Dark theme text color */
+    }
+
+    /* Remove .select-display-text and its styles */
+    /* Remove .editable-field.select-field::after styles */
 </style>
 
 <div class="admin-container">
@@ -700,10 +739,8 @@ if (file_exists($headerPath)) {
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="editable-field select-field" data-field="changefreq"
-                                            contenteditable="false">
-                                            <?php echo htmlspecialchars($page['changefreq']); ?>
-                                            <select style="display:none;">
+                                        <div class="editable-field select-field">
+                                            <select class="changefreq-select" data-field="changefreq">
                                                 <option value="always" <?php echo ($page['changefreq'] == 'always') ? 'selected' : ''; ?>>always</option>
                                                 <option value="hourly" <?php echo ($page['changefreq'] == 'hourly') ? 'selected' : ''; ?>>hourly</option>
                                                 <option value="daily" <?php echo ($page['changefreq'] == 'daily') ? 'selected' : ''; ?>>daily</option>
@@ -767,10 +804,8 @@ if (file_exists($headerPath)) {
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="editable-field select-field" data-field="changefreq"
-                                            contenteditable="false">
-                                            <?php echo htmlspecialchars($page['changefreq']); ?>
-                                            <select style="display:none;">
+                                        <div class="editable-field select-field">
+                                            <select class="changefreq-select" data-field="changefreq">
                                                 <option value="always" <?php echo ($page['changefreq'] == 'always') ? 'selected' : ''; ?>>always</option>
                                                 <option value="hourly" <?php echo ($page['changefreq'] == 'hourly') ? 'selected' : ''; ?>>hourly</option>
                                                 <option value="daily" <?php echo ($page['changefreq'] == 'daily') ? 'selected' : ''; ?>>daily</option>
@@ -979,42 +1014,22 @@ if (file_exists($headerPath)) {
         });
 
         // Event Delegation für Select-Felder (beide Tabellen)
-        $(document).on('click', '.editable-field.select-field', function () {
-            const $div = $(this);
-            const $select = $div.find('select');
+        // Das 'change'-Event des nativen Select-Elements wird direkt abgefangen
+        $(document).on('change', '.editable-field.select-field .changefreq-select', function () {
+            const $selectChanged = $(this);
+            const $divParent = $selectChanged.closest('.editable-field.select-field');
+            const $row = $selectChanged.closest('tr');
+            const loc = $row.data('original-loc');
+            const field = $selectChanged.data('field'); // data-field ist jetzt direkt auf dem select
 
-            // Div-Text ausblenden, Select anzeigen
-            $div.text('');
-            $select.show().focus();
-            $div.addClass('editing');
+            const value = $selectChanged.val();
 
-            $select.off('change').on('change', function () {
-                const $selectChanged = $(this);
-                const $divParent = $selectChanged.parent();
-                const $row = $selectChanged.closest('tr');
-                const loc = $row.data('original-loc');
-                const field = $divParent.data('field');
-                const value = $selectChanged.val();
+            // Update the displayed text in the select (which is now directly visible)
+            // No need to update a separate span, as the select itself is visible
 
-                $divParent.text(value);
-                $selectChanged.hide();
-                $divParent.removeClass('editing');
-
-                if (sitemapMap.has(loc)) {
-                    sitemapMap.get(loc)[field] = value;
-                }
-            });
-
-            $select.off('blur').on('blur', function () {
-                const $selectBlurred = $(this);
-                const $divParent = $selectBlurred.parent();
-                // Wenn Div leer ist, weil Select angezeigt wurde, den aktuell ausgewählten Wert wiederherstellen
-                if ($divParent.text() === '') {
-                    $divParent.text($selectBlurred.val());
-                }
-                $selectBlurred.hide();
-                $divParent.removeClass('editing');
-            });
+            if (sitemapMap.has(loc)) {
+                sitemapMap.get(loc)[field] = value;
+            }
         });
 
 
@@ -1043,8 +1058,8 @@ if (file_exists($headerPath)) {
                 <td><div class="editable-field" data-field="loc" contenteditable="true"></div></td>
                 <td><div class="editable-field" data-field="priority" contenteditable="true">${newPage.priority}</div></td>
                 <td>
-                    <div class="editable-field select-field" data-field="changefreq" contenteditable="false">${newPage.changefreq}
-                        <select style="display:none;">
+                    <div class="editable-field select-field">
+                        <select class="changefreq-select" data-field="changefreq">
                             <option value="always">always</option>
                             <option value="hourly">hourly</option>
                             <option value="daily">daily</option>
