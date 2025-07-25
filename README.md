@@ -13,7 +13,7 @@
   <!-- Pull Requests Badge (Beispiel, bitte anpassen) -->
   <img src="https://img.shields.io/github/issues-pr/RaptorXilef/twokinds.4lima.de.svg" alt="Pull Requests">
   <!-- Checks Badge (Beispiel, bitte anpassen, falls du CI/CD nutzt) -->
-  <img src="https://img.shields.io/github/checks-status/RaptorXilef/twokinds.4lima.de/main" alt="Checks Status">
+  <!--<img src="https://img.shields.io/github/checks-status/RaptorXilef/twokinds.4lima.de/main" alt="Checks Status">-->
   <br><img src="https://licensebuttons.net/l/by-nc/4.0/88x31.png" alt="CC BY-NC 4.0"></br>
 </p>
 
