@@ -652,7 +652,8 @@ if (file_exists($headerPath)) {
         <div class="collapsible-content">
             <p class="path-hint">Pfade sollten relativ zum Hauptverzeichnis beginnen, z.B.
                 <code>./meine-seite.php</code> oder <code>./ordner/datei.html</code>. Ein fehlendes <code>./</code> wird
-                automatisch ergänzt.</p>
+                automatisch ergänzt.
+            </p>
             <div class="sitemap-table-container">
                 <table class="sitemap-table" id="sitemap-table">
                     <thead>
@@ -690,11 +691,13 @@ if (file_exists($headerPath)) {
                                     </td>
                                     <td>
                                         <div class="editable-field" data-field="loc" contenteditable="true">
-                                            <?php echo htmlspecialchars($page['loc']); ?></div>
+                                            <?php echo htmlspecialchars($page['loc']); ?>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="editable-field" data-field="priority" contenteditable="true">
-                                            <?php echo htmlspecialchars($page['priority']); ?></div>
+                                            <?php echo htmlspecialchars($page['priority']); ?>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="editable-field select-field" data-field="changefreq"
@@ -755,11 +758,13 @@ if (file_exists($headerPath)) {
                                     data-name="<?php echo htmlspecialchars($filename); ?>">
                                     <td>
                                         <div class="editable-field" data-field="loc" contenteditable="true">
-                                            <?php echo htmlspecialchars($filename); ?></div>
+                                            <?php echo htmlspecialchars($filename); ?>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="editable-field" data-field="priority" contenteditable="true">
-                                            <?php echo htmlspecialchars($page['priority']); ?></div>
+                                            <?php echo htmlspecialchars($page['priority']); ?>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="editable-field select-field" data-field="changefreq"
