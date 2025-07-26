@@ -674,6 +674,8 @@ if (file_exists($headerPath)) {
         transition: max-height 0.3s ease-out;
         padding: 0 20px;
         /* Initial padding, will be adjusted when expanded */
+        display: block;
+        /* Sicherstellen, dass es nicht 'display: none' ist, wenn es von max-height gesteuert wird */
     }
 
     .collapsible-section.expanded .collapsible-content {
@@ -684,12 +686,16 @@ if (file_exists($headerPath)) {
         /* Restore top padding */
         padding-bottom: 20px;
         /* Restore bottom padding */
+        display: block !important;
+        /* Explizit sicherstellen, dass es sichtbar ist */
     }
 
     /* Spezifische Anpassung für den Bericht über fehlende Comic-Informationen */
     .report-section.collapsible-section.expanded .collapsible-content {
         max-height: 459800px;
         /* Sehr großer Wert für den Gesamtbericht */
+        display: block !important;
+        /* Explizit sicherstellen, dass es sichtbar ist */
     }
 
     /* Remove padding from the section classes themselves as it's now on collapsible-content */

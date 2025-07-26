@@ -109,7 +109,7 @@ function loadSitemapData(string $path, bool $debugMode): array
 {
     if ($debugMode)
         error_log("DEBUG: loadSitemapData() aufgerufen für: " . basename($path));
-    if (!file_exists($path)) {
+    if (!file_exists($path) || filesize($path) === 0) {
         if ($debugMode)
             error_log("DEBUG: Sitemap-JSON-Datei nicht gefunden: " . $path);
         return ['pages' => []];
@@ -607,6 +607,8 @@ if (file_exists($headerPath)) {
         overflow: hidden;
         transition: max-height 0.3s ease-out;
         padding: 0 20px;
+        display: block;
+        /* Sicherstellen, dass es nicht 'display: none' ist, wenn es von max-height gesteuert wird */
     }
 
     .collapsible-section.expanded .collapsible-content {
@@ -614,6 +616,8 @@ if (file_exists($headerPath)) {
         /* Adjust as needed for content */
         padding-top: 20px;
         padding-bottom: 20px;
+        display: block !important;
+        /* Explizit sicherstellen, dass es sichtbar ist */
     }
 
     .collapsible-section:not(.expanded) {

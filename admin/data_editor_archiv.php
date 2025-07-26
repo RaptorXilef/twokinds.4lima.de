@@ -824,12 +824,14 @@ $additionalHeadContent = <<<EOT
             overflow: hidden;
             transition: max-height 0.3s ease-out;
             padding: 0 20px; /* Initial padding, will be adjusted when expanded */
+            display: block; /* Sicherstellen, dass es nicht 'display: none' ist, wenn es von max-height gesteuert wird */
         }
 
         .collapsible-section.expanded .collapsible-content {
             max-height: 4800px; /* Sufficiently large to show content */
             padding-top: 20px; /* Restore top padding */
             padding-bottom: 20px; /* Restore bottom padding */
+            display: block !important; /* Explizit sicherstellen, dass es sichtbar ist */
         }
 
         /* Remove padding from the section classes themselves as it\'s now on collapsible-content */
@@ -938,19 +940,22 @@ $additionalHeadContent = <<<EOT
         button, .button {
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px; /* Changed to rounded corners */
             background-color: #007bff;
             color: white;
             font-size: 1em;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Added transform and box-shadow */
             text-decoration: none; /* Für .button Klasse */
             display: inline-block; /* Für .button Klasse */
             margin-left: 10px; /* Abstand zwischen Buttons */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Added shadow */
         }
 
         button:hover, .button:hover {
             background-color: #0056b3;
+            transform: translateY(-2px); /* Lift effect on hover */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
         }
 
         button.delete, .button.delete {
@@ -978,11 +983,15 @@ $additionalHeadContent = <<<EOT
             padding: 5px; /* Adjust padding for icon-only buttons */
             margin: 0 2px; /* Adjust margin */
             font-size: 1.1em; /* Make icons slightly larger */
+            box-shadow: none; /* Remove shadow for small buttons */
+            border-radius: 5px; /* Smaller rounded corners for table buttons */
         }
 
         .action-buttons button:hover {
             background-color: rgba(0, 123, 255, 0.1); /* Light hover background */
             border-color: #007bff; /* Add border on hover */
+            transform: none; /* No lift effect for small buttons */
+            box-shadow: none;
         }
 
         body.theme-night .action-buttons button {
