@@ -200,6 +200,12 @@
     const chapterLinksContainer =
       bookmarksSection.querySelector(".chapter-links");
 
+    // === NEU HINZUGEFÜGT: Füge die Klasse 'tag-page-links' hinzu ===
+    if (chapterLinksContainer) {
+      chapterLinksContainer.classList.add("tag-page-links");
+    }
+    // =============================================================
+
     const bookmarksSorted = new Map(
       [...bookmarkMap].sort((a, b) => b[1].id.localeCompare(a[1].id))
     ); // Sort descending by ID (newest first)
