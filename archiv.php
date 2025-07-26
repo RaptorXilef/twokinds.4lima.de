@@ -162,14 +162,15 @@ if ($debugMode)
         <?php foreach ($archiveChapters as $chapter):
             $chapterId = $chapter['chapterId'] ?? 'N/A';
             $chapterTitle = !empty(trim(strip_tags($chapter['title'] ?? '', '<b><i><u><p><br>'))) ? $chapter['title'] : 'Dieses Kapitel wird im Moment bearbeitet.';
-            $chapterDescription = !empty(trim(strip_tags($chapter['description'] ?? '', '<b><i><u><p><br>'))) ? $chapter['description'] : 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.';
+            $chapterDescription = $chapter['description'] ?? 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.';
             if ($debugMode)
                 error_log("DEBUG: Verarbeite Kapitel ID: {$chapterId} mit Titel: {$chapterTitle}");
             ?>
             <section class="chapter collapsible-section" data-ch-id="<?php echo htmlspecialchars($chapterId); ?>">
                 <h2 class="collapsible-header"><?php echo $chapterTitle; ?><span class="arrow-left jsdep"></span></h2>
+                <!-- Der P-Tag für die Beschreibung ist jetzt direkt unter h2 und außerhalb von .collapsible-content -->
+                <p><?php echo htmlspecialchars($chapterDescription); ?></p>
                 <div class="collapsible-content">
-                    <p><?php echo $chapterDescription; ?></p>
                     <aside class="chapter-links">
                         <?php
                         // Hole alle Comics, die diesem Kapitel zugeordnet sind
