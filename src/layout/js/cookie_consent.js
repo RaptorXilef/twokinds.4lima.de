@@ -16,7 +16,12 @@ const CONSENT_STORAGE_KEY = "cookie_consent";
 // Exponierte Funktion, um den Banner von außen aufrufen zu können (z.B. von der Datenschutzerklärung)
 window.showCookieBanner = showCookieBanner;
 
+// Globale Flag, um zu verfolgen, ob Google Analytics auf diesem Seitenaufruf bereits konfiguriert wurde.
+// Dies ist entscheidend, um den "expires" Fehler zu vermeiden.
+window.gaConfigured = false;
+
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("DEBUG: DOMContentLoaded fired in cookie_consent.js."); // DEBUG
   // Initialen Zustand des Banners überprüfen und ggf. anzeigen
   checkConsentAndDisplayBanner();
 
@@ -27,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (acceptAllBtn) {
     acceptAllBtn.addEventListener("click", () => {
+      console.log("DEBUG: 'Alle akzeptieren' Button geklickt."); // DEBUG
       setConsent({
         [COOKIE_CATEGORIES.NECESSARY]: true,
         [COOKIE_CATEGORIES.ANALYTICS]: true,
@@ -37,9 +43,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (rejectAllBtn) {
     rejectAllBtn.addEventListener("click", () => {
+      console.log("DEBUG: 'Alle ablehnen' Button geklickt."); // DEBUG
       setConsent({
         [COOKIE_CATEGORIES.NECESSARY]: true, // Notwendige immer akzeptieren
-        [COOKIE_CATEGORIES.ANALYTICS]: false,
+        [COOKIE_CATEGORIES.ANALYTIES]: false,
       });
       hideCookieBanner();
     });
@@ -47,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (savePreferencesBtn) {
     savePreferencesBtn.addEventListener("click", () => {
+      console.log("DEBUG: 'Einstellungen speichern' Button geklickt."); // DEBUG
       const analyticsCheckbox = document.getElementById("cookieAnalytics");
       setConsent({
         [COOKIE_CATEGORIES.NECESSARY]: true,
@@ -58,9 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // === NEU: Logik für einklappbare Details im Cookie-Banner ===
+  // === Logik für einklappbare Details im Cookie-Banner ===
   document.querySelectorAll(".toggle-details").forEach((toggle) => {
     toggle.addEventListener("click", () => {
+      console.log("DEBUG: Toggle-Details geklickt."); // DEBUG
       const targetId = toggle.dataset.target;
       const content = document.getElementById(targetId);
       const icon = toggle.querySelector(".toggle-icon");
@@ -74,21 +83,54 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-  // === ENDE NEU ===
+  // === ENDE Einklapp-Logik ===
+
+  // Überwache Theme-Wechsel, um den Banner-Stil anzupassen (falls der Banner sichtbar ist)
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === "class") {
+        const body = document.body;
+        const banner = document.getElementById("cookieConsentBanner");
+        if (banner && banner.style.display !== "none") {
+          // Hier könnte man explizit Klassen togglen, wenn cookie_banner_dark.css nicht ausreicht
+          // Aber da wir CSS-Regeln verwenden, die auf body.theme-night basieren,
+          // ist hier keine direkte JS-Aktion notwendig, solange der Banner sichtbar ist.
+        }
+      }
+    });
+  });
+
+  // Beobachte Änderungen der 'class'-Attribute am Body-Element
+  if (document.body) {
+    observer.observe(document.body, { attributes: true });
+  } else {
+    console.error("DEBUG: document.body nicht verfügbar für MutationObserver."); // DEBUG
+  }
 });
 
 /**
  * Überprüft den gespeicherten Consent-Status und zeigt den Banner bei Bedarf an.
  */
 function checkConsentAndDisplayBanner() {
+  console.log("DEBUG: checkConsentAndDisplayBanner() aufgerufen."); // DEBUG
   const consent = getConsent();
   if (consent === null) {
+    console.log("DEBUG: Kein Consent gefunden, zeige Cookie-Banner an."); // DEBUG
     // Banner anzeigen, wenn keine Entscheidung getroffen wurde
     showCookieBanner();
   } else {
+    console.log("DEBUG: Consent gefunden:", consent); // DEBUG
     // Google Analytics laden, wenn Analytics-Consent gegeben wurde
     if (consent[COOKIE_CATEGORIES.ANALYTICS]) {
+      console.log(
+        "DEBUG: Analytics-Consent ist TRUE, versuche Google Analytics zu laden."
+      ); // DEBUG
       loadGoogleAnalytics();
+    } else {
+      console.log(
+        "DEBUG: Analytics-Consent ist FALSE, deaktiviere Google Analytics."
+      ); // DEBUG
+      disableGoogleAnalytics();
     }
     // Banner ausblenden, falls noch sichtbar (sollte es nicht sein, aber zur Sicherheit)
     hideCookieBanner();
@@ -99,6 +141,7 @@ function checkConsentAndDisplayBanner() {
  * Zeigt den Cookie-Banner an und setzt die Checkboxen entsprechend der gespeicherten Präferenzen.
  */
 function showCookieBanner() {
+  console.log("DEBUG: showCookieBanner() aufgerufen."); // DEBUG
   const banner = document.getElementById("cookieConsentBanner");
   if (banner) {
     banner.style.display = "block";
@@ -116,6 +159,10 @@ function showCookieBanner() {
       analyticsCheckbox.checked = consent
         ? consent[COOKIE_CATEGORIES.ANALYTICS]
         : true;
+      console.log(
+        "DEBUG: Cookie-Banner Checkboxen gesetzt. Analytics-Checkbox:",
+        analyticsCheckbox.checked
+      ); // DEBUG
     }
   }
 }
@@ -124,9 +171,11 @@ function showCookieBanner() {
  * Blendet den Cookie-Banner aus.
  */
 function hideCookieBanner() {
+  console.log("DEBUG: hideCookieBanner() aufgerufen."); // DEBUG
   const banner = document.getElementById("cookieConsentBanner");
   if (banner) {
     banner.style.display = "none";
+    console.log("DEBUG: Cookie-Banner ausgeblendet."); // DEBUG
   }
 }
 
@@ -135,20 +184,25 @@ function hideCookieBanner() {
  * @param {object} preferences Ein Objekt mit den Cookie-Kategorien und ihrem Consent-Status.
  */
 function setConsent(preferences) {
+  console.log("DEBUG: setConsent() aufgerufen mit Präferenzen:", preferences); // DEBUG
   try {
     localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(preferences));
+    console.log("DEBUG: Consent im Local Storage gespeichert."); // DEBUG
     // Lade oder entlade Google Analytics basierend auf der neuen Präferenz
     if (preferences[COOKIE_CATEGORIES.ANALYTICS]) {
+      console.log(
+        "DEBUG: Analytics-Consent ist TRUE nach setConsent, versuche Google Analytics zu laden."
+      ); // DEBUG
       loadGoogleAnalytics();
     } else {
-      // Optional: Google Analytics deaktivieren/entladen, falls zuvor geladen
-      // Dies ist komplexer und erfordert ggf. das Zurücksetzen von GA-Variablen
-      // Für den Anfang reicht es, es nicht zu laden, wenn kein Consent da ist.
+      console.log(
+        "DEBUG: Analytics-Consent ist FALSE nach setConsent, deaktiviere Google Analytics."
+      ); // DEBUG
       disableGoogleAnalytics();
     }
   } catch (e) {
     console.error(
-      "Fehler beim Speichern des Cookie-Consents im Local Storage:",
+      "DEBUG: Fehler beim Speichern des Cookie-Consents im Local Storage:",
       e
     );
   }
@@ -159,12 +213,15 @@ function setConsent(preferences) {
  * @returns {object|null} Die Präferenzen oder null, wenn keine gespeichert sind.
  */
 function getConsent() {
+  console.log("DEBUG: getConsent() aufgerufen."); // DEBUG
   try {
     const stored = localStorage.getItem(CONSENT_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
+    const consentData = stored ? JSON.parse(stored) : null;
+    console.log("DEBUG: Consent aus Local Storage abgerufen:", consentData); // DEBUG
+    return consentData;
   } catch (e) {
     console.error(
-      "Fehler beim Abrufen des Cookie-Consents aus dem Local Storage:",
+      "DEBUG: Fehler beim Abrufen des Cookie-Consents aus dem Local Storage:",
       e
     );
     return null;
@@ -172,77 +229,138 @@ function getConsent() {
 }
 
 /**
- * Lädt das Google Analytics (gtag.js) Skript.
+ * Lädt das Google Analytics (gtag.js) Skript und konfiguriert es.
+ * Stellt sicher, dass die Konfiguration nur einmal pro Seitenaufruf erfolgt.
  */
 function loadGoogleAnalytics() {
-  // Verhindere doppeltes Laden
-  if (window.gaTrackingLoaded) {
+  console.log(
+    "DEBUG: loadGoogleAnalytics() aufgerufen. window.gaConfigured:",
+    window.gaConfigured
+  ); // DEBUG
+  // Wenn GA bereits konfiguriert ist, tun wir nichts, um den Fehler zu vermeiden.
+  if (window.gaConfigured) {
+    console.log(
+      "DEBUG: Google Analytics ist bereits konfiguriert (Flag ist TRUE). Abbruch."
+    ); // DEBUG
     return;
   }
 
-  // Füge gtag.js Skript hinzu
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  document.head.appendChild(script);
+  // Überprüfe, ob das gtag.js Skript bereits im DOM vorhanden ist.
+  let gaScript = document.querySelector(
+    `script[src*="gtag/js?id=${GA_MEASUREMENT_ID}"]`
+  );
+  console.log("DEBUG: GA Skript im DOM gefunden:", !!gaScript); // DEBUG
 
-  script.onload = () => {
-    window.dataLayer = window.dataLayer || [];
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-    gtag("js", new Date());
-    gtag("config", GA_MEASUREMENT_ID);
-    window.gaTrackingLoaded = true; // Markiere, dass GA geladen wurde
-    console.log("Google Analytics geladen und konfiguriert.");
-  };
+  if (!gaScript) {
+    // Wenn Skript nicht gefunden, erstelle und füge es hinzu
+    gaScript = document.createElement("script");
+    gaScript.async = true;
+    gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+    document.head.appendChild(gaScript);
+    console.log("DEBUG: Google Analytics Skript wird dem DOM hinzugefügt."); // DEBUG
 
-  script.onerror = (e) => {
-    console.error("Fehler beim Laden des Google Analytics Skripts:", e);
-  };
-}
+    // Setze den onload-Handler für das neu erstellte Skript
+    gaScript.onload = () => {
+      console.log("DEBUG: Google Analytics Skript ONLOAD Event gefeuert."); // DEBUG
+      // Stelle sicher, dass dataLayer und gtag Funktion verfügbar sind
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      console.log(
+        "DEBUG: gtag() Funktion verfügbar:",
+        typeof window.gtag === "function"
+      ); // DEBUG
 
-/**
- * Deaktiviert Google Analytics (setzt die Tracking-Variablen zurück).
- * Dies ist eine rudimentäre Deaktivierung. Für eine vollständige Deaktivierung
- * müssten ggf. weitere GA-spezifische Cookies gelöscht werden.
- */
-function disableGoogleAnalytics() {
-  if (window.gaTrackingLoaded) {
-    // Setze die Tracking-ID auf eine leere Zeichenkette oder null,
-    // um weitere Events zu verhindern.
-    if (typeof window.gtag === "function") {
-      window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false }); // Deaktiviere Seitenansichten
-      window.gtag("set", "anonymize_ip", true); // Anonymisiere IP-Adressen (falls nicht schon geschehen)
-      console.log("Google Analytics deaktiviert.");
-    }
-    window.gaTrackingLoaded = false;
-    // Optional: Entferne das gtag.js Skript aus dem DOM, falls gewünscht
-    const gaScript = document.querySelector(
-      `script[src*="gtag/js?id=${GA_MEASUREMENT_ID}"]`
-    );
-    if (gaScript) {
-      gaScript.remove();
+      // Konfiguriere GA nur, wenn es noch nicht konfiguriert wurde (doppelte Prüfung im onload)
+      if (!window.gaConfigured) {
+        console.log("DEBUG: Rufe gtag('js', new Date()) auf."); // DEBUG
+        gtag("js", new Date()); // Initialisiert gtag.js
+        console.log("DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf."); // DEBUG
+        gtag("config", GA_MEASUREMENT_ID); // Konfiguriert die Mess-ID
+        window.gaConfigured = true; // Setze die Flag auf true
+        console.log(
+          "DEBUG: Google Analytics geladen und konfiguriert (via onload)."
+        ); // DEBUG
+      } else {
+        console.log(
+          "DEBUG: Google Analytics Skript geladen, aber bereits konfiguriert (redundanter onload-Aufruf oder Race Condition)."
+        ); // DEBUG
+      }
+    };
+
+    gaScript.onerror = (e) => {
+      console.error(
+        "DEBUG: Fehler beim Laden des Google Analytics Skripts:",
+        e
+      ); // DEBUG
+    };
+  } else {
+    // Wenn das Skript bereits im DOM ist, aber noch nicht konfiguriert (z.B. es lädt noch).
+    // Versuche zu konfigurieren, falls gtag bereits verfügbar ist und noch nicht konfiguriert wurde.
+    // Dies fängt Fälle ab, in denen loadGoogleAnalytics() mehrfach aufgerufen wird,
+    // nachdem das Skript-Tag existiert, aber bevor sein onload-Handler gefeuert und gaConfigured gesetzt hat.
+    console.log(
+      "DEBUG: GA Skript ist bereits im DOM. Prüfe Konfigurationsstatus."
+    ); // DEBUG
+    if (typeof window.gtag === "function" && !window.gaConfigured) {
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      console.log(
+        "DEBUG: gtag() Funktion verfügbar und noch nicht konfiguriert. Rufe gtag('js', new Date()) auf."
+      ); // DEBUG
+      gtag("js", new Date());
+      console.log("DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf."); // DEBUG
+      gtag("config", GA_MEASUREMENT_ID);
+      window.gaConfigured = true;
+      console.log(
+        "DEBUG: Google Analytics Skript war bereits im DOM, jetzt konfiguriert (direkt)."
+      ); // DEBUG
+    } else if (window.gaConfigured) {
+      console.log(
+        "DEBUG: Google Analytics Skript ist bereits im DOM und bereits konfiguriert (Flag ist TRUE)."
+      ); // DEBUG
+    } else {
+      console.log(
+        "DEBUG: Google Analytics Skript ist im DOM, aber gtag() noch nicht verfügbar oder bereits konfiguriert. Warte auf onload."
+      ); // DEBUG
     }
   }
 }
 
-// Überwache Theme-Wechsel, um den Banner-Stil anzupassen (falls der Banner sichtbar ist)
-// Dies ist ein Beispiel, wie man auf Änderungen der body-Klasse reagieren könnte.
-// Die CSS-Regeln in cookie_banner_dark.css erledigen den Hauptteil.
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.attributeName === "class") {
-      const body = document.body;
-      const banner = document.getElementById("cookieConsentBanner");
-      if (banner && banner.style.display !== "none") {
-        // Hier könnte man explizit Klassen togglen, wenn cookie_banner_dark.css nicht ausreicht
-        // Aber da wir CSS-Regeln verwenden, die auf body.theme-night basieren,
-        // ist hier keine direkte JS-Aktion notwendig, solange der Banner sichtbar ist.
-      }
+/**
+ * Deaktiviert Google Analytics und entfernt das Skript aus dem DOM.
+ */
+function disableGoogleAnalytics() {
+  console.log(
+    "DEBUG: disableGoogleAnalytics() aufgerufen. window.gaConfigured:",
+    window.gaConfigured
+  ); // DEBUG
+  // Wenn GA konfiguriert war, versuchen wir es zu deaktivieren.
+  if (window.gaConfigured) {
+    if (typeof window.gtag === "function") {
+      console.log("DEBUG: Deaktiviere GA-Seitenansichten und anonymisiere IP."); // DEBUG
+      window.gtag("config", GA_MEASUREMENT_ID, { send_page_view: false }); // Deaktiviere Seitenansichten
+      window.gtag("set", "anonymize_ip", true); // Anonymisiere IP-Adressen (falls nicht schon geschehen)
+      console.log("DEBUG: Google Analytics deaktiviert."); // DEBUG
     }
-  });
-});
+    window.gaConfigured = false; // Setze die Konfigurations-Flag zurück
+  }
 
-// Beobachte Änderungen der 'class'-Attribute am Body-Element
-observer.observe(document.body, { attributes: true });
+  // Entferne das gtag.js Skript aus dem DOM, falls es vorhanden ist.
+  const gaScript = document.querySelector(
+    `script[src*="gtag/js?id=${GA_MEASUREMENT_ID}"]`
+  );
+  if (gaScript) {
+    gaScript.remove();
+    console.log("DEBUG: Google Analytics Skript aus DOM entfernt."); // DEBUG
+  }
+
+  // Setze den dataLayer zurück, um eine saubere Neuinitialisierung zu ermöglichen.
+  if (window.dataLayer) {
+    window.dataLayer = [];
+    console.log("DEBUG: dataLayer zurückgesetzt."); // DEBUG
+  }
+}
