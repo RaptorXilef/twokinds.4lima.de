@@ -18,7 +18,7 @@ window.showCookieBanner = showCookieBanner;
 
 // Globale Flag, um zu verfolgen, ob Google Analytics auf diesem Seitenaufruf bereits konfiguriert wurde.
 // Dies ist entscheidend, um den "expires" Fehler zu vermeiden.
-window.gaConfigured = false;
+window.gaConfigured = false; // Initialisiere als false
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DEBUG: DOMContentLoaded fired in cookie_consent.js."); // DEBUG
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("DEBUG: 'Alle ablehnen' Button geklickt."); // DEBUG
       setConsent({
         [COOKIE_CATEGORIES.NECESSARY]: true, // Notwendige immer akzeptieren
-        [COOKIE_CATEGORIES.ANALYTIES]: false,
+        [COOKIE_CATEGORIES.ANALYTICS]: false,
       });
       hideCookieBanner();
     });
@@ -234,15 +234,20 @@ function getConsent() {
  */
 function loadGoogleAnalytics() {
   console.log(
-    "DEBUG: loadGoogleAnalytics() aufgerufen. window.gaConfigured:",
+    "DEBUG: loadGoogleAnalytics() aufgerufen. window.gaConfigured (vor Prüfung):",
     window.gaConfigured
   ); // DEBUG
-  // Wenn GA bereits konfiguriert ist, tun wir nichts, um den Fehler zu vermeiden.
-  if (window.gaConfigured) {
-    console.log(
-      "DEBUG: Google Analytics ist bereits konfiguriert (Flag ist TRUE). Abbruch."
-    ); // DEBUG
-    return;
+
+  // Standard-gtag.js-Snippet-Initialisierung, falls noch nicht vorhanden
+  if (!window.dataLayer) {
+    window.dataLayer = [];
+    console.log("DEBUG: window.dataLayer initialisiert."); // DEBUG
+  }
+  if (typeof window.gtag !== "function") {
+    window.gtag = function () {
+      window.dataLayer.push(arguments);
+    };
+    console.log("DEBUG: Temporäre window.gtag Funktion initialisiert."); // DEBUG
   }
 
   // Überprüfe, ob das gtag.js Skript bereits im DOM vorhanden ist.
@@ -259,32 +264,28 @@ function loadGoogleAnalytics() {
     document.head.appendChild(gaScript);
     console.log("DEBUG: Google Analytics Skript wird dem DOM hinzugefügt."); // DEBUG
 
-    // Setze den onload-Handler für das neu erstellte Skript
+    // Der onload-Handler wird nur für das neu hinzugefügte Skript benötigt.
     gaScript.onload = () => {
-      console.log("DEBUG: Google Analytics Skript ONLOAD Event gefeuert."); // DEBUG
-      // Stelle sicher, dass dataLayer und gtag Funktion verfügbar sind
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
       console.log(
-        "DEBUG: gtag() Funktion verfügbar:",
-        typeof window.gtag === "function"
+        "DEBUG: Google Analytics Skript ONLOAD Event gefeuert. (Nach Skript-Append)"
       ); // DEBUG
-
-      // Konfiguriere GA nur, wenn es noch nicht konfiguriert wurde (doppelte Prüfung im onload)
       if (!window.gaConfigured) {
-        console.log("DEBUG: Rufe gtag('js', new Date()) auf."); // DEBUG
-        gtag("js", new Date()); // Initialisiert gtag.js
-        console.log("DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf."); // DEBUG
-        gtag("config", GA_MEASUREMENT_ID); // Konfiguriert die Mess-ID
+        console.log("DEBUG: Rufe gtag('js', new Date()) auf (via onload)."); // DEBUG
+        window.gtag("js", new Date()); // Initialisiert gtag.js
+        console.log(
+          "DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf (via onload). gaConfigured (vor Setzung):",
+          window.gaConfigured
+        ); // DEBUG
+        window.gtag("config", GA_MEASUREMENT_ID); // Konfiguriert die Mess-ID
         window.gaConfigured = true; // Setze die Flag auf true
         console.log(
-          "DEBUG: Google Analytics geladen und konfiguriert (via onload)."
+          "DEBUG: Google Analytics geladen und konfiguriert (via onload). gaConfigured jetzt:",
+          window.gaConfigured
         ); // DEBUG
       } else {
         console.log(
-          "DEBUG: Google Analytics Skript geladen, aber bereits konfiguriert (redundanter onload-Aufruf oder Race Condition)."
+          "DEBUG: Google Analytics Skript geladen, aber bereits konfiguriert (redundanter onload-Aufruf). gaConfigured Status:",
+          window.gaConfigured
         ); // DEBUG
       }
     };
@@ -296,35 +297,32 @@ function loadGoogleAnalytics() {
       ); // DEBUG
     };
   } else {
-    // Wenn das Skript bereits im DOM ist, aber noch nicht konfiguriert (z.B. es lädt noch).
-    // Versuche zu konfigurieren, falls gtag bereits verfügbar ist und noch nicht konfiguriert wurde.
-    // Dies fängt Fälle ab, in denen loadGoogleAnalytics() mehrfach aufgerufen wird,
-    // nachdem das Skript-Tag existiert, aber bevor sein onload-Handler gefeuert und gaConfigured gesetzt hat.
+    // Das Skript ist bereits im DOM. Versuche zu konfigurieren, falls noch nicht geschehen.
     console.log(
       "DEBUG: GA Skript ist bereits im DOM. Prüfe Konfigurationsstatus."
     ); // DEBUG
-    if (typeof window.gtag === "function" && !window.gaConfigured) {
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
+    if (!window.gaConfigured) {
       console.log(
-        "DEBUG: gtag() Funktion verfügbar und noch nicht konfiguriert. Rufe gtag('js', new Date()) auf."
+        "DEBUG: GA noch nicht konfiguriert. Rufe gtag('js', new Date()) auf (direkt)."
       ); // DEBUG
-      gtag("js", new Date());
-      console.log("DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf."); // DEBUG
-      gtag("config", GA_MEASUREMENT_ID);
+      window.gtag("js", new Date());
+      console.log(
+        "DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf (direkt). gaConfigured (vor Setzung):",
+        window.gaConfigured
+      ); // DEBUG
+      window.gtag("config", GA_MEASUREMENT_ID);
       window.gaConfigured = true;
       console.log(
-        "DEBUG: Google Analytics Skript war bereits im DOM, jetzt konfiguriert (direkt)."
-      ); // DEBUG
-    } else if (window.gaConfigured) {
-      console.log(
-        "DEBUG: Google Analytics Skript ist bereits im DOM und bereits konfiguriert (Flag ist TRUE)."
+        "DEBUG: Google Analytics Skript war bereits im DOM, jetzt konfiguriert (direkt). gaConfigured jetzt:",
+        window.gaConfigured
       ); // DEBUG
     } else {
       console.log(
-        "DEBUG: Google Analytics Skript ist im DOM, aber gtag() noch nicht verfügbar oder bereits konfiguriert. Warte auf onload."
+        "DEBUG: Google Analytics Skript ist bereits im DOM und bereits konfiguriert (Flag ist TRUE)."
+      ); // DEBUG
+      // Füge hier einen Trace hinzu, um zu sehen, woher der redundante Aufruf kommt.
+      console.trace(
+        "WARN: gtag('config') wurde aufgerufen, obwohl gaConfigured bereits TRUE ist. Mögliche externe Initialisierung oder Timing-Problem."
       ); // DEBUG
     }
   }
@@ -360,7 +358,6 @@ function disableGoogleAnalytics() {
 
   // Setze den dataLayer zurück, um eine saubere Neuinitialisierung zu ermöglichen.
   if (window.dataLayer) {
-    window.dataLayer = [];
-    console.log("DEBUG: dataLayer zurückgesetzt."); // DEBUG
+    console.log("DEBUG: dataLayer bleibt bestehen, da Skript entfernt wurde."); // DEBUG
   }
 }

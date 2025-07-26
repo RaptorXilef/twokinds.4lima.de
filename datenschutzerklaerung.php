@@ -27,21 +27,8 @@ $robotsContent = 'noindex, follow'; // Diese Seite sollte nicht von Suchmaschine
 // Hier wird die cookie_consent.js geladen, damit die Funktion showCookieBanner verfügbar ist.
 // Der Pfad ist relativ zum baseUrl, der in header.php definiert wird.
 // KORREKTUR: Pfad zu cookie_consent.js angepasst, da datenschutzerklaerung.php im Hauptverzeichnis liegt
-$additionalScripts = '
-    <script type="text/javascript" src="' . htmlspecialchars($baseUrl) . 'src/layout/js/cookie_consent.js?c=' . filemtime(__DIR__ . '/src/layout/js/cookie_consent.js') . '"></script>
-    <script>
-        // Funktion, um den Cookie-Banner erneut anzuzeigen
-        function openCookieSettings() {
-            if (typeof window.showCookieBanner === "function") {
-                window.showCookieBanner();
-            } else {
-                console.error("showCookieBanner Funktion nicht verfügbar.");
-                // KEIN alert(), stattdessen eine Meldung im Modal oder auf der Seite anzeigen
-                // Für dieses Beispiel belassen wir es bei console.error, da kein Modal definiert ist.
-            }
-        }
-    </script>
-';
+// Der zusätzliche Script-Block kann nun entfallen, da showCookieBanner global verfügbar ist.
+$additionalScripts = ''; // Leere den additionalScripts-Block, da die Funktion global ist.
 ?>
 
 <article>
@@ -165,7 +152,7 @@ $additionalScripts = '
                 target="_blank">https://support.google.com/analytics/answer/6004245?hl=de</a>.</p>
 
         <div style="text-align: center; margin-top: 20px;">
-            <button class="button" onclick="openCookieSettings()">Cookie-Einstellungen ändern</button>
+            <button class="button" onclick="window.showCookieBanner()">Cookie-Einstellungen ändern</button>
         </div>
     </section>
 
