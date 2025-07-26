@@ -1,0 +1,129 @@
+/* cookie_banner.css */
+
+/* Basis-Container für den Cookie-Banner */
+#cookieConsentBanner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    background-color: #f5f5f5; /* Helles Hintergrund für den Banner */
+    color: #333; /* Dunkler Text */
+    padding: 20px;
+    border-radius: 10px; /* Abgerundete Ecken */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Dezenter Schatten */
+    z-index: 9999; /* Immer im Vordergrund */
+    display: none; /* Standardmäßig ausgeblendet, wird per JS eingeblendet */
+    font-family: "Open Sans", "Lucida Grande", Arial, sans-serif;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+#cookieConsentBanner h3 {
+    font-size: 1.4em;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #000; /* Überschrift Farbe */
+    text-align: center;
+}
+
+#cookieConsentBanner p {
+    margin-bottom: 15px;
+}
+
+#cookieConsentBanner .cookie-category {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #e0e0e0; /* Leichter Hintergrund für Kategorien */
+    border-radius: 5px;
+}
+
+#cookieConsentBanner .cookie-category label {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#cookieConsentBanner .cookie-category input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2); /* Checkbox etwas größer */
+    cursor: pointer;
+}
+
+#cookieConsentBanner .cookie-category input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#cookieConsentBanner .cookie-category .description {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 5px;
+    margin-left: 30px; /* Einrückung für Beschreibung */
+}
+
+#cookieConsentBanner .cookie-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap; /* Buttons umbrechen auf kleinen Bildschirmen */
+}
+
+#cookieConsentBanner .cookie-buttons button {
+    flex: 1 1 auto; /* Buttons füllen den verfügbaren Platz */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    min-width: 120px; /* Mindestbreite für Buttons */
+}
+
+#cookieConsentBanner #acceptAllCookies {
+    background-color: #6c8f6c; /* Akzeptieren-Button Farbe (passend zum Menü) */
+    color: white;
+}
+
+#cookieConsentBanner #acceptAllCookies:hover {
+    background-color: #85aa85;
+}
+
+#cookieConsentBanner #rejectAllCookies {
+    background-color: #d1e5d4; /* Ablehnen-Button Farbe (passend zum Sidebar-Hintergrund) */
+    color: #333;
+}
+
+#cookieConsentBanner #rejectAllCookies:hover {
+    background-color: #b1cab5;
+}
+
+#cookieConsentBanner #saveCookiePreferences {
+    background-color: #b1cab5; /* Speichern-Button Farbe (passend zum Dialog-Titel) */
+    color: #333;
+}
+
+#cookieConsentBanner #saveCookiePreferences:hover {
+    background-color: #9cb59c;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+    #cookieConsentBanner {
+        width: 95%;
+        bottom: 10px;
+        padding: 15px;
+    }
+
+    #cookieConsentBanner h3 {
+        font-size: 1.2em;
+    }
+
+    #cookieConsentBanner .cookie-buttons {
+        flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
+    }
+}

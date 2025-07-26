@@ -90,9 +90,22 @@ $robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
 // Der Pfad zur common.js ist relativ zum Anwendungs-Root: src/layout/js/common.js
 $commonJsWebPath = $baseUrl . 'src/layout/js/common.js';
 // Füge einen Cache-Buster hinzu, basierend auf der letzten Änderungszeit der common.js Datei
-// Pfad zur Datei auf dem Dateisystem: dirname(__FILE__) ist src/layout/, also ../js/common.js
+// Pfad zur Datei auf dem Dateisystem: dirname(__FILE__) ist src/layout/, also js/common.js
 $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ . '/js/common.js');
 // --- Ende Dynamische Pfadbestimmung ---
+
+// --- Pfade für Cookie Banner CSS und JS ---
+// Die Pfade sind relativ zum aktuellen Verzeichnis der header.php (src/layout/)
+$cookieBannerCssPath = $baseUrl . 'src/layout/css/cookie_banner.css';
+$cookieBannerDarkCssPath = $baseUrl . 'src/layout/css/cookie_banner_dark.css';
+$cookieConsentJsPath = $baseUrl . 'src/layout/js/cookie_consent.js';
+
+// Cache-Buster für Cookie Banner Dateien
+$cookieBannerCssPathWithCacheBuster = $cookieBannerCssPath . '?c=' . filemtime(__DIR__ . '/css/cookie_banner.css');
+$cookieBannerDarkCssPathWithCacheBuster = $cookieBannerDarkCssPath . '?c=' . filemtime(__DIR__ . '/css/cookie_banner_dark.css');
+$cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(__DIR__ . '/js/cookie_consent.js');
+// --- Ende Pfade für Cookie Banner ---
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -123,6 +136,11 @@ $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ .
     <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main.css?c=20250524">
     <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524">
 
+    <!-- NEU: Stylesheets für den Cookie-Banner -->
+    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($cookieBannerCssPathWithCacheBuster); ?>">
+    <link rel="stylesheet" type="text/css"
+        href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
+
 
     <!-- Favicons für verschiedene Browser und Geräte. -->
     <link rel="icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
@@ -131,6 +149,8 @@ $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ .
 
     <!-- Standard-JavaScript-Dateien. common.js wird nun vom lokalen Server geladen. -->
     <script type='text/javascript' src='<?php echo htmlspecialchars($commonJsWebPathWithCacheBuster); ?>'></script>
+    <!-- NEU: Cookie-Consent-Skript -->
+    <script type='text/javascript' src='<?php echo htmlspecialchars($cookieConsentJsPathWithCacheBuster); ?>'></script>
 
     <?php
     // Hier können zusätzliche Skripte eingefügt werden, die spezifisch für die aufrufende Seite sind.
@@ -141,6 +161,39 @@ $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ .
 </head>
 
 <body class="<?php echo htmlspecialchars($bodyClass); ?>">
+    <!-- NEU: Cookie-Consent-Banner -->
+    <div id="cookieConsentBanner">
+        <h3>Datenschutz-Einstellungen</h3>
+        <p>Wir verwenden Cookies, um die Funktionalität unserer Webseite zu gewährleisten und die Nutzung zu
+            analysieren. Bitte treffen Sie Ihre Auswahl:</p>
+
+        <div class="cookie-category">
+            <label for="cookieNecessary">
+                <input type="checkbox" id="cookieNecessary" checked disabled>
+                Notwendige Cookies
+            </label>
+            <p class="description">Diese Cookies sind für den grundlegenden Betrieb der Webseite unerlässlich und können
+                nicht deaktiviert werden.</p>
+        </div>
+
+        <div class="cookie-category">
+            <label for="cookieAnalytics">
+                <input type="checkbox" id="cookieAnalytics" checked>
+                Analyse-Cookies (Google Analytics)
+            </label>
+            <p class="description">Diese Cookies helfen uns zu verstehen, wie Besucher mit der Webseite interagieren,
+                indem Informationen anonym gesammelt und gemeldet werden. Dies hilft uns, die Webseite zu verbessern.
+            </p>
+        </div>
+
+        <div class="cookie-buttons">
+            <button id="acceptAllCookies">Alle akzeptieren</button>
+            <button id="rejectAllCookies">Alle ablehnen</button>
+            <button id="saveCookiePreferences">Auswahl speichern</button>
+        </div>
+    </div>
+    <!-- Ende Cookie-Consent-Banner -->
+
     <div id="mainContainer" class="main-container">
         <!-- Hinweis auf das Fanprojekt und Link zum Original. -->
         <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"

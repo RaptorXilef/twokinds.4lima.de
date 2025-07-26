@@ -49,7 +49,8 @@ Kunst und Geschichte. Danke!<br>
 <p>
 <h3>Kontakt:</h3>
 <span id="Kontakt">
-    Ihr könnt mich über <a href="https://inkbunny.net/RaptorXilefSFW">InkBunny</a> <br>
+    Ihr könnt mich über <a href="https://github.com/RaptorXilef/twokinds.4lima.de">GitHub</a> <a
+        href="https://inkbunny.net/RaptorXilefSFW">InkBunny</a> <br>
     oder E-mail erreichen:
 
     <div id="email-link">

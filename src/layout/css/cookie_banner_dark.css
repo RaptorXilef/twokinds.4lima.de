@@ -1,0 +1,46 @@
+/* cookie_banner_dark.css */
+
+body.theme-night #cookieConsentBanner {
+    background-color: #00334c; /* Dunkler Hintergrund für den Banner */
+    color: #fff; /* Heller Text */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-night #cookieConsentBanner h3 {
+    color: #fff; /* Überschrift Farbe im dunklen Modus */
+}
+
+body.theme-night #cookieConsentBanner .cookie-category {
+    background-color: #00425c; /* Dunklerer Hintergrund für Kategorien */
+}
+
+body.theme-night #cookieConsentBanner .cookie-category .description {
+    color: #ccc;
+}
+
+body.theme-night #cookieConsentBanner #acceptAllCookies {
+    background-color: #2a6177; /* Akzeptieren-Button im dunklen Modus */
+    color: #fff;
+}
+
+body.theme-night #cookieConsentBanner #acceptAllCookies:hover {
+    background-color: #48778a;
+}
+
+body.theme-night #cookieConsentBanner #rejectAllCookies {
+    background-color: #002b3c; /* Ablehnen-Button im dunklen Modus */
+    color: #fff;
+}
+
+body.theme-night #cookieConsentBanner #rejectAllCookies:hover {
+    background-color: #00425c;
+}
+
+body.theme-night #cookieConsentBanner #saveCookiePreferences {
+    background-color: #002b3c; /* Speichern-Button im dunklen Modus */
+    color: #fff;
+}
+
+body.theme-night #cookieConsentBanner #saveCookiePreferences:hover {
+    background-color: #00425c;
+}
