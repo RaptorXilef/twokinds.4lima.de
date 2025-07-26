@@ -10,11 +10,12 @@
  * @param bool $isDisabled Ob der Button deaktiviert sein soll.
  * @return string Der generierte HTML-String für den Navigationsbutton.
  */
-function renderNavLink(string $href, string $class, string $text, bool $isDisabled): string {
+function renderNavLink(string $href, string $class, string $text, bool $isDisabled): string
+{
     $tag = $isDisabled ? 'span' : 'a'; // Tag ist <span> wenn deaktiviert, sonst <a>
     $linkAttr = $isDisabled ? '' : ' href="' . htmlspecialchars($href) . '"'; // href nur für <a>
     $disabledClass = $isDisabled ? ' disabled' : ''; // 'disabled' Klasse hinzufügen, wenn deaktiviert
     return '<' . $tag . $linkAttr . ' class="navarrow ' . $class . $disabledClass . '">' .
-           '    <span class="nav-wrapper"><span class="nav-text">' . htmlspecialchars($text) . '</span></span>' .
-           '</' . $tag . '>';
+        '    <span class="nav-wrapper"><span class="nav-text">' . htmlspecialchars($text) . '</span></span>' .
+        '</' . $tag . '>';
 }

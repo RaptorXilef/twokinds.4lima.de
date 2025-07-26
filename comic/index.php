@@ -153,7 +153,8 @@ include __DIR__ . '/../src/layout/header.php';
 <article class="comic">
     <header>
         <!-- H1-Tag im Format des Originals, zeigt den Titel des neuesten Comics. -->
-        <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>: <?php echo htmlspecialchars($comicName); ?></h1>
+        <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:
+            <?php echo htmlspecialchars($comicName); ?></h1>
     </header>
 
     <div class='comicnav'>
@@ -168,10 +169,8 @@ include __DIR__ . '/../src/layout/header.php';
 
     <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
     <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
-        <img src="<?php echo htmlspecialchars($comicImagePath); ?>"
-             title="<?php echo htmlspecialchars($comicName); ?>"
-             alt="Comic Page"
-        >
+        <img src="<?php echo htmlspecialchars($comicImagePath); ?>" title="<?php echo htmlspecialchars($comicName); ?>"
+            alt="Comic Page">
     </a>
 
     <div class='comicnav bottomnav'>
@@ -187,7 +186,8 @@ include __DIR__ . '/../src/layout/header.php';
     <div class="below-nav jsdep">
         <div class="nav-instruction">
             <!-- Hinweis zur Navigation mit Tastaturpfeilen auf Deutsch. -->
-            <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K navigieren.</span>
+            <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
+                navigieren.</span>
         </div>
     </div>
 

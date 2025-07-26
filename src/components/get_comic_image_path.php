@@ -8,7 +8,8 @@
  * @param string $suffix Ein optionaler Suffix für den Dateinamen (z.B. '_preview' für Thumbnails).
  * @return string Der vollständige relative Pfad zum Comic-Bild, falls gefunden, andernfalls ein leerer String.
  */
-function getComicImagePath(string $comicId, string $baseDir, string $suffix = ''): string {
+function getComicImagePath(string $comicId, string $baseDir, string $suffix = ''): string
+{
     // Bevorzugte Reihenfolge der Dateierweiterungen, in der gesucht wird.
     // Falls ein Suffix vorhanden ist (z.B. '_preview'), ist es wahrscheinlicher, dass es sich um ein PNG handelt.
     // Daher wird die Reihenfolge angepasst, um .png zuerst zu prüfen, falls ein Suffix verwendet wird.
@@ -16,7 +17,7 @@ function getComicImagePath(string $comicId, string $baseDir, string $suffix = ''
     if (empty($suffix)) { // Wenn kein Suffix, ist .jpg oft das Hauptformat
         $extensions = ['jpg', 'png', 'gif'];
     }
-    
+
     foreach ($extensions as $ext) {
         $filePath = $baseDir . htmlspecialchars($comicId) . $suffix . '.' . $ext;
         // file_exists benötigt einen absoluten Pfad. __DIR__ ist das Verzeichnis dieser Datei.

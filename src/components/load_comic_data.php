@@ -6,7 +6,7 @@
  */
 
 // Pfad zur JSON-Datei
-$comicDataPath = __DIR__ . '/comic_var.json';
+$comicDataPath = __DIR__ . '../config/comic_var.json';
 
 // Überprüfen, ob die JSON-Datei existiert
 if (file_exists($comicDataPath)) {

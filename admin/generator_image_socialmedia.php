@@ -63,7 +63,8 @@ if (!extension_loaded('gd')) {
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
  * @return array Eine Liste eindeutiger Comic-IDs (Dateinamen ohne Erweiterung).
  */
-function getExistingComicIds(string $lowresDir, string $hiresDir): array {
+function getExistingComicIds(string $lowresDir, string $hiresDir): array
+{
     $comicIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
 
@@ -97,7 +98,8 @@ function getExistingComicIds(string $lowresDir, string $hiresDir): array {
  * @param string $socialMediaImageDir Pfad zum Social Media Bild-Verzeichnis.
  * @return array Eine Liste vorhandener Social Media Bild-IDs (Dateinamen ohne Erweiterung).
  */
-function getExistingSocialMediaImageIds(string $socialMediaImageDir): array {
+function getExistingSocialMediaImageIds(string $socialMediaImageDir): array
+{
     $imageIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif']; // Prüfe auf gängige Bild-Erweiterungen
 
@@ -119,7 +121,8 @@ function getExistingSocialMediaImageIds(string $socialMediaImageDir): array {
  * @param array $existingSocialMediaImageIds Alle gefundenen Social Media Bild-IDs.
  * @return array Eine Liste von Comic-IDs, für die Social Media Bilder fehlen.
  */
-function findMissingSocialMediaImages(array $allComicIds, array $existingSocialMediaImageIds): array {
+function findMissingSocialMediaImages(array $allComicIds, array $existingSocialMediaImageIds): array
+{
     return array_values(array_diff($allComicIds, $existingSocialMediaImageIds));
 }
 
@@ -133,7 +136,8 @@ function findMissingSocialMediaImages(array $allComicIds, array $existingSocialM
  * @param string $socialMediaImageDir Pfad zum Social Media Bild-Verzeichnis.
  * @return array Ein assoziatives Array mit 'created' (erfolgreich erstellter Pfad) und 'errors' (Fehlermeldungen).
  */
-function generateSocialMediaImage(string $comicId, string $lowresDir, string $hiresDir, string $socialMediaImageDir): array {
+function generateSocialMediaImage(string $comicId, string $lowresDir, string $hiresDir, string $socialMediaImageDir): array
+{
     $errors = [];
     $createdPath = '';
 
@@ -243,8 +247,20 @@ function generateSocialMediaImage(string $comicId, string $lowresDir, string $hi
         $offsetY = ($targetHeight - $newHeight) / 2;
 
         // Bild auf die neue Größe und Position resamplen und kopieren
-        if (!imagecopyresampled($tempImage, $sourceImage, (int)$offsetX, (int)$offsetY, 0, 0,
-                               (int)$newWidth, (int)$newHeight, $width, $height)) {
+        if (
+            !imagecopyresampled(
+                $tempImage,
+                $sourceImage,
+                (int) $offsetX,
+                (int) $offsetY,
+                0,
+                0,
+                (int) $newWidth,
+                (int) $newHeight,
+                $width,
+                $height
+            )
+        ) {
             $errors[] = "Fehler beim Resampling des Bildes für Comic-ID '$comicId'.";
             error_log("Fehler beim Resampling des Bildes für Comic-ID '$comicId'.");
             imagedestroy($sourceImage);
@@ -386,7 +402,8 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
             <div id="created-images-container" class="image-grid">
                 <!-- Hier werden die erfolgreich generierten Bilder angezeigt -->
             </div>
-            <p class="status-message status-red" style="display: none;" id="error-header-message">Fehler bei der Generierung:</p>
+            <p class="status-message status-red" style="display: none;" id="error-header-message">Fehler bei der
+                Generierung:</p>
             <ul id="generation-errors-list">
                 <!-- Hier werden Fehler angezeigt -->
             </ul>
@@ -399,16 +416,21 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         </div>
 
         <?php if (empty($allComicIds)): ?>
-            <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden, die als Basis dienen könnten.</p>
+            <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen
+                `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden,
+                die als Basis dienen könnten.</p>
         <?php elseif (empty($missingSocialMediaImages)): ?>
-            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Social Media Bilder sind vorhanden.</p>
+            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Social Media Bilder sind
+                vorhanden.</p>
         <?php else: ?>
-            <p class="status-message status-red">Es fehlen <?php echo count($missingSocialMediaImages); ?> Social Media Bilder.</p>
+            <p class="status-message status-red">Es fehlen <?php echo count($missingSocialMediaImages); ?> Social Media
+                Bilder.</p>
             <h3>Fehlende Social Media Bilder (IDs):</h3>
             <!-- Geänderter Bereich für die Anzeige der fehlenden Bilder -->
             <div id="missing-images-grid" class="missing-items-grid">
                 <?php foreach ($missingSocialMediaImages as $id): ?>
-                    <span class="missing-item" data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
+                    <span class="missing-item"
+                        data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
@@ -422,15 +444,18 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         --missing-grid-border-color: #e0e0e0;
         --missing-grid-bg-color: #f9f9f9;
         --missing-item-bg-color: #e9e9e9;
-        --missing-item-text-color: #333; /* Standardtextfarbe */
+        --missing-item-text-color: #333;
+        /* Standardtextfarbe */
     }
 
-    body.theme-night { /* GEÄNDERT: von body.dark-mode zu body.theme-night */
+    body.theme-night {
+        /* GEÄNDERT: von body.dark-mode zu body.theme-night */
         /* Dark Mode Overrides */
         --missing-grid-border-color: #045d81;
         --missing-grid-bg-color: #03425b;
         --missing-item-bg-color: #025373;
-        --missing-item-text-color: #f0f0f0; /* Hellerer Text für Dark Mode */
+        --missing-item-text-color: #f0f0f0;
+        /* Hellerer Text für Dark Mode */
     }
 
     /* Allgemeine Statusmeldungen */
@@ -439,16 +464,19 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         border-radius: 5px;
         margin-bottom: 10px;
     }
+
     .status-green {
         background-color: #d4edda;
         color: #155724;
         border: 1px solid #c3e6cb;
     }
+
     .status-orange {
         background-color: #fff3cd;
         color: #856404;
         border: 1px solid #ffeeba;
     }
+
     .status-red {
         background-color: #f8d7da;
         color: #721c24;
@@ -457,7 +485,8 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
 
     /* Neue Button-Stile */
     .status-red-button {
-        background-color: #dc3545; /* Bootstrap-Rot */
+        background-color: #dc3545;
+        /* Bootstrap-Rot */
         color: white;
         border: 1px solid #dc3545;
         padding: 8px 15px;
@@ -466,9 +495,11 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         font-size: 1em;
         transition: background-color 0.2s ease;
     }
+
     .status-red-button:hover {
         background-color: #c82333;
     }
+
     .status-red-button:disabled {
         background-color: #e9ecef;
         color: #6c757d;
@@ -477,7 +508,8 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
     }
 
     .status-green-button {
-        background-color: #28a745; /* Bootstrap-Grün */
+        background-color: #28a745;
+        /* Bootstrap-Grün */
         color: white;
         border: 1px solid #28a745;
         padding: 8px 15px;
@@ -486,9 +518,11 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         font-size: 1em;
         transition: background-color 0.2s ease;
     }
+
     .status-green-button:hover {
         background-color: #218838;
     }
+
     .status-green-button:disabled {
         background-color: #e9ecef;
         color: #6c757d;
@@ -506,9 +540,15 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         animation: spin 1s ease infinite;
         margin: 0 auto 10px auto;
     }
+
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Image Grid Layout (für Social Media Bilder) */
@@ -519,14 +559,18 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         margin-top: 15px;
         padding-bottom: 20px;
     }
+
     .image-item {
         text-align: center;
         border: 1px solid #ccc;
         padding: 5px;
         border-radius: 8px;
-        width: calc(50% - 5px); /* Für 2 Bilder pro Reihe, da sie breiter sind */
-        min-width: 300px; /* Mindestbreite für Responsivität */
-        height: auto; /* Flexibel in der Höhe */
+        width: calc(50% - 5px);
+        /* Für 2 Bilder pro Reihe, da sie breiter sind */
+        min-width: 300px;
+        /* Mindestbreite für Responsivität */
+        height: auto;
+        /* Flexibel in der Höhe */
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -534,14 +578,17 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
         box-sizing: border-box;
         overflow: hidden;
     }
+
     .image-item img {
         display: block;
         max-width: 100%;
-        height: auto; /* Wichtig für proportionale Skalierung */
+        height: auto;
+        /* Wichtig für proportionale Skalierung */
         object-fit: contain;
         border-radius: 4px;
         margin-bottom: 5px;
     }
+
     .image-item span {
         word-break: break-all;
         font-size: 0.8em;
@@ -550,27 +597,36 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
     /* Responsive Anpassungen für den Image-Grid */
     @media (max-width: 1000px) {
         .image-item {
-            width: 100%; /* 1 pro Reihe auf kleineren Bildschirmen */
+            width: 100%;
+            /* 1 pro Reihe auf kleineren Bildschirmen */
         }
     }
 
     /* Stil für den Button-Container - initial statisch, wird per JS zu 'fixed' */
     #fixed-buttons-container {
-        z-index: 1000; /* Stellt sicher, dass die Buttons über anderen Inhalten liegen */
-        display: flex; /* Für nebeneinanderliegende Buttons */
-        gap: 10px; /* Abstand zwischen den Buttons */
-        margin-top: 20px; /* Fügt etwas Abstand hinzu, wenn die Buttons statisch sind */
-        margin-bottom: 20px; /* Abstand nach unten, wenn statisch */
-        justify-content: flex-end; /* Richtet die Buttons im statischen Zustand am rechten Rand aus */
+        z-index: 1000;
+        /* Stellt sicher, dass die Buttons über anderen Inhalten liegen */
+        display: flex;
+        /* Für nebeneinanderliegende Buttons */
+        gap: 10px;
+        /* Abstand zwischen den Buttons */
+        margin-top: 20px;
+        /* Fügt etwas Abstand hinzu, wenn die Buttons statisch sind */
+        margin-bottom: 20px;
+        /* Abstand nach unten, wenn statisch */
+        justify-content: flex-end;
+        /* Richtet die Buttons im statischen Zustand am rechten Rand aus */
         /* top und right werden dynamisch per JavaScript gesetzt, position wird auch per JS gesetzt */
     }
 
     /* Anpassung für kleinere Bildschirme, falls die Buttons zu viel Platz einnehmen */
     @media (max-width: 768px) {
         #fixed-buttons-container {
-            flex-direction: column; /* Buttons untereinander auf kleinen Bildschirmen */
+            flex-direction: column;
+            /* Buttons untereinander auf kleinen Bildschirmen */
             gap: 5px;
-            align-items: flex-end; /* Auch im Spalten-Layout rechts ausrichten */
+            align-items: flex-end;
+            /* Auch im Spalten-Layout rechts ausrichten */
         }
     }
 
@@ -578,302 +634,313 @@ $socialMediaImageWebPath = '../assets/comic_socialmedia/';
     .missing-items-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px; /* Abstand zwischen den Elementen */
-        max-height: 300px; /* Maximale Höhe */
-        overflow-y: auto; /* Scrollbar, wenn Inhalt die Höhe überschreitet */
-        border: 1px solid var(--missing-grid-border-color); /* Dynamischer Rahmen */
+        gap: 8px;
+        /* Abstand zwischen den Elementen */
+        max-height: 300px;
+        /* Maximale Höhe */
+        overflow-y: auto;
+        /* Scrollbar, wenn Inhalt die Höhe überschreitet */
+        border: 1px solid var(--missing-grid-border-color);
+        /* Dynamischer Rahmen */
         padding: 10px;
         border-radius: 5px;
-        background-color: var(--missing-grid-bg-color); /* Dynamischer Hintergrund */
+        background-color: var(--missing-grid-bg-color);
+        /* Dynamischer Hintergrund */
     }
 
     .missing-item {
-        background-color: var(--missing-item-bg-color); /* Dynamischer Hintergrund */
-        color: var(--missing-item-text-color); /* Dynamische Textfarbe */
+        background-color: var(--missing-item-bg-color);
+        /* Dynamischer Hintergrund */
+        color: var(--missing-item-text-color);
+        /* Dynamische Textfarbe */
         padding: 4px 8px;
         border-radius: 3px;
         font-size: 0.9em;
-        white-space: nowrap; /* Verhindert Zeilenumbruch innerhalb eines Eintrags */
+        white-space: nowrap;
+        /* Verhindert Zeilenumbruch innerhalb eines Eintrags */
         overflow: hidden;
-        text-overflow: ellipsis; /* Fügt "..." hinzu, wenn der Text zu lang ist */
-        max-width: 150px; /* Begrenzt die Breite jedes Eintrags */
-        flex-shrink: 0; /* Verhindert, dass Elemente schrumpfen */
+        text-overflow: ellipsis;
+        /* Fügt "..." hinzu, wenn der Text zu lang ist */
+        max-width: 150px;
+        /* Begrenzt die Breite jedes Eintrags */
+        flex-shrink: 0;
+        /* Verhindert, dass Elemente schrumpfen */
     }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const generateButton = document.getElementById('generate-images-button');
-    const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const progressText = document.getElementById('progress-text');
-    const missingImagesGrid = document.getElementById('missing-images-grid'); // ID geändert
-    const createdImagesContainer = document.getElementById('created-images-container');
-    const generationResultsSection = document.getElementById('generation-results-section');
-    const overallStatusMessage = document.getElementById('overall-status-message');
-    const errorHeaderMessage = document.getElementById('error-header-message');
-    const errorsList = document.getElementById('generation-errors-list');
+    document.addEventListener('DOMContentLoaded', function () {
+        const generateButton = document.getElementById('generate-images-button');
+        const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const progressText = document.getElementById('progress-text');
+        const missingImagesGrid = document.getElementById('missing-images-grid'); // ID geändert
+        const createdImagesContainer = document.getElementById('created-images-container');
+        const generationResultsSection = document.getElementById('generation-results-section');
+        const overallStatusMessage = document.getElementById('overall-status-message');
+        const errorHeaderMessage = document.getElementById('error-header-message');
+        const errorsList = document.getElementById('generation-errors-list');
 
-    // Die Liste der fehlenden IDs, direkt von PHP übergeben
-    const initialMissingIds = <?php echo json_encode($missingSocialMediaImages); ?>;
-    let remainingIds = [...initialMissingIds];
-    let createdCount = 0;
-    let errorCount = 0;
-    let isPaused = false; // Status für die Pause-Funktion
-    let isGenerationActive = false; // Neuer Flag, um zu verfolgen, ob die Generierung läuft
+        // Die Liste der fehlenden IDs, direkt von PHP übergeben
+        const initialMissingIds = <?php echo json_encode($missingSocialMediaImages); ?>;
+        let remainingIds = [...initialMissingIds];
+        let createdCount = 0;
+        let errorCount = 0;
+        let isPaused = false; // Status für die Pause-Funktion
+        let isGenerationActive = false; // Neuer Flag, um zu verfolgen, ob die Generierung läuft
 
-    // Elemente für die Positionierung der Buttons
-    const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
-    const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
+        // Elemente für die Positionierung der Buttons
+        const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
+        const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
 
-    // Sicherheitscheck: Wenn der Button-Container nicht gefunden wird, breche ab.
-    if (!fixedButtonsContainer) {
-        console.error("Fehler: Das Element '#fixed-buttons-container' wurde nicht gefunden. Die Buttons können nicht positioniert werden.");
-        return;
-    }
-
-    let initialButtonTopOffset; // Die absolute Top-Position der Buttons im Dokument, wenn sie nicht fixed sind
-    let stickyThreshold; // Der Scroll-Y-Wert, ab dem die Buttons fixiert werden sollen
-    const stickyOffset = 18; // Gewünschter Abstand vom oberen Viewport-Rand, wenn sticky
-    const rightOffset = 24; // Gewünschter Abstand vom rechten Rand des Main-Elements, wenn sticky
-
-    /**
-     * Berechnet die initialen Positionen und den Schwellenwert für das "Klebenbleiben".
-     * Diese Funktion muss aufgerufen werden, wenn sich das Layout ändert (z.B. bei Fenstergröße).
-     */
-    function calculateInitialPositions() {
-        // Sicherstellen, dass die Buttons nicht 'fixed' sind, um ihre natürliche Position zu ermitteln
-        // Die CSS-Eigenschaft justify-content: flex-end; kümmert sich jetzt um die horizontale Ausrichtung im statischen Zustand.
-        fixedButtonsContainer.style.position = 'static';
-        fixedButtonsContainer.style.top = 'auto';
-        fixedButtonsContainer.style.right = 'auto';
-
-        // Die absolute Top-Position des Button-Containers im Dokument
-        initialButtonTopOffset = fixedButtonsContainer.getBoundingClientRect().top + window.scrollY;
-
-        // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
-        // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
-        stickyThreshold = initialButtonTopOffset - stickyOffset;
-
-        if (!mainContent) {
-            console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
+        // Sicherheitscheck: Wenn der Button-Container nicht gefunden wird, breche ab.
+        if (!fixedButtonsContainer) {
+            console.error("Fehler: Das Element '#fixed-buttons-container' wurde nicht gefunden. Die Buttons können nicht positioniert werden.");
+            return;
         }
-    }
 
-    /**
-     * Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
-     */
-    function handleScroll() {
-        if (!fixedButtonsContainer) return; // Sicherheitscheck
+        let initialButtonTopOffset; // Die absolute Top-Position der Buttons im Dokument, wenn sie nicht fixed sind
+        let stickyThreshold; // Der Scroll-Y-Wert, ab dem die Buttons fixiert werden sollen
+        const stickyOffset = 18; // Gewünschter Abstand vom oberen Viewport-Rand, wenn sticky
+        const rightOffset = 24; // Gewünschter Abstand vom rechten Rand des Main-Elements, wenn sticky
 
-        const currentScrollY = window.scrollY; // Aktuelle Scroll-Position
+        /**
+         * Berechnet die initialen Positionen und den Schwellenwert für das "Klebenbleiben".
+         * Diese Funktion muss aufgerufen werden, wenn sich das Layout ändert (z.B. bei Fenstergröße).
+         */
+        function calculateInitialPositions() {
+            // Sicherstellen, dass die Buttons nicht 'fixed' sind, um ihre natürliche Position zu ermitteln
+            // Die CSS-Eigenschaft justify-content: flex-end; kümmert sich jetzt um die horizontale Ausrichtung im statischen Zustand.
+            fixedButtonsContainer.style.position = 'static';
+            fixedButtonsContainer.style.top = 'auto';
+            fixedButtonsContainer.style.right = 'auto';
 
-        if (currentScrollY >= stickyThreshold) {
-            // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
-            if (fixedButtonsContainer.style.position !== 'fixed') {
-                fixedButtonsContainer.style.position = 'fixed';
-                fixedButtonsContainer.style.top = `${stickyOffset}px`; // 18px vom oberen Viewport-Rand
+            // Die absolute Top-Position des Button-Containers im Dokument
+            initialButtonTopOffset = fixedButtonsContainer.getBoundingClientRect().top + window.scrollY;
 
-                // Berechne die rechte Position:
-                if (mainContent) {
-                    const mainRect = mainContent.getBoundingClientRect();
-                    // Abstand vom rechten Viewport-Rand zum rechten Rand des Main-Elements + gewünschter Offset
-                    fixedButtonsContainer.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
-                } else {
-                    // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
-                    fixedButtonsContainer.style.right = `${rightOffset}px`;
+            // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
+            // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
+            stickyThreshold = initialButtonTopOffset - stickyOffset;
+
+            if (!mainContent) {
+                console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
+            }
+        }
+
+        /**
+         * Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
+         */
+        function handleScroll() {
+            if (!fixedButtonsContainer) return; // Sicherheitscheck
+
+            const currentScrollY = window.scrollY; // Aktuelle Scroll-Position
+
+            if (currentScrollY >= stickyThreshold) {
+                // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
+                if (fixedButtonsContainer.style.position !== 'fixed') {
+                    fixedButtonsContainer.style.position = 'fixed';
+                    fixedButtonsContainer.style.top = `${stickyOffset}px`; // 18px vom oberen Viewport-Rand
+
+                    // Berechne die rechte Position:
+                    if (mainContent) {
+                        const mainRect = mainContent.getBoundingClientRect();
+                        // Abstand vom rechten Viewport-Rand zum rechten Rand des Main-Elements + gewünschter Offset
+                        fixedButtonsContainer.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
+                    } else {
+                        // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
+                        fixedButtonsContainer.style.right = `${rightOffset}px`;
+                    }
+                }
+            } else {
+                // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
+                if (fixedButtonsContainer.style.position === 'fixed') {
+                    fixedButtonsContainer.style.position = 'static'; // Zurück zum normalen Fluss
+                    fixedButtonsContainer.style.top = 'auto';
+                    fixedButtonsContainer.style.right = 'auto';
                 }
             }
-        } else {
-            // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
-            if (fixedButtonsContainer.style.position === 'fixed') {
-                fixedButtonsContainer.style.position = 'static'; // Zurück zum normalen Fluss
-                fixedButtonsContainer.style.top = 'auto';
-                fixedButtonsContainer.style.right = 'auto';
-            }
         }
-    }
 
-    /**
-     * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
-     */
-    function handleResize() {
-        calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
-        handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
-    }
-
-    // Initiales Setup beim Laden der Seite
-    // Zuerst Positionen berechnen, dann den Scroll-Status anpassen
-    calculateInitialPositions();
-    handleScroll(); // Setze den initialen Zustand basierend auf der aktuellen Scroll-Position
-
-    // Event Listener für Scroll- und Resize-Ereignisse
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleResize);
-
-    // Funktion zum Aktualisieren des Button-Zustands (Text, Farbe und Sichtbarkeit)
-    function updateButtonState() {
-        if (initialMissingIds.length === 0) {
-            // Keine Bilder zum Generieren vorhanden
-            generateButton.style.display = 'inline-block';
-            generateButton.disabled = true;
-            togglePauseResumeButton.style.display = 'none';
-        } else if (isGenerationActive) {
-            // Generierung ist aktiv oder pausiert
-            generateButton.style.display = 'none';
-            togglePauseResumeButton.style.display = 'inline-block';
-            if (isPaused) {
-                togglePauseResumeButton.textContent = 'Generierung fortsetzen';
-                togglePauseResumeButton.className = 'status-green-button';
-            } else {
-                togglePauseResumeButton.textContent = 'Generierung pausieren';
-                togglePauseResumeButton.className = 'status-red-button';
-            }
-            togglePauseResumeButton.disabled = false;
-        } else if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) {
-            // Alle Bilder verarbeitet (Generierung abgeschlossen)
-            generateButton.style.display = 'inline-block';
-            generateButton.disabled = true; // Nichts mehr zu generieren
-            togglePauseResumeButton.style.display = 'none';
-        } else {
-            // Initialer Zustand: Bilder zum Generieren vorhanden, aber noch nicht gestartet
-            generateButton.style.display = 'inline-block';
-            generateButton.disabled = false;
-            togglePauseResumeButton.style.display = 'none';
+        /**
+         * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
+         */
+        function handleResize() {
+            calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
+            handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
         }
-    }
 
-    // Initialen Zustand der Buttons beim Laden der Seite setzen
-    updateButtonState();
+        // Initiales Setup beim Laden der Seite
+        // Zuerst Positionen berechnen, dann den Scroll-Status anpassen
+        calculateInitialPositions();
+        handleScroll(); // Setze den initialen Zustand basierend auf der aktuellen Scroll-Position
 
-    if (generateButton) {
-        generateButton.addEventListener('click', function() {
+        // Event Listener für Scroll- und Resize-Ereignisse
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleResize);
+
+        // Funktion zum Aktualisieren des Button-Zustands (Text, Farbe und Sichtbarkeit)
+        function updateButtonState() {
             if (initialMissingIds.length === 0) {
-                console.log('Keine Social Media Bilder zum Generieren vorhanden.');
+                // Keine Bilder zum Generieren vorhanden
+                generateButton.style.display = 'inline-block';
+                generateButton.disabled = true;
+                togglePauseResumeButton.style.display = 'none';
+            } else if (isGenerationActive) {
+                // Generierung ist aktiv oder pausiert
+                generateButton.style.display = 'none';
+                togglePauseResumeButton.style.display = 'inline-block';
+                if (isPaused) {
+                    togglePauseResumeButton.textContent = 'Generierung fortsetzen';
+                    togglePauseResumeButton.className = 'status-green-button';
+                } else {
+                    togglePauseResumeButton.textContent = 'Generierung pausieren';
+                    togglePauseResumeButton.className = 'status-red-button';
+                }
+                togglePauseResumeButton.disabled = false;
+            } else if (remainingIds.length === 0 && createdCount + errorCount === initialMissingIds.length) {
+                // Alle Bilder verarbeitet (Generierung abgeschlossen)
+                generateButton.style.display = 'inline-block';
+                generateButton.disabled = true; // Nichts mehr zu generieren
+                togglePauseResumeButton.style.display = 'none';
+            } else {
+                // Initialer Zustand: Bilder zum Generieren vorhanden, aber noch nicht gestartet
+                generateButton.style.display = 'inline-block';
+                generateButton.disabled = false;
+                togglePauseResumeButton.style.display = 'none';
+            }
+        }
+
+        // Initialen Zustand der Buttons beim Laden der Seite setzen
+        updateButtonState();
+
+        if (generateButton) {
+            generateButton.addEventListener('click', function () {
+                if (initialMissingIds.length === 0) {
+                    console.log('Keine Social Media Bilder zum Generieren vorhanden.');
+                    return;
+                }
+
+                // UI zurücksetzen und Ladezustand anzeigen
+                loadingSpinner.style.display = 'block';
+                generationResultsSection.style.display = 'block';
+                overallStatusMessage.textContent = '';
+                overallStatusMessage.className = 'status-message'; // Klasse zurücksetzen
+                createdImagesContainer.innerHTML = '';
+                errorsList.innerHTML = '';
+                errorHeaderMessage.style.display = 'none'; // Fehler-Header initial ausblenden
+
+                // Setze remainingIds neu, falls der Button erneut geklickt wird nach Abschluss
+                remainingIds = [...initialMissingIds];
+                createdCount = 0;
+                errorCount = 0;
+                isPaused = false;
+
+                isGenerationActive = true; // Generierung starten
+                updateButtonState(); // Buttons anpassen (Generieren aus, Pause an)
+                processNextImage();
+            });
+        }
+
+        if (togglePauseResumeButton) {
+            togglePauseResumeButton.addEventListener('click', function () {
+                isPaused = !isPaused; // Zustand umschalten
+                if (isPaused) {
+                    progressText.textContent = `Generierung pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
+                }
+                updateButtonState(); // Button-Text und Sichtbarkeit aktualisieren
+                if (!isPaused) { // Wenn gerade fortgesetzt wurde
+                    processNextImage(); // Generierung fortsetzen
+                }
+            });
+        }
+
+        async function processNextImage() {
+            if (isPaused) {
+                // Wenn pausiert, beende die Ausführung, bis fortgesetzt wird
                 return;
             }
 
-            // UI zurücksetzen und Ladezustand anzeigen
-            loadingSpinner.style.display = 'block';
-            generationResultsSection.style.display = 'block';
-            overallStatusMessage.textContent = '';
-            overallStatusMessage.className = 'status-message'; // Klasse zurücksetzen
-            createdImagesContainer.innerHTML = '';
-            errorsList.innerHTML = '';
-            errorHeaderMessage.style.display = 'none'; // Fehler-Header initial ausblenden
+            if (remainingIds.length === 0) {
+                // Alle Bilder verarbeitet
+                loadingSpinner.style.display = 'none';
+                progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+                isGenerationActive = false; // Generierung beendet
+                updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
 
-            // Setze remainingIds neu, falls der Button erneut geklickt wird nach Abschluss
-            remainingIds = [...initialMissingIds];
-            createdCount = 0;
-            errorCount = 0;
-            isPaused = false;
-
-            isGenerationActive = true; // Generierung starten
-            updateButtonState(); // Buttons anpassen (Generieren aus, Pause an)
-            processNextImage();
-        });
-    }
-
-    if (togglePauseResumeButton) {
-        togglePauseResumeButton.addEventListener('click', function() {
-            isPaused = !isPaused; // Zustand umschalten
-            if (isPaused) {
-                progressText.textContent = `Generierung pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
+                if (errorCount > 0) {
+                    overallStatusMessage.textContent = `Generierung abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+                    overallStatusMessage.className = 'status-message status-orange';
+                    errorHeaderMessage.style.display = 'block';
+                } else {
+                    overallStatusMessage.textContent = `Alle ${createdCount} Social Media Bilder erfolgreich generiert!`;
+                    overallStatusMessage.className = 'status-message status-green';
+                }
+                return;
             }
-            updateButtonState(); // Button-Text und Sichtbarkeit aktualisieren
-            if (!isPaused) { // Wenn gerade fortgesetzt wurde
-                processNextImage(); // Generierung fortsetzen
-            }
-        });
-    }
 
-    async function processNextImage() {
-        if (isPaused) {
-            // Wenn pausiert, beende die Ausführung, bis fortgesetzt wird
-            return;
-        }
+            const currentId = remainingIds.shift(); // Nächste ID aus der Liste nehmen
+            progressText.textContent = `Generiere Social Media Bild ${createdCount + errorCount + 1} von ${initialMissingIds.length} (${currentId})...`;
 
-        if (remainingIds.length === 0) {
-            // Alle Bilder verarbeitet
-            loadingSpinner.style.display = 'none';
-            progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
-            isGenerationActive = false; // Generierung beendet
-            updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
-
-            if (errorCount > 0) {
-                overallStatusMessage.textContent = `Generierung abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
-                overallStatusMessage.className = 'status-message status-orange';
-                errorHeaderMessage.style.display = 'block';
-            } else {
-                overallStatusMessage.textContent = `Alle ${createdCount} Social Media Bilder erfolgreich generiert!`;
-                overallStatusMessage.className = 'status-message status-green';
-            }
-            return;
-        }
-
-        const currentId = remainingIds.shift(); // Nächste ID aus der Liste nehmen
-        progressText.textContent = `Generiere Social Media Bild ${createdCount + errorCount + 1} von ${initialMissingIds.length} (${currentId})...`;
-
-        try {
-            const response = await fetch(window.location.href, { // Anfrage an dasselbe PHP-Skript
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'generate_single_social_media_image', // Spezifische Aktion für AJAX
-                    comic_id: currentId
-                })
-            });
-
-            let data;
             try {
-                data = await response.json();
-            } catch (jsonError) {
-                const responseText = await response.text();
-                throw new Error(`Fehler beim Parsen der JSON-Antwort für ${currentId}: ${jsonError.message}. Antwort war: ${responseText.substring(0, 200)}...`);
-            }
+                const response = await fetch(window.location.href, { // Anfrage an dasselbe PHP-Skript
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'generate_single_social_media_image', // Spezifische Aktion für AJAX
+                        comic_id: currentId
+                    })
+                });
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    const responseText = await response.text();
+                    throw new Error(`Fehler beim Parsen der JSON-Antwort für ${currentId}: ${jsonError.message}. Antwort war: ${responseText.substring(0, 200)}...`);
+                }
 
 
-            if (data.success) {
-                createdCount++;
-                const imageDiv = document.createElement('div');
-                imageDiv.className = 'image-item';
-                imageDiv.innerHTML = `
+                if (data.success) {
+                    createdCount++;
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'image-item';
+                    imageDiv.innerHTML = `
                     <img src="${data.imageUrl}" alt="Social Media Bild ${data.comicId}">
                     <span>${data.comicId}</span>
                 `;
-                createdImagesContainer.appendChild(imageDiv);
+                    createdImagesContainer.appendChild(imageDiv);
 
-                // Entferne das Element aus dem Grid der fehlenden Bilder
-                if (missingImagesGrid) {
-                    const missingItemSpan = missingImagesGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
-                    if (missingItemSpan) {
-                        missingItemSpan.remove();
+                    // Entferne das Element aus dem Grid der fehlenden Bilder
+                    if (missingImagesGrid) {
+                        const missingItemSpan = missingImagesGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
+                        if (missingItemSpan) {
+                            missingItemSpan.remove();
+                        }
                     }
-                }
 
-            } else {
+                } else {
+                    errorCount++;
+                    const errorItem = document.createElement('li');
+                    errorItem.textContent = `Fehler für ${currentId}: ${data.message}`;
+                    errorsList.appendChild(errorItem);
+                    errorHeaderMessage.style.display = 'block';
+                }
+            } catch (error) {
                 errorCount++;
                 const errorItem = document.createElement('li');
-                errorItem.textContent = `Fehler für ${currentId}: ${data.message}`;
+                errorItem.textContent = `Netzwerkfehler oder unerwartete Antwort für ${currentId}: ${error.message}`;
                 errorsList.appendChild(errorItem);
                 errorHeaderMessage.style.display = 'block';
             }
-        } catch (error) {
-            errorCount++;
-            const errorItem = document.createElement('li');
-            errorItem.textContent = `Netzwerkfehler oder unerwartete Antwort für ${currentId}: ${error.message}`;
-            errorsList.appendChild(errorItem);
-            errorHeaderMessage.style.display = 'block';
-        }
 
-        // Fügen Sie hier eine kleine Verzögerung ein, bevor das nächste Bild verarbeitet wird
-        setTimeout(() => {
-            processNextImage();
-        }, 1000); // 1000 Millisekunden (1 Sekunde) Verzögerung
-    }
-});
+            // Fügen Sie hier eine kleine Verzögerung ein, bevor das nächste Bild verarbeitet wird
+            setTimeout(() => {
+                processNextImage();
+            }, 1000); // 1000 Millisekunden (1 Sekunde) Verzögerung
+        }
+    });
 </script>
 
 <?php

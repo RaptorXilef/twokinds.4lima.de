@@ -33,12 +33,13 @@ $robotsContent = 'index, follow'; // Diese Seite soll von Suchmaschinen indexier
 $current_page_type = 'archive';
 
 // Pfade zu den JSON-Dateien
-$archiveChaptersJsonPath = __DIR__ . '/src/components/archive_chapters.json';
-$comicVarJsonPath = __DIR__ . '/src/components/comic_var.json';
+$archiveChaptersJsonPath = __DIR__ . '/src/config/archive_chapters.json';
+$comicVarJsonPath = __DIR__ . '/src/config/comic_var.json';
 $placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg'; // Pfad zum Platzhalterbild
 
 // Lade die Archivkapitel-Daten
-function loadArchiveChapters(string $path): array {
+function loadArchiveChapters(string $path): array
+{
     if (!file_exists($path) || filesize($path) === 0) {
         return [];
     }
@@ -49,14 +50,15 @@ function loadArchiveChapters(string $path): array {
         return [];
     }
     // Sortiere nach chapterId, um Konsistenz zu gewährleisten
-    usort($data, function($a, $b) {
+    usort($data, function ($a, $b) {
         return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
     });
     return $data;
 }
 
 // Lade die Comic-Variablen-Daten
-function loadComicVar(string $path): array {
+function loadComicVar(string $path): array
+{
     if (!file_exists($path) || filesize($path) === 0) {
         return [];
     }
@@ -89,7 +91,7 @@ $existingChapterIds = array_column($archiveChapters, 'chapterId');
 foreach ($comicsByChapter as $chId => $comics) {
     if (!in_array($chId, $existingChapterIds)) {
         $archiveChapters[] = [
-            'chapterId' => (int)$chId,
+            'chapterId' => (int) $chId,
             'title' => 'Dieses Kapitel wird im Moment bearbeitet.',
             'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.'
         ];
@@ -97,7 +99,7 @@ foreach ($comicsByChapter as $chId => $comics) {
 }
 
 // Sortiere die Kapitel erneut nach chapterId, falls neue hinzugefügt wurden
-usort($archiveChapters, function($a, $b) {
+usort($archiveChapters, function ($a, $b) {
     return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
 });
 
@@ -128,7 +130,7 @@ include __DIR__ . '/src/layout/header.php';
             $chapterId = $chapter['chapterId'] ?? 'N/A';
             $chapterTitle = !empty(trim(strip_tags($chapter['title'] ?? '', '<b><i><u><p><br>'))) ? $chapter['title'] : 'Dieses Kapitel wird im Moment bearbeitet.';
             $chapterDescription = !empty(trim(strip_tags($chapter['description'] ?? '', '<b><i><u><p><br>'))) ? $chapter['description'] : 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.';
-        ?>
+            ?>
             <section class="chapter collapsible-section" data-ch-id="<?php echo htmlspecialchars($chapterId); ?>">
                 <h2 class="collapsible-header"><?php echo $chapterTitle; ?><span class="arrow-left jsdep"></span></h2>
                 <div class="collapsible-content">
@@ -150,10 +152,13 @@ include __DIR__ . '/src/layout/header.php';
                                 $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId) . '.php'; // Link zur Comic-Seite
                                 $comicDate = DateTime::createFromFormat('Ymd', $comicId);
                                 $displayDate = $comicDate ? $comicDate->format('d.m.Y') : 'Unbekanntes Datum';
-                            ?>
+                                ?>
                                 <a href="<?php echo $comicPagePath; ?>" title="Comic vom <?php echo htmlspecialchars($displayDate); ?>">
                                     <span><?php echo htmlspecialchars($displayDate); ?></span>
-                                    <img class="jsdep" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" data-src="<?php echo htmlspecialchars($displayImagePath); ?>" alt="Comic vom <?php echo htmlspecialchars($displayDate); ?>">
+                                    <img class="jsdep"
+                                        src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+                                        data-src="<?php echo htmlspecialchars($displayImagePath); ?>"
+                                        alt="Comic vom <?php echo htmlspecialchars($displayDate); ?>">
                                 </a>
                             <?php endforeach; ?>
                         <?php endif; ?>

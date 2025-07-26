@@ -98,13 +98,15 @@ $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ .
 ?>
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <title>
         <?php echo htmlspecialchars($pageTitle); ?>
     </title>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <meta name="keywords" content="TwoKinds, in, auf, deutsch, übersetzt, uebersetzt, Web, Comic, Tom, Fischbach, RaptorXilef, Felix, Maywald, Reni, Nora, Trace, Flora, Keith, Natani, Zen, Sythe, Nibbly, Raine, Laura, Saria, Eric, Kathrin, Mike, Evals, Madelyn, Maren, Karen, Red, Templer, Keidran, Basitin, Mensch">
+    <meta name="keywords"
+        content="TwoKinds, in, auf, deutsch, übersetzt, uebersetzt, Web, Comic, Tom, Fischbach, RaptorXilef, Felix, Maywald, Reni, Nora, Trace, Flora, Keith, Natani, Zen, Sythe, Nibbly, Raine, Laura, Saria, Eric, Kathrin, Mike, Evals, Madelyn, Maren, Karen, Red, Templer, Keidran, Basitin, Mensch">
     <meta name="author" content="Felix Maywald, Design und Rechte by Thomas J. Fischbach & Brandon J. Dusseau">
     <meta name="viewport" content="<?php echo htmlspecialchars($viewportContent); ?>">
     <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s', filemtime(__FILE__)); ?>">
@@ -141,30 +143,32 @@ $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ .
     echo $additionalHeadContent;
     ?>
 </head>
+
 <body class="<?php echo htmlspecialchars($bodyClass); ?>">
     <div id="mainContainer" class="main-container">
         <!-- Hinweis auf das Fanprojekt und Link zum Original. -->
-        <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/" target="_blank">twokinds.keenspot.com</a></center>
+        <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
+                target="_blank">twokinds.keenspot.com</a></center>
         <div id="banner-lights-off" class="banner-lights-off"></div>
         <!-- Hauptbanner der Webseite. -->
         <div id="banner" class="banner">Twokinds</div>
         <div id="content-area" class="content-area">
             <div id="sidebar" class="sidebar">
 
-                        <?php
-                        // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
-                        // __DIR__ ist das Verzeichnis der aktuellen Datei (src/layout)
-                        // $_SERVER['PHP_SELF'] ist der Pfad zum aktuell aufgerufenen Skript (z.B. /admin/index.php oder /index.php)
-                        if (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) {
-                            // Wenn sich die aufgerufene Seite im /admin/-Verzeichnis befindet, lade das Admin-Menü
-                            // Der Pfad ist von src/layout/ nach ../components/
-                            require(__DIR__ . '/../components/admin_menue_config.php');
-                        } else {
-                            // Andernfalls lade das normale Seitenmenü
-                            // Der Pfad ist von src/layout/ nach ../components/
-                            require(__DIR__ . '/../components/menue_config.php');
-                        }
-                        ?>
+                <?php
+                // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
+                // __DIR__ ist das Verzeichnis der aktuellen Datei (src/layout)
+                // $_SERVER['PHP_SELF'] ist der Pfad zum aktuell aufgerufenen Skript (z.B. /admin/index.php oder /index.php)
+                if (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) {
+                    // Wenn sich die aufgerufene Seite im /admin/-Verzeichnis befindet, lade das Admin-Menü
+                    // Der Pfad ist von src/layout/ nach ../components/
+                    require(__DIR__ . '/../components/admin_menue_config.php');
+                } else {
+                    // Andernfalls lade das normale Seitenmenü
+                    // Der Pfad ist von src/layout/ nach ../components/
+                    require(__DIR__ . '/../components/menue_config.php');
+                }
+                ?>
 
             </div>
             <main id="content" class="content">

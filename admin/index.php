@@ -24,7 +24,8 @@ $usersFile = __DIR__ . '/../../../admin_users.json';
  * Liest die Benutzerdaten aus der JSON-Datei.
  * @return array Ein assoziatives Array der Benutzerdaten oder ein leeres Array, wenn die Datei nicht existiert oder leer ist.
  */
-function getUsers(): array {
+function getUsers(): array
+{
     global $usersFile;
     if (!file_exists($usersFile) || filesize($usersFile) === 0) {
         return [];
@@ -44,7 +45,8 @@ function getUsers(): array {
  * @param array $users Das zu speichernde Benutzerarray.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveUsers(array $users): bool {
+function saveUsers(array $users): bool
+{
     global $usersFile;
     // Stelle sicher, dass das Verzeichnis schreibbar ist, bevor geschrieben wird.
     // Hier prüfen wir das Verzeichnis, in dem die Users-Datei liegen soll.
@@ -184,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             break;
-        
+
         // Neuen Benutzer hinzufügen (nur für angemeldete Benutzer)
         case 'add_user':
             if (!$loggedIn) {
@@ -261,32 +263,38 @@ include __DIR__ . '/../src/layout/header.php';
             margin: 20px auto;
             padding: 20px;
             /* Dezenter Rahmen im hellen Modus (beibehalten) */
-            border: 1px solid rgba(221, 221, 221, 0.2); 
+            border: 1px solid rgba(221, 221, 221, 0.2);
             border-radius: 8px;
             /* Dezenter Hintergrund im hellen Modus (beibehalten) */
-            background-color: rgba(240, 240, 240, 0.05); 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Dezenterer Schatten (beibehalten) */
+            background-color: rgba(240, 240, 240, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            /* Dezenterer Schatten (beibehalten) */
         }
 
         /* Input-Felder und Labels im hellen Theme */
         .admin-form-container label {
-            color: #333; /* Dunkler Text für Labels */
+            color: #333;
+            /* Dunkler Text für Labels */
         }
+
         .admin-form-container input[type="text"],
         .admin-form-container input[type="password"],
         .admin-form-container input[type="email"] {
-            width: calc(100% - 18px); /* Breite anpassen */
+            width: calc(100% - 18px);
+            /* Breite anpassen */
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            background-color: #fff; /* Weißer Hintergrund für Input-Felder */
-            color: #333; /* Dunkler Text in Input-Feldern */
+            background-color: #fff;
+            /* Weißer Hintergrund für Input-Felder */
+            color: #333;
+            /* Dunkler Text in Input-Feldern */
         }
-        
+
         /* Logout Link im hellen Theme */
         /* Dies ist die Standardfarbe für den Logout-Link, wenn kein Dunkelmodus aktiv ist */
         .logout-link {
-            color: rgb(240, 17, 9); 
+            color: rgb(240, 17, 9);
             text-decoration: none;
             font-weight: bold;
         }
@@ -296,14 +304,18 @@ include __DIR__ . '/../src/layout/header.php';
 
         .main-container.lights-off .admin-form-container {
             /* Hintergrund und Rahmen wie in v10 (letzter Stand, den du als besser empfandest) */
-            background-color: rgba(30, 30, 30, 0.2); /* Dunkler, transparenter Hintergrund */
-            border-color: rgba(80, 80, 80, 0.15); /* Angepasster Rahmen */
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Angepasster Schatten */
+            background-color: rgba(30, 30, 30, 0.2);
+            /* Dunkler, transparenter Hintergrund */
+            border-color: rgba(80, 80, 80, 0.15);
+            /* Angepasster Rahmen */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* Angepasster Schatten */
         }
 
         /* Labels sollen im Dunkelmodus #efefef sein */
         body.theme-night .admin-form-container label {
-            color: #efefef !important; /* Helleres Grau für Labels im Dark Theme - !important hinzugefügt, um body.theme-night a zu überschreiben */
+            color: #efefef !important;
+            /* Helleres Grau für Labels im Dark Theme - !important hinzugefügt, um body.theme-night a zu überschreiben */
         }
 
         /* Überschriften, Absätze und Benutzernamen sollen hell sein im Dark Theme */
@@ -311,16 +323,20 @@ include __DIR__ . '/../src/layout/header.php';
         .main-container.lights-off .admin-form-container h3,
         .main-container.lights-off .admin-form-container p,
         .main-container.lights-off .admin-form-container li span.user-name {
-            color: #f0f0f0; /* Heller Text für diese Elemente im Dark Theme */
+            color: #f0f0f0;
+            /* Heller Text für diese Elemente im Dark Theme */
         }
 
         /* Input-Felder im dunklen Theme */
         .main-container.lights-off .admin-form-container input[type="text"],
         .main-container.lights-off .admin-form-container input[type="password"],
         .main-container.lights-off .admin-form-container input[type="email"] {
-            background-color: #444; /* Dunklerer Hintergrund für Input-Felder im Dark Theme */
-            color: #f0f0f0; /* Heller Text in Input-Feldern im Dark Theme */
-            border-color: #666; /* Angepasster Rahmen für Input-Felder im Dark Theme */
+            background-color: #444;
+            /* Dunklerer Hintergrund für Input-Felder im Dark Theme */
+            color: #f0f0f0;
+            /* Heller Text in Input-Feldern im Dark Theme */
+            border-color: #666;
+            /* Angepasster Rahmen für Input-Felder im Dark Theme */
         }
 
         /* Buttons (allgemein) */
@@ -332,18 +348,44 @@ include __DIR__ . '/../src/layout/header.php';
             font-size: 16px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
+
         /* Spezifische Button-Farben (heller Modus Standard) */
-        .admin-form-container button[name="action"][value="create_initial_user"] { background-color: #4CAF50; color: white; }
-        .admin-form-container button[name="action"][value="login"] { background-color: #008CBA; color: white; }
-        .admin-form-container button[name="action"][value="change_credentials"] { background-color: #5cb85c; color: white; }
-        .admin-form-container button[name="action"][value="add_user"] { background-color: #f0ad4e; color: white; }
-        .admin-form-container button[name="action"][value="delete_user"] { background-color: #dc3545; color: white; font-size: 14px; padding: 5px 10px;}
-        .admin-form-container button:hover { opacity: 0.9; }
+        .admin-form-container button[name="action"][value="create_initial_user"] {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .admin-form-container button[name="action"][value="login"] {
+            background-color: #008CBA;
+            color: white;
+        }
+
+        .admin-form-container button[name="action"][value="change_credentials"] {
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        .admin-form-container button[name="action"][value="add_user"] {
+            background-color: #f0ad4e;
+            color: white;
+        }
+
+        .admin-form-container button[name="action"][value="delete_user"] {
+            background-color: #dc3545;
+            color: white;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+
+        .admin-form-container button:hover {
+            opacity: 0.9;
+        }
 
         /* Buttons, die im Dark Theme schwarz bleiben sollen (spezifisch für Dark Mode) */
         .main-container.lights-off .admin-form-container button[name="action"][value="change_credentials"],
         .main-container.lights-off .admin-form-container button[name="action"][value="add_user"] {
-            color: #333; /* Schwarz im Dark Theme */
+            color: #333;
+            /* Schwarz im Dark Theme */
         }
 
         .admin-form-container ul {
@@ -359,30 +401,42 @@ include __DIR__ . '/../src/layout/header.php';
             justify-content: space-between;
             align-items: center;
         }
+
         .main-container.lights-off .admin-form-container li {
-            border-bottom: 1px dotted #555; /* Angepasster Trenner im Dark Theme */
+            border-bottom: 1px dotted #555;
+            /* Angepasster Trenner im Dark Theme */
         }
+
         .admin-form-container li span.user-name {
             font-weight: bold;
         }
-        
+
         /* (Sie) Text soll im hellen Modus schwarz sein und im Dark Theme weiß */
         .admin-form-container li span.current-user-tag {
-            font-size: 0.9em; /* Standardgröße */
-            color: rgb(0, 0, 0); /* Schwarz im hellen Modus für deutlichen Kontrast */
+            font-size: 0.9em;
+            /* Standardgröße */
+            color: rgb(0, 0, 0);
+            /* Schwarz im hellen Modus für deutlichen Kontrast */
         }
+
         body.theme-night .admin-form-container li span.current-user-tag {
-            color: #f0f0f0 !important; /* Heller Tag im Dark Theme - !important hinzugefügt für höchste Priorität */
+            color: #f0f0f0 !important;
+            /* Heller Tag im Dark Theme - !important hinzugefügt für höchste Priorität */
         }
-        
+
         /* Logout Link im Dark Theme */
         body.theme-night .admin-form-container .logout-link {
-            color: rgb(255, 191, 189) !important; /* Kräftigeres Rot im Dark Theme wie gewünscht */
-            text-decoration: none; /* Sicherstellen, dass es nicht unterstrichen ist */
-            font-weight: bold; /* Sicherstellen, dass es fett ist */
+            color: rgb(255, 191, 189) !important;
+            /* Kräftigeres Rot im Dark Theme wie gewünscht */
+            text-decoration: none;
+            /* Sicherstellen, dass es nicht unterstrichen ist */
+            font-weight: bold;
+            /* Sicherstellen, dass es fett ist */
         }
+
         .main-container.lights-off .logout-link:hover {
-            opacity: 0.8; /* Hover-Effekt */
+            opacity: 0.8;
+            /* Hover-Effekt */
         }
 
 
@@ -392,25 +446,28 @@ include __DIR__ . '/../src/layout/header.php';
             border-radius: 5px;
             font-weight: bold;
         }
+
         .admin-form-container .message p {
             margin: 0;
         }
+
         .admin-form-container .message p[style*="color: red"] {
             color: #a94442;
             background-color: #f2dede;
             border: 1px solid #ebccd1;
         }
+
         .admin-form-container .message p[style*="color: green"] {
             color: #3c763d;
             background-color: #dff0d8;
             border: 1px solid #d6e9c6;
         }
+
         .admin-form-container .message p[style*="color: orange"] {
             color: #8a6d3b;
             background-color: #fcf8e3;
             border: 1px solid #faebcc;
         }
-
     </style>
 
     <div class="admin-form-container">
@@ -423,7 +480,7 @@ include __DIR__ . '/../src/layout/header.php';
         <?php
         $existingUsers = getUsers(); // Lade Benutzer jedes Mal neu, um aktuelle Liste zu haben
         if (empty($existingUsers)):
-        ?>
+            ?>
             <h2>Ersten Admin-Benutzer erstellen</h2>
             <p>Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
@@ -463,7 +520,8 @@ include __DIR__ . '/../src/layout/header.php';
                     </div>
                     <div>
                         <label for="new_username">Neuer Benutzername (optional):</label>
-                        <input type="text" id="new_username" name="new_username" value="<?php echo htmlspecialchars($currentUser); ?>">
+                        <input type="text" id="new_username" name="new_username"
+                            value="<?php echo htmlspecialchars($currentUser); ?>">
                     </div>
                     <div>
                         <label for="new_password">Neues Passwort (optional):</label>
@@ -495,23 +553,24 @@ include __DIR__ . '/../src/layout/header.php';
                     $allUsers = getUsers(); // Lade die aktuelle Benutzerliste
                     if (!empty($allUsers)):
                         foreach ($allUsers as $user => $data):
-                    ?>
-                        <li>
-                            <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
-                            <?php if ($user !== $currentUser): // Verhindere, dass der aktuelle Benutzer sich selbst löscht ?>
-                                <form action="index.php" method="POST" style="margin: 0;">
-                                    <input type="hidden" name="action" value="delete_user">
-                                    <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
-                                    <button type="submit" onclick="return confirm('Sind Sie sicher, dass Sie den Benutzer <?php echo htmlspecialchars($user); ?> löschen möchten?');">Löschen</button>
-                                </form>
-                            <?php else: ?>
-                                <span class="current-user-tag">(Sie)</span>
-                            <?php endif; ?>
-                        </li>
-                    <?php
+                            ?>
+                            <li>
+                                <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
+                                <?php if ($user !== $currentUser): // Verhindere, dass der aktuelle Benutzer sich selbst löscht ?>
+                                    <form action="index.php" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="action" value="delete_user">
+                                        <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
+                                        <button type="submit"
+                                            onclick="return confirm('Sind Sie sicher, dass Sie den Benutzer <?php echo htmlspecialchars($user); ?> löschen möchten?');">Löschen</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span class="current-user-tag">(Sie)</span>
+                                <?php endif; ?>
+                            </li>
+                            <?php
                         endforeach;
                     else:
-                    ?>
+                        ?>
                         <li>Keine weiteren Benutzer vorhanden.</li>
                     <?php endif; ?>
                 </ul>

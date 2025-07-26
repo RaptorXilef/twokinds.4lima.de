@@ -29,7 +29,8 @@ include __DIR__ . "/src/layout/header.php";
         <a href="#natani"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_natani.gif" alt="Natani"></a>
         <a href="#zen"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_zen.gif" alt="Zen"></a>
         <a href="#sythe"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_sythe.gif" alt="Sythe"></a>
-        <a href="#mrsnibbly"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_nibbly.gif" alt="Nibbly the Great and Powerful"></a>
+        <a href="#mrsnibbly"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_nibbly.gif"
+                alt="Nibbly the Great and Powerful"></a>
         <a href="#raine"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_raine.gif" alt="Raine"></a>
         <a href="#laura"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_laura.gif" alt="Laura"></a>
         <a href="#saria"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_saria.gif" alt="Saria"></a>
@@ -37,7 +38,8 @@ include __DIR__ . "/src/layout/header.php";
         <a href="#kathrin"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_kathrin.gif" alt="Kathrin"></a>
         <a href="#mike"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_mike.gif" alt="Mike"></a>
         <a href="#evals"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_evals.gif" alt="Evals"></a>
-        <a href="#maddie"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maddie.gif" alt="Madelyn Adelaide"></a>
+        <a href="#maddie"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maddie.gif"
+                alt="Madelyn Adelaide"></a>
         <a href="#maren"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maren.gif" alt="Maren"></a>
         <a href="#karen"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_karen.gif" alt="Karen"></a>
         <a href="#red"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_red.gif" alt="Red-haired guy"></a>
@@ -55,9 +57,12 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="trace">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Trace2025.png" class="portrait" alt="Trace"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/traceref_thumbnail.png" alt="Ref Sheet"></a>
-            <a href="https://www.patreon.com/posts/tiger-trace-22635887" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/tigertraceref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/traceref_thumbnail.png" alt="Ref Sheet"></a>
+            <a href="https://www.patreon.com/posts/tiger-trace-22635887" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/tigertraceref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Trace Legacy</h3>
@@ -68,9 +73,17 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Mensch<br>
                 <b>Sprachen:</b> Mensch<br>
             </p>
-            <p><b>Persönlichkeit:</b> Trace ist normalerweise freundlich, schüchtern und ein wenig naiv. Allerdings verändert sich seine Persönlichkeit drastisch, wenn er sich an vergangene Erinnerungen erinnert.</p>
-            <p>Trace wurde in eine arme Bauernfamilie hineingeboren, doch seine magischen Talente wurden schnell erkannt und schon in jungen Jahren wurde er von den Templern rekrutiert. Er stieg in den Rängen auf und übernahm schließlich nach dem Tod seiner ersten Frau die Leitung der Organisation als Großtempel. Er wurde schnell als Tyrann bekannt, der von Menschen und Keidran gleichermaßen gefürchtet wurde. Seine unglaubliche Macht ermöglichte es ihm, alle zu dominieren, die sich ihm widersetzten.</p>
-            <p>Allerdings wurden ihm seine Erinnerungen und sein tief verwurzelter Hass auf Keidran gestohlen. Er reist jetzt an der Seite von Flora, einer Keidranerin, mit der er sich angefreundet hat, ohne zu wissen, wie er einst über sie dachte. Doch langsam kehren seine Erinnerungen zurück und mit ihnen das Wissen um eine Vergangenheit, die er lieber vergessen hätte bleiben wollen.</p>
+            <p><b>Persönlichkeit:</b> Trace ist normalerweise freundlich, schüchtern und ein wenig naiv. Allerdings
+                verändert sich seine Persönlichkeit drastisch, wenn er sich an vergangene Erinnerungen erinnert.</p>
+            <p>Trace wurde in eine arme Bauernfamilie hineingeboren, doch seine magischen Talente wurden schnell erkannt
+                und schon in jungen Jahren wurde er von den Templern rekrutiert. Er stieg in den Rängen auf und übernahm
+                schließlich nach dem Tod seiner ersten Frau die Leitung der Organisation als Großtempel. Er wurde
+                schnell als Tyrann bekannt, der von Menschen und Keidran gleichermaßen gefürchtet wurde. Seine
+                unglaubliche Macht ermöglichte es ihm, alle zu dominieren, die sich ihm widersetzten.</p>
+            <p>Allerdings wurden ihm seine Erinnerungen und sein tief verwurzelter Hass auf Keidran gestohlen. Er reist
+                jetzt an der Seite von Flora, einer Keidranerin, mit der er sich angefreundet hat, ohne zu wissen, wie
+                er einst über sie dachte. Doch langsam kehren seine Erinnerungen zurück und mit ihnen das Wissen um eine
+                Vergangenheit, die er lieber vergessen hätte bleiben wollen.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -78,9 +91,12 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="flora">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Flora2025.png" class="portrait" alt="Flora"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/FloraSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/flora-character-127534701" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/floraref_thumbnail.png" alt="Ref Sheet"></a>
-            <a href="https://www.patreon.com/posts/flora-ref-sheet-26619874" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/flora-oldref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/FloraSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/flora-character-127534701" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/floraref_thumbnail.png" alt="Ref Sheet"></a>
+            <a href="https://www.patreon.com/posts/flora-ref-sheet-26619874" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/flora-oldref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Flora des Regenwald-Tigerstammes</h3>
@@ -92,9 +108,18 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Keidran, Mensch<br>
             </p>
 
-            <p><b>Persönlichkeit:</b> Flora ist kontaktfreudig und willensstark, aber auch romantisch. Seit ihrer Kindheit träumt sie davon, die „wahre Liebe“ zu finden.</p>
-            <p>Flora wurde in den südlichen Regenwäldern ihres Stammes geboren. Doch im Alter von drei Jahren wurde ihr Haus von Sklavenhändlern angegriffen. Ihre Eltern wurden getötet und sie wurde in die Sklaverei verkauft. Flora hatte dabei genug Glück, von einer freundlichen Menschenfamilie gekauft zu werden, die sich dazu entschloss, sie zur Dienstmagd zu machen, um die Schulden zu begleichen. Sie hat keine Erinnerung an den Tag, an dem ihr Stamm angegriffen wurde.</p>
-            <p>Flora wurde schließlich vorzeitig aus ihrer Knechtschaft entlassen und durfte zu ihrem Volk zurückkehren. Aufgrund ihrer Kenntnis der menschlichen Natur und Sprache wurde sie als Vertreterin des Tigerclans ausgewählt und eine Ehe zwischen ihr und einem Prinzen des Wolfclans arrangiert. Die Vereinbarung scheiterte jedoch, als ihre Karawane angegriffen wurde. Sie wurde von Trace, der erst kürzlich sein Gedächtnis verloren hatte, vor den menschlichen Angreifern gerettet.</p>
+            <p><b>Persönlichkeit:</b> Flora ist kontaktfreudig und willensstark, aber auch romantisch. Seit ihrer
+                Kindheit träumt sie davon, die „wahre Liebe“ zu finden.</p>
+            <p>Flora wurde in den südlichen Regenwäldern ihres Stammes geboren. Doch im Alter von drei Jahren wurde ihr
+                Haus von Sklavenhändlern angegriffen. Ihre Eltern wurden getötet und sie wurde in die Sklaverei
+                verkauft. Flora hatte dabei genug Glück, von einer freundlichen Menschenfamilie gekauft zu werden, die
+                sich dazu entschloss, sie zur Dienstmagd zu machen, um die Schulden zu begleichen. Sie hat keine
+                Erinnerung an den Tag, an dem ihr Stamm angegriffen wurde.</p>
+            <p>Flora wurde schließlich vorzeitig aus ihrer Knechtschaft entlassen und durfte zu ihrem Volk zurückkehren.
+                Aufgrund ihrer Kenntnis der menschlichen Natur und Sprache wurde sie als Vertreterin des Tigerclans
+                ausgewählt und eine Ehe zwischen ihr und einem Prinzen des Wolfclans arrangiert. Die Vereinbarung
+                scheiterte jedoch, als ihre Karawane angegriffen wurde. Sie wurde von Trace, der erst kürzlich sein
+                Gedächtnis verloren hatte, vor den menschlichen Angreifern gerettet.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -102,8 +127,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="keith">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Keith2025.png" class="portrait" alt="Keith"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KeithSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/keith-ref-sheet-26845156" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/keithref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KeithSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/keith-ref-sheet-26845156" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/keithref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Keith Keiser</h3>
@@ -114,17 +141,26 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Ostbasitin<br>
                 <b>Sprachen:</b> Keidran, Mensch, Basitin<br>
             </p>
-            <p><b>Persönlichkeit:</b> Keith verhält sich die meiste Zeit ernst oder gleichgültig. Tief im Inneren ist er jedoch wirklich fürsorglich und beschützerisch.</p>
-            <p>Keith wurde auf den Basidian-Inseln geboren, einer großen Landmasse in der Nähe des Festlandes. Sein Vater war General des Militärs. Seine Mutter war Soldatin, wie alle Basitins, aber sie schützte ihn die meiste Zeit seiner Kindheit vor dem Militärleben. Wie alle Basitins trat er schließlich im Alter von 8 Jahren dem Militär bei, was für die meisten Basitins spät war. Keith wurde im Alter von 13 Jahren für den Tod seiner Eltern verantwortlich gemacht und von den Inseln verbannt. Ihm wurde befohlen, nicht zurückzukehren, bis er den Großtempel zurückgebracht hatte.</p>
+            <p><b>Persönlichkeit:</b> Keith verhält sich die meiste Zeit ernst oder gleichgültig. Tief im Inneren ist er
+                jedoch wirklich fürsorglich und beschützerisch.</p>
+            <p>Keith wurde auf den Basidian-Inseln geboren, einer großen Landmasse in der Nähe des Festlandes. Sein
+                Vater war General des Militärs. Seine Mutter war Soldatin, wie alle Basitins, aber sie schützte ihn die
+                meiste Zeit seiner Kindheit vor dem Militärleben. Wie alle Basitins trat er schließlich im Alter von 8
+                Jahren dem Militär bei, was für die meisten Basitins spät war. Keith wurde im Alter von 13 Jahren für
+                den Tod seiner Eltern verantwortlich gemacht und von den Inseln verbannt. Ihm wurde befohlen, nicht
+                zurückzukehren, bis er den Großtempel zurückgebracht hatte.</p>
         </div>
         <div class="clear"></div>
     </section>
 
     <section class="char-detail" id="natani">
         <div class="char-img">
-            <img src="https://cdn.twokinds.keenspot.com/img/characters/Natani2025.png" class="portrait" alt="Natani"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/NataniSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/natani-ref-sheet-25812950" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/nataniref_thumbnail.png" alt="Ref Sheet"></a>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Natani2025.png" class="portrait"
+                alt="Natani"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/NataniSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/natani-ref-sheet-25812950" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/nataniref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Natani</h3>
@@ -135,9 +171,19 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Wolf Keidran<br>
                 <b>Sprachen:</b> Keidran<br>
             </p>
-            <p><b>Persönlichkeit:</b> Dreist, aggressiv und insgeheim einsam. Natani stößt alle bis auf ein paar emotional beiseite.</p>
-            <p>Der jüngere der Assassinenbrüder. Natani war gezwungen, mit seinem Bruder Zen als Obdachlose zu leben, nachdem ihre Eltern und ihr Stamm von menschlichen Templern zerstört worden waren. Aus Verzweiflung schlossen er und Zen sich einer Assassinengilde an, um über die Runden zu kommen. Aufgrund eines Unfalls während eines Attentats wurde Natani auf magische Weise und dauerhaft mit dem Geist seines Bruders verbunden. Sie können nun über ihre Verbindung aktiv die Gedanken und Gefühle des anderen lesen und so über große Entfernungen kommunizieren. Diese Verbindung ist zwar ein großer Vorteil auf diesem Gebiet, hat aber auch Nachteile. Sie können niemals getrennt werden und es ist unbekannt, was passieren wird, wenn einer stirbt.</p>
-            <p>Natani hatte nie eine formelle Ausbildung und ist daher Analphabet. Er kann in keiner Sprache schreiben und nur Keidran sprechen, obwohl er eine Handvoll menschlicher Wörter verstehen kann. Dennoch tappt Natani bei Gesprächen zwischen Spezies oft im Dunkeln.</p>
+            <p><b>Persönlichkeit:</b> Dreist, aggressiv und insgeheim einsam. Natani stößt alle bis auf ein paar
+                emotional beiseite.</p>
+            <p>Der jüngere der Assassinenbrüder. Natani war gezwungen, mit seinem Bruder Zen als Obdachlose zu leben,
+                nachdem ihre Eltern und ihr Stamm von menschlichen Templern zerstört worden waren. Aus Verzweiflung
+                schlossen er und Zen sich einer Assassinengilde an, um über die Runden zu kommen. Aufgrund eines Unfalls
+                während eines Attentats wurde Natani auf magische Weise und dauerhaft mit dem Geist seines Bruders
+                verbunden. Sie können nun über ihre Verbindung aktiv die Gedanken und Gefühle des anderen lesen und so
+                über große Entfernungen kommunizieren. Diese Verbindung ist zwar ein großer Vorteil auf diesem Gebiet,
+                hat aber auch Nachteile. Sie können niemals getrennt werden und es ist unbekannt, was passieren wird,
+                wenn einer stirbt.</p>
+            <p>Natani hatte nie eine formelle Ausbildung und ist daher Analphabet. Er kann in keiner Sprache schreiben
+                und nur Keidran sprechen, obwohl er eine Handvoll menschlicher Wörter verstehen kann. Dennoch tappt
+                Natani bei Gesprächen zwischen Spezies oft im Dunkeln.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -145,8 +191,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="zen">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Zen2025.png" class="portrait" alt="Zen"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/ZenSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/zen-ref-sheet-82651895" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/zenref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/ZenSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/zen-ref-sheet-82651895" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/zenref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Zen</h3>
@@ -157,8 +205,15 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Wolf Keidran<br>
                 <b>Sprachen:</b> Keidran, (sehr wenig) menschlich<br>
             </p>
-            <p><b>Persönlichkeit:</b> Unbeschwert und optimistisch, durchaus. Genießt es, sein jüngeres Geschwister unermüdlich zu necken.</p>
-            <p>Der ältere der Assassinenbrüder. Zen ist sehr beschützerisch gegenüber seinen Geschwistern, der einzigen Familie, die er noch hat, nachdem der Angriff beide zu Waisen gemacht hat. Die Brüder schlossen sich beide der Assassinengilde an und nutzten ihre einzigartige mentale Verbindung, um ihnen bei der Eroberung ansonsten unmöglicher Ziele zu helfen. Trotz des Könnens und des guten Rufs des Assassinen-Bruders sterben fast alle Ziele, die sie töten sollen, auf indirekte Weise, oft durch Zufall oder auf eine Art und Weise, die das Duo ursprünglich nicht beabsichtigt hatte. Irgendwie scheint ihr allgemeines Pech über einen Stellvertreter auf andere abzufärben.</p>
+            <p><b>Persönlichkeit:</b> Unbeschwert und optimistisch, durchaus. Genießt es, sein jüngeres Geschwister
+                unermüdlich zu necken.</p>
+            <p>Der ältere der Assassinenbrüder. Zen ist sehr beschützerisch gegenüber seinen Geschwistern, der einzigen
+                Familie, die er noch hat, nachdem der Angriff beide zu Waisen gemacht hat. Die Brüder schlossen sich
+                beide der Assassinengilde an und nutzten ihre einzigartige mentale Verbindung, um ihnen bei der
+                Eroberung ansonsten unmöglicher Ziele zu helfen. Trotz des Könnens und des guten Rufs des
+                Assassinen-Bruders sterben fast alle Ziele, die sie töten sollen, auf indirekte Weise, oft durch Zufall
+                oder auf eine Art und Weise, die das Duo ursprünglich nicht beabsichtigt hatte. Irgendwie scheint ihr
+                allgemeines Pech über einen Stellvertreter auf andere abzufärben.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -166,8 +221,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="sythe">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Sythe2025.png" class="portrait" alt="Sythe"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SytheSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/sytheref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SytheSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/sytheref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Sythe</h3>
@@ -179,16 +236,26 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Keidran, Mensch<br>
             </p>
             <p><b>Persönlichkeit:</b> Extrem pessimistisch und in stressigen Umgebungen leicht ängstlich.</p>
-            <p>Sythe ist ein Wolf mit Pferdeschwanz, der sich fernab von Schlachtfeldern und Konflikten am wohlsten fühlt. Er wurde von seinem Onkel erzogen und sein ganzes Leben lang zum Diplomaten zwischen Menschen und Keidran ausgebildet – er verbrachte sogar über ein Jahr unter Menschen, bevor die Grenzen geschlossen wurden. Bedauerlicherweise sind seine perfekte menschliche Sprache und seine jahrelange Ausbildung in Kulturen und Politik zwischen den Spezies seit Ausbruch des Krieges völlig verloren gegangen. Intern hat Sythe eine sehr negative Einstellung zu seinesgleichen – er glaubt, dass der Krieg größtenteils auf die Wölfe zurückzuführen ist, die die Menschen überhaupt provoziert haben. Letztendlich wünscht er sich nichts sehnlicher, als dass sein Leben wieder normal wird.</p>
+            <p>Sythe ist ein Wolf mit Pferdeschwanz, der sich fernab von Schlachtfeldern und Konflikten am wohlsten
+                fühlt. Er wurde von seinem Onkel erzogen und sein ganzes Leben lang zum Diplomaten zwischen Menschen und
+                Keidran ausgebildet – er verbrachte sogar über ein Jahr unter Menschen, bevor die Grenzen geschlossen
+                wurden. Bedauerlicherweise sind seine perfekte menschliche Sprache und seine jahrelange Ausbildung in
+                Kulturen und Politik zwischen den Spezies seit Ausbruch des Krieges völlig verloren gegangen. Intern hat
+                Sythe eine sehr negative Einstellung zu seinesgleichen – er glaubt, dass der Krieg größtenteils auf die
+                Wölfe zurückzuführen ist, die die Menschen überhaupt provoziert haben. Letztendlich wünscht er sich
+                nichts sehnlicher, als dass sein Leben wieder normal wird.</p>
         </div>
         <div class="clear"></div>
     </section>
 
     <section class="char-detail" id="mrsnibbly">
         <div class="char-img">
-            <img src="https://cdn.twokinds.keenspot.com/img/characters/Nibbly2025.png" class="portrait" alt="Mrs Nibbly"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MrsNibblySwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/sytheref_thumbnail.png" alt="Ref Sheet"></a>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Nibbly2025.png" class="portrait"
+                alt="Mrs Nibbly"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MrsNibblySwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/sytheref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Mrs. Nibbly</h3>
@@ -200,8 +267,18 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Eichhörnchen<br>
             </p>
             <p><b>Persönlichkeit:</b> Ein neugieriges kleines Eichhörnchen ohne Selbsterhaltungstrieb.</p>
-            <p><i>„Das Leben ist nicht wie einer deiner Romane, Liebes.“ Ihre Freunde würden spotten. „Geh zu einem dieser Monster und wirst bei lebendigem Leibe gefressen!“ Oder zumindest hätten sie das gesagt, wenn Eichhörnchen sprechen könnten. Frau Nibbly wusste jedoch, dass sie eines Tages mehr als eine gewöhnliche Hausfrau sein würde. Ihre nächtlichen Träume waren voller Bilder von Abenteuern und Romantik unter den Riesen. Nachdem sie im Winter zuvor ihren Mann verloren hat, beschließt sie, dass es endlich an der Zeit ist, ihre Träume zu verwirklichen.</i></p>
-            <p><i>Obwohl sie verängstigt war, blieb sie standhaft, als sich das zweibeinige Tier näherte, und erlaubte ihm nicht, ihre Angst zu bemerken. Und es war genau so, wie sie es sich immer vorgestellt hatte! Er hat sie angenommen! Als sie auf die Kreatur kletterte, wusste Mrs. Nibbly, dass sich ihr Leben bald ändern würde. Welche Sehenswürdigkeiten würde sie sehen? Sie wusste es nicht und es kümmerte sie auch nicht. All sie wusste war, dass sie es mit ihm teilen würde – ihrem neuen, lebenslangen Freund und Begleiter. Und vielleicht eines Tages... mehr?</i></p>
+            <p><i>„Das Leben ist nicht wie einer deiner Romane, Liebes.“ Ihre Freunde würden spotten. „Geh zu einem
+                    dieser Monster und wirst bei lebendigem Leibe gefressen!“ Oder zumindest hätten sie das gesagt, wenn
+                    Eichhörnchen sprechen könnten. Frau Nibbly wusste jedoch, dass sie eines Tages mehr als eine
+                    gewöhnliche Hausfrau sein würde. Ihre nächtlichen Träume waren voller Bilder von Abenteuern und
+                    Romantik unter den Riesen. Nachdem sie im Winter zuvor ihren Mann verloren hat, beschließt sie, dass
+                    es endlich an der Zeit ist, ihre Träume zu verwirklichen.</i></p>
+            <p><i>Obwohl sie verängstigt war, blieb sie standhaft, als sich das zweibeinige Tier näherte, und erlaubte
+                    ihm nicht, ihre Angst zu bemerken. Und es war genau so, wie sie es sich immer vorgestellt hatte! Er
+                    hat sie angenommen! Als sie auf die Kreatur kletterte, wusste Mrs. Nibbly, dass sich ihr Leben bald
+                    ändern würde. Welche Sehenswürdigkeiten würde sie sehen? Sie wusste es nicht und es kümmerte sie
+                    auch nicht. All sie wusste war, dass sie es mit ihm teilen würde – ihrem neuen, lebenslangen Freund
+                    und Begleiter. Und vielleicht eines Tages... mehr?</i></p>
             <p>Dieser Abschnitt wurde von Raine verfasst.</p>
         </div>
         <div class="clear"></div>
@@ -210,8 +287,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="raine">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Raine2025.png" class="portrait" alt="Raine"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RaineSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/raine-reference-25826733" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/raineref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RaineSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/raine-reference-25826733" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/raineref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Raine</h3>
@@ -222,8 +301,16 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Mensch / Wolf Keidran<br>
                 <b>Sprachen:</b> Mensch, Keidran<br>
             </p>
-            <p><b>Persönlichkeit:</b> In menschlicher Form ist Raine ein schüchternes und leicht naives junges Mädchen. Aufgrund mangelnder Erfahrung als Keidranerin verliert sich Raine jedoch manchmal in der wilden Natur ihrer anderen Form.</p>
-            <p>Raine ist die Tochter des ehemaligen Großtemplers. Sie wurde unter ungewöhnlichen und unnatürlichen Umständen geboren und verfügt daher über unvorhersehbare magische Kräfte. Die wilde Natur ihrer Magie führt dazu, dass sie physische Transformationen zwischen Keidran- und menschlichen Formen erlebt. Diese Transformationen werden normalerweise durch Artefakte in Schach gehalten, die verzaubert sind, um ihre Magie zu unterdrücken. Ihr ganzes Leben lang hat Raines Mutter ihre Keidran-Form vor anderen Mitgliedern des Templerordens und sogar vor Raine selbst geheim gehalten. Doch je reifer Raine wird, desto unruhiger wird ihre bestialische Seite aufgrund jahrelanger Unterdrückung.</p>
+            <p><b>Persönlichkeit:</b> In menschlicher Form ist Raine ein schüchternes und leicht naives junges Mädchen.
+                Aufgrund mangelnder Erfahrung als Keidranerin verliert sich Raine jedoch manchmal in der wilden Natur
+                ihrer anderen Form.</p>
+            <p>Raine ist die Tochter des ehemaligen Großtemplers. Sie wurde unter ungewöhnlichen und unnatürlichen
+                Umständen geboren und verfügt daher über unvorhersehbare magische Kräfte. Die wilde Natur ihrer Magie
+                führt dazu, dass sie physische Transformationen zwischen Keidran- und menschlichen Formen erlebt. Diese
+                Transformationen werden normalerweise durch Artefakte in Schach gehalten, die verzaubert sind, um ihre
+                Magie zu unterdrücken. Ihr ganzes Leben lang hat Raines Mutter ihre Keidran-Form vor anderen Mitgliedern
+                des Templerordens und sogar vor Raine selbst geheim gehalten. Doch je reifer Raine wird, desto unruhiger
+                wird ihre bestialische Seite aufgrund jahrelanger Unterdrückung.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -231,8 +318,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="laura">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Laura2025.png" class="portrait" alt="Laura"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LauraSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/laura-reference-30562240" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/lauraref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LauraSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/laura-reference-30562240" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/lauraref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Laura vom Stamm der Küstenfuchse</h3>
@@ -243,8 +332,13 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Fuchs Keidran<br>
                 <b>Sprachen:</b> Keidran, Mensch<br>
             </p>
-            <p><b>Persönlichkeit:</b> Laura hat sehr wenig Selbstvertrauen. Sie ist schüchtern, schüchtern und emotional zerbrechlich. Sie versucht Konflikte zu vermeiden und stets höflich zu sein.</p>
-            <p>Lauras Familie fand Keith hinter ihrem Haus an Land gespült, nachdem er verbannt worden war. Laura verliebte sich in Keith und sie sollten heiraten, doch die Ereignisse verschworen sich gegen sie und Keith verließ schließlich das Land und begab sich auf menschliches Territorium, dem sie nicht folgen konnte. Nach mehreren Jahren beschloss sie, Keith auf die einzige Weise aufzusuchen, die sie kannte: indem sie zu den Basitin-Inseln reiste.</p>
+            <p><b>Persönlichkeit:</b> Laura hat sehr wenig Selbstvertrauen. Sie ist schüchtern, schüchtern und emotional
+                zerbrechlich. Sie versucht Konflikte zu vermeiden und stets höflich zu sein.</p>
+            <p>Lauras Familie fand Keith hinter ihrem Haus an Land gespült, nachdem er verbannt worden war. Laura
+                verliebte sich in Keith und sie sollten heiraten, doch die Ereignisse verschworen sich gegen sie und
+                Keith verließ schließlich das Land und begab sich auf menschliches Territorium, dem sie nicht folgen
+                konnte. Nach mehreren Jahren beschloss sie, Keith auf die einzige Weise aufzusuchen, die sie kannte:
+                indem sie zu den Basitin-Inseln reiste.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -252,8 +346,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="saria">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Saria.jpg" class="portrait" alt="Saria"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SariaSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/saria-ref-sheet-60925868" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/sariaref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SariaSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/saria-ref-sheet-60925868" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/sariaref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Saria au Gruhen</h3>
@@ -264,8 +360,13 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Mensch<br>
                 <b>Sprachen:</b> Mensch, Keidran<br>
             </p>
-            <p><b>Persönlichkeit:</b> Saria spricht leise und ist normalerweise schüchtern, hat aber keine Angst, sich zu äußern, wenn es nötig ist.</p>
-            <p>Saria war eine bürgerliche Tochter eines Schmieds. Sie lernte schon früh, auf sich selbst aufzupassen. Sie arbeitet lieber für sich selbst und war nie auf die Hilfe von Sklaven angewiesen. Ihr Vater brachte sie zur Templerakademie, um an der Herstellung von Rüstungen für die Templer zu arbeiten. Dort lernte sie Trace kennen und verliebte sich in sie. Sie waren ein Jahr lang glücklich verheiratet. Ihre Ehe war jedoch nur von kurzer Dauer.</p>
+            <p><b>Persönlichkeit:</b> Saria spricht leise und ist normalerweise schüchtern, hat aber keine Angst, sich
+                zu äußern, wenn es nötig ist.</p>
+            <p>Saria war eine bürgerliche Tochter eines Schmieds. Sie lernte schon früh, auf sich selbst aufzupassen.
+                Sie arbeitet lieber für sich selbst und war nie auf die Hilfe von Sklaven angewiesen. Ihr Vater brachte
+                sie zur Templerakademie, um an der Herstellung von Rüstungen für die Templer zu arbeiten. Dort lernte
+                sie Trace kennen und verliebte sich in sie. Sie waren ein Jahr lang glücklich verheiratet. Ihre Ehe war
+                jedoch nur von kurzer Dauer.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -273,7 +374,8 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="eric">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Eric.jpg" class="portrait" alt="Eric"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EricSwatch.gif" alt="Color Swatch">
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EricSwatch.gif"
+                alt="Color Swatch">
             <!--<a href="" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/ericref_thumbnail.png" alt="Ref Sheet"></a>-->
         </div>
         <div class="char-info">
@@ -286,7 +388,11 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Mensch, Keidran, Basitin<br>
             </p>
             <p><b>Persönlichkeit:</b> Eric mag Keidran. Das fasst es ziemlich gut zusammen.</p>
-            <p>Eric wurde in eine Adelsfamilie hineingeboren. Er ist äußerst wohlhabend, versucht aber, bescheiden mit seinem Geld umzugehen. Eric hat eine große Affinität zu Keidran und nutzt seinen riesigen Reichtum, um in Städten auf dem ganzen Festland verschiedene Keidran-Sklaven zu kaufen. Eric ist sehr belesen, aber er ist auf Keidran-Anatomie und -Physiologie spezialisiert. Eric behandelt alle seine Sklaven sehr gut und die meisten sind ihm auf ewig ergeben, obwohl sie versklavt sind.</p>
+            <p>Eric wurde in eine Adelsfamilie hineingeboren. Er ist äußerst wohlhabend, versucht aber, bescheiden mit
+                seinem Geld umzugehen. Eric hat eine große Affinität zu Keidran und nutzt seinen riesigen Reichtum, um
+                in Städten auf dem ganzen Festland verschiedene Keidran-Sklaven zu kaufen. Eric ist sehr belesen, aber
+                er ist auf Keidran-Anatomie und -Physiologie spezialisiert. Eric behandelt alle seine Sklaven sehr gut
+                und die meisten sind ihm auf ewig ergeben, obwohl sie versklavt sind.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -294,8 +400,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="kathrin">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Kathrin.jpg" class="portrait" alt="Kathrin"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KathrinSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/kathrin-ref-26592787" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/kathrinref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KathrinSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/kathrin-ref-26592787" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/kathrinref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Kathrin "Spots" Vaughan</h3>
@@ -306,8 +414,12 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Mischling Keidran<br>
                 <b>Sprachen:</b> Mensch, Keidran<br>
             </p>
-            <p><b>Persönlichkeit:</b> Kathrin hat eine fröhliche Persönlichkeit. Sie ist in den meisten Dingen etwas naiv, da sie ihr ganzes Leben lang als Sklavin untergebracht war.</p>
-            <p>Kathrin wurde selektiv aus mehreren Generationen von Keidran-Sklaven gezüchtet, um körperlich ansprechender für Menschen zu sein. Ironischerweise ist Kathrin, obwohl sie als Sexsklavin konzipiert wurde, unglaublich naiv, wenn es um Sex geht. Eric lässt ihr viel mehr Freiheiten als seine anderen Sklaven, aber sie genießt es wirklich, ihm zu dienen.</p>
+            <p><b>Persönlichkeit:</b> Kathrin hat eine fröhliche Persönlichkeit. Sie ist in den meisten Dingen etwas
+                naiv, da sie ihr ganzes Leben lang als Sklavin untergebracht war.</p>
+            <p>Kathrin wurde selektiv aus mehreren Generationen von Keidran-Sklaven gezüchtet, um körperlich
+                ansprechender für Menschen zu sein. Ironischerweise ist Kathrin, obwohl sie als Sexsklavin konzipiert
+                wurde, unglaublich naiv, wenn es um Sex geht. Eric lässt ihr viel mehr Freiheiten als seine anderen
+                Sklaven, aber sie genießt es wirklich, ihm zu dienen.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -315,8 +427,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="mike">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Mike.jpg" class="portrait" alt="Mike"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MikeSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/mikeandevalsref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MikeSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/mikeandevalsref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Mike</h3>
@@ -327,8 +441,10 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Fuchs Keidran<br>
                 <b>Sprachen:</b> Mensch, Keidran<br>
             </p>
-            <p><b>Persönlichkeit:</b> Er war früher vollkommen zufrieden mit seinem Schicksal, bis er an dem schicksalhaften Tag einem Basitin begegnete, der schwarze Magie beherrschte.</p>
-            <p>Mike ist einer von mehreren Sklaven, die unter Eric arbeiten. Seine Aufgabe besteht hauptsächlich darin, Erics Schiff zu warten. Er ist gut mit Evals befreundet, einem weiteren Sklaven auf Erics Schiff.</p>
+            <p><b>Persönlichkeit:</b> Er war früher vollkommen zufrieden mit seinem Schicksal, bis er an dem
+                schicksalhaften Tag einem Basitin begegnete, der schwarze Magie beherrschte.</p>
+            <p>Mike ist einer von mehreren Sklaven, die unter Eric arbeiten. Seine Aufgabe besteht hauptsächlich darin,
+                Erics Schiff zu warten. Er ist gut mit Evals befreundet, einem weiteren Sklaven auf Erics Schiff.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -336,8 +452,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="evals">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Evals.jpg" class="portrait" alt="Evals"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EvalsSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/mikeandevalsref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EvalsSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/mikeandevalsref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Evals</h3>
@@ -349,16 +467,21 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Mensch, Keidran<br>
             </p>
             <p><b>Persönlichkeit:</b> Ein typischer Keidran-Sklave.</p>
-            <p>Evals ist einer von mehreren Sklaven, die unter Eric arbeiten. Seine Aufgabe besteht hauptsächlich darin, Erics Schiff zu warten. Er ist gut mit Mike befreundet, einem weiteren Sklaven auf Erics Schiff. Obwohl Evals größer ist als Mike, ist Mike normalerweise derjenige, der die Führung übernimmt.</p>
+            <p>Evals ist einer von mehreren Sklaven, die unter Eric arbeiten. Seine Aufgabe besteht hauptsächlich darin,
+                Erics Schiff zu warten. Er ist gut mit Mike befreundet, einem weiteren Sklaven auf Erics Schiff. Obwohl
+                Evals größer ist als Mike, ist Mike normalerweise derjenige, der die Führung übernimmt.</p>
         </div>
         <div class="clear"></div>
     </section>
 
     <section class="char-detail" id="maddie">
         <div class="char-img">
-            <img src="https://cdn.twokinds.keenspot.com/img/characters/Maddie.png" class="portrait" alt="Madelyn Adelaide"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MaddySwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/madelyn-ref-34828699" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/madelynref_thumbnail.png" alt="Ref Sheet"></a>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Maddie.png" class="portrait"
+                alt="Madelyn Adelaide"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MaddySwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/madelyn-ref-34828699" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/madelynref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Madelyn Adelaide</h3>
@@ -369,8 +492,15 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Ostbasitin<br>
                 <b>Sprachen:</b> Mensch, Basitin, Keidran<br>
             </p>
-            <p><b>Persönlichkeit:</b> Hyperaktiv und lebenslustig, wenn sie nicht im Einsatz ist. Illusorisch und stalkerhaft, wenn nötig.</p>
-            <p>Das ursprüngliche Stalker Girl. Madelyn Adelaide ist eine der besten Spione, die die Basitin zu bieten haben. Mit ihrer geringen Größe und unheimlichen Geschwindigkeit kann sie typischerweise durch jede Falle oder jeden Käfig schlüpfen ... solange niemand hinschaut. Wenn sie erwischt wird, ist sie sehr gut darin, die Gefühle anderer zu ihrem Vorteil zu manipulieren. Ihr kindliches Aussehen macht sie für diejenigen gefährlich, die sie unterschätzen. Im Gegensatz zu den meisten Basitin ist sie jedoch in einem Frontalkampf fast völlig nutzlos, da sie auf jegliches Kampftraining für Tarnung verzichtet hat.</p>
+            <p><b>Persönlichkeit:</b> Hyperaktiv und lebenslustig, wenn sie nicht im Einsatz ist. Illusorisch und
+                stalkerhaft, wenn nötig.</p>
+            <p>Das ursprüngliche Stalker Girl. Madelyn Adelaide ist eine der besten Spione, die die Basitin zu bieten
+                haben. Mit ihrer geringen Größe und unheimlichen Geschwindigkeit kann sie typischerweise durch jede
+                Falle oder jeden Käfig schlüpfen ... solange niemand hinschaut. Wenn sie erwischt wird, ist sie sehr gut
+                darin, die Gefühle anderer zu ihrem Vorteil zu manipulieren. Ihr kindliches Aussehen macht sie für
+                diejenigen gefährlich, die sie unterschätzen. Im Gegensatz zu den meisten Basitin ist sie jedoch in
+                einem Frontalkampf fast völlig nutzlos, da sie auf jegliches Kampftraining für Tarnung verzichtet hat.
+            </p>
         </div>
         <div class="clear"></div>
     </section>
@@ -378,8 +508,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="maren">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Maren.jpg" class="portrait" alt="Maren"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MarenSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/marenkarenref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MarenSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/marenkarenref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Maren Taverndatter</h3>
@@ -391,7 +523,11 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Mensch<br>
             </p>
             <p><b>Persönlichkeit:</b> Maren ist herrisch und bevorzugt, dass die Dinge nach ihrem Kopf gehen.</p>
-            <p>Maren ist die herrische Älteste der Taverndatter-Schwestern. Sie ist eine von Traces aktuellen "Freundinnen", obwohl Trace und sie nie ernsthaft involviert waren. Sie trafen sich in ihrer Taverne, als Trace während seiner Missionen vorbeikam. Sie wusste, dass Trace seine Frau, die vor Jahren verstorben war, immer noch liebte; und sie wusste, dass sie in Wirklichkeit nur von Trace als momentane Ablenkung benutzt wurde. Aber sie blieb trotzdem bei ihm.</p>
+            <p>Maren ist die herrische Älteste der Taverndatter-Schwestern. Sie ist eine von Traces aktuellen
+                "Freundinnen", obwohl Trace und sie nie ernsthaft involviert waren. Sie trafen sich in ihrer Taverne,
+                als Trace während seiner Missionen vorbeikam. Sie wusste, dass Trace seine Frau, die vor Jahren
+                verstorben war, immer noch liebte; und sie wusste, dass sie in Wirklichkeit nur von Trace als momentane
+                Ablenkung benutzt wurde. Aber sie blieb trotzdem bei ihm.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -399,8 +535,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="karen">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Karen.jpg" class="portrait" alt="Karen"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KarenSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/marenkarenref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KarenSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/marenkarenref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Karen Taverndatter</h3>
@@ -411,17 +549,26 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Mensch<br>
                 <b>Sprachen:</b> Mensch<br>
             </p>
-            <p><b>Persönlichkeit:</b> Karen ist kontaktfreudig und aufgeregt; sie hasst Langeweile und wird sich alle Mühe geben, die Dinge interessant zu machen.</p>
-            <p>Karen ist die hyperaktive jüngere der Taverndatter-Schwestern. Sie kümmert sich nicht um Rassen, Kriege oder Religionen. Sie genießt einfach interessante Dinge, und wenn nichts Interessantes passiert, neigt sie dazu, es zu verursachen. Karens zusätzliche Keidran-Ohren wurden ihr als Fluch von Trace gegeben, den sie nervte. Der Fluch ging jedoch nach hinten los, als Karen beschloss, dass sie die Ohren liebte und sie behalten wollte.</p>
+            <p><b>Persönlichkeit:</b> Karen ist kontaktfreudig und aufgeregt; sie hasst Langeweile und wird sich alle
+                Mühe geben, die Dinge interessant zu machen.</p>
+            <p>Karen ist die hyperaktive jüngere der Taverndatter-Schwestern. Sie kümmert sich nicht um Rassen, Kriege
+                oder Religionen. Sie genießt einfach interessante Dinge, und wenn nichts Interessantes passiert, neigt
+                sie dazu, es zu verursachen. Karens zusätzliche Keidran-Ohren wurden ihr als Fluch von Trace gegeben,
+                den sie nervte. Der Fluch ging jedoch nach hinten los, als Karen beschloss, dass sie die Ohren liebte
+                und sie behalten wollte.</p>
         </div>
         <div class="clear"></div>
     </section>
 
     <section class="char-detail" id="red">
         <div class="char-img">
-            <img src="https://cdn.twokinds.keenspot.com/img/characters/RedHairedGuy.jpg" class="portrait" alt="Red Haired Guy"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RedHairedGuySwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/red-ref-sheet-90801686" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/redref_thumbnail.png" alt="Ref Sheet"></a>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/RedHairedGuy.jpg" class="portrait"
+                alt="Red Haired Guy"><br>
+            <img class="char-swatch"
+                src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RedHairedGuySwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/red-ref-sheet-90801686" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/redref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>[Datenbankfehler]</h3>
@@ -432,8 +579,11 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Mensch<br>
                 <b>Sprachen:</b> Mensch<br>
             </p>
-            <p><b>Persönlichkeit:</b> [Datenbankfehler] ist ein bisschen ein Muskelprotz. Er versucht sein Bestes, um alle seine Probleme mit seinem Schwert zu lösen.</p>
-            <p>[Datenbankfehler] war einer von Traces Freunden von der Templerakademie. Allerdings brach er das Studium nach ein paar Jahren ab, als er kaum eine magische Entwicklung zeigte. Später schloss er sich der örtlichen Miliz seiner Heimatstadt an.</p>
+            <p><b>Persönlichkeit:</b> [Datenbankfehler] ist ein bisschen ein Muskelprotz. Er versucht sein Bestes, um
+                alle seine Probleme mit seinem Schwert zu lösen.</p>
+            <p>[Datenbankfehler] war einer von Traces Freunden von der Templerakademie. Allerdings brach er das Studium
+                nach ein paar Jahren ab, als er kaum eine magische Entwicklung zeigte. Später schloss er sich der
+                örtlichen Miliz seiner Heimatstadt an.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -441,7 +591,8 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="alaric">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Alaric.jpg" class="portrait" alt="Alaric"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/AlaricSwatch.gif" alt="Color Swatch">
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/AlaricSwatch.gif"
+                alt="Color Swatch">
             <!--<a href="" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/alaricref_thumbnail.png" alt="Ref Sheet"></a>-->
         </div>
         <div class="char-info">
@@ -453,8 +604,12 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Ostbasitin<br>
                 <b>Sprachen:</b> Mensch, Keidran, Basitin<br>
             </p>
-            <p><b>Persönlichkeit:</b> Alaric ist ungewöhnlich für einen Basitin, er drückt seine Zuneigung offen aus und missachtet Regeln und Gesetze, wann immer es möglich ist.</p>
-            <p>Alaric ist der Generalmeister des östlichen Basitin-Militärs. Er ist nach dem König selbst einer der mächtigsten Männer der Basitin-Gesellschaft. Obwohl er immer noch nicht in der Lage ist, Gesetze oder Regeln der Gesellschaft zu brechen, hat er sie ausreichend studiert, um sie so weit wie möglich zu umgehen. Er liebt Keith sehr, mit dem er seit seiner Kindheit befreundet ist.</p>
+            <p><b>Persönlichkeit:</b> Alaric ist ungewöhnlich für einen Basitin, er drückt seine Zuneigung offen aus und
+                missachtet Regeln und Gesetze, wann immer es möglich ist.</p>
+            <p>Alaric ist der Generalmeister des östlichen Basitin-Militärs. Er ist nach dem König selbst einer der
+                mächtigsten Männer der Basitin-Gesellschaft. Obwohl er immer noch nicht in der Lage ist, Gesetze oder
+                Regeln der Gesellschaft zu brechen, hat er sie ausreichend studiert, um sie so weit wie möglich zu
+                umgehen. Er liebt Keith sehr, mit dem er seit seiner Kindheit befreundet ist.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -462,8 +617,10 @@ include __DIR__ . "/src/layout/header.php";
     <section class="char-detail" id="nora">
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/LadyNora.jpg" class="portrait" alt="Nora"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LadyNoraSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/lady-nora-ref-26898478" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/noraref_thumbnail.png" alt="Ref Sheet"></a>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LadyNoraSwatch.gif"
+                alt="Color Swatch">
+            <a href="https://www.patreon.com/posts/lady-nora-ref-26898478" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/noraref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Lady Nora</h3>
@@ -475,7 +632,12 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Sprachen:</b> Alle (telepathisch)<br>
             </p>
             <p><b>Persönlichkeit:</b> Nora mischt sich gerne in die Angelegenheiten der Sterblichen ein.</p>
-            <p>Lady Nora ist etwas über 20 Jahrhunderte alt und damit einer der ältesten und größten Drachen ihrer Zeit. Im Gegensatz zu den meisten Drachen, die wenig Interesse an Sterblichen haben, genießt sie es, Menschen, Keidran und Basitin beim Fehden untereinander zuzusehen. Normalerweise mischt sie sich nur ein, um zu sehen, was passieren könnte. Nora kann ihre Gestalt verändern, aber sie hat Schwierigkeiten, auf zwei Beinen zu balancieren. Aus diesem Grund verwandelt sie sich im Allgemeinen nur in andere vierbeinige Tiere und selten in eine humanoide Form.</p>
+            <p>Lady Nora ist etwas über 20 Jahrhunderte alt und damit einer der ältesten und größten Drachen ihrer Zeit.
+                Im Gegensatz zu den meisten Drachen, die wenig Interesse an Sterblichen haben, genießt sie es, Menschen,
+                Keidran und Basitin beim Fehden untereinander zuzusehen. Normalerweise mischt sie sich nur ein, um zu
+                sehen, was passieren könnte. Nora kann ihre Gestalt verändern, aber sie hat Schwierigkeiten, auf zwei
+                Beinen zu balancieren. Aus diesem Grund verwandelt sie sich im Allgemeinen nur in andere vierbeinige
+                Tiere und selten in eine humanoide Form.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -484,7 +646,8 @@ include __DIR__ . "/src/layout/header.php";
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Reni2025.png" class="portrait" alt="Reni"><br>
             <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/reniref_thumbnail.png" alt="Color Swatch">-->
-            <a href="https://www.patreon.com/posts/reni-ref-sheet-50534633" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/reniref_thumbnail.png" alt="Ref Sheet"></a>
+            <a href="https://www.patreon.com/posts/reni-ref-sheet-50534633" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/reniref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Prinzessin Reni</h3>
@@ -495,10 +658,21 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Schwarzer Drache<br>
                 <b>Sprachen:</b> Alle (telepathisch)<br>
             </p>
-            <p><b>Persönlichkeit:</b> Reni ist ein sanfter und gutmütiger Drache, der versucht, sein Bestes zu tun, um seine Macht und Autorität zu nutzen, um jedem zu helfen, dem er kann.</p>
-            <p>Reni ist ein junger Drache, erst 20 Jahre alt, aber nach Drachen- und Menschenstandards als erwachsen angesehen. Obwohl sie den Titel "königlicher Drache" trägt und bei Menschen als Prinzessin anerkannt ist, ist sie aufgrund ihrer nicht-menschlichen Herkunft nicht für den Thron berechtigt. Sie besitzt jedoch immer noch königliche Autorität, die ihr Einfluss in politischen Angelegenheiten ermöglicht.</p>
-            <p>Obwohl ihr die magische Begabung eines alten Drachen wie Nora fehlt, besitzt Reni angeborene Drachenfähigkeiten, einschließlich Telepathie und Gestaltwandlung in eine menschliche Form – eine Form, die sie akribisch entworfen hat, um sich anzupassen. Da sie unter Menschen aufgewachsen ist, betrachtet sie sich als Teil ihrer Gesellschaft und ist zutiefst beschützend ihnen gegenüber.</p>
-            <p>Renis größter Fehler ist ihre Unerfahrenheit. Behütet und bestrebt, zu gefallen, neigt sie dazu, dem zu glauben, was ihr gesagt wird, und zu folgen, anstatt zu führen, oft gibt sie anderen trotz ihres königlichen Status nach. Ihre Naivität macht sie anfällig für Manipulationen, obwohl ihr starker moralischer Kompass und ihre Loyalität zur Menschheit sie dazu antreiben, im Laufe der Zeit unabhängiger und fähiger zu werden.</p>
+            <p><b>Persönlichkeit:</b> Reni ist ein sanfter und gutmütiger Drache, der versucht, sein Bestes zu tun, um
+                seine Macht und Autorität zu nutzen, um jedem zu helfen, dem er kann.</p>
+            <p>Reni ist ein junger Drache, erst 20 Jahre alt, aber nach Drachen- und Menschenstandards als erwachsen
+                angesehen. Obwohl sie den Titel "königlicher Drache" trägt und bei Menschen als Prinzessin anerkannt
+                ist, ist sie aufgrund ihrer nicht-menschlichen Herkunft nicht für den Thron berechtigt. Sie besitzt
+                jedoch immer noch königliche Autorität, die ihr Einfluss in politischen Angelegenheiten ermöglicht.</p>
+            <p>Obwohl ihr die magische Begabung eines alten Drachen wie Nora fehlt, besitzt Reni angeborene
+                Drachenfähigkeiten, einschließlich Telepathie und Gestaltwandlung in eine menschliche Form – eine Form,
+                die sie akribisch entworfen hat, um sich anzupassen. Da sie unter Menschen aufgewachsen ist, betrachtet
+                sie sich als Teil ihrer Gesellschaft und ist zutiefst beschützend ihnen gegenüber.</p>
+            <p>Renis größter Fehler ist ihre Unerfahrenheit. Behütet und bestrebt, zu gefallen, neigt sie dazu, dem zu
+                glauben, was ihr gesagt wird, und zu folgen, anstatt zu führen, oft gibt sie anderen trotz ihres
+                königlichen Status nach. Ihre Naivität macht sie anfällig für Manipulationen, obwohl ihr starker
+                moralischer Kompass und ihre Loyalität zur Menschheit sie dazu antreiben, im Laufe der Zeit unabhängiger
+                und fähiger zu werden.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -507,7 +681,8 @@ include __DIR__ . "/src/layout/header.php";
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Adira2025.png" class="portrait" alt="Adira"><br>
             <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/adiramaeveref_thumbnail.png" alt="Color Swatch">-->
-            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/adiramaeveref_thumbnail.png" alt="Ref Sheet"></a>
+            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/adiramaeveref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Adira von der Riftwall</h3>
@@ -518,9 +693,16 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Schneeleopard Keidran<br>
                 <b>Sprachen:</b> Mensch, Keidran<br>
             </p>
-            <p><b>Persönlichkeit:</b> Adira ist eine pragmatische Geschäftsfrau, die versucht, optimistisch zu bleiben, während sie unter Menschen lebt.</p>
-            <p>Adira ist eine Bewohnerin der Menschenstadt Edinmire. Doch trotz dessen ist Adira keine Sklavin, sondern eine der wenigen Keidran, die als legale Bürger innerhalb des Imperiums existieren. Ihre Familie besitzt und betreibt die Riftwall-Taverne seit Generationen, noch bevor das Land menschliches Territorium wurde. Der Familie wurde erlaubt, den Betrieb fortzusetzen, im Wesentlichen durch Bestandsschutz.</p>
-            <p>Schneeleoparden-Keidran sind ein verstreutes Volk, ohne bekanntes zentralisiertes Königreich. Es wird angenommen, dass die Spezies ausstirbt, was Adira zu einem seltenen Anblick macht. Adira hat den starken Wunsch, sich mit dem Rest ihrer Sippe wiederzuvereinigen und ihre Blutlinie fortzusetzen. Sie hat eine Tochter, Maeve.</p>
+            <p><b>Persönlichkeit:</b> Adira ist eine pragmatische Geschäftsfrau, die versucht, optimistisch zu bleiben,
+                während sie unter Menschen lebt.</p>
+            <p>Adira ist eine Bewohnerin der Menschenstadt Edinmire. Doch trotz dessen ist Adira keine Sklavin, sondern
+                eine der wenigen Keidran, die als legale Bürger innerhalb des Imperiums existieren. Ihre Familie besitzt
+                und betreibt die Riftwall-Taverne seit Generationen, noch bevor das Land menschliches Territorium wurde.
+                Der Familie wurde erlaubt, den Betrieb fortzusetzen, im Wesentlichen durch Bestandsschutz.</p>
+            <p>Schneeleoparden-Keidran sind ein verstreutes Volk, ohne bekanntes zentralisiertes Königreich. Es wird
+                angenommen, dass die Spezies ausstirbt, was Adira zu einem seltenen Anblick macht. Adira hat den starken
+                Wunsch, sich mit dem Rest ihrer Sippe wiederzuvereinigen und ihre Blutlinie fortzusetzen. Sie hat eine
+                Tochter, Maeve.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -529,7 +711,8 @@ include __DIR__ . "/src/layout/header.php";
         <div class="char-img">
             <img src="https://cdn.twokinds.keenspot.com/img/characters/Maeve2025.png" class="portrait" alt="Maeve"><br>
             <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/adiramaeveref_thumbnail.png" alt="Color Swatch">-->
-            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/adiramaeveref_thumbnail.png" alt="Ref Sheet"></a>
+            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/adiramaeveref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Maeve von der Riftwall</h3>
@@ -569,7 +752,8 @@ include __DIR__ . "/src/layout/header.php";
 
     <section class="char-detail">
         <div class="center" style="margin-bottom: 10px;">
-            <img src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" alt="Bösewichte" style="width: 500px;">
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" alt="Bösewichte"
+                style="width: 500px;">
         </div>
         <div class="char-info" style="width: 800px;">
             <h3>Die Meistertempler: Meisterspion, Architekt, Stratege, Seher und Magier.</h3>
@@ -577,16 +761,24 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Klasse:</b> Meistertempler<br>
                 <b>Spezies:</b> Mensch<br>
             </p>
-            <p>Diese fünf Männer wurden von Großtempler Trace angestellt, um nach seiner Übernahme die Ordnung im Tempel aufrechtzuerhalten. Er ließ sie die bisherigen sechs Meistertempler des vorherigen Großtempels ersetzen. Nach Traces Verschwinden hielt der Tempelmeister den Orden bis zu seiner Rückkehr weiterhin unter Kontrolle. Einige suchen Trace, damit er zurückkehren kann, während andere planen, Trace zu töten und seine Macht an sich zu reißen. Wieder andere planen, ihn fernzuhalten und zu beschäftigen, damit er möglicherweise überhaupt nicht zurückkehrt.</p>
+            <p>Diese fünf Männer wurden von Großtempler Trace angestellt, um nach seiner Übernahme die Ordnung im Tempel
+                aufrechtzuerhalten. Er ließ sie die bisherigen sechs Meistertempler des vorherigen Großtempels ersetzen.
+                Nach Traces Verschwinden hielt der Tempelmeister den Orden bis zu seiner Rückkehr weiterhin unter
+                Kontrolle. Einige suchen Trace, damit er zurückkehren kann, während andere planen, Trace zu töten und
+                seine Macht an sich zu reißen. Wieder andere planen, ihn fernzuhalten und zu beschäftigen, damit er
+                möglicherweise überhaupt nicht zurückkehrt.</p>
         </div>
         <div class="clear"></div>
     </section>
 
     <section class="char-detail" id="evil-trace">
         <div class="char-img">
-            <img src="https://cdn.twokinds.keenspot.com/img/characters/EvilTrace.jpg" class="portrait" alt="Böser Trace"><br>
-            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif" alt="Color Swatch"><br>
-            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets/traceref_thumbnail.png" alt="Ref Sheet"></a>
+            <img src="https://cdn.twokinds.keenspot.com/img/characters/EvilTrace.jpg" class="portrait"
+                alt="Böser Trace"><br>
+            <img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif"
+                alt="Color Swatch"><br>
+            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img class="char-swatch"
+                    src="assets/img/charaktere/ref_sheets/traceref_thumbnail.png" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Trace Legacy (Böse)</h3>
@@ -597,9 +789,17 @@ include __DIR__ . "/src/layout/header.php";
                 <b>Spezies:</b> Mensch<br>
                 <b>Sprachen:</b> Mensch, Keidran, Basitin<br>
             </p>
-            <p><b>Persönlichkeit:</b> Trace ist ein herzloser Killer, der nichts Geringeres als den Tod aller Menschen will. Ihm ist das Leben egal.</p>
-            <p>Trace wurde in eine erbärmliche Bauernfamilie hineingeboren, doch seine offensichtlichen natürlichen Talente in der Magie wurden schnell erkannt und in jungen Jahren wurde er in den Templerorden rekrutiert. Er stieg in den Rängen auf und übernahm unweigerlich die Organisation als Großtempel nach dem Tod seiner ersten Frau. Er wurde schnell als großer Herrscher bekannt, der von Menschen und Keidran gleichermaßen gefürchtet wurde. Seine unglaubliche Macht ermöglichte es ihm, alle zu dominieren, die sich ihm widersetzten.</p>
-            <p>Ephemural raubte ihm jedoch seine Erinnerungen. Jetzt muss er seine Erinnerungen und seine Machtposition wiedererlangen, bevor er sich zu sehr auf das Leben des erbärmlichen Keidran einlässt, mit dem er reist.</p>
+            <p><b>Persönlichkeit:</b> Trace ist ein herzloser Killer, der nichts Geringeres als den Tod aller Menschen
+                will. Ihm ist das Leben egal.</p>
+            <p>Trace wurde in eine erbärmliche Bauernfamilie hineingeboren, doch seine offensichtlichen natürlichen
+                Talente in der Magie wurden schnell erkannt und in jungen Jahren wurde er in den Templerorden
+                rekrutiert. Er stieg in den Rängen auf und übernahm unweigerlich die Organisation als Großtempel nach
+                dem Tod seiner ersten Frau. Er wurde schnell als großer Herrscher bekannt, der von Menschen und Keidran
+                gleichermaßen gefürchtet wurde. Seine unglaubliche Macht ermöglichte es ihm, alle zu dominieren, die
+                sich ihm widersetzten.</p>
+            <p>Ephemural raubte ihm jedoch seine Erinnerungen. Jetzt muss er seine Erinnerungen und seine Machtposition
+                wiedererlangen, bevor er sich zu sehr auf das Leben des erbärmlichen Keidran einlässt, mit dem er reist.
+            </p>
         </div>
         <div class="clear"></div>
     </section>

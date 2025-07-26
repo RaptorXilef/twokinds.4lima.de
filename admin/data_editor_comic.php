@@ -23,9 +23,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     // Lösche das Session-Cookie.
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000,
-            $params["path"], $params["domain"],
-            $params["secure"], $params["httpholy"]
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httpholy"]
         );
     }
 
@@ -49,7 +54,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
-$comicVarJsonPath = __DIR__ . '/../src/components/comic_var.json';
+$comicVarJsonPath = __DIR__ . '/../src/config/comic_var.json';
 $comicLowresDirPath = __DIR__ . '/../assets/comic_lowres/';
 $comicHiresDirPath = __DIR__ . '/../assets/comic_hires/';
 $comicThumbnailsDirPath = __DIR__ . '/../assets/comic_thumbnails/'; // Neuer Pfad
@@ -77,7 +82,8 @@ $chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
  * @param string $path Der Pfad zur JSON-Datei.
  * @return array Die dekodierten Daten als assoziatives Array oder ein leeres Array im Fehlerfall.
  */
-function loadComicData(string $path): array {
+function loadComicData(string $path): array
+{
     if (!file_exists($path)) {
         return [];
     }
@@ -98,7 +104,8 @@ function loadComicData(string $path): array {
  * @param array $deletedIds Eine Liste von IDs, die gelöscht werden sollen.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveComicData(string $path, array $newDataSubset, array $deletedIds = []): bool {
+function saveComicData(string $path, array $newDataSubset, array $deletedIds = []): bool
+{
     $existingData = loadComicData($path); // Lade die bestehenden Daten
 
     // Aktualisiere bestehende Daten mit dem Subset und füge neue hinzu
@@ -131,7 +138,8 @@ function saveComicData(string $path, array $newDataSubset, array $deletedIds = [
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
  * @return array Eine Liste eindeutiger Comic-IDs (Dateinamen ohne Erweiterung), sortiert.
  */
-function getComicIdsFromImages(string $lowresDir, string $hiresDir): array {
+function getComicIdsFromImages(string $lowresDir, string $hiresDir): array
+{
     $imageIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
 
@@ -162,7 +170,8 @@ function getComicIdsFromImages(string $lowresDir, string $hiresDir): array {
  * @param array $directories An associative array of directory paths for each image type.
  * @return array An associative array indicating presence (true/false) for each image type.
  */
-function checkImageExistenceForComic(string $comicId, array $directories): array {
+function checkImageExistenceForComic(string $comicId, array $directories): array
+{
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
     $results = [];
 
@@ -211,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             $type = isset($page['comic_type']) ? trim($page['comic_type']) : '';
             $name = isset($page['comic_name']) ? trim($page['comic_name']) : '';
             $transcript = isset($page['comic_transcript']) ? $page['comic_transcript'] : '';
-            $chapter = isset($page['comic_chapter']) ? (int)$page['comic_chapter'] : null;
+            $chapter = isset($page['comic_chapter']) ? (int) $page['comic_chapter'] : null;
 
             // Validierung für Chapter (muss eine Zahl sein)
             if (!is_numeric($chapter) || $chapter <= 0) {
@@ -274,8 +283,9 @@ foreach ($fullComicData as $id => $data) {
 
 
 // --- Paginierungslogik anwenden ---
-$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($currentPage < 1) $currentPage = 1;
+$currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+if ($currentPage < 1)
+    $currentPage = 1;
 
 
 $totalItems = count($fullComicData);
@@ -292,8 +302,8 @@ if ($currentPage > $totalPages && $totalPages > 0) {
     $currentPage = $totalPages;
     error_log("DEBUG: Current Page adjusted to Total Pages: " . $currentPage);
 } elseif ($totalPages == 0 && $totalItems > 0) {
-     $currentPage = 1; // Sollte nicht passieren, wenn totalItems > 0 und ITEMS_PER_PAGE > 0
-     error_log("DEBUG: Current Page adjusted to 1 (totalPages 0, totalItems > 0): " . $currentPage);
+    $currentPage = 1; // Sollte nicht passieren, wenn totalItems > 0 und ITEMS_PER_PAGE > 0
+    error_log("DEBUG: Current Page adjusted to 1 (totalPages 0, totalItems > 0): " . $currentPage);
 } elseif ($totalItems == 0) {
     $currentPage = 1;
     $totalPages = 1; // Sicherstellen, dass mindestens 1 Seite angezeigt wird, wenn keine Items vorhanden sind
@@ -388,11 +398,12 @@ if (file_exists($headerPath)) {
         margin: 20px auto;
         background-color: #f9f9f9;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     body.theme-night .admin-container {
-        background-color: #00334c; /* Dunklerer Hintergrund für den Container im Dark Mode */
+        background-color: #00334c;
+        /* Dunklerer Hintergrund für den Container im Dark Mode */
         color: #fff;
     }
 
@@ -401,7 +412,8 @@ if (file_exists($headerPath)) {
         margin-bottom: 20px;
         border-radius: 5px;
         font-weight: bold;
-        display: none; /* Standardmäßig ausgeblendet */
+        display: none;
+        /* Standardmäßig ausgeblendet */
     }
 
     .message-box.success {
@@ -416,13 +428,15 @@ if (file_exists($headerPath)) {
         border: 1px solid #f5c6cb;
     }
 
-    .message-box.info { /* Added info message style */
+    .message-box.info {
+        /* Added info message style */
         background-color: #d1ecf1;
         color: #0c5460;
         border: 1px solid #bee5eb;
     }
 
-    .message-box.warning { /* Added warning message style */
+    .message-box.warning {
+        /* Added warning message style */
         background-color: #fff3cd;
         color: #856404;
         border: 1px solid #ffeeba;
@@ -430,24 +444,28 @@ if (file_exists($headerPath)) {
 
 
     body.theme-night .message-box.success {
-        background-color: #28a745; /* Dunkelgrün */
+        background-color: #28a745;
+        /* Dunkelgrün */
         color: #fff;
         border-color: #218838;
     }
 
     body.theme-night .message-box.error {
-        background-color: #dc3545; /* Dunkelrot */
+        background-color: #dc3545;
+        /* Dunkelrot */
         color: #fff;
         border-color: #c82333;
     }
 
-    body.theme-night .message-box.info { /* Dark mode for info message */
+    body.theme-night .message-box.info {
+        /* Dark mode for info message */
         background-color: #17a2b8;
         color: #fff;
         border-color: #138496;
     }
 
-    body.theme-night .message-box.warning { /* Dark mode for warning message */
+    body.theme-night .message-box.warning {
+        /* Dark mode for warning message */
         background-color: #6c5b00;
         color: #fff;
         border-color: #927c00;
@@ -458,8 +476,9 @@ if (file_exists($headerPath)) {
         margin-bottom: 30px;
         background-color: #fff;
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        overflow: hidden; /* Ensures content doesn't spill during transition */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        /* Ensures content doesn't spill during transition */
     }
 
     body.theme-night .collapsible-section {
@@ -468,13 +487,16 @@ if (file_exists($headerPath)) {
 
     .collapsible-header {
         cursor: pointer;
-        padding: 15px 20px; /* More padding for a better clickable area */
-        background-color: #f2f2f2; /* Light background for header */
+        padding: 15px 20px;
+        /* More padding for a better clickable area */
+        background-color: #f2f2f2;
+        /* Light background for header */
         border-bottom: 1px solid #eee;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 1.5em; /* Match h2 font size */
+        font-size: 1.5em;
+        /* Match h2 font size */
         font-weight: bold;
         color: #333;
     }
@@ -487,38 +509,48 @@ if (file_exists($headerPath)) {
 
     .collapsible-header i {
         transition: transform 0.3s ease;
-        margin-left: 10px; /* Space between text and icon */
+        margin-left: 10px;
+        /* Space between text and icon */
     }
 
     .collapsible-section.expanded .collapsible-header i {
-        transform: rotate(0deg); /* Down arrow */
+        transform: rotate(0deg);
+        /* Down arrow */
     }
 
     .collapsible-section:not(.expanded) .collapsible-header i {
-        transform: rotate(-90deg); /* Right arrow */
+        transform: rotate(-90deg);
+        /* Right arrow */
     }
 
     .collapsible-content {
         max-height: 0;
         overflow: hidden;
         transition: max-height 0.3s ease-out;
-        padding: 0 20px; /* Initial padding, will be adjusted when expanded */
+        padding: 0 20px;
+        /* Initial padding, will be adjusted when expanded */
     }
 
     .collapsible-section.expanded .collapsible-content {
         /* Angepasste max-height Werte */
-        max-height: 4800px; /* Für die Comic-Liste */
-        padding-top: 20px; /* Restore top padding */
-        padding-bottom: 20px; /* Restore bottom padding */
+        max-height: 4800px;
+        /* Für die Comic-Liste */
+        padding-top: 20px;
+        /* Restore top padding */
+        padding-bottom: 20px;
+        /* Restore bottom padding */
     }
 
     /* Spezifische Anpassung für den Bericht über fehlende Comic-Informationen */
     .report-section.collapsible-section.expanded .collapsible-content {
-        max-height: 459800px; /* Sehr großer Wert für den Gesamtbericht */
+        max-height: 459800px;
+        /* Sehr großer Wert für den Gesamtbericht */
     }
 
     /* Remove padding from the section classes themselves as it's now on collapsible-content */
-    .form-section, .comic-list-section, .report-section {
+    .form-section,
+    .comic-list-section,
+    .report-section {
         padding: 0;
     }
 
@@ -526,11 +558,14 @@ if (file_exists($headerPath)) {
     .collapsible-section:not(.expanded) {
         border-radius: 8px;
     }
+
     /* Ensure header has rounded corners when section is collapsed */
     .collapsible-section:not(.expanded) .collapsible-header {
         border-radius: 8px;
-        border-bottom: none; /* No bottom border when collapsed */
+        border-bottom: none;
+        /* No bottom border when collapsed */
     }
+
     /* Ensure header has rounded top corners when expanded */
     .collapsible-section.expanded .collapsible-header {
         border-radius: 8px 8px 0 0;
@@ -555,19 +590,22 @@ if (file_exists($headerPath)) {
 
     .form-group input[type="text"],
     .form-group select {
-        width: calc(100% - 22px); /* Padding berücksichtigen */
+        width: calc(100% - 22px);
+        /* Padding berücksichtigen */
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
         font-size: 1em;
-        box-sizing: border-box; /* Padding und Border in der Breite enthalten */
+        box-sizing: border-box;
+        /* Padding und Border in der Breite enthalten */
         background-color: #fff;
         color: #333;
     }
 
     /* Summernote editor frame */
     .note-editor.note-frame {
-        width: calc(100% - 22px) !important; /* Ensure same width as other inputs */
+        width: calc(100% - 22px) !important;
+        /* Ensure same width as other inputs */
         border: 1px solid #ccc;
         border-radius: 4px;
         box-sizing: border-box;
@@ -576,7 +614,8 @@ if (file_exists($headerPath)) {
 
     body.theme-night .form-group input[type="text"],
     body.theme-night .form-group select,
-    body.theme-night .note-editor.note-frame { /* Summernote editor frame dark mode */
+    body.theme-night .note-editor.note-frame {
+        /* Summernote editor frame dark mode */
         background-color: #005a7e;
         border-color: #007bb5;
         color: #fff;
@@ -612,7 +651,8 @@ if (file_exists($headerPath)) {
         background-color: #006690;
     }
 
-    .form-group textarea { /* This is the original textarea, hidden by Summernote */
+    .form-group textarea {
+        /* This is the original textarea, hidden by Summernote */
         min-height: 100px;
         resize: vertical;
     }
@@ -622,7 +662,8 @@ if (file_exists($headerPath)) {
         margin-top: 20px;
     }
 
-    button, .button {
+    button,
+    .button {
         padding: 10px 20px;
         border: none;
         border-radius: 5px;
@@ -631,49 +672,66 @@ if (file_exists($headerPath)) {
         font-size: 1em;
         cursor: pointer;
         transition: background-color 0.3s ease;
-        text-decoration: none; /* Für .button Klasse */
-        display: inline-block; /* Für .button Klasse */
-        margin-left: 10px; /* Abstand zwischen Buttons */
+        text-decoration: none;
+        /* Für .button Klasse */
+        display: inline-block;
+        /* Für .button Klasse */
+        margin-left: 10px;
+        /* Abstand zwischen Buttons */
     }
 
-    button:hover, .button:hover {
+    button:hover,
+    .button:hover {
         background-color: #0056b3;
     }
 
-    button.delete, .button.delete {
+    button.delete,
+    .button.delete {
         background-color: #dc3545;
     }
 
-    button.delete:hover, .button.delete:hover {
+    button.delete:hover,
+    .button.delete:hover {
         background-color: #c82333;
     }
 
-    button.edit, .button.edit {
+    button.edit,
+    .button.edit {
         background-color: #ffc107;
         color: #333;
     }
 
-    button.edit:hover, .button.edit:hover {
+    button.edit:hover,
+    .button.edit:hover {
         background-color: #e0a800;
     }
 
     /* Icon buttons in table */
     .comic-table td .actions button {
-        background-color: transparent; /* Make background transparent */
-        border: 1px solid transparent; /* Remove border */
-        color: #007bff; /* Use primary color for icons */
-        padding: 5px; /* Adjust padding for icon-only buttons */
-        margin: 0 2px; /* Adjust margin */
-        font-size: 1.1em; /* Make icons slightly larger */
+        background-color: transparent;
+        /* Make background transparent */
+        border: 1px solid transparent;
+        /* Remove border */
+        color: #007bff;
+        /* Use primary color for icons */
+        padding: 5px;
+        /* Adjust padding for icon-only buttons */
+        margin: 0 2px;
+        /* Adjust margin */
+        font-size: 1.1em;
+        /* Make icons slightly larger */
     }
 
     .comic-table td .actions button:hover {
-        background-color: rgba(0, 123, 255, 0.1); /* Light hover background */
-        border-color: #007bff; /* Add border on hover */
+        background-color: rgba(0, 123, 255, 0.1);
+        /* Light hover background */
+        border-color: #007bff;
+        /* Add border on hover */
     }
 
     body.theme-night .comic-table td .actions button {
-        color: #7bbdff; /* Lighter color for icons in dark mode */
+        color: #7bbdff;
+        /* Lighter color for icons in dark mode */
     }
 
     body.theme-night .comic-table td .actions button:hover {
@@ -682,35 +740,43 @@ if (file_exists($headerPath)) {
     }
 
 
-    body.theme-night button, body.theme-night .button {
+    body.theme-night button,
+    body.theme-night .button {
         background-color: #2a6177;
     }
 
-    body.theme-night button:hover, body.theme-night .button:hover {
+    body.theme-night button:hover,
+    body.theme-night .button:hover {
         background-color: #48778a;
     }
 
-    body.theme-night button.delete, body.theme-night .button.delete {
+    body.theme-night button.delete,
+    body.theme-night .button.delete {
         background-color: #dc3545;
     }
 
-    body.theme-night button.delete:hover, body.theme-night .button.delete:hover {
+    body.theme-night button.delete:hover,
+    body.theme-night .button.delete:hover {
         background-color: #c82333;
     }
 
-    body.theme-night button.edit, body.theme-night .button.edit {
+    body.theme-night button.edit,
+    body.theme-night .button.edit {
         background-color: #ffc107;
-        color: #333; /* Textfarbe bleibt dunkel für Kontrast */
+        color: #333;
+        /* Textfarbe bleibt dunkel für Kontrast */
     }
 
-    body.theme-night button.edit:hover, body.theme-night .button.edit:hover {
+    body.theme-night button.edit:hover,
+    body.theme-night .button.edit:hover {
         background-color: #e0a800;
     }
 
     /* Comic-Liste und Tabelle */
     /* .comic-list-section padding is now handled by .collapsible-content */
     .comic-table-container {
-        overflow-x: auto; /* Ermöglicht horizontales Scrollen bei kleinen Bildschirmen */
+        overflow-x: auto;
+        /* Ermöglicht horizontales Scrollen bei kleinen Bildschirmen */
     }
 
     .comic-table {
@@ -719,14 +785,16 @@ if (file_exists($headerPath)) {
         margin-bottom: 20px;
     }
 
-    .comic-table th, .comic-table td {
+    .comic-table th,
+    .comic-table td {
         border: 1px solid #ddd;
         padding: 8px;
         text-align: left;
         vertical-align: top;
     }
 
-    body.theme-night .comic-table th, body.theme-night .comic-table td {
+    body.theme-night .comic-table th,
+    body.theme-night .comic-table td {
         border-color: #005a7e;
     }
 
@@ -760,14 +828,20 @@ if (file_exists($headerPath)) {
     .comic-table td .editable-field {
         width: 100%;
         padding: 5px;
-        border: 1px solid #eee; /* Leichter Rand im Nicht-Bearbeitungsmodus */
+        border: 1px solid #eee;
+        /* Leichter Rand im Nicht-Bearbeitungsmodus */
         border-radius: 3px;
         box-sizing: border-box;
-        background-color: transparent; /* Standardmäßig transparent */
-        cursor: pointer; /* Zeigt an, dass es klickbar ist */
-        min-height: 30px; /* Mindesthöhe für leere Felder */
-        display: block; /* Stellt sicher, dass es die volle Breite einnimmt */
-        color: #333; /* Standardtextfarbe */
+        background-color: transparent;
+        /* Standardmäßig transparent */
+        cursor: pointer;
+        /* Zeigt an, dass es klickbar ist */
+        min-height: 30px;
+        /* Mindesthöhe für leere Felder */
+        display: block;
+        /* Stellt sicher, dass es die volle Breite einnimmt */
+        color: #333;
+        /* Standardtextfarbe */
     }
 
     body.theme-night .comic-table td .editable-field {
@@ -776,7 +850,8 @@ if (file_exists($headerPath)) {
     }
 
     .comic-table td .editable-field:hover {
-        border-color: #ccc; /* Rand beim Hover */
+        border-color: #ccc;
+        /* Rand beim Hover */
     }
 
     body.theme-night .comic-table td .editable-field:hover {
@@ -784,8 +859,10 @@ if (file_exists($headerPath)) {
     }
 
     .comic-table td .editable-field.editing {
-        border-color: #007bff; /* Blauer Rand im Bearbeitungsmodus */
-        background-color: #fff; /* Weißer Hintergrund im Bearbeitungsmodus */
+        border-color: #007bff;
+        /* Blauer Rand im Bearbeitungsmodus */
+        background-color: #fff;
+        /* Weißer Hintergrund im Bearbeitungsmodus */
         cursor: text;
     }
 
@@ -795,17 +872,22 @@ if (file_exists($headerPath)) {
     }
 
     .comic-table td .editable-field.missing-info {
-        border: 2px solid #dc3545; /* Roter Rand für fehlende Infos */
-        background-color: #f8d7da; /* Hellroter Hintergrund */
+        border: 2px solid #dc3545;
+        /* Roter Rand für fehlende Infos */
+        background-color: #f8d7da;
+        /* Hellroter Hintergrund */
     }
 
     body.theme-night .comic-table td .editable-field.missing-info {
-        border-color: #ff4d4d; /* Helleres Rot */
-        background-color: #721c24; /* Dunkleres Rot */
+        border-color: #ff4d4d;
+        /* Helleres Rot */
+        background-color: #721c24;
+        /* Dunkleres Rot */
     }
 
     .comic-table td .actions {
-        white-space: nowrap; /* Buttons bleiben in einer Zeile */
+        white-space: nowrap;
+        /* Buttons bleiben in einer Zeile */
     }
 
 
@@ -815,10 +897,12 @@ if (file_exists($headerPath)) {
         justify-content: center;
         align-items: center;
         margin-top: 20px;
-        flex-wrap: wrap; /* Ermöglicht Umbruch auf kleineren Bildschirmen */
+        flex-wrap: wrap;
+        /* Ermöglicht Umbruch auf kleineren Bildschirmen */
     }
 
-    .pagination a, .pagination span {
+    .pagination a,
+    .pagination span {
         padding: 8px 12px;
         margin: 0 4px;
         border: 1px solid #ddd;
@@ -829,7 +913,8 @@ if (file_exists($headerPath)) {
         transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    body.theme-night .pagination a, body.theme-night .pagination span {
+    body.theme-night .pagination a,
+    body.theme-night .pagination span {
         border-color: #005a7e;
         color: #7bbdff;
         background-color: #004c6b;
@@ -853,25 +938,29 @@ if (file_exists($headerPath)) {
     }
 
     body.theme-night .pagination .current-page {
-        background-color: #007bff; /* Bleibt blau, da es die aktive Seite ist */
+        background-color: #007bff;
+        /* Bleibt blau, da es die aktive Seite ist */
         border-color: #007bff;
         color: white;
     }
 
     .pagination .incomplete-page {
-        background-color: #f8d7da; /* Hellrot */
+        background-color: #f8d7da;
+        /* Hellrot */
         border-color: #f5c6cb;
         color: #721c24;
     }
 
     body.theme-night .pagination .incomplete-page {
-        background-color: #dc3545; /* Dunkelrot */
+        background-color: #dc3545;
+        /* Dunkelrot */
         border-color: #c82333;
         color: #fff;
     }
 
     .pagination .incomplete-page.current-page {
-        background-color: #dc3545; /* Roter Hintergrund für aktuelle unvollständige Seite */
+        background-color: #dc3545;
+        /* Roter Hintergrund für aktuelle unvollständige Seite */
         color: white;
     }
 
@@ -898,14 +987,17 @@ if (file_exists($headerPath)) {
         margin-bottom: 20px;
     }
 
-    .report-table th, .report-table td {
+    .report-table th,
+    .report-table td {
         border: 1px solid #ddd;
         padding: 8px;
-        text-align: center; /* Center icons */
+        text-align: center;
+        /* Center icons */
         vertical-align: middle;
     }
 
-    body.theme-night .report-table th, body.theme-night .report-table td {
+    body.theme-night .report-table th,
+    body.theme-night .report-table td {
         border-color: #005a7e;
     }
 
@@ -937,12 +1029,14 @@ if (file_exists($headerPath)) {
     }
 
     .icon-success {
-        color: #28a745; /* Green checkmark */
+        color: #28a745;
+        /* Green checkmark */
         font-size: 1.2em;
     }
 
     .icon-missing {
-        color: #dc3545; /* Red cross */
+        color: #dc3545;
+        /* Red cross */
         font-size: 1.2em;
     }
 
@@ -956,7 +1050,8 @@ if (file_exists($headerPath)) {
     }
 
     body.theme-night .report-section .missing-other-pages-warning {
-        background-color: #6c5b00; /* Dunkleres Gelb */
+        background-color: #6c5b00;
+        /* Dunkleres Gelb */
         border-color: #927c00;
         color: #fff;
     }
@@ -966,12 +1061,13 @@ if (file_exists($headerPath)) {
         position: fixed;
         bottom: 20px;
         right: 20px;
-        background-color: #28a745; /* Grün */
+        background-color: #28a745;
+        /* Grün */
         color: white;
         padding: 15px 25px;
         border-radius: 50px;
         font-size: 1.2em;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         z-index: 1000;
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease;
@@ -983,13 +1079,15 @@ if (file_exists($headerPath)) {
     }
 
     .floating-save-button.disabled {
-        background-color: #6c757d; /* Grau */
+        background-color: #6c757d;
+        /* Grau */
         cursor: not-allowed;
         box-shadow: none;
     }
 
     body.theme-night .floating-save-button {
-        background-color: #1e7e34; /* Dunkelgrün */
+        background-color: #1e7e34;
+        /* Dunkelgrün */
     }
 
     body.theme-night .floating-save-button:hover {
@@ -1003,14 +1101,16 @@ if (file_exists($headerPath)) {
     /* Floating Add Button */
     .floating-add-button {
         position: fixed;
-        bottom: 90px; /* Über dem Save Button */
+        bottom: 90px;
+        /* Über dem Save Button */
         right: 20px;
-        background-color: #17a2b8; /* Cyan */
+        background-color: #17a2b8;
+        /* Cyan */
         color: white;
         padding: 15px 25px;
         border-radius: 50px;
         font-size: 1.2em;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         z-index: 1000;
         cursor: pointer;
         transition: background-color 0.3s ease, transform 0.2s ease;
@@ -1038,28 +1138,35 @@ if (file_exists($headerPath)) {
 
         .form-group input[type="text"],
         .form-group select {
-            width: calc(100% - 20px); /* Anpassung für kleinere Bildschirme */
+            width: calc(100% - 20px);
+            /* Anpassung für kleinere Bildschirme */
         }
 
-        .note-editor.note-frame { /* Summernote editor frame */
-            width: calc(100% - 20px) !important; /* Ensure same width as other inputs */
+        .note-editor.note-frame {
+            /* Summernote editor frame */
+            width: calc(100% - 20px) !important;
+            /* Ensure same width as other inputs */
         }
 
         .collapsible-header {
-            padding: 10px 15px; /* Adjust padding for smaller screens */
+            padding: 10px 15px;
+            /* Adjust padding for smaller screens */
             font-size: 1.2em;
         }
 
         .collapsible-content {
-            padding: 0 15px; /* Adjust padding for smaller screens */
+            padding: 0 15px;
+            /* Adjust padding for smaller screens */
         }
+
         .collapsible-section.expanded .collapsible-content {
             padding-top: 15px;
             padding-bottom: 15px;
         }
 
 
-        .comic-table th, .comic-table td {
+        .comic-table th,
+        .comic-table td {
             padding: 6px;
             font-size: 0.9em;
         }
@@ -1070,13 +1177,15 @@ if (file_exists($headerPath)) {
             margin-left: 2px;
         }
 
-        .pagination a, .pagination span {
+        .pagination a,
+        .pagination span {
             padding: 6px 10px;
             margin: 0 2px;
             font-size: 0.9em;
         }
 
-        .floating-save-button, .floating-add-button {
+        .floating-save-button,
+        .floating-add-button {
             padding: 12px 20px;
             font-size: 1em;
             bottom: 10px;
@@ -1084,7 +1193,8 @@ if (file_exists($headerPath)) {
         }
 
         .floating-add-button {
-            bottom: 70px; /* Anpassung für kleinere Bildschirme */
+            bottom: 70px;
+            /* Anpassung für kleinere Bildschirme */
         }
     }
 </style>
@@ -1099,13 +1209,15 @@ if (file_exists($headerPath)) {
                 <input type="hidden" id="original-comic-id" name="original_comic_id" value="">
                 <div class="form-group">
                     <label for="comic-id">Comic ID (Datum JJJJMMTT):</label>
-                    <input type="text" id="comic-id" name="comic_id" pattern="\d{8}" title="Bitte geben Sie eine 8-stellige Zahl (JJJJMMTT) ein." required>
+                    <input type="text" id="comic-id" name="comic_id" pattern="\d{8}"
+                        title="Bitte geben Sie eine 8-stellige Zahl (JJJJMMTT) ein." required>
                 </div>
                 <div class="form-group">
                     <label for="comic-type">Typ:</label>
                     <select id="comic-type" name="comic_type" required>
                         <?php foreach ($comicTypeOptions as $option): ?>
-                            <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
+                            <option value="<?php echo htmlspecialchars($option); ?>">
+                                <?php echo htmlspecialchars($option); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -1122,7 +1234,8 @@ if (file_exists($headerPath)) {
                     <select id="comic-chapter" name="comic_chapter" required>
                         <option value="">Bitte auswählen</option>
                         <?php foreach ($chapterOptions as $option): ?>
-                            <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
+                            <option value="<?php echo htmlspecialchars($option); ?>">
+                                <?php echo htmlspecialchars($option); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -1135,7 +1248,8 @@ if (file_exists($headerPath)) {
     </section>
 
     <section class="comic-list-section collapsible-section expanded"> <!-- Standardmäßig ausgeklappt, wie gewünscht -->
-        <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-down"></i></h2> <!-- Pfeil nach unten für ausgeklappten Zustand -->
+        <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-down"></i></h2>
+        <!-- Pfeil nach unten für ausgeklappten Zustand -->
         <div class="collapsible-content">
             <div class="comic-table-container">
                 <table class="comic-table" id="comic-data-table">
@@ -1163,16 +1277,27 @@ if (file_exists($headerPath)) {
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
 
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
-                            ?>
-                                <tr data-comic-id="<?php echo htmlspecialchars($id); ?>" class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
+                                ?>
+                                <tr data-comic-id="<?php echo htmlspecialchars($id); ?>"
+                                    class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td class="comic-id-display"><?php echo htmlspecialchars($id); ?></td>
-                                    <td><span class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span></td>
-                                    <td><span class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span></td>
-                                    <td><span class="editable-field comic-transcript-display <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['transcript']); ?></span></td>
-                                    <td><span class="editable-field comic-chapter-display <?php echo $isChapterMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span></td>
+                                    <td><span
+                                            class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span>
+                                    </td>
+                                    <td><span
+                                            class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span>
+                                    </td>
+                                    <td><span
+                                            class="editable-field comic-transcript-display <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['transcript']); ?></span>
+                                    </td>
+                                    <td><span
+                                            class="editable-field comic-chapter-display <?php echo $isChapterMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span>
+                                    </td>
                                     <td class="actions">
-                                        <button type="button" class="edit-button button edit" title="Bearbeiten"><i class="fas fa-edit"></i></button>
-                                        <button type="button" class="delete-button button delete" title="Löschen"><i class="fas fa-trash-alt"></i></button>
+                                        <button type="button" class="edit-button button edit" title="Bearbeiten"><i
+                                                class="fas fa-edit"></i></button>
+                                        <button type="button" class="delete-button button delete" title="Löschen"><i
+                                                class="fas fa-trash-alt"></i></button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -1180,13 +1305,15 @@ if (file_exists($headerPath)) {
                     </tbody>
                 </table>
             </div>
-            <button type="button" id="add-new-comic-button" class="button"><i class="fas fa-plus"></i> Neuen Comic-Eintrag hinzufügen (+)</button>
+            <button type="button" id="add-new-comic-button" class="button"><i class="fas fa-plus"></i> Neuen
+                Comic-Eintrag hinzufügen (+)</button>
 
             <!-- Paginierung -->
             <div class="pagination">
                 <?php if ($currentPage > 1): ?>
                     <a href="?page=1" title="Erste Seite"><i class="fas fa-angle-double-left"></i></a>
-                    <a href="?page=<?php echo $currentPage - 1; ?>" title="Vorherige Seite"><i class="fas fa-angle-left"></i></a>
+                    <a href="?page=<?php echo $currentPage - 1; ?>" title="Vorherige Seite"><i
+                            class="fas fa-angle-left"></i></a>
                 <?php else: ?>
                     <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
                     <span class="disabled"><i class="fas fa-angle-left"></i></span>
@@ -1207,7 +1334,7 @@ if (file_exists($headerPath)) {
                     if (isset($pagesWithIncompleteData[$i])) {
                         $pageClass .= ' incomplete-page';
                     }
-                ?>
+                    ?>
                     <a href="?page=<?php echo $i; ?>" class="<?php echo $pageClass; ?>"><?php echo $i; ?></a>
                 <?php endfor; ?>
 
@@ -1218,8 +1345,10 @@ if (file_exists($headerPath)) {
                 ?>
 
                 <?php if ($currentPage < $totalPages): ?>
-                    <a href="?page=<?php echo $currentPage + 1; ?>" title="Nächste Seite"><i class="fas fa-angle-right"></i></a>
-                    <a href="?page=<?php echo $totalPages; ?>" title="Letzte Seite"><i class="fas fa-angle-double-right"></i></a>
+                    <a href="?page=<?php echo $currentPage + 1; ?>" title="Nächste Seite"><i
+                            class="fas fa-angle-right"></i></a>
+                    <a href="?page=<?php echo $totalPages; ?>" title="Letzte Seite"><i
+                            class="fas fa-angle-double-right"></i></a>
                 <?php else: ?>
                     <span class="disabled"><i class="fas fa-angle-right"></i></span>
                     <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
@@ -1229,7 +1358,8 @@ if (file_exists($headerPath)) {
     </section>
 
     <section class="report-section collapsible-section"> <!-- Standardmäßig eingeklappt -->
-        <h2 class="collapsible-header">Bericht über fehlende Comic-Informationen (Gesamt) <i class="fas fa-chevron-right"></i></h2>
+        <h2 class="collapsible-header">Bericht über fehlende Comic-Informationen (Gesamt) <i
+                class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
             <?php if (!empty($fullComicData)): // Check if there's any comic data at all ?>
                 <div class="comic-table-container">
@@ -1258,17 +1388,25 @@ if (file_exists($headerPath)) {
 
                                 // Get image existence for current comic ID
                                 $currentImageExistence = $imageExistenceReport[$id] ?? [];
-                            ?>
+                                ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($id); ?></td>
-                                    <td><?php echo $isTypeMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                    <td><?php echo $isNameMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                    <td><?php echo $isTranscriptEffectivelyEmpty ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                    <td><?php echo $isChapterMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?></td>
-                                    <td><?php echo ($currentImageExistence['lowres'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?></td>
-                                    <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?></td>
-                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?></td>
-                                    <td><?php echo ($currentImageExistence['socialmedia'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?></td>
+                                    <td><?php echo $isTypeMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
+                                    </td>
+                                    <td><?php echo $isNameMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
+                                    </td>
+                                    <td><?php echo $isTranscriptEffectivelyEmpty ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
+                                    </td>
+                                    <td><?php echo $isChapterMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
+                                    </td>
+                                    <td><?php echo ($currentImageExistence['lowres'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    </td>
+                                    <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    </td>
+                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    </td>
+                                    <td><?php echo ($currentImageExistence['socialmedia'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -1276,7 +1414,8 @@ if (file_exists($headerPath)) {
                 </div>
                 <?php if ($hasIncompleteOtherPages): ?>
                     <p class="missing-other-pages-warning">
-                        <i class="fas fa-exclamation-triangle"></i> Hinweis: Es gibt auch unvollständige Comic-Einträge auf anderen Seiten. Bitte überprüfen Sie alle Seiten.
+                        <i class="fas fa-exclamation-triangle"></i> Hinweis: Es gibt auch unvollständige Comic-Einträge auf
+                        anderen Seiten. Bitte überprüfen Sie alle Seiten.
                     </p>
                 <?php endif; ?>
             <?php else: ?>
@@ -1296,258 +1435,258 @@ if (file_exists($headerPath)) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOMContentLoaded fired."); // Debug-Meldung
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("DOMContentLoaded fired."); // Debug-Meldung
 
-    const comicEditForm = document.getElementById('comic-edit-form');
-    const comicIdInput = document.getElementById('comic-id');
-    const originalComicIdInput = document.getElementById('original-comic-id');
-    const comicTypeSelect = document.getElementById('comic-type');
-    const comicNameInput = document.getElementById('comic-name');
-    const comicTranscriptTextarea = document.getElementById('comic-transcript');
-    const comicChapterSelect = document.getElementById('comic-chapter');
-    const saveSingleButton = document.getElementById('save-single-button');
-    const cancelEditButton = document.getElementById('cancel-edit-button');
-    const addComicButton = document.getElementById('add-new-comic-button');
-    const comicDataTable = document.getElementById('comic-data-table');
-    const messageBoxElement = document.getElementById('message-box');
-    const saveAllButton = document.getElementById('save-all-button');
-    const formSection = document.querySelector('.form-section'); // Referenz zum Formular-Abschnitt
+        const comicEditForm = document.getElementById('comic-edit-form');
+        const comicIdInput = document.getElementById('comic-id');
+        const originalComicIdInput = document.getElementById('original-comic-id');
+        const comicTypeSelect = document.getElementById('comic-type');
+        const comicNameInput = document.getElementById('comic-name');
+        const comicTranscriptTextarea = document.getElementById('comic-transcript');
+        const comicChapterSelect = document.getElementById('comic-chapter');
+        const saveSingleButton = document.getElementById('save-single-button');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+        const addComicButton = document.getElementById('add-new-comic-button');
+        const comicDataTable = document.getElementById('comic-data-table');
+        const messageBoxElement = document.getElementById('message-box');
+        const saveAllButton = document.getElementById('save-all-button');
+        const formSection = document.querySelector('.form-section'); // Referenz zum Formular-Abschnitt
 
-    let hasUnsavedChanges = false;
-    let editedRows = new Map(); // Speichert die IDs der bearbeiteten Zeilen und ihre Daten
-    let deletedRows = new Set(); // Speichert die IDs der gelöschten Zeilen
-    let summernoteInitialized = false; // Neues Flag für Summernote-Initialisierung
+        let hasUnsavedChanges = false;
+        let editedRows = new Map(); // Speichert die IDs der bearbeiteten Zeilen und ihre Daten
+        let deletedRows = new Set(); // Speichert die IDs der gelöschten Zeilen
+        let summernoteInitialized = false; // Neues Flag für Summernote-Initialisierung
 
-    // Funktion zur Initialisierung von Summernote
-    function initializeSummernote() {
-        if (!summernoteInitialized) {
-            console.log("Initializing Summernote..."); // Debug-Meldung
-            $('#comic-transcript').summernote({
-                height: 150,
-                toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['font', ['strikethrough', 'superscript', 'subscript']],
-                    ['fontsize', ['fontsize']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['height', ['height']],
-                    ['insert', ['link']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ]
-            });
-            summernoteInitialized = true;
-            console.log("Summernote initialized."); // Debug-Meldung
-        }
-    }
-
-    // Initialisiere Formularfelder mit Standardwerten oder leere sie
-    function resetForm() {
-        comicEditForm.reset();
-        comicIdInput.value = '';
-        originalComicIdInput.value = ''; // Wichtig für neue Einträge
-        comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
-        saveSingleButton.textContent = 'Speichern';
-        saveSingleButton.classList.remove('edit');
-        saveSingleButton.classList.add('button');
-        if (summernoteInitialized) { // Nur Summernote leeren, wenn es initialisiert ist
-            $('#comic-transcript').summernote('code', '');
-        } else {
-            // Wenn Summernote noch nicht initialisiert ist, leere das normale Textarea
-            comicTranscriptTextarea.value = '';
-        }
-        formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
-        console.log("Form reset."); // Debug-Meldung
-    }
-
-    // Funktion zum Anzeigen von Nachrichten
-    function showMessage(msg, type) {
-        if (messageBoxElement) {
-            messageBoxElement.textContent = msg;
-            messageBoxElement.className = 'message-box ' + type;
-            messageBoxElement.style.display = 'block';
-            setTimeout(() => {
-                messageBoxElement.style.display = 'none'; // Nachricht nach 5 Sekunden ausblenden
-            }, 5000);
-        } else {
-            console.warn("Message box element not found, falling back to console: " + msg);
-        }
-    }
-
-    // Funktion zum Setzen des "ungespeicherte Änderungen"-Flags
-    function setUnsavedChanges(status) {
-        hasUnsavedChanges = status;
-        if (saveAllButton) {
-            if (status) {
-                saveAllButton.classList.remove('disabled');
-            } else {
-                saveAllButton.classList.add('disabled');
+        // Funktion zur Initialisierung von Summernote
+        function initializeSummernote() {
+            if (!summernoteInitialized) {
+                console.log("Initializing Summernote..."); // Debug-Meldung
+                $('#comic-transcript').summernote({
+                    height: 150,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['strikethrough', 'superscript', 'subscript']],
+                        ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['height', ['height']],
+                        ['insert', ['link']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ]
+                });
+                summernoteInitialized = true;
+                console.log("Summernote initialized."); // Debug-Meldung
             }
         }
-        console.log("Unsaved changes status:", hasUnsavedChanges); // Debug-Meldung
-    }
 
-    // Warnung vor dem Verlassen der Seite bei ungespeicherten Änderungen
-    window.addEventListener('beforeunload', function(event) {
-        if (hasUnsavedChanges) {
-            event.preventDefault(); // Standardaktion (Seite verlassen) verhindern
-            event.returnValue = ''; // Für ältere Browser
-            return ''; // Für moderne Browser
+        // Initialisiere Formularfelder mit Standardwerten oder leere sie
+        function resetForm() {
+            comicEditForm.reset();
+            comicIdInput.value = '';
+            originalComicIdInput.value = ''; // Wichtig für neue Einträge
+            comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
+            saveSingleButton.textContent = 'Speichern';
+            saveSingleButton.classList.remove('edit');
+            saveSingleButton.classList.add('button');
+            if (summernoteInitialized) { // Nur Summernote leeren, wenn es initialisiert ist
+                $('#comic-transcript').summernote('code', '');
+            } else {
+                // Wenn Summernote noch nicht initialisiert ist, leere das normale Textarea
+                comicTranscriptTextarea.value = '';
+            }
+            formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
+            console.log("Form reset."); // Debug-Meldung
         }
-    });
 
-    // Hilfsfunktion für HTML-Escaping in JavaScript (für Input-Werte)
-    function htmlspecialchars(str) {
-        var div = document.createElement('div');
-        div.appendChild(document.createTextNode(str));
-        return div.innerHTML;
-    }
+        // Funktion zum Anzeigen von Nachrichten
+        function showMessage(msg, type) {
+            if (messageBoxElement) {
+                messageBoxElement.textContent = msg;
+                messageBoxElement.className = 'message-box ' + type;
+                messageBoxElement.style.display = 'block';
+                setTimeout(() => {
+                    messageBoxElement.style.display = 'none'; // Nachricht nach 5 Sekunden ausblenden
+                }, 5000);
+            } else {
+                console.warn("Message box element not found, falling back to console: " + msg);
+            }
+        }
 
-    // Event Listener für Bearbeiten-Buttons
-    comicDataTable.addEventListener('click', function(event) {
-        const target = event.target;
-        // Überprüfe, ob der Klick auf den Button selbst oder ein Icon darin erfolgte
-        const editButton = target.closest('.edit-button');
-        const deleteButton = target.closest('.delete-button');
+        // Funktion zum Setzen des "ungespeicherte Änderungen"-Flags
+        function setUnsavedChanges(status) {
+            hasUnsavedChanges = status;
+            if (saveAllButton) {
+                if (status) {
+                    saveAllButton.classList.remove('disabled');
+                } else {
+                    saveAllButton.classList.add('disabled');
+                }
+            }
+            console.log("Unsaved changes status:", hasUnsavedChanges); // Debug-Meldung
+        }
 
-        if (editButton) {
-            console.log("Edit button clicked."); // Debug-Meldung
-            const row = editButton.closest('tr');
-            const comicId = row.dataset.comicId;
-            const comicType = row.querySelector('.comic-type-display').textContent;
-            const comicName = row.querySelector('.comic-name-display').textContent;
-            const comicTranscript = row.querySelector('.comic-transcript-display').textContent;
-            const comicChapter = row.querySelector('.comic-chapter-display').textContent;
+        // Warnung vor dem Verlassen der Seite bei ungespeicherten Änderungen
+        window.addEventListener('beforeunload', function (event) {
+            if (hasUnsavedChanges) {
+                event.preventDefault(); // Standardaktion (Seite verlassen) verhindern
+                event.returnValue = ''; // Für ältere Browser
+                return ''; // Für moderne Browser
+            }
+        });
 
-            // Formularfelder füllen
-            comicIdInput.value = comicId;
-            originalComicIdInput.value = comicId; // Speichert die Original-ID für den Fall, dass die ID geändert wird
-            comicIdInput.readOnly = true; // ID ist nicht bearbeitbar im Bearbeitungsmodus
-            comicTypeSelect.value = comicType;
-            comicNameInput.value = comicName;
-            
-            // Summernote initialisieren und Inhalt füllen
+        // Hilfsfunktion für HTML-Escaping in JavaScript (für Input-Werte)
+        function htmlspecialchars(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        // Event Listener für Bearbeiten-Buttons
+        comicDataTable.addEventListener('click', function (event) {
+            const target = event.target;
+            // Überprüfe, ob der Klick auf den Button selbst oder ein Icon darin erfolgte
+            const editButton = target.closest('.edit-button');
+            const deleteButton = target.closest('.delete-button');
+
+            if (editButton) {
+                console.log("Edit button clicked."); // Debug-Meldung
+                const row = editButton.closest('tr');
+                const comicId = row.dataset.comicId;
+                const comicType = row.querySelector('.comic-type-display').textContent;
+                const comicName = row.querySelector('.comic-name-display').textContent;
+                const comicTranscript = row.querySelector('.comic-transcript-display').textContent;
+                const comicChapter = row.querySelector('.comic-chapter-display').textContent;
+
+                // Formularfelder füllen
+                comicIdInput.value = comicId;
+                originalComicIdInput.value = comicId; // Speichert die Original-ID für den Fall, dass die ID geändert wird
+                comicIdInput.readOnly = true; // ID ist nicht bearbeitbar im Bearbeitungsmodus
+                comicTypeSelect.value = comicType;
+                comicNameInput.value = comicName;
+
+                // Summernote initialisieren und Inhalt füllen
+                initializeSummernote();
+                $('#comic-transcript').summernote('code', comicTranscript); // Summernote mit Inhalt füllen
+
+                comicChapterSelect.value = comicChapter;
+
+                saveSingleButton.textContent = 'Änderungen speichern';
+                saveSingleButton.classList.add('edit');
+                saveSingleButton.classList.remove('button');
+
+                // Auto-expand form section and scroll to it
+                if (!formSection.classList.contains('expanded')) {
+                    formSection.classList.add('expanded');
+                }
+                formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
+            } else if (deleteButton) {
+                console.log("Delete button clicked."); // Debug-Meldung
+                const row = deleteButton.closest('tr');
+                const comicId = row.dataset.comicId;
+
+                // Bestätigungsdialog vor dem Löschen
+                const confirmDelete = confirm(`Sind Sie sicher, dass Sie den Comic-Eintrag mit der ID ${comicId} löschen möchten? Diese Änderung wird erst nach dem Klick auf "Alle Änderungen speichern" permanent.`);
+                if (confirmDelete) {
+                    // Markiere die Zeile als gelöscht (visuell und intern)
+                    row.style.textDecoration = 'line-through';
+                    row.style.opacity = '0.5';
+                    row.querySelectorAll('button').forEach(btn => btn.disabled = true); // Buttons deaktivieren
+
+                    // Füge die ID zur deletedRows Set hinzu
+                    deletedRows.add(comicId);
+                    // Entferne die ID aus editedRows, falls sie dort war
+                    editedRows.delete(comicId);
+
+                    setUnsavedChanges(true);
+                    showMessage(`Comic-Eintrag ${comicId} zum Löschen markiert. Klicken Sie auf "Alle Änderungen speichern", um dies zu bestätigen.`, 'success');
+                } else {
+                    showMessage(`Löschen für Comic-Eintrag ${comicId} abgebrochen.`, 'info');
+                }
+            }
+        });
+
+        // Event Listener für das Hinzufügen eines neuen Eintrags
+        addComicButton.addEventListener('click', function () {
+            console.log("Add new comic button clicked."); // Debug-Meldung
+            resetForm();
+            saveSingleButton.textContent = 'Hinzufügen';
+            saveSingleButton.classList.add('button');
+            saveSingleButton.classList.remove('edit');
+            comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
+
+            // Summernote initialisieren, falls noch nicht geschehen
             initializeSummernote();
-            $('#comic-transcript').summernote('code', comicTranscript); // Summernote mit Inhalt füllen
-
-            comicChapterSelect.value = comicChapter;
-
-            saveSingleButton.textContent = 'Änderungen speichern';
-            saveSingleButton.classList.add('edit');
-            saveSingleButton.classList.remove('button');
 
             // Auto-expand form section and scroll to it
             if (!formSection.classList.contains('expanded')) {
                 formSection.classList.add('expanded');
             }
             formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
-        } else if (deleteButton) {
-            console.log("Delete button clicked."); // Debug-Meldung
-            const row = deleteButton.closest('tr');
-            const comicId = row.dataset.comicId;
+        });
 
-            // Bestätigungsdialog vor dem Löschen
-            const confirmDelete = confirm(`Sind Sie sicher, dass Sie den Comic-Eintrag mit der ID ${comicId} löschen möchten? Diese Änderung wird erst nach dem Klick auf "Alle Änderungen speichern" permanent.`);
-            if (confirmDelete) {
-                // Markiere die Zeile als gelöscht (visuell und intern)
-                row.style.textDecoration = 'line-through';
-                row.style.opacity = '0.5';
-                row.querySelectorAll('button').forEach(btn => btn.disabled = true); // Buttons deaktivieren
+        // Event Listener für Abbrechen-Button
+        cancelEditButton.addEventListener('click', function () {
+            console.log("Cancel button clicked."); // Debug-Meldung
+            resetForm();
+            showMessage('Bearbeitung abgebrochen.', 'info');
+        });
 
-                // Füge die ID zur deletedRows Set hinzu
-                deletedRows.add(comicId);
-                // Entferne die ID aus editedRows, falls sie dort war
-                editedRows.delete(comicId);
+        // Event Listener für das Speichern eines einzelnen Eintrags (Formular-Submit)
+        comicEditForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // Standard-Formular-Submit verhindern
+            console.log("Form submit button clicked."); // Debug-Meldung
 
-                setUnsavedChanges(true);
-                showMessage(`Comic-Eintrag ${comicId} zum Löschen markiert. Klicken Sie auf "Alle Änderungen speichern", um dies zu bestätigen.`, 'success');
-            } else {
-                showMessage(`Löschen für Comic-Eintrag ${comicId} abgebrochen.`, 'info');
+            const comicId = comicIdInput.value.trim();
+            const originalComicId = originalComicIdInput.value.trim(); // Die ID, die tatsächlich bearbeitet wird (falls ID geändert wurde)
+            const comicType = comicTypeSelect.value.trim();
+            const comicName = comicNameInput.value.trim();
+            // Inhalt von Summernote holen (oder vom Textarea, falls Summernote nicht initialisiert wurde)
+            const comicTranscript = summernoteInitialized ? $('#comic-transcript').summernote('code').trim() : comicTranscriptTextarea.value.trim();
+            const comicChapter = comicChapterSelect.value.trim();
+
+            // Einfache Validierung
+            if (!comicId || !comicType || !comicName || !comicChapter) {
+                showMessage('Bitte füllen Sie alle Felder (ID, Typ, Name, Kapitel) aus.', 'error');
+                return;
             }
-        }
-    });
+            if (!/^\d{8}$/.test(comicId)) {
+                showMessage('Comic ID muss eine 8-stellige Zahl (JJJJMMTT) sein.', 'error');
+                return;
+            }
 
-    // Event Listener für das Hinzufügen eines neuen Eintrags
-    addComicButton.addEventListener('click', function() {
-        console.log("Add new comic button clicked."); // Debug-Meldung
-        resetForm();
-        saveSingleButton.textContent = 'Hinzufügen';
-        saveSingleButton.classList.add('button');
-        saveSingleButton.classList.remove('edit');
-        comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
+            const comicData = {
+                comic_id: comicId,
+                comic_type: comicType,
+                comic_name: comicName,
+                comic_transcript: comicTranscript,
+                comic_chapter: parseInt(comicChapter)
+            };
+            console.log("Comic data prepared:", comicData); // Debug-Meldung
 
-        // Summernote initialisieren, falls noch nicht geschehen
-        initializeSummernote();
+            // Wenn originalComicId gesetzt ist und sich von comicId unterscheidet, bedeutet dies eine ID-Änderung
+            if (originalComicId && originalComicId !== comicId) {
+                // Markiere die alte ID als zu löschen
+                deletedRows.add(originalComicId);
+                // Entferne die alte ID aus editedRows, falls sie dort war
+                editedRows.delete(originalComicId);
+                console.log("Original ID marked for deletion due to ID change:", originalComicId); // Debug-Meldung
+            }
 
-        // Auto-expand form section and scroll to it
-        if (!formSection.classList.contains('expanded')) {
-            formSection.classList.add('expanded');
-        }
-        formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
-    });
+            // Füge die Daten zur Map der bearbeiteten Zeilen hinzu
+            editedRows.set(comicId, comicData);
+            // Entferne die ID aus deletedRows, falls sie dort fälschlicherweise war (z.B. Bearbeitung nach Lösch-Markierung)
+            deletedRows.delete(comicId);
+            console.log("Edited rows map updated:", editedRows); // Debug-Meldung
 
-    // Event Listener für Abbrechen-Button
-    cancelEditButton.addEventListener('click', function() {
-        console.log("Cancel button clicked."); // Debug-Meldung
-        resetForm();
-        showMessage('Bearbeitung abgebrochen.', 'info');
-    });
-
-    // Event Listener für das Speichern eines einzelnen Eintrags (Formular-Submit)
-    comicEditForm.addEventListener('submit', function(event) {
-        event.preventDefault(); // Standard-Formular-Submit verhindern
-        console.log("Form submit button clicked."); // Debug-Meldung
-
-        const comicId = comicIdInput.value.trim();
-        const originalComicId = originalComicIdInput.value.trim(); // Die ID, die tatsächlich bearbeitet wird (falls ID geändert wurde)
-        const comicType = comicTypeSelect.value.trim();
-        const comicName = comicNameInput.value.trim();
-        // Inhalt von Summernote holen (oder vom Textarea, falls Summernote nicht initialisiert wurde)
-        const comicTranscript = summernoteInitialized ? $('#comic-transcript').summernote('code').trim() : comicTranscriptTextarea.value.trim();
-        const comicChapter = comicChapterSelect.value.trim();
-
-        // Einfache Validierung
-        if (!comicId || !comicType || !comicName || !comicChapter) {
-            showMessage('Bitte füllen Sie alle Felder (ID, Typ, Name, Kapitel) aus.', 'error');
-            return;
-        }
-        if (!/^\d{8}$/.test(comicId)) {
-            showMessage('Comic ID muss eine 8-stellige Zahl (JJJJMMTT) sein.', 'error');
-            return;
-        }
-
-        const comicData = {
-            comic_id: comicId,
-            comic_type: comicType,
-            comic_name: comicName,
-            comic_transcript: comicTranscript,
-            comic_chapter: parseInt(comicChapter)
-        };
-        console.log("Comic data prepared:", comicData); // Debug-Meldung
-
-        // Wenn originalComicId gesetzt ist und sich von comicId unterscheidet, bedeutet dies eine ID-Änderung
-        if (originalComicId && originalComicId !== comicId) {
-            // Markiere die alte ID als zu löschen
-            deletedRows.add(originalComicId);
-            // Entferne die alte ID aus editedRows, falls sie dort war
-            editedRows.delete(originalComicId);
-            console.log("Original ID marked for deletion due to ID change:", originalComicId); // Debug-Meldung
-        }
-
-        // Füge die Daten zur Map der bearbeiteten Zeilen hinzu
-        editedRows.set(comicId, comicData);
-        // Entferne die ID aus deletedRows, falls sie dort fälschlicherweise war (z.B. Bearbeitung nach Lösch-Markierung)
-        deletedRows.delete(comicId);
-        console.log("Edited rows map updated:", editedRows); // Debug-Meldung
-
-        // Aktualisiere die Tabellenzeile oder füge eine neue hinzu (visuell)
-        let row = comicDataTable.querySelector(`tr[data-comic-id="${htmlspecialchars(originalComicId || comicId)}"]`);
-        if (!row) {
-            // Neue Zeile hinzufügen, wenn nicht gefunden
-            row = comicDataTable.tBodies[0].insertRow();
-            row.dataset.comicId = comicId;
-            // Initialize innerHTML with empty spans for editable fields
-            row.innerHTML = `
+            // Aktualisiere die Tabellenzeile oder füge eine neue hinzu (visuell)
+            let row = comicDataTable.querySelector(`tr[data-comic-id="${htmlspecialchars(originalComicId || comicId)}"]`);
+            if (!row) {
+                // Neue Zeile hinzufügen, wenn nicht gefunden
+                row = comicDataTable.tBodies[0].insertRow();
+                row.dataset.comicId = comicId;
+                // Initialize innerHTML with empty spans for editable fields
+                row.innerHTML = `
                 <td class="comic-id-display"></td>
                 <td><span class="editable-field comic-type-display"></span></td>
                 <td><span class="editable-field comic-name-display"></span></td>
@@ -1558,291 +1697,291 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button type="button" class="delete-button button delete" title="Löschen"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
-            console.log("New row added visually for ID:", comicId); // Debug-Meldung
-        }
-
-        // Aktualisiere die angezeigten Werte
-        row.dataset.comicId = comicId; // Wichtig, falls ID geändert wurde
-        row.querySelector('.comic-id-display').textContent = comicId;
-        row.querySelector('.comic-type-display').textContent = comicType;
-        row.querySelector('.comic-name-display').textContent = comicName;
-        row.querySelector('.comic-transcript-display').textContent = comicTranscript; // Textinhalt
-        row.querySelector('.comic-chapter-display').textContent = comicChapter;
-
-        // Entferne visuelle Lösch-Markierungen, falls die Zeile bearbeitet wurde
-        row.style.textDecoration = 'none';
-        row.style.opacity = '1';
-        row.querySelectorAll('button').forEach(btn => btn.disabled = false);
-
-        // Prüfe auf fehlende Informationen und markiere visuell
-        const isTranscriptEffectivelyEmpty = (comicTranscript === '' || comicTranscript === '<p><br></p>' || comicTranscript === '&nbsp;');
-        const missingFields = [];
-        if (comicType === '') missingFields.push('type');
-        if (comicName === '') missingFields.push('name');
-        if (isTranscriptEffectivelyEmpty) missingFields.push('transcript');
-        if (comicChapter === '' || parseInt(comicChapter) <= 0) missingFields.push('chapter');
-
-        if (missingFields.length > 0) {
-            row.classList.add('missing-info-row');
-            if (missingFields.includes('type')) row.querySelector('.comic-type-display').classList.add('missing-info'); else row.querySelector('.comic-type-display').classList.remove('missing-info');
-            if (missingFields.includes('name')) row.querySelector('.comic-name-display').classList.add('missing-info'); else row.querySelector('.comic-name-display').classList.remove('missing-info');
-            if (missingFields.includes('transcript')) row.querySelector('.comic-transcript-display').classList.add('missing-info'); else row.querySelector('.comic-transcript-display').classList.remove('missing-info');
-            if (missingFields.includes('chapter')) row.querySelector('.comic-chapter-display').classList.add('missing-info'); else row.querySelector('.comic-chapter-display').classList.remove('missing-info');
-        } else {
-            row.classList.remove('missing-info-row');
-            row.querySelectorAll('.missing-info').forEach(el => el.classList.remove('missing-info'));
-        }
-
-        setUnsavedChanges(true);
-        resetForm();
-        showMessage('Eintrag lokal gespeichert.', 'success');
-        showMessage('Ihre Änderungen sind lokal gespeichert. Bitte klicken Sie auf "Alle Änderungen speichern", um sie permanent zu sichern.', 'warning');
-    });
-
-    // Event Listener für den "Alle Änderungen speichern" Button
-    saveAllButton.addEventListener('click', function() {
-        console.log("Save All button clicked."); // Debug-Meldung
-        if (!hasUnsavedChanges) {
-            showMessage('Keine ungespeicherten Änderungen vorhanden.', 'info');
-            return;
-        }
-
-        // Sammle alle zu speichernden/löschenden Daten
-        const dataToSend = {
-            pages: Array.from(editedRows.values()),
-            deleted_ids: Array.from(deletedRows)
-        };
-        console.log("Data to send to server:", dataToSend); // Debug-Meldung
-
-        // Sende Daten an den Server
-        fetch(window.location.href, { // Sendet an die aktuelle PHP-Datei
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dataToSend)
-        })
-        .then(response => {
-            if (!response.ok) {
-                // Wenn der Server einen HTTP-Fehlercode zurückgibt
-                throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+                console.log("New row added visually for ID:", comicId); // Debug-Meldung
             }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                showMessage(data.message + ' Die Seite wird neu geladen, um die Änderungen anzuzeigen.', 'success');
-                setUnsavedChanges(false);
-                editedRows.clear(); // Lokale Änderungen löschen
-                deletedRows.clear(); // Lokale Löschungen löschen
-                console.log("Fetch successful, reloading page."); // Debug-Meldung
-                // Kurze Verzögerung vor dem Neuladen, damit die Nachricht sichtbar ist
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+
+            // Aktualisiere die angezeigten Werte
+            row.dataset.comicId = comicId; // Wichtig, falls ID geändert wurde
+            row.querySelector('.comic-id-display').textContent = comicId;
+            row.querySelector('.comic-type-display').textContent = comicType;
+            row.querySelector('.comic-name-display').textContent = comicName;
+            row.querySelector('.comic-transcript-display').textContent = comicTranscript; // Textinhalt
+            row.querySelector('.comic-chapter-display').textContent = comicChapter;
+
+            // Entferne visuelle Lösch-Markierungen, falls die Zeile bearbeitet wurde
+            row.style.textDecoration = 'none';
+            row.style.opacity = '1';
+            row.querySelectorAll('button').forEach(btn => btn.disabled = false);
+
+            // Prüfe auf fehlende Informationen und markiere visuell
+            const isTranscriptEffectivelyEmpty = (comicTranscript === '' || comicTranscript === '<p><br></p>' || comicTranscript === '&nbsp;');
+            const missingFields = [];
+            if (comicType === '') missingFields.push('type');
+            if (comicName === '') missingFields.push('name');
+            if (isTranscriptEffectivelyEmpty) missingFields.push('transcript');
+            if (comicChapter === '' || parseInt(comicChapter) <= 0) missingFields.push('chapter');
+
+            if (missingFields.length > 0) {
+                row.classList.add('missing-info-row');
+                if (missingFields.includes('type')) row.querySelector('.comic-type-display').classList.add('missing-info'); else row.querySelector('.comic-type-display').classList.remove('missing-info');
+                if (missingFields.includes('name')) row.querySelector('.comic-name-display').classList.add('missing-info'); else row.querySelector('.comic-name-display').classList.remove('missing-info');
+                if (missingFields.includes('transcript')) row.querySelector('.comic-transcript-display').classList.add('missing-info'); else row.querySelector('.comic-transcript-display').classList.remove('missing-info');
+                if (missingFields.includes('chapter')) row.querySelector('.comic-chapter-display').classList.add('missing-info'); else row.querySelector('.comic-chapter-display').classList.remove('missing-info');
             } else {
-                showMessage('Fehler beim Speichern der Daten: ' + data.message, 'error');
-                console.error('Server responded with error:', data.message); // Debug-Meldung
+                row.classList.remove('missing-info-row');
+                row.querySelectorAll('.missing-info').forEach(el => el.classList.remove('missing-info'));
             }
-        })
-        .catch(error => {
-            console.error('Fetch error:', error); // Debug-Meldung
-            showMessage('Ein Netzwerkfehler ist aufgetreten oder die Serverantwort war unerwartet: ' + error.message, 'error');
+
+            setUnsavedChanges(true);
+            resetForm();
+            showMessage('Eintrag lokal gespeichert.', 'success');
+            showMessage('Ihre Änderungen sind lokal gespeichert. Bitte klicken Sie auf "Alle Änderungen speichern", um sie permanent zu sichern.', 'warning');
         });
-    });
 
-    // Initialer Status des "Alle Änderungen speichern" Buttons
-    setUnsavedChanges(false);
-
-    // Live-Bearbeitung in der Tabelle (Doppelklick)
-    comicDataTable.addEventListener('dblclick', function(event) {
-        const target = event.target;
-        if (target.classList.contains('editable-field')) {
-            const row = target.closest('tr');
-            const comicId = row.dataset.comicId;
-            const fieldName = target.classList[1].replace('-display', ''); // z.B. 'comic-type'
-            console.log("Double-clicked editable field:", fieldName, "for ID:", comicId); // Debug-Meldung
-
-            if (target.classList.contains('editing')) {
-                return; // Bereits im Bearbeitungsmodus
+        // Event Listener für den "Alle Änderungen speichern" Button
+        saveAllButton.addEventListener('click', function () {
+            console.log("Save All button clicked."); // Debug-Meldung
+            if (!hasUnsavedChanges) {
+                showMessage('Keine ungespeicherten Änderungen vorhanden.', 'info');
+                return;
             }
 
-            // Alle anderen Bearbeitungsfelder schließen
-            document.querySelectorAll('.editable-field.editing').forEach(field => {
-                field.classList.remove('editing');
-                const originalContent = field.dataset.originalContent;
-                if (originalContent !== undefined) {
-                    field.innerHTML = originalContent; // Setze den Inhalt zurück
-                }
-            });
+            // Sammle alle zu speichernden/löschenden Daten
+            const dataToSend = {
+                pages: Array.from(editedRows.values()),
+                deleted_ids: Array.from(deletedRows)
+            };
+            console.log("Data to send to server:", dataToSend); // Debug-Meldung
 
-            // Speichere den Originalinhalt
-            target.dataset.originalContent = target.innerHTML;
-            target.classList.add('editing');
-
-            let inputElement;
-            if (fieldName === 'comic-type') {
-                inputElement = document.createElement('select');
-                <?php foreach ($comicTypeOptions as $option): ?>
-                    var optionType = document.createElement('option'); // Changed to var
-                    optionType.value = "<?php echo htmlspecialchars($option); ?>";
-                    optionType.textContent = "<?php echo htmlspecialchars($option); ?>";
-                    inputElement.appendChild(optionType);
-                <?php endforeach; ?>
-                inputElement.value = target.textContent;
-            } else if (fieldName === 'comic-chapter') {
-                inputElement = document.createElement('select');
-                var defaultOption = document.createElement('option'); // Changed to var
-                defaultOption.value = "";
-                defaultOption.textContent = "Bitte auswählen";
-                inputElement.appendChild(defaultOption);
-                <?php foreach ($chapterOptions as $option): ?>
-                    var optionChapter = document.createElement('option'); // Changed to var
-                    optionChapter.value = "<?php echo htmlspecialchars($option); ?>";
-                    optionChapter.textContent = "<?php echo htmlspecialchars($option); ?>";
-                    inputElement.appendChild(optionChapter);
-                <?php endforeach; ?>
-                inputElement.value = target.textContent;
-            } else if (fieldName === 'comic-transcript') {
-                // Double-clicking transcript now triggers the main edit form
-                const editButton = row.querySelector('.edit-button');
-                if (editButton) {
-                    editButton.click(); // Simulate click on edit button
-                    target.classList.remove('editing'); // Remove editing class from span
-                    console.log("Transcript double-clicked, redirecting to full form edit."); // Debug-Meldung
-                    return; // Exit here as editing happens in main form
-                }
-            } else {
-                inputElement = document.createElement('input');
-                inputElement.type = 'text';
-                inputElement.value = target.textContent;
-                inputElement.style.width = '100%';
-                inputElement.style.boxSizing = 'border-box';
-            }
-
-            // Only proceed if an input element was created (i.e., not for transcript field)
-            if (inputElement) {
-                target.innerHTML = '';
-                target.appendChild(inputElement);
-                inputElement.focus();
-
-                inputElement.addEventListener('blur', function() {
-                    // Überprüfe, ob sich der Wert geändert hat
-                    const newValue = inputElement.value.trim();
-                    const originalValue = target.dataset.originalContent.trim();
-                    console.log("Field blurred. New value:", newValue, "Original value:", originalValue); // Debug-Meldung
-
-                    target.classList.remove('editing');
-                    target.innerHTML = htmlspecialchars(newValue); // Zeige den neuen Wert an
-
-                    if (newValue !== originalValue) {
-                        // Daten für die Speicherung vorbereiten
-                        let currentData = editedRows.get(comicId) || {
-                            comic_id: comicId,
-                            comic_type: row.querySelector('.comic-type-display').textContent,
-                            comic_name: row.querySelector('.comic-name-display').textContent,
-                            comic_transcript: row.querySelector('.comic-transcript-display').textContent,
-                            comic_chapter: parseInt(row.querySelector('.comic-chapter-display').textContent)
-                        };
-
-                        if (fieldName === 'comic-type') currentData.comic_type = newValue;
-                        else if (fieldName === 'comic-name') currentData.comic_name = newValue;
-                        else if (fieldName === 'comic-transcript') currentData.comic_transcript = newValue; // Should not happen with current logic for transcript
-                        else if (fieldName === 'comic-chapter') currentData.comic_chapter = parseInt(newValue);
-
-                        editedRows.set(comicId, currentData);
-                        setUnsavedChanges(true);
-                        showMessage('Änderung für ' + comicId + ' (' + fieldName + ') lokal gespeichert. Klicken Sie auf "Alle Änderungen speichern".', 'info');
-                        console.log("Local change recorded:", currentData); // Debug-Meldung
-
-                        // Aktualisiere die "missing-info" Klasse basierend auf dem neuen Wert
-                        const isTranscriptEffectivelyEmpty = (currentData.comic_transcript === '' || currentData.comic_transcript === '<p><br></p>' || currentData.comic_transcript === '&nbsp;');
-                        const isChapterEffectivelyEmpty = (currentData.comic_chapter === null || isNaN(currentData.comic_chapter) || currentData.comic_chapter <= 0);
-
-                        if (fieldName === 'comic-type') {
-                            if (currentData.comic_type === '') target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        } else if (fieldName === 'comic-name') {
-                            if (currentData.comic_name === '') target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        } else if (fieldName === 'comic-transcript') { // Should not happen with current logic for transcript
-                            if (isTranscriptEffectivelyEmpty) target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        } else if (fieldName === 'comic-chapter') {
-                            if (isChapterEffectivelyEmpty) target.classList.add('missing-info');
-                            else target.classList.remove('missing-info');
-                        }
-
-                        // Prüfe, ob die gesamte Zeile jetzt vollständig ist oder nicht
-                        const rowType = row.querySelector('.comic-type-display').textContent;
-                        const rowName = row.querySelector('.comic-name-display').textContent;
-                        const rowTranscript = row.querySelector('.comic-transcript-display').textContent;
-                        const rowChapter = row.querySelector('.comic-chapter-display').textContent;
-
-                        const rowIsTranscriptEffectivelyEmpty = (rowTranscript === '' || rowTranscript === '<p><br></p>' || rowTranscript === '&nbsp;');
-                        const rowIsChapterEffectivelyEmpty = (rowChapter === '' || parseInt(rowChapter) <= 0);
-
-                        if (rowType === '' || rowName === '' || rowIsTranscriptEffectivelyEmpty || rowIsChapterEffectivelyEmpty) {
-                            row.classList.add('missing-info-row');
-                        } else {
-                            row.classList.remove('missing-info-row');
-                        }
-
+            // Sende Daten an den Server
+            fetch(window.location.href, { // Sendet an die aktuelle PHP-Datei
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        // Wenn der Server einen HTTP-Fehlercode zurückgibt
+                        throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        showMessage(data.message + ' Die Seite wird neu geladen, um die Änderungen anzuzeigen.', 'success');
+                        setUnsavedChanges(false);
+                        editedRows.clear(); // Lokale Änderungen löschen
+                        deletedRows.clear(); // Lokale Löschungen löschen
+                        console.log("Fetch successful, reloading page."); // Debug-Meldung
+                        // Kurze Verzögerung vor dem Neuladen, damit die Nachricht sichtbar ist
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
                     } else {
-                        // Wenn keine Änderung, setze den Originalinhalt zurück (falls HTML-Tags entfernt wurden)
-                        target.innerHTML = originalValue;
+                        showMessage('Fehler beim Speichern der Daten: ' + data.message, 'error');
+                        console.error('Server responded with error:', data.message); // Debug-Meldung
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error); // Debug-Meldung
+                    showMessage('Ein Netzwerkfehler ist aufgetreten oder die Serverantwort war unerwartet: ' + error.message, 'error');
+                });
+        });
+
+        // Initialer Status des "Alle Änderungen speichern" Buttons
+        setUnsavedChanges(false);
+
+        // Live-Bearbeitung in der Tabelle (Doppelklick)
+        comicDataTable.addEventListener('dblclick', function (event) {
+            const target = event.target;
+            if (target.classList.contains('editable-field')) {
+                const row = target.closest('tr');
+                const comicId = row.dataset.comicId;
+                const fieldName = target.classList[1].replace('-display', ''); // z.B. 'comic-type'
+                console.log("Double-clicked editable field:", fieldName, "for ID:", comicId); // Debug-Meldung
+
+                if (target.classList.contains('editing')) {
+                    return; // Bereits im Bearbeitungsmodus
+                }
+
+                // Alle anderen Bearbeitungsfelder schließen
+                document.querySelectorAll('.editable-field.editing').forEach(field => {
+                    field.classList.remove('editing');
+                    const originalContent = field.dataset.originalContent;
+                    if (originalContent !== undefined) {
+                        field.innerHTML = originalContent; // Setze den Inhalt zurück
                     }
                 });
 
-                // Ermögliche Speichern mit Enter für Textfelder
-                if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
-                    inputElement.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter' && inputElement.tagName === 'INPUT') { // Nur für INPUT, nicht TEXTAREA
-                            inputElement.blur(); // Verlässt das Feld, was den blur-Event auslöst und speichert
+                // Speichere den Originalinhalt
+                target.dataset.originalContent = target.innerHTML;
+                target.classList.add('editing');
+
+                let inputElement;
+                if (fieldName === 'comic-type') {
+                    inputElement = document.createElement('select');
+                    <?php foreach ($comicTypeOptions as $option): ?>
+                        var optionType = document.createElement('option'); // Changed to var
+                        optionType.value = "<?php echo htmlspecialchars($option); ?>";
+                        optionType.textContent = "<?php echo htmlspecialchars($option); ?>";
+                        inputElement.appendChild(optionType);
+                    <?php endforeach; ?>
+                    inputElement.value = target.textContent;
+                } else if (fieldName === 'comic-chapter') {
+                    inputElement = document.createElement('select');
+                    var defaultOption = document.createElement('option'); // Changed to var
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Bitte auswählen";
+                    inputElement.appendChild(defaultOption);
+                    <?php foreach ($chapterOptions as $option): ?>
+                        var optionChapter = document.createElement('option'); // Changed to var
+                        optionChapter.value = "<?php echo htmlspecialchars($option); ?>";
+                        optionChapter.textContent = "<?php echo htmlspecialchars($option); ?>";
+                        inputElement.appendChild(optionChapter);
+                    <?php endforeach; ?>
+                    inputElement.value = target.textContent;
+                } else if (fieldName === 'comic-transcript') {
+                    // Double-clicking transcript now triggers the main edit form
+                    const editButton = row.querySelector('.edit-button');
+                    if (editButton) {
+                        editButton.click(); // Simulate click on edit button
+                        target.classList.remove('editing'); // Remove editing class from span
+                        console.log("Transcript double-clicked, redirecting to full form edit."); // Debug-Meldung
+                        return; // Exit here as editing happens in main form
+                    }
+                } else {
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                    inputElement.value = target.textContent;
+                    inputElement.style.width = '100%';
+                    inputElement.style.boxSizing = 'border-box';
+                }
+
+                // Only proceed if an input element was created (i.e., not for transcript field)
+                if (inputElement) {
+                    target.innerHTML = '';
+                    target.appendChild(inputElement);
+                    inputElement.focus();
+
+                    inputElement.addEventListener('blur', function () {
+                        // Überprüfe, ob sich der Wert geändert hat
+                        const newValue = inputElement.value.trim();
+                        const originalValue = target.dataset.originalContent.trim();
+                        console.log("Field blurred. New value:", newValue, "Original value:", originalValue); // Debug-Meldung
+
+                        target.classList.remove('editing');
+                        target.innerHTML = htmlspecialchars(newValue); // Zeige den neuen Wert an
+
+                        if (newValue !== originalValue) {
+                            // Daten für die Speicherung vorbereiten
+                            let currentData = editedRows.get(comicId) || {
+                                comic_id: comicId,
+                                comic_type: row.querySelector('.comic-type-display').textContent,
+                                comic_name: row.querySelector('.comic-name-display').textContent,
+                                comic_transcript: row.querySelector('.comic-transcript-display').textContent,
+                                comic_chapter: parseInt(row.querySelector('.comic-chapter-display').textContent)
+                            };
+
+                            if (fieldName === 'comic-type') currentData.comic_type = newValue;
+                            else if (fieldName === 'comic-name') currentData.comic_name = newValue;
+                            else if (fieldName === 'comic-transcript') currentData.comic_transcript = newValue; // Should not happen with current logic for transcript
+                            else if (fieldName === 'comic-chapter') currentData.comic_chapter = parseInt(newValue);
+
+                            editedRows.set(comicId, currentData);
+                            setUnsavedChanges(true);
+                            showMessage('Änderung für ' + comicId + ' (' + fieldName + ') lokal gespeichert. Klicken Sie auf "Alle Änderungen speichern".', 'info');
+                            console.log("Local change recorded:", currentData); // Debug-Meldung
+
+                            // Aktualisiere die "missing-info" Klasse basierend auf dem neuen Wert
+                            const isTranscriptEffectivelyEmpty = (currentData.comic_transcript === '' || currentData.comic_transcript === '<p><br></p>' || currentData.comic_transcript === '&nbsp;');
+                            const isChapterEffectivelyEmpty = (currentData.comic_chapter === null || isNaN(currentData.comic_chapter) || currentData.comic_chapter <= 0);
+
+                            if (fieldName === 'comic-type') {
+                                if (currentData.comic_type === '') target.classList.add('missing-info');
+                                else target.classList.remove('missing-info');
+                            } else if (fieldName === 'comic-name') {
+                                if (currentData.comic_name === '') target.classList.add('missing-info');
+                                else target.classList.remove('missing-info');
+                            } else if (fieldName === 'comic-transcript') { // Should not happen with current logic for transcript
+                                if (isTranscriptEffectivelyEmpty) target.classList.add('missing-info');
+                                else target.classList.remove('missing-info');
+                            } else if (fieldName === 'comic-chapter') {
+                                if (isChapterEffectivelyEmpty) target.classList.add('missing-info');
+                                else target.classList.remove('missing-info');
+                            }
+
+                            // Prüfe, ob die gesamte Zeile jetzt vollständig ist oder nicht
+                            const rowType = row.querySelector('.comic-type-display').textContent;
+                            const rowName = row.querySelector('.comic-name-display').textContent;
+                            const rowTranscript = row.querySelector('.comic-transcript-display').textContent;
+                            const rowChapter = row.querySelector('.comic-chapter-display').textContent;
+
+                            const rowIsTranscriptEffectivelyEmpty = (rowTranscript === '' || rowTranscript === '<p><br></p>' || rowTranscript === '&nbsp;');
+                            const rowIsChapterEffectivelyEmpty = (rowChapter === '' || parseInt(rowChapter) <= 0);
+
+                            if (rowType === '' || rowName === '' || rowIsTranscriptEffectivelyEmpty || rowIsChapterEffectivelyEmpty) {
+                                row.classList.add('missing-info-row');
+                            } else {
+                                row.classList.remove('missing-info-row');
+                            }
+
+                        } else {
+                            // Wenn keine Änderung, setze den Originalinhalt zurück (falls HTML-Tags entfernt wurden)
+                            target.innerHTML = originalValue;
                         }
                     });
+
+                    // Ermögliche Speichern mit Enter für Textfelder
+                    if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
+                        inputElement.addEventListener('keypress', function (e) {
+                            if (e.key === 'Enter' && inputElement.tagName === 'INPUT') { // Nur für INPUT, nicht TEXTAREA
+                                inputElement.blur(); // Verlässt das Feld, was den blur-Event auslöst und speichert
+                            }
+                        });
+                    }
                 }
             }
-        }
-    });
+        });
 
-    // Add event listeners for collapsible headers
-    document.querySelectorAll('.collapsible-header').forEach(header => {
-        const section = header.closest('.collapsible-section');
-        const icon = header.querySelector('i');
+        // Add event listeners for collapsible headers
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            const section = header.closest('.collapsible-section');
+            const icon = header.querySelector('i');
 
-        // Set initial icon based on HTML class
-        if (section.classList.contains('expanded')) {
-            icon.classList.remove('fa-chevron-right');
-            icon.classList.add('fa-chevron-down');
-        } else {
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-right');
-        }
-
-        header.addEventListener('click', function() {
-            const wasExpanded = section.classList.contains('expanded'); // Zustand vor dem Toggle speichern
-            section.classList.toggle('expanded');
-            // Update the icon based on the new expanded state
+            // Set initial icon based on HTML class
             if (section.classList.contains('expanded')) {
                 icon.classList.remove('fa-chevron-right');
                 icon.classList.add('fa-chevron-down');
-                // Wenn es der Formular-Abschnitt ist und er gerade aufgeklappt wurde, Summernote initialisieren
-                if (section.classList.contains('form-section') && !wasExpanded) {
-                    initializeSummernote();
-                }
-                // Zum Formular scrollen, wenn es aufgeklappt wird
-                if (section.classList.contains('form-section')) {
-                    section.scrollIntoView({ behavior: 'smooth' });
-                }
             } else {
                 icon.classList.remove('fa-chevron-down');
                 icon.classList.add('fa-chevron-right');
             }
-            console.log("Collapsible header clicked. Section expanded status:", section.classList.contains('expanded')); // Debug-Meldung
+
+            header.addEventListener('click', function () {
+                const wasExpanded = section.classList.contains('expanded'); // Zustand vor dem Toggle speichern
+                section.classList.toggle('expanded');
+                // Update the icon based on the new expanded state
+                if (section.classList.contains('expanded')) {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-down');
+                    // Wenn es der Formular-Abschnitt ist und er gerade aufgeklappt wurde, Summernote initialisieren
+                    if (section.classList.contains('form-section') && !wasExpanded) {
+                        initializeSummernote();
+                    }
+                    // Zum Formular scrollen, wenn es aufgeklappt wird
+                    if (section.classList.contains('form-section')) {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-right');
+                }
+                console.log("Collapsible header clicked. Section expanded status:", section.classList.contains('expanded')); // Debug-Meldung
+            });
         });
     });
-});
 </script>
 
 <?php

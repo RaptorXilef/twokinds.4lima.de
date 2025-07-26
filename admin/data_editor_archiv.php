@@ -13,9 +13,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     // Lösche das Session-Cookie.
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000,
-            $params["path"], $params["domain"],
-            $params["secure"], $params["httponly"]
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httponly"]
         );
     }
 
@@ -37,7 +42,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 // Pfad zur JSON-Datei mit den Archivkapiteln
-$archiveChaptersJsonPath = __DIR__ . '/../src/components/archive_chapters.json';
+$archiveChaptersJsonPath = __DIR__ . '/../src/config/archive_chapters.json';
 
 $message = '';
 $messageType = ''; // 'success' oder 'error' oder 'info' oder 'warning'
@@ -47,7 +52,8 @@ $messageType = ''; // 'success' oder 'error' oder 'info' oder 'warning'
  * @param string $path Der Pfad zur JSON-Datei.
  * @return array Die dekodierten Daten als assoziatives Array (chapterId => data) oder ein leeres Array im Fehlerfall.
  */
-function loadArchiveChapters(string $path): array {
+function loadArchiveChapters(string $path): array
+{
     if (!file_exists($path) || filesize($path) === 0) {
         return [];
     }
@@ -62,7 +68,7 @@ function loadArchiveChapters(string $path): array {
         return [];
     }
     // Sortiere nach chapterId, um Konsistenz zu gewährleisten
-    usort($data, function($a, $b) {
+    usort($data, function ($a, $b) {
         return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
     });
     return $data;
@@ -74,9 +80,10 @@ function loadArchiveChapters(string $path): array {
  * @param array $data Die zu speichernden Daten.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveArchiveChapters(string $path, array $data): bool {
+function saveArchiveChapters(string $path, array $data): bool
+{
     // Sortiere die Daten vor dem Speichern nach chapterId
-    usort($data, function($a, $b) {
+    usort($data, function ($a, $b) {
         return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
     });
     $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -141,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $newChapter = [
-                    'chapterId' => (int)$newChapterId, // Cast to int
+                    'chapterId' => (int) $newChapterId, // Cast to int
                     'title' => $postedTitle,
                     'description' => $postedDescription
                 ];
@@ -187,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     // Update the chapter data
-                    $chapters[$foundIndex]['chapterId'] = (int)$postedChapterId;
+                    $chapters[$foundIndex]['chapterId'] = (int) $postedChapterId;
                     $chapters[$foundIndex]['title'] = $postedTitle;
                     $chapters[$foundIndex]['description'] = $postedDescription;
 
@@ -206,7 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             case 'delete':
                 $chapterIdToDelete = $_POST['chapter_id'] ?? null;
-                $chapters = array_filter($chapters, function($chapter) use ($chapterIdToDelete) {
+                $chapters = array_filter($chapters, function ($chapter) use ($chapterIdToDelete) {
                     return (isset($chapter['chapterId']) && $chapter['chapterId'] != $chapterIdToDelete);
                 });
 
@@ -1046,17 +1053,22 @@ include __DIR__ . '/../src/layout/header.php';
     <div id="message-box" class="message-box"></div>
 
     <section class="form-section collapsible-section" id="edit-form-section"> <!-- Standardmäßig eingeklappt -->
-        <h2 class="collapsible-header" id="form-header">Neues Kapitel hinzufügen <i class="fas fa-chevron-right"></i></h2>
+        <h2 class="collapsible-header" id="form-header">Neues Kapitel hinzufügen <i class="fas fa-chevron-right"></i>
+        </h2>
         <div class="collapsible-content">
             <form method="POST">
                 <!-- Hidden input for the action (add/edit/delete) -->
-                <input type="hidden" name="action" id="form_action" value="<?php echo htmlspecialchars($formAction); ?>">
+                <input type="hidden" name="action" id="form_action"
+                    value="<?php echo htmlspecialchars($formAction); ?>">
                 <!-- Hidden input to store the original chapter ID when editing -->
-                <input type="hidden" name="original_chapter_id" id="original_chapter_id_hidden" value="<?php echo htmlspecialchars($originalChapterId); ?>">
+                <input type="hidden" name="original_chapter_id" id="original_chapter_id_hidden"
+                    value="<?php echo htmlspecialchars($originalChapterId); ?>">
 
                 <div class="form-group">
                     <label for="chapter_id_input">Kapitel ID:</label>
-                    <input type="text" id="chapter_id_input" name="chapter_id" value="<?php echo htmlspecialchars($editChapterId); ?>" placeholder="Automatisch generieren, wenn leer">
+                    <input type="text" id="chapter_id_input" name="chapter_id"
+                        value="<?php echo htmlspecialchars($editChapterId); ?>"
+                        placeholder="Automatisch generieren, wenn leer">
                 </div>
 
                 <div class="form-group">
@@ -1066,12 +1078,15 @@ include __DIR__ . '/../src/layout/header.php';
 
                 <div class="form-group">
                     <label for="description">Beschreibung:</label>
-                    <textarea id="description" name="description" rows="8"><?php echo htmlspecialchars($editDescription); ?></textarea>
+                    <textarea id="description" name="description"
+                        rows="8"><?php echo htmlspecialchars($editDescription); ?></textarea>
                 </div>
 
                 <div class="button-group">
-                    <button type="submit" id="submit-button"><?php echo ($formAction === 'edit' ? 'Änderungen speichern' : 'Kapitel hinzufügen'); ?></button>
-                    <button type="button" id="cancel-edit-button" class="button delete" style="display: <?php echo ($formAction === 'edit' ? 'inline-block' : 'none'); ?>;">Abbrechen</button>
+                    <button type="submit"
+                        id="submit-button"><?php echo ($formAction === 'edit' ? 'Änderungen speichern' : 'Kapitel hinzufügen'); ?></button>
+                    <button type="button" id="cancel-edit-button" class="button delete"
+                        style="display: <?php echo ($formAction === 'edit' ? 'inline-block' : 'none'); ?>;">Abbrechen</button>
                 </div>
             </form>
         </div>
@@ -1101,11 +1116,16 @@ include __DIR__ . '/../src/layout/header.php';
                                 $isTitleMissing = empty(trim(strip_tags($chapter['title'] ?? '', '<b><i><u><p><br>')));
                                 $isDescriptionMissing = empty(trim(strip_tags($chapter['description'] ?? '', '<b><i><u><p><br>')));
                                 $isMissingInfoRow = $isTitleMissing || $isDescriptionMissing;
-                            ?>
-                                <tr data-chapter-id="<?php echo htmlspecialchars($chapter['chapterId'] ?? ''); ?>" class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
+                                ?>
+                                <tr data-chapter-id="<?php echo htmlspecialchars($chapter['chapterId'] ?? ''); ?>"
+                                    class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td><?php echo htmlspecialchars($chapter['chapterId'] ?? 'N/A'); ?></td>
-                                    <td><span class="editable-field chapter-title-display <?php echo $isTitleMissing ? 'missing-info' : ''; ?>"><?php echo $chapter['title'] ?? ''; ?></span></td>
-                                    <td><span class="editable-field chapter-description-display <?php echo $isDescriptionMissing ? 'missing-info' : ''; ?>"><?php echo $chapter['description'] ?? ''; ?></span></td>
+                                    <td><span
+                                            class="editable-field chapter-title-display <?php echo $isTitleMissing ? 'missing-info' : ''; ?>"><?php echo $chapter['title'] ?? ''; ?></span>
+                                    </td>
+                                    <td><span
+                                            class="editable-field chapter-description-display <?php echo $isDescriptionMissing ? 'missing-info' : ''; ?>"><?php echo $chapter['description'] ?? ''; ?></span>
+                                    </td>
                                     <td class="action-buttons">
                                         <button type="button" class="edit-button button edit"
                                             data-id="<?php echo htmlspecialchars($chapter['chapterId'] ?? ''); ?>"
@@ -1126,7 +1146,8 @@ include __DIR__ . '/../src/layout/header.php';
                     </tbody>
                 </table>
             </div>
-            <button type="button" id="add-new-chapter-button" class="button"><i class="fas fa-plus"></i> Neues Kapitel hinzufügen (+)</button>
+            <button type="button" id="add-new-chapter-button" class="button"><i class="fas fa-plus"></i> Neues Kapitel
+                hinzufügen (+)</button>
         </div>
     </section>
 </div>

@@ -9094,6 +9094,13 @@
             "changefreq": "never"
         },
         {
+            "loc": "./comic/index.php",
+            "name": "index.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "weekly"
+        },
+        {
             "loc": "./impressum.php",
             "name": "impressum.php",
             "path": "./",

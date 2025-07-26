@@ -53,7 +53,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
-$sitemapJsonPath = __DIR__ . '/../src/components/sitemap.json';
+$sitemapJsonPath = __DIR__ . '/../src/config/sitemap.json';
 // Pfad zum Comic-Verzeichnis ist von Hauptverzeichnis/admin/ -> Hauptverzeichnis/comic/
 $webRootPath = realpath(__DIR__ . '/../'); // Der tatsächliche Webroot
 $comicDirPath = $webRootPath . '/comic/'; // Absoluter Pfad zum Comic-Verzeichnis

@@ -19,9 +19,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     // Lösche das Session-Cookie.
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000,
-            $params["path"], $params["domain"],
-            $params["secure"], $params["httplly"]
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httplly"]
         );
     }
 
@@ -46,7 +51,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
-$sitemapConfigPath = __DIR__ . '/../src/components/sitemap.json';
+$sitemapConfigPath = __DIR__ . '/../src/config/sitemap.json';
 $sitemapOutputPath = __DIR__ . '/../sitemap.xml'; // Sitemap im öffentlichen Hauptverzeichnis
 
 // Setze Parameter für den Header.
@@ -71,7 +76,8 @@ if ($isLocal) {
 }
 
 // Funktion zum Generieren der Sitemap
-function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, string $baseUrl): string {
+function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, string $baseUrl): string
+{
     $message = '';
     $status = 'error';
 
@@ -104,7 +110,7 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, s
         }
 
         $filePath = realpath(__DIR__ . '/../' . $page['path'] . $page['name']); // Pfad relativ zum Projekt-Root
-        
+
         if (!file_exists($filePath)) {
             error_log("Warnung: Datei nicht gefunden für Sitemap-Eintrag: " . htmlspecialchars($filePath));
             continue;
@@ -154,45 +160,61 @@ if (file_exists($headerPath)) {
 <section>
     <h2 class="page-header">Sitemap generieren</h2>
     <p>Hier können Sie die <code>sitemap.xml</code> für Ihre Webseite generieren oder aktualisieren.</p>
-    <p>Die Sitemap wird im Hauptverzeichnis Ihrer Webseite abgelegt und enthält Links zu den wichtigsten Seiten, wie in <code>src/components/sitemap.json</code> konfiguriert.</p>
+    <p>Die Sitemap wird im Hauptverzeichnis Ihrer Webseite abgelegt und enthält Links zu den wichtigsten Seiten, wie in
+        <code>src/config/sitemap.json</code> konfiguriert.</p>
 
     <form method="POST" action="">
         <button type="submit" name="generate_sitemap" class="button">Sitemap generieren / aktualisieren</button>
     </form>
 
     <?php if (!empty($generationMessage)): ?>
-        <div style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #e0ffe0; border-radius: 5px; color: #155724;">
+        <div
+            style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #e0ffe0; border-radius: 5px; color: #155724;">
             <p><?php echo $generationMessage; ?></p>
         </div>
     <?php endif; ?>
 
     <h3 style="margin-top: 30px;">Informationen zur Sitemap.xml</h3>
-    <p>Eine Sitemap ist eine XML-Datei, die Suchmaschinen wie Google und Bing über die Struktur Ihrer Webseite informiert und ihnen hilft, Ihre Inhalte effizienter zu crawlen und zu indexieren. Sie enthält eine Liste aller URLs, die Sie den Suchmaschinen mitteilen möchten.</p>
-    
+    <p>Eine Sitemap ist eine XML-Datei, die Suchmaschinen wie Google und Bing über die Struktur Ihrer Webseite
+        informiert und ihnen hilft, Ihre Inhalte effizienter zu crawlen und zu indexieren. Sie enthält eine Liste aller
+        URLs, die Sie den Suchmaschinen mitteilen möchten.</p>
+
     <h4>Welche Informationen müssen und sollten in der XML enthalten sein und warum?</h4>
     <ul>
         <li>
             <strong><code>&lt;loc&gt;</code> (Location / URL der Seite)</strong>:
             <p>Dies ist das einzige **Pflichtfeld**. Es gibt die vollständige URL der Webseite an.
-            **Warum**: Suchmaschinen benötigen die genaue Adresse, um Ihre Seite zu finden und zu besuchen.</p>
+                **Warum**: Suchmaschinen benötigen die genaue Adresse, um Ihre Seite zu finden und zu besuchen.</p>
         </li>
         <li>
             <strong><code>&lt;lastmod&gt;</code> (Letzte Änderung)</strong>:
-            <p>Gibt das Datum der letzten Änderung der Datei an. Das Format muss dem W3C Datetime Format entsprechen (YYYY-MM-DDThh:mm:ssTZD).
-            **Warum**: Hilft Suchmaschinen zu erkennen, ob sich der Inhalt einer Seite seit dem letzten Besuch geändert hat. Dies kann das Crawling effizienter machen, da Seiten, die sich nicht geändert haben, seltener neu gecrawlt werden müssen.</p>
+            <p>Gibt das Datum der letzten Änderung der Datei an. Das Format muss dem W3C Datetime Format entsprechen
+                (YYYY-MM-DDThh:mm:ssTZD).
+                **Warum**: Hilft Suchmaschinen zu erkennen, ob sich der Inhalt einer Seite seit dem letzten Besuch
+                geändert hat. Dies kann das Crawling effizienter machen, da Seiten, die sich nicht geändert haben,
+                seltener neu gecrawlt werden müssen.</p>
         </li>
         <li>
             <strong><code>&lt;changefreq&gt;</code> (Änderungsfrequenz)</strong>:
-            <p>Ein Hinweis darauf, wie oft sich der Inhalt der Seite voraussichtlich ändert (z.B. <code>always</code>, <code>hourly</code>, <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>yearly</code>, <code>never</code>).
-            **Warum**: Dies ist ein **Hinweis** für Crawler. Wenn Sie angeben, dass sich eine Seite täglich ändert, kann dies Suchmaschinen dazu ermutigen, diese Seite häufiger zu besuchen. Es ist jedoch keine Garantie, dass dies auch tatsächlich geschieht.</p>
+            <p>Ein Hinweis darauf, wie oft sich der Inhalt der Seite voraussichtlich ändert (z.B. <code>always</code>,
+                <code>hourly</code>, <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>yearly</code>,
+                <code>never</code>).
+                **Warum**: Dies ist ein **Hinweis** für Crawler. Wenn Sie angeben, dass sich eine Seite täglich ändert,
+                kann dies Suchmaschinen dazu ermutigen, diese Seite häufiger zu besuchen. Es ist jedoch keine Garantie,
+                dass dies auch tatsächlich geschieht.</p>
         </li>
         <li>
             <strong><code>&lt;priority&gt;</code> (Priorität)</strong>:
-            <p>Die Priorität der URL relativ zu anderen URLs auf Ihrer Webseite. Die Werte reichen von 0.0 (niedrigste Priorität) bis 1.0 (höchste Priorität). Der Standardwert ist 0.5.
-            **Warum**: Zeigt Suchmaschinen an, welche Seiten Sie für wichtiger halten als andere. Seiten mit höherer Priorität werden möglicherweise häufiger gecrawlt. Auch dies ist nur ein **Hinweis** und sollte realistisch gesetzt werden.</p>
+            <p>Die Priorität der URL relativ zu anderen URLs auf Ihrer Webseite. Die Werte reichen von 0.0 (niedrigste
+                Priorität) bis 1.0 (höchste Priorität). Der Standardwert ist 0.5.
+                **Warum**: Zeigt Suchmaschinen an, welche Seiten Sie für wichtiger halten als andere. Seiten mit höherer
+                Priorität werden möglicherweise häufiger gecrawlt. Auch dies ist nur ein **Hinweis** und sollte
+                realistisch gesetzt werden.</p>
         </li>
     </ul>
-    <p>Durch die Bereitstellung dieser Informationen in Ihrer <code>sitemap.xml</code> können Sie Suchmaschinen dabei unterstützen, Ihre Webseite besser zu verstehen und Ihre Inhalte effektiver zu indexieren, was letztendlich zu einer besseren Sichtbarkeit in den Suchergebnissen führen kann.</p>
+    <p>Durch die Bereitstellung dieser Informationen in Ihrer <code>sitemap.xml</code> können Sie Suchmaschinen dabei
+        unterstützen, Ihre Webseite besser zu verstehen und Ihre Inhalte effektiver zu indexieren, was letztendlich zu
+        einer besseren Sichtbarkeit in den Suchergebnissen führen kann.</p>
 
 </section>
 

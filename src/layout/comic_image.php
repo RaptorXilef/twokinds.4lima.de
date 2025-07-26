@@ -13,13 +13,11 @@ if (!isset($currentComicId) || !isset($comicName)) {
 } else {
     $imageHiresPath = "./comic_hires/{$currentComicId}.jpg";
     $imagePath = "./comic/{$currentComicId}.png";
-?>
-<a href="<?php echo $imageHiresPath; ?>" target="_blank">
-    <img src="<?php echo $imagePath; ?>"
-        title="<?php echo htmlspecialchars($comicName); ?>"
-        alt="Comic Page: <?php echo htmlspecialchars($comicName); ?>"
-        width="825">
-</a>
-<?php
+    ?>
+    <a href="<?php echo $imageHiresPath; ?>" target="_blank">
+        <img src="<?php echo $imagePath; ?>" title="<?php echo htmlspecialchars($comicName); ?>"
+            alt="Comic Page: <?php echo htmlspecialchars($comicName); ?>" width="825">
+    </a>
+    <?php
 }
 ?>

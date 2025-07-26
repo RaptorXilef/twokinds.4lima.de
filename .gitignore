@@ -15,6 +15,7 @@ assets/comic_thumbnails/
 !assets/comic_thumbnails/index.php
 !assets/comic_thumbnails/in_translation.jpg
 !assets/comic_thumbnails/.htaccess
+assets/img/github/twokinds.4lima.de.psd
 
 # Nicht verwendete Icons
 assets/icons/nicht verwendet/*
@@ -28,3 +29,6 @@ comic/*
 
 # Zip-Archive
 *.zip
+
+# Googles
+google5c760f191f071105.html
