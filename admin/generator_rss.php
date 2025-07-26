@@ -133,13 +133,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
             'feed_author_email' => 'felix.mustermann@example.com'
         ];
 
-        if ($rssConfigResult['status'] === 'success') {
+        // Korrektur: Nur array_merge aufrufen, wenn $rssConfigResult['data'] ein Array und nicht null ist
+        if (
+            $rssConfigResult['status'] === 'success' &&
+            isset($rssConfigResult['data']) &&
+            is_array($rssConfigResult['data']) &&
+            $rssConfigResult['data'] !== null
+        ) {
             $rssConfig = array_merge($rssConfig, $rssConfigResult['data']);
             if ($debugMode)
                 error_log("DEBUG: rss_config.json erfolgreich geladen und Standardwerte überschrieben.");
         } else {
             if ($debugMode)
-                error_log("DEBUG: rss_config.json konnte nicht geladen werden. Verwende Standardwerte. Meldung: " . $rssConfigResult['message']);
+                error_log("DEBUG: rss_config.json konnte nicht geladen werden oder Daten sind kein Array oder null. Verwende Standardwerte. Meldung: " . $rssConfigResult['message']);
         }
 
         $comicData = $comicDataResult['data'];
@@ -182,7 +188,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
                 if ($debugMode)
                     error_log("DEBUG: Verarbeite Comic-Datei: " . $filename . ", ID: " . $comicId);
 
-                if (isset($comicData[$comicId])) {
+                if (is_array($comicData) && isset($comicData[$comicId])) {
                     $comicInfo = $comicData[$comicId];
 
                     // Prüfe auf "Comicseite" Typ und nicht-leere "name" und "transcript"
