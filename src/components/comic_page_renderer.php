@@ -14,7 +14,7 @@
 
 // === DEBUG-MODUS STEUERUNG ===
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
-/* $debugMode = false; */
+$debugMode = false;
 
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 // load_comic_data.php ist dafür zuständig, die comic_var.json zu lesen und $comicData zu befüllen.

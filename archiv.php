@@ -130,10 +130,13 @@ if ($debugMode)
     error_log("DEBUG: Kapitel nach ID sortiert.");
 
 
-// === WICHTIG: Entferne die explizite JS-Einbindung hier! ===
+// === WICHTIG: Hier wird archive.js geladen! ===
 // Die JavaScript-Dateien werden nun über den header.php geladen,
 // basierend auf dem oben gesetzten $current_page_type.
-$additionalScripts = ''; // Leere diesen String, damit keine doppelten Skripte geladen werden.
+// Die vorherige Zeile "$additionalScripts = '';" wurde entfernt oder angepasst.
+$additionalScripts = '
+    <script type="text/javascript" src="' . htmlspecialchars($baseUrl) . 'src/layout/js/archive.js?c=' . filemtime(__DIR__ . '/src/layout/js/archive.js') . '"></script>
+';
 
 // Zusätzliche Styles für das Archiv
 // Hier wird kein Font Awesome mehr geladen, da das Original-Design eigene Pfeile hat.
