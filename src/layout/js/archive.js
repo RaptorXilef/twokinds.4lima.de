@@ -2,7 +2,7 @@
  * Enables dynamic loading of thumbnails for archive page.
  */
 // Steuerung für Debug-Meldungen. Setze auf true, um Debug-Meldungen in der Konsole anzuzeigen.
-const debugModeJsArchiv = true; // Kann auf false gesetzt werden, um Debug-Meldungen zu deaktivieren.
+const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meldungen zu deaktivieren.
 
 (function () {
   if (debugModeJsArchiv)
