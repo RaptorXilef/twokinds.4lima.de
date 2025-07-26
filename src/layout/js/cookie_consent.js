@@ -57,6 +57,24 @@ document.addEventListener("DOMContentLoaded", () => {
       hideCookieBanner();
     });
   }
+
+  // === NEU: Logik für einklappbare Details im Cookie-Banner ===
+  document.querySelectorAll(".toggle-details").forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+      const targetId = toggle.dataset.target;
+      const content = document.getElementById(targetId);
+      const icon = toggle.querySelector(".toggle-icon");
+
+      if (content.style.display === "block" || content.style.display === "") {
+        content.style.display = "none";
+        if (icon) icon.classList.replace("fa-chevron-down", "fa-chevron-right");
+      } else {
+        content.style.display = "block";
+        if (icon) icon.classList.replace("fa-chevron-right", "fa-chevron-down");
+      }
+    });
+  });
+  // === ENDE NEU ===
 });
 
 /**

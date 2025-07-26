@@ -164,16 +164,88 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
     <!-- NEU: Cookie-Consent-Banner -->
     <div id="cookieConsentBanner">
         <h3>Datenschutz-Einstellungen</h3>
-        <p>Wir verwenden Cookies, um die Funktionalität unserer Webseite zu gewährleisten und die Nutzung zu
-            analysieren. Bitte treffen Sie Ihre Auswahl:</p>
+        <p>Wir verwenden Cookies und vergleichbare Technologien, um die Funktionalität unserer Webseite zu gewährleisten
+            und die Nutzung zu analysieren. Bitte treffen Sie Ihre Auswahl:</p>
 
         <div class="cookie-category">
             <label for="cookieNecessary">
                 <input type="checkbox" id="cookieNecessary" checked disabled>
-                Notwendige Cookies
+                Notwendige Funktionen
             </label>
-            <p class="description">Diese Cookies sind für den grundlegenden Betrieb der Webseite unerlässlich und können
-                nicht deaktiviert werden.</p>
+            <p class="description">Diese Speicherungen sind für den grundlegenden Betrieb der Webseite unerlässlich und
+                können nicht deaktiviert werden. Sie speichern keine direkt personenbezogenen Daten, die eine
+                Identifizierung erlauben, sondern dienen der technischen Funktionalität und Ihrer Nutzungserfahrung.</p>
+
+            <!-- Äußerer einklappbarer Bereich für notwendige Cookies -->
+            <div class="toggle-details-container">
+                <span class="toggle-details" data-target="details-necessary-cookies">Details anzeigen <i
+                        class="fas fa-chevron-right toggle-icon"></i></span>
+                <div id="details-necessary-cookies" class="collapsible-content">
+                    <ul>
+                        <li>
+                            <b>Ihre Einwilligung (<code class="mono">cookie_consent</code>):</b> Speichert Ihre
+                            Entscheidung bezüglich der Cookie-Einstellungen (akzeptiert/abgelehnt für Analyse-Cookies)
+                            im lokalen Speicher Ihres Browsers. Dies ist notwendig, damit der Banner nicht bei jedem
+                            Besuch erneut erscheint.
+                            <span class="toggle-details" data-target="details-consent">Erfahre mehr darüber <i
+                                    class="fas fa-chevron-right toggle-icon"></i></span>
+                            <div id="details-consent" class="collapsible-content inner-collapsible">
+                                <em>Gespeicherte Daten:</em> Ein JSON-Objekt, das den Status Ihrer Einwilligung für jede
+                                Cookie-Kategorie enthält (z.B. <code
+                                    class="mono">{"necessary": true, "analytics": true/false}</code>).
+                            </div>
+                        </li>
+                        <li>
+                            <b>Theme-Präferenz (<code class="mono">themePref</code>):</b> Speichert Ihre gewählte
+                            Theme-Einstellung (Hell/Dunkel/Systemstandard) im lokalen Speicher Ihres Browsers.
+                            <span class="toggle-details" data-target="details-theme">Erfahre mehr darüber <i
+                                    class="fas fa-chevron-right toggle-icon"></i></span>
+                            <div id="details-theme" class="collapsible-content inner-collapsible">
+                                <em>Gespeicherte Daten:</em> Eine numerische ID des gewählten Themes (0 für
+                                Systemstandard, 1 für Hell, 2 für Dunkel) oder kein Eintrag, wenn der Systemstandard
+                                gewählt ist.
+                            </div>
+                        </li>
+                        <li>
+                            <b>Lesezeichen (<code class="mono">comicBookmarks</code>):</b> Speichert die IDs der von
+                            Ihnen gesetzten Lesezeichen im lokalen Speicher Ihres Browsers. Dies ermöglicht es Ihnen,
+                            Ihre Lesezeichen bei späteren Besuchen wiederzufinden.
+                            <span class="toggle-details" data-target="details-bookmarks">Erfahre mehr darüber <i
+                                    class="fas fa-chevron-right toggle-icon"></i></span>
+                            <div id="details-bookmarks" class="collapsible-content inner-collapsible">
+                                <em>Gespeicherte Daten:</em> Ein JSON-Array von Objekten, wobei jedes Objekt die ID des
+                                Comics, die Seitenzahl, den Permalink und die URL des Vorschaubildes des Lesezeichens
+                                enthält.
+                            </div>
+                        </li>
+                        <li>
+                            <b>Archiv-Ansicht (<code class="mono">archiveExpansion</code>):</b> Speichert den
+                            Aufklappstatus der Kapitel im Archiv im lokalen Speicher Ihres Browsers. Dies verbessert die
+                            Benutzerfreundlichkeit, indem Ihre bevorzugte Ansicht beibehalten wird.
+                            <span class="toggle-details" data-target="details-archive">Erfahre mehr darüber <i
+                                    class="fas fa-chevron-right toggle-icon"></i></span>
+                            <div id="details-archive" class="collapsible-content inner-collapsible">
+                                <em>Gespeicherte Daten:</em> Ein JSON-Objekt, das die IDs der aufgeklappten Kapitel und
+                                einen Zeitstempel für die Gültigkeit der Speicherung enthält.
+                            </div>
+                        </li>
+                        <li>
+                            <b>Administrations-Sitzung (Session-ID, z.B. <code class="mono">PHPSESSID</code>):</b> Ein
+                            temporäres Cookie, das für den Login und die Aufrechterhaltung Ihrer Sitzung im
+                            Admin-Bereich verwendet wird. Es ist nur für Administratoren relevant und wird beim
+                            Schließen des Browsers oder nach Inaktivität gelöscht.
+                            <span class="toggle-details" data-target="details-admin">Erfahre mehr darüber <i
+                                    class="fas fa-chevron-right toggle-icon"></i></span>
+                            <div id="details-admin" class="collapsible-content inner-collapsible">
+                                <em>Gespeicherte Daten:</em> Eine zufällige, eindeutige Zeichenfolge (Session-ID), die
+                                auf dem Server mit den Anmeldeinformationen des Administrators verknüpft ist (z.B. <code
+                                    class="mono">admin_logged_in</code>, <code class="mono">admin_username</code>). Es
+                                werden keine direkten personenbezogenen Daten im Cookie selbst gespeichert.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <div class="cookie-category">
@@ -182,8 +254,9 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
                 Analyse-Cookies (Google Analytics)
             </label>
             <p class="description">Diese Cookies helfen uns zu verstehen, wie Besucher mit der Webseite interagieren,
-                indem Informationen anonym gesammelt und gemeldet werden. Dies hilft uns, die Webseite zu verbessern.
-            </p>
+                indem Informationen über Ihre Nutzung (z.B. besuchte Seiten, Verweildauer, verwendetes Gerät,
+                anonymisierte IP-Adresse) gesammelt und an Google übertragen werden. Diese Daten werden ausschließlich
+                zur Verbesserung der Webseite verwendet und ermöglichen keine direkte Identifizierung Ihrer Person.</p>
         </div>
 
         <div class="cookie-buttons">
