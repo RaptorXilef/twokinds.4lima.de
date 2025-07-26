@@ -36,7 +36,7 @@
         <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv.php">Archiv</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen.php">Lesezeichen</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic.php">Über den Comic</a>
-        <a href="<?php htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz.php">Lizenz</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>impressum.php">Impressum</a>
         <br>
