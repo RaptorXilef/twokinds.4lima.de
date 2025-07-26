@@ -1,12 +1,25 @@
 <?php
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: data_editor_archiv.php wird geladen.");
+
 // Start den Output Buffer als ALLERERSTE Zeile
 ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in data_editor_archiv.php gestartet.");
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session gestartet in data_editor_archiv.php.");
 
 // Logout-Logik: Muss vor dem Sicherheitscheck erfolgen.
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion erkannt.");
     // Zerstöre alle Session-Variablen.
     $_SESSION = array();
 
@@ -35,14 +48,20 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
 
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von data_editor_archiv.php.");
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
     ob_end_clean(); // Output Buffer leeren, da wir umleiten
     header('Location: index.php');
     exit;
 }
+if ($debugMode)
+    error_log("DEBUG: Admin in data_editor_archiv.php angemeldet.");
 
 // Pfad zur JSON-Datei mit den Archivkapiteln
 $archiveChaptersJsonPath = __DIR__ . '/../src/config/archive_chapters.json';
+if ($debugMode)
+    error_log("DEBUG: Pfad zu archive_chapters.json: " . $archiveChaptersJsonPath);
 
 $message = '';
 $messageType = ''; // 'success' oder 'error' oder 'info' oder 'warning'
@@ -50,27 +69,44 @@ $messageType = ''; // 'success' oder 'error' oder 'info' oder 'warning'
 /**
  * Lädt Kapitel-Metadaten aus einer JSON-Datei.
  * @param string $path Der Pfad zur JSON-Datei.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array Die dekodierten Daten als assoziatives Array (chapterId => data) oder ein leeres Array im Fehlerfall.
  */
-function loadArchiveChapters(string $path): array
+function loadArchiveChapters(string $path, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: loadArchiveChapters() aufgerufen für: " . basename($path));
     if (!file_exists($path) || filesize($path) === 0) {
+        if ($debugMode)
+            error_log("DEBUG: archive_chapters.json nicht gefunden oder leer.");
         return [];
     }
     $content = file_get_contents($path);
+    if ($content === false) {
+        error_log("Fehler beim Lesen der JSON-Datei: " . $path);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Lesen des Inhalts von: " . $path);
+        return [];
+    }
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         error_log("Fehler beim Dekodieren von archive_chapters.json: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren von archive_chapters.json: " . json_last_error_msg());
         return [];
     }
     // Stelle sicher, dass es ein Array ist
     if (!is_array($data)) {
+        if ($debugMode)
+            error_log("DEBUG: Dekodierte Daten sind kein Array.");
         return [];
     }
     // Sortiere nach chapterId, um Konsistenz zu gewährleisten
     usort($data, function ($a, $b) {
         return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
     });
+    if ($debugMode)
+        error_log("DEBUG: Archivkapitel erfolgreich geladen und sortiert. Anzahl: " . count($data));
     return $data;
 }
 
@@ -78,24 +114,40 @@ function loadArchiveChapters(string $path): array
  * Speichert Kapitel-Metadaten in einer JSON-Datei.
  * @param string $path Der Pfad zur JSON-Datei.
  * @param array $data Die zu speichernden Daten.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveArchiveChapters(string $path, array $data): bool
+function saveArchiveChapters(string $path, array $data, bool $debugMode): bool
 {
+    if ($debugMode)
+        error_log("DEBUG: saveArchiveChapters() aufgerufen für: " . basename($path));
     // Sortiere die Daten vor dem Speichern nach chapterId
     usort($data, function ($a, $b) {
         return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
     });
+    if ($debugMode)
+        error_log("DEBUG: Archivdaten vor dem Speichern sortiert.");
     $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     if ($jsonContent === false) {
         error_log("Fehler beim Kodieren von Archivdaten in JSON: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Kodieren von Archivdaten in JSON: " . json_last_error_msg());
         return false;
     }
-    return file_put_contents($path, $jsonContent) !== false;
+    if (file_put_contents($path, $jsonContent) !== false) {
+        if ($debugMode)
+            error_log("DEBUG: Archivdaten erfolgreich gespeichert.");
+        return true;
+    } else {
+        error_log("Fehler beim Schreiben der Archivdaten nach " . $path);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Schreiben der Archivdaten nach " . $path);
+        return false;
+    }
 }
 
 // Lade die aktuellen Kapiteldaten
-$chapters = loadArchiveChapters($archiveChaptersJsonPath);
+$chapters = loadArchiveChapters($archiveChaptersJsonPath, $debugMode);
 
 // Initialisiere Variablen für das Bearbeitungsformular
 $editChapterId = '';
@@ -106,14 +158,24 @@ $originalChapterId = ''; // Wird nur im Bearbeitungsmodus gesetzt
 
 // === POST-Anfragen verarbeiten ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($debugMode)
+        error_log("DEBUG: POST-Anfrage erkannt.");
     // Rich-Text-Editor-Inhalte von Summernote abrufen
     $postedTitle = $_POST['title'] ?? '';
     $postedDescription = $_POST['description'] ?? '';
     $postedChapterId = $_POST['chapter_id'] ?? ''; // Die vom Benutzer eingegebene ID
     $originalChapterId = $_POST['original_chapter_id'] ?? ''; // Die ursprüngliche ID im Bearbeitungsmodus
+    if ($debugMode) {
+        error_log("DEBUG: Posted Title: " . $postedTitle);
+        error_log("DEBUG: Posted Description: " . $postedDescription);
+        error_log("DEBUG: Posted Chapter ID: " . $postedChapterId);
+        error_log("DEBUG: Original Chapter ID: " . $originalChapterId);
+    }
 
     if (isset($_POST['action'])) {
         $action = $_POST['action'];
+        if ($debugMode)
+            error_log("DEBUG: Ausgeführte Aktion: " . $action);
 
         switch ($action) {
             case 'add':
@@ -129,11 +191,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                     $newChapterId = $maxId + 1;
+                    if ($debugMode)
+                        error_log("DEBUG: Kapitel ID automatisch generiert: " . $newChapterId);
                 } else {
                     // Validate if manually provided ID is unique and numeric
                     if (!is_numeric($newChapterId) || $newChapterId <= 0) {
                         $message = 'Fehler: Kapitel ID muss eine positive Zahl sein.';
                         $messageType = 'error';
+                        if ($debugMode)
+                            error_log("DEBUG: Fehler: Kapitel ID ist keine positive Zahl.");
                         header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
                         exit;
                     }
@@ -141,6 +207,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if (isset($chapter['chapterId']) && $chapter['chapterId'] == $newChapterId) {
                             $message = 'Fehler: Kapitel ID existiert bereits. Bitte wählen Sie eine andere ID.';
                             $messageType = 'error';
+                            if ($debugMode)
+                                error_log("DEBUG: Fehler: Kapitel ID existiert bereits: " . $newChapterId);
                             header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
                             exit;
                         }
@@ -154,12 +222,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
                 $chapters[] = $newChapter;
 
-                if (saveArchiveChapters($archiveChaptersJsonPath, $chapters)) {
+                if (saveArchiveChapters($archiveChaptersJsonPath, $chapters, $debugMode)) {
                     $message = 'Kapitel erfolgreich hinzugefügt!';
                     $messageType = 'success';
+                    if ($debugMode)
+                        error_log("DEBUG: Kapitel " . $newChapterId . " erfolgreich hinzugefügt.");
                 } else {
                     $message = 'Fehler beim Hinzufügen des Kapitels.';
                     $messageType = 'error';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler beim Hinzufügen des Kapitels " . $newChapterId . ".");
                 }
                 break;
 
@@ -175,11 +247,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($foundIndex !== -1) {
+                    if ($debugMode)
+                        error_log("DEBUG: Ursprüngliches Kapitel zum Bearbeiten gefunden bei Index: " . $foundIndex . " (ID: " . $originalChapterId . ")");
                     // If the ID is being changed, validate new ID
                     if ($postedChapterId != $originalChapterId) {
+                        if ($debugMode)
+                            error_log("DEBUG: Kapitel ID wird geändert von " . $originalChapterId . " zu " . $postedChapterId);
                         if (!is_numeric($postedChapterId) || $postedChapterId <= 0) {
                             $message = 'Fehler: Kapitel ID muss eine positive Zahl sein.';
                             $messageType = 'error';
+                            if ($debugMode)
+                                error_log("DEBUG: Fehler: Neue Kapitel ID ist keine positive Zahl.");
                             header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
                             exit;
                         }
@@ -187,6 +265,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             if ($index !== $foundIndex && isset($chapter['chapterId']) && $chapter['chapterId'] == $postedChapterId) {
                                 $message = 'Fehler: Die neue Kapitel ID existiert bereits. Bitte wählen Sie eine andere ID.';
                                 $messageType = 'error';
+                                if ($debugMode)
+                                    error_log("DEBUG: Fehler: Neue Kapitel ID existiert bereits: " . $postedChapterId);
                                 header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
                                 exit;
                             }
@@ -198,35 +278,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $chapters[$foundIndex]['title'] = $postedTitle;
                     $chapters[$foundIndex]['description'] = $postedDescription;
 
-                    if (saveArchiveChapters($archiveChaptersJsonPath, $chapters)) {
+                    if (saveArchiveChapters($archiveChaptersJsonPath, $chapters, $debugMode)) {
                         $message = 'Kapitel erfolgreich aktualisiert!';
                         $messageType = 'success';
+                        if ($debugMode)
+                            error_log("DEBUG: Kapitel " . $postedChapterId . " erfolgreich aktualisiert.");
                     } else {
                         $message = 'Fehler beim Aktualisieren des Kapitels.';
                         $messageType = 'error';
+                        if ($debugMode)
+                            error_log("DEBUG: Fehler beim Aktualisieren des Kapitels " . $postedChapterId . ".");
                     }
                 } else {
                     $message = 'Fehler: Ursprüngliches Kapitel zum Bearbeiten nicht gefunden.';
                     $messageType = 'error';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler: Ursprüngliches Kapitel zum Bearbeiten nicht gefunden (ID: " . $originalChapterId . ").");
                 }
                 break;
 
             case 'delete':
                 $chapterIdToDelete = $_POST['chapter_id'] ?? null;
+                if ($debugMode)
+                    error_log("DEBUG: Löschaktion für Kapitel ID: " . $chapterIdToDelete);
                 $chapters = array_filter($chapters, function ($chapter) use ($chapterIdToDelete) {
                     return (isset($chapter['chapterId']) && $chapter['chapterId'] != $chapterIdToDelete);
                 });
 
-                if (saveArchiveChapters($archiveChaptersJsonPath, array_values($chapters))) { // array_values um Indizes neu zu ordnen
+                if (saveArchiveChapters($archiveChaptersJsonPath, array_values($chapters), $debugMode)) { // array_values um Indizes neu zu ordnen
                     $message = 'Kapitel erfolgreich gelöscht!';
                     $messageType = 'success';
+                    if ($debugMode)
+                        error_log("DEBUG: Kapitel " . $chapterIdToDelete . " erfolgreich gelöscht.");
                 } else {
                     $message = 'Fehler beim Löschen des Kapitels.';
                     $messageType = 'error';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler beim Löschen des Kapitels " . $chapterIdToDelete . ".");
                 }
                 break;
         }
         // Nach einer POST-Anfrage Redirect, um Formular-Resubmission zu vermeiden
+        if ($debugMode)
+            error_log("DEBUG: Redirect nach POST-Anfrage zu: " . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
         header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
         exit;
     }
@@ -236,11 +330,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_GET['edit_id'])) {
     $editChapterId = $_GET['edit_id'];
     $formAction = 'edit';
+    if ($debugMode)
+        error_log("DEBUG: Bearbeitungsmodus aktiviert für ID: " . $editChapterId);
     foreach ($chapters as $chapter) {
         if (isset($chapter['chapterId']) && $chapter['chapterId'] == $editChapterId) {
             $editTitle = $chapter['title'];
             $editDescription = $chapter['description'];
             $originalChapterId = $editChapterId; // Setze die ursprüngliche ID für den Bearbeitungsmodus
+            if ($debugMode)
+                error_log("DEBUG: Bearbeitungsdaten geladen für ID " . $editChapterId . ": Titel='" . $editTitle . "'");
             break;
         }
     }
@@ -250,6 +348,8 @@ if (isset($_GET['edit_id'])) {
 if (isset($_GET['message']) && isset($_GET['type'])) {
     $message = htmlspecialchars($_GET['message']);
     $messageType = htmlspecialchars($_GET['type']);
+    if ($debugMode)
+        error_log("DEBUG: Nachricht aus GET-Parametern: Typ='" . $messageType . "', Nachricht='" . $message . "'");
 }
 
 // Setze Parameter für den Header.
@@ -257,6 +357,10 @@ $pageTitle = 'Archiv Daten Editor';
 $pageHeader = 'Archiv Daten Editor';
 $siteDescription = 'Seite zum Bearbeiten der Archivkapitel-Daten.';
 $robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
 
 // Heredoc-Syntax für $additionalScripts
 $additionalScripts = <<<EOT
@@ -265,6 +369,8 @@ $additionalScripts = <<<EOT
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOM fully loaded and parsed."); // Debug-Meldung
+
             const editFormSection = document.getElementById("edit-form-section");
             const formHeader = document.getElementById("form-header");
             const submitButton = document.getElementById("submit-button");
@@ -277,11 +383,15 @@ $additionalScripts = <<<EOT
 
             // Referenz zum Icon im Formular-Header
             const formHeaderIcon = formHeader ? formHeader.querySelector("i") : null;
+            if (!formHeaderIcon) {
+                console.error("Error: Collapsible header icon for form section not found on DOMContentLoaded.");
+            }
 
             // Funktion zur Initialisierung von Summernote
             function initializeSummernote() {
                 // Nur initialisieren, wenn es noch nicht initialisiert wurde
                 if (!titleTextarea.data("summernote")) {
+                    console.log("Initializing Summernote for title..."); // Debug-Meldung
                     titleTextarea.summernote({
                         placeholder: "Titel hier eingeben...",
                         tabsize: 2,
@@ -298,6 +408,7 @@ $additionalScripts = <<<EOT
                     });
                 }
                 if (!descriptionTextarea.data("summernote")) {
+                    console.log("Initializing Summernote for description..."); // Debug-Meldung
                     descriptionTextarea.summernote({
                         placeholder: "Beschreibung hier eingeben...",
                         tabsize: 2,
@@ -313,15 +424,18 @@ $additionalScripts = <<<EOT
                         ]
                     });
                 }
+                console.log("Summernote initialization check complete."); // Debug-Meldung
             }
 
             // Funktion zum Zerstören von Summernote-Instanzen
             function destroySummernote() {
                 if (titleTextarea.data("summernote")) {
                     titleTextarea.summernote("destroy");
+                    console.log("Summernote for title destroyed."); // Debug-Meldung
                 }
                 if (descriptionTextarea.data("summernote")) {
                     descriptionTextarea.summernote("destroy");
+                    console.log("Summernote for description destroyed."); // Debug-Meldung
                 }
             }
 
@@ -329,30 +443,40 @@ $additionalScripts = <<<EOT
             function resetForm() {
                 chapterIdInput.value = "";
                 originalChapterIdHidden.value = ""; // Auch die ursprüngliche ID zurücksetzen
-                titleTextarea.summernote("code", ""); // Summernote spezifisch
-                descriptionTextarea.summernote("code", ""); // Summernote spezifisch
+                // Summernote spezifisch: Inhalte leeren
+                if (titleTextarea.data("summernote")) {
+                    titleTextarea.summernote("code", "");
+                } else {
+                    titleTextarea.val(""); // Fallback für nicht-initialisiertes Summernote
+                }
+                if (descriptionTextarea.data("summernote")) {
+                    descriptionTextarea.summernote("code", "");
+                } else {
+                    descriptionTextarea.val(""); // Fallback
+                }
+
                 formActionInput.value = "add";
                 formHeader.textContent = "Neues Kapitel hinzufügen"; // Angepasste Überschrift
                 submitButton.textContent = "Kapitel hinzufügen";
                 cancelEditButton.style.display = "none"; // Verstecke Abbrechen-Button
                 
                 // Summernote zerstören, wenn Formular eingeklappt wird
-                if (editFormSection.classList.contains("expanded")) {
-                    destroySummernote();
-                }
+                // Dies wird jetzt vom collapsible header click handler übernommen, aber hier zur Sicherheit
+                // if (editFormSection.classList.contains("expanded")) {
+                //     destroySummernote();
+                // }
                 editFormSection.classList.remove("expanded"); // Klappe Formular ein
-                // Sicherstellen, dass das Icon existiert, bevor darauf zugegriffen wird
                 if (formHeaderIcon) {
                     formHeaderIcon.classList.remove("fa-chevron-down");
                     formHeaderIcon.classList.add("fa-chevron-right");
-                } else {
-                    console.error("Error: Collapsible header icon for form section not found in resetForm.");
                 }
+                console.log("Form reset and collapsed."); // Debug-Meldung
             }
 
             // Logik für den "Bearbeiten" Button
             document.querySelectorAll(".edit-button").forEach(button => {
                 button.addEventListener("click", function() {
+                    console.log("Edit button clicked."); // Debug-Meldung
                     const chapterId = this.dataset.id;
                     const title = this.dataset.title;
                     const description = this.dataset.description;
@@ -376,6 +500,7 @@ $additionalScripts = <<<EOT
                             formHeaderIcon.classList.remove("fa-chevron-right");
                             formHeaderIcon.classList.add("fa-chevron-down");
                         }
+                        console.log("Form section expanded for editing."); // Debug-Meldung
                     }
                     editFormSection.scrollIntoView({ behavior: "smooth" });
                 });
@@ -383,6 +508,7 @@ $additionalScripts = <<<EOT
 
             // Logik für den "Abbrechen" Button
             cancelEditButton.addEventListener("click", function() {
+                console.log("Cancel button clicked."); // Debug-Meldung
                 resetForm();
                 // Optional: Nachricht anzeigen
                 const messageBoxElement = document.getElementById("message-box");
@@ -405,12 +531,14 @@ $additionalScripts = <<<EOT
                 confirmMessage.textContent = message;
                 deleteActionCallback = callback;
                 customConfirmModal.style.display = "block";
+                console.log("Custom confirmation modal shown."); // Debug-Meldung
             }
 
             confirmYes.onclick = function() {
                 customConfirmModal.style.display = "none";
                 if (deleteActionCallback) {
                     deleteActionCallback(true);
+                    console.log("Confirmation: Yes clicked."); // Debug-Meldung
                 }
             };
 
@@ -418,6 +546,7 @@ $additionalScripts = <<<EOT
                 customConfirmModal.style.display = "none";
                 if (deleteActionCallback) {
                     deleteActionCallback(false);
+                    console.log("Confirmation: No clicked."); // Debug-Meldung
                 }
             };
 
@@ -425,6 +554,7 @@ $additionalScripts = <<<EOT
             document.querySelectorAll(".delete-button").forEach(button => {
                 button.addEventListener("click", function(event) {
                     event.preventDefault();
+                    console.log("Delete button clicked (table)."); // Debug-Meldung
                     const chapterId = this.dataset.id;
                     showCustomConfirm("Sind Sie sicher, dass Sie dieses Kapitel löschen möchten?", function(confirmed) {
                         if (confirmed) {
@@ -446,6 +576,9 @@ $additionalScripts = <<<EOT
 
                             document.body.appendChild(form);
                             form.submit();
+                            console.log("Delete form submitted for ID:", chapterId); // Debug-Meldung
+                        } else {
+                            console.log("Delete cancelled for ID:", chapterId); // Debug-Meldung
                         }
                     });
                 });
@@ -464,6 +597,7 @@ $additionalScripts = <<<EOT
                         icon.classList.add("fa-chevron-down");
                         if (isFormSection) {
                             initializeSummernote(); // Summernote initialisieren, wenn Formular beim Laden bereits aufgeklappt ist
+                            console.log("Form section was expanded on load, Summernote initialized."); // Debug-Meldung
                         }
                     } else {
                         icon.classList.remove("fa-chevron-down");
@@ -473,6 +607,7 @@ $additionalScripts = <<<EOT
 
 
                 header.addEventListener("click", function() {
+                    console.log("Collapsible header clicked."); // Debug-Meldung
                     const wasExpanded = section.classList.contains("expanded");
                     section.classList.toggle("expanded");
                     // Update the icon based on the new expanded state
@@ -483,10 +618,12 @@ $additionalScripts = <<<EOT
                             // If it's the form section and it's expanded, initialize Summernote
                             if (isFormSection && !wasExpanded) { // Nur initialisieren, wenn es vorher nicht expanded war
                                 initializeSummernote();
+                                console.log("Form section expanded, Summernote initialized."); // Debug-Meldung
                             }
                             // Scroll to the form if it's expanded
                             if (isFormSection) {
                                 section.scrollIntoView({ behavior: "smooth" });
+                                console.log("Scrolled to form section."); // Debug-Meldung
                             }
                         } else {
                             icon.classList.remove("fa-chevron-down");
@@ -494,6 +631,7 @@ $additionalScripts = <<<EOT
                             // If it's the form section and it's collapsed, destroy Summernote
                             if (isFormSection && wasExpanded) { // Nur zerstören, wenn es vorher expanded war
                                 destroySummernote();
+                                console.log("Form section collapsed, Summernote destroyed."); // Debug-Meldung
                             }
                         }
                     }
@@ -513,10 +651,12 @@ $additionalScripts = <<<EOT
                 // Clean URL parameters after displaying message
                 history.replaceState({}, document.title, window.location.pathname);
                 setTimeout(() => { messageBoxElement.style.display = "none"; }, 5000);
+                console.log("Message from GET displayed:", msg, "Type:", type); // Debug-Meldung
             }
 
             // Add new chapter button functionality
             document.getElementById("add-new-chapter-button").addEventListener("click", function() {
+                console.log("Add new chapter button clicked."); // Debug-Meldung
                 resetForm();
                 // Beim Hinzufügen eines neuen Kapitels Summernote initialisieren und Formular aufklappen
                 editFormSection.classList.add("expanded");
@@ -527,11 +667,13 @@ $additionalScripts = <<<EOT
                 initializeSummernote(); // Summernote initialisieren
                 editFormSection.scrollIntoView({ behavior: "smooth" });
                 formHeader.textContent = "Neues Kapitel hinzufügen"; // Setze die Überschrift explizit
+                console.log("New chapter form opened and Summernote initialized."); // Debug-Meldung
             });
 
             // Initialen Zustand des Formulars setzen (z.B. wenn edit_id in URL ist)
             // Dies muss nach allen Event Listeners passieren
             if ("<?php echo $formAction; ?>" === "edit") {
+                console.log("Page loaded in edit mode."); // Debug-Meldung
                 // Wenn wir im Bearbeitungsmodus starten, klappe das Formular auf und setze die Daten
                 editFormSection.classList.add("expanded");
                 if (formHeaderIcon) { // Sicherstellen, dass das Icon existiert
@@ -546,7 +688,9 @@ $additionalScripts = <<<EOT
                 formHeader.textContent = "Kapitel bearbeiten (ID: <?php echo htmlspecialchars($editChapterId); ?>)";
                 submitButton.textContent = "Änderungen speichern";
                 cancelEditButton.style.display = "inline-block";
+                console.log("Form pre-filled for editing."); // Debug-Meldung
             } else {
+                console.log("Page loaded in add mode."); // Debug-Meldung
                 // Wenn wir im Hinzufügen-Modus starten, stelle sicher, dass die ID-Anzeige ausgeblendet ist
                 // (Nicht mehr nötig, da das Feld immer sichtbar ist, aber für Konsistenz)
             }

@@ -8,6 +8,12 @@
  * @param string $suffix Ein optionaler Suffix für den Dateinamen (z.B. '_preview' für Thumbnails).
  * @return string Der vollständige relative Pfad zum Comic-Bild, falls gefunden, andernfalls ein leerer String.
  */
+
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+// Diese Variable wird in dieser Datei aktuell nicht verwendet, da keine error_log Aufrufe vorhanden sind.
+/* $debugMode = false; */
+
 function getComicImagePath(string $comicId, string $baseDir, string $suffix = ''): string
 {
     // Bevorzugte Reihenfolge der Dateierweiterungen, in der gesucht wird.

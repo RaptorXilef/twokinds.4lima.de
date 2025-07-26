@@ -8,23 +8,39 @@
  * und einem schwebenden Button für die Ordnererstellung.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: initial_setup.php wird geladen.");
+
 // Starte die PHP-Sitzung. Notwendig, wenn diese Seite in den Admin-Bereich eingebunden ist.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session gestartet in initial_setup.php.");
 
 // Logout-Funktion (wird über GET-Parameter ausgelöst)
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     session_unset();     // Entfernt alle Session-Variablen
     session_destroy();   // Zerstört die Session
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion in initial_setup.php durchgeführt.");
     header('Location: index.php'); // Weiterleitung zur Login-Seite
     exit;
 }
 
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von initial_setup.php.");
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
     header('Location: index.php');
     exit;
 }
+if ($debugMode)
+    error_log("DEBUG: Admin in initial_setup.php angemeldet.");
+
 
 // Pfade zu den benötigten Ressourcen
 $robotsContent = 'noindex, nofollow';
@@ -39,6 +55,9 @@ $requiredFolders = [
     __DIR__ . '/../assets/comic_hires',
     __DIR__ . '/../assets/comic_thumbnails',
 ];
+if ($debugMode)
+    error_log("DEBUG: Erforderliche Ordnerpfade definiert.");
+
 
 $message = ''; // Wird für Statusmeldungen an den Benutzer verwendet.
 
@@ -49,14 +68,18 @@ $message = ''; // Wird für Statusmeldungen an den Benutzer verwendet.
  * @param array $folders Die Liste der zu überprüfenden Ordnerpfade.
  * @return array Eine Liste der fehlenden Ordnerpfade.
  */
-function checkMissingFolders(array $folders): array
+function checkMissingFolders(array $folders, bool $debugMode): array
 {
     $missing = [];
     foreach ($folders as $folder) {
         if (!is_dir($folder)) {
             $missing[] = $folder;
+            if ($debugMode)
+                error_log("DEBUG: Fehlender Ordner gefunden: " . $folder);
         }
     }
+    if ($debugMode)
+        error_log("DEBUG: Überprüfung auf fehlende Ordner abgeschlossen. Gefunden: " . count($missing));
     return $missing;
 }
 
@@ -65,7 +88,7 @@ function checkMissingFolders(array $folders): array
  * @param array $folders Die Liste der zu erstellenden Ordnerpfade.
  * @return array Eine Liste der Ordner, die erfolgreich erstellt wurden.
  */
-function createFolders(array $folders): array
+function createFolders(array $folders, bool $debugMode): array
 {
     $created = [];
     foreach ($folders as $folder) {
@@ -75,11 +98,17 @@ function createFolders(array $folders): array
             // Für lokale Entwicklung oder bestimmte Serverkonfigurationen kann es notwendig sein.
             if (mkdir($folder, 0777, true)) {
                 $created[] = $folder;
+                if ($debugMode)
+                    error_log("DEBUG: Ordner erfolgreich erstellt: " . $folder);
             } else {
                 error_log("Fehler beim Erstellen des Ordners: " . $folder);
+                if ($debugMode)
+                    error_log("DEBUG: Fehler beim Erstellen des Ordners: " . $folder);
             }
         }
     }
+    if ($debugMode)
+        error_log("DEBUG: Ordnererstellung abgeschlossen. Erstellt: " . count($created));
     return $created;
 }
 
@@ -88,21 +117,29 @@ function createFolders(array $folders): array
  * @param string $filePath Der Pfad zur JSON-Datei.
  * @return array|null Die dekodierten Daten als assoziatives Array oder null bei Fehler/nicht existent.
  */
-function getComicData(string $filePath): ?array
+function getComicData(string $filePath, bool $debugMode): ?array
 {
     if (!file_exists($filePath)) {
+        if ($debugMode)
+            error_log("DEBUG: JSON-Datei nicht gefunden: " . $filePath);
         return null;
     }
     $content = file_get_contents($filePath);
     if ($content === false) {
         error_log("Fehler beim Lesen der JSON-Datei: " . $filePath);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Lesen der JSON-Datei: " . $filePath);
         return null;
     }
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         error_log("Fehler beim Dekodieren der JSON-Datei: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren der JSON-Datei: " . json_last_error_msg());
         return null;
     }
+    if ($debugMode)
+        error_log("DEBUG: Comic-Daten aus JSON erfolgreich geladen.");
     return is_array($data) ? $data : [];
 }
 
@@ -112,13 +149,15 @@ function getComicData(string $filePath): ?array
  * @param array $data Die zu speichernden Daten.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveComicData(string $filePath, array $data): bool
+function saveComicData(string $filePath, array $data, bool $debugMode): bool
 {
     // Sicherstellen, dass das Verzeichnis existiert
     $dir = dirname($filePath);
     if (!is_dir($dir)) {
         if (!mkdir($dir, 0777, true)) {
             error_log("Fehler: Verzeichnis für JSON-Datei nicht erstellbar: " . $dir);
+            if ($debugMode)
+                error_log("DEBUG: Fehler: Verzeichnis für JSON-Datei nicht erstellbar: " . $dir);
             return false;
         }
     }
@@ -126,6 +165,11 @@ function saveComicData(string $filePath, array $data): bool
     $result = file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT));
     if ($result === false) {
         error_log("Fehler beim Schreiben der JSON-Datei: " . $filePath);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Schreiben der JSON-Datei: " . $filePath);
+    } else {
+        if ($debugMode)
+            error_log("DEBUG: Comic-Daten in JSON erfolgreich gespeichert.");
     }
     return $result !== false;
 }
@@ -135,29 +179,40 @@ function saveComicData(string $filePath, array $data): bool
  * @param array $data Das zu überprüfende Array.
  * @return bool True, wenn alphabetisch geordnet, False sonst.
  */
-function isAlphabeticallySorted(array $data): bool
+function isAlphabeticallySorted(array $data, bool $debugMode): bool
 {
     $keys = array_keys($data);
     $sortedKeys = $keys;
     sort($sortedKeys); // Alphabetische Sortierung der Schlüssel
-    return $keys === $sortedKeys;
+    $isSorted = ($keys === $sortedKeys);
+    if ($debugMode)
+        error_log("DEBUG: Überprüfung auf alphabetische Sortierung: " . ($isSorted ? "Ja" : "Nein"));
+    return $isSorted;
 }
 
 // --- Verarbeitung von POST-Anfragen ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+    if ($debugMode)
+        error_log("DEBUG: POST-Anfrage erhalten, Aktion: " . $action);
 
     switch ($action) {
         case 'create_folders':
-            $missing = checkMissingFolders($requiredFolders);
+            $missing = checkMissingFolders($requiredFolders, $debugMode);
             if (empty($missing)) {
                 $message = '<p class="status-message status-orange">Alle erforderlichen Ordner existieren bereits.</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Alle Ordner existieren bereits.");
             } else {
-                $created = createFolders($missing);
+                $created = createFolders($missing, $debugMode);
                 if (!empty($created)) {
                     $message = '<p class="status-message status-green">Folgende Ordner erfolgreich erstellt: ' . implode(', ', array_map('basename', $created)) . '</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Ordner erfolgreich erstellt: " . implode(', ', array_map('basename', $created)));
                 } else {
                     $message = '<p class="status-message status-red">Fehler beim Erstellen der Ordner. Bitte Dateiberechtigungen prüfen.</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler beim Erstellen der Ordner.");
                 }
             }
             break;
@@ -165,29 +220,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'create_json':
             if (file_exists($comicVarJsonPath)) {
                 $message = '<p class="status-message status-orange">Die Datei `comic_var.json` existiert bereits.</p>';
+                if ($debugMode)
+                    error_log("DEBUG: comic_var.json existiert bereits.");
             } else {
-                if (saveComicData($comicVarJsonPath, [])) { // Erstelle eine leere JSON-Datei
+                if (saveComicData($comicVarJsonPath, [], $debugMode)) { // Erstelle eine leere JSON-Datei
                     $message = '<p class="status-message status-green">Leere `comic_var.json` erfolgreich erstellt.</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Leere comic_var.json erstellt.");
                 } else {
                     $message = '<p class="status-message status-red">Fehler beim Erstellen der `comic_var.json`. Bitte Dateiberechtigungen prüfen.</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler beim Erstellen der comic_var.json.");
                 }
             }
             break;
 
         case 'sort_json':
-            $comicData = getComicData($comicVarJsonPath);
+            $comicData = getComicData($comicVarJsonPath, $debugMode);
             if ($comicData === null) {
                 $message = '<p class="status-message status-red">Die Datei `comic_var.json` existiert nicht oder ist fehlerhaft. Kann nicht sortiert werden.</p>';
+                if ($debugMode)
+                    error_log("DEBUG: comic_var.json existiert nicht oder ist fehlerhaft für Sortierung.");
             } elseif (empty($comicData)) {
                 $message = '<p class="status-message status-orange">Die Datei `comic_var.json` ist leer und muss nicht sortiert werden.</p>';
-            } elseif (isAlphabeticallySorted($comicData)) {
+                if ($debugMode)
+                    error_log("DEBUG: comic_var.json ist leer, keine Sortierung nötig.");
+            } elseif (isAlphabeticallySorted($comicData, $debugMode)) {
                 $message = '<p class="status-message status-orange">Die Datei `comic_var.json` ist bereits korrekt alphabetisch geordnet.</p>';
+                if ($debugMode)
+                    error_log("DEBUG: comic_var.json ist bereits sortiert.");
             } else {
                 ksort($comicData); // Sortiert das Array nach Schlüsseln (alphabetisch)
-                if (saveComicData($comicVarJsonPath, $comicData)) {
+                if (saveComicData($comicVarJsonPath, $comicData, $debugMode)) {
                     $message = '<p class="status-message status-green">Die Datei `comic_var.json` wurde erfolgreich alphabetisch geordnet.</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: comic_var.json erfolgreich sortiert.");
                 } else {
                     $message = '<p class="status-message status-red">Fehler beim Speichern der sortierten `comic_var.json`. Bitte Dateiberechtigungen prüfen.</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler beim Speichern der sortierten comic_var.json.");
                 }
             }
             break;
@@ -195,17 +266,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // --- Statusermittlung für die Anzeige (unabhängig von POST-Requests) ---
-$missingFolders = checkMissingFolders($requiredFolders);
+$missingFolders = checkMissingFolders($requiredFolders, $debugMode);
 $jsonFileExists = file_exists($comicVarJsonPath);
 $jsonFileSorted = false;
 $currentComicData = []; // Standardwert, falls JSON nicht existiert oder leer ist
 if ($jsonFileExists) {
-    $data = getComicData($comicVarJsonPath);
+    $data = getComicData($comicVarJsonPath, $debugMode);
     if ($data !== null) { // Prüfen, ob Daten erfolgreich geladen wurden
         $currentComicData = $data;
-        $jsonFileSorted = isAlphabeticallySorted($currentComicData);
+        $jsonFileSorted = isAlphabeticallySorted($currentComicData, $debugMode);
     }
 }
+if ($debugMode)
+    error_log("DEBUG: Statusermittlung für Anzeige abgeschlossen.");
 
 
 // --- HTML-Struktur und Anzeige ---
@@ -219,6 +292,8 @@ $siteDescription = 'Tools für die initiale Konfiguration und Wartung der Twokin
 // Stelle sicher, dass der Pfad korrekt ist.
 if (file_exists($headerPath)) {
     include $headerPath;
+    if ($debugMode)
+        error_log("DEBUG: Header in initial_setup.php eingebunden.");
 } else {
     // Fallback oder Fehlerbehandlung, wenn der Header nicht gefunden wird
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
@@ -235,6 +310,8 @@ if (file_exists($headerPath)) {
             <div class="message">
                 <?php echo $message; ?>
             </div>
+            <?php if ($debugMode)
+                error_log("DEBUG: Nachricht an Benutzer angezeigt: " . strip_tags($message)); ?>
         <?php endif; ?>
 
         <!-- Tool 1: Ordner überprüfen und erstellen -->
@@ -256,8 +333,12 @@ if (file_exists($headerPath)) {
                             Ordner erstellen</button>
                     </form>
                 </div>
+                <?php if ($debugMode)
+                    error_log("DEBUG: Fehlende Ordnerliste und 'Ordner erstellen'-Button angezeigt."); ?>
             <?php else: ?>
                 <p class="status-message status-green">Alle erforderlichen Comic-Ordner existieren.</p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: 'Alle Ordner existieren'-Nachricht angezeigt."); ?>
             <?php endif; ?>
         </section>
 
@@ -272,8 +353,12 @@ if (file_exists($headerPath)) {
                     <button type="submit" name="action" value="create_json" class="status-green-button">Leere
                         `comic_var.json` erstellen</button>
                 </form>
+                <?php if ($debugMode)
+                    error_log("DEBUG: 'comic_var.json existiert nicht'-Nachricht und 'Erstellen'-Button angezeigt."); ?>
             <?php else: ?>
                 <p class="status-message status-green">Die Datei `comic_var.json` existiert.</p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: 'comic_var.json existiert'-Nachricht angezeigt."); ?>
             <?php endif; ?>
         </section>
 
@@ -285,18 +370,26 @@ if (file_exists($headerPath)) {
             <?php if (!$jsonFileExists): ?>
                 <p class="status-message status-orange">Die Datei `comic_var.json` existiert nicht. Bitte zuerst erstellen.
                 </p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: 'comic_var.json existiert nicht' für Sortierung angezeigt."); ?>
             <?php elseif (empty($currentComicData)): ?>
                 <p class="status-message status-orange">Die Datei `comic_var.json` ist leer und muss nicht sortiert werden.
                 </p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: 'comic_var.json ist leer' für Sortierung angezeigt."); ?>
             <?php elseif ($jsonFileSorted): ?>
                 <p class="status-message status-green">Die Datei `comic_var.json` ist bereits korrekt alphabetisch geordnet.
                 </p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: 'comic_var.json ist bereits sortiert' angezeigt."); ?>
             <?php else: ?>
                 <p class="status-message status-red">Die Datei `comic_var.json` ist nicht alphabetisch geordnet.</p>
                 <form action="" method="POST">
                     <button type="submit" name="action" value="sort_json" class="status-red-button">`comic_var.json`
                         alphabetisch ordnen</button>
                 </form>
+                <?php if ($debugMode)
+                    error_log("DEBUG: 'comic_var.json nicht sortiert' und 'Sortieren'-Button angezeigt."); ?>
             <?php endif; ?>
         </section>
     </div>
@@ -694,6 +787,8 @@ if (file_exists($headerPath)) {
 // Stelle sicher, dass der Pfad korrekt ist.
 if (file_exists($footerPath)) {
     include $footerPath;
+    if ($debugMode)
+        error_log("DEBUG: Footer in initial_setup.php eingebunden.");
 } else {
     // Fallback oder Fehlerbehandlung, wenn der Footer nicht gefunden wird
     die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));

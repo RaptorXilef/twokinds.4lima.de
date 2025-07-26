@@ -7,9 +7,15 @@
  * @param string $comicName Der Name des aktuell angezeigten Comics.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+/* $debugMode = false; */
+
 // Überprüfe, ob die benötigten Variablen gesetzt sind
 if (!isset($currentComicId) || !isset($comicName)) {
-    echo '<p style="color: red;">Fehler: Comic-Informationen nicht verfügbar.</p>';
+    if ($debugMode) { // Nur im Debug-Modus anzeigen
+        echo '<p style="color: red;">Fehler: Comic-Informationen nicht verfügbar.</p>';
+    }
 } else {
     $imageHiresPath = "./comic_hires/{$currentComicId}.jpg";
     $imagePath = "./comic/{$currentComicId}.png";

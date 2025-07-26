@@ -8,14 +8,27 @@
  * Ladekreis und Fortschrittsanzeige, analog zu den Bildgeneratoren.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: generator_comic.php wird geladen.");
+
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
 ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in generator_comic.php gestartet.");
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session gestartet in generator_comic.php.");
 
 // Logout-Funktion (wird über GET-Parameter ausgelöst)
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion erkannt.");
     session_unset();     // Entfernt alle Session-Variablen
     session_destroy();   // Zerstört die Session
     ob_end_clean(); // Output Buffer leeren, da wir umleiten
@@ -25,11 +38,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von generator_comic.php.");
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
     ob_end_clean(); // Output Buffer leeren, da wir umleiten
     header('Location: index.php');
     exit;
 }
+if ($debugMode)
+    error_log("DEBUG: Admin in generator_comic.php angemeldet.");
 
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
@@ -37,45 +54,69 @@ $footerPath = __DIR__ . '/../src/layout/footer.php';
 $comicVarJsonPath = __DIR__ . '/../src/config/comic_var.json';
 $comicLowresDirPath = __DIR__ . '/../assets/comic_lowres/';
 $comicPagesDirPath = __DIR__ . '/../comic/'; // Pfad zum Ordner, wo die Comic-PHP-Dateien liegen
+if ($debugMode) {
+    error_log("DEBUG: Pfade definiert: comicVarJsonPath=" . $comicVarJsonPath . ", comicLowresDirPath=" . $comicLowresDirPath . ", comicPagesDirPath=" . $comicPagesDirPath);
+}
 
 // --- Hilfsfunktionen ---
 
 /**
  * Liest die Comic-Daten aus der JSON-Datei.
  * @param string $filePath Der Pfad zur JSON-Datei.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array|null Die dekodierten Daten als assoziatives Array oder null bei Fehler/nicht existent.
  */
-function getComicData(string $filePath): ?array
+function getComicData(string $filePath, bool $debugMode): ?array
 {
+    if ($debugMode)
+        error_log("DEBUG: getComicData() aufgerufen für: " . basename($filePath));
     if (!file_exists($filePath)) {
+        if ($debugMode)
+            error_log("DEBUG: JSON-Datei nicht gefunden: " . $filePath);
         return null;
     }
     $content = file_get_contents($filePath);
     if ($content === false) {
         error_log("Fehler beim Lesen der JSON-Datei: " . $filePath);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Lesen des Inhalts von: " . $filePath);
         return null;
     }
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         error_log("Fehler beim Dekodieren der JSON-Datei: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren der JSON-Datei: " . json_last_error_msg());
         return null;
     }
+    if ($debugMode)
+        error_log("DEBUG: JSON-Datei erfolgreich geladen und geparst: " . basename($filePath));
     return is_array($data) ? $data : [];
 }
 
 /**
  * Ermittelt alle Comic-IDs basierend auf den Bilddateien im lowres-Ordner.
  * @param string $dirPath Der Pfad zum lowres-Comic-Ordner.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array Eine Liste der Comic-IDs (Dateinamen ohne Erweiterung), sortiert.
  */
-function getComicIdsFromImages(string $dirPath): array
+function getComicIdsFromImages(string $dirPath, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: getComicIdsFromImages() aufgerufen für: " . $dirPath);
     $imageIds = [];
     if (is_dir($dirPath)) {
         $files = scandir($dirPath);
+        if ($files === false) {
+            if ($debugMode)
+                error_log("DEBUG: scandir() fehlgeschlagen für " . $dirPath);
+            return [];
+        }
         foreach ($files as $file) {
             // Ignoriere . und .. sowie versteckte Dateien und "in_translation" Bilder
             if ($file === '.' || $file === '..' || substr($file, 0, 1) === '.' || strpos($file, 'in_translation') !== false) {
+                if ($debugMode)
+                    error_log("DEBUG: Datei übersprungen ('.' oder '..' oder versteckt oder 'in_translation'): " . $file);
                 continue;
             }
             // Extrahiere den Dateinamen ohne Erweiterung (z.B. "20250604" aus "20250604.png")
@@ -83,10 +124,20 @@ function getComicIdsFromImages(string $dirPath): array
             // Stellt sicher, dass es ein Datum im FormatYYYYMMDD ist und eine gültige Bild-Extension hat
             if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), ['jpg', 'jpeg', 'png', 'gif'])) {
                 $imageIds[] = $info['filename'];
+                if ($debugMode)
+                    error_log("DEBUG: Comic-ID aus Bild gefunden: " . $info['filename']);
+            } else {
+                if ($debugMode)
+                    error_log("DEBUG: Datei übersprungen (ungültiges Format/Extension): " . $file);
             }
         }
+    } else {
+        if ($debugMode)
+            error_log("DEBUG: Comic-Lowres-Verzeichnis nicht gefunden oder ist kein Verzeichnis: " . $dirPath);
     }
     sort($imageIds); // IDs sortieren, um eine konsistente Reihenfolge zu gewährleisten
+    if ($debugMode)
+        error_log("DEBUG: " . count($imageIds) . " Comic-IDs aus Bildern gefunden und sortiert.");
     return $imageIds;
 }
 
@@ -94,17 +145,24 @@ function getComicIdsFromImages(string $dirPath): array
  * Überprüft, welche Comic-PHP-Dateien fehlen.
  * @param array $comicIds Die Liste der erwarteten Comic-IDs.
  * @param string $comicPagesDir Der Pfad zum Comic-Seiten-Ordner.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array Eine Liste der fehlenden Comic-IDs.
  */
-function getMissingComicPageFiles(array $comicIds, string $comicPagesDir): array
+function getMissingComicPageFiles(array $comicIds, string $comicPagesDir, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: getMissingComicPageFiles() aufgerufen.");
     $missingFiles = [];
     foreach ($comicIds as $id) {
         $filePath = $comicPagesDir . $id . '.php';
         if (!file_exists($filePath)) {
             $missingFiles[] = $id;
+            if ($debugMode)
+                error_log("DEBUG: Fehlende Comic-Seite gefunden: " . $id . ".php");
         }
     }
+    if ($debugMode)
+        error_log("DEBUG: " . count($missingFiles) . " fehlende Comic-PHP-Dateien gefunden.");
     return $missingFiles;
 }
 
@@ -112,25 +170,40 @@ function getMissingComicPageFiles(array $comicIds, string $comicPagesDir): array
  * Erstellt eine einzelne Comic-PHP-Datei.
  * @param string $comicId Die ID des Comics, für das eine Datei erstellt werden soll.
  * @param string $comicPagesDir Der Pfad zum Comic-Seiten-Ordner.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function createSingleComicPageFile(string $comicId, string $comicPagesDir): bool
+function createSingleComicPageFile(string $comicId, string $comicPagesDir, bool $debugMode): bool
 {
+    if ($debugMode)
+        error_log("DEBUG: createSingleComicPageFile() aufgerufen für Comic-ID: " . $comicId);
     // Sicherstellen, dass das Verzeichnis existiert
     if (!is_dir($comicPagesDir)) {
+        if ($debugMode)
+            error_log("DEBUG: Comic-Seiten-Verzeichnis existiert nicht, versuche zu erstellen: " . $comicPagesDir);
         if (!mkdir($comicPagesDir, 0777, true)) {
             error_log("Fehler: Comic-Seiten-Verzeichnis nicht erstellbar: " . $comicPagesDir);
+            if ($debugMode)
+                error_log("DEBUG: Fehler: Comic-Seiten-Verzeichnis nicht erstellbar: " . $comicPagesDir);
             return false;
         }
+        if ($debugMode)
+            error_log("DEBUG: Comic-Seiten-Verzeichnis erfolgreich erstellt: " . $comicPagesDir);
     }
 
     $filePath = $comicPagesDir . $comicId . '.php';
     $fileContent = "<?php require_once __DIR__ . '/../src/components/comic_page_renderer.php'; ?>";
+    if ($debugMode)
+        error_log("DEBUG: Versuche Datei zu erstellen: " . $filePath);
 
     if (file_put_contents($filePath, $fileContent) !== false) {
+        if ($debugMode)
+            error_log("DEBUG: Comic-Seite erfolgreich erstellt: " . $filePath);
         return true;
     } else {
         error_log("Fehler beim Erstellen der Datei: " . $filePath);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Erstellen der Datei: " . $filePath);
         return false;
     }
 }
@@ -139,6 +212,8 @@ function createSingleComicPageFile(string $comicId, string $comicPagesDir): bool
 // --- AJAX-Anfrage-Handler ---
 // Dieser Block wird nur ausgeführt, wenn eine POST-Anfrage mit der Aktion 'create_single_comic_page' gesendet wird.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_single_comic_page') {
+    if ($debugMode)
+        error_log("DEBUG: AJAX-Anfrage 'create_single_comic_page' erkannt.");
     // Leere und beende den Output Buffer, um sicherzustellen, dass keine unerwünschten Ausgaben gesendet werden.
     ob_end_clean();
     // Temporär Fehleranzeige deaktivieren und Error Reporting unterdrücken, um JSON-Ausgabe nicht zu stören.
@@ -152,20 +227,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (empty($comicId)) {
         $response['message'] = 'Keine Comic-ID für die Generierung angegeben.';
         error_log("AJAX-Anfrage: Keine Comic-ID angegeben.");
+        if ($debugMode)
+            error_log("DEBUG: AJAX: Keine Comic-ID angegeben, sende Fehlerantwort.");
         echo json_encode($response);
         exit;
     }
+    if ($debugMode)
+        error_log("DEBUG: AJAX: Starte Generierung für Comic-ID: " . $comicId);
 
     // Pfad für die einzelne Generierung (muss hier neu definiert werden, da es ein separater Request ist)
     $comicPagesDirPath = __DIR__ . '/../comic/';
 
-    if (createSingleComicPageFile($comicId, $comicPagesDirPath)) {
+    if (createSingleComicPageFile($comicId, $comicPagesDirPath, $debugMode)) {
         $response['success'] = true;
         $response['message'] = 'Comic-Seite für ' . $comicId . ' erfolgreich erstellt.';
         $response['comicId'] = $comicId;
+        if ($debugMode)
+            error_log("DEBUG: AJAX: Comic-Seite für Comic-ID " . $comicId . " erfolgreich generiert.");
     } else {
         $response['message'] = 'Fehler beim Erstellen der Comic-Seite für ' . $comicId . '.';
         error_log("AJAX-Anfrage: Fehler beim Erstellen der Comic-Seite für Comic-ID '$comicId'.");
+        if ($debugMode)
+            error_log("DEBUG: AJAX: Fehler bei der Generierung für Comic-ID " . $comicId . ".");
     }
 
     // Überprüfe, ob json_encode einen Fehler hatte
@@ -173,6 +256,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if ($jsonOutput === false) {
         $jsonError = json_last_error_msg();
         error_log("AJAX-Anfrage: json_encode Fehler für Comic-ID '$comicId': " . $jsonError);
+        if ($debugMode)
+            error_log("DEBUG: AJAX: JSON-Encoding fehlgeschlagen für Comic-ID " . $comicId . ": " . $jsonError);
         echo json_encode(['success' => false, 'message' => 'Interner Serverfehler: JSON-Encoding fehlgeschlagen.']);
     } else {
         echo $jsonOutput;
@@ -185,19 +270,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // --- Statusermittlung für die Anzeige (unabhängig von POST-Requests) ---
 // Leere den Output Buffer und sende den Inhalt, der bis hierhin gesammelt wurde.
 ob_end_flush();
+if ($debugMode)
+    error_log("DEBUG: Normale Seitenladung (kein AJAX-Call). Output Buffer wird geleert und ausgegeben.");
 
-$comicIdsFromImages = getComicIdsFromImages($comicLowresDirPath);
-$comicDataFromJson = getComicData($comicVarJsonPath);
+$comicIdsFromImages = getComicIdsFromImages($comicLowresDirPath, $debugMode);
+$comicDataFromJson = getComicData($comicVarJsonPath, $debugMode);
 
 $allComicIds = [];
 if ($comicDataFromJson) {
     $allComicIds = array_unique(array_merge(array_keys($comicDataFromJson), $comicIdsFromImages));
+    if ($debugMode)
+        error_log("DEBUG: Comic-Daten aus JSON und Bildern zusammengeführt.");
 } else {
     $allComicIds = $comicIdsFromImages;
+    if ($debugMode)
+        error_log("DEBUG: Comic-Daten nur aus Bildern verwendet (JSON nicht verfügbar).");
 }
 sort($allComicIds);
+if ($debugMode)
+    error_log("DEBUG: Alle Comic-IDs sortiert. Anzahl: " . count($allComicIds));
 
-$missingComicPages = getMissingComicPageFiles($allComicIds, $comicPagesDirPath);
+$missingComicPages = getMissingComicPageFiles($allComicIds, $comicPagesDirPath, $debugMode);
+if ($debugMode)
+    error_log("DEBUG: " . count($missingComicPages) . " fehlende Comic-Seiten für Anzeige.");
 
 
 // --- HTML-Struktur und Anzeige ---
@@ -211,6 +306,8 @@ $siteDescription = 'Generiert fehlende Comic-PHP-Seiten basierend auf vorhandene
 $robotsContent = 'noindex, nofollow';
 if (file_exists($headerPath)) {
     include $headerPath;
+    if ($debugMode)
+        error_log("DEBUG: Header in generator_comic.php eingebunden.");
 } else {
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
 }
@@ -254,9 +351,14 @@ if (file_exists($headerPath)) {
             <?php if (empty($allComicIds)): ?>
                 <p class="status-message status-orange">Es wurden keine Comic-IDs in <code>comic_var.json</code> oder im
                     <code>./assets/comic_lowres/</code> Ordner gefunden. Bitte stellen Sie sicher, dass Comics vorhanden
-                    sind.</p>
+                    sind.
+                </p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: Keine Comic-IDs gefunden, Statusmeldung angezeigt."); ?>
             <?php elseif (empty($missingComicPages)): ?>
                 <p class="status-message status-green">Alle Comic-PHP-Dateien scheinen vorhanden zu sein.</p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: Alle Comic-PHP-Dateien vorhanden, Statusmeldung angezeigt."); ?>
             <?php else: ?>
                 <p class="status-message status-red">Es fehlen <strong><?php echo count($missingComicPages); ?></strong>
                     Comic-PHP-Dateien:</p>
@@ -266,6 +368,8 @@ if (file_exists($headerPath)) {
                             data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?>.php</span>
                     <?php endforeach; ?>
                 </div>
+                <?php if ($debugMode)
+                    error_log("DEBUG: Fehlende Comic-PHP-Dateien angezeigt."); ?>
             <?php endif; ?>
         </div>
     </div>
@@ -839,6 +943,8 @@ if (file_exists($headerPath)) {
 // Binde den gemeinsamen Footer ein.
 if (file_exists($footerPath)) {
     include $footerPath;
+    if ($debugMode)
+        error_log("DEBUG: Footer in generator_comic.php eingebunden.");
 } else {
     die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));
 }

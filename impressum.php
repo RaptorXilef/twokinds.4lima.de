@@ -3,6 +3,13 @@
  * Diese Datei enthält das Impressum der Webseite.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: impressum.php wird geladen.");
+
 // JavaScript für die E-Mail-Anzeige als zusätzliche Skripte an den Header übergeben.
 $emailScript = '
 <script type="text/javascript">
@@ -19,6 +26,8 @@ $pageTitle = 'Impressum';
 $pageHeader = 'Impressum'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
 $additionalScripts = $emailScript; // Füge das E-Mail-Skript hinzu.
 include __DIR__ . "/src/layout/header.php";
+if ($debugMode)
+    error_log("DEBUG: Header in impressum.php eingebunden.");
 ?>
 <p>
 <h3>Verantwortlich für den Inhalt:</h3>
@@ -80,4 +89,6 @@ Die Veröffentlichung und Verbreitung der hier publizierten Comics und Bildern u
 <?php
 // Binde den gemeinsamen Footer ein.
 include __DIR__ . "/src/layout/footer.php";
+if ($debugMode)
+    error_log("DEBUG: Footer in impressum.php eingebunden.");
 ?>

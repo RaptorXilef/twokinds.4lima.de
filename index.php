@@ -5,6 +5,10 @@
  * Der Seitentitel und Open Graph Metadaten werden spezifisch für die Startseite gesetzt.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 require_once __DIR__ . '/src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
@@ -35,10 +39,12 @@ if (isset($comicData[$currentComicId])) {
     // Pfad für die Vorschau-URL (relativ zur aktuellen Datei)
     if (!empty($rawComicPreviewPath) && file_exists(realpath(__DIR__ . '/' . $rawComicPreviewPath))) {
         $comicPreviewUrl = './' . $rawComicPreviewPath;
-        error_log("DEBUG: Comic Preview Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicPreviewUrl));
+        if ($debugMode)
+            error_log("DEBUG: Comic Preview Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicPreviewUrl));
     } else {
         $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
-        error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview (Haupt-Index): " . $comicPreviewUrl);
+        if ($debugMode)
+            error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview (Haupt-Index): " . $comicPreviewUrl);
     }
 } else {
     // Fallback-Werte, falls keine Comic-Daten oder der neueste Comic nicht gefunden wird.
@@ -66,24 +72,29 @@ if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/' . $rawComi
     // If original comic exists, use its path (relative to current file)
     $comicImagePath = './' . $rawComicLowresPath;
     $comicHiresPath = './' . $rawComicHiresPath;
-    error_log("DEBUG: Original Comic Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
+    if ($debugMode)
+        error_log("DEBUG: Original Comic Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
 } else {
     // If original comic does not exist, try "in translation" image
-    error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Haupt-Index). Versuche In Translation.");
+    if ($debugMode)
+        error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Haupt-Index). Versuche In Translation.");
     // Check if the "in translation" fallback exists
     if (file_exists(realpath(__DIR__ . '/' . $inTranslationLowres))) {
         $comicImagePath = $inTranslationLowres;
         $comicHiresPath = $inTranslationHires;
-        error_log("DEBUG: In Translation Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
+        if ($debugMode)
+            error_log("DEBUG: In Translation Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
     } else {
         // If "in translation" also doesn't exist, use generic placeholder URL
         error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad (Haupt-Index): " . realpath(__DIR__ . '/' . $inTranslationLowres));
         $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
         $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
-        error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild (Haupt-Index): " . $comicImagePath);
+        if ($debugMode)
+            error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild (Haupt-Index): " . $comicImagePath);
     }
 }
-error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird (Haupt-Index): " . $comicImagePath);
+if ($debugMode)
+    error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird (Haupt-Index): " . $comicImagePath);
 
 
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
@@ -105,10 +116,12 @@ if ($isLocal) {
     array_pop($pathParts); // Entfernt 'index.php'
     $basePath = implode('/', $pathParts);
     $baseUrl = $protocol . $host . $basePath . '/';
-    error_log("DEBUG: Lokale Basis-URL (Haupt-Index): " . $baseUrl);
+    if ($debugMode)
+        error_log("DEBUG: Lokale Basis-URL (Haupt-Index): " . $baseUrl);
 } else {
     $baseUrl = 'https://twokinds.4lima.de/';
-    error_log("DEBUG: Live Basis-URL (Haupt-Index): " . $baseUrl);
+    if ($debugMode)
+        error_log("DEBUG: Live Basis-URL (Haupt-Index): " . $baseUrl);
 }
 
 
@@ -130,7 +143,8 @@ if (str_starts_with($tempPreviewUrl, './')) {
 }
 $absoluteComicPreviewUrl = $baseUrl . htmlspecialchars($tempPreviewUrl);
 
-error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Haupt-Index): " . $absoluteComicPreviewUrl);
+if ($debugMode)
+    error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Haupt-Index): " . $absoluteComicPreviewUrl);
 
 
 $additionalHeadContent = '

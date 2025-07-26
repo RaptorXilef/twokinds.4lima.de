@@ -6,22 +6,29 @@
  * $isCurrentPageLatest ist optional und kann vom inkludierenden Skript gesetzt werden (z.B. von index.php).
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+/* $debugMode = false; */
+
 // Lade die Hilfsfunktion zum Rendern der Navigationsbuttons.
 // Diese Datei sollte nur einmal pro Request eingebunden werden, um den "Cannot redeclare function"-Fehler zu vermeiden.
 require_once __DIR__ . '/../components/nav_link_helper.php';
 
 // Prüfe, ob die essentiellen Daten verfügbar sind.
 if (!isset($comicData)) {
-    error_log("FEHLER: \$comicData ist in comic_navigation.php nicht verfügbar. Navigation kann nicht gerendert werden.");
+    if ($debugMode)
+        error_log("FEHLER: \$comicData ist in comic_navigation.php nicht verfügbar. Navigation kann nicht gerendert werden.");
     return; // Skript beenden, wenn Daten fehlen
 }
 if (!isset($baseUrl)) {
-    error_log("FEHLER: \$baseUrl ist in comic_navigation.php nicht verfügbar. Absolute Links können nicht generiert werden.");
+    if ($debugMode)
+        error_log("FEHLER: \$baseUrl ist in comic_navigation.php nicht verfügbar. Absolute Links können nicht generiert werden.");
     return; // Skript beenden, wenn Basis-URL fehlt
 }
 if (!isset($currentComicId)) {
     // Dieser Fall sollte durch die aufrufenden Seiten verhindert werden, ist aber ein Fallback.
-    error_log("WARNUNG: \$currentComicId ist in comic_navigation.php nicht verfügbar.");
+    if ($debugMode)
+        error_log("WARNUNG: \$currentComicId ist in comic_navigation.php nicht verfügbar.");
 }
 
 // Initialisiere Navigations-Variablen
@@ -73,13 +80,15 @@ if (!empty($comicData)) {
         }
     } else {
         // Fallback, falls die aktuelle Comic-ID nicht gefunden wird.
-        error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in comic_var.json gefunden. Navigation möglicherweise fehlerhaft.");
+        if ($debugMode)
+            error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in comic_var.json gefunden. Navigation möglicherweise fehlerhaft.");
         $isCurrentPageFirst = true;
         $isCurrentPageLatest = true;
     }
 } else {
     // Wenn comicData leer ist, sollten alle Navigationslinks deaktiviert sein.
-    error_log("WARNUNG: \$comicData ist leer. Alle Navigationslinks werden deaktiviert.");
+    if ($debugMode)
+        error_log("WARNUNG: \$comicData ist leer. Alle Navigationslinks werden deaktiviert.");
     $isCurrentPageFirst = true;
     $isCurrentPageLatest = true;
 }

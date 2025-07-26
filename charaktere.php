@@ -3,6 +3,13 @@
  * Diese Datei zeigt Details zu den Charakteren des Comics an.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: charaktere.php wird geladen.");
+
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versesehen.
 $pageTitle = 'Charaktere';
 // Der H1-Header für diese Seite ist im Body der Datei selbst (header hidden), daher bleibt $pageHeader leer.
@@ -13,6 +20,8 @@ $pageHeader = '';
 // Wir müssen sie nicht explizit hier einbinden.
 
 include __DIR__ . "/src/layout/header.php";
+if ($debugMode)
+    error_log("DEBUG: Header in charaktere.php eingebunden.");
 
 // Standardmäßig die Original-Pfade verwenden.
 // Um lokale Bilder zu verwenden, ändere 'original' zu 'local' in den Pfaden unten.
@@ -808,4 +817,6 @@ include __DIR__ . "/src/layout/header.php";
 <?php
 // Binde den gemeinsamen Footer ein.
 include __DIR__ . "/src/layout/footer.php";
+if ($debugMode)
+    error_log("DEBUG: Footer in charaktere.php eingebunden.");
 ?>

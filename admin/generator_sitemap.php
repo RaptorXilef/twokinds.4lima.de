@@ -5,14 +5,27 @@
  * basierend auf einer Konfigurationsdatei (sitemap.json).
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: generator_sitemap.php wird geladen.");
+
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
 ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer gestartet.");
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session gestartet in generator_sitemap.php.");
 
 // Logout-Logik: Muss vor dem Sicherheitscheck erfolgen.
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion erkannt.");
     // Zerstöre alle Session-Variablen.
     $_SESSION = array();
 
@@ -28,10 +41,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
             $params["secure"],
             $params["httplly"]
         );
+        if ($debugMode)
+            error_log("DEBUG: Session-Cookie gelöscht.");
     }
 
     // Zerstöre die Session.
     session_destroy();
+    if ($debugMode)
+        error_log("DEBUG: Session zerstört.");
 
     // Weiterleitung zur Login-Seite (index.php im Admin-Bereich).
     // ob_end_clean() leert den Output Buffer, bevor die Weiterleitung gesendet wird.
@@ -42,17 +59,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
 
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von generator_sitemap.php.");
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
     ob_end_clean(); // Output Buffer leeren, da wir umleiten
     header('Location: index.php');
     exit;
 }
+if ($debugMode)
+    error_log("DEBUG: Admin in generator_sitemap.php angemeldet.");
+
 
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $sitemapConfigPath = __DIR__ . '/../src/config/sitemap.json';
 $sitemapOutputPath = __DIR__ . '/../sitemap.xml'; // Sitemap im öffentlichen Hauptverzeichnis
+if ($debugMode)
+    error_log("DEBUG: Pfade definiert: Config=" . $sitemapConfigPath . ", Output=" . $sitemapOutputPath);
+
 
 // Setze Parameter für den Header.
 $pageTitle = 'Sitemap Generator';
@@ -71,17 +96,23 @@ if ($isLocal) {
     array_pop($pathParts); // Entfernt 'admin'
     $basePath = implode('/', $pathParts);
     $baseUrl = $protocol . $host . $basePath . '/';
+    if ($debugMode)
+        error_log("DEBUG: Lokale Basis-URL bestimmt: " . $baseUrl);
 } else {
     $baseUrl = 'https://twokinds.4lima.de/';
+    if ($debugMode)
+        error_log("DEBUG: Produktive Basis-URL verwendet: " . $baseUrl);
 }
 
 // Funktion zum Generieren der Sitemap
-function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, string $baseUrl): string
+function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, string $baseUrl, bool $debugMode): string
 {
     $message = '';
     $status = 'error';
 
     if (!file_exists($sitemapConfigPath)) {
+        if ($debugMode)
+            error_log("DEBUG: Konfigurationsdatei sitemap.json nicht gefunden.");
         return 'Fehler: Konfigurationsdatei sitemap.json nicht gefunden unter ' . htmlspecialchars($sitemapConfigPath);
     }
 
@@ -89,10 +120,17 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, s
     $sitemapConfig = json_decode($configContent, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren von sitemap.json: " . json_last_error_msg());
         return 'Fehler beim Dekodieren von sitemap.json: ' . json_last_error_msg();
     }
+    if ($debugMode)
+        error_log("DEBUG: Sitemap-Konfiguration erfolgreich geladen.");
+
 
     if (!isset($sitemapConfig['pages']) || !is_array($sitemapConfig['pages'])) {
+        if ($debugMode)
+            error_log("DEBUG: Ungültiges Format in sitemap.json: 'pages'-Array fehlt oder ist ungültig.");
         return 'Fehler: Ungültiges Format in sitemap.json. "pages"-Array fehlt oder ist ungültig.';
     }
 
@@ -106,13 +144,19 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, s
     foreach ($sitemapConfig['pages'] as $page) {
         if (!isset($page['name']) || !isset($page['path'])) {
             error_log("Warnung: Ungültiger Seiteneintrag in sitemap.json übersprungen.");
+            if ($debugMode)
+                error_log("DEBUG: Ungültiger Seiteneintrag in sitemap.json übersprungen.");
             continue;
         }
 
         $filePath = realpath(__DIR__ . '/../' . $page['path'] . $page['name']); // Pfad relativ zum Projekt-Root
+        if ($debugMode)
+            error_log("DEBUG: Verarbeite Seite: " . $page['name'] . ", Dateipfad: " . $filePath);
 
         if (!file_exists($filePath)) {
             error_log("Warnung: Datei nicht gefunden für Sitemap-Eintrag: " . htmlspecialchars($filePath));
+            if ($debugMode)
+                error_log("DEBUG: Datei nicht gefunden für Sitemap-Eintrag: " . $filePath);
             continue;
         }
 
@@ -136,22 +180,30 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, s
         }
 
         $urlset->appendChild($url);
+        if ($debugMode)
+            error_log("DEBUG: URL zur Sitemap hinzugefügt: " . $loc->nodeValue);
     }
 
     $xml->save($sitemapOutputPath);
     $message = 'Sitemap.xml erfolgreich generiert und gespeichert unter: ' . htmlspecialchars($sitemapOutputPath);
     $status = 'success';
+    if ($debugMode)
+        error_log("DEBUG: Sitemap.xml erfolgreich generiert.");
     return $message;
 }
 
 $generationMessage = '';
 if (isset($_POST['generate_sitemap'])) {
-    $generationMessage = generateSitemap($sitemapConfigPath, $sitemapOutputPath, $baseUrl);
+    if ($debugMode)
+        error_log("DEBUG: 'Sitemap generieren'-Button geklickt.");
+    $generationMessage = generateSitemap($sitemapConfigPath, $sitemapOutputPath, $baseUrl, $debugMode);
 }
 
 // Binde den gemeinsamen Header ein.
 if (file_exists($headerPath)) {
     include $headerPath;
+    if ($debugMode)
+        error_log("DEBUG: Header in generator_sitemap.php eingebunden.");
 } else {
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
 }
@@ -161,7 +213,8 @@ if (file_exists($headerPath)) {
     <h2 class="page-header">Sitemap generieren</h2>
     <p>Hier können Sie die <code>sitemap.xml</code> für Ihre Webseite generieren oder aktualisieren.</p>
     <p>Die Sitemap wird im Hauptverzeichnis Ihrer Webseite abgelegt und enthält Links zu den wichtigsten Seiten, wie in
-        <code>src/config/sitemap.json</code> konfiguriert.</p>
+        <code>src/config/sitemap.json</code> konfiguriert.
+    </p>
 
     <form method="POST" action="">
         <button type="submit" name="generate_sitemap" class="button">Sitemap generieren / aktualisieren</button>
@@ -172,6 +225,8 @@ if (file_exists($headerPath)) {
             style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #e0ffe0; border-radius: 5px; color: #155724;">
             <p><?php echo $generationMessage; ?></p>
         </div>
+        <?php if ($debugMode)
+            error_log("DEBUG: Generierungsnachricht angezeigt: " . strip_tags($generationMessage)); ?>
     <?php endif; ?>
 
     <h3 style="margin-top: 30px;">Informationen zur Sitemap.xml</h3>
@@ -201,7 +256,8 @@ if (file_exists($headerPath)) {
                 <code>never</code>).
                 **Warum**: Dies ist ein **Hinweis** für Crawler. Wenn Sie angeben, dass sich eine Seite täglich ändert,
                 kann dies Suchmaschinen dazu ermutigen, diese Seite häufiger zu besuchen. Es ist jedoch keine Garantie,
-                dass dies auch tatsächlich geschieht.</p>
+                dass dies auch tatsächlich geschieht.
+            </p>
         </li>
         <li>
             <strong><code>&lt;priority&gt;</code> (Priorität)</strong>:
@@ -222,6 +278,8 @@ if (file_exists($headerPath)) {
 // Binde den gemeinsamen Footer ein.
 if (file_exists($footerPath)) {
     include $footerPath;
+    if ($debugMode)
+        error_log("DEBUG: Footer in generator_sitemap.php eingebunden.");
 } else {
     echo "</body></html>"; // HTML schließen, falls Footer fehlt.
 }

@@ -9,21 +9,38 @@
  * und das Betriebssystem zu entlasten.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: generator_thumbnail.php wird geladen.");
+
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
 ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer gestartet.");
 
 // Erhöhe das PHP-Speicherlimit, um Probleme mit großen Bildern zu vermeiden.
 // 512M sollte für Thumbnails ausreichend sein, aber 1G ist auch möglich für Konsistenz.
 ini_set('memory_limit', '512M');
+if ($debugMode)
+    error_log("DEBUG: Speicherlimit auf 512M gesetzt.");
 
 // Aktiviere die explizite Garbage Collection, um Speicher effizienter zu verwalten.
 gc_enable();
+if ($debugMode)
+    error_log("DEBUG: Garbage Collection aktiviert.");
 
 // Starte die PHP-Sitzung. Notwendig für die Admin-Anmeldung.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session gestartet in generator_thumbnail.php.");
 
 // Logout-Funktion (wird über GET-Parameter ausgelöst)
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion erkannt.");
     session_unset();     // Entfernt alle Session-Variablen
     session_destroy();   // Zerstört die Session
     ob_end_clean(); // Output Buffer leeren, da wir umleiten
@@ -34,11 +51,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von generator_thumbnail.php.");
     // Beende den Output Buffer, da wir umleiten und keine weitere Ausgabe wollen.
     ob_end_clean();
     header('Location: index.php');
     exit;
 }
+if ($debugMode)
+    error_log("DEBUG: Admin in generator_thumbnail.php angemeldet.");
+
 
 // Pfade zu den benötigten Ressourcen und Verzeichnissen.
 // Die 'assets'-Ordner liegen eine Ebene über 'admin'.
@@ -47,13 +69,19 @@ $footerPath = __DIR__ . '/../src/layout/footer.php';
 $lowresDir = __DIR__ . '/../assets/comic_lowres/'; // Quellverzeichnis für Comic-Bilder
 $hiresDir = __DIR__ . '/../assets/comic_hires/';   // Optionales Quellverzeichnis für Hi-Res Comic-Bilder
 $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/'; // Zielverzeichnis für Thumbnails
+if ($debugMode)
+    error_log("DEBUG: Verzeichnispfade definiert.");
 
 // Stelle sicher, dass die GD-Bibliothek geladen ist.
 if (!extension_loaded('gd')) {
     $gdError = "FEHLER: Die GD-Bibliothek ist nicht geladen. Thumbnails können nicht generiert werden. Bitte PHP-Konfiguration prüfen.";
     error_log("GD-Bibliothek nicht geladen in thumbnail_generator.php");
+    if ($debugMode)
+        error_log("DEBUG: GD-Bibliothek nicht geladen.");
 } else {
     $gdError = null;
+    if ($debugMode)
+        error_log("DEBUG: GD-Bibliothek geladen.");
 }
 
 /**
@@ -63,7 +91,7 @@ if (!extension_loaded('gd')) {
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
  * @return array Eine Liste eindeutiger Comic-IDs (Dateinamen ohne Erweiterung).
  */
-function getExistingComicIds(string $lowresDir, string $hiresDir): array
+function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMode): array
 {
     $comicIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
@@ -77,6 +105,8 @@ function getExistingComicIds(string $lowresDir, string $hiresDir): array
                 $comicIds[$fileInfo['filename']] = true; // Assoziatives Array für Eindeutigkeit
             }
         }
+        if ($debugMode)
+            error_log("DEBUG: " . count($comicIds) . " IDs aus lowresDir gefunden.");
     }
 
     // Scan hires-Verzeichnis nach Bildern, nur hinzufügen, wenn nicht bereits in lowres gefunden
@@ -88,8 +118,11 @@ function getExistingComicIds(string $lowresDir, string $hiresDir): array
                 $comicIds[$fileInfo['filename']] = true;
             }
         }
+        if ($debugMode)
+            error_log("DEBUG: " . count($comicIds) . " IDs (inkl. hiresDir) gefunden.");
     }
-
+    if ($debugMode)
+        error_log("DEBUG: Gesamtzahl der Comic-IDs: " . count($comicIds));
     return array_keys($comicIds); // Eindeutige Dateinamen zurückgeben
 }
 
@@ -98,7 +131,7 @@ function getExistingComicIds(string $lowresDir, string $hiresDir): array
  * @param string $thumbnailDir Pfad zum Thumbnail-Verzeichnis.
  * @return array Eine Liste vorhandener Thumbnail-IDs (Dateinamen ohne Erweiterung).
  */
-function getExistingThumbnailIds(string $thumbnailDir): array
+function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
 {
     $thumbnailIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif']; // Prüfe auf gängige Bild-Erweiterungen
@@ -111,6 +144,11 @@ function getExistingThumbnailIds(string $thumbnailDir): array
                 $thumbnailIds[] = $fileInfo['filename'];
             }
         }
+        if ($debugMode)
+            error_log("DEBUG: " . count($thumbnailIds) . " Thumbnails im Verzeichnis gefunden.");
+    } else {
+        if ($debugMode)
+            error_log("DEBUG: Thumbnail-Verzeichnis nicht gefunden: " . $thumbnailDir);
     }
     return $thumbnailIds;
 }
@@ -121,9 +159,12 @@ function getExistingThumbnailIds(string $thumbnailDir): array
  * @param array $existingThumbnailIds Alle gefundenen Thumbnail-IDs.
  * @return array Eine Liste von Comic-IDs, für die Thumbnails fehlen.
  */
-function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds): array
+function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds, bool $debugMode): array
 {
-    return array_values(array_diff($allComicIds, $existingThumbnailIds));
+    $missing = array_values(array_diff($allComicIds, $existingThumbnailIds));
+    if ($debugMode)
+        error_log("DEBUG: Fehlende Thumbnails gefunden: " . count($missing));
+    return $missing;
 }
 
 /**
@@ -135,21 +176,29 @@ function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds):
  * @param string $thumbnailDir Pfad zum Thumbnail-Verzeichnis.
  * @return array Ein assoziatives Array mit 'created' (erfolgreich erstellter Pfad) und 'errors' (Fehlermeldungen).
  */
-function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir, string $thumbnailDir): array
+function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir, string $thumbnailDir, bool $debugMode): array
 {
     $errors = [];
     $createdPath = '';
+    if ($debugMode)
+        error_log("DEBUG: Starte Thumbnail-Generierung für Comic-ID: " . $comicId);
 
     // Erstelle den Zielordner, falls er nicht existiert.
     if (!is_dir($thumbnailDir)) {
         if (!mkdir($thumbnailDir, 0755, true)) {
             $errors[] = "Fehler: Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden. Bitte Berechtigungen prüfen.";
             error_log("Fehler: Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden für Comic-ID $comicId.");
+            if ($debugMode)
+                error_log("DEBUG: Fehler: Zielverzeichnis konnte nicht erstellt werden.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
+        if ($debugMode)
+            error_log("DEBUG: Zielverzeichnis erstellt: " . $thumbnailDir);
     } elseif (!is_writable($thumbnailDir)) {
         $errors[] = "Fehler: Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar. Bitte Berechtigungen prüfen.";
         error_log("Fehler: Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar für Comic-ID $comicId.");
+        if ($debugMode)
+            error_log("DEBUG: Fehler: Zielverzeichnis nicht beschreibbar.");
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -169,10 +218,14 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         if (file_exists($hiresPath)) {
             $sourceImagePath = $hiresPath;
             $sourceImageExtension = $ext;
+            if ($debugMode)
+                error_log("DEBUG: Quellbild in hiresDir gefunden: " . $sourceImagePath);
             break;
         } elseif (file_exists($lowresPath)) {
             $sourceImagePath = $lowresPath;
             $sourceImageExtension = $ext;
+            if ($debugMode)
+                error_log("DEBUG: Quellbild in lowresDir gefunden: " . $sourceImagePath);
             break;
         }
     }
@@ -180,6 +233,8 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
     if (empty($sourceImagePath)) {
         $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden in '$hiresDir' oder '$lowresDir'.";
         error_log("Quellbild für Comic-ID '$comicId' nicht gefunden.");
+        if ($debugMode)
+            error_log("DEBUG: Quellbild nicht gefunden.");
         return ['created' => $createdPath, 'errors' => $errors];
     }
 
@@ -189,9 +244,13 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         if ($imageInfo === false) {
             $errors[] = "Kann Bildinformationen für '$sourceImagePath' nicht abrufen (Comic-ID: $comicId).";
             error_log("Kann Bildinformationen für '$sourceImagePath' nicht abrufen (Comic-ID: $comicId).");
+            if ($debugMode)
+                error_log("DEBUG: Kann Bildinformationen nicht abrufen.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
         list($width, $height, $type) = $imageInfo;
+        if ($debugMode)
+            error_log("DEBUG: Quellbild-Infos: Breite=" . $width . ", Höhe=" . $height . ", Typ=" . $type);
 
         $sourceImage = null;
         switch ($type) {
@@ -207,12 +266,16 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
             default:
                 $errors[] = "Nicht unterstütztes Bildformat für Comic-ID '$comicId': " . $sourceImageExtension . ". Erwartet: JPG, PNG, GIF.";
                 error_log("Nicht unterstütztes Bildformat für Comic-ID '$comicId': " . $sourceImageExtension);
+                if ($debugMode)
+                    error_log("DEBUG: Nicht unterstütztes Bildformat.");
                 return ['created' => $createdPath, 'errors' => $errors];
         }
 
         if (!$sourceImage) {
             $errors[] = "Fehler beim Laden des Bildes für Comic-ID '$comicId' von '$sourceImagePath'.";
             error_log("Fehler beim Laden des Bildes für Comic-ID '$comicId' von '$sourceImagePath'.");
+            if ($debugMode)
+                error_log("DEBUG: Fehler beim Laden des Bildes.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
@@ -221,12 +284,17 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         $ratio = min($targetWidth / $width, $targetHeight / $height); // GEÄNDERT: von max zu min
         $newWidth = $width * $ratio;
         $newHeight = $height * $ratio;
+        if ($debugMode)
+            error_log("DEBUG: Neue Abmessungen: Breite=" . $newWidth . ", Höhe=" . $newHeight);
+
 
         // Erstelle ein neues True-Color-Bild für das Thumbnail
         $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
         if ($tempImage === false) {
             $errors[] = "Fehler beim Erstellen des temporären Bildes für Comic-ID '$comicId'.";
             imagedestroy($sourceImage);
+            if ($debugMode)
+                error_log("DEBUG: Fehler beim Erstellen des temporären Bildes.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
@@ -237,6 +305,9 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         // Berechne Offsets, um das Bild auf dem neuen Canvas zu zentrieren
         $offsetX = ($targetWidth - $newWidth) / 2;
         $offsetY = ($targetHeight - $newHeight) / 2;
+        if ($debugMode)
+            error_log("DEBUG: Offsets: X=" . $offsetX . ", Y=" . $offsetY);
+
 
         // Bild auf die neue Größe und Position resamplen und kopieren
         if (
@@ -256,6 +327,8 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
             $errors[] = "Fehler beim Resampling des Bildes für Comic-ID '$comicId'.";
             imagedestroy($sourceImage);
             imagedestroy($tempImage);
+            if ($debugMode)
+                error_log("DEBUG: Fehler beim Resampling des Bildes.");
             return ['created' => $createdPath, 'errors' => $errors];
         }
 
@@ -263,23 +336,33 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
         $thumbnailPath = $thumbnailDir . $comicId . '.jpg';
         if (imagejpeg($tempImage, $thumbnailPath, 90)) { // 90% Qualität
             $createdPath = $thumbnailPath;
+            if ($debugMode)
+                error_log("DEBUG: Thumbnail erfolgreich gespeichert: " . $thumbnailPath);
         } else {
             $errors[] = "Fehler beim Speichern des Thumbnails für Comic-ID '$comicId' nach '$thumbnailPath'.";
             error_log("Fehler beim Speichern des Thumbnails für Comic-ID '$comicId' nach '$thumbnailPath'.");
+            if ($debugMode)
+                error_log("DEBUG: Fehler beim Speichern des Thumbnails.");
         }
 
         // Speicher freigeben
         imagedestroy($sourceImage);
         imagedestroy($tempImage);
+        if ($debugMode)
+            error_log("DEBUG: Bildspeicher freigegeben.");
 
     } catch (Throwable $e) { // Throwable fängt auch Errors (z.B. Memory Exhaustion) ab
         $errors[] = "Ausnahme/Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " (Code: " . $e->getCode() . " in " . $e->getFile() . " Zeile " . $e->getLine() . ")";
         error_log("Kritischer Fehler bei Comic-ID '$comicId': " . $e->getMessage() . " in " . $e->getFile() . " Zeile " . $e->getLine());
+        if ($debugMode)
+            error_log("DEBUG: Kritischer Fehler: " . $e->getMessage());
     } finally {
         // Führe nach jeder Bildgenerierung eine explizite Garbage Collection durch
         gc_collect_cycles();
         // Füge eine kurze Pause ein, um dem System Zeit zur Ressourcenfreigabe zu geben
         usleep(50000); // 50 Millisekunden Pause
+        if ($debugMode)
+            error_log("DEBUG: Garbage Collection und Pause nach Generierung.");
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }
@@ -287,6 +370,8 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
 // --- AJAX-Anfrage-Handler ---
 // Dieser Block wird nur ausgeführt, wenn eine POST-Anfrage mit der Aktion 'generate_single_thumbnail' gesendet wird.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_thumbnail') {
+    if ($debugMode)
+        error_log("DEBUG: AJAX-Anfrage 'generate_single_thumbnail' erkannt.");
     // Leere und beende den Output Buffer, um sicherzustellen, dass keine unerwünschten Ausgaben gesendet werden.
     ob_end_clean();
     // Temporär Fehleranzeige deaktivieren und Error Reporting unterdrücken, um JSON-Ausgabe nicht zu stören.
@@ -300,6 +385,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (!extension_loaded('gd')) {
         $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen. Thumbnails können nicht generiert werden.";
         error_log("AJAX-Anfrage: GD-Bibliothek nicht geladen.");
+        if ($debugMode)
+            error_log("DEBUG: AJAX-Fehler: GD-Bibliothek nicht geladen.");
         echo json_encode($response);
         exit;
     }
@@ -308,31 +395,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     if (empty($comicId)) {
         $response['message'] = 'Keine Comic-ID für die Generierung angegeben.';
         error_log("AJAX-Anfrage: Keine Comic-ID angegeben.");
+        if ($debugMode)
+            error_log("DEBUG: AJAX-Fehler: Keine Comic-ID angegeben.");
         echo json_encode($response);
         exit;
     }
+    if ($debugMode)
+        error_log("DEBUG: AJAX-Anfrage für Comic-ID: " . $comicId);
 
     // Pfade für die einzelne Generierung (müssen hier neu definiert werden, da es ein separater Request ist)
     $lowresDir = __DIR__ . '/../assets/comic_lowres/';
     $hiresDir = __DIR__ . '/../assets/comic_hires/';
     $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/';
 
-    $result = generateThumbnail($comicId, $lowresDir, $hiresDir, $thumbnailDir);
+    $result = generateThumbnail($comicId, $lowresDir, $hiresDir, $thumbnailDir, $debugMode);
 
     if (empty($result['errors'])) {
         $response['success'] = true;
         $response['message'] = 'Thumbnail für ' . $comicId . ' erfolgreich erstellt.';
         $response['imageUrl'] = '../assets/comic_thumbnails/' . $comicId . '.jpg?' . time(); // Cache-Buster
         $response['comicId'] = $comicId;
+        if ($debugMode)
+            error_log("DEBUG: AJAX-Erfolg für Comic-ID: " . $comicId);
     } else {
         $response['message'] = 'Fehler bei der Erstellung für ' . $comicId . ': ' . implode(', ', $result['errors']);
         error_log("AJAX-Anfrage: Fehler bei der Generierung für Comic-ID '$comicId': " . implode(', ', $result['errors']));
+        if ($debugMode)
+            error_log("DEBUG: AJAX-Fehler für Comic-ID: " . $comicId . ": " . implode(', ', $result['errors']));
     }
     // Überprüfe, ob json_encode einen Fehler hatte
     $jsonOutput = json_encode($response);
     if ($jsonOutput === false) {
         $jsonError = json_last_error_msg();
         error_log("AJAX-Anfrage: json_encode Fehler für Comic-ID '$comicId': " . $jsonError);
+        if ($debugMode)
+            error_log("DEBUG: AJAX-Fehler: JSON-Encoding fehlgeschlagen für Comic-ID: " . $comicId);
         echo json_encode(['success' => false, 'message' => 'Interner Serverfehler: JSON-Encoding fehlgeschlagen.']);
     } else {
         echo $jsonOutput;
@@ -345,18 +442,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // --- Normaler Seitenaufbau (wenn keine AJAX-Anfrage vorliegt) ---
 // Leere den Output Buffer und sende den Inhalt, der bis hierhin gesammelt wurde.
 ob_end_flush();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer geleert und gesendet.");
+
 
 // Variablen für die Anzeige initialisieren
-$allComicIds = getExistingComicIds($lowresDir, $hiresDir);
-$existingThumbnailIds = getExistingThumbnailIds($thumbnailDir);
-$missingThumbnails = findMissingThumbnails($allComicIds, $existingThumbnailIds);
+$allComicIds = getExistingComicIds($lowresDir, $hiresDir, $debugMode);
+$existingThumbnailIds = getExistingThumbnailIds($thumbnailDir, $debugMode);
+$missingThumbnails = findMissingThumbnails($allComicIds, $existingThumbnailIds, $debugMode);
+if ($debugMode)
+    error_log("DEBUG: Initialer Thumbnail-Status ermittelt.");
+
 
 // Gemeinsamen Header einbinden.
 if (file_exists($headerPath)) {
     include $headerPath;
+    if ($debugMode)
+        error_log("DEBUG: Header in generator_thumbnail.php eingebunden.");
 } else {
     // Fallback oder Fehlerbehandlung, falls Header nicht gefunden wird.
     echo "<!DOCTYPE html><html lang=\"de\"><head><meta charset=\"UTF-8\"><title>Fehler</title></head><body><h1>Fehler: Header nicht gefunden!</h1>";
+    if ($debugMode)
+        error_log("DEBUG: Fehler: Header-Datei nicht gefunden.");
 }
 
 // Basis-URL für die Bildanzeige bestimmen
@@ -371,6 +478,8 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
     <div class="content-section">
         <?php if ($gdError): ?>
             <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p>
+            <?php if ($debugMode)
+                error_log("DEBUG: GD-Fehlermeldung angezeigt."); ?>
         <?php endif; ?>
 
         <h2>Status der Thumbnails</h2>
@@ -405,8 +514,12 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
             <p class="status-message status-orange">Es wurden keine Comic-Bilder in den Verzeichnissen
                 `<?php echo htmlspecialchars($lowresDir); ?>` oder `<?php echo htmlspecialchars($hiresDir); ?>` gefunden,
                 die als Basis dienen könnten.</p>
+            <?php if ($debugMode)
+                error_log("DEBUG: Keine Comic-Bilder gefunden-Nachricht angezeigt."); ?>
         <?php elseif (empty($missingThumbnails)): ?>
             <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Thumbnails sind vorhanden.</p>
+            <?php if ($debugMode)
+                error_log("DEBUG: Alle Thumbnails vorhanden-Nachricht angezeigt."); ?>
         <?php else: ?>
             <p class="status-message status-red">Es fehlen <?php echo count($missingThumbnails); ?> Thumbnails.</p>
             <h3>Fehlende Thumbnails (IDs):</h3>
@@ -417,6 +530,8 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
                         data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
                 <?php endforeach; ?>
             </div>
+            <?php if ($debugMode)
+                error_log("DEBUG: Fehlende Thumbnails-Liste angezeigt."); ?>
         <?php endif; ?>
     </div>
 </article>
@@ -764,109 +879,156 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
                 generateButton.style.display = 'none';
                 togglePauseResumeButton.style.display = 'inline-block';
                 if (isPaused) {
+                    togglePauseResumeButton.textContent = 'Fortsetzen';
+                    togglePauseResumeButton.className = 'status-green-button';
                     progressText.textContent = `Generierung pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
+                } else {
+                    togglePauseResumeButton.textContent = 'Pause';
+                    togglePauseResumeButton.className = 'status-orange-button'; // Könnte eine neue Klasse sein
                 }
-                updateButtonState(); // Button-Text und Sichtbarkeit aktualisieren
-                if (!isPaused) { // Wenn gerade fortgesetzt wurde
-                    processNextImage(); // Generierung fortsetzen
-                }
-            });
-    }
-
-    async function processNextImage() {
-        if (isPaused) {
-            // Wenn pausiert, beende die Ausführung, bis fortgesetzt wird
-            return;
+            } else {
+                // Generierung ist nicht aktiv (z.B. vor dem Start oder nach Abschluss)
+                generateButton.style.display = 'inline-block';
+                generateButton.disabled = false;
+                togglePauseResumeButton.style.display = 'none';
+            }
         }
 
-        if (remainingIds.length === 0) {
-            // Alle Bilder verarbeitet
-            loadingSpinner.style.display = 'none';
-            progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
-            isGenerationActive = false; // Generierung beendet
-            updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
-
-            if (errorCount > 0) {
-                overallStatusMessage.textContent = `Generierung abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+        // Event Listener für den Generate-Button
+        generateButton.addEventListener('click', function () {
+            if (remainingIds.length === 0) {
+                overallStatusMessage.textContent = 'Keine Thumbnails zum Generieren vorhanden.';
                 overallStatusMessage.className = 'status-message status-orange';
-                errorHeaderMessage.style.display = 'block';
-            } else {
-                overallStatusMessage.textContent = `Alle ${createdCount} Thumbnails erfolgreich generiert!`;
-                overallStatusMessage.className = 'status-message status-green';
+                generationResultsSection.style.display = 'block';
+                return;
             }
-            return;
-        }
 
-        const currentId = remainingIds.shift(); // Nächste ID aus der Liste nehmen
-        progressText.textContent = `Generiere Thumbnail ${createdCount + errorCount + 1} von ${initialMissingIds.length} (${currentId})...`;
+            // UI-Elemente zurücksetzen
+            createdImagesContainer.innerHTML = '';
+            errorsList.innerHTML = '';
+            errorHeaderMessage.style.display = 'none';
+            overallStatusMessage.style.display = 'none'; // Verstecke die allgemeine Statusmeldung beim Start
+            generationResultsSection.style.display = 'block';
 
-        try {
-            const response = await fetch(window.location.href, { // Anfrage an dasselbe PHP-Skript
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'generate_single_thumbnail', // Spezifische Aktion für AJAX
-                    comic_id: currentId
-                })
-            });
+            createdCount = 0;
+            errorCount = 0;
+            isPaused = false;
+            isGenerationActive = true; // Generierung beginnt
+            updateButtonState(); // Buttons anpassen (Generieren aus, Toggle an)
 
-            let data;
+            loadingSpinner.style.display = 'block';
+            processNextImage();
+        });
+
+        // Event Listener für den Pause/Resume-Button
+        togglePauseResumeButton.addEventListener('click', function () {
+            isPaused = !isPaused;
+            updateButtonState(); // Button-Text und Sichtbarkeit aktualisieren
+            if (!isPaused) { // Wenn gerade fortgesetzt wurde
+                processNextImage(); // Generierung fortsetzen
+            }
+        });
+
+        async function processNextImage() {
+            if (isPaused) {
+                // Wenn pausiert, beende die Ausführung, bis fortgesetzt wird
+                return;
+            }
+
+            if (remainingIds.length === 0) {
+                // Alle Bilder verarbeitet
+                loadingSpinner.style.display = 'none';
+                progressText.textContent = `Generierung abgeschlossen. ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+                isGenerationActive = false; // Generierung beendet
+                updateButtonState(); // Buttons anpassen (Toggle aus, Generieren an)
+
+                if (errorCount > 0) {
+                    overallStatusMessage.textContent = `Generierung abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
+                    overallStatusMessage.className = 'status-message status-orange';
+                    errorHeaderMessage.style.display = 'block';
+                } else {
+                    overallStatusMessage.textContent = `Alle ${createdCount} Thumbnails erfolgreich generiert!`;
+                    overallStatusMessage.className = 'status-message status-green';
+                }
+                overallStatusMessage.style.display = 'block'; // Zeige die allgemeine Statusmeldung an
+                return;
+            }
+
+            const currentId = remainingIds.shift(); // Nächste ID aus der Liste nehmen
+            progressText.textContent = `Generiere Thumbnail ${createdCount + errorCount + 1} von ${initialMissingIds.length} (${currentId})...`;
+
             try {
-                data = await response.json();
-            } catch (jsonError) {
-                const responseText = await response.text();
-                throw new Error(`Fehler beim Parsen der JSON-Antwort für ${currentId}: ${jsonError.message}. Antwort war: ${responseText.substring(0, 200)}...`);
-            }
+                const response = await fetch(window.location.href, { // Anfrage an dasselbe PHP-Skript
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        action: 'generate_single_thumbnail', // Spezifische Aktion für AJAX
+                        comic_id: currentId
+                    })
+                });
 
-
-            if (data.success) {
-                createdCount++;
-                const imageDiv = document.createElement('div');
-                imageDiv.className = 'image-item';
-                imageDiv.innerHTML = `
-                    <img src="${data.imageUrl}" alt="Thumbnail ${data.comicId}">
-                    <span>${data.comicId}</span>
-                `;
-                createdImagesContainer.appendChild(imageDiv);
-
-                // Entferne das Element aus dem Grid der fehlenden Bilder
-                if (missingThumbnailsGrid) {
-                    const missingItemSpan = missingThumbnailsGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
-                    if (missingItemSpan) {
-                        missingItemSpan.remove();
-                    }
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    const responseText = await response.text();
+                    throw new Error(`Fehler beim Parsen der JSON-Antwort für ${currentId}: ${jsonError.message}. Antwort war: ${responseText.substring(0, 200)}...`);
                 }
 
-            } else {
+
+                if (data.success) {
+                    createdCount++;
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'image-item';
+                    imageDiv.innerHTML = `
+                        <img src="${data.imageUrl}" alt="Thumbnail ${data.comicId}">
+                        <span>${data.comicId}</span>
+                    `;
+                    createdImagesContainer.appendChild(imageDiv);
+
+                    // Entferne das Element aus dem Grid der fehlenden Bilder
+                    if (missingThumbnailsGrid) {
+                        const missingItemSpan = missingThumbnailsGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
+                        if (missingItemSpan) {
+                            missingItemSpan.remove();
+                        }
+                    }
+
+                } else {
+                    errorCount++;
+                    const errorItem = document.createElement('li');
+                    errorItem.textContent = `Fehler für ${currentId}: ${data.message}`;
+                    errorsList.appendChild(errorItem);
+                    errorHeaderMessage.style.display = 'block';
+                }
+            } catch (error) {
                 errorCount++;
                 const errorItem = document.createElement('li');
-                errorItem.textContent = `Fehler für ${currentId}: ${data.message}`;
+                errorItem.textContent = `Netzwerkfehler oder unerwartete Antwort für ${currentId}: ${error.message}`;
                 errorsList.appendChild(errorItem);
                 errorHeaderMessage.style.display = 'block';
             }
-        } catch (error) {
-            errorCount++;
-            const errorItem = document.createElement('li');
-            errorItem.textContent = `Netzwerkfehler oder unerwartete Antwort für ${currentId}: ${error.message}`;
-            errorsList.appendChild(errorItem);
-            errorHeaderMessage.style.display = 'block';
-        }
 
-        // Fügen Sie hier eine kleine Verzögerung ein, bevor das nächste Bild verarbeitet wird
-        setTimeout(() => {
-            processNextImage();
-        }, 1000); // 1000 Millisekunden (1 Sekunde) Verzögerung
-    }
-});
+            // Fügen Sie hier eine kleine Verzögerung ein, bevor das nächste Bild verarbeitet wird
+            setTimeout(() => {
+                processNextImage();
+            }, 1000); // 1000 Millisekunden (1 Sekunde) Verzögerung
+        }
+        updateButtonState(); // Initialen Zustand der Buttons setzen
+    });
 </script>
 
 <?php
 // Gemeinsamen Footer einbinden.
 if (file_exists($footerPath)) {
     include $footerPath;
+    if ($debugMode)
+        error_log("DEBUG: Footer in generator_thumbnail.php eingebunden.");
 } else {
     echo "</body></html>"; // HTML schließen, falls Footer fehlt.
+    if ($debugMode)
+        error_log("DEBUG: Fehler: Footer-Datei nicht gefunden.");
 }
 ?>

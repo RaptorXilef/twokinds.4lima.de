@@ -3,10 +3,19 @@
  * Diese Datei erklärt die Lizenzbedingungen für die Nutzung der Comic-Inhalte.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+	error_log("DEBUG: lizenz.php wird geladen.");
+
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Lizenz';
 $pageHeader = 'Lizenz'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
 include __DIR__ . "/src/layout/header.php";
+if ($debugMode)
+	error_log("DEBUG: Header in lizenz.php eingebunden.");
 ?>
 <p>Von Zeit zu Zeit kommen einige Leute auf Tom zu und berichten, dass eines Seiner Bilder von jemand anderem
 	„gestohlen“ wurde. Normalerweise ist es eine bearbeitete Seite aus dem Comic oder ein neu eingefärbtes Bild aus
@@ -56,4 +65,6 @@ Quelle: <a href="https://twokinds.keenspot.com/license/"> https://twokinds.keens
 <?php
 // Binde den gemeinsamen Footer ein.
 include __DIR__ . "/src/layout/footer.php";
+if ($debugMode)
+	error_log("DEBUG: Footer in lizenz.php eingebunden.");
 ?>

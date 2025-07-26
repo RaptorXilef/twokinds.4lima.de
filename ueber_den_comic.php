@@ -3,24 +3,38 @@
  * Diese Datei enthält Informationen über den Comic, den Künstler und den Übersetzer.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+	error_log("DEBUG: ueber_den_comic.php wird geladen.");
+
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 // Der Pfad ist relativ zum aktuellen Verzeichnis (infos.php liegt im Root-Verzeichnis).
 $comicDataPath = __DIR__ . '/src/config/comic_var.json';
 $comicData = [];
 if (file_exists($comicDataPath)) {
-	$comicData = json_decode(file_get_contents($comicDataPath), true);
+	$jsonContent = file_get_contents($comicDataPath);
+	$comicData = json_decode($jsonContent, true);
 	if (json_last_error() !== JSON_ERROR_NONE) {
-		error_log("Fehler beim Dekodieren von comic_var.json: " . json_last_error_msg());
+		if ($debugMode)
+			error_log("Fehler beim Dekodieren von comic_var.json in ueber_den_comic.php: " . json_last_error_msg());
 		$comicData = []; // Setze auf leeres Array bei Fehler
 	}
+	if ($debugMode)
+		error_log("DEBUG: comic_var.json in ueber_den_comic.php erfolgreich geladen.");
 } else {
-	error_log("comic_var.json nicht gefunden unter: " . $comicDataPath);
+	if ($debugMode)
+		error_log("Fehler: comic_var.json nicht gefunden unter: " . $comicDataPath);
 }
 
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Über';
 $pageHeader = 'Über'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
 include __DIR__ . "/src/layout/header.php";
+if ($debugMode)
+	error_log("DEBUG: Header in ueber_den_comic.php eingebunden.");
 ?>
 <section>
 	<h2 class="page-header">Über den Comic</h2>
@@ -45,6 +59,8 @@ include __DIR__ . "/src/layout/header.php";
 				}
 			}
 		}
+		if ($debugMode)
+			error_log("DEBUG: Comicseiten: {$comicPageCount}, Lückenfüller: {$fillerPageCount}");
 
 		echo '<b>Comicseiten:</b> ' . $comicPageCount . '<br>';
 		echo '<b>Lückenfüller:</b> ' . $fillerPageCount;
@@ -69,7 +85,8 @@ include __DIR__ . "/src/layout/header.php";
 	<p><b>Rassen:</b> Bei TwoKind gibt es drei verschiedene Hauptarten von Rassen: <i>Menschen</i>, <i>Keidran</i>, und
 		<i>Basitins</i>. Der größte Teil des Konflikts dreht sich jedoch um die ersten beiden. Die Menschen sind die
 		üblichen primitiven, zweibeinigen, empfindungsfähigen Tiere. Aufgrund ihrer hohen Intelligenz und natürlichen
-		Neugier sind sie den beiden anderen Rassen technologisch überlegen.</p>
+		Neugier sind sie den beiden anderen Rassen technologisch überlegen.
+	</p>
 
 	<p><i>Keidran</i> sind hunde- und katzenartige, zweibeinige, empfindungsfähige Tiere. Es gibt sie in einer Vielzahl
 		von Formen und Größen, darunter: Tiger, Großkatzen, Hunde, Wölfe und Füchse. Sie sind eine kurzlebige, aber
@@ -106,6 +123,8 @@ include __DIR__ . "/src/layout/header.php";
 
 		// Alter berechnen.
 		$alter = date_diff(date_create($geburtstag), date_create($heute))->y;
+		if ($debugMode)
+			error_log("DEBUG: Alter des Künstlers: {$alter} Jahre.");
 
 		echo '<b>Alter:</b> ' . $alter . ' Jahre<br>';
 		?>
@@ -152,6 +171,8 @@ include __DIR__ . "/src/layout/header.php";
 
 		// Alter berechnen.
 		$alter1 = date_diff(date_create($geburtstag1), date_create($heute1))->y;
+		if ($debugMode)
+			error_log("DEBUG: Alter des Übersetzers: {$alter1} Jahre.");
 
 		echo '<b>Alter:</b> ' . $alter1 . ' Jahre<br>';
 		?>
@@ -196,4 +217,6 @@ include __DIR__ . "/src/layout/header.php";
 <?php
 // Binde den gemeinsamen Footer ein.
 include __DIR__ . "/src/layout/footer.php";
+if ($debugMode)
+	error_log("DEBUG: Footer in ueber_den_comic.php eingebunden.");
 ?>

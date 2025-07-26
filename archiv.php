@@ -8,6 +8,13 @@ error_reporting(E_ALL);
  * Die Seite verwendet ein aufklappbares Sektionsdesign mit Lazy Loading für Thumbnails.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: archiv.php wird geladen.");
+
 // === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
 // Diese Logik wird hier dupliziert, um sicherzustellen, dass $baseUrl
 // verfügbar ist, bevor $additionalScripts und $additionalHeadContent definiert werden,
@@ -22,6 +29,9 @@ $scriptDir = rtrim(dirname($scriptName), '/');
 // In diesem Fall ist $baseUrl einfach das Protokoll und der Host.
 // Andernfalls ist es Protokoll + Host + Skriptverzeichnis.
 $baseUrl = $protocol . $host . ($scriptDir === '' ? '/' : $scriptDir . '/');
+
+if ($debugMode)
+    error_log("DEBUG: Basis-URL in archiv.php: " . $baseUrl);
 
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Archiv';
@@ -38,41 +48,51 @@ $comicVarJsonPath = __DIR__ . '/src/config/comic_var.json';
 $placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg'; // Pfad zum Platzhalterbild
 
 // Lade die Archivkapitel-Daten
-function loadArchiveChapters(string $path): array
+function loadArchiveChapters(string $path, bool $debugMode): array
 {
     if (!file_exists($path) || filesize($path) === 0) {
+        if ($debugMode)
+            error_log("DEBUG: Archivkapitel-Datei nicht gefunden oder leer: " . $path);
         return [];
     }
     $content = file_get_contents($path);
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log("Fehler beim Dekodieren von archive_chapters.json: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("Fehler beim Dekodieren von archive_chapters.json: " . json_last_error_msg());
         return [];
     }
     // Sortiere nach chapterId, um Konsistenz zu gewährleisten
     usort($data, function ($a, $b) {
         return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
     });
+    if ($debugMode)
+        error_log("DEBUG: Archivkapitel erfolgreich geladen.");
     return $data;
 }
 
 // Lade die Comic-Variablen-Daten
-function loadComicVar(string $path): array
+function loadComicVar(string $path, bool $debugMode): array
 {
     if (!file_exists($path) || filesize($path) === 0) {
+        if ($debugMode)
+            error_log("DEBUG: Comic-Variablen-Datei nicht gefunden oder leer: " . $path);
         return [];
     }
     $content = file_get_contents($path);
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        error_log("Fehler beim Dekodieren von comic_var.json: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("Fehler beim Dekodieren von comic_var.json: " . json_last_error_msg());
         return [];
     }
+    if ($debugMode)
+        error_log("DEBUG: Comic-Variablen erfolgreich geladen.");
     return $data;
 }
 
-$archiveChapters = loadArchiveChapters($archiveChaptersJsonPath);
-$comicData = loadComicVar($comicVarJsonPath);
+$archiveChapters = loadArchiveChapters($archiveChaptersJsonPath, $debugMode);
+$comicData = loadComicVar($comicVarJsonPath, $debugMode);
 
 // Erstelle eine Map von chapterId zu Comic-IDs aus comic_var.json
 $comicsByChapter = [];
@@ -85,6 +105,8 @@ foreach ($comicData as $comicId => $details) {
         $comicsByChapter[$chapterId][$comicId] = $details; // Speichere den gesamten Comic-Datensatz
     }
 }
+if ($debugMode)
+    error_log("DEBUG: Comics nach Kapiteln gruppiert.");
 
 // Füge fehlende Kapitel aus comic_var.json hinzu, falls sie nicht in archive_chapters.json sind
 $existingChapterIds = array_column($archiveChapters, 'chapterId');
@@ -95,6 +117,8 @@ foreach ($comicsByChapter as $chId => $comics) {
             'title' => 'Dieses Kapitel wird im Moment bearbeitet.',
             'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.'
         ];
+        if ($debugMode)
+            error_log("DEBUG: Fehlendes Kapitel {$chId} hinzugefügt.");
     }
 }
 
@@ -102,6 +126,8 @@ foreach ($comicsByChapter as $chId => $comics) {
 usort($archiveChapters, function ($a, $b) {
     return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
 });
+if ($debugMode)
+    error_log("DEBUG: Kapitel nach ID sortiert.");
 
 
 // === WICHTIG: Entferne die explizite JS-Einbindung hier! ===
@@ -115,6 +141,8 @@ $additionalHeadContent = '';
 
 // Binde den gemeinsamen Header ein. Dies muss vor jeglichem HTML-Output geschehen.
 include __DIR__ . '/src/layout/header.php';
+if ($debugMode)
+    error_log("DEBUG: Header in archiv.php eingebunden.");
 ?>
 
 <article>
@@ -125,11 +153,15 @@ include __DIR__ . '/src/layout/header.php';
 
     <?php if (empty($archiveChapters)): ?>
         <p>Es sind noch keine Archivkapitel vorhanden.</p>
+        <?php if ($debugMode)
+            error_log("DEBUG: Keine Archivkapitel zum Anzeigen."); ?>
     <?php else: ?>
         <?php foreach ($archiveChapters as $chapter):
             $chapterId = $chapter['chapterId'] ?? 'N/A';
             $chapterTitle = !empty(trim(strip_tags($chapter['title'] ?? '', '<b><i><u><p><br>'))) ? $chapter['title'] : 'Dieses Kapitel wird im Moment bearbeitet.';
             $chapterDescription = !empty(trim(strip_tags($chapter['description'] ?? '', '<b><i><u><p><br>'))) ? $chapter['description'] : 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.';
+            if ($debugMode)
+                error_log("DEBUG: Verarbeite Kapitel ID: {$chapterId} mit Titel: {$chapterTitle}");
             ?>
             <section class="chapter collapsible-section" data-ch-id="<?php echo htmlspecialchars($chapterId); ?>">
                 <h2 class="collapsible-header"><?php echo $chapterTitle; ?><span class="arrow-left jsdep"></span></h2>
@@ -144,6 +176,8 @@ include __DIR__ . '/src/layout/header.php';
 
                         if (empty($comicsForThisChapter)): ?>
                             <p>Für dieses Kapitel sind noch keine Comics verfügbar.</p>
+                            <?php if ($debugMode)
+                                error_log("DEBUG: Keine Comics für Kapitel {$chapterId} gefunden."); ?>
                         <?php else: ?>
                             <?php foreach ($comicsForThisChapter as $comicId => $comicDetails):
                                 $comicImagePath = "assets/comic_thumbnails/{$comicId}.jpg";
@@ -152,6 +186,8 @@ include __DIR__ . '/src/layout/header.php';
                                 $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId) . '.php'; // Link zur Comic-Seite
                                 $comicDate = DateTime::createFromFormat('Ymd', $comicId);
                                 $displayDate = $comicDate ? $comicDate->format('d.m.Y') : 'Unbekanntes Datum';
+                                if ($debugMode)
+                                    error_log("DEBUG: Zeige Comic {$comicId} für Kapitel {$chapterId}. Bildpfad: {$displayImagePath}");
                                 ?>
                                 <a href="<?php echo $comicPagePath; ?>" title="Comic vom <?php echo htmlspecialchars($displayDate); ?>">
                                     <span><?php echo htmlspecialchars($displayDate); ?></span>
@@ -172,4 +208,6 @@ include __DIR__ . '/src/layout/header.php';
 <?php
 // Binde den gemeinsamen Footer ein.
 include __DIR__ . '/src/layout/footer.php';
+if ($debugMode)
+    error_log("DEBUG: Footer in archiv.php eingebunden.");
 ?>

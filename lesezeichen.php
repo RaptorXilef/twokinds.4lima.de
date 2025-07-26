@@ -4,9 +4,18 @@
  * Die Lesezeichen werden aus dem Browser-spezifischen localStorage gelesen.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: lesezeichen.php wird geladen.");
+
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 // Dies ist notwendig, um die Titel der Lesezeichen korrekt anzuzeigen.
 require_once __DIR__ . '/src/components/load_comic_data.php';
+if ($debugMode)
+    error_log("DEBUG: load_comic_data.php in lesezeichen.php eingebunden.");
 
 // === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
 // Diese Logik wird hier dupliziert, um sicherzustellen, dass $baseUrl
@@ -22,6 +31,8 @@ $scriptDir = rtrim(dirname($scriptName), '/');
 // In diesem Fall ist $baseUrl einfach das Protokoll und der Host.
 // Andernfalls ist es Protokoll + Host + Skriptverzeichnis.
 $baseUrl = $protocol . $host . ($scriptDir === '' ? '/' : $scriptDir . '/');
+if ($debugMode)
+    error_log("DEBUG: Basis-URL in lesezeichen.php: " . $baseUrl);
 
 
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
@@ -31,6 +42,8 @@ $pageHeader = 'Deine Lesezeichen'; // Dieser Wert wird im Hauptinhaltsbereich an
 // Füge die comic.js als zusätzliches Skript hinzu, da sie die Lesezeichen-Logik enthält.
 // Der Cache-Buster (c=20250722) sollte beibehalten werden, um Browser-Caching zu umgehen.
 $additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($baseUrl) . "src/layout/js/comic.js?c=20250722'></script>";
+if ($debugMode)
+    error_log("DEBUG: comic.js als zusätzliches Skript in lesezeichen.php hinzugefügt.");
 
 // Die allgemeine Seitenbeschreibung für SEO und Social Media.
 $siteDescription = 'Verwalte und zeige deine gespeicherten Comic-Lesezeichen an.';
@@ -40,6 +53,8 @@ $viewportContent = 'width=1099'; // Konsistent mit Original für das Design.
 
 // Binde den gemeinsamen Header ein.
 include __DIR__ . "/src/layout/header.php";
+if ($debugMode)
+    error_log("DEBUG: Header in lesezeichen.php eingebunden.");
 ?>
 
 <div id="bookmarksPage" class="bookmarks-page">
@@ -94,4 +109,8 @@ include __DIR__ . "/src/layout/header.php";
 </div>
 
 
-<?php include __DIR__ . "/src/layout/footer.php"; ?>
+<?php
+include __DIR__ . "/src/layout/footer.php";
+if ($debugMode)
+    error_log("DEBUG: Footer in lesezeichen.php eingebunden.");
+?>

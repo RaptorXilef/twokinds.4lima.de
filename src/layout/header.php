@@ -13,6 +13,10 @@
  * @param string $robotsContent Inhalt des robots-Meta-Tags (Standard: "index, follow").
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+/* $debugMode = false; */
+
 // Setzt das maximale Ausführungszeitlimit für das Skript, um Timeouts bei größeren Operationen zu vermeiden.
 set_time_limit(300);
 
@@ -52,20 +56,14 @@ if ($isLocal) {
     }
 
     $baseUrl = $protocol . $host . $subfolderPath;
-    error_log("DEBUG: Lokale Basis-URL (Header - Refined): " . $baseUrl);
+    if ($debugMode)
+        error_log("DEBUG: Lokale Basis-URL (Header - Refined): " . $baseUrl);
 } else {
     $baseUrl = 'https://twokinds.4lima.de/';
-    error_log("DEBUG: Live Basis-URL (Header): " . $baseUrl);
+    if ($debugMode)
+        error_log("DEBUG: Live Basis-URL (Header): " . $baseUrl);
 }
 // === Ende Dynamische Basis-URL Bestimmung ===
-
-
-
-
-
-
-
-
 
 // Basis-Dateiname der aktuellen PHP-Datei ohne Erweiterung, wird für den Standard-Titel verwendet.
 $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
@@ -124,8 +122,6 @@ $commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ .
     <!-- Standard-Stylesheets für das Hauptdesign. -->
     <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main.css?c=20250524">
     <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524">
-
-
 
 
     <!-- Favicons für verschiedene Browser und Geräte. -->

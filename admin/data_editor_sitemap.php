@@ -8,14 +8,27 @@
  * und die Gesamt-Sitemap wird gespeichert.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: data_editor_sitemap.php wird geladen.");
+
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
 ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in data_editor_sitemap.php gestartet.");
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session gestartet in data_editor_sitemap.php.");
 
 // Logout-Logik: Muss vor dem Sicherheitscheck erfolgen.
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion erkannt.");
     // Zerstöre alle Session-Variablen.
     $_SESSION = array();
 
@@ -44,11 +57,15 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
 
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von data_editor_sitemap.php.");
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
     ob_end_clean(); // Output Buffer leeren, da wir umleiten
     header('Location: index.php');
     exit;
 }
+if ($debugMode)
+    error_log("DEBUG: Admin in data_editor_sitemap.php angemeldet.");
 
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
@@ -57,16 +74,25 @@ $sitemapJsonPath = __DIR__ . '/../src/config/sitemap.json';
 // Pfad zum Comic-Verzeichnis ist von Hauptverzeichnis/admin/ -> Hauptverzeichnis/comic/
 $webRootPath = realpath(__DIR__ . '/../'); // Der tatsächliche Webroot
 $comicDirPath = $webRootPath . '/comic/'; // Absoluter Pfad zum Comic-Verzeichnis
+if ($debugMode) {
+    error_log("DEBUG: Pfade definiert: sitemapJsonPath=" . $sitemapJsonPath . ", comicDirPath=" . $comicDirPath);
+}
 
 // Konstante für die Anzahl der Elemente pro Seite für die Comic-Tabelle
 if (!defined('COMIC_PAGES_PER_PAGE')) {
     define('COMIC_PAGES_PER_PAGE', 50);
+    if ($debugMode)
+        error_log("DEBUG: COMIC_PAGES_PER_PAGE definiert: " . COMIC_PAGES_PER_PAGE);
 }
 
 // Setze Parameter für den Header.
 $pageTitle = 'Sitemap Editor';
 $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow'; // Admin-Seiten nicht crawlen
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
 
 $message = '';
 $messageType = ''; // 'success' or 'error'
@@ -76,20 +102,35 @@ $messageType = ''; // 'success' or 'error'
  * Wenn 'loc' fehlt, wird es aus 'path' und 'name' zusammengesetzt.
  * Wenn 'name' oder 'path' fehlen, werden sie aus 'loc' abgeleitet.
  * @param string $path Der Pfad zur JSON-Datei.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array Die dekodierten Daten als assoziatives Array oder ein leeres Array im Fehlerfall.
  */
-function loadSitemapData(string $path): array
+function loadSitemapData(string $path, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: loadSitemapData() aufgerufen für: " . basename($path));
     if (!file_exists($path)) {
+        if ($debugMode)
+            error_log("DEBUG: Sitemap-JSON-Datei nicht gefunden: " . $path);
         return ['pages' => []];
     }
     $content = file_get_contents($path);
+    if ($content === false) {
+        error_log("FEHLER: loadSitemapData: Fehler beim Lesen des Inhalts von sitemap.json: " . $path);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Lesen des Inhalts von: " . $path);
+        return ['pages' => []];
+    }
 
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         error_log("FEHLER: loadSitemapData: Fehler beim Dekodieren von sitemap.json: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren von sitemap.json: " . json_last_error_msg());
         return ['pages' => []];
     }
+    if ($debugMode)
+        error_log("DEBUG: Sitemap-Daten erfolgreich geladen und dekodiert.");
 
     $pages = isset($data['pages']) && is_array($data['pages']) ? $data['pages'] : [];
     $sanitizedPages = [];
@@ -104,6 +145,8 @@ function loadSitemapData(string $path): array
 
         // Logik zur Konsolidierung/Ableitung der Felder
         if (empty($loc)) {
+            if ($debugMode)
+                error_log("DEBUG: 'loc' ist leer für einen Eintrag. Versuche Ableitung.");
             // Wenn 'loc' fehlt, aber 'name' vorhanden ist, 'loc' aus 'path' und 'name' zusammensetzen
             if (!empty($name)) {
                 $normalizedPath = rtrim($path, '/\\');
@@ -113,15 +156,23 @@ function loadSitemapData(string $path): array
                     $normalizedPath .= '/';
                 }
                 $loc = $normalizedPath . $name;
+                if ($debugMode)
+                    error_log("DEBUG: 'loc' aus 'path' und 'name' abgeleitet: " . $loc);
             } else {
                 // Wenn weder 'loc' noch 'name' vorhanden sind, Eintrag überspringen
                 error_log("WARNUNG: loadSitemapData: Eintrag mit unzureichenden Daten übersprungen (weder 'loc' noch 'name' vorhanden): " . print_r($page, true));
+                if ($debugMode)
+                    error_log("DEBUG: Eintrag übersprungen: Weder 'loc' noch 'name' vorhanden.");
                 continue;
             }
         } else { // 'loc' ist vorhanden
+            if ($debugMode)
+                error_log("DEBUG: 'loc' ist vorhanden: " . $loc);
             // Wenn 'name' fehlt, aus 'loc' ableiten
             if (empty($name)) {
                 $name = basename($loc);
+                if ($debugMode)
+                    error_log("DEBUG: 'name' aus 'loc' abgeleitet: " . $name);
             }
             // Wenn 'path' fehlt oder nicht konsistent ist, aus 'loc' ableiten
             // Nur ableiten, wenn der aktuelle Pfad nicht schon der erwartete Basispfad für Comic-Seiten ist
@@ -134,6 +185,8 @@ function loadSitemapData(string $path): array
                 } else {
                     $path = $derivedPath . '/';
                 }
+                if ($debugMode)
+                    error_log("DEBUG: 'path' aus 'loc' abgeleitet: " . $path);
             }
         }
 
@@ -147,10 +200,16 @@ function loadSitemapData(string $path): array
                 'changefreq' => $changefreq,
             ];
             $sanitizedPages[] = $sanitizedPage;
+            if ($debugMode)
+                error_log("DEBUG: Bereinigte Seite hinzugefügt: " . $loc);
         } else {
             error_log("WARNUNG: loadSitemapData: Eintrag nach Bereinigung immer noch unvollständig (loc oder name leer): " . print_r($sanitizedPage, true));
+            if ($debugMode)
+                error_log("DEBUG: Eintrag nach Bereinigung immer noch unvollständig.");
         }
     }
+    if ($debugMode)
+        error_log("DEBUG: " . count($sanitizedPages) . " Seiten nach Bereinigung.");
     return ['pages' => $sanitizedPages];
 }
 
@@ -158,10 +217,13 @@ function loadSitemapData(string $path): array
  * Speichert Sitemap-Daten in die JSON-Datei.
  * @param string $path Der Pfad zur JSON-Datei.
  * @param array $data Die zu speichernden Daten.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveSitemapData(string $path, array $data): bool
+function saveSitemapData(string $path, array $data, bool $debugMode): bool
 {
+    if ($debugMode)
+        error_log("DEBUG: saveSitemapData() aufgerufen für: " . basename($path));
     if (isset($data['pages']) && is_array($data['pages'])) {
         usort($data['pages'], function ($a, $b) {
             // Sicherstellen, dass 'loc' existiert, bevor strcmp aufgerufen wird
@@ -169,6 +231,8 @@ function saveSitemapData(string $path, array $data): bool
             $locB = isset($b['loc']) ? $b['loc'] : '';
             return strcmp($locA, $locB);
         });
+        if ($debugMode)
+            error_log("DEBUG: Seiten nach 'loc' sortiert.");
     }
 
     // Sicherstellen, dass nur die relevanten Felder für die JSON-Ausgabe enthalten sind
@@ -183,32 +247,50 @@ function saveSitemapData(string $path, array $data): bool
         ];
     }
     $data['pages'] = $outputPages; // Überschreibe mit den bereinigten Daten
+    if ($debugMode)
+        error_log("DEBUG: Daten für Speicherung bereinigt.");
 
     $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     if ($jsonContent === false) {
         error_log("FEHLER: saveSitemapData: Fehler beim Kodieren von Sitemap-Daten: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Kodieren von Sitemap-Daten: " . json_last_error_msg());
         return false;
     }
     if (file_put_contents($path, $jsonContent) === false) {
         error_log("FEHLER: saveSitemapData: Fehler beim Schreiben der Sitemap-Daten nach " . $path);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Schreiben der Sitemap-Daten nach " . $path);
         return false;
     }
+    if ($debugMode)
+        error_log("DEBUG: Sitemap-Daten erfolgreich gespeichert.");
     return true;
 }
 
 /**
  * Scannt das Comic-Verzeichnis nach PHP-Dateien im YYYYMMDD.php Format.
  * @param string $dirPath Der Pfad zum Comic-Verzeichnis.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array Eine Liste von Dateinamen (z.B. '20250724.php'), alphabetisch sortiert.
  */
-function scanComicDirectory(string $dirPath): array
+function scanComicDirectory(string $dirPath, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: scanComicDirectory() aufgerufen für: " . $dirPath);
     $comicFiles = [];
     if (!is_dir($dirPath)) {
         error_log("WARNUNG: scanComicDirectory: Comic-Verzeichnis nicht gefunden: " . $dirPath);
+        if ($debugMode)
+            error_log("DEBUG: Comic-Verzeichnis nicht gefunden: " . $dirPath);
         return [];
     }
     $files = scandir($dirPath);
+    if ($files === false) {
+        if ($debugMode)
+            error_log("DEBUG: scandir() fehlgeschlagen für " . $dirPath);
+        return [];
+    }
     foreach ($files as $file) {
         // Ignoriere . und ..
         if ($file === '.' || $file === '..') {
@@ -216,27 +298,42 @@ function scanComicDirectory(string $dirPath): array
         }
         // Ignoriere comic/index.php
         if ($file === 'index.php') {
+            if ($debugMode)
+                error_log("DEBUG: comic/index.php übersprungen.");
             continue;
         }
         // Prüfe auf YYYYMMDD.php Format
         if (preg_match('/^\d{8}\.php$/', $file)) {
             $comicFiles[] = $file;
+            if ($debugMode)
+                error_log("DEBUG: Comic-Datei gefunden: " . $file);
+        } else {
+            if ($debugMode)
+                error_log("DEBUG: Datei übersprungen (kein YYYYMMDD.php Format): " . $file);
         }
     }
     sort($comicFiles); // Alphabetisch sortieren
+    if ($debugMode)
+        error_log("DEBUG: " . count($comicFiles) . " Comic-Dateien im Verzeichnis gefunden und sortiert.");
     return $comicFiles;
 }
 
 // Verarbeite POST-Anfragen zum Speichern (AJAX-Handling)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
+    if ($debugMode)
+        error_log("DEBUG: POST-Anfrage mit application/json Content-Type erkannt.");
     $input = file_get_contents('php://input');
     $requestData = json_decode($input, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'error', 'message' => 'Fehler beim Dekodieren der JSON-Daten: ' . json_last_error_msg()]);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren der empfangenen JSON-Daten: " . json_last_error_msg());
         exit;
     }
+    if ($debugMode)
+        error_log("DEBUG: JSON-Daten erfolgreich empfangen und dekodiert.");
 
     $allPagesToSave = [];
 
@@ -253,6 +350,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             // Validierung: loc und name dürfen nicht leer sein
             if (empty($loc) || empty($name)) {
                 error_log("WARNUNG: Speichern: Eintrag mit leerem 'loc' oder 'name' übersprungen: " . print_r($page, true));
+                if ($debugMode)
+                    error_log("DEBUG: Eintrag mit leerem 'loc' oder 'name' übersprungen beim Speichern.");
                 continue; // Zeile ignorieren, wenn loc oder name leer ist
             }
 
@@ -263,23 +362,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
                 'priority' => $priority,
                 'changefreq' => $changefreq,
             ];
+            if ($debugMode)
+                error_log("DEBUG: Seite für Speicherung vorbereitet: " . $loc);
         }
     }
+    if ($debugMode)
+        error_log("DEBUG: " . count($allPagesToSave) . " Seiten zum Speichern gesammelt.");
 
-    if (saveSitemapData($sitemapJsonPath, ['pages' => $allPagesToSave])) {
+    if (saveSitemapData($sitemapJsonPath, ['pages' => $allPagesToSave], $debugMode)) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'success', 'message' => 'Sitemap-Daten erfolgreich gespeichert!']);
+        if ($debugMode)
+            error_log("DEBUG: Sitemap-Daten erfolgreich gespeichert (AJAX-Antwort).");
         exit;
     } else {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern der Sitemap-Daten.']);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Speichern der Sitemap-Daten (AJAX-Antwort).");
         exit;
     }
 }
 
 // Lade bestehende Sitemap-Daten
-$sitemapData = loadSitemapData($sitemapJsonPath);
+$sitemapData = loadSitemapData($sitemapJsonPath, $debugMode);
 $existingPages = $sitemapData['pages'];
+if ($debugMode)
+    error_log("DEBUG: " . count($existingPages) . " bestehende Seiten aus Sitemap geladen.");
 
 $generalPages = [];
 $comicPages = [];
@@ -292,13 +401,22 @@ foreach ($existingPages as $page) {
     if ($pagePath === './comic/') {
         // Verwende 'loc' als Schlüssel für einfachen Zugriff und um Duplikate zu vermeiden
         $comicPages[$page['loc']] = $page;
+        if ($debugMode)
+            error_log("DEBUG: Seite als Comic-Seite erkannt: " . $page['loc']);
     } else {
         $generalPages[] = $page;
+        if ($debugMode)
+            error_log("DEBUG: Seite als allgemeine Seite erkannt: " . $page['loc']);
     }
+}
+if ($debugMode) {
+    error_log("DEBUG: " . count($generalPages) . " allgemeine Seiten und " . count($comicPages) . " Comic-Seiten separiert.");
 }
 
 // Scanne das Comic-Verzeichnis nach neuen PHP-Dateien
-$foundComicFiles = scanComicDirectory($comicDirPath);
+$foundComicFiles = scanComicDirectory($comicDirPath, $debugMode);
+if ($debugMode)
+    error_log("DEBUG: " . count($foundComicFiles) . " Comic-Dateien im Verzeichnis gefunden.");
 
 // Füge fehlende Comic-Dateien hinzu oder aktualisiere bestehende
 foreach ($foundComicFiles as $filename) {
@@ -312,6 +430,8 @@ foreach ($foundComicFiles as $filename) {
             'priority' => 0.8,
             'changefreq' => 'never',
         ];
+        if ($debugMode)
+            error_log("DEBUG: Neue Comic-Seite aus Verzeichnis hinzugefügt: " . $loc);
     }
     // Wenn er schon existiert, bleiben die manuell gesetzten Werte bestehen (Überschreiben durch manuelle Einträge).
     // Es ist hier kein 'else' nötig, da die vorhandenen Einträge bereits in $comicPages sind.
@@ -319,31 +439,47 @@ foreach ($foundComicFiles as $filename) {
 
 // Sortiere comicPages alphabetisch nach 'loc' (was dem Dateinamen entspricht, da path gleich ist)
 ksort($comicPages);
+if ($debugMode)
+    error_log("DEBUG: Comic-Seiten nach 'loc' sortiert.");
 
 // --- Paginierungslogik für Comic-Tabelle ---
 $comicCurrentPage = isset($_GET['comic_page']) ? (int) $_GET['comic_page'] : 1;
 if ($comicCurrentPage < 1)
     $comicCurrentPage = 1;
+if ($debugMode)
+    error_log("DEBUG: Aktuelle Comic-Seite (Paginierung): " . $comicCurrentPage);
 
 $totalComicItems = count($comicPages);
 $totalComicPages = ceil($totalComicItems / COMIC_PAGES_PER_PAGE);
+if ($debugMode) {
+    error_log("DEBUG: Gesamtanzahl Comic-Items: " . $totalComicItems);
+    error_log("DEBUG: Gesamtanzahl Comic-Seiten (Paginierung): " . $totalComicPages);
+}
 
 // Sicherstellen, dass die aktuelle Seite nicht außerhalb des Bereichs liegt
 if ($totalComicPages > 0 && $comicCurrentPage > $totalComicPages) {
     $comicCurrentPage = $totalComicPages;
+    if ($debugMode)
+        error_log("DEBUG: Aktuelle Comic-Seite angepasst auf max. Seite: " . $comicCurrentPage);
 } elseif ($totalComicItems === 0) { // Wenn keine Items vorhanden sind, gibt es auch nur 1 leere Seite
     $comicCurrentPage = 1;
     $totalComicPages = 1;
+    if ($debugMode)
+        error_log("DEBUG: Keine Comic-Items, Paginierung auf Seite 1 gesetzt.");
 }
 
 $comicOffset = ($comicCurrentPage - 1) * COMIC_PAGES_PER_PAGE;
 // array_slice behält hier die Keys, damit wir im Loop den ursprünglichen 'loc' Schlüssel verwenden können
 $paginatedComicPages = array_slice($comicPages, $comicOffset, COMIC_PAGES_PER_PAGE, true);
+if ($debugMode)
+    error_log("DEBUG: " . count($paginatedComicPages) . " Comic-Seiten für aktuelle Paginierungsseite.");
 
 
 // Binde den gemeinsamen Header ein.
 if (file_exists($headerPath)) {
     include $headerPath;
+    if ($debugMode)
+        error_log("DEBUG: Header in data_editor_sitemap.php eingebunden.");
 } else {
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
 }
@@ -720,11 +856,17 @@ if (file_exists($headerPath)) {
                                         // Prüfe, ob die Datei existiert
                                         // $webRootPath ist bereits der absolute Pfad zum Hauptverzeichnis
                                         $fileToCheck = $webRootPath . '/' . ltrim($page['loc'], './');
+                                        if ($debugMode)
+                                            error_log("DEBUG: Prüfe Existenz von Datei: " . $fileToCheck);
 
                                         if (file_exists($fileToCheck) && is_file($fileToCheck)) {
                                             echo '<i class="fas fa-check-circle" style="color: green;"></i>';
+                                            if ($debugMode)
+                                                error_log("DEBUG: Datei existiert: " . $fileToCheck);
                                         } else {
                                             echo '<i class="fas fa-times-circle" style="color: red;"></i>';
+                                            if ($debugMode)
+                                                error_log("DEBUG: Datei fehlt: " . $fileToCheck);
                                         }
                                         ?>
                                     </td>
@@ -1132,6 +1274,8 @@ if (file_exists($headerPath)) {
 // Binde den gemeinsamen Footer ein.
 if (file_exists($footerPath)) {
     include $footerPath;
+    if ($debugMode)
+        error_log("DEBUG: Footer in data_editor_sitemap.php eingebunden.");
 } else {
     die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));
 }

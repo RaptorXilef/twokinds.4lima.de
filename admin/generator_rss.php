@@ -9,13 +9,45 @@
  * @subpackage RSS
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: generator_rss.php wird geladen.");
+
+// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
+ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in generator_rss.php gestartet.");
+
 // Setzt das maximale Ausführungszeitlimit für das Skript.
 set_time_limit(300);
+if ($debugMode)
+    error_log("DEBUG: Maximales Ausführungszeitlimit auf 300 Sekunden gesetzt.");
 
 // Starte die PHP-Sitzung, falls noch keine aktiv ist.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+    if ($debugMode)
+        error_log("DEBUG: Session gestartet in generator_rss.php.");
+} else {
+    if ($debugMode)
+        error_log("DEBUG: Session bereits aktiv in generator_rss.php.");
 }
+
+// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von generator_rss.php.");
+    // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
+    ob_end_clean(); // Output Buffer leeren, da wir umleiten
+    header('Location: index.php');
+    exit;
+}
+if ($debugMode)
+    error_log("DEBUG: Admin in generator_rss.php angemeldet.");
+
 
 // === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
 // Diese Logik ist notwendig, um korrekte absolute URLs im RSS-Feed zu generieren.
@@ -30,37 +62,64 @@ $scriptDir = rtrim(dirname($scriptName), '/');
 // Andernfalls ist es Protokoll + Host + Skriptverzeichnis.
 // Da diese Datei im 'admin' Verzeichnis liegt, muss der baseUrl einen Schritt zurückgehen.
 $baseUrl = $protocol . $host . rtrim(dirname($scriptDir), '/') . '/';
+if ($debugMode)
+    error_log("DEBUG: Basis-URL bestimmt: " . $baseUrl);
 
 // Pfade zu den JSON-Konfigurationsdateien
 $comicVarJsonPath = __DIR__ . '/../src/config/comic_var.json';
 $rssConfigJsonPath = __DIR__ . '/../src/config/rss_config.json';
 $rssOutputPath = __DIR__ . '/../rss.xml'; // Speicherort der generierten rss.xml
+if ($debugMode) {
+    error_log("DEBUG: comic_var.json Pfad: " . $comicVarJsonPath);
+    error_log("DEBUG: rss_config.json Pfad: " . $rssConfigJsonPath);
+    error_log("DEBUG: rss.xml Output Pfad: " . $rssOutputPath);
+}
 
 // Funktion zum Laden einer JSON-Datei
-function loadJsonFile($filePath)
+function loadJsonFile($filePath, $debugMode) // $debugMode als Parameter übergeben
 {
+    if ($debugMode)
+        error_log("DEBUG: loadJsonFile() aufgerufen für: " . basename($filePath));
+
     if (!file_exists($filePath)) {
+        if ($debugMode)
+            error_log("DEBUG: Datei nicht gefunden: " . $filePath);
         return ['status' => 'error', 'message' => "Datei nicht gefunden: " . basename($filePath), 'data' => null];
     }
     $content = file_get_contents($filePath);
+    if ($content === false) {
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Lesen des Inhalts von: " . $filePath);
+        return ['status' => 'error', 'message' => "Fehler beim Lesen des Inhalts von: " . basename($filePath), 'data' => null];
+    }
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Parsen von JSON in " . basename($filePath) . ": " . json_last_error_msg());
         return ['status' => 'error', 'message' => "Fehler beim Parsen von JSON in " . basename($filePath) . ": " . json_last_error_msg(), 'data' => null];
     }
+    if ($debugMode)
+        error_log("DEBUG: Datei erfolgreich geladen und geparst: " . basename($filePath));
     return ['status' => 'success', 'message' => "Datei erfolgreich geladen: " . basename($filePath), 'data' => $data];
 }
 
 // Überprüfe, ob der RSS-Generierungs-Request gesendet wurde (AJAX-Call)
 if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
+    if ($debugMode)
+        error_log("DEBUG: AJAX-Anfrage 'generate_rss' erkannt.");
     // WICHTIG: KEINE AUSGABE VOR DIESER ZEILE, wenn JSON gesendet wird!
+    // Output Buffer leeren, um sicherzustellen, dass nur JSON gesendet wird
+    ob_end_clean();
     header('Content-Type: application/json');
 
     try {
         // Lade die JSON-Dateien
-        $comicDataResult = loadJsonFile($comicVarJsonPath);
-        $rssConfigResult = loadJsonFile($rssConfigJsonPath);
+        $comicDataResult = loadJsonFile($comicVarJsonPath, $debugMode);
+        $rssConfigResult = loadJsonFile($rssConfigJsonPath, $debugMode);
 
         if ($comicDataResult['status'] !== 'success') {
+            if ($debugMode)
+                error_log("DEBUG: Fehler beim Laden von comic_var.json: " . $comicDataResult['message']);
             echo json_encode(['success' => false, 'message' => 'Fehler: comic_var.json konnte nicht geladen werden. ' . $comicDataResult['message']]);
             exit;
         }
@@ -76,23 +135,43 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
 
         if ($rssConfigResult['status'] === 'success') {
             $rssConfig = array_merge($rssConfig, $rssConfigResult['data']);
+            if ($debugMode)
+                error_log("DEBUG: rss_config.json erfolgreich geladen und Standardwerte überschrieben.");
+        } else {
+            if ($debugMode)
+                error_log("DEBUG: rss_config.json konnte nicht geladen werden. Verwende Standardwerte. Meldung: " . $rssConfigResult['message']);
         }
 
         $comicData = $comicDataResult['data'];
         $maxItems = $rssConfig['max_items'];
+        if ($debugMode)
+            error_log("DEBUG: Max. RSS-Items: " . $maxItems);
+
 
         // Finde alle Comic-PHP-Dateien im comic-Verzeichnis
         // Pfad von admin/ zu comic/
         $comicFiles = glob(__DIR__ . '/../comic/*.php');
+        if ($comicFiles === false) {
+            if ($debugMode)
+                error_log("DEBUG: Fehler beim Lesen des comic-Verzeichnisses.");
+            echo json_encode(['success' => false, 'message' => 'Fehler beim Zugriff auf das Comic-Verzeichnis.']);
+            exit;
+        }
+        if ($debugMode)
+            error_log("DEBUG: " . count($comicFiles) . " Comic-Dateien gefunden.");
 
         // Sortiere die Dateien alphabetisch (entspricht chronologisch bei YYYYMMDD.php)
         rsort($comicFiles); // Absteigend sortieren, um die neuesten zuerst zu haben
+        if ($debugMode)
+            error_log("DEBUG: Comic-Dateien absteigend sortiert.");
 
         $rssItems = [];
         $processedCount = 0;
 
         foreach ($comicFiles as $filePath) {
             if ($processedCount >= $maxItems) {
+                if ($debugMode)
+                    error_log("DEBUG: Maximale Anzahl an RSS-Items (" . $maxItems . ") erreicht. Schleife beendet.");
                 break; // Maximale Anzahl an Items erreicht
             }
 
@@ -100,6 +179,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
             // Extrahiere die ID (YYYYMMDD) aus dem Dateinamen
             if (preg_match('/^(\d{8})\.php$/', $filename, $matches)) {
                 $comicId = $matches[1];
+                if ($debugMode)
+                    error_log("DEBUG: Verarbeite Comic-Datei: " . $filename . ", ID: " . $comicId);
 
                 if (isset($comicData[$comicId])) {
                     $comicInfo = $comicData[$comicId];
@@ -122,10 +203,24 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
                             'pubDate' => $pubDate
                         ];
                         $processedCount++;
+                        if ($debugMode)
+                            error_log("DEBUG: Comic-Item hinzugefügt: " . $comicInfo['name'] . " (Verarbeitet: " . $processedCount . ")");
+                    } else {
+                        if ($debugMode)
+                            error_log("DEBUG: Comic-ID " . $comicId . " übersprungen: Typ nicht 'Comicseite' oder Name/Transkript leer.");
                     }
+                } else {
+                    if ($debugMode)
+                        error_log("DEBUG: Comic-ID " . $comicId . " nicht in comic_var.json gefunden. Überspringe.");
                 }
+            } else {
+                if ($debugMode)
+                    error_log("DEBUG: Dateiname " . $filename . " entspricht nicht dem YYYYMMDD.php-Format. Überspringe.");
             }
         }
+        if ($debugMode)
+            error_log("DEBUG: Insgesamt " . count($rssItems) . " RSS-Items zur Generierung vorbereitet.");
+
 
         // Erstelle den RSS-XML-Inhalt
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"></rss>');
@@ -138,6 +233,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         $channel->addChild('generator', 'Custom RSS Generator by Felix');
         $channel->addChild('managingEditor', htmlspecialchars($rssConfig['feed_author_email']) . ' (' . htmlspecialchars($rssConfig['feed_author_name']) . ')');
         $channel->addChild('webMaster', htmlspecialchars($rssConfig['feed_author_email']) . ' (' . htmlspecialchars($rssConfig['feed_author_name']) . ')');
+        if ($debugMode)
+            error_log("DEBUG: Grundstruktur des RSS-XML erstellt.");
 
         foreach ($rssItems as $item) {
             $rssItem = $channel->addChild('item');
@@ -146,26 +243,38 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
             $rssItem->addChild('guid', $item['guid']);
             $rssItem->addChild('description', $item['description']);
             $rssItem->addChild('pubDate', $item['pubDate']);
+            if ($debugMode)
+                error_log("DEBUG: RSS-Item '" . $item['title'] . "' zum Channel hinzugefügt.");
         }
 
         // Prüfen, ob die Datei bereits existiert
         $fileExists = file_exists($rssOutputPath);
+        if ($debugMode)
+            error_log("DEBUG: RSS-Output-Datei existiert bereits: " . ($fileExists ? 'Ja' : 'Nein'));
 
         // Speichere die XML-Datei
         if (file_put_contents($rssOutputPath, $xml->asXML()) !== false) {
             $message = $fileExists ? 'RSS-Feed erfolgreich aktualisiert und unter ' : 'RSS-Feed erfolgreich generiert und unter ';
             $message .= htmlspecialchars($baseUrl) . 'rss.xml gespeichert.';
+            if ($debugMode)
+                error_log("DEBUG: " . $message);
             echo json_encode(['success' => true, 'message' => $message]);
         } else {
+            if ($debugMode)
+                error_log("DEBUG: Fehler beim Speichern der rss.xml Datei: " . $rssOutputPath);
             echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern der rss.xml Datei. Bitte Dateiberechtigungen prüfen.']);
         }
     } catch (Exception $e) {
         // Fange unerwartete Fehler ab und gib sie als JSON zurück
+        if ($debugMode)
+            error_log("DEBUG: Unerwarteter Fehler aufgetreten: " . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Ein unerwarteter Fehler ist aufgetreten: ' . $e->getMessage()]);
     }
     exit; // Wichtig, um zu verhindern, dass der Rest der HTML-Seite gerendert wird
 } else {
     // Dieser Block wird nur ausgeführt, wenn die Seite normal geladen wird (kein AJAX-Call)
+    if ($debugMode)
+        error_log("DEBUG: Normale Seitenladung (kein AJAX-Call).");
 
     // Setze Parameter für den Header.
     $pageTitle = 'RSS Generator';
@@ -179,11 +288,22 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
 
     // Binde den gemeinsamen Header ein.
     // Pfad von admin/ zu src/layout/
-    include __DIR__ . "/../src/layout/header.php";
+    $headerPath = __DIR__ . "/../src/layout/header.php";
+    if (file_exists($headerPath)) {
+        include $headerPath;
+        if ($debugMode)
+            error_log("DEBUG: Header in generator_rss.php eingebunden.");
+    } else {
+        die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
+    }
 
     // Lade die JSON-Dateien erneut für die Anzeige des Status auf der Seite
-    $comicDataResult = loadJsonFile($comicVarJsonPath);
-    $rssConfigResult = loadJsonFile($rssConfigJsonPath);
+    $comicDataResult = loadJsonFile($comicVarJsonPath, $debugMode);
+    $rssConfigResult = loadJsonFile($rssConfigJsonPath, $debugMode);
+    if ($debugMode) {
+        error_log("DEBUG: Status comic_var.json für Anzeige: " . $comicDataResult['status'] . " - " . $comicDataResult['message']);
+        error_log("DEBUG: Status rss_config.json für Anzeige: " . $rssConfigResult['status'] . " - " . $rssConfigResult['message']);
+    }
     ?>
 
     <section>
@@ -204,6 +324,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
             <?php if ($comicDataResult['status'] !== 'success' || $rssConfigResult['status'] !== 'success'): ?>
                 <p class="text-red-700 mt-2 font-bold">Bitte beheben Sie die oben genannten Fehler, bevor Sie den RSS-Feed
                     generieren.</p>
+                <?php if ($debugMode)
+                    error_log("DEBUG: Fehler in Konfigurationsdateien erkannt, Generierungsbutton deaktiviert."); ?>
             <?php endif; ?>
         </div>
 
@@ -222,6 +344,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
     <?php
     // Binde den gemeinsamen Footer ein.
     // Pfad von admin/ zu src/layout/
-    include __DIR__ . "/../src/layout/footer.php";
-} // Ende des else-Blocks für die normale Seitenanzeige
+    $footerPath = __DIR__ . "/../src/layout/footer.php";
+    if (file_exists($footerPath)) {
+        include $footerPath;
+        if ($debugMode)
+            error_log("DEBUG: Footer in generator_rss.php eingebunden.");
+    } else {
+        echo "</body></html>"; // HTML schließen, falls Footer fehlt.
+        if ($debugMode)
+            error_log("DEBUG: Footer-Datei nicht gefunden, HTML manuell geschlossen.");
+    }
+} // Ende des else-blocks für die normale Seitenanzeige
+
+ob_end_flush(); // Gebe den Output Buffer am Ende des Skripts aus.
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in generator_rss.php geleert und ausgegeben.");
 ?>

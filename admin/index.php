@@ -9,14 +9,30 @@
  * Für eine echte Anwendung ist eine Datenbanklösung erforderlich.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: index.php wird geladen.");
+
+// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
+ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in index.php gestartet.");
+
 // Starte die PHP-Sitzung. Dies ist notwendig, um den Anmeldestatus zu speichern.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session in index.php gestartet.");
 
 // --- Pfad zur simulierten Benutzerdatenbank (JSON-Datei) ---
 // WICHTIG: Die Datei liegt nun außerhalb des öffentlichen Web-Verzeichnisses für erhöhte Sicherheit.
 // '__DIR__' ist das Verzeichnis der aktuellen Datei (z.B. /Stammverzeichnis/default-website/twokinds/admin/).
 // Wir müssen drei Ebenen nach oben gehen, um zum Server-Stammverzeichnis zu gelangen.
 $usersFile = __DIR__ . '/../../../admin_users.json';
+if ($debugMode)
+    error_log("DEBUG: usersFile Pfad: " . $usersFile);
 
 // --- Hilfsfunktionen für die Benutzerverwaltung (Simulierte Datenbankzugriffe) ---
 
@@ -26,17 +42,43 @@ $usersFile = __DIR__ . '/../../../admin_users.json';
  */
 function getUsers(): array
 {
-    global $usersFile;
-    if (!file_exists($usersFile) || filesize($usersFile) === 0) {
+    global $usersFile, $debugMode; // $debugMode auch in der Funktion verfügbar machen
+    if ($debugMode)
+        error_log("DEBUG: getUsers() aufgerufen.");
+
+    if (!file_exists($usersFile)) {
+        if ($debugMode)
+            error_log("DEBUG: Benutzerdatei nicht gefunden: " . $usersFile);
+        return [];
+    }
+    if (filesize($usersFile) === 0) {
+        if ($debugMode)
+            error_log("DEBUG: Benutzerdatei ist leer: " . $usersFile);
         return [];
     }
     // Stelle sicher, dass die Datei lesbar ist
     if (!is_readable($usersFile)) {
         error_log("Fehler: Benutzerdatei nicht lesbar: " . $usersFile);
+        if ($debugMode)
+            error_log("DEBUG: Benutzerdatei nicht lesbar (Fehler): " . $usersFile);
         return [];
     }
     $content = file_get_contents($usersFile);
+    if ($content === false) {
+        error_log("Fehler: Konnte Inhalt der Benutzerdatei nicht lesen: " . $usersFile);
+        if ($debugMode)
+            error_log("DEBUG: Konnte Inhalt der Benutzerdatei nicht lesen (Fehler): " . $usersFile);
+        return [];
+    }
     $users = json_decode($content, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("Fehler beim Dekodieren der Benutzer-JSON: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren der Benutzer-JSON: " . json_last_error_msg());
+        return [];
+    }
+    if ($debugMode)
+        error_log("DEBUG: " . count($users) . " Benutzer aus Datei geladen.");
     return is_array($users) ? $users : [];
 }
 
@@ -47,17 +89,44 @@ function getUsers(): array
  */
 function saveUsers(array $users): bool
 {
-    global $usersFile;
-    // Stelle sicher, dass das Verzeichnis schreibbar ist, bevor geschrieben wird.
-    // Hier prüfen wir das Verzeichnis, in dem die Users-Datei liegen soll.
-    if (!is_writable(dirname($usersFile))) {
-        error_log("Fehler: Verzeichnis für Benutzerdatei nicht schreibbar: " . dirname($usersFile));
+    global $usersFile, $debugMode; // $debugMode auch in der Funktion verfügbar machen
+    if ($debugMode)
+        error_log("DEBUG: saveUsers() aufgerufen.");
+
+    $dir = dirname($usersFile);
+    if (!is_dir($dir)) {
+        if ($debugMode)
+            error_log("DEBUG: Verzeichnis für Benutzerdatei existiert nicht, versuche zu erstellen: " . $dir);
+        if (!mkdir($dir, 0755, true)) { // Rekursives Erstellen mit 0755 Rechten
+            error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
+            return false;
+        }
+        if ($debugMode)
+            error_log("DEBUG: Verzeichnis erfolgreich erstellt: " . $dir);
+    }
+
+    if (!is_writable($dir)) {
+        error_log("Fehler: Verzeichnis für Benutzerdatei nicht schreibbar: " . $dir);
+        if ($debugMode)
+            error_log("DEBUG: Verzeichnis für Benutzerdatei nicht schreibbar (Fehler): " . $dir);
         return false;
     }
     // JSON_PRETTY_PRINT für bessere Lesbarkeit der Datei.
-    $result = file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT));
+    $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
+    if ($jsonContent === false) {
+        error_log("Fehler beim Kodieren der Benutzerdaten in JSON: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Kodieren der Benutzerdaten in JSON: " . json_last_error_msg());
+        return false;
+    }
+    $result = file_put_contents($usersFile, $jsonContent);
     if ($result === false) {
         error_log("Fehler beim Schreiben der Benutzerdatei: " . $usersFile);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Schreiben der Benutzerdatei (Fehler): " . $usersFile);
+    } else {
+        if ($debugMode)
+            error_log("DEBUG: Benutzerdaten erfolgreich in Datei gespeichert: " . $usersFile);
     }
     return $result !== false;
 }
@@ -70,13 +139,24 @@ $message = ''; // Wird für Erfolgs- oder Fehlermeldungen verwendet.
 $loggedIn = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
 $currentUser = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : '';
 
+if ($debugMode) {
+    error_log("DEBUG: Aktueller Anmeldestatus: " . ($loggedIn ? 'Angemeldet' : 'Nicht angemeldet'));
+    if ($loggedIn)
+        error_log("DEBUG: Angemeldeter Benutzer: " . $currentUser);
+}
+
 // Logout-Funktion (wird über GET-Parameter ausgelöst)
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion erkannt.");
     session_unset();     // Entfernt alle Session-Variablen
     session_destroy();   // Zerstört die Session
     $loggedIn = false;
     $currentUser = '';
     $message = '<p style="color: green;">Erfolgreich abgemeldet.</p>';
+    if ($debugMode)
+        error_log("DEBUG: Session zerstört, Weiterleitung zur Login-Seite.");
+    ob_end_clean(); // Output Buffer leeren, bevor die Weiterleitung gesendet wird.
     header('Location: index.php'); // Weiterleitung zur Login-Seite
     exit;
 }
@@ -84,10 +164,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 // Bearbeitung von POST-Anfragen
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+    if ($debugMode)
+        error_log("DEBUG: POST-Anfrage erkannt, Aktion: " . $action);
 
     switch ($action) {
         // Initialen Admin-Benutzer erstellen (nur wenn noch keine Benutzer existieren)
         case 'create_initial_user':
+            if ($debugMode)
+                error_log("DEBUG: Aktion: create_initial_user.");
             $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             $password = $_POST['password'] ?? ''; // Passwörter werden gehasht, daher nicht filtern.
 
@@ -95,25 +179,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($users)) { // Nur erstellen, wenn keine Benutzer vorhanden sind
                 if (empty($username) || empty($password)) {
                     $message = '<p style="color: red;">Benutzername und Passwort dürfen nicht leer sein.</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler: Benutzername oder Passwort leer für initialen Benutzer.");
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $users[$username] = ['passwordHash' => $hashedPassword];
                     if (saveUsers($users)) {
                         $message = '<p style="color: green;">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p>';
+                        if ($debugMode)
+                            error_log("DEBUG: Initialer Benutzer '" . $username . "' erfolgreich erstellt und gespeichert.");
                         // Weiterleitung zur Login-Seite
+                        ob_end_clean();
                         header('Location: index.php');
                         exit;
                     } else {
                         $message = '<p style="color: red;">Fehler beim Speichern des Benutzers。</p>';
+                        if ($debugMode)
+                            error_log("DEBUG: Fehler beim Speichern des initialen Benutzers.");
                     }
                 }
             } else {
                 $message = '<p style="color: red;">Ein Admin-Benutzer existiert bereits. Initialisierung nicht möglich。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Initialer Benutzer konnte nicht erstellt werden, da bereits Benutzer existieren.");
             }
             break;
 
         // Anmeldefunktion
         case 'login':
+            if ($debugMode)
+                error_log("DEBUG: Aktion: login.");
             $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             $password = $_POST['password'] ?? '';
 
@@ -124,18 +219,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $loggedIn = true;
                 $currentUser = $username;
                 $message = '<p style="color: green;">Erfolgreich angemeldet！</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Benutzer '" . $username . "' erfolgreich angemeldet.");
                 // Weiterleitung, um Formularerneutsendung zu vermeiden
+                ob_end_clean();
                 header('Location: index.php');
                 exit;
             } else {
                 $message = '<p style="color: red;">Ungültiger Benutzername oder Passwort。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Fehlgeschlagener Login-Versuch für Benutzer '" . $username . "'.");
             }
             break;
 
         // Benutzername/Passwort ändern (nur für angemeldete Benutzer)
         case 'change_credentials':
+            if ($debugMode)
+                error_log("DEBUG: Aktion: change_credentials.");
             if (!$loggedIn) {
                 $message = '<p style="color: red;">Sie müssen angemeldet sein, um Ihre Daten zu ändern。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Versuchter Datenänderung ohne Anmeldung.");
                 break;
             }
             $currentUsername = $_SESSION['admin_username'];
@@ -148,8 +252,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Überprüfe altes Passwort
             if (!isset($users[$currentUsername]) || !password_verify($oldPassword, $users[$currentUsername]['passwordHash'])) {
                 $message = '<p style="color: red;">Altes Passwort ist inkorrekt。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Ungültiges altes Passwort für Benutzer '" . $currentUsername . "'.");
             } elseif (empty($newUsername) && empty($newPassword)) {
                 $message = '<p style="color: orange;">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Keine neuen Anmeldedaten zum Ändern angegeben.");
             } else {
                 $userUpdated = false;
                 $newUsersArray = $users; // Arbeitskopie der Benutzer
@@ -158,6 +266,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($newUsername) && $newUsername !== $currentUsername) {
                     if (isset($newUsersArray[$newUsername])) {
                         $message = '<p style="color: red;">Neuer Benutzername ist bereits vergeben。</p>';
+                        if ($debugMode)
+                            error_log("DEBUG: Neuer Benutzername '" . $newUsername . "' bereits vergeben.");
                         break; // Abbruch, wenn Benutzername schon existiert
                     }
                     // Verschiebe den alten Eintrag zum neuen Benutzernamen
@@ -166,6 +276,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['admin_username'] = $newUsername; // Session aktualisieren
                     $currentUser = $newUsername;
                     $userUpdated = true;
+                    if ($debugMode)
+                        error_log("DEBUG: Benutzername von '" . $currentUsername . "' zu '" . $newUsername . "' geändert.");
                 }
 
                 // Wenn Passwort geändert wird
@@ -173,24 +285,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $hashedNewPassword = password_hash($newPassword, PASSWORD_DEFAULT);
                     $newUsersArray[$currentUser]['passwordHash'] = $hashedNewPassword;
                     $userUpdated = true;
+                    if ($debugMode)
+                        error_log("DEBUG: Passwort für Benutzer '" . $currentUser . "' geändert.");
                 }
 
                 if ($userUpdated) {
                     if (saveUsers($newUsersArray)) {
                         $message = '<p style="color: green;">Anmeldedaten erfolgreich aktualisiert。</p>';
+                        if ($debugMode)
+                            error_log("DEBUG: Anmeldedaten erfolgreich gespeichert.");
                     } else {
                         $message = '<p style="color: red;">Fehler beim Speichern der neuen Anmeldedaten。</p>';
+                        if ($debugMode)
+                            error_log("DEBUG: Fehler beim Speichern der neuen Anmeldedaten.");
                     }
                 } else {
                     $message = '<p style="color: orange;">Keine Änderungen vorgenommen (Benutzername und/oder Passwort nicht unterschiedlich)。</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Keine Änderungen an Anmeldedaten vorgenommen.");
                 }
             }
             break;
 
         // Neuen Benutzer hinzufügen (nur für angemeldete Benutzer)
         case 'add_user':
+            if ($debugMode)
+                error_log("DEBUG: Aktion: add_user.");
             if (!$loggedIn) {
                 $message = '<p style="color: red;">Sie müssen angemeldet sein, um Benutzer hinzuzufügen。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Versuchter Benutzerhinzufügung ohne Anmeldung.");
                 break;
             }
             $newUsername = filter_input(INPUT_POST, 'add_username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -199,42 +323,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $users = getUsers();
             if (empty($newUsername) || empty($newPassword)) {
                 $message = '<p style="color: red;">Benutzername und Passwort für den neuen Benutzer dürfen nicht leer sein。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Fehler: Benutzername oder Passwort leer für neuen Benutzer.");
             } elseif (isset($users[$newUsername])) {
                 $message = '<p style="color: red;">Benutzername "' . htmlspecialchars($newUsername) . '" existiert bereits。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Fehler: Benutzername '" . $newUsername . "' existiert bereits.");
             } else {
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
                 $users[$newUsername] = ['passwordHash' => $hashedPassword];
                 if (saveUsers($users)) {
                     $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($newUsername) . '" erfolgreich hinzugefügt。</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Benutzer '" . $newUsername . "' erfolgreich hinzugefügt.");
                 } else {
                     $message = '<p style="color: red;">Fehler beim Hinzufügen des Benutzers。</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler beim Hinzufügen des Benutzers '" . $newUsername . "'.");
                 }
             }
             break;
 
         // Benutzer löschen (nur für angemeldete Benutzer)
         case 'delete_user':
+            if ($debugMode)
+                error_log("DEBUG: Aktion: delete_user.");
             if (!$loggedIn) {
                 $message = '<p style="color: red;">Sie müssen angemeldet sein, um Benutzer zu löschen。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Versuchtes Benutzerlöschen ohne Anmeldung.");
                 break;
             }
             $userToDelete = filter_input(INPUT_POST, 'user_to_delete', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
             if (empty($userToDelete)) {
                 $message = '<p style="color: red;">Kein Benutzer zum Löschen ausgewählt。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Fehler: Kein Benutzer zum Löschen ausgewählt.");
             } elseif ($userToDelete === $currentUser) {
                 $message = '<p style="color: red;">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen。</p>';
+                if ($debugMode)
+                    error_log("DEBUG: Fehler: Versuch, angemeldeten Benutzer '" . $currentUser . "' zu löschen.");
             } else {
                 $users = getUsers();
                 if (isset($users[$userToDelete])) {
                     unset($users[$userToDelete]);
                     if (saveUsers($users)) {
                         $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht。</p>';
+                        if ($debugMode)
+                            error_log("DEBUG: Benutzer '" . $userToDelete . "' erfolgreich gelöscht.");
                     } else {
                         $message = '<p style="color: red;">Fehler beim Löschen des Benutzers。</p>';
+                        if ($debugMode)
+                            error_log("DEBUG: Fehler beim Löschen des Benutzers '" . $userToDelete . "'.");
                     }
                 } else {
                     $message = '<p style="color: red;">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden。</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Fehler: Benutzer '" . $userToDelete . "' zum Löschen nicht gefunden.");
                 }
             }
             break;
@@ -251,11 +397,17 @@ $siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung. H
 
 // Binde den gemeinsamen Header ein。
 $robotsContent = 'noindex, nofollow';
-include __DIR__ . '/../src/layout/header.php';
+$headerPath = __DIR__ . '/../src/layout/header.php';
+if (file_exists($headerPath)) {
+    include $headerPath;
+    if ($debugMode)
+        error_log("DEBUG: Header in index.php eingebunden.");
+} else {
+    die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
+}
 ?>
 
 <article>
-    <!-- CSS für das Admin-Formular, um Theme-Anpassungen zu ermöglichen -->
     <style>
         /* Container für das Formularfeld */
         .admin-form-container {
@@ -474,12 +626,19 @@ include __DIR__ . '/../src/layout/header.php';
         <?php if (!empty($message)): ?>
             <div class="message">
                 <?php echo $message; // Zeigt Nachrichten an ?>
+                <?php if ($debugMode)
+                    error_log("DEBUG: Nachricht angezeigt: " . strip_tags($message)); ?>
             </div>
         <?php endif; ?>
 
         <?php
         $existingUsers = getUsers(); // Lade Benutzer jedes Mal neu, um aktuelle Liste zu haben
+        if ($debugMode)
+            error_log("DEBUG: Anzahl vorhandener Benutzer: " . count($existingUsers));
+
         if (empty($existingUsers)):
+            if ($debugMode)
+                error_log("DEBUG: Keine Benutzer gefunden, Formular für initialen Benutzer anzeigen.");
             ?>
             <h2>Ersten Admin-Benutzer erstellen</h2>
             <p>Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
@@ -494,7 +653,10 @@ include __DIR__ . '/../src/layout/header.php';
                 </div>
                 <button type="submit" name="action" value="create_initial_user">Admin erstellen</button>
             </form>
-        <?php elseif (!$loggedIn): ?>
+        <?php elseif (!$loggedIn):
+            if ($debugMode)
+                error_log("DEBUG: Benutzer existieren, aber nicht angemeldet. Login-Formular anzeigen.");
+            ?>
             <h2>Login</h2>
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
@@ -507,7 +669,10 @@ include __DIR__ . '/../src/layout/header.php';
                 </div>
                 <button type="submit" name="action" value="login">Login</button>
             </form>
-        <?php else: ?>
+        <?php else:
+            if ($debugMode)
+                error_log("DEBUG: Benutzer '" . $currentUser . "' ist angemeldet. Verwaltungsformulare anzeigen.");
+            ?>
             <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
             <p style="text-align: right;"><a href="?action=logout" class="logout-link">Logout</a></p>
 
@@ -551,6 +716,8 @@ include __DIR__ . '/../src/layout/header.php';
                 <ul>
                     <?php
                     $allUsers = getUsers(); // Lade die aktuelle Benutzerliste
+                    if ($debugMode)
+                        error_log("DEBUG: Zeige Liste von " . count($allUsers) . " Benutzern an.");
                     if (!empty($allUsers)):
                         foreach ($allUsers as $user => $data):
                             ?>
@@ -570,6 +737,8 @@ include __DIR__ . '/../src/layout/header.php';
                             <?php
                         endforeach;
                     else:
+                        if ($debugMode)
+                            error_log("DEBUG: Keine weiteren Benutzer vorhanden (außer eventuell dem angemeldeten).");
                         ?>
                         <li>Keine weiteren Benutzer vorhanden.</li>
                     <?php endif; ?>
@@ -582,5 +751,18 @@ include __DIR__ . '/../src/layout/header.php';
 
 <?php
 // Binde den gemeinsamen Footer ein.
-include __DIR__ . '/../src/layout/footer.php';
+$footerPath = __DIR__ . '/../src/layout/footer.php';
+if (file_exists($footerPath)) {
+    include $footerPath;
+    if ($debugMode)
+        error_log("DEBUG: Footer in index.php eingebunden.");
+} else {
+    echo "</body></html>"; // HTML schließen, falls Footer fehlt.
+    if ($debugMode)
+        error_log("DEBUG: Footer-Datei nicht gefunden, HTML manuell geschlossen.");
+}
+
+ob_end_flush(); // Gebe den Output Buffer am Ende des Skripts aus.
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in index.php geleert und ausgegeben.");
 ?>

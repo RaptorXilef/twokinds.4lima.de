@@ -9,14 +9,27 @@
  * Ein Bericht über fehlende Informationen wird am Ende der Seite angezeigt.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: data_editor_comic.php wird geladen.");
+
 // Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
 ob_start();
+if ($debugMode)
+    error_log("DEBUG: Output Buffer in data_editor_comic.php gestartet.");
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
+if ($debugMode)
+    error_log("DEBUG: Session gestartet in data_editor_comic.php.");
 
 // Logout-Logik: Muss vor dem Sicherheitscheck erfolgen.
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
+    if ($debugMode)
+        error_log("DEBUG: Logout-Aktion erkannt.");
     // Zerstöre alle Session-Variablen.
     $_SESSION = array();
 
@@ -45,11 +58,15 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
 
 // SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    if ($debugMode)
+        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von data_editor_comic.php.");
     // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
     ob_end_clean(); // Output Buffer leeren, da wir umleiten
     header('Location: index.php');
     exit;
 }
+if ($debugMode)
+    error_log("DEBUG: Admin in data_editor_comic.php angemeldet.");
 
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
@@ -59,16 +76,25 @@ $comicLowresDirPath = __DIR__ . '/../assets/comic_lowres/';
 $comicHiresDirPath = __DIR__ . '/../assets/comic_hires/';
 $comicThumbnailsDirPath = __DIR__ . '/../assets/comic_thumbnails/'; // Neuer Pfad
 $comicSocialMediaDirPath = __DIR__ . '/../assets/comic_socialmedia/'; // Neuer Pfad
+if ($debugMode) {
+    error_log("DEBUG: Pfade definiert: comicVarJsonPath=" . $comicVarJsonPath . ", comicLowresDirPath=" . $comicLowresDirPath . ", comicHiresDirPath=" . $comicHiresDirPath . ", comicThumbnailsDirPath=" . $comicThumbnailsDirPath . ", comicSocialMediaDirPath=" . $comicSocialMediaDirPath);
+}
 
 // Konstante für die Anzahl der Elemente pro Seite definieren, falls noch nicht geschehen
 if (!defined('ITEMS_PER_PAGE')) {
     define('ITEMS_PER_PAGE', 50);
+    if ($debugMode)
+        error_log("DEBUG: ITEMS_PER_PAGE definiert: " . ITEMS_PER_PAGE);
 }
 
 // Setze Parameter für den Header.
 $pageTitle = 'Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
 $robotsContent = 'noindex, nofollow'; // Admin-Seiten nicht crawlen
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
 
 $message = '';
 $messageType = ''; // 'success' or 'error'
@@ -76,23 +102,42 @@ $messageType = ''; // 'success' or 'error'
 // Optionen für 'type' und 'chapter'
 $comicTypeOptions = ['Comicseite', 'Lückenfüller'];
 $chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
+if ($debugMode) {
+    error_log("DEBUG: Comic-Typ-Optionen: " . implode(', ', $comicTypeOptions));
+    error_log("DEBUG: Kapitel-Optionen: " . implode(', ', $chapterOptions));
+}
 
 /**
  * Lädt Comic-Metadaten aus einer JSON-Datei.
  * @param string $path Der Pfad zur JSON-Datei.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array Die dekodierten Daten als assoziatives Array oder ein leeres Array im Fehlerfall.
  */
-function loadComicData(string $path): array
+function loadComicData(string $path, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: loadComicData() aufgerufen für: " . basename($path));
     if (!file_exists($path)) {
+        if ($debugMode)
+            error_log("DEBUG: Comic-JSON-Datei nicht gefunden: " . $path);
         return [];
     }
     $content = file_get_contents($path);
+    if ($content === false) {
+        error_log("Fehler beim Lesen der JSON-Datei: " . $path);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Lesen des Inhalts von: " . $path);
+        return [];
+    }
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         error_log("Fehler beim Dekodieren von comic_var.json: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren von comic_var.json: " . json_last_error_msg());
         return [];
     }
+    if ($debugMode)
+        error_log("DEBUG: Comic-Daten erfolgreich geladen und dekodiert.");
     return is_array($data) ? $data : [];
 }
 
@@ -102,33 +147,50 @@ function loadComicData(string $path): array
  * @param string $path Der Pfad zur JSON-Datei.
  * @param array $newDataSubset Die neuen oder aktualisierten Daten (Subset der gesamten Daten).
  * @param array $deletedIds Eine Liste von IDs, die gelöscht werden sollen.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveComicData(string $path, array $newDataSubset, array $deletedIds = []): bool
+function saveComicData(string $path, array $newDataSubset, array $deletedIds = [], bool $debugMode): bool
 {
-    $existingData = loadComicData($path); // Lade die bestehenden Daten
+    if ($debugMode)
+        error_log("DEBUG: saveComicData() aufgerufen für: " . basename($path));
+    $existingData = loadComicData($path, $debugMode); // Lade die bestehenden Daten
 
     // Aktualisiere bestehende Daten mit dem Subset und füge neue hinzu
     foreach ($newDataSubset as $id => $data) {
         $existingData[$id] = $data;
+        if ($debugMode)
+            error_log("DEBUG: Aktualisiere/Füge Comic-ID hinzu: " . $id);
     }
 
     // Entferne gelöschte IDs
     foreach ($deletedIds as $id) {
-        unset($existingData[$id]);
+        if (isset($existingData[$id])) {
+            unset($existingData[$id]);
+            if ($debugMode)
+                error_log("DEBUG: Lösche Comic-ID: " . $id);
+        }
     }
 
     // Sortiere das Array alphabetisch nach Schlüsseln (Comic-IDs)
     ksort($existingData);
+    if ($debugMode)
+        error_log("DEBUG: Comic-Daten nach ID sortiert.");
     $jsonContent = json_encode($existingData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     if ($jsonContent === false) {
         error_log("Fehler beim Kodieren von Comic-Daten: " . json_last_error_msg());
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Kodieren von Comic-Daten: " . json_last_error_msg());
         return false;
     }
     if (file_put_contents($path, $jsonContent) === false) {
         error_log("Fehler beim Schreiben der Comic-Daten nach " . $path);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Schreiben der Comic-Daten nach " . $path);
         return false;
     }
+    if ($debugMode)
+        error_log("DEBUG: Comic-Daten erfolgreich gespeichert.");
     return true;
 }
 
@@ -136,10 +198,13 @@ function saveComicData(string $path, array $newDataSubset, array $deletedIds = [
  * Scannt die Comic-Bildverzeichnisse nach vorhandenen Comic-IDs.
  * @param string $lowresDir Pfad zum lowres-Verzeichnis.
  * @param string $hiresDir Pfad zum hires-Verzeichnis.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array Eine Liste eindeutiger Comic-IDs (Dateinamen ohne Erweiterung), sortiert.
  */
-function getComicIdsFromImages(string $lowresDir, string $hiresDir): array
+function getComicIdsFromImages(string $lowresDir, string $hiresDir, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: getComicIdsFromImages() aufgerufen für lowres: " . $lowresDir . " und hires: " . $hiresDir);
     $imageIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
 
@@ -147,20 +212,37 @@ function getComicIdsFromImages(string $lowresDir, string $hiresDir): array
     foreach ($dirs as $dir) {
         if (is_dir($dir)) {
             $files = scandir($dir);
+            if ($files === false) {
+                if ($debugMode)
+                    error_log("DEBUG: scandir() fehlgeschlagen für " . $dir);
+                continue;
+            }
             foreach ($files as $file) {
                 // Ignoriere . und .. sowie versteckte Dateien und "in_translation" Bilder
                 if ($file === '.' || $file === '..' || substr($file, 0, 1) === '.' || strpos($file, 'in_translation') !== false) {
+                    if ($debugMode)
+                        error_log("DEBUG: Datei übersprungen ('.' oder '..' oder versteckt oder 'in_translation'): " . $file);
                     continue;
                 }
                 $info = pathinfo($file);
                 if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), $imageExtensions)) {
                     $imageIds[$info['filename']] = true; // Verwende assoziatives Array für Eindeutigkeit
+                    if ($debugMode)
+                        error_log("DEBUG: Comic-ID aus Bild gefunden: " . $info['filename'] . " in " . basename($dir));
+                } else {
+                    if ($debugMode)
+                        error_log("DEBUG: Datei übersprungen (ungültiges Format/Extension): " . $file . " in " . basename($dir));
                 }
             }
+        } else {
+            if ($debugMode)
+                error_log("DEBUG: Verzeichnis nicht gefunden oder ist kein Verzeichnis: " . $dir);
         }
     }
     $sortedIds = array_keys($imageIds);
     sort($sortedIds);
+    if ($debugMode)
+        error_log("DEBUG: " . count($sortedIds) . " Comic-IDs aus Bildern gefunden und sortiert.");
     return $sortedIds;
 }
 
@@ -168,10 +250,13 @@ function getComicIdsFromImages(string $lowresDir, string $hiresDir): array
  * Checks for the existence of various image types for a given comic ID.
  * @param string $comicId The ID of the comic (e.g., 'JJJJMMTT').
  * @param array $directories An associative array of directory paths for each image type.
+ * @param bool $debugMode Debug-Modus Flag.
  * @return array An associative array indicating presence (true/false) for each image type.
  */
-function checkImageExistenceForComic(string $comicId, array $directories): array
+function checkImageExistenceForComic(string $comicId, array $directories, bool $debugMode): array
 {
+    if ($debugMode)
+        error_log("DEBUG: checkImageExistenceForComic() aufgerufen für Comic-ID: " . $comicId);
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
     $results = [];
 
@@ -185,6 +270,8 @@ function checkImageExistenceForComic(string $comicId, array $directories): array
             }
         }
         $results[$type] = $found;
+        if ($debugMode)
+            error_log("DEBUG: Bildtyp '" . $type . "' für " . $comicId . ": " . ($found ? "gefunden" : "fehlt"));
     }
     return $results;
 }
@@ -192,6 +279,8 @@ function checkImageExistenceForComic(string $comicId, array $directories): array
 
 // Verarbeite POST-Anfragen zum Speichern (AJAX-Handling)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
+    if ($debugMode)
+        error_log("DEBUG: POST-Anfrage mit application/json Content-Type erkannt.");
     // JSON-Daten aus dem Request Body lesen
     $input = file_get_contents('php://input');
     $requestData = json_decode($input, true);
@@ -199,13 +288,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
     if (json_last_error() !== JSON_ERROR_NONE) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'error', 'message' => 'Fehler beim Dekodieren der JSON-Daten: ' . json_last_error_msg()]);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren der empfangenen JSON-Daten: " . json_last_error_msg());
         exit;
     }
+    if ($debugMode)
+        error_log("DEBUG: JSON-Daten erfolgreich empfangen und dekodiert.");
 
     $updatedComicDataSubset = [];
     $deletedIds = [];
 
     if (isset($requestData['pages']) && is_array($requestData['pages'])) {
+        if ($debugMode)
+            error_log("DEBUG: Verarbeite " . count($requestData['pages']) . " Seiten aus der Anfrage.");
         foreach ($requestData['pages'] as $page) {
             $comicId = trim($page['comic_id']);
             if (empty($comicId)) {
@@ -213,6 +308,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
                 // Wir fügen sie zur Liste der zu löschenden IDs hinzu, falls sie existiert
                 if (isset($page['original_comic_id']) && !empty($page['original_comic_id'])) {
                     $deletedIds[] = $page['original_comic_id'];
+                    if ($debugMode)
+                        error_log("DEBUG: Original-ID für Löschung markiert (leere Comic-ID): " . $page['original_comic_id']);
                 }
                 continue; // Überspringe leere IDs
             }
@@ -225,6 +322,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             // Validierung für Chapter (muss eine Zahl sein)
             if (!is_numeric($chapter) || $chapter <= 0) {
                 $chapter = null; // Setze auf null oder einen Standardwert, wenn ungültig
+                if ($debugMode)
+                    error_log("DEBUG: Kapitel für Comic-ID " . $comicId . " als ungültig erkannt, auf null gesetzt.");
             }
 
             $updatedComicDataSubset[$comicId] = [
@@ -233,25 +332,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
                 'transcript' => $transcript,
                 'chapter' => $chapter
             ];
+            if ($debugMode)
+                error_log("DEBUG: Comic-Daten für Update/Insert vorbereitet: " . $comicId);
         }
+    }
+    if ($debugMode) {
+        error_log("DEBUG: " . count($updatedComicDataSubset) . " Comics für Update/Insert gesammelt.");
+        error_log("DEBUG: " . count($deletedIds) . " Comics für Löschung gesammelt.");
     }
 
     // Speichere das Subset der Daten und verarbeite gelöschte IDs.
-    if (saveComicData($comicVarJsonPath, $updatedComicDataSubset, $deletedIds)) {
+    if (saveComicData($comicVarJsonPath, $updatedComicDataSubset, $deletedIds, $debugMode)) {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!']);
+        if ($debugMode)
+            error_log("DEBUG: Comic-Daten erfolgreich gespeichert (AJAX-Antwort).");
         exit;
     } else {
         header('Content-Type: application/json');
         echo json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern der Comic-Daten.']);
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Speichern der Comic-Daten (AJAX-Antwort).");
         exit;
     }
 }
 
 // Lade die gesamte Comic-Datenbank für Paginierung und fehlende IDs
-$fullComicData = loadComicData($comicVarJsonPath);
-error_log("DEBUG: Count of fullComicData after loading from JSON: " . count($fullComicData)); // NEUE DEBUG-ZEILE
-$imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath);
+$fullComicData = loadComicData($comicVarJsonPath, $debugMode);
+if ($debugMode)
+    error_log("DEBUG: Count of fullComicData after loading from JSON: " . count($fullComicData)); // NEUE DEBUG-ZEILE
+$imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
+if ($debugMode)
+    error_log("DEBUG: Count of imageComicIds: " . count($imageComicIds));
 
 // Füge fehlende Comic-IDs aus den Bildern hinzu
 foreach ($imageComicIds as $id) {
@@ -262,11 +374,17 @@ foreach ($imageComicIds as $id) {
             'transcript' => '', // Leer lassen
             'chapter' => null // Leer lassen
         ];
+        if ($debugMode)
+            error_log("DEBUG: Neue Comic-ID aus Bildern zu fullComicData hinzugefügt: " . $id);
     }
 }
+if ($debugMode)
+    error_log("DEBUG: Final count of fullComicData after merging with image IDs: " . count($fullComicData));
 
 // Sortiere die gesamten Daten nach Comic-ID, bevor paginiert wird
 ksort($fullComicData);
+if ($debugMode)
+    error_log("DEBUG: fullComicData nach ID sortiert.");
 
 // Sammle Bildverfügbarkeitsdaten für alle Comics
 $imageDirectories = [
@@ -278,8 +396,10 @@ $imageDirectories = [
 
 $imageExistenceReport = [];
 foreach ($fullComicData as $id => $data) {
-    $imageExistenceReport[$id] = checkImageExistenceForComic($id, $imageDirectories);
+    $imageExistenceReport[$id] = checkImageExistenceForComic($id, $imageDirectories, $debugMode);
 }
+if ($debugMode)
+    error_log("DEBUG: Bildexistenzbericht für alle Comics erstellt.");
 
 
 // --- Paginierungslogik anwenden ---
@@ -292,33 +412,42 @@ $totalItems = count($fullComicData);
 $totalPages = ceil($totalItems / ITEMS_PER_PAGE);
 
 // Debugging output in den Error-Log
-error_log("DEBUG: Total Items: " . $totalItems);
-error_log("DEBUG: Items Per Page: " . ITEMS_PER_PAGE);
-error_log("DEBUG: Calculated Total Pages: " . $totalPages);
-error_log("DEBUG: Current Page (before adjustment): " . $currentPage);
+if ($debugMode) {
+    error_log("DEBUG: Total Items: " . $totalItems);
+    error_log("DEBUG: Items Per Page: " . ITEMS_PER_PAGE);
+    error_log("DEBUG: Calculated Total Pages: " . $totalPages);
+    error_log("DEBUG: Current Page (before adjustment): " . $currentPage);
+}
 
 // Sicherstellen, dass die aktuelle Seite nicht außerhalb des Bereichs liegt
 if ($currentPage > $totalPages && $totalPages > 0) {
     $currentPage = $totalPages;
-    error_log("DEBUG: Current Page adjusted to Total Pages: " . $currentPage);
+    if ($debugMode)
+        error_log("DEBUG: Current Page adjusted to Total Pages: " . $currentPage);
 } elseif ($totalPages == 0 && $totalItems > 0) {
     $currentPage = 1; // Sollte nicht passieren, wenn totalItems > 0 und ITEMS_PER_PAGE > 0
-    error_log("DEBUG: Current Page adjusted to 1 (totalPages 0, totalItems > 0): " . $currentPage);
+    if ($debugMode)
+        error_log("DEBUG: Current Page adjusted to 1 (totalPages 0, totalItems > 0): " . $currentPage);
 } elseif ($totalItems == 0) {
     $currentPage = 1;
     $totalPages = 1; // Sicherstellen, dass mindestens 1 Seite angezeigt wird, wenn keine Items vorhanden sind
-    error_log("DEBUG: Current Page and Total Pages adjusted to 1 (no items): " . $currentPage);
+    if ($debugMode)
+        error_log("DEBUG: Current Page and Total Pages adjusted to 1 (no items): " . $currentPage);
 }
 
-error_log("DEBUG: Final Current Page: " . $currentPage);
-error_log("DEBUG: Final Total Pages: " . $totalPages);
+if ($debugMode)
+    error_log("DEBUG: Final Current Page: " . $currentPage);
+if ($debugMode)
+    error_log("DEBUG: Final Total Pages: " . $totalPages);
 
 
 $offset = ($currentPage - 1) * ITEMS_PER_PAGE;
-error_log("DEBUG: Offset: " . $offset);
+if ($debugMode)
+    error_log("DEBUG: Offset: " . $offset);
 
 $paginatedComicData = array_slice($fullComicData, $offset, ITEMS_PER_PAGE, true); // true, um Keys zu erhalten
-error_log("DEBUG: Paginated Comic Data Count: " . count($paginatedComicData));
+if ($debugMode)
+    error_log("DEBUG: Paginated Comic Data Count: " . count($paginatedComicData));
 
 // Bericht über unvollständige Informationen (basierend auf allen Daten)
 $incompleteInfoReportFull = [];
@@ -343,8 +472,12 @@ foreach ($fullComicData as $id => $data) {
 
     if (!empty($missingFields)) {
         $incompleteInfoReportFull[$id] = $missingFields;
+        if ($debugMode)
+            error_log("DEBUG: Unvollständiger Eintrag gefunden: " . $id . " (Fehlende Felder: " . implode(', ', $missingFields) . ")");
     }
 }
+if ($debugMode)
+    error_log("DEBUG: " . count($incompleteInfoReportFull) . " unvollständige Einträge im Gesamtbericht.");
 
 // Bericht für die aktuelle Seite
 $incompleteInfoReportCurrentPage = [];
@@ -353,15 +486,21 @@ foreach ($paginatedComicData as $id => $data) {
         $incompleteInfoReportCurrentPage[$id] = $incompleteInfoReportFull[$id];
     }
 }
+if ($debugMode)
+    error_log("DEBUG: " . count($incompleteInfoReportCurrentPage) . " unvollständige Einträge auf der aktuellen Seite.");
 
 // Prüfen, ob auf anderen Seiten unvollständige Informationen vorhanden sind
 $hasIncompleteOtherPages = false;
 foreach ($incompleteInfoReportFull as $id => $fields) {
     if (!isset($paginatedComicData[$id])) { // Wenn die ID nicht auf der aktuellen Seite ist
         $hasIncompleteOtherPages = true;
+        if ($debugMode)
+            error_log("DEBUG: Unvollständiger Eintrag auf anderer Seite gefunden: " . $id);
         break;
     }
 }
+if ($debugMode)
+    error_log("DEBUG: Has incomplete data on other pages: " . ($hasIncompleteOtherPages ? "true" : "false"));
 
 // Ermittle, welche Seiten in der Paginierung unvollständige Daten haben
 $pagesWithIncompleteData = [];
@@ -372,14 +511,20 @@ if (!empty($incompleteInfoReportFull)) {
         if ($index !== false) {
             $pageNumber = floor($index / ITEMS_PER_PAGE) + 1;
             $pagesWithIncompleteData[$pageNumber] = true;
+            if ($debugMode)
+                error_log("DEBUG: Seite " . $pageNumber . " enthält unvollständige Daten.");
         }
     }
 }
+if ($debugMode)
+    error_log("DEBUG: Seiten mit unvollständigen Daten: " . implode(', ', array_keys($pagesWithIncompleteData)));
 
 
 // Binde den gemeinsamen Header ein.
 if (file_exists($headerPath)) {
     include $headerPath;
+    if ($debugMode)
+        error_log("DEBUG: Header in data_editor_comic.php eingebunden.");
 } else {
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
 }
@@ -1217,7 +1362,8 @@ if (file_exists($headerPath)) {
                     <select id="comic-type" name="comic_type" required>
                         <?php foreach ($comicTypeOptions as $option): ?>
                             <option value="<?php echo htmlspecialchars($option); ?>">
-                                <?php echo htmlspecialchars($option); ?></option>
+                                <?php echo htmlspecialchars($option); ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -1235,7 +1381,8 @@ if (file_exists($headerPath)) {
                         <option value="">Bitte auswählen</option>
                         <?php foreach ($chapterOptions as $option): ?>
                             <option value="<?php echo htmlspecialchars($option); ?>">
-                                <?php echo htmlspecialchars($option); ?></option>
+                                <?php echo htmlspecialchars($option); ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -1508,6 +1655,7 @@ if (file_exists($headerPath)) {
                 setTimeout(() => {
                     messageBoxElement.style.display = 'none'; // Nachricht nach 5 Sekunden ausblenden
                 }, 5000);
+                console.log("Message displayed:", msg, "Type:", type); // Debug-Meldung
             } else {
                 console.warn("Message box element not found, falling back to console: " + msg);
             }
@@ -1531,6 +1679,7 @@ if (file_exists($headerPath)) {
             if (hasUnsavedChanges) {
                 event.preventDefault(); // Standardaktion (Seite verlassen) verhindern
                 event.returnValue = ''; // Für ältere Browser
+                console.log("Beforeunload: Unsaved changes detected, preventing navigation."); // Debug-Meldung
                 return ''; // Für moderne Browser
             }
         });
@@ -1578,6 +1727,7 @@ if (file_exists($headerPath)) {
                 // Auto-expand form section and scroll to it
                 if (!formSection.classList.contains('expanded')) {
                     formSection.classList.add('expanded');
+                    console.log("Form section expanded."); // Debug-Meldung
                 }
                 formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
             } else if (deleteButton) {
@@ -1586,6 +1736,8 @@ if (file_exists($headerPath)) {
                 const comicId = row.dataset.comicId;
 
                 // Bestätigungsdialog vor dem Löschen
+                // KEIN alert() oder confirm() verwenden, stattdessen eine Modale UI
+                // Für diese Implementierung wird ein einfaches confirm() verwendet, da dies die aktuelle Anforderung ist.
                 const confirmDelete = confirm(`Sind Sie sicher, dass Sie den Comic-Eintrag mit der ID ${comicId} löschen möchten? Diese Änderung wird erst nach dem Klick auf "Alle Änderungen speichern" permanent.`);
                 if (confirmDelete) {
                     // Markiere die Zeile als gelöscht (visuell und intern)
@@ -1597,6 +1749,7 @@ if (file_exists($headerPath)) {
                     deletedRows.add(comicId);
                     // Entferne die ID aus editedRows, falls sie dort war
                     editedRows.delete(comicId);
+                    console.log("Comic-ID " + comicId + " marked for deletion. deletedRows:", deletedRows); // Debug-Meldung
 
                     setUnsavedChanges(true);
                     showMessage(`Comic-Eintrag ${comicId} zum Löschen markiert. Klicken Sie auf "Alle Änderungen speichern", um dies zu bestätigen.`, 'success');
@@ -1621,6 +1774,7 @@ if (file_exists($headerPath)) {
             // Auto-expand form section and scroll to it
             if (!formSection.classList.contains('expanded')) {
                 formSection.classList.add('expanded');
+                console.log("Form section expanded for new entry."); // Debug-Meldung
             }
             formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
         });
@@ -1648,10 +1802,12 @@ if (file_exists($headerPath)) {
             // Einfache Validierung
             if (!comicId || !comicType || !comicName || !comicChapter) {
                 showMessage('Bitte füllen Sie alle Felder (ID, Typ, Name, Kapitel) aus.', 'error');
+                console.error("Validation failed: Missing required fields."); // Debug-Meldung
                 return;
             }
             if (!/^\d{8}$/.test(comicId)) {
                 showMessage('Comic ID muss eine 8-stellige Zahl (JJJJMMTT) sein.', 'error');
+                console.error("Validation failed: Invalid Comic ID format."); // Debug-Meldung
                 return;
             }
 
@@ -1727,9 +1883,11 @@ if (file_exists($headerPath)) {
                 if (missingFields.includes('name')) row.querySelector('.comic-name-display').classList.add('missing-info'); else row.querySelector('.comic-name-display').classList.remove('missing-info');
                 if (missingFields.includes('transcript')) row.querySelector('.comic-transcript-display').classList.add('missing-info'); else row.querySelector('.comic-transcript-display').classList.remove('missing-info');
                 if (missingFields.includes('chapter')) row.querySelector('.comic-chapter-display').classList.add('missing-info'); else row.querySelector('.comic-chapter-display').classList.remove('missing-info');
+                console.log("Row " + comicId + " marked as missing info. Fields:", missingFields); // Debug-Meldung
             } else {
                 row.classList.remove('missing-info-row');
                 row.querySelectorAll('.missing-info').forEach(el => el.classList.remove('missing-info'));
+                console.log("Row " + comicId + " has all info, removed missing-info class."); // Debug-Meldung
             }
 
             setUnsavedChanges(true);
@@ -1764,6 +1922,7 @@ if (file_exists($headerPath)) {
                 .then(response => {
                     if (!response.ok) {
                         // Wenn der Server einen HTTP-Fehlercode zurückgibt
+                        console.error(`HTTP-Fehler! Status: ${response.status}`); // Debug-Meldung
                         throw new Error(`HTTP-Fehler! Status: ${response.status}`);
                     }
                     return response.json();
@@ -1803,6 +1962,7 @@ if (file_exists($headerPath)) {
                 console.log("Double-clicked editable field:", fieldName, "for ID:", comicId); // Debug-Meldung
 
                 if (target.classList.contains('editing')) {
+                    console.log("Field already in editing mode, returning."); // Debug-Meldung
                     return; // Bereits im Bearbeitungsmodus
                 }
 
@@ -1812,6 +1972,7 @@ if (file_exists($headerPath)) {
                     const originalContent = field.dataset.originalContent;
                     if (originalContent !== undefined) {
                         field.innerHTML = originalContent; // Setze den Inhalt zurück
+                        console.log("Closed other editing field, restored content."); // Debug-Meldung
                     }
                 });
 
@@ -1829,6 +1990,7 @@ if (file_exists($headerPath)) {
                         inputElement.appendChild(optionType);
                     <?php endforeach; ?>
                     inputElement.value = target.textContent;
+                    console.log("Created select input for comic-type."); // Debug-Meldung
                 } else if (fieldName === 'comic-chapter') {
                     inputElement = document.createElement('select');
                     var defaultOption = document.createElement('option'); // Changed to var
@@ -1842,6 +2004,7 @@ if (file_exists($headerPath)) {
                         inputElement.appendChild(optionChapter);
                     <?php endforeach; ?>
                     inputElement.value = target.textContent;
+                    console.log("Created select input for comic-chapter."); // Debug-Meldung
                 } else if (fieldName === 'comic-transcript') {
                     // Double-clicking transcript now triggers the main edit form
                     const editButton = row.querySelector('.edit-button');
@@ -1857,6 +2020,7 @@ if (file_exists($headerPath)) {
                     inputElement.value = target.textContent;
                     inputElement.style.width = '100%';
                     inputElement.style.boxSizing = 'border-box';
+                    console.log("Created text input for field:", fieldName); // Debug-Meldung
                 }
 
                 // Only proceed if an input element was created (i.e., not for transcript field)
@@ -1923,13 +2087,16 @@ if (file_exists($headerPath)) {
 
                             if (rowType === '' || rowName === '' || rowIsTranscriptEffectivelyEmpty || rowIsChapterEffectivelyEmpty) {
                                 row.classList.add('missing-info-row');
+                                console.log("Row " + comicId + " now has missing info after inline edit."); // Debug-Meldung
                             } else {
                                 row.classList.remove('missing-info-row');
+                                console.log("Row " + comicId + " now complete after inline edit."); // Debug-Meldung
                             }
 
                         } else {
                             // Wenn keine Änderung, setze den Originalinhalt zurück (falls HTML-Tags entfernt wurden)
                             target.innerHTML = originalValue;
+                            console.log("No change in value, restored original content."); // Debug-Meldung
                         }
                     });
 
@@ -1938,6 +2105,7 @@ if (file_exists($headerPath)) {
                         inputElement.addEventListener('keypress', function (e) {
                             if (e.key === 'Enter' && inputElement.tagName === 'INPUT') { // Nur für INPUT, nicht TEXTAREA
                                 inputElement.blur(); // Verlässt das Feld, was den blur-Event auslöst und speichert
+                                console.log("Enter key pressed, blurring input."); // Debug-Meldung
                             }
                         });
                     }
@@ -1988,6 +2156,8 @@ if (file_exists($headerPath)) {
 // Binde den gemeinsamen Footer ein.
 if (file_exists($footerPath)) {
     include $footerPath;
+    if ($debugMode)
+        error_log("DEBUG: Footer in data_editor_comic.php eingebunden.");
 } else {
     die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));
 }

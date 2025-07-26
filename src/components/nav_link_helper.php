@@ -10,6 +10,12 @@
  * @param bool $isDisabled Ob der Button deaktiviert sein soll.
  * @return string Der generierte HTML-String für den Navigationsbutton.
  */
+
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+// Diese Variable wird in dieser Datei aktuell nicht verwendet, da keine error_log Aufrufe vorhanden sind.
+/* $debugMode = false; */
+
 function renderNavLink(string $href, string $class, string $text, bool $isDisabled): string
 {
     $tag = $isDisabled ? 'span' : 'a'; // Tag ist <span> wenn deaktiviert, sonst <a>

@@ -12,6 +12,10 @@
  * Diese Datei wird von den einzelnen Comic-PHP-Dateien (z.B. comic/20250604.php) inkludiert.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
+/* $debugMode = false; */
+
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 // load_comic_data.php ist dafür zuständig, die comic_var.json zu lesen und $comicData zu befüllen.
 require_once __DIR__ . '/load_comic_data.php';
@@ -47,12 +51,14 @@ if (isset($comicData[$currentComicId])) {
     // Pfad für die Vorschaubild-URL (relativ zur aktuellen Comic-Seite, d.h., comic/YYYYMMDD.php)
     // realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath) konstruiert den absoluten Pfad zur Datei.
     if (!empty($rawComicThumbnailRootPath) && file_exists(realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath))) {
-        // Pfad von src/components/ zu assets/
+        // Wenn Original-Comic existiert, nutze dessen Pfad (relativ zur aktuellen Comic-Seite).
         $comicPreviewUrl = '../' . $rawComicThumbnailRootPath; // Pfad relativ zum Comic-Ordner
-        error_log("DEBUG: Comic Thumbnail Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath));
+        if ($debugMode)
+            error_log("DEBUG: Comic Thumbnail Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath));
     } else {
         $comicPreviewUrl = $externalPlaceholderThumbnailUrl; // Neue, externe Platzhalter-URL
-        error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
+        if ($debugMode)
+            error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
     }
 } else {
     // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
@@ -61,7 +67,8 @@ if (isset($comicData[$currentComicId])) {
     $comicName = 'Comic nicht gefunden';
     $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
     $comicPreviewUrl = $externalPlaceholderThumbnailUrl; // Immer die externe Platzhalter-URL verwenden
-    error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
+    if ($debugMode)
+        error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
 }
 
 // Definiere die Pfade zu den Lückenfüller-Bildern (relativ zum Projekt-Root).
@@ -85,25 +92,30 @@ if (!empty($rawComicLowresRootPath) && file_exists(realpath(__DIR__ . '/../../' 
     // Wenn Original-Comic existiert, nutze dessen Pfad (relativ zur aktuellen Comic-Seite).
     $comicImagePath = '../' . $rawComicLowresRootPath;
     $comicHiresPath = '../' . $rawComicHiresRootPath;
-    error_log("DEBUG: Original Comic Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicLowresRootPath));
+    if ($debugMode)
+        error_log("DEBUG: Original Comic Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicLowresRootPath));
 } else {
     // Wenn Original-Comic nicht existiert, versuche "in translation" Bild.
-    error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Renderer). Versuche In Translation.");
+    if ($debugMode)
+        error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Renderer). Versuche In Translation.");
     // Prüfe, ob der "in translation" Fallback existiert. Pfad ist relativ zum Projekt-Root für file_exists.
     if (file_exists(realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath))) {
         // Wenn "in translation" existiert, nutze dessen Pfad (relativ zur aktuellen Comic-Seite).
         $comicImagePath = '../' . $inTranslationLowresRootPath;
         $comicHiresPath = '../' . $inTranslationHiresRootPath;
-        error_log("DEBUG: In Translation Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath));
+        if ($debugMode)
+            error_log("DEBUG: In Translation Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath));
     } else {
         // Wenn auch "in translation" nicht existiert, nutze generischen Placeholder-URL.
         error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad (Renderer): " . realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath));
         $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
         $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
-        error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild (Renderer): " . $comicImagePath);
+        if ($debugMode)
+            error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild (Renderer): " . $comicImagePath);
     }
 }
-error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird (Renderer): " . $comicImagePath);
+if ($debugMode)
+    error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird (Renderer): " . $comicImagePath);
 
 
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
@@ -126,10 +138,12 @@ if ($isLocal) {
     array_pop($pathParts); // Entfernt 'comic'
     $basePath = implode('/', $pathParts);
     $baseUrl = $protocol . $host . $basePath . '/';
-    error_log("DEBUG: Lokale Basis-URL (Renderer): " . $baseUrl);
+    if ($debugMode)
+        error_log("DEBUG: Lokale Basis-URL (Renderer): " . $baseUrl);
 } else {
     $baseUrl = 'https://twokinds.4lima.de/';
-    error_log("DEBUG: Live Basis-URL (Renderer): " . $baseUrl);
+    if ($debugMode)
+        error_log("DEBUG: Live Basis-URL (Renderer): " . $baseUrl);
 }
 
 // Setze Parameter für den Header.
@@ -151,7 +165,8 @@ if (strpos($comicPreviewUrl, 'http://') === 0 || strpos($comicPreviewUrl, 'https
     // Dazu entfernen wir den '..' Teil und konkatenieren mit $baseUrl
     $absoluteComicPreviewUrl = $baseUrl . ltrim($comicPreviewUrl, './');
 }
-error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Renderer): " . $absoluteComicPreviewUrl);
+if ($debugMode)
+    error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Renderer): " . $absoluteComicPreviewUrl);
 
 $additionalHeadContent = '
     <link rel="canonical" href="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '.php">
