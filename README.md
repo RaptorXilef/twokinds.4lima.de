@@ -14,7 +14,7 @@
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/issues"><img src="https://img.shields.io/github/issues/RaptorXilef/twokinds.4lima.de.svg" alt="Issues"></a>
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/pulls"><img src="https://img.shields.io/github/issues-pr/RaptorXilef/twokinds.4lima.de.svg" alt="Pull Requests"></a>
   <!--<img src="https://img.shields.io/github/checks-status/RaptorXilef/twokinds.4lima.de/main" alt="Checks Status">-->
-  <br><a href="https://twokinds.4lima.de"><img src="https://licensebuttons.net/l/by-nc/4.0/88x31.png" alt="CC BY-NC 4.0"></a></br>
+  <br><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"><img src="https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png" alt="CC BY-NC-SA 4.0"></a></br>
   </p>
   <br><br>
 
@@ -125,7 +125,7 @@ Beiträge sind herzlich willkommen! Wenn du Fehler findest oder Verbesserungen v
 
 ## Lizenz
 
-Dieser Code steht unter der [Creative Commons Attribution-NonCommercial 4.0 International Lizenz](https://creativecommons.org/licenses/by-nc/4.0/deed.de). [![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc/4.0/deed.de)
+Dieser Code steht unter der [Creative Commons Namensnennung-Nicht kommerziell-Share Alike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de). [![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc-sa/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc/4.0/deed.de)
 
 Dies bedeutet, dass du den Code teilen und adaptieren darfst, solange du die Namensnennung beibehältst und ihn nicht für kommerzielle Zwecke nutzt.
 
