@@ -251,12 +251,14 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
         <div class="cookie-category">
             <label for="cookieAnalytics">
                 <input type="checkbox" id="cookieAnalytics" checked>
-                Analyse-Cookies (Google Analytics)
+                Analyse-Cookies (Google Analytics) <br> Wichtig für die Webseiten-Weiterentwicklung
             </label>
-            <p class="description">Diese Cookies helfen uns zu verstehen, wie Besucher mit der Webseite interagieren,
+            <p class="description">Diese Cookies helfen mir zu verstehen, wie Besucher mit der Webseite interagieren,
                 indem Informationen über Ihre Nutzung (z.B. besuchte Seiten, Verweildauer, verwendetes Gerät,
-                anonymisierte IP-Adresse) gesammelt und an Google übertragen werden. Diese Daten werden ausschließlich
-                zur Verbesserung der Webseite verwendet und ermöglichen keine direkte Identifizierung Ihrer Person.</p>
+                anonymisierte IP-Adresse) gesammelt und an Google Analytics übertragen werden. Diese Daten werden
+                ausschließlich zur Verbesserung der Webseite verwendet und ermöglichen keine direkte Identifizierung
+                Ihrer Person. <br><br> Die Daten werden <b>nicht</b> für das schalten personalisierter Werbung
+                verwendet!</p>
         </div>
 
         <div class="cookie-buttons">
