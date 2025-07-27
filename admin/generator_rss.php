@@ -53,15 +53,19 @@ if ($debugMode)
 // Diese Logik ist notwendig, um korrekte absolute URLs im RSS-Feed zu generieren.
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
-$scriptName = $_SERVER['SCRIPT_NAME'];
-// Ermittle das Basisverzeichnis des Skripts relativ zum Document Root
-$scriptDir = rtrim(dirname($scriptName), '/');
+// Korrektur: appRootAbsPath muss das tatsächliche Anwendungs-Root-Verzeichnis sein.
+// Wenn generator_rss.php in /app-root/admin/ liegt, dann ist dirname(__FILE__) /app-root/admin
+// und dirname(dirname(__FILE__)) ist /app-root.
+$appRootAbsPath = str_replace('\\', '/', dirname(dirname(__FILE__)));
+$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+if (!empty($subfolderPath) && $subfolderPath !== '/') {
+    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+} elseif (empty($subfolderPath)) {
+    $subfolderPath = '/';
+}
+$baseUrl = $protocol . $host . $subfolderPath;
 
-// Wenn das Skript im Root-Verzeichnis liegt, ist $scriptDir leer.
-// In diesem Fall ist $baseUrl einfach das Protokoll und der Host.
-// Andernfalls ist es Protokoll + Host + Skriptverzeichnis.
-// Da diese Datei im 'admin' Verzeichnis liegt, muss der baseUrl einen Schritt zurückgehen.
-$baseUrl = $protocol . $host . rtrim(dirname($scriptDir), '/') . '/';
 if ($debugMode)
     error_log("DEBUG: Basis-URL bestimmt: " . $baseUrl);
 
@@ -124,13 +128,16 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
             exit;
         }
 
-        // Standardwerte für RSS-Konfiguration, falls die Datei nicht geladen werden kann
+        // Standardwerte für RSS-Konfiguration
         $rssConfig = [
             'max_items' => 10,
-            'feed_title' => 'Twokinds Deutsch Comic-Feed',
+            'feed_title' => 'Twokinds in deutsch - Comic-Feed',
             'feed_description' => 'Der offizielle RSS-Feed für die neuesten deutschen Übersetzungen von Twokinds.',
-            'feed_author_name' => 'Felix Mustermann',
-            'feed_author_email' => 'felix.mustermann@example.com'
+            'feed_author_name' => 'Felix Maywald', // Feed-Autor
+            'comic_author_name' => 'Thomas J. Fischbach', // Comic-Autor
+            'comic_translator_name' => 'Felix Maywald', // Comic-Übersetzer
+            'homepage_url' => $baseUrl, // URL der Homepage
+            'contact_info' => $baseUrl . 'impressum.php' // Kontaktmöglichkeit (E-Mail, URL, Tel. etc.)
         ];
 
         // Korrektur: Nur array_merge aufrufen, wenn $rssConfigResult['data'] ein Array und nicht null ist
@@ -232,15 +239,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"></rss>');
         $channel = $xml->addChild('channel');
         $channel->addChild('title', $rssConfig['feed_title']);
-        $channel->addChild('link', htmlspecialchars($baseUrl)); // Link zur Hauptseite
+        $channel->addChild('link', htmlspecialchars($rssConfig['homepage_url'])); // Link zur Hauptseite
         $channel->addChild('description', $rssConfig['feed_description']);
         $channel->addChild('language', 'de-de'); // Sprache des Feeds
         $channel->addChild('lastBuildDate', date(DATE_RSS)); // Letztes Build-Datum
         $channel->addChild('generator', 'Custom RSS Generator by Felix');
-        $channel->addChild('managingEditor', htmlspecialchars($rssConfig['feed_author_email']) . ' (' . htmlspecialchars($rssConfig['feed_author_name']) . ')');
-        $channel->addChild('webMaster', htmlspecialchars($rssConfig['feed_author_email']) . ' (' . htmlspecialchars($rssConfig['feed_author_name']) . ')');
-        if ($debugMode)
-            error_log("DEBUG: Grundstruktur des RSS-XML erstellt.");
+        // Feed-Autor ohne Klammern und E-Mail
+        $channel->addChild('managingEditor', htmlspecialchars($rssConfig['feed_author_name']));
+        $channel->addChild('webMaster', htmlspecialchars($rssConfig['feed_author_name']));
+
+        // Optional: Hinzufügen von Informationen über Comic-Autor, Übersetzer und Kontakt als benutzerdefinierte Elemente
+        // Dies erfordert einen Namespace, um valide zu sein, oder man fügt es in die Description ein.
+        // Für RSS 2.0 ohne Namespace-Erweiterung ist die Description der beste Ort.
+        // Die Informationen sind aber in $rssConfig verfügbar.
 
         foreach ($rssItems as $item) {
             $rssItem = $channel->addChild('item');
@@ -260,11 +271,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
 
         // Speichere die XML-Datei
         if (file_put_contents($rssOutputPath, $xml->asXML()) !== false) {
-            $message = $fileExists ? 'RSS-Feed erfolgreich aktualisiert und unter ' : 'RSS-Feed erfolgreich generiert und unter ';
-            $message .= htmlspecialchars($baseUrl) . 'rss.xml gespeichert.';
+            $rssFileUrl = htmlspecialchars($baseUrl) . 'rss.xml';
+            $message = $fileExists ? 'RSS-Feed erfolgreich aktualisiert.' : 'RSS-Feed erfolgreich generiert.';
             if ($debugMode)
-                error_log("DEBUG: " . $message);
-            echo json_encode(['success' => true, 'message' => $message]);
+                error_log("DEBUG: " . $message . " URL: " . $rssFileUrl);
+            echo json_encode(['success' => true, 'message' => $message, 'rssUrl' => $rssFileUrl]);
         } else {
             if ($debugMode)
                 error_log("DEBUG: Fehler beim Speichern der rss.xml Datei: " . $rssOutputPath);

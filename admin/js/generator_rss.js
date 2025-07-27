@@ -25,7 +25,17 @@
           const result = await response.json();
 
           if (result.success) {
-            generationMessage.textContent = result.message;
+            let displayMessage = result.message;
+            // Wenn eine RSS-URL zurückgegeben wurde, füge sie als anklickbaren Link hinzu
+            if (result.rssUrl) {
+              displayMessage +=
+                ' Der Feed ist verfügbar unter: <a href="' +
+                result.rssUrl +
+                '" target="_blank" class="text-blue-500 hover:underline">' +
+                result.rssUrl +
+                "</a>";
+            }
+            generationMessage.innerHTML = displayMessage; // Verwende innerHTML, um den Link zu rendern
             generationMessage.classList.remove("text-blue-700", "text-red-700");
             generationMessage.classList.add("text-green-700");
           } else {

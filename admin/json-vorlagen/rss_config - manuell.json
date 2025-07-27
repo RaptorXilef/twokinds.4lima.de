@@ -4,5 +4,7 @@
     "feed_description": "Der offizielle RSS-Feed für die neuesten deutschen Übersetzungen von Twokinds.",
     "feed_author_name": "Felix Maywald",
     "comic_author_name": "Thomas J. Fischbach",
-    "comic_translator_name": "Felix Maywald"
+    "comic_translator_name": "Felix Maywald",
+    "homepage_url": "",
+    "contact_info": ""
 }
