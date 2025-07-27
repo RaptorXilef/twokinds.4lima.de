@@ -157,6 +157,13 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
     <script type='text/javascript' src='<?php echo htmlspecialchars($cookieConsentJsPathWithCacheBuster); ?>'></script>
 
     <?php
+    // Setze eine JavaScript-Variable, die angibt, ob es sich um eine Admin-Seite handelt.
+    // Dies wird von common.js verwendet, um bestimmte Funktionen zu deaktivieren.
+    $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) ? 'true' : 'false';
+    echo "<script type='text/javascript'>window.isAdminPage = " . $isAdminPage . ";</script>";
+    ?>
+
+    <?php
     // Hier können zusätzliche Skripte eingefügt werden, die spezifisch für die aufrufende Seite sind.
     echo $additionalScripts;
     // Hier können zusätzliche Meta-Tags, Links etc. eingefügt werden, die spezifisch für die aufrufende Seite sind.

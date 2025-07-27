@@ -34,12 +34,15 @@
       body.classList.remove("preload");
     }
 
-    // Theme also toggles on 'i' keypress.
-    body.addEventListener("keyup", (e) => {
-      if (e.which == 73) {
-        toggleTheme(e);
-      }
-    });
+    // Theme also toggles on 'i' keypress, but only if not an admin page.
+    // window.isAdminPage is set in header.php
+    if (typeof window.isAdminPage === "undefined" || !window.isAdminPage) {
+      body.addEventListener("keyup", (e) => {
+        if (e.which == 73) {
+          toggleTheme(e);
+        }
+      });
+    }
 
     // Watch the system theme change event and automatically change with it.
     if (window.matchMedia) {
