@@ -131,13 +131,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         // Standardwerte für RSS-Konfiguration
         $rssConfig = [
             'max_items' => 10,
-            'feed_title' => 'Twokinds Deutsch Comic-Feed',
+            'feed_title' => 'Twokinds in deutsch - Comic-Feed',
             'feed_description' => 'Der offizielle RSS-Feed für die neuesten deutschen Übersetzungen von Twokinds.',
             'feed_author_name' => 'Felix Maywald', // Feed-Autor
             'comic_author_name' => 'Thomas J. Fischbach', // Comic-Autor
             'comic_translator_name' => 'Felix Maywald', // Comic-Übersetzer
             'homepage_url' => $baseUrl, // URL der Homepage
-            'contact_info' => 'info@example.com' // Kontaktmöglichkeit (E-Mail, URL, Tel. etc.)
+            'contact_info' => $baseUrl . 'impressum.php' // Kontaktmöglichkeit (E-Mail, URL, Tel. etc.)
         ];
 
         // Korrektur: Nur array_merge aufrufen, wenn $rssConfigResult['data'] ein Array und nicht null ist
@@ -273,7 +273,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         $channel = $xml->addChild('channel');
         $channel->addChild('title', $rssConfig['feed_title']);
         $channel->addChild('link', htmlspecialchars($rssConfig['homepage_url'])); // Link zur Hauptseite
-        $channel->addChild('description', $rssConfig['feed_description']);
+        // ÄNDERUNG: Zusätzliche Informationen zur Channel-Beschreibung hinzufügen
+        $fullDescription = $rssConfig['feed_description'];
+        if (!empty($rssConfig['comic_author_name'])) {
+            $fullDescription .= '<br/><br/>Original-Comic-Autor: ' . htmlspecialchars($rssConfig['comic_author_name']);
+        }
+        if (!empty($rssConfig['comic_translator_name'])) {
+            $fullDescription .= '<br/>Übersetzer: ' . htmlspecialchars($rssConfig['comic_translator_name']);
+        }
+        if (!empty($rssConfig['contact_info'])) {
+            $fullDescription .= '<br/>Kontakt: ' . htmlspecialchars($rssConfig['contact_info']);
+        }
+        $channel->addChild('description', $fullDescription);
         $channel->addChild('language', 'de-de'); // Sprache des Feeds
         $channel->addChild('lastBuildDate', date(DATE_RSS)); // Letztes Build-Datum
         $channel->addChild('generator', 'Custom RSS Generator by Felix');
