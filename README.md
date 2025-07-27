@@ -19,6 +19,16 @@
   <br><br>
 
 
+---
+### Wichtiger Hinweis: 
+
+Zum aktuellen Zeitpunkt ist das gesammte Projekt noch an die Domain twokinds.4lima.de gebunden. Auf anderen Hosts läuft das Projekt nicht. Dies soll aber in zukünftigen Updates geändert werden.
+
+---
+
+<br>
+<br>
+
 ## Inhaltsverzeichnis
 
 - [Über das Projekt](#über-das-projekt)
