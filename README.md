@@ -12,19 +12,12 @@
   </p>
   <p align="center">  
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/issues"><img src="https://img.shields.io/github/issues/RaptorXilef/twokinds.4lima.de.svg" alt="Issues"></a>
-  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/pulls"><img src="https://img.shields.io/github/issues-pr/RaptorXilef/twokinds.4lima.de.svg" alt="Pull Requests"></a>
+  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/milestones"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress/RaptorXilef/twokinds.4lima.de/1"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress-percent/RaptorXilef/twokinds.4lima.de/1"></a>
   <!--<img src="https://img.shields.io/github/checks-status/RaptorXilef/twokinds.4lima.de/main" alt="Checks Status">-->
   <br><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"><img src="https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png" alt="CC BY-NC-SA 4.0"></a></br>
   </p>
   <br><br>
 
-
----
-### Wichtiger Hinweis: 
-
-Zum aktuellen Zeitpunkt ist das gesammte Projekt noch an die Domain twokinds.4lima.de gebunden. Auf anderen Hosts läuft das Projekt nicht. Dies soll aber in zukünftigen Updates geändert werden.
-
----
 
 <br>
 <br>
@@ -148,7 +141,7 @@ Siehe: [TwoKinds-Lizenz](https://twokinds.keenspot.com/license/)
 Bei Fragen oder Anregungen kannst du gern ein Issue öffnen: 
 
 
-
+<a href="https://github.com/RaptorXilef/twokinds.4lima.de/pulls"><img src="https://img.shields.io/github/issues-pr/RaptorXilef/twokinds.4lima.de.svg" alt="Pull Requests"></a>
   ![GitHub language count](https://img.shields.io/github/languages/count/RaptorXilef/twokinds.4lima.de)
   ![GitHub top language](https://img.shields.io/github/languages/top/RaptorXilef/twokinds.4lima.de)
   ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/RaptorXilef/twokinds.4lima.de/total)
