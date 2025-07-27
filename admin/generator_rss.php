@@ -131,13 +131,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         // Standardwerte für RSS-Konfiguration
         $rssConfig = [
             'max_items' => 10,
-            'feed_title' => 'Twokinds in deutsch - Comic-Feed',
+            'feed_title' => 'Twokinds Deutsch Comic-Feed',
             'feed_description' => 'Der offizielle RSS-Feed für die neuesten deutschen Übersetzungen von Twokinds.',
             'feed_author_name' => 'Felix Maywald', // Feed-Autor
             'comic_author_name' => 'Thomas J. Fischbach', // Comic-Autor
             'comic_translator_name' => 'Felix Maywald', // Comic-Übersetzer
             'homepage_url' => $baseUrl, // URL der Homepage
-            'contact_info' => $baseUrl . 'impressum.php' // Kontaktmöglichkeit (E-Mail, URL, Tel. etc.)
+            'contact_info' => 'info@example.com' // Kontaktmöglichkeit (E-Mail, URL, Tel. etc.)
         ];
 
         // Korrektur: Nur array_merge aufrufen, wenn $rssConfigResult['data'] ein Array und nicht null ist
@@ -208,11 +208,42 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
                         $comicLink = htmlspecialchars($baseUrl . 'comic/' . $filename);
                         $pubDate = date(DATE_RSS, strtotime($comicId)); // Datum im RSS-Format
 
+                        $imageHtml = '';
+                        // Konstruiere den Dateisystempfad zum Bild
+                        // Annahme: Bilder sind im Format YYYYMMDD.jpg oder YYYYMMDD.png
+                        $imageFileNameJpg = $comicId . '.jpg';
+                        $imageFileNamePng = $comicId . '.png';
+                        $imageFsPathJpg = __DIR__ . '/../assets/comic_lowres/' . $imageFileNameJpg;
+                        $imageFsPathPng = __DIR__ . '/../assets/comic_lowres/' . $imageFileNamePng;
+
+                        $actualImageFileName = '';
+                        if (file_exists($imageFsPathJpg)) {
+                            $actualImageFileName = $imageFileNameJpg;
+                        } elseif (file_exists($imageFsPathPng)) {
+                            $actualImageFileName = $imageFileNamePng;
+                        }
+
+                        if (!empty($actualImageFileName)) {
+                            $imageUrl = htmlspecialchars($baseUrl . 'assets/comic_lowres/' . $actualImageFileName);
+                            // Füge ein einfaches Style für max-width hinzu, um Responsivität in verschiedenen Readern zu gewährleisten
+                            $imageHtml = '<p><img src="' . $imageUrl . '" alt="' . htmlspecialchars($comicInfo['name']) . '" style="max-width: 100%; height: auto; display: block; margin-bottom: 10px;" /></p>';
+                            if ($debugMode) {
+                                error_log("DEBUG: Comic-Bild gefunden: " . $imageUrl);
+                            }
+                        } else {
+                            if ($debugMode) {
+                                error_log("DEBUG: Comic-Bild nicht gefunden für ID " . $comicId . " (weder .jpg noch .png erwartet).");
+                            }
+                        }
+
+                        // Füge das Bild-HTML vor dem Transkript in die Beschreibung ein
+                        $descriptionWithImage = $imageHtml . '<p>' . htmlspecialchars($comicInfo['transcript']) . '</p>';
+
                         $rssItems[] = [
                             'title' => htmlspecialchars($comicInfo['name']),
                             'link' => $comicLink,
-                            'guid' => $comicLink, // GUID sollte eindeutig sein, Link ist hier ausreichend
-                            'description' => htmlspecialchars($comicInfo['transcript']),
+                            'guid' => $comicLink,
+                            'description' => $descriptionWithImage, // Verwende die Beschreibung mit Bild
                             'pubDate' => $pubDate
                         ];
                         $processedCount++;
