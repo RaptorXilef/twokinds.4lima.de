@@ -38,6 +38,8 @@
         <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic.php">Über den Comic</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz.php">Lizenz</a>
+        <br>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>datenschutzerklaerung.php">Datenschutz</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>impressum.php">Impressum</a>
         <br>
         <a id="toggle_lights" class="theme jsdep" href=""><span class="themelabel">Theme</span><span

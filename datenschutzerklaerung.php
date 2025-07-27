@@ -42,14 +42,17 @@ $additionalScripts = ''; // Leere den additionalScripts-Block, da die Funktion g
             personenbezogenen Daten (nachfolgend kurz „Daten“) innerhalb unseres Onlineangebotes und der mit ihm
             verbundenen Webseiten, Funktionen und Inhalte sowie externen Onlinepräsenzen, wie z.B. unser Social Media
             Profil, auf. (nachfolgend gemeinsam bezeichnet als „Onlineangebot“).</p>
+        <br>
         <p>Verantwortlicher für die Datenverarbeitung auf dieser Website ist:</p>
         <p>
-            [Dein Name/Firmenname]<br>
+            <!--[Dein Name/Firmenname]<br>
             [Deine Adresse]<br>
             [Deine E-Mail-Adresse]<br>
-            [Deine Telefonnummer (optional)]
+            [Deine Telefonnummer (optional)]-->
+            Felix Maywald
         </p>
-        <p>Die vollständigen Kontaktdaten findest du in unserem Impressum.</p>
+        <p>Die vollständigen Kontaktdaten findest du in unserem <a
+                href="<?php echo htmlspecialchars($baseUrl); ?>impressum.php">Impressum</a>.</p>
     </section>
 
     <section>

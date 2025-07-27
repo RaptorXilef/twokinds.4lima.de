@@ -34,19 +34,19 @@
         </br>
         <a href="./initial_setup.php">Webseiten-Ersteinrichtung</a>
         </br>
-        <a href="./generator_comic.php">Comic-Seiten-Generator</a>
-        </br>
         <a href="./generator_thumbnail.php">Thumbnail-Generator</a>
-        </br>
         <a href="./generator_image_socialmedia_crop.php">Social Media Bild-Generator Crop</a>
-        <a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>
+        <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
         </br>
         <a href="./data_editor_comic.php">Comic Daten Editor</a>
+        <a href="./generator_comic.php">Comic-Seiten-Generator</a>
+        </br>
+        <a href="./generator_rss.php">RSS-Generator</a>
         </br>
         <a href="./data_editor_archiv.php">Archiv Daten Editor</a>
         </br>
-        <a href="./generator_sitemap.php">Sitemap Generator</a>
         <a href="./data_editor_sitemap.php">Sitemap Editor</a>
+        <a href="./generator_sitemap.php">Sitemap Generator</a>
         </br>
         <a href="?action=logout">Logout</a>
         <br>
