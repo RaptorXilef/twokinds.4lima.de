@@ -1,0 +1,98 @@
+{
+    "20250209": {
+        "type": "Comicseite",
+        "name": "Nora erwacht 3",
+        "transcript": "<p><b>Nora:</b> Blablabla...</p><p><b>Charakter B:</b> Lorem ipsum dolor sit amet.</p>",
+        "chapter": 22
+    },
+    "20250219": {
+        "type": "Comicseite",
+        "name": "Nora erwacht 4",
+        "transcript": "<p><b>Nora:</b> Weitere Zeilen hier.</p>",
+        "chapter": 22
+    },
+    "20250223": {
+        "type": "Comicseite",
+        "name": "Nora erwacht 5 - Ger\u00f6stet",
+        "transcript": "<p><b>Erz\u00e4hler:</b> Die Hitze stieg.</p>",
+        "chapter": 22
+    },
+    "20250301": {
+        "type": "Comicseite",
+        "name": "Nora erwacht 6",
+        "transcript": "<p><b>Nora:</b> Es ist geschafft!</p>",
+        "chapter": 22
+    },
+    "20250305": {
+        "type": "Comicseite",
+        "name": "Noras Futter",
+        "transcript": "<p><b>Nora:</b> Ich habe Hunger.</p>",
+        "chapter": 22
+    },
+    "20250309": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 1 - Ehrliche Worte",
+        "transcript": "<p><b>Maeve:</b> Das ist die Wahrheit.</p>",
+        "chapter": 22
+    },
+    "20250312": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 2 - H\u00f6flichkeits-Paradoxon (test)",
+        "transcript": "<p><b>Reed:</b> Eine schwierige Situation.</p><p>(test)</p>",
+        "chapter": 22
+    },
+    "20250315": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 3 - Komplimente",
+        "transcript": "<p><b>Maeve:</b> Du siehst gut aus.</p>",
+        "chapter": 22
+    },
+    "20250320": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 4 - Oberschwester Edith",
+        "transcript": "<p><b>Edith:</b> Regeln sind Regeln.</p>",
+        "chapter": 22
+    },
+    "20250326": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 5 - Die Waisenkinder",
+        "transcript": "<p><b>Reed:</b> Arme Kinder.</p>",
+        "chapter": 22
+    },
+    "20250403": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 6 - Nach Hause gehen",
+        "transcript": "<p><b>Maeve:</b> Der Weg ist lang.</p>",
+        "chapter": 22
+    },
+    "20250410": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 7 - Entf\u00fchrung f\u00fcr einen guten Zweck",
+        "transcript": "<p><b>Erz\u00e4hler:</b> Eine unkonventionelle Methode.</p>",
+        "chapter": 22
+    },
+    "20250507": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 8 - Gute Nacht Mave",
+        "transcript": "<p><b>Maeve:</b> Schlafe gut.</p>",
+        "chapter": 22
+    },
+    "20250513": {
+        "type": "Comicseite",
+        "name": "Maeve und Reed 9 - Gemeinsames Bett",
+        "transcript": "<p><b>Reed:</b> Ein unerwarteter Abend.</p>",
+        "chapter": 22
+    },
+    "20250531": {
+        "type": "Comicseite",
+        "name": "Wache gegen Templer",
+        "transcript": "<p><b>Wache:</b> Achtung!</p>",
+        "chapter": 22
+    },
+    "20250604": {
+        "type": "Comicseite",
+        "name": "Durch die T\u00fcr kommen",
+        "transcript": "<p><b>Charakter:</b> Fast geschafft.</p>",
+        "chapter": 22
+    }
+}
