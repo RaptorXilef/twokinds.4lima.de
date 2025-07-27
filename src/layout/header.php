@@ -26,42 +26,45 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
-// Diese Logik ist nun zentral in header_admin.php und wird für alle Seiten verwendet.
+// Diese Logik ermittelt die Basis-URL dynamisch, unabhängig davon, ob die Seite lokal,
+// im Intranet oder auf einem externen Server läuft und ob sie in einem Unterordner installiert ist.
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
 
-$isLocal = (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false);
+// Ermittle den Pfad des aktuellen Skripts relativ zum Webserver-Dokumenten-Root.
+// Beispiel: /deinprojekt/src/layout/header.php
+$scriptPath = $_SERVER['PHP_SELF'];
 
-if ($isLocal) {
-    // Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
-    // __FILE__ ist der absolute Pfad zu header_admin.php (z.B. /var/www/html/deinprojekt/src/layout/header_admin.php)
-    // dirname(__FILE__) ist /var/www/html/deinprojekt/src/layout
-    // dirname(dirname(__FILE__)) ist /var/www/html/deinprojekt/src
-    // dirname(dirname(dirname(__FILE__))) ist /var/www/html/deinprojekt (dies ist der Anwendungs-Root)
-    $appRootAbsPath = str_replace('\\', '/', dirname(dirname(dirname(__FILE__))));
+// Ermittle das Verzeichnis der aktuellen Datei (z.B. /deinprojekt/src/layout)
+$currentDir = dirname($scriptPath);
 
-    // Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
-    $documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+// Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
+// __FILE__ ist der absolute Pfad zu header.php (z.B. /var/www/html/deinprojekt/src/layout/header.php)
+// dirname(__FILE__) ist /var/www/html/deinprojekt/src/layout
+// dirname(dirname(__FILE__)) ist /var/www/html/deinprojekt/src
+// dirname(dirname(dirname(__FILE__))) ist /var/www/html/deinprojekt (dies ist der Anwendungs-Root)
+$appRootAbsPath = str_replace('\\', '/', dirname(dirname(dirname(__FILE__))));
 
-    // Berechne den Unterordner-Pfad relativ zum Dokumenten-Root des Webservers.
-    // Wenn documentRoot /var/www/html ist und appRootAbsPath /var/www/html/deinprojekt,
-    // dann wird subfolderPath /deinprojekt.
-    $subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+// Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
+$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
 
-    // Stelle sicher, dass der Unterordner-Pfad mit einem Schrägstrich beginnt und endet.
-    if (!empty($subfolderPath) && $subfolderPath !== '/') {
-        $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
-    } elseif (empty($subfolderPath)) {
-        $subfolderPath = '/'; // Wenn der Anwendungs-Root GLEICH dem Dokumenten-Root ist.
-    }
+// Berechne den Unterordner-Pfad relativ zum Dokumenten-Root des Webservers.
+// Wenn documentRoot /var/www/html ist und appRootAbsPath /var/www/html/deinprojekt,
+// dann wird subfolderPath /deinprojekt.
+$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
 
-    $baseUrl = $protocol . $host . $subfolderPath;
-    if ($debugMode)
-        error_log("DEBUG: Lokale Basis-URL (Header - Refined): " . $baseUrl);
-} else {
-    $baseUrl = 'https://twokinds.4lima.de/';
-    if ($debugMode)
-        error_log("DEBUG: Live Basis-URL (Header): " . $baseUrl);
+// Stelle sicher, dass der Unterordner-Pfad mit einem Schrägstrich beginnt und endet.
+if (!empty($subfolderPath) && $subfolderPath !== '/') {
+    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+} elseif (empty($subfolderPath)) {
+    $subfolderPath = '/'; // Wenn der Anwendungs-Root GLEICH dem Dokumenten-Root ist.
+}
+
+$baseUrl = $protocol . $host . $subfolderPath;
+
+// Debug-Ausgabe, falls $debugMode aktiviert ist
+if (isset($debugMode) && $debugMode) {
+    error_log("DEBUG: Dynamische Basis-URL: " . $baseUrl);
 }
 // === Ende Dynamische Basis-URL Bestimmung ===
 
@@ -124,7 +127,8 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
 
     <?php
     // Pfad zur Sitemap-Datei.
-    $sitemapURL = 'https://twokinds.4lima.de/sitemap.xml';
+    // Verwendet nun die dynamisch ermittelte baseUrl
+    $sitemapURL = $baseUrl . 'sitemap.xml';
     ?>
     <link rel="sitemap" type="application/xml" title="Sitemap" href="<?php echo htmlspecialchars($sitemapURL); ?>">
     <meta name="google-site-verification" content="61orCNrFH-sm-pPvwWMM8uEH8OAnJDeKtI9yzVL3ico" />
