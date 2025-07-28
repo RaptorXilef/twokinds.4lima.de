@@ -45,7 +45,8 @@ Es ist wichtig, die PHP-Konfiguration anzupassen, damit das Skript korrekt und o
 
   ```
   ;extension=curl
-  ;extension=dom
+  ;extension=json
+  bei sehr alten PHP Versionen (;extension=dom)
 
   ```
 
@@ -53,7 +54,8 @@ Es ist wichtig, die PHP-Konfiguration anzupassen, damit das Skript korrekt und o
 
   ```
   extension=curl
-  extension=dom
+  extension=json
+  bei sehr alten PHP Versionen (extension=dom)
 
   ```
 

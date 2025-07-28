@@ -18,12 +18,12 @@ const DELAY_BETWEEN_REQUESTS = 1; // Wartezeit in Sekunden zwischen erfolgreiche
 // --- ANPASSBARE VARIABLEN FÜR START- UND ENDNUMMER ---
 // Ändere diese Werte, um den Bereich der zu scrapenden Comics festzulegen.
 const START_COMIC_NUMBER = 1;   // Die erste Comic-Nummer, die gescraped werden soll
-const END_COMIC_NUMBER = 4;    // Die letzte Comic-Nummer, die gescraped werden soll
+const END_COMIC_NUMBER = 1264;    // Die letzte Comic-Nummer, die gescraped werden soll
 
 // --- DEBUG-MODUS ---
 // Setze auf 'true', um detaillierte Debug-Ausgaben in der Konsole zu sehen.
 // Setze auf 'false', für eine weniger ausführliche Ausgabe.
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 // --- Initialisierung für Browser-Ausgabe (optional, primär für Konsole gedacht) ---
 // Deaktiviere Output-Buffering und aktiviere implizites Flushing für sofortige Ausgabe im Browser

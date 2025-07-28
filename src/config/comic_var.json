@@ -1,98 +1,107 @@
 {
-    "20250209": {
-        "type": "Comicseite",
-        "name": "Nora erwacht 3",
-        "transcript": "<p><b>Nora:</b> Blablabla...</p><p><b>Charakter B:</b> Lorem ipsum dolor sit amet.</p>",
-        "chapter": 22
-    },
-    "20250219": {
-        "type": "Comicseite",
-        "name": "Nora erwacht 4",
-        "transcript": "<p><b>Nora:</b> Weitere Zeilen hier.</p>",
-        "chapter": 22
-    },
-    "20250223": {
-        "type": "Comicseite",
-        "name": "Nora erwacht 5 - Ger\u00f6stet",
-        "transcript": "<p><b>Erz\u00e4hler:</b> Die Hitze stieg.</p>",
-        "chapter": 22
-    },
-    "20250301": {
-        "type": "Comicseite",
-        "name": "Nora erwacht 6",
-        "transcript": "<p><b>Nora:</b> Es ist geschafft!</p>",
-        "chapter": 22
-    },
-    "20250305": {
-        "type": "Comicseite",
-        "name": "Noras Futter",
-        "transcript": "<p><b>Nora:</b> Ich habe Hunger.</p>",
-        "chapter": 22
-    },
-    "20250309": {
-        "type": "Comicseite",
-        "name": "Maeve und Reed 1 - Ehrliche Worte",
-        "transcript": "<p><b>Maeve:</b> Das ist die Wahrheit.</p>",
-        "chapter": 22
-    },
     "20250312": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 2 - H\u00f6flichkeits-Paradoxon (test)",
-        "transcript": "<p><b>Reed:</b> Eine schwierige Situation.</p><p>(test)</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 2 - Politeness Paradox",
+        "transcript": "<p><strong>Maeve:</strong> Thank you for helping me, Miss Reed, ma'am.</p>\n<p><strong>Reed:</strong> You know, you can just call me Alice.</p>\n<p><strong>Maeve:</strong> Alice?</p>\n<p><strong>Reed:</strong> That's my name. <strong><em>Alice Reed!</em></strong></p>\n<p><strong>Maeve:</strong> Um…</p>\n<p><strong>Reed:</strong> What's wrong? Oh, Keidran usually have just one name, right? Plus their tribe?</p>\n<p><strong>Maeve:</strong> I-It's not that. I know how human names work, but…</p>\n<p><strong>Adira:</strong> Maeve, humans have two names, and they're <strong><em>very</em></strong> picky about them. <strong><em>Never</em></strong> call a grown up by their first name.</p>\n<p><strong>Maeve:</strong> M-mom said I shouldn't…</p>\n<p><strong>Adira:</strong> Maeve, never talk back to a guard! Be polite and do what they say!</p>\n<p><strong>Adira:</strong> Also you're in big trouble for that bad word, young lady!</p>\n<p><strong>Maeve:</strong> <strong><em>NYA!</em></strong></p>\n<p><strong>Maeve:</strong> (thoughts) <em>How do you know?! Wait… those two things were the opposite!</em></p>\n<p><strong>Maeve:</strong> (thoughts) <em>Which one do I listen to?! Uh… um… </em><strong><em>mrow!!!</em></strong></p>\n<p><strong>Reed:</strong> Maeve! <strong><em>Maeve!</em></strong> Calm down, it's okay! It's fine! You can keep calling me Miss Reed! I'm not going to get mad either way, alright?</p>\n<p><strong>Maeve:</strong> Oh… Really?</p>\n<p><strong>Reed:</strong> Yes! I promise!</p>\n<p><strong>Reed:</strong> (thoughts) <em>Woah, she's a nervous one. I was just trying to make her more at ease…</em></p>\n<p><strong>Reed:</strong> (thoughts) <em>I really am just terrible with kids.</em></p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250312"
     },
     "20250315": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 3 - Komplimente",
-        "transcript": "<p><b>Maeve:</b> Du siehst gut aus.</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 3 - Complements",
+        "transcript": "<p><strong>Reed:</strong> <strong><em>SIGH</em></strong></p>\n<p><strong>Reed:</strong> (thoughts) <em>Good going, Reed. Just when she was starting to open up. Now she's back to staring at me with those big ol' eyes.</em></p>\n<p><strong>Maeve:</strong> I like your hair!</p>\n<p><strong>Reed:</strong> Huh?</p>\n<p><strong>Signboard:</strong> HAPPY HEARTH ORPHANAGE</p>\n<p><strong>Reed:</strong> Oh… You do?</p>\n<p><strong>Maeve:</strong> <strong><em>Yeah!</em></strong> I don't see many human ladies with hair like that.</p>\n<p><strong>Reed:</strong> Well, it's just because I'm a guard. Long hair can get dirty or be grabbed. So I keep it short just to be practical.</p>\n<p><strong>Maeve:</strong> Well, I think it looks <strong><em>cool!</em></strong></p>\n<p><strong>Reed:</strong> Really? Thank you, Maeve!</p>\n<p><strong>Reed:</strong> (thoughts) <em>Wow! Not used to hearing that… Most people just say I look like a </em><strong><em>boy</em></strong><em>.</em></p>\n<p><strong>Reed:</strong> (thoughts) And my fellow guardsmen, well… they're great guys, but not exactly the most tactful bunch…</p>\n<p><strong>Dave:</strong> Mornin', Reed! You look like crap!</p>\n<p><strong>Reed:</strong> …Thanks, Dave.</p>\n<p><strong>Reed:</strong> (thoughts) <em>Is it sad that being called cool by a child is the best feeling compliment I've received in months?</em></p>\n<p><strong>Reed:</strong> <strong><em>I'm cool! ♥︎</em></strong></p>\n<p><strong>Dave:</strong> Reed, heads up. We're here.</p>\n<p><strong>Reed:</strong> Oh, good. <em>Time to go.</em></p>\n<p><strong><em>CREAK</em></strong></p>\n<p><strong>Sign:</strong> EDITH'S HAPPY HEARTH ALL SPECIES WELCOME!</p>\n<p><strong><em>RUMBLE</em></strong></p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250315"
     },
     "20250320": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 4 - Oberschwester Edith",
-        "transcript": "<p><b>Edith:</b> Regeln sind Regeln.</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 4 - Matron Edith",
+        "transcript": "<p><strong>Edith:</strong> Yeah? Whatdaya want?</p>\n<p><strong>Reed:</strong> You're… Edith?</p>\n<p><strong>Edith:</strong> You're probably thinking of my late grandma, but yeah, I'm also Edith.</p>\n<p><strong>Edith:</strong> And before you ask, no, there's no beds left. We were full even before the fires. Sorry.</p>\n<p><strong>Reed:</strong> Oh, it's not for me. I'm with the guard. I was told you'd have a room for this one?</p>\n<p><strong>Reed:</strong> This is Maeve. Her mother went missing recently. She just needs a safe place to stay for a day or two, until her mom is found.</p>\n<p><strong>Edith:</strong> Oh… …a Keidran…</p>\n<p><strong>Edith:</strong> …Are you sure?</p>\n<p><strong>Reed:</strong> Uh… yes?</p>\n<p><strong>Edith:</strong> …Okay… this way.</p>\n<p><strong>Reed:</strong> Wait, what did you mean by that? Ma'am?</p>\n<p><strong><em>CLICK</em></strong></p>\n<p><strong><em>CREEEK</em></strong></p>\n<p><strong>Reed:</strong> <em>Ah—!</em></p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250320"
     },
     "20250326": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 5 - Die Waisenkinder",
-        "transcript": "<p><b>Reed:</b> Arme Kinder.</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 5 - The Orphaned",
+        "transcript": "<p><strong>Edith:</strong> We're the only orphanage that takes in Keidran. As you can imagine, with the war, it's not a very popular position these days. And with the recent wolf attack, I fear it's only going to get worse.</p>\n<p><strong>Reed:</strong> <strong><em>AH!</em></strong></p>\n<p><strong>Edith:</strong> There's no beds, but… I can spare some of my own bedding for her, I suppose. She'll also get at least two meals a day while she's here.</p>\n<p><strong>Edith:</strong> Any Keidran who go feral are kept in a separate room, for all their safety. Oh… and of course… with the recent laws…</p>\n<p><strong>Edith:</strong> She'll have to wear this.</p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250326"
     },
     "20250403": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 6 - Nach Hause gehen",
-        "transcript": "<p><b>Maeve:</b> Der Weg ist lang.</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 6 - Going Home",
+        "transcript": "<p><strong>Dave:</strong> So, you went through with it? Damn, I’m out five copper. We had I bet I’d have to step in and do it for you.</p>\n<p><strong>Newspaper:</strong> <strong>THE EDINMIRE ENQUIRER</strong></p>\n<p><strong>Newspaper: LEGACY ESTATE GLOWING!</strong> GRAND TEMPLAR AT IT AGAIN?</p>\n<p><strong>Newspaper: </strong>The citizens of Edinmire were abuzz last night as a strange phenomenon illuminated the towering Legacy Estate. A pulsing glow, shifting from deep blues to eerie reds, bathed the surrounding mountainside, sending whispers through the city streets. Trace Legacy, the Grand Templar and Duke of Edinmire, returned only two days ago after an unexplained six-month absence. Now, with the estate coming alive in an unexplained way, speculation is mounting: Has the Duke resumed his magical experiments? “I saw it clear as day!” said merchant Claras Day. Eyewitnesses describe the lights as bright and unnatural, accompanied by faint tremors beneath their feet. “Duke Legacy is a powerful mage,” said Councilman Davien Rhys. “If he is indeed conducting experiments, we trust he is doing so responsibly. There is no evidence to suggest any threat to the city.” Not all citizens are convinced. Given Legacy’s infamous past and rumored instability, some fear his return could signal danger. Others wonder if he is attempting to reclaim his former position as the head of the Templar Order, a post he abandoned under mysterious circumstances. “If he’s experimenting, we should know.” cont. p3</p>\n<p><strong>Newspaper:</strong> <strong>ANOTHER DRAGON? RENI'S MATE?!</strong></p>\n<p><strong>Newspaper:</strong> <strong>WANTED CRAZY LIZARD WEIRDO </strong>50 Gold Reward<strong> ASSAULT AND BATTERY ESCAPING JAIL LOOKING WEIRD</strong></p>\n<p><strong>Dave:</strong> You being a lady guard, you know, emotional. No offense.</p>\n<p><strong>Reed:</strong> Shut the hell up, Dave. Just get in the carriage.</p>\n<p><strong>Dave:</strong> You're the boss!</p>\n<p><strong>RUMBLE</strong></p>\n<p><strong>Reed: </strong><em>That look on her face...</em></p>\n<p><strong>Reed: </strong><em>When she went into that awful room... I couldn't stand it...</em></p>\n<p><strong>Dave: </strong>I know how you feel, Reed. They're cute. But it's like the dogs at the pound. Can't save 'em all.</p>\n<p><strong>Dave:</strong> Alright, have a good night, lieutenant. <em>Hyah!</em></p>\n<p><strong>Horse:</strong> <strong>CLIP CLOP</strong></p>\n<p><strong>Reed: </strong>Home sweet home...</p>\n<p><strong>PWIP</strong></p>\n<p><strong>Maeve:</strong> This is your house?</p>\n<p><strong>Reed: </strong><em>Shhh!</em> Not until we're inside!</p>",
+        "chapter": "",
+        "datum": "20250403"
     },
     "20250410": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 7 - Entf\u00fchrung f\u00fcr einen guten Zweck",
-        "transcript": "<p><b>Erz\u00e4hler:</b> Eine unkonventionelle Methode.</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 7 - Kidnapping for a Good Cause",
+        "transcript": "<p><strong>Reed:</strong> We'll find somewhere else.</p>\n<p><strong>Reed:</strong> Also… due to the war, the guard is stretched thin. We don't have time to check things like collar laws. You'll have to… <em>enforce them at your own discretion.</em></p>\n<p><strong>Reed:</strong> Do you understand what I'm saying?</p>\n<p><strong>Eith:</strong> …Thank you.</p>\n<p><strong><em>SHUT</em></strong></p>\n<p><strong>Reed:</strong> (thoughts) <strong><em>Urgh!</em></strong><em> What have I done? Not only did I heavily imply to that woman that she should break the law… I just took a kid home with me.</em></p>\n<p><strong>Reed:</strong> (thoughts) <em>What will happen if people find out?</em></p>\n<p><strong>SMASH</strong></p>\n<p><strong>Guard one:</strong> <strong><em>Stop right there, criminal scum!</em></strong></p>\n<p><strong>Guard two:</strong> Kidnapping?! You're going away for a long time, you sicko!</p>\n<p><strong>Reed:</strong> <strong><em>No, please! It's not like that!</em></strong></p>\n<p><strong>Guard one:</strong> Oh, wait… It's just a Keidran.</p>\n<p><strong>Guard two:</strong> Never mind. See ya Monday, Reed.</p>\n<p><strong>Reed:</strong> (thoughts) <em>Actually… that version seems more realistic, sadly…</em></p>\n<p><strong>Reed:</strong> (thoughts) <em>But I still might end up fired for this.</em></p>\n<p><strong>Maeve:</strong> …Thank you for not leaving me there…</p>\n<p><strong>Reed:</strong> (thoughts) <em>…Oh, well. If I'm fired, so be it. Maybe I'll finally move somewhere warmer.</em></p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250410"
     },
     "20250507": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 8 - Gute Nacht Mave",
-        "transcript": "<p><b>Maeve:</b> Schlafe gut.</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 8 - Goodnight Maeve",
+        "transcript": "<p><strong>Caption: Later…</strong></p>\n<p><strong>Reed:</strong> All washed up?</p>\n<p><strong>Maeve:</strong> …My shirt's too big.</p>\n<p><strong>Reed:</strong> Sorry. I don't have anything more… <strong>you-sized.</strong></p>\n<p><strong>Maeve:</strong> It's okay.</p>\n<p><strong>Reed:</strong> If you can, try to keep away from windows. Last thing I need is a nosy neighbour spotting you in here. <em>Heh… spots.</em></p>\n<p><strong>Reed:</strong> <em>Hm…</em> actually, they'd probably just assume I bought a Keidran. But that's not something I want added to my reputation either.</p>\n<p><strong>CLUNK</strong></p>\n<p><strong>Reed:</strong> I don't have a guest room, but I made up the couch just for you. Should be comfy. <em>(Comfier than that other place, anyway…)</em></p>\n<p><strong>YAWN</strong></p>\n<p><strong>Reed:</strong> Tomorrow, we'll figure something out. Maybe you can come with me to the castle and meet the princess! But for now, goodnight, Maeve.</p>\n<p><strong>Reed:</strong> Sleep tigh—</p>\n<p><strong>ZIP!</strong></p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250507"
     },
     "20250513": {
         "type": "Comicseite",
-        "name": "Maeve und Reed 9 - Gemeinsames Bett",
-        "transcript": "<p><b>Reed:</b> Ein unerwarteter Abend.</p>",
-        "chapter": 22
+        "name": "Maeve and Reed 9 - Communal Bed",
+        "transcript": "<p><strong>Reed:</strong> What? Too good for a couch? Alright, <strong><em>fine</em></strong>. You can have my bed. It's just up the stairs.</p>\n<p><strong>Reed:</strong> I'll take the cou—!</p>\n<p><strong>Maeve:</strong> <em>Nya!</em></p>\n<p><strong>ZIP!</strong></p>\n<p><strong>Reed:</strong> <strong>SIGH…</strong></p>\n<p><strong>Reed:</strong> (thoughts) <em>Dave was right about me… Curse my weak heart.</em></p>\n<p><strong>Reed:</strong> (thoughts) <em>I don't know much about Keidran, but I've heard stories that felines like the tigers traditionally sleep in large communal beds. I'd bet it's the same for the snow leopards. Makes me wonder where Maeve's father is… best not to ask her that, though.</em></p>\n<p><strong>Reed:</strong> (thoughts) <em>Now that I think about it…</em></p>\n<p><strong>Reed:</strong> (thoughts) <em>Maeve's probably never had to sleep alone in her entire life. It's no wonder she's so clingy…</em></p>\n<p><strong>Reed:</strong> (thoughts) <em>…Damn it, Kei, you'd better find her mother, or so help me… I'm going to have to adopt this kid! </em><strong><em>Agh!</em></strong></p>\n<p><strong>RUMBLE</strong></p>\n<p><strong>Unknown:</strong> Distract him!</p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250513"
     },
     "20250531": {
         "type": "Comicseite",
-        "name": "Wache gegen Templer",
-        "transcript": "<p><b>Wache:</b> Achtung!</p>",
-        "chapter": 22
+        "name": "Guard vs Templar",
+        "transcript": "<p><strong>Templar Knight:</strong> <strong><em>Halt!</em></strong></p>\n<p><strong>Keiren:</strong> What's going on here?</p>\n<p><strong>Templar Knight:</strong> This area is off-limits. You'll have to leave.</p>\n<p><strong>Keiren:</strong> \"Off-limits\"? I am <strong><em>captain of the guard.</em></strong> I demand to know what's going on!</p>\n<p><strong>Templar Knight:</strong> The Riftwall Tavern is suspected to be connected to the recent wolf attack.</p>\n<p><strong>Keiren:</strong> What? I wasn't informed of this!</p>\n<p><strong>Keiren:</strong> The owner, Adira, where is she? Did you take her?</p>\n<p><strong>Templar Knight:</strong> She is not here. I suggest you submit an inquiry with the Templar over at the tower.</p>\n<p><strong>Keiren:</strong> I intend to… …but not before I look around inside for myself, first.</p>\n<p><strong>Templar Knight:</strong> No, you will not. Entry is forbidden by order of the Templar.</p>\n<p><strong>Keiren:</strong> The Templar <strong><em>do not</em></strong> have authority over the guard, I don't answer to you. Stand aside.</p>\n<p><strong>Templar Knight:</strong> Our orders come from the crown and the <strong><em>royal</em></strong> guard, which you <strong><em>do</em></strong> answer to.</p>\n<p><strong>Templar Knight:</strong> So I suggest you move along, farm boy.</p>\n<p><strong>Keiren:</strong> I don't care where you claim your orders came from, \"Templar!\" It wasn't a request!</p>\n<p><strong>Keiren:</strong> Either I'm walking through that door, <strong>or I'm kicking you through it.</strong></p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250531"
     },
     "20250604": {
         "type": "Comicseite",
-        "name": "Durch die T\u00fcr kommen",
-        "transcript": "<p><b>Charakter:</b> Fast geschafft.</p>",
-        "chapter": 22
+        "name": "Getting Through the Door",
+        "transcript": "<p><strong>THUD</strong></p>\n<p><strong><em>CRASH!</em></strong></p>\n<p><strong>Templar Knight:</strong> <strong><em>IGNIRAS!</em></strong></p>\n<p><strong>Keiren:</strong> <strong><em>Ngh!</em></strong></p>\n<p><strong><em>FWOOSH!</em></strong></p>\n<p><strong>Keiren:<em> Yeargh!</em></strong></p>\n<p><strong><em>SMASH!</em></strong></p>\n<p><strong>Keiren:<em> Huff... Huff...</em></strong></p>\n<p><strong>Keiren: </strong>(thoughts) <em>I really hope that wasn't a real Templar knight...</em></p>\n<p><strong>Unknown: </strong>(O.S.) <em>...Hello?</em></p>",
+        "chapter": "",
+        "datum": "20250604"
+    },
+    "20250622": {
+        "type": "Comicseite",
+        "name": "Finding Adira",
+        "transcript": "<p><strong>Keiren:</strong> (thoughts) <em>That was a woman's voice…</em></p>\n<p><strong>Keiren:</strong> This is the guard! Who's in here? Show yourselves <em>now!</em></p>\n<p><strong>Adira:</strong> Please… Don't hurt me…</p>\n<p><strong>Keiren:</strong> <strong><em>Adira?</em></strong></p>\n<p><strong>Adira:</strong> Y-yes?</p>\n<p><strong>Keiren:</strong> You're here!</p>\n<p><strong>Keiren:</strong> <em>And— oh…</em></p>\n<p><strong>Adira:</strong> I'm not armed! I don't have anything on me, I swear.</p>\n<p><strong>Keiren:</strong> I… I see…</p>\n<p><strong>Keiren:</strong> <em>U-uh,</em> is anyone else in here now?</p>\n<p><strong>Adira:</strong> N-no.</p>\n<p><strong>Keiren:</strong> Where'd they go? I know it wasn't just the one.</p>\n<p><strong>Keiren:</strong> Your neighbor Warren flagged me down. Nearly decked me!</p>\n<p><strong>Warren:</strong> The heck are you doin' with Addy?!</p>\n<p><strong>Keiren:</strong> He was worried sick about you. Said he saw <strong><em>my</em></strong> guards harassing you, and then cloaked figures swarming around the tavern. But I know those weren't my men. <strong><em>So what's going on?</em></strong></p>\n<p><strong>Adira:</strong> It was <strong><em>the wolves!</em></strong></p>\n<p><strong>Adira:</strong> They were after the <strong><em>Riftwall!</em></strong> The portal!</p>\n<p><strong>Adira:</strong> It's how they were moving in and out of the city!</p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250622"
+    },
+    "20250627": {
+        "type": "Comicseite",
+        "name": "Uncovering the Truth",
+        "transcript": "<p><strong>Keiren:</strong> The Riftwall? I thought it didn't work?</p>\n<p><strong>Adira:</strong> It does! But it went to a place I'd never seen before. Hundreds of them went through.</p>\n<p><strong>Keiren:</strong> Into the city?!</p>\n<p><strong>Adira:</strong> No, out!</p>\n<p><strong>Keiren:</strong> …The prisoners of the war! The wolfpen. They smuggled all the wolves out!</p>\n<p><strong>Adira:</strong> I suppose they did.</p>\n<p><strong>Keiren:</strong> Why are you still here? Why didn't they just take you?</p>\n<p><strong>Adira:</strong> They were still waiting for someone else to arrive. Their leader, I guess. They needed me here. This Riftwall only responds to its owner. I have no doubt if the stragglers hadn't been <strong><em>taking forever</em></strong>… I'd certainly be gone by now.</p>\n<p><strong>Keiren:</strong> That's a relief, at least…</p>\n<p><strong>Keiren:</strong> <em>Uh…</em> I should mention, we have your daughter!</p>\n<p><strong>Adira:</strong> My… <strong><em>oh, you do?! Where is she?! I've been so worried!</em></strong></p>\n<p><strong>Keiren:</strong> …She's okay. Mira is back at the station. Your daughter's a brave girl.</p>\n<p><strong>Adira:</strong> Oh, thank the starts! You don't know how relieved I am to hear that my little Mira's safe.</p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250627"
+    },
+    "20250715": {
+        "type": "Comicseite",
+        "name": "Ambush",
+        "transcript": "<p><strong>Keiren:</strong> (thoughts) <em>Doesn't know her daughter's own name? Mind control? Illusion? I should try to dispel—</em></p>\n<p><strong>Keiren:</strong> (thoughts) <em>Ah? My armor gem's gone!</em></p>\n<p><strong>Keiren:</strong> (thoughts) <em>She must have taken it off me! She saw me use it earlier…</em></p>\n<p><strong>Keiren:</strong> (thoughts) <em>She doesn't want me able to shield!</em></p>\n<p><strong>Keiren:</strong> (thoughts) <em>And that means…!</em></p>\n<p><strong>THWANG!</strong></p>\n<p><em>ZIIIIIIP!</em></p>\n<p><strong>Keiren:</strong> (thoughts) <strong><em>Ambush!</em></strong></p>\n<p><em>FHWP!</em></p>\n<p><strong>THWONK!</strong></p>\n<p><strong>Unknown wolf:</strong> <strong>GAH!</strong></p>\n<p> </p>\n<p><em>Page transcript provided by KEISER</em></p>",
+        "chapter": "",
+        "datum": "20250715"
+    },
+    "20250721": {
+        "type": "Comicseite",
+        "name": "Ambush pt 2",
+        "transcript": "<p><strong>Unknown Axe Wolf:</strong> <strong><em>GRRGH!</em></strong></p>\n<p><strong><em>WOOSH!</em></strong></p>\n<p><strong>Keiren:</strong> <strong><em>HRRAAAH!</em></strong></p>\n<p><strong><em>SHINK!</em></strong></p>\n<p><strong>Keiren:<em> Ngh!</em></strong></p>\n<p><strong><em>THUNK!</em></strong></p>\n<p><strong><em>BZZT!</em></strong></p>",
+        "chapter": "",
+        "datum": "20250721"
+    },
+    "20250725": {
+        "type": "Comicseite",
+        "name": "Ambush pt 3",
+        "transcript": "<p><strong><em>SHINK!</em></strong></p>\n<p><strong>Unknown Fox: <em>GLK!</em></strong></p>\n<p><strong><em>THWK!</em></strong></p>\n<p><strong><em>BOOM!</em></strong></p>\n<p><strong><em>CRACK!</em></strong></p>",
+        "chapter": "",
+        "datum": "20250725"
     }
 }
