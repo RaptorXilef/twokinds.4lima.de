@@ -68,6 +68,7 @@ function convertDateToYYYYMMDD(string $dateString): string
         echo "  [DEBUG] Versuche Datum zu konvertieren: '{$dateString}'\n";
         flush();
     }
+    // Versuche, das Datum zu parsen
     $dateTime = DateTime::createFromFormat('F j, Y', $dateString);
     if ($dateTime) {
         $formattedDate = $dateTime->format('Ymd');
@@ -248,7 +249,7 @@ for ($i = START_COMIC_NUMBER; $i <= END_COMIC_NUMBER; $i++) {
     $xpath = new DOMXPath($dom);
 
     $type = '';
-    $date = '';
+    $date = ''; // Initialisiere Datum als leeren String
     $name = '';
     $transcript = '';
 
@@ -273,29 +274,35 @@ for ($i = START_COMIC_NUMBER; $i <= END_COMIC_NUMBER; $i++) {
         }
 
         // Datum und Name extrahieren
-        $parts = explode(':', $h1Text, 2); // Splitte nur am ersten Doppelpunkt
-        if (count($parts) === 2) {
-            $dateAndTypePart = $parts[0];
-            $namePart = trim($parts[1]);
-
-            // Datum extrahieren (nach 'for ' bis zum Ende des Strings oder vor dem Doppelpunkt)
-            preg_match('/for\s(.*?)$/', $dateAndTypePart, $matches);
-            if (isset($matches[1])) {
-                $rawDate = trim($matches[1]);
-                $date = convertDateToYYYYMMDD($rawDate);
-            }
-            $name = $namePart;
+        // Regex angepasst, um das Datum zwischen "for " und dem ersten ":" zu erfassen
+        preg_match('/for\s(.*?):/', $h1Text, $matches);
+        if (isset($matches[1])) {
+            $rawDate = trim($matches[1]);
+            $date = convertDateToYYYYMMDD($rawDate);
             if (DEBUG_MODE) {
-                echo "  [DEBUG] Name ermittelt: '{$name}'\n";
-                echo "  [DEBUG] Rohdatum aus H1: '{$rawDate}'\n";
+                echo "  [DEBUG] Rohdatum aus H1 (extrahiert): '{$rawDate}'\n";
+                echo "  [DEBUG] Datum nach Konvertierung: '{$date}'\n";
                 flush();
             }
         } else {
             if (DEBUG_MODE) {
-                echo "  [DEBUG] H1-Text konnte nicht am Doppelpunkt gesplittet werden: '{$h1Text}'\n";
+                echo "  [DEBUG] Rohdatum konnte nicht aus H1-Text extrahiert werden: '{$h1Text}'\n";
                 flush();
             }
         }
+
+        // Name extrahieren (alles nach dem ersten Doppelpunkt)
+        $nameParts = explode(':', $h1Text, 2);
+        if (count($nameParts) > 1) {
+            $name = trim($nameParts[1]);
+        } else {
+            $name = ''; // Name bleibt leer, wenn kein Doppelpunkt gefunden wird
+        }
+        if (DEBUG_MODE) {
+            echo "  [DEBUG] Name ermittelt: '{$name}'\n";
+            flush();
+        }
+
     } else {
         if (DEBUG_MODE) {
             echo "\n  [DEBUG] H1-Tag nicht gefunden für Comic {$i}.\n";
@@ -329,18 +336,22 @@ for ($i = START_COMIC_NUMBER; $i <= END_COMIC_NUMBER; $i++) {
         'name' => $name,
         'transcript' => $transcript,
         'chapter' => '', // Bleibt leer
+        'datum' => $date // HIER WURDE DAS NEUE 'datum'-FELD HINZUGEFÜGT
     ];
 
-    // Verwende das Datum als Schlüssel, falls vorhanden, sonst die Comic-Nummer als Fallback
+    // --- HIER IST DIE WICHTIGE ÄNDERUNG FÜR DEN SCHLÜSSEL ---
+    // Verwende das extrahierte Datum als Schlüssel.
+    // Wenn das Datum leer ist (z.B. Parsing-Fehler), verwende die Comic-Nummer als Fallback.
     $key = !empty($date) ? $date : (string) $i;
     $comicData[$key] = $comicEntry;
 
     if (DEBUG_MODE) {
         echo "  [DEBUG] Daten für Comic {$i} gesammelt:\n";
         echo "    Type: '{$type}'\n";
-        echo "    Datum (Key): '{$key}'\n";
+        echo "    Datum (Key): '{$key}'\n"; // Zeigt den verwendeten Schlüssel an
         echo "    Name: '{$name}'\n";
         echo "    Transkript Länge: " . strlen($transcript) . " Zeichen\n";
+        echo "    Datum (Feld): '{$comicEntry['datum']}'\n"; // Zeigt den Wert des neuen 'datum'-Feldes
         flush();
     }
 
