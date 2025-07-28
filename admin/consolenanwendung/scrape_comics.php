@@ -18,7 +18,7 @@ const DELAY_BETWEEN_REQUESTS = 1; // Wartezeit in Sekunden zwischen erfolgreiche
 // --- ANPASSBARE VARIABLEN FÜR START- UND ENDNUMMER ---
 // Ändere diese Werte, um den Bereich der zu scrapenden Comics festzulegen.
 const START_COMIC_NUMBER = 1;   // Die erste Comic-Nummer, die gescraped werden soll
-const END_COMIC_NUMBER = 10;    // Die letzte Comic-Nummer, die gescraped werden soll
+const END_COMIC_NUMBER = 4;    // Die letzte Comic-Nummer, die gescraped werden soll
 
 // --- DEBUG-MODUS ---
 // Setze auf 'true', um detaillierte Debug-Ausgaben in der Konsole zu sehen.
@@ -265,40 +265,40 @@ for ($i = START_COMIC_NUMBER; $i <= END_COMIC_NUMBER; $i++) {
         // Type ermitteln
         if (strpos($h1Text, 'Comic for') === 0) {
             $type = 'Comicseite';
+            $prefixLength = strlen('Comic for ');
         } elseif (strpos($h1Text, 'Filler for') === 0) {
             $type = 'Lückenfüller';
+            $prefixLength = strlen('Filler for ');
+        } else {
+            $type = ''; // Unbekannter Typ
+            $prefixLength = 0;
         }
         if (DEBUG_MODE) {
             echo "  [DEBUG] Typ ermittelt: '{$type}'\n";
             flush();
         }
 
-        // Datum und Name extrahieren
-        // Regex angepasst, um das Datum zwischen "for " und dem ersten ":" zu erfassen
-        preg_match('/for\s(.*?):/', $h1Text, $matches);
-        if (isset($matches[1])) {
-            $rawDate = trim($matches[1]);
-            $date = convertDateToYYYYMMDD($rawDate);
-            if (DEBUG_MODE) {
-                echo "  [DEBUG] Rohdatum aus H1 (extrahiert): '{$rawDate}'\n";
-                echo "  [DEBUG] Datum nach Konvertierung: '{$date}'\n";
-                flush();
-            }
+        // Den Teil nach dem "Comic for " oder "Filler for " extrahieren
+        $contentAfterPrefix = substr($h1Text, $prefixLength);
+
+        // Prüfen, ob ein Doppelpunkt im Rest des Strings vorhanden ist
+        $colonPos = strpos($contentAfterPrefix, ':');
+
+        if ($colonPos !== false) {
+            // Doppelpunkt gefunden: Datum ist vor dem Doppelpunkt, Name danach
+            $rawDate = trim(substr($contentAfterPrefix, 0, $colonPos));
+            $name = trim(substr($contentAfterPrefix, $colonPos + 1));
         } else {
-            if (DEBUG_MODE) {
-                echo "  [DEBUG] Rohdatum konnte nicht aus H1-Text extrahiert werden: '{$h1Text}'\n";
-                flush();
-            }
+            // Kein Doppelpunkt gefunden: Der gesamte Rest ist das Datum, Name ist leer
+            $rawDate = trim($contentAfterPrefix);
+            $name = '';
         }
 
-        // Name extrahieren (alles nach dem ersten Doppelpunkt)
-        $nameParts = explode(':', $h1Text, 2);
-        if (count($nameParts) > 1) {
-            $name = trim($nameParts[1]);
-        } else {
-            $name = ''; // Name bleibt leer, wenn kein Doppelpunkt gefunden wird
-        }
+        $date = convertDateToYYYYMMDD($rawDate);
+
         if (DEBUG_MODE) {
+            echo "  [DEBUG] Rohdatum aus H1 (extrahiert): '{$rawDate}'\n";
+            echo "  [DEBUG] Datum nach Konvertierung: '{$date}'\n";
             echo "  [DEBUG] Name ermittelt: '{$name}'\n";
             flush();
         }
@@ -336,12 +336,13 @@ for ($i = START_COMIC_NUMBER; $i <= END_COMIC_NUMBER; $i++) {
         'name' => $name,
         'transcript' => $transcript,
         'chapter' => '', // Bleibt leer
-        'datum' => $date // HIER WURDE DAS NEUE 'datum'-FELD HINZUGEFÜGT
+        'datum' => $date // Das extrahierte Datum im YYYYMMDD-Format als separates Feld
     ];
 
     // --- HIER IST DIE WICHTIGE ÄNDERUNG FÜR DEN SCHLÜSSEL ---
     // Verwende das extrahierte Datum als Schlüssel.
-    // Wenn das Datum leer ist (z.B. Parsing-Fehler), verwende die Comic-Nummer als Fallback.
+    // Wenn das Datum leer ist (was nach der neuen Logik seltener der Fall sein sollte),
+    // verwende die Comic-Nummer als Fallback.
     $key = !empty($date) ? $date : (string) $i;
     $comicData[$key] = $comicEntry;
 
