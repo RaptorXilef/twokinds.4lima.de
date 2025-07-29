@@ -41,11 +41,12 @@ if (file_exists($versionJsonPath)) {
 <footer>
     TWOKINDS, sein Logo und alle zugehörigen Zeichen sind urheberrechtlich geschützt; 2023 Thomas J. Fischbach.
     Website-Design von Thomas J. Fischbach & Brandon J. Dusseau.</br>
-    Ab Kapitel 21 ins deutsche übersetzt von Felix Maywald. Kapitel 01 bis 20 ins deutsche übersetzt von <a
-        href="https://www.twokinds.de/">Cornelius Lehners</a>.</br>
+    <?php /*Ab Kapitel 21 ins deutsche übersetzt von Felix Maywald. Kapitel 01 bis 20 ins deutsche übersetzt von <a
+href="https://www.twokinds.de/">Cornelius Lehners</a>.</br>*/ ?>
     </br> Der Webspace wird mir kostenlos von <a href="https://www.lima-city.de/">www.lima-city.de</a> bereitgestellt!
+    <br><br> Homepage und Übersetzungen &copy; 2023-2025 Felix Maywald
     </br>
-    <span class="website-version">Webseite Version: <?php echo $versionInfo['version']; ?>
+    <span class="website-version">Homepage Version: <?php echo $versionInfo['version']; ?>
         (<?php echo $versionInfo['type']; ?>) - siehe: <a
             href="https://github.com/RaptorXilef/twokinds.4lima.de/releases">Github</a> </span>
 </footer>
