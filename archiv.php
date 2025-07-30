@@ -109,7 +109,7 @@ $existingChapterIds = array_column($archiveChapters, 'chapterId');
 foreach ($comicsByChapter as $chId => $comics) {
     if (!in_array($chId, $existingChapterIds)) {
         $archiveChapters[] = [
-            'chapterId' => (int) $chId,
+            'chapterId' => (string) $chId, // Sicherstellen, dass chId als String hinzugefügt wird
             'title' => '', // Setze den Titel explizit leer für neue Kapitel
             'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.'
         ];
@@ -118,7 +118,7 @@ foreach ($comicsByChapter as $chId => $comics) {
     }
 }
 
-// === NEUE FILTERLOGIK ===
+// === FILTERLOGIK ===
 // Entferne Kapitel mit leerer chapterId, wenn keine zugehörigen Comics vorhanden sind.
 $filteredArchiveChapters = [];
 foreach ($archiveChapters as $chapter) {
@@ -138,30 +138,32 @@ if ($debugMode)
     error_log("DEBUG: Kapitel nach Filterung aktualisiert.");
 
 
-// === NEUE SORTIERLOGIK (Mehrstufig und korrigierte Leer-Prüfung der chapterId) ===
+// === KORRIGIERTE SORTIERLOGIK (Mehrstufig für numerische, gemischte und leere IDs) ===
 // Funktion, um den effektiven Sortierwert für ein Kapitel zu erhalten
-// Gibt ein Array zurück: [Priorität (0=numerische ID, 1=leere ID), chapterId_numerisch_oder_MAX]
+// Gibt ein Array zurück: [Priorität, Sortier-Schlüssel]
+// Prioritäten:
+// 0: Numerische chapterId (z.B. "1", "10", "5.5", "6,1" wird zu "6.1") - sortiert numerisch
+// 1: Andere String-chapterId (z.B. "Chapter X") - sortiert natürlich als String
+// 2: Leere chapterId ("") - sortiert ganz ans Ende
 function getChapterSortValue(array $chapter): array
 {
-    $rawChapterId = $chapter['chapterId'] ?? ''; // Hole den Rohwert, kann "" oder eine Zahl als String sein
-    $chapterTitle = $chapter['title'] ?? ''; // Titel für die sekundäre Prüfung (falls relevant)
+    $rawChapterId = $chapter['chapterId'] ?? '';
 
-    // Prüfe, ob die chapterId ein leerer String ist
-    $isChapterIdEmptyString = ($rawChapterId === '');
+    // Priorität 2: Leere chapterId ("") - sortiert ganz ans Ende
+    if ($rawChapterId === '') {
+        return [2, PHP_INT_MAX]; // Höchste Priorität, um ans Ende zu gehen
+    }
 
-    // Bestimme den numerischen Sortierwert
-    // Wenn chapterId ein leerer String ist, weise PHP_INT_MAX zu, um es ans Ende zu schieben.
-    // Andernfalls konvertiere es in einen Integer.
-    $numericalSortValue = $isChapterIdEmptyString ? PHP_INT_MAX : (int) $rawChapterId;
+    // Ersetze Komma durch Punkt für die numerische Prüfung, falls vorhanden
+    $numericCheckId = str_replace(',', '.', $rawChapterId);
 
-    // Priorität: 0 für Kapitel mit einer numerischen chapterId (sortiert zuerst),
-    // 1 für Kapitel mit einer leeren chapterId (sortiert zuletzt).
-    $priority = $isChapterIdEmptyString ? 1 : 0;
+    // Priorität 0: Numerische chapterId (z.B. "1", "10", "5.5", "6,1" wird zu "6.1")
+    if (is_numeric($numericCheckId)) {
+        return [0, (float) $numericCheckId]; // Niedrigste Priorität, sortiert numerisch
+    }
 
-    // Gib ein Array für die mehrstufige Sortierung zurück:
-    // 1. Nach Priorität (leere chapterId zuletzt)
-    // 2. Dann nach dem numerischen Wert der chapterId
-    return [$priority, $numericalSortValue];
+    // Priorität 1: Andere String-chapterId (z.B. "Chapter X")
+    return [1, $rawChapterId]; // Mittlere Priorität, sortiert natürlich als String
 }
 
 // Sortiere die Kapitel nach ihrem effektiven Sortierwert (mehrstufig)
@@ -169,13 +171,17 @@ usort($archiveChapters, function ($a, $b) {
     $sortValueA = getChapterSortValue($a);
     $sortValueB = getChapterSortValue($b);
 
-    // Vergleiche zuerst nach Priorität (ob chapterId leer ist)
+    // Vergleiche zuerst nach Priorität
     if ($sortValueA[0] !== $sortValueB[0]) {
         return $sortValueA[0] <=> $sortValueB[0];
     }
 
-    // Wenn Prioritäten gleich sind (beide chapterIds sind entweder numerisch oder beide leer),
-    // vergleiche nach dem numerischen Wert der chapterId.
+    // Wenn Prioritäten gleich sind, vergleiche nach dem Sortier-Schlüssel
+    if ($sortValueA[0] === 1) { // Beide sind andere Strings (Priorität 1)
+        return strnatcmp($sortValueA[1], $sortValueB[1]); // Natürliche String-Sortierung
+    }
+
+    // Für Priorität 0 (numerisch) und 2 (leere ID), verwende den Spaceship-Operator
     return $sortValueA[1] <=> $sortValueB[1];
 });
 if ($debugMode)
