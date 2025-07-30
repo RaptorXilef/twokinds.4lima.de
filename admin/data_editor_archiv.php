@@ -1275,6 +1275,7 @@ $additionalHeadContent = <<<EOT
             cursor: pointer;
         }
         .note-modal-backdrop {
+            /*Fix Summernote backdrop Problem*/
             z-index: 99;
         }
     </style>

@@ -1347,6 +1347,11 @@ if (file_exists($headerPath)) {
             bottom: 70px;
             /* Anpassung für kleinere Bildschirme */
         }
+
+        .note-modal-backdrop {
+            /*Fix Summernote backdrop Problem*/
+            z-index: 99;
+        }
     }
 </style>
 
