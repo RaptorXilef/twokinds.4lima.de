@@ -67,6 +67,36 @@ $message = '';
 $messageType = ''; // 'success' oder 'error' oder 'info' oder 'warning'
 
 /**
+ * Funktion, um den effektiven Sortierwert für ein Kapitel zu erhalten.
+ * Diese Funktion ist identisch mit der in archiv.php, um konsistente Sortierung zu gewährleisten.
+ * Gibt ein Array zurück: [Priorität, Sortier-Schlüssel]
+ * Prioritäten:
+ * 0: Numerische chapterId (z.B. "1", "10", "5.5", "6,1" wird zu "6.1") - sortiert numerisch
+ * 1: Andere String-chapterId (z.B. "Chapter X") - sortiert natürlich als String
+ * 2: Leere chapterId ("") - sortiert ganz ans Ende
+ */
+function getChapterSortValue(array $chapter): array
+{
+    $rawChapterId = $chapter['chapterId'] ?? '';
+
+    // Priorität 2: Leere chapterId ("") - sortiert ganz ans Ende
+    if ($rawChapterId === '') {
+        return [2, PHP_INT_MAX]; // Höchste Priorität, um ans Ende zu gehen
+    }
+
+    // Ersetze Komma durch Punkt für die numerische Prüfung, falls vorhanden
+    $numericCheckId = str_replace(',', '.', $rawChapterId);
+
+    // Priorität 0: Numerische chapterId (z.B. "1", "10", "5.5", "6,1" wird zu "6.1")
+    if (is_numeric($numericCheckId)) {
+        return [0, (float) $numericCheckId]; // Niedrigste Priorität, sortiert numerisch
+    }
+
+    // Priorität 1: Andere String-chapterId (z.B. "Chapter X")
+    return [1, $rawChapterId]; // Mittlere Priorität, sortiert natürlich als String
+}
+
+/**
  * Lädt Kapitel-Metadaten aus einer JSON-Datei.
  * @param string $path Der Pfad zur JSON-Datei.
  * @param bool $debugMode Debug-Modus Flag.
@@ -101,9 +131,23 @@ function loadArchiveChapters(string $path, bool $debugMode): array
             error_log("DEBUG: Dekodierte Daten sind kein Array.");
         return [];
     }
-    // Sortiere nach chapterId, um Konsistenz zu gewährleisten
+    // Sortiere nach der neuen getChapterSortValue Logik
     usort($data, function ($a, $b) {
-        return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
+        $sortValueA = getChapterSortValue($a);
+        $sortValueB = getChapterSortValue($b);
+
+        // Vergleiche zuerst nach Priorität
+        if ($sortValueA[0] !== $sortValueB[0]) {
+            return $sortValueA[0] <=> $sortValueB[0];
+        }
+
+        // Wenn Prioritäten gleich sind, vergleiche nach dem Sortier-Schlüssel
+        if ($sortValueA[0] === 1) { // Beide sind andere Strings (Priorität 1)
+            return strnatcmp($sortValueA[1], $sortValueB[1]); // Natürliche String-Sortierung
+        }
+
+        // Für Priorität 0 (numerisch) und 2 (leere ID), verwende den Spaceship-Operator
+        return $sortValueA[1] <=> $sortValueB[1];
     });
     if ($debugMode)
         error_log("DEBUG: Archivkapitel erfolgreich geladen und sortiert. Anzahl: " . count($data));
@@ -121,9 +165,19 @@ function saveArchiveChapters(string $path, array $data, bool $debugMode): bool
 {
     if ($debugMode)
         error_log("DEBUG: saveArchiveChapters() aufgerufen für: " . basename($path));
-    // Sortiere die Daten vor dem Speichern nach chapterId
+    // Sortiere die Daten vor dem Speichern nach der neuen getChapterSortValue Logik
     usort($data, function ($a, $b) {
-        return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
+        $sortValueA = getChapterSortValue($a);
+        $sortValueB = getChapterSortValue($b);
+
+        if ($sortValueA[0] !== $sortValueB[0]) {
+            return $sortValueA[0] <=> $sortValueB[0];
+        }
+
+        if ($sortValueA[0] === 1) {
+            return strnatcmp($sortValueA[1], $sortValueB[1]);
+        }
+        return $sortValueA[1] <=> $sortValueB[1];
     });
     if ($debugMode)
         error_log("DEBUG: Archivdaten vor dem Speichern sortiert.");
@@ -155,6 +209,7 @@ $editTitle = '';
 $editDescription = '';
 $formAction = 'add'; // Standardaktion ist "Hinzufügen"
 $originalChapterId = ''; // Wird nur im Bearbeitungsmodus gesetzt
+$leaveIdEmptyChecked = false; // Flag für die Checkbox
 
 // === POST-Anfragen verarbeiten ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -163,13 +218,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Rich-Text-Editor-Inhalte von Summernote abrufen
     $postedTitle = $_POST['title'] ?? '';
     $postedDescription = $_POST['description'] ?? '';
-    $postedChapterId = $_POST['chapter_id'] ?? ''; // Die vom Benutzer eingegebene ID
-    $originalChapterId = $_POST['original_chapter_id'] ?? ''; // Die ursprüngliche ID im Bearbeitungsmodus
+    // trim() entfernt Leerzeichen am Anfang/Ende der ID
+    $postedChapterId = trim($_POST['chapter_id'] ?? ''); 
+    $originalChapterId = trim($_POST['original_chapter_id'] ?? ''); 
+    $leaveIdEmpty = isset($_POST['leave_id_empty']); // Checkbox-Status
+
+    // NEU: Ersetze Komma durch Punkt in der geposteten ID, bevor sie weiterverarbeitet wird
+    $postedChapterId = str_replace(',', '.', $postedChapterId);
+
     if ($debugMode) {
         error_log("DEBUG: Posted Title: " . $postedTitle);
         error_log("DEBUG: Posted Description: " . $postedDescription);
-        error_log("DEBUG: Posted Chapter ID: " . $postedChapterId);
-        error_log("DEBUG: Original Chapter ID: " . $originalChapterId);
+        error_log("DEBUG: Posted Chapter ID (nach Komma-Ersetzung): '" . $postedChapterId . "'"); // Anführungszeichen für leere ID
+        error_log("DEBUG: Original Chapter ID: '" . $originalChapterId . "'"); // Anführungszeichen für leere ID
+        error_log("DEBUG: Leave ID Empty Checkbox: " . ($leaveIdEmpty ? 'true' : 'false'));
     }
 
     if (isset($_POST['action'])) {
@@ -180,43 +242,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         switch ($action) {
             case 'add':
                 $newChapterId = $postedChapterId;
-                if (empty($newChapterId)) {
-                    // Auto-generate if not provided
+
+                // Wenn Checkbox "leer lassen" aktiviert ist, setze ID auf leeren String
+                if ($leaveIdEmpty) {
+                    $newChapterId = '';
+                    if ($debugMode)
+                        error_log("DEBUG: Kapitel ID explizit auf leer gesetzt durch Checkbox.");
+                } 
+                // Ansonsten, wenn die ID leer ist (und Checkbox nicht aktiviert), automatisch generieren
+                elseif (empty($newChapterId)) {
                     $maxId = 0;
                     if (!empty($chapters)) {
                         foreach ($chapters as $chapter) {
-                            if (isset($chapter['chapterId']) && $chapter['chapterId'] > $maxId) {
-                                $maxId = $chapter['chapterId'];
+                            // Nur numerische IDs für die Max-Berechnung berücksichtigen
+                            $currentId = $chapter['chapterId'] ?? '';
+                            // Ersetze Komma durch Punkt für numerische Prüfung
+                            $numericCurrentId = str_replace(',', '.', $currentId); 
+                            if (is_numeric($numericCurrentId) && (float)$numericCurrentId > $maxId) {
+                                $maxId = (float)$numericCurrentId;
                             }
                         }
                     }
-                    $newChapterId = $maxId + 1;
+                    // Generiere die nächste Ganzzahl-ID
+                    $newChapterId = (string) (floor($maxId) + 1); 
                     if ($debugMode)
                         error_log("DEBUG: Kapitel ID automatisch generiert: " . $newChapterId);
-                } else {
-                    // Validate if manually provided ID is unique and numeric
-                    if (!is_numeric($newChapterId) || $newChapterId <= 0) {
-                        $message = 'Fehler: Kapitel ID muss eine positive Zahl sein.';
+                }
+
+                // Überprüfe, ob die (neue oder explizit leere) ID bereits existiert
+                foreach ($chapters as $chapter) {
+                    if (isset($chapter['chapterId']) && $chapter['chapterId'] == $newChapterId) {
+                        $message = 'Fehler: Kapitel ID existiert bereits. Bitte wählen Sie eine andere ID oder lassen Sie das Feld leer für automatische Generierung.';
                         $messageType = 'error';
                         if ($debugMode)
-                            error_log("DEBUG: Fehler: Kapitel ID ist keine positive Zahl.");
+                            error_log("DEBUG: Fehler: Kapitel ID existiert bereits: '" . $newChapterId . "'");
                         header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
                         exit;
-                    }
-                    foreach ($chapters as $chapter) {
-                        if (isset($chapter['chapterId']) && $chapter['chapterId'] == $newChapterId) {
-                            $message = 'Fehler: Kapitel ID existiert bereits. Bitte wählen Sie eine andere ID.';
-                            $messageType = 'error';
-                            if ($debugMode)
-                                error_log("DEBUG: Fehler: Kapitel ID existiert bereits: " . $newChapterId);
-                            header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
-                            exit;
-                        }
                     }
                 }
 
                 $newChapter = [
-                    'chapterId' => (int) $newChapterId, // Cast to int
+                    'chapterId' => $newChapterId, // ID als String speichern
                     'title' => $postedTitle,
                     'description' => $postedDescription
                 ];
@@ -226,20 +292,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = 'Kapitel erfolgreich hinzugefügt!';
                     $messageType = 'success';
                     if ($debugMode)
-                        error_log("DEBUG: Kapitel " . $newChapterId . " erfolgreich hinzugefügt.");
+                        error_log("DEBUG: Kapitel '" . $newChapterId . "' erfolgreich hinzugefügt.");
                 } else {
                     $message = 'Fehler beim Hinzufügen des Kapitels.';
                     $messageType = 'error';
                     if ($debugMode)
-                        error_log("DEBUG: Fehler beim Hinzufügen des Kapitels " . $newChapterId . ".");
+                        error_log("DEBUG: Fehler beim Hinzufügen des Kapitels '" . $newChapterId . "'.");
                 }
                 break;
 
             case 'edit':
-                // The ID to find in the existing array is originalChapterId
-                // The new ID for this chapter will be postedChapterId
                 $foundIndex = -1;
                 foreach ($chapters as $index => $chapter) {
+                    // Vergleich der originalChapterId, die auch "" oder "6.1" sein kann
                     if (isset($chapter['chapterId']) && $chapter['chapterId'] == $originalChapterId) {
                         $foundIndex = $index;
                         break;
@@ -248,25 +313,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($foundIndex !== -1) {
                     if ($debugMode)
-                        error_log("DEBUG: Ursprüngliches Kapitel zum Bearbeiten gefunden bei Index: " . $foundIndex . " (ID: " . $originalChapterId . ")");
-                    // If the ID is being changed, validate new ID
-                    if ($postedChapterId != $originalChapterId) {
+                        error_log("DEBUG: Ursprüngliches Kapitel zum Bearbeiten gefunden bei Index: " . $foundIndex . " (ID: '" . $originalChapterId . "')");
+                    
+                    $effectivePostedChapterId = $postedChapterId;
+                    // Wenn Checkbox "leer lassen" aktiviert ist, setze ID auf leeren String
+                    if ($leaveIdEmpty) {
+                        $effectivePostedChapterId = '';
                         if ($debugMode)
-                            error_log("DEBUG: Kapitel ID wird geändert von " . $originalChapterId . " zu " . $postedChapterId);
-                        if (!is_numeric($postedChapterId) || $postedChapterId <= 0) {
-                            $message = 'Fehler: Kapitel ID muss eine positive Zahl sein.';
-                            $messageType = 'error';
-                            if ($debugMode)
-                                error_log("DEBUG: Fehler: Neue Kapitel ID ist keine positive Zahl.");
-                            header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
-                            exit;
-                        }
+                            error_log("DEBUG: Kapitel ID explizit auf leer gesetzt im Bearbeitungsmodus durch Checkbox.");
+                    }
+
+                    // Wenn die ID geändert wird, validiere die neue ID
+                    if ($effectivePostedChapterId != $originalChapterId) {
+                        if ($debugMode)
+                            error_log("DEBUG: Kapitel ID wird geändert von '" . $originalChapterId . "' zu '" . $effectivePostedChapterId . "'");
+                        
+                        // Überprüfe, ob die neue ID bereits existiert (außer dem aktuell bearbeiteten Kapitel)
                         foreach ($chapters as $index => $chapter) {
-                            if ($index !== $foundIndex && isset($chapter['chapterId']) && $chapter['chapterId'] == $postedChapterId) {
+                            if ($index !== $foundIndex && isset($chapter['chapterId']) && $chapter['chapterId'] == $effectivePostedChapterId) {
                                 $message = 'Fehler: Die neue Kapitel ID existiert bereits. Bitte wählen Sie eine andere ID.';
                                 $messageType = 'error';
                                 if ($debugMode)
-                                    error_log("DEBUG: Fehler: Neue Kapitel ID existiert bereits: " . $postedChapterId);
+                                    error_log("DEBUG: Fehler: Neue Kapitel ID existiert bereits: '" . $effectivePostedChapterId . "'");
                                 header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
                                 exit;
                             }
@@ -274,7 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     // Update the chapter data
-                    $chapters[$foundIndex]['chapterId'] = (int) $postedChapterId;
+                    $chapters[$foundIndex]['chapterId'] = $effectivePostedChapterId; // ID als String speichern
                     $chapters[$foundIndex]['title'] = $postedTitle;
                     $chapters[$foundIndex]['description'] = $postedDescription;
 
@@ -282,25 +350,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $message = 'Kapitel erfolgreich aktualisiert!';
                         $messageType = 'success';
                         if ($debugMode)
-                            error_log("DEBUG: Kapitel " . $postedChapterId . " erfolgreich aktualisiert.");
+                            error_log("DEBUG: Kapitel '" . $effectivePostedChapterId . "' erfolgreich aktualisiert.");
                     } else {
                         $message = 'Fehler beim Aktualisieren des Kapitels.';
                         $messageType = 'error';
                         if ($debugMode)
-                            error_log("DEBUG: Fehler beim Aktualisieren des Kapitels " . $postedChapterId . ".");
+                            error_log("DEBUG: Fehler beim Aktualisieren des Kapitels '" . $effectivePostedChapterId . "'.");
                     }
                 } else {
                     $message = 'Fehler: Ursprüngliches Kapitel zum Bearbeiten nicht gefunden.';
                     $messageType = 'error';
                     if ($debugMode)
-                        error_log("DEBUG: Fehler: Ursprüngliches Kapitel zum Bearbeiten nicht gefunden (ID: " . $originalChapterId . ").");
+                        error_log("DEBUG: Fehler: Ursprüngliches Kapitel zum Bearbeiten nicht gefunden (ID: '" . $originalChapterId . "').");
                 }
                 break;
 
             case 'delete':
-                $chapterIdToDelete = $_POST['chapter_id'] ?? null;
+                $chapterIdToDelete = trim($_POST['chapter_id'] ?? '');
                 if ($debugMode)
-                    error_log("DEBUG: Löschaktion für Kapitel ID: " . $chapterIdToDelete);
+                    error_log("DEBUG: Löschaktion für Kapitel ID: '" . $chapterIdToDelete . "'");
                 $chapters = array_filter($chapters, function ($chapter) use ($chapterIdToDelete) {
                     return (isset($chapter['chapterId']) && $chapter['chapterId'] != $chapterIdToDelete);
                 });
@@ -309,12 +377,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = 'Kapitel erfolgreich gelöscht!';
                     $messageType = 'success';
                     if ($debugMode)
-                        error_log("DEBUG: Kapitel " . $chapterIdToDelete . " erfolgreich gelöscht.");
+                        error_log("DEBUG: Kapitel '" . $chapterIdToDelete . "' erfolgreich gelöscht.");
                 } else {
                     $message = 'Fehler beim Löschen des Kapitels.';
                     $messageType = 'error';
                     if ($debugMode)
-                        error_log("DEBUG: Fehler beim Löschen des Kapitels " . $chapterIdToDelete . ".");
+                        error_log("DEBUG: Fehler beim Löschen des Kapitels '" . $chapterIdToDelete . "'.");
                 }
                 break;
         }
@@ -328,17 +396,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // === GET-Parameter für Bearbeitung und Nachrichten verarbeiten ===
 if (isset($_GET['edit_id'])) {
-    $editChapterId = $_GET['edit_id'];
+    $editChapterId = trim($_GET['edit_id']);
     $formAction = 'edit';
     if ($debugMode)
-        error_log("DEBUG: Bearbeitungsmodus aktiviert für ID: " . $editChapterId);
+        error_log("DEBUG: Bearbeitungsmodus aktiviert für ID: '" . $editChapterId . "'");
     foreach ($chapters as $chapter) {
         if (isset($chapter['chapterId']) && $chapter['chapterId'] == $editChapterId) {
             $editTitle = $chapter['title'];
             $editDescription = $chapter['description'];
             $originalChapterId = $editChapterId; // Setze die ursprüngliche ID für den Bearbeitungsmodus
+            // Setze den Status der Checkbox, wenn die ID leer ist
+            $leaveIdEmptyChecked = ($editChapterId === '');
             if ($debugMode)
-                error_log("DEBUG: Bearbeitungsdaten geladen für ID " . $editChapterId . ": Titel='" . $editTitle . "'");
+                error_log("DEBUG: Bearbeitungsdaten geladen für ID '" . $editChapterId . "': Titel='" . $editTitle . "', Checkbox 'leer lassen' ist " . ($leaveIdEmptyChecked ? 'aktiviert' : 'deaktiviert'));
             break;
         }
     }
@@ -380,6 +450,7 @@ $additionalScripts = <<<EOT
             const formActionInput = document.getElementById("form_action");
             const titleTextarea = $("#title"); // jQuery-Objekt für Summernote
             const descriptionTextarea = $("#description"); // jQuery-Objekt für Summernote
+            const leaveIdEmptyCheckbox = document.getElementById("leave_id_empty_checkbox"); // Neue Checkbox
 
             // Referenz zum Icon im Formular-Header
             const formHeaderIcon = formHeader ? formHeader.querySelector("i") : null;
@@ -442,6 +513,11 @@ $additionalScripts = <<<EOT
             // Funktion zum Zurücksetzen des Formulars
             function resetForm() {
                 chapterIdInput.value = "";
+                chapterIdInput.disabled = false; // Sicherstellen, dass das Feld aktiviert ist
+                chapterIdInput.placeholder = "Automatisch generieren, wenn leer"; // Platzhalter zurücksetzen
+                if (leaveIdEmptyCheckbox) {
+                    leaveIdEmptyCheckbox.checked = false; // Checkbox deaktivieren
+                }
                 originalChapterIdHidden.value = ""; // Auch die ursprüngliche ID zurücksetzen
                 // Summernote spezifisch: Inhalte leeren
                 if (titleTextarea.data("summernote")) {
@@ -460,11 +536,6 @@ $additionalScripts = <<<EOT
                 submitButton.textContent = "Kapitel hinzufügen";
                 cancelEditButton.style.display = "none"; // Verstecke Abbrechen-Button
                 
-                // Summernote zerstören, wenn Formular eingeklappt wird
-                // Dies wird jetzt vom collapsible header click handler übernommen, aber hier zur Sicherheit
-                // if (editFormSection.classList.contains("expanded")) {
-                //     destroySummernote();
-                // }
                 editFormSection.classList.remove("expanded"); // Klappe Formular ein
                 if (formHeaderIcon) {
                     formHeaderIcon.classList.remove("fa-chevron-down");
@@ -484,12 +555,25 @@ $additionalScripts = <<<EOT
                     chapterIdInput.value = chapterId; // ID im editierbaren Feld anzeigen
                     originalChapterIdHidden.value = chapterId; // Ursprüngliche ID speichern
                     
+                    // Setze den Zustand der "Leer lassen"-Checkbox basierend auf der chapterId
+                    if (leaveIdEmptyCheckbox) {
+                        if (chapterId === "") {
+                            leaveIdEmptyCheckbox.checked = true;
+                            chapterIdInput.disabled = true;
+                            chapterIdInput.placeholder = "ID wird leer gelassen";
+                        } else {
+                            leaveIdEmptyCheckbox.checked = false;
+                            chapterIdInput.disabled = false;
+                            chapterIdInput.placeholder = "Automatisch generieren, wenn leer";
+                        }
+                    }
+
                     // Summernote initialisieren, falls noch nicht geschehen
                     initializeSummernote();
                     titleTextarea.summernote("code", title); // Summernote spezifisch
                     descriptionTextarea.summernote("code", description); // Summernote spezifisch
                     formActionInput.value = "edit";
-                    formHeader.textContent = "Kapitel bearbeiten (ID: " + chapterId + ")";
+                    formHeader.textContent = "Kapitel bearbeiten (ID: " + (chapterId === "" ? "Leer" : chapterId) + ")";
                     submitButton.textContent = "Änderungen speichern";
                     cancelEditButton.style.display = "inline-block"; // Zeige Abbrechen-Button
 
@@ -691,8 +775,6 @@ $additionalScripts = <<<EOT
                 console.log("Form pre-filled for editing."); // Debug-Meldung
             } else {
                 console.log("Page loaded in add mode."); // Debug-Meldung
-                // Wenn wir im Hinzufügen-Modus starten, stelle sicher, dass die ID-Anzeige ausgeblendet ist
-                // (Nicht mehr nötig, da das Feld immer sichtbar ist, aber für Konsistenz)
             }
         });
     </script>
@@ -1222,6 +1304,11 @@ include __DIR__ . '/../src/layout/header.php';
                     <input type="text" id="chapter_id_input" name="chapter_id"
                         value="<?php echo htmlspecialchars($editChapterId); ?>"
                         placeholder="Automatisch generieren, wenn leer">
+                    <div class="checkbox-group" style="margin-top: 5px;">
+                        <input type="checkbox" id="leave_id_empty_checkbox" name="leave_id_empty"
+                            <?php echo $leaveIdEmptyChecked ? 'checked' : ''; ?>>
+                        <label for="leave_id_empty_checkbox" style="display: inline; font-weight: normal;">Kapitel ID leer lassen ("")</label>
+                    </div>
                 </div>
 
                 <div class="form-group">
