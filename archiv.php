@@ -62,10 +62,6 @@ function loadArchiveChapters(string $path, bool $debugMode): array
             error_log("Fehler beim Dekodieren von archive_chapters.json: " . json_last_error_msg());
         return [];
     }
-    // Sortiere nach chapterId, um Konsistenz zu gewährleisten
-    usort($data, function ($a, $b) {
-        return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
-    });
     if ($debugMode)
         error_log("DEBUG: Archivkapitel erfolgreich geladen.");
     return $data;
@@ -114,7 +110,7 @@ foreach ($comicsByChapter as $chId => $comics) {
     if (!in_array($chId, $existingChapterIds)) {
         $archiveChapters[] = [
             'chapterId' => (int) $chId,
-            'title' => 'Dieses Kapitel wird im Moment bearbeitet.',
+            'title' => '', // Setze den Titel explizit leer für neue Kapitel
             'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.'
         ];
         if ($debugMode)
@@ -122,12 +118,48 @@ foreach ($comicsByChapter as $chId => $comics) {
     }
 }
 
-// Sortiere die Kapitel erneut nach chapterId, falls neue hinzugefügt wurden
+// === NEUE SORTIERLOGIK (Mehrstufig und korrigierte Leer-Prüfung der chapterId) ===
+// Funktion, um den effektiven Sortierwert für ein Kapitel zu erhalten
+// Gibt ein Array zurück: [Priorität (0=numerische ID, 1=leere ID), chapterId_numerisch_oder_MAX]
+function getChapterSortValue(array $chapter): array
+{
+    $rawChapterId = $chapter['chapterId'] ?? ''; // Hole den Rohwert, kann "" oder eine Zahl als String sein
+    $chapterTitle = $chapter['title'] ?? ''; // Titel für die sekundäre Prüfung (falls relevant)
+
+    // Prüfe, ob die chapterId ein leerer String ist
+    $isChapterIdEmptyString = ($rawChapterId === '');
+
+    // Bestimme den numerischen Sortierwert
+    // Wenn chapterId ein leerer String ist, weise PHP_INT_MAX zu, um es ans Ende zu schieben.
+    // Andernfalls konvertiere es in einen Integer.
+    $numericalSortValue = $isChapterIdEmptyString ? PHP_INT_MAX : (int) $rawChapterId;
+
+    // Priorität: 0 für Kapitel mit einer numerischen chapterId (sortiert zuerst),
+    // 1 für Kapitel mit einer leeren chapterId (sortiert zuletzt).
+    $priority = $isChapterIdEmptyString ? 1 : 0;
+
+    // Gib ein Array für die mehrstufige Sortierung zurück:
+    // 1. Nach Priorität (leere chapterId zuletzt)
+    // 2. Dann nach dem numerischen Wert der chapterId
+    return [$priority, $numericalSortValue];
+}
+
+// Sortiere die Kapitel nach ihrem effektiven Sortierwert (mehrstufig)
 usort($archiveChapters, function ($a, $b) {
-    return ($a['chapterId'] ?? 0) <=> ($b['chapterId'] ?? 0);
+    $sortValueA = getChapterSortValue($a);
+    $sortValueB = getChapterSortValue($b);
+
+    // Vergleiche zuerst nach Priorität (ob chapterId leer ist)
+    if ($sortValueA[0] !== $sortValueB[0]) {
+        return $sortValueA[0] <=> $sortValueB[0];
+    }
+
+    // Wenn Prioritäten gleich sind (beide chapterIds sind entweder numerisch oder beide leer),
+    // vergleiche nach dem numerischen Wert der chapterId.
+    return $sortValueA[1] <=> $sortValueB[1];
 });
 if ($debugMode)
-    error_log("DEBUG: Kapitel nach ID sortiert.");
+    error_log("DEBUG: Kapitel nach ID und Titelstatus sortiert.");
 
 
 // === WICHTIG: Hier wird archive.js geladen! ===
@@ -161,6 +193,7 @@ if ($debugMode)
     <?php else: ?>
         <?php foreach ($archiveChapters as $chapter):
             $chapterId = $chapter['chapterId'] ?? 'N/A';
+            // Der Titel wird hier anhand der Logik aus dem Originalcode ermittelt
             $chapterTitle = !empty(trim(strip_tags($chapter['title'] ?? '', '<b><i><u><p><br>'))) ? $chapter['title'] : 'Dieses Kapitel wird im Moment bearbeitet.';
             $chapterDescription = $chapter['description'] ?? 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.';
             if ($debugMode)
