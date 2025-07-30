@@ -118,6 +118,26 @@ foreach ($comicsByChapter as $chId => $comics) {
     }
 }
 
+// === NEUE FILTERLOGIK ===
+// Entferne Kapitel mit leerer chapterId, wenn keine zugehörigen Comics vorhanden sind.
+$filteredArchiveChapters = [];
+foreach ($archiveChapters as $chapter) {
+    $chapterId = $chapter['chapterId'] ?? ''; // Hole den Rohwert der chapterId
+    $associatedComics = $comicsByChapter[$chapterId] ?? []; // Hole die zugehörigen Comics
+
+    // Wenn die chapterId ein leerer String ist UND es keine zugehörigen Comics gibt, überspringe dieses Kapitel.
+    if ($chapterId === '' && empty($associatedComics)) {
+        if ($debugMode)
+            error_log("DEBUG: Kapitel mit leerer ID ('') und ohne zugehörige Comics wird entfernt: " . json_encode($chapter));
+        continue; // Dieses Kapitel nicht zur gefilterten Liste hinzufügen
+    }
+    $filteredArchiveChapters[] = $chapter; // Füge das Kapitel zur gefilterten Liste hinzu
+}
+$archiveChapters = $filteredArchiveChapters; // Aktualisiere die Hauptliste der Kapitel
+if ($debugMode)
+    error_log("DEBUG: Kapitel nach Filterung aktualisiert.");
+
+
 // === NEUE SORTIERLOGIK (Mehrstufig und korrigierte Leer-Prüfung der chapterId) ===
 // Funktion, um den effektiven Sortierwert für ein Kapitel zu erhalten
 // Gibt ein Array zurück: [Priorität (0=numerische ID, 1=leere ID), chapterId_numerisch_oder_MAX]
