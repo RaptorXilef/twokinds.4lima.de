@@ -228,7 +228,7 @@ if ($debugMode)
             <section class="chapter collapsible-section" data-ch-id="<?php echo htmlspecialchars($chapterId); ?>">
                 <h2 class="collapsible-header"><?php echo $chapterTitle; ?><span class="arrow-left jsdep"></span></h2>
                 <!-- Der P-Tag für die Beschreibung ist jetzt direkt unter h2 und außerhalb von .collapsible-content -->
-                <p><?php echo htmlspecialchars($chapterDescription); ?></p>
+                <p><?php echo $chapterDescription; ?></p>
                 <div class="collapsible-content">
                     <aside class="chapter-links">
                         <?php
