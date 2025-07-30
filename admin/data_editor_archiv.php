@@ -33,7 +33,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
             $params["path"],
             $params["domain"],
             $params["secure"],
-            $params["httponly"]
+            $params["httpholy"]
         );
     }
 
@@ -215,9 +215,9 @@ $leaveIdEmptyChecked = false; // Flag für die Checkbox
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($debugMode)
         error_log("DEBUG: POST-Anfrage erkannt.");
-    // Rich-Text-Editor-Inhalte von Summernote abrufen
-    $postedTitle = $_POST['title'] ?? '';
-    $postedDescription = $_POST['description'] ?? '';
+    // Inhalte vom Formular abrufen
+    $postedTitle = $_POST['title'] ?? ''; // Titel ist jetzt ein normales Textfeld
+    $postedDescription = $_POST['description'] ?? ''; // Beschreibung bleibt Summernote
     // trim() entfernt Leerzeichen am Anfang/Ende der ID
     $postedChapterId = trim($_POST['chapter_id'] ?? ''); 
     $originalChapterId = trim($_POST['original_chapter_id'] ?? ''); 
@@ -445,10 +445,10 @@ $additionalScripts = <<<EOT
             const formHeader = document.getElementById("form-header");
             const submitButton = document.getElementById("submit-button");
             const cancelEditButton = document.getElementById("cancel-edit-button");
-            const chapterIdInput = document.getElementById("chapter_id_input"); // Neues Feld für die ID
+            const chapterIdInput = document.getElementById("chapter_id_input"); // Feld für die Kapitel ID
             const originalChapterIdHidden = document.getElementById("original_chapter_id_hidden"); // Hidden input for original ID
             const formActionInput = document.getElementById("form_action");
-            const titleTextarea = $("#title"); // jQuery-Objekt für Summernote
+            const titleInput = document.getElementById("title"); // GEÄNDERT: Referenz auf Input-Feld
             const descriptionTextarea = $("#description"); // jQuery-Objekt für Summernote
             const leaveIdEmptyCheckbox = document.getElementById("leave_id_empty_checkbox"); // Neue Checkbox
 
@@ -458,26 +458,8 @@ $additionalScripts = <<<EOT
                 console.error("Error: Collapsible header icon for form section not found on DOMContentLoaded.");
             }
 
-            // Funktion zur Initialisierung von Summernote
+            // Funktion zur Initialisierung von Summernote (nur für Beschreibung)
             function initializeSummernote() {
-                // Nur initialisieren, wenn es noch nicht initialisiert wurde
-                if (!titleTextarea.data("summernote")) {
-                    console.log("Initializing Summernote for title..."); // Debug-Meldung
-                    titleTextarea.summernote({
-                        placeholder: "Titel hier eingeben...",
-                        tabsize: 2,
-                        height: 120,
-                        toolbar: [
-                            ["style", ["style"]],
-                            ["font", ["bold", "italic", "underline", "clear"]],
-                            ["color", ["color"]],
-                            ["para", ["ul", "ol", "paragraph"]],
-                            ["table", ["table"]],
-                            ["insert", ["link"]],
-                            ["view", ["fullscreen", "codeview", "help"]]
-                        ]
-                    });
-                }
                 if (!descriptionTextarea.data("summernote")) {
                     console.log("Initializing Summernote for description..."); // Debug-Meldung
                     descriptionTextarea.summernote({
@@ -492,18 +474,15 @@ $additionalScripts = <<<EOT
                             ["table", ["table"]],
                             ["insert", ["link"]],
                             ["view", ["fullscreen", "codeview", "help"]]
-                        ]
+                        ],
+                        defaultParagraphSeparator: null // Verhindert automatische <p>-Tags
                     });
                 }
                 console.log("Summernote initialization check complete."); // Debug-Meldung
             }
 
-            // Funktion zum Zerstören von Summernote-Instanzen
+            // Funktion zum Zerstören von Summernote-Instanzen (nur für Beschreibung)
             function destroySummernote() {
-                if (titleTextarea.data("summernote")) {
-                    titleTextarea.summernote("destroy");
-                    console.log("Summernote for title destroyed."); // Debug-Meldung
-                }
                 if (descriptionTextarea.data("summernote")) {
                     descriptionTextarea.summernote("destroy");
                     console.log("Summernote for description destroyed."); // Debug-Meldung
@@ -519,16 +498,14 @@ $additionalScripts = <<<EOT
                     leaveIdEmptyCheckbox.checked = false; // Checkbox deaktivieren
                 }
                 originalChapterIdHidden.value = ""; // Auch die ursprüngliche ID zurücksetzen
+                
+                titleInput.value = ""; // GEÄNDERT: Titel-Input leeren
+                
                 // Summernote spezifisch: Inhalte leeren
-                if (titleTextarea.data("summernote")) {
-                    titleTextarea.summernote("code", "");
-                } else {
-                    titleTextarea.val(""); // Fallback für nicht-initialisiertes Summernote
-                }
                 if (descriptionTextarea.data("summernote")) {
                     descriptionTextarea.summernote("code", "");
                 } else {
-                    descriptionTextarea.val(""); // Fallback
+                    descriptionTextarea.val(""); // Fallback für nicht-initialisiertes Summernote
                 }
 
                 formActionInput.value = "add";
@@ -568,10 +545,12 @@ $additionalScripts = <<<EOT
                         }
                     }
 
+                    titleInput.value = title; // GEÄNDERT: Titel-Input füllen
+                    
                     // Summernote initialisieren, falls noch nicht geschehen
                     initializeSummernote();
-                    titleTextarea.summernote("code", title); // Summernote spezifisch
                     descriptionTextarea.summernote("code", description); // Summernote spezifisch
+                    
                     formActionInput.value = "edit";
                     formHeader.textContent = "Kapitel bearbeiten (ID: " + (chapterId === "" ? "Leer" : chapterId) + ")";
                     submitButton.textContent = "Änderungen speichern";
@@ -748,7 +727,7 @@ $additionalScripts = <<<EOT
                     formHeaderIcon.classList.remove("fa-chevron-right");
                     formHeaderIcon.classList.add("fa-chevron-down");
                 }
-                initializeSummernote(); // Summernote initialisieren
+                initializeSummernote(); // Summernote initialisieren (nur für Beschreibung)
                 editFormSection.scrollIntoView({ behavior: "smooth" });
                 formHeader.textContent = "Neues Kapitel hinzufügen"; // Setze die Überschrift explizit
                 console.log("New chapter form opened and Summernote initialized."); // Debug-Meldung
@@ -764,8 +743,8 @@ $additionalScripts = <<<EOT
                     formHeaderIcon.classList.remove("fa-chevron-right");
                     formHeaderIcon.classList.add("fa-chevron-down");
                 }
-                initializeSummernote(); // Summernote initialisieren
-                titleTextarea.summernote("code", "<?php echo htmlspecialchars($editTitle); ?>");
+                initializeSummernote(); // Summernote initialisieren (nur für Beschreibung)
+                titleInput.value = "<?php echo htmlspecialchars($editTitle); ?>"; // GEÄNDERT: Titel-Input füllen
                 descriptionTextarea.summernote("code", "<?php echo htmlspecialchars($editDescription); ?>");
                 chapterIdInput.value = "<?php echo htmlspecialchars($editChapterId); ?>";
                 originalChapterIdHidden.value = "<?php echo htmlspecialchars($originalChapterId); ?>";
@@ -1317,7 +1296,8 @@ include __DIR__ . '/../src/layout/header.php';
 
                 <div class="form-group">
                     <label for="title">Titel:</label>
-                    <textarea id="title" name="title" rows="4"><?php echo htmlspecialchars($editTitle); ?></textarea>
+                    <!-- GEÄNDERT: Input-Feld statt Textarea -->
+                    <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($editTitle); ?>" placeholder="Titel hier eingeben...">
                 </div>
 
                 <div class="form-group">
@@ -1357,7 +1337,7 @@ include __DIR__ . '/../src/layout/header.php';
                         <?php else: ?>
                             <?php foreach ($chapters as $chapter):
                                 // strip_tags mit erlaubten Tags, um nur reinen Text für die Prüfung zu erhalten
-                                $isTitleMissing = empty(trim(strip_tags($chapter['title'] ?? '', '<b><i><u><p><br>')));
+                                $isTitleMissing = empty(trim(strip_tags($chapter['title'] ?? ''))); // GEÄNDERT: Keine HTML-Tags für Titel
                                 $isDescriptionMissing = empty(trim(strip_tags($chapter['description'] ?? '', '<b><i><u><p><br>')));
                                 $isMissingInfoRow = $isTitleMissing || $isDescriptionMissing;
                                 ?>
@@ -1365,7 +1345,7 @@ include __DIR__ . '/../src/layout/header.php';
                                     class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td><?php echo htmlspecialchars($chapter['chapterId'] ?? 'N/A'); ?></td>
                                     <td><span
-                                            class="editable-field chapter-title-display <?php echo $isTitleMissing ? 'missing-info' : ''; ?>"><?php echo $chapter['title'] ?? ''; ?></span>
+                                            class="editable-field chapter-title-display <?php echo $isTitleMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($chapter['title'] ?? ''); ?></span>
                                     </td>
                                     <td><span
                                             class="editable-field chapter-description-display <?php echo $isDescriptionMissing ? 'missing-info' : ''; ?>"><?php echo $chapter['description'] ?? ''; ?></span>
