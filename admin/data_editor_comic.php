@@ -101,7 +101,8 @@ $messageType = ''; // 'success' or 'error'
 
 // Optionen für 'type' und 'chapter'
 $comicTypeOptions = ['Comicseite', 'Lückenfüller'];
-$chapterOptions = range(1, 100); // Beispiel: Kapitel 1 bis 100
+// Kapitel-Optionen: 0 bis 100 (wird jetzt nur noch als Referenz verwendet, da Input-Feld Text ist)
+$chapterOptions = range(0, 100);
 if ($debugMode) {
     error_log("DEBUG: Comic-Typ-Optionen: " . implode(', ', $comicTypeOptions));
     error_log("DEBUG: Kapitel-Optionen: " . implode(', ', $chapterOptions));
@@ -317,13 +318,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             $type = isset($page['comic_type']) ? trim($page['comic_type']) : '';
             $name = isset($page['comic_name']) ? trim($page['comic_name']) : '';
             $transcript = isset($page['comic_transcript']) ? $page['comic_transcript'] : '';
-            $chapter = isset($page['comic_chapter']) ? (int) $page['comic_chapter'] : null;
 
-            // Validierung für Chapter (muss eine Zahl sein)
-            if (!is_numeric($chapter) || $chapter <= 0) {
-                $chapter = null; // Setze auf null oder einen Standardwert, wenn ungültig
-                if ($debugMode)
-                    error_log("DEBUG: Kapitel für Comic-ID " . $comicId . " als ungültig erkannt, auf null gesetzt.");
+            // NEU: Kapitel als String empfangen und verarbeiten
+            $chapter = $page['comic_chapter'] ?? '';
+
+            if ($chapter === '') {
+                $chapter = null; // Leere Zeichenkette als null speichern
+            } else {
+                // Komma durch Punkt ersetzen für konsistente numerische Umwandlung
+                $chapter = str_replace(',', '.', $chapter);
+                // Prüfen, ob es eine gültige Zahl ist (Integer oder Float)
+                if (!is_numeric($chapter)) {
+                    // Wenn nicht numerisch, als ungültige Eingabe behandeln und null setzen
+                    $chapter = null;
+                    if ($debugMode)
+                        error_log("DEBUG: Kapitel für Comic-ID " . $comicId . " als ungültig erkannt (nicht numerisch), auf null gesetzt.");
+                } else {
+                    // In Float umwandeln für Konsistenz, auch wenn es eine Ganzzahl ist (z.B. "0" oder "5")
+                    $chapter = (float) $chapter;
+                    // Wenn negativ, als fehlend behandeln (oder auf null setzen)
+                    if ($chapter < 0) {
+                        $chapter = null;
+                        if ($debugMode)
+                            error_log("DEBUG: Kapitel für Comic-ID " . $comicId . " als ungültig erkannt (negativ), auf null gesetzt.");
+                    }
+                }
             }
 
             $updatedComicDataSubset[$comicId] = [
@@ -466,7 +485,8 @@ foreach ($fullComicData as $id => $data) {
     if ($isTranscriptEffectivelyEmpty) { // Verwende die korrigierte Prüfung
         $missingFields[] = 'transcript';
     }
-    if ($data['chapter'] === null || $data['chapter'] <= 0) {
+    // Kapitel 0 soll nicht mehr als fehlend gelten
+    if ($data['chapter'] === null || $data['chapter'] < 0) {
         $missingFields[] = 'chapter';
     }
 
@@ -623,7 +643,7 @@ if (file_exists($headerPath)) {
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         overflow: hidden;
-        /* Ensures content doesn't spill during transition */
+        /* Ensures content doesn\'t spill during transition */
     }
 
     body.theme-night .collapsible-section {
@@ -680,7 +700,7 @@ if (file_exists($headerPath)) {
 
     .collapsible-section.expanded .collapsible-content {
         /* Angepasste max-height Werte */
-        max-height: 4800px;
+        max-height: 90000px;
         /* Für die Comic-Liste */
         padding-top: 20px;
         /* Restore top padding */
@@ -1389,14 +1409,9 @@ if (file_exists($headerPath)) {
                 </div>
                 <div class="form-group">
                     <label for="comic-chapter">Kapitel:</label>
-                    <select id="comic-chapter" name="comic_chapter" required>
-                        <option value="">Bitte auswählen</option>
-                        <?php foreach ($chapterOptions as $option): ?>
-                            <option value="<?php echo htmlspecialchars($option); ?>">
-                                <?php echo htmlspecialchars($option); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+                    <!-- GEÄNDERT: Input-Feld statt Select, 'required' entfernt, Placeholder hinzugefügt -->
+                    <input type="text" id="comic-chapter" name="comic_chapter"
+                        placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
                 <div class="button-group">
                     <button type="submit" id="save-single-button">Speichern</button>
@@ -1433,7 +1448,8 @@ if (file_exists($headerPath)) {
                                 $isNameMissing = empty($data['name']);
                                 $transcriptContent = trim(strip_tags($data['transcript'], '<br>'));
                                 $isTranscriptEffectivelyEmpty = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
-                                $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
+                                // Kapitel 0 soll nicht mehr als fehlend gelten
+                                $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
 
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                                 ?>
@@ -1543,7 +1559,8 @@ if (file_exists($headerPath)) {
                                 $isNameMissing = empty($data['name']);
                                 $transcriptContent = trim(strip_tags($data['transcript'], '<br>'));
                                 $isTranscriptEffectivelyEmpty = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
-                                $isChapterMissing = ($data['chapter'] === null || $data['chapter'] <= 0);
+                                // Kapitel 0 soll nicht mehr als fehlend gelten
+                                $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
 
                                 // Get image existence for current comic ID
                                 $currentImageExistence = $imageExistenceReport[$id] ?? [];
@@ -1603,7 +1620,7 @@ if (file_exists($headerPath)) {
         const comicTypeSelect = document.getElementById('comic-type');
         const comicNameInput = document.getElementById('comic-name');
         const comicTranscriptTextarea = document.getElementById('comic-transcript');
-        const comicChapterSelect = document.getElementById('comic-chapter');
+        const comicChapterInput = document.getElementById('comic-chapter'); // GEÄNDERT: Referenz auf Input-Feld
         const saveSingleButton = document.getElementById('save-single-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
         const addComicButton = document.getElementById('add-new-comic-button');
@@ -1654,6 +1671,7 @@ if (file_exists($headerPath)) {
                 // Wenn Summernote noch nicht initialisiert ist, leere das normale Textarea
                 comicTranscriptTextarea.value = '';
             }
+            comicChapterInput.value = ''; // GEÄNDERT: Kapitel-Input leeren
             formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
             console.log("Form reset."); // Debug-Meldung
         }
@@ -1730,7 +1748,7 @@ if (file_exists($headerPath)) {
                 initializeSummernote();
                 $('#comic-transcript').summernote('code', comicTranscript); // Summernote mit Inhalt füllen
 
-                comicChapterSelect.value = comicChapter;
+                comicChapterInput.value = comicChapter; // GEÄNDERT: Wert in Input-Feld setzen
 
                 saveSingleButton.textContent = 'Änderungen speichern';
                 saveSingleButton.classList.add('edit');
@@ -1809,12 +1827,15 @@ if (file_exists($headerPath)) {
             const comicName = comicNameInput.value.trim();
             // Inhalt von Summernote holen (oder vom Textarea, falls Summernote nicht initialisiert wurde)
             const comicTranscript = summernoteInitialized ? $('#comic-transcript').summernote('code').trim() : comicTranscriptTextarea.value.trim();
-            const comicChapter = comicChapterSelect.value.trim();
+            const comicChapter = comicChapterInput.value.trim(); // GEÄNDERT: Wert aus Input-Feld holen
 
             // Einfache Validierung
-            if (!comicId || !comicType || !comicName || !comicChapter) {
-                showMessage('Bitte füllen Sie alle Felder (ID, Typ, Name, Kapitel) aus.', 'error');
-                console.error("Validation failed: Missing required fields."); // Debug-Meldung
+            // Kapitel darf 0 oder leer sein, aber nicht negativ oder ungültig numerisch
+            const parsedChapter = parseFloat(comicChapter.replace(',', '.'));
+
+            if (!comicId || !comicType || !comicName || (comicChapter !== '' && (isNaN(parsedChapter) || parsedChapter < 0))) {
+                showMessage('Bitte füllen Sie alle Felder (ID, Typ, Name) aus. Kapitel muss eine Zahl (>= 0) sein oder leer bleiben.', 'error');
+                console.error("Validation failed: Missing required fields or invalid chapter."); // Debug-Meldung
                 return;
             }
             if (!/^\d{8}$/.test(comicId)) {
@@ -1828,7 +1849,7 @@ if (file_exists($headerPath)) {
                 comic_type: comicType,
                 comic_name: comicName,
                 comic_transcript: comicTranscript,
-                comic_chapter: parseInt(comicChapter)
+                comic_chapter: comicChapter // GEÄNDERT: Kapitel als String senden, PHP verarbeitet es
             };
             console.log("Comic data prepared:", comicData); // Debug-Meldung
 
@@ -1874,7 +1895,7 @@ if (file_exists($headerPath)) {
             row.querySelector('.comic-type-display').textContent = comicType;
             row.querySelector('.comic-name-display').textContent = comicName;
             row.querySelector('.comic-transcript-display').textContent = comicTranscript; // Textinhalt
-            row.querySelector('.comic-chapter-display').textContent = comicChapter;
+            row.querySelector('.comic-chapter-display').textContent = comicChapter; // GEÄNDERT: Kapitel-Wert setzen
 
             // Entferne visuelle Lösch-Markierungen, falls die Zeile bearbeitet wurde
             row.style.textDecoration = 'none';
@@ -1883,11 +1904,14 @@ if (file_exists($headerPath)) {
 
             // Prüfe auf fehlende Informationen und markiere visuell
             const isTranscriptEffectivelyEmpty = (comicTranscript === '' || comicTranscript === '<p><br></p>' || comicTranscript === '&nbsp;');
+            // GEÄNDERT: Kapitel 0 ist jetzt erlaubt, leere Zeichenkette auch
+            const isChapterEffectivelyEmpty = (comicChapter === '' || isNaN(parseFloat(comicChapter.replace(',', '.'))) || parseFloat(comicChapter.replace(',', '.')) < 0);
+
             const missingFields = [];
             if (comicType === '') missingFields.push('type');
             if (comicName === '') missingFields.push('name');
             if (isTranscriptEffectivelyEmpty) missingFields.push('transcript');
-            if (comicChapter === '' || parseInt(comicChapter) <= 0) missingFields.push('chapter');
+            if (isChapterEffectivelyEmpty) missingFields.push('chapter'); // GEÄNDERT: Neue Logik verwenden
 
             if (missingFields.length > 0) {
                 row.classList.add('missing-info-row');
@@ -2004,19 +2028,14 @@ if (file_exists($headerPath)) {
                     inputElement.value = target.textContent;
                     console.log("Created select input for comic-type."); // Debug-Meldung
                 } else if (fieldName === 'comic-chapter') {
-                    inputElement = document.createElement('select');
-                    var defaultOption = document.createElement('option'); // Changed to var
-                    defaultOption.value = "";
-                    defaultOption.textContent = "Bitte auswählen";
-                    inputElement.appendChild(defaultOption);
-                    <?php foreach ($chapterOptions as $option): ?>
-                        var optionChapter = document.createElement('option'); // Changed to var
-                        optionChapter.value = "<?php echo htmlspecialchars($option); ?>";
-                        optionChapter.textContent = "<?php echo htmlspecialchars($option); ?>";
-                        inputElement.appendChild(optionChapter);
-                    <?php endforeach; ?>
+                    // GEÄNDERT: Text-Input für Kapitel
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
                     inputElement.value = target.textContent;
-                    console.log("Created select input for comic-chapter."); // Debug-Meldung
+                    inputElement.style.width = '100%';
+                    inputElement.style.boxSizing = 'border-box';
+                    inputElement.placeholder = "Kapitel (z.B. 0, 6, 6.1)"; // Placeholder hinzugefügt
+                    console.log("Created text input for comic-chapter."); // Debug-Meldung
                 } else if (fieldName === 'comic-transcript') {
                     // Double-clicking transcript now triggers the main edit form
                     const editButton = row.querySelector('.edit-button');
@@ -2057,13 +2076,14 @@ if (file_exists($headerPath)) {
                                 comic_type: row.querySelector('.comic-type-display').textContent,
                                 comic_name: row.querySelector('.comic-name-display').textContent,
                                 comic_transcript: row.querySelector('.comic-transcript-display').textContent,
-                                comic_chapter: parseInt(row.querySelector('.comic-chapter-display').textContent)
+                                // GEÄNDERT: Kapitel als String holen
+                                comic_chapter: row.querySelector('.comic-chapter-display').textContent
                             };
 
                             if (fieldName === 'comic-type') currentData.comic_type = newValue;
                             else if (fieldName === 'comic-name') currentData.comic_name = newValue;
                             else if (fieldName === 'comic-transcript') currentData.comic_transcript = newValue; // Should not happen with current logic for transcript
-                            else if (fieldName === 'comic-chapter') currentData.comic_chapter = parseInt(newValue);
+                            else if (fieldName === 'comic-chapter') currentData.comic_chapter = newValue; // GEÄNDERT: Kapitel als String speichern
 
                             editedRows.set(comicId, currentData);
                             setUnsavedChanges(true);
@@ -2072,7 +2092,8 @@ if (file_exists($headerPath)) {
 
                             // Aktualisiere die "missing-info" Klasse basierend auf dem neuen Wert
                             const isTranscriptEffectivelyEmpty = (currentData.comic_transcript === '' || currentData.comic_transcript === '<p><br></p>' || currentData.comic_transcript === '&nbsp;');
-                            const isChapterEffectivelyEmpty = (currentData.comic_chapter === null || isNaN(currentData.comic_chapter) || currentData.comic_chapter <= 0);
+                            // GEÄNDERT: Kapitel 0 ist jetzt erlaubt, leere Zeichenkette auch
+                            const isChapterEffectivelyEmpty = (currentData.comic_chapter === '' || isNaN(parseFloat(currentData.comic_chapter.replace(',', '.'))) || parseFloat(currentData.comic_chapter.replace(',', '.')) < 0);
 
                             if (fieldName === 'comic-type') {
                                 if (currentData.comic_type === '') target.classList.add('missing-info');
@@ -2092,10 +2113,11 @@ if (file_exists($headerPath)) {
                             const rowType = row.querySelector('.comic-type-display').textContent;
                             const rowName = row.querySelector('.comic-name-display').textContent;
                             const rowTranscript = row.querySelector('.comic-transcript-display').textContent;
-                            const rowChapter = row.querySelector('.comic-chapter-display').textContent;
+                            const rowChapter = row.querySelector('.comic-chapter-display').textContent; // GEÄNDERT: Kapitel-Wert holen
 
                             const rowIsTranscriptEffectivelyEmpty = (rowTranscript === '' || rowTranscript === '<p><br></p>' || rowTranscript === '&nbsp;');
-                            const rowIsChapterEffectivelyEmpty = (rowChapter === '' || parseInt(rowChapter) <= 0);
+                            // GEÄNDERT: Kapitel 0 ist jetzt erlaubt, leere Zeichenkette auch
+                            const rowIsChapterEffectivelyEmpty = (rowChapter === '' || isNaN(parseFloat(rowChapter.replace(',', '.'))) || parseFloat(rowChapter.replace(',', '.')) < 0);
 
                             if (rowType === '' || rowName === '' || rowIsTranscriptEffectivelyEmpty || rowIsChapterEffectivelyEmpty) {
                                 row.classList.add('missing-info-row');
