@@ -65,6 +65,7 @@ if ($debugMode)
 
 $message = '';
 $messageType = ''; // 'success' oder 'error' oder 'info' oder 'warning'
+$scrollToId = ''; // Variable, um die ID des Elements zu speichern, zu dem gescrollt werden soll
 
 /**
  * Funktion, um den effektiven Sortierwert für ein Kapitel zu erhalten.
@@ -92,7 +93,7 @@ function getChapterSortValue(array $chapter): array
         return [0, (float) $numericCheckId]; // Niedrigste Priorität, sortiert numerisch
     }
 
-    // Priorität 1: Andere String-chapterId (z.B. "Chapter X")
+    // Priorität 1: Andere String-chapterId (z.g. "Chapter X")
     return [1, $rawChapterId]; // Mittlere Priorität, sortiert natürlich als String
 }
 
@@ -291,8 +292,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (saveArchiveChapters($archiveChaptersJsonPath, $chapters, $debugMode)) {
                     $message = 'Kapitel erfolgreich hinzugefügt!';
                     $messageType = 'success';
+                    $scrollToId = $newChapterId; // Setze die ID zum Scrollen
                     if ($debugMode)
-                        error_log("DEBUG: Kapitel '" . $newChapterId . "' erfolgreich hinzugefügt.");
+                        error_log("DEBUG: Kapitel '" . $newChapterId . "' erfolgreich hinzugefügt. Scroll-ID: " . $scrollToId);
                 } else {
                     $message = 'Fehler beim Hinzufügen des Kapitels.';
                     $messageType = 'error';
@@ -349,8 +351,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (saveArchiveChapters($archiveChaptersJsonPath, $chapters, $debugMode)) {
                         $message = 'Kapitel erfolgreich aktualisiert!';
                         $messageType = 'success';
+                        $scrollToId = $effectivePostedChapterId; // Setze die ID zum Scrollen
                         if ($debugMode)
-                            error_log("DEBUG: Kapitel '" . $effectivePostedChapterId . "' erfolgreich aktualisiert.");
+                            error_log("DEBUG: Kapitel '" . $effectivePostedChapterId . "' erfolgreich aktualisiert. Scroll-ID: " . $scrollToId);
                     } else {
                         $message = 'Fehler beim Aktualisieren des Kapitels.';
                         $messageType = 'error';
@@ -376,6 +379,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (saveArchiveChapters($archiveChaptersJsonPath, array_values($chapters), $debugMode)) { // array_values um Indizes neu zu ordnen
                     $message = 'Kapitel erfolgreich gelöscht!';
                     $messageType = 'success';
+                    // Kein Scrollen nach dem Löschen, da das Element nicht mehr existiert
                     if ($debugMode)
                         error_log("DEBUG: Kapitel '" . $chapterIdToDelete . "' erfolgreich gelöscht.");
                 } else {
@@ -387,9 +391,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
         }
         // Nach einer POST-Anfrage Redirect, um Formular-Resubmission zu vermeiden
+        $redirectUrl = $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType);
+        if (!empty($scrollToId)) {
+            // URL-Encoding für den Fragment-Bezeichner
+            $redirectUrl .= '#chapter-' . urlencode($scrollToId); 
+        }
         if ($debugMode)
-            error_log("DEBUG: Redirect nach POST-Anfrage zu: " . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
-        header('Location: ' . $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType));
+            error_log("DEBUG: Redirect nach POST-Anfrage zu: " . $redirectUrl);
+        header('Location: ' . $redirectUrl);
         exit;
     }
 }
@@ -422,6 +431,14 @@ if (isset($_GET['message']) && isset($_GET['type'])) {
         error_log("DEBUG: Nachricht aus GET-Parametern: Typ='" . $messageType . "', Nachricht='" . $message . "'");
 }
 
+// Prüfen, ob ein Scroll-Anker in der URL vorhanden ist (nach Redirect)
+if (isset($_GET['scroll_to'])) {
+    $scrollToId = htmlspecialchars($_GET['scroll_to']);
+    if ($debugMode)
+        error_log("DEBUG: Scroll-To ID aus GET-Parametern: " . $scrollToId);
+}
+
+
 // Setze Parameter für den Header.
 $pageTitle = 'Archiv Daten Editor';
 $pageHeader = 'Archiv Daten Editor';
@@ -448,7 +465,7 @@ $additionalScripts = <<<EOT
             const chapterIdInput = document.getElementById("chapter_id_input"); // Feld für die Kapitel ID
             const originalChapterIdHidden = document.getElementById("original_chapter_id_hidden"); // Hidden input for original ID
             const formActionInput = document.getElementById("form_action");
-            const titleInput = document.getElementById("title"); // GEÄNDERT: Referenz auf Input-Feld
+            const titleInput = document.getElementById("title"); // Referenz auf Input-Feld
             const descriptionTextarea = $("#description"); // jQuery-Objekt für Summernote
             const leaveIdEmptyCheckbox = document.getElementById("leave_id_empty_checkbox"); // Neue Checkbox
 
@@ -499,7 +516,7 @@ $additionalScripts = <<<EOT
                 }
                 originalChapterIdHidden.value = ""; // Auch die ursprüngliche ID zurücksetzen
                 
-                titleInput.value = ""; // GEÄNDERT: Titel-Input leeren
+                titleInput.value = ""; // Titel-Input leeren
                 
                 // Summernote spezifisch: Inhalte leeren
                 if (descriptionTextarea.data("summernote")) {
@@ -545,7 +562,7 @@ $additionalScripts = <<<EOT
                         }
                     }
 
-                    titleInput.value = title; // GEÄNDERT: Titel-Input füllen
+                    titleInput.value = title; // Titel-Input füllen
                     
                     // Summernote initialisieren, falls noch nicht geschehen
                     initializeSummernote();
@@ -706,16 +723,30 @@ $additionalScripts = <<<EOT
             const msg = urlParams.get("message");
             const type = urlParams.get("type");
             const messageBoxElement = document.getElementById("message-box");
+            const scrollToHash = window.location.hash; // Den Hash-Teil der URL abrufen
 
             if (msg && type && messageBoxElement) {
                 messageBoxElement.textContent = msg;
                 messageBoxElement.className = "message-box " + type;
                 messageBoxElement.style.display = "block";
-                // Clean URL parameters after displaying message
-                history.replaceState({}, document.title, window.location.pathname);
+                // Clean URL parameters after displaying message, but keep hash
+                history.replaceState({}, document.title, window.location.pathname + scrollToHash);
                 setTimeout(() => { messageBoxElement.style.display = "none"; }, 5000);
                 console.log("Message from GET displayed:", msg, "Type:", type); // Debug-Meldung
             }
+
+            // Scrollen zum Element, wenn ein Hash in der URL vorhanden ist
+            if (scrollToHash) {
+                const targetElementId = scrollToHash.substring(1); // '#' entfernen
+                const targetElement = document.getElementById(targetElementId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 'block: center' für bessere Sichtbarkeit
+                    console.log("Scrolled to element with ID:", targetElementId); // Debug-Meldung
+                } else {
+                    console.warn("Target element for scrolling not found:", targetElementId); // Debug-Meldung
+                }
+            }
+
 
             // Add new chapter button functionality
             document.getElementById("add-new-chapter-button").addEventListener("click", function() {
@@ -744,7 +775,7 @@ $additionalScripts = <<<EOT
                     formHeaderIcon.classList.add("fa-chevron-down");
                 }
                 initializeSummernote(); // Summernote initialisieren (nur für Beschreibung)
-                titleInput.value = "<?php echo htmlspecialchars($editTitle); ?>"; // GEÄNDERT: Titel-Input füllen
+                titleInput.value = "<?php echo htmlspecialchars($editTitle); ?>"; // Titel-Input füllen
                 descriptionTextarea.summernote("code", "<?php echo htmlspecialchars($editDescription); ?>");
                 chapterIdInput.value = "<?php echo htmlspecialchars($editChapterId); ?>";
                 originalChapterIdHidden.value = "<?php echo htmlspecialchars($originalChapterId); ?>";
@@ -1337,11 +1368,12 @@ include __DIR__ . '/../src/layout/header.php';
                         <?php else: ?>
                             <?php foreach ($chapters as $chapter):
                                 // strip_tags mit erlaubten Tags, um nur reinen Text für die Prüfung zu erhalten
-                                $isTitleMissing = empty(trim(strip_tags($chapter['title'] ?? ''))); // GEÄNDERT: Keine HTML-Tags für Titel
+                                $isTitleMissing = empty(trim(strip_tags($chapter['title'] ?? '')));
                                 $isDescriptionMissing = empty(trim(strip_tags($chapter['description'] ?? '', '<b><i><u><p><br>')));
                                 $isMissingInfoRow = $isTitleMissing || $isDescriptionMissing;
                                 ?>
-                                <tr data-chapter-id="<?php echo htmlspecialchars($chapter['chapterId'] ?? ''); ?>"
+                                <tr id="chapter-<?php echo htmlspecialchars($chapter['chapterId'] ?? ''); ?>"
+                                    data-chapter-id="<?php echo htmlspecialchars($chapter['chapterId'] ?? ''); ?>"
                                     class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td><?php echo htmlspecialchars($chapter['chapterId'] ?? 'N/A'); ?></td>
                                     <td><span

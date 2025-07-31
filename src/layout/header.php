@@ -284,7 +284,7 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
         <!-- Hinweis auf das Fanprojekt und Link zum Original. -->
         <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
                 target="_blank">twokinds.keenspot.com</a><br><br>Die Homepage wird derzeit überarbeitet und erhält
-            etliche neue Elemente und Funktionen.<br>Bis alle Transcripte Auf deutsch verfügbar sind, wird es noch etwas
+            etliche neue Elemente und Funktionen.<br>Bis alle Transcripte auf deutsch verfügbar sind, wird es noch etwas
             dauern. Bitte hab noch etwas geduld. Danke :-)<br><br>Den aktuellen Stand der Updates erfährst du hier: <a
                 href="https://github.com/RaptorXilef/twokinds.4lima.de/" target="_blank">GitHub</a></center>
         <div id="banner-lights-off" class="banner-lights-off"></div>
