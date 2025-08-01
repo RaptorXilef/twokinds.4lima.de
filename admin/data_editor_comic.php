@@ -828,6 +828,20 @@ if (file_exists($headerPath)) {
         resize: vertical;
     }
 
+    /* NEU: Styling für die Checkbox-Gruppe */
+    .form-group-checkbox {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-group-checkbox label {
+        margin-bottom: 0;
+        margin-left: 8px;
+        font-weight: normal;
+        cursor: pointer;
+    }
+
     .button-group {
         text-align: right;
         margin-top: 20px;
@@ -930,6 +944,7 @@ if (file_exists($headerPath)) {
     body.theme-night .button.delete:hover {
         background-color: #c82333;
     }
+
 
     body.theme-night button.edit,
     body.theme-night .button.edit {
@@ -1402,6 +1417,11 @@ if (file_exists($headerPath)) {
                 <div class="form-group">
                     <label for="comic-name">Name:</label>
                     <input type="text" id="comic-name" name="comic_name" required>
+                    <!-- NEU: Checkbox hinzugefügt -->
+                    <div class="form-group-checkbox">
+                        <input type="checkbox" id="comic-name-empty-checkbox">
+                        <label for="comic-name-empty-checkbox">Name leer lassen</label>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="comic-transcript">Transkript (HTML erlaubt):</label>
@@ -1409,7 +1429,6 @@ if (file_exists($headerPath)) {
                 </div>
                 <div class="form-group">
                     <label for="comic-chapter">Kapitel:</label>
-                    <!-- GEÄNDERT: Input-Feld statt Select, 'required' entfernt, Placeholder hinzugefügt -->
                     <input type="text" id="comic-chapter" name="comic_chapter"
                         placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
@@ -1619,25 +1638,25 @@ if (file_exists($headerPath)) {
         const originalComicIdInput = document.getElementById('original-comic-id');
         const comicTypeSelect = document.getElementById('comic-type');
         const comicNameInput = document.getElementById('comic-name');
+        const comicNameEmptyCheckbox = document.getElementById('comic-name-empty-checkbox'); // NEU: Checkbox Referenz
         const comicTranscriptTextarea = document.getElementById('comic-transcript');
-        const comicChapterInput = document.getElementById('comic-chapter'); // GEÄNDERT: Referenz auf Input-Feld
+        const comicChapterInput = document.getElementById('comic-chapter');
         const saveSingleButton = document.getElementById('save-single-button');
         const cancelEditButton = document.getElementById('cancel-edit-button');
         const addComicButton = document.getElementById('add-new-comic-button');
         const comicDataTable = document.getElementById('comic-data-table');
         const messageBoxElement = document.getElementById('message-box');
         const saveAllButton = document.getElementById('save-all-button');
-        const formSection = document.querySelector('.form-section'); // Referenz zum Formular-Abschnitt
+        const formSection = document.querySelector('.form-section');
 
         let hasUnsavedChanges = false;
-        let editedRows = new Map(); // Speichert die IDs der bearbeiteten Zeilen und ihre Daten
-        let deletedRows = new Set(); // Speichert die IDs der gelöschten Zeilen
-        let summernoteInitialized = false; // Neues Flag für Summernote-Initialisierung
+        let editedRows = new Map();
+        let deletedRows = new Set();
+        let summernoteInitialized = false;
 
-        // Funktion zur Initialisierung von Summernote
         function initializeSummernote() {
             if (!summernoteInitialized) {
-                console.log("Initializing Summernote..."); // Debug-Meldung
+                console.log("Initializing Summernote...");
                 $('#comic-transcript').summernote({
                     height: 150,
                     toolbar: [
@@ -1652,46 +1671,48 @@ if (file_exists($headerPath)) {
                     ]
                 });
                 summernoteInitialized = true;
-                console.log("Summernote initialized."); // Debug-Meldung
+                console.log("Summernote initialized.");
             }
         }
 
-        // Initialisiere Formularfelder mit Standardwerten oder leere sie
         function resetForm() {
             comicEditForm.reset();
             comicIdInput.value = '';
-            originalComicIdInput.value = ''; // Wichtig für neue Einträge
-            comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
+            originalComicIdInput.value = '';
+            comicIdInput.readOnly = false;
+
+            // NEU: Checkbox-Logik beim Zurücksetzen
+            comicNameEmptyCheckbox.checked = false;
+            comicNameInput.required = true;
+            comicNameInput.disabled = false;
+
             saveSingleButton.textContent = 'Speichern';
             saveSingleButton.classList.remove('edit');
             saveSingleButton.classList.add('button');
-            if (summernoteInitialized) { // Nur Summernote leeren, wenn es initialisiert ist
+            if (summernoteInitialized) {
                 $('#comic-transcript').summernote('code', '');
             } else {
-                // Wenn Summernote noch nicht initialisiert ist, leere das normale Textarea
                 comicTranscriptTextarea.value = '';
             }
-            comicChapterInput.value = ''; // GEÄNDERT: Kapitel-Input leeren
-            formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
-            console.log("Form reset."); // Debug-Meldung
+            comicChapterInput.value = '';
+            formSection.scrollIntoView({ behavior: 'smooth' });
+            console.log("Form reset.");
         }
 
-        // Funktion zum Anzeigen von Nachrichten
         function showMessage(msg, type) {
             if (messageBoxElement) {
                 messageBoxElement.textContent = msg;
                 messageBoxElement.className = 'message-box ' + type;
                 messageBoxElement.style.display = 'block';
                 setTimeout(() => {
-                    messageBoxElement.style.display = 'none'; // Nachricht nach 5 Sekunden ausblenden
+                    messageBoxElement.style.display = 'none';
                 }, 5000);
-                console.log("Message displayed:", msg, "Type:", type); // Debug-Meldung
+                console.log("Message displayed:", msg, "Type:", type);
             } else {
                 console.warn("Message box element not found, falling back to console: " + msg);
             }
         }
 
-        // Funktion zum Setzen des "ungespeicherte Änderungen"-Flags
         function setUnsavedChanges(status) {
             hasUnsavedChanges = status;
             if (saveAllButton) {
@@ -1701,35 +1722,43 @@ if (file_exists($headerPath)) {
                     saveAllButton.classList.add('disabled');
                 }
             }
-            console.log("Unsaved changes status:", hasUnsavedChanges); // Debug-Meldung
+            console.log("Unsaved changes status:", hasUnsavedChanges);
         }
 
-        // Warnung vor dem Verlassen der Seite bei ungespeicherten Änderungen
         window.addEventListener('beforeunload', function (event) {
             if (hasUnsavedChanges) {
-                event.preventDefault(); // Standardaktion (Seite verlassen) verhindern
-                event.returnValue = ''; // Für ältere Browser
-                console.log("Beforeunload: Unsaved changes detected, preventing navigation."); // Debug-Meldung
-                return ''; // Für moderne Browser
+                event.preventDefault();
+                event.returnValue = '';
+                console.log("Beforeunload: Unsaved changes detected, preventing navigation.");
+                return '';
             }
         });
 
-        // Hilfsfunktion für HTML-Escaping in JavaScript (für Input-Werte)
         function htmlspecialchars(str) {
             var div = document.createElement('div');
             div.appendChild(document.createTextNode(str));
             return div.innerHTML;
         }
 
-        // Event Listener für Bearbeiten-Buttons
+        // NEU: Event Listener für die "Name leer lassen" Checkbox
+        comicNameEmptyCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                comicNameInput.value = ''; // Feld leeren
+                comicNameInput.required = false; // "required" entfernen
+                comicNameInput.disabled = true; // Feld deaktivieren
+            } else {
+                comicNameInput.required = true; // "required" wiederherstellen
+                comicNameInput.disabled = false; // Feld aktivieren
+            }
+        });
+
         comicDataTable.addEventListener('click', function (event) {
             const target = event.target;
-            // Überprüfe, ob der Klick auf den Button selbst oder ein Icon darin erfolgte
             const editButton = target.closest('.edit-button');
             const deleteButton = target.closest('.delete-button');
 
             if (editButton) {
-                console.log("Edit button clicked."); // Debug-Meldung
+                console.log("Edit button clicked.");
                 const row = editButton.closest('tr');
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
@@ -1737,49 +1766,49 @@ if (file_exists($headerPath)) {
                 const comicTranscript = row.querySelector('.comic-transcript-display').textContent;
                 const comicChapter = row.querySelector('.comic-chapter-display').textContent;
 
-                // Formularfelder füllen
                 comicIdInput.value = comicId;
-                originalComicIdInput.value = comicId; // Speichert die Original-ID für den Fall, dass die ID geändert wird
-                comicIdInput.readOnly = true; // ID ist nicht bearbeitbar im Bearbeitungsmodus
+                originalComicIdInput.value = comicId;
+                comicIdInput.readOnly = true;
                 comicTypeSelect.value = comicType;
                 comicNameInput.value = comicName;
 
-                // Summernote initialisieren und Inhalt füllen
-                initializeSummernote();
-                $('#comic-transcript').summernote('code', comicTranscript); // Summernote mit Inhalt füllen
+                // NEU: Checkbox-Status basierend auf dem Namen setzen
+                if (comicName === '') {
+                    comicNameEmptyCheckbox.checked = true;
+                } else {
+                    comicNameEmptyCheckbox.checked = false;
+                }
+                // Trigger change event to apply disabled/required state
+                comicNameEmptyCheckbox.dispatchEvent(new Event('change'));
 
-                comicChapterInput.value = comicChapter; // GEÄNDERT: Wert in Input-Feld setzen
+                initializeSummernote();
+                $('#comic-transcript').summernote('code', comicTranscript);
+
+                comicChapterInput.value = comicChapter;
 
                 saveSingleButton.textContent = 'Änderungen speichern';
                 saveSingleButton.classList.add('edit');
                 saveSingleButton.classList.remove('button');
 
-                // Auto-expand form section and scroll to it
                 if (!formSection.classList.contains('expanded')) {
                     formSection.classList.add('expanded');
-                    console.log("Form section expanded."); // Debug-Meldung
+                    console.log("Form section expanded.");
                 }
-                formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
+                formSection.scrollIntoView({ behavior: 'smooth' });
             } else if (deleteButton) {
-                console.log("Delete button clicked."); // Debug-Meldung
+                console.log("Delete button clicked.");
                 const row = deleteButton.closest('tr');
                 const comicId = row.dataset.comicId;
 
-                // Bestätigungsdialog vor dem Löschen
-                // KEIN alert() oder confirm() verwenden, stattdessen eine Modale UI
-                // Für diese Implementierung wird ein einfaches confirm() verwendet, da dies die aktuelle Anforderung ist.
                 const confirmDelete = confirm(`Sind Sie sicher, dass Sie den Comic-Eintrag mit der ID ${comicId} löschen möchten? Diese Änderung wird erst nach dem Klick auf "Alle Änderungen speichern" permanent.`);
                 if (confirmDelete) {
-                    // Markiere die Zeile als gelöscht (visuell und intern)
                     row.style.textDecoration = 'line-through';
                     row.style.opacity = '0.5';
-                    row.querySelectorAll('button').forEach(btn => btn.disabled = true); // Buttons deaktivieren
+                    row.querySelectorAll('button').forEach(btn => btn.disabled = true);
 
-                    // Füge die ID zur deletedRows Set hinzu
                     deletedRows.add(comicId);
-                    // Entferne die ID aus editedRows, falls sie dort war
                     editedRows.delete(comicId);
-                    console.log("Comic-ID " + comicId + " marked for deletion. deletedRows:", deletedRows); // Debug-Meldung
+                    console.log("Comic-ID " + comicId + " marked for deletion. deletedRows:", deletedRows);
 
                     setUnsavedChanges(true);
                     showMessage(`Comic-Eintrag ${comicId} zum Löschen markiert. Klicken Sie auf "Alle Änderungen speichern", um dies zu bestätigen.`, 'success');
@@ -1789,58 +1818,51 @@ if (file_exists($headerPath)) {
             }
         });
 
-        // Event Listener für das Hinzufügen eines neuen Eintrags
         addComicButton.addEventListener('click', function () {
-            console.log("Add new comic button clicked."); // Debug-Meldung
+            console.log("Add new comic button clicked.");
             resetForm();
             saveSingleButton.textContent = 'Hinzufügen';
             saveSingleButton.classList.add('button');
             saveSingleButton.classList.remove('edit');
-            comicIdInput.readOnly = false; // ID ist bearbeitbar für neue Einträge
+            comicIdInput.readOnly = false;
 
-            // Summernote initialisieren, falls noch nicht geschehen
             initializeSummernote();
 
-            // Auto-expand form section and scroll to it
             if (!formSection.classList.contains('expanded')) {
                 formSection.classList.add('expanded');
-                console.log("Form section expanded for new entry."); // Debug-Meldung
+                console.log("Form section expanded for new entry.");
             }
-            formSection.scrollIntoView({ behavior: 'smooth' }); // Zum Formular scrollen
+            formSection.scrollIntoView({ behavior: 'smooth' });
         });
 
-        // Event Listener für Abbrechen-Button
         cancelEditButton.addEventListener('click', function () {
-            console.log("Cancel button clicked."); // Debug-Meldung
+            console.log("Cancel button clicked.");
             resetForm();
             showMessage('Bearbeitung abgebrochen.', 'info');
         });
 
-        // Event Listener für das Speichern eines einzelnen Eintrags (Formular-Submit)
         comicEditForm.addEventListener('submit', function (event) {
-            event.preventDefault(); // Standard-Formular-Submit verhindern
-            console.log("Form submit button clicked."); // Debug-Meldung
+            event.preventDefault();
+            console.log("Form submit button clicked.");
 
             const comicId = comicIdInput.value.trim();
-            const originalComicId = originalComicIdInput.value.trim(); // Die ID, die tatsächlich bearbeitet wird (falls ID geändert wurde)
+            const originalComicId = originalComicIdInput.value.trim();
             const comicType = comicTypeSelect.value.trim();
             const comicName = comicNameInput.value.trim();
-            // Inhalt von Summernote holen (oder vom Textarea, falls Summernote nicht initialisiert wurde)
             const comicTranscript = summernoteInitialized ? $('#comic-transcript').summernote('code').trim() : comicTranscriptTextarea.value.trim();
-            const comicChapter = comicChapterInput.value.trim(); // GEÄNDERT: Wert aus Input-Feld holen
+            const comicChapter = comicChapterInput.value.trim();
 
-            // Einfache Validierung
-            // Kapitel darf 0 oder leer sein, aber nicht negativ oder ungültig numerisch
             const parsedChapter = parseFloat(comicChapter.replace(',', '.'));
 
-            if (!comicId || !comicType || !comicName || (comicChapter !== '' && (isNaN(parsedChapter) || parsedChapter < 0))) {
-                showMessage('Bitte füllen Sie alle Felder (ID, Typ, Name) aus. Kapitel muss eine Zahl (>= 0) sein oder leer bleiben.', 'error');
-                console.error("Validation failed: Missing required fields or invalid chapter."); // Debug-Meldung
+            // NEU: Validierung angepasst
+            if (!comicId || !comicType || (!comicName && !comicNameEmptyCheckbox.checked) || (comicChapter !== '' && (isNaN(parsedChapter) || parsedChapter < 0))) {
+                showMessage('Bitte füllen Sie alle Felder (ID, Typ) aus. Name muss entweder ausgefüllt oder als "leer" markiert sein. Kapitel muss eine Zahl (>= 0) sein oder leer bleiben.', 'error');
+                console.error("Validation failed: Missing required fields or invalid chapter.");
                 return;
             }
             if (!/^\d{8}$/.test(comicId)) {
                 showMessage('Comic ID muss eine 8-stellige Zahl (JJJJMMTT) sein.', 'error');
-                console.error("Validation failed: Invalid Comic ID format."); // Debug-Meldung
+                console.error("Validation failed: Invalid Comic ID format.");
                 return;
             }
 
@@ -1849,32 +1871,24 @@ if (file_exists($headerPath)) {
                 comic_type: comicType,
                 comic_name: comicName,
                 comic_transcript: comicTranscript,
-                comic_chapter: comicChapter // GEÄNDERT: Kapitel als String senden, PHP verarbeitet es
+                comic_chapter: comicChapter
             };
-            console.log("Comic data prepared:", comicData); // Debug-Meldung
+            console.log("Comic data prepared:", comicData);
 
-            // Wenn originalComicId gesetzt ist und sich von comicId unterscheidet, bedeutet dies eine ID-Änderung
             if (originalComicId && originalComicId !== comicId) {
-                // Markiere die alte ID als zu löschen
                 deletedRows.add(originalComicId);
-                // Entferne die alte ID aus editedRows, falls sie dort war
                 editedRows.delete(originalComicId);
-                console.log("Original ID marked for deletion due to ID change:", originalComicId); // Debug-Meldung
+                console.log("Original ID marked for deletion due to ID change:", originalComicId);
             }
 
-            // Füge die Daten zur Map der bearbeiteten Zeilen hinzu
             editedRows.set(comicId, comicData);
-            // Entferne die ID aus deletedRows, falls sie dort fälschlicherweise war (z.B. Bearbeitung nach Lösch-Markierung)
             deletedRows.delete(comicId);
-            console.log("Edited rows map updated:", editedRows); // Debug-Meldung
+            console.log("Edited rows map updated:", editedRows);
 
-            // Aktualisiere die Tabellenzeile oder füge eine neue hinzu (visuell)
             let row = comicDataTable.querySelector(`tr[data-comic-id="${htmlspecialchars(originalComicId || comicId)}"]`);
             if (!row) {
-                // Neue Zeile hinzufügen, wenn nicht gefunden
                 row = comicDataTable.tBodies[0].insertRow();
                 row.dataset.comicId = comicId;
-                // Initialize innerHTML with empty spans for editable fields
                 row.innerHTML = `
                 <td class="comic-id-display"></td>
                 <td><span class="editable-field comic-type-display"></span></td>
@@ -1886,32 +1900,28 @@ if (file_exists($headerPath)) {
                     <button type="button" class="delete-button button delete" title="Löschen"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
-                console.log("New row added visually for ID:", comicId); // Debug-Meldung
+                console.log("New row added visually for ID:", comicId);
             }
 
-            // Aktualisiere die angezeigten Werte
-            row.dataset.comicId = comicId; // Wichtig, falls ID geändert wurde
+            row.dataset.comicId = comicId;
             row.querySelector('.comic-id-display').textContent = comicId;
             row.querySelector('.comic-type-display').textContent = comicType;
             row.querySelector('.comic-name-display').textContent = comicName;
-            row.querySelector('.comic-transcript-display').textContent = comicTranscript; // Textinhalt
-            row.querySelector('.comic-chapter-display').textContent = comicChapter; // GEÄNDERT: Kapitel-Wert setzen
+            row.querySelector('.comic-transcript-display').textContent = comicTranscript;
+            row.querySelector('.comic-chapter-display').textContent = comicChapter;
 
-            // Entferne visuelle Lösch-Markierungen, falls die Zeile bearbeitet wurde
             row.style.textDecoration = 'none';
             row.style.opacity = '1';
             row.querySelectorAll('button').forEach(btn => btn.disabled = false);
 
-            // Prüfe auf fehlende Informationen und markiere visuell
             const isTranscriptEffectivelyEmpty = (comicTranscript === '' || comicTranscript === '<p><br></p>' || comicTranscript === '&nbsp;');
-            // GEÄNDERT: Kapitel 0 ist jetzt erlaubt, leere Zeichenkette auch
             const isChapterEffectivelyEmpty = (comicChapter === '' || isNaN(parseFloat(comicChapter.replace(',', '.'))) || parseFloat(comicChapter.replace(',', '.')) < 0);
 
             const missingFields = [];
             if (comicType === '') missingFields.push('type');
-            if (comicName === '') missingFields.push('name');
+            if (comicName === '') missingFields.push('name'); // Markierung bleibt bestehen, wie gewünscht
             if (isTranscriptEffectivelyEmpty) missingFields.push('transcript');
-            if (isChapterEffectivelyEmpty) missingFields.push('chapter'); // GEÄNDERT: Neue Logik verwenden
+            if (isChapterEffectivelyEmpty) missingFields.push('chapter');
 
             if (missingFields.length > 0) {
                 row.classList.add('missing-info-row');
@@ -1919,11 +1929,11 @@ if (file_exists($headerPath)) {
                 if (missingFields.includes('name')) row.querySelector('.comic-name-display').classList.add('missing-info'); else row.querySelector('.comic-name-display').classList.remove('missing-info');
                 if (missingFields.includes('transcript')) row.querySelector('.comic-transcript-display').classList.add('missing-info'); else row.querySelector('.comic-transcript-display').classList.remove('missing-info');
                 if (missingFields.includes('chapter')) row.querySelector('.comic-chapter-display').classList.add('missing-info'); else row.querySelector('.comic-chapter-display').classList.remove('missing-info');
-                console.log("Row " + comicId + " marked as missing info. Fields:", missingFields); // Debug-Meldung
+                console.log("Row " + comicId + " marked as missing info. Fields:", missingFields);
             } else {
                 row.classList.remove('missing-info-row');
                 row.querySelectorAll('.missing-info').forEach(el => el.classList.remove('missing-info'));
-                console.log("Row " + comicId + " has all info, removed missing-info class."); // Debug-Meldung
+                console.log("Row " + comicId + " has all info, removed missing-info class.");
             }
 
             setUnsavedChanges(true);
@@ -1932,23 +1942,20 @@ if (file_exists($headerPath)) {
             showMessage('Ihre Änderungen sind lokal gespeichert. Bitte klicken Sie auf "Alle Änderungen speichern", um sie permanent zu sichern.', 'warning');
         });
 
-        // Event Listener für den "Alle Änderungen speichern" Button
         saveAllButton.addEventListener('click', function () {
-            console.log("Save All button clicked."); // Debug-Meldung
+            console.log("Save All button clicked.");
             if (!hasUnsavedChanges) {
                 showMessage('Keine ungespeicherten Änderungen vorhanden.', 'info');
                 return;
             }
 
-            // Sammle alle zu speichernden/löschenden Daten
             const dataToSend = {
                 pages: Array.from(editedRows.values()),
                 deleted_ids: Array.from(deletedRows)
             };
-            console.log("Data to send to server:", dataToSend); // Debug-Meldung
+            console.log("Data to send to server:", dataToSend);
 
-            // Sende Daten an den Server
-            fetch(window.location.href, { // Sendet an die aktuelle PHP-Datei
+            fetch(window.location.href, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1957,8 +1964,7 @@ if (file_exists($headerPath)) {
             })
                 .then(response => {
                     if (!response.ok) {
-                        // Wenn der Server einen HTTP-Fehlercode zurückgibt
-                        console.error(`HTTP-Fehler! Status: ${response.status}`); // Debug-Meldung
+                        console.error(`HTTP-Fehler! Status: ${response.status}`);
                         throw new Error(`HTTP-Fehler! Status: ${response.status}`);
                     }
                     return response.json();
@@ -1967,52 +1973,47 @@ if (file_exists($headerPath)) {
                     if (data.status === 'success') {
                         showMessage(data.message + ' Die Seite wird neu geladen, um die Änderungen anzuzeigen.', 'success');
                         setUnsavedChanges(false);
-                        editedRows.clear(); // Lokale Änderungen löschen
-                        deletedRows.clear(); // Lokale Löschungen löschen
-                        console.log("Fetch successful, reloading page."); // Debug-Meldung
-                        // Kurze Verzögerung vor dem Neuladen, damit die Nachricht sichtbar ist
+                        editedRows.clear();
+                        deletedRows.clear();
+                        console.log("Fetch successful, reloading page.");
                         setTimeout(() => {
                             window.location.reload();
                         }, 1500);
                     } else {
                         showMessage('Fehler beim Speichern der Daten: ' + data.message, 'error');
-                        console.error('Server responded with error:', data.message); // Debug-Meldung
+                        console.error('Server responded with error:', data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Fetch error:', error); // Debug-Meldung
+                    console.error('Fetch error:', error);
                     showMessage('Ein Netzwerkfehler ist aufgetreten oder die Serverantwort war unerwartet: ' + error.message, 'error');
                 });
         });
 
-        // Initialer Status des "Alle Änderungen speichern" Buttons
         setUnsavedChanges(false);
 
-        // Live-Bearbeitung in der Tabelle (Doppelklick)
         comicDataTable.addEventListener('dblclick', function (event) {
             const target = event.target;
             if (target.classList.contains('editable-field')) {
                 const row = target.closest('tr');
                 const comicId = row.dataset.comicId;
-                const fieldName = target.classList[1].replace('-display', ''); // z.B. 'comic-type'
-                console.log("Double-clicked editable field:", fieldName, "for ID:", comicId); // Debug-Meldung
+                const fieldName = target.classList[1].replace('-display', '');
+                console.log("Double-clicked editable field:", fieldName, "for ID:", comicId);
 
                 if (target.classList.contains('editing')) {
-                    console.log("Field already in editing mode, returning."); // Debug-Meldung
-                    return; // Bereits im Bearbeitungsmodus
+                    console.log("Field already in editing mode, returning.");
+                    return;
                 }
 
-                // Alle anderen Bearbeitungsfelder schließen
                 document.querySelectorAll('.editable-field.editing').forEach(field => {
                     field.classList.remove('editing');
                     const originalContent = field.dataset.originalContent;
                     if (originalContent !== undefined) {
-                        field.innerHTML = originalContent; // Setze den Inhalt zurück
-                        console.log("Closed other editing field, restored content."); // Debug-Meldung
+                        field.innerHTML = originalContent;
+                        console.log("Closed other editing field, restored content.");
                     }
                 });
 
-                // Speichere den Originalinhalt
                 target.dataset.originalContent = target.innerHTML;
                 target.classList.add('editing');
 
@@ -2020,30 +2021,28 @@ if (file_exists($headerPath)) {
                 if (fieldName === 'comic-type') {
                     inputElement = document.createElement('select');
                     <?php foreach ($comicTypeOptions as $option): ?>
-                        var optionType = document.createElement('option'); // Changed to var
+                        var optionType = document.createElement('option');
                         optionType.value = "<?php echo htmlspecialchars($option); ?>";
                         optionType.textContent = "<?php echo htmlspecialchars($option); ?>";
                         inputElement.appendChild(optionType);
                     <?php endforeach; ?>
                     inputElement.value = target.textContent;
-                    console.log("Created select input for comic-type."); // Debug-Meldung
+                    console.log("Created select input for comic-type.");
                 } else if (fieldName === 'comic-chapter') {
-                    // GEÄNDERT: Text-Input für Kapitel
                     inputElement = document.createElement('input');
                     inputElement.type = 'text';
                     inputElement.value = target.textContent;
                     inputElement.style.width = '100%';
                     inputElement.style.boxSizing = 'border-box';
-                    inputElement.placeholder = "Kapitel (z.B. 0, 6, 6.1)"; // Placeholder hinzugefügt
-                    console.log("Created text input for comic-chapter."); // Debug-Meldung
+                    inputElement.placeholder = "Kapitel (z.B. 0, 6, 6.1)";
+                    console.log("Created text input for comic-chapter.");
                 } else if (fieldName === 'comic-transcript') {
-                    // Double-clicking transcript now triggers the main edit form
                     const editButton = row.querySelector('.edit-button');
                     if (editButton) {
-                        editButton.click(); // Simulate click on edit button
-                        target.classList.remove('editing'); // Remove editing class from span
-                        console.log("Transcript double-clicked, redirecting to full form edit."); // Debug-Meldung
-                        return; // Exit here as editing happens in main form
+                        editButton.click();
+                        target.classList.remove('editing');
+                        console.log("Transcript double-clicked, redirecting to full form edit.");
+                        return;
                     }
                 } else {
                     inputElement = document.createElement('input');
@@ -2051,48 +2050,42 @@ if (file_exists($headerPath)) {
                     inputElement.value = target.textContent;
                     inputElement.style.width = '100%';
                     inputElement.style.boxSizing = 'border-box';
-                    console.log("Created text input for field:", fieldName); // Debug-Meldung
+                    console.log("Created text input for field:", fieldName);
                 }
 
-                // Only proceed if an input element was created (i.e., not for transcript field)
                 if (inputElement) {
                     target.innerHTML = '';
                     target.appendChild(inputElement);
                     inputElement.focus();
 
                     inputElement.addEventListener('blur', function () {
-                        // Überprüfe, ob sich der Wert geändert hat
                         const newValue = inputElement.value.trim();
                         const originalValue = target.dataset.originalContent.trim();
-                        console.log("Field blurred. New value:", newValue, "Original value:", originalValue); // Debug-Meldung
+                        console.log("Field blurred. New value:", newValue, "Original value:", originalValue);
 
                         target.classList.remove('editing');
-                        target.innerHTML = htmlspecialchars(newValue); // Zeige den neuen Wert an
+                        target.innerHTML = htmlspecialchars(newValue);
 
                         if (newValue !== originalValue) {
-                            // Daten für die Speicherung vorbereiten
                             let currentData = editedRows.get(comicId) || {
                                 comic_id: comicId,
                                 comic_type: row.querySelector('.comic-type-display').textContent,
                                 comic_name: row.querySelector('.comic-name-display').textContent,
                                 comic_transcript: row.querySelector('.comic-transcript-display').textContent,
-                                // GEÄNDERT: Kapitel als String holen
                                 comic_chapter: row.querySelector('.comic-chapter-display').textContent
                             };
 
                             if (fieldName === 'comic-type') currentData.comic_type = newValue;
                             else if (fieldName === 'comic-name') currentData.comic_name = newValue;
-                            else if (fieldName === 'comic-transcript') currentData.comic_transcript = newValue; // Should not happen with current logic for transcript
-                            else if (fieldName === 'comic-chapter') currentData.comic_chapter = newValue; // GEÄNDERT: Kapitel als String speichern
+                            else if (fieldName === 'comic-transcript') currentData.comic_transcript = newValue;
+                            else if (fieldName === 'comic-chapter') currentData.comic_chapter = newValue;
 
                             editedRows.set(comicId, currentData);
                             setUnsavedChanges(true);
                             showMessage('Änderung für ' + comicId + ' (' + fieldName + ') lokal gespeichert. Klicken Sie auf "Alle Änderungen speichern".', 'info');
-                            console.log("Local change recorded:", currentData); // Debug-Meldung
+                            console.log("Local change recorded:", currentData);
 
-                            // Aktualisiere die "missing-info" Klasse basierend auf dem neuen Wert
                             const isTranscriptEffectivelyEmpty = (currentData.comic_transcript === '' || currentData.comic_transcript === '<p><br></p>' || currentData.comic_transcript === '&nbsp;');
-                            // GEÄNDERT: Kapitel 0 ist jetzt erlaubt, leere Zeichenkette auch
                             const isChapterEffectivelyEmpty = (currentData.comic_chapter === '' || isNaN(parseFloat(currentData.comic_chapter.replace(',', '.'))) || parseFloat(currentData.comic_chapter.replace(',', '.')) < 0);
 
                             if (fieldName === 'comic-type') {
@@ -2101,7 +2094,7 @@ if (file_exists($headerPath)) {
                             } else if (fieldName === 'comic-name') {
                                 if (currentData.comic_name === '') target.classList.add('missing-info');
                                 else target.classList.remove('missing-info');
-                            } else if (fieldName === 'comic-transcript') { // Should not happen with current logic for transcript
+                            } else if (fieldName === 'comic-transcript') {
                                 if (isTranscriptEffectivelyEmpty) target.classList.add('missing-info');
                                 else target.classList.remove('missing-info');
                             } else if (fieldName === 'comic-chapter') {
@@ -2109,37 +2102,33 @@ if (file_exists($headerPath)) {
                                 else target.classList.remove('missing-info');
                             }
 
-                            // Prüfe, ob die gesamte Zeile jetzt vollständig ist oder nicht
                             const rowType = row.querySelector('.comic-type-display').textContent;
                             const rowName = row.querySelector('.comic-name-display').textContent;
                             const rowTranscript = row.querySelector('.comic-transcript-display').textContent;
-                            const rowChapter = row.querySelector('.comic-chapter-display').textContent; // GEÄNDERT: Kapitel-Wert holen
+                            const rowChapter = row.querySelector('.comic-chapter-display').textContent;
 
                             const rowIsTranscriptEffectivelyEmpty = (rowTranscript === '' || rowTranscript === '<p><br></p>' || rowTranscript === '&nbsp;');
-                            // GEÄNDERT: Kapitel 0 ist jetzt erlaubt, leere Zeichenkette auch
                             const rowIsChapterEffectivelyEmpty = (rowChapter === '' || isNaN(parseFloat(rowChapter.replace(',', '.'))) || parseFloat(rowChapter.replace(',', '.')) < 0);
 
                             if (rowType === '' || rowName === '' || rowIsTranscriptEffectivelyEmpty || rowIsChapterEffectivelyEmpty) {
                                 row.classList.add('missing-info-row');
-                                console.log("Row " + comicId + " now has missing info after inline edit."); // Debug-Meldung
+                                console.log("Row " + comicId + " now has missing info after inline edit.");
                             } else {
                                 row.classList.remove('missing-info-row');
-                                console.log("Row " + comicId + " now complete after inline edit."); // Debug-Meldung
+                                console.log("Row " + comicId + " now complete after inline edit.");
                             }
 
                         } else {
-                            // Wenn keine Änderung, setze den Originalinhalt zurück (falls HTML-Tags entfernt wurden)
                             target.innerHTML = originalValue;
-                            console.log("No change in value, restored original content."); // Debug-Meldung
+                            console.log("No change in value, restored original content.");
                         }
                     });
 
-                    // Ermögliche Speichern mit Enter für Textfelder
                     if (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') {
                         inputElement.addEventListener('keypress', function (e) {
-                            if (e.key === 'Enter' && inputElement.tagName === 'INPUT') { // Nur für INPUT, nicht TEXTAREA
-                                inputElement.blur(); // Verlässt das Feld, was den blur-Event auslöst und speichert
-                                console.log("Enter key pressed, blurring input."); // Debug-Meldung
+                            if (e.key === 'Enter' && inputElement.tagName === 'INPUT') {
+                                inputElement.blur();
+                                console.log("Enter key pressed, blurring input.");
                             }
                         });
                     }
@@ -2147,12 +2136,10 @@ if (file_exists($headerPath)) {
             }
         });
 
-        // Add event listeners for collapsible headers
         document.querySelectorAll('.collapsible-header').forEach(header => {
             const section = header.closest('.collapsible-section');
             const icon = header.querySelector('i');
 
-            // Set initial icon based on HTML class
             if (section.classList.contains('expanded')) {
                 icon.classList.remove('fa-chevron-right');
                 icon.classList.add('fa-chevron-down');
@@ -2162,17 +2149,14 @@ if (file_exists($headerPath)) {
             }
 
             header.addEventListener('click', function () {
-                const wasExpanded = section.classList.contains('expanded'); // Zustand vor dem Toggle speichern
+                const wasExpanded = section.classList.contains('expanded');
                 section.classList.toggle('expanded');
-                // Update the icon based on the new expanded state
                 if (section.classList.contains('expanded')) {
                     icon.classList.remove('fa-chevron-right');
                     icon.classList.add('fa-chevron-down');
-                    // Wenn es der Formular-Abschnitt ist und er gerade aufgeklappt wurde, Summernote initialisieren
                     if (section.classList.contains('form-section') && !wasExpanded) {
                         initializeSummernote();
                     }
-                    // Zum Formular scrollen, wenn es aufgeklappt wird
                     if (section.classList.contains('form-section')) {
                         section.scrollIntoView({ behavior: 'smooth' });
                     }
@@ -2180,7 +2164,7 @@ if (file_exists($headerPath)) {
                     icon.classList.remove('fa-chevron-down');
                     icon.classList.add('fa-chevron-right');
                 }
-                console.log("Collapsible header clicked. Section expanded status:", section.classList.contains('expanded')); // Debug-Meldung
+                console.log("Collapsible header clicked. Section expanded status:", section.classList.contains('expanded'));
             });
         });
     });
