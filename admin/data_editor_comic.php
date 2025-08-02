@@ -127,56 +127,48 @@ function loadComicData(string $path, bool $debugMode): array
 }
 
 /**
- * Speichert Comic-Daten in die JSON-Datei, alphabetisch sortiert.
+ * Speichert Comic-Daten in die JSON-Datei und gibt die vollständigen, sortierten Daten zurück.
  * @param string $path Der Pfad zur JSON-Datei.
- * @param array $newDataSubset Die neuen oder aktualisierten Daten (Subset der gesamten Daten).
+ * @param array $newDataSubset Die neuen oder aktualisierten Daten.
  * @param array $deletedIds Eine Liste von IDs, die gelöscht werden sollen.
  * @param bool $debugMode Debug-Modus Flag.
- * @return bool True bei Erfolg, False bei Fehler.
+ * @return array|false Die vollständigen, aktualisierten Daten bei Erfolg, sonst false.
  */
-function saveComicData(string $path, array $newDataSubset, array $deletedIds = [], bool $debugMode): bool
+function saveComicDataAndReturnAll(string $path, array $newDataSubset, array $deletedIds = [], bool $debugMode)
 {
     if ($debugMode)
-        error_log("DEBUG: saveComicData() aufgerufen für: " . basename($path));
-    $existingData = loadComicData($path, $debugMode); // Lade die bestehenden Daten
+        error_log("DEBUG: saveComicDataAndReturnAll() aufgerufen.");
+    $existingData = loadComicData($path, $debugMode);
 
-    // Aktualisiere bestehende Daten mit dem Subset und füge neue hinzu
     foreach ($newDataSubset as $id => $data) {
         $existingData[$id] = $data;
-        if ($debugMode)
-            error_log("DEBUG: Aktualisiere/Füge Comic-ID hinzu: " . $id);
     }
 
-    // Entferne gelöschte IDs
     foreach ($deletedIds as $id) {
         if (isset($existingData[$id])) {
             unset($existingData[$id]);
-            if ($debugMode)
-                error_log("DEBUG: Lösche Comic-ID: " . $id);
         }
     }
 
-    // Sortiere das Array alphabetisch nach Schlüsseln (Comic-IDs)
     ksort($existingData);
-    if ($debugMode)
-        error_log("DEBUG: Comic-Daten nach ID sortiert.");
     $jsonContent = json_encode($existingData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
     if ($jsonContent === false) {
         error_log("Fehler beim Kodieren von Comic-Daten: " . json_last_error_msg());
-        if ($debugMode)
-            error_log("DEBUG: Fehler beim Kodieren von Comic-Daten: " . json_last_error_msg());
         return false;
     }
+
     if (file_put_contents($path, $jsonContent) === false) {
         error_log("Fehler beim Schreiben der Comic-Daten nach " . $path);
-        if ($debugMode)
-            error_log("DEBUG: Fehler beim Schreiben der Comic-Daten nach " . $path);
         return false;
     }
+
     if ($debugMode)
-        error_log("DEBUG: Comic-Daten erfolgreich gespeichert.");
-    return true;
+        error_log("DEBUG: Comic-Daten erfolgreich gespeichert. Gebe vollständige Daten zurück.");
+
+    return $existingData; // KORREKTUR: Gibt die vollständigen Daten zurück.
 }
+
 
 /**
  * Scannt die Comic-Bildverzeichnisse nach vorhandenen Comic-IDs.
@@ -307,14 +299,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             $deletedIds[] = $originalComicId;
         }
 
-        if (saveComicData($comicVarJsonPath, $updatedData, $deletedIds, $debugMode)) {
-            // Finde die Seite des gespeicherten Eintrags
-            $allData = loadComicData($comicVarJsonPath, $debugMode);
-            ksort($allData);
+        // KORREKTUR: Verwende die neue Funktion, die die Daten zurückgibt
+        $allData = saveComicDataAndReturnAll($comicVarJsonPath, $updatedData, $deletedIds, $debugMode);
+
+        if ($allData !== false) {
+            // Finde die Seite des gespeicherten Eintrags aus den zurückgegebenen Daten
             $allIds = array_keys($allData);
             $index = array_search($comicId, $allIds);
-            // KORREKTUR: Die Berechnung war korrekt, aber wir stellen sicher, dass sie konsistent ist.
+
             $pageNumber = ($index !== false) ? floor($index / $itemsPerPage) + 1 : 1;
+
+            // Wenn pageNumber ungleich 1, dann +1.
+            if ($pageNumber == 1 or $pageNumber == 0) {
+                $pageNumber;
+            } else {
+                $pageNumber++;
+            }
+
+            if ($debugMode) {
+                error_log("DEBUG SAVE: comicId=$comicId, index=$index, itemsPerPage=$itemsPerPage, calculatedPage=$pageNumber");
+            }
 
             header('Content-Type: application/json');
             echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!', 'comic_id' => $comicId, 'page' => $pageNumber]);
@@ -333,7 +337,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             exit;
         }
 
-        if (saveComicData($comicVarJsonPath, [], [$comicId], $debugMode)) {
+        // Fürs Löschen reicht die alte Funktion, da wir keine Daten zurück brauchen.
+        if (saveComicDataAndReturnAll($comicVarJsonPath, [], [$comicId], $debugMode) !== false) {
             header('Content-Type: application/json');
             echo json_encode(['status' => 'success', 'message' => 'Comic-Eintrag ' . htmlspecialchars($comicId) . ' erfolgreich gelöscht!']);
             exit;
@@ -1317,7 +1322,7 @@ if (file_exists($headerPath)) {
                                     </td>
                                     <td><?php echo ($currentImageExistence['lowres'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-check-circle icon-missing"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
                                     <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
