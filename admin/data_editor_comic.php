@@ -166,7 +166,7 @@ function saveComicDataAndReturnAll(string $path, array $newDataSubset, array $de
     if ($debugMode)
         error_log("DEBUG: Comic-Daten erfolgreich gespeichert. Gebe vollständige Daten zurück.");
 
-    return $existingData; // KORREKTUR: Gibt die vollständigen Daten zurück.
+    return $existingData;
 }
 
 
@@ -299,22 +299,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             $deletedIds[] = $originalComicId;
         }
 
-        // KORREKTUR: Verwende die neue Funktion, die die Daten zurückgibt
         $allData = saveComicDataAndReturnAll($comicVarJsonPath, $updatedData, $deletedIds, $debugMode);
 
         if ($allData !== false) {
-            // Finde die Seite des gespeicherten Eintrags aus den zurückgegebenen Daten
             $allIds = array_keys($allData);
             $index = array_search($comicId, $allIds);
 
             $pageNumber = ($index !== false) ? floor($index / $itemsPerPage) + 1 : 1;
-
-            // Wenn pageNumber ungleich 1, dann +1.
-            if ($pageNumber == 1 or $pageNumber == 0) {
-                $pageNumber;
-            } else {
-                $pageNumber++;
-            }
 
             if ($debugMode) {
                 error_log("DEBUG SAVE: comicId=$comicId, index=$index, itemsPerPage=$itemsPerPage, calculatedPage=$pageNumber");
@@ -337,7 +328,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             exit;
         }
 
-        // Fürs Löschen reicht die alte Funktion, da wir keine Daten zurück brauchen.
         if (saveComicDataAndReturnAll($comicVarJsonPath, [], [$comicId], $debugMode) !== false) {
             header('Content-Type: application/json');
             echo json_encode(['status' => 'success', 'message' => 'Comic-Eintrag ' . htmlspecialchars($comicId) . ' erfolgreich gelöscht!']);
@@ -1572,8 +1562,18 @@ if (file_exists($headerPath)) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        const targetUrl = `?page=${data.page}#comic-row-${data.comic_id}`;
-                        window.location.href = targetUrl;
+                        const targetPage = data.page.toString();
+                        const currentPage = new URLSearchParams(window.location.search).get('page') || '1';
+                        const targetUrl = `?page=${targetPage}#comic-row-${data.comic_id}`;
+
+                        // KORREKTUR: Wenn die Zielseite die gleiche ist wie die aktuelle, erzwinge einen Reload.
+                        if (targetPage === currentPage && window.location.pathname + window.location.search === window.location.pathname + `?page=${targetPage}`) {
+                            window.location.href = targetUrl;
+                            window.location.reload();
+                        } else {
+                            // Bei einer neuen Seite ist der Reload implizit.
+                            window.location.href = targetUrl;
+                        }
                     } else {
                         showMessage('Fehler beim Speichern: ' + data.message, 'error');
                     }
