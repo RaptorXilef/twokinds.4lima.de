@@ -299,17 +299,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             $deletedIds[] = $originalComicId;
         }
 
-        $allData = saveComicDataAndReturnAll($comicVarJsonPath, $updatedData, $deletedIds, $debugMode);
+        // Speichere die Daten und erhalte die reine JSON-Datenmenge zurück
+        $allDataFromFile = saveComicDataAndReturnAll($comicVarJsonPath, $updatedData, $deletedIds, $debugMode);
 
-        if ($allData !== false) {
-            $allIds = array_keys($allData);
+        if ($allDataFromFile !== false) {
+            // === HIER IST DIE KORREKTUR ===
+            // Wir müssen nun die Datenbasis für die Seitenberechnung um die Bild-IDs erweitern,
+            // genau wie es beim normalen Seitenaufbau zur Anzeige geschieht.
+
+            // 1. Beginne mit den Daten, die gerade gespeichert wurden.
+            $completeDataForCalc = $allDataFromFile;
+
+            // 2. Hole die IDs aus den Bildordnern.
+            $imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
+
+            // 3. Füge fehlende IDs zur Berechnungsbasis hinzu.
+            foreach ($imageComicIds as $id) {
+                if (!isset($completeDataForCalc[$id])) {
+                    // Der Inhalt ist für die Zählung egal, aber die ID muss existieren.
+                    $completeDataForCalc[$id] = ['type' => '', 'name' => '', 'transcript' => '', 'chapter' => null];
+                }
+            }
+
+            // 4. Sortiere die komplette, kombinierte Liste, um den korrekten Index zu finden.
+            ksort($completeDataForCalc);
+
+            // 5. Führe die Seitenberechnung auf der korrekten, vollständigen Datenmenge durch.
+            $allIds = array_keys($completeDataForCalc);
             $index = array_search($comicId, $allIds);
 
             $pageNumber = ($index !== false) ? floor($index / $itemsPerPage) + 1 : 1;
 
             if ($debugMode) {
-                error_log("DEBUG SAVE: comicId=$comicId, index=$index, itemsPerPage=$itemsPerPage, calculatedPage=$pageNumber");
+                error_log("DEBUG SAVE (CORRECTED): comicId=$comicId, index=$index, totalItems=" . count($allIds) . ", itemsPerPage=$itemsPerPage, calculatedPage=$pageNumber");
             }
+            // === ENDE DER KORREKTUR ===
 
             header('Content-Type: application/json');
             echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!', 'comic_id' => $comicId, 'page' => $pageNumber]);
@@ -319,6 +343,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             echo json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern der Comic-Daten.']);
             exit;
         }
+
 
     } elseif ($action === 'delete') {
         $comicId = $requestData['comic_id'] ?? null;
