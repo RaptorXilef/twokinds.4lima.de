@@ -418,6 +418,56 @@ if ($currentPage > $totalPages && $totalPages > 0) {
 $offset = ($currentPage - 1) * $itemsPerPage;
 $paginatedComicData = array_slice($fullComicData, $offset, $itemsPerPage, true);
 
+// === PAGINIERUNGS-HTML GENERIEREN ===
+// Wir generieren den HTML-Code für die Paginierung hier einmal und speichern ihn in einer Variable.
+// Das vermeidet Code-Wiederholungen und macht die Wartung einfacher.
+$paginationHtml = '';
+if ($totalPages > 1) {
+    ob_start(); // Starte den Output-Buffer, um den HTML-Code "einzufangen"
+    ?>
+    <div class="pagination">
+        <?php if ($currentPage > 1): ?>
+            <a href="?page=1" title="Erste Seite"><i class="fas fa-angle-double-left"></i></a>
+            <a href="?page=<?php echo $currentPage - 1; ?>" title="Vorherige Seite"><i class="fas fa-angle-left"></i></a>
+        <?php else: ?>
+            <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
+            <span class="disabled"><i class="fas fa-angle-left"></i></span>
+        <?php endif; ?>
+
+        <?php
+        $range = 2;
+        $startPage = max(1, $currentPage - $range);
+        $endPage = min($totalPages, $currentPage + $range);
+
+        if ($startPage > 1) {
+            echo '<span>...</span>';
+        }
+
+        for ($i = $startPage; $i <= $endPage; $i++): ?>
+            <a href="?page=<?php echo $i; ?>"
+                class="<?php echo ($i == $currentPage) ? 'current-page' : ''; ?>"><?php echo $i; ?></a>
+        <?php endfor; ?>
+
+        <?php
+        if ($endPage < $totalPages) {
+            echo '<span>...</span>';
+        }
+        ?>
+
+        <?php if ($currentPage < $totalPages): ?>
+            <a href="?page=<?php echo $currentPage + 1; ?>" title="Nächste Seite"><i class="fas fa-angle-right"></i></a>
+            <a href="?page=<?php echo $totalPages; ?>" title="Letzte Seite"><i class="fas fa-angle-double-right"></i></a>
+        <?php else: ?>
+            <span class="disabled"><i class="fas fa-angle-right"></i></span>
+            <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
+        <?php endif; ?>
+    </div>
+    <?php
+    $paginationHtml = ob_get_clean(); // Speichere den Inhalt des Buffers in die Variable und leere ihn.
+}
+// === ENDE PAGINIERUNGS-HTML GENERIERUNG ===
+
+
 // Binde den gemeinsamen Header ein.
 if (file_exists($headerPath)) {
     include $headerPath;
@@ -920,6 +970,8 @@ if (file_exists($headerPath)) {
         justify-content: center;
         align-items: center;
         margin-top: 20px;
+        margin-bottom: 20px;
+        /* Abstand hinzugefügt */
         flex-wrap: wrap;
     }
 
@@ -959,6 +1011,7 @@ if (file_exists($headerPath)) {
         font-weight: bold;
     }
 
+
     body.theme-night .pagination .current-page {
         background-color: #007bff;
         border-color: #007bff;
@@ -985,6 +1038,7 @@ if (file_exists($headerPath)) {
     .pagination .incomplete-page:hover {
         background-color: #f5c6cb;
     }
+
 
     body.theme-night .pagination .incomplete-page:hover {
         background-color: #c82333;
@@ -1145,6 +1199,8 @@ if (file_exists($headerPath)) {
 </style>
 
 <div class="admin-container">
+    <?php echo $paginationHtml; // Paginierung 1: Ganz oben ?>
+
     <div id="message-box" class="message-box"></div>
 
     <section class="form-section collapsible-section">
@@ -1195,6 +1251,7 @@ if (file_exists($headerPath)) {
     <section class="comic-list-section collapsible-section expanded">
         <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-down"></i></h2>
         <div class="collapsible-content">
+            <?php echo $paginationHtml; // Paginierung 2: Über der Haupt-Tabelle ?>
             <div class="comic-table-container">
                 <table class="comic-table" id="comic-data-table">
                     <thead>
@@ -1252,47 +1309,7 @@ if (file_exists($headerPath)) {
             <button type="button" id="add-new-comic-button" class="button"><i class="fas fa-plus"></i> Neuen
                 Comic-Eintrag hinzufügen (+)</button>
 
-            <!-- Paginierung -->
-            <div class="pagination">
-                <?php if ($currentPage > 1): ?>
-                    <a href="?page=1" title="Erste Seite"><i class="fas fa-angle-double-left"></i></a>
-                    <a href="?page=<?php echo $currentPage - 1; ?>" title="Vorherige Seite"><i
-                            class="fas fa-angle-left"></i></a>
-                <?php else: ?>
-                    <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
-                    <span class="disabled"><i class="fas fa-angle-left"></i></span>
-                <?php endif; ?>
-
-                <?php
-                $range = 2;
-                $startPage = max(1, $currentPage - $range);
-                $endPage = min($totalPages, $currentPage + $range);
-
-                if ($startPage > 1) {
-                    echo '<span>...</span>';
-                }
-
-                for ($i = $startPage; $i <= $endPage; $i++): ?>
-                    <a href="?page=<?php echo $i; ?>"
-                        class="<?php echo ($i == $currentPage) ? 'current-page' : ''; ?>"><?php echo $i; ?></a>
-                <?php endfor; ?>
-
-                <?php
-                if ($endPage < $totalPages) {
-                    echo '<span>...</span>';
-                }
-                ?>
-
-                <?php if ($currentPage < $totalPages): ?>
-                    <a href="?page=<?php echo $currentPage + 1; ?>" title="Nächste Seite"><i
-                            class="fas fa-angle-right"></i></a>
-                    <a href="?page=<?php echo $totalPages; ?>" title="Letzte Seite"><i
-                            class="fas fa-angle-double-right"></i></a>
-                <?php else: ?>
-                    <span class="disabled"><i class="fas fa-angle-right"></i></span>
-                    <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
-                <?php endif; ?>
-            </div>
+            <?php echo $paginationHtml; // Paginierung 3: Unter der Haupt-Tabelle ?>
         </div>
     </section>
 
@@ -1301,6 +1318,7 @@ if (file_exists($headerPath)) {
                 class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
             <?php if (!empty($paginatedComicData)): ?>
+                <?php echo $paginationHtml; // Paginierung 4: Über der Berichts-Tabelle ?>
                 <div class="comic-table-container">
                     <table class="report-table">
                         <thead>
@@ -1339,7 +1357,7 @@ if (file_exists($headerPath)) {
                                     </td>
                                     <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
                                     </td>
                                     <td><?php echo ($currentImageExistence['socialmedia'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
@@ -1348,11 +1366,14 @@ if (file_exists($headerPath)) {
                         </tbody>
                     </table>
                 </div>
+                <?php echo $paginationHtml; // Paginierung 5: Unter der Berichts-Tabelle ?>
             <?php else: ?>
                 <p>Keine Comic-Daten zum Berichten vorhanden.</p>
             <?php endif; ?>
         </div>
     </section>
+
+    <?php echo $paginationHtml; // Paginierung 6: Ganz unten ?>
 </div>
 
 <!-- jQuery (Summernote benötigt jQuery) -->
