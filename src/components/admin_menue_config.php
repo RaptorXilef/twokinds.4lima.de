@@ -34,6 +34,8 @@
         </br>
         <a href="./initial_setup.php">Webseiten-Ersteinrichtung</a>
         </br>
+        <a href="./upload_image.php">Bild-Upload</a>
+        </br>
         <a href="./generator_thumbnail.php">Thumbnail-Generator</a>
         <a href="./generator_image_socialmedia_crop.php">Social Media Bild-Generator Crop</a>
         <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
