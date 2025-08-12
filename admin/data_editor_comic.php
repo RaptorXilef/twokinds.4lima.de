@@ -274,23 +274,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         $transcript = isset($pageData['comic_transcript']) ? $pageData['comic_transcript'] : '';
         $chapter = $pageData['comic_chapter'] ?? '';
 
+        // === BUGFIX & FEATURE: `chapter` als String, nicht als Zahl speichern ===
         if ($chapter === '') {
             $chapter = null;
         } else {
             $chapter = str_replace(',', '.', $chapter);
+            // Überprüfen, ob es eine gültige Zahl ist, aber nicht in eine Zahl umwandeln.
             if (!is_numeric($chapter) || (float) $chapter < 0) {
                 $chapter = null;
-            } else {
-                $chapter = (float) $chapter;
             }
+            // Der Wert bleibt ein String, wenn er gültig ist.
         }
 
+        // === FEATURE: `datum` Feld hinzufügen & KORREKTUR: Reihenfolge der Felder ===
         $updatedData = [
             $comicId => [
                 'type' => $type,
                 'name' => $name,
                 'transcript' => $transcript,
-                'chapter' => $chapter
+                'chapter' => $chapter,
+                'datum' => $comicId // Das Datum ist die Comic-ID
             ]
         ];
 
@@ -303,37 +306,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         $allDataFromFile = saveComicDataAndReturnAll($comicVarJsonPath, $updatedData, $deletedIds, $debugMode);
 
         if ($allDataFromFile !== false) {
-            // === HIER IST DIE KORREKTUR ===
-            // Wir müssen nun die Datenbasis für die Seitenberechnung um die Bild-IDs erweitern,
-            // genau wie es beim normalen Seitenaufbau zur Anzeige geschieht.
-
-            // 1. Beginne mit den Daten, die gerade gespeichert wurden.
+            // === KORREKTUR FÜR SEITENBERECHNUNG ===
             $completeDataForCalc = $allDataFromFile;
-
-            // 2. Hole die IDs aus den Bildordnern.
             $imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
 
-            // 3. Füge fehlende IDs zur Berechnungsbasis hinzu.
             foreach ($imageComicIds as $id) {
                 if (!isset($completeDataForCalc[$id])) {
-                    // Der Inhalt ist für die Zählung egal, aber die ID muss existieren.
-                    $completeDataForCalc[$id] = ['type' => '', 'name' => '', 'transcript' => '', 'chapter' => null];
+                    // === FEATURE: `datum` auch hier für Konsistenz hinzufügen (mit korrekter Reihenfolge) ===
+                    $completeDataForCalc[$id] = ['type' => '', 'name' => '', 'transcript' => '', 'chapter' => null, 'datum' => $id];
                 }
             }
 
-            // 4. Sortiere die komplette, kombinierte Liste, um den korrekten Index zu finden.
             ksort($completeDataForCalc);
 
-            // 5. Führe die Seitenberechnung auf der korrekten, vollständigen Datenmenge durch.
             $allIds = array_keys($completeDataForCalc);
             $index = array_search($comicId, $allIds);
-
             $pageNumber = ($index !== false) ? floor($index / $itemsPerPage) + 1 : 1;
 
             if ($debugMode) {
                 error_log("DEBUG SAVE (CORRECTED): comicId=$comicId, index=$index, totalItems=" . count($allIds) . ", itemsPerPage=$itemsPerPage, calculatedPage=$pageNumber");
             }
-            // === ENDE DER KORREKTUR ===
 
             header('Content-Type: application/json');
             echo json_encode(['status' => 'success', 'message' => 'Comic-Daten erfolgreich gespeichert!', 'comic_id' => $comicId, 'page' => $pageNumber]);
@@ -377,11 +369,13 @@ $imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, 
 // Füge fehlende Comic-IDs aus den Bildern hinzu
 foreach ($imageComicIds as $id) {
     if (!isset($fullComicData[$id])) {
+        // === FEATURE: `datum` auch hier für Konsistenz hinzufügen (mit korrekter Reihenfolge) ===
         $fullComicData[$id] = [
             'type' => '',
             'name' => '',
             'transcript' => '',
-            'chapter' => null
+            'chapter' => null,
+            'datum' => $id
         ];
     }
 }
