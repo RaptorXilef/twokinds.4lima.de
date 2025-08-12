@@ -7,8 +7,8 @@
  * wird der Nutzer für jedes Bild individuell über eine interaktive Oberfläche
  * um Bestätigung gebeten.
  *
- * @version 3.1 (Korrigierte Version mit neuem Design und Pfaden)
- * @author Felix Maywald
+ * @version 3.5 (Behebung des doppelten Dateierweiterungs-Bugs, Design- und z-index-Korrekturen)
+ * @author Gemini
  * @date 2025-08-12
  */
 
@@ -64,11 +64,29 @@ if (!is_dir($uploadLowresDir)) {
     mkdir($uploadLowresDir, 0777, true);
 }
 
-// Hilfsfunktion, um Dateinamen zu kürzen (JJJJMMTT.ext)
+/**
+ * Hilfsfunktion, um Dateinamen zu kürzen (JJJJMMTT.ext).
+ * Diese Version ist robuster, da sie gezielt nach dem Datum sucht und die korrekte Endung anhängt.
+ * @param string $filename Der ursprüngliche Dateiname.
+ * @return string Der gekürzte und korrigierte Dateiname.
+ */
 function shortenFilename($filename)
 {
-    $shortName = strtok($filename, '_');
+    // Die Dateierweiterung wird mit pathinfo ermittelt.
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+    // Suche nach einem 8-stelligen Datum im Dateinamen
+    preg_match('/(\d{8})/', $filename, $matches);
+
+    // Wenn ein Datum gefunden wurde, nutze es als Basis.
+    if (!empty($matches)) {
+        $shortName = $matches[0];
+    } else {
+        // Fallback: Nutze den ursprünglichen Namen ohne Erweiterung, falls kein Datum gefunden wurde.
+        $shortName = pathinfo($filename, PATHINFO_FILENAME);
+    }
+
+    // Der gekürzte Name wird mit der originalen Erweiterung neu zusammengesetzt.
     return $shortName . '.' . $extension;
 }
 
@@ -112,13 +130,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
             // Bestätigung erforderlich
             $_SESSION['pending_upload'][$shortName] = [
                 'temp_file' => $tempFilePath,
-                'existing_file' => $existingFile
+                'existing_file' => $existingFile,
+                'target_dir' => $targetDir
             ];
+
+            // Korrigierte URL-Erstellung für den Browser
+            // Statt den absoluten Pfad zu manipulieren, verwenden wir einen relativen Pfad
+            $existingFileUrl = '../assets/' . basename($targetDir) . '/' . basename($existingFile);
 
             echo json_encode([
                 'status' => 'confirmation_needed',
                 'short_name' => $shortName,
-                'existing_image_url' => str_replace(__DIR__ . '/..', '', $existingFile),
+                'existing_image_url' => $existingFileUrl,
                 'new_image_data_uri' => 'data:image/' . $imageFileType . ';base64,' . base64_encode(file_get_contents($tempFilePath))
             ]);
             exit;
@@ -153,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $uploadData = $_SESSION['pending_upload'][$shortName];
     $tempFilePath = $uploadData['temp_file'];
     $existingFile = $uploadData['existing_file'];
+    $targetDir = $uploadData['target_dir'];
 
     unset($_SESSION['pending_upload'][$shortName]);
 
@@ -162,8 +186,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             unlink($existingFile);
         }
 
-        list($width, $height) = getimagesize($tempFilePath);
-        $targetDir = ($width >= 1000 && $height >= 1000) ? $uploadHiresDir : $uploadLowresDir;
         $targetPath = $targetDir . '/' . $shortName;
 
         if (rename($tempFilePath, $targetPath)) {
@@ -195,46 +217,46 @@ if (file_exists($headerPath)) {
 }
 ?>
 
+<div class="main-content">
+    <article class="center">
+        <div id="statusMessages"></div>
 
-<br>
-<article class="center">
-    <div id="statusMessages"></div>
-
-    <div id="uploadContainer">
-        <form id="uploadForm">
-            <div id="dropZone" class="drag-drop-zone">
-                <p class="instructions">Dateien hierher ziehen, oder klicken</p>
-                <input type="file" id="fileInput" multiple hidden>
-                <label for="fileInput" class="button">Bilder auswählen</label>
-            </div>
-            <div id="fileList" style="margin-top: 10px; font-style: italic;"></div>
-            <button type="submit" id="uploadButton" class="button upload-button">Upload starten</button>
-        </form>
-    </div>
-
-    <div id="confirmationModal" class="modal" style="display:none;">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2 id="confirmationHeader">Bestätigung erforderlich</h2>
-            <p id="confirmationMessage">Ein Bild mit dem Namen **DATEN** existiert bereits. Soll es
-                überschrieben werden?</p>
-            <div class="image-comparison">
-                <div class="image-box">
-                    <h3>Bestehendes Bild</h3>
-                    <img id="existingImage" src="" alt="Bestehendes Bild" style="max-width: 250px; max-height: 250px;">
+        <div id="uploadContainer">
+            <form id="uploadForm">
+                <div id="dropZone" class="drag-drop-zone">
+                    <p class="instructions">Dateien hierher ziehen, oder klicken</p>
+                    <input type="file" id="fileInput" multiple hidden>
+                    <label for="fileInput" class="button">Bilder auswählen</label>
                 </div>
-                <div class="image-box">
-                    <h3>Neues Bild</h3>
-                    <img id="newImage" src="" alt="Neues Bild" style="max-width: 250px; max-height: 250px;">
+                <div id="fileList" style="margin-top: 10px; font-style: italic;"></div>
+                <button type="submit" id="uploadButton" class="button upload-button">Upload starten</button>
+            </form>
+        </div>
+
+        <div id="confirmationModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2 id="confirmationHeader">Bestätigung erforderlich</h2>
+                <p id="confirmationMessage">Ein Bild mit dem Namen **DATEN** existiert bereits. Soll es
+                    überschrieben werden?</p>
+                <div class="image-comparison">
+                    <div class="image-box">
+                        <h3>Bestehendes Bild</h3>
+                        <img id="existingImage" src="" alt="Bestehendes Bild"
+                            style="max-width: 250px; max-height: 250px;">
+                    </div>
+                    <div class="image-box">
+                        <h3>Neues Bild</h3>
+                        <img id="newImage" src="" alt="Neues Bild" style="max-width: 250px; max-height: 250px;">
+                    </div>
                 </div>
-            </div>
-            <div class="modal-buttons">
-                <button id="confirmOverwrite" class="button button-confirm">Ja, überschreiben</button>
-                <button id="cancelOverwrite" class="button button-cancel">Nein, abbrechen</button>
+                <div class="modal-buttons">
+                    <button id="confirmOverwrite" class="button button-confirm">Ja, überschreiben</button>
+                    <button id="cancelOverwrite" class="button button-cancel">Nein, abbrechen</button>
+                </div>
             </div>
         </div>
-    </div>
-</article>
+    </article>
 </div>
 </div>
 
@@ -334,7 +356,7 @@ if (file_exists($headerPath)) {
         }
 
         async function handleConfirmation(data) {
-            confirmationModal.style.display = 'block';
+            confirmationModal.style.display = 'flex';
             confirmationMessage.innerHTML = `Ein Bild mit dem Namen <strong>${data.short_name}</strong> existiert bereits. Soll es überschrieben werden?`;
             existingImage.src = data.existing_image_url;
             newImage.src = data.new_image_data_uri;
@@ -390,7 +412,7 @@ if (file_exists($headerPath)) {
     }
 
     body.theme-night .main-container {
-        background-color: #00334c;
+        background-color: #00425c;
         color: #fff;
     }
 
@@ -448,6 +470,12 @@ if (file_exists($headerPath)) {
         background-color: #fff;
     }
 
+    body.theme-night .image-box {
+        background-color: #00334c;
+        /* Dunklerer Hintergrund für die Boxen */
+        border-color: #2a6177;
+    }
+
     .image-box img {
         display: block;
         margin-top: 10px;
@@ -461,18 +489,21 @@ if (file_exists($headerPath)) {
     .modal {
         display: none;
         position: fixed;
-        z-index: 10;
+        z-index: 101;
+        /* Erhöhter z-index, um über dem Banner zu liegen */
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
         overflow: auto;
         background-color: rgba(0, 0, 0, 0.4);
+        justify-content: center;
+        align-items: center;
     }
 
     .modal-content {
         background-color: #fefefe;
-        margin: 15% auto;
+        margin: auto;
         padding: 20px;
         border: 1px solid #888;
         width: 80%;
@@ -482,9 +513,18 @@ if (file_exists($headerPath)) {
         text-align: center;
     }
 
+    body.theme-night .modal-content {
+        background-color: #00334c;
+        /* Dunkler Hintergrund für das Modal */
+        border: 1px solid #2a6177;
+        color: #fff;
+    }
+
     .close-button {
         color: #aaa;
-        float: right;
+        position: absolute;
+        right: 15px;
+        top: 10px;
         font-size: 28px;
         font-weight: bold;
     }
@@ -498,6 +538,10 @@ if (file_exists($headerPath)) {
 
     .modal-buttons {
         margin-top: 20px;
+    }
+
+    .banner {
+        z-index: 100;
     }
 </style>
 
