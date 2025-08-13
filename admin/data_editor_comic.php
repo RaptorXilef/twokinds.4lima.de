@@ -960,13 +960,10 @@ if (file_exists($headerPath)) {
     /* KORREKTUR & NEU: Stile für Transkript-Anzeige */
     .transcript-content {
         display: block;
+        cursor: pointer;
         transition: max-height 0.3s ease-in-out;
         overflow: hidden;
         word-break: break-word;
-    }
-
-    .transcript-content-codeview {
-        cursor: pointer;
     }
 
     .transcript-collapsed {
@@ -1301,7 +1298,6 @@ if (file_exists($headerPath)) {
         <div class="collapsible-content">
             <?php echo $paginationHtml; // Paginierung 2: Über der Haupt-Tabelle ?>
 
-            <!-- NEU: Container für Buttons über der Tabelle -->
             <div class="table-controls">
                 <button type="button" id="toggle-transcript-view" class="button"><i class="fas fa-eye"></i> HTML
                     rendern</button>
@@ -1345,7 +1341,7 @@ if (file_exists($headerPath)) {
                                     </td>
                                     <!-- KORREKTUR: Angepasste Transkript-Zelle -->
                                     <td><span
-                                            class="editable-field comic-transcript-display transcript-content transcript-content-codeview transcript-collapsed <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"
+                                            class="editable-field comic-transcript-display transcript-content transcript-collapsed <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"
                                             data-raw-html="<?php echo htmlspecialchars($data['transcript'], ENT_QUOTES, 'UTF-8'); ?>"
                                             data-is-expanded="false"><?php echo htmlspecialchars($data['transcript']); ?></span>
                                     </td>
@@ -1560,8 +1556,8 @@ if (file_exists($headerPath)) {
             const deleteButton = target.closest('.delete-button');
             const transcriptCell = target.closest('.transcript-content');
 
-            // KORREKTUR: Logik für das Auf- und Zuklappen
-            if (transcriptCell && transcriptCell.classList.contains('transcript-content-codeview')) {
+            // KORREKTUR: Logik für das Auf- und Zuklappen in BEIDEN Modi
+            if (transcriptCell && !editButton && !deleteButton) {
                 const isExpanded = transcriptCell.dataset.isExpanded === 'true';
                 transcriptCell.dataset.isExpanded = !isExpanded; // Zustand umschalten
                 transcriptCell.classList.toggle('transcript-collapsed', isExpanded);
@@ -1754,19 +1750,19 @@ if (file_exists($headerPath)) {
 
             allTranscripts.forEach(cell => {
                 const rawHtml = cell.dataset.rawHtml;
+                const isExpanded = cell.dataset.isExpanded === 'true'; // Individuellen Zustand auslesen
+
                 if (isTranscriptRendered) {
                     // In den Render-Modus wechseln
                     cell.innerHTML = rawHtml;
-                    cell.classList.remove('transcript-content-codeview', 'transcript-collapsed', 'transcript-expanded');
                 } else {
                     // Zurück in den Code-Modus wechseln
                     cell.textContent = rawHtml;
-                    cell.classList.add('transcript-content-codeview');
-                    // Individuellen Klapp-Zustand wiederherstellen
-                    const isExpanded = cell.dataset.isExpanded === 'true';
-                    cell.classList.toggle('transcript-expanded', isExpanded);
-                    cell.classList.toggle('transcript-collapsed', !isExpanded);
                 }
+
+                // Zustand (ein-/ausgeklappt) wiederherstellen, der für die Zelle gilt
+                cell.classList.toggle('transcript-expanded', isExpanded);
+                cell.classList.toggle('transcript-collapsed', !isExpanded);
             });
 
             this.innerHTML = isTranscriptRendered ? '<i class="fas fa-code"></i> Code anzeigen' : '<i class="fas fa-eye"></i> HTML rendern';
@@ -1776,7 +1772,6 @@ if (file_exists($headerPath)) {
         // Gespeicherte Ansicht beim Laden wiederherstellen
         const savedViewMode = localStorage.getItem('transcriptViewMode');
         if (savedViewMode === 'rendered') {
-            // Verzögern, damit die Seite erst aufgebaut wird
             setTimeout(() => toggleTranscriptViewButton.click(), 0);
         }
     });
