@@ -957,6 +957,58 @@ if (file_exists($headerPath)) {
         animation: highlight-fade-dark 4s ease-out forwards;
     }
 
+    /* NEU: Stile für Transkript-Anzeige */
+    .transcript-content {
+        display: block;
+        cursor: pointer;
+        transition: max-height 0.3s ease-in-out;
+        overflow: hidden;
+        word-break: break-word;
+    }
+
+    .transcript-collapsed {
+        max-height: 3.2em;
+        /* Ungefähr 2 Zeilen */
+        position: relative;
+    }
+
+    .transcript-collapsed::after {
+        content: "...";
+        text-align: right;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 40%;
+        height: 1.6em;
+        /* Höhe einer Zeile */
+        background: linear-gradient(to right, transparent, white 50%);
+    }
+
+    body.theme-night .transcript-collapsed::after {
+        background: linear-gradient(to right, transparent, #004c6b 50%);
+    }
+
+    .comic-table tr:nth-child(even) .transcript-collapsed::after {
+        background: linear-gradient(to right, transparent, #f9f9f9 50%);
+    }
+
+    body.theme-night .comic-table tr:nth-child(even) .transcript-collapsed::after {
+        background: linear-gradient(to right, transparent, #006690 50%);
+    }
+
+    .transcript-expanded {
+        max-height: 500px;
+        /* Genug Platz für viel Text */
+        cursor: default;
+    }
+
+    .table-controls {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 15px;
+        gap: 10px;
+    }
 
     /* Paginierung */
     .pagination {
@@ -1246,6 +1298,13 @@ if (file_exists($headerPath)) {
         <h2 class="collapsible-header">Bearbeitungsübersicht Comic-Daten <i class="fas fa-chevron-down"></i></h2>
         <div class="collapsible-content">
             <?php echo $paginationHtml; // Paginierung 2: Über der Haupt-Tabelle ?>
+
+            <!-- NEU: Container für Buttons über der Tabelle -->
+            <div class="table-controls">
+                <button type="button" id="toggle-transcript-view" class="button"><i class="fas fa-eye"></i> HTML
+                    rendern</button>
+            </div>
+
             <div class="comic-table-container">
                 <table class="comic-table" id="comic-data-table">
                     <thead>
@@ -1282,8 +1341,10 @@ if (file_exists($headerPath)) {
                                     <td><span
                                             class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span>
                                     </td>
+                                    <!-- NEU: Angepasste Transkript-Zelle -->
                                     <td><span
-                                            class="editable-field comic-transcript-display <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['transcript']); ?></span>
+                                            class="editable-field comic-transcript-display transcript-content transcript-collapsed <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"
+                                            data-raw-html="<?php echo htmlspecialchars($data['transcript'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($data['transcript']); ?></span>
                                     </td>
                                     <td><span
                                             class="editable-field comic-chapter-display <?php echo $isChapterMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span>
@@ -1402,6 +1463,10 @@ if (file_exists($headerPath)) {
         const messageBoxElement = document.getElementById('message-box');
         const formSection = document.querySelector('.form-section');
 
+        // NEU: Variablen für die Umschalt-Funktion
+        const toggleTranscriptViewButton = document.getElementById('toggle-transcript-view');
+        let isTranscriptRendered = false;
+
         let summernoteInitialized = false;
 
         function initializeSummernote() {
@@ -1418,7 +1483,6 @@ if (file_exists($headerPath)) {
                         ['insert', ['link']],
                         ['view', ['fullscreen', 'codeview', 'help']]
                     ],
-                    // === KORREKTUR: WORD-CODE BEREINIGEN MIT BEIBEHALTUNG DER GRUNDFORMATIERUNG ===
                     callbacks: {
                         onPaste: function (e) {
                             var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
@@ -1426,28 +1490,15 @@ if (file_exists($headerPath)) {
 
                             if (pastedData) {
                                 e.preventDefault();
-
-                                // 1. Entferne Word-spezifische Kommentare und XML-Tags
                                 let cleanedData = pastedData.replace(/<!--[\s\S]*?-->/g, '');
                                     cleanedData = cleanedData.replace(/<\/?\w+:[^>]*>/g, '');
-
-                                // 2. Entferne Style-, Class- und andere Junk-Attribute von allen Tags
                                 cleanedData = cleanedData.replace(/\s(class|style|lang|dir|width|height|face|size|start|type|value|id|name|title)=["'][^"']*["']/gi, '');
-
-                                // 3. Konvertiere veraltete Tags in semantische Tags
                                 cleanedData = cleanedData.replace(/<b\s*>/gi, '<strong>').replace(/<\/b\s*>/gi, '</strong>');
                                 cleanedData = cleanedData.replace(/<i\s*>/gi, '<em>').replace(/<\/i\s*>/gi, '</em>');
-
-                                // 4. Entferne <span> Tags, behalte aber deren Inhalt
                                 cleanedData = cleanedData.replace(/<\/?span[^>]*>/gi, '');
-
-                                // 5. Entferne leere Tags, die oft übrig bleiben (nach den anderen Bereinigungen)
                                 cleanedData = cleanedData.replace(/<[^\/>][^>]*>\s*<\/[^>]+>/g, '');
-
-                                // Füge den bereinigten HTML-Code ein
                                 $('#comic-transcript').summernote('pasteHTML', cleanedData);
                             }
-                            // Wenn keine HTML-Daten vorhanden sind, wird die Standard-Einfügeaktion (normalerweise reiner Text) zugelassen.
                         }
                     }
                 });
@@ -1505,13 +1556,23 @@ if (file_exists($headerPath)) {
             const target = event.target;
             const editButton = target.closest('.edit-button');
             const deleteButton = target.closest('.delete-button');
+            const transcriptCell = target.closest('.transcript-content');
+
+            // NEU: Logik für das Auf- und Zuklappen
+            if (transcriptCell && !editButton && !deleteButton) {
+                if (!isTranscriptRendered) { // Nur im Code-Modus klappen
+                    transcriptCell.classList.toggle('transcript-collapsed');
+                    transcriptCell.classList.toggle('transcript-expanded');
+                }
+            }
 
             if (editButton) {
                 const row = editButton.closest('tr');
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
-                const comicTranscript = row.querySelector('.comic-transcript-display').textContent;
+                // KORREKTUR: HTML aus dem data-Attribut holen, nicht aus dem sichtbaren Text
+                const comicTranscript = row.querySelector('.transcript-content').dataset.rawHtml;
                 const comicChapter = row.querySelector('.comic-chapter-display').textContent;
 
                 comicIdInput.value = comicId;
@@ -1638,12 +1699,10 @@ if (file_exists($headerPath)) {
                         const currentPage = new URLSearchParams(window.location.search).get('page') || '1';
                         const targetUrl = `?page=${targetPage}#comic-row-${data.comic_id}`;
 
-                        // KORREKTUR: Wenn die Zielseite die gleiche ist wie die aktuelle, erzwinge einen Reload.
                         if (targetPage === currentPage && window.location.pathname + window.location.search === window.location.pathname + `?page=${targetPage}`) {
                             window.location.href = targetUrl;
                             window.location.reload();
                         } else {
-                            // Bei einer neuen Seite ist der Reload implizit.
                             window.location.href = targetUrl;
                         }
                     } else {
@@ -1686,6 +1745,36 @@ if (file_exists($headerPath)) {
                 }
             });
         });
+
+        // NEU: Logik für den Ansicht-Umschalter
+        toggleTranscriptViewButton.addEventListener('click', function () {
+            isTranscriptRendered = !isTranscriptRendered;
+            const allTranscripts = comicDataTable.querySelectorAll('.transcript-content');
+
+            allTranscripts.forEach(cell => {
+                const rawHtml = cell.dataset.rawHtml;
+                if (isTranscriptRendered) {
+                    cell.innerHTML = rawHtml;
+                    cell.classList.remove('transcript-collapsed');
+                    cell.classList.add('transcript-expanded'); // Im Render-Modus immer aufgeklappt
+                    cell.style.cursor = 'default';
+                } else {
+                    cell.textContent = rawHtml;
+                    cell.classList.add('transcript-collapsed');
+                    cell.classList.remove('transcript-expanded');
+                    cell.style.cursor = 'pointer';
+                }
+            });
+
+            this.innerHTML = isTranscriptRendered ? '<i class="fas fa-code"></i> Code anzeigen' : '<i class="fas fa-eye"></i> HTML rendern';
+            localStorage.setItem('transcriptViewMode', isTranscriptRendered ? 'rendered' : 'source');
+        });
+
+        // NEU: Gespeicherte Ansicht beim Laden wiederherstellen
+        const savedViewMode = localStorage.getItem('transcriptViewMode');
+        if (savedViewMode === 'rendered') {
+            setTimeout(() => toggleTranscriptViewButton.click(), 0);
+        }
     });
 </script>
 
