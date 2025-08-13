@@ -1418,17 +1418,36 @@ if (file_exists($headerPath)) {
                         ['insert', ['link']],
                         ['view', ['fullscreen', 'codeview', 'help']]
                     ],
-                    // === NEU: WORD-CODE BEREINIGEN ===
+                    // === KORREKTUR: WORD-CODE BEREINIGEN MIT BEIBEHALTUNG DER GRUNDFORMATIERUNG ===
                     callbacks: {
                         onPaste: function (e) {
-                            // Verhindert, dass der unsaubere Code direkt eingefügt wird
-                            e.preventDefault();
-                            // Holt den Text aus der Zwischenablage
-                            var bufferText = ((e.originalEvent.clipboardData || window.clipboardData).getData('text/plain'));
+                            var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+                            var pastedData = clipboardData.getData('text/html');
 
-                            // Fügt den reinen Text ein. Summernote formatiert ihn dann mit sauberem HTML.
-                            // Dies entfernt alle Word-spezifischen Tags wie <o:p>, <w:WordDocument> etc.
-                            document.execCommand('insertText', false, bufferText);
+                            if (pastedData) {
+                                e.preventDefault();
+
+                                // 1. Entferne Word-spezifische Kommentare und XML-Tags
+                                let cleanedData = pastedData.replace(/<!--[\s\S]*?-->/g, '');
+                                    cleanedData = cleanedData.replace(/<\/?\w+:[^>]*>/g, '');
+
+                                // 2. Entferne Style-, Class- und andere Junk-Attribute von allen Tags
+                                cleanedData = cleanedData.replace(/\s(class|style|lang|dir|width|height|face|size|start|type|value|id|name|title)=["'][^"']*["']/gi, '');
+
+                                // 3. Konvertiere veraltete Tags in semantische Tags
+                                cleanedData = cleanedData.replace(/<b\s*>/gi, '<strong>').replace(/<\/b\s*>/gi, '</strong>');
+                                cleanedData = cleanedData.replace(/<i\s*>/gi, '<em>').replace(/<\/i\s*>/gi, '</em>');
+
+                                // 4. Entferne <span> Tags, behalte aber deren Inhalt
+                                cleanedData = cleanedData.replace(/<\/?span[^>]*>/gi, '');
+
+                                // 5. Entferne leere Tags, die oft übrig bleiben (nach den anderen Bereinigungen)
+                                cleanedData = cleanedData.replace(/<[^\/>][^>]*>\s*<\/[^>]+>/g, '');
+
+                                // Füge den bereinigten HTML-Code ein
+                                $('#comic-transcript').summernote('pasteHTML', cleanedData);
+                            }
+                            // Wenn keine HTML-Daten vorhanden sind, wird die Standard-Einfügeaktion (normalerweise reiner Text) zugelassen.
                         }
                     }
                 });
