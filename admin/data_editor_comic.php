@@ -1417,7 +1417,20 @@ if (file_exists($headerPath)) {
                         ['height', ['height']],
                         ['insert', ['link']],
                         ['view', ['fullscreen', 'codeview', 'help']]
-                    ]
+                    ],
+                    // === NEU: WORD-CODE BEREINIGEN ===
+                    callbacks: {
+                        onPaste: function (e) {
+                            // Verhindert, dass der unsaubere Code direkt eingefügt wird
+                            e.preventDefault();
+                            // Holt den Text aus der Zwischenablage
+                            var bufferText = ((e.originalEvent.clipboardData || window.clipboardData).getData('text/plain'));
+
+                            // Fügt den reinen Text ein. Summernote formatiert ihn dann mit sauberem HTML.
+                            // Dies entfernt alle Word-spezifischen Tags wie <o:p>, <w:WordDocument> etc.
+                            document.execCommand('insertText', false, bufferText);
+                        }
+                    }
                 });
                 summernoteInitialized = true;
             }
