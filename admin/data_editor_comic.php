@@ -957,13 +957,16 @@ if (file_exists($headerPath)) {
         animation: highlight-fade-dark 4s ease-out forwards;
     }
 
-    /* NEU: Stile für Transkript-Anzeige */
+    /* KORREKTUR & NEU: Stile für Transkript-Anzeige */
     .transcript-content {
         display: block;
-        cursor: pointer;
         transition: max-height 0.3s ease-in-out;
         overflow: hidden;
         word-break: break-word;
+    }
+
+    .transcript-content-codeview {
+        cursor: pointer;
     }
 
     .transcript-collapsed {
@@ -997,9 +1000,8 @@ if (file_exists($headerPath)) {
     }
 
     .transcript-expanded {
-        max-height: 500px;
-        /* Genug Platz für viel Text */
-        cursor: default;
+        max-height: none;
+        /* KORREKTUR: Keine Höhenbegrenzung */
     }
 
     .table-controls {
@@ -1341,10 +1343,11 @@ if (file_exists($headerPath)) {
                                     <td><span
                                             class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span>
                                     </td>
-                                    <!-- NEU: Angepasste Transkript-Zelle -->
+                                    <!-- KORREKTUR: Angepasste Transkript-Zelle -->
                                     <td><span
-                                            class="editable-field comic-transcript-display transcript-content transcript-collapsed <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"
-                                            data-raw-html="<?php echo htmlspecialchars($data['transcript'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($data['transcript']); ?></span>
+                                            class="editable-field comic-transcript-display transcript-content transcript-content-codeview transcript-collapsed <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"
+                                            data-raw-html="<?php echo htmlspecialchars($data['transcript'], ENT_QUOTES, 'UTF-8'); ?>"
+                                            data-is-expanded="false"><?php echo htmlspecialchars($data['transcript']); ?></span>
                                     </td>
                                     <td><span
                                             class="editable-field comic-chapter-display <?php echo $isChapterMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['chapter'] ?? ''); ?></span>
@@ -1463,7 +1466,6 @@ if (file_exists($headerPath)) {
         const messageBoxElement = document.getElementById('message-box');
         const formSection = document.querySelector('.form-section');
 
-        // NEU: Variablen für die Umschalt-Funktion
         const toggleTranscriptViewButton = document.getElementById('toggle-transcript-view');
         let isTranscriptRendered = false;
 
@@ -1558,12 +1560,12 @@ if (file_exists($headerPath)) {
             const deleteButton = target.closest('.delete-button');
             const transcriptCell = target.closest('.transcript-content');
 
-            // NEU: Logik für das Auf- und Zuklappen
-            if (transcriptCell && !editButton && !deleteButton) {
-                if (!isTranscriptRendered) { // Nur im Code-Modus klappen
-                    transcriptCell.classList.toggle('transcript-collapsed');
-                    transcriptCell.classList.toggle('transcript-expanded');
-                }
+            // KORREKTUR: Logik für das Auf- und Zuklappen
+            if (transcriptCell && transcriptCell.classList.contains('transcript-content-codeview')) {
+                const isExpanded = transcriptCell.dataset.isExpanded === 'true';
+                transcriptCell.dataset.isExpanded = !isExpanded; // Zustand umschalten
+                transcriptCell.classList.toggle('transcript-collapsed', isExpanded);
+                transcriptCell.classList.toggle('transcript-expanded', !isExpanded);
             }
 
             if (editButton) {
@@ -1571,7 +1573,6 @@ if (file_exists($headerPath)) {
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
-                // KORREKTUR: HTML aus dem data-Attribut holen, nicht aus dem sichtbaren Text
                 const comicTranscript = row.querySelector('.transcript-content').dataset.rawHtml;
                 const comicChapter = row.querySelector('.comic-chapter-display').textContent;
 
@@ -1746,7 +1747,7 @@ if (file_exists($headerPath)) {
             });
         });
 
-        // NEU: Logik für den Ansicht-Umschalter
+        // KORREKTUR: Logik für den Ansicht-Umschalter
         toggleTranscriptViewButton.addEventListener('click', function () {
             isTranscriptRendered = !isTranscriptRendered;
             const allTranscripts = comicDataTable.querySelectorAll('.transcript-content');
@@ -1754,15 +1755,17 @@ if (file_exists($headerPath)) {
             allTranscripts.forEach(cell => {
                 const rawHtml = cell.dataset.rawHtml;
                 if (isTranscriptRendered) {
+                    // In den Render-Modus wechseln
                     cell.innerHTML = rawHtml;
-                    cell.classList.remove('transcript-collapsed');
-                    cell.classList.add('transcript-expanded'); // Im Render-Modus immer aufgeklappt
-                    cell.style.cursor = 'default';
+                    cell.classList.remove('transcript-content-codeview', 'transcript-collapsed', 'transcript-expanded');
                 } else {
+                    // Zurück in den Code-Modus wechseln
                     cell.textContent = rawHtml;
-                    cell.classList.add('transcript-collapsed');
-                    cell.classList.remove('transcript-expanded');
-                    cell.style.cursor = 'pointer';
+                    cell.classList.add('transcript-content-codeview');
+                    // Individuellen Klapp-Zustand wiederherstellen
+                    const isExpanded = cell.dataset.isExpanded === 'true';
+                    cell.classList.toggle('transcript-expanded', isExpanded);
+                    cell.classList.toggle('transcript-collapsed', !isExpanded);
                 }
             });
 
@@ -1770,9 +1773,10 @@ if (file_exists($headerPath)) {
             localStorage.setItem('transcriptViewMode', isTranscriptRendered ? 'rendered' : 'source');
         });
 
-        // NEU: Gespeicherte Ansicht beim Laden wiederherstellen
+        // Gespeicherte Ansicht beim Laden wiederherstellen
         const savedViewMode = localStorage.getItem('transcriptViewMode');
         if (savedViewMode === 'rendered') {
+            // Verzögern, damit die Seite erst aufgebaut wird
             setTimeout(() => toggleTranscriptViewButton.click(), 0);
         }
     });
