@@ -203,8 +203,8 @@ function generateThumbnail(string $comicId, string $lowresDir, string $hiresDir,
     }
 
     // Definiere die Zielabmessungen für Thumbnails
-    $targetWidth = 187; // Korrigierte Breite
-    $targetHeight = 250; // Korrigierte Höhe
+    $targetWidth = 198; // Korrigierte Breite
+    $targetHeight = 258; // Korrigierte Höhe
 
     $sourceImagePath = '';
     $sourceImageExtension = '';
