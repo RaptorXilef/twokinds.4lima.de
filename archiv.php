@@ -243,12 +243,26 @@ if ($debugMode)
                                 error_log("DEBUG: Keine Comics für Kapitel {$chapterId} gefunden."); ?>
                         <?php else: ?>
                             <?php foreach ($comicsForThisChapter as $comicId => $comicDetails):
-                                $comicImagePath = "assets/comic_thumbnails/{$comicId}.jpg";
-                                // Überprüfe, ob die Datei auf dem Server existiert
-                                $displayImagePath = file_exists(__DIR__ . '/' . $comicImagePath) ? $baseUrl . $comicImagePath : $baseUrl . $placeholderImagePath;
-                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId) . '.php'; // Link zur Comic-Seite
+                                // Array mit den unterstützten Dateiendungen
+                                $supportedExtensions = ['jpg', 'png', 'gif', 'webp'];
+                                $foundImagePath = null;
+
+                                // Schleife durch die Endungen und prüfe, welche Datei existiert
+                                foreach ($supportedExtensions as $ext) {
+                                    $potentialImagePath = "assets/comic_thumbnails/{$comicId}.{$ext}";
+                                    if (file_exists(__DIR__ . '/' . $potentialImagePath)) {
+                                        $foundImagePath = $potentialImagePath;
+                                        break; // Beende die Schleife, sobald das erste Bild gefunden wurde
+                                    }
+                                }
+
+                                // Setze den Pfad zum gefundenen Bild oder zum Platzhalter
+                                $displayImagePath = $foundImagePath ? $baseUrl . $foundImagePath : $baseUrl . $placeholderImagePath;
+
+                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId) . '.php';
                                 $comicDate = DateTime::createFromFormat('Ymd', $comicId);
                                 $displayDate = $comicDate ? $comicDate->format('d.m.Y') : 'Unbekanntes Datum';
+
                                 if ($debugMode)
                                     error_log("DEBUG: Zeige Comic {$comicId} für Kapitel {$chapterId}. Bildpfad: {$displayImagePath}");
                                 ?>
