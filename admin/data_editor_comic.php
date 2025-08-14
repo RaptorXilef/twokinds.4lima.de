@@ -76,8 +76,10 @@ $comicLowresDirPath = __DIR__ . '/../assets/comic_lowres/';
 $comicHiresDirPath = __DIR__ . '/../assets/comic_hires/';
 $comicThumbnailsDirPath = __DIR__ . '/../assets/comic_thumbnails/';
 $comicSocialMediaDirPath = __DIR__ . '/../assets/comic_socialmedia/';
+$comicPhpPagesPath = __DIR__ . '/../comic/';
+
 if ($debugMode) {
-    error_log("DEBUG: Pfade definiert: comicVarJsonPath=" . $comicVarJsonPath . ", comicLowresDirPath=" . $comicLowresDirPath . ", comicHiresDirPath=" . $comicHiresDirPath . ", comicThumbnailsDirPath=" . $comicThumbnailsDirPath . ", comicSocialMediaDirPath=" . $comicSocialMediaDirPath);
+    error_log("DEBUG: Pfade definiert: comicVarJsonPath=" . $comicVarJsonPath . ", comicPhpPagesPath=" . $comicPhpPagesPath);
 }
 
 // Setze Parameter für den Header.
@@ -212,6 +214,38 @@ function getComicIdsFromImages(string $lowresDir, string $hiresDir, bool $debugM
 }
 
 /**
+ * Scannt das Comic-Seiten-Verzeichnis nach vorhandenen PHP-Dateien.
+ * @param string $pagesDir Pfad zum Verzeichnis mit den Comic-PHP-Seiten.
+ * @param bool $debugMode Debug-Modus Flag.
+ * @return array Eine Liste eindeutiger Comic-IDs (Dateinamen ohne .php), sortiert.
+ */
+function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
+{
+    if ($debugMode)
+        error_log("DEBUG: getComicIdsFromPhpFiles() aufgerufen für: " . $pagesDir);
+    $phpIds = [];
+    if (is_dir($pagesDir)) {
+        $files = scandir($pagesDir);
+        if ($files === false) {
+            if ($debugMode)
+                error_log("DEBUG: scandir() fehlgeschlagen für " . $pagesDir);
+            return [];
+        }
+        foreach ($files as $file) {
+            if (pathinfo($file, PATHINFO_EXTENSION) === 'php' && preg_match('/^\d{8}$/', pathinfo($file, PATHINFO_FILENAME))) {
+                $phpIds[pathinfo($file, PATHINFO_FILENAME)] = true;
+            }
+        }
+    }
+    $sortedIds = array_keys($phpIds);
+    sort($sortedIds);
+    if ($debugMode)
+        error_log("DEBUG: " . count($sortedIds) . " Comic-IDs aus PHP-Dateien gefunden und sortiert.");
+    return $sortedIds;
+}
+
+
+/**
  * Checks for the existence of various image types for a given comic ID.
  * @param string $comicId The ID of the comic (e.g., 'JJJJMMTT').
  * @param array $directories An associative array of directory paths for each image type.
@@ -274,26 +308,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         $transcript = isset($pageData['comic_transcript']) ? $pageData['comic_transcript'] : '';
         $chapter = $pageData['comic_chapter'] ?? '';
 
-        // === BUGFIX & FEATURE: `chapter` als String, nicht als Zahl speichern ===
         if ($chapter === '') {
             $chapter = null;
         } else {
             $chapter = str_replace(',', '.', $chapter);
-            // Überprüfen, ob es eine gültige Zahl ist, aber nicht in eine Zahl umwandeln.
             if (!is_numeric($chapter) || (float) $chapter < 0) {
                 $chapter = null;
             }
-            // Der Wert bleibt ein String, wenn er gültig ist.
         }
 
-        // === FEATURE: `datum` Feld hinzufügen & KORREKTUR: Reihenfolge der Felder ===
         $updatedData = [
             $comicId => [
                 'type' => $type,
                 'name' => $name,
                 'transcript' => $transcript,
                 'chapter' => $chapter,
-                'datum' => $comicId // Das Datum ist die Comic-ID
+                'datum' => $comicId
             ]
         ];
 
@@ -302,17 +332,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
             $deletedIds[] = $originalComicId;
         }
 
-        // Speichere die Daten und erhalte die reine JSON-Datenmenge zurück
         $allDataFromFile = saveComicDataAndReturnAll($comicVarJsonPath, $updatedData, $deletedIds, $debugMode);
 
         if ($allDataFromFile !== false) {
-            // === KORREKTUR FÜR SEITENBERECHNUNG ===
             $completeDataForCalc = $allDataFromFile;
             $imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
+            $phpComicIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
+            $allFileIds = array_unique(array_merge($imageComicIds, $phpComicIds));
 
-            foreach ($imageComicIds as $id) {
+            foreach ($allFileIds as $id) {
                 if (!isset($completeDataForCalc[$id])) {
-                    // === FEATURE: `datum` auch hier für Konsistenz hinzufügen (mit korrekter Reihenfolge) ===
                     $completeDataForCalc[$id] = ['type' => '', 'name' => '', 'transcript' => '', 'chapter' => null, 'datum' => $id];
                 }
             }
@@ -362,26 +391,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
 }
 
 
-// Lade die gesamte Comic-Datenbank für Paginierung und fehlende IDs
-$fullComicData = loadComicData($comicVarJsonPath, $debugMode);
-$imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
+// === DATEN-ZUSAMMENFÜHRUNGSLOGIK ===
+$jsonData = loadComicData($comicVarJsonPath, $debugMode);
+$imageIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
+$phpIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
 
-// Füge fehlende Comic-IDs aus den Bildern hinzu
-foreach ($imageComicIds as $id) {
-    if (!isset($fullComicData[$id])) {
-        // === FEATURE: `datum` auch hier für Konsistenz hinzufügen (mit korrekter Reihenfolge) ===
-        $fullComicData[$id] = [
-            'type' => '',
-            'name' => '',
-            'transcript' => '',
-            'chapter' => null,
-            'datum' => $id
-        ];
+// Erstelle eine Master-Liste aller eindeutigen IDs aus allen Quellen
+$allIds = array_unique(array_merge(array_keys($jsonData), $imageIds, $phpIds));
+sort($allIds); // Sortiere die Master-Liste
+
+$fullComicData = [];
+foreach ($allIds as $id) {
+    // Beginne mit den Daten aus der JSON-Datei, falls vorhanden, sonst mit einem leeren Template
+    $fullComicData[$id] = $jsonData[$id] ?? [
+        'type' => '',
+        'name' => '',
+        'transcript' => '',
+        'chapter' => null,
+        'datum' => $id
+    ];
+
+    // Füge die Quellen-Information hinzu
+    $sources = [];
+    if (isset($jsonData[$id])) {
+        $sources[] = 'json';
     }
+    if (in_array($id, $imageIds)) {
+        $sources[] = 'image';
+    }
+    if (in_array($id, $phpIds)) {
+        $sources[] = 'php';
+    }
+    $fullComicData[$id]['sources'] = $sources;
 }
-
-// Sortiere die gesamten Daten nach Comic-ID, bevor paginiert wird
-ksort($fullComicData);
 
 // Sammle Bildverfügbarkeitsdaten für alle Comics
 $imageDirectories = [
@@ -413,11 +455,9 @@ $offset = ($currentPage - 1) * $itemsPerPage;
 $paginatedComicData = array_slice($fullComicData, $offset, $itemsPerPage, true);
 
 // === PAGINIERUNGS-HTML GENERIEREN ===
-// Wir generieren den HTML-Code für die Paginierung hier einmal und speichern ihn in einer Variable.
-// Das vermeidet Code-Wiederholungen und macht die Wartung einfacher.
 $paginationHtml = '';
 if ($totalPages > 1) {
-    ob_start(); // Starte den Output-Buffer, um den HTML-Code "einzufangen"
+    ob_start();
     ?>
     <div class="pagination">
         <?php if ($currentPage > 1): ?>
@@ -457,7 +497,7 @@ if ($totalPages > 1) {
         <?php endif; ?>
     </div>
     <?php
-    $paginationHtml = ob_get_clean(); // Speichere den Inhalt des Buffers in die Variable und leere ihn.
+    $paginationHtml = ob_get_clean();
 }
 // === ENDE PAGINIERUNGS-HTML GENERIERUNG ===
 
@@ -1003,10 +1043,69 @@ if (file_exists($headerPath)) {
 
     .table-controls {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        /* Geändert für Legende links */
         align-items: center;
         margin-bottom: 15px;
         gap: 10px;
+        flex-wrap: wrap;
+        /* Für mobile Ansicht */
+    }
+
+    /* NEU: Styling für Quellen-Marker und Legende */
+    .source-markers {
+        margin-top: 5px;
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .source-marker {
+        font-size: 0.7em;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: bold;
+        color: white;
+        cursor: help;
+    }
+
+    .source-json {
+        background-color: #6c757d;
+    }
+
+    /* Grey */
+    .source-image {
+        background-color: #007bff;
+    }
+
+    /* Blue */
+    .source-php {
+        background-color: #28a745;
+    }
+
+    /* Green */
+
+    body.theme-night .source-json {
+        background-color: #5a6268;
+    }
+
+    body.theme-night .source-image {
+        background-color: #0056b3;
+    }
+
+    body.theme-night .source-php {
+        background-color: #1e7e34;
+    }
+
+    .marker-legend {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-size: 0.9em;
+    }
+
+    .marker-legend .source-marker {
+        cursor: default;
     }
 
     /* Paginierung */
@@ -1299,6 +1398,15 @@ if (file_exists($headerPath)) {
             <?php echo $paginationHtml; // Paginierung 2: Über der Haupt-Tabelle ?>
 
             <div class="table-controls">
+                <!-- NEU: Legende für die Marker -->
+                <div class="marker-legend">
+                    <strong>Herkunft Eintrag - Legende:</strong>
+                    <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
+                    <span class="source-marker source-image"
+                        title="Mindestens eine Bilddatei existiert in comic_hires, comic_lowres oder comic_thumbnails">Bild</span>
+                    <span class="source-marker source-php"
+                        title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
+                </div>
                 <button type="button" id="toggle-transcript-view" class="button"><i class="fas fa-eye"></i> HTML
                     rendern</button>
             </div>
@@ -1332,14 +1440,29 @@ if (file_exists($headerPath)) {
                                 ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
                                     class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
-                                    <td class="comic-id-display"><?php echo htmlspecialchars($id); ?></td>
+                                    <td class="comic-id-display">
+                                        <?php echo htmlspecialchars($id); ?>
+                                        <div class="source-markers">
+                                            <?php if (in_array('json', $data['sources'])): ?>
+                                                <span class="source-marker source-json"
+                                                    title="Eintrag existiert in comic_var.json">JSON</span>
+                                            <?php endif; ?>
+                                            <?php if (in_array('image', $data['sources'])): ?>
+                                                <span class="source-marker source-image"
+                                                    title="Mindestens eine Bilddatei existiert in comic_hires, comic_lowres oder comic_thumbnails">Bild</span>
+                                            <?php endif; ?>
+                                            <?php if (in_array('php', $data['sources'])): ?>
+                                                <span class="source-marker source-php"
+                                                    title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
                                     <td><span
                                             class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span>
                                     </td>
                                     <td><span
                                             class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span>
                                     </td>
-                                    <!-- KORREKTUR: Angepasste Transkript-Zelle -->
                                     <td><span
                                             class="editable-field comic-transcript-display transcript-content transcript-collapsed <?php echo $isTranscriptEffectivelyEmpty ? 'missing-info' : ''; ?>"
                                             data-raw-html="<?php echo htmlspecialchars($data['transcript'], ENT_QUOTES, 'UTF-8'); ?>"
@@ -1556,10 +1679,9 @@ if (file_exists($headerPath)) {
             const deleteButton = target.closest('.delete-button');
             const transcriptCell = target.closest('.transcript-content');
 
-            // KORREKTUR: Logik für das Auf- und Zuklappen in BEIDEN Modi
             if (transcriptCell && !editButton && !deleteButton) {
                 const isExpanded = transcriptCell.dataset.isExpanded === 'true';
-                transcriptCell.dataset.isExpanded = !isExpanded; // Zustand umschalten
+                transcriptCell.dataset.isExpanded = !isExpanded;
                 transcriptCell.classList.toggle('transcript-collapsed', isExpanded);
                 transcriptCell.classList.toggle('transcript-expanded', !isExpanded);
             }
