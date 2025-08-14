@@ -481,7 +481,7 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
 
 <article>
     <header>
-        <h1>Thumbnail-Generator</h1>
+        <h1>Thumbnail-Generator WEBP</h1>
     </header>
 
     <div class="content-section">

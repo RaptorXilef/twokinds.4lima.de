@@ -482,7 +482,7 @@ $thumbnailWebPath = '../assets/comic_thumbnails/';
                 error_log("DEBUG: GD-Fehlermeldung angezeigt."); ?>
         <?php endif; ?>
 
-        <h2>Status der Thumbnails</h2>
+        <h2>Status der Thumbnails JPG</h2>
 
         <!-- Container für die Buttons - JETZT HIER PLATZIERT -->
         <div id="fixed-buttons-container">
