@@ -37,7 +37,7 @@
         <a href="./upload_image.php">Bild-Upload</a>
         </br>
         <a href="./generator_thumbnail.php">Thumbnail-Generator</a>
-        <a href="./generator_image_socialmedia_crop.php">Social Media Bild-Generator Crop</a>
+        <a href="./generator_image_socialmedia.php">Social Media Vorschau-Generator</a>
         <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
         </br>
         <a href="./data_editor_comic.php">Comic Daten Editor</a>
