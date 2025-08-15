@@ -36,9 +36,7 @@
         </br>
         <a href="./upload_image.php">Bild-Upload</a>
         </br>
-        <a href="./generator_thumbnail_webp.php">Thumbnail-Generator <br> WEBP</a>
-        <a href="./generator_thumbnail_png.php">Thumbnail-Generator <br> PNG</a>
-        <a href="./generator_thumbnail_jpg.php">Thumbnail-Generator <br> JPG</a>
+        <a href="./generator_thumbnail.php">Thumbnail-Generator</a>
         <a href="./generator_image_socialmedia_crop.php">Social Media Bild-Generator Crop</a>
         <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
         </br>
