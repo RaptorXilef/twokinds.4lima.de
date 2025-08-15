@@ -19,9 +19,9 @@ function getComicImagePath(string $comicId, string $baseDir, string $suffix = ''
     // Bevorzugte Reihenfolge der Dateierweiterungen, in der gesucht wird.
     // Falls ein Suffix vorhanden ist (z.B. '_preview'), ist es wahrscheinlicher, dass es sich um ein PNG handelt.
     // Daher wird die Reihenfolge angepasst, um .png zuerst zu prüfen, falls ein Suffix verwendet wird.
-    $extensions = ['png', 'jpg', 'gif'];
+    $extensions = ['webp', 'png', 'jpg', 'gif'];
     if (empty($suffix)) { // Wenn kein Suffix, ist .jpg oft das Hauptformat
-        $extensions = ['jpg', 'png', 'gif'];
+        $extensions = ['webp', 'jpg', 'png', 'gif'];
     }
 
     foreach ($extensions as $ext) {
