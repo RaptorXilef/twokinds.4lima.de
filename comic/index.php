@@ -55,9 +55,37 @@ if (isset($comicData[$currentComicId])) {
     $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
 }
 
-// Define paths for fallback "in translation" images relative to the current file (e.g., comic/index.php)
-$inTranslationLowres = '../assets/comic_lowres/in_translation.png';
-$inTranslationHires = '../assets/comic_hires/in_translation.jpg';
+// === ANFANG DER ÄNDERUNG: Dynamische Suche nach "in translation"-Bildern ===
+// Definiere die Basis-Pfade (relativ zu dieser Datei) und die Dateiendungen, nach denen gesucht werden soll.
+// Anmerkung: "git" wurde als Tippfehler angenommen und durch "gif" ersetzt.
+$inTranslationLowresBase = '../assets/comic_lowres/in_translation';
+$inTranslationHiresBase = '../assets/comic_hires/in_translation';
+$imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
+// Initialisiere die Variablen mit einem nicht existierenden Pfad. Dies stellt sicher,
+// dass die spätere file_exists-Prüfung korrekt fehlschlägt, falls kein Bild gefunden wird.
+$inTranslationLowres = $inTranslationLowresBase . '.invalid';
+$inTranslationHires = $inTranslationHiresBase . '.invalid';
+
+// Suche nach dem niedrigauflösenden "in translation"-Bild.
+foreach ($imageExtensions as $ext) {
+    $potentialPath = $inTranslationLowresBase . '.' . $ext;
+    // Die Pfad-Prüfung muss vom aktuellen Verzeichnis (__DIR__) aus korrekt aufgelöst werden.
+    if (file_exists(__DIR__ . '/' . $potentialPath)) {
+        $inTranslationLowres = $potentialPath;
+        break; // Sobald ein Bild gefunden wurde, wird die Schleife beendet.
+    }
+}
+
+// Suche nach dem hochauflösenden "in translation"-Bild.
+foreach ($imageExtensions as $ext) {
+    $potentialPath = $inTranslationHiresBase . '.' . $ext;
+    if (file_exists(__DIR__ . '/' . $potentialPath)) {
+        $inTranslationHires = $potentialPath;
+        break; // Sobald ein Bild gefunden wurde, wird die Schleife beendet.
+    }
+}
+// === ENDE DER ÄNDERUNG ===
 
 // Get paths from the helper function (these are relative to the project root, e.g., 'assets/comic_lowres/20250604.png')
 $rawComicLowresPath = getComicImagePath($currentComicId, './assets/comic_lowres/');
@@ -166,7 +194,6 @@ include __DIR__ . '/../src/layout/header.php';
 
 <article class="comic">
     <header>
-        <!-- H1-Tag im Format des Originals, zeigt den Titel des neuesten Comics. -->
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:
             <?php echo htmlspecialchars($comicName); ?>
         </h1>
@@ -182,7 +209,6 @@ include __DIR__ . '/../src/layout/header.php';
         ?>
     </div>
 
-    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
     <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
         <img src="<?php echo htmlspecialchars($comicImagePath); ?>" title="<?php echo htmlspecialchars($comicName); ?>"
             alt="Comic Page">
@@ -200,7 +226,6 @@ include __DIR__ . '/../src/layout/header.php';
 
     <div class="below-nav jsdep">
         <div class="nav-instruction">
-            <!-- Hinweis zur Navigation mit Tastaturpfeilen auf Deutsch. -->
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
         </div>
