@@ -1,0 +1,3 @@
+<Files "*">
+    Header set X-Robots-Tag "noindex, nofollow"
+</Files>
