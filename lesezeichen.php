@@ -17,19 +17,11 @@ require_once __DIR__ . '/src/components/load_comic_data.php';
 if ($debugMode)
     error_log("DEBUG: load_comic_data.php in lesezeichen.php eingebunden.");
 
-// === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
-// Diese Logik wird hier dupliziert, um sicherzustellen, dass $baseUrl
-// verfügbar ist, bevor $additionalScripts und $additionalHeadContent definiert werden,
-// die ihrerseits im header.php verwendet werden.
+// === Dynamische Basis-URL Bestimmung ===
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
 $scriptName = $_SERVER['SCRIPT_NAME'];
-// Ermittle das Basisverzeichnis des Skripts relativ zum Document Root
 $scriptDir = rtrim(dirname($scriptName), '/');
-
-// Wenn das Skript im Root-Verzeichnis liegt, ist $scriptDir leer.
-// In diesem Fall ist $baseUrl einfach das Protokoll und der Host.
-// Andernfalls ist es Protokoll + Host + Skriptverzeichnis.
 $baseUrl = $protocol . $host . ($scriptDir === '' ? '/' : $scriptDir . '/');
 if ($debugMode)
     error_log("DEBUG: Basis-URL in lesezeichen.php: " . $baseUrl);
@@ -37,13 +29,20 @@ if ($debugMode)
 
 // Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
 $pageTitle = 'Deine Lesezeichen';
-$pageHeader = 'Deine Lesezeichen'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
+$pageHeader = 'Deine Lesezeichen';
 
-// Füge die comic.js als zusätzliches Skript hinzu, da sie die Lesezeichen-Logik enthält.
-// Der Cache-Buster (c=20250722) sollte beibehalten werden, um Browser-Caching zu umgehen.
-$additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($baseUrl) . "src/layout/js/comic.js?c=20250722'></script>";
+// === ANPASSUNG: Automatischer Cache-Buster für comic.js ===
+// Der Pfad zur JS-Datei auf dem Server
+$comicJsPath = __DIR__ . '/src/layout/js/comic.js';
+// Die Web-URL zur JS-Datei
+$comicJsUrl = $baseUrl . 'src/layout/js/comic.js';
+// Erstelle den Cache-Buster basierend auf dem letzten Änderungsdatum der Datei
+$cacheBuster = file_exists($comicJsPath) ? '?c=' . filemtime($comicJsPath) : '';
+// Füge die comic.js mit automatischem Cache-Buster als zusätzliches Skript hinzu.
+$additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($comicJsUrl . $cacheBuster) . "'></script>";
 if ($debugMode)
-    error_log("DEBUG: comic.js als zusätzliches Skript in lesezeichen.php hinzugefügt.");
+    error_log("DEBUG: comic.js mit Cache-Buster '" . $cacheBuster . "' in lesezeichen.php hinzugefügt.");
+
 
 // Die allgemeine Seitenbeschreibung für SEO und Social Media.
 $siteDescription = 'Verwalte und zeige deine gespeicherten Comic-Lesezeichen an.';
@@ -58,7 +57,6 @@ if ($debugMode)
 ?>
 
 <div id="bookmarksPage" class="bookmarks-page">
-    <!-- Bookmark example as seen in the original screenshot -->
     <div class="bookmark-example">
         <span>Klicke auf das Lesezeichen-Symbol auf jeder Comic-Seite, um sie hier hinzuzufügen.</span>
         <div class="ribbon"></div>
@@ -79,14 +77,12 @@ if ($debugMode)
         <input type="file" id="import" accept=".json,application/json" style="display: none;">
     </div>
 
-    <!-- Templates for JavaScript to clone -->
     <template id="noBookmarks">
         <div class="no-bookmarks">Du hast noch keine Lesezeichen!</div>
     </template>
 
     <template id="pageBookmarkWrapper">
         <div class="chapter-links">
-            <!-- Bookmarks are dynamically inserted here by JS -->
         </div>
     </template>
 
