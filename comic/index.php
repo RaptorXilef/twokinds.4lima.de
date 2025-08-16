@@ -209,7 +209,7 @@ include __DIR__ . '/../src/layout/header.php';
         ?>
     </div>
 
-    <a href="<?php echo htmlspecialchars($comicHiresPath); ?>">
+    <a href="<?php echo htmlspecialchars($comicHiresPath); ?>" target="_blank" rel="noopener noreferrer">
         <img src="<?php echo htmlspecialchars($comicImagePath); ?>" title="<?php echo htmlspecialchars($comicName); ?>"
             alt="Comic Page">
     </a>
