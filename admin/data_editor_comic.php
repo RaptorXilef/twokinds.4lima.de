@@ -256,7 +256,7 @@ function checkImageExistenceForComic(string $comicId, array $directories, bool $
 {
     if ($debugMode)
         error_log("DEBUG: checkImageExistenceForComic() aufgerufen für Comic-ID: " . $comicId);
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     $results = [];
 
     foreach ($directories as $type => $dirPath) {

@@ -210,9 +210,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
 
                         $imageHtml = '';
                         // Konstruiere den Dateisystempfad zum Bild
-                        // Annahme: Bilder sind im Format YYYYMMDD.jpg, YYYYMMDD.png oder YYYYMMDD.gif
-                        // ÄNDERUNG: Pfad zu comic_thumbnails und Hinzufügen von .gif
-                        $imageExtensions = ['.jpg', '.png', '.gif'];
+                        // Annahme: Bilder sind im Format YYYYMMDD.jpg, .png, .gif, .jpeg oder .webp
+                        // ÄNDERUNG: Pfad zu comic_thumbnails und Hinzufügen von .gif, .jpeg, .webp
+                        $imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
                         $actualImageFileName = '';
 
                         foreach ($imageExtensions as $ext) {
