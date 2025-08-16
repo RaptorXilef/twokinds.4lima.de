@@ -26,10 +26,10 @@ assets/comic_thumbnails/*.jpg
 assets/comic_thumbnails/*.png
 assets/comic_thumbnails/*gif
 assets/comic_thumbnails/*.webp
-!assets/comic_socialmedia/placeholder.*
+!assets/comic_thumbnails/placeholder.*
 !assets/comic_thumbnails/in_translation.*
-!assets/comic_socialmedia/index.php
-!assets/comic_socialmedia/.htaccess
+!assets/comic_thumbnails/index.php
+!assets/comic_thumbnails/.htaccess
 
 assets/img/github/twokinds.4lima.de.psd
 assets/img/about/*
