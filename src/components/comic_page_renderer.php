@@ -180,8 +180,19 @@ $pageTitle = 'Comic ' . substr($currentComicId, 0, 4) . '.' . substr($currentCom
 // H1-Header auf der Seite: TT.MM.JJJJ
 // Hinzufügen von " vom " zwischen Comic-Typ und Datum
 $pageHeader = htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
-// Die comic.js ist für die Lesezeichen-Funktion notwendig
-$additionalScripts = "<script type='text/javascript' src='../src/layout/js/comic.js?c=20250722'></script>";
+
+// --- Automatischer Cache-Buster für comic.js ---
+// Pfad zur JS-Datei auf dem Server (von /src/components/ aus gesehen)
+$comicJsPathOnServer = __DIR__ . '/../layout/js/comic.js';
+
+// Web-URL zur JS-Datei (von der Comic-Seite wie /comic/seite.php aus gesehen)
+$comicJsWebUrl = '../src/layout/js/comic.js';
+
+// Erstelle den Cache-Buster, falls die Datei existiert
+$cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
+
+// Füge die comic.js mit automatischem Cache-Buster als zusätzliches Skript hinzu.
+$additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 
 // Funktion zur Erstellung einer absoluten URL aus einer relativen oder bereits absoluten URL
 function makeAbsoluteUrl($url, $baseUrl)
