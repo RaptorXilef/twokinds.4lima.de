@@ -122,7 +122,7 @@ function getComicIdsFromImages(string $dirPath, bool $debugMode): array
             // Extrahiere den Dateinamen ohne Erweiterung (z.B. "20250604" aus "20250604.png")
             $info = pathinfo($file);
             // Stellt sicher, dass es ein Datum im FormatYYYYMMDD ist und eine gültige Bild-Extension hat
-            if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), ['jpg', 'jpeg', 'png', 'gif'])) {
+            if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                 $imageIds[] = $info['filename'];
                 if ($debugMode)
                     error_log("DEBUG: Comic-ID aus Bild gefunden: " . $info['filename']);

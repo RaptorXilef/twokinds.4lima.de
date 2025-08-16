@@ -184,7 +184,7 @@ function getComicIdsFromImages(string $lowresDir, string $hiresDir, bool $debugM
     if ($debugMode)
         error_log("DEBUG: getComicIdsFromImages() aufgerufen für lowres: " . $lowresDir . " und hires: " . $hiresDir);
     $imageIds = [];
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     $dirs = [$lowresDir, $hiresDir];
     foreach ($dirs as $dir) {

@@ -57,7 +57,7 @@ if (!extension_loaded('gd')) {
 function getExistingComicIds(string $hiresDir, string $lowresDir, bool $debugMode): array
 {
     $comicIds = [];
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     foreach ([$hiresDir, $lowresDir] as $dir) {
         if (is_dir($dir)) {
@@ -138,7 +138,7 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
 
     // Quellbild finden (priorisiert hires)
     $sourceImagePath = '';
-    $possibleExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    $possibleExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     foreach ([$hiresDir, $lowresDir] as $dir) {
         foreach ($possibleExtensions as $ext) {
             $path = $dir . $comicId . '.' . $ext;
@@ -169,6 +169,9 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
                 break;
             case IMAGETYPE_GIF:
                 $sourceImage = @imagecreatefromgif($sourceImagePath);
+                break;
+            case IMAGETYPE_WEBP:
+                $sourceImage = @imagecreatefromwebp($sourceImagePath);
                 break;
         }
         if (!$sourceImage)
