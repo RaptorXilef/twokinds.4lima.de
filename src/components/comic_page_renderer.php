@@ -71,10 +71,36 @@ if (isset($comicData[$currentComicId])) {
         error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
 }
 
-// Definiere die Pfade zu den Lückenfüller-Bildern (relativ zum Projekt-Root).
-// Diese Pfade werden später für file_exists und für die HTML-Ausgabe angepasst.
-$inTranslationLowresRootPath = 'assets/comic_lowres/in_translation.png';
-$inTranslationHiresRootPath = 'assets/comic_hires/in_translation.jpg';
+// === ANFANG DER ÄNDERUNG: Dynamische Suche nach "in translation"-Bildern ===
+// Definiere die Basis-Pfade (relativ zum Projekt-Root) und die Dateiendungen.
+$inTranslationLowresBase = 'assets/comic_lowres/in_translation';
+$inTranslationHiresBase = 'assets/comic_hires/in_translation';
+$imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
+// Initialisiere die Pfad-Variablen mit einem nicht existierenden Pfad.
+// Dies ist ein Workaround, damit die spätere file_exists(realpath(...))-Prüfung korrekt fehlschlägt.
+$inTranslationLowresRootPath = $inTranslationLowresBase . '.invalid';
+$inTranslationHiresRootPath = $inTranslationHiresBase . '.invalid';
+
+// Suche nach dem niedrigauflösenden "in translation"-Bild.
+foreach ($imageExtensions as $ext) {
+    $potentialPath = $inTranslationLowresBase . '.' . $ext;
+    // __DIR__ ist /src/components, also gehen wir zwei Ebenen hoch zum Projekt-Root.
+    if (file_exists(__DIR__ . '/../../' . $potentialPath)) {
+        $inTranslationLowresRootPath = $potentialPath;
+        break; // Sobald ein Bild gefunden wurde, wird die Schleife beendet.
+    }
+}
+
+// Suche nach dem hochauflösenden "in translation"-Bild.
+foreach ($imageExtensions as $ext) {
+    $potentialPath = $inTranslationHiresBase . '.' . $ext;
+    if (file_exists(__DIR__ . '/../../' . $potentialPath)) {
+        $inTranslationHiresRootPath = $potentialPath;
+        break; // Sobald ein Bild gefunden wurde, wird die Schleife beendet.
+    }
+}
+// === ENDE DER ÄNDERung ===
 
 // Ermittle die Pfade zu den Comic-Bildern mit der Helferfunktion.
 // Die Helferfunktion getComicImagePath gibt Pfade relativ zum Projekt-Root zurück (z.B. 'assets/comic_lowres/20250604.png').
