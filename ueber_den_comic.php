@@ -153,7 +153,7 @@ if ($debugMode)
 	<h2 class="page-header">Über den Übersetzer</h2>
 
 	<!-- Angepasster Pfad für das Bild von Felix. -->
-	<img class="float-left" src="assets/img/about/Felix.jpg" alt="Felix" height="275">
+	<img class="float-left" src="assets/img/about/Felix.webp" alt="Felix" height="275">
 
 	<p>
 		<b>Name:</b> Felix Maywald<br>

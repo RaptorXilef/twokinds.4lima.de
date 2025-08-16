@@ -16,6 +16,7 @@ assets/comic_thumbnails/
 !assets/comic_thumbnails/in_translation.jpg
 !assets/comic_thumbnails/.htaccess
 assets/img/github/twokinds.4lima.de.psd
+assets/img/about/*
 
 # Nicht verwendete Icons
 assets/icons/nicht verwendet/*
