@@ -1534,7 +1534,7 @@ if (file_exists($headerPath)) {
                                     </td>
                                     <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
                                     <td><?php echo ($currentImageExistence['socialmedia'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
