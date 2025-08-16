@@ -26,7 +26,6 @@ require_once __DIR__ . '/nav_link_helper.php';
 
 
 // Die ID der aktuellen Comic-Seite wird aus dem Dateinamen der AUFRUFENDEN Datei extrahiert.
-// $_SERVER['SCRIPT_FILENAME'] gibt den vollständigen Pfad zur aufgerufenen PHP-Datei zurück.
 $currentComicId = basename($_SERVER['SCRIPT_FILENAME'], '.php');
 
 // Hole die Daten für die aktuelle Comic-Seite
@@ -35,8 +34,8 @@ $comicName = '';
 $comicTranscript = '';
 $comicPreviewUrl = ''; // URL für das Vorschaubild, z.B. für Social Media Meta-Tags.
 
-// Definiere die externe Platzhalter-URL für Thumbnails
-$externalPlaceholderThumbnailUrl = 'https://placehold.co/96x96/cccccc/333333?text=Vorschau%0Aaktuell%0Anicht%0Averf%C3%BCgbar';
+// Definiere eine externe Platzhalter-URL für den Fall, dass kein Vorschaubild gefunden wird
+$externalPlaceholderPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Vorschau+fehlt';
 
 
 if (isset($comicData[$currentComicId])) {
@@ -44,31 +43,28 @@ if (isset($comicData[$currentComicId])) {
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
 
-    // Die Preview-URL wird nun lokal aus dem 'comic_thumbnails'-Ordner geladen (relativ zum Projekt-Root).
-    // Korrigierter Pfad zu 'assets/comic_thumbnails/' und ohne '_preview' Suffix.
-    $rawComicThumbnailRootPath = getComicImagePath($currentComicId, './assets/comic_thumbnails/');
+    // === KORRIGIERT: Suche nun im korrekten Ordner 'comic_socialmedia' ===
+    $rawComicPreviewPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
 
-    // Pfad für die Vorschaubild-URL (relativ zur aktuellen Comic-Seite, d.h., comic/YYYYMMDD.php)
-    // realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath) konstruiert den absoluten Pfad zur Datei.
-    if (!empty($rawComicThumbnailRootPath) && file_exists(realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath))) {
-        // Wenn Original-Comic existiert, nutze dessen Pfad (relativ zur aktuellen Comic-Seite).
-        $comicPreviewUrl = '../' . $rawComicThumbnailRootPath; // Pfad relativ zum Comic-Ordner
+    // Erstelle den relativen Pfad zum Vorschaubild
+    if (!empty($rawComicPreviewPath) && file_exists(realpath(__DIR__ . '/../../' . $rawComicPreviewPath))) {
+        $comicPreviewUrl = '../' . $rawComicPreviewPath;
         if ($debugMode)
-            error_log("DEBUG: Comic Thumbnail Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicThumbnailRootPath));
+            error_log("DEBUG: Social Media Vorschaubild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicPreviewPath));
     } else {
-        $comicPreviewUrl = $externalPlaceholderThumbnailUrl; // Neue, externe Platzhalter-URL
+        $comicPreviewUrl = $externalPlaceholderPreviewUrl;
         if ($debugMode)
-            error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
+            error_log("DEBUG: Fallback auf externe Placeholder-URL für Social Media Vorschau (Renderer): " . $comicPreviewUrl);
     }
 } else {
     // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
     error_log("FEHLER: Daten für Comic ID '{$currentComicId}' nicht in comic_var.json gefunden.");
-    $comicTyp = 'Fehler auf Seite'; // Angepasst, da "vom" nun im H1 hinzugefügt wird
+    $comicTyp = 'Fehler auf Seite';
     $comicName = 'Comic nicht gefunden';
     $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
-    $comicPreviewUrl = $externalPlaceholderThumbnailUrl; // Immer die externe Platzhalter-URL verwenden
+    $comicPreviewUrl = $externalPlaceholderPreviewUrl;
     if ($debugMode)
-        error_log("DEBUG: Fallback auf externe Placeholder-URL für Comic Thumbnail (Renderer): " . $comicPreviewUrl);
+        error_log("DEBUG: Fallback auf externe Placeholder-URL, da Comic-Daten fehlen (Renderer): " . $comicPreviewUrl);
 }
 
 // === ANFANG DER ÄNDERUNG: Dynamische Suche nach "in translation"-Bildern ===
@@ -184,6 +180,7 @@ $additionalScripts = "<script type='text/javascript' src='../src/layout/js/comic
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
 // Die og:image URL muss absolut sein.
 // Hier prüfen wir, ob $comicPreviewUrl bereits eine absolute URL ist
+// Erstelle die absolute URL für das Vorschaubild
 if (strpos($comicPreviewUrl, 'http://') === 0 || strpos($comicPreviewUrl, 'https://') === 0) {
     $absoluteComicPreviewUrl = $comicPreviewUrl; // Ist bereits absolut
 } else {
@@ -217,7 +214,7 @@ include __DIR__ . '/../layout/header.php';
         <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->
         <h1><?php echo $pageHeader; ?></h1>
         <!-- Der Lesezeichen-Button wird nun im comicnav-Container platziert,
-             damit die CSS-Regeln aus main.css korrekt angewendet werden können. -->
+            damit die CSS-Regeln aus main.css korrekt angewendet werden können. -->
     </header>
 
     <div class='comicnav'>
@@ -235,9 +232,7 @@ include __DIR__ . '/../layout/header.php';
                      if (strpos($comicPreviewUrl, 'http://') === 0 || strpos($comicPreviewUrl, 'https://') === 0) {
                          echo htmlspecialchars($comicPreviewUrl); // Ist bereits absolut
                      } else {
-                         // Wenn es ein relativer Pfad ist (z.B. ../assets/thumbnails/...), müssen wir ihn absolut machen
-                         // Dazu entfernen wir den '..' Teil und konkatenieren mit $baseUrl
-                         echo htmlspecialchars($baseUrl . ltrim($comicPreviewUrl, './'));
+                         echo htmlspecialchars($baseUrl . ltrim(ltrim($comicPreviewUrl, '.'), '/'));
                      }
                      ?>">
             Bookmark this page
