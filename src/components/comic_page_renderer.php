@@ -32,10 +32,12 @@ $currentComicId = basename($_SERVER['SCRIPT_FILENAME'], '.php');
 $comicTyp = '';
 $comicName = '';
 $comicTranscript = '';
-$comicPreviewUrl = ''; // URL für das Vorschaubild, z.B. für Social Media Meta-Tags.
+$socialMediaPreviewUrl = ''; // URL für Social Media Vorschaubild.
+$bookmarkThumbnailUrl = ''; // URL für Lesezeichen-Vorschaubild.
 
-// Definiere eine externe Platzhalter-URL für den Fall, dass kein Vorschaubild gefunden wird
-$externalPlaceholderPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Vorschau+fehlt';
+// Definiere Platzhalter-URLs
+$externalPlaceholderSocialUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Vorschau+fehlt';
+$externalPlaceholderThumbnailUrl = 'https://placehold.co/96x96/cccccc/333333?text=Vorschau%0Afehlt';
 
 
 if (isset($comicData[$currentComicId])) {
@@ -43,28 +45,33 @@ if (isset($comicData[$currentComicId])) {
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
 
-    // === KORRIGIERT: Suche nun im korrekten Ordner 'comic_socialmedia' ===
-    $rawComicPreviewPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
-
+    // --- LOGIK FÜR SOCIAL MEDIA VORSCHAUBILD ---
+    $rawSocialPreviewPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
     // Erstelle den relativen Pfad zum Vorschaubild
-    if (!empty($rawComicPreviewPath) && file_exists(realpath(__DIR__ . '/../../' . $rawComicPreviewPath))) {
-        $comicPreviewUrl = '../' . $rawComicPreviewPath;
-        if ($debugMode)
-            error_log("DEBUG: Social Media Vorschaubild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicPreviewPath));
+    if (!empty($rawSocialPreviewPath) && file_exists(realpath(__DIR__ . '/../../' . $rawSocialPreviewPath))) {
+        $socialMediaPreviewUrl = '../' . $rawSocialPreviewPath;
     } else {
-        $comicPreviewUrl = $externalPlaceholderPreviewUrl;
-        if ($debugMode)
-            error_log("DEBUG: Fallback auf externe Placeholder-URL für Social Media Vorschau (Renderer): " . $comicPreviewUrl);
+        $socialMediaPreviewUrl = $externalPlaceholderSocialUrl;
     }
+
+    // --- LOGIK FÜR LESEZEICHEN-VORSCHAUBILD ---
+    $rawBookmarkThumbnailPath = getComicImagePath($currentComicId, './assets/comic_thumbnails/');
+    if (!empty($rawBookmarkThumbnailPath) && file_exists(realpath(__DIR__ . '/../../' . $rawBookmarkThumbnailPath))) {
+        $bookmarkThumbnailUrl = '../' . $rawBookmarkThumbnailPath;
+    } else {
+        $bookmarkThumbnailUrl = $externalPlaceholderThumbnailUrl;
+    }
+
 } else {
     // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
     error_log("FEHLER: Daten für Comic ID '{$currentComicId}' nicht in comic_var.json gefunden.");
     $comicTyp = 'Fehler auf Seite';
     $comicName = 'Comic nicht gefunden';
     $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
-    $comicPreviewUrl = $externalPlaceholderPreviewUrl;
+    $socialMediaPreviewUrl = $externalPlaceholderSocialUrl;
+    $bookmarkThumbnailUrl = $externalPlaceholderThumbnailUrl;
     if ($debugMode)
-        error_log("DEBUG: Fallback auf externe Placeholder-URL, da Comic-Daten fehlen (Renderer): " . $comicPreviewUrl);
+        error_log("DEBUG: Fallback auf externe Placeholder-URL, da Comic-Daten fehlen (Renderer): " . $socialMediaPreviewUrl . "oder " . $bookmarkThumbnailUrl);
 }
 
 // === ANFANG DER ÄNDERUNG: Dynamische Suche nach "in translation"-Bildern ===
@@ -129,7 +136,9 @@ if (!empty($rawComicLowresRootPath) && file_exists(realpath(__DIR__ . '/../../' 
             error_log("DEBUG: In Translation Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath));
     } else {
         // Wenn auch "in translation" nicht existiert, nutze generischen Placeholder-URL.
-        error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad (Renderer): " . realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath));
+        if ($debugMode)
+            error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad (Renderer): " . realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath));
+
         $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
         $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
         if ($debugMode)
@@ -142,9 +151,6 @@ if ($debugMode)
 
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
-// Konvertiere die Comic-ID (Datum) ins englische Format für den Original-H1-Header-Stil "Month Day, Year"
-$formattedDateEnglish = date('F d, Y', strtotime($currentComicId));
-
 // Die allgemeine Seitenbeschreibung, die in header.php verwendet wird.
 $siteDescription = 'Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.';
 
@@ -177,25 +183,30 @@ $pageHeader = htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': 
 // Die comic.js ist für die Lesezeichen-Funktion notwendig
 $additionalScripts = "<script type='text/javascript' src='../src/layout/js/comic.js?c=20250722'></script>";
 
-// Zusätzliche Meta-Tags für Social Media (Open Graph).
-// Die og:image URL muss absolut sein.
-// Hier prüfen wir, ob $comicPreviewUrl bereits eine absolute URL ist
-// Erstelle die absolute URL für das Vorschaubild
-if (strpos($comicPreviewUrl, 'http://') === 0 || strpos($comicPreviewUrl, 'https://') === 0) {
-    $absoluteComicPreviewUrl = $comicPreviewUrl; // Ist bereits absolut
-} else {
-    // Wenn es ein relativer Pfad ist (z.B. ../assets/thumbnails/...), müssen wir ihn absolut machen
-    // Dazu entfernen wir den '..' Teil und konkatenieren mit $baseUrl
-    $absoluteComicPreviewUrl = $baseUrl . ltrim($comicPreviewUrl, './');
+// Funktion zur Erstellung einer absoluten URL aus einer relativen oder bereits absoluten URL
+function makeAbsoluteUrl($url, $baseUrl)
+{
+    if (str_starts_with($url, 'http')) {
+        return $url;
+    }
+    $tempUrl = $url;
+    if (str_starts_with($tempUrl, '../')) {
+        $tempUrl = substr($tempUrl, 3);
+    } elseif (str_starts_with($tempUrl, './')) {
+        $tempUrl = substr($tempUrl, 2);
+    }
+    return $baseUrl . $tempUrl;
 }
-if ($debugMode)
-    error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Renderer): " . $absoluteComicPreviewUrl);
+
+// Absolute URLs für Social Media und Lesezeichen erstellen
+$absoluteSocialPreviewUrl = makeAbsoluteUrl($socialMediaPreviewUrl, $baseUrl);
+$absoluteBookmarkThumbnailUrl = makeAbsoluteUrl($bookmarkThumbnailUrl, $baseUrl);
 
 $additionalHeadContent = '
     <link rel="canonical" href="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '.php">
     <meta property="og:title" content="TwoKinds auf Deutsch - Comic ' . htmlspecialchars($formattedDateGerman) . ': ' . htmlspecialchars($comicName) . '">
     <meta property="og:description" content="' . htmlspecialchars($siteDescription) . '">
-    <meta property="og:image" content="' . htmlspecialchars($absoluteComicPreviewUrl) . '">
+    <meta property="og:image" content="' . htmlspecialchars($absoluteSocialPreviewUrl) . '">
     <meta property="og:type" content="article">
     <meta property="og:url" content="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '.php">
 ';
@@ -218,23 +229,14 @@ include __DIR__ . '/../layout/header.php';
     </header>
 
     <div class='comicnav'>
-        <?php
-        // Binde die obere Comic-Navigation ein.
-        // Pfad von src/components/ zu src/layout/
-        include __DIR__ . '/../layout/comic_navigation.php';
-        ?>
+        <!-- Binde die obere Comic-Navigation ein. -->
+        <?php include __DIR__ . '/../layout/comic_navigation.php'; ?>
         <!-- Lesezeichen-Button mit der Original-Klasse und den Datenattributen -->
         <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
             data-id="<?php echo htmlspecialchars($currentComicId); ?>"
             data-page="<?php echo htmlspecialchars($currentComicId); ?>"
-            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>" data-thumb="<?php
-                     // Hier prüfen wir erneut, ob $comicPreviewUrl bereits absolut ist
-                     if (strpos($comicPreviewUrl, 'http://') === 0 || strpos($comicPreviewUrl, 'https://') === 0) {
-                         echo htmlspecialchars($comicPreviewUrl); // Ist bereits absolut
-                     } else {
-                         echo htmlspecialchars($baseUrl . ltrim(ltrim($comicPreviewUrl, '.'), '/'));
-                     }
-                     ?>">
+            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>"
+            data-thumb="<?php echo htmlspecialchars($absoluteBookmarkThumbnailUrl); ?>">
             Bookmark this page
         </button>
     </div>
@@ -246,11 +248,8 @@ include __DIR__ . '/../layout/header.php';
     </a>
 
     <div class='comicnav bottomnav'>
-        <?php
-        // Binde die untere Comic-Navigation ein (identisch zur oberen Navigation).
-        // Pfad von src/components/ zu src/layout/
-        include __DIR__ . '/../layout/comic_navigation.php';
-        ?>
+        <!-- Binde die untere Comic-Navigation ein (identisch zur oberen Navigation). -->
+        <?php include __DIR__ . '/../layout/comic_navigation.php'; ?>
     </div>
 
     <div class="below-nav jsdep">
@@ -275,8 +274,5 @@ include __DIR__ . '/../layout/header.php';
     </aside>
 </article>
 
-<?php
-// Binde den gemeinsamen Footer ein.
-// Pfad von src/components/ zu src/layout/
-include __DIR__ . '/../layout/footer.php';
-?>
+<!-- Binde den gemeinsamen Footer ein. -->
+<?php include __DIR__ . '/../layout/footer.php'; ?>
