@@ -52,6 +52,8 @@ google5c760f191f071105.html
 src/layout/js_backup/gtag.js
 _debug/*
 src/config/*
+src/config/comic_var.json
+src/config/archive_chapters.json
 
 #Notizen
 _links/*

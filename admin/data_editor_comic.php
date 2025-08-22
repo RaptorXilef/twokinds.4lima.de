@@ -244,6 +244,34 @@ function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
     return $sortedIds;
 }
 
+/**
+ * NEU: Sucht das erste verfügbare lowres-Bild für eine Comic-ID und gibt den relativen Web-Pfad zurück.
+ * @param string $comicId Die ID des Comics.
+ * @param string $baseDir Der absolute Basispfad zum lowres-Verzeichnis.
+ * @param bool $debugMode Debug-Modus Flag.
+ * @return string Der relative Pfad zum Bild oder ein leerer String, wenn nichts gefunden wurde.
+ */
+function findLowresImagePath(string $comicId, string $baseDir, bool $debugMode): string
+{
+    if ($debugMode)
+        error_log("DEBUG: findLowresImagePath() aufgerufen für Comic-ID: " . $comicId);
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    // WICHTIG: Der Pfad, der vom Browser aus erreichbar ist.
+    $relativeWebPath = '../assets/comic_lowres/';
+
+    foreach ($imageExtensions as $ext) {
+        if (file_exists($baseDir . $comicId . '.' . $ext)) {
+            if ($debugMode)
+                error_log("DEBUG: Bild gefunden: " . $baseDir . $comicId . '.' . $ext);
+            return $relativeWebPath . $comicId . '.' . $ext;
+        }
+    }
+
+    if ($debugMode)
+        error_log("DEBUG: Kein lowres-Bild für ID " . $comicId . " gefunden.");
+    return '';
+}
+
 
 /**
  * Checks for the existence of various image types for a given comic ID.
@@ -1384,6 +1412,15 @@ if (file_exists($headerPath)) {
                     <input type="text" id="comic-chapter" name="comic_chapter"
                         placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
+
+                <!-- NEUER ABSCHNITT FÜR DIE BILDVORSCHAU -->
+                <div id="comic-image-preview-container" style="display: none; margin-top: 20px; text-align: center;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Vorschaubild:</label>
+                    <img id="comic-image-preview" src="" alt="Vorschau des Comics"
+                        style="max-width: 100%; max-height: 900px; height: auto; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <!-- ENDE NEUER ABSCHNITT -->
+
                 <div class="button-group">
                     <button type="submit" id="save-single-button">Speichern</button>
                     <button type="button" id="cancel-edit-button">Abbrechen</button>
@@ -1438,7 +1475,10 @@ if (file_exists($headerPath)) {
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                                 ?>
+                                <!-- NEU: Die Funktion findLowresImagePath wird aufgerufen und das Ergebnis als data-Attribut gespeichert -->
+                                <?php $lowresImagePath = findLowresImagePath($id, $comicLowresDirPath, $debugMode); ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
+                                    data-lowres-path="<?php echo htmlspecialchars($lowresImagePath); ?>"
                                     class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td class="comic-id-display">
                                         <?php echo htmlspecialchars($id); ?>
@@ -1646,6 +1686,13 @@ if (file_exists($headerPath)) {
                 comicTranscriptTextarea.value = '';
             }
             comicChapterInput.value = '';
+
+            // NEU: Bildvorschau ausblenden und leeren
+            const previewContainer = document.getElementById('comic-image-preview-container');
+            if (previewContainer) {
+                previewContainer.style.display = 'none';
+                document.getElementById('comic-image-preview').src = '';
+            }
         }
 
         function showMessage(msg, type) {
@@ -1687,7 +1734,23 @@ if (file_exists($headerPath)) {
             }
 
             if (editButton) {
+                // NEUE LOGIK FÜR DIE BILDVORSCHAU
                 const row = editButton.closest('tr');
+                const lowresPath = row.dataset.lowresPath;
+                const previewContainer = document.getElementById('comic-image-preview-container');
+                const previewImage = document.getElementById('comic-image-preview');
+                const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Comicseite%0Anicht%0Averf%C3%BCgbar';
+
+                // Setze die Bildquelle: entweder der gefundene Pfad oder der Platzhalter
+                if (lowresPath) {
+                    previewImage.src = lowresPath;
+                } else {
+                    previewImage.src = placeholderUrl;
+                }
+                // Zeige den Vorschau-Container an
+                previewContainer.style.display = 'block';
+
+                // Bestehender Code zum Füllen des Formulars
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
