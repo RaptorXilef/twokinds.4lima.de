@@ -128,6 +128,15 @@ Beiträge sind herzlich willkommen! Wenn du Fehler findest oder Verbesserungen v
 
 ## Lizenz
 
+**Hinweis zur Nutzung und Übersetzung**
+
+Dieses Projekt ist unter der Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License lizenziert. Diese Lizenz erlaubt und fördert ausdrücklich die Erstellung von Übersetzungen und abgeleiteten Werken.
+
+Ich bitte jedoch darum, von einer direkten Spiegelung oder dem Hosten der deutschen Originalversion auf einer anderen Domain unter einem neuen Namen abzusehen. Dies ist mir sehr wichtig!
+
+Solltest du das Projekt in eine andere Sprache übersetzen, bist du selbstverständlich eingeladen, deine Übersetzung unter den Lizenzbedingungen mithilfe des hier bereitgestellten Webseiten-Projekts zu veröffentlichen. Das Hosten von Übersetzungen ist willkommen und erwünscht. So können wir eine klare Quelle für das Originalprojekt, die deutsche Version und zukünftig andere Übersetzungen gewährleisten und Verwirrung vermeiden.
+
+<br>
 Dieser Code steht unter der [Creative Commons Namensnennung-Nicht kommerziell-Share Alike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de). [![CC BY-NC 4.0](https://licensebuttons.net/l/by-nc-sa/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc/4.0/deed.de)
 
 Dies bedeutet, dass du den Code teilen und adaptieren darfst, solange du die Namensnennung beibehältst und ihn nicht für kommerzielle Zwecke nutzt.
