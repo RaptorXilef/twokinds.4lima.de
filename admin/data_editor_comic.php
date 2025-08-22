@@ -1413,18 +1413,19 @@ if (file_exists($headerPath)) {
                         placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
 
-                <!-- NEUER ABSCHNITT FÜR DIE BILDVORSCHAU -->
-                <div id="comic-image-preview-container" style="display: none; margin-top: 20px; text-align: center;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Vorschaubild:</label>
-                    <img id="comic-image-preview" src="" alt="Vorschau des Comics"
-                        style="max-width: 100%; max-height: 900px; height: auto; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <!-- ENDE NEUER ABSCHNITT -->
-
+                <!-- GEÄNDERTE REIHENFOLGE: Buttons sind jetzt hier -->
                 <div class="button-group">
                     <button type="submit" id="save-single-button">Speichern</button>
                     <button type="button" id="cancel-edit-button">Abbrechen</button>
                 </div>
+
+                <!-- BILDVORSCHAU JETZT NACH DEN BUTTONS -->
+                <div id="comic-image-preview-container" style="display: none; margin-top: 20px; text-align: center;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Vorschaubild:</label>
+                    <img id="comic-image-preview" src="" alt="Vorschau des Comics"
+                        style="max-width: 100%; max-height: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
             </form>
         </div>
     </section>
