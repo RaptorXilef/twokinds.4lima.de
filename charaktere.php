@@ -714,7 +714,7 @@ if ($debugMode)
                     data-src="assets/img/charaktere/ref_sheets_webp/redref_thumbnail.webp" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
-            <h3>[Datenbankfehler]</h3>
+            <h3>Red</h3>
             <p>
                 <b>Geschlecht:</b> Männlich<br>
                 <b>Alter:</b> 25<br>
@@ -722,9 +722,9 @@ if ($debugMode)
                 <b>Spezies:</b> Mensch<br>
                 <b>Sprachen:</b> Mensch<br>
             </p>
-            <p><b>Persönlichkeit:</b> [Datenbankfehler] ist ein bisschen ein Muskelprotz. Er versucht sein Bestes, um
+            <p><b>Persönlichkeit:</b> Red ist ein bisschen ein Muskelprotz. Er versucht sein Bestes, um
                 alle seine Probleme mit seinem Schwert zu lösen.</p>
-            <p>[Datenbankfehler] war einer von Traces Freunden von der Templerakademie. Allerdings brach er das Studium
+            <p>Red war einer von Traces Freunden von der Templerakademie. Allerdings brach er das Studium
                 nach ein paar Jahren ab, als er kaum eine magische Entwicklung zeigte. Später schloss er sich der
                 örtlichen Miliz seiner Heimatstadt an.</p>
         </div>
