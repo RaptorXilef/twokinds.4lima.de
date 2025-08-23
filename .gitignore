@@ -52,8 +52,11 @@ google5c760f191f071105.html
 src/layout/js_backup/gtag.js
 _debug/*
 src/config/*
-src/config/comic_var.json
-src/config/archive_chapters.json
+# git update-index --assume-unchanged src/config/comic_var.json
+# git update-index --assume-unchanged src/config/archive_chapters.json
+# wieder aktivieren:
+# git update-index --no-assume-unchanged src/config/comic_var.json
+# git update-index --no-assume-unchanged src/config/archive_chapters.json
 
 #Notizen
 _links/*
