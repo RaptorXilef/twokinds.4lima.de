@@ -1017,12 +1017,13 @@ if (file_exists($headerPath)) {
         }
     }
 
+    /* Zeit der Animation der Temellenzeile, nach der Bearbeitung (4s)*/
     .highlight-row {
-        animation: highlight-fade 4s ease-out forwards;
+        animation: highlight-fade 10s ease-out forwards;
     }
 
     body.theme-night .highlight-row {
-        animation: highlight-fade-dark 4s ease-out forwards;
+        animation: highlight-fade-dark 10s ease-out forwards;
     }
 
     /* KORREKTUR & NEU: Stile für Transkript-Anzeige */
@@ -1413,17 +1414,22 @@ if (file_exists($headerPath)) {
                         placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
 
-                <!-- GEÄNDERTE REIHENFOLGE: Buttons sind jetzt hier -->
+                <!-- KORREKTUR: Buttons haben jetzt Klassen statt IDs -->
                 <div class="button-group">
-                    <button type="submit" id="save-single-button">Speichern</button>
-                    <button type="button" id="cancel-edit-button">Abbrechen</button>
+                    <button type="submit" class="save-form-button">Speichern</button>
+                    <button type="button" class="cancel-form-button">Abbrechen</button>
                 </div>
 
-                <!-- BILDVORSCHAU JETZT NACH DEN BUTTONS -->
                 <div id="comic-image-preview-container" style="display: none; margin-top: 20px; text-align: center;">
                     <label style="display: block; margin-bottom: 10px; font-weight: bold;">Vorschaubild:</label>
                     <img id="comic-image-preview" src="" alt="Vorschau des Comics"
                         style="max-width: 100%; max-height: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+                <!-- KORREKTUR: Zweites Button-Paar hat ebenfalls Klassen -->
+                <div class="button-group">
+                    <button type="submit" class="save-form-button">Speichern</button>
+                    <button type="button" class="cancel-form-button">Abbrechen</button>
                 </div>
 
             </form>
@@ -1436,7 +1442,6 @@ if (file_exists($headerPath)) {
             <?php echo $paginationHtml; // Paginierung 2: Über der Haupt-Tabelle ?>
 
             <div class="table-controls">
-                <!-- NEU: Legende für die Marker -->
                 <div class="marker-legend">
                     <strong>Herkunft Eintrag - Legende:</strong>
                     <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
@@ -1476,7 +1481,6 @@ if (file_exists($headerPath)) {
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                                 ?>
-                                <!-- NEU: Die Funktion findLowresImagePath wird aufgerufen und das Ergebnis als data-Attribut gespeichert -->
                                 <?php $lowresImagePath = findLowresImagePath($id, $comicLowresDirPath, $debugMode); ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
                                     data-lowres-path="<?php echo htmlspecialchars($lowresImagePath); ?>"
@@ -1619,8 +1623,9 @@ if (file_exists($headerPath)) {
         const comicNameEmptyCheckbox = document.getElementById('comic-name-empty-checkbox');
         const comicTranscriptTextarea = document.getElementById('comic-transcript');
         const comicChapterInput = document.getElementById('comic-chapter');
-        const saveSingleButton = document.getElementById('save-single-button');
-        const cancelEditButton = document.getElementById('cancel-edit-button');
+        // KORREKTUR: Buttons über Klassen auswählen, um alle zu erfassen
+        const saveButtons = document.querySelectorAll('.save-form-button');
+        const cancelButtons = document.querySelectorAll('.cancel-form-button');
         const addComicButton = document.getElementById('add-new-comic-button');
         const comicDataTable = document.getElementById('comic-data-table');
         const messageBoxElement = document.getElementById('message-box');
@@ -1678,9 +1683,13 @@ if (file_exists($headerPath)) {
             comicNameInput.required = true;
             comicNameInput.disabled = false;
 
-            saveSingleButton.textContent = 'Speichern';
-            saveSingleButton.classList.remove('edit');
-            saveSingleButton.classList.add('button');
+            // KORREKTUR: Alle Speichern-Buttons anpassen
+            saveButtons.forEach(button => {
+                button.textContent = 'Speichern';
+                button.classList.remove('edit');
+                button.classList.add('button');
+            });
+
             if (summernoteInitialized) {
                 $('#comic-transcript').summernote('code', '');
             } else {
@@ -1688,7 +1697,6 @@ if (file_exists($headerPath)) {
             }
             comicChapterInput.value = '';
 
-            // NEU: Bildvorschau ausblenden und leeren
             const previewContainer = document.getElementById('comic-image-preview-container');
             if (previewContainer) {
                 previewContainer.style.display = 'none';
@@ -1735,7 +1743,7 @@ if (file_exists($headerPath)) {
             }
 
             if (editButton) {
-                // NEUE LOGIK FÜR DIE BILDVORSCHAU
+                // LOGIK FÜR DIE BILDVORSCHAU
                 const row = editButton.closest('tr');
                 const lowresPath = row.dataset.lowresPath;
                 const previewContainer = document.getElementById('comic-image-preview-container');
@@ -1776,9 +1784,12 @@ if (file_exists($headerPath)) {
 
                 comicChapterInput.value = comicChapter;
 
-                saveSingleButton.textContent = 'Änderungen speichern';
-                saveSingleButton.classList.add('edit');
-                saveSingleButton.classList.remove('button');
+                // KORREKTUR: Alle Speichern-Buttons anpassen
+                saveButtons.forEach(button => {
+                    button.textContent = 'Änderungen speichern';
+                    button.classList.add('edit');
+                    button.classList.remove('button');
+                });
 
                 if (!formSection.classList.contains('expanded')) {
                     formSection.classList.add('expanded');
@@ -1818,9 +1829,12 @@ if (file_exists($headerPath)) {
 
         addComicButton.addEventListener('click', function () {
             resetForm();
-            saveSingleButton.textContent = 'Hinzufügen';
-            saveSingleButton.classList.add('button');
-            saveSingleButton.classList.remove('edit');
+            // KORREKTUR: Alle Speichern-Buttons anpassen
+            saveButtons.forEach(button => {
+                button.textContent = 'Hinzufügen';
+                button.classList.add('button');
+                button.classList.remove('edit');
+            });
             comicIdInput.readOnly = false;
 
             initializeSummernote();
@@ -1831,9 +1845,12 @@ if (file_exists($headerPath)) {
             formSection.scrollIntoView({ behavior: 'smooth' });
         });
 
-        cancelEditButton.addEventListener('click', function () {
-            resetForm();
-            showMessage('Bearbeitung abgebrochen.', 'info');
+        // KORREKTUR: Event Listener für alle Abbrechen-Buttons
+        cancelButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                resetForm();
+                showMessage('Bearbeitung abgebrochen.', 'info');
+            });
         });
 
         comicEditForm.addEventListener('submit', function (event) {
@@ -1929,7 +1946,7 @@ if (file_exists($headerPath)) {
             });
         });
 
-        // KORREKTUR: Logik für den Ansicht-Umschalter
+        // Logik für den Ansicht-Umschalter
         toggleTranscriptViewButton.addEventListener('click', function () {
             isTranscriptRendered = !isTranscriptRendered;
             const allTranscripts = comicDataTable.querySelectorAll('.transcript-content');
