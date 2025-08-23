@@ -245,7 +245,7 @@ function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
 }
 
 /**
- * NEU: Sucht das erste verfügbare lowres-Bild für eine Comic-ID und gibt den relativen Web-Pfad zurück.
+ * Sucht das erste verfügbare lowres-Bild für eine Comic-ID und gibt den relativen Web-Pfad zurück.
  * @param string $comicId Die ID des Comics.
  * @param string $baseDir Der absolute Basispfad zum lowres-Verzeichnis.
  * @param bool $debugMode Debug-Modus Flag.
@@ -270,6 +270,40 @@ function findLowresImagePath(string $comicId, string $baseDir, bool $debugMode):
     if ($debugMode)
         error_log("DEBUG: Kein lowres-Bild für ID " . $comicId . " gefunden.");
     return '';
+}
+
+/**
+ * NEU: Holt alle Dateinamen aus dem lowres-Verzeichnis für die Live-Vorschau im JavaScript.
+ * @param string $lowresDir Der absolute Pfad zum lowres-Verzeichnis.
+ * @param bool $debugMode Debug-Modus Flag.
+ * @return array Eine Liste aller gültigen Bild-Dateinamen.
+ */
+function getLowresImageFilenames(string $lowresDir, bool $debugMode): array
+{
+    if ($debugMode)
+        error_log("DEBUG: getLowresImageFilenames() aufgerufen für: " . $lowresDir);
+    $filenames = [];
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (is_dir($lowresDir)) {
+        $files = scandir($lowresDir);
+        if ($files === false) {
+            if ($debugMode)
+                error_log("DEBUG: scandir() fehlgeschlagen für " . $lowresDir);
+            return [];
+        }
+        foreach ($files as $file) {
+            $info = pathinfo($file);
+            if (
+                isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) &&
+                isset($info['extension']) && in_array(strtolower($info['extension']), $imageExtensions)
+            ) {
+                $filenames[] = $file;
+            }
+        }
+    }
+    if ($debugMode)
+        error_log("DEBUG: " . count($filenames) . " lowres Bilddateien für JS gefunden.");
+    return $filenames;
 }
 
 
@@ -536,6 +570,9 @@ if (file_exists($headerPath)) {
 } else {
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
 }
+
+// NEU: Hole die Dateinamen für das JavaScript
+$lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 ?>
 
 <!-- Font Awesome für Icons -->
@@ -1621,6 +1658,9 @@ if (file_exists($headerPath)) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
 <script>
+    // NEU: Übergebe die PHP-Variable an JavaScript
+    const availableLowresImages = <?php echo json_encode($lowresImageFiles); ?>;
+
     document.addEventListener('DOMContentLoaded', function () {
         // Scrollen und Hervorheben beim Laden der Seite
         if (window.location.hash) {
@@ -1733,6 +1773,23 @@ if (file_exists($headerPath)) {
             }
         }
 
+        /**
+         * NEU: Zeigt das Vorschaubild basierend auf einem Pfad an.
+         * @param {string} imagePath Der relative Pfad zum Bild.
+         */
+        function showImagePreview(imagePath) {
+            const previewContainer = document.getElementById('comic-image-preview-container');
+            const previewImage = document.getElementById('comic-image-preview');
+            const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Comicseite%0Anicht%0Averf%C3%BCgbar';
+
+            if (imagePath) {
+                previewImage.src = imagePath;
+            } else {
+                previewImage.src = placeholderUrl;
+            }
+            previewContainer.style.display = 'block';
+        }
+
         comicNameEmptyCheckbox.addEventListener('change', function () {
             if (this.checked) {
                 comicNameInput.value = '';
@@ -1760,16 +1817,7 @@ if (file_exists($headerPath)) {
             if (editButton) {
                 const row = editButton.closest('tr');
                 const lowresPath = row.dataset.lowresPath;
-                const previewContainer = document.getElementById('comic-image-preview-container');
-                const previewImage = document.getElementById('comic-image-preview');
-                const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Comicseite%0Anicht%0Averf%C3%BCgbar';
-
-                if (lowresPath) {
-                    previewImage.src = lowresPath;
-                } else {
-                    previewImage.src = placeholderUrl;
-                }
-                previewContainer.style.display = 'block';
+                showImagePreview(lowresPath); // NEU: Aufruf der zentralen Funktion
 
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
@@ -1859,6 +1907,24 @@ if (file_exists($headerPath)) {
                 resetForm();
                 showMessage('Bearbeitung abgebrochen.', 'info');
             });
+        });
+
+        // NEU: Event Listener für das Verlassen des ID-Feldes
+        comicIdInput.addEventListener('blur', function () {
+            // Nur ausführen, wenn das Feld editierbar ist (also im "Hinzufügen"-Modus)
+            if (this.readOnly) {
+                return;
+            }
+
+            const comicId = this.value.trim();
+
+            // Prüfen, ob eine gültige ID eingegeben wurde
+            if (comicId && /^\d{8}$/.test(comicId)) {
+                // Finde die passende Bilddatei aus der vorab geladenen Liste
+                const foundFile = availableLowresImages.find(file => file.startsWith(comicId + '.'));
+                const path = foundFile ? `../assets/comic_lowres/${foundFile}` : '';
+                showImagePreview(path);
+            }
         });
 
         comicEditForm.addEventListener('submit', function (event) {
@@ -1992,4 +2058,3 @@ if (file_exists($footerPath)) {
 } else {
     die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));
 }
-?>
