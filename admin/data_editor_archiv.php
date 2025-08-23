@@ -1288,6 +1288,25 @@ $additionalHeadContent = <<<EOT
             /*Fix Summernote backdrop Problem*/
             z-index: 99;
         }
+
+    /* NEU: Fix für Summernote Tooltip-Positionierung */
+    .note-tooltip {
+        /* Setzt die Breite auf einen sinnvollen Wert. */
+        width: auto !important;
+        /* Erzwingt, dass die Höhe sich am Inhalt orientiert. */
+        height: auto !important;
+        /* Setzt eine eventuell geerbte Mindesthöhe zurück, die den Container aufbläht. */
+        min-height: 0 !important;
+        /* Verhindert, dass der Tooltip nach links aus dem Bild wandert. */
+        left: auto !important;
+        right: auto !important;
+        /* KORREKTUR: Setzt eine normale Zeilenhöhe, um den vertikalen Versatz zu beheben. */
+        line-height: 1.2 !important;
+        /* Sorgt für einen kleinen Abstand zum Mauszeiger. */
+        padding: 5px;
+        white-space: nowrap;
+        /* Verhindert unerwünschten Zeilenumbruch im Tooltip. */
+    }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 EOT;
