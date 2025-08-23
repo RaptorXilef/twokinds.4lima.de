@@ -424,7 +424,7 @@ $jsonData = loadComicData($comicVarJsonPath, $debugMode);
 $imageIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
 $phpIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
 
-// Erstelle eine Master-Liste aller eindeutigen IDs aus allen Quellen
+// Erstelle eine Master-Liste aller eindeutiger IDs aus allen Quellen
 $allIds = array_unique(array_merge(array_keys($jsonData), $imageIds, $phpIds));
 sort($allIds); // Sortiere die Master-Liste
 
@@ -1369,6 +1369,25 @@ if (file_exists($headerPath)) {
     .note-modal-backdrop {
         z-index: 99;
     }
+
+    /* NEU: Fix für Summernote Tooltip-Positionierung */
+    .note-tooltip {
+        /* Setzt die Breite auf einen sinnvollen Wert. */
+        width: auto !important;
+        /* Erzwingt, dass die Höhe sich am Inhalt orientiert. */
+        height: auto !important;
+        /* Setzt eine eventuell geerbte Mindesthöhe zurück, die den Container aufbläht. */
+        min-height: 0 !important;
+        /* Verhindert, dass der Tooltip nach links aus dem Bild wandert. */
+        left: auto !important;
+        right: auto !important;
+        /* KORREKTUR: Setzt eine normale Zeilenhöhe, um den vertikalen Versatz zu beheben. */
+        line-height: 1.2 !important;
+        /* Sorgt für einen kleinen Abstand zum Mauszeiger. */
+        padding: 5px;
+        white-space: nowrap;
+        /* Verhindert unerwünschten Zeilenumbruch im Tooltip. */
+    }
 </style>
 
 <div class="admin-container">
@@ -1414,7 +1433,6 @@ if (file_exists($headerPath)) {
                         placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
 
-                <!-- KORREKTUR: Buttons haben jetzt Klassen statt IDs -->
                 <div class="button-group">
                     <button type="submit" class="save-form-button">Speichern</button>
                     <button type="button" class="cancel-form-button">Abbrechen</button>
@@ -1426,7 +1444,6 @@ if (file_exists($headerPath)) {
                         style="max-width: 100%; max-height: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
 
-                <!-- KORREKTUR: Zweites Button-Paar hat ebenfalls Klassen -->
                 <div class="button-group">
                     <button type="submit" class="save-form-button">Speichern</button>
                     <button type="button" class="cancel-form-button">Abbrechen</button>
@@ -1579,7 +1596,7 @@ if (file_exists($headerPath)) {
                                     </td>
                                     <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
                                     </td>
                                     <td><?php echo ($currentImageExistence['socialmedia'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
@@ -1623,7 +1640,6 @@ if (file_exists($headerPath)) {
         const comicNameEmptyCheckbox = document.getElementById('comic-name-empty-checkbox');
         const comicTranscriptTextarea = document.getElementById('comic-transcript');
         const comicChapterInput = document.getElementById('comic-chapter');
-        // KORREKTUR: Buttons über Klassen auswählen, um alle zu erfassen
         const saveButtons = document.querySelectorAll('.save-form-button');
         const cancelButtons = document.querySelectorAll('.cancel-form-button');
         const addComicButton = document.getElementById('add-new-comic-button');
@@ -1683,7 +1699,6 @@ if (file_exists($headerPath)) {
             comicNameInput.required = true;
             comicNameInput.disabled = false;
 
-            // KORREKTUR: Alle Speichern-Buttons anpassen
             saveButtons.forEach(button => {
                 button.textContent = 'Speichern';
                 button.classList.remove('edit');
@@ -1743,23 +1758,19 @@ if (file_exists($headerPath)) {
             }
 
             if (editButton) {
-                // LOGIK FÜR DIE BILDVORSCHAU
                 const row = editButton.closest('tr');
                 const lowresPath = row.dataset.lowresPath;
                 const previewContainer = document.getElementById('comic-image-preview-container');
                 const previewImage = document.getElementById('comic-image-preview');
                 const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Comicseite%0Anicht%0Averf%C3%BCgbar';
 
-                // Setze die Bildquelle: entweder der gefundene Pfad oder der Platzhalter
                 if (lowresPath) {
                     previewImage.src = lowresPath;
                 } else {
                     previewImage.src = placeholderUrl;
                 }
-                // Zeige den Vorschau-Container an
                 previewContainer.style.display = 'block';
 
-                // Bestehender Code zum Füllen des Formulars
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
@@ -1784,7 +1795,6 @@ if (file_exists($headerPath)) {
 
                 comicChapterInput.value = comicChapter;
 
-                // KORREKTUR: Alle Speichern-Buttons anpassen
                 saveButtons.forEach(button => {
                     button.textContent = 'Änderungen speichern';
                     button.classList.add('edit');
@@ -1829,7 +1839,6 @@ if (file_exists($headerPath)) {
 
         addComicButton.addEventListener('click', function () {
             resetForm();
-            // KORREKTUR: Alle Speichern-Buttons anpassen
             saveButtons.forEach(button => {
                 button.textContent = 'Hinzufügen';
                 button.classList.add('button');
@@ -1845,7 +1854,6 @@ if (file_exists($headerPath)) {
             formSection.scrollIntoView({ behavior: 'smooth' });
         });
 
-        // KORREKTUR: Event Listener für alle Abbrechen-Buttons
         cancelButtons.forEach(button => {
             button.addEventListener('click', function () {
                 resetForm();
@@ -1946,24 +1954,20 @@ if (file_exists($headerPath)) {
             });
         });
 
-        // Logik für den Ansicht-Umschalter
         toggleTranscriptViewButton.addEventListener('click', function () {
             isTranscriptRendered = !isTranscriptRendered;
             const allTranscripts = comicDataTable.querySelectorAll('.transcript-content');
 
             allTranscripts.forEach(cell => {
                 const rawHtml = cell.dataset.rawHtml;
-                const isExpanded = cell.dataset.isExpanded === 'true'; // Individuellen Zustand auslesen
+                const isExpanded = cell.dataset.isExpanded === 'true';
 
                 if (isTranscriptRendered) {
-                    // In den Render-Modus wechseln
                     cell.innerHTML = rawHtml;
                 } else {
-                    // Zurück in den Code-Modus wechseln
                     cell.textContent = rawHtml;
                 }
 
-                // Zustand (ein-/ausgeklappt) wiederherstellen, der für die Zelle gilt
                 cell.classList.toggle('transcript-expanded', isExpanded);
                 cell.classList.toggle('transcript-collapsed', !isExpanded);
             });
@@ -1972,7 +1976,6 @@ if (file_exists($headerPath)) {
             localStorage.setItem('transcriptViewMode', isTranscriptRendered ? 'rendered' : 'source');
         });
 
-        // Gespeicherte Ansicht beim Laden wiederherstellen
         const savedViewMode = localStorage.getItem('transcriptViewMode');
         if (savedViewMode === 'rendered') {
             setTimeout(() => toggleTranscriptViewButton.click(), 0);
