@@ -273,7 +273,7 @@ function findLowresImagePath(string $comicId, string $baseDir, bool $debugMode):
 }
 
 /**
- * NEU: Holt alle Dateinamen aus dem lowres-Verzeichnis für die Live-Vorschau im JavaScript.
+ * Holt alle Dateinamen aus dem lowres-Verzeichnis für die Live-Vorschau im JavaScript.
  * @param string $lowresDir Der absolute Pfad zum lowres-Verzeichnis.
  * @param bool $debugMode Debug-Modus Flag.
  * @return array Eine Liste aller gültigen Bild-Dateinamen.
@@ -1658,7 +1658,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
 <script>
-    // NEU: Übergebe die PHP-Variable an JavaScript
     const availableLowresImages = <?php echo json_encode($lowresImageFiles); ?>;
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -1713,13 +1712,26 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
                             if (pastedData) {
                                 e.preventDefault();
-                                let cleanedData = pastedData.replace(/<!--[\s\S]*?-->/g, '');
+                                let cleanedData = pastedData;
+
+                                // 1. Kommentare und Word-spezifische XML-Tags entfernen
+                                cleanedData = cleanedData.replace(/<!--[\s\S]*?-->/g, '');
                                     cleanedData = cleanedData.replace(/<\/?\w+:[^>]*>/g, '');
-                                cleanedData = cleanedData.replace(/\s(class|style|lang|dir|width|height|face|size|start|type|value|id|name|title)=["'][^"']*["']/gi, '');
+
+                                // 2. Alle Attribute von p-Tags entfernen (zielt auf MsoNormal, style etc.)
+                                cleanedData = cleanedData.replace(/<p[^>]*>/gi, '<p>');
+
+                                // 3. Veraltete Tags normalisieren
                                 cleanedData = cleanedData.replace(/<b\s*>/gi, '<strong>').replace(/<\/b\s*>/gi, '</strong>');
                                 cleanedData = cleanedData.replace(/<i\s*>/gi, '<em>').replace(/<\/i\s*>/gi, '</em>');
+
+                                // 4. Überflüssige Spans entfernen
                                 cleanedData = cleanedData.replace(/<\/?span[^>]*>/gi, '');
-                                cleanedData = cleanedData.replace(/<[^\/>][^>]*>\s*<\/[^>]+>/g, '');
+
+                                // 5. Leere p-Tags und alle Arten von Zeilenumbrüchen entfernen
+                                cleanedData = cleanedData.replace(/<p>\s*(&nbsp;)?\s*<\/p>/gi, '');
+                                cleanedData = cleanedData.replace(/(\r\n|\n|\r)/gm, "");
+
                                 $('#comic-transcript').summernote('pasteHTML', cleanedData);
                             }
                         }
@@ -1773,10 +1785,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
         }
 
-        /**
-         * NEU: Zeigt das Vorschaubild basierend auf einem Pfad an.
-         * @param {string} imagePath Der relative Pfad zum Bild.
-         */
         function showImagePreview(imagePath) {
             const previewContainer = document.getElementById('comic-image-preview-container');
             const previewImage = document.getElementById('comic-image-preview');
@@ -1817,7 +1825,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             if (editButton) {
                 const row = editButton.closest('tr');
                 const lowresPath = row.dataset.lowresPath;
-                showImagePreview(lowresPath); // NEU: Aufruf der zentralen Funktion
+                showImagePreview(lowresPath);
 
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
@@ -1909,18 +1917,14 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             });
         });
 
-        // NEU: Event Listener für das Verlassen des ID-Feldes
         comicIdInput.addEventListener('blur', function () {
-            // Nur ausführen, wenn das Feld editierbar ist (also im "Hinzufügen"-Modus)
             if (this.readOnly) {
                 return;
             }
 
             const comicId = this.value.trim();
 
-            // Prüfen, ob eine gültige ID eingegeben wurde
             if (comicId && /^\d{8}$/.test(comicId)) {
-                // Finde die passende Bilddatei aus der vorab geladenen Liste
                 const foundFile = availableLowresImages.find(file => file.startsWith(comicId + '.'));
                 const path = foundFile ? `../assets/comic_lowres/${foundFile}` : '';
                 showImagePreview(path);
@@ -2058,3 +2062,4 @@ if (file_exists($footerPath)) {
 } else {
     die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));
 }
+?>
