@@ -1711,6 +1711,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                 <th>Name</th>
                                 <th>Transkript</th>
                                 <th>Kapitel</th>
+                                <th>URL</th>
                                 <th>Lowres</th>
                                 <th>Hires</th>
                                 <th>Thumbnails</th>
@@ -1724,6 +1725,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                 $transcriptContent = trim(strip_tags($data['transcript'], '<br>'));
                                 $isTranscriptEffectivelyEmpty = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
+                                $isUrlMissing = empty($data['url_originalbild']);
                                 $currentImageExistence = $imageExistenceReport[$id] ?? [];
                                 ?>
                                 <tr>
@@ -1735,6 +1737,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                     <td><?php echo $isTranscriptEffectivelyEmpty ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
                                     </td>
                                     <td><?php echo $isChapterMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
+                                    </td>
+                                    <td><?php echo $isUrlMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
                                     </td>
                                     <td><?php echo ($currentImageExistence['lowres'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
@@ -2027,7 +2031,12 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 // NEUE LOGIK: Wenn der gespeicherte Dateiname leer ist,
                 // fülle das Feld standardmäßig mit der Comic-ID.
                 if (urlOriginalbild.trim() === '') {
-                    urlOriginalbild = comicId;
+                    const originalUrlData = row.dataset.urlOriginalbild.trim();
+                    if (originalUrlData === '') {
+                        urlOriginalbild = comicId;
+                    } else {
+                        urlOriginalbild = originalUrlData;
+                    }
                 }
 
                 updateOriginalImagePreview(urlOriginalbild);
