@@ -1444,6 +1444,58 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         white-space: nowrap;
         /* Verhindert unerwünschten Zeilenumbruch im Tooltip. */
     }
+
+    /* NEUE STYLES FÜR BUTTON-TOGGLE */
+    .button-toggle-group {
+        display: flex;
+        gap: 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow: hidden;
+        display: inline-flex;
+    }
+
+    .button-toggle {
+        padding: 8px 15px;
+        border: none;
+        background-color: #f0f0f0;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        color: #333;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .button-toggle:not(:last-child) {
+        border-right: 1px solid #ccc;
+    }
+
+    .button-toggle:hover {
+        background-color: #e0e0e0;
+    }
+
+    .button-toggle.active {
+        background-color: #007bff;
+        color: white;
+    }
+
+    body.theme-night .button-toggle-group {
+        border-color: #007bb5;
+    }
+
+    body.theme-night .button-toggle {
+        background-color: #005a7e;
+        color: #fff;
+        border-right-color: #007bb5;
+    }
+
+    body.theme-night .button-toggle:hover {
+        background-color: #006690;
+    }
+
+    body.theme-night .button-toggle.active {
+        background-color: #007bff;
+    }
 </style>
 
 <div class="admin-container">
@@ -1501,14 +1553,26 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                     <button type="button" class="cancel-form-button">Abbrechen</button>
                 </div>
 
-                <div id="comic-image-preview-container" style="display: none; margin-top: 20px; text-align: center;">
+                <!-- NEUE Button-Gruppe -->
+                <div class="form-group">
+                    <label>Anzeige-Modus:</label>
+                    <div id="view-toggle-buttons" class="button-toggle-group">
+                        <button type="button" class="button-toggle active" data-view="preview">Nur Vorschau</button>
+                        <button type="button" class="button-toggle" data-view="original">Nur Original</button>
+                        <button type="button" class="button-toggle" data-view="both">Beide</button>
+                    </div>
+                </div>
+
+                <div id="comic-image-preview-container" data-has-image="false"
+                    style="margin-top: 20px; text-align: center;">
                     <label style="display: block; margin-bottom: 10px; font-weight: bold;">Vorschaubild:</label>
                     <img id="comic-image-preview" src="" alt="Vorschau des Comics"
                         style="max-width: 100%; max-height: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
 
                 <!-- NEUER PREVIEW-CONTAINER -->
-                <div id="original-image-preview-container" style="display: none; margin-top: 20px; text-align: center;">
+                <div id="original-image-preview-container" data-has-image="false"
+                    style="margin-top: 20px; text-align: center;">
                     <label style="display: block; margin-bottom: 10px; font-weight: bold;">Originalbild (von
                         URL):</label>
                     <img id="original-image-preview" src="" alt="Vorschau des Originalbilds"
@@ -1737,6 +1801,13 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
         let summernoteInitialized = false;
 
+        // NEU: Elemente für die Ansicht-Umschaltung
+        const viewToggleButtons = document.getElementById('view-toggle-buttons');
+        const previewContainer = document.getElementById('comic-image-preview-container');
+        const originalPreviewContainer = document.getElementById('original-image-preview-container');
+        let currentView = 'preview'; // Mögliche Werte: 'preview', 'original', 'both'
+
+
         function initializeSummernote() {
             if (!summernoteInitialized) {
                 $('#comic-transcript').summernote({
@@ -1759,25 +1830,14 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                             if (pastedData) {
                                 e.preventDefault();
                                 let cleanedData = pastedData;
-
-                                // 1. Kommentare und Word-spezifische XML-Tags entfernen
                                 cleanedData = cleanedData.replace(/<!--[\s\S]*?-->/g, '');
                                     cleanedData = cleanedData.replace(/<\/?\w+:[^>]*>/g, '');
-
-                                // 2. Alle Attribute von p-Tags entfernen (zielt auf MsoNormal, style etc.)
                                 cleanedData = cleanedData.replace(/<p[^>]*>/gi, '<p>');
-
-                                // 3. Veraltete Tags normalisieren
                                 cleanedData = cleanedData.replace(/<b\s*>/gi, '<strong>').replace(/<\/b\s*>/gi, '</strong>');
                                 cleanedData = cleanedData.replace(/<i\s*>/gi, '<em>').replace(/<\/i\s*>/gi, '</em>');
-
-                                // 4. Überflüssige Spans entfernen
                                 cleanedData = cleanedData.replace(/<\/?span[^>]*>/gi, '');
-
-                                // 5. Leere p-Tags und alle Arten von Zeilenumbrüchen entfernen
                                 cleanedData = cleanedData.replace(/<p>\s*(&nbsp;)?\s*<\/p>/gi, '');
                                 cleanedData = cleanedData.replace(/(\r\n|\n|\r)/gm, "");
-
                                 $('#comic-transcript').summernote('pasteHTML', cleanedData);
                             }
                         }
@@ -1786,6 +1846,25 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 summernoteInitialized = true;
             }
         }
+
+        // NEU: Funktion zur Steuerung der Sichtbarkeit der Container
+        function updateViewVisibility() {
+            const hasPreviewImage = previewContainer.dataset.hasImage === 'true';
+            const hasOriginalImage = originalPreviewContainer.dataset.hasImage === 'true';
+
+            previewContainer.style.display = (hasPreviewImage && (currentView === 'preview' || currentView === 'both')) ? 'block' : 'none';
+            originalPreviewContainer.style.display = (hasOriginalImage && (currentView === 'original' || currentView === 'both')) ? 'block' : 'none';
+        }
+
+        // NEU: Funktion zum Setzen der aktiven Ansicht
+        function setView(newView) {
+            currentView = newView;
+            viewToggleButtons.querySelectorAll('.button-toggle').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === newView);
+            });
+            updateViewVisibility();
+        }
+
 
         function resetForm() {
             comicEditForm.reset();
@@ -1812,17 +1891,9 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
             comicChapterInput.value = '';
 
-            const previewContainer = document.getElementById('comic-image-preview-container');
-            if (previewContainer) {
-                previewContainer.style.display = 'none';
-                document.getElementById('comic-image-preview').src = '';
-            }
-
-            const originalPreviewContainer = document.getElementById('original-image-preview-container');
-            if (originalPreviewContainer) {
-                originalPreviewContainer.style.display = 'none';
-                document.getElementById('original-image-preview').src = '';
-            }
+            previewContainer.dataset.hasImage = 'false';
+            originalPreviewContainer.dataset.hasImage = 'false';
+            setView('preview');
         }
 
         function showMessage(msg, type) {
@@ -1840,38 +1911,39 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         }
 
         function showImagePreview(imagePath) {
-            const previewContainer = document.getElementById('comic-image-preview-container');
             const previewImage = document.getElementById('comic-image-preview');
             const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Comicseite%0Anicht%0Averf%C3%BCgbar';
 
+            previewContainer.dataset.hasImage = 'true'; // Wir zeigen immer etwas an (Bild oder Platzhalter)
             if (imagePath) {
                 previewImage.src = imagePath;
             } else {
                 previewImage.src = placeholderUrl;
             }
-            previewContainer.style.display = 'block';
+            updateViewVisibility();
         }
 
         function updateOriginalImagePreview(filename) {
-            const previewContainer = document.getElementById('original-image-preview-container');
             const previewImage = document.getElementById('original-image-preview');
             const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Originalbild%0Anicht%0Averf%C3%BCgbar';
 
             if (!filename || filename.trim() === '') {
-                previewContainer.style.display = 'none';
+                originalPreviewContainer.dataset.hasImage = 'false';
                 previewImage.src = '';
+                updateViewVisibility();
                 return;
             }
 
-            previewContainer.style.display = 'block';
-            previewImage.src = placeholderUrl; // Start with placeholder
+            originalPreviewContainer.dataset.hasImage = 'true';
+            previewImage.src = placeholderUrl;
+            updateViewVisibility();
 
             let imageFound = false;
 
             function tryLoadImage(index) {
                 if (index >= imageExtensions.length || imageFound) {
                     if (!imageFound) {
-                        previewImage.src = placeholderUrl; // Keep placeholder if none found
+                        previewImage.src = placeholderUrl;
                     }
                     return;
                 }
@@ -1892,10 +1964,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                         tryLoadImage(index + 1);
                     }
                 };
-
                 img.src = url;
             }
-
             tryLoadImage(0);
         }
 
@@ -1925,12 +1995,14 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
             if (editButton) {
                 const row = editButton.closest('tr');
+
+                setView('preview'); // Standardansicht beim Öffnen
+
                 const lowresPath = row.dataset.lowresPath;
                 showImagePreview(lowresPath);
 
                 const urlOriginalbild = row.dataset.urlOriginalbild;
                 updateOriginalImagePreview(urlOriginalbild);
-
 
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
@@ -1999,6 +2071,14 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
         });
 
+        // NEU: Event Listener für die Umschalt-Buttons
+        viewToggleButtons.addEventListener('click', function (event) {
+            const button = event.target.closest('.button-toggle');
+            if (button && button.dataset.view) {
+                setView(button.dataset.view);
+            }
+        });
+
         addComicButton.addEventListener('click', function () {
             resetForm();
             saveButtons.forEach(button => {
@@ -2027,9 +2107,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             if (this.readOnly) {
                 return;
             }
-
             const comicId = this.value.trim();
-
             if (comicId && /^\d{8}$/.test(comicId)) {
                 const foundFile = availableLowresImages.find(file => file.startsWith(comicId + '.'));
                 const path = foundFile ? `../assets/comic_lowres/${foundFile}` : '';
@@ -2162,6 +2240,9 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         if (savedViewMode === 'rendered') {
             setTimeout(() => toggleTranscriptViewButton.click(), 0);
         }
+
+        // Initiales Ausblenden der Container, da anfangs kein Bild ausgewählt ist.
+        updateViewVisibility();
     });
 </script>
 
