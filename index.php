@@ -229,6 +229,11 @@ include __DIR__ . '/src/layout/header.php';
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
         </div>
+        <!-- NEU: Link zum Kopieren der URL mit spezieller Logik für die Index-Seite -->
+        <div class="permalink">
+            <a href="#" id="copy-comic-url" title="Klicke, um den Link zu dieser Comicseite zu kopieren">URL zur
+                aktuellen Seite kopieren</a>
+        </div>
     </div>
 
     <aside class="transcript">
@@ -238,6 +243,35 @@ include __DIR__ . '/src/layout/header.php';
         </div>
     </aside>
 </article>
+
+<!-- NEU: JavaScript zum Kopieren der URL für die Index-Seite -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const copyLink = document.getElementById('copy-comic-url');
+        if (copyLink) {
+            copyLink.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                // Die zu kopierende URL wird aus der PHP-Variable geholt, die die URL des neuesten Comics enthält.
+                const urlToCopy = '<?php echo $baseUrl . 'comic/' . $latestComicId . '.php'; ?>';
+                const originalText = this.textContent;
+
+                navigator.clipboard.writeText(urlToCopy).then(() => {
+                    this.textContent = 'Kopiert!';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Fehler beim Kopieren der URL: ', err);
+                    this.textContent = 'Fehler beim Kopieren';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
+                });
+            });
+        }
+    });
+</script>
 
 <?php
 // Binde den gemeinsamen Footer ein.

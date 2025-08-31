@@ -269,11 +269,10 @@ include __DIR__ . '/../layout/header.php';
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
         </div>
-        <!-- Link zur Lesezeichen-Seite (wie im Original verfügbar) -->
-        <div class="bookmark-control">
-            <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen.php" class="view-bookmarks-link">
-                Lesezeichen anzeigen
-            </a>
+        <!-- NEU: Link zum Kopieren der URL -->
+        <div class="permalink">
+            <a href="#" id="copy-comic-url" title="Klicke, um den Link zu dieser Comicseite zu kopieren">URL zur
+                aktuellen Seite kopieren</a>
         </div>
     </div>
 
@@ -284,6 +283,37 @@ include __DIR__ . '/../layout/header.php';
         </div>
     </aside>
 </article>
+
+<!-- NEU: JavaScript zum Kopieren der URL -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const copyLink = document.getElementById('copy-comic-url');
+        if (copyLink) {
+            copyLink.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                // Die zu kopierende URL wird direkt von der aktuellen Fenster-Location geholt.
+                const urlToCopy = window.location.href;
+                const originalText = this.textContent;
+
+                navigator.clipboard.writeText(urlToCopy).then(() => {
+                    // Visuelles Feedback für den Benutzer
+                    this.textContent = 'Kopiert!';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Fehler beim Kopieren der URL: ', err);
+                    // Fallback oder Fehlermeldung
+                    this.textContent = 'Fehler beim Kopieren';
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
+                });
+            });
+        }
+    });
+</script>
 
 <!-- Binde den gemeinsamen Footer ein. -->
 <?php include __DIR__ . '/../layout/footer.php'; ?>
