@@ -27,12 +27,14 @@ $currentComicId = $latestComicId;
 $comicTyp = '';
 $comicName = '';
 $comicTranscript = '';
+$urlOriginalbildFilename = '';
 $comicPreviewUrl = ''; // URL für das Vorschaubild, z.B. für Social Media Meta-Tags.
 
 if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
+    $urlOriginalbildFilename = $comicData[$currentComicId]['url_originalbild'] ?? '';
     // Die Preview-URL wird nun lokal aus dem 'comic_socialmedia'-Ordner geladen (relativ zum Projekt-Root).
     $rawComicPreviewPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
 
@@ -57,7 +59,6 @@ if (isset($comicData[$currentComicId])) {
 
 // === ANFANG DER ÄNDERUNG: Dynamische Suche nach "in translation"-Bildern ===
 // Definiere die Basis-Pfade und die Dateiendungen, nach denen gesucht werden soll.
-// Anmerkung: "git" wurde als Tippfehler angenommen und durch "gif" ersetzt.
 $inTranslationLowresBase = './assets/comic_lowres/in_translation';
 $inTranslationHiresBase = './assets/comic_hires/in_translation';
 $imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
@@ -126,8 +127,6 @@ if ($debugMode)
 
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
-// Konvertiere die Comic-ID (Datum) ins englische Format für den H1-Header (Original-Stil).
-$formattedDateEnglish = date('F d, Y', strtotime($currentComicId));
 
 // Die allgemeine Seitenbeschreibung, die in header.php verwendet wird.
 $siteDescription = 'Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.';
@@ -177,7 +176,7 @@ if ($debugMode)
 $additionalHeadContent = '
     <link rel="canonical" href="' . $baseUrl . '">
     <meta property="og:title" content="TwoKinds auf Deutsch - Startseite (Comic)">
-    <meta property="og:description" content="Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.">
+    <meta property="og:description" content="' . $siteDescription . '">
     <meta property="og:image" content="' . $absoluteComicPreviewUrl . '">
     <meta property="og:type" content="website">
     <meta property="og:url" content="' . $baseUrl . '">
@@ -207,10 +206,10 @@ include __DIR__ . '/src/layout/header.php';
         ?>
     </div>
 
-    <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
-    <a href="<?php echo htmlspecialchars($comicHiresPath); ?>" target="_blank" rel="noopener noreferrer">
-        <img src="<?php echo htmlspecialchars($comicImagePath); ?>" title="<?php echo htmlspecialchars($comicName); ?>"
-            alt="Comic Page">
+    <a id="comic-image-link" href="<?php echo htmlspecialchars($comicHiresPath); ?>" target="_blank"
+        rel="noopener noreferrer">
+        <img id="comic-image" src="<?php echo htmlspecialchars($comicImagePath); ?>"
+            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page">
     </a>
 
     <div class='comicnav bottomnav'>
@@ -237,7 +236,16 @@ include __DIR__ . '/src/layout/header.php';
     </div>
 
     <aside class="transcript">
-        <h2>Transkript</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <h2>Transkript</h2>
+            <?php if (!empty($urlOriginalbildFilename)): ?>
+                <a href="#" class="button" id="toggle-language-btn"
+                    data-german-src="<?php echo htmlspecialchars($comicImagePath); ?>"
+                    data-german-href="<?php echo htmlspecialchars($comicHiresPath); ?>"
+                    data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>">Seite auf englisch
+                    anzeigen</a>
+            <?php endif; ?>
+        </div>
         <div class="transcript-content">
             <?php echo $comicTranscript; ?>
         </div>
@@ -247,6 +255,7 @@ include __DIR__ . '/src/layout/header.php';
 <!-- NEU: JavaScript zum Kopieren der URL für die Index-Seite -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // URL Kopieren Logik
         const copyLink = document.getElementById('copy-comic-url');
         if (copyLink) {
             copyLink.addEventListener('click', function (event) {
@@ -255,19 +264,85 @@ include __DIR__ . '/src/layout/header.php';
                 // Die zu kopierende URL wird aus der PHP-Variable geholt, die die URL des neuesten Comics enthält.
                 const urlToCopy = '<?php echo $baseUrl . 'comic/' . $latestComicId . '.php'; ?>';
                 const originalText = this.textContent;
-
                 navigator.clipboard.writeText(urlToCopy).then(() => {
                     this.textContent = 'Kopiert!';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                    }, 2000);
+                    setTimeout(() => { this.textContent = originalText; }, 2000);
                 }).catch(err => {
                     console.error('Fehler beim Kopieren der URL: ', err);
                     this.textContent = 'Fehler beim Kopieren';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                    }, 2000);
+                    setTimeout(() => { this.textContent = originalText; }, 2000);
                 });
+            });
+        }
+
+        // Sprache Umschalten Logik
+        const toggleBtn = document.getElementById('toggle-language-btn');
+        if (toggleBtn) {
+            const comicLink = document.getElementById('comic-image-link');
+            const comicImage = document.getElementById('comic-image');
+            let isGerman = true;
+            let englishSrc = '';
+            let englishHref = '';
+
+            const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
+            const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
+            function findEnglishUrl(filename) {
+                return new Promise((resolve, reject) => {
+                    let found = false;
+                    let attempts = 0;
+                    imageExtensions.forEach(ext => {
+                        const url = originalImageUrlBase + filename + '.' + ext;
+                        const img = new Image();
+                        img.onload = () => {
+                            if (!found) {
+                                found = true;
+                                resolve(url);
+                            }
+                        };
+                        img.onerror = () => {
+                            attempts++;
+                            if (attempts === imageExtensions.length && !found) {
+                                reject('Kein englisches Bild gefunden');
+                            }
+                        };
+                        img.src = url;
+                    });
+                });
+            }
+
+            toggleBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (isGerman) {
+                    // Auf Englisch umschalten
+                    if (englishSrc) {
+                        comicImage.src = englishSrc;
+                        comicLink.href = englishHref;
+                        toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                        isGerman = false;
+                    } else {
+                        const originalText = toggleBtn.textContent;
+                        toggleBtn.textContent = 'Lade...';
+                        findEnglishUrl(toggleBtn.dataset.englishFilename).then(foundUrl => {
+                            englishSrc = foundUrl;
+                            englishHref = foundUrl; // Für Hi-Res nehmen wir dieselbe URL
+                            comicImage.src = englishSrc;
+                            comicLink.href = englishHref;
+                            toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                            isGerman = false;
+                        }).catch(error => {
+                            console.error(error);
+                            toggleBtn.textContent = 'Original nicht gefunden';
+                            setTimeout(() => { toggleBtn.textContent = originalText; }, 2000);
+                        });
+                    }
+                } else {
+                    // Zurück auf Deutsch umschalten
+                    comicImage.src = toggleBtn.dataset.germanSrc;
+                    comicLink.href = toggleBtn.dataset.germanHref;
+                    toggleBtn.textContent = 'Seite auf englisch anzeigen';
+                    isGerman = true;
+                }
             });
         }
     });

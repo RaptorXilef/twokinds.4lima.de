@@ -32,6 +32,7 @@ $currentComicId = basename($_SERVER['SCRIPT_FILENAME'], '.php');
 $comicTyp = '';
 $comicName = '';
 $comicTranscript = '';
+$urlOriginalbildFilename = ''; // NEU: Initialisieren der Variable
 $socialMediaPreviewUrl = ''; // URL für Social Media Vorschaubild.
 $bookmarkThumbnailUrl = ''; // URL für Lesezeichen-Vorschaubild.
 
@@ -44,6 +45,7 @@ if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
+    $urlOriginalbildFilename = $comicData[$currentComicId]['url_originalbild'] ?? ''; // NEU: Variable aus JSON lesen
 
     // --- LOGIK FÜR SOCIAL MEDIA VORSCHAUBILD ---
     $rawSocialPreviewPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
@@ -253,9 +255,10 @@ include __DIR__ . '/../layout/header.php';
     </div>
 
     <!-- Haupt-Comic-Bild mit Links zur Hi-Res-Version. -->
-    <a href="<?php echo htmlspecialchars($comicHiresPath); ?>" target="_blank" rel="noopener noreferrer">
-        <img src="<?php echo htmlspecialchars($comicImagePath); ?>" title="<?php echo htmlspecialchars($comicName); ?>"
-            alt="Comic Page">
+    <a id="comic-image-link" href="<?php echo htmlspecialchars($comicHiresPath); ?>" target="_blank"
+        rel="noopener noreferrer">
+        <img id="comic-image" src="<?php echo htmlspecialchars($comicImagePath); ?>"
+            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page">
     </a>
 
     <div class='comicnav bottomnav'>
@@ -269,7 +272,6 @@ include __DIR__ . '/../layout/header.php';
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
         </div>
-        <!-- NEU: Link zum Kopieren der URL -->
         <div class="permalink">
             <a href="#" id="copy-comic-url" title="Klicke, um den Link zu dieser Comicseite zu kopieren">URL zur
                 aktuellen Seite kopieren</a>
@@ -277,7 +279,17 @@ include __DIR__ . '/../layout/header.php';
     </div>
 
     <aside class="transcript">
-        <h2>Transkript</h2>
+        <!-- NEUE STRUKTUR: Flex-Container für Überschrift und Button -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <h2>Transkript</h2>
+            <?php if (!empty($urlOriginalbildFilename)): ?>
+                <a href="#" class="button" id="toggle-language-btn"
+                    data-german-src="<?php echo htmlspecialchars($comicImagePath); ?>"
+                    data-german-href="<?php echo htmlspecialchars($comicHiresPath); ?>"
+                    data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>">Seite auf englisch
+                    anzeigen</a>
+            <?php endif; ?>
+        </div>
         <div class="transcript-content">
             <?php echo $comicTranscript; ?>
         </div>
@@ -287,29 +299,93 @@ include __DIR__ . '/../layout/header.php';
 <!-- NEU: JavaScript zum Kopieren der URL -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // URL Kopieren Logik
         const copyLink = document.getElementById('copy-comic-url');
         if (copyLink) {
             copyLink.addEventListener('click', function (event) {
                 event.preventDefault();
-
-                // Die zu kopierende URL wird direkt von der aktuellen Fenster-Location geholt.
                 const urlToCopy = window.location.href;
                 const originalText = this.textContent;
-
                 navigator.clipboard.writeText(urlToCopy).then(() => {
-                    // Visuelles Feedback für den Benutzer
                     this.textContent = 'Kopiert!';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                    }, 2000);
+                    setTimeout(() => { this.textContent = originalText; }, 2000);
                 }).catch(err => {
                     console.error('Fehler beim Kopieren der URL: ', err);
                     // Fallback oder Fehlermeldung
                     this.textContent = 'Fehler beim Kopieren';
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                    }, 2000);
+                    setTimeout(() => { this.textContent = originalText; }, 2000);
                 });
+            });
+        }
+
+        // Sprache Umschalten Logik
+        const toggleBtn = document.getElementById('toggle-language-btn');
+        if (toggleBtn) {
+            const comicLink = document.getElementById('comic-image-link');
+            const comicImage = document.getElementById('comic-image');
+            let isGerman = true;
+            let englishSrc = '';
+            let englishHref = '';
+
+            const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
+            const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
+            function findEnglishUrl(filename) {
+                return new Promise((resolve, reject) => {
+                    let found = false;
+                    let attempts = 0;
+                    imageExtensions.forEach(ext => {
+                        const url = originalImageUrlBase + filename + '.' + ext;
+                        const img = new Image();
+                        img.onload = () => {
+                            if (!found) {
+                                found = true;
+                                resolve(url);
+                            }
+                        };
+                        img.onerror = () => {
+                            attempts++;
+                            if (attempts === imageExtensions.length && !found) {
+                                reject('Kein englisches Bild gefunden');
+                            }
+                        };
+                        img.src = url;
+                    });
+                });
+            }
+
+            toggleBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (isGerman) {
+                    // Auf Englisch umschalten
+                    if (englishSrc) {
+                        comicImage.src = englishSrc;
+                        comicLink.href = englishHref;
+                        toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                        isGerman = false;
+                    } else {
+                        const originalText = toggleBtn.textContent;
+                        toggleBtn.textContent = 'Lade...';
+                        findEnglishUrl(toggleBtn.dataset.englishFilename).then(foundUrl => {
+                            englishSrc = foundUrl;
+                            englishHref = foundUrl; // Für Hi-Res nehmen wir dieselbe URL
+                            comicImage.src = englishSrc;
+                            comicLink.href = englishHref;
+                            toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                            isGerman = false;
+                        }).catch(error => {
+                            console.error(error);
+                            toggleBtn.textContent = 'Original nicht gefunden';
+                            setTimeout(() => { toggleBtn.textContent = originalText; }, 2000);
+                        });
+                    }
+                } else {
+                    // Zurück auf Deutsch umschalten
+                    comicImage.src = toggleBtn.dataset.germanSrc;
+                    comicLink.href = toggleBtn.dataset.germanHref;
+                    toggleBtn.textContent = 'Seite auf englisch anzeigen';
+                    isGerman = true;
+                }
             });
         }
     });
