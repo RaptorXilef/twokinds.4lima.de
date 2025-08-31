@@ -233,6 +233,14 @@ $robotsContent = 'noindex, follow';
 include __DIR__ . '/../layout/header.php';
 ?>
 
+<style>
+    /* Passt die Größe des Comic-Bildes an die Containerbreite an */
+    #comic-image {
+        width: 100%;
+        height: auto;
+    }
+</style>
+
 <article class="comic">
     <header style="position: relative;">
         <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->

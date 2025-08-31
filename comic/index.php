@@ -194,6 +194,14 @@ $robotsContent = 'noindex, follow';
 include __DIR__ . '/../src/layout/header.php';
 ?>
 
+<style>
+    /* Passt die Größe des Comic-Bildes an die Containerbreite an */
+    #comic-image {
+        width: 100%;
+        height: auto;
+    }
+</style>
+
 <article class="comic">
     <header>
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:

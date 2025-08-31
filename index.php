@@ -188,6 +188,14 @@ $viewportContent = 'width=1099'; // Konsistent mit Comic-Seiten für das Design.
 include __DIR__ . '/src/layout/header.php';
 ?>
 
+<style>
+    /* Passt die Größe des Comic-Bildes an die Containerbreite an */
+    #comic-image {
+        width: 100%;
+        height: auto;
+    }
+</style>
+
 <article class="comic">
     <header>
         <!-- H1-Tag im Format des Originals, zeigt den Titel des neuesten Comics. -->
