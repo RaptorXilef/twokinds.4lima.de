@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
 
     if (move_uploaded_file($file['tmp_name'], $tempFilePath)) {
         list($width, $height) = getimagesize($tempFilePath);
-        $targetDir = ($width >= 1000 && $height >= 1000) ? $uploadHiresDir : $uploadLowresDir;
+        $targetDir = ($width >= 1800 && $height >= 1000) ? $uploadHiresDir : $uploadLowresDir;
         $existingFile = findExistingFileInDir($shortName, $targetDir);
 
         if ($existingFile !== null) {

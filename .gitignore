@@ -15,6 +15,8 @@ assets/comic_lowres/*.webp
 !assets/comic_lowres/index.php
 !assets/comic_lowres/.htaccess
 
+assets/comic_lowres_png/*
+
 assets/comic_socialmedia/*.jpg
 assets/comic_socialmedia/*.png
 assets/comic_socialmedia/*gif

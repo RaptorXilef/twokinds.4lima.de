@@ -792,6 +792,13 @@
             "changefreq": "never"
         },
         {
+            "loc": "./comic/20040908.php",
+            "name": "20040908.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
             "loc": "./comic/20040910.php",
             "name": "20040910.php",
             "path": "./comic/",
@@ -4460,8 +4467,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20111021.php",
-            "name": "20111021.php",
+            "loc": "./comic/20111022.php",
+            "name": "20111022.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -4978,8 +4985,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20121224.php",
-            "name": "20121224.php",
+            "loc": "./comic/20121225.php",
+            "name": "20121225.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -5127,6 +5134,13 @@
         {
             "loc": "./comic/20130328.php",
             "name": "20130328.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20130401.php",
+            "name": "20130401.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -5587,8 +5601,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20131224.php",
-            "name": "20131224.php",
+            "loc": "./comic/20131225.php",
+            "name": "20131225.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -6315,6 +6329,13 @@
             "changefreq": "never"
         },
         {
+            "loc": "./comic/20151022.php",
+            "name": "20151022.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
             "loc": "./comic/20151023.php",
             "name": "20151023.php",
             "path": "./comic/",
@@ -7008,8 +7029,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20170706.php",
-            "name": "20170706.php",
+            "loc": "./comic/20170705.php",
+            "name": "20170705.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -7169,15 +7190,15 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20171108.php",
-            "name": "20171108.php",
+            "loc": "./comic/20171107.php",
+            "name": "20171107.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20171111.php",
-            "name": "20171111.php",
+            "loc": "./comic/20171110.php",
+            "name": "20171110.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -7379,8 +7400,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20180618.php",
-            "name": "20180618.php",
+            "loc": "./comic/20180619.php",
+            "name": "20180619.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -8331,29 +8352,29 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20211121.php",
-            "name": "20211121.php",
+            "loc": "./comic/20211120.php",
+            "name": "20211120.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20211201.php",
-            "name": "20211201.php",
+            "loc": "./comic/20211130.php",
+            "name": "20211130.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20211205.php",
-            "name": "20211205.php",
+            "loc": "./comic/20211204.php",
+            "name": "20211204.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20211211.php",
-            "name": "20211211.php",
+            "loc": "./comic/20211210.php",
+            "name": "20211210.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -8534,36 +8555,36 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20221113.php",
-            "name": "20221113.php",
+            "loc": "./comic/20221112.php",
+            "name": "20221112.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20221203.php",
-            "name": "20221203.php",
+            "loc": "./comic/20221202.php",
+            "name": "20221202.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20221231.php",
-            "name": "20221231.php",
+            "loc": "./comic/20221230.php",
+            "name": "20221230.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20230104.php",
-            "name": "20230104.php",
+            "loc": "./comic/20230103.php",
+            "name": "20230103.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20230106.php",
-            "name": "20230106.php",
+            "loc": "./comic/20230105.php",
+            "name": "20230105.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -8599,6 +8620,13 @@
         {
             "loc": "./comic/20230208.php",
             "name": "20230208.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20230215.php",
+            "name": "20230215.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -8688,8 +8716,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20230517.php",
-            "name": "20230517.php",
+            "loc": "./comic/20230518.php",
+            "name": "20230518.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -8772,8 +8800,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20230909.php",
-            "name": "20230909.php",
+            "loc": "./comic/20230914.php",
+            "name": "20230914.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -8842,8 +8870,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20240117.php",
-            "name": "20240117.php",
+            "loc": "./comic/20240118.php",
+            "name": "20240118.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -8954,8 +8982,8 @@
             "changefreq": "never"
         },
         {
-            "loc": "./comic/20241218.php",
-            "name": "20241218.php",
+            "loc": "./comic/20241219.php",
+            "name": "20241219.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"
@@ -9089,6 +9117,48 @@
         {
             "loc": "./comic/20250604.php",
             "name": "20250604.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20250622.php",
+            "name": "20250622.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20250627.php",
+            "name": "20250627.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20250715.php",
+            "name": "20250715.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20250721.php",
+            "name": "20250721.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20250725.php",
+            "name": "20250725.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
+            "loc": "./comic/20250810.php",
+            "name": "20250810.php",
             "path": "./comic/",
             "priority": 0.8,
             "changefreq": "never"

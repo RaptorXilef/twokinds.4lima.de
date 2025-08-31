@@ -143,6 +143,7 @@ function saveComicDataAndReturnAll(string $path, array $newDataSubset, array $de
     $existingData = loadComicData($path, $debugMode);
 
     foreach ($newDataSubset as $id => $data) {
+        // Stelle sicher, dass der neue Eintrag alle Felder hat
         $existingData[$id] = $data;
     }
 
@@ -369,6 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         $name = isset($pageData['comic_name']) ? trim($pageData['comic_name']) : '';
         $transcript = isset($pageData['comic_transcript']) ? $pageData['comic_transcript'] : '';
         $chapter = $pageData['comic_chapter'] ?? '';
+        $urlOriginalbild = isset($pageData['comic_url_originalbild']) ? trim($pageData['comic_url_originalbild']) : '';
 
         if ($chapter === '') {
             $chapter = null;
@@ -385,7 +387,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
                 'name' => $name,
                 'transcript' => $transcript,
                 'chapter' => $chapter,
-                'datum' => $comicId
+                'datum' => $comicId,
+                'url_originalbild' => $urlOriginalbild
             ]
         ];
 
@@ -404,7 +407,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
 
             foreach ($allFileIds as $id) {
                 if (!isset($completeDataForCalc[$id])) {
-                    $completeDataForCalc[$id] = ['type' => '', 'name' => '', 'transcript' => '', 'chapter' => null, 'datum' => $id];
+                    $completeDataForCalc[$id] = ['type' => '', 'name' => '', 'transcript' => '', 'chapter' => null, 'datum' => $id, 'url_originalbild' => ''];
                 }
             }
 
@@ -470,8 +473,14 @@ foreach ($allIds as $id) {
         'name' => '',
         'transcript' => '',
         'chapter' => null,
-        'datum' => $id
+        'datum' => $id,
+        'url_originalbild' => ''
     ];
+    // Stelle sicher, dass 'url_originalbild' immer existiert
+    if (!isset($fullComicData[$id]['url_originalbild'])) {
+        $fullComicData[$id]['url_originalbild'] = '';
+    }
+
 
     // Füge die Quellen-Information hinzu
     $sources = [];
@@ -1150,6 +1159,11 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
     }
 
     /* Green */
+    .source-url {
+        background-color: #9f58d1;
+    }
+
+    /* Purple */
 
     body.theme-night .source-json {
         background-color: #5a6268;
@@ -1163,11 +1177,16 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         background-color: #1e7e34;
     }
 
+    body.theme-night .source-url {
+        background-color: #8a48b9;
+    }
+
     .marker-legend {
         display: flex;
         gap: 10px;
         align-items: center;
         font-size: 0.9em;
+        flex-wrap: wrap;
     }
 
     .marker-legend .source-marker {
@@ -1469,6 +1488,13 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                     <input type="text" id="comic-chapter" name="comic_chapter"
                         placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
+                <!-- NEUES FELD -->
+                <div class="form-group">
+                    <label for="comic-url-originalbild">Originalbild Dateiname (von cdn.twokinds.keenspot.com):</label>
+                    <input type="text" id="comic-url-originalbild" name="comic_url_originalbild"
+                        placeholder="z.B. 20250315 (ohne Dateiendung)">
+                </div>
+
 
                 <div class="button-group">
                     <button type="submit" class="save-form-button">Speichern</button>
@@ -1480,6 +1506,15 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                     <img id="comic-image-preview" src="" alt="Vorschau des Comics"
                         style="max-width: 100%; max-height: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
+
+                <!-- NEUER PREVIEW-CONTAINER -->
+                <div id="original-image-preview-container" style="display: none; margin-top: 20px; text-align: center;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Originalbild (von
+                        URL):</label>
+                    <img id="original-image-preview" src="" alt="Vorschau des Originalbilds"
+                        style="max-width: 100%; max-height: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
 
                 <div class="button-group">
                     <button type="submit" class="save-form-button">Speichern</button>
@@ -1497,12 +1532,13 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
             <div class="table-controls">
                 <div class="marker-legend">
-                    <strong>Herkunft Eintrag - Legende:</strong>
+                    <strong>Herkunft:</strong>
                     <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
                     <span class="source-marker source-image"
-                        title="Mindestens eine Bilddatei existiert in comic_hires, comic_lowres oder comic_thumbnails">Bild</span>
+                        title="Mindestens eine Bilddatei existiert lokal">Bild</span>
                     <span class="source-marker source-php"
                         title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
+                    <span class="source-marker source-url" title="Ein Originalbild ist via URL verknüpft">URL</span>
                 </div>
                 <button type="button" id="toggle-transcript-view" class="button"><i class="fas fa-eye"></i> HTML
                     rendern</button>
@@ -1534,10 +1570,12 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                 $isTranscriptEffectivelyEmpty = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
+                                $urlOriginalbildFilename = $data['url_originalbild'] ?? '';
                                 ?>
                                 <?php $lowresImagePath = findLowresImagePath($id, $comicLowresDirPath, $debugMode); ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
                                     data-lowres-path="<?php echo htmlspecialchars($lowresImagePath); ?>"
+                                    data-url-originalbild="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>"
                                     class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td class="comic-id-display">
                                         <?php echo htmlspecialchars($id); ?>
@@ -1553,6 +1591,10 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                             <?php if (in_array('php', $data['sources'])): ?>
                                                 <span class="source-marker source-php"
                                                     title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
+                                            <?php endif; ?>
+                                            <?php if (!empty($urlOriginalbildFilename)): ?>
+                                                <span class="source-marker source-url"
+                                                    title="Ein Originalbild ist via URL verknüpft">URL</span>
                                             <?php endif; ?>
                                         </div>
                                     </td>
@@ -1659,6 +1701,9 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
 <script>
     const availableLowresImages = <?php echo json_encode($lowresImageFiles); ?>;
+    const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
+    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
 
     document.addEventListener('DOMContentLoaded', function () {
         // Scrollen und Hervorheben beim Laden der Seite
@@ -1679,6 +1724,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         const comicNameEmptyCheckbox = document.getElementById('comic-name-empty-checkbox');
         const comicTranscriptTextarea = document.getElementById('comic-transcript');
         const comicChapterInput = document.getElementById('comic-chapter');
+        const comicUrlOriginalbildInput = document.getElementById('comic-url-originalbild');
         const saveButtons = document.querySelectorAll('.save-form-button');
         const cancelButtons = document.querySelectorAll('.cancel-form-button');
         const addComicButton = document.getElementById('add-new-comic-button');
@@ -1751,6 +1797,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             comicNameInput.required = true;
             comicNameInput.disabled = false;
 
+            comicUrlOriginalbildInput.value = '';
+
             saveButtons.forEach(button => {
                 button.textContent = 'Speichern';
                 button.classList.remove('edit');
@@ -1768,6 +1816,12 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             if (previewContainer) {
                 previewContainer.style.display = 'none';
                 document.getElementById('comic-image-preview').src = '';
+            }
+
+            const originalPreviewContainer = document.getElementById('original-image-preview-container');
+            if (originalPreviewContainer) {
+                originalPreviewContainer.style.display = 'none';
+                document.getElementById('original-image-preview').src = '';
             }
         }
 
@@ -1796,6 +1850,53 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 previewImage.src = placeholderUrl;
             }
             previewContainer.style.display = 'block';
+        }
+
+        function updateOriginalImagePreview(filename) {
+            const previewContainer = document.getElementById('original-image-preview-container');
+            const previewImage = document.getElementById('original-image-preview');
+            const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Originalbild%0Anicht%0Averf%C3%BCgbar';
+
+            if (!filename || filename.trim() === '') {
+                previewContainer.style.display = 'none';
+                previewImage.src = '';
+                return;
+            }
+
+            previewContainer.style.display = 'block';
+            previewImage.src = placeholderUrl; // Start with placeholder
+
+            let imageFound = false;
+
+            function tryLoadImage(index) {
+                if (index >= imageExtensions.length || imageFound) {
+                    if (!imageFound) {
+                        previewImage.src = placeholderUrl; // Keep placeholder if none found
+                    }
+                    return;
+                }
+
+                const ext = imageExtensions[index];
+                const url = originalImageUrlBase + filename + '.' + ext;
+                const img = new Image();
+
+                img.onload = function () {
+                    if (!imageFound) {
+                        imageFound = true;
+                        previewImage.src = url;
+                    }
+                };
+
+                img.onerror = function () {
+                    if (!imageFound) {
+                        tryLoadImage(index + 1);
+                    }
+                };
+
+                img.src = url;
+            }
+
+            tryLoadImage(0);
         }
 
         comicNameEmptyCheckbox.addEventListener('change', function () {
@@ -1827,6 +1928,10 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 const lowresPath = row.dataset.lowresPath;
                 showImagePreview(lowresPath);
 
+                const urlOriginalbild = row.dataset.urlOriginalbild;
+                updateOriginalImagePreview(urlOriginalbild);
+
+
                 const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
@@ -1838,6 +1943,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 comicIdInput.readOnly = true;
                 comicTypeSelect.value = comicType;
                 comicNameInput.value = comicName;
+                comicUrlOriginalbildInput.value = urlOriginalbild;
 
                 if (comicName === '') {
                     comicNameEmptyCheckbox.checked = true;
@@ -1931,6 +2037,10 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
         });
 
+        comicUrlOriginalbildInput.addEventListener('blur', function () {
+            updateOriginalImagePreview(this.value.trim());
+        });
+
         comicEditForm.addEventListener('submit', function (event) {
             event.preventDefault();
 
@@ -1940,6 +2050,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             const comicName = comicNameInput.value.trim();
             const comicTranscript = summernoteInitialized ? $('#comic-transcript').summernote('code').trim() : comicTranscriptTextarea.value.trim();
             const comicChapter = comicChapterInput.value.trim();
+            const comicUrlOriginalbild = comicUrlOriginalbildInput.value.trim();
             const parsedChapter = parseFloat(comicChapter.replace(',', '.'));
 
             if (!comicId || !comicType || (!comicName && !comicNameEmptyCheckbox.checked) || (comicChapter !== '' && (isNaN(parsedChapter) || parsedChapter < 0))) {
@@ -1957,7 +2068,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 comic_type: comicType,
                 comic_name: comicName,
                 comic_transcript: comicTranscript,
-                comic_chapter: comicChapter
+                comic_chapter: comicChapter,
+                comic_url_originalbild: comicUrlOriginalbild
             };
 
             const dataToSend = {
