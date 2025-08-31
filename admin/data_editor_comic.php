@@ -1540,11 +1540,14 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                     <input type="text" id="comic-chapter" name="comic_chapter"
                         placeholder="Geben Sie eine Kapitelnummer ein (z.B. 0, 6, 6.1)">
                 </div>
-                <!-- NEUES FELD -->
                 <div class="form-group">
                     <label for="comic-url-originalbild">Originalbild Dateiname (von cdn.twokinds.keenspot.com):</label>
                     <input type="text" id="comic-url-originalbild" name="comic_url_originalbild"
                         placeholder="z.B. 20250315 (ohne Dateiendung)">
+                    <div class="form-group-checkbox">
+                        <input type="checkbox" id="comic-url-empty-checkbox">
+                        <label for="comic-url-empty-checkbox">Dateiname leer lassen</label>
+                    </div>
                 </div>
 
 
@@ -1553,7 +1556,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                     <button type="button" class="cancel-form-button">Abbrechen</button>
                 </div>
 
-                <!-- NEUE Button-Gruppe -->
                 <div class="form-group">
                     <label>Anzeige-Modus:</label>
                     <div id="view-toggle-buttons" class="button-toggle-group">
@@ -1570,7 +1572,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                         style="max-width: 100%; max-height: 100%; height: auto; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
 
-                <!-- NEUER PREVIEW-CONTAINER -->
                 <div id="original-image-preview-container" data-has-image="false"
                     style="margin-top: 20px; text-align: center;">
                     <label style="display: block; margin-bottom: 10px; font-weight: bold;">Originalbild (von
@@ -1789,6 +1790,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         const comicTranscriptTextarea = document.getElementById('comic-transcript');
         const comicChapterInput = document.getElementById('comic-chapter');
         const comicUrlOriginalbildInput = document.getElementById('comic-url-originalbild');
+        const comicUrlEmptyCheckbox = document.getElementById('comic-url-empty-checkbox');
         const saveButtons = document.querySelectorAll('.save-form-button');
         const cancelButtons = document.querySelectorAll('.cancel-form-button');
         const addComicButton = document.getElementById('add-new-comic-button');
@@ -1801,11 +1803,10 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
         let summernoteInitialized = false;
 
-        // NEU: Elemente für die Ansicht-Umschaltung
         const viewToggleButtons = document.getElementById('view-toggle-buttons');
         const previewContainer = document.getElementById('comic-image-preview-container');
         const originalPreviewContainer = document.getElementById('original-image-preview-container');
-        let currentView = 'preview'; // Mögliche Werte: 'preview', 'original', 'both'
+        let currentView = 'preview';
 
 
         function initializeSummernote() {
@@ -1847,7 +1848,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
         }
 
-        // NEU: Funktion zur Steuerung der Sichtbarkeit der Container
         function updateViewVisibility() {
             const hasPreviewImage = previewContainer.dataset.hasImage === 'true';
             const hasOriginalImage = originalPreviewContainer.dataset.hasImage === 'true';
@@ -1856,7 +1856,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             originalPreviewContainer.style.display = (hasOriginalImage && (currentView === 'original' || currentView === 'both')) ? 'block' : 'none';
         }
 
-        // NEU: Funktion zum Setzen der aktiven Ansicht
         function setView(newView) {
             currentView = newView;
             viewToggleButtons.querySelectorAll('.button-toggle').forEach(btn => {
@@ -1877,6 +1876,9 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             comicNameInput.disabled = false;
 
             comicUrlOriginalbildInput.value = '';
+            comicUrlEmptyCheckbox.checked = false;
+            comicUrlOriginalbildInput.disabled = false;
+
 
             saveButtons.forEach(button => {
                 button.textContent = 'Speichern';
@@ -1914,7 +1916,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             const previewImage = document.getElementById('comic-image-preview');
             const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Comicseite%0Anicht%0Averf%C3%BCgbar';
 
-            previewContainer.dataset.hasImage = 'true'; // Wir zeigen immer etwas an (Bild oder Platzhalter)
+            previewContainer.dataset.hasImage = 'true';
             if (imagePath) {
                 previewImage.src = imagePath;
             } else {
@@ -1980,6 +1982,24 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
         });
 
+        comicUrlEmptyCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                comicUrlOriginalbildInput.value = '';
+                comicUrlOriginalbildInput.disabled = true;
+                updateOriginalImagePreview('');
+            } else {
+                comicUrlOriginalbildInput.disabled = false;
+                if (comicUrlOriginalbildInput.value.trim() === '') {
+                    const comicId = comicIdInput.value.trim();
+                    if (comicId) {
+                        comicUrlOriginalbildInput.value = comicId;
+                        updateOriginalImagePreview(comicId);
+                    }
+                }
+            }
+        });
+
+
         comicDataTable.addEventListener('click', function (event) {
             const target = event.target;
             const editButton = target.closest('.edit-button');
@@ -1996,15 +2016,22 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             if (editButton) {
                 const row = editButton.closest('tr');
 
-                setView('preview'); // Standardansicht beim Öffnen
+                setView('preview');
 
                 const lowresPath = row.dataset.lowresPath;
                 showImagePreview(lowresPath);
 
-                const urlOriginalbild = row.dataset.urlOriginalbild;
+                const comicId = row.dataset.comicId;
+                let urlOriginalbild = row.dataset.urlOriginalbild;
+
+                // NEUE LOGIK: Wenn der gespeicherte Dateiname leer ist,
+                // fülle das Feld standardmäßig mit der Comic-ID.
+                if (urlOriginalbild.trim() === '') {
+                    urlOriginalbild = comicId;
+                }
+
                 updateOriginalImagePreview(urlOriginalbild);
 
-                const comicId = row.dataset.comicId;
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
                 const comicTranscript = row.querySelector('.transcript-content').dataset.rawHtml;
@@ -2023,6 +2050,11 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                     comicNameEmptyCheckbox.checked = false;
                 }
                 comicNameEmptyCheckbox.dispatchEvent(new Event('change'));
+
+                // NEUE LOGIK: Die Checkbox soll beim Laden eines Eintrags
+                // immer standardmäßig deaktiviert (false) sein.
+                comicUrlEmptyCheckbox.checked = false;
+                comicUrlEmptyCheckbox.dispatchEvent(new Event('change'));
 
                 initializeSummernote();
                 $('#comic-transcript').summernote('code', comicTranscript);
@@ -2071,7 +2103,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
         });
 
-        // NEU: Event Listener für die Umschalt-Buttons
         viewToggleButtons.addEventListener('click', function (event) {
             const button = event.target.closest('.button-toggle');
             if (button && button.dataset.view) {
@@ -2104,16 +2135,25 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         });
 
         comicIdInput.addEventListener('blur', function () {
+            const comicId = this.value.trim();
+
             if (this.readOnly) {
                 return;
             }
-            const comicId = this.value.trim();
+
             if (comicId && /^\d{8}$/.test(comicId)) {
                 const foundFile = availableLowresImages.find(file => file.startsWith(comicId + '.'));
                 const path = foundFile ? `../assets/comic_lowres/${foundFile}` : '';
                 showImagePreview(path);
             }
+
+            // KORRIGIERTE LOGIK: Nur füllen, wenn das Feld leer ist
+            if (!comicUrlEmptyCheckbox.checked && comicUrlOriginalbildInput.value.trim() === '') {
+                comicUrlOriginalbildInput.value = comicId;
+                updateOriginalImagePreview(comicId);
+            }
         });
+
 
         comicUrlOriginalbildInput.addEventListener('blur', function () {
             updateOriginalImagePreview(this.value.trim());
@@ -2241,7 +2281,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             setTimeout(() => toggleTranscriptViewButton.click(), 0);
         }
 
-        // Initiales Ausblenden der Container, da anfangs kein Bild ausgewählt ist.
         updateViewVisibility();
     });
 </script>
