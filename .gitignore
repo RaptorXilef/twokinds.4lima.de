@@ -53,7 +53,12 @@ comic/*
 google5c760f191f071105.html
 src/layout/js_backup/gtag.js
 _debug/*
-src/config/*
+src/config/archive_chapters.json
+src/config/comic_var.json
+src/config/rss_config.json
+src/config/sitemap.json
+src/config/version.json
+
 # git update-index --assume-unchanged src/config/comic_var.json
 # git update-index --assume-unchanged src/config/archive_chapters.json
 # wieder aktivieren:
