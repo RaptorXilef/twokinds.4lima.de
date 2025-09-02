@@ -1496,6 +1496,21 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
     body.theme-night .button-toggle.active {
         background-color: #007bff;
     }
+
+    /* NEU: Styles für das Vorschaubild */
+    .comic-thumbnail-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 5px;
+    }
+
+    .comic-thumbnail {
+        max-width: 80px;
+        height: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
 </style>
 
 <div class="admin-container">
@@ -1636,6 +1651,15 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                                 $urlOriginalbildFilename = $data['url_originalbild'] ?? '';
+                                // NEU: Pfad zum Vorschaubild finden.
+                                $thumbnailPath = '';
+                                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                                foreach ($imageExtensions as $ext) {
+                                    if (file_exists($comicThumbnailsDirPath . $id . '.' . $ext)) {
+                                        $thumbnailPath = '../assets/comic_thumbnails/' . $id . '.' . $ext;
+                                        break;
+                                    }
+                                }
                                 ?>
                                 <?php $lowresImagePath = findLowresImagePath($id, $comicLowresDirPath, $debugMode); ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
@@ -1663,8 +1687,18 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                             <?php endif; ?>
                                         </div>
                                     </td>
-                                    <td><span
-                                            class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span>
+                                    <td>
+                                        <span
+                                            class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>">
+                                            <?php echo htmlspecialchars($data['type']); ?>
+                                        </span>
+                                        <?php if (!empty($thumbnailPath)): ?>
+                                            <div class="comic-thumbnail-container">
+                                                <img src="<?php echo htmlspecialchars($thumbnailPath); ?>"
+                                                    alt="Vorschaubild für Comic-ID <?php echo htmlspecialchars($id); ?>"
+                                                    class="comic-thumbnail">
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td><span
                                             class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span>
