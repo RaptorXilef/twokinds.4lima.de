@@ -2,7 +2,6 @@
 /**
  * Dies ist die Hauptseite des Admin-Bereichs.
  * Sie verwaltet die Anmeldung, Abmeldung, die Änderung der Benutzerdaten, das Hinzufügen und Löschen neuer Benutzer.
- * Daten werden zu Demonstrationszwecken in einer lokalen JSON-Datei gespeichert.
  *
  * SICHERHEITSHINWEIS: Diese Dateispeicherung ist NICHT SICHER für eine Produktionsumgebung!
  * Passwörter werden gehasht, aber die Methode ist anfällig für direkte Dateizugriffe.
@@ -26,16 +25,25 @@ session_start();
 if ($debugMode)
     error_log("DEBUG: Session in index.php gestartet.");
 
-// --- Pfad zur simulierten Benutzerdatenbank (JSON-Datei) ---
-// WICHTIG: Die Datei liegt nun außerhalb des öffentlichen Web-Verzeichnisses für erhöhte Sicherheit.
-// '__DIR__' ist das Verzeichnis der aktuellen Datei (z.B. /Stammverzeichnis/default-website/twokinds/admin/).
-// Wir müssen drei Ebenen nach oben gehen, um zum Server-Stammverzeichnis zu gelangen.
+// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/../src/components/security_check.php';
+
+
+// --- NEU: Konfiguration für Brute-Force-Schutz ---
+define('MAX_LOGIN_ATTEMPTS', 3); // Max. Fehlversuche
+define('LOGIN_BLOCK_SECONDS', 900); // 15 Minuten Sperrzeit (900 Sekunden)
+
+// --- Pfade zu den Datendateien ---
 $usersFile = __DIR__ . '/../../../admin_users.json';
-if ($debugMode)
+$loginAttemptsFile = __DIR__ . '/../../../login_attempts.json'; // Datei für Login-Versuche
+
+if ($debugMode) {
     error_log("DEBUG: usersFile Pfad: " . $usersFile);
+    error_log("DEBUG: loginAttemptsFile Pfad: " . $loginAttemptsFile);
+}
 
 // --- Hilfsfunktionen für die Benutzerverwaltung (Simulierte Datenbankzugriffe) ---
-
+// getUsers() und saveUsers() bleiben unverändert...
 /**
  * Liest die Benutzerdaten aus der JSON-Datei.
  * @return array Ein assoziatives Array der Benutzerdaten oder ein leeres Array, wenn die Datei nicht existiert oder leer ist.
@@ -131,9 +139,48 @@ function saveUsers(array $users): bool
     return $result !== false;
 }
 
+// --- NEU: Hilfsfunktionen für Login-Versuche ---
+/**
+ * Liest die Login-Versuche aus der JSON-Datei.
+ * @return array Die Daten der Login-Versuche.
+ */
+function getLoginAttempts(): array
+{
+    global $loginAttemptsFile, $debugMode;
+    if (!file_exists($loginAttemptsFile)) {
+        return [];
+    }
+    $content = file_get_contents($loginAttemptsFile);
+    $attempts = json_decode($content, true);
+    return is_array($attempts) ? $attempts : [];
+}
+
+/**
+ * Speichert die Login-Versuche in die JSON-Datei.
+ * @param array $attempts Die zu speichernden Daten.
+ * @return bool True bei Erfolg, False bei Fehler.
+ */
+function saveLoginAttempts(array $attempts): bool
+{
+    global $loginAttemptsFile, $debugMode;
+    $dir = dirname($loginAttemptsFile);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    $jsonContent = json_encode($attempts, JSON_PRETTY_PRINT);
+    return file_put_contents($loginAttemptsFile, $jsonContent) !== false;
+}
+
+
 // --- Authentifizierungs- und Verwaltungslogik ---
 
 $message = ''; // Wird für Erfolgs- oder Fehlermeldungen verwendet.
+
+// NEU: Nachricht für abgelaufene Session anzeigen
+if (isset($_GET['reason']) && $_GET['reason'] === 'session_expired') {
+    $message = '<p style="color: orange;">Ihre Sitzung ist aufgrund von Inaktivität abgelaufen. Bitte melden Sie sich erneut an.</p>';
+}
+
 
 // Überprüfen, ob ein Benutzer angemeldet ist.
 $loggedIn = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
@@ -205,30 +252,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
 
-        // Anmeldefunktion
+        // Anmeldefunktion (mit Brute-Force-Schutz)
         case 'login':
             if ($debugMode)
                 error_log("DEBUG: Aktion: login.");
+
+            // --- NEU: Brute-Force-Prüfung ---
+            $userIp = $_SERVER['REMOTE_ADDR'];
+            $attempts = getLoginAttempts();
+
+            if (isset($attempts[$userIp]) && $attempts[$userIp]['attempts'] >= MAX_LOGIN_ATTEMPTS) {
+                $timeSinceLastAttempt = time() - $attempts[$userIp]['last_attempt'];
+                if ($timeSinceLastAttempt < LOGIN_BLOCK_SECONDS) {
+                    $remainingTime = LOGIN_BLOCK_SECONDS - $timeSinceLastAttempt;
+                    $message = '<p style="color: red;">Zu viele fehlgeschlagene Login-Versuche. Bitte warten Sie noch ' . ceil($remainingTime / 60) . ' Minute(n).</p>';
+                    if ($debugMode)
+                        error_log("DEBUG: Login für IP $userIp blockiert. Verbleibende Zeit: $remainingTime Sekunden.");
+                    break; // Wichtig: Login-Prozess hier abbrechen
+                } else {
+                    // Sperrzeit ist abgelaufen, Zähler zurücksetzen
+                    unset($attempts[$userIp]);
+                    saveLoginAttempts($attempts);
+                    if ($debugMode)
+                        error_log("DEBUG: Sperrzeit für IP $userIp abgelaufen, Zähler zurückgesetzt.");
+                }
+            }
+
             $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             $password = $_POST['password'] ?? '';
 
             $users = getUsers();
             if (isset($users[$username]) && password_verify($password, $users[$username]['passwordHash'])) {
+                // --- ERFOLGREICHER LOGIN ---
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $username;
+                $_SESSION['last_activity'] = time(); // NEU: Aktivitätszeitstempel initial setzen
                 $loggedIn = true;
                 $currentUser = $username;
-                $message = '<p style="color: green;">Erfolgreich angemeldet！</p>';
+
+                // Fehlversuche für diese IP zurücksetzen
+                if (isset($attempts[$userIp])) {
+                    unset($attempts[$userIp]);
+                    saveLoginAttempts($attempts);
+                }
+
                 if ($debugMode)
-                    error_log("DEBUG: Benutzer '" . $username . "' erfolgreich angemeldet.");
-                // Weiterleitung, um Formularerneutsendung zu vermeiden
+                    error_log("DEBUG: Benutzer '" . $username . "' erfolgreich angemeldet. Fehlversuche für IP $userIp zurückgesetzt.");
                 ob_end_clean();
                 header('Location: index.php');
                 exit;
             } else {
-                $message = '<p style="color: red;">Ungültiger Benutzername oder Passwort。</p>';
+                // --- FEHLGESCHLAGENER LOGIN ---
+                if (!isset($attempts[$userIp])) {
+                    $attempts[$userIp] = ['attempts' => 0, 'last_attempt' => 0];
+                }
+                $attempts[$userIp]['attempts']++;
+                $attempts[$userIp]['last_attempt'] = time();
+                saveLoginAttempts($attempts);
+
+                $remainingAttempts = MAX_LOGIN_ATTEMPTS - $attempts[$userIp]['attempts'];
+                $message = '<p style="color: red;">Ungültiger Benutzername oder Passwort. Verbleibende Versuche: ' . $remainingAttempts . '</p>';
                 if ($debugMode)
-                    error_log("DEBUG: Fehlgeschlagener Login-Versuch für Benutzer '" . $username . "'.");
+                    error_log("DEBUG: Fehlgeschlagener Login-Versuch für IP $userIp. Versuch Nr. " . $attempts[$userIp]['attempts']);
             }
             break;
 
@@ -388,7 +473,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // --- HTML-Struktur und Anzeige ---
-
 // Parameter für den Header
 $pageTitle = 'Adminbereich'; // Setze den spezifischen Titel für den Adminbereich
 $pageHeader = 'Adminbereich';

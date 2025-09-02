@@ -301,6 +301,11 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
                     // Wenn sich die aufgerufene Seite im /admin/-Verzeichnis befindet, lade das Admin-Menü
                     // Der Pfad ist von src/layout/ nach ../components/
                     require(__DIR__ . '/../components/admin_menue_config.php');
+
+                    // KORRIGIERUNG: Lade das Modal nur, wenn der Admin auch wirklich eingeloggt ist.
+                    if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+                        require(__DIR__ . '/../components/session_timeout_modal.php');
+                    }
                 } else {
                     // Andernfalls lade das normale Seitenmenü
                     // Der Pfad ist von src/layout/ nach ../components/
