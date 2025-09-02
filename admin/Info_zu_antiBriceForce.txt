@@ -1,0 +1,22 @@
+Wird ein Falsches Passwort eingegeben, wird eine login_attempts.json erstellt. Diese Speichert die aktuelle IP-Adresse.
+
+Werden 3 mal Falsche Logindaten eingegeben, wird die IP Adresse für 15 Minuten gesperrt.
+
+
+Du möchtest wissen, was mit den Einträgen in der login_attempts.json passiert, damit diese Datei nicht unendlich wächst?
+
+Das System, das ich implementiert habe, kümmert sich automatisch darum. Ein Eintrag für eine IP-Adresse wird in zwei Fällen automatisch gelöscht:
+
+- Bei einem erfolgreichen Login: Sobald sich ein Benutzer korrekt anmeldet, prüft das Skript, ob für seine IP-Adresse Fehlversuche gespeichert sind. 
+   Wenn ja, wird der komplette Eintrag für diese IP sofort gelöscht. Das sorgt dafür, dass die "Strafe" aufgehoben wird, sobald der rechtmäßige Benutzer Zugang erhält.
+
+- Nach Ablauf der Sperrzeit: Wenn ein Benutzer von einer blockierten IP-Adresse nach Ablauf der 15-minütigen Sperre einen neuen Anmeldeversuch startet, passiert Folgendes:
+
+  -  Das Skript erkennt, dass die Sperrzeit abgelaufen ist.
+
+  -  Es löscht den alten Eintrag mit den gezählten Fehlversuchen.
+
+  -  Erst danach wird der neue Anmeldeversuch normal verarbeitet (als wäre es der erste Versuch).
+
+
+Zusammengefasst: Die Einträge werden nicht einfach nur ignoriert, sondern aktiv gelöscht. Du musst dich also nicht darum kümmern, die login_attempts.json-Datei manuell zu bereinigen. Das System hält sich selbst sauber.
