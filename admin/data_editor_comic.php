@@ -1914,8 +1914,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             comicNameInput.disabled = false;
 
             comicUrlOriginalbildInput.value = '';
-            comicUrlEmptyCheckbox.checked = false;
-            comicUrlOriginalbildInput.disabled = false;
+            comicUrlEmptyCheckbox.checked = true; // Standardmäßig anhaken
+            comicUrlOriginalbildInput.disabled = true; // Und deaktivieren
 
 
             saveButtons.forEach(button => {
@@ -2027,12 +2027,15 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 updateOriginalImagePreview('');
             } else {
                 comicUrlOriginalbildInput.disabled = false;
-                if (comicUrlOriginalbildInput.value.trim() === '') {
+                // Logik für das Wiederherstellen des Werts
+                const initialValue = comicUrlOriginalbildInput.dataset.initialValue;
+                if (initialValue) {
+                    comicUrlOriginalbildInput.value = initialValue;
+                    updateOriginalImagePreview(initialValue);
+                } else {
                     const comicId = comicIdInput.value.trim();
-                    if (comicId) {
-                        comicUrlOriginalbildInput.value = comicId;
-                        updateOriginalImagePreview(comicId);
-                    }
+                    comicUrlOriginalbildInput.value = comicId;
+                    updateOriginalImagePreview(comicId);
                 }
             }
         });
@@ -2062,18 +2065,21 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 const comicId = row.dataset.comicId;
                 let urlOriginalbild = row.dataset.urlOriginalbild;
 
-                // NEUE LOGIK: Wenn der gespeicherte Dateiname leer ist,
-                // fülle das Feld standardmäßig mit der Comic-ID.
-                if (urlOriginalbild.trim() === '') {
-                    const originalUrlData = row.dataset.urlOriginalbild.trim();
-                    if (originalUrlData === '') {
-                        urlOriginalbild = comicId;
-                    } else {
-                        urlOriginalbild = originalUrlData;
-                    }
+                // NEU: Den ursprünglichen URL-Wert in einem Datenattribut speichern
+                comicUrlOriginalbildInput.dataset.initialValue = urlOriginalbild;
+
+                // NEU: Checkbox und Textfeld-Status basierend auf dem Wert aus der JSON setzen
+                const isUrlEmpty = urlOriginalbild.trim() === '';
+                comicUrlEmptyCheckbox.checked = isUrlEmpty;
+                comicUrlOriginalbildInput.disabled = isUrlEmpty;
+                if (isUrlEmpty) {
+                    comicUrlOriginalbildInput.value = comicId;
+                } else {
+                    comicUrlOriginalbildInput.value = urlOriginalbild;
                 }
 
-                updateOriginalImagePreview(urlOriginalbild);
+                // Vorschaubild der URL aktualisieren
+                updateOriginalImagePreview(comicUrlOriginalbildInput.value);
 
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
@@ -2085,7 +2091,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 comicIdInput.readOnly = true;
                 comicTypeSelect.value = comicType;
                 comicNameInput.value = comicName;
-                comicUrlOriginalbildInput.value = urlOriginalbild;
+
 
                 if (comicName === '') {
                     comicNameEmptyCheckbox.checked = true;
@@ -2096,8 +2102,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
                 // NEUE LOGIK: Die Checkbox soll beim Laden eines Eintrags
                 // immer standardmäßig deaktiviert (false) sein.
-                comicUrlEmptyCheckbox.checked = false;
-                comicUrlEmptyCheckbox.dispatchEvent(new Event('change'));
+                // comicUrlEmptyCheckbox.checked = false; // Diese Zeile wird durch die neue Logik ersetzt
+                // comicUrlEmptyCheckbox.dispatchEvent(new Event('change')); // Diese Zeile wird durch die neue Logik ersetzt
 
                 initializeSummernote();
                 $('#comic-transcript').summernote('code', comicTranscript);
