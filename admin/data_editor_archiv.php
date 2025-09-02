@@ -13,6 +13,10 @@ if ($debugMode)
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
+
+// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/../src/components/security_check.php';
+
 if ($debugMode)
     error_log("DEBUG: Session gestartet in data_editor_archiv.php.");
 
@@ -220,8 +224,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postedTitle = $_POST['title'] ?? ''; // Titel ist jetzt ein normales Textfeld
     $postedDescription = $_POST['description'] ?? ''; // Beschreibung bleibt Summernote
     // trim() entfernt Leerzeichen am Anfang/Ende der ID
-    $postedChapterId = trim($_POST['chapter_id'] ?? ''); 
-    $originalChapterId = trim($_POST['original_chapter_id'] ?? ''); 
+    $postedChapterId = trim($_POST['chapter_id'] ?? '');
+    $originalChapterId = trim($_POST['original_chapter_id'] ?? '');
     $leaveIdEmpty = isset($_POST['leave_id_empty']); // Checkbox-Status
 
     // NEU: Ersetze Komma durch Punkt in der geposteten ID, bevor sie weiterverarbeitet wird
@@ -249,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $newChapterId = '';
                     if ($debugMode)
                         error_log("DEBUG: Kapitel ID explizit auf leer gesetzt durch Checkbox.");
-                } 
+                }
                 // Ansonsten, wenn die ID leer ist (und Checkbox nicht aktiviert), automatisch generieren
                 elseif (empty($newChapterId)) {
                     $maxId = 0;
@@ -258,14 +262,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             // Nur numerische IDs für die Max-Berechnung berücksichtigen
                             $currentId = $chapter['chapterId'] ?? '';
                             // Ersetze Komma durch Punkt für numerische Prüfung
-                            $numericCurrentId = str_replace(',', '.', $currentId); 
-                            if (is_numeric($numericCurrentId) && (float)$numericCurrentId > $maxId) {
-                                $maxId = (float)$numericCurrentId;
+                            $numericCurrentId = str_replace(',', '.', $currentId);
+                            if (is_numeric($numericCurrentId) && (float) $numericCurrentId > $maxId) {
+                                $maxId = (float) $numericCurrentId;
                             }
                         }
                     }
                     // Generiere die nächste Ganzzahl-ID
-                    $newChapterId = (string) (floor($maxId) + 1); 
+                    $newChapterId = (string) (floor($maxId) + 1);
                     if ($debugMode)
                         error_log("DEBUG: Kapitel ID automatisch generiert: " . $newChapterId);
                 }
@@ -316,7 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($foundIndex !== -1) {
                     if ($debugMode)
                         error_log("DEBUG: Ursprüngliches Kapitel zum Bearbeiten gefunden bei Index: " . $foundIndex . " (ID: '" . $originalChapterId . "')");
-                    
+
                     $effectivePostedChapterId = $postedChapterId;
                     // Wenn Checkbox "leer lassen" aktiviert ist, setze ID auf leeren String
                     if ($leaveIdEmpty) {
@@ -329,7 +333,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($effectivePostedChapterId != $originalChapterId) {
                         if ($debugMode)
                             error_log("DEBUG: Kapitel ID wird geändert von '" . $originalChapterId . "' zu '" . $effectivePostedChapterId . "'");
-                        
+
                         // Überprüfe, ob die neue ID bereits existiert (außer dem aktuell bearbeiteten Kapitel)
                         foreach ($chapters as $index => $chapter) {
                             if ($index !== $foundIndex && isset($chapter['chapterId']) && $chapter['chapterId'] == $effectivePostedChapterId) {
@@ -394,7 +398,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $redirectUrl = $_SERVER['PHP_SELF'] . '?message=' . urlencode($message) . '&type=' . urlencode($messageType);
         if (!empty($scrollToId)) {
             // URL-Encoding für den Fragment-Bezeichner
-            $redirectUrl .= '#chapter-' . urlencode($scrollToId); 
+            $redirectUrl .= '#chapter-' . urlencode($scrollToId);
         }
         if ($debugMode)
             error_log("DEBUG: Redirect nach POST-Anfrage zu: " . $redirectUrl);
@@ -1338,16 +1342,17 @@ include __DIR__ . '/../src/layout/header.php';
                         value="<?php echo htmlspecialchars($editChapterId); ?>"
                         placeholder="Automatisch generieren, wenn leer">
                     <div class="checkbox-group" style="margin-top: 5px;">
-                        <input type="checkbox" id="leave_id_empty_checkbox" name="leave_id_empty"
-                            <?php echo $leaveIdEmptyChecked ? 'checked' : ''; ?>>
-                        <label for="leave_id_empty_checkbox" style="display: inline; font-weight: normal;">Kapitel ID leer lassen ("")</label>
+                        <input type="checkbox" id="leave_id_empty_checkbox" name="leave_id_empty" <?php echo $leaveIdEmptyChecked ? 'checked' : ''; ?>>
+                        <label for="leave_id_empty_checkbox" style="display: inline; font-weight: normal;">Kapitel ID
+                            leer lassen ("")</label>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="title">Titel:</label>
                     <!-- GEÄNDERT: Input-Feld statt Textarea -->
-                    <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($editTitle); ?>" placeholder="Titel hier eingeben...">
+                    <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($editTitle); ?>"
+                        placeholder="Titel hier eingeben...">
                 </div>
 
                 <div class="form-group">

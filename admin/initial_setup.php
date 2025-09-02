@@ -15,10 +15,17 @@ $debugMode = false;
 if ($debugMode)
     error_log("DEBUG: initial_setup.php wird geladen.");
 
+// Starte den Output Buffer als ALLERERSTE Zeile
+ob_start();
+
 // Starte die PHP-Sitzung. Notwendig, wenn diese Seite in den Admin-Bereich eingebunden ist.
 session_start();
 if ($debugMode)
     error_log("DEBUG: Session gestartet in initial_setup.php.");
+
+// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/../src/components/security_check.php';
+
 
 // Logout-Funktion (wird über GET-Parameter ausgelöst)
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
@@ -960,6 +967,14 @@ if (file_exists($headerPath)) {
                     fixedButtonsContainerFolders.style.right = 'auto';
                 }
             }
+        }
+
+        /**
+         * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
+         */
+        function handleResize() {
+            calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
+            handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
         }
 
         // Initiales Setup beim Laden der Seite

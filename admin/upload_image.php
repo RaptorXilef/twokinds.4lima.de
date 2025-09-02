@@ -8,22 +8,23 @@
  * um Bestätigung gebeten.
  *
  * @version 3.5 (Behebung des doppelten Dateierweiterungs-Bugs, Design- und z-index-Korrekturen)
- * @author Gemini
+ * @author Felix
  * @date 2025-08-12
  */
 
 // === DEBUG-MODUS & KONFIGURATION ===
-$debugMode = true;
+$debugMode = false;
 
 if ($debugMode)
     error_log("DEBUG: upload_image.php wird geladen.");
 
 // Starte den Output Buffer, um Redirects ohne Fehler zu ermöglichen.
 ob_start();
-if ($debugMode)
-    error_log("DEBUG: Output Buffer in upload_image.php gestartet.");
 
 session_start();
+
+// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/../src/components/security_check.php';
 
 // Logout-Funktion
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {

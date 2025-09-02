@@ -20,6 +20,9 @@ gc_enable();
 
 session_start();
 
+// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/../src/components/security_check.php';
+
 // Logout-Funktion
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     session_unset();

@@ -22,6 +22,10 @@ if ($debugMode)
 
 // Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
 session_start();
+
+// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/../src/components/security_check.php';
+
 if ($debugMode)
     error_log("DEBUG: Session gestartet in generator_comic.php.");
 

@@ -110,22 +110,16 @@ document.addEventListener("DOMContentLoaded", () => {
   logoutBtn.addEventListener("click", forceLogout);
 
   // Throttled activity handler to prevent resetting too often
-  let lastActivityTime = Date.now();
+  let activityTimeout;
   const activityHandler = () => {
-    lastActivityTime = Date.now();
+    clearTimeout(activityTimeout);
+    activityTimeout = setTimeout(resetTimers, 500); // Reset only after 500ms of inactivity
   };
-
-  // Check for inactivity every second
-  setInterval(() => {
-    // If there was activity in the last 2 seconds, reset the main timers
-    if (Date.now() - lastActivityTime < 2000) {
-      resetTimers();
-    }
-  }, 1000);
 
   window.addEventListener("mousemove", activityHandler, { passive: true });
   window.addEventListener("keydown", activityHandler, { passive: true });
   window.addEventListener("click", activityHandler, { passive: true });
+  window.addEventListener("scroll", activityHandler, { passive: true });
 
   startTimers();
 });
