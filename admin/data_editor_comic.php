@@ -1496,21 +1496,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
     body.theme-night .button-toggle.active {
         background-color: #007bff;
     }
-
-    /* NEU: Styles für das Vorschaubild */
-    .comic-thumbnail-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 5px;
-    }
-
-    .comic-thumbnail {
-        max-width: 80px;
-        height: auto;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
 </style>
 
 <div class="admin-container">
@@ -1651,15 +1636,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                                 $urlOriginalbildFilename = $data['url_originalbild'] ?? '';
-                                // NEU: Pfad zum Vorschaubild finden.
-                                $thumbnailPath = '';
-                                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-                                foreach ($imageExtensions as $ext) {
-                                    if (file_exists($comicThumbnailsDirPath . $id . '.' . $ext)) {
-                                        $thumbnailPath = '../assets/comic_thumbnails/' . $id . '.' . $ext;
-                                        break;
-                                    }
-                                }
                                 ?>
                                 <?php $lowresImagePath = findLowresImagePath($id, $comicLowresDirPath, $debugMode); ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
@@ -1687,18 +1663,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                             <?php endif; ?>
                                         </div>
                                     </td>
-                                    <td>
-                                        <span
-                                            class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>">
-                                            <?php echo htmlspecialchars($data['type']); ?>
-                                        </span>
-                                        <?php if (!empty($thumbnailPath)): ?>
-                                            <div class="comic-thumbnail-container">
-                                                <img src="<?php echo htmlspecialchars($thumbnailPath); ?>"
-                                                    alt="Vorschaubild für Comic-ID <?php echo htmlspecialchars($id); ?>"
-                                                    class="comic-thumbnail">
-                                            </div>
-                                        <?php endif; ?>
+                                    <td><span
+                                            class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span>
                                     </td>
                                     <td><span
                                             class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span>
@@ -1914,8 +1880,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             comicNameInput.disabled = false;
 
             comicUrlOriginalbildInput.value = '';
-            comicUrlEmptyCheckbox.checked = true; // Standardmäßig anhaken
-            comicUrlOriginalbildInput.disabled = true; // Und deaktivieren
+            comicUrlEmptyCheckbox.checked = false;
+            comicUrlOriginalbildInput.disabled = false;
 
 
             saveButtons.forEach(button => {
@@ -2027,15 +1993,12 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 updateOriginalImagePreview('');
             } else {
                 comicUrlOriginalbildInput.disabled = false;
-                // Logik für das Wiederherstellen des Werts
-                const initialValue = comicUrlOriginalbildInput.dataset.initialValue;
-                if (initialValue) {
-                    comicUrlOriginalbildInput.value = initialValue;
-                    updateOriginalImagePreview(initialValue);
-                } else {
+                if (comicUrlOriginalbildInput.value.trim() === '') {
                     const comicId = comicIdInput.value.trim();
-                    comicUrlOriginalbildInput.value = comicId;
-                    updateOriginalImagePreview(comicId);
+                    if (comicId) {
+                        comicUrlOriginalbildInput.value = comicId;
+                        updateOriginalImagePreview(comicId);
+                    }
                 }
             }
         });
@@ -2065,21 +2028,18 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 const comicId = row.dataset.comicId;
                 let urlOriginalbild = row.dataset.urlOriginalbild;
 
-                // NEU: Den ursprünglichen URL-Wert in einem Datenattribut speichern
-                comicUrlOriginalbildInput.dataset.initialValue = urlOriginalbild;
-
-                // NEU: Checkbox und Textfeld-Status basierend auf dem Wert aus der JSON setzen
-                const isUrlEmpty = urlOriginalbild.trim() === '';
-                comicUrlEmptyCheckbox.checked = isUrlEmpty;
-                comicUrlOriginalbildInput.disabled = isUrlEmpty;
-                if (isUrlEmpty) {
-                    comicUrlOriginalbildInput.value = comicId;
-                } else {
-                    comicUrlOriginalbildInput.value = urlOriginalbild;
+                // NEUE LOGIK: Wenn der gespeicherte Dateiname leer ist,
+                // fülle das Feld standardmäßig mit der Comic-ID.
+                if (urlOriginalbild.trim() === '') {
+                    const originalUrlData = row.dataset.urlOriginalbild.trim();
+                    if (originalUrlData === '') {
+                        urlOriginalbild = comicId;
+                    } else {
+                        urlOriginalbild = originalUrlData;
+                    }
                 }
 
-                // Vorschaubild der URL aktualisieren
-                updateOriginalImagePreview(comicUrlOriginalbildInput.value);
+                updateOriginalImagePreview(urlOriginalbild);
 
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
@@ -2091,7 +2051,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 comicIdInput.readOnly = true;
                 comicTypeSelect.value = comicType;
                 comicNameInput.value = comicName;
-
+                comicUrlOriginalbildInput.value = urlOriginalbild;
 
                 if (comicName === '') {
                     comicNameEmptyCheckbox.checked = true;
@@ -2102,8 +2062,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
                 // NEUE LOGIK: Die Checkbox soll beim Laden eines Eintrags
                 // immer standardmäßig deaktiviert (false) sein.
-                // comicUrlEmptyCheckbox.checked = false; // Diese Zeile wird durch die neue Logik ersetzt
-                // comicUrlEmptyCheckbox.dispatchEvent(new Event('change')); // Diese Zeile wird durch die neue Logik ersetzt
+                comicUrlEmptyCheckbox.checked = false;
+                comicUrlEmptyCheckbox.dispatchEvent(new Event('change'));
 
                 initializeSummernote();
                 $('#comic-transcript').summernote('code', comicTranscript);
