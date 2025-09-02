@@ -1,112 +1,132 @@
 [
     {
-        "chapterId": 1,
-        "title": "Prolog: Die Anfänge",
-        "description": "Die ersten Schritte unserer Helden und die Einführung in die Welt von TwoKinds. Eine Zeit der Entdeckungen und unerwarteten Begegnungen. test"
-    },
-    {
-        "chapterId": 2,
-        "title": "Kapitel 2: Neue Allianzen",
-        "description": "Während alte Konflikte schwelen, schmieden sich neue Bündnisse. Vertrauen wird aufgebaut, aber auch auf die Probe gestellt."
-    },
-    {
-        "chapterId": 3,
+        "chapterId": "0",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 4,
+        "chapterId": "1",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 5,
+        "chapterId": "2",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 6,
+        "chapterId": "3",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 7,
+        "chapterId": "4",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 8,
+        "chapterId": "5",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 9,
+        "chapterId": "6.1",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 10,
+        "chapterId": "6.2",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 11,
+        "chapterId": "7",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 12,
+        "chapterId": "8",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 13,
+        "chapterId": "9",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 14,
+        "chapterId": "10",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 15,
+        "chapterId": "11",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 16,
+        "chapterId": "12",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 17,
+        "chapterId": "13",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 18,
+        "chapterId": "14",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 19,
+        "chapterId": "15",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 20,
+        "chapterId": "16",
         "title": "",
         "description": ""
     },
     {
-        "chapterId": 21,
-        "title": "Test",
-        "description": "Test des blablabla"
+        "chapterId": "16.5",
+        "title": "",
+        "description": ""
     },
     {
-        "chapterId": 22,
-        "title": "Kapitel 22: Maeves und Reeds Abenteuer",
-        "description": "Maeve und Reed begeben sich auf eine unerwartete Reise, die sie vor neue Herausforderungen stellt und ihre Freundschaft vertieft."
+        "chapterId": "17",
+        "title": "",
+        "description": ""
+    },
+    {
+        "chapterId": "18",
+        "title": "",
+        "description": ""
+    },
+    {
+        "chapterId": "19",
+        "title": "",
+        "description": ""
+    },
+    {
+        "chapterId": "20",
+        "title": "",
+        "description": ""
+    },
+    {
+        "chapterId": "21",
+        "title": "",
+        "description": ""
+    },
+    {
+        "chapterId": "22",
+        "title": "",
+        "description": ""
+    },
+    {
+        "chapterId": "",
+        "title": "",
+        "description": ""
     }
 ]

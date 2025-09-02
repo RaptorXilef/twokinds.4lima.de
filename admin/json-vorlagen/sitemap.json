@@ -15,6 +15,13 @@
             "changefreq": "monthly"
         },
         {
+            "loc": "./comic/20031022.php",
+            "name": "20031022.php",
+            "path": "./comic/",
+            "priority": 0.8,
+            "changefreq": "never"
+        },
+        {
             "loc": "./comic/index.php",
             "name": "index.php",
             "path": "./comic/",
