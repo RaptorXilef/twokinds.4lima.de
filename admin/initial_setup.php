@@ -24,7 +24,7 @@ if ($debugMode)
     error_log("DEBUG: Session gestartet in initial_setup.php.");
 
 // NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/../src/components/security_check.php';
+require_once __DIR__ . '/src/components/security_check.php';
 
 
 // Logout-Funktion (wird über GET-Parameter ausgelöst)

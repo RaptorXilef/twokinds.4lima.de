@@ -74,6 +74,6 @@ if (!isset($baseUrl)) {
 <?php
 // Pfad und Cache-Buster für das JavaScript
 // __DIR__ ist hier /src/components/, also gehen wir eine Ebene hoch zu /src/ und dann in /layout/js/
-$sessionTimeoutJsPath = $baseUrl . 'src/layout/js/session_timeout.js?c=' . filemtime(__DIR__ . '/../layout/js/session_timeout.js');
+$sessionTimeoutJsPath = $baseUrl . 'admin/src/js/session_timeout.js?c=' . filemtime(__DIR__ . '/../js/session_timeout.js');
 echo "<script type='text/javascript' src='" . htmlspecialchars($sessionTimeoutJsPath) . "'></script>";
 ?>

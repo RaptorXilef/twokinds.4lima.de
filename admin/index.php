@@ -26,7 +26,7 @@ if ($debugMode)
     error_log("DEBUG: Session in index.php gestartet.");
 
 // NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/../src/components/security_check.php';
+require_once __DIR__ . '/src/components/security_check.php';
 
 
 // --- NEU: Konfiguration für Brute-Force-Schutz ---
