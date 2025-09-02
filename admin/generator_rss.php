@@ -205,52 +205,55 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
                         isset($comicInfo['transcript']) && trim(strip_tags($comicInfo['transcript'])) !== ''
                     ) { // strip_tags entfernt HTML, trim entfernt Leerzeichen
 
-                        $comicLink = htmlspecialchars($baseUrl . 'comic/' . $filename);
-                        $pubDate = date(DATE_RSS, strtotime($comicId)); // Datum im RSS-Format
-
-                        $imageHtml = '';
-                        // Konstruiere den Dateisystempfad zum Bild
-                        // Annahme: Bilder sind im Format YYYYMMDD.jpg, .png, .gif, .jpeg oder .webp
-                        // ÄNDERUNG: Pfad zu comic_thumbnails und Hinzufügen von .gif, .jpeg, .webp
+                        // *** ÄNDERUNG START ***
+                        // Zuerst prüfen, ob ein Bild existiert. Nur dann den Eintrag erstellen.
                         $imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
                         $actualImageFileName = '';
 
                         foreach ($imageExtensions as $ext) {
                             $imageFileName = $comicId . $ext;
-                            $imageFsPath = __DIR__ . '/../assets/comic_thumbnails/' . $imageFileName;
+                            // NEUER PFAD: /assets/comic_lowres/ statt /assets/comic_thumbnails/
+                            $imageFsPath = __DIR__ . '/../assets/comic_lowres/' . $imageFileName;
                             if (file_exists($imageFsPath)) {
                                 $actualImageFileName = $imageFileName;
                                 break; // Bild gefunden, Schleife beenden
                             }
                         }
 
+                        // Nur wenn ein Bild gefunden wurde (!empty), fahren wir fort und erstellen den RSS-Eintrag.
                         if (!empty($actualImageFileName)) {
-                            // ÄNDERUNG: Pfad zu comic_thumbnails
-                            $imageUrl = htmlspecialchars($baseUrl . 'assets/comic_thumbnails/' . $actualImageFileName);
-                            // Füge ein einfaches Style für max-width hinzu, um Responsivität in verschiedenen Readern zu gewährleisten
-                            $imageHtml = '<p><img src="' . $imageUrl . '" alt="' . htmlspecialchars($comicInfo['name']) . '" style="max-width: 100%; height: auto; display: block; margin-bottom: 10px;" /></p>';
                             if ($debugMode) {
-                                error_log("DEBUG: Comic-Bild gefunden: " . $imageUrl);
+                                error_log("DEBUG: Comic-Bild gefunden für ID " . $comicId . ". Erstelle RSS-Eintrag.");
                             }
+
+                            $comicLink = htmlspecialchars($baseUrl . 'comic/' . $filename);
+                            $pubDate = date(DATE_RSS, strtotime($comicId)); // Datum im RSS-Format
+
+                            // NEUER PFAD: /assets/comic_lowres/
+                            $imageUrl = htmlspecialchars($baseUrl . 'assets/comic_lowres/' . $actualImageFileName);
+                            $imageHtml = '<p><img src="' . $imageUrl . '" alt="' . htmlspecialchars($comicInfo['name']) . '" style="max-width: 100%; height: auto; display: block; margin-bottom: 10px;" /></p>';
+
+                            $descriptionWithImage = $imageHtml . '<p>' . htmlspecialchars($comicInfo['transcript']) . '</p>';
+
+                            $rssItems[] = [
+                                'title' => htmlspecialchars($comicInfo['name']),
+                                'link' => $comicLink,
+                                'guid' => $comicLink,
+                                'description' => $descriptionWithImage,
+                                'pubDate' => $pubDate
+                            ];
+                            $processedCount++;
+                            if ($debugMode)
+                                error_log("DEBUG: Comic-Item hinzugefügt: " . $comicInfo['name'] . " (Verarbeitet: " . $processedCount . ")");
+
                         } else {
+                            // Wenn kein Bild gefunden wurde, wird dieser Comic übersprungen.
                             if ($debugMode) {
-                                error_log("DEBUG: Comic-Bild nicht gefunden für ID " . $comicId . " (weder .jpg, .png noch .gif erwartet).");
+                                error_log("DEBUG: Comic-ID " . $comicId . " übersprungen: Kein Bild im Ordner /assets/comic_lowres/ gefunden.");
                             }
                         }
+                        // *** ÄNDERUNG ENDE ***
 
-                        // Füge das Bild-HTML vor dem Transkript in die Beschreibung ein
-                        $descriptionWithImage = $imageHtml . '<p>' . htmlspecialchars($comicInfo['transcript']) . '</p>';
-
-                        $rssItems[] = [
-                            'title' => htmlspecialchars($comicInfo['name']),
-                            'link' => $comicLink, // Dieser Link zeigt auf die eigentliche Comic-PHP-Seite
-                            'guid' => $comicLink,
-                            'description' => $descriptionWithImage, // Verwende die Beschreibung mit Bild
-                            'pubDate' => $pubDate
-                        ];
-                        $processedCount++;
-                        if ($debugMode)
-                            error_log("DEBUG: Comic-Item hinzugefügt: " . $comicInfo['name'] . " (Verarbeitet: " . $processedCount . ")");
                     } else {
                         if ($debugMode)
                             error_log("DEBUG: Comic-ID " . $comicId . " übersprungen: Typ nicht 'Comicseite' oder Name/Transkript leer.");
