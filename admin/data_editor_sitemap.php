@@ -90,7 +90,7 @@ if (!defined('COMIC_PAGES_PER_PAGE')) {
 }
 
 // Setze Parameter für den Header.
-$pageTitle = 'Sitemap Editor';
+$pageTitle = 'Adminbereich - Sitemap Editor';
 $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow'; // Admin-Seiten nicht crawlen
 if ($debugMode) {

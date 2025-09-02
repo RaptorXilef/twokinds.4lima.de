@@ -84,9 +84,14 @@ if ($debugMode)
 
 
 // Setze Parameter für den Header.
-$pageTitle = 'Sitemap Generator';
+$pageTitle = 'Adminbereich - Sitemap Generator';
 $pageHeader = 'Sitemap Generator';
-$robotsContent = 'noindex, nofollow'; // Admin-Seiten nicht crawlen
+$siteDescription = 'Seite zum erstellen der sitemal.xml.';
+$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
 
 // Basis-URL der Webseite dynamisch bestimmen
 $isLocal = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);

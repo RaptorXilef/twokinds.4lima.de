@@ -47,6 +47,16 @@ $lowresDir = __DIR__ . '/../assets/comic_lowres/';
 $hiresDir = __DIR__ . '/../assets/comic_hires/';
 $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/';
 
+// Setze Parameter für den Header.
+$pageTitle = 'Adminbereich - Thumbnail Generator';
+$pageHeader = 'Thumbnail Generator';
+$siteDescription = 'Seite zum Generieren der Vorschaubilder.';
+$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
+
 // GD-Bibliothek-Check
 if (!extension_loaded('gd')) {
     $gdError = "FEHLER: Die GD-Bibliothek ist nicht geladen. Thumbnails können nicht generiert werden.";
@@ -337,10 +347,6 @@ if (file_exists($headerPath)) {
 ?>
 
 <article>
-    <header>
-        <h1>Thumbnail-Generator</h1>
-    </header>
-
     <div class="content-section">
         <?php if ($gdError): ?>
             <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p>

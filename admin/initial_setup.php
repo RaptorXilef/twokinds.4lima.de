@@ -418,6 +418,11 @@ if ($debugMode)
 $pageTitle = 'Adminbereich - Ersteinrichtung';
 $pageHeader = 'Webseiten-Ersteinrichtung';
 $siteDescription = 'Tools für die initiale Konfiguration und Wartung der Twokinds-Webseite.';
+$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
 
 // Binde den gemeinsamen Header ein.
 // Stelle sicher, dass der Pfad korrekt ist.

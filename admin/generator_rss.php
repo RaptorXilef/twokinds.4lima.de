@@ -345,11 +345,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         error_log("DEBUG: Normale Seitenladung (kein AJAX-Call).");
 
     // Setze Parameter für den Header.
-    $pageTitle = 'RSS Generator';
+    $pageTitle = 'Adminbereich - RSS Generator';
     $pageHeader = 'RSS Feed Generator';
+    $siteDescription = 'Seite zum erstellen des RSS-Feeds.';
+    $robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+    if ($debugMode) {
+        error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+        error_log("DEBUG: Robots-Content: " . $robotsContent);
+    }
     $bodyClass = ''; // Keine spezielle Klasse für den Body
     // HIER WIRD DIE JAVASCRIPT-DATEI EINGEBUNDEN:
-    $additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($baseUrl) . "admin/js/generator_rss.js?c=" . date('Ymd') . "'></script>";
+    $additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($baseUrl) . "admin/src/js/generator_rss.js?c=" . date('Ymd') . "'></script>";
     $additionalHeadContent = '';
     $viewportContent = 'width=1099'; // Konsistent mit Original für das Design.
     $siteDescription = 'Verwaltung des RSS-Feeds für die Comic-Webseite.';
@@ -375,8 +381,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
     ?>
 
     <section>
-        <h2 class="page-header">RSS-Feed Generierung</h2>
-
         <p>Hier kannst du den RSS-Feed für deine Comic-Webseite generieren.</p>
 
         <div class="status-messages mt-4 p-4 rounded-lg bg-gray-100 border border-gray-200">

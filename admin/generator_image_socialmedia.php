@@ -46,6 +46,16 @@ $hiresDir = __DIR__ . '/../assets/comic_hires/';
 $lowresDir = __DIR__ . '/../assets/comic_lowres/'; // Hinzugefügt für Fallback
 $socialMediaImageDir = __DIR__ . '/../assets/comic_socialmedia/';
 
+// Setze Parameter für den Header.
+$pageTitle = 'Adminbereich - Social Media Bild-Generator';
+$pageHeader = 'Social Media Bild-Generator';
+$siteDescription = 'Seite zum Generieren der Sozial Media Vorschaubilder.';
+$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
+
 // GD-Bibliothek-Check
 if (!extension_loaded('gd')) {
     $gdError = "FEHLER: Die GD-Bibliothek ist nicht geladen. Bilder können nicht generiert werden.";
@@ -305,9 +315,6 @@ else
 ?>
 
 <article>
-    <header>
-        <h1>Social Media Bild-Generator</h1>
-    </header>
     <div class="content-section">
         <?php if ($gdError): ?>
             <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p><?php endif; ?>

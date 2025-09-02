@@ -474,8 +474,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // --- HTML-Struktur und Anzeige ---
 // Parameter für den Header
-$pageTitle = 'Adminbereich'; // Setze den spezifischen Titel für den Adminbereich
-$pageHeader = 'Adminbereich';
+$pageTitle = 'Adminbereich - Login und Benutzerverwaltung'; // Setze den spezifischen Titel für den Adminbereich
+$pageHeader = 'Adminbereich - Login und Benutzerverwaltung';
 // Setze die Beschreibung für den Adminbereich.
 $siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung. Hier können administrative Aufgaben durchgeführt werden。';
 

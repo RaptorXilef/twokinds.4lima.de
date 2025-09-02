@@ -206,9 +206,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Setze Parameter für den Header.
-$pageTitle = 'Bild-Upload';
-$pageHeader = 'Bild-Upload für Comic';
-$robotsContent = 'noindex, nofollow';
+$pageTitle = 'Adminbereich - Bild-Upload';
+$pageHeader = 'Bild-Upload für Comic-Seiten (hires und lowres)';
+$siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
+$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+if ($debugMode) {
+    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
+    error_log("DEBUG: Robots-Content: " . $robotsContent);
+}
 
 // Binde den gemeinsamen Header ein.
 if (file_exists($headerPath)) {

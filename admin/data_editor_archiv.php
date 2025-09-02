@@ -444,7 +444,7 @@ if (isset($_GET['scroll_to'])) {
 
 
 // Setze Parameter für den Header.
-$pageTitle = 'Archiv Daten Editor';
+$pageTitle = 'Adminbereich - Archiv Daten Editor';
 $pageHeader = 'Archiv Daten Editor';
 $siteDescription = 'Seite zum Bearbeiten der Archivkapitel-Daten.';
 $robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden

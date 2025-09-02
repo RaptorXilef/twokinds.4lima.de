@@ -87,7 +87,7 @@ if ($debugMode) {
 }
 
 // Setze Parameter für den Header.
-$pageTitle = 'Comic Daten Editor';
+$pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
 $robotsContent = 'noindex, nofollow'; // Admin-Seiten nicht crawlen
 if ($debugMode) {
