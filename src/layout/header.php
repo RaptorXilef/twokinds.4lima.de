@@ -109,6 +109,8 @@ $cookieBannerDarkCssPathWithCacheBuster = $cookieBannerDarkCssPath . '?c=' . fil
 $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(__DIR__ . '/js/cookie_consent.js');
 // --- Ende Pfade für Cookie Banner ---
 
+// Prüfen, ob wir im Admin-Bereich sind
+$isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -145,6 +147,10 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
     <link rel="stylesheet" type="text/css"
         href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
 
+    <?php if ($isAdminPage): // Lade Font Awesome nur für Admin-Seiten, um das Uhren-Icon anzuzeigen ?>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <?php endif; ?>
+
 
     <!-- Favicons für verschiedene Browser und Geräte. -->
     <link rel="icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
@@ -159,8 +165,7 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
     <?php
     // Setze eine JavaScript-Variable, die angibt, ob es sich um eine Admin-Seite handelt.
     // Dies wird von common.js verwendet, um bestimmte Funktionen zu deaktivieren.
-    $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) ? 'true' : 'false';
-    echo "<script type='text/javascript'>window.isAdminPage = " . $isAdminPage . ";</script>";
+    echo "<script type='text/javascript'>window.isAdminPage = " . ($isAdminPage ? 'true' : 'false') . ";</script>";
     ?>
 
     <?php
@@ -295,20 +300,16 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
 
                 <?php
                 // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
-                // __DIR__ ist das Verzeichnis der aktuellen Datei (src/layout)
-                // $_SERVER['PHP_SELF'] ist der Pfad zum aktuell aufgerufenen Skript (z.B. /admin/index.php oder /index.php)
-                if (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) {
+                if ($isAdminPage) {
                     // Wenn sich die aufgerufene Seite im /admin/-Verzeichnis befindet, lade das Admin-Menü
-                    // Der Pfad ist von src/layout/ nach ../components/
                     require(__DIR__ . '/../components/admin_menue_config.php');
 
-                    // KORRIGIERUNG: Lade das Modal nur, wenn der Admin auch wirklich eingeloggt ist.
+                    // Lade das Modal NUR, wenn der Admin auch wirklich eingeloggt ist.
                     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
                         require(__DIR__ . '/../components/session_timeout_modal.php');
                     }
                 } else {
                     // Andernfalls lade das normale Seitenmenü
-                    // Der Pfad ist von src/layout/ nach ../components/
                     require(__DIR__ . '/../components/menue_config.php');
                 }
                 ?>
@@ -319,7 +320,7 @@ $cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(_
                     <?php
                     // Der Seiten-Header wird hier dynamisch eingefügt, wenn er übergeben wurde.
                     // Er wird nur angezeigt, wenn die Seite im Admin-Verzeichnis liegt.
-                    if (!empty($pageHeader) && strpos($_SERVER['PHP_SELF'], '/admin/') !== false) {
+                    if (!empty($pageHeader) && $isAdminPage) {
                         echo '<header>';
                         echo '    <h1 class="page-header">' . htmlspecialchars($pageHeader) . '</h1>';
                         echo '</header>';
