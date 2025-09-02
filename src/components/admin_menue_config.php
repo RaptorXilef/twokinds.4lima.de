@@ -33,7 +33,7 @@
   <!-- NEU: Session-Timer-Anzeige -->
   <div id="session-timer-display" class="session-timer">
     <i class="fas fa-stopwatch"></i>
-    <span>Session-Timeout in:</span>
+    <span>Auto-Logout in:</span>
     <strong id="session-timer-countdown">10:00</strong>
   </div>
 

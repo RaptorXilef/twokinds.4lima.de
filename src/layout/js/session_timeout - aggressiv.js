@@ -8,13 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
   let warningTimer;
   let logoutTimer;
   let countdownInterval;
-  let displayCountdownInterval;
+  let displayCountdownInterval; // NEU: Separater Intervall für die Anzeige
 
   const modal = document.getElementById("sessionTimeoutModal");
   const countdownElement = document.getElementById("sessionTimeoutCountdown");
   const stayLoggedInBtn = document.getElementById("stayLoggedInBtn");
   const logoutBtn = document.getElementById("logoutBtn");
 
+  // NEU: Elemente für die permanente Timer-Anzeige
   const timerDisplayContainer = document.getElementById(
     "session-timer-display"
   );
@@ -26,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn(
       "Session timer display elements not found. Visible countdown disabled."
     );
+    // Don't return, as the modal might still work.
   }
   if (!modal || !countdownElement || !stayLoggedInBtn || !logoutBtn) {
     console.warn(
@@ -38,30 +40,24 @@ document.addEventListener("DOMContentLoaded", () => {
     clearTimeout(warningTimer);
     clearTimeout(logoutTimer);
     clearInterval(countdownInterval);
-    clearInterval(displayCountdownInterval);
+    clearInterval(displayCountdownInterval); // NEU
 
     warningTimer = setTimeout(showWarningModal, warningTimeInSeconds * 1000);
     logoutTimer = setTimeout(forceLogout, sessionTimeoutInSeconds * 1000);
 
+    // NEU: Starte den sichtbaren Countdown
     startDisplayCountdown();
   }
 
   function resetTimers() {
-    // Hide modal if it's visible when activity is detected
-    if (modal.style.display === "flex") {
-      hideWarningModal();
-    }
     startTimers();
   }
 
+  // NEU: Funktion zur Aktualisierung des sichtbaren Countdowns
   function startDisplayCountdown() {
     let remainingSeconds = sessionTimeoutInSeconds;
 
     const updateDisplay = () => {
-      if (remainingSeconds < 0) {
-        clearInterval(displayCountdownInterval);
-        return;
-      }
       const minutes = Math.floor(remainingSeconds / 60)
         .toString()
         .padStart(2, "0");
@@ -70,9 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
         timerDisplayCountdown.textContent = `${minutes}:${seconds}`;
       }
       remainingSeconds--;
+
+      if (remainingSeconds < 0) {
+        clearInterval(displayCountdownInterval);
+      }
     };
 
-    updateDisplay();
+    updateDisplay(); // Sofort aktualisieren
     displayCountdownInterval = setInterval(updateDisplay, 1000);
   }
 
@@ -109,19 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   logoutBtn.addEventListener("click", forceLogout);
 
-  // Throttled activity handler to prevent resetting too often
-  let lastActivityTime = Date.now();
+  let activityTimeout;
   const activityHandler = () => {
-    lastActivityTime = Date.now();
+    clearTimeout(activityTimeout);
+    activityTimeout = setTimeout(resetTimers, 300);
   };
-
-  // Check for inactivity every second
-  setInterval(() => {
-    // If there was activity in the last 2 seconds, reset the main timers
-    if (Date.now() - lastActivityTime < 2000) {
-      resetTimers();
-    }
-  }, 1000);
 
   window.addEventListener("mousemove", activityHandler, { passive: true });
   window.addEventListener("keydown", activityHandler, { passive: true });
