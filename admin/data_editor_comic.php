@@ -1496,6 +1496,21 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
     body.theme-night .button-toggle.active {
         background-color: #007bff;
     }
+
+    /* NEU: Styles für das Vorschaubild */
+    .comic-thumbnail-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 5px;
+    }
+
+    .comic-thumbnail {
+        max-width: 80px;
+        height: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
 </style>
 
 <div class="admin-container">
@@ -1636,6 +1651,15 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                                 $urlOriginalbildFilename = $data['url_originalbild'] ?? '';
+                                // NEU: Pfad zum Vorschaubild finden.
+                                $thumbnailPath = '';
+                                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                                foreach ($imageExtensions as $ext) {
+                                    if (file_exists($comicThumbnailsDirPath . $id . '.' . $ext)) {
+                                        $thumbnailPath = '../assets/comic_thumbnails/' . $id . '.' . $ext;
+                                        break;
+                                    }
+                                }
                                 ?>
                                 <?php $lowresImagePath = findLowresImagePath($id, $comicLowresDirPath, $debugMode); ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
@@ -1663,8 +1687,16 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                             <?php endif; ?>
                                         </div>
                                     </td>
-                                    <td><span
+                                    <td>
+                                        <span
                                             class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span>
+                                        <?php if (!empty($thumbnailPath)): ?>
+                                            <div class="comic-thumbnail-container">
+                                                <img src="<?php echo htmlspecialchars($thumbnailPath); ?>"
+                                                    alt="Vorschaubild für Comic-ID <?php echo htmlspecialchars($id); ?>"
+                                                    class="comic-thumbnail">
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td><span
                                             class="editable-field comic-name-display <?php echo $isNameMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['name']); ?></span>
@@ -1880,9 +1912,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             comicNameInput.disabled = false;
 
             comicUrlOriginalbildInput.value = '';
-            comicUrlEmptyCheckbox.checked = false;
-            comicUrlOriginalbildInput.disabled = false;
-
+            comicUrlEmptyCheckbox.checked = true; // Standardmäßig anhaken
+            comicUrlOriginalbildInput.disabled = true; // Und deaktivieren
 
             saveButtons.forEach(button => {
                 button.textContent = 'Speichern';
@@ -1993,12 +2024,14 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 updateOriginalImagePreview('');
             } else {
                 comicUrlOriginalbildInput.disabled = false;
-                if (comicUrlOriginalbildInput.value.trim() === '') {
+                const initialValue = comicUrlOriginalbildInput.dataset.initialValue;
+                if (initialValue) {
+                    comicUrlOriginalbildInput.value = initialValue;
+                    updateOriginalImagePreview(initialValue);
+                } else {
                     const comicId = comicIdInput.value.trim();
-                    if (comicId) {
-                        comicUrlOriginalbildInput.value = comicId;
-                        updateOriginalImagePreview(comicId);
-                    }
+                    comicUrlOriginalbildInput.value = comicId;
+                    updateOriginalImagePreview(comicId);
                 }
             }
         });
@@ -2026,20 +2059,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 showImagePreview(lowresPath);
 
                 const comicId = row.dataset.comicId;
-                let urlOriginalbild = row.dataset.urlOriginalbild;
-
-                // NEUE LOGIK: Wenn der gespeicherte Dateiname leer ist,
-                // fülle das Feld standardmäßig mit der Comic-ID.
-                if (urlOriginalbild.trim() === '') {
-                    const originalUrlData = row.dataset.urlOriginalbild.trim();
-                    if (originalUrlData === '') {
-                        urlOriginalbild = comicId;
-                    } else {
-                        urlOriginalbild = originalUrlData;
-                    }
-                }
-
-                updateOriginalImagePreview(urlOriginalbild);
+                const urlOriginalbild = row.dataset.urlOriginalbild;
 
                 const comicType = row.querySelector('.comic-type-display').textContent;
                 const comicName = row.querySelector('.comic-name-display').textContent;
@@ -2049,9 +2069,18 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 comicIdInput.value = comicId;
                 originalComicIdInput.value = comicId;
                 comicIdInput.readOnly = true;
+
                 comicTypeSelect.value = comicType;
+
                 comicNameInput.value = comicName;
-                comicUrlOriginalbildInput.value = urlOriginalbild;
+
+                // Korrigierte Logik für comic-url-originalbild
+                const hasUrlInJson = urlOriginalbild.trim() !== '';
+                comicUrlOriginalbildInput.dataset.initialValue = hasUrlInJson ? urlOriginalbild : '';
+                comicUrlEmptyCheckbox.checked = !hasUrlInJson;
+                comicUrlOriginalbildInput.disabled = !hasUrlInJson;
+                comicUrlOriginalbildInput.value = hasUrlInJson ? urlOriginalbild : '';
+                updateOriginalImagePreview(hasUrlInJson ? urlOriginalbild : '');
 
                 if (comicName === '') {
                     comicNameEmptyCheckbox.checked = true;
@@ -2059,11 +2088,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                     comicNameEmptyCheckbox.checked = false;
                 }
                 comicNameEmptyCheckbox.dispatchEvent(new Event('change'));
-
-                // NEUE LOGIK: Die Checkbox soll beim Laden eines Eintrags
-                // immer standardmäßig deaktiviert (false) sein.
-                comicUrlEmptyCheckbox.checked = false;
-                comicUrlEmptyCheckbox.dispatchEvent(new Event('change'));
 
                 initializeSummernote();
                 $('#comic-transcript').summernote('code', comicTranscript);
@@ -2156,7 +2180,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                 showImagePreview(path);
             }
 
-            // KORRIGIERTE LOGIK: Nur füllen, wenn das Feld leer ist
+            // KORRIGIERTE LOGIK: Nur füllen, wenn das Feld leer ist und die Checkbox nicht angehakt ist
             if (!comicUrlEmptyCheckbox.checked && comicUrlOriginalbildInput.value.trim() === '') {
                 comicUrlOriginalbildInput.value = comicId;
                 updateOriginalImagePreview(comicId);
