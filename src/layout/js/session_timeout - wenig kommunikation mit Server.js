@@ -1,18 +1,14 @@
 /**
- * Kümmert sich um die clientseitige Logik für die Session-Timeout-Warnung und den sichtbaren Countdown.
- * V3 - Behebt den Fehler, bei dem clientseitige Aktivität die Server-Session nicht aktualisiert hat.
+ * Handles the client-side logic for the session timeout warning and visible countdown.
  */
 document.addEventListener("DOMContentLoaded", () => {
-  const sessionTimeoutInSeconds = 600; // 10 Minuten (muss mit PHP übereinstimmen)
-  const warningTimeInSeconds = 540; // 9 Minuten (1 Minute vor dem Timeout)
+  const sessionTimeoutInSeconds = 600; // 10 minutes (must match PHP)
+  const warningTimeInSeconds = 540; // 9 minutes (1 minute before timeout)
 
   let warningTimer;
   let logoutTimer;
   let countdownInterval;
   let displayCountdownInterval;
-
-  // Ein Flag, um zu verhindern, dass zu viele Pings an den Server gesendet werden
-  let isPinging = false;
 
   const modal = document.getElementById("sessionTimeoutModal");
   const countdownElement = document.getElementById("sessionTimeoutCountdown");
@@ -28,12 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!timerDisplayContainer || !timerDisplayCountdown) {
     console.warn(
-      "Elemente für die Session-Timer-Anzeige nicht gefunden. Sichtbarer Countdown deaktiviert."
+      "Session timer display elements not found. Visible countdown disabled."
     );
   }
   if (!modal || !countdownElement || !stayLoggedInBtn || !logoutBtn) {
     console.warn(
-      "Elemente für das Session-Timeout-Modal nicht gefunden. Timeout-Funktion deaktiviert."
+      "Session timeout modal elements not found. Timeout feature disabled."
     );
     return;
   }
@@ -50,40 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
     startDisplayCountdown();
   }
 
-  /**
-   * BUGFIX: Diese Funktion pingt nun den Server an, um die PHP-Sitzung am Leben zu erhalten.
-   * Sie enthält einen Drosselungsmechanismus, um zu viele Anfragen zu vermeiden.
-   */
-  function resetTimersAndPingServer() {
-    // Wenn wir uns bereits mitten in einer Ping-Anfrage befinden, nichts tun.
-    if (isPinging) {
-      return;
+  function resetTimers() {
+    // Hide modal if it's visible when activity is detected
+    if (modal.style.display === "flex") {
+      hideWarningModal();
     }
-
-    // Setze ein Flag, um anzuzeigen, dass ein Ping im Gange ist.
-    isPinging = true;
-
-    // Pingt den Server an, um den Session-Zeitstempel zu aktualisieren.
-    // KORREKTUR: Der Pfad muss relativ zum aktuellen Verzeichnis sein.
-    fetch("src/components/keep_alive.php")
-      .then((response) => {
-        if (response.ok) {
-          // Wenn der Ping erfolgreich war, setze die clientseitigen Timer zurück.
-          startTimers();
-        } else {
-          console.warn(
-            "Keep-alive-Ping war nicht erfolgreich. Server-Session könnte ablaufen."
-          );
-        }
-      })
-      .catch((err) => console.warn("Keep-alive-Ping fehlgeschlagen.", err))
-      .finally(() => {
-        // Nachdem der Ping abgeschlossen ist (erfolgreich oder nicht), erlaube nach einer kurzen Verzögerung einen neuen Ping.
-        // Dies verhindert aufeinanderfolgende Pings bei schneller Aktivität.
-        setTimeout(() => {
-          isPinging = false;
-        }, 5000); // Erlaube einen neuen Ping höchstens alle 5 Sekunden.
-      });
+    startTimers();
   }
 
   function startDisplayCountdown() {
@@ -133,17 +101,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   stayLoggedInBtn.addEventListener("click", () => {
     hideWarningModal();
-    resetTimersAndPingServer(); // Benutze die korrigierte Funktion
+    resetTimers();
+    fetch("keep_alive.php").catch((err) =>
+      console.warn("Keep-alive ping failed.", err)
+    );
   });
 
   logoutBtn.addEventListener("click", forceLogout);
 
-  // Diese Logik drosselt den Aktivitäts-Handler. Sie stellt sicher, dass resetTimersAndPingServer
-  // nur einmal aufgerufen wird, nachdem eine Welle von Aktivitäten beendet ist (Debouncing).
+  // Throttled activity handler to prevent resetting too often
   let activityTimeout;
   const activityHandler = () => {
     clearTimeout(activityTimeout);
-    activityTimeout = setTimeout(resetTimersAndPingServer, 500); // 500ms Verzögerung
+    activityTimeout = setTimeout(resetTimers, 500); // Reset only after 500ms of inactivity
   };
 
   window.addEventListener("mousemove", activityHandler, { passive: true });
