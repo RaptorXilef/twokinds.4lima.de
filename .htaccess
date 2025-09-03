@@ -1,55 +1,85 @@
-# --- Sicherheits- und Performance-Header ---
+# ##############################################################################
+# ##                                                                          ##
+# ##      UMFASSENDE .HTACCESS-KONFIGURATION FÜR PERFORMANCE & SICHERHEIT     ##
+# ##                                                                          ##
+# ##############################################################################
+
+
+# --- Block 1: Sicherheits- und Kompatibilitäts-Header ---
+# Dieser Block sendet bei jeder Anfrage wichtige HTTP-Header mit,
+# die den Browser anweisen, sich sicherer zu verhalten und die Seite korrekt darzustellen.
 <IfModule mod_headers.c>
-    # Erzwingt die neueste Rendering-Engine von Internet Explorer
+    # Erzwingt, dass der Internet Explorer immer die neueste verfügbare Rendering-Engine verwendet.
     Header set X-UA-Compatible "IE=Edge"
-    # Clickjacking-Schutz: Verhindert das Einbetten der Seite in iframes auf fremden Seiten.
+
+    # Clickjacking-Schutz: Erlaubt das Einbetten der Seite via <iframe>, <embed> oder <object> nur von der eigenen Domain.
     Header set X-Frame-Options "SAMEORIGIN"
-    # MIME-Type-Sniffing-Schutz: Verhindert, dass der Browser den Inhaltstyp errät.
+
+    # MIME-Type-Sniffing-Schutz: Verhindert, dass der Browser versucht, den Inhaltstyp einer Datei zu "erraten",
+    # was eine Sicherheitslücke sein kann. Der Browser muss dem vom Server deklarierten Content-Type vertrauen.
     Header set X-Content-Type-Options "nosniff"
-    # Referrer-Policy: Kontrolliert, welche Referrer-Informationen gesendet werden.
+
+    # Referrer-Policy: Kontrolliert, welche Informationen über die Herkunftsseite (Referrer)
+    # bei Klicks auf externe Links gesendet werden. Dies verbessert den Datenschutz.
     Header set Referrer-Policy "no-referrer-when-downgrade"
 </IfModule>
 
-# --- Eigene Fehlerseiten (Benutzerfreundlichkeit) ---
-# Du musst die Dateien 403.php und 404.php im Hauptverzeichnis erstellen.
+
+# --- Block 2: Eigene Fehlerseiten (Benutzerfreundlichkeit) ---
+# Zeigt anstelle der technischen Standard-Fehlerseiten des Servers eigene,
+# benutzerfreundliche und im Design der Webseite gehaltene Seiten an.
+# WICHTIG: Du musst die Dateien 403.php und 404.php im Hauptverzeichnis deiner Webseite erstellen.
 ErrorDocument 403 /403.php
 ErrorDocument 404 /404.php
 
-# --- Grundlegende Servereinstellungen ---
-# Verhindert, dass Besucher die Dateiliste eines Verzeichnisses sehen können.
-Options -Indexes
-# Schützt diese .htaccess-Datei vor direktem Zugriff über den Browser.
-<Files .htaccess>
-    Require all denied
-</Files>
 
-# --- Umschreibungs- und Weiterleitungsregeln ---
+# --- Block 3: Grundlegende Servereinstellungen & Basisschutz ---
+# Verbessert die Sicherheit, indem Standard-Serververhalten angepasst wird.
+
+# Verhindert "Directory Listing", also dass Besucher die Dateiliste eines Verzeichnisses sehen können,
+# falls dort keine Index-Datei (z.B. index.php) liegt.
+Options -Indexes
+
+# Schützt diese .htaccess-Datei selbst und andere sensible Konfigurationsdateien vor direktem Zugriff über den Browser.
+<FilesMatch "(^\.htaccess|php\.ini|licence\.txt|readme\.html)">
+    Require all denied
+</FilesMatch>
+
+
+# --- Block 4: Umschreibungs- und Weiterleitungsregeln ---
+# Das Herzstück für saubere, SEO-freundliche URLs.
 RewriteEngine On
 
-# --- Block 1: Kanonische URL erzwingen (HTTPS & non-www) ---
+# 4a: Kanonische URL erzwingen (HTTPS & non-www)
+# Leitet alle Anfragen auf eine einzige, offizielle Version der URL um (https://twokinds.4lima.de),
+# um doppelten Inhalt (Duplicate Content) bei Suchmaschinen zu vermeiden.
+
+# Erzwingt HTTPS für alle Anfragen.
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
+# Erzwingt die "non-www"-Version (ohne www. davor).
 RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
-# --- Block 2: Schutz vor Hotlinking von Bildern ---
-# BITTE "deinedomain.de" durch deine echte Domain ersetzen!
+# 4b: Schutz vor Hotlinking von Bildern
+# Verhindert, dass andere Webseiten deine Bilder direkt einbinden und so deinen Traffic verbrauchen.
+# Bilder werden nur angezeigt, wenn der Aufruf von deiner eigenen Domain kommt.
 RewriteCond %{HTTP_REFERER} !^$
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds.4lima.de [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.de [NC]
 RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [NC,F,L]
 
-# --- Block 3: Permanente Weiterleitungen (Redirects) für alte Comic-Pfade ---
-# Leitet Anfragen für alte Comic-Seiten-Pfade (z.B. /20250810 oder /20250810.php)
-# permanent auf die neue, saubere URL-Struktur um (z.B. /comic/20250810).
+# 4c: Permanente Weiterleitungen (Redirects) für alte Comic-Pfade
+# Leitet Besucher und Suchmaschinen von der alten URL-Struktur (z.B. /20250810.php)
+# permanent (301) auf die neue, saubere URL-Struktur (z.B. /comic/20250810) um.
 # Bedingung: Die Anfrage darf nicht bereits im /comic/ Verzeichnis sein (verhindert Loops).
 RewriteCond %{REQUEST_URI} !^/comic/
 RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
 RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 
-
-# --- Block 4: Interne Umschreibungen für "saubere" URLs ---
-# Ermöglicht den Aufruf von PHP-Dateien ohne die .php-Endung.
+# 4d: Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
+# Ermöglicht den Aufruf von PHP-Dateien, ohne dass ".php" in der URL stehen muss.
+# Dies geschieht intern auf dem Server; der Besucher sieht die saubere URL.
 # Gilt für ALLE Pfade, z.B. /kontakt -> /kontakt.php und /comic/20250810 -> /comic/20250810.php
 # Bedingung: Die Anfrage ist kein existierendes Verzeichnis.
 RewriteCond %{REQUEST_FILENAME} !-d
@@ -61,7 +91,9 @@ RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^(.*)$ $1.php [L]
 
 
-# --- Block 5: GZIP-Komprimierung für schnellere Ladezeiten ---
+# --- Block 5: GZIP-Komprimierung (Performance) ---
+# Komprimiert textbasierte Dateien (HTML, CSS, JS etc.) vor der Übertragung an den Browser.
+# Dies reduziert die Dateigröße und beschleunigt die Ladezeit erheblich.
 <IfModule mod_deflate.c>
     # Komprimiere HTML, CSS, JavaScript, Text, XML und Schriften
     AddOutputFilterByType DEFLATE application/javascript
@@ -87,7 +119,10 @@ RewriteRule ^(.*)$ $1.php [L]
 </IfModule>
 
 
-# --- Block 6: Browser-Caching für statische Inhalte ---
+# --- Block 6: Browser-Caching (Performance) ---
+# Weist den Browser des Besuchers an, statische Dateien (Bilder, CSS, JS) für einen
+# langen Zeitraum lokal zu speichern. Bei einem erneuten Besuch müssen diese Dateien nicht
+# erneut vom Server geladen werden, was die Seite extrem beschleunigt.
 <IfModule mod_expires.c>
     ExpiresActive On
     # Standard-Ablaufzeit
@@ -108,4 +143,24 @@ RewriteRule ^(.*)$ $1.php [L]
     ExpiresByType application/x-font-ttf          "access plus 1 year"
     ExpiresByType font/opentype                   "access plus 1 year"
 </IfModule>
+
+
+# --- Block 7: Korrekte MIME-Typen für moderne Formate ---
+# Stellt sicher, dass moderne Dateiformate vom Server mit dem korrekten
+# Content-Type-Header ausgeliefert werden, um Darstellungsprobleme im Browser zu vermeiden.
+<IfModule mod_mime.c>
+    AddType image/webp                      .webp
+    AddType image/svg+xml                   .svg .svgz
+    AddType font/woff2                      .woff2
+</IfModule>
+
+
+# --- Block 8: ETags entfernen (Performance-Optimierung) ---
+# ETags sind eine Methode zur Validierung von Cache-Dateien. In manchen Konfigurationen
+# können sie das Caching behindern oder unnötige Server-Informationen preisgeben.
+# Das Entfernen ist eine gängige Best-Practice-Optimierung.
+<IfModule mod_headers.c>
+    Header unset ETag
+</IfModule>
+FileETag None
 
