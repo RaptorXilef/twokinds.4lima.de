@@ -301,15 +301,17 @@ $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
                 <?php
                 // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
                 if ($isAdminPage) {
-                    // Wenn sich die aufgerufene Seite im /admin/-Verzeichnis befindet, lade das Admin-Menü
-                    require(__DIR__ . '/../../admin/src/components/admin_menue_config.php');
-
-                    // Lade das Modal NUR, wenn der Admin auch wirklich eingeloggt ist.
+                    // *** NEUE LOGIK ***
+                    // Lade das Admin-Menü und das Timeout-Modal NUR, wenn der Admin auch wirklich eingeloggt ist.
+                    // Die Prüfung 'isset($_SESSION['admin_logged_in'])' stellt sicher, dass das Menü nicht auf der Login-Seite angezeigt wird.
                     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+                        require(__DIR__ . '/../../admin/src/components/admin_menue_config.php');
                         require(__DIR__ . '/../../admin/src/components/session_timeout_modal.php');
+                    } else {
+                        require(__DIR__ . '/../../admin/src/components/admin_menue_config_login.php');
                     }
                 } else {
-                    // Andernfalls lade das normale Seitenmenü
+                    // Andernfalls lade das normale Seitenmenü für öffentliche Seiten
                     require(__DIR__ . '/../components/menue_config.php');
                 }
                 ?>
