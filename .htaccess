@@ -177,7 +177,7 @@ FileETag None
 <IfModule mod_headers.c>
     # Content Security Policy (CSP): Definiert eine Whitelist für ausführbare Ressourcen.
     # Dies ist eine sehr effektive Maßnahme gegen Cross-Site-Scripting (XSS).
-    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com placehold.co www.googletagmanager.com; style-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com placehold.co i.creativecommons.org licensebuttons.net; font-src 'self' cdnjs.cloudflare.com cdn.twokinds.keenspot.com https://fonts.gstatic.com; connect-src 'self' *.google-analytics.com https://cdn.twokinds.keenspot.com;"
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com placehold.co www.googletagmanager.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com placehold.co i.creativecommons.org; font-src 'self' cdnjs.cloudflare.com cdn.twokinds.keenspot.com https://fonts.gstatic.com; connect-src 'self' *.google-analytics.com https://cdn.twokinds.keenspot.com;"
 
     # HTTP Strict Transport Security (HSTS): Weist den Browser an, die Seite nur über HTTPS aufzurufen.
     # WICHTIGER HINWEIS: Aktiviere diese Zeile erst, wenn du sicher bist, dass deine HTTPS-Konfiguration
