@@ -12,6 +12,14 @@ if ($debugMode)
 ob_start();
 session_start();
 
+// --- Logout-Logik ---
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_unset();
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
 // Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
 require_once __DIR__ . '/src/components/security_check.php';
 
