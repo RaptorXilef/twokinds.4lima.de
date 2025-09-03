@@ -729,11 +729,11 @@ if (file_exists($headerPath)) {
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
                     <label for="create_username">Benutzername:</label>
-                    <input type="text" id="create_username" name="username" required>
+                    <input type="text" id="create_username" name="username" required autocomplete="username">
                 </div>
                 <div>
                     <label for="create_password">Passwort:</label>
-                    <input type="password" id="create_password" name="password" required>
+                    <input type="password" id="create_password" name="password" required autocomplete="new-password">
                 </div>
                 <button type="submit" name="action" value="create_initial_user">Admin erstellen</button>
             </form>
@@ -745,11 +745,11 @@ if (file_exists($headerPath)) {
             <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                 <div>
                     <label for="login_username">Benutzername:</label>
-                    <input type="text" id="login_username" name="username" required>
+                    <input type="text" id="login_username" name="username" required autocomplete="username">
                 </div>
                 <div>
                     <label for="login_password">Passwort:</label>
-                    <input type="password" id="login_password" name="password" required>
+                    <input type="password" id="login_password" name="password" required autocomplete="current-password">
                 </div>
                 <button type="submit" name="action" value="login">Login</button>
             </form>
@@ -765,16 +765,17 @@ if (file_exists($headerPath)) {
                 <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
                         <label for="old_password">Altes Passwort (Bestätigung):</label>
-                        <input type="password" id="old_password" name="old_password" required>
+                        <input type="password" id="old_password" name="old_password" required
+                            autocomplete="current-password">
                     </div>
                     <div>
                         <label for="new_username">Neuer Benutzername (optional):</label>
                         <input type="text" id="new_username" name="new_username"
-                            value="<?php echo htmlspecialchars($currentUser); ?>">
+                            value="<?php echo htmlspecialchars($currentUser); ?>" autocomplete="username">
                     </div>
                     <div>
                         <label for="new_password">Neues Passwort (optional):</label>
-                        <input type="password" id="new_password" name="new_password">
+                        <input type="password" id="new_password" name="new_password" autocomplete="new-password">
                     </div>
                     <button type="submit" name="action" value="change_credentials">Daten ändern</button>
                 </form>
@@ -785,11 +786,11 @@ if (file_exists($headerPath)) {
                 <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
                         <label for="add_username">Benutzername für neuen Benutzer:</label>
-                        <input type="text" id="add_username" name="add_username" required>
+                        <input type="text" id="add_username" name="add_username" required autocomplete="username">
                     </div>
                     <div>
                         <label for="add_password">Passwort für neuen Benutzer:</label>
-                        <input type="password" id="add_password" name="add_password" required>
+                        <input type="password" id="add_password" name="add_password" required autocomplete="new-password">
                     </div>
                     <button type="submit" name="action" value="add_user">Benutzer hinzufügen</button>
                 </form>
