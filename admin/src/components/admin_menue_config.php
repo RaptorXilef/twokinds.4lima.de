@@ -39,8 +39,8 @@
 
   <!-- Menü-Navigation -->
   <nav id="menu" class="menu">
-    <a href="./index.php">Dashboard</a>
-    <a href="./index.php#manage-users">Benutzer verwalten</a>
+    <a href="./management_user.php">Benutzer verwalten</a>
+    <a href="./management_login.php">Eigene Anmeldedaten ändern</a>
     </br>
     <a href="./initial_setup.php">Webseiten-Ersteinrichtung</a>
     </br>

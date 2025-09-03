@@ -1,0 +1,237 @@
+<?php
+/**
+ * Diese Seite erlaubt einem angemeldeten Benutzer, die eigenen Anmeldedaten zu ändern.
+ */
+
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: management_login.php wird geladen.");
+
+ob_start();
+session_start();
+
+// Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/src/components/security_check.php';
+
+// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header('Location: index.php');
+    exit;
+}
+
+// --- Pfad zur Benutzerdatei ---
+$usersFile = __DIR__ . '/../../../admin_users.json';
+
+// --- Hilfsfunktionen (unverändert) ---
+function getUsers(): array
+{
+    global $usersFile;
+    if (!file_exists($usersFile) || filesize($usersFile) === 0)
+        return [];
+    $content = file_get_contents($usersFile);
+    $users = json_decode($content, true);
+    return is_array($users) ? $users : [];
+}
+
+function saveUsers(array $users): bool
+{
+    global $usersFile;
+    $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
+    return file_put_contents($usersFile, $jsonContent) !== false;
+}
+
+// --- Logik ---
+$message = '';
+$currentUser = $_SESSION['admin_username'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'change_credentials') {
+    $oldPassword = $_POST['old_password'] ?? '';
+    $newUsername = filter_input(INPUT_POST, 'new_username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $newPassword = $_POST['new_password'] ?? '';
+    $confirmNewPassword = $_POST['confirm_new_password'] ?? '';
+    $users = getUsers();
+
+    if ($newPassword !== $confirmNewPassword) {
+        $message = '<p style="color: red;">Die neuen Passwörter stimmen nicht überein.</p>';
+    } elseif (!isset($users[$currentUser]) || !password_verify($oldPassword, $users[$currentUser]['passwordHash'])) {
+        $message = '<p style="color: red;">Das aktuelle Passwort ist inkorrekt.</p>';
+    } elseif (empty($newUsername) && empty($newPassword)) {
+        $message = '<p style="color: orange;">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein.</p>';
+    } else {
+        $userUpdated = false;
+        $newUsersArray = $users;
+
+        if (!empty($newUsername) && $newUsername !== $currentUser) {
+            if (isset($newUsersArray[$newUsername])) {
+                $message = '<p style="color: red;">Neuer Benutzername ist bereits vergeben.</p>';
+            } else {
+                $newUsersArray[$newUsername] = $newUsersArray[$currentUser];
+                unset($newUsersArray[$currentUser]);
+                $_SESSION['admin_username'] = $newUsername;
+                $currentUser = $newUsername;
+                $userUpdated = true;
+            }
+        }
+
+        if (!empty($newPassword) && empty($message)) {
+            $hashedNewPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            $newUsersArray[$currentUser]['passwordHash'] = $hashedNewPassword;
+            $userUpdated = true;
+        }
+
+        if ($userUpdated && empty($message)) {
+            if (saveUsers($newUsersArray)) {
+                $message = '<p style="color: green;">Anmeldedaten erfolgreich aktualisiert.</p>';
+            } else {
+                $message = '<p style="color: red;">Fehler beim Speichern der neuen Anmeldedaten.</p>';
+            }
+        }
+    }
+}
+
+// --- HTML-Struktur und Anzeige ---
+$pageTitle = 'Adminbereich - Anmeldedaten ändern';
+$pageHeader = 'Eigene Anmeldedaten ändern';
+$robotsContent = 'noindex, nofollow';
+$headerPath = __DIR__ . '/../src/layout/header.php';
+if (file_exists($headerPath)) {
+    include $headerPath;
+} else {
+    die('Fehler: Header-Datei nicht gefunden.');
+}
+?>
+<article>
+    <style>
+        /* Stile können in eine zentrale CSS-Datei ausgelagert werden */
+        .admin-form-container {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid rgba(221, 221, 221, 0.2);
+            border-radius: 8px;
+            background-color: rgba(240, 240, 240, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .main-container.lights-off .admin-form-container {
+            background-color: rgba(30, 30, 30, 0.2);
+            border-color: rgba(80, 80, 80, 0.15);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-form-container label {
+            color: #333;
+        }
+
+        body.theme-night .admin-form-container label {
+            color: #efefef !important;
+        }
+
+        .admin-form-container input[type="text"],
+        .admin-form-container input[type="password"] {
+            width: calc(100% - 18px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #333;
+        }
+
+        .main-container.lights-off .admin-form-container input[type="text"],
+        .main-container.lights-off .admin-form-container input[type="password"] {
+            background-color: #444;
+            color: #f0f0f0;
+            border-color: #666;
+        }
+
+        .admin-form-container button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+            background-color: #5cb85c;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .message p {
+            margin: 0;
+        }
+    </style>
+    <div class="admin-form-container">
+        <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
+        <p style="text-align: right;"><a href="index.php?action=logout" class="logout-link">Logout</a></p>
+
+        <?php if (!empty($message)): ?>
+            <div class="message"><?php echo $message; ?></div>
+        <?php endif; ?>
+
+        <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
+            <h3>Benutzerdaten ändern</h3>
+            <form id="change-credentials-form" action="management_login.php" method="POST"
+                style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" name="action" value="change_credentials">
+                <div>
+                    <label for="new_username">Benutzername:</label>
+                    <input type="text" id="new_username" name="new_username"
+                        value="<?php echo htmlspecialchars($currentUser); ?>" autocomplete="username">
+                </div>
+                <div>
+                    <label for="new_password">Neues Passwort (optional):</label>
+                    <input type="password" id="new_password" name="new_password" autocomplete="new-password">
+                </div>
+                <div>
+                    <label for="confirm_new_password">Neues Passwort bestätigen:</label>
+                    <!-- FIX: autocomplete="off" verhindert, dass Passwort-Manager dieses Feld automatisch ausfüllen -->
+                    <input type="password" id="confirm_new_password" name="confirm_new_password" autocomplete="off">
+                </div>
+                <hr style="border-top: 1px dashed #ccc; margin: 10px 0;">
+                <div>
+                    <label for="old_password">Aktuelles Passwort (zur Bestätigung):</label>
+                    <input type="password" id="old_password" name="old_password" required
+                        autocomplete="current-password">
+                </div>
+                <button type="submit">Daten ändern</button>
+            </form>
+        </section>
+    </div>
+</article>
+
+<script>
+    // Fügt eine einfache clientseitige Validierung hinzu, um zu prüfen, ob die neuen Passwörter übereinstimmen.
+    document.getElementById('change-credentials-form').addEventListener('submit', function (event) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmNewPassword = document.getElementById('confirm_new_password').value;
+
+        // Führe die Prüfung nur aus, wenn ein neues Passwort eingegeben wird.
+        if (newPassword !== '' || confirmNewPassword !== '') {
+            if (newPassword !== confirmNewPassword) {
+                // Verwende eine benutzerfreundlichere Meldung statt alert()
+                const messageContainer = document.querySelector('.message');
+                if (messageContainer) {
+                    messageContainer.innerHTML = '<p style="color: red;">Die neuen Passwörter stimmen nicht überein.</p>';
+                } else {
+                    alert('Die neuen Passwörter stimmen nicht überein.');
+                }
+                event.preventDefault(); // Verhindert das Absenden des Formulars
+            }
+        }
+    });
+</script>
+
+<?php
+$footerPath = __DIR__ . '/../src/layout/footer.php';
+if (file_exists($footerPath)) {
+    include $footerPath;
+}
+ob_end_flush();
+?>
