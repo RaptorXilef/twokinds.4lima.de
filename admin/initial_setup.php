@@ -901,95 +901,97 @@ if (file_exists($headerPath)) {
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Übergebe die PHP-Debug-Variable an JavaScript
+        const debugModeEnabled = <?php echo json_encode($debugMode); ?>;
+
         // Elemente für die Positionierung der Buttons
         const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
         const fixedButtonsContainerFolders = document.getElementById('fixed-buttons-container-folders'); // Spezifischer Container für Ordner-Buttons
 
-        // Sicherheitscheck: Wenn der Button-Container nicht gefunden wird, breche ab.
-        if (!fixedButtonsContainerFolders) {
-            console.warn("Warnung: Das Element '#fixed-buttons-container-folders' wurde nicht gefunden. Der schwebende Button wird nicht aktiviert.");
-            // return; // Skript hier nicht beenden, da andere Teile noch funktionieren könnten
-        }
+        // *** KORREKTUR: Führe den Code für den schwebenden Button nur aus, WENN der Button-Container existiert. ***
+        if (fixedButtonsContainerFolders) {
 
-        let initialButtonTopOffset; // Die absolute Top-Position der Buttons im Dokument, wenn sie nicht fixed sind
-        let stickyThreshold; // Der Scroll-Y-Wert, ab dem die Buttons fixiert werden sollen
-        const stickyOffset = 18; // Gewünschter Abstand vom oberen Viewport-Rand, wenn sticky
-        const rightOffset = 24; // Gewünschter Abstand vom rechten Rand des Main-Elements, wenn sticky
+            let initialButtonTopOffset; // Die absolute Top-Position der Buttons im Dokument, wenn sie nicht fixed sind
+            let stickyThreshold; // Der Scroll-Y-Wert, ab dem die Buttons fixiert werden sollen
+            const stickyOffset = 18; // Gewünschter Abstand vom oberen Viewport-Rand, wenn sticky
+            const rightOffset = 24; // Gewünschter Abstand vom rechten Rand des Main-Elements, wenn sticky
 
-        /**
-         * Berechnet die initialen Positionen und den Schwellenwert für das "Klebenbleiben".
-         * Diese Funktion muss aufgerufen werden, wenn sich das Layout ändert (z.B. bei Fenstergröße).
-         */
-        function calculateInitialPositions() {
-            if (!fixedButtonsContainerFolders) return; // Zusätzlicher Sicherheitscheck
+            /**
+             * Berechnet die initialen Positionen und den Schwellenwert für das "Klebenbleiben".
+             * Diese Funktion muss aufgerufen werden, wenn sich das Layout ändert (z.B. bei Fenstergröße).
+             */
+            function calculateInitialPositions() {
+                // Sicherstellen, dass die Buttons nicht 'fixed' sind, um ihre natürliche Position zu ermitteln
+                fixedButtonsContainerFolders.style.position = 'static';
+                fixedButtonsContainerFolders.style.top = 'auto';
+                fixedButtonsContainerFolders.style.right = 'auto';
 
-            // Sicherstellen, dass die Buttons nicht 'fixed' sind, um ihre natürliche Position zu ermitteln
-            fixedButtonsContainerFolders.style.position = 'static';
-            fixedButtonsContainerFolders.style.top = 'auto';
-            fixedButtonsContainerFolders.style.right = 'auto';
+                // Die absolute Top-Position des Button-Containers im Dokument
+                initialButtonTopOffset = fixedButtonsContainerFolders.getBoundingClientRect().top + window.scrollY;
 
-            // Die absolute Top-Position des Button-Containers im Dokument
-            initialButtonTopOffset = fixedButtonsContainerFolders.getBoundingClientRect().top + window.scrollY;
+                // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
+                // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
+                stickyThreshold = initialButtonTopOffset - stickyOffset;
 
-            // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
-            // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
-            stickyThreshold = initialButtonTopOffset - stickyOffset;
-
-            if (!mainContent) {
-                console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
+                if (!mainContent) {
+                    console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
+                }
             }
-        }
 
-        /**
-         * Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
-         */
-        function handleScroll() {
-            if (!fixedButtonsContainerFolders) return; // Sicherheitscheck
+            /**
+             * Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
+             */
+            function handleScroll() {
+                const currentScrollY = window.scrollY; // Aktuelle Scroll-Position
 
-            const currentScrollY = window.scrollY; // Aktuelle Scroll-Position
+                if (currentScrollY >= stickyThreshold) {
+                    // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
+                    if (fixedButtonsContainerFolders.style.position !== 'fixed') {
+                        fixedButtonsContainerFolders.style.position = 'fixed';
+                        fixedButtonsContainerFolders.style.top = `${stickyOffset}px`; // 18px vom oberen Viewport-Rand
 
-            if (currentScrollY >= stickyThreshold) {
-                // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
-                if (fixedButtonsContainerFolders.style.position !== 'fixed') {
-                    fixedButtonsContainerFolders.style.position = 'fixed';
-                    fixedButtonsContainerFolders.style.top = `${stickyOffset}px`; // 18px vom oberen Viewport-Rand
-
-                    // Berechne die rechte Position:
-                    if (mainContent) {
-                        const mainRect = mainContent.getBoundingClientRect();
-                        // Abstand vom rechten Viewport-Rand zum rechten Rand des Main-Elements + gewünschter Offset
-                        fixedButtonsContainerFolders.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
-                    } else {
-                        // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
-                        fixedButtonsContainerFolders.style.right = `${rightOffset}px`;
+                        // Berechne die rechte Position:
+                        if (mainContent) {
+                            const mainRect = mainContent.getBoundingClientRect();
+                            // Abstand vom rechten Viewport-Rand zum rechten Rand des Main-Elements + gewünschter Offset
+                            fixedButtonsContainerFolders.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
+                        } else {
+                            // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
+                            fixedButtonsContainerFolders.style.right = `${rightOffset}px`;
+                        }
+                    }
+                } else {
+                    // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
+                    if (fixedButtonsContainerFolders.style.position === 'fixed') {
+                        fixedButtonsContainerFolders.style.position = 'static'; // Zurück zum normalen Fluss
+                        fixedButtonsContainerFolders.style.top = 'auto';
+                        fixedButtonsContainerFolders.style.right = 'auto';
                     }
                 }
-            } else {
-                // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
-                if (fixedButtonsContainerFolders.style.position === 'fixed') {
-                    fixedButtonsContainerFolders.style.position = 'static'; // Zurück zum normalen Fluss
-                    fixedButtonsContainerFolders.style.top = 'auto';
-                    fixedButtonsContainerFolders.style.right = 'auto';
-                }
+            }
+
+            /**
+             * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
+             */
+            function handleResize() {
+                calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
+                handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
+            }
+
+            // Initiales Setup beim Laden der Seite
+            // Zuerst Positionen berechnen, dann den Scroll-Status anpassen
+            calculateInitialPositions();
+            handleScroll(); // Setze den initialen Zustand basierend auf der aktuellen Scroll-Position
+
+            // Event Listener für Scroll- und Resize-Ereignisse
+            window.addEventListener('scroll', handleScroll);
+            window.addEventListener('resize', handleResize);
+        } else {
+            // Gib den Hinweis nur aus, wenn der Debug-Modus in PHP aktiviert ist
+            if (debugModeEnabled) {
+                console.info("Hinweis: Das Element '#fixed-buttons-container-folders' wurde nicht gefunden, da es nicht benötigt wird (alle Ordner existieren bereits). Der schwebende Button ist daher inaktiv.");
             }
         }
-
-        /**
-         * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
-         */
-        function handleResize() {
-            calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
-            handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
-        }
-
-        // Initiales Setup beim Laden der Seite
-        // Zuerst Positionen berechnen, dann den Scroll-Status anpassen
-        calculateInitialPositions();
-        handleScroll(); // Setze den initialen Zustand basierend auf der aktuellen Scroll-Position
-
-        // Event Listener für Scroll- und Resize-Ereignisse
-        window.addEventListener('scroll', handleScroll);
-        window.addEventListener('resize', handleResize);
     });
 </script>
 
