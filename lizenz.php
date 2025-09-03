@@ -26,8 +26,8 @@ if ($debugMode)
 	anders angegeben. </p>
 
 <div class="center">
-	<a href="http://creativecommons.org/licenses/by-nc-sa/3.0/de/">
-		<img src="http://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png" alt="Creative Commons" />
+	<a href="https://creativecommons.org/licenses/by-nc-sa/3.0/de/">
+		<img src="https://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png" alt="Creative Commons" />
 	</a>
 </div>
 
