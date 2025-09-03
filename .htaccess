@@ -1,9 +1,21 @@
-# Erzwingt die neueste Rendering-Engine von Internet Explorer
+# --- Sicherheits- und Performance-Header ---
 <IfModule mod_headers.c>
+    # Erzwingt die neueste Rendering-Engine von Internet Explorer
     Header set X-UA-Compatible "IE=Edge"
+    # Clickjacking-Schutz: Verhindert das Einbetten der Seite in iframes auf fremden Seiten.
+    Header set X-Frame-Options "SAMEORIGIN"
+    # MIME-Type-Sniffing-Schutz: Verhindert, dass der Browser den Inhaltstyp errät.
+    Header set X-Content-Type-Options "nosniff"
+    # Referrer-Policy: Kontrolliert, welche Referrer-Informationen gesendet werden.
+    Header set Referrer-Policy "no-referrer-when-downgrade"
 </IfModule>
 
-# --- Block für grundlegende Sicherheits- und Servereinstellungen ---
+# --- Eigene Fehlerseiten (Benutzerfreundlichkeit) ---
+# Du musst die Dateien 403.php und 404.php im Hauptverzeichnis erstellen.
+ErrorDocument 403 /403.php
+ErrorDocument 404 /404.php
+
+# --- Grundlegende Servereinstellungen ---
 # Verhindert, dass Besucher die Dateiliste eines Verzeichnisses sehen können.
 Options -Indexes
 # Schützt diese .htaccess-Datei vor direktem Zugriff über den Browser.
@@ -11,34 +23,32 @@ Options -Indexes
     Require all denied
 </Files>
 
-# --- Block 1: Kanonische URL erzwingen (HTTPS & non-www) ---
-# Dieser Block sollte an die Spitze der Umschreibungsregeln,
-# um sicherzustellen, dass alle Anfragen zuerst auf die korrekte Domain umgeleitet werden.
+# --- Umschreibungs- und Weiterleitungsregeln ---
 RewriteEngine On
 
-# 1a. HTTPS erzwingen
+# --- Block 1: Kanonische URL erzwingen (HTTPS & non-www) ---
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
-# 1b. Erzwinge die non-www Version (z.B. deinedomain.de statt www.deinedomain.de)
-# Um www zu erzwingen, ändere die beiden folgenden Zeilen entsprechend.
 RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
+# --- Block 2: Schutz vor Hotlinking von Bildern ---
+# BITTE "deinedomain.de" durch deine echte Domain ersetzen!
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds.4lima.de [NC]
+RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [NC,F,L]
 
-# --- Block 2: Permanente Weiterleitungen (Redirects) für alte Comic-Pfade ---
+# --- Block 3: Permanente Weiterleitungen (Redirects) für alte Comic-Pfade ---
 # Leitet Anfragen für alte Comic-Seiten-Pfade (z.B. /20250810 oder /20250810.php)
 # permanent auf die neue, saubere URL-Struktur um (z.B. /comic/20250810).
 # Bedingung: Die Anfrage darf nicht bereits im /comic/ Verzeichnis sein (verhindert Loops).
 RewriteCond %{REQUEST_URI} !^/comic/
-# Bedingung: Die Zieldatei (z.B. /comic/20250810.php) muss existieren.
 RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
-# Regel: Fange 8 Ziffern am Anfang der URL ab (mit optionaler .php-Endung)
-# und leite auf /comic/ plus die 8 Ziffern um.
 RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 
 
-# --- Block 3: Interne Umschreibungen für "saubere" URLs ---
+# --- Block 4: Interne Umschreibungen für "saubere" URLs ---
 # Ermöglicht den Aufruf von PHP-Dateien ohne die .php-Endung.
 # Gilt für ALLE Pfade, z.B. /kontakt -> /kontakt.php und /comic/20250810 -> /comic/20250810.php
 # Bedingung: Die Anfrage ist kein existierendes Verzeichnis.
@@ -51,7 +61,7 @@ RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^(.*)$ $1.php [L]
 
 
-# --- Block 4: GZIP-Komprimierung für schnellere Ladezeiten ---
+# --- Block 5: GZIP-Komprimierung für schnellere Ladezeiten ---
 <IfModule mod_deflate.c>
     # Komprimiere HTML, CSS, JavaScript, Text, XML und Schriften
     AddOutputFilterByType DEFLATE application/javascript
@@ -77,7 +87,7 @@ RewriteRule ^(.*)$ $1.php [L]
 </IfModule>
 
 
-# --- Block 5: Browser-Caching für statische Inhalte ---
+# --- Block 6: Browser-Caching für statische Inhalte ---
 <IfModule mod_expires.c>
     ExpiresActive On
     # Standard-Ablaufzeit
