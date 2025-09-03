@@ -1,6 +1,7 @@
 # ##############################################################################
 # ##                                                                          ##
 # ##      UMFASSENDE .HTACCESS-KONFIGURATION FÜR PERFORMANCE & SICHERHEIT     ##
+# ##                 -- Finale Optimierungsstufe --                           ##
 # ##                                                                          ##
 # ##############################################################################
 
@@ -77,7 +78,13 @@ RewriteCond %{REQUEST_URI} !^/comic/
 RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
 RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 
-# 4d: Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
+# 4d: Trailing-Slash-Weiterleitung (SEO-Optimierung)
+# Entfernt den Schrägstrich (/) am Ende von URLs, um Duplicate Content zu vermeiden.
+# Beispiel: /kontakt/ wird permanent (301) zu /kontakt umgeleitet.
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [R=301,L]
+
+# 4e: Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
 # Ermöglicht den Aufruf von PHP-Dateien, ohne dass ".php" in der URL stehen muss.
 # Dies geschieht intern auf dem Server; der Besucher sieht die saubere URL.
 # Gilt für ALLE Pfade, z.B. /kontakt -> /kontakt.php und /comic/20250810 -> /comic/20250810.php
@@ -163,4 +170,19 @@ RewriteRule ^(.*)$ $1.php [L]
     Header unset ETag
 </IfModule>
 FileETag None
+
+
+# --- Block 9: Erweiterte Sicherheits-Header (CSP & HSTS) ---
+# Dies sind fortgeschrittene Header, die einen robusten Schutz gegen moderne Web-Angriffe bieten.
+<IfModule mod_headers.c>
+    # Content Security Policy (CSP): Definiert eine Whitelist für ausführbare Ressourcen.
+    # Dies ist eine sehr effektive Maßnahme gegen Cross-Site-Scripting (XSS).
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com placehold.co www.googletagmanager.com; style-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com placehold.co; font-src 'self' cdnjs.cloudflare.com cdn.twokinds.keenspot.com https://fonts.gstatic.com; connect-src 'self' *.google-analytics.com https://cdn.twokinds.keenspot.com;"
+
+    # HTTP Strict Transport Security (HSTS): Weist den Browser an, die Seite nur über HTTPS aufzurufen.
+    # WICHTIGER HINWEIS: Aktiviere diese Zeile erst, wenn du sicher bist, dass deine HTTPS-Konfiguration
+    # dauerhaft und fehlerfrei funktioniert. Einmal gesetzt, wird der Browser für die angegebene
+    # Zeit (max-age) keine HTTP-Verbindungen mehr zulassen.
+    # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
 
