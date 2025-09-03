@@ -42,7 +42,8 @@ if ($debugMode)
 	<p>
 		<b>Name:</b> TwoKinds (2kinds)<br>
 		<b>Begonnen:</b> 22. Oktober 2003<br>
-		<b>Übersetzt seit:</b> 2021<br>
+		<b>Übersetzt seit:</b> September 2016 <br>
+		<b>Auf twokinds.4lima.de seit:</b> 2021<br>
 		<b>Art:</b> Fantasy Manga<br>
 
 		<?php

@@ -1,0 +1,27 @@
+RewriteEngine On
+
+# --- Block 1: Permanente Weiterleitungen (Redirects) ---
+# Leitet Anfragen für alte Comic-Seiten-Pfade (z.B. /20250810 oder /20250810.php)
+# permanent auf die neue, saubere URL-Struktur um (z.B. /comic/20250810).
+
+# Bedingung: Die Anfrage darf nicht bereits im /comic/ Verzeichnis sein (verhindert Loops).
+RewriteCond %{REQUEST_URI} !^/comic/
+# Bedingung: Die Zieldatei (z.B. /comic/20250810.php) muss existieren.
+RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
+# Regel: Fange 8 Ziffern am Anfang der URL ab (mit optionaler .php-Endung)
+# und leite auf /comic/ plus die 8 Ziffern um.
+RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
+
+
+# --- Block 2: Interne Umschreibungen (Rewrites) ---
+# Ermöglicht den Aufruf von PHP-Dateien ohne die .php-Endung.
+# Gilt für ALLE Pfade, z.B. /kontakt -> /kontakt.php und /comic/20250810 -> /comic/20250810.php
+
+# Bedingung: Die Anfrage ist kein existierendes Verzeichnis.
+RewriteCond %{REQUEST_FILENAME} !-d
+# Bedingung: Die Anfrage ist keine existierende Datei.
+RewriteCond %{REQUEST_FILENAME} !-f
+# Bedingung: Eine .php-Datei mit dem angefragten Namen muss existieren.
+RewriteCond %{REQUEST_FILENAME}\.php -f
+# Regel: Schreibe die Anfrage intern auf die entsprechende .php-Datei um.
+RewriteRule ^(.*)$ $1.php [L]
