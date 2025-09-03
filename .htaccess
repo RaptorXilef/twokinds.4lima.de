@@ -1,9 +1,34 @@
+# Erzwingt die neueste Rendering-Engine von Internet Explorer
+<IfModule mod_headers.c>
+    Header set X-UA-Compatible "IE=Edge"
+</IfModule>
+
+# --- Block für grundlegende Sicherheits- und Servereinstellungen ---
+# Verhindert, dass Besucher die Dateiliste eines Verzeichnisses sehen können.
+Options -Indexes
+# Schützt diese .htaccess-Datei vor direktem Zugriff über den Browser.
+<Files .htaccess>
+    Require all denied
+</Files>
+
+# --- Block 1: Kanonische URL erzwingen (HTTPS & non-www) ---
+# Dieser Block sollte an die Spitze der Umschreibungsregeln,
+# um sicherzustellen, dass alle Anfragen zuerst auf die korrekte Domain umgeleitet werden.
 RewriteEngine On
 
-# --- Block 1: Permanente Weiterleitungen (Redirects) ---
+# 1a. HTTPS erzwingen
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# 1b. Erzwinge die non-www Version (z.B. deinedomain.de statt www.deinedomain.de)
+# Um www zu erzwingen, ändere die beiden folgenden Zeilen entsprechend.
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+
+# --- Block 2: Permanente Weiterleitungen (Redirects) für alte Comic-Pfade ---
 # Leitet Anfragen für alte Comic-Seiten-Pfade (z.B. /20250810 oder /20250810.php)
 # permanent auf die neue, saubere URL-Struktur um (z.B. /comic/20250810).
-
 # Bedingung: Die Anfrage darf nicht bereits im /comic/ Verzeichnis sein (verhindert Loops).
 RewriteCond %{REQUEST_URI} !^/comic/
 # Bedingung: Die Zieldatei (z.B. /comic/20250810.php) muss existieren.
@@ -13,10 +38,9 @@ RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
 RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 
 
-# --- Block 2: Interne Umschreibungen (Rewrites) ---
+# --- Block 3: Interne Umschreibungen für "saubere" URLs ---
 # Ermöglicht den Aufruf von PHP-Dateien ohne die .php-Endung.
 # Gilt für ALLE Pfade, z.B. /kontakt -> /kontakt.php und /comic/20250810 -> /comic/20250810.php
-
 # Bedingung: Die Anfrage ist kein existierendes Verzeichnis.
 RewriteCond %{REQUEST_FILENAME} !-d
 # Bedingung: Die Anfrage ist keine existierende Datei.
@@ -25,3 +49,53 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}\.php -f
 # Regel: Schreibe die Anfrage intern auf die entsprechende .php-Datei um.
 RewriteRule ^(.*)$ $1.php [L]
+
+
+# --- Block 4: GZIP-Komprimierung für schnellere Ladezeiten ---
+<IfModule mod_deflate.c>
+    # Komprimiere HTML, CSS, JavaScript, Text, XML und Schriften
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE application/x-font-truetype
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE font/otf
+    AddOutputFilterByType DEFLATE font/ttf
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+</IfModule>
+
+
+# --- Block 5: Browser-Caching für statische Inhalte ---
+<IfModule mod_expires.c>
+    ExpiresActive On
+    # Standard-Ablaufzeit
+    ExpiresDefault                              "access plus 1 month"
+    # CSS
+    ExpiresByType text/css                        "access plus 1 year"
+    # Bilder
+    ExpiresByType image/gif                       "access plus 1 year"
+    ExpiresByType image/png                       "access plus 1 year"
+    ExpiresByType image/jpg                       "access plus 1 year"
+    ExpiresByType image/jpeg                      "access plus 1 year"
+    ExpiresByType image/webp                      "access plus 1 year"
+    ExpiresByType image/svg+xml                   "access plus 1 year"
+    ExpiresByType image/x-icon                    "access plus 1 year"
+    # JavaScript
+    ExpiresByType application/javascript          "access plus 1 year"
+    # Schriftarten
+    ExpiresByType application/x-font-ttf          "access plus 1 year"
+    ExpiresByType font/opentype                   "access plus 1 year"
+</IfModule>
+
