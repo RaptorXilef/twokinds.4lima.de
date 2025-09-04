@@ -2,10 +2,11 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 /**
- * Dies ist die Archivseite der TwoKinds-Webseite.
+ * Dies ist die Archivseite der TwoKinds-Webseite. (OPTIMIERTE VERSION)
  * Sie zeigt die Comics nach Kapiteln gruppiert an und lädt Informationen
  * aus archive_chapters.json und comic_var.json.
- * Die Seite verwendet ein aufklappbares Sektionsdesign mit Lazy Loading für Thumbnails.
+ * Die Thumbnail-Pfade werden aus einer vor-generierten Cache-Datei gelesen,
+ * um die Serverlast drastisch zu reduzieren.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -21,75 +22,49 @@ if ($debugMode)
 // die ihrerseits im header.php verwendet werden.
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
-$scriptName = $_SERVER['SCRIPT_NAME'];
-// Ermittle das Basisverzeichnis des Skripts relativ zum Document Root
-$scriptDir = rtrim(dirname($scriptName), '/');
-
-// Wenn das Skript im Root-Verzeichnis liegt, ist $scriptDir leer.
-// In diesem Fall ist $baseUrl einfach das Protokoll und der Host.
-// Andernfalls ist es Protokoll + Host + Skriptverzeichnis.
+$scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 $baseUrl = $protocol . $host . ($scriptDir === '' ? '/' : $scriptDir . '/');
 
 if ($debugMode)
     error_log("DEBUG: Basis-URL in archiv.php: " . $baseUrl);
 
-// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
-$pageTitle = 'Archiv';
-$pageHeader = 'TwoKinds Archiv'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
-$siteDescription = 'Das Archiv der TwoKinds Comics, fanübersetzt auf Deutsch.';
-$robotsContent = 'index, follow'; // Diese Seite soll von Suchmaschinen indexiert werden
 
-// Setze den Seitentyp, damit der Header die richtigen Skripte lädt
-$current_page_type = 'archive';
-
-// Pfade zu den JSON-Dateien
+// === LADE CACHE UND DATEN ===
 $archiveChaptersJsonPath = __DIR__ . '/src/config/archive_chapters.json';
 $comicVarJsonPath = __DIR__ . '/src/config/comic_var.json';
-$placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg'; // Pfad zum Platzhalterbild
+$archiveCacheJsonPath = __DIR__ . '/src/config/archive_cache.json'; // NEU
+$placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg';
 
-// Lade die Archivkapitel-Daten
-function loadArchiveChapters(string $path, bool $debugMode): array
+// Funktion zum Laden von JSON-Dateien
+function loadJsonFile(string $path, bool $debugMode, string $fileName): array
 {
     if (!file_exists($path) || filesize($path) === 0) {
         if ($debugMode)
-            error_log("DEBUG: Archivkapitel-Datei nicht gefunden oder leer: " . $path);
+            error_log("DEBUG: {$fileName} nicht gefunden oder leer: " . $path);
         return [];
     }
     $content = file_get_contents($path);
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         if ($debugMode)
-            error_log("Fehler beim Dekodieren von archive_chapters.json: " . json_last_error_msg());
+            error_log("Fehler beim Dekodieren von {$fileName}: " . json_last_error_msg());
         return [];
     }
     if ($debugMode)
-        error_log("DEBUG: Archivkapitel erfolgreich geladen.");
+        error_log("DEBUG: {$fileName} erfolgreich geladen.");
     return $data;
 }
 
-// Lade die Comic-Variablen-Daten
-function loadComicVar(string $path, bool $debugMode): array
-{
-    if (!file_exists($path) || filesize($path) === 0) {
-        if ($debugMode)
-            error_log("DEBUG: Comic-Variablen-Datei nicht gefunden oder leer: " . $path);
-        return [];
-    }
-    $content = file_get_contents($path);
-    $data = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        if ($debugMode)
-            error_log("Fehler beim Dekodieren von comic_var.json: " . json_last_error_msg());
-        return [];
-    }
-    if ($debugMode)
-        error_log("DEBUG: Comic-Variablen erfolgreich geladen.");
-    return $data;
+$archiveChapters = loadJsonFile($archiveChaptersJsonPath, $debugMode, 'archive_chapters.json');
+$comicData = loadJsonFile($comicVarJsonPath, $debugMode, 'comic_var.json');
+$thumbnailPaths = loadJsonFile($archiveCacheJsonPath, $debugMode, 'archive_cache.json'); // NEU
+
+if ($debugMode && empty($thumbnailPaths)) {
+    error_log("WARNUNG: Der Thumbnail-Cache (archive_cache.json) ist leer oder konnte nicht geladen werden. Führe build_archive_cache.php aus.");
 }
 
-$archiveChapters = loadArchiveChapters($archiveChaptersJsonPath, $debugMode);
-$comicData = loadComicVar($comicVarJsonPath, $debugMode);
 
+// === DATENVERARBEITUNG ===
 // Erstelle eine Map von chapterId zu Comic-IDs aus comic_var.json
 $comicsByChapter = [];
 foreach ($comicData as $comicId => $details) {
@@ -109,31 +84,25 @@ $existingChapterIds = array_column($archiveChapters, 'chapterId');
 foreach ($comicsByChapter as $chId => $comics) {
     if (!in_array($chId, $existingChapterIds)) {
         $archiveChapters[] = [
-            'chapterId' => (string) $chId, // Sicherstellen, dass chId als String hinzugefügt wird
-            'title' => '', // Setze den Titel explizit leer für neue Kapitel
-            'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.'
+            'chapterId' => (string) $chId,
+            'title' => '',
+            'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt.'
         ];
         if ($debugMode)
             error_log("DEBUG: Fehlendes Kapitel {$chId} hinzugefügt.");
     }
 }
 
-// === FILTERLOGIK ===
-// Entferne Kapitel mit leerer chapterId, wenn keine zugehörigen Comics vorhanden sind.
-$filteredArchiveChapters = [];
-foreach ($archiveChapters as $chapter) {
-    $chapterId = $chapter['chapterId'] ?? ''; // Hole den Rohwert der chapterId
-    $associatedComics = $comicsByChapter[$chapterId] ?? []; // Hole die zugehörigen Comics
-
-    // Wenn die chapterId ein leerer String ist UND es keine zugehörigen Comics gibt, überspringe dieses Kapitel.
-    if ($chapterId === '' && empty($associatedComics)) {
+// FILTERLOGIK: Entferne Kapitel mit leerer chapterId, wenn keine zugehörigen Comics vorhanden sind.
+$archiveChapters = array_filter($archiveChapters, function ($chapter) use ($comicsByChapter, $debugMode) {
+    $chapterId = $chapter['chapterId'] ?? '';
+    if ($chapterId === '' && empty($comicsByChapter[$chapterId] ?? [])) {
         if ($debugMode)
-            error_log("DEBUG: Kapitel mit leerer ID ('') und ohne zugehörige Comics wird entfernt: " . json_encode($chapter));
-        continue; // Dieses Kapitel nicht zur gefilterten Liste hinzufügen
+            error_log("DEBUG: Leeres Kapitel ohne Comics wird entfernt: " . json_encode($chapter));
+        return false;
     }
-    $filteredArchiveChapters[] = $chapter; // Füge das Kapitel zur gefilterten Liste hinzu
-}
-$archiveChapters = $filteredArchiveChapters; // Aktualisiere die Hauptliste der Kapitel
+    return true;
+});
 if ($debugMode)
     error_log("DEBUG: Kapitel nach Filterung aktualisiert.");
 
@@ -150,58 +119,47 @@ function getChapterSortValue(array $chapter): array
     $rawChapterId = $chapter['chapterId'] ?? '';
 
     // Priorität 2: Leere chapterId ("") - sortiert ganz ans Ende
-    if ($rawChapterId === '') {
+    if ($rawChapterId === '')
         return [2, PHP_INT_MAX]; // Höchste Priorität, um ans Ende zu gehen
-    }
 
     // Ersetze Komma durch Punkt für die numerische Prüfung, falls vorhanden
     $numericCheckId = str_replace(',', '.', $rawChapterId);
-
     // Priorität 0: Numerische chapterId (z.B. "1", "10", "5.5", "6,1" wird zu "6.1")
-    if (is_numeric($numericCheckId)) {
+    if (is_numeric($numericCheckId))
         return [0, (float) $numericCheckId]; // Niedrigste Priorität, sortiert numerisch
-    }
-
     // Priorität 1: Andere String-chapterId (z.B. "Chapter X")
     return [1, $rawChapterId]; // Mittlere Priorität, sortiert natürlich als String
 }
 
 // Sortiere die Kapitel nach ihrem effektiven Sortierwert (mehrstufig)
 usort($archiveChapters, function ($a, $b) {
-    $sortValueA = getChapterSortValue($a);
-    $sortValueB = getChapterSortValue($b);
-
+    $valA = getChapterSortValue($a);
+    $valB = getChapterSortValue($b);
     // Vergleiche zuerst nach Priorität
-    if ($sortValueA[0] !== $sortValueB[0]) {
-        return $sortValueA[0] <=> $sortValueB[0];
-    }
-
+    if ($valA[0] !== $valB[0])
+        return $valA[0] <=> $valB[0];
     // Wenn Prioritäten gleich sind, vergleiche nach dem Sortier-Schlüssel
-    if ($sortValueA[0] === 1) { // Beide sind andere Strings (Priorität 1)
-        return strnatcmp($sortValueA[1], $sortValueB[1]); // Natürliche String-Sortierung
-    }
-
-    // Für Priorität 0 (numerisch) und 2 (leere ID), verwende den Spaceship-Operator
-    return $sortValueA[1] <=> $sortValueB[1];
+    if ($valA[0] === 1) // Beide sind andere Strings (Priorität 1)
+        return strnatcmp($valA[1], $valB[1]); // Natürliche String-Sortierung
+    return $valA[1] <=> $valB[1];
 });
 if ($debugMode)
     error_log("DEBUG: Kapitel nach ID und Titelstatus sortiert.");
 
 
-// === WICHTIG: Hier wird archive.js geladen! ===
-// Die JavaScript-Dateien werden nun über den header.php geladen,
-// basierend auf dem oben gesetzten $current_page_type.
-// Die vorherige Zeile "$additionalScripts = '';" wurde entfernt oder angepasst.
-$additionalScripts = '
-    <script type="text/javascript" src="' . htmlspecialchars($baseUrl) . 'src/layout/js/archive.js?c=' . filemtime(__DIR__ . '/src/layout/js/archive.js') . '"></script>
-';
-
+// === HEADER-PARAMETER ===
+$pageTitle = 'Archiv';
+$pageHeader = 'TwoKinds auf Deutsch - Archiv';
+$siteDescription = 'Das Archiv der TwoKinds Comics, fanübersetzt auf Deutsch.';
+$robotsContent = 'index, follow';
+$additionalScripts = '<script type="text/javascript" src="' . htmlspecialchars($baseUrl) . 'src/layout/js/archive.js?c=' . filemtime(__DIR__ . '/src/layout/js/archive.js') . '"></script>';
 // Zusätzliche Styles für das Archiv
 // Hier wird kein Font Awesome mehr geladen, da das Original-Design eigene Pfeile hat.
 $additionalHeadContent = '';
 
 // Binde den gemeinsamen Header ein. Dies muss vor jeglichem HTML-Output geschehen.
 include __DIR__ . '/src/layout/header.php';
+
 if ($debugMode)
     error_log("DEBUG: Header in archiv.php eingebunden.");
 ?>
@@ -220,8 +178,8 @@ if ($debugMode)
         <?php foreach ($archiveChapters as $chapter):
             $chapterId = $chapter['chapterId'] ?? 'N/A';
             // Der Titel wird hier anhand der Logik aus dem Originalcode ermittelt
-            $chapterTitle = !empty(trim(strip_tags($chapter['title'] ?? '', '<b><i><u><p><br>'))) ? $chapter['title'] : 'Dieses Kapitel wird im Moment bearbeitet.';
-            $chapterDescription = $chapter['description'] ?? 'Die Informationen zu diesem Kapitel werden noch erstellt. Bitte besuche diesen Teil später noch einmal.';
+            $chapterTitle = !empty(trim(strip_tags($chapter['title'] ?? ''))) ? $chapter['title'] : 'Dieses Kapitel wird im Moment bearbeitet.';
+            $chapterDescription = $chapter['description'] ?? 'Die Informationen zu diesem Kapitel werden noch erstellt.';
             if ($debugMode)
                 error_log("DEBUG: Verarbeite Kapitel ID: {$chapterId} mit Titel: {$chapterTitle}");
             ?>
@@ -243,20 +201,8 @@ if ($debugMode)
                                 error_log("DEBUG: Keine Comics für Kapitel {$chapterId} gefunden."); ?>
                         <?php else: ?>
                             <?php foreach ($comicsForThisChapter as $comicId => $comicDetails):
-                                // Array mit den unterstützten Dateiendungen
-                                $supportedExtensions = ['jpg', 'png', 'gif', 'webp'];
-                                $foundImagePath = null;
-
-                                // Schleife durch die Endungen und prüfe, welche Datei existiert
-                                foreach ($supportedExtensions as $ext) {
-                                    $potentialImagePath = "assets/comic_thumbnails/{$comicId}.{$ext}";
-                                    if (file_exists(__DIR__ . '/' . $potentialImagePath)) {
-                                        $foundImagePath = $potentialImagePath;
-                                        break; // Beende die Schleife, sobald das erste Bild gefunden wurde
-                                    }
-                                }
-
-                                // Setze den Pfad zum gefundenen Bild oder zum Platzhalter
+                                // === MODIFIZIERT: Bildpfad aus Cache lesen ===
+                                $foundImagePath = $thumbnailPaths[$comicId] ?? null;
                                 $displayImagePath = $foundImagePath ? $baseUrl . $foundImagePath : $baseUrl . $placeholderImagePath;
 
                                 $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId) . '.php';
