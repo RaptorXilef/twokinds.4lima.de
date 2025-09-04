@@ -180,7 +180,7 @@ FileETag None
     # Die Zeilen werden mit einem Backslash (\) zusammengefügt, um die Lesbarkeit zu verbessern.
     Header set Content-Security-Policy "\
     default-src 'self'; \
-    script-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com placehold.co www.googletagmanager.com https://cdn.tailwindcss.com; \
+    script-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com placehold.co www.googletagmanager.com https://cdn.tailwindcss.com code.jquery.com; \
     style-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com https://fonts.googleapis.com; \
     img-src 'self' data: cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com placehold.co i.creativecommons.org licensebuttons.net; \
     font-src 'self' cdnjs.cloudflare.com cdn.twokinds.keenspot.com https://fonts.gstatic.com; \
