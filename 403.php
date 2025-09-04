@@ -12,12 +12,38 @@ $debugMode = false;
 if ($debugMode)
     error_log("DEBUG: 403.php wird geladen.");
 
-// Definiere die Bildpfade
-$errorImagePath = './assets/fehler/403.webp'; // Pfad relativ zum Root-Verzeichnis
-$fallbackImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Zugriff+verweigert';
+// === KORRIGIERTE Dynamische Basis-URL Bestimmung ===
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
 
-// KORRIGIERTE PRÜFUNG: Prüft den Pfad auf Dateisystemebene
-$imageToShow = file_exists($errorImagePath) ? './' . $errorImagePath : $fallbackImagePath;
+// Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
+// Da diese Datei im Root liegt, ist ihr Verzeichnis der Anwendungs-Root.
+$appRootAbsPath = str_replace('\\', '/', dirname(__FILE__));
+
+// Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
+$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+
+// Berechne den Unterordner-Pfad, falls die App in einem Unterordner liegt.
+$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+
+// Stelle sicher, dass der Pfad korrekt formatiert ist (z.B. /mein-unterordner/)
+if (!empty($subfolderPath) && $subfolderPath !== '/') {
+    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+} elseif (empty($subfolderPath)) {
+    $subfolderPath = '/';
+}
+$baseUrl = $protocol . $host . $subfolderPath;
+
+
+// Definiere die Bildpfade
+$errorImageName = '403.webp';
+$errorImagePathOnDisk = 'assets/fehler/' . $errorImageName; // Pfad für die Dateisystem-Prüfung
+$errorImageUrlForBrowser = $baseUrl . 'assets/fehler/' . $errorImageName; // Pfad für den Browser
+$fallbackImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
+
+// Prüft, ob das lokale Bild auf dem Server existiert.
+$imageToShow = file_exists($errorImagePathOnDisk) ? $errorImageUrlForBrowser : $fallbackImagePath;
+
 
 // Setze Parameter für den Header.
 $pageTitle = 'Fehler 403 - Zugriff verweigert';

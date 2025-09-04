@@ -12,11 +12,38 @@ $debugMode = false;
 if ($debugMode)
     error_log("DEBUG: 404.php wird geladen.");
 
+// === KORRIGIERTE Dynamische Basis-URL Bestimmung ===
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+
+// Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
+// Da diese Datei im Root liegt, ist ihr Verzeichnis der Anwendungs-Root.
+$appRootAbsPath = str_replace('\\', '/', dirname(__FILE__));
+
+// Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
+$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+
+// Berechne den Unterordner-Pfad, falls die App in einem Unterordner liegt.
+$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+
+// Stelle sicher, dass der Pfad korrekt formatiert ist (z.B. /mein-unterordner/)
+if (!empty($subfolderPath) && $subfolderPath !== '/') {
+    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+} elseif (empty($subfolderPath)) {
+    $subfolderPath = '/';
+}
+$baseUrl = $protocol . $host . $subfolderPath;
+
+
 // Definiere die Bildpfade
-$errorImagePath = './assets/fehler/404.webp';
+$errorImageName = '404.webp';
+$errorImagePathOnDisk = 'assets/fehler/' . $errorImageName; // Pfad für die Dateisystem-Prüfung
+$errorImageUrlForBrowser = $baseUrl . 'assets/fehler/' . $errorImageName; // Pfad für den Browser
 $fallbackImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
-$imageToShow = file_exists(__DIR__ . '/' . ltrim($errorImagePath, './')) ? $errorImagePath : $fallbackImagePath;
-$hiresImageToShow = $imageToShow; // Für 404 gibt es kein separates hochauflösendes Bild
+
+// Prüft, ob das lokale Bild auf dem Server existiert.
+$imageToShow = file_exists($errorImagePathOnDisk) ? $errorImageUrlForBrowser : $fallbackImagePath;
+
 
 // Setze Parameter für den Header.
 $pageTitle = 'Fehler 404 - Seite nicht gefunden';
@@ -69,8 +96,10 @@ include __DIR__ . '/src/layout/header.php';
             </p>
             <ul>
                 <li>Überprüfe die URL auf Tippfehler.</li>
-                <li>Gehe zurück zur <a href="./index.php">Startseite</a>, um den neuesten Comic zu sehen.</li>
-                <li>Besuche das <a href="./archiv.php">Archiv</a>, um einen bestimmten Comic zu finden.</li>
+                <li>Gehe zurück zur <a href="<?php echo htmlspecialchars($baseUrl); ?>index.php">Startseite</a>, um den
+                    neuesten Comic zu sehen.</li>
+                <li>Besuche das <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv.php">Archiv</a>, um einen
+                    bestimmten Comic zu finden.</li>
             </ul>
             <p>
                 Wenn du glaubst, dass hier ein Fehler auf der Webseite vorliegt, würde ich mich freuen, wenn du ihn
@@ -84,13 +113,3 @@ include __DIR__ . '/src/layout/header.php';
 // Binde den gemeinsamen Footer ein.
 include __DIR__ . '/src/layout/footer.php';
 ?>
-```
-
-**Wichtiger letzter Schritt:**
-Vergiss nicht, in deiner `.htaccess`-Datei (Block 2) sicherzustellen, dass diese beiden Dateien auch wirklich aufgerufen
-werden:
-
-```apache
-# --- Block 2: Eigene Fehlerseiten (Benutzerfreundlichkeit) ---
-ErrorDocument 403 /403.php
-ErrorDocument 404 /404.php
