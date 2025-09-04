@@ -180,11 +180,11 @@ FileETag None
     # Die Zeilen werden mit einem Backslash (\) zusammengefügt, um die Lesbarkeit zu verbessern.
     Header set Content-Security-Policy "\
     default-src 'self'; \
-    script-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com placehold.co www.googletagmanager.com https://cdn.tailwindcss.com code.jquery.com; \
-    style-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com https://fonts.googleapis.com; \
+    script-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com placehold.co www.googletagmanager.com https://cdn.tailwindcss.com code.jquery.com cdn.jsdelivr.net; \
+    style-src 'self' 'unsafe-inline' cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com cdnjs.cloudflare.com https://fonts.googleapis.com cdn.jsdelivr.net; \
     img-src 'self' data: cdn.twokinds.keenspot.com twokinds.keenspot.com www.2kinds.com placehold.co i.creativecommons.org licensebuttons.net; \
-    font-src 'self' cdnjs.cloudflare.com cdn.twokinds.keenspot.com https://fonts.gstatic.com; \
-    connect-src 'self' *.google-analytics.com https://cdn.twokinds.keenspot.com;"
+    font-src 'self' cdnjs.cloudflare.com cdn.twokinds.keenspot.com https://fonts.gstatic.com cdn.jsdelivr.net; \
+    connect-src 'self' *.google-analytics.com https://cdn.twokinds.keenspot.com cdn.jsdelivr.net;"
 
     # HTTP Strict Transport Security (HSTS): Weist den Browser an, die Seite nur über HTTPS aufzurufen.
     # WICHTIGER HINWEIS: Aktiviere diese Zeile erst, wenn du sicher bist, dass deine HTTPS-Konfiguration
