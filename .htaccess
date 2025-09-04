@@ -67,6 +67,7 @@ RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 # Verhindert, dass andere Webseiten deine Bilder direkt einbinden und so deinen Traffic verbrauchen.
 # Bilder werden nur angezeigt, wenn der Aufruf von deiner eigenen Domain kommt.
 RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
 RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.de [NC]
 RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [NC,F,L]
 
