@@ -9,6 +9,8 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
+// Lade die Cache-Busting-Konfiguration und Helferfunktion.
+require_once __DIR__ . '/src/components/cache_config.php';
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 require_once __DIR__ . '/src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
@@ -95,11 +97,13 @@ $rawComicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/')
 $comicImagePath = '';
 $comicHiresPath = '';
 
+// === MODIFIZIERT: Logik wurde vereinfacht und nutzt nun die zentrale Helferfunktion ===
 // Check if the actual comic image exists on disk
 if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/' . $rawComicLowresPath))) {
-    // If original comic exists, use its path (relative to current file)
-    $comicImagePath = './' . $rawComicLowresPath;
-    $comicHiresPath = './' . $rawComicHiresPath;
+    // Wenn das Original-Comic existiert, versioniere den Pfad.
+    // ltrim entfernt './', damit der Pfad für die Helferfunktion root-relativ ist.
+    $comicImagePath = './' . versioniere_bild_asset(ltrim($rawComicLowresPath, './'));
+    $comicHiresPath = './' . versioniere_bild_asset(ltrim($rawComicHiresPath, './'));
     if ($debugMode)
         error_log("DEBUG: Original Comic Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
 } else {
@@ -108,8 +112,9 @@ if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/' . $rawComi
         error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Haupt-Index). Versuche In Translation.");
     // Check if the "in translation" fallback exists
     if (file_exists(realpath(__DIR__ . '/' . $inTranslationLowres))) {
-        $comicImagePath = $inTranslationLowres;
-        $comicHiresPath = $inTranslationHires;
+        // Da die Pfade von der Root aus relativ sind ('./assets/...'), können wir sie direkt an die Helferfunktion übergeben.
+        $comicImagePath = './' . versioniere_bild_asset(ltrim($inTranslationLowres, './'));
+        $comicHiresPath = './' . versioniere_bild_asset(ltrim($inTranslationHires, './'));
         if ($debugMode)
             error_log("DEBUG: In Translation Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
     } else {

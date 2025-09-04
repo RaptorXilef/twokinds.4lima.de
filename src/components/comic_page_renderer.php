@@ -16,6 +16,8 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
+// Lade die Cache-Busting-Konfiguration und Helferfunktion.
+require_once __DIR__ . '/cache_config.php';
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 // load_comic_data.php ist dafür zuständig, die comic_var.json zu lesen und $comicData zu befüllen.
 require_once __DIR__ . '/load_comic_data.php';
@@ -116,13 +118,14 @@ $rawComicHiresRootPath = getComicImagePath($currentComicId, './assets/comic_hire
 $comicImagePath = '';
 $comicHiresPath = '';
 
+// === MODIFIZIERT: Logik wurde vereinfacht und nutzt nun die zentrale Helferfunktion ===
 // Prüfe, ob die tatsächlichen Comic-Bilder existieren (Pfade sind relativ zum Projekt-Root).
 // Da die Comic-Seiten in einem Unterordner (comic/) liegen, müssen wir "../" voranstellen,
 // um vom aktuellen Standort (comic/YYYYMMDD.php) zum Projekt-Root zu gelangen und dann den Pfad zu assets/ zu finden.
 if (!empty($rawComicLowresRootPath) && file_exists(realpath(__DIR__ . '/../../' . $rawComicLowresRootPath))) {
-    // Wenn Original-Comic existiert, nutze dessen Pfad (relativ zur aktuellen Comic-Seite).
-    $comicImagePath = '../' . $rawComicLowresRootPath;
-    $comicHiresPath = '../' . $rawComicHiresRootPath;
+    // Wenn Original-Comic existiert, nutze dessen Pfad und versioniere ihn.
+    $comicImagePath = '../' . versioniere_bild_asset(ltrim($rawComicLowresRootPath, './'));
+    $comicHiresPath = '../' . versioniere_bild_asset(ltrim($rawComicHiresRootPath, './'));
     if ($debugMode)
         error_log("DEBUG: Original Comic Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $rawComicLowresRootPath));
 } else {
@@ -132,8 +135,8 @@ if (!empty($rawComicLowresRootPath) && file_exists(realpath(__DIR__ . '/../../' 
     // Prüfe, ob der "in translation" Fallback existiert. Pfad ist relativ zum Projekt-Root für file_exists.
     if (file_exists(realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath))) {
         // Wenn "in translation" existiert, nutze dessen Pfad (relativ zur aktuellen Comic-Seite).
-        $comicImagePath = '../' . $inTranslationLowresRootPath;
-        $comicHiresPath = '../' . $inTranslationHiresRootPath;
+        $comicImagePath = '../' . versioniere_bild_asset($inTranslationLowresRootPath);
+        $comicHiresPath = '../' . versioniere_bild_asset($inTranslationHiresRootPath);
         if ($debugMode)
             error_log("DEBUG: In Translation Bild gefunden (Renderer): " . realpath(__DIR__ . '/../../' . $inTranslationLowresRootPath));
     } else {

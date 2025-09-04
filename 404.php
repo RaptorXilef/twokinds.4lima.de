@@ -12,6 +12,9 @@ $debugMode = false;
 if ($debugMode)
     error_log("DEBUG: 404.php wird geladen.");
 
+// Lade die Cache-Busting-Konfiguration und Helferfunktion.
+require_once __DIR__ . '/src/components/cache_config.php';
+
 // === KORRIGIERTE Dynamische Basis-URL Bestimmung ===
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
@@ -38,11 +41,14 @@ $baseUrl = $protocol . $host . $subfolderPath;
 // Definiere die Bildpfade
 $errorImageName = '404.webp';
 $errorImagePathOnDisk = 'assets/fehler/' . $errorImageName; // Pfad für die Dateisystem-Prüfung
-$errorImageUrlForBrowser = $baseUrl . 'assets/fehler/' . $errorImageName; // Pfad für den Browser
 $fallbackImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
 
-// Prüft, ob das lokale Bild auf dem Server existiert.
-$imageToShow = file_exists($errorImagePathOnDisk) ? $errorImageUrlForBrowser : $fallbackImagePath;
+// === MODIFIZIERT: Logik nutzt nun die zentrale Helferfunktion ===
+$imageToShow = $fallbackImagePath;
+if (file_exists($errorImagePathOnDisk)) {
+    $versionedPath = versioniere_bild_asset($errorImagePathOnDisk);
+    $imageToShow = $baseUrl . $versionedPath;
+}
 
 
 // Setze Parameter für den Header.

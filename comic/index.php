@@ -9,6 +9,8 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
+// Lade die Cache-Busting-Konfiguration und Helferfunktion.
+require_once __DIR__ . '/../src/components/cache_config.php';
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 require_once __DIR__ . '/../src/components/load_comic_data.php';
 // Lade die Helferfunktion zum Finden des Bildpfades.
@@ -97,11 +99,13 @@ $rawComicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/')
 $comicImagePath = '';
 $comicHiresPath = '';
 
+// === MODIFIZIERT: Logik wurde vereinfacht und nutzt nun die zentrale Helferfunktion ===
 // Check if the actual comic image exists on disk
 if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/../' . $rawComicLowresPath))) {
-    // If original comic exists, use its path (relative to current file)
-    $comicImagePath = '../' . $rawComicLowresPath;
-    $comicHiresPath = '../' . $rawComicHiresPath;
+    // Der raw-Pfad ist root-relativ (z.B. './assets/...'), perfekt für die Helferfunktion.
+    // Wir stellen '../' voran, um den korrekten relativen Link aus comic/ zu erstellen.
+    $comicImagePath = '../' . versioniere_bild_asset(ltrim($rawComicLowresPath, './'));
+    $comicHiresPath = '../' . versioniere_bild_asset(ltrim($rawComicHiresPath, './'));
     if ($debugMode)
         error_log("DEBUG: Original Comic Bild gefunden (Index): " . realpath(__DIR__ . '/' . $comicImagePath));
 } else {
@@ -110,8 +114,12 @@ if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/../' . $rawC
         error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Index). Versuche In Translation.");
     // Check if the "in translation" fallback exists
     if (file_exists(realpath(__DIR__ . '/' . $inTranslationLowres))) {
-        $comicImagePath = $inTranslationLowres;
-        $comicHiresPath = $inTranslationHires;
+        // Die 'in_translation'-Pfade sind relativ zu dieser Datei ('../assets/...').
+        // Wir entfernen '../' für die Helferfunktion und fügen es dem Ergebnis wieder hinzu.
+        $rootRelativeLowres = substr($inTranslationLowres, 3);
+        $rootRelativeHires = substr($inTranslationHires, 3);
+        $comicImagePath = '../' . versioniere_bild_asset($rootRelativeLowres);
+        $comicHiresPath = '../' . versioniere_bild_asset($rootRelativeHires);
         if ($debugMode)
             error_log("DEBUG: In Translation Bild gefunden (Index): " . realpath(__DIR__ . '/' . $comicImagePath));
     } else {

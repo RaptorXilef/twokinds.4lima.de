@@ -10,6 +10,9 @@ $debugMode = false;
 if ($debugMode)
 	error_log("DEBUG: ueber_den_comic.php wird geladen.");
 
+// NEU: Lade die Cache-Busting-Konfiguration und Helferfunktion.
+require_once __DIR__ . '/src/components/cache_config.php';
+
 // Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
 // Der Pfad ist relativ zum aktuellen Verzeichnis (infos.php liegt im Root-Verzeichnis).
 $comicDataPath = __DIR__ . '/src/config/comic_var.json';
@@ -153,8 +156,9 @@ if ($debugMode)
 <section>
 	<h2 class="page-header">Über den Übersetzer</h2>
 
-	<!-- Angepasster Pfad für das Bild von Felix. -->
-	<img class="float-left" src="assets/img/about/Felix.webp" alt="Felix" height="275">
+	<!-- MODIFIZIERT: Bildpfad wird durch die Cache-Busting-Funktion geleitet. -->
+	<img class="float-left" src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/about/Felix.webp')); ?>"
+		alt="Felix" height="275">
 
 	<p>
 		<b>Name:</b> Felix Maywald<br>
