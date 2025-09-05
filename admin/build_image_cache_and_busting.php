@@ -1,0 +1,343 @@
+<?php
+/**
+ * Administrationsseite zum Erstellen des Bild-Caches inkl. Cache-Busting.
+ * Dieses Tool scannt die Bildverzeichnisse, ermittelt den letzten Änderungszeitpunkt
+ * jeder Datei und speichert die relativen Pfade mit einem Cache-Busting-Parameter
+ * (?c=timestamp) in der zentralen 'comic_image_cache.json'.
+ */
+
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = false;
+
+if ($debugMode)
+    error_log("DEBUG: build_image_cache_and_busting.php wird geladen.");
+
+ob_start();
+session_start();
+
+// Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
+require_once __DIR__ . '/src/components/security_check.php';
+
+// Logout-Funktion
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    session_unset();
+    session_destroy();
+    ob_end_clean();
+    header('Location: index.php');
+    exit;
+}
+
+// SICHERHEITSCHECK: Nur für angemeldete Administratoren.
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    ob_end_clean();
+    header('Location: index.php');
+    exit;
+}
+
+// Pfade
+$headerPath = __DIR__ . '/../src/layout/header.php';
+$footerPath = __DIR__ . '/../src/layout/footer.php';
+$cachePath = __DIR__ . '/../src/config/comic_image_cache.json';
+$dirsToScan = [
+    'thumbnails' => [
+        'path' => __DIR__ . '/../assets/comic_thumbnails/',
+        'relativePath' => 'assets/comic_thumbnails/'
+    ],
+    'lowres' => [
+        'path' => __DIR__ . '/../assets/comic_lowres/',
+        'relativePath' => 'assets/comic_lowres/'
+    ],
+    'hires' => [
+        'path' => __DIR__ . '/../assets/comic_hires/',
+        'relativePath' => 'assets/comic_hires/'
+    ],
+    'socialmedia' => [
+        'path' => __DIR__ . '/../assets/comic_socialmedia/',
+        'relativePath' => 'assets/comic_socialmedia/'
+    ]
+];
+
+/**
+ * Scannt ein Verzeichnis nach Bilddateien und hängt einen Cache-Busting-Parameter an.
+ *
+ * @param string $dir Der absolute Pfad zum zu scannenden Verzeichnis.
+ * @param string $relativePathPrefix Der relative Pfad-Präfix für die Ausgabe.
+ * @return array Ein assoziatives Array [comicId => relativerPfad?c=timestamp].
+ */
+function scanDirectoryForImagesWithCacheBusting(string $dir, string $relativePathPrefix): array
+{
+    $images = [];
+    if (!is_dir($dir)) {
+        return [];
+    }
+    $files = scandir($dir);
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') {
+            continue;
+        }
+
+        $absolutePath = $dir . $file;
+        $fileInfo = pathinfo($absolutePath);
+
+        if (is_file($absolutePath) && isset($fileInfo['filename']) && !empty($fileInfo['filename']) && isset($fileInfo['extension']) && in_array(strtolower($fileInfo['extension']), $imageExtensions)) {
+            // Letzten Änderungszeitpunkt holen
+            $lastModified = @filemtime($absolutePath);
+            if ($lastModified === false) {
+                $lastModified = time(); // Fallback
+            }
+            // Pfad mit Cache-Buster zusammensetzen
+            $pathWithBuster = $relativePathPrefix . $file . '?c=' . $lastModified;
+            $images[$fileInfo['filename']] = $pathWithBuster;
+        }
+    }
+    return $images;
+}
+
+// --- AJAX-Anfrage-Handler ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'build_cache') {
+    ob_end_clean();
+    header('Content-Type: application/json');
+    $response = ['success' => false, 'message' => '', 'counts' => []];
+    $type = $_POST['type'] ?? '';
+
+    $typesToProcess = ($type === 'all') ? array_keys($dirsToScan) : (array_key_exists($type, $dirsToScan) ? [$type] : []);
+
+    if (empty($typesToProcess)) {
+        $response['message'] = 'Ungültiger Typ für Cache-Erstellung angegeben.';
+        echo json_encode($response);
+        exit;
+    }
+
+    $existingCache = file_exists($cachePath) ? json_decode(file_get_contents($cachePath), true) : [];
+    if (!is_array($existingCache)) {
+        $existingCache = [];
+    }
+
+    foreach ($typesToProcess as $currentType) {
+        $dirInfo = $dirsToScan[$currentType];
+        $foundImages = scanDirectoryForImagesWithCacheBusting($dirInfo['path'], $dirInfo['relativePath']);
+        $response['counts'][$currentType] = count($foundImages);
+
+        foreach ($foundImages as $comicId => $path) {
+            $existingCache[$comicId][$currentType] = $path;
+        }
+    }
+
+    if (file_put_contents($cachePath, json_encode($existingCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+        $response['success'] = true;
+        $response['message'] = 'Cache erfolgreich aktualisiert für: ' . implode(', ', $typesToProcess);
+    } else {
+        $response['message'] = 'Fehler: Die Cache-Datei konnte nicht geschrieben werden.';
+        error_log("Fehler beim Schreiben der Cache-Datei: " . $cachePath);
+    }
+
+    echo json_encode($response);
+    exit;
+}
+// --- Ende AJAX-Anfrage-Handler ---
+
+ob_end_flush();
+
+// Header-Parameter
+$pageTitle = 'Adminbereich - Bild-Cache & Busting Generator';
+$pageHeader = 'Bild-Cache & Busting Generator';
+$siteDescription = 'Tool zum Erstellen des Bild-Caches mit Cache-Busting-Parametern.';
+$robotsContent = 'noindex, nofollow';
+
+include $headerPath;
+?>
+
+<article>
+    <div class="admin-form-container">
+        <header>
+            <h1><?php echo htmlspecialchars($pageHeader); ?></h1>
+        </header>
+
+        <div class="content-section">
+            <h2>Cache inkl. Cache-Busting aktualisieren</h2>
+            <p>Dieses Tool scannt die Bildverzeichnisse, hängt den Zeitstempel der letzten Dateiänderung als
+                Cache-Busting-Parameter an (<code>?c=...</code>) und speichert das Ergebnis in
+                <code>comic_image_cache.json</code>. Dies stellt sicher, dass Browser immer die neuste Version eines
+                Bildes laden, nachdem es geändert wurde.
+            </p>
+
+            <div id="fixed-buttons-container">
+                <button type="button" class="cache-build-button" data-type="thumbnails">Thumbnails</button>
+                <button type="button" class="cache-build-button" data-type="lowres">Low-Res</button>
+                <button type="button" class="cache-build-button" data-type="hires">High-Res</button>
+                <button type="button" class="cache-build-button" data-type="socialmedia">Social Media</button>
+                <button type="button" id="build-all-button" class="cache-build-button" data-type="all"><strong>Alle
+                        aktualisieren</strong></button>
+            </div>
+
+            <div id="loading-spinner" style="display: none; text-align: center; margin-top: 20px;">
+                <div class="spinner"></div>
+                <p id="progress-text">Aktualisiere Cache...</p>
+            </div>
+
+            <div id="generation-results-section" style="margin-top: 20px; display: none;">
+                <h2>Ergebnis</h2>
+                <p id="overall-status-message" class="status-message"></p>
+            </div>
+        </div>
+    </div>
+</article>
+
+<style>
+    #fixed-buttons-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .cache-build-button {
+        padding: 8px 15px;
+        border: 1px solid #007bff;
+        background-color: transparent;
+        color: #007bff;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .cache-build-button:hover,
+    .cache-build-button:focus {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .cache-build-button:disabled {
+        background-color: #e9ecef;
+        color: #6c757d;
+        border-color: #ced4da;
+        cursor: not-allowed;
+    }
+
+    #build-all-button {
+        background-color: #007bff;
+        color: white;
+    }
+
+    #build-all-button:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    body.theme-night .cache-build-button {
+        color: #09f;
+        border-color: #09f;
+    }
+
+    body.theme-night .cache-build-button:hover,
+    body.theme-night .cache-build-button:focus {
+        background-color: #09f;
+        color: #fff;
+    }
+
+    body.theme-night #build-all-button {
+        background-color: #09f;
+        border-color: #09f;
+        color: #fff;
+    }
+
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: #09f;
+        animation: spin 1s ease infinite;
+        margin: 0 auto 10px auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .status-message {
+        padding: 12px;
+        border-radius: 5px;
+        margin-top: 15px;
+    }
+
+    .status-green {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .status-red {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const buttons = document.querySelectorAll('.cache-build-button');
+        const spinner = document.getElementById('loading-spinner');
+        const progressText = document.getElementById('progress-text');
+        const resultsSection = document.getElementById('generation-results-section');
+        const statusMessage = document.getElementById('overall-status-message');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', async function () {
+                const type = this.dataset.type;
+                const typeName = this.textContent;
+
+                resultsSection.style.display = 'none';
+                statusMessage.innerHTML = '';
+                spinner.style.display = 'block';
+                progressText.textContent = `Aktualisiere Cache für '${typeName}'... Bitte warten.`;
+                buttons.forEach(b => b.disabled = true);
+
+                try {
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ action: 'build_cache', type: type })
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP-Fehler: Status ${response.status}`);
+
+                    const data = await response.json();
+
+                    resultsSection.style.display = 'block';
+                    statusMessage.className = data.success ? 'status-message status-green' : 'status-message status-red';
+
+                    let message = data.message;
+                    if (data.success && data.counts) {
+                        const countDetails = Object.entries(data.counts)
+                            .map(([key, value]) => `<li><strong>${key}:</strong> ${value} Bilder gefunden</li>`)
+                            .join('');
+                        message += `<br><br><strong>Details:</strong><ul>${countDetails}</ul>`;
+                    }
+                    statusMessage.innerHTML = message;
+
+                } catch (error) {
+                    resultsSection.style.display = 'block';
+                    statusMessage.className = 'status-message status-red';
+                    statusMessage.innerHTML = `Ein unerwarteter Fehler ist aufgetreten: ${error.message}.`;
+                    console.error('Fehler bei der Cache-Erstellung:', error);
+                } finally {
+                    spinner.style.display = 'none';
+                    buttons.forEach(b => b.disabled = false);
+                }
+            });
+        });
+    });
+</script>
+
+<?php include $footerPath; ?>
