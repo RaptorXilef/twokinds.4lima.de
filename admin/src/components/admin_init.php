@@ -32,24 +32,28 @@ $csp = [
     'default-src' => ["'self'"],
 
     // Skripte: Erlaube 'self', inline-Skripte ('unsafe-inline') und vertrauenswürdige CDNs.
-    'script-src' => ["'self'", "'unsafe-inline'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+    'script-src' => ["'self'", "'unsafe-inline'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
 
     // Stylesheets: Erlaube 'self', inline-Styles ('unsafe-inline') und vertrauenswürdige CDNs.
-    'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+    'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
 
     // Schriftarten: Erlaube 'self' und CDNs.
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com"],
+    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com"],
 
     // Bilder: Erlaube 'self', data-URIs (für base64-Bilder) und den Placeholder-Dienst.
-    'img-src' => ["'self'", "data:", "https://placehold.co"],
+    'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com"],
+
+    // *** NEU: connect-src Direktive hinzugefügt ***
+    // Erlaubt Verbindungen (z.B. via fetch, XHR) zu den angegebenen Domains.
+    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com"],
 
     // Plugins (Flash etc.): Verbiete alles.
     'object-src' => ["'none'"],
 
     // Framing: Erlaube das Einbetten der Seite nur durch sich selbst (Schutz vor Clickjacking).
     'frame-ancestors' => ["'self'"],
-    'base-uri' => ["'self'"], // NEU: Verhindert, dass die Basis-URL manipuliert wird.
-    'form-action' => ["'self'"], // NEU: Erlaubt Formular-Übermittlungen nur an die eigene Domain.
+    'base-uri' => ["'self'"], // Verhindert, dass die Basis-URL manipuliert wird.
+    'form-action' => ["'self'"], // Erlaubt Formular-Übermittlungen nur an die eigene Domain.
 ];
 
 // Baue den CSP-Header-String aus dem Array zusammen.
