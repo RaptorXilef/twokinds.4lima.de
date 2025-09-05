@@ -26,8 +26,37 @@ ob_start();
 
 // --- SICHERHEITSVERBESSERUNG 1: Erweiterte HTTP Security Headers ---
 
-// Content-Security-Policy (CSP): Schränkt ein, von wo Ressourcen geladen werden dürfen.
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https://placehold.co; object-src 'none'; frame-ancestors 'self';");
+// Content-Security-Policy (CSP) als Array für bessere Lesbarkeit und Wartbarkeit.
+$csp = [
+    // Standard-Richtlinie: Lade alles nur von der eigenen Domain ('self').
+    'default-src' => ["'self'"],
+
+    // Skripte: Erlaube 'self', inline-Skripte ('unsafe-inline') und vertrauenswürdige CDNs.
+    'script-src' => ["'self'", "'unsafe-inline'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+
+    // Stylesheets: Erlaube 'self', inline-Styles ('unsafe-inline') und vertrauenswürdige CDNs.
+    'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+
+    // Schriftarten: Erlaube 'self' und CDNs.
+    'font-src' => ["'self'", "https://cdnjs.cloudflare.com"],
+
+    // Bilder: Erlaube 'self', data-URIs (für base64-Bilder) und den Placeholder-Dienst.
+    'img-src' => ["'self'", "data:", "https://placehold.co"],
+
+    // Plugins (Flash etc.): Verbiete alles.
+    'object-src' => ["'none'"],
+
+    // Framing: Erlaube das Einbetten der Seite nur durch sich selbst (Schutz vor Clickjacking).
+    'frame-ancestors' => ["'self'"],
+];
+
+// Baue den CSP-Header-String aus dem Array zusammen.
+$cspHeader = '';
+foreach ($csp as $directive => $sources) {
+    $cspHeader .= $directive . ' ' . implode(' ', $sources) . '; ';
+}
+header("Content-Security-Policy: " . trim($cspHeader));
+
 
 // Verhindert, dass der Browser versucht, den MIME-Typ zu erraten (Schutz vor "MIME-Sniffing").
 header('X-Content-Type-Options: nosniff');
@@ -101,8 +130,7 @@ if (empty($_SESSION['csrf_token'])) {
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     if (!isset($_GET['token']) || !hash_equals($_SESSION['csrf_token'], $_GET['token'])) {
         // Logge den fehlgeschlagenen Versuch (auch ohne Debug-Modus)
-        if ($debugMode)
-            error_log("SECURITY WARNING: Logout-Versuch mit ungültigem CSRF-Token von IP: " . $_SERVER['REMOTE_ADDR']);
+        error_log("SECURITY WARNING: Logout-Versuch mit ungültigem CSRF-Token von IP: " . $_SERVER['REMOTE_ADDR']);
         // Leite einfach zum Dashboard zurück, ohne Fehlermeldung, um keine Infos preiszugeben.
         header('Location: management_user.php');
         exit;
