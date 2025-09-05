@@ -1,12 +1,12 @@
 <?php
 /**
- * Zentrales Initialisierungsskript für alle Admin-Seiten (Maximal gehärtete Version).
+ * Zentrales Initialisierungsskript für alle Admin-Seiten (Final gehärtete Version).
  *
  * Dieses Skript übernimmt wiederkehrende Aufgaben und implementiert wichtige Sicherheitsmaßnahmen:
- * - Strikte Sicherheits-Header (CSP, HSTS, Permissions-Policy etc.)
+ * - Strikte Sicherheits-Header (CSP, HSTS, Permissions-Policy etc.).
  * - Session-Konfiguration für erhöhte Sicherheit (HTTPOnly, Secure, SameSite).
- * - Schutz vor Session Hijacking durch User-Agent-Bindung und regelmäßige ID-Erneuerung.
- * - Schutz vor Clickjacking durch X-Frame-Options Header.
+ * - Schutz vor Session Hijacking durch User-Agent- und IP-Adressen-Bindung.
+ * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
  * - CSRF-Schutz für die Logout-Funktion.
  *
  * Die Variable $debugMode sollte in der aufrufenden Datei VOR dem Einbinden dieses Skripts gesetzt werden.
@@ -48,6 +48,8 @@ $csp = [
 
     // Framing: Erlaube das Einbetten der Seite nur durch sich selbst (Schutz vor Clickjacking).
     'frame-ancestors' => ["'self'"],
+    'base-uri' => ["'self'"], // NEU: Verhindert, dass die Basis-URL manipuliert wird.
+    'form-action' => ["'self'"], // NEU: Erlaubt Formular-Übermittlungen nur an die eigene Domain.
 ];
 
 // Baue den CSP-Header-String aus dem Array zusammen.
@@ -94,25 +96,30 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // --- SICHERHEITSVERBESSERUNG 3: Schutz vor Session Hijacking & Fixation ---
-// Schritt 3a: Binde die Session an den User Agent des Benutzers.
-if (isset($_SESSION['user_agent'])) {
-    if ($_SESSION['user_agent'] !== $_SERVER['HTTP_USER_AGENT']) {
+// Schritt 3a: Binde die Session an den User Agent und die IP-Adresse (anonymisiert).
+$sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
+
+if (isset($_SESSION['session_fingerprint'])) {
+    if ($_SESSION['session_fingerprint'] !== $sessionIdentifier) {
         // User Agent hat sich geändert -> Möglicher Angriff! Session zerstören.
-        error_log("SECURITY ALERT: User-Agent hat sich mitten in der Session geändert. Möglicher Hijacking-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
+        error_log("SECURITY ALERT: Session-Fingerabdruck hat sich geändert. Möglicher Hijacking-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
         session_unset();
         session_destroy();
         header('Location: index.php?reason=session_hijacked');
         exit;
     }
 } else {
-    $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+    $_SESSION['session_fingerprint'] = $sessionIdentifier;
 }
 
 // Schritt 3b: Regeneriert die Session-ID in regelmäßigen Abständen.
 if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 } elseif (time() - $_SESSION['last_regeneration'] > 900) { // Alle 15 Minuten
+    // WICHTIGE OPTIMIERUNG: Session-Daten sichern, regenerieren, wiederherstellen.
+    $currentSessionData = $_SESSION;
     session_regenerate_id(true); // Erneuert die ID und löscht die alte Session-Datei
+    $_SESSION = $currentSessionData;
     $_SESSION['last_regeneration'] = time();
     if ($debugMode)
         error_log("DEBUG: Session-ID wurde aus Sicherheitsgründen erneuert.");
@@ -164,7 +171,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     header('Location: index.php');
     exit;
 }
-
 
 // FINALER SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
