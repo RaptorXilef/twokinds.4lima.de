@@ -47,7 +47,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
             $params["path"],
             $params["domain"],
             $params["secure"],
-            $params["httpholy"]
+            $params["httponly"]
         );
     }
 
@@ -71,6 +71,9 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 if ($debugMode)
     error_log("DEBUG: Admin in data_editor_comic.php angemeldet.");
+
+// === ANGEPASST: Lade den neuen zentralen Image-Cache-Helfer ===
+require_once __DIR__ . '/../src/components/image_cache_helper.php';
 
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';
@@ -250,70 +253,7 @@ function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
 }
 
 /**
- * Sucht das erste verfügbare lowres-Bild für eine Comic-ID und gibt den relativen Web-Pfad zurück.
- * @param string $comicId Die ID des Comics.
- * @param string $baseDir Der absolute Basispfad zum lowres-Verzeichnis.
- * @param bool $debugMode Debug-Modus Flag.
- * @return string Der relative Pfad zum Bild oder ein leerer String, wenn nichts gefunden wurde.
- */
-function findLowresImagePath(string $comicId, string $baseDir, bool $debugMode): string
-{
-    if ($debugMode)
-        error_log("DEBUG: findLowresImagePath() aufgerufen für Comic-ID: " . $comicId);
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    // WICHTIG: Der Pfad, der vom Browser aus erreichbar ist.
-    $relativeWebPath = '../assets/comic_lowres/';
-
-    foreach ($imageExtensions as $ext) {
-        if (file_exists($baseDir . $comicId . '.' . $ext)) {
-            if ($debugMode)
-                error_log("DEBUG: Bild gefunden: " . $baseDir . $comicId . '.' . $ext);
-            return $relativeWebPath . $comicId . '.' . $ext;
-        }
-    }
-
-    if ($debugMode)
-        error_log("DEBUG: Kein lowres-Bild für ID " . $comicId . " gefunden.");
-    return '';
-}
-
-/**
- * Holt alle Dateinamen aus dem lowres-Verzeichnis für die Live-Vorschau im JavaScript.
- * @param string $lowresDir Der absolute Pfad zum lowres-Verzeichnis.
- * @param bool $debugMode Debug-Modus Flag.
- * @return array Eine Liste aller gültigen Bild-Dateinamen.
- */
-function getLowresImageFilenames(string $lowresDir, bool $debugMode): array
-{
-    if ($debugMode)
-        error_log("DEBUG: getLowresImageFilenames() aufgerufen für: " . $lowresDir);
-    $filenames = [];
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    if (is_dir($lowresDir)) {
-        $files = scandir($lowresDir);
-        if ($files === false) {
-            if ($debugMode)
-                error_log("DEBUG: scandir() fehlgeschlagen für " . $lowresDir);
-            return [];
-        }
-        foreach ($files as $file) {
-            $info = pathinfo($file);
-            if (
-                isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) &&
-                isset($info['extension']) && in_array(strtolower($info['extension']), $imageExtensions)
-            ) {
-                $filenames[] = $file;
-            }
-        }
-    }
-    if ($debugMode)
-        error_log("DEBUG: " . count($filenames) . " lowres Bilddateien für JS gefunden.");
-    return $filenames;
-}
-
-
-/**
- * Checks for the existence of various image types for a given comic ID.
+ * Checks for the existence of various image types for a given comic ID by scanning the filesystem (for the live report).
  * @param string $comicId The ID of the comic (e.g., 'JJJJMMTT').
  * @param array $directories An associative array of directory paths for each image type.
  * @param bool $debugMode Debug-Modus Flag.
@@ -322,7 +262,7 @@ function getLowresImageFilenames(string $lowresDir, bool $debugMode): array
 function checkImageExistenceForComic(string $comicId, array $directories, bool $debugMode): array
 {
     if ($debugMode)
-        error_log("DEBUG: checkImageExistenceForComic() aufgerufen für Comic-ID: " . $comicId);
+        error_log("DEBUG: Live-Check der Bildexistenz für Comic-ID: " . $comicId);
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     $results = [];
 
@@ -404,25 +344,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         $allDataFromFile = saveComicDataAndReturnAll($comicVarJsonPath, $updatedData, $deletedIds, $debugMode);
 
         if ($allDataFromFile !== false) {
-            $completeDataForCalc = $allDataFromFile;
             $imageComicIds = getComicIdsFromImages($comicLowresDirPath, $comicHiresDirPath, $debugMode);
             $phpComicIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
-            $allFileIds = array_unique(array_merge($imageComicIds, $phpComicIds));
+            $allFileIds = array_unique(array_merge(array_keys($allDataFromFile), $imageComicIds, $phpComicIds));
+            sort($allFileIds);
 
-            foreach ($allFileIds as $id) {
-                if (!isset($completeDataForCalc[$id])) {
-                    $completeDataForCalc[$id] = ['type' => '', 'name' => '', 'transcript' => '', 'chapter' => null, 'datum' => $id, 'url_originalbild' => ''];
-                }
-            }
-
-            ksort($completeDataForCalc);
-
-            $allIds = array_keys($completeDataForCalc);
-            $index = array_search($comicId, $allIds);
+            $index = array_search($comicId, $allFileIds);
             $pageNumber = ($index !== false) ? floor($index / $itemsPerPage) + 1 : 1;
 
             if ($debugMode) {
-                error_log("DEBUG SAVE (CORRECTED): comicId=$comicId, index=$index, totalItems=" . count($allIds) . ", itemsPerPage=$itemsPerPage, calculatedPage=$pageNumber");
+                error_log("DEBUG SAVE (CORRECTED): comicId=$comicId, index=$index, totalItems=" . count($allFileIds) . ", itemsPerPage=$itemsPerPage, calculatedPage=$pageNumber");
             }
 
             header('Content-Type: application/json');
@@ -500,19 +431,6 @@ foreach ($allIds as $id) {
     $fullComicData[$id]['sources'] = $sources;
 }
 
-// Sammle Bildverfügbarkeitsdaten für alle Comics
-$imageDirectories = [
-    'lowres' => $comicLowresDirPath,
-    'hires' => $comicHiresDirPath,
-    'thumbnails' => $comicThumbnailsDirPath,
-    'socialmedia' => $comicSocialMediaDirPath,
-];
-
-$imageExistenceReport = [];
-foreach ($fullComicData as $id => $data) {
-    $imageExistenceReport[$id] = checkImageExistenceForComic($id, $imageDirectories, $debugMode);
-}
-
 
 // --- Paginierungslogik anwenden ---
 $currentPage = isset($_GET['page']) ? (int) $_GET['page'] : 1;
@@ -584,8 +502,16 @@ if (file_exists($headerPath)) {
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
 }
 
-// NEU: Hole die Dateinamen für das JavaScript
-$lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
+// === NEUE LOGIK: Hole alle gecachten Bildpfade für JavaScript ===
+$jsImageData = [];
+foreach ($allIds as $id) {
+    $jsImageData[$id] = [
+        'lowres' => get_cached_image_path($id, 'lowres'),
+        'hires' => get_cached_image_path($id, 'hires'),
+        'thumbnails' => get_cached_image_path($id, 'thumbnails'),
+        'socialmedia' => get_cached_image_path($id, 'socialmedia')
+    ];
+}
 ?>
 
 <!-- Font Awesome für Icons -->
@@ -1515,6 +1441,31 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         border: 1px solid #ddd;
         border-radius: 4px;
     }
+
+    /* ANPASSUNG FÜR BERICHT */
+    .report-info {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 5px;
+        color: #0c5460;
+    }
+
+    body.theme-night .report-info {
+        background-color: #17a2b8;
+        color: #fff;
+        border-color: #138496;
+    }
+
+    .report-info a {
+        color: #0c5460;
+        font-weight: bold;
+    }
+
+    body.theme-night .report-info a {
+        color: #fff;
+    }
 </style>
 
 <div class="admin-container">
@@ -1655,19 +1606,13 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isMissingInfoRow = $isTypeMissing || $isNameMissing || $isTranscriptEffectivelyEmpty || $isChapterMissing;
                                 $urlOriginalbildFilename = $data['url_originalbild'] ?? '';
-                                // NEU: Pfad zum Vorschaubild finden.
-                                $thumbnailPath = '';
-                                $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-                                foreach ($imageExtensions as $ext) {
-                                    if (file_exists($comicThumbnailsDirPath . $id . '.' . $ext)) {
-                                        $thumbnailPath = '../assets/comic_thumbnails/' . $id . '.' . $ext;
-                                        break;
-                                    }
-                                }
+
+                                // === KORREKTE LOGIK: Thumbnail-Pfad aus dem Cache holen ===
+                                $thumbnailPath = get_cached_image_path($id, 'thumbnails');
+                                $lowresPath = get_cached_image_path($id, 'lowres');
                                 ?>
-                                <?php $lowresImagePath = findLowresImagePath($id, $comicLowresDirPath, $debugMode); ?>
                                 <tr id="<?php echo $rowId; ?>" data-comic-id="<?php echo htmlspecialchars($id); ?>"
-                                    data-lowres-path="<?php echo htmlspecialchars($lowresImagePath); ?>"
+                                    data-lowres-path="<?php echo htmlspecialchars($lowresPath ? '../' . $lowresPath : ''); ?>"
                                     data-url-originalbild="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>"
                                     class="<?php echo $isMissingInfoRow ? 'missing-info-row' : ''; ?>">
                                     <td class="comic-id-display">
@@ -1696,7 +1641,7 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                             class="editable-field comic-type-display <?php echo $isTypeMissing ? 'missing-info' : ''; ?>"><?php echo htmlspecialchars($data['type']); ?></span>
                                         <?php if (!empty($thumbnailPath)): ?>
                                             <div class="comic-thumbnail-container">
-                                                <img src="<?php echo htmlspecialchars($thumbnailPath); ?>"
+                                                <img src="../<?php echo htmlspecialchars($thumbnailPath); ?>"
                                                     alt="Vorschaubild für Comic-ID <?php echo htmlspecialchars($id); ?>"
                                                     class="comic-thumbnail">
                                             </div>
@@ -1736,6 +1681,15 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
         <h2 class="collapsible-header">Bericht über fehlende Informationen (Aktuelle Seite) <i
                 class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
+            <!-- HINWEIS UND BUTTON HINZUGEFÜGT -->
+            <div class="report-info">
+                <p><strong>Hinweis:</strong> Diese Tabelle zeigt den <strong>aktuellen Live-Status</strong> der
+                    Bilddateien auf dem Server. Wenn dieser Status von der Anzeige oben abweicht (z.B. ein Thumbnail
+                    oben angezeigt wird, hier aber als fehlend markiert ist), muss der Bild-Cache aktualisiert werden.
+                </p>
+                <a href="build_image_cache_and_busting.php?autostart=all" class="button" target="_blank">Bild-Cache
+                    jetzt für alle Typen aktualisieren</a>
+            </div>
             <?php if (!empty($paginatedComicData)): ?>
                 <?php echo $paginationHtml; // Paginierung 4: Über der Berichts-Tabelle ?>
                 <div class="comic-table-container">
@@ -1755,14 +1709,24 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($paginatedComicData as $id => $data):
+                            <?php
+                            // Verzeichnisse für den Live-Check definieren
+                            $imageDirectoriesForLiveCheck = [
+                                'lowres' => $comicLowresDirPath,
+                                'hires' => $comicHiresDirPath,
+                                'thumbnails' => $comicThumbnailsDirPath,
+                                'socialmedia' => $comicSocialMediaDirPath,
+                            ];
+                            foreach ($paginatedComicData as $id => $data):
                                 $isTypeMissing = empty($data['type']);
                                 $isNameMissing = empty($data['name']);
                                 $transcriptContent = trim(strip_tags($data['transcript'], '<br>'));
                                 $isTranscriptEffectivelyEmpty = (empty($transcriptContent) || $transcriptContent === '<br>' || $transcriptContent === '&nbsp;');
                                 $isChapterMissing = ($data['chapter'] === null || $data['chapter'] < 0);
                                 $isUrlMissing = empty($data['url_originalbild']);
-                                $currentImageExistence = $imageExistenceReport[$id] ?? [];
+
+                                // === KORRIGIERT: Führe hier den Live-Check durch ===
+                                $currentImageExistence = checkImageExistenceForComic($id, $imageDirectoriesForLiveCheck, $debugMode);
                                 ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($id); ?></td>
@@ -1776,13 +1740,13 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
                                     </td>
                                     <td><?php echo $isUrlMissing ? '<i class="fas fa-times-circle icon-missing"></i>' : '<i class="fas fa-check-circle icon-success"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['lowres'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['lowres']) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['hires'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['hires']) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-check-circle icon-missing"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['thumbnails'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['thumbnails']) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-check-circle icon-missing"></i>'; ?>
                                     </td>
-                                    <td><?php echo ($currentImageExistence['socialmedia'] ?? false) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-times-circle icon-missing"></i>'; ?>
+                                    <td><?php echo ($currentImageExistence['socialmedia']) ? '<i class="fas fa-check-circle icon-success"></i>' : '<i class="fas fa-check-circle icon-missing"></i>'; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -1805,10 +1769,10 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
 
 <script>
-    const availableLowresImages = <?php echo json_encode($lowresImageFiles); ?>;
+    // === NEU: Übergebe die gecachten Bilddaten an JavaScript ===
+    const cachedImageData = <?php echo json_encode($jsImageData); ?>;
     const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
-
 
     document.addEventListener('DOMContentLoaded', function () {
         // Scrollen und Hervorheben beim Laden der Seite
@@ -1955,12 +1919,8 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             const previewImage = document.getElementById('comic-image-preview');
             const placeholderUrl = 'https://placehold.co/825x1075/cccccc/333333?text=Comicseite%0Anicht%0Averf%C3%BCgbar';
 
-            previewContainer.dataset.hasImage = 'true';
-            if (imagePath) {
-                previewImage.src = imagePath;
-            } else {
-                previewImage.src = placeholderUrl;
-            }
+            previewContainer.dataset.hasImage = !!imagePath;
+            previewImage.src = imagePath ? `../${imagePath}` : placeholderUrl;
             updateViewVisibility();
         }
 
@@ -2059,10 +2019,11 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
                 setView('preview');
 
-                const lowresPath = row.dataset.lowresPath;
+                // KORREKTUR: Nutze die Cache-Daten für die Vorschau
+                const comicId = row.dataset.comicId;
+                const lowresPath = (cachedImageData[comicId] && cachedImageData[comicId].lowres) ? cachedImageData[comicId].lowres : null;
                 showImagePreview(lowresPath);
 
-                const comicId = row.dataset.comicId;
                 const urlOriginalbild = row.dataset.urlOriginalbild;
 
                 const comicType = row.querySelector('.comic-type-display').textContent;
@@ -2078,7 +2039,6 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
 
                 comicNameInput.value = comicName;
 
-                // Korrigierte Logik für comic-url-originalbild
                 const hasUrlInJson = urlOriginalbild.trim() !== '';
                 comicUrlOriginalbildInput.dataset.initialValue = hasUrlInJson ? urlOriginalbild : '';
                 comicUrlEmptyCheckbox.checked = !hasUrlInJson;
@@ -2179,12 +2139,11 @@ $lowresImageFiles = getLowresImageFilenames($comicLowresDirPath, $debugMode);
             }
 
             if (comicId && /^\d{8}$/.test(comicId)) {
-                const foundFile = availableLowresImages.find(file => file.startsWith(comicId + '.'));
-                const path = foundFile ? `../assets/comic_lowres/${foundFile}` : '';
-                showImagePreview(path);
+                // Nutze die Cache-Daten für die Vorschau
+                const imagePath = (cachedImageData[comicId] && cachedImageData[comicId].lowres) ? cachedImageData[comicId].lowres : null;
+                showImagePreview(imagePath);
             }
 
-            // KORRIGIERTE LOGIK: Nur füllen, wenn das Feld leer ist und die Checkbox nicht angehakt ist
             if (!comicUrlEmptyCheckbox.checked && comicUrlOriginalbildInput.value.trim() === '') {
                 comicUrlOriginalbildInput.value = comicId;
                 updateOriginalImagePreview(comicId);

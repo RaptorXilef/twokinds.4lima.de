@@ -37,7 +37,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
             $params["path"],
             $params["domain"],
             $params["secure"],
-            $params["httpholy"]
+            $params["httponly"]
         );
     }
 
