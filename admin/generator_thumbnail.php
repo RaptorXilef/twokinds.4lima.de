@@ -380,6 +380,18 @@ if (file_exists($headerPath)) {
             <ul id="generation-errors-list"></ul>
         </div>
 
+        <div id="cache-update-notification" class="notification-box" style="display:none; margin-top: 20px;">
+            <h4>Nächster Schritt: Cache aktualisieren</h4>
+            <p>
+                Da neue Thumbnails hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
+                <br>
+                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder generiert sind, da der Prozess
+                kurzzeitig hohe Serverlast verursachen kann.
+            </p>
+            <a href="build_image_cache_and_busting.php?autostart=thumbnails" class="button">Cache jetzt
+                aktualisieren</a>
+        </div>
+
         <div id="loading-spinner" style="display: none; text-align: center; margin-top: 20px;">
             <div class="spinner"></div>
             <p id="progress-text">Generiere Thumbnails...</p>
@@ -628,6 +640,29 @@ if (file_exists($headerPath)) {
     body.theme-night .toggle-buttons input[type="radio"]:checked+label {
         background-color: #09f;
     }
+
+    .notification-box {
+        border: 1px solid #bee5eb;
+        background-color: #d1ecf1;
+        color: #0c5460;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .notification-box h4 {
+        margin-top: 0;
+    }
+
+    .notification-box .button {
+        margin-top: 10px;
+        display: inline-block;
+    }
+
+    body.theme-night .notification-box {
+        background-color: #0c5460;
+        border-color: #17a2b8;
+        color: #f8f9fa;
+    }
 </style>
 
 <script>
@@ -642,6 +677,7 @@ if (file_exists($headerPath)) {
         const overallStatusMessage = document.getElementById('overall-status-message');
         const errorHeaderMessage = document.getElementById('error-header-message');
         const errorsList = document.getElementById('generation-errors-list');
+        const cacheUpdateNotification = document.getElementById('cache-update-notification');
 
         const initialMissingIds = <?php echo json_encode($missingThumbnails); ?>;
         let remainingIds = [...initialMissingIds];
@@ -712,6 +748,8 @@ if (file_exists($headerPath)) {
         generateButton.addEventListener('click', function () {
             if (remainingIds.length === 0) return;
 
+            cacheUpdateNotification.style.display = 'none';
+
             createdImagesContainer.innerHTML = '';
             errorsList.innerHTML = '';
             errorHeaderMessage.style.display = 'none';
@@ -752,6 +790,9 @@ if (file_exists($headerPath)) {
                     overallStatusMessage.className = 'status-message status-green';
                 }
                 overallStatusMessage.style.display = 'block';
+                if (createdCount > 0) {
+                    cacheUpdateNotification.style.display = 'block';
+                }
                 return;
             }
 

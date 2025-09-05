@@ -239,6 +239,18 @@ if (file_exists($headerPath)) {
             </form>
         </div>
 
+        <div id="cache-update-notification" class="notification-box" style="display:none; margin-top: 20px;">
+            <h4>Nächster Schritt: Cache aktualisieren</h4>
+            <p>
+                Da neue Bilder hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
+                <br>
+                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder hochgeladen sind, da der
+                Prozess kurzzeitig hohe Serverlast verursachen kann.
+            </p>
+            <a href="build_image_cache_and_busting.php?autostart=lowres,hires" class="button">Cache jetzt
+                aktualisieren</a>
+        </div>
+
         <div id="confirmationModal" class="modal" style="display:none;">
             <div class="modal-content">
                 <span class="close-button">&times;</span>
@@ -282,6 +294,8 @@ if (file_exists($headerPath)) {
         const existingImage = document.getElementById('existingImage');
         const newImage = document.getElementById('newImage');
         const confirmationMessage = document.getElementById('confirmationMessage');
+
+        const cacheUpdateNotification = document.getElementById('cache-update-notification');
 
         let filesToUpload = [];
 
@@ -333,6 +347,8 @@ if (file_exists($headerPath)) {
             e.preventDefault();
             uploadButton.disabled = true;
 
+            cacheUpdateNotification.style.display = 'none';
+
             for (const file of filesToUpload) {
                 await uploadFile(file);
             }
@@ -341,6 +357,8 @@ if (file_exists($headerPath)) {
             filesToUpload = [];
             updateFileList();
             uploadButton.disabled = false;
+
+            cacheUpdateNotification.style.display = 'block';
         });
 
         async function uploadFile(file) {
@@ -548,6 +566,29 @@ if (file_exists($headerPath)) {
 
     .banner {
         z-index: 100;
+    }
+
+    .notification-box {
+        border: 1px solid #bee5eb;
+        background-color: #d1ecf1;
+        color: #0c5460;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .notification-box h4 {
+        margin-top: 0;
+    }
+
+    .notification-box .button {
+        margin-top: 10px;
+        display: inline-block;
+    }
+
+    body.theme-night .notification-box {
+        background-color: #0c5460;
+        border-color: #17a2b8;
+        color: #f8f9fa;
     }
 </style>
 

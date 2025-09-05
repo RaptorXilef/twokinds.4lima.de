@@ -115,12 +115,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     ob_end_clean();
     header('Content-Type: application/json');
     $response = ['success' => false, 'message' => '', 'counts' => []];
-    $type = $_POST['type'] ?? '';
 
-    $typesToProcess = ($type === 'all') ? array_keys($dirsToScan) : (array_key_exists($type, $dirsToScan) ? [$type] : []);
+    // NEU START: Verarbeitet einzelne, komma-getrennte oder 'all' Typen
+    $typesToProcess = [];
+    $typeInput = $_POST['type'] ?? '';
+
+    if ($typeInput === 'all') {
+        $typesToProcess = array_keys($dirsToScan);
+    } else {
+        $submittedTypes = explode(',', $typeInput);
+        foreach ($submittedTypes as $submittedType) {
+            if (array_key_exists($submittedType, $dirsToScan)) {
+                $typesToProcess[] = $submittedType;
+            }
+        }
+    }
+    // NEU ENDE
 
     if (empty($typesToProcess)) {
-        $response['message'] = 'Ungültiger Typ für Cache-Erstellung angegeben.';
+        $response['message'] = 'Ungültiger oder kein Typ für Cache-Erstellung angegeben.';
         echo json_encode($response);
         exit;
     }
@@ -135,7 +148,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $foundImages = scanDirectoryForImagesWithCacheBusting($dirInfo['path'], $dirInfo['relativePath']);
         $response['counts'][$currentType] = count($foundImages);
 
+        // Sicherstellen, dass die Keys existieren, bevor darauf zugegriffen wird
         foreach ($foundImages as $comicId => $path) {
+            if (!isset($existingCache[$comicId])) {
+                $existingCache[$comicId] = [];
+            }
             $existingCache[$comicId][$currentType] = $path;
         }
     }
@@ -307,51 +324,80 @@ include $headerPath;
         const resultsSection = document.getElementById('generation-results-section');
         const statusMessage = document.getElementById('overall-status-message');
 
-        buttons.forEach(button => {
-            button.addEventListener('click', async function () {
-                const type = this.dataset.type;
-                const typeName = this.textContent;
-
-                resultsSection.style.display = 'none';
-                statusMessage.innerHTML = '';
-                spinner.style.display = 'block';
-                progressText.textContent = `Aktualisiere Cache für '${typeName}'... Bitte warten.`;
-                buttons.forEach(b => b.disabled = true);
-
-                try {
-                    const response = await fetch(window.location.href, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({ action: 'build_cache', type: type })
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP-Fehler: Status ${response.status}`);
-
-                    const data = await response.json();
-
-                    resultsSection.style.display = 'block';
-                    statusMessage.className = data.success ? 'status-message status-green' : 'status-message status-red';
-
-                    let message = data.message;
-                    if (data.success && data.counts) {
-                        const countDetails = Object.entries(data.counts)
-                            .map(([key, value]) => `<li><strong>${key}:</strong> ${value} Bilder gefunden</li>`)
-                            .join('');
-                        message += `<br><br><strong>Details:</strong><ul>${countDetails}</ul>`;
-                    }
-                    statusMessage.innerHTML = message;
-
-                } catch (error) {
-                    resultsSection.style.display = 'block';
-                    statusMessage.className = 'status-message status-red';
-                    statusMessage.innerHTML = `Ein unerwarteter Fehler ist aufgetreten: ${error.message}.`;
-                    console.error('Fehler bei der Cache-Erstellung:', error);
-                } finally {
-                    spinner.style.display = 'none';
-                    buttons.forEach(b => b.disabled = false);
+        // NEU START: Refaktorisierte Funktion für den AJAX-Aufruf
+        async function runCacheBuild(type) {
+            let typeName = type;
+            if (type === 'lowres,hires') {
+                typeName = 'Low-Res & High-Res';
+            } else {
+                const button = document.querySelector(`.cache-build-button[data-type="${type}"]`);
+                if (button) {
+                    typeName = button.textContent;
                 }
+            }
+
+            resultsSection.style.display = 'none';
+            statusMessage.innerHTML = '';
+            spinner.style.display = 'block';
+            progressText.textContent = `Aktualisiere Cache für '${typeName}'... Bitte warten.`;
+            buttons.forEach(b => b.disabled = true);
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'build_cache', type: type })
+                });
+
+                if (!response.ok) throw new Error(`HTTP-Fehler: Status ${response.status}`);
+
+                const data = await response.json();
+
+                resultsSection.style.display = 'block';
+                statusMessage.className = data.success ? 'status-message status-green' : 'status-message status-red';
+
+                let message = data.message;
+                if (data.success && data.counts) {
+                    const countDetails = Object.entries(data.counts)
+                        .map(([key, value]) => `<li><strong>${key}:</strong> ${value} Bilder gefunden</li>`)
+                        .join('');
+                    message += `<br><br><strong>Details:</strong><ul>${countDetails}</ul>`;
+                }
+                statusMessage.innerHTML = message;
+
+            } catch (error) {
+                resultsSection.style.display = 'block';
+                statusMessage.className = 'status-message status-red';
+                statusMessage.innerHTML = `Ein unerwarteter Fehler ist aufgetreten: ${error.message}.`;
+                console.error('Fehler bei der Cache-Erstellung:', error);
+            } finally {
+                spinner.style.display = 'none';
+                buttons.forEach(b => b.disabled = false);
+            }
+        }
+        // NEU ENDE
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function () {
+                const type = this.dataset.type;
+                runCacheBuild(type); // Aufruf der neuen Funktion
             });
         });
+
+        // NEU START: Autostart-Logik
+        const urlParams = new URLSearchParams(window.location.search);
+        const autostartType = urlParams.get('autostart');
+        if (autostartType) {
+            // Gültige Typen prüfen, um sicherzugehen
+            const allowedTypes = ['thumbnails', 'lowres,hires', 'socialmedia', 'lowres', 'hires', 'all'];
+            const types = autostartType.split(',');
+            const isValid = types.every(t => allowedTypes.includes(t));
+
+            if (isValid) {
+                runCacheBuild(autostartType);
+            }
+        }
+        // NEU ENDE
     });
 </script>
 
