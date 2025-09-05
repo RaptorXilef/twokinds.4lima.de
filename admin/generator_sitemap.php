@@ -9,70 +9,8 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: generator_sitemap.php wird geladen.");
-
-// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
-ob_start();
-if ($debugMode)
-    error_log("DEBUG: Output Buffer gestartet.");
-
-// Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
-session_start();
-
-// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
-
-if ($debugMode)
-    error_log("DEBUG: Session gestartet in generator_sitemap.php.");
-
-// Logout-Logik: Muss vor dem Sicherheitscheck erfolgen.
-if (isset($_GET['action']) && $_GET['action'] == 'logout') {
-    if ($debugMode)
-        error_log("DEBUG: Logout-Aktion erkannt.");
-    // Zerstöre alle Session-Variablen.
-    $_SESSION = array();
-
-    // Lösche das Session-Cookie.
-    if (ini_get("session.use_cookies")) {
-        $params = session_get_cookie_params();
-        setcookie(
-            session_name(),
-            '',
-            time() - 42000,
-            $params["path"],
-            $params["domain"],
-            $params["secure"],
-            $params["httplly"]
-        );
-        if ($debugMode)
-            error_log("DEBUG: Session-Cookie gelöscht.");
-    }
-
-    // Zerstöre die Session.
-    session_destroy();
-    if ($debugMode)
-        error_log("DEBUG: Session zerstört.");
-
-    // Weiterleitung zur Login-Seite (index.php im Admin-Bereich).
-    // ob_end_clean() leert den Output Buffer, bevor die Weiterleitung gesendet wird.
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
-}
-
-// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if ($debugMode)
-        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von generator_sitemap.php.");
-    // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
-    ob_end_clean(); // Output Buffer leeren, da wir umleiten
-    header('Location: index.php');
-    exit;
-}
-if ($debugMode)
-    error_log("DEBUG: Admin in generator_sitemap.php angemeldet.");
-
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';

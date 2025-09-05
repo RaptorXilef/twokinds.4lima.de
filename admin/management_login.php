@@ -6,28 +6,8 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: management_login.php wird geladen.");
-
-ob_start();
-session_start();
-
-// --- Logout-Logik ---
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    session_unset();
-    session_destroy();
-    header('Location: index.php');
-    exit;
-}
-
-// Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
-
-// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header('Location: index.php');
-    exit;
-}
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // --- Pfad zur Benutzerdatei ---
 $usersFile = __DIR__ . '/../../../admin_users.json';

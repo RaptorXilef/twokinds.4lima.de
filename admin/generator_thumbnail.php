@@ -10,35 +10,8 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: generator_thumbnail.php wird geladen.");
-
-ob_start();
-
-// PHP-Einstellungen
-ini_set('memory_limit', '512M');
-gc_enable();
-
-session_start();
-
-// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
-
-// Logout-Funktion
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    session_unset();
-    session_destroy();
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
-}
-
-// Sicherheitscheck: Admin-Login
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
-}
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade
 $headerPath = __DIR__ . '/../src/layout/header.php';

@@ -10,30 +10,8 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: build_image_cache_and_busting.php wird geladen.");
-
-ob_start();
-session_start();
-
-// Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
-
-// Logout-Funktion
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    session_unset();
-    session_destroy();
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
-}
-
-// SICHERHEITSCHECK: Nur für angemeldete Administratoren.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
-}
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade
 $headerPath = __DIR__ . '/../src/layout/header.php';

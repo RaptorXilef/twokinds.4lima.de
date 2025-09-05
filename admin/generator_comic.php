@@ -12,45 +12,8 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: generator_comic.php wird geladen.");
-
-// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
-ob_start();
-if ($debugMode)
-    error_log("DEBUG: Output Buffer in generator_comic.php gestartet.");
-
-// Starte die PHP-Sitzung. Notwendig, um den Anmeldestatus zu überprüfen.
-session_start();
-
-// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
-
-if ($debugMode)
-    error_log("DEBUG: Session gestartet in generator_comic.php.");
-
-// Logout-Funktion (wird über GET-Parameter ausgelöst)
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    if ($debugMode)
-        error_log("DEBUG: Logout-Aktion erkannt.");
-    session_unset();     // Entfernt alle Session-Variablen
-    session_destroy();   // Zerstört die Session
-    ob_end_clean(); // Output Buffer leeren, da wir umleiten
-    header('Location: index.php'); // Weiterleitung zur Login-Seite
-    exit;
-}
-
-// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if ($debugMode)
-        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von generator_comic.php.");
-    // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
-    ob_end_clean(); // Output Buffer leeren, da wir umleiten
-    header('Location: index.php');
-    exit;
-}
-if ($debugMode)
-    error_log("DEBUG: Admin in generator_comic.php angemeldet.");
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';

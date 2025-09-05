@@ -13,40 +13,10 @@
  */
 
 // === DEBUG-MODUS & KONFIGURATION ===
-$debugMode = false;
+$debugMode = true;
 
-if ($debugMode)
-    error_log("DEBUG: upload_image.php wird geladen.");
-
-// Starte den Output Buffer, um Redirects ohne Fehler zu ermöglichen.
-ob_start();
-
-session_start();
-
-// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
-
-// Logout-Funktion
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    if ($debugMode)
-        error_log("DEBUG: Logout-Aktion erkannt.");
-    session_unset();
-    session_destroy();
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
-}
-
-// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if ($debugMode)
-        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von upload_image.php.");
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
-}
-if ($debugMode)
-    error_log("DEBUG: Admin in upload_image.php angemeldet.");
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // Korrigierte Pfade zu den benötigten Ressourcen
 $headerPath = __DIR__ . '/../src/layout/header.php';

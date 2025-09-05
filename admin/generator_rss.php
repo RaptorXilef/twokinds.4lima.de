@@ -13,45 +13,8 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: generator_rss.php wird geladen.");
-
-// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
-ob_start();
-if ($debugMode)
-    error_log("DEBUG: Output Buffer in generator_rss.php gestartet.");
-
-// Setzt das maximale Ausführungszeitlimit für das Skript.
-set_time_limit(300);
-if ($debugMode)
-    error_log("DEBUG: Maximales Ausführungszeitlimit auf 300 Sekunden gesetzt.");
-
-// Starte die PHP-Sitzung, falls noch keine aktiv ist.
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-
-    // NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-    require_once __DIR__ . '/src/components/security_check.php';
-
-    if ($debugMode)
-        error_log("DEBUG: Session gestartet in generator_rss.php.");
-} else {
-    if ($debugMode)
-        error_log("DEBUG: Session bereits aktiv in generator_rss.php.");
-}
-
-// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if ($debugMode)
-        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von generator_rss.php.");
-    // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
-    ob_end_clean(); // Output Buffer leeren, da wir umleiten
-    header('Location: index.php');
-    exit;
-}
-if ($debugMode)
-    error_log("DEBUG: Admin in generator_rss.php angemeldet.");
-
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
 // Diese Logik ist notwendig, um korrekte absolute URLs im RSS-Feed zu generieren.

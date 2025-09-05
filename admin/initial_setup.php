@@ -12,42 +12,8 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: initial_setup.php wird geladen.");
-
-// Starte den Output Buffer als ALLERERSTE Zeile
-ob_start();
-
-// Starte die PHP-Sitzung. Notwendig, wenn diese Seite in den Admin-Bereich eingebunden ist.
-session_start();
-if ($debugMode)
-    error_log("DEBUG: Session gestartet in initial_setup.php.");
-
-// NEU: Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
-
-
-// Logout-Funktion (wird über GET-Parameter ausgelöst)
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    session_unset();     // Entfernt alle Session-Variablen
-    session_destroy();   // Zerstört die Session
-    if ($debugMode)
-        error_log("DEBUG: Logout-Aktion in initial_setup.php durchgeführt.");
-    header('Location: index.php'); // Weiterleitung zur Login-Seite
-    exit;
-}
-
-// SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if ($debugMode)
-        error_log("DEBUG: Nicht angemeldet, Weiterleitung zur Login-Seite von initial_setup.php.");
-    // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
-    header('Location: index.php');
-    exit;
-}
-if ($debugMode)
-    error_log("DEBUG: Admin in initial_setup.php angemeldet.");
-
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade zu den benötigten Ressourcen
 $robotsContent = 'noindex, nofollow';
