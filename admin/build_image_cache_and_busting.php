@@ -4,6 +4,7 @@
  * Dieses Tool scannt die Bildverzeichnisse, ermittelt den letzten Änderungszeitpunkt
  * jeder Datei und speichert die relativen Pfade mit einem Cache-Busting-Parameter
  * (?c=timestamp) in der zentralen 'comic_image_cache.json'.
+ * Es priorisiert dabei die Dateiendungen (webp, png, etc.), um die performanteste Version zu wählen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -59,6 +60,7 @@ $dirsToScan = [
 
 /**
  * Scannt ein Verzeichnis nach Bilddateien und hängt einen Cache-Busting-Parameter an.
+ * Sucht für jeden eindeutigen Dateinamen die beste verfügbare Erweiterung in priorisierter Reihenfolge.
  *
  * @param string $dir Der absolute Pfad zum zu scannenden Verzeichnis.
  * @param string $relativePathPrefix Der relative Pfad-Präfix für die Ausgabe.
@@ -70,26 +72,39 @@ function scanDirectoryForImagesWithCacheBusting(string $dir, string $relativePat
     if (!is_dir($dir)) {
         return [];
     }
+
+    // Priorisierte Liste der Erweiterungen
+    $prioritizedExtensions = ['webp', 'png', 'gif', 'jpg', 'jpeg'];
+    $allowedExtensions = array_flip($prioritizedExtensions);
+
+    // Zuerst alle eindeutigen Basis-Dateinamen sammeln
+    $baseNames = [];
     $files = scandir($dir);
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
     foreach ($files as $file) {
-        if ($file === '.' || $file === '..') {
-            continue;
+        $fileInfo = pathinfo($file);
+        if (isset($fileInfo['filename'], $fileInfo['extension']) && !empty($fileInfo['filename']) && isset($allowedExtensions[strtolower($fileInfo['extension'])])) {
+            $baseNames[$fileInfo['filename']] = true; // Verwende Keys für Eindeutigkeit
         }
+    }
+    $uniqueBaseNames = array_keys($baseNames);
 
-        $absolutePath = $dir . $file;
-        $fileInfo = pathinfo($absolutePath);
+    // Für jeden Basisnamen die beste verfügbare Erweiterung in priorisierter Reihenfolge suchen
+    foreach ($uniqueBaseNames as $baseName) {
+        foreach ($prioritizedExtensions as $ext) {
+            $fileName = $baseName . '.' . $ext;
+            $absolutePath = $dir . $fileName;
 
-        if (is_file($absolutePath) && isset($fileInfo['filename']) && !empty($fileInfo['filename']) && isset($fileInfo['extension']) && in_array(strtolower($fileInfo['extension']), $imageExtensions)) {
-            // Letzten Änderungszeitpunkt holen
-            $lastModified = @filemtime($absolutePath);
-            if ($lastModified === false) {
-                $lastModified = time(); // Fallback
+            if (is_file($absolutePath)) {
+                // Die erste gefundene Datei (gemäß Priorität) wird verwendet
+                $lastModified = @filemtime($absolutePath);
+                if ($lastModified === false) {
+                    $lastModified = time(); // Fallback
+                }
+                $pathWithBuster = $relativePathPrefix . $fileName . '?c=' . $lastModified;
+                $images[$baseName] = $pathWithBuster;
+
+                break; // Suche für diesen Basisnamen abbrechen und zum nächsten springen
             }
-            // Pfad mit Cache-Buster zusammensetzen
-            $pathWithBuster = $relativePathPrefix . $file . '?c=' . $lastModified;
-            $images[$fileInfo['filename']] = $pathWithBuster;
         }
     }
     return $images;
