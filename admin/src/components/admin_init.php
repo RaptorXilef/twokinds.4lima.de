@@ -1,14 +1,17 @@
 <?php
 /**
- * Zentrales Initialisierungsskript für alle Admin-Seiten.
+ * Zentrales Initialisierungsskript für alle Admin-Seiten (Gehärtete Version).
  *
- * Dieses Skript übernimmt wiederkehrende Aufgaben wie:
- * - Handhabung des Debug-Modus
- * - Starten des Output Buffers, um Header-Weiterleitungen zu ermöglichen
- * - Starten der Session
- * - Einbinden der zentralen Sicherheits- und Sitzungsüberprüfung
- * - Bereitstellen einer globalen Logout-Funktion
- * - Überprüfung, ob der Benutzer angemeldet ist, andernfalls Weiterleitung zum Login
+ * Dieses Skript übernimmt wiederkehrende Aufgaben und implementiert wichtige Sicherheitsmaßnahmen:
+ * - Session-Konfiguration für erhöhte Sicherheit (HTTPOnly, Secure, SameSite).
+ * - Schutz vor Session Hijacking durch regelmäßige Erneuerung der Session-ID.
+ * - Schutz vor Clickjacking durch X-Frame-Options Header.
+ * - Handhabung des Debug-Modus.
+ * - Starten des Output Buffers.
+ * - Starten und Sichern der Session.
+ * - Einbinden der zentralen Timeout-Prüfung.
+ * - Bereitstellen einer globalen, validierten Logout-Funktion.
+ * - Überprüfung, ob der Benutzer angemeldet ist, andernfalls Weiterleitung zum Login.
  *
  * Die Variable $debugMode sollte in der aufrufenden Datei VOR dem Einbinden dieses Skripts gesetzt werden.
  */
@@ -24,24 +27,48 @@ if (!isset($debugMode)) {
 if ($debugMode)
     error_log("DEBUG: admin_init.php wird von {$callingScript} eingebunden.");
 
-// Starte den Output Buffer als ALLERERSTE Zeile, um wirklich jede Ausgabe abzufangen.
+// Starte den Output Buffer als ALLERERSTE Zeile.
 ob_start();
-if ($debugMode)
-    error_log("DEBUG: Output Buffer von admin_init.php gestartet.");
+
+// --- SICHERHEITSVERBESSERUNG 1: Strikte Session-Konfiguration ---
+// Setzt sichere Cookie-Parameter, BEVOR die Session gestartet wird.
+session_set_cookie_params([
+    'lifetime' => 0, // Session-Cookie gilt bis zum Schließen des Browsers
+    'path' => '/', // Gilt für die gesamte Domain
+    'domain' => $_SERVER['HTTP_HOST'],
+    'secure' => isset($_SERVER['HTTPS']), // Cookie nur über HTTPS senden
+    'httponly' => true, // Verhindert Zugriff durch JavaScript (Schutz vor XSS)
+    'samesite' => 'Strict' // Schutz vor CSRF-Angriffen
+]);
 
 // Starte die PHP-Sitzung, falls noch keine aktiv ist.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-// __DIR__ verweist hier auf /src/components/, daher ist der Pfad korrekt.
+// --- SICHERHEITSVERBESSERUNG 2: Schutz vor Session Hijacking ---
+// Regeneriert die Session-ID in regelmäßigen Abständen.
+if (!isset($_SESSION['last_regeneration'])) {
+    $_SESSION['last_regeneration'] = time();
+} elseif (time() - $_SESSION['last_regeneration'] > 900) { // Alle 15 Minuten
+    session_regenerate_id(true); // Erneuert die ID und löscht die alte Session-Datei
+    $_SESSION['last_regeneration'] = time();
+    if ($debugMode)
+        error_log("DEBUG: Session-ID wurde aus Sicherheitsgründen erneuert.");
+}
+
+// --- SICHERHEITSVERBESSERUNG 3: Schutz vor Clickjacking ---
+// Verhindert, dass die Admin-Seite in einem <frame> oder <iframe> auf einer anderen Domain geladen wird.
+header('X-Frame-Options: SAMEORIGIN');
+
+// Binde die zentrale Sicherheits- und Sitzungsüberprüfung (Timeout) ein.
 require_once __DIR__ . '/security_check.php';
 
 if ($debugMode)
     error_log("DEBUG: Session gestartet und security_check.php eingebunden.");
 
 // Logout-Funktion (wird über GET-Parameter ausgelöst)
+// Validierung des 'action'-Parameters
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     if ($debugMode)
         error_log("DEBUG: Logout-Aktion in admin_init.php erkannt.");
@@ -59,7 +86,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
             $params["path"],
             $params["domain"],
             $params["secure"],
-            $params["httponly"] // Korrekte Schreibweise
+            $params["httponly"]
         );
     }
 
