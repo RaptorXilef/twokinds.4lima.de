@@ -1,9 +1,9 @@
 <?php
 /**
- * Zentrales Initialisierungsskript für alle Admin-Seiten (Gehärtete Version).
+ * Zentrales Initialisierungsskript für alle Admin-Seiten (Maximal gehärtete Version).
  *
  * Dieses Skript übernimmt wiederkehrende Aufgaben und implementiert wichtige Sicherheitsmaßnahmen:
- * - Strikte Sicherheits-Header (CSP, X-Content-Type-Options etc.)
+ * - Strikte Sicherheits-Header (CSP, HSTS, Permissions-Policy etc.)
  * - Session-Konfiguration für erhöhte Sicherheit (HTTPOnly, Secure, SameSite).
  * - Schutz vor Session Hijacking durch User-Agent-Bindung und regelmäßige ID-Erneuerung.
  * - Schutz vor Clickjacking durch X-Frame-Options Header.
@@ -24,16 +24,29 @@ if ($debugMode)
 
 ob_start();
 
-// --- SICHERHEITSVERBESSERUNG 1: HTTP Security Headers ---
-// Content-Security-Policy: Schränkt ein, von wo Ressourcen (Skripte, Stylesheets etc.) geladen werden dürfen.
-// Dies ist ein starker Schutz gegen XSS-Angriffe.
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https://placehold.co;");
-// Verhindert, dass der Browser versucht, den MIME-Typ zu erraten.
+// --- SICHERHEITSVERBESSERUNG 1: Erweiterte HTTP Security Headers ---
+
+// Content-Security-Policy (CSP): Schränkt ein, von wo Ressourcen geladen werden dürfen.
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: https://placehold.co; object-src 'none'; frame-ancestors 'self';");
+
+// Verhindert, dass der Browser versucht, den MIME-Typ zu erraten (Schutz vor "MIME-Sniffing").
 header('X-Content-Type-Options: nosniff');
-// Verhindert Clickjacking-Angriffe.
+
+// Verhindert Clickjacking-Angriffe. 'frame-ancestors' in CSP ist moderner, aber X-Frame-Options bietet Abwärtskompatibilität.
 header('X-Frame-Options: SAMEORIGIN');
-// Kontrolliert, welche Referrer-Informationen gesendet werden.
+
+// Kontrolliert, welche Referrer-Informationen gesendet werden, um Datenlecks zu minimieren.
 header('Referrer-Policy: strict-origin-when-cross-origin');
+
+// Permissions Policy: Deaktiviert sensible Browser-Features, die im Admin-Bereich nicht benötigt werden.
+header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
+
+// HTTP Strict Transport Security (HSTS): Weist den Browser an, für eine lange Zeit nur über HTTPS zu kommunizieren.
+// WICHTIG: Nur aktivieren, wenn du sicher bist, dass deine Seite dauerhaft und ausschließlich über HTTPS laufen wird.
+// Einmal gesetzt, erzwingt der Browser für die angegebene Zeit (hier 1 Jahr) HTTPS.
+// if (isset($_SERVER['HTTPS'])) {
+//     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+// }
 
 
 // --- SICHERHEITSVERBESSERUNG 2: Strikte Session-Konfiguration ---
@@ -56,6 +69,7 @@ if (session_status() === PHP_SESSION_NONE) {
 if (isset($_SESSION['user_agent'])) {
     if ($_SESSION['user_agent'] !== $_SERVER['HTTP_USER_AGENT']) {
         // User Agent hat sich geändert -> Möglicher Angriff! Session zerstören.
+        error_log("SECURITY ALERT: User-Agent hat sich mitten in der Session geändert. Möglicher Hijacking-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
         session_unset();
         session_destroy();
         header('Location: index.php?reason=session_hijacked');
@@ -84,13 +98,11 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-// Logout-Funktion mit CSRF-Token-Überprüfung
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    // Überprüfe, ob der Token gültig ist.
     if (!isset($_GET['token']) || !hash_equals($_SESSION['csrf_token'], $_GET['token'])) {
-        // Ungültiger Token -> Logout abbrechen
+        // Logge den fehlgeschlagenen Versuch (auch ohne Debug-Modus)
         if ($debugMode)
-            error_log("DEBUG: Logout-Versuch mit ungültigem CSRF-Token abgebrochen.");
+            error_log("SECURITY WARNING: Logout-Versuch mit ungültigem CSRF-Token von IP: " . $_SERVER['REMOTE_ADDR']);
         // Leite einfach zum Dashboard zurück, ohne Fehlermeldung, um keine Infos preiszugeben.
         header('Location: management_user.php');
         exit;
