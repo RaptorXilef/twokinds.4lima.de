@@ -12,24 +12,15 @@ $debugMode = false;
 if ($debugMode)
     error_log("DEBUG: 403.php wird geladen.");
 
-// Lade die Cache-Busting-Konfiguration und Helferfunktion.
-require_once __DIR__ . '/src/components/cache_config.php';
+// === ANGEPASST: Lade den neuen zentralen Image-Cache-Helfer ===
+require_once __DIR__ . '/src/components/image_cache_helper.php';
 
 // === KORRIGIERTE Dynamische Basis-URL Bestimmung ===
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
-
-// Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
-// Da diese Datei im Root liegt, ist ihr Verzeichnis der Anwendungs-Root.
 $appRootAbsPath = str_replace('\\', '/', dirname(__FILE__));
-
-// Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
 $documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
-
-// Berechne den Unterordner-Pfad, falls die App in einem Unterordner liegt.
 $subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
-
-// Stelle sicher, dass der Pfad korrekt formatiert ist (z.B. /mein-unterordner/)
 if (!empty($subfolderPath) && $subfolderPath !== '/') {
     $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
 } elseif (empty($subfolderPath)) {
@@ -38,16 +29,16 @@ if (!empty($subfolderPath) && $subfolderPath !== '/') {
 $baseUrl = $protocol . $host . $subfolderPath;
 
 
-// Definiere die Bildpfade
-$errorImageName = '403.webp';
-$errorImagePathOnDisk = 'assets/fehler/' . $errorImageName; // Pfad für die Dateisystem-Prüfung
-$fallbackImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
+// === NEUE LOGIK: Bildpfade für Low-Res und High-Res aus dem Cache abrufen ===
+$lowresImage = get_cached_image_path('403', 'lowres');
+$hiresImage = get_cached_image_path('403', 'hires');
 
-// === MODIFIZIERT: Logik nutzt nun die zentrale Helferfunktion ===
-$imageToShow = $fallbackImagePath;
-if (file_exists($errorImagePathOnDisk)) {
-    $versionedPath = versioniere_bild_asset($errorImagePathOnDisk);
-    $imageToShow = $baseUrl . $versionedPath;
+$imageToShow = $lowresImage ? $baseUrl . $lowresImage : 'https://placehold.co/800x600/cccccc/333333?text=Zugriff+verweigert';
+// Der Link zeigt auf die Hi-Res-Version, falls vorhanden, ansonsten auf die Low-Res-Version selbst.
+$linkToShow = $hiresImage ? $baseUrl . $hiresImage : $imageToShow;
+
+if ($debugMode && !$lowresImage) {
+    error_log("DEBUG: 403-Bild nicht im Cache gefunden, verwende Placeholder.");
 }
 
 
@@ -82,13 +73,14 @@ include __DIR__ . '/src/layout/header.php';
 
 <article class="comic">
     <header>
-        <h1>
-            <?php echo htmlspecialchars($pageHeader); ?>
-        </h1>
+        <h1><?php echo htmlspecialchars($pageHeader); ?></h1>
     </header>
 
     <div>
-        <img id="error-image" src="<?php echo htmlspecialchars($imageToShow); ?>" alt="Fehlerbild: Zugriff verweigert">
+        <a href="<?php echo htmlspecialchars($linkToShow); ?>" target="_blank" rel="noopener noreferrer">
+            <img id="error-image" src="<?php echo htmlspecialchars($imageToShow); ?>"
+                alt="Fehlerbild: Zugriff verweigert">
+        </a>
     </div>
 
     <aside class="transcript">

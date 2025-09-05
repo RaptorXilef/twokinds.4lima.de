@@ -36,8 +36,11 @@ assets/comic_thumbnails/*.webp
 assets/img/github/twokinds.4lima.de.psd
 assets/img/about/*
 
-!assets/fehler/404.*
-!assets/fehler/403.*
+# Fehlerseiten
+!assets/comic_lowres/404.*
+!assets/comic_hires/404.*
+!assets/comic_lowres/403.*
+!assets/comic_hires/403.*
 
 # Nicht verwendete Icons
 assets/icons/nicht verwendet/*

@@ -9,13 +9,11 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// Lade die Cache-Busting-Konfiguration und Helferfunktion.
-require_once __DIR__ . '/src/components/cache_config.php';
-// Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
+// === ANGEPASST: Lade zentrale Helfer anstelle der alten Skripte ===
+// Lade die Comic-Daten aus der JSON-Datei.
 require_once __DIR__ . '/src/components/load_comic_data.php';
-// Lade die Helferfunktion zum Finden des Bildpfades.
-// Diese muss hier eingebunden werden, da sie vor dem Header benötigt wird.
-require_once __DIR__ . '/src/components/get_comic_image_path.php';
+// Lade den neuen Helfer, der die Bildpfade aus dem Cache bereitstellt.
+require_once __DIR__ . '/src/components/image_cache_helper.php';
 
 // Ermittle die ID des neuesten Comics. Da $comicData nach Datum sortiert ist,
 // ist der letzte Schlüssel im Array der neueste Comic.
@@ -37,97 +35,36 @@ if (isset($comicData[$currentComicId])) {
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
     $urlOriginalbildFilename = $comicData[$currentComicId]['url_originalbild'] ?? '';
-    // Die Preview-URL wird nun lokal aus dem 'comic_socialmedia'-Ordner geladen (relativ zum Projekt-Root).
-    $rawComicPreviewPath = getComicImagePath($currentComicId, './assets/comic_socialmedia/');
-
-    // Pfad für die Vorschau-URL (relativ zur aktuellen Datei)
-    if (!empty($rawComicPreviewPath) && file_exists(realpath(__DIR__ . '/' . $rawComicPreviewPath))) {
-        $comicPreviewUrl = './' . $rawComicPreviewPath;
-        if ($debugMode)
-            error_log("DEBUG: Comic Preview Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicPreviewUrl));
-    } else {
-        $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
-        if ($debugMode)
-            error_log("DEBUG: Fallback auf Placeholder-URL für Comic Preview (Haupt-Index): " . $comicPreviewUrl);
-    }
 } else {
     // Fallback-Werte, falls keine Comic-Daten oder der neueste Comic nicht gefunden wird.
     error_log("Fehler: Daten für den neuesten Comic (ID '{$currentComicId}') nicht in comic_var.json gefunden.");
     $comicTyp = 'Comicseite'; // Angepasst, da "vom" nun im H1 hinzugefügt wird
     $comicName = 'Willkommen';
     $comicTranscript = '<p>Willkommen auf TwoKinds auf Deutsch! Leider konnte der neueste Comic nicht geladen werden.</p>';
-    $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Fehler';
 }
 
-// === ANFANG DER ÄNDERUNG: Dynamische Suche nach "in translation"-Bildern ===
-// Definiere die Basis-Pfade und die Dateiendungen, nach denen gesucht werden soll.
-$inTranslationLowresBase = './assets/comic_lowres/in_translation';
-$inTranslationHiresBase = './assets/comic_hires/in_translation';
-$imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+// === NEUE LOGIK: Bildpfade direkt aus dem Cache abrufen ===
+$comicImagePath = get_cached_image_path($currentComicId, 'lowres');
+$comicHiresPath = get_cached_image_path($currentComicId, 'hires');
+$comicPreviewUrl = get_cached_image_path($currentComicId, 'socialmedia');
 
-// Initialisiere die Variablen mit einem nicht existierenden Pfad. Dies stellt sicher,
-// dass die spätere file_exists-Prüfung korrekt fehlschlägt, falls kein Bild gefunden wird.
-$inTranslationLowres = $inTranslationLowresBase . '.invalid';
-$inTranslationHires = $inTranslationHiresBase . '.invalid';
-
-// Suche nach dem niedrigauflösenden "in translation"-Bild.
-foreach ($imageExtensions as $ext) {
-    $potentialPath = $inTranslationLowresBase . '.' . $ext;
-    if (file_exists(__DIR__ . '/' . ltrim($potentialPath, './'))) {
-        $inTranslationLowres = $potentialPath;
-        break; // Sobald ein Bild gefunden wurde, wird die Schleife beendet.
-    }
+// Fallback-Logik, falls der Comic (noch) nicht im Cache ist.
+if (empty($comicImagePath)) {
+    // Versuche, das "in_translation"-Bild aus dem Cache als Fallback zu laden.
+    $comicImagePath = get_cached_image_path('in_translation', 'lowres');
+    $comicHiresPath = get_cached_image_path('in_translation', 'hires');
 }
-
-// Suche nach dem hochauflösenden "in translation"-Bild.
-foreach ($imageExtensions as $ext) {
-    $potentialPath = $inTranslationHiresBase . '.' . $ext;
-    if (file_exists(__DIR__ . '/' . ltrim($potentialPath, './'))) {
-        $inTranslationHires = $potentialPath;
-        break; // Sobald ein Bild gefunden wurde, wird die Schleife beendet.
-    }
-}
-// === ENDE DER ÄNDERUNG ===
-
-// Get paths from the helper function (these are relative to the project root, e.g., 'assets/comic_lowres/20250604.png')
-$rawComicLowresPath = getComicImagePath($currentComicId, './assets/comic_lowres/');
-$rawComicHiresPath = getComicImagePath($currentComicId, './assets/comic_hires/');
-
-// Initialize the final paths that will be used in HTML
-$comicImagePath = '';
-$comicHiresPath = '';
-
-// === MODIFIZIERT: Logik wurde vereinfacht und nutzt nun die zentrale Helferfunktion ===
-// Check if the actual comic image exists on disk
-if (!empty($rawComicLowresPath) && file_exists(realpath(__DIR__ . '/' . $rawComicLowresPath))) {
-    // Wenn das Original-Comic existiert, versioniere den Pfad.
-    // ltrim entfernt './', damit der Pfad für die Helferfunktion root-relativ ist.
-    $comicImagePath = './' . versioniere_bild_asset(ltrim($rawComicLowresPath, './'));
-    $comicHiresPath = './' . versioniere_bild_asset(ltrim($rawComicHiresPath, './'));
+// Wenn auch das nicht verfügbar ist, wird ein externer Platzhalter verwendet.
+if (empty($comicImagePath)) {
+    $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
+    $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
     if ($debugMode)
-        error_log("DEBUG: Original Comic Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
-} else {
-    // If original comic does not exist, try "in translation" image
-    if ($debugMode)
-        error_log("DEBUG: Original Comic Bild nicht gefunden oder Pfad leer (Haupt-Index). Versuche In Translation.");
-    // Check if the "in translation" fallback exists
-    if (file_exists(realpath(__DIR__ . '/' . $inTranslationLowres))) {
-        // Da die Pfade von der Root aus relativ sind ('./assets/...'), können wir sie direkt an die Helferfunktion übergeben.
-        $comicImagePath = './' . versioniere_bild_asset(ltrim($inTranslationLowres, './'));
-        $comicHiresPath = './' . versioniere_bild_asset(ltrim($inTranslationHires, './'));
-        if ($debugMode)
-            error_log("DEBUG: In Translation Bild gefunden (Haupt-Index): " . realpath(__DIR__ . '/' . $comicImagePath));
-    } else {
-        // If "in translation" also doesn't exist, use generic placeholder URL
-        error_log("FEHLER: 'in_translation' Bild nicht gefunden unter dem erwarteten Pfad (Haupt-Index): " . realpath(__DIR__ . '/' . $inTranslationLowres));
-        $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
-        $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
-        if ($debugMode)
-            error_log("DEBUG: Fallback auf allgemeine Placeholder-URL für Hauptcomicbild (Haupt-Index): " . $comicImagePath);
-    }
+        error_log("DEBUG: Fallback auf externen Placeholder für Hauptcomicbild (Haupt-Index).");
 }
-if ($debugMode)
-    error_log("DEBUG: Finaler \$comicImagePath, der im HTML verwendet wird (Haupt-Index): " . $comicImagePath);
+// Fallback für das Social-Media-Vorschaubild.
+if (empty($comicPreviewUrl)) {
+    $comicPreviewUrl = 'https://placehold.co/1200x630/cccccc/333333?text=Comic+Preview+Fehler';
+}
 
 
 // Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
@@ -167,12 +104,7 @@ $additionalScripts = "<script type='text/javascript' src='https://cdn.twokinds.k
 
 // Zusätzliche Meta-Tags für Social Media (Open Graph).
 // Für Open Graph URLs muss der Pfad absolut sein.
-// Hier ist keine ltrim-Anpassung notwendig, da die Pfade in dieser index.php bereits relativ zum Root sind.
-$tempPreviewUrl = $comicPreviewUrl;
-if (str_starts_with($tempPreviewUrl, './')) {
-    $tempPreviewUrl = substr($tempPreviewUrl, 2); // Entferne die ersten 2 Zeichen ('./')
-}
-$absoluteComicPreviewUrl = $baseUrl . htmlspecialchars($tempPreviewUrl);
+$absoluteComicPreviewUrl = str_starts_with($comicPreviewUrl, 'http') ? $comicPreviewUrl : $baseUrl . $comicPreviewUrl;
 
 if ($debugMode)
     error_log("DEBUG: Finaler \$absoluteComicPreviewUrl für Open Graph (Haupt-Index): " . $absoluteComicPreviewUrl);
@@ -182,7 +114,7 @@ $additionalHeadContent = '
     <link rel="canonical" href="' . $baseUrl . '">
     <meta property="og:title" content="TwoKinds auf Deutsch - Startseite (Comic)">
     <meta property="og:description" content="' . $siteDescription . '">
-    <meta property="og:image" content="' . $absoluteComicPreviewUrl . '">
+    <meta property="og:image" content="' . htmlspecialchars($absoluteComicPreviewUrl) . '">
     <meta property="og:type" content="website">
     <meta property="og:url" content="' . $baseUrl . '">
 ';
@@ -219,9 +151,11 @@ include __DIR__ . '/src/layout/header.php';
         ?>
     </div>
 
-    <a id="comic-image-link" href="<?php echo htmlspecialchars($comicHiresPath); ?>" target="_blank"
-        rel="noopener noreferrer">
-        <img id="comic-image" src="<?php echo htmlspecialchars($comicImagePath); ?>"
+    <a id="comic-image-link"
+        href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : './' . $comicHiresPath); ?>"
+        target="_blank" rel="noopener noreferrer">
+        <img id="comic-image"
+            src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : './' . $comicImagePath); ?>"
             title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page">
     </a>
 
@@ -252,11 +186,11 @@ include __DIR__ . '/src/layout/header.php';
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
             <h2>Transkript</h2>
             <?php if (!empty($urlOriginalbildFilename)): ?>
-                <a href="#" class="button" id="toggle-language-btn"
-                    data-german-src="<?php echo htmlspecialchars($comicImagePath); ?>"
-                    data-german-href="<?php echo htmlspecialchars($comicHiresPath); ?>"
-                    data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>">Seite auf englisch
-                    anzeigen</a>
+                    <a href="#" class="button" id="toggle-language-btn"
+                        data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : './' . $comicImagePath); ?>"
+                        data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : './' . $comicHiresPath); ?>"
+                        data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>">Seite auf englisch
+                        anzeigen</a>
             <?php endif; ?>
         </div>
         <div class="transcript-content">
