@@ -3,11 +3,11 @@
  * Zentrales Initialisierungsskript für alle Admin-Seiten (Final gehärtete Version).
  *
  * Dieses Skript übernimmt wiederkehrende Aufgaben und implementiert wichtige Sicherheitsmaßnahmen:
- * - Strikte Sicherheits-Header (CSP, HSTS, Permissions-Policy etc.).
+ * - Strikte Sicherheits-Header (CSP mit Nonce, HSTS, Permissions-Policy etc.).
  * - Session-Konfiguration für erhöhte Sicherheit (HTTPOnly, Secure, SameSite).
  * - Schutz vor Session Hijacking durch User-Agent- und IP-Adressen-Bindung.
  * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
- * - CSRF-Schutz für die Logout-Funktion.
+ * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
  *
  * Die Variable $debugMode sollte in der aufrufenden Datei VOR dem Einbinden dieses Skripts gesetzt werden.
  */
@@ -24,18 +24,38 @@ if ($debugMode)
 
 ob_start();
 
-// --- SICHERHEITSVERBESSERUNG 1: Erweiterte HTTP Security Headers ---
+
+// --- 1. Dynamische Basis-URL Bestimmung ---
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'];
+// __DIR__ ist /admin/src/components, also gehen wir drei Ebenen hoch zum Anwendungs-Root.
+$appRootAbsPath = str_replace('\\', '/', dirname(dirname(dirname(__DIR__))));
+$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+if (!empty($subfolderPath) && $subfolderPath !== '/') {
+    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+} elseif (empty($subfolderPath)) {
+    $subfolderPath = '/';
+}
+$baseUrl = $protocol . $host . $subfolderPath;
+
+if ($debugMode) {
+    error_log("DEBUG (admin_init.php): Basis-URL bestimmt: " . $baseUrl);
+}
+
+
+// --- 2. Sicherheits-Header & CSP mit Nonce ---
+$nonce = bin2hex(random_bytes(16));
 
 // Content-Security-Policy (CSP) als Array für bessere Lesbarkeit und Wartbarkeit.
 $csp = [
     // Standard-Richtlinie: Lade alles nur von der eigenen Domain ('self').
     'default-src' => ["'self'"],
-
-    // Skripte: Erlaube 'self', inline-Skripte ('unsafe-inline') und vertrauenswürdige CDNs.
-    'script-src' => ["'self'", "'unsafe-inline'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
+    // Skripte: Erlaube 'self', inline-Skripte und füge die Nonce-Quelle hinzu.
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
 
     // Stylesheets: Erlaube 'self', inline-Styles ('unsafe-inline') und vertrauenswürdige CDNs.
-    'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
+    'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
 
     // Schriftarten: Erlaube 'self' und CDNs.
     'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com"],
@@ -84,7 +104,7 @@ header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 // }
 
 
-// --- SICHERHEITSVERBESSERUNG 2: Strikte Session-Konfiguration ---
+// --- 3: Strikte Session-Konfiguration ---
 session_set_cookie_params([
     'lifetime' => 0, // Session-Cookie gilt bis zum Schließen des Browsers
     'path' => '/', // Gilt für die gesamte Domain
@@ -99,10 +119,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- SICHERHEITSVERBESSERUNG 3: Schutz vor Session Hijacking & Fixation ---
-// Schritt 3a: Binde die Session an den User Agent und die IP-Adresse (anonymisiert).
+// --- 4: Schutz vor Session Hijacking & Fixation ---
+// Schritt 4a: Binde die Session an den User Agent und die IP-Adresse (anonymisiert).
 $sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
-
 if (isset($_SESSION['session_fingerprint'])) {
     if ($_SESSION['session_fingerprint'] !== $sessionIdentifier) {
         // User Agent hat sich geändert -> Möglicher Angriff! Session zerstören.
@@ -129,15 +148,56 @@ if (!isset($_SESSION['last_regeneration'])) {
         error_log("DEBUG: Session-ID wurde aus Sicherheitsgründen erneuert.");
 }
 
-// Binde die zentrale Sicherheits- und Sitzungsüberprüfung (Timeout) ein.
-require_once __DIR__ . '/security_check.php';
 
-// --- SICHERHEITSVERBESSERUNG 4: CSRF-Schutz für Logout ---
+// --- 5: CSRF-Schutz für Logout ---
 // Erstelle einen CSRF-Token, wenn noch keiner existiert.
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+/**
+ * Überprüft den CSRF-Token für POST- und AJAX-Anfragen. Bricht bei Fehler ab.
+ */
+function verify_csrf_token()
+{
+    global $debugMode;
+    $token = null;
+
+    if (!empty($_POST['csrf_token'])) {
+        $token = $_POST['csrf_token'];
+    } else {
+        $json_input = file_get_contents('php://input');
+        if (!empty($json_input)) {
+            $data = json_decode($json_input, true);
+            if (isset($data['csrf_token'])) {
+                $token = $data['csrf_token'];
+            }
+        }
+    }
+
+    if ($token === null || !hash_equals($_SESSION['csrf_token'], $token)) {
+        error_log("SECURITY WARNING: Ungültiger CSRF-Token bei Anfrage von IP: " . $_SERVER['REMOTE_ADDR']);
+        // Bei AJAX-Anfragen einen JSON-Fehler zurückgeben
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            http_response_code(403);
+            echo json_encode(['status' => 'error', 'message' => 'Ungültige Anfrage (CSRF-Token-Fehler).']);
+        } else {
+            // Bei normalen POST-Anfragen eine generische Fehlermeldung anzeigen
+            die('Ungültige Anfrage. Bitte versuchen Sie es erneut.');
+        }
+        exit;
+    }
+    if ($debugMode)
+        error_log("DEBUG: CSRF-Token erfolgreich validiert.");
+}
+
+// --- 6. Session-Timeout ---
+// Binde die zentrale Sicherheits- und Sitzungsüberprüfung (Timeout) ein.
+require_once __DIR__ . '/security_check.php';
+
+// --- 7. Logout-Funktion ---
+// Logout-Funktion mit CSRF-Token-Überprüfung
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     if (!isset($_GET['token']) || !hash_equals($_SESSION['csrf_token'], $_GET['token'])) {
         // Logge den fehlgeschlagenen Versuch (auch ohne Debug-Modus)
@@ -176,7 +236,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     exit;
 }
 
-// FINALER SICHERHEITSCHECK: Nur für angemeldete Administratoren zugänglich.
+// --- 8. Finaler Login-Check ---
+// Dieser Check wird für alle Admin-Seiten außer der Login-Seite selbst durchgeführt.
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     if ($debugMode)
         error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von admin_init.php (aufgerufen von {$callingScript}).");
