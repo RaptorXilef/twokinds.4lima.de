@@ -1,43 +1,27 @@
 <?php
 /**
- * Gemeinsamer Header für alle Seiten.
- * Enthält die grundlegende HTML-Struktur, Meta-Tags, Stylesheets und Skripte.
+ * Gemeinsamer, modularer Header für alle Seiten (SEO-optimierte Version).
  *
- * @param string $pageTitle Der spezifische Titel für die aktuelle Seite, der im Browser-Tab angezeigt wird.
+ * Diese Datei wurde verschlankt und konzentriert sich auf die HTML-Struktur und das Asset-Management.
+ * Die sicherheitsrelevanten Initialisierungen wurden in separate `init.php`-Dateien ausgelagert.
+ *
+ * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
  * @param string $pageHeader Der sichtbare H1-Header für die aktuelle Seite im Hauptinhaltsbereich.
  * @param string $bodyClass Eine optionale Klasse für das Body-Tag (z.B. 'preload' für Ladezustände).
  * @param string $additionalScripts Optionaler HTML-Code für zusätzliche Skripte, die im <head> Bereich eingefügt werden.
  * @param string $additionalHeadContent Optionaler HTML-Code für zusätzliche Meta-Tags oder Links im <head> Bereich.
  * @param string $viewportContent Der Inhalt des Viewport-Meta-Tags, steuert das Responsive Design.
- * @param string $siteDescription Die allgemeine Beschreibung der Webseite für SEO und Social Media.
+ * @param string $siteDescription Die Beschreibung der Seite für SEO und Social Media.
+ * @param string $ogImage Die URL zu einem Vorschaubild für Social Media (optional).
  * @param string $robotsContent Inhalt des robots-Meta-Tags (Standard: "index, follow").
+ * ... weitere Parameter ...
  */
 
-// === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
-/* $debugMode = false; */
-
-// Setzt das maximale Ausführungszeitlimit für das Skript, um Timeouts bei größeren Operationen zu vermeiden.
-set_time_limit(300);
-
-// Starte die PHP-Sitzung, falls noch keine aktiv ist.
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
+// --- 1. Dynamische Basis-URL und Seiten-URL Bestimmung ---
 // Diese Logik ermittelt die Basis-URL dynamisch, unabhängig davon, ob die Seite lokal,
 // im Intranet oder auf einem externen Server läuft und ob sie in einem Unterordner installiert ist.
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'];
-
-// Ermittle den Pfad des aktuellen Skripts relativ zum Webserver-Dokumenten-Root.
-// Beispiel: /deinprojekt/src/layout/header.php
-$scriptPath = $_SERVER['PHP_SELF'];
-
-// Ermittle das Verzeichnis der aktuellen Datei (z.B. /deinprojekt/src/layout)
-$currentDir = dirname($scriptPath);
-
 // Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
 // __FILE__ ist der absolute Pfad zu header.php (z.B. /var/www/html/deinprojekt/src/layout/header.php)
 // dirname(__FILE__) ist /var/www/html/deinprojekt/src/layout
@@ -59,129 +43,111 @@ if (!empty($subfolderPath) && $subfolderPath !== '/') {
 } elseif (empty($subfolderPath)) {
     $subfolderPath = '/'; // Wenn der Anwendungs-Root GLEICH dem Dokumenten-Root ist.
 }
-
 $baseUrl = $protocol . $host . $subfolderPath;
+// Erstellt die vollständige, aktuelle URL für Canonical und OG-Tags.
+$currentPageUrl = rtrim($baseUrl, '/') . $_SERVER['REQUEST_URI'];
 
 // Debug-Ausgabe, falls $debugMode aktiviert ist
 if (isset($debugMode) && $debugMode) {
-    error_log("DEBUG: Dynamische Basis-URL: " . $baseUrl);
+    error_log("DEBUG: Dynamische Basis-URL: " . $baseUrl . " und Dynamische Seiten-URL: " . $currentPageUrl);
 }
-// === Ende Dynamische Basis-URL Bestimmung ===
 
-// Basis-Dateiname der aktuellen PHP-Datei ohne Erweiterung, wird für den Standard-Titel verwendet.
-$filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
+// --- 2. Prüfung, ob eine Initialisierungsdatei geladen wurde ---
+if (!isset($nonce)) {
+    $nonce = bin2hex(random_bytes(16));
+    error_log("WARNUNG: Keine init.php-Datei vor dem Header geladen. Eine Fallback-Nonce wurde generiert.");
+}
 
-// Standardpräfix für den Seitentitel. Dieser kann in einzelnen Seiten vor dem Include überschrieben werden,
-// falls ein spezifischerer Präfix gewünscht ist.
-$pageTitlePrefix = 'TwoKinds auf Deutsch - ';
-
-// Standardwerte für Parameter, falls sie in der aufrufenden Datei nicht gesetzt werden.
-// Der Seiten-Titel wird aus dem Präfix und dem übergebenen $pageTitle zusammengesetzt.
-$pageTitle = $pageTitlePrefix . (isset($pageTitle) ? $pageTitle : ucfirst($filenameWithoutExtension));
-$pageHeader = isset($pageHeader) ? $pageHeader : ''; // Standardmäßig leer, da viele Seiten einen eigenen Header haben.
-$bodyClass = isset($bodyClass) ? $bodyClass : 'preload';
-$additionalScripts = isset($additionalScripts) ? $additionalScripts : '';
-$additionalHeadContent = isset($additionalHeadContent) ? $additionalHeadContent : '';
-$viewportContent = isset($viewportContent) ? $viewportContent : 'width=device-width, initial-scale=1.0';
-// Standardbeschreibung der Webseite, kann von einzelnen Seiten überschrieben werden.
-$siteDescription = isset($siteDescription) ? $siteDescription : 'Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.';
-// Standardwert für den robots-Meta-Tag, der bei Comicseiten oder Adminseiten überschrieben wird.
-$robotsContent = isset($robotsContent) ? $robotsContent : 'index, follow';
-
-
-// --- Dynamische Pfadbestimmung für common.js ---
-// Der Pfad zur common.js ist relativ zum Anwendungs-Root: src/layout/js/common.js
-$commonJsWebPath = $baseUrl . 'src/layout/js/common.js';
-// Füge einen Cache-Buster hinzu, basierend auf der letzten Änderungszeit der common.js Datei
-// Pfad zur Datei auf dem Dateisystem: dirname(__FILE__) ist src/layout/, also js/common.js
-$commonJsWebPathWithCacheBuster = $commonJsWebPath . '?c=' . filemtime(__DIR__ . '/js/common.js');
-// --- Ende Dynamische Pfadbestimmung ---
-
-// --- Pfade für Cookie Banner CSS und JS ---
-// Die Pfade sind relativ zum aktuellen Verzeichnis der header.php (src/layout/)
-$cookieBannerCssPath = $baseUrl . 'src/layout/css/cookie_banner.css';
-$cookieBannerDarkCssPath = $baseUrl . 'src/layout/css/cookie_banner_dark.css';
-$cookieConsentJsPath = $baseUrl . 'src/layout/js/cookie_consent.js';
-
-// Cache-Buster für Cookie Banner Dateien
-$cookieBannerCssPathWithCacheBuster = $cookieBannerCssPath . '?c=' . filemtime(__DIR__ . '/css/cookie_banner.css');
-$cookieBannerDarkCssPathWithCacheBuster = $cookieBannerDarkCssPath . '?c=' . filemtime(__DIR__ . '/css/cookie_banner_dark.css');
-$cookieConsentJsPathWithCacheBuster = $cookieConsentJsPath . '?c=' . filemtime(__DIR__ . '/js/cookie_consent.js');
-// --- Ende Pfade für Cookie Banner ---
-
-// Prüfen, ob wir im Admin-Bereich sind
+// --- 3. Setup der Seiten-Variablen mit Standardwerten ---
 $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
+$filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
+$pageTitlePrefix = 'Twokinds – Das Webcomic auf Deutsch | ';
+$pageTitle = $pageTitlePrefix . ($pageTitle ?? ucfirst($filenameWithoutExtension));
+$siteDescription = $siteDescription ?? 'Tauche ein in die Welt von Twokinds – dem beliebten Fantasy-Webcomic von Tom Fischbach, jetzt komplett auf Deutsch verfügbar. Erlebe die spannende Geschichte von Trace und Flora und entdecke die Rassenkonflikte zwischen Menschen und Keidran.';
+$ogImage = $ogImage ?? ''; // Standardmäßig kein OG-Image
+$robotsContent = $robotsContent ?? 'index, follow';
+$bodyClass = $bodyClass ?? 'preload';
+$additionalScripts = $additionalScripts ?? '';
+$additionalHeadContent = $additionalHeadContent ?? '';
+$viewportContent = $viewportContent ?? 'width=device-width, initial-scale=1.0';
+
+
+// Pfade zu Assets mit Cache-Busting
+$commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.js?c=' . filemtime(__DIR__ . '/js/common.js');
+$cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.css?c=' . filemtime(__DIR__ . '/css/cookie_banner.css');
+$cookieBannerDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner_dark.css?c=' . filemtime(__DIR__ . '/css/cookie_banner_dark.css');
+$cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.js?c=' . filemtime(__DIR__ . '/js/cookie_consent.js');
 ?>
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
-    <title>
-        <?php echo htmlspecialchars($pageTitle); ?>
-    </title>
+    <title><?php echo htmlspecialchars($pageTitle); ?></title>
     <meta charset="utf-8">
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <meta name="keywords"
-        content="TwoKinds, in, auf, deutsch, übersetzt, uebersetzt, Web, Comic, Tom, Fischbach, RaptorXilef, Felix, Maywald, Reni, Nora, Trace, Flora, Keith, Natani, Zen, Sythe, Nibbly, Raine, Laura, Saria, Eric, Kathrin, Mike, Evals, Madelyn, Maren, Karen, Red, Templer, Keidran, Basitin, Mensch">
-    <meta name="author" content="Felix Maywald, Design und Rechte by Thomas J. Fischbach & Brandon J. Dusseau">
     <meta name="viewport" content="<?php echo htmlspecialchars($viewportContent); ?>">
+    <meta name="robots" content="<?php echo htmlspecialchars($robotsContent); ?>">
+    <meta name="author" content="Felix Maywald, Design und Rechte by Thomas J. Fischbach & Brandon J. Dusseau">
+    <meta name="keywords"
+        content="Twokinds, 2kinds, Webcomic, Tom Fischbach, Deutsch, Übersetzung, Fantasy, Manga, Comic, Trace Legacy, Flora, Keidran, Basitin, Fanprojekt, Felix Maywald, RaptorXielf" />
+    <meta name="description" content="<?php echo htmlspecialchars($siteDescription); ?>" />
+
+    <!-- Dynamische Canonical & Open Graph URLs -->
+    <link rel="canonical" href="<?php echo htmlspecialchars($currentPageUrl); ?>" />
+    <meta property="og:url" content="<?php echo htmlspecialchars($currentPageUrl); ?>" />
     <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s', filemtime(__FILE__)); ?>">
 
-    <?php
-    // Pfad zur Sitemap-Datei.
-    // Verwendet nun die dynamisch ermittelte baseUrl
-    $sitemapURL = $baseUrl . 'sitemap.xml';
-    ?>
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="<?php echo htmlspecialchars($sitemapURL); ?>">
-    <meta name="google-site-verification" content="61orCNrFH-sm-pPvwWMM8uEH8OAnJDeKtI9yzVL3ico" />
-
-    <!-- Robots Meta Tag für Indexierungssteuerung -->
-    <meta name="robots" content="<?php echo htmlspecialchars($robotsContent); ?>">
-
-    <!-- Standard-Stylesheets für das Hauptdesign. -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main.css?c=20250524">
-    <link rel="stylesheet" type="text/css" href="https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524">
-
-    <!-- NEU: Stylesheets für den Cookie-Banner -->
-    <link rel="stylesheet" type="text/css" href="<?php echo htmlspecialchars($cookieBannerCssPathWithCacheBuster); ?>">
-    <link rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
-
-    <?php if ($isAdminPage): // Lade Font Awesome nur für Admin-Seiten, um das Uhren-Icon anzuzeigen ?>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Open Graph Meta Tags für Social Media -->
+    <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
+    <meta property="og:description" content="<?php echo htmlspecialchars($siteDescription); ?>" />
+    <meta property="og:type" content="website" />
+    <?php if (!empty($ogImage)): ?>
+        <meta property="og:image" content="<?php echo htmlspecialchars($ogImage); ?>" />
     <?php endif; ?>
 
+    <!-- Weitere Meta-Informationen -->
+    <link rel="sitemap" type="application/xml" title="Sitemap"
+        href="<?php echo htmlspecialchars($baseUrl . 'sitemap.xml'); ?>">
+    <meta name="google-site-verification" content="61orCNrFH-sm-pPvwWMM8uEH8OAnJDeKtI9yzVL3ico" />
 
-    <!-- Favicons für verschiedene Browser und Geräte. -->
+    <!-- Stylesheets -->
+    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
+        href="https://cdn.twokinds.keenspot.com/css/main.css?c=20250524">
+    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
+        href="https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524">
+    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
+        href="<?php echo htmlspecialchars($cookieBannerCssPathWithCacheBuster); ?>">
+    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
+        href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
+    <?php if ($isAdminPage): ?>
+        <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <?php endif; ?>
+
+    <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
     <link rel="shortcut icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
     <link rel="apple-touch-icon-precomposed" type="image/png" href="https://cdn.twokinds.keenspot.com/appleicon.png">
 
-    <!-- Standard-JavaScript-Dateien. common.js wird nun vom lokalen Server geladen. -->
-    <script type='text/javascript' src='<?php echo htmlspecialchars($commonJsWebPathWithCacheBuster); ?>'></script>
-    <!-- NEU: Cookie-Consent-Skript -->
-    <script type='text/javascript' src='<?php echo htmlspecialchars($cookieConsentJsPathWithCacheBuster); ?>'></script>
+    <!-- JavaScript -->
+    <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'
+        src='<?php echo htmlspecialchars($commonJsWebPathWithCacheBuster); ?>'></script>
+    <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'
+        src='<?php echo htmlspecialchars($cookieConsentJsPathWithCacheBuster); ?>'></script>
+    <script nonce="<?php echo htmlspecialchars($nonce); ?>"
+        type='text/javascript'>window.isAdminPage = <?php echo ($isAdminPage ? 'true' : 'false'); ?>;</script>
 
     <?php
-    // Setze eine JavaScript-Variable, die angibt, ob es sich um eine Admin-Seite handelt.
-    // Dies wird von common.js verwendet, um bestimmte Funktionen zu deaktivieren.
-    echo "<script type='text/javascript'>window.isAdminPage = " . ($isAdminPage ? 'true' : 'false') . ";</script>";
-    ?>
-
-    <?php
-    // Hier können zusätzliche Skripte eingefügt werden, die spezifisch für die aufrufende Seite sind.
     echo $additionalScripts;
-    // Hier können zusätzliche Meta-Tags, Links etc. eingefügt werden, die spezifisch für die aufrufende Seite sind.
     echo $additionalHeadContent;
     ?>
 </head>
 
 <body class="<?php echo htmlspecialchars($bodyClass); ?>">
-    <!-- NEU: Cookie-Consent-Banner -->
+    <!-- Cookie-Consent-Banner -->
     <div id="cookieConsentBanner">
         <h3>Datenschutz-Einstellungen</h3>
-        <p>Wir verwenden Cookies und vergleichbare Technologien, um die Funktionalität unserer Webseite zu gewährleisten
-            und die Nutzung zu analysieren. Bitte treffen Sie Ihre Auswahl:</p>
+        <p>Ich verwende Cookies und vergleichbare Technologien, um die Funktionalität dieser Webseite zu gewährleisten
+            und die Nutzung zu analysieren. Bitte treffe deine Auswahl:</p>
 
         <div class="cookie-category">
             <label for="cookieNecessary">
@@ -276,7 +242,6 @@ $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
                 Ihrer Person. <br><br> Die Daten werden <b>nicht</b> für das schalten personalisierter Werbung
                 verwendet!</p>
         </div>
-
         <div class="cookie-buttons">
             <button id="acceptAllCookies">Alle akzeptieren</button>
             <button id="rejectAllCookies">Alle ablehnen</button>
@@ -286,20 +251,20 @@ $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
     <!-- Ende Cookie-Consent-Banner -->
 
     <div id="mainContainer" class="main-container">
-        <!-- Hinweis auf das Fanprojekt und Link zum Original. -->
         <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
-                target="_blank">twokinds.keenspot.com</a><!--<br><br>Den aktuellen Stand der Updates erfährst du hier: <a
-                href="https://github.com/RaptorXilef/twokinds.4lima.de/" target="_blank">GitHub</a>--></center>
+                target="_blank">twokinds.keenspot.com</a><br><br>⚠ Die
+            Homepage wird grade auf die neuste Version 2.0.0.0 aktualisiert. Der Vorgang kann bis heute (06.09.2025)
+            22:00 Uhr
+            andauern. ⚠<br> In dieser Zeit kann es zu Ladefehlern kommen. Ich bitte um Verständnis. <br> Beste Grüße
+            Felix </center>
         <div id="banner-lights-off" class="banner-lights-off"></div>
-        <!-- Hauptbanner der Webseite. -->
         <div id="banner" class="banner">Twokinds</div>
         <div id="content-area" class="content-area">
             <div id="sidebar" class="sidebar">
-
                 <?php
                 // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
                 if ($isAdminPage) {
-                    // *** NEUE LOGIK ***
+                    // ***  BESTIMMUNGS-LOGIK ***
                     // Lade das Admin-Menü und das Timeout-Modal NUR, wenn der Admin auch wirklich eingeloggt ist.
                     // Die Prüfung 'isset($_SESSION['admin_logged_in'])' stellt sicher, dass das Menü nicht auf der Login-Seite angezeigt wird.
                     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
@@ -313,7 +278,6 @@ $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
                     require(__DIR__ . '/../components/menue_config.php');
                 }
                 ?>
-
             </div>
             <main id="content" class="content">
                 <article>
@@ -321,8 +285,6 @@ $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
                     // Der Seiten-Header wird hier dynamisch eingefügt, wenn er übergeben wurde.
                     // Er wird nur angezeigt, wenn die Seite im Admin-Verzeichnis liegt.
                     if (!empty($pageHeader) && $isAdminPage) {
-                        echo '<header>';
-                        echo '    <h1 class="page-header">' . htmlspecialchars($pageHeader) . '</h1>';
-                        echo '</header>';
+                        echo '<header><h1 class="page-header">' . htmlspecialchars($pageHeader) . '</h1></header>';
                     }
                     ?>
