@@ -88,6 +88,14 @@ require_once __DIR__ . '/../src/layout/header.php';
         width: 100%;
         height: auto;
     }
+
+    /* Ersetzt den Inline-Stil für den Transcript-Header (CSP-Konformität) */
+    .transcript-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
 </style>
 
 <article class="comic">
@@ -138,7 +146,7 @@ require_once __DIR__ . '/../src/layout/header.php';
 
     <aside class="transcript">
         <!-- Flex-Container für Überschrift und Button -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+        <div class="transcript-header">
             <h2>Transkript</h2>
             <?php if (!empty($urlOriginalbildFilename)): ?>
                 <a href="#" class="button" id="toggle-language-btn"
