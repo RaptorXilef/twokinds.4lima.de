@@ -163,13 +163,16 @@ include $headerPath;
 <article>
     <div class="content-section">
         <div id="settings-and-actions-container">
+            <?php if ($comicSettings['last_run_timestamp']): ?>
+                <p class="status-message status-info">Letzte Ausführung am
+                    <?php echo date('d.m.Y \u\m H:i:s', $comicSettings['last_run_timestamp']); ?> Uhr.
+                </p>
+            <?php endif; ?>
+
             <h2>Status & Ausführung</h2>
             <p>Dieses Tool prüft, für welche Comic-Bilder eine entsprechende PHP-Anzeigeseite fehlt und erstellt diese
                 bei Bedarf automatisch.</p>
-            <?php if ($comicSettings['last_run_timestamp']): ?>
-                <p class="status-message status-info">Letzte Ausführung am
-                    <?php echo date('d.m.Y \u\m H:i:s', $comicSettings['last_run_timestamp']); ?> Uhr.</p>
-            <?php endif; ?>
+
             <div id="fixed-buttons-container">
                 <button type="button" id="generate-pages-button" <?php echo empty($missingComicPages) ? 'disabled' : ''; ?>>Fehlende Seiten erstellen</button>
                 <button type="button" id="toggle-pause-resume-button" class="hidden-by-default"></button>
@@ -229,9 +232,10 @@ include $headerPath;
     }
 
     .status-message {
-        padding: 8px 12px;
+        padding: 10px;
+        margin-bottom: 20px;
         border-radius: 5px;
-        margin-bottom: 10px;
+        font-weight: bold;
     }
 
     .status-green {

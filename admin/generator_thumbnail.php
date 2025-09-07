@@ -1,15 +1,13 @@
 <?php
 /**
  * Dies ist die Administrationsseite für den Thumbnail-Generator.
- * V2.4: UI-Logik perfektioniert. Blendet Einstellungs-Container sofort, 
- * den Status-Container erst nach Abschluss der Generierung aus, 
- * um eine finale Berichtsansicht zu schaffen.
+ * V2.6: Behebt einen JavaScript ReferenceError aufgrund eines Scope-Problems.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade
@@ -20,57 +18,39 @@ $hiresDir = __DIR__ . '/../assets/comic_hires/';
 $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/';
 $settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 
-// --- Funktionen zur Einstellungsverwaltung ---
+// --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
-        'generator_thumbnail' => [
-            'last_used_format' => 'webp',
-            'last_used_quality' => 90,
-            'last_used_lossless' => false,
-            'last_run_timestamp' => null
-        ]
+        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
+        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
+        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
+        'generator_comic' => ['last_run_timestamp' => null],
+        'upload_image' => ['last_run_timestamp' => null]
     ];
     if (!file_exists($filePath)) {
-        if ($debugMode)
-            error_log("DEBUG: Einstellungsdatei nicht gefunden, erstelle Standard: $filePath");
         $dir = dirname($filePath);
-        if (!is_dir($dir)) {
+        if (!is_dir($dir))
             mkdir($dir, 0755, true);
-        }
         file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
         return $defaults;
     }
     $content = file_get_contents($filePath);
     $settings = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        if ($debugMode)
-            error_log("DEBUG: Fehler beim Dekodieren der Einstellungs-JSON. Verwende Standardwerte.");
+    if (json_last_error() !== JSON_ERROR_NONE)
         return $defaults;
-    }
-    if (!isset($settings['generator_thumbnail'])) {
+    if (!isset($settings['generator_thumbnail']))
         $settings['generator_thumbnail'] = $defaults['generator_thumbnail'];
-    }
     return $settings;
 }
 
 function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
 {
-    if ($debugMode)
-        error_log("DEBUG: Speichere Einstellungen in: $filePath");
     $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
     return file_put_contents($filePath, $jsonContent) !== false;
 }
 
-// GD-Bibliothek-Check
-if (!extension_loaded('gd')) {
-    $gdError = "FEHLER: Die GD-Bibliothek ist nicht geladen. Thumbnails können nicht generiert werden.";
-    error_log($gdError);
-} else {
-    $gdError = null;
-}
-
-// Funktionen getExistingComicIds, getExistingThumbnailIds, findMissingThumbnails (unverändert)
+// ... (Restliche PHP-Funktionen unverändert) ...
 function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMode): array
 {
     $comicIds = [];
@@ -86,8 +66,6 @@ function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMod
             }
         }
     }
-    if ($debugMode)
-        error_log("DEBUG: " . count($comicIds) . " eindeutige Comic-IDs gefunden.");
     return array_keys($comicIds);
 }
 function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
@@ -102,19 +80,13 @@ function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
                 $thumbnailIds[$fileInfo['filename']] = true;
             }
         }
-        if ($debugMode)
-            error_log("DEBUG: " . count($thumbnailIds) . " Thumbnails im Verzeichnis gefunden.");
     }
     return array_keys($thumbnailIds);
 }
 function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds, bool $debugMode): array
 {
-    $missing = array_values(array_diff($allComicIds, $existingThumbnailIds));
-    if ($debugMode)
-        error_log("DEBUG: Fehlende Thumbnails gefunden: " . count($missing));
-    return $missing;
+    return array_values(array_diff($allComicIds, $existingThumbnailIds));
 }
-
 /**
  * Generiert ein einzelnes Thumbnail in einem spezifizierten Format (jpg, png, oder webp).
  * @param string $comicId Die ID des Comics.
@@ -147,19 +119,17 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
     // Quellbild finden
     $sourceImagePath = '';
     $possibleExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    foreach ($possibleExtensions as $ext) {
-        if (file_exists($hiresDir . $comicId . '.' . $ext)) {
-            $sourceImagePath = $hiresDir . $comicId . '.' . $ext;
-            break;
-        }
-        if (file_exists($lowresDir . $comicId . '.' . $ext)) {
-            $sourceImagePath = $lowresDir . $comicId . '.' . $ext;
-            break;
+    foreach ([$hiresDir, $lowresDir] as $dir) {
+        foreach ($possibleExtensions as $ext) {
+            $path = $dir . $comicId . '.' . $ext;
+            if (file_exists($path)) {
+                $sourceImagePath = $path;
+                break 2;
+            }
         }
     }
     if (empty($sourceImagePath)) {
-        $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden.";
-        return ['created' => '', 'errors' => $errors];
+        return ['created' => '', 'errors' => ["Quellbild für Comic-ID '$comicId' nicht gefunden."]];
     }
     try {
         // Quellbild laden
@@ -263,12 +233,9 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     verify_csrf_token();
     ob_end_clean();
-    ini_set('display_errors', 0);
-    error_reporting(0);
     header('Content-Type: application/json');
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
@@ -306,9 +273,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $currentSettings['generator_thumbnail'] = $newThumbnailSettings;
             if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
-                $response['message'] = 'Einstellungen gespeichert.';
-            } else {
-                $response['message'] = 'Fehler beim Speichern der Einstellungen.';
             }
             break;
     }
@@ -316,41 +280,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 ob_end_flush();
-
 $settings = loadGeneratorSettings($settingsFilePath, $debugMode);
 $thumbnailSettings = $settings['generator_thumbnail'];
 $allComicIds = getExistingComicIds($lowresDir, $hiresDir, $debugMode);
 $existingThumbnailIds = getExistingThumbnailIds($thumbnailDir, $debugMode);
 $missingThumbnails = findMissingThumbnails($allComicIds, $existingThumbnailIds, $debugMode);
+
 $pageTitle = 'Adminbereich - Thumbnail Generator';
 $pageHeader = 'Thumbnail Generator';
 $siteDescription = 'Seite zum Generieren der Vorschaubilder.';
 
-if (file_exists($headerPath)) {
-    include $headerPath;
-} else {
-    die("Header nicht gefunden!");
-}
+include $headerPath;
 ?>
 
 <article>
     <div class="content-section">
-        <?php if ($gdError): ?>
-            <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p>
-        <?php endif; ?>
+        <div id="last-run-container">
+            <?php if ($thumbnailSettings['last_run_timestamp']): ?>
+                <p class="status-message status-info">Letzte Ausführung am
+                    <?php echo date('d.m.Y \u\m H:i:s', $thumbnailSettings['last_run_timestamp']); ?> Uhr (Format:
+                    <?php echo htmlspecialchars(strtoupper($thumbnailSettings['last_used_format'])); ?>, Qualität:
+                    <?php echo $thumbnailSettings['last_used_lossless'] ? 'Verlustfrei' : $thumbnailSettings['last_used_quality']; ?>).
+                </p>
+            <?php endif; ?>
+        </div>
 
         <div id="settings-and-actions-container">
             <h2>Einstellungen & Status</h2>
+            <p>Dieses Tool generiert Vorschaubilder (Thumbnails) für die Lesezeichen-Funktion und das Archiv.</p>
             <div class="settings-grid">
                 <div class="format-switcher">
                     <label>Ausgabeformat:</label>
                     <div class="toggle-buttons">
-                        <input type="radio" id="format-webp" name="format-toggle" value="webp">
-                        <label for="format-webp">WebP</label>
-                        <input type="radio" id="format-png" name="format-toggle" value="png">
-                        <label for="format-png">PNG</label>
-                        <input type="radio" id="format-jpg" name="format-toggle" value="jpg">
-                        <label for="format-jpg">JPG</label>
+                        <input type="radio" id="format-webp" name="format-toggle" value="webp"><label
+                            for="format-webp">WebP</label>
+                        <input type="radio" id="format-png" name="format-toggle" value="png"><label
+                            for="format-png">PNG</label>
+                        <input type="radio" id="format-jpg" name="format-toggle" value="jpg"><label
+                            for="format-jpg">JPG</label>
                     </div>
                 </div>
                 <div id="quality-control-container">
@@ -358,14 +325,11 @@ if (file_exists($headerPath)) {
                     <input type="range" id="quality-slider" min="1" max="100" value="90" class="slider">
                 </div>
                 <div id="lossless-control-container">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="lossless-checkbox">
-                        Verlustfrei
-                    </label>
+                    <label class="checkbox-label"><input type="checkbox" id="lossless-checkbox">Verlustfrei</label>
                 </div>
             </div>
             <div id="fixed-buttons-container">
-                <button type="button" id="generate-thumbnails-button" <?php echo $gdError || empty($missingThumbnails) ? 'disabled' : ''; ?>>Fehlende Thumbnails erstellen</button>
+                <button type="button" id="generate-thumbnails-button" <?php echo empty($missingThumbnails) ? 'disabled' : ''; ?>>Fehlende Thumbnails erstellen</button>
                 <button type="button" id="toggle-pause-resume-button" class="hidden-by-default"></button>
             </div>
         </div>
@@ -379,11 +343,7 @@ if (file_exists($headerPath)) {
 
         <div id="cache-update-notification" class="notification-box hidden-by-default">
             <h4>Nächster Schritt: Cache aktualisieren</h4>
-            <p>
-                Da neue Thumbnails hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
-                <br>
-                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder generiert sind.
-            </p>
+            <p>Da neue Thumbnails hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.</p>
             <a href="build_image_cache_and_busting.php?autostart=thumbnails" class="button">Cache jetzt
                 aktualisieren</a>
         </div>
@@ -418,20 +378,25 @@ if (file_exists($headerPath)) {
         --missing-grid-border-color: #e0e0e0;
         --missing-grid-bg-color: #f9f9f9;
         --missing-item-bg-color: #e9e9e9;
-        --missing-item-text-color: #333;
+        --generated-item-bg-color: #d4edda;
+        --generated-item-text-color: #155724;
+        --generated-item-border-color: #c3e6cb;
     }
 
     body.theme-night {
         --missing-grid-border-color: #045d81;
         --missing-grid-bg-color: #03425b;
         --missing-item-bg-color: #025373;
-        --missing-item-text-color: #f0f0f0;
+        --generated-item-bg-color: #2a6177;
+        --generated-item-text-color: #fff;
+        --generated-item-border-color: #48778a;
     }
 
     .status-message {
-        padding: 8px 12px;
+        padding: 10px;
+        margin-bottom: 20px;
         border-radius: 5px;
-        margin-bottom: 10px;
+        font-weight: bold;
     }
 
     .status-green {
@@ -452,6 +417,12 @@ if (file_exists($headerPath)) {
         border: 1px solid #f5c6cb;
     }
 
+    .status-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
     .status-red-button,
     .status-green-button {
         color: white;
@@ -460,11 +431,11 @@ if (file_exists($headerPath)) {
         cursor: pointer;
         font-size: 1em;
         transition: background-color 0.2s ease;
+        border: none;
     }
 
     .status-red-button {
         background-color: #dc3545;
-        border: 1px solid #dc3545;
     }
 
     .status-red-button:hover {
@@ -475,13 +446,11 @@ if (file_exists($headerPath)) {
     .status-green-button:disabled {
         background-color: #e9ecef;
         color: #6c757d;
-        border-color: #e9ecef;
         cursor: not-allowed;
     }
 
     .status-green-button {
         background-color: #28a745;
-        border: 1px solid #28a745;
     }
 
     .status-green-button:hover {
@@ -495,7 +464,7 @@ if (file_exists($headerPath)) {
         border-radius: 50%;
         border-left-color: #09f;
         animation: spin 1s ease infinite;
-        margin: 0 auto 10px auto;
+        margin: 0 auto 10px;
     }
 
     @keyframes spin {
@@ -558,7 +527,6 @@ if (file_exists($headerPath)) {
 
     .missing-item {
         background-color: var(--missing-item-bg-color);
-        color: var(--missing-item-text-color);
         padding: 4px 8px;
         border-radius: 3px;
         font-size: 0.9em;
@@ -570,6 +538,11 @@ if (file_exists($headerPath)) {
         color: #0c5460;
         padding: 15px;
         border-radius: 5px;
+    }
+
+    .notification-box .button {
+        margin-top: 10px;
+        display: inline-block;
     }
 
     body.theme-night .notification-box {
@@ -687,10 +660,10 @@ if (file_exists($headerPath)) {
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
+        // KORREKTUR: Alle Konstanten, die auf DOM-Elemente zugreifen,
+        // müssen INNERHALB des DOMContentLoaded-Listeners definiert werden.
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         const settings = <?php echo json_encode($thumbnailSettings); ?>;
-
-        // UI-Elemente
         const settingsAndActionsContainer = document.getElementById('settings-and-actions-container');
         const initialStatusContainer = document.getElementById('initial-status-container');
         const generateButton = document.getElementById('generate-thumbnails-button');
@@ -706,80 +679,60 @@ if (file_exists($headerPath)) {
         const qualitySlider = document.getElementById('quality-slider');
         const qualityValueSpan = document.getElementById('quality-value');
         const losslessCheckbox = document.getElementById('lossless-checkbox');
-        const qualityControlContainer = document.getElementById('quality-control-container');
         const formatToggleInputs = document.querySelectorAll('input[name="format-toggle"]');
-
+        const lastRunContainer = document.getElementById('last-run-container');
+        const qualityControlContainer = document.getElementById('quality-control-container'); // Diese Zeile war das Problem
         const initialMissingIds = <?php echo json_encode($missingThumbnails); ?>;
         let isPaused = false;
         let isGenerationActive = false;
 
-        function applySettings() {
-            document.querySelector(`input[name="format-toggle"][value="${settings.last_used_format}"]`).checked = true;
-            qualitySlider.value = settings.last_used_quality;
-            qualityValueSpan.textContent = settings.last_used_quality;
-            losslessCheckbox.checked = settings.last_used_lossless;
-            updateUiFromSettings();
-        }
-
-        function updateUiFromSettings() {
-            const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
-            const isLossless = losslessCheckbox.checked;
-            qualityControlContainer.style.display = (isLossless || selectedFormat === 'png') ? 'none' : 'contents';
-            losslessCheckbox.parentElement.parentElement.style.display = (selectedFormat === 'webp') ? 'contents' : 'none';
-        }
-
+        function applySettings() { document.querySelector(`input[name="format-toggle"][value="${settings.last_used_format}"]`).checked = true; qualitySlider.value = settings.last_used_quality; qualityValueSpan.textContent = settings.last_used_quality; losslessCheckbox.checked = settings.last_used_lossless; updateUiFromSettings(); }
+        function updateUiFromSettings() { const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value; const isLossless = losslessCheckbox.checked; qualityControlContainer.style.display = (isLossless || selectedFormat === 'png') ? 'none' : 'contents'; losslessCheckbox.parentElement.parentElement.style.display = (selectedFormat === 'webp') ? 'contents' : 'none'; }
         qualitySlider.addEventListener('input', () => { qualityValueSpan.textContent = qualitySlider.value; });
         losslessCheckbox.addEventListener('change', updateUiFromSettings);
         formatToggleInputs.forEach(input => input.addEventListener('change', updateUiFromSettings));
-        applySettings();
 
-        function addLogMessage(message, type) {
-            const li = document.createElement('li');
-            li.className = `log-${type}`;
-            li.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            logList.appendChild(li);
-            errorHeader.style.display = 'block';
-            li.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
+        function addLogMessage(message, type) { const li = document.createElement('li'); li.className = `log-${type}`; li.textContent = `[${new Date().toLocaleTimeString()}] ${message}`; logList.appendChild(li); errorHeader.style.display = 'block'; li.scrollIntoView({ behavior: 'smooth', block: 'end' }); }
+        async function saveSettings(format, quality, lossless) { const formData = new URLSearchParams({ action: 'save_settings', csrf_token: csrfToken, format, quality, lossless: lossless.toString() }); await fetch(window.location.href, { method: 'POST', body: formData }); }
+        async function generateSingleImage(comicId, format, quality) { const formData = new URLSearchParams({ action: 'generate_single_thumbnail', comic_id: comicId, output_format: format, csrf_token: csrfToken }); if (quality !== null) { formData.append('quality', quality); } try { const response = await fetch(window.location.href, { method: 'POST', body: formData }); if (!response.ok) throw new Error(`Server-Antwort: ${response.status}`); return await response.json(); } catch (error) { return { success: false, message: `Netzwerkfehler: ${error.message}` }; } }
 
-        async function saveSettings(format, quality, lossless) {
-            const formData = new URLSearchParams({ action: 'save_settings', csrf_token: csrfToken, format: format, quality: quality, lossless: lossless.toString() });
-            await fetch(window.location.href, { method: 'POST', body: formData });
-        }
+        function updateTimestamp() {
+            const now = new Date();
+            const settings = {
+                format: document.querySelector('input[name="format-toggle"]:checked').value,
+                quality: losslessCheckbox.checked ? 'Verlustfrei' : qualitySlider.value,
+            };
+            const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const time = now.toLocaleTimeString('de-DE');
+            const newStatusText = `Letzte Ausführung am ${date} um ${time} Uhr (Format: ${settings.format.toUpperCase()}, Qualität: ${settings.quality}).`;
 
-        async function generateSingleImage(comicId, format, quality) {
-            const formData = new URLSearchParams({ action: 'generate_single_thumbnail', comic_id: comicId, output_format: format, csrf_token: csrfToken });
-            if (quality !== null) { formData.append('quality', quality); }
-            try {
-                const response = await fetch(window.location.href, { method: 'POST', body: formData });
-                if (!response.ok) throw new Error(`Server-Antwort: ${response.status}`);
-                return await response.json();
-            } catch (error) { return { success: false, message: `Netzwerkfehler: ${error.message}` }; }
+            let pElement = lastRunContainer.querySelector('.status-message');
+            if (!pElement) {
+                pElement = document.createElement('p');
+                pElement.className = 'status-message status-info';
+                lastRunContainer.prepend(pElement);
+            }
+            pElement.innerHTML = newStatusText;
         }
 
         async function processGenerationQueue() {
             const userFormat = document.querySelector('input[name="format-toggle"]:checked').value;
             const userQuality = parseInt(qualitySlider.value, 10);
             const userLossless = losslessCheckbox.checked;
-
             isGenerationActive = true;
             updateButtonState();
-
             loadingSpinner.style.display = 'block';
             generationResultsSection.style.display = 'block';
             createdImagesContainer.innerHTML = '';
             logList.innerHTML = '';
             errorHeader.style.display = 'none';
             cacheUpdateNotification.style.display = 'none';
-
             let createdCount = 0;
             let lastSuccessfulSettings = {};
-
             for (let i = 0; i < initialMissingIds.length; i++) {
                 if (isPaused) { await new Promise(resolve => { const interval = setInterval(() => { if (!isPaused) { clearInterval(interval); resolve(); } }, 200); }); }
                 const currentId = initialMissingIds[i];
                 progressText.textContent = `Verarbeite ${i + 1} von ${initialMissingIds.length} (${currentId})...`;
-
                 const fallbackChain = [];
                 if (userFormat === 'webp') {
                     if (userLossless) fallbackChain.push({ format: 'webp', quality: 101, lossless: true });
@@ -792,7 +745,6 @@ if (file_exists($headerPath)) {
                 } else {
                     fallbackChain.push({ format: 'jpg', quality: userQuality, lossless: false });
                 }
-
                 let success = false;
                 for (const attempt of fallbackChain) {
                     addLogMessage(`Versuch für '${currentId}': Format=${attempt.format}, Qualität=${attempt.quality}`, 'info');
@@ -816,50 +768,27 @@ if (file_exists($headerPath)) {
                 if (!success) { addLogMessage(`Alle Versuche für '${currentId}' fehlgeschlagen. Breche für dieses Bild ab.`, 'error'); }
                 await new Promise(resolve => setTimeout(resolve, 50));
             }
-
             loadingSpinner.style.display = 'none';
             isGenerationActive = false;
             progressText.textContent = 'Prozess abgeschlossen.';
-
-            // KORREKTUR: UI-Elemente erst am Ende ausblenden.
             if (settingsAndActionsContainer) settingsAndActionsContainer.style.display = 'none';
             if (initialStatusContainer) initialStatusContainer.style.display = 'none';
-
-
             if (Object.keys(lastSuccessfulSettings).length > 0) {
                 await saveSettings(lastSuccessfulSettings.format, lastSuccessfulSettings.quality, lastSuccessfulSettings.lossless);
                 addLogMessage(`Erfolgreiche Einstellungen (Format: ${lastSuccessfulSettings.format}, Qualität: ${lastSuccessfulSettings.quality}) wurden gespeichert.`, 'info');
+                updateTimestamp();
             }
-
             if (createdCount > 0) {
                 cacheUpdateNotification.style.display = 'block';
             }
         }
-
-        function updateButtonState() {
-            if (initialMissingIds.length === 0) {
-                generateButton.disabled = true;
-                togglePauseResumeButton.style.display = 'none';
-            } else if (isGenerationActive) {
-                settingsAndActionsContainer.style.display = 'none'; // KORREKTUR: Sofort ausblenden
-                togglePauseResumeButton.style.display = 'inline-block';
-                if (isPaused) {
-                    togglePauseResumeButton.textContent = 'Fortsetzen';
-                    togglePauseResumeButton.className = 'status-green-button';
-                } else {
-                    togglePauseResumeButton.textContent = 'Pause';
-                    togglePauseResumeButton.className = 'status-red-button';
-                }
-            } else {
-                settingsAndActionsContainer.style.display = 'block';
-                generateButton.style.display = 'inline-block';
-                generateButton.disabled = false;
-                togglePauseResumeButton.style.display = 'none';
-            }
-        }
+        function updateButtonState() { if (initialMissingIds.length === 0) { generateButton.disabled = true; togglePauseResumeButton.style.display = 'none'; } else if (isGenerationActive) { settingsAndActionsContainer.style.display = 'none'; togglePauseResumeButton.style.display = 'inline-block'; if (isPaused) { togglePauseResumeButton.textContent = 'Fortsetzen'; togglePauseResumeButton.className = 'status-green-button'; } else { togglePauseResumeButton.textContent = 'Pause'; togglePauseResumeButton.className = 'status-red-button'; } } else { settingsAndActionsContainer.style.display = 'block'; generateButton.disabled = false; togglePauseResumeButton.style.display = 'none'; } }
 
         generateButton.addEventListener('click', processGenerationQueue);
         togglePauseResumeButton.addEventListener('click', () => { isPaused = !isPaused; updateButtonState(); });
+
+        // Initialen Zustand setzen
+        applySettings();
         updateButtonState();
     });
 </script>
@@ -867,7 +796,5 @@ if (file_exists($headerPath)) {
 <?php
 if (file_exists($footerPath)) {
     include $footerPath;
-} else {
-    echo "</body></html>";
 }
 ?>

@@ -26,7 +26,7 @@ $nonce = $nonce ?? '';
     </br>
     <a href="./upload_image.php">Bild-Upload</a>
     <a href="./generator_thumbnail.php">Thumbnail-Generator</a>
-    <a href="./generator_image_socialmedia.php">Social Media Vorschau-Generator</a>
+    <a href="./generator_image_socialmedia.php">Social Media Vorschau Generator</a>
     <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
     <a href="./build_image_cache_and_busting.php">Bild-Cache-Generator</a>
     <br>

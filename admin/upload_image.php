@@ -1,13 +1,13 @@
 <?php
 /**
  * Administrationsseite zum asynchronen Hochladen von Comic-Bildern.
- * V3.7: Design vollständig an das einheitliche Admin-Layout angepasst.
+ * V4.1: Integriert das Speichern und Anzeigen der letzten Ausführung konsistent.
  */
 
 // === DEBUG-MODUS & KONFIGURATION ===
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade
@@ -16,6 +16,40 @@ $footerPath = __DIR__ . '/../src/layout/footer.php';
 $uploadHiresDir = __DIR__ . '/../assets/comic_hires';
 $uploadLowresDir = __DIR__ . '/../assets/comic_lowres';
 $tempDir = sys_get_temp_dir();
+$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
+
+// --- Einstellungsverwaltung ---
+function loadGeneratorSettings(string $filePath, bool $debugMode): array
+{
+    $defaults = [
+        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
+        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
+        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
+        'generator_comic' => ['last_run_timestamp' => null],
+        'upload_image' => ['last_run_timestamp' => null]
+    ];
+    if (!file_exists($filePath)) {
+        $dir = dirname($filePath);
+        if (!is_dir($dir))
+            mkdir($dir, 0755, true);
+        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        return $defaults;
+    }
+    $content = file_get_contents($filePath);
+    $settings = json_decode($content, true);
+    if (json_last_error() !== JSON_ERROR_NONE)
+        return $defaults;
+    if (!isset($settings['upload_image']))
+        $settings['upload_image'] = $defaults['upload_image'];
+    return $settings;
+}
+
+function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+{
+    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
+    return file_put_contents($filePath, $jsonContent) !== false;
+}
+
 
 if (!is_dir($uploadHiresDir))
     mkdir($uploadHiresDir, 0777, true);
@@ -26,8 +60,7 @@ function shortenFilename($filename)
 {
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
     preg_match('/(\d{8})/', $filename, $matches);
-    $shortName = !empty($matches) ? $matches[0] : pathinfo($filename, PATHINFO_FILENAME);
-    return $shortName . '.' . $extension;
+    return (!empty($matches) ? $matches[0] : pathinfo($filename, PATHINFO_FILENAME)) . '.' . $extension;
 }
 
 function findExistingFileInDir($shortName, $dir)
@@ -39,78 +72,101 @@ function findExistingFileInDir($shortName, $dir)
     return null;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
-    header('Content-Type: application/json');
+// --- AJAX HANDLER ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
-    $file = $_FILES['file'];
-    if ($file['error'] !== UPLOAD_ERR_OK) {
-        echo json_encode(['status' => 'error', 'message' => 'Fehler beim Upload.']);
-        exit;
-    }
-    $imageFileType = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-        echo json_encode(['status' => 'error', 'message' => 'Ungültiger Dateityp.']);
-        exit;
-    }
+    ob_end_clean();
+    header('Content-Type: application/json');
 
-    $shortName = shortenFilename($file['name']);
-    $tempFilePath = $tempDir . '/' . uniqid() . '_' . $shortName;
+    if (isset($_FILES['file'])) {
+        $file = $_FILES['file'];
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            echo json_encode(['status' => 'error', 'message' => 'Fehler beim Upload.']);
+            exit;
+        }
+        $imageFileType = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Ungültiger Dateityp.']);
+            exit;
+        }
 
-    if (move_uploaded_file($file['tmp_name'], $tempFilePath)) {
-        list($width, $height) = getimagesize($tempFilePath);
-        $targetDir = ($width >= 1800 && $height >= 1000) ? $uploadHiresDir : $uploadLowresDir;
-        $existingFile = findExistingFileInDir($shortName, $targetDir);
+        $shortName = shortenFilename($file['name']);
+        $tempFilePath = $tempDir . '/' . uniqid() . '_' . $shortName;
 
-        if ($existingFile !== null) {
-            $_SESSION['pending_upload'][$shortName] = ['temp_file' => $tempFilePath, 'existing_file' => $existingFile, 'target_dir' => $targetDir];
-            $existingFileUrl = '../assets/' . basename($targetDir) . '/' . basename($existingFile);
-            echo json_encode(['status' => 'confirmation_needed', 'short_name' => $shortName, 'existing_image_url' => $existingFileUrl, 'new_image_data_uri' => 'data:image/' . $imageFileType . ';base64,' . base64_encode(file_get_contents($tempFilePath))]);
-        } else {
-            $targetPath = $targetDir . '/' . $shortName;
-            if (rename($tempFilePath, $targetPath)) {
-                echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' erfolgreich hochgeladen."]);
+        if (move_uploaded_file($file['tmp_name'], $tempFilePath)) {
+            list($width, $height) = getimagesize($tempFilePath);
+            $targetDir = ($width >= 1800 && $height >= 1000) ? $uploadHiresDir : $uploadLowresDir;
+            $existingFile = findExistingFileInDir($shortName, $targetDir);
+
+            if ($existingFile !== null) {
+                $_SESSION['pending_upload'][$shortName] = ['temp_file' => $tempFilePath, 'existing_file' => $existingFile, 'target_dir' => $targetDir];
+                $existingFileUrl = '../assets/' . basename($targetDir) . '/' . basename($existingFile);
+                echo json_encode(['status' => 'confirmation_needed', 'short_name' => $shortName, 'existing_image_url' => $existingFileUrl, 'new_image_data_uri' => 'data:image/' . $imageFileType . ';base64,' . base64_encode(file_get_contents($tempFilePath))]);
             } else {
-                unlink($tempFilePath);
-                echo json_encode(['status' => 'error', 'message' => "Fehler beim Speichern von '{$shortName}'."]);
+                $targetPath = $targetDir . '/' . $shortName;
+                if (rename($tempFilePath, $targetPath)) {
+                    echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' erfolgreich hochgeladen."]);
+                } else {
+                    if (file_exists($tempFilePath))
+                        unlink($tempFilePath);
+                    echo json_encode(['status' => 'error', 'message' => "Fehler beim Speichern von '{$shortName}'."]);
+                }
             }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => "Fehler beim Verschieben von '{$file['name']}'."]);
         }
-    } else {
-        echo json_encode(['status' => 'error', 'message' => "Fehler beim Verschieben von '{$file['name']}'."]);
-    }
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'confirm_overwrite') {
-    header('Content-Type: application/json');
-    verify_csrf_token();
-    $shortName = $_POST['short_name'] ?? null;
-    $decision = $_POST['decision'] ?? null;
-    if (!$shortName || !isset($_SESSION['pending_upload'][$shortName])) {
-        echo json_encode(['status' => 'error', 'message' => 'Ungültige Anfrage.']);
         exit;
     }
-    $uploadData = $_SESSION['pending_upload'][$shortName];
-    unset($_SESSION['pending_upload'][$shortName]);
-    if ($decision === 'yes') {
-        if (file_exists($uploadData['existing_file']))
-            unlink($uploadData['existing_file']);
-        if (rename($uploadData['temp_file'], $uploadData['target_dir'] . '/' . $shortName)) {
-            echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' wurde überschrieben."]);
-        } else {
-            if (file_exists($uploadData['temp_file']))
-                unlink($uploadData['temp_file']);
-            echo json_encode(['status' => 'error', 'message' => "Fehler beim Überschreiben von '{$shortName}'."]);
+
+    if (isset($_POST['action'])) {
+        $action = $_POST['action'];
+        $response = ['success' => false, 'message' => ''];
+
+        switch ($action) {
+            case 'confirm_overwrite':
+                $shortName = $_POST['short_name'] ?? null;
+                $decision = $_POST['decision'] ?? null;
+                if (!$shortName || !isset($_SESSION['pending_upload'][$shortName])) {
+                    echo json_encode(['status' => 'error', 'message' => 'Ungültige Anfrage.']);
+                    exit;
+                }
+                $uploadData = $_SESSION['pending_upload'][$shortName];
+                unset($_SESSION['pending_upload'][$shortName]);
+                if ($decision === 'yes') {
+                    if (file_exists($uploadData['existing_file']))
+                        unlink($uploadData['existing_file']);
+                    if (rename($uploadData['temp_file'], $uploadData['target_dir'] . '/' . $shortName)) {
+                        echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' wurde überschrieben."]);
+                    } else {
+                        if (file_exists($uploadData['temp_file']))
+                            unlink($uploadData['temp_file']);
+                        echo json_encode(['status' => 'error', 'message' => "Fehler beim Überschreiben von '{$shortName}'."]);
+                    }
+                } else {
+                    if (file_exists($uploadData['temp_file']))
+                        unlink($uploadData['temp_file']);
+                    echo json_encode(['status' => 'info', 'message' => "Upload von '{$shortName}' wurde abgebrochen."]);
+                }
+                exit;
+
+            case 'save_settings':
+                $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+                $currentSettings['upload_image']['last_run_timestamp'] = time();
+                if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+                    $response['success'] = true;
+                }
+                break;
         }
-    } else {
-        if (file_exists($uploadData['temp_file']))
-            unlink($uploadData['temp_file']);
-        echo json_encode(['status' => 'info', 'message' => "Upload von '{$shortName}' wurde abgebrochen."]);
+        echo json_encode($response);
+        exit;
     }
-    exit;
 }
 
+
+$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$uploadSettings = $settings['upload_image'];
 $pageTitle = 'Adminbereich - Bild-Upload';
-$pageHeader = 'Bild-Upload für Comic-Seiten (hires und lowres)';
+$pageHeader = 'Bild-Upload';
 $siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
 $robotsContent = 'noindex, nofollow';
 
@@ -119,6 +175,18 @@ include $headerPath;
 
 <article>
     <div class="content-section">
+        <div id="last-run-container">
+            <?php if ($uploadSettings['last_run_timestamp']): ?>
+                <p class="status-message status-info">Letzter Upload am
+                    <?php echo date('d.m.Y \u\m H:i:s', $uploadSettings['last_run_timestamp']); ?> Uhr.
+                </p>
+            <?php endif; ?>
+        </div>
+
+        <h2>Bild-Upload</h2>
+        <p>Ziehe Bilder per Drag & Drop in den Kasten oder wähle sie über den Button aus, um sie hochzuladen. Das Skript
+            erkennt automatisch, ob es sich um eine High-Res- oder Low-Res-Version handelt.</p>
+
         <div id="statusMessages"></div>
 
         <div id="uploadContainer">
@@ -129,7 +197,7 @@ include $headerPath;
                     <label for="fileInput" class="button">Bilder auswählen</label>
                 </div>
                 <div id="fileList"></div>
-                <button type="submit" id="uploadButton" class="button upload-button">Upload starten</button>
+                <button type="submit" id="uploadButton" class="button upload-button" disabled>Upload starten</button>
             </form>
         </div>
 
@@ -169,6 +237,7 @@ include $headerPath;
 </article>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    /* ... (CSS-Stile bleiben weitgehend unverändert) ... */
     .drag-drop-zone {
         border: 2px dashed #ccc;
         border-radius: 5px;
@@ -195,6 +264,7 @@ include $headerPath;
         margin-top: 10px;
         font-style: italic;
         margin-bottom: 15px;
+        min-height: 1.2em;
     }
 
     .status-message {
@@ -222,12 +292,17 @@ include $headerPath;
         border: 1px solid #ffeeba;
     }
 
+    .status-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
     .image-comparison {
         display: flex;
         justify-content: center;
         gap: 20px;
-        margin-top: 20px;
-        margin-bottom: 20px;
+        margin: 20px 0;
     }
 
     .image-box {
@@ -254,10 +329,8 @@ include $headerPath;
         margin-top: 15px;
     }
 
-    /* Modal-Styles */
     .modal {
         display: none;
-        /* JS toggelt zu flex */
         position: fixed;
         z-index: 10001;
         left: 0;
@@ -342,7 +415,6 @@ include $headerPath;
         const uploadForm = document.getElementById('uploadForm');
         const uploadButton = document.getElementById('uploadButton');
         const statusMessages = document.getElementById('statusMessages');
-
         const confirmationModal = document.getElementById('confirmationModal');
         const closeButton = document.querySelector('.close-button');
         const confirmOverwriteButton = document.getElementById('confirmOverwrite');
@@ -350,42 +422,21 @@ include $headerPath;
         const existingImage = document.getElementById('existingImage');
         const newImage = document.getElementById('newImage');
         const confirmationMessage = document.getElementById('confirmationMessage');
-
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
-
+        const lastRunContainer = document.getElementById('last-run-container');
         let filesToUpload = [];
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('drag-over');
-            if (e.dataTransfer.files.length > 0) {
-                fileInput.files = e.dataTransfer.files;
-                handleFiles(fileInput.files);
-            }
-        });
-
-        dropZone.addEventListener('click', (e) => {
-            if (!e.target.closest('label')) fileInput.click();
-        });
-
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files.length > 0) { fileInput.files = e.dataTransfer.files; handleFiles(fileInput.files); } });
+        dropZone.addEventListener('click', (e) => { if (!e.target.closest('label')) fileInput.click(); });
         fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
-        function handleFiles(files) {
-            filesToUpload = Array.from(files);
-            updateFileList();
-        }
+        function handleFiles(files) { filesToUpload = Array.from(files); updateFileList(); }
 
         function updateFileList() {
             if (filesToUpload.length > 0) {
-                const fileNames = filesToUpload.map(f => f.name).join(', ');
-                fileList.textContent = `Ausgewählte Dateien (${filesToUpload.length}): ${fileNames}`;
+                fileList.textContent = `Ausgewählte Dateien (${filesToUpload.length}): ${filesToUpload.map(f => f.name).join(', ')}`;
                 uploadButton.disabled = false;
             } else {
                 fileList.textContent = '';
@@ -397,16 +448,32 @@ include $headerPath;
             e.preventDefault();
             uploadButton.disabled = true;
             cacheUpdateNotification.style.display = 'none';
+            let uploadSuccess = false;
+            let fileCounter = 0;
 
             for (const file of filesToUpload) {
-                await uploadFile(file);
+                const result = await uploadFile(file);
+                if (result && (result.status === 'success' || result.status === 'info')) {
+                    fileCounter++;
+                }
+                if (result && result.status === 'success') {
+                    uploadSuccess = true;
+                }
             }
 
-            addStatusMessage("Upload-Prozess abgeschlossen.", "info");
+            if (fileCounter > 0) {
+                addStatusMessage("Upload-Prozess abgeschlossen.", "info");
+            }
+
             filesToUpload = [];
             updateFileList();
             uploadButton.disabled = false;
-            cacheUpdateNotification.style.display = 'block';
+
+            if (uploadSuccess) {
+                await saveSettings();
+                updateTimestamp();
+                cacheUpdateNotification.style.display = 'block';
+            }
         });
 
         async function uploadFile(file) {
@@ -418,19 +485,20 @@ include $headerPath;
             const result = await response.json();
 
             if (result.status === 'confirmation_needed') {
-                await handleConfirmation(result);
+                return await handleConfirmation(result);
             } else {
                 addStatusMessage(result.message, result.status);
+                return result;
             }
         }
 
         async function handleConfirmation(data) {
-            confirmationModal.style.display = 'flex';
-            confirmationMessage.innerHTML = `Ein Bild mit dem Namen <strong>${data.short_name}</strong> existiert bereits. Soll es überschrieben werden?`;
-            existingImage.src = data.existing_image_url;
-            newImage.src = data.new_image_data_uri;
-
             return new Promise(resolve => {
+                confirmationModal.style.display = 'flex';
+                confirmationMessage.innerHTML = `Ein Bild mit dem Namen <strong>${data.short_name}</strong> existiert bereits. Soll es überschrieben werden?`;
+                existingImage.src = data.existing_image_url;
+                newImage.src = data.new_image_data_uri;
+
                 const handleDecision = async (decision) => {
                     confirmationModal.style.display = 'none';
                     const formData = new FormData();
@@ -442,21 +510,45 @@ include $headerPath;
                     const response = await fetch('upload_image.php', { method: 'POST', body: formData });
                     const result = await response.json();
                     addStatusMessage(result.message, result.status);
-                    resolve();
+                    resolve(result);
                 };
 
                 confirmOverwriteButton.onclick = () => handleDecision('yes');
                 cancelOverwriteButton.onclick = () => handleDecision('no');
                 closeButton.onclick = () => handleDecision('no');
-                window.onclick = (event) => {
-                    if (event.target === confirmationModal) handleDecision('no');
-                };
+                window.onclick = (event) => { if (event.target === confirmationModal) handleDecision('no'); };
             });
+        }
+
+        async function saveSettings() {
+            await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ action: 'save_settings', csrf_token: csrfToken })
+            });
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+
+            let pElement = lastRunContainer.querySelector('.status-message');
+            if (!pElement) {
+                pElement = document.createElement('p');
+                pElement.className = 'status-message status-info';
+                lastRunContainer.prepend(pElement);
+            }
+            pElement.innerHTML = `Letzter Upload am ${formattedDate} Uhr.`;
         }
 
         function addStatusMessage(message, type) {
             const messageDiv = document.createElement('div');
-            // Konvertiere alten Status zu neuem
             if (type === 'success') type = 'green';
             if (type === 'error') type = 'red';
             if (type === 'info') type = 'orange';
@@ -466,7 +558,7 @@ include $headerPath;
             statusMessages.prepend(messageDiv);
         }
 
-        updateFileList(); // Initialer Zustand
+        updateFileList();
     });
 </script>
 

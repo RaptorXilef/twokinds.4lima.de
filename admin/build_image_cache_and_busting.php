@@ -166,6 +166,13 @@ include $headerPath;
 
 <article>
     <div class="content-section">
+        <?php if ($cacheSettings['last_run_timestamp']): ?>
+            <p class="status-message status-info">Letzte Ausführung:
+                <strong><?php echo htmlspecialchars($cacheSettings['last_run_type']); ?></strong> am
+                <?php echo date('d.m.Y \u\m H:i:s', $cacheSettings['last_run_timestamp']); ?> Uhr.
+            </p>
+        <?php endif; ?>
+
         <h2>Cache inkl. Cache-Busting aktualisieren</h2>
         <p>Dieses Tool scannt die Bildverzeichnisse, hängt den Zeitstempel der letzten Dateiänderung als
             Cache-Busting-Parameter an (<code>?c=...</code>) und speichert das Ergebnis in
@@ -173,12 +180,6 @@ include $headerPath;
             Bildes laden, nachdem es geändert wurde.
         </p>
 
-        <?php if ($cacheSettings['last_run_timestamp']): ?>
-            <p class="status-message status-info">Letzte Ausführung:
-                <strong><?php echo htmlspecialchars($cacheSettings['last_run_type']); ?></strong> am
-                <?php echo date('d.m.Y \u\m H:i:s', $cacheSettings['last_run_timestamp']); ?> Uhr.
-            </p>
-        <?php endif; ?>
 
         <div id="fixed-buttons-container">
             <button type="button" class="cache-build-button" data-type="thumbnails">Thumbnails</button>
@@ -282,9 +283,10 @@ include $headerPath;
     }
 
     .status-message {
-        padding: 12px;
+        padding: 10px;
+        margin-bottom: 20px;
         border-radius: 5px;
-        margin-top: 15px;
+        font-weight: bold;
     }
 
     .status-green {
