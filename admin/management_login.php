@@ -45,18 +45,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $users = getUsers();
 
     if ($newPassword !== $confirmNewPassword) {
-        $message = '<p style="color: red;">Die neuen Passwörter stimmen nicht überein.</p>';
+        $message = '<p class="message-red">Die neuen Passwörter stimmen nicht überein.</p>';
     } elseif (!isset($users[$currentUser]) || !password_verify($oldPassword, $users[$currentUser]['passwordHash'])) {
-        $message = '<p style="color: red;">Das aktuelle Passwort ist inkorrekt.</p>';
+        $message = '<p class="message-red">Das aktuelle Passwort ist inkorrekt.</p>';
     } elseif (empty($newUsername) && empty($newPassword)) {
-        $message = '<p style="color: orange;">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein.</p>';
+        $message = '<p class="message-orange">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein.</p>';
     } else {
         $userUpdated = false;
         $newUsersArray = $users;
 
         if (!empty($newUsername) && $newUsername !== $currentUser) {
             if (isset($newUsersArray[$newUsername])) {
-                $message = '<p style="color: red;">Neuer Benutzername ist bereits vergeben.</p>';
+                $message = '<p class="message-red">Neuer Benutzername ist bereits vergeben.</p>';
             } else {
                 $newUsersArray[$newUsername] = $newUsersArray[$currentUser];
                 unset($newUsersArray[$currentUser]);
@@ -74,9 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         if ($userUpdated && empty($message)) {
             if (saveUsers($newUsersArray)) {
-                $message = '<p style="color: green;">Anmeldedaten erfolgreich aktualisiert.</p>';
+                $message = '<p class="message-green">Anmeldedaten erfolgreich aktualisiert.</p>';
             } else {
-                $message = '<p style="color: red;">Fehler beim Speichern der neuen Anmeldedaten.</p>';
+                $message = '<p class="message-red">Fehler beim Speichern der neuen Anmeldedaten.</p>';
             }
         }
     }
@@ -156,21 +156,52 @@ if (file_exists($headerPath)) {
         .message p {
             margin: 0;
         }
+
+        .message-red {
+            color: red;
+        }
+
+        .message-green {
+            color: green;
+        }
+
+        .message-orange {
+            color: orange;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .section-divider {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #eee;
+        }
+
+        .form-hr {
+            border-top: 1px dashed #ccc;
+            margin: 10px 0;
+        }
+
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
     </style>
     <div class="admin-form-container">
         <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-        <p style="text-align: right;"><a
-                href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
+        <p class="text-right"><a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
                 class="logout-link">Logout</a></p>
 
         <?php if (!empty($message)): ?>
             <div class="message"><?php echo $message; ?></div>
         <?php endif; ?>
 
-        <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
+        <section class="section-divider">
             <h3>Benutzerdaten ändern</h3>
-            <form id="change-credentials-form" action="management_login.php" method="POST"
-                style="display: flex; flex-direction: column; gap: 15px;">
+            <form id="change-credentials-form" action="management_login.php" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <input type="hidden" name="action" value="change_credentials">
                 <div>
@@ -186,7 +217,7 @@ if (file_exists($headerPath)) {
                     <label for="confirm_new_password">Neues Passwort bestätigen:</label>
                     <input type="password" id="confirm_new_password" name="confirm_new_password" autocomplete="off">
                 </div>
-                <hr style="border-top: 1px dashed #ccc; margin: 10px 0;">
+                <hr class="form-hr">
                 <div>
                     <label for="old_password">Aktuelles Passwort (zur Bestätigung):</label>
                     <input type="password" id="old_password" name="old_password" required
@@ -209,12 +240,18 @@ if (file_exists($headerPath)) {
             if (newPassword !== confirmNewPassword) {
                 // Verwende eine benutzerfreundlichere Meldung statt alert()
                 const messageContainer = document.querySelector('.message');
-                if (messageContainer) {
-                    messageContainer.innerHTML = '<p style="color: red;">Die neuen Passwörter stimmen nicht überein.</p>';
-                } else {
-                    alert('Die neuen Passwörter stimmen nicht überein.');
+                // Erstelle eine neue Nachricht, falls kein Container existiert
+                const messageDiv = messageContainer || document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.innerHTML = '<p class="message-red">Die neuen Passwörter stimmen nicht überein.</p>';
+
+                // Füge die Nachricht nur hinzu, wenn sie noch nicht da war
+                if (!messageContainer) {
+                    const form = document.getElementById('change-credentials-form');
+                    form.parentNode.insertBefore(messageDiv, form);
                 }
-                event.preventDefault(); // Verhindert das Absenden des Formulars
+
+                event.preventDefault();
             }
         }
     });
