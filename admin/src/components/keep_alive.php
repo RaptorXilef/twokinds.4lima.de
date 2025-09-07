@@ -1,44 +1,30 @@
 <?php
 /**
- * This script is called via AJAX to keep the PHP session alive.
- * It simply starts the session and updates the 'last_activity' timestamp.
- * It is now protected against CSRF attacks.
+ * Dieses Skript wird per AJAX aufgerufen, um die PHP-Session am Leben zu erhalten.
+ * Es bindet die zentrale admin_init.php ein, um alle Sicherheitsprüfungen
+ * (Login, Session-Fingerprint, CSRF-Token) zu durchlaufen.
+ * Bei Erfolg wird der 'last_activity'-Zeitstempel aktualisiert.
+ *
+ * @version 2.0 (Strukturell überarbeitet für zentrale Sicherheit)
+ * @date 2025-09-07
  */
 
-// Strikte Session-Konfiguration, um sicherzugehen
-session_set_cookie_params([
-    'lifetime' => 0,
-    'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'],
-    'secure' => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Strict'
-]);
+// Definiere eine Konstante, damit admin_init.php weiß, dass dies ein API-Aufruf ist.
+define('IS_API_CALL', true);
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Binde die zentrale Initialisierungs- und Sicherheitsdatei ein.
+// Diese Datei kümmert sich um alles: Session-Start, CSRF-Prüfung, Login-Status etc.
+require_once __DIR__ . '/admin_init.php';
 
-// --- CSRF-Token-Überprüfung ---
-$token = $_POST['csrf_token'] ?? null;
+// Wenn das Skript bis hierhin ohne Fehler durchläuft (d.h., admin_init.php hat
+// keinen exit() wegen eines Fehlers ausgelöst), ist der Benutzer authentifiziert
+// und der CSRF-Token war gültig.
 
-if ($token === null || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
-    header('Content-Type: application/json');
-    http_response_code(403); // Forbidden
-    echo json_encode(['status' => 'error', 'message' => 'Invalid CSRF token.']);
-    exit;
-}
+// Jetzt aktualisieren wir einfach die letzte Aktivität.
+$_SESSION['last_activity'] = time();
 
-// If the user is logged in, update their last activity time.
-if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-    $_SESSION['last_activity'] = time();
-    // Respond with success
-    header('Content-Type: application/json');
-    echo json_encode(['status' => 'success', 'message' => 'Session extended.']);
-} else {
-    // Respond with an error if the user is not logged in
-    header('Content-Type: application/json');
-    http_response_code(401); // Unauthorized
-    echo json_encode(['status' => 'error', 'message' => 'Not logged in.']);
-}
+// Sende eine Erfolgsmeldung zurück.
+header('Content-Type: application/json');
+echo json_encode(['status' => 'success', 'message' => 'Session extended.']);
+exit;
 ?>
