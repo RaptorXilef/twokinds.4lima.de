@@ -185,12 +185,12 @@ if (file_exists($headerPath)) {
                     <input type="file" id="fileInput" multiple hidden>
                     <label for="fileInput" class="button">Bilder auswählen</label>
                 </div>
-                <div id="fileList" style="margin-top: 10px; font-style: italic;"></div>
+                <div id="fileList"></div>
                 <button type="submit" id="uploadButton" class="button upload-button">Upload starten</button>
             </form>
         </div>
 
-        <div id="cache-update-notification" class="notification-box" style="display:none; margin-top: 20px;">
+        <div id="cache-update-notification" class="notification-box">
             <h4>Nächster Schritt: Cache aktualisieren</h4>
             <p>
                 Da neue Bilder hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
@@ -202,7 +202,7 @@ if (file_exists($headerPath)) {
                 aktualisieren</a>
         </div>
 
-        <div id="confirmationModal" class="modal" style="display:none;">
+        <div id="confirmationModal" class="modal">
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h2 id="confirmationHeader">Bestätigung erforderlich</h2>
@@ -211,12 +211,11 @@ if (file_exists($headerPath)) {
                 <div class="image-comparison">
                     <div class="image-box">
                         <h3>Bestehendes Bild</h3>
-                        <img id="existingImage" src="" alt="Bestehendes Bild"
-                            style="max-width: 250px; max-height: 250px;">
+                        <img id="existingImage" src="" alt="Bestehendes Bild" class="comparison-image">
                     </div>
                     <div class="image-box">
                         <h3>Neues Bild</h3>
-                        <img id="newImage" src="" alt="Neues Bild" style="max-width: 250px; max-height: 250px;">
+                        <img id="newImage" src="" alt="Neues Bild" class="comparison-image">
                     </div>
                 </div>
                 <div class="modal-buttons">
@@ -406,6 +405,11 @@ if (file_exists($headerPath)) {
         background-color: #f0f0f0;
     }
 
+    #fileList {
+        margin-top: 10px;
+        font-style: italic;
+    }
+
     .status-message {
         padding: 10px;
         margin-bottom: 20px;
@@ -449,13 +453,14 @@ if (file_exists($headerPath)) {
 
     body.theme-night .image-box {
         background-color: #00334c;
-        /* Dunklerer Hintergrund für die Boxen */
         border-color: #2a6177;
     }
 
-    .image-box img {
+    .image-box img.comparison-image {
         display: block;
         margin-top: 10px;
+        max-width: 250px;
+        max-height: 250px;
     }
 
     .upload-button {
@@ -467,7 +472,6 @@ if (file_exists($headerPath)) {
         display: none;
         position: fixed;
         z-index: 101;
-        /* Erhöhter z-index, um über dem Banner zu liegen */
         left: 0;
         top: 0;
         width: 100%;
@@ -492,7 +496,6 @@ if (file_exists($headerPath)) {
 
     body.theme-night .modal-content {
         background-color: #00334c;
-        /* Dunkler Hintergrund für das Modal */
         border: 1px solid #2a6177;
         color: #fff;
     }
@@ -522,6 +525,8 @@ if (file_exists($headerPath)) {
     }
 
     .notification-box {
+        display: none;
+        margin-top: 20px;
         border: 1px solid #bee5eb;
         background-color: #d1ecf1;
         color: #0c5460;
