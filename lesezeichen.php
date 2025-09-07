@@ -29,6 +29,13 @@ $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="tex
 require_once __DIR__ . "/src/layout/header.php";
 ?>
 
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    /* Versteckt das Datei-Input-Feld für den Import, um CSP-konform zu sein */
+    .hidden-file-input {
+        display: none;
+    }
+</style>
+
 <div id="bookmarksPage" class="bookmarks-page">
     <div class="bookmark-example">
         <span>Klicke auf das Lesezeichen-Symbol auf jeder Comic-Seite, um sie hier hinzuzufügen.</span>
@@ -47,7 +54,7 @@ require_once __DIR__ . "/src/layout/header.php";
         <button type="button" id="removeAll">Alle Lesezeichen entfernen</button>
         <button type="button" id="export">Exportieren</button>
         <button type="button" id="importButton">Importieren</button>
-        <input type="file" id="import" accept=".json,application/json" style="display: none;">
+        <input type="file" id="import" accept=".json,application/json" class="hidden-file-input">
     </div>
 
     <template id="noBookmarks">
