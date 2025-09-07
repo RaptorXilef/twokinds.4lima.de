@@ -225,7 +225,9 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             case 'webp':
                 // Prüfen, ob WebP-Unterstützung vorhanden ist
                 if (function_exists('imagewebp')) {
-                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, 101); // 101 for lossless
+                    // KORREKTUR: Verwende eine Standard-Qualität statt der speziellen '101' für verlustfrei.
+                    // Dies ist kompatibler mit verschiedenen Server-GD-Versionen.
+                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, 90);
                 } else {
                     $errors[] = "WebP-Unterstützung ist auf diesem Server nicht aktiviert.";
                 }
@@ -236,7 +238,13 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             $createdPath = $thumbnailPath;
         } else {
             if (empty($errors)) {
-                $errors[] = "Fehler beim Speichern des Thumbnails nach '$thumbnailPath'.";
+                // KORREKTUR: Verbesserte Fehlermeldung und Aufräumen von 0-Byte-Dateien.
+                if (file_exists($thumbnailPath) && filesize($thumbnailPath) === 0) {
+                    unlink($thumbnailPath); // Lösche die leere Datei
+                    $errors[] = "Fehler beim Speichern des WebP-Bildes (leere Datei erstellt). Dies deutet oft auf ein Problem mit der GD-Bibliothek-Konfiguration auf dem Server hin.";
+                } else {
+                    $errors[] = "Fehler beim Speichern des Thumbnails nach '$thumbnailPath'.";
+                }
             }
         }
 
