@@ -1,6 +1,6 @@
 /**
  * Kümmert sich um die clientseitige Logik für die Session-Timeout-Warnung und den sichtbaren Countdown.
- * V4 - Sendet den CSRF-Token mit, um 403-Fehler zu vermeiden.
+ * V4 - Integriert CSRF-Token in AJAX-Anfragen und Logout-Link.
  */
 document.addEventListener("DOMContentLoaded", () => {
   const sessionTimeoutInSeconds = 600; // 10 Minuten (muss mit PHP übereinstimmen)
@@ -10,30 +10,26 @@ document.addEventListener("DOMContentLoaded", () => {
   let logoutTimer;
   let countdownInterval;
   let displayCountdownInterval;
-
-  // Ein Flag, um zu verhindern, dass zu viele Pings an den Server gesendet werden
   let isPinging = false;
 
   const modal = document.getElementById("sessionTimeoutModal");
   const countdownElement = document.getElementById("sessionTimeoutCountdown");
   const stayLoggedInBtn = document.getElementById("stayLoggedInBtn");
   const logoutBtn = document.getElementById("logoutBtn");
-
-  const timerDisplayContainer = document.getElementById(
-    "session-timer-display"
-  );
   const timerDisplayCountdown = document.getElementById(
     "session-timer-countdown"
   );
 
-  if (!timerDisplayContainer || !timerDisplayCountdown) {
-    console.warn(
-      "Elemente für die Session-Timer-Anzeige nicht gefunden. Sichtbarer Countdown deaktiviert."
-    );
-  }
   if (!modal || !countdownElement || !stayLoggedInBtn || !logoutBtn) {
     console.warn(
       "Elemente für das Session-Timeout-Modal nicht gefunden. Timeout-Funktion deaktiviert."
+    );
+    return;
+  }
+
+  if (typeof window.csrfToken === "undefined" || window.csrfToken === "") {
+    console.error(
+      "CSRF-Token nicht gefunden. Die Session-Verlängerung wird fehlschlagen."
     );
     return;
   }
@@ -47,39 +43,26 @@ document.addEventListener("DOMContentLoaded", () => {
     warningTimer = setTimeout(showWarningModal, warningTimeInSeconds * 1000);
     logoutTimer = setTimeout(forceLogout, sessionTimeoutInSeconds * 1000);
 
-    startDisplayCountdown();
+    if (timerDisplayCountdown) startDisplayCountdown();
   }
 
   /**
-   * KORRIGIERT: Diese Funktion sendet den CSRF-Token im Body der POST-Anfrage mit.
+   * Ping den Server, um die PHP-Session am Leben zu erhalten, und sendet den CSRF-Token mit.
    */
   function resetTimersAndPingServer() {
-    // Wenn wir uns bereits mitten in einer Ping-Anfrage befinden, nichts tun.
-    if (isPinging) {
-      return;
-    }
-
-    // Setze ein Flag, um anzuzeigen, dass ein Ping im Gange ist.
+    if (isPinging) return;
     isPinging = true;
 
-    // Erstelle FormData und füge den globalen CSRF-Token hinzu.
+    // KORREKTUR: Sende den CSRF-Token als POST-Daten.
     const formData = new FormData();
-    // window.csrfToken wird in session_timeout_modal.php gesetzt.
-    if (typeof window.csrfToken === "undefined" || window.csrfToken === "") {
-      console.error("CSRF token is not available.");
-      isPinging = false;
-      return;
-    }
     formData.append("csrf_token", window.csrfToken);
 
-    // Pingt den Server mit dem CSRF-Token an.
     fetch("src/components/keep_alive.php", {
       method: "POST",
       body: formData,
     })
       .then((response) => {
         if (response.ok) {
-          // Wenn der Ping erfolgreich war, setze die clientseitigen Timer zurück.
           startTimers();
         } else {
           console.warn(
@@ -89,17 +72,14 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((err) => console.warn("Keep-alive-Ping fehlgeschlagen.", err))
       .finally(() => {
-        // Nachdem der Ping abgeschlossen ist (erfolgreich oder nicht), erlaube nach einer kurzen Verzögerung einen neuen Ping.
-        // Dies verhindert aufeinanderfolgende Pings bei schneller Aktivität.
         setTimeout(() => {
           isPinging = false;
-        }, 5000); // Erlaube einen neuen Ping höchstens alle 5 Sekunden.
+        }, 5000); // Drosselung
       });
   }
 
   function startDisplayCountdown() {
     let remainingSeconds = sessionTimeoutInSeconds;
-
     const updateDisplay = () => {
       if (remainingSeconds < 0) {
         clearInterval(displayCountdownInterval);
@@ -109,12 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
         .toString()
         .padStart(2, "0");
       const seconds = (remainingSeconds % 60).toString().padStart(2, "0");
-      if (timerDisplayCountdown) {
-        timerDisplayCountdown.textContent = `${minutes}:${seconds}`;
-      }
+      timerDisplayCountdown.textContent = `${minutes}:${seconds}`;
       remainingSeconds--;
     };
-
     updateDisplay();
     displayCountdownInterval = setInterval(updateDisplay, 1000);
   }
@@ -127,9 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     countdownInterval = setInterval(() => {
       countdown--;
       countdownElement.textContent = countdown;
-      if (countdown <= 0) {
-        clearInterval(countdownInterval);
-      }
+      if (countdown <= 0) clearInterval(countdownInterval);
     }, 1000);
   }
 
@@ -139,31 +114,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function forceLogout() {
-    // KORREKTUR: Der Logout-Link benötigt ebenfalls den CSRF-Token,
-    // der in admin_init.php an die URL angehängt wird.
-    // Wir holen ihn aus dem Logout-Button im Menü, falls vorhanden.
-    const logoutLink = document.querySelector('a[href*="action=logout"]');
-    if (logoutLink) {
-      window.location.href = logoutLink.href;
-    } else {
-      // Fallback, falls der Link nicht gefunden wird.
-      window.location.href = "index.php";
-    }
+    // KORREKTUR: Füge den CSRF-Token zum Logout-Link hinzu.
+    // Wir nehmen an, dass die admin_init.php auf allen Seiten geladen wird und den Link verarbeitet.
+    window.location.href = `?action=logout&token=${window.csrfToken}`;
   }
 
   stayLoggedInBtn.addEventListener("click", () => {
     hideWarningModal();
-    resetTimersAndPingServer(); // Benutze die korrigierte Funktion
+    resetTimersAndPingServer();
   });
 
   logoutBtn.addEventListener("click", forceLogout);
 
-  // Diese Logik drosselt den Aktivitäts-Handler. Sie stellt sicher, dass resetTimersAndPingServer
-  // nur einmal aufgerufen wird, nachdem eine Welle von Aktivitäten beendet ist (Debouncing).
+  // Debouncing für Aktivitäts-Handler
   let activityTimeout;
   const activityHandler = () => {
     clearTimeout(activityTimeout);
-    activityTimeout = setTimeout(resetTimersAndPingServer, 500); // 500ms Verzögerung
+    activityTimeout = setTimeout(resetTimersAndPingServer, 500);
   };
 
   window.addEventListener("mousemove", activityHandler, { passive: true });
