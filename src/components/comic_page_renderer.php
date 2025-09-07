@@ -103,10 +103,22 @@ require_once __DIR__ . '/../layout/header.php';
         width: 100%;
         height: auto;
     }
+
+    /* Ersetzt die Inline-Stile für CSP-Konformität */
+    .comic-header {
+        position: relative;
+    }
+
+    .transcript-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
 </style>
 
 <article class="comic">
-    <header style="position: relative;">
+    <header class="comic-header">
         <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName); ?>
         </h1>
@@ -153,7 +165,7 @@ require_once __DIR__ . '/../layout/header.php';
 
     <aside class="transcript">
         <!-- Flex-Container für Überschrift und Button -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+        <div class="transcript-header">
             <h2>Transkript</h2>
             <?php if (!empty($urlOriginalbildFilename)): ?>
                 <a href="#" class="button" id="toggle-language-btn"
