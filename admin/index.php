@@ -17,15 +17,22 @@ ob_start();
 $nonce = bin2hex(random_bytes(16));
 $csp = [
     'default-src' => ["'self'"],
-    'script-src' => ["'self'", "'nonce-{$nonce}'"],
-    'style-src' => ["'self'", "'nonce-{$nonce}'"],
-    'font-src' => ["'self'"],
-    'img-src' => ["'self'", "data:"],
+    // ERWEITERT: Externe Skript-Quellen für den Admin-Bereich hinzugefügt.
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
+    // ERWEITERT: Externe Stil-Quellen hinzugefügt.
+    'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdn.twokinds.keenspot.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+    // ERWEITERT: Externe Schrift-Quellen hinzugefügt.
+    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+    // ERWEITERT: Externe Bild-Quellen hinzugefügt.
+    'img-src' => ["'self'", "data:", "https://cdn.twokinds.keenspot.com", "https://placehold.co"],
+    // ERWEITERT: Externe Verbindungs-Quellen hinzugefügt, um .map-Fehler zu vermeiden.
+    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com"],
     'object-src' => ["'none'"],
     'frame-ancestors' => ["'self'"],
     'base-uri' => ["'self'"],
     'form-action' => ["'self'"],
 ];
+
 $cspHeader = '';
 foreach ($csp as $directive => $sources) {
     $cspHeader .= $directive . ' ' . implode(' ', $sources) . '; ';
@@ -124,8 +131,9 @@ function saveLoginAttempts(array $attempts): bool
 // --- Logik ---
 $message = '';
 
+// KORREKTUR: Inline-Stil durch Klasse ersetzt.
 if (isset($_GET['reason']) && $_GET['reason'] === 'session_expired') {
-    $message = '<p style="color: orange;">Ihre Sitzung ist aufgrund von Inaktivität abgelaufen. Bitte melden Sie sich erneut an.</p>';
+    $message = '<p class="message-orange">Ihre Sitzung ist aufgrund von Inaktivität abgelaufen. Bitte melden Sie sich erneut an.</p>';
 }
 
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
@@ -146,16 +154,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $users = getUsers();
             if (empty($users)) {
                 if (empty($username) || empty($password)) {
-                    $message = '<p style="color: red;">Benutzername und Passwort dürfen nicht leer sein.</p>';
+                    // KORREKTUR: Inline-Stil durch Klasse ersetzt.
+                    $message = '<p class="message-red">Benutzername und Passwort dürfen nicht leer sein.</p>';
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $users[$username] = ['passwordHash' => $hashedPassword];
                     if (saveUsers($users)) {
-                        $message = '<p style="color: green;">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p>';
+                        // KORREKTUR: Inline-Stil durch Klasse ersetzt.
+                        $message = '<p class="message-green">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p>';
                         header('Location: index.php');
                         exit;
                     } else {
-                        $message = '<p style="color: red;">Fehler beim Speichern des Benutzers.</p>';
+                        // KORREKTUR: Inline-Stil durch Klasse ersetzt.
+                        $message = '<p class="message-red">Fehler beim Speichern des Benutzers.</p>';
                     }
                 }
             }
@@ -169,7 +180,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $timeSinceLastAttempt = time() - $attempts[$userIp]['last_attempt'];
                 if ($timeSinceLastAttempt < LOGIN_BLOCK_SECONDS) {
                     $remainingTime = LOGIN_BLOCK_SECONDS - $timeSinceLastAttempt;
-                    $message = '<p style="color: red;">Zu viele fehlgeschlagene Login-Versuche. Bitte warten Sie noch ' . ceil($remainingTime / 60) . ' Minute(n).</p>';
+                    // KORREKTUR: Inline-Stil durch Klasse ersetzt.
+                    $message = '<p class="message-red">Zu viele fehlgeschlagene Login-Versuche. Bitte warten Sie noch ' . ceil($remainingTime / 60) . ' Minute(n).</p>';
                     break;
                 } else {
                     unset($attempts[$userIp]);
@@ -199,7 +211,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $attempts[$userIp]['last_attempt'] = time();
                 saveLoginAttempts($attempts);
                 $remainingAttempts = MAX_LOGIN_ATTEMPTS - $attempts[$userIp]['attempts'];
-                $message = '<p style="color: red;">Ungültiger Benutzername oder Passwort. Verbleibende Versuche: ' . $remainingAttempts . '</p>';
+                // KORREKTUR: Inline-Stil durch Klasse ersetzt.
+                $message = '<p class="message-red">Ungültiger Benutzername oder Passwort. Verbleibende Versuche: ' . $remainingAttempts . '</p>';
             }
             break;
     }
@@ -286,6 +299,26 @@ if (file_exists($headerPath)) {
         .message p {
             margin: 0;
         }
+
+        /* Klassen für Nachrichtenfarben */
+        .message-red {
+            color: red;
+        }
+
+        .message-green {
+            color: green;
+        }
+
+        .message-orange {
+            color: orange;
+        }
+
+        /* KORREKTUR: Klasse für Formular-Layout */
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
     </style>
     <div class="admin-form-container">
         <?php if (!empty($message)): ?>
@@ -298,7 +331,7 @@ if (file_exists($headerPath)) {
             ?>
             <h2>Ersten Admin-Benutzer erstellen</h2>
             <p>Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
-            <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            <form action="index.php" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <div>
                     <label for="create_username">Benutzername:</label>
@@ -312,7 +345,7 @@ if (file_exists($headerPath)) {
             </form>
         <?php else: ?>
             <h2>Login</h2>
-            <form action="index.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            <form action="index.php" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <div>
                     <label for="login_username">Benutzername:</label>
