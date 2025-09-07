@@ -25,11 +25,9 @@ $nonce = $nonce ?? '';
     <a href="./initial_setup.php">Webseiten-Ersteinrichtung</a>
     </br>
     <a href="./upload_image.php">Bild-Upload</a>
-    </br>
     <a href="./generator_thumbnail.php">Thumbnail-Generator</a>
     <a href="./generator_image_socialmedia.php">Social Media Vorschau-Generator</a>
     <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
-    </br>
     <a href="./build_image_cache_and_busting.php">Bild-Cache-Generator</a>
     <br>
     <a href="./data_editor_comic.php">Comic Daten Editor</a>
