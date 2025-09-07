@@ -5,6 +5,7 @@
  * Diese Version kombiniert die Generierung für JPG, PNG und WebP in einer einzigen Datei.
  * Der Benutzer kann das gewünschte Ausgabeformat über ein Frontend-Steuerelement auswählen.
  * Die Generierung erfolgt schrittweise über AJAX, um Speicherprobleme zu vermeiden.
+ * NEU: Integrierte eine automatische Fallback-Logik für WebP.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -24,7 +25,7 @@ $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/';
 $pageTitle = 'Adminbereich - Thumbnail Generator';
 $pageHeader = 'Thumbnail Generator';
 $siteDescription = 'Seite zum Generieren der Vorschaubilder.';
-$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+$robotsContent = 'noindex, nofollow';
 if ($debugMode) {
     error_log("DEBUG: Seiten-Titel: " . $pageTitle);
     error_log("DEBUG: Robots-Content: " . $robotsContent);
@@ -106,7 +107,7 @@ function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds, 
  * @param bool $debugMode Debug-Modus an/aus.
  * @return array Ergebnis-Array mit 'created' und 'errors'.
  */
-function generateThumbnail(string $comicId, string $outputFormat, string $lowresDir, string $hiresDir, string $thumbnailDir, bool $debugMode): array
+function generateThumbnail(string $comicId, string $outputFormat, string $lowresDir, string $hiresDir, string $thumbnailDir, bool $debugMode, array $options = []): array
 {
     $errors = [];
     $createdPath = '';
@@ -225,9 +226,8 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             case 'webp':
                 // Prüfen, ob WebP-Unterstützung vorhanden ist
                 if (function_exists('imagewebp')) {
-                    // KORREKTUR: Verwende eine Standard-Qualität statt der speziellen '101' für verlustfrei.
-                    // Dies ist kompatibler mit verschiedenen Server-GD-Versionen.
-                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, 90);
+                    $quality = $options['webp_quality'] ?? 90;
+                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, $quality);
                 } else {
                     $errors[] = "WebP-Unterstützung ist auf diesem Server nicht aktiviert.";
                 }
@@ -235,20 +235,20 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
         }
 
         if ($saveSuccess) {
-            $createdPath = $thumbnailPath;
+            // Check if the file is not empty
+            if (filesize($thumbnailPath) > 0) {
+                $createdPath = $thumbnailPath;
+            } else {
+                $saveSuccess = false; // Treat as failure
+                unlink($thumbnailPath); // Clean up empty file
+                $errors[] = "Fehler beim Speichern des WebP-Bildes (leere Datei erstellt). Dies deutet oft auf ein Problem mit der GD-Bibliothek-Konfiguration auf dem Server hin.";
+            }
         } else {
             if (empty($errors)) {
-                // KORREKTUR: Verbesserte Fehlermeldung und Aufräumen von 0-Byte-Dateien.
-                if (file_exists($thumbnailPath) && filesize($thumbnailPath) === 0) {
-                    unlink($thumbnailPath); // Lösche die leere Datei
-                    $errors[] = "Fehler beim Speichern des WebP-Bildes (leere Datei erstellt). Dies deutet oft auf ein Problem mit der GD-Bibliothek-Konfiguration auf dem Server hin.";
-                } else {
-                    $errors[] = "Fehler beim Speichern des Thumbnails nach '$thumbnailPath'.";
-                }
+                $errors[] = "Fehler beim Speichern des Thumbnails nach '$thumbnailPath'.";
             }
         }
 
-        // Speicher freigeben
         imagedestroy($sourceImage);
         imagedestroy($tempImage);
 
@@ -292,13 +292,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         exit;
     }
 
-    // Thumbnail mit dem ausgewählten Format generieren
-    $result = generateThumbnail($comicId, $outputFormat, $lowresDir, $hiresDir, $thumbnailDir, $debugMode);
+    $options = [];
+    if ($outputFormat === 'webp') {
+        $options['webp_quality'] = $_POST['webp_quality'] ?? 90;
+    }
+
+    $result = generateThumbnail($comicId, $outputFormat, $lowresDir, $hiresDir, $thumbnailDir, $debugMode, $options);
 
     if (empty($result['errors'])) {
         $response['success'] = true;
         $response['message'] = "Thumbnail für $comicId als .$outputFormat erstellt.";
-        // Die URL mit der korrekten, dynamischen Dateiendung zurückgeben
         $response['imageUrl'] = '../assets/comic_thumbnails/' . $comicId . '.' . $outputFormat . '?' . time();
         $response['comicId'] = $comicId;
     } else {
@@ -352,9 +355,10 @@ if (file_exists($headerPath)) {
             <button type="button" id="toggle-pause-resume-button"></button>
         </div>
 
+        <div id="status-container"></div>
+
         <div id="generation-results-section">
             <h2 class="results-header">Ergebnisse der Generierung</h2>
-            <p id="overall-status-message" class="status-message"></p>
             <div id="created-images-container" class="image-grid"></div>
             <p class="status-message status-red" id="error-header-message">Fehler:</p>
             <ul id="generation-errors-list"></ul>
@@ -675,53 +679,147 @@ if (file_exists($headerPath)) {
         const missingThumbnailsGrid = document.getElementById('missing-thumbnails-grid');
         const createdImagesContainer = document.getElementById('created-images-container');
         const generationResultsSection = document.getElementById('generation-results-section');
-        const overallStatusMessage = document.getElementById('overall-status-message');
         const errorHeaderMessage = document.getElementById('error-header-message');
         const errorsList = document.getElementById('generation-errors-list');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
+        const statusContainer = document.getElementById('status-container');
+
 
         const initialMissingIds = <?php echo json_encode($missingThumbnails); ?>;
-        let remainingIds = [...initialMissingIds];
-        let createdCount = 0;
-        let errorCount = 0;
         let isPaused = false;
         let isGenerationActive = false;
 
-        // Sticky-Buttons Logik
-        const mainContent = document.getElementById('content');
-        const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
-        if (!fixedButtonsContainer) return;
-        let initialButtonTopOffset, stickyThreshold;
-        const stickyOffset = 18, rightOffset = 24;
-
-        function calculateInitialPositions() {
-            fixedButtonsContainer.style.position = 'static';
-            initialButtonTopOffset = fixedButtonsContainer.getBoundingClientRect().top + window.scrollY;
-            stickyThreshold = initialButtonTopOffset - stickyOffset;
+        function addStatusMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `status-message status-${type}`;
+            messageDiv.innerHTML = `<p>${message}</p>`;
+            statusContainer.innerHTML = ''; // Clear previous messages
+            statusContainer.appendChild(messageDiv);
         }
 
-        function handleScroll() {
-            if (window.scrollY >= stickyThreshold) {
-                if (fixedButtonsContainer.style.position !== 'fixed') {
-                    fixedButtonsContainer.style.position = 'fixed';
-                    fixedButtonsContainer.style.top = `${stickyOffset}px`;
-                    if (mainContent) {
-                        const mainRect = mainContent.getBoundingClientRect();
-                        fixedButtonsContainer.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
-                    } else {
-                        fixedButtonsContainer.style.right = `${rightOffset}px`;
-                    }
+        async function generateSingleImage(comicId, format, webpQuality = null) {
+            const formData = new URLSearchParams({
+                action: 'generate_single_thumbnail',
+                comic_id: comicId,
+                output_format: format,
+                csrf_token: csrfToken
+            });
+            if (webpQuality !== null && format === 'webp') {
+                formData.append('webp_quality', webpQuality);
+            }
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
                 }
-            } else {
-                if (fixedButtonsContainer.style.position === 'fixed') {
-                    fixedButtonsContainer.style.position = 'static';
-                }
+                return await response.json();
+            } catch (error) {
+                return { success: false, message: `Netzwerkfehler oder ungültige Server-Antwort: ${error.message}` };
             }
         }
-        calculateInitialPositions();
-        handleScroll();
-        window.addEventListener('scroll', handleScroll);
-        window.addEventListener('resize', () => { calculateInitialPositions(); handleScroll(); });
+
+        async function runGenerationQueue(format, webpQuality = null) {
+            isGenerationActive = true;
+            updateButtonState();
+            loadingSpinner.style.display = 'block';
+            generationResultsSection.style.display = 'block';
+            createdImagesContainer.innerHTML = '';
+            errorsList.innerHTML = '';
+            errorHeaderMessage.style.display = 'none';
+
+            let createdCount = 0;
+            let errorCount = 0;
+
+            for (let i = 0; i < initialMissingIds.length; i++) {
+                if (isPaused) {
+                    await new Promise(resolve => {
+                        const interval = setInterval(() => {
+                            if (!isPaused) {
+                                clearInterval(interval);
+                                resolve();
+                            }
+                        }, 200);
+                    });
+                }
+
+                const currentId = initialMissingIds[i];
+                progressText.textContent = `Generiere ${i + 1} von ${initialMissingIds.length} (${currentId}) als .${format}...`;
+
+                const data = await generateSingleImage(currentId, format, webpQuality);
+
+                if (data.success) {
+                    createdCount++;
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'image-item';
+                    imageDiv.innerHTML = `<img src="${data.imageUrl}" alt="Thumbnail ${data.comicId}"><span>${data.comicId}</span>`;
+                    createdImagesContainer.appendChild(imageDiv);
+                    if (missingThumbnailsGrid) {
+                        const missingItemSpan = missingThumbnailsGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
+                        if (missingItemSpan) missingItemSpan.remove();
+                    }
+                } else {
+                    errorCount++;
+                    const errorItem = document.createElement('li');
+                    errorItem.textContent = data.message;
+                    errorsList.appendChild(errorItem);
+                    errorHeaderMessage.style.display = 'block';
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            loadingSpinner.style.display = 'none';
+            isGenerationActive = false;
+            updateButtonState();
+
+            if (errorCount > 0) {
+                addStatusMessage(`Abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`, 'orange');
+            } else {
+                addStatusMessage(`Alle ${createdCount} Thumbnails erfolgreich generiert!`, 'green');
+            }
+
+            if (createdCount > 0) {
+                cacheUpdateNotification.style.display = 'block';
+            }
+        }
+
+        async function determineWebPSupportAndRunQueue() {
+            const testId = initialMissingIds[0];
+            if (!testId) return;
+
+            isGenerationActive = true;
+            updateButtonState();
+            loadingSpinner.style.display = 'block';
+
+            // 1. Try lossless
+            progressText.textContent = 'Prüfe verlustfreie WebP-Unterstützung...';
+            let result = await generateSingleImage(testId, 'webp', 101);
+            if (result.success) {
+                addStatusMessage("Server unterstützt verlustfreies WebP (Qualität 101). Fahre fort.", "green");
+                runGenerationQueue('webp', 101);
+                return;
+            }
+
+            // 2. Try lossy
+            progressText.textContent = 'Verlustfrei fehlgeschlagen. Prüfe verlustbehaftete WebP-Unterstützung...';
+            addStatusMessage(`Verlustfrei fehlgeschlagen: ${result.message}. Versuche verlustbehaftetes WebP...`, "orange");
+            result = await generateSingleImage(testId, 'webp', 90);
+            if (result.success) {
+                addStatusMessage("Server unterstützt verlustbehaftetes WebP (Qualität 90). Fahre fort.", "green");
+                runGenerationQueue('webp', 90);
+                return;
+            }
+
+            // 3. Fallback to JPG
+            progressText.textContent = 'WebP-Generierung fehlgeschlagen. Wechsle zu JPG.';
+            addStatusMessage(`Verlustbehaftetes WebP ebenfalls fehlgeschlagen: ${result.message}. Wechsle automatisch zu JPG als Fallback.`, "red");
+            runGenerationQueue('jpg', 90);
+        }
 
 
         function updateButtonState() {
@@ -734,10 +832,10 @@ if (file_exists($headerPath)) {
                 if (isPaused) {
                     togglePauseResumeButton.textContent = 'Fortsetzen';
                     togglePauseResumeButton.className = 'status-green-button';
-                    progressText.textContent = `Pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
+                    progressText.textContent = `Pausiert.`;
                 } else {
                     togglePauseResumeButton.textContent = 'Pause';
-                    togglePauseResumeButton.className = 'status-orange-button';
+                    togglePauseResumeButton.className = 'status-red-button';
                 }
             } else {
                 generateButton.style.display = 'inline-block';
@@ -747,110 +845,22 @@ if (file_exists($headerPath)) {
         }
 
         generateButton.addEventListener('click', function () {
-            if (remainingIds.length === 0) return;
-
+            const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
+            statusContainer.innerHTML = '';
             cacheUpdateNotification.style.display = 'none';
 
-            createdImagesContainer.innerHTML = '';
-            errorsList.innerHTML = '';
-            errorHeaderMessage.style.display = 'none';
-            overallStatusMessage.style.display = 'none';
-            generationResultsSection.style.display = 'block';
-
-            createdCount = 0;
-            errorCount = 0;
-            isPaused = false;
-            isGenerationActive = true;
-            updateButtonState();
-
-            loadingSpinner.style.display = 'block';
-            processNextImage();
+            if (selectedFormat === 'webp') {
+                determineWebPSupportAndRunQueue();
+            } else {
+                runGenerationQueue(selectedFormat, selectedFormat === 'jpg' ? 90 : null);
+            }
         });
 
         togglePauseResumeButton.addEventListener('click', function () {
             isPaused = !isPaused;
             updateButtonState();
-            if (!isPaused) {
-                processNextImage();
-            }
         });
 
-        async function processNextImage() {
-            if (isPaused) return;
-
-            if (remainingIds.length === 0) {
-                loadingSpinner.style.display = 'none';
-                isGenerationActive = false;
-                updateButtonState();
-
-                if (errorCount > 0) {
-                    overallStatusMessage.textContent = `Abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
-                    overallStatusMessage.className = 'status-message status-orange';
-                } else {
-                    overallStatusMessage.textContent = `Alle ${createdCount} Thumbnails erfolgreich generiert!`;
-                    overallStatusMessage.className = 'status-message status-green';
-                }
-                overallStatusMessage.style.display = 'block';
-                if (createdCount > 0) {
-                    cacheUpdateNotification.style.display = 'block';
-                }
-                return;
-            }
-
-            const currentId = remainingIds.shift();
-            progressText.textContent = `Generiere ${createdCount + errorCount + 1} von ${initialMissingIds.length} (${currentId})...`;
-
-            const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
-
-            try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        action: 'generate_single_thumbnail',
-                        comic_id: currentId,
-                        output_format: selectedFormat,
-                        csrf_token: csrfToken
-                    })
-                });
-
-                let data;
-                try {
-                    data = await response.json();
-                } catch (jsonError) {
-                    throw new Error(`Ungültige JSON-Antwort vom Server.`);
-                }
-
-                if (data.success) {
-                    createdCount++;
-                    const imageDiv = document.createElement('div');
-                    imageDiv.className = 'image-item';
-                    imageDiv.innerHTML = `<img src="${data.imageUrl}" alt="Thumbnail ${data.comicId}"><span>${data.comicId}</span>`;
-                    createdImagesContainer.appendChild(imageDiv);
-
-                    if (missingThumbnailsGrid) {
-                        const missingItemSpan = missingThumbnailsGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
-                        if (missingItemSpan) {
-                            missingItemSpan.remove();
-                        }
-                    }
-                } else {
-                    errorCount++;
-                    const errorItem = document.createElement('li');
-                    errorItem.textContent = data.message;
-                    errorsList.appendChild(errorItem);
-                    errorHeaderMessage.style.display = 'block';
-                }
-            } catch (error) {
-                errorCount++;
-                const errorItem = document.createElement('li');
-                errorItem.textContent = `Netzwerkfehler bei ${currentId}: ${error.message}`;
-                errorsList.appendChild(errorItem);
-                errorHeaderMessage.style.display = 'block';
-            }
-
-            setTimeout(processNextImage, 1000);
-        }
         updateButtonState();
     });
 </script>
