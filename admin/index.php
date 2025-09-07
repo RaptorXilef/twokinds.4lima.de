@@ -25,8 +25,8 @@ $csp = [
     'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
     // ERWEITERT: Externe Bild-Quellen hinzugefügt.
     'img-src' => ["'self'", "data:", "https://cdn.twokinds.keenspot.com", "https://placehold.co"],
-    // ERWEITERT: Externe Verbindungs-Quellen hinzugefügt, um .map-Fehler zu vermeiden.
-    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com"],
+    // ERWEITERT: Google Analytics Domain für das Senden von Tracking-Daten hinzugefügt.
+    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://*.google-analytics.com"],
     'object-src' => ["'none'"],
     'frame-ancestors' => ["'self'"],
     'base-uri' => ["'self'"],
