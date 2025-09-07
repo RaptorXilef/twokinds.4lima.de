@@ -1,11 +1,9 @@
 <?php
 /**
  * Dies ist die Administrationsseite für den Thumbnail-Generator.
- * Sie überprüft, welche Thumbnails fehlen und bietet die Möglichkeit, diese zu erstellen.
- * Diese Version kombiniert die Generierung für JPG, PNG und WebP in einer einzigen Datei.
- * Der Benutzer kann das gewünschte Ausgabeformat über ein Frontend-Steuerelement auswählen.
- * Die Generierung erfolgt schrittweise über AJAX, um Speicherprobleme zu vermeiden.
- * NEU: Integrierte eine automatische Fallback-Logik für WebP.
+ * V2.4: UI-Logik perfektioniert. Blendet Einstellungs-Container sofort, 
+ * den Status-Container erst nach Abschluss der Generierung aus, 
+ * um eine finale Berichtsansicht zu schaffen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -20,15 +18,48 @@ $footerPath = __DIR__ . '/../src/layout/footer.php';
 $lowresDir = __DIR__ . '/../assets/comic_lowres/';
 $hiresDir = __DIR__ . '/../assets/comic_hires/';
 $thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/';
+$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 
-// Setze Parameter für den Header.
-$pageTitle = 'Adminbereich - Thumbnail Generator';
-$pageHeader = 'Thumbnail Generator';
-$siteDescription = 'Seite zum Generieren der Vorschaubilder.';
-$robotsContent = 'noindex, nofollow';
-if ($debugMode) {
-    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
-    error_log("DEBUG: Robots-Content: " . $robotsContent);
+// --- Funktionen zur Einstellungsverwaltung ---
+function loadGeneratorSettings(string $filePath, bool $debugMode): array
+{
+    $defaults = [
+        'generator_thumbnail' => [
+            'last_used_format' => 'webp',
+            'last_used_quality' => 90,
+            'last_used_lossless' => false,
+            'last_run_timestamp' => null
+        ]
+    ];
+    if (!file_exists($filePath)) {
+        if ($debugMode)
+            error_log("DEBUG: Einstellungsdatei nicht gefunden, erstelle Standard: $filePath");
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        return $defaults;
+    }
+    $content = file_get_contents($filePath);
+    $settings = json_decode($content, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren der Einstellungs-JSON. Verwende Standardwerte.");
+        return $defaults;
+    }
+    if (!isset($settings['generator_thumbnail'])) {
+        $settings['generator_thumbnail'] = $defaults['generator_thumbnail'];
+    }
+    return $settings;
+}
+
+function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+{
+    if ($debugMode)
+        error_log("DEBUG: Speichere Einstellungen in: $filePath");
+    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
+    return file_put_contents($filePath, $jsonContent) !== false;
 }
 
 // GD-Bibliothek-Check
@@ -39,14 +70,11 @@ if (!extension_loaded('gd')) {
     $gdError = null;
 }
 
-/**
- * Scannt die Comic-Verzeichnisse nach vorhandenen Comic-Bildern.
- */
+// Funktionen getExistingComicIds, getExistingThumbnailIds, findMissingThumbnails (unverändert)
 function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMode): array
 {
     $comicIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
     foreach ([$lowresDir, $hiresDir] as $dir) {
         if (is_dir($dir)) {
             $files = scandir($dir);
@@ -62,21 +90,16 @@ function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMod
         error_log("DEBUG: " . count($comicIds) . " eindeutige Comic-IDs gefunden.");
     return array_keys($comicIds);
 }
-
-/**
- * Scannt das Thumbnail-Verzeichnis nach vorhandenen Thumbnails.
- */
 function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
 {
     $thumbnailIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
     if (is_dir($thumbnailDir)) {
         $files = scandir($thumbnailDir);
         foreach ($files as $file) {
             $fileInfo = pathinfo($file);
             if (isset($fileInfo['extension']) && in_array(strtolower($fileInfo['extension']), $imageExtensions)) {
-                $thumbnailIds[$fileInfo['filename']] = true; // Verwende Keys für Eindeutigkeit
+                $thumbnailIds[$fileInfo['filename']] = true;
             }
         }
         if ($debugMode)
@@ -84,11 +107,6 @@ function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
     }
     return array_keys($thumbnailIds);
 }
-
-
-/**
- * Vergleicht Comic-IDs mit Thumbnail-IDs, um fehlende zu finden.
- */
 function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds, bool $debugMode): array
 {
     $missing = array_values(array_diff($allComicIds, $existingThumbnailIds));
@@ -111,16 +129,13 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
 {
     $errors = [];
     $createdPath = '';
-    if ($debugMode)
-        error_log("DEBUG: Starte Generierung für ID '$comicId' im Format '$outputFormat'.");
-
-    // Zielverzeichnis prüfen und erstellen
     if (!is_dir($thumbnailDir)) {
         if (!mkdir($thumbnailDir, 0755, true)) {
             $errors[] = "Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden.";
             return ['created' => '', 'errors' => $errors];
         }
-    } elseif (!is_writable($thumbnailDir)) {
+    }
+    if (!is_writable($thumbnailDir)) {
         $errors[] = "Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar.";
         return ['created' => '', 'errors' => $errors];
     }
@@ -142,12 +157,10 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             break;
         }
     }
-
     if (empty($sourceImagePath)) {
         $errors[] = "Quellbild für Comic-ID '$comicId' nicht gefunden.";
         return ['created' => '', 'errors' => $errors];
     }
-
     try {
         // Quellbild laden
         $imageInfo = @getimagesize($sourceImagePath);
@@ -156,7 +169,6 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             return ['created' => '', 'errors' => $errors];
         }
         list($width, $height, $type) = $imageInfo;
-
         $sourceImage = null;
         switch ($type) {
             case IMAGETYPE_JPEG:
@@ -174,7 +186,6 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             default:
                 $errors[] = "Nicht unterstütztes Bildformat.";
         }
-
         if (!$sourceImage) {
             $errors[] = "Fehler beim Laden des Bildes von '$sourceImagePath'.";
             return ['created' => '', 'errors' => $errors];
@@ -218,40 +229,32 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
         $saveSuccess = false;
         switch ($outputFormat) {
             case 'jpg':
-                $saveSuccess = imagejpeg($tempImage, $thumbnailPath, 90);
+                $saveSuccess = imagejpeg($tempImage, $thumbnailPath, $options['quality'] ?? 90);
                 break;
             case 'png':
-                $saveSuccess = imagepng($tempImage, $thumbnailPath, 9);
+                $saveSuccess = imagepng($tempImage, $thumbnailPath, $options['quality'] ?? 9);
                 break;
             case 'webp':
-                // Prüfen, ob WebP-Unterstützung vorhanden ist
                 if (function_exists('imagewebp')) {
-                    $quality = $options['webp_quality'] ?? 90;
+                    $quality = $options['quality'] ?? 90;
                     $saveSuccess = imagewebp($tempImage, $thumbnailPath, $quality);
                 } else {
                     $errors[] = "WebP-Unterstützung ist auf diesem Server nicht aktiviert.";
                 }
                 break;
         }
-
-        if ($saveSuccess) {
-            // Check if the file is not empty
-            if (filesize($thumbnailPath) > 0) {
-                $createdPath = $thumbnailPath;
-            } else {
-                $saveSuccess = false; // Treat as failure
-                unlink($thumbnailPath); // Clean up empty file
-                $errors[] = "Fehler beim Speichern des WebP-Bildes (leere Datei erstellt). Dies deutet oft auf ein Problem mit der GD-Bibliothek-Konfiguration auf dem Server hin.";
-            }
+        if ($saveSuccess && filesize($thumbnailPath) > 0) {
+            $createdPath = $thumbnailPath;
         } else {
+            if (file_exists($thumbnailPath)) {
+                unlink($thumbnailPath);
+            }
             if (empty($errors)) {
-                $errors[] = "Fehler beim Speichern des Thumbnails nach '$thumbnailPath'.";
+                $errors[] = "Fehler beim Speichern des Bildes (evtl. 0-Byte-Datei). Server-Konfiguration prüfen.";
             }
         }
-
         imagedestroy($sourceImage);
         imagedestroy($tempImage);
-
     } catch (Throwable $e) {
         $errors[] = "Ausnahme bei Comic-ID '$comicId': " . $e->getMessage();
     } finally {
@@ -261,71 +264,72 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
     return ['created' => $createdPath, 'errors' => $errors];
 }
 
-
-// --- AJAX-Anfrage-Handler ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_thumbnail') {
-    // SICHERHEIT: CSRF-Token validieren
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     verify_csrf_token();
     ob_end_clean();
     ini_set('display_errors', 0);
     error_reporting(0);
     header('Content-Type: application/json');
-
+    $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
-
-    if (!extension_loaded('gd')) {
-        $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen.";
-        echo json_encode($response);
-        exit;
+    switch ($action) {
+        case 'generate_single_thumbnail':
+            if (!extension_loaded('gd')) {
+                $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen.";
+                echo json_encode($response);
+                exit;
+            }
+            $outputFormat = $_POST['output_format'] ?? 'webp';
+            if (!in_array($outputFormat, ['jpg', 'png', 'webp'])) {
+                $outputFormat = 'webp';
+            }
+            $comicId = $_POST['comic_id'] ?? '';
+            if (empty($comicId)) {
+                $response['message'] = 'Keine Comic-ID angegeben.';
+                echo json_encode($response);
+                exit;
+            }
+            $options = ['quality' => $_POST['quality'] ?? null];
+            $result = generateThumbnail($comicId, $outputFormat, $lowresDir, $hiresDir, $thumbnailDir, $debugMode, $options);
+            if (empty($result['errors'])) {
+                $response['success'] = true;
+                $response['message'] = "Thumbnail für $comicId als .$outputFormat erstellt.";
+                $response['imageUrl'] = '../assets/comic_thumbnails/' . $comicId . '.' . $outputFormat . '?' . time();
+                $response['comicId'] = $comicId;
+            } else {
+                $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
+            }
+            break;
+        case 'save_settings':
+            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $newThumbnailSettings = ['last_used_format' => $_POST['format'] ?? 'webp', 'last_used_quality' => (int) ($_POST['quality'] ?? 90), 'last_used_lossless' => ($_POST['lossless'] === 'true'), 'last_run_timestamp' => time()];
+            $currentSettings['generator_thumbnail'] = $newThumbnailSettings;
+            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+                $response['success'] = true;
+                $response['message'] = 'Einstellungen gespeichert.';
+            } else {
+                $response['message'] = 'Fehler beim Speichern der Einstellungen.';
+            }
+            break;
     }
-
-    // Das vom Frontend ausgewählte Format auslesen, Standard ist 'webp'
-    $outputFormat = $_POST['output_format'] ?? 'webp';
-    if (!in_array($outputFormat, ['jpg', 'png', 'webp'])) {
-        $outputFormat = 'webp'; // Sicherheits-Fallback
-    }
-
-    $comicId = $_POST['comic_id'] ?? '';
-    if (empty($comicId)) {
-        $response['message'] = 'Keine Comic-ID angegeben.';
-        echo json_encode($response);
-        exit;
-    }
-
-    $options = [];
-    if ($outputFormat === 'webp') {
-        $options['webp_quality'] = $_POST['webp_quality'] ?? 90;
-    }
-
-    $result = generateThumbnail($comicId, $outputFormat, $lowresDir, $hiresDir, $thumbnailDir, $debugMode, $options);
-
-    if (empty($result['errors'])) {
-        $response['success'] = true;
-        $response['message'] = "Thumbnail für $comicId als .$outputFormat erstellt.";
-        $response['imageUrl'] = '../assets/comic_thumbnails/' . $comicId . '.' . $outputFormat . '?' . time();
-        $response['comicId'] = $comicId;
-    } else {
-        $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
-    }
-
     echo json_encode($response);
     exit;
 }
-// --- Ende AJAX-Anfrage-Handler ---
-
-
 ob_end_flush();
 
-// Variablen für die Anzeige initialisieren
+$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$thumbnailSettings = $settings['generator_thumbnail'];
 $allComicIds = getExistingComicIds($lowresDir, $hiresDir, $debugMode);
 $existingThumbnailIds = getExistingThumbnailIds($thumbnailDir, $debugMode);
 $missingThumbnails = findMissingThumbnails($allComicIds, $existingThumbnailIds, $debugMode);
+$pageTitle = 'Adminbereich - Thumbnail Generator';
+$pageHeader = 'Thumbnail Generator';
+$siteDescription = 'Seite zum Generieren der Vorschaubilder.';
 
-// Header einbinden
 if (file_exists($headerPath)) {
     include $headerPath;
 } else {
-    echo "<!DOCTYPE html><html><head><title>Fehler</title></head><body><h1>Header nicht gefunden!</h1>";
+    die("Header nicht gefunden!");
 }
 ?>
 
@@ -335,66 +339,77 @@ if (file_exists($headerPath)) {
             <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p>
         <?php endif; ?>
 
-        <h2>Einstellungen & Status</h2>
-
-        <!-- Format-Umschalter -->
-        <div class="format-switcher">
-            <label>Ausgabeformat:</label>
-            <div class="toggle-buttons">
-                <input type="radio" id="format-webp" name="format-toggle" value="webp" checked>
-                <label for="format-webp">WebP</label>
-                <input type="radio" id="format-png" name="format-toggle" value="png">
-                <label for="format-png">PNG</label>
-                <input type="radio" id="format-jpg" name="format-toggle" value="jpg">
-                <label for="format-jpg">JPG</label>
+        <div id="settings-and-actions-container">
+            <h2>Einstellungen & Status</h2>
+            <div class="settings-grid">
+                <div class="format-switcher">
+                    <label>Ausgabeformat:</label>
+                    <div class="toggle-buttons">
+                        <input type="radio" id="format-webp" name="format-toggle" value="webp">
+                        <label for="format-webp">WebP</label>
+                        <input type="radio" id="format-png" name="format-toggle" value="png">
+                        <label for="format-png">PNG</label>
+                        <input type="radio" id="format-jpg" name="format-toggle" value="jpg">
+                        <label for="format-jpg">JPG</label>
+                    </div>
+                </div>
+                <div id="quality-control-container">
+                    <label for="quality-slider">Qualität: <span id="quality-value">90</span></label>
+                    <input type="range" id="quality-slider" min="1" max="100" value="90" class="slider">
+                </div>
+                <div id="lossless-control-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="lossless-checkbox">
+                        Verlustfrei
+                    </label>
+                </div>
+            </div>
+            <div id="fixed-buttons-container">
+                <button type="button" id="generate-thumbnails-button" <?php echo $gdError || empty($missingThumbnails) ? 'disabled' : ''; ?>>Fehlende Thumbnails erstellen</button>
+                <button type="button" id="toggle-pause-resume-button" class="hidden-by-default"></button>
             </div>
         </div>
 
-        <div id="fixed-buttons-container">
-            <button type="button" id="generate-thumbnails-button" <?php echo $gdError || empty($missingThumbnails) ? 'disabled' : ''; ?>>Fehlende Thumbnails erstellen</button>
-            <button type="button" id="toggle-pause-resume-button"></button>
-        </div>
-
-        <div id="status-container"></div>
-
-        <div id="generation-results-section">
+        <div id="generation-results-section" class="hidden-by-default">
             <h2 class="results-header">Ergebnisse der Generierung</h2>
             <div id="created-images-container" class="image-grid"></div>
-            <p class="status-message status-red" id="error-header-message">Fehler:</p>
-            <ul id="generation-errors-list"></ul>
+            <h3 class="status-red hidden-by-default" id="error-header">Protokoll & Fehler:</h3>
+            <ul id="generation-log-list"></ul>
         </div>
 
-        <div id="cache-update-notification" class="notification-box">
+        <div id="cache-update-notification" class="notification-box hidden-by-default">
             <h4>Nächster Schritt: Cache aktualisieren</h4>
             <p>
                 Da neue Thumbnails hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
                 <br>
-                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder generiert sind, da der Prozess
-                kurzzeitig hohe Serverlast verursachen kann.
+                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder generiert sind.
             </p>
             <a href="build_image_cache_and_busting.php?autostart=thumbnails" class="button">Cache jetzt
                 aktualisieren</a>
         </div>
 
-        <div id="loading-spinner">
+        <div id="loading-spinner" class="hidden-by-default">
             <div class="spinner"></div>
             <p id="progress-text">Generiere Thumbnails...</p>
         </div>
 
-        <?php if (empty($allComicIds)): ?>
-            <p class="status-message status-orange">Keine Comic-Bilder in den Verzeichnissen gefunden.</p>
-        <?php elseif (empty($missingThumbnails)): ?>
-            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Thumbnails sind vorhanden.</p>
-        <?php else: ?>
-            <p class="status-message status-red">Es fehlen <?php echo count($missingThumbnails); ?> Thumbnails.</p>
-            <h3>Fehlende Thumbnails (IDs):</h3>
-            <div id="missing-thumbnails-grid" class="missing-items-grid">
-                <?php foreach ($missingThumbnails as $id): ?>
-                    <span class="missing-item"
-                        data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+        <div id="initial-status-container">
+            <?php if (empty($allComicIds)): ?>
+                <p class="status-message status-orange">Keine Comic-Bilder in den Verzeichnissen gefunden.</p>
+            <?php elseif (empty($missingThumbnails)): ?>
+                <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Thumbnails sind vorhanden.
+                </p>
+            <?php else: ?>
+                <p class="status-message status-red">Es fehlen <?php echo count($missingThumbnails); ?> Thumbnails.</p>
+                <h3>Fehlende Thumbnails (IDs):</h3>
+                <div id="missing-thumbnails-grid" class="missing-items-grid">
+                    <?php foreach ($missingThumbnails as $id): ?>
+                        <span class="missing-item"
+                            data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 </article>
 
@@ -529,23 +544,6 @@ if (file_exists($headerPath)) {
         font-size: 0.8em;
     }
 
-    #fixed-buttons-container {
-        z-index: 1000;
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        justify-content: flex-end;
-    }
-
-    @media (max-width: 768px) {
-        #fixed-buttons-container {
-            flex-direction: column;
-            gap: 5px;
-            align-items: flex-end;
-        }
-    }
-
     .missing-items-grid {
         display: flex;
         flex-wrap: wrap;
@@ -564,62 +562,6 @@ if (file_exists($headerPath)) {
         padding: 4px 8px;
         border-radius: 3px;
         font-size: 0.9em;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-        flex-shrink: 0;
-    }
-
-    .format-switcher {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-
-    .toggle-buttons {
-        display: flex;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        overflow: hidden;
-    }
-
-    .toggle-buttons input[type="radio"] {
-        display: none;
-    }
-
-    .toggle-buttons label {
-        padding: 8px 16px;
-        cursor: pointer;
-        background-color: #f0f0f0;
-        color: #333;
-        transition: background-color 0.2s ease;
-        border-left: 1px solid #ccc;
-    }
-
-    .toggle-buttons label:first-of-type {
-        border-left: none;
-    }
-
-    .toggle-buttons input[type="radio"]:checked+label {
-        background-color: #007bff;
-        color: white;
-    }
-
-    body.theme-night .toggle-buttons {
-        border-color: #045d81;
-    }
-
-    body.theme-night .toggle-buttons label {
-        background-color: #025373;
-        color: #f0f0f0;
-        border-left-color: #045d81;
-    }
-
-    body.theme-night .toggle-buttons input[type="radio"]:checked+label {
-        background-color: #09f;
     }
 
     .notification-box {
@@ -630,48 +572,127 @@ if (file_exists($headerPath)) {
         border-radius: 5px;
     }
 
-    .notification-box h4 {
-        margin-top: 0;
-    }
-
-    .notification-box .button {
-        margin-top: 10px;
-        display: inline-block;
-    }
-
     body.theme-night .notification-box {
         background-color: #0c5460;
         border-color: #17a2b8;
         color: #f8f9fa;
     }
 
-    /* KORREKTUREN FÜR CSP */
-    #toggle-pause-resume-button,
-    #generation-results-section,
-    #error-header-message,
-    #cache-update-notification,
-    #loading-spinner {
+    .settings-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 15px 20px;
+        align-items: center;
+        margin-bottom: 20px;
+        max-width: 500px;
+    }
+
+    .format-switcher {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    #quality-control-container,
+    #lossless-control-container {
+        display: contents;
+    }
+
+    .slider {
+        width: 100%;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
+    }
+
+    #generation-log-list {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 10px;
+        background-color: var(--missing-grid-bg-color);
+        border: 1px solid var(--missing-grid-border-color);
+        border-radius: 5px;
+        padding: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    #generation-log-list li {
+        padding: 5px;
+        border-bottom: 1px dashed var(--missing-grid-border-color);
+    }
+
+    #generation-log-list li:last-child {
+        border-bottom: none;
+    }
+
+    .log-info {
+        color: #0c5460;
+    }
+
+    .log-success {
+        color: #155724;
+    }
+
+    .log-warning {
+        color: #856404;
+    }
+
+    .log-error {
+        color: #721c24;
+    }
+
+    body.theme-night .log-info {
+        color: #69d3e8;
+    }
+
+    body.theme-night .log-success {
+        color: #28a745;
+    }
+
+    body.theme-night .log-warning {
+        color: #ffc107;
+    }
+
+    body.theme-night .log-error {
+        color: #dc3545;
+    }
+
+    #fixed-buttons-container {
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        #fixed-buttons-container {
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-end;
+        }
+    }
+
+    .hidden-by-default {
         display: none;
-    }
-
-    #generation-results-section,
-    #cache-update-notification,
-    #loading-spinner {
-        margin-top: 20px;
-    }
-
-    .results-header {
-        margin-top: 20px;
-    }
-
-    #loading-spinner {
-        text-align: center;
     }
 </style>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
+        const settings = <?php echo json_encode($thumbnailSettings); ?>;
+
+        // UI-Elemente
+        const settingsAndActionsContainer = document.getElementById('settings-and-actions-container');
+        const initialStatusContainer = document.getElementById('initial-status-container');
         const generateButton = document.getElementById('generate-thumbnails-button');
         const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -679,108 +700,135 @@ if (file_exists($headerPath)) {
         const missingThumbnailsGrid = document.getElementById('missing-thumbnails-grid');
         const createdImagesContainer = document.getElementById('created-images-container');
         const generationResultsSection = document.getElementById('generation-results-section');
-        const errorHeaderMessage = document.getElementById('error-header-message');
-        const errorsList = document.getElementById('generation-errors-list');
+        const errorHeader = document.getElementById('error-header');
+        const logList = document.getElementById('generation-log-list');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
-        const statusContainer = document.getElementById('status-container');
-
+        const qualitySlider = document.getElementById('quality-slider');
+        const qualityValueSpan = document.getElementById('quality-value');
+        const losslessCheckbox = document.getElementById('lossless-checkbox');
+        const qualityControlContainer = document.getElementById('quality-control-container');
+        const formatToggleInputs = document.querySelectorAll('input[name="format-toggle"]');
 
         const initialMissingIds = <?php echo json_encode($missingThumbnails); ?>;
         let isPaused = false;
         let isGenerationActive = false;
 
-        function addStatusMessage(message, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `status-message status-${type}`;
-            messageDiv.innerHTML = `<p>${message}</p>`;
-            statusContainer.innerHTML = ''; // Clear previous messages
-            statusContainer.appendChild(messageDiv);
+        function applySettings() {
+            document.querySelector(`input[name="format-toggle"][value="${settings.last_used_format}"]`).checked = true;
+            qualitySlider.value = settings.last_used_quality;
+            qualityValueSpan.textContent = settings.last_used_quality;
+            losslessCheckbox.checked = settings.last_used_lossless;
+            updateUiFromSettings();
         }
 
-        async function generateSingleImage(comicId, format, webpQuality = null) {
-            const formData = new URLSearchParams({
-                action: 'generate_single_thumbnail',
-                comic_id: comicId,
-                output_format: format,
-                csrf_token: csrfToken
-            });
-            if (webpQuality !== null && format === 'webp') {
-                formData.append('webp_quality', webpQuality);
-            }
+        function updateUiFromSettings() {
+            const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
+            const isLossless = losslessCheckbox.checked;
+            qualityControlContainer.style.display = (isLossless || selectedFormat === 'png') ? 'none' : 'contents';
+            losslessCheckbox.parentElement.parentElement.style.display = (selectedFormat === 'webp') ? 'contents' : 'none';
+        }
 
+        qualitySlider.addEventListener('input', () => { qualityValueSpan.textContent = qualitySlider.value; });
+        losslessCheckbox.addEventListener('change', updateUiFromSettings);
+        formatToggleInputs.forEach(input => input.addEventListener('change', updateUiFromSettings));
+        applySettings();
+
+        function addLogMessage(message, type) {
+            const li = document.createElement('li');
+            li.className = `log-${type}`;
+            li.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logList.appendChild(li);
+            errorHeader.style.display = 'block';
+            li.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        async function saveSettings(format, quality, lossless) {
+            const formData = new URLSearchParams({ action: 'save_settings', csrf_token: csrfToken, format: format, quality: quality, lossless: lossless.toString() });
+            await fetch(window.location.href, { method: 'POST', body: formData });
+        }
+
+        async function generateSingleImage(comicId, format, quality) {
+            const formData = new URLSearchParams({ action: 'generate_single_thumbnail', comic_id: comicId, output_format: format, csrf_token: csrfToken });
+            if (quality !== null) { formData.append('quality', quality); }
             try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formData
-                });
-                if (!response.ok) {
-                    throw new Error(`Server responded with status: ${response.status}`);
-                }
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`Server-Antwort: ${response.status}`);
                 return await response.json();
-            } catch (error) {
-                return { success: false, message: `Netzwerkfehler oder ungültige Server-Antwort: ${error.message}` };
-            }
+            } catch (error) { return { success: false, message: `Netzwerkfehler: ${error.message}` }; }
         }
 
-        async function runGenerationQueue(format, webpQuality = null) {
+        async function processGenerationQueue() {
+            const userFormat = document.querySelector('input[name="format-toggle"]:checked').value;
+            const userQuality = parseInt(qualitySlider.value, 10);
+            const userLossless = losslessCheckbox.checked;
+
             isGenerationActive = true;
             updateButtonState();
+
             loadingSpinner.style.display = 'block';
             generationResultsSection.style.display = 'block';
             createdImagesContainer.innerHTML = '';
-            errorsList.innerHTML = '';
-            errorHeaderMessage.style.display = 'none';
+            logList.innerHTML = '';
+            errorHeader.style.display = 'none';
+            cacheUpdateNotification.style.display = 'none';
 
             let createdCount = 0;
-            let errorCount = 0;
+            let lastSuccessfulSettings = {};
 
             for (let i = 0; i < initialMissingIds.length; i++) {
-                if (isPaused) {
-                    await new Promise(resolve => {
-                        const interval = setInterval(() => {
-                            if (!isPaused) {
-                                clearInterval(interval);
-                                resolve();
-                            }
-                        }, 200);
-                    });
-                }
-
+                if (isPaused) { await new Promise(resolve => { const interval = setInterval(() => { if (!isPaused) { clearInterval(interval); resolve(); } }, 200); }); }
                 const currentId = initialMissingIds[i];
-                progressText.textContent = `Generiere ${i + 1} von ${initialMissingIds.length} (${currentId}) als .${format}...`;
+                progressText.textContent = `Verarbeite ${i + 1} von ${initialMissingIds.length} (${currentId})...`;
 
-                const data = await generateSingleImage(currentId, format, webpQuality);
-
-                if (data.success) {
-                    createdCount++;
-                    const imageDiv = document.createElement('div');
-                    imageDiv.className = 'image-item';
-                    imageDiv.innerHTML = `<img src="${data.imageUrl}" alt="Thumbnail ${data.comicId}"><span>${data.comicId}</span>`;
-                    createdImagesContainer.appendChild(imageDiv);
-                    if (missingThumbnailsGrid) {
-                        const missingItemSpan = missingThumbnailsGrid.querySelector(`span[data-comic-id="${data.comicId}"]`);
-                        if (missingItemSpan) missingItemSpan.remove();
-                    }
+                const fallbackChain = [];
+                if (userFormat === 'webp') {
+                    if (userLossless) fallbackChain.push({ format: 'webp', quality: 101, lossless: true });
+                    fallbackChain.push({ format: 'webp', quality: userQuality, lossless: false });
+                    fallbackChain.push({ format: 'png', quality: 9, lossless: false });
+                    fallbackChain.push({ format: 'jpg', quality: 90, lossless: false });
+                } else if (userFormat === 'png') {
+                    fallbackChain.push({ format: 'png', quality: 9, lossless: false });
+                    fallbackChain.push({ format: 'jpg', quality: 90, lossless: false });
                 } else {
-                    errorCount++;
-                    const errorItem = document.createElement('li');
-                    errorItem.textContent = data.message;
-                    errorsList.appendChild(errorItem);
-                    errorHeaderMessage.style.display = 'block';
+                    fallbackChain.push({ format: 'jpg', quality: userQuality, lossless: false });
                 }
 
+                let success = false;
+                for (const attempt of fallbackChain) {
+                    addLogMessage(`Versuch für '${currentId}': Format=${attempt.format}, Qualität=${attempt.quality}`, 'info');
+                    const result = await generateSingleImage(currentId, attempt.format, attempt.quality);
+                    if (result.success) {
+                        createdCount++;
+                        const imageDiv = document.createElement('div');
+                        imageDiv.className = 'image-item';
+                        imageDiv.innerHTML = `<img src="${result.imageUrl}" alt="Thumbnail ${result.comicId}"><span>${result.comicId}</span>`;
+                        createdImagesContainer.appendChild(imageDiv);
+                        const missingItem = missingThumbnailsGrid.querySelector(`span[data-comic-id="${result.comicId}"]`);
+                        if (missingItem) missingItem.remove();
+                        lastSuccessfulSettings = attempt;
+                        addLogMessage(`Erfolgreich für '${currentId}' mit Format ${attempt.format}.`, 'success');
+                        success = true;
+                        break;
+                    } else {
+                        addLogMessage(`Fehlgeschlagen für '${currentId}' mit Format ${attempt.format}: ${result.message}`, 'warning');
+                    }
+                }
+                if (!success) { addLogMessage(`Alle Versuche für '${currentId}' fehlgeschlagen. Breche für dieses Bild ab.`, 'error'); }
                 await new Promise(resolve => setTimeout(resolve, 50));
             }
 
             loadingSpinner.style.display = 'none';
             isGenerationActive = false;
-            updateButtonState();
+            progressText.textContent = 'Prozess abgeschlossen.';
 
-            if (errorCount > 0) {
-                addStatusMessage(`Abgeschlossen mit Fehlern: ${createdCount} erfolgreich, ${errorCount} Fehler.`, 'orange');
-            } else {
-                addStatusMessage(`Alle ${createdCount} Thumbnails erfolgreich generiert!`, 'green');
+            // KORREKTUR: UI-Elemente erst am Ende ausblenden.
+            if (settingsAndActionsContainer) settingsAndActionsContainer.style.display = 'none';
+            if (initialStatusContainer) initialStatusContainer.style.display = 'none';
+
+
+            if (Object.keys(lastSuccessfulSettings).length > 0) {
+                await saveSettings(lastSuccessfulSettings.format, lastSuccessfulSettings.quality, lastSuccessfulSettings.lossless);
+                addLogMessage(`Erfolgreiche Einstellungen (Format: ${lastSuccessfulSettings.format}, Qualität: ${lastSuccessfulSettings.quality}) wurden gespeichert.`, 'info');
             }
 
             if (createdCount > 0) {
@@ -788,79 +836,30 @@ if (file_exists($headerPath)) {
             }
         }
 
-        async function determineWebPSupportAndRunQueue() {
-            const testId = initialMissingIds[0];
-            if (!testId) return;
-
-            isGenerationActive = true;
-            updateButtonState();
-            loadingSpinner.style.display = 'block';
-
-            // 1. Try lossless
-            progressText.textContent = 'Prüfe verlustfreie WebP-Unterstützung...';
-            let result = await generateSingleImage(testId, 'webp', 101);
-            if (result.success) {
-                addStatusMessage("Server unterstützt verlustfreies WebP (Qualität 101). Fahre fort.", "green");
-                runGenerationQueue('webp', 101);
-                return;
-            }
-
-            // 2. Try lossy
-            progressText.textContent = 'Verlustfrei fehlgeschlagen. Prüfe verlustbehaftete WebP-Unterstützung...';
-            addStatusMessage(`Verlustfrei fehlgeschlagen: ${result.message}. Versuche verlustbehaftetes WebP...`, "orange");
-            result = await generateSingleImage(testId, 'webp', 90);
-            if (result.success) {
-                addStatusMessage("Server unterstützt verlustbehaftetes WebP (Qualität 90). Fahre fort.", "green");
-                runGenerationQueue('webp', 90);
-                return;
-            }
-
-            // 3. Fallback to JPG
-            progressText.textContent = 'WebP-Generierung fehlgeschlagen. Wechsle zu JPG.';
-            addStatusMessage(`Verlustbehaftetes WebP ebenfalls fehlgeschlagen: ${result.message}. Wechsle automatisch zu JPG als Fallback.`, "red");
-            runGenerationQueue('jpg', 90);
-        }
-
-
         function updateButtonState() {
             if (initialMissingIds.length === 0) {
                 generateButton.disabled = true;
                 togglePauseResumeButton.style.display = 'none';
             } else if (isGenerationActive) {
-                generateButton.style.display = 'none';
+                settingsAndActionsContainer.style.display = 'none'; // KORREKTUR: Sofort ausblenden
                 togglePauseResumeButton.style.display = 'inline-block';
                 if (isPaused) {
                     togglePauseResumeButton.textContent = 'Fortsetzen';
                     togglePauseResumeButton.className = 'status-green-button';
-                    progressText.textContent = `Pausiert.`;
                 } else {
                     togglePauseResumeButton.textContent = 'Pause';
                     togglePauseResumeButton.className = 'status-red-button';
                 }
             } else {
+                settingsAndActionsContainer.style.display = 'block';
                 generateButton.style.display = 'inline-block';
                 generateButton.disabled = false;
                 togglePauseResumeButton.style.display = 'none';
             }
         }
 
-        generateButton.addEventListener('click', function () {
-            const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
-            statusContainer.innerHTML = '';
-            cacheUpdateNotification.style.display = 'none';
-
-            if (selectedFormat === 'webp') {
-                determineWebPSupportAndRunQueue();
-            } else {
-                runGenerationQueue(selectedFormat, selectedFormat === 'jpg' ? 90 : null);
-            }
-        });
-
-        togglePauseResumeButton.addEventListener('click', function () {
-            isPaused = !isPaused;
-            updateButtonState();
-        });
-
+        generateButton.addEventListener('click', processGenerationQueue);
+        togglePauseResumeButton.addEventListener('click', () => { isPaused = !isPaused; updateButtonState(); });
         updateButtonState();
     });
 </script>
