@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0.42",
+  "version": "2.0.0.45",
   "type": "release",
   "_comment_type": "Mögliche Einträge: development, alpha, beta, release_candidate, release, stable, patch"
 }

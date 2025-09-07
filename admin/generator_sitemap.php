@@ -1,85 +1,90 @@
 <?php
 /**
- * Dies ist die Administrationsseite für den Sitemap-Generator.
- * Sie generiert oder aktualisiert die sitemap.xml-Datei im öffentlichen Hauptverzeichnis
- * basierend auf einer Konfigurationsdatei (sitemap.json).
+ * Administrationsseite zum Generieren der Sitemap.xml.
+ * V2: Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung
+ * und AJAX-basierter Generierung.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
-// Pfade zu den benötigten Ressourcen
+// Pfade
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $sitemapConfigPath = __DIR__ . '/../src/config/sitemap.json';
-$sitemapOutputPath = __DIR__ . '/../sitemap.xml'; // Sitemap im öffentlichen Hauptverzeichnis
-if ($debugMode)
-    error_log("DEBUG: Pfade definiert: Config=" . $sitemapConfigPath . ", Output=" . $sitemapOutputPath);
+$sitemapOutputPath = __DIR__ . '/../sitemap.xml';
+$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 
-
-// Setze Parameter für den Header.
-$pageTitle = 'Adminbereich - Sitemap Generator';
-$pageHeader = 'Sitemap Generator';
-$siteDescription = 'Seite zum erstellen der sitemal.xml.';
-$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
-if ($debugMode) {
-    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
-    error_log("DEBUG: Robots-Content: " . $robotsContent);
-}
-
-// Basis-URL der Webseite dynamisch bestimmen
-$isLocal = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
-if ($isLocal) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-    $host = $_SERVER['HTTP_HOST'];
-    // Beispiel: /twokinds/default-website/twokinds/admin/sitemap_generator.php
-    // Wir wollen die Basis-URL des Projekts: /twokinds/default-website/twokinds/
-    $pathParts = explode('/', $_SERVER['SCRIPT_NAME']);
-    array_pop($pathParts); // Entfernt 'sitemap_generator.php'
-    array_pop($pathParts); // Entfernt 'admin'
-    $basePath = implode('/', $pathParts);
-    $baseUrl = $protocol . $host . $basePath . '/';
-    if ($debugMode)
-        error_log("DEBUG: Lokale Basis-URL bestimmt: " . $baseUrl);
-} else {
-    $baseUrl = 'https://twokinds.4lima.de/';
-    if ($debugMode)
-        error_log("DEBUG: Produktive Basis-URL verwendet: " . $baseUrl);
-}
-
-// Funktion zum Generieren der Sitemap
-function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, string $baseUrl, bool $debugMode): string
+// --- Einstellungsverwaltung ---
+function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
-    $message = '';
-    $status = 'error';
+    $defaults = [
+        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
+        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
+        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
+        'generator_comic' => ['last_run_timestamp' => null],
+        'upload_image' => ['last_run_timestamp' => null],
+        'generator_rss' => ['last_run_timestamp' => null],
+        'data_editor_sitemap' => ['last_run_timestamp' => null],
+        'generator_sitemap' => ['last_run_timestamp' => null]
+    ];
+    if (!file_exists($filePath)) {
+        $dir = dirname($filePath);
+        if (!is_dir($dir))
+            mkdir($dir, 0755, true);
+        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        return $defaults;
+    }
+    $content = file_get_contents($filePath);
+    $settings = json_decode($content, true);
+    if (json_last_error() !== JSON_ERROR_NONE)
+        return $defaults;
+    if (!isset($settings['generator_sitemap']))
+        $settings['generator_sitemap'] = $defaults['generator_sitemap'];
+    return $settings;
+}
 
+function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+{
+    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
+    return file_put_contents($filePath, $jsonContent) !== false;
+}
+
+/**
+ * Generiert die Sitemap.xml.
+ */
+function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, bool $debugMode): array
+{
     if (!file_exists($sitemapConfigPath)) {
-        if ($debugMode)
-            error_log("DEBUG: Konfigurationsdatei sitemap.json nicht gefunden.");
-        return 'Fehler: Konfigurationsdatei sitemap.json nicht gefunden unter ' . htmlspecialchars($sitemapConfigPath);
+        return ['success' => false, 'message' => 'Fehler: Konfigurationsdatei sitemap.json nicht gefunden.'];
     }
 
     $configContent = file_get_contents($sitemapConfigPath);
     $sitemapConfig = json_decode($configContent, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-        if ($debugMode)
-            error_log("DEBUG: Fehler beim Dekodieren von sitemap.json: " . json_last_error_msg());
-        return 'Fehler beim Dekodieren von sitemap.json: ' . json_last_error_msg();
+        return ['success' => false, 'message' => 'Fehler beim Dekodieren von sitemap.json: ' . json_last_error_msg()];
     }
-    if ($debugMode)
-        error_log("DEBUG: Sitemap-Konfiguration erfolgreich geladen.");
-
 
     if (!isset($sitemapConfig['pages']) || !is_array($sitemapConfig['pages'])) {
-        if ($debugMode)
-            error_log("DEBUG: Ungültiges Format in sitemap.json: 'pages'-Array fehlt oder ist ungültig.");
-        return 'Fehler: Ungültiges Format in sitemap.json. "pages"-Array fehlt oder ist ungültig.';
+        return ['success' => false, 'message' => 'Fehler: Ungültiges Format in sitemap.json.'];
     }
+
+    // Basis-URL dynamisch bestimmen
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $appRootAbsPath = str_replace('\\', '/', dirname(dirname(__FILE__)));
+    $documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
+    $subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
+    if (!empty($subfolderPath) && $subfolderPath !== '/') {
+        $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
+    } elseif (empty($subfolderPath)) {
+        $subfolderPath = '/';
+    }
+    $baseUrl = $protocol . $host . $subfolderPath;
 
     $xml = new DOMDocument('1.0', 'UTF-8');
     $xml->formatOutput = true;
@@ -89,150 +94,224 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, s
     $xml->appendChild($urlset);
 
     foreach ($sitemapConfig['pages'] as $page) {
-        if (!isset($page['name']) || !isset($page['path'])) {
-            error_log("Warnung: Ungültiger Seiteneintrag in sitemap.json übersprungen.");
-            if ($debugMode)
-                error_log("DEBUG: Ungültiger Seiteneintrag in sitemap.json übersprungen.");
+        if (!isset($page['loc']))
             continue;
-        }
 
-        $filePath = realpath(__DIR__ . '/../' . $page['path'] . $page['name']); // Pfad relativ zum Projekt-Root
-        if ($debugMode)
-            error_log("DEBUG: Verarbeite Seite: " . $page['name'] . ", Dateipfad: " . $filePath);
-
-        if (!file_exists($filePath)) {
-            error_log("Warnung: Datei nicht gefunden für Sitemap-Eintrag: " . htmlspecialchars($filePath));
-            if ($debugMode)
-                error_log("DEBUG: Datei nicht gefunden für Sitemap-Eintrag: " . $filePath);
+        $filePath = realpath(__DIR__ . '/../' . ltrim($page['loc'], './'));
+        if (!$filePath || !is_file($filePath))
             continue;
-        }
 
         $url = $xml->createElement('url');
-
-        $loc = $xml->createElement('loc', htmlspecialchars($baseUrl . ltrim($page['path'], './') . $page['name']));
-        $url->appendChild($loc);
-
-        $lastmodTimestamp = filemtime($filePath);
-        $lastmod = $xml->createElement('lastmod', date('Y-m-d\TH:i:sP', $lastmodTimestamp));
-        $url->appendChild($lastmod);
-
-        if (isset($page['changefreq'])) {
-            $changefreq = $xml->createElement('changefreq', htmlspecialchars($page['changefreq']));
-            $url->appendChild($changefreq);
-        }
-
-        if (isset($page['priority'])) {
-            $priority = $xml->createElement('priority', htmlspecialchars(sprintf('%.1f', $page['priority'])));
-            $url->appendChild($priority);
-        }
-
+        $locValue = $baseUrl . ltrim($page['loc'], './');
+        $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
+        $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($filePath))));
+        if (isset($page['changefreq']))
+            $url->appendChild($xml->createElement('changefreq', htmlspecialchars($page['changefreq'])));
+        if (isset($page['priority']))
+            $url->appendChild($xml->createElement('priority', htmlspecialchars(sprintf('%.1f', $page['priority']))));
         $urlset->appendChild($url);
-        if ($debugMode)
-            error_log("DEBUG: URL zur Sitemap hinzugefügt: " . $loc->nodeValue);
     }
 
-    $xml->save($sitemapOutputPath);
-    $message = 'Sitemap.xml erfolgreich generiert und gespeichert unter: ' . htmlspecialchars($sitemapOutputPath);
-    $status = 'success';
-    if ($debugMode)
-        error_log("DEBUG: Sitemap.xml erfolgreich generiert.");
-    return $message;
+    if ($xml->save($sitemapOutputPath) !== false) {
+        return ['success' => true, 'message' => 'Sitemap.xml erfolgreich generiert.', 'sitemapUrl' => $baseUrl . 'sitemap.xml'];
+    } else {
+        return ['success' => false, 'message' => 'Fehler beim Speichern der sitemap.xml.'];
+    }
 }
 
-$generationMessage = '';
-if (isset($_POST['generate_sitemap'])) {
-    // SICHERHEIT: CSRF-Token validieren
+// --- AJAX-Handler ---
+if (isset($_POST['action'])) {
     verify_csrf_token();
+    ob_end_clean();
+    header('Content-Type: application/json');
+    $action = $_POST['action'];
+    $response = ['success' => false, 'message' => ''];
 
-    if ($debugMode)
-        error_log("DEBUG: 'Sitemap generieren'-Button geklickt.");
-    $generationMessage = generateSitemap($sitemapConfigPath, $sitemapOutputPath, $baseUrl, $debugMode);
+    switch ($action) {
+        case 'generate_sitemap':
+            $result = generateSitemap($sitemapConfigPath, $sitemapOutputPath, $debugMode);
+            $response = $result;
+            break;
+        case 'save_settings':
+            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $currentSettings['generator_sitemap']['last_run_timestamp'] = time();
+            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+                $response['success'] = true;
+            }
+            break;
+    }
+    echo json_encode($response);
+    exit;
 }
 
-// Binde den gemeinsamen Header ein.
-if (file_exists($headerPath)) {
-    include $headerPath;
-    if ($debugMode)
-        error_log("DEBUG: Header in generator_sitemap.php eingebunden.");
-} else {
-    die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
-}
+$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$sitemapSettings = $settings['generator_sitemap'];
+$pageTitle = 'Adminbereich - Sitemap Generator';
+$pageHeader = 'Sitemap Generator';
+$robotsContent = 'noindex, nofollow';
+
+include $headerPath;
 ?>
 
-<section>
-    <h2 class="page-header">Sitemap generieren</h2>
-    <p>Hier können Sie die <code>sitemap.xml</code> für Ihre Webseite generieren oder aktualisieren.</p>
-    <p>Die Sitemap wird im Hauptverzeichnis Ihrer Webseite abgelegt und enthält Links zu den wichtigsten Seiten, wie in
-        <code>src/config/sitemap.json</code> konfiguriert.
-    </p>
-
-    <form method="POST" action="">
-        <!-- SICHERHEIT: CSRF-Token zum Formular hinzufügen -->
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-        <button type="submit" name="generate_sitemap" class="button">Sitemap generieren / aktualisieren</button>
-    </form>
-
-    <?php if (!empty($generationMessage)): ?>
-        <div
-            style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #e0ffe0; border-radius: 5px; color: #155724;">
-            <p><?php echo $generationMessage; ?></p>
-        </div>
-        <?php if ($debugMode)
-            error_log("DEBUG: Generierungsnachricht angezeigt: " . strip_tags($generationMessage)); ?>
-    <?php endif; ?>
-
-    <h3 style="margin-top: 30px;">Informationen zur Sitemap.xml</h3>
-    <p>Eine Sitemap ist eine XML-Datei, die Suchmaschinen wie Google und Bing über die Struktur Ihrer Webseite
-        informiert und ihnen hilft, Ihre Inhalte effizienter zu crawlen und zu indexieren. Sie enthält eine Liste aller
-        URLs, die Sie den Suchmaschinen mitteilen möchten.</p>
-
-    <h4>Welche Informationen müssen und sollten in der XML enthalten sein und warum?</h4>
-    <ul>
-        <li>
-            <strong><code>&lt;loc&gt;</code> (Location / URL der Seite)</strong>:
-            <p>Dies ist das einzige **Pflichtfeld**. Es gibt die vollständige URL der Webseite an.
-                **Warum**: Suchmaschinen benötigen die genaue Adresse, um Ihre Seite zu finden und zu besuchen.</p>
-        </li>
-        <li>
-            <strong><code>&lt;lastmod&gt;</code> (Letzte Änderung)</strong>:
-            <p>Gibt das Datum der letzten Änderung der Datei an. Das Format muss dem W3C Datetime Format entsprechen
-                (YYYY-MM-DDThh:mm:ssTZD).
-                **Warum**: Hilft Suchmaschinen zu erkennen, ob sich der Inhalt einer Seite seit dem letzten Besuch
-                geändert hat. Dies kann das Crawling effizienter machen, da Seiten, die sich nicht geändert haben,
-                seltener neu gecrawlt werden müssen.</p>
-        </li>
-        <li>
-            <strong><code>&lt;changefreq&gt;</code> (Änderungsfrequenz)</strong>:
-            <p>Ein Hinweis darauf, wie oft sich der Inhalt der Seite voraussichtlich ändert (z.B. <code>always</code>,
-                <code>hourly</code>, <code>daily</code>, <code>weekly</code>, <code>monthly</code>, <code>yearly</code>,
-                <code>never</code>).
-                **Warum**: Dies ist ein **Hinweis** für Crawler. Wenn Sie angeben, dass sich eine Seite täglich ändert,
-                kann dies Suchmaschinen dazu ermutigen, diese Seite häufiger zu besuchen. Es ist jedoch keine Garantie,
-                dass dies auch tatsächlich geschieht.
+<article>
+    <div class="content-section">
+        <div id="settings-and-actions-container">
+            <div id="last-run-container">
+                <?php if ($sitemapSettings['last_run_timestamp']): ?>
+                    <p class="status-message status-info">Letzte Generierung am
+                        <?php echo date('d.m.Y \u\m H:i:s', $sitemapSettings['last_run_timestamp']); ?> Uhr.
+                    </p>
+                <?php endif; ?>
+            </div>
+            <h2>Sitemap Generator</h2>
+            <p>Dieses Tool erstellt die <code>sitemap.xml</code>-Datei basierend auf der Konfiguration in
+                <code>sitemap.json</code>. Die Sitemap wird im Hauptverzeichnis der Webseite abgelegt.
             </p>
-        </li>
-        <li>
-            <strong><code>&lt;priority&gt;</code> (Priorität)</strong>:
-            <p>Die Priorität der URL relativ zu anderen URLs auf Ihrer Webseite. Die Werte reichen von 0.0 (niedrigste
-                Priorität) bis 1.0 (höchste Priorität). Der Standardwert ist 0.5.
-                **Warum**: Zeigt Suchmaschinen an, welche Seiten Sie für wichtiger halten als andere. Seiten mit höherer
-                Priorität werden möglicherweise häufiger gecrawlt. Auch dies ist nur ein **Hinweis** und sollte
-                realistisch gesetzt werden.</p>
-        </li>
-    </ul>
-    <p>Durch die Bereitstellung dieser Informationen in Ihrer <code>sitemap.xml</code> können Sie Suchmaschinen dabei
-        unterstützen, Ihre Webseite besser zu verstehen und Ihre Inhalte effektiver zu indexieren, was letztendlich zu
-        einer besseren Sichtbarkeit in den Suchergebnissen führen kann.</p>
 
-</section>
+            <div id="fixed-buttons-container">
+                <button type="button" id="generate-sitemap-button" class="button">Sitemap generieren /
+                    aktualisieren</button>
+            </div>
+        </div>
 
-<?php
-// Binde den gemeinsamen Footer ein.
-if (file_exists($footerPath)) {
-    include $footerPath;
-    if ($debugMode)
-        error_log("DEBUG: Footer in generator_sitemap.php eingebunden.");
-} else {
-    echo "</body></html>"; // HTML schließen, falls Footer fehlt.
-}
-?>
+        <div id="loading-spinner" class="hidden-by-default">
+            <div class="spinner"></div>
+            <p id="progress-text">Generiere Sitemap...</p>
+        </div>
+
+        <div id="generation-results-section" class="hidden-by-default">
+            <h2>Ergebnis</h2>
+            <p id="overall-status-message" class="status-message"></p>
+        </div>
+    </div>
+</article>
+
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    .status-message {
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+    .status-green {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .status-red {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .status-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    #fixed-buttons-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: #09f;
+        animation: spin 1s ease infinite;
+        margin: 20px auto 10px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .hidden-by-default {
+        display: none;
+    }
+</style>
+
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
+        const generateButton = document.getElementById('generate-sitemap-button');
+        const spinner = document.getElementById('loading-spinner');
+        const resultsSection = document.getElementById('generation-results-section');
+        const statusMessage = document.getElementById('overall-status-message');
+        const lastRunContainer = document.getElementById('last-run-container');
+
+        async function saveSettings() {
+            await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ action: 'save_settings', csrf_token: csrfToken })
+            });
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const time = now.toLocaleTimeString('de-DE');
+            const newStatusText = `Letzte Generierung am ${date} um ${time} Uhr.`;
+
+            let pElement = lastRunContainer.querySelector('.status-message');
+            if (!pElement) {
+                pElement = document.createElement('p');
+                pElement.className = 'status-message status-info';
+                lastRunContainer.prepend(pElement);
+            }
+            pElement.innerHTML = newStatusText;
+        }
+
+        generateButton.addEventListener('click', async function () {
+            this.disabled = true;
+            spinner.style.display = 'block';
+            resultsSection.style.display = 'none';
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'generate_sitemap', csrf_token: csrfToken })
+                });
+
+                const data = await response.json();
+                resultsSection.style.display = 'block';
+                statusMessage.className = data.success ? 'status-message status-green' : 'status-message status-red';
+
+                let message = data.message;
+                if (data.success && data.sitemapUrl) {
+                    message += ` <a href="${data.sitemapUrl}" target="_blank">Sitemap ansehen</a>`;
+                }
+                statusMessage.innerHTML = message;
+
+                if (data.success) {
+                    await saveSettings();
+                    updateTimestamp();
+                }
+
+            } catch (error) {
+                resultsSection.style.display = 'block';
+                statusMessage.className = 'status-message status-red';
+                statusMessage.innerHTML = `Ein unerwarteter Fehler ist aufgetreten: ${error.message}.`;
+            } finally {
+                spinner.style.display = 'none';
+                this.disabled = false;
+            }
+        });
+    });
+</script>
+
+<?php include $footerPath; ?>
