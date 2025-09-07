@@ -22,6 +22,14 @@ $rssFeedUrl = htmlspecialchars($baseUrl) . 'rss.xml';
 require_once __DIR__ . "/src/layout/header.php";
 ?>
 
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    /* Ersetzt den Inline-Stil für das RSS-Icon (CSP-Konformität) */
+    .rss-icon-inline {
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+
 <article>
     <header>
         <h1 class="page-header">So nutzt du RSS-Feeds: Immer auf dem neuesten Stand bleiben</h1>
@@ -63,7 +71,7 @@ require_once __DIR__ . "/src/layout/header.php";
         (<a href="<?php echo htmlspecialchars($baseUrl); ?>rss.xml" target="_blank" title="Mein RSS-Feed"
             id="rssFeedLink">
             <img src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/rss-feed.png" alt="RSS" width="16"
-                height="16" style="border-radius: 5px; cursor: pointer;">
+                height="16" class="rss-icon-inline">
         </a>)
         auf meiner Webseite oder du kannst sie direkt hier abrufen: <code><?php echo $rssFeedUrl; ?></code></p>
 
