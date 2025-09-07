@@ -46,16 +46,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newPassword = $_POST['add_password'] ?? '';
             $users = getUsers();
             if (empty($newUsername) || empty($newPassword)) {
-                $message = '<p style="color: red;">Benutzername und Passwort für den neuen Benutzer dürfen nicht leer sein.</p>';
+                $message = '<p class="message-red">Benutzername und Passwort für den neuen Benutzer dürfen nicht leer sein.</p>';
             } elseif (isset($users[$newUsername])) {
-                $message = '<p style="color: red;">Benutzername "' . htmlspecialchars($newUsername) . '" existiert bereits.</p>';
+                $message = '<p class="message-red">Benutzername "' . htmlspecialchars($newUsername) . '" existiert bereits.</p>';
             } else {
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
                 $users[$newUsername] = ['passwordHash' => $hashedPassword];
                 if (saveUsers($users)) {
-                    $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($newUsername) . '" erfolgreich hinzugefügt.</p>';
+                    $message = '<p class="message-green">Benutzer "' . htmlspecialchars($newUsername) . '" erfolgreich hinzugefügt.</p>';
                 } else {
-                    $message = '<p style="color: red;">Fehler beim Hinzufügen des Benutzers.</p>';
+                    $message = '<p class="message-red">Fehler beim Hinzufügen des Benutzers.</p>';
                 }
             }
             break;
@@ -63,20 +63,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'delete_user':
             $userToDelete = filter_input(INPUT_POST, 'user_to_delete', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             if (empty($userToDelete)) {
-                $message = '<p style="color: red;">Kein Benutzer zum Löschen ausgewählt.</p>';
+                $message = '<p class="message-red">Kein Benutzer zum Löschen ausgewählt.</p>';
             } elseif ($userToDelete === $currentUser) {
-                $message = '<p style="color: red;">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen.</p>';
+                $message = '<p class="message-red">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen.</p>';
             } else {
                 $users = getUsers();
                 if (isset($users[$userToDelete])) {
                     unset($users[$userToDelete]);
                     if (saveUsers($users)) {
-                        $message = '<p style="color: green;">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht.</p>';
+                        $message = '<p class="message-green">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht.</p>';
                     } else {
-                        $message = '<p style="color: red;">Fehler beim Löschen des Benutzers.</p>';
+                        $message = '<p class="message-red">Fehler beim Löschen des Benutzers.</p>';
                     }
                 } else {
-                    $message = '<p style="color: red;">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden.</p>';
+                    $message = '<p class="message-red">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden.</p>';
                 }
             }
             break;
@@ -150,7 +150,7 @@ if (file_exists($headerPath)) {
             background-color: #f0ad4e;
         }
 
-        .admin-form-container button[value="delete_user"] {
+        .admin-form-container .delete-button {
             background-color: #dc3545;
             font-size: 14px;
             padding: 5px 10px;
@@ -165,6 +165,14 @@ if (file_exists($headerPath)) {
 
         .message p {
             margin: 0;
+        }
+
+        .message-red {
+            color: red;
+        }
+
+        .message-green {
+            color: green;
         }
 
         ul {
@@ -190,20 +198,39 @@ if (file_exists($headerPath)) {
             font-weight: bold;
             color: inherit;
         }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .section-divider {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #eee;
+        }
+
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .delete-form {
+            margin: 0;
+        }
     </style>
     <div class="admin-form-container">
         <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-        <p style="text-align: right;"><a
-                href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
+        <p class="text-right"><a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
                 class="logout-link">Logout</a></p>
 
         <?php if (!empty($message)): ?>
             <div class="message"><?php echo $message; ?></div>
         <?php endif; ?>
 
-        <section id="manage-users" style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
+        <section id="manage-users" class="section-divider">
             <h3>Neuen Benutzer hinzufügen</h3>
-            <form action="management_user.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            <form action="management_user.php" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <input type="hidden" name="action" value="add_user">
                 <div>
@@ -218,7 +245,7 @@ if (file_exists($headerPath)) {
             </form>
         </section>
 
-        <section style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
+        <section class="section-divider">
             <h3>Verfügbare Benutzer</h3>
             <ul>
                 <?php
@@ -228,13 +255,12 @@ if (file_exists($headerPath)) {
                     <li>
                         <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
                         <?php if ($user !== $currentUser): ?>
-                            <form action="management_user.php" method="POST" style="margin: 0;">
+                            <form action="management_user.php" method="POST" class="delete-form">
                                 <input type="hidden" name="csrf_token"
                                     value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                                 <input type="hidden" name="action" value="delete_user">
                                 <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
-                                <button type="submit"
-                                    onclick="return confirm('Sind Sie sicher, dass Sie den Benutzer <?php echo htmlspecialchars($user); ?> löschen möchten?');">Löschen</button>
+                                <button type="submit" class="delete-button">Löschen</button>
                             </form>
                         <?php else: ?>
                             <span class="current-user-tag">(Sie)</span>
@@ -245,6 +271,21 @@ if (file_exists($headerPath)) {
         </section>
     </div>
 </article>
+
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteForms = document.querySelectorAll('.delete-form');
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function (event) {
+                const userToDelete = form.querySelector('input[name="user_to_delete"]').value;
+                if (!confirm('Sind Sie sicher, dass Sie den Benutzer "' + userToDelete + '" löschen möchten?')) {
+                    event.preventDefault(); // Verhindert das Absenden des Formulars, wenn der Benutzer auf "Abbrechen" klickt.
+                }
+            });
+        });
+    });
+</script>
+
 <?php
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 if (file_exists($footerPath)) {

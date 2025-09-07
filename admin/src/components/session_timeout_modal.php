@@ -75,10 +75,11 @@ $nonce = $nonce ?? '';
 
 <?php
 // Pfad und Cache-Buster für das JavaScript
-// __DIR__ ist hier /src/components/, also gehen wir eine Ebene hoch zu /src/ und dann in /layout/js/
+// __DIR__ ist hier /admin/src/components/, also gehen wir eine Ebene hoch zu /admin/src/ und dann in /js/
 $sessionTimeoutJsPath = $baseUrl . 'admin/src/js/session_timeout.js?c=' . filemtime(__DIR__ . '/../js/session_timeout.js');
 
-// Übergebe CSRF-Token und Nonce an das JavaScript
+// Übergebe den CSRF-Token an das JavaScript in einer globalen Variable
 echo "<script nonce=\"" . htmlspecialchars($nonce) . "\">window.csrfToken = '" . htmlspecialchars($_SESSION['csrf_token'] ?? '') . "';</script>";
+// Lade das eigentliche Timeout-Skript
 echo "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($sessionTimeoutJsPath) . "'></script>";
 ?>

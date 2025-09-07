@@ -51,7 +51,8 @@ $csp = [
     // Standard-Richtlinie: Lade alles nur von der eigenen Domain ('self').
     'default-src' => ["'self'"],
     // Skripte: Erlaube 'self', inline-Skripte und füge die Nonce-Quelle hinzu.
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+    // KORRIGIERT: Google Tag Manager für Analytics hinzugefügt
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
     // Stylesheets: Erlaube 'self', inline-Styles ('unsafe-inline') und vertrauenswürdige CDNs.
     'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdn.twokinds.keenspot.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
     // Schriftarten: Erlaube 'self' und CDNs.
@@ -59,7 +60,8 @@ $csp = [
     // Bilder: Erlaube 'self', data-URIs (für base64-Bilder) und den Placeholder-Dienst.
     'img-src' => ["'self'", "data:", "https://cdn.twokinds.keenspot.com", "https://placehold.co"],
     // Erlaubt Verbindungen (z.B. via fetch, XHR) zu den angegebenen Domains.
-    'connect-src' => ["'self'"],
+    // KORRIGIERT: Notwendige Domains für Analytics und CSS Source Maps hinzugefügt
+    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://*.google-analytics.com"],
     // Plugins (Flash etc.): Verbiete alles.
     'object-src' => ["'none'"],
     // Framing: Erlaube das Einbetten der Seite nur durch sich selbst (Schutz vor Clickjacking).

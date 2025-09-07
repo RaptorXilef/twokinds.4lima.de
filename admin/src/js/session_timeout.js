@@ -1,6 +1,6 @@
 /**
  * Kümmert sich um die clientseitige Logik für die Session-Timeout-Warnung und den sichtbaren Countdown.
- * V3 - Behebt den Fehler, bei dem clientseitige Aktivität die Server-Session nicht aktualisiert hat.
+ * V4 - Sendet den CSRF-Token mit, um 403-Fehler zu vermeiden.
  */
 document.addEventListener("DOMContentLoaded", () => {
   const sessionTimeoutInSeconds = 600; // 10 Minuten (muss mit PHP übereinstimmen)
@@ -51,8 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * BUGFIX: Diese Funktion pingt nun den Server an, um die PHP-Sitzung am Leben zu erhalten.
-   * Sie enthält einen Drosselungsmechanismus, um zu viele Anfragen zu vermeiden.
+   * KORRIGIERT: Diese Funktion sendet den CSRF-Token im Body der POST-Anfrage mit.
    */
   function resetTimersAndPingServer() {
     // Wenn wir uns bereits mitten in einer Ping-Anfrage befinden, nichts tun.
@@ -63,9 +62,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // Setze ein Flag, um anzuzeigen, dass ein Ping im Gange ist.
     isPinging = true;
 
-    // Pingt den Server an, um den Session-Zeitstempel zu aktualisieren.
-    // KORREKTUR: Der Pfad muss relativ zum aktuellen Verzeichnis sein.
-    fetch("src/components/keep_alive.php")
+    // Erstelle FormData und füge den globalen CSRF-Token hinzu.
+    const formData = new FormData();
+    // window.csrfToken wird in session_timeout_modal.php gesetzt.
+    if (typeof window.csrfToken === "undefined" || window.csrfToken === "") {
+      console.error("CSRF token is not available.");
+      isPinging = false;
+      return;
+    }
+    formData.append("csrf_token", window.csrfToken);
+
+    // Pingt den Server mit dem CSRF-Token an.
+    fetch("src/components/keep_alive.php", {
+      method: "POST",
+      body: formData,
+    })
       .then((response) => {
         if (response.ok) {
           // Wenn der Ping erfolgreich war, setze die clientseitigen Timer zurück.
@@ -128,7 +139,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function forceLogout() {
-    window.location.href = "index.php?action=logout";
+    // KORREKTUR: Der Logout-Link benötigt ebenfalls den CSRF-Token,
+    // der in admin_init.php an die URL angehängt wird.
+    // Wir holen ihn aus dem Logout-Button im Menü, falls vorhanden.
+    const logoutLink = document.querySelector('a[href*="action=logout"]');
+    if (logoutLink) {
+      window.location.href = logoutLink.href;
+    } else {
+      // Fallback, falls der Link nicht gefunden wird.
+      window.location.href = "index.php";
+    }
   }
 
   stayLoggedInBtn.addEventListener("click", () => {
