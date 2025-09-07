@@ -29,7 +29,7 @@ $additionalScripts = '
     <script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($charaktereJsPath) . '"></script>
 ';
 
-// CSS für das initiale Ausblenden der Lazy-Load-Bilder
+// CSS für das initiale Ausblenden der Lazy-Load-Bilder und die Korrekturen für die Bösewichte-Sektion
 $additionalHeadContent = '
     <style nonce="' . htmlspecialchars($nonce) . '">
         img.lazy-char-img {
@@ -38,6 +38,15 @@ $additionalHeadContent = '
         }
         img.lazy-char-img.loaded {
             opacity: 1;
+        }
+        .villain-image-container {
+            margin-bottom: 10px;
+        }
+        .villain-info {
+            width: 800px;
+        }
+        .villain-group-image {
+            width: 800px;
         }
     </style>
 ';
@@ -886,12 +895,12 @@ require_once __DIR__ . "/src/layout/header.php";
     </header>
 
     <section class="char-detail" id="mask">
-        <div class="center" style="margin-bottom: 10px;">
+        <div class="center villain-image-container">
             <img class="lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="<?php echo get_char_image_path('TheMaskedGods2025', 'portrait'); ?>" alt="Die Masken">
         </div>
-        <div class="char-info" style="width: 800px;">
+        <div class="char-info villain-info">
             <h3>Die Masken</h3>
             <p>
                 <b>Klasse:</b> Korrumpierte planetare Wächter<br>
@@ -906,14 +915,13 @@ require_once __DIR__ . "/src/layout/header.php";
     </section>
 
     <section class="char-detail">
-        <div class="center" style="margin-bottom: 10px;">
-            <img class="lazy-char-img"
+        <div class="center villain-image-container">
+            <img class="lazy-char-img villain-group-image"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                <?php /* data-src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" */ ?>
-                data-src="<?php echo get_char_image_path('TemplarChart2025', 'portrait'); ?>"  alt="Bösewichte"
-                style="width: 800px;">
+                data-src="<?php echo get_char_image_path('TemplarChart2025', 'portrait'); ?>" alt="Bösewichte">
+            <?php /* data-src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" */ ?>
         </div>
-        <div class="char-info" style="width: 800px;">
+        <div class="char-info villain-info">
             <h3>Die Meistertempler: Meisterspion, Architekt, Stratege, Seher und Magier.</h3>
             <p>
                 <b>Klasse:</b> Meistertempler<br>
@@ -978,6 +986,4 @@ require_once __DIR__ . "/src/layout/header.php";
 
 </section>
 
-<?php
-require_once __DIR__ . "/src/layout/footer.php";
-?>
+<?php require_once __DIR__ . "/src/layout/footer.php"; ?>
