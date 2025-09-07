@@ -64,9 +64,6 @@ function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMod
 
 /**
  * Scannt das Thumbnail-Verzeichnis nach vorhandenen Thumbnails.
- * HINWEIS: Diese Funktion prüft nur auf Existenz des Dateinamens, unabhängig von der Erweiterung.
- * Die Logik geht davon aus, dass wenn ein Thumbnail (z.B. als JPG) existiert, es nicht neu generiert werden muss,
- * es sei denn, der Benutzer möchte es explizit in einem anderen Format. Die "Fehlend"-Liste ist formatunabhängig.
  */
 function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
 {
@@ -228,7 +225,7 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             case 'webp':
                 // Prüfen, ob WebP-Unterstützung vorhanden ist
                 if (function_exists('imagewebp')) {
-                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, 101); // 101 für verlustfrei
+                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, 101); // 101 for lossless
                 } else {
                     $errors[] = "WebP-Unterstützung ist auf diesem Server nicht aktiviert.";
                 }
@@ -238,7 +235,7 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
         if ($saveSuccess) {
             $createdPath = $thumbnailPath;
         } else {
-            if (empty($errors)) { // Füge nur eine Fehlermeldung hinzu, wenn nicht schon eine existiert (z.B. WebP-Support)
+            if (empty($errors)) {
                 $errors[] = "Fehler beim Speichern des Thumbnails nach '$thumbnailPath'.";
             }
         }
@@ -261,7 +258,6 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_thumbnail') {
     // SICHERHEIT: CSRF-Token validieren
     verify_csrf_token();
-
     ob_end_clean();
     ini_set('display_errors', 0);
     error_reporting(0);
@@ -345,18 +341,18 @@ if (file_exists($headerPath)) {
 
         <div id="fixed-buttons-container">
             <button type="button" id="generate-thumbnails-button" <?php echo $gdError || empty($missingThumbnails) ? 'disabled' : ''; ?>>Fehlende Thumbnails erstellen</button>
-            <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
+            <button type="button" id="toggle-pause-resume-button"></button>
         </div>
 
-        <div id="generation-results-section" style="margin-top: 20px; display: none;">
-            <h2 style="margin-top: 20px;">Ergebnisse der Generierung</h2>
+        <div id="generation-results-section">
+            <h2 class="results-header">Ergebnisse der Generierung</h2>
             <p id="overall-status-message" class="status-message"></p>
             <div id="created-images-container" class="image-grid"></div>
-            <p class="status-message status-red" style="display: none;" id="error-header-message">Fehler:</p>
+            <p class="status-message status-red" id="error-header-message">Fehler:</p>
             <ul id="generation-errors-list"></ul>
         </div>
 
-        <div id="cache-update-notification" class="notification-box" style="display:none; margin-top: 20px;">
+        <div id="cache-update-notification" class="notification-box">
             <h4>Nächster Schritt: Cache aktualisieren</h4>
             <p>
                 Da neue Thumbnails hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
@@ -368,7 +364,7 @@ if (file_exists($headerPath)) {
                 aktualisieren</a>
         </div>
 
-        <div id="loading-spinner" style="display: none; text-align: center; margin-top: 20px;">
+        <div id="loading-spinner">
             <div class="spinner"></div>
             <p id="progress-text">Generiere Thumbnails...</p>
         </div>
@@ -563,7 +559,6 @@ if (file_exists($headerPath)) {
         flex-shrink: 0;
     }
 
-    /* STILE FÜR DEN FORMAT-UMSCHALTER */
     .format-switcher {
         display: flex;
         align-items: center;
@@ -581,7 +576,6 @@ if (file_exists($headerPath)) {
 
     .toggle-buttons input[type="radio"] {
         display: none;
-        /* Verstecke die eigentlichen Radio-Buttons */
     }
 
     .toggle-buttons label {
@@ -637,6 +631,29 @@ if (file_exists($headerPath)) {
         background-color: #0c5460;
         border-color: #17a2b8;
         color: #f8f9fa;
+    }
+
+    /* KORREKTUREN FÜR CSP */
+    #toggle-pause-resume-button,
+    #generation-results-section,
+    #error-header-message,
+    #cache-update-notification,
+    #loading-spinner {
+        display: none;
+    }
+
+    #generation-results-section,
+    #cache-update-notification,
+    #loading-spinner {
+        margin-top: 20px;
+    }
+
+    .results-header {
+        margin-top: 20px;
+    }
+
+    #loading-spinner {
+        text-align: center;
     }
 </style>
 
@@ -784,7 +801,7 @@ if (file_exists($headerPath)) {
                     body: new URLSearchParams({
                         action: 'generate_single_thumbnail',
                         comic_id: currentId,
-                        output_format: selectedFormat,  // Format mitsenden
+                        output_format: selectedFormat,
                         csrf_token: csrfToken
                     })
                 });
@@ -831,7 +848,6 @@ if (file_exists($headerPath)) {
 </script>
 
 <?php
-// Footer einbinden
 if (file_exists($footerPath)) {
     include $footerPath;
 } else {
