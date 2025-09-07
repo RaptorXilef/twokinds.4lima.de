@@ -51,6 +51,8 @@
         <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic.php">Über den Comic</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
         <br>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>faq.php">FAQ</a>
+        <br>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>rss_anleitung.php">RSS-Feed Info</a>
         <br>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz.php">Lizenz</a>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Dies ist die Administrationsseite für den Comic-Seiten-Generator im Admin-Bereich.
+ * Dies ist die Administrationsseite für den Comic-Seiten-Generator im Admin-bereich.
  * Sie überprüft fehlende Comic-PHP-Dateien basierend auf der comic_var.json und den Bilddateien
  * und bietet die Möglichkeit, diese automatisiert zu erstellen.
  *
@@ -12,7 +12,7 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade zu den benötigten Ressourcen
@@ -179,6 +179,9 @@ function createSingleComicPageFile(string $comicId, string $comicPagesDir, bool 
 // --- AJAX-Anfrage-Handler ---
 // Dieser Block wird nur ausgeführt, wenn eine POST-Anfrage mit der Aktion 'create_single_comic_page' gesendet wird.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_single_comic_page') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     if ($debugMode)
         error_log("DEBUG: AJAX-Anfrage 'create_single_comic_page' erkannt.");
     // Leere und beende den Output Buffer, um sicherzustellen, dass keine unerwünschten Ausgaben gesendet werden.
@@ -196,6 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         error_log("AJAX-Anfrage: Keine Comic-ID angegeben.");
         if ($debugMode)
             error_log("DEBUG: AJAX: Keine Comic-ID angegeben, sende Fehlerantwort.");
+        http_response_code(400);
         echo json_encode($response);
         exit;
     }
@@ -216,6 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         error_log("AJAX-Anfrage: Fehler beim Erstellen der Comic-Seite für Comic-ID '$comicId'.");
         if ($debugMode)
             error_log("DEBUG: AJAX: Fehler bei der Generierung für Comic-ID " . $comicId . ".");
+        http_response_code(500);
     }
 
     // Überprüfe, ob json_encode einen Fehler hatte
@@ -225,6 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         error_log("AJAX-Anfrage: json_encode Fehler für Comic-ID '$comicId': " . $jsonError);
         if ($debugMode)
             error_log("DEBUG: AJAX: JSON-Encoding fehlgeschlagen für Comic-ID " . $comicId . ": " . $jsonError);
+        http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Interner Serverfehler: JSON-Encoding fehlgeschlagen.']);
     } else {
         echo $jsonOutput;
@@ -342,7 +348,7 @@ if (file_exists($headerPath)) {
     </div>
 </article>
 
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     /* CSS-Variablen für Light- und Dark-Mode */
     :root {
         /* Light Mode Defaults */
@@ -635,8 +641,10 @@ if (file_exists($headerPath)) {
     /* Diese spezifischen .message Styles sind nicht mehr nötig, da .status-message direkt die Farben setzt */
 </style>
 
-<script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
+        // SICHERHEIT: CSRF-Token für JavaScript verfügbar machen
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         const generateButton = document.getElementById('generate-pages-button');
         const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -855,7 +863,8 @@ if (file_exists($headerPath)) {
                     },
                     body: new URLSearchParams({
                         action: 'create_single_comic_page', // Spezifische Aktion für AJAX
-                        comic_id: currentId
+                        comic_id: currentId,
+                        csrf_token: csrfToken // SICHERHEIT: CSRF-Token mitsenden
                     })
                 });
 

@@ -5,30 +5,18 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: datenschutzerklaerung.php wird geladen.");
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/src/components/public_init.php';
 
-// Binde den gemeinsamen Header ein. DIES MUSS VOR JEDER VERWENDUNG VON $baseUrl ODER ANDEREN VARIABLEN AUS DEM HEADER ERFOLGEN!
-include __DIR__ . "/src/layout/header.php";
-if ($debugMode)
-    error_log("DEBUG: Header in datenschutzerklaerung.php eingebunden.");
-
-// Setze Parameter für den Header. Diese werden vom Header.php verwendet, wenn sie vor dem Include definiert werden.
-// Wenn sie nach dem Include definiert werden, überschreiben sie die Standardwerte im Header.
-// Hier definieren wir sie vor dem Include, damit header.php sie direkt nutzen kann.
+// === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Datenschutzerklärung';
-$pageHeader = 'Datenschutzerklärung';
-$siteDescription = 'Erfahren Sie mehr über den Datenschutz auf der TwoKinds-Webseite.';
+$siteDescription = 'Erfahre mehr über den Datenschutz auf der deutschen TwoKinds-Webseite und wie wir deine Daten schützen.';
 $robotsContent = 'noindex, follow'; // Diese Seite sollte nicht von Suchmaschinen indexiert werden
 
-// Hier wird die cookie_consent.js geladen, damit die Funktion showCookieBanner verfügbar ist.
-// Der Pfad ist relativ zum baseUrl, der in header.php definiert wird.
-// KORREKTUR: Pfad zu cookie_consent.js angepasst, da datenschutzerklaerung.php im Hauptverzeichnis liegt
-// Der zusätzliche Script-Block kann nun entfallen, da showCookieBanner global verfügbar ist.
-$additionalScripts = ''; // Leere den additionalScripts-Block, da die Funktion global ist.
+// === 3. HEADER EINBINDEN ===
+require_once __DIR__ . "/src/layout/header.php";
 ?>
 
 <article>
@@ -45,10 +33,6 @@ $additionalScripts = ''; // Leere den additionalScripts-Block, da die Funktion g
         <br>
         <p>Verantwortlicher für die Datenverarbeitung auf dieser Website ist:</p>
         <p>
-            <!--[Dein Name/Firmenname]<br>
-            [Deine Adresse]<br>
-            [Deine E-Mail-Adresse]<br>
-            [Deine Telefonnummer (optional)]-->
             Felix Maywald
         </p>
         <p>Die vollständigen Kontaktdaten findest du in unserem <a
@@ -176,9 +160,22 @@ $additionalScripts = ''; // Leere den additionalScripts-Block, da die Funktion g
 
 </article>
 
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    document.addEventListener('DOMContentLoaded', function () {
+        const changeSettingsBtn = document.getElementById('change-cookie-settings-btn');
+        if (changeSettingsBtn) {
+            changeSettingsBtn.addEventListener('click', function () {
+                // Die Funktion showCookieBanner() wird von cookie_consent.js bereitgestellt
+                if (typeof window.showCookieBanner === 'function') {
+                    window.showCookieBanner();
+                } else {
+                    console.error('Cookie Banner Funktion nicht gefunden.');
+                }
+            });
+        }
+    });
+</script>
+
 <?php
-// Binde den gemeinsamen Footer ein.
-include __DIR__ . "/src/layout/footer.php";
-if ($debugMode)
-    error_log("DEBUG: Footer in datenschutzerklaerung.php eingebunden.");
+require_once __DIR__ . "/src/layout/footer.php";
 ?>

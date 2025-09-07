@@ -6,7 +6,7 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // --- Pfad zur Benutzerdatei ---
@@ -35,6 +35,9 @@ $message = '';
 $currentUser = $_SESSION['admin_username'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'change_credentials') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     $oldPassword = $_POST['old_password'] ?? '';
     $newUsername = filter_input(INPUT_POST, 'new_username', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $newPassword = $_POST['new_password'] ?? '';
@@ -91,8 +94,7 @@ if (file_exists($headerPath)) {
 }
 ?>
 <article>
-    <style>
-        /* Stile können in eine zentrale CSS-Datei ausgelagert werden */
+    <style nonce="<?php echo htmlspecialchars($nonce); ?>">
         .admin-form-container {
             max-width: 500px;
             margin: 20px auto;
@@ -157,7 +159,9 @@ if (file_exists($headerPath)) {
     </style>
     <div class="admin-form-container">
         <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-        <p style="text-align: right;"><a href="index.php?action=logout" class="logout-link">Logout</a></p>
+        <p style="text-align: right;"><a
+                href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
+                class="logout-link">Logout</a></p>
 
         <?php if (!empty($message)): ?>
             <div class="message"><?php echo $message; ?></div>
@@ -167,6 +171,7 @@ if (file_exists($headerPath)) {
             <h3>Benutzerdaten ändern</h3>
             <form id="change-credentials-form" action="management_login.php" method="POST"
                 style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <input type="hidden" name="action" value="change_credentials">
                 <div>
                     <label for="new_username">Benutzername:</label>
@@ -179,7 +184,6 @@ if (file_exists($headerPath)) {
                 </div>
                 <div>
                     <label for="confirm_new_password">Neues Passwort bestätigen:</label>
-                    <!-- FIX: autocomplete="off" verhindert, dass Passwort-Manager dieses Feld automatisch ausfüllen -->
                     <input type="password" id="confirm_new_password" name="confirm_new_password" autocomplete="off">
                 </div>
                 <hr style="border-top: 1px dashed #ccc; margin: 10px 0;">
@@ -194,7 +198,7 @@ if (file_exists($headerPath)) {
     </div>
 </article>
 
-<script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     // Fügt eine einfache clientseitige Validierung hinzu, um zu prüfen, ob die neuen Passwörter übereinstimmen.
     document.getElementById('change-credentials-form').addEventListener('submit', function (event) {
         const newPassword = document.getElementById('new_password').value;

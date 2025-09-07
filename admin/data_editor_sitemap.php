@@ -12,7 +12,7 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade zu den benötigten Ressourcen
@@ -268,6 +268,9 @@ function scanComicDirectory(string $dirPath, bool $debugMode): array
 
 // Verarbeite POST-Anfragen zum Speichern (AJAX-Handling)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     if ($debugMode)
         error_log("DEBUG: POST-Anfrage mit application/json Content-Type erkannt.");
     $input = file_get_contents('php://input');
@@ -275,6 +278,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
 
     if (json_last_error() !== JSON_ERROR_NONE) {
         header('Content-Type: application/json');
+        http_response_code(400);
         echo json_encode(['status' => 'error', 'message' => 'Fehler beim Dekodieren der JSON-Daten: ' . json_last_error_msg()]);
         if ($debugMode)
             error_log("DEBUG: Fehler beim Dekodieren der empfangenen JSON-Daten: " . json_last_error_msg());
@@ -325,6 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && 
         exit;
     } else {
         header('Content-Type: application/json');
+        http_response_code(500);
         echo json_encode(['status' => 'error', 'message' => 'Fehler beim Speichern der Sitemap-Daten.']);
         if ($debugMode)
             error_log("DEBUG: Fehler beim Speichern der Sitemap-Daten (AJAX-Antwort).");
@@ -434,9 +439,10 @@ if (file_exists($headerPath)) {
 ?>
 
 <!-- Font Awesome für Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    nonce="<?php echo htmlspecialchars($nonce); ?>">
 
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     /* Allgemeine Layout-Anpassungen (minimal, falls nicht in main.css) */
     .admin-container {
         padding: 20px;
@@ -762,9 +768,6 @@ if (file_exists($headerPath)) {
         color: #fff;
         /* Dark theme text color */
     }
-
-    /* Remove .select-display-text and its styles */
-    /* Remove .editable-field.select-field::after styles */
 </style>
 
 <div class="admin-container">
@@ -923,34 +926,54 @@ if (file_exists($headerPath)) {
             <!-- Paginierung für Comic-Tabelle -->
             <div class="pagination">
                 <?php if ($totalComicPages > 1): ?>
-                    <?php if ($comicCurrentPage > 1): ?>
-                        <a href="?comic_page=<?php echo $comicCurrentPage - 1; ?>">&laquo; Vorherige</a>
-                    <?php endif; ?>
+                    <?php
+                    // Logik zur Anzeige der Paginierungs-Links
+                    $range = 2; // Anzahl der Links um die aktuelle Seite herum
+                    $start = max(1, $comicCurrentPage - $range);
+                    $end = min($totalComicPages, $comicCurrentPage + $range);
 
-                    <?php for ($i = 1; $i <= $totalComicPages; $i++): ?>
-                        <a href="?comic_page=<?php echo $i; ?>"
-                            class="<?php echo ($i == $comicCurrentPage) ? 'current-page' : ''; ?>">
-                            <?php echo $i; ?>
-                        </a>
-                    <?php endfor; ?>
+                    if ($comicCurrentPage > 1) {
+                        echo '<a href="?comic_page=1" title="Erste Seite"><i class="fas fa-angle-double-left"></i></a>';
+                        echo '<a href="?comic_page=' . ($comicCurrentPage - 1) . '" title="Vorherige Seite"><i class="fas fa-angle-left"></i></a>';
+                    }
 
-                    <?php if ($comicCurrentPage < $totalComicPages): ?>
-                        <a href="?comic_page=<?php echo $comicCurrentPage + 1; ?>">Nächste &raquo;</a>
-                    <?php endif; ?>
+                    if ($start > 1) {
+                        echo '<span>...</span>';
+                    }
+
+                    for ($i = $start; $i <= $end; $i++) {
+                        if ($i == $comicCurrentPage) {
+                            echo '<span class="current-page">' . $i . '</span>';
+                        } else {
+                            echo '<a href="?comic_page=' . $i . '">' . $i . '</a>';
+                        }
+                    }
+
+                    if ($end < $totalComicPages) {
+                        echo '<span>...</span>';
+                    }
+
+                    if ($comicCurrentPage < $totalComicPages) {
+                        echo '<a href="?comic_page=' . ($comicCurrentPage + 1) . '" title="Nächste Seite"><i class="fas fa-angle-right"></i></a>';
+                        echo '<a href="?comic_page=' . $totalComicPages . '" title="Letzte Seite"><i class="fas fa-angle-double-right"></i></a>';
+                    }
+                    ?>
                 <?php endif; ?>
             </div>
         </div>
     </section>
 
     <div class="button-group">
-        <button id="save-all-btn"><i class="fas fa-save"></i> Änderungen speichern</button>
+        <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
     </div>
 
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     $(document).ready(function () {
+        // SICHERHEIT: CSRF-Token für JavaScript verfügbar machen
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         const messageBox = $('#message-box');
 
         function showMessage(message, type) {
@@ -1198,23 +1221,33 @@ if (file_exists($headerPath)) {
             // Filtere temporäre Einträge, die nicht bearbeitet wurden (loc ist immer noch 'temp_...')
             const pagesToSave = Array.from(sitemapMap.values()).filter(page => !page.loc.startsWith('temp_') || page.name !== '');
 
+            // SICHERHEIT: CSRF-Token zu den zu sendenden Daten hinzufügen
+            const dataToSend = {
+                pages: pagesToSave,
+                csrf_token: csrfToken
+            };
+
             $.ajax({
                 url: window.location.href, // An dasselbe PHP-Skript senden
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ pages: pagesToSave }), // Alle gesammelten Daten senden
+                data: JSON.stringify(dataToSend), // Alle gesammelten Daten inkl. Token senden
                 success: function (response) {
                     if (response.status === 'success') {
                         showMessage(response.message, 'success');
                         // Seite neu laden, um gespeicherte Änderungen und neue temporäre IDs zu reflektieren
-                        window.location.reload();
+                        setTimeout(() => window.location.reload(), 1500);
                     } else {
-                        showMessage(response.message, 'error');
+                        showMessage('Fehler: ' + response.message, 'error');
                     }
                 },
                 error: function (xhr, status, error) {
+                    let errorMessage = 'Ein Fehler ist aufgetreten: ' + error;
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = 'Fehler: ' + xhr.responseJSON.message;
+                    }
                     console.error('AJAX error:', status, error);
-                    showMessage('Ein Fehler ist aufgetreten: ' + error, 'error');
+                    showMessage(errorMessage, 'error');
                 }
             });
         });

@@ -13,7 +13,7 @@
 $debugMode = false; // Setze auf true, um DEBUG-Meldungen zu aktivieren.
 $itemsPerPage = 50; // HIER: Lege die Anzahl der Einträge pro Seite fest.
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // === ANGEPASST: Lade den neuen zentralen Image-Cache-Helfer ===
@@ -227,6 +227,8 @@ function checkImageExistenceForComic(string $comicId, array $directories, bool $
 
 // Verarbeite POST-Anfragen zum Speichern (AJAX-Handling)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
     if ($debugMode)
         error_log("DEBUG: POST-Anfrage mit application/json Content-Type erkannt.");
 
@@ -446,7 +448,7 @@ if (file_exists($headerPath)) {
     die('Fehler: Header-Datei nicht gefunden. Pfad: ' . htmlspecialchars($headerPath));
 }
 
-// === NEUE LOGIK: Hole alle gecachten Bildpfade für JavaScript ===
+// Hole alle gecachten Bildpfade für JavaScript
 $jsImageData = [];
 foreach ($allIds as $id) {
     $jsImageData[$id] = [
@@ -458,12 +460,13 @@ foreach ($allIds as $id) {
 }
 ?>
 
+<!-- Externe CSS/JS-Dateien mit Nonce -->
 <!-- Font Awesome für Icons -->
 <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> -->
 <!-- Summernote CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet">
-
-<style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css" rel="stylesheet"
+    nonce="<?php echo htmlspecialchars($nonce); ?>">
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     /* Allgemeine Layout-Anpassungen */
     .admin-container {
         padding: 20px;
@@ -1420,6 +1423,7 @@ foreach ($allIds as $id) {
     <section class="form-section collapsible-section">
         <h2 class="collapsible-header">Comic-Eintrag bearbeiten / hinzufügen <i class="fas fa-chevron-right"></i></h2>
         <div class="collapsible-content">
+            <!-- WICHTIG: Das Formular selbst benötigt keinen CSRF-Token mehr, da die Daten per AJAX (JSON) gesendet werden -->
             <form id="comic-edit-form">
                 <input type="hidden" id="original-comic-id" name="original_comic_id" value="">
                 <div class="form-group">
@@ -1708,12 +1712,14 @@ foreach ($allIds as $id) {
 </div>
 
 <!-- jQuery (Summernote benötigt jQuery) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
 <!-- Summernote JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js"
+    nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
 
-<script>
-    // === NEU: Übergebe die gecachten Bilddaten an JavaScript ===
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    // CSRF-Token für alle AJAX-Anfragen verfügbar machen
+    const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
     const cachedImageData = <?php echo json_encode($jsImageData); ?>;
     const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
@@ -2019,7 +2025,8 @@ foreach ($allIds as $id) {
                 if (confirm(`Sind Sie sicher, dass Sie den Comic-Eintrag mit der ID ${comicId} endgültig löschen möchten?`)) {
                     const dataToSend = {
                         action: 'delete',
-                        comic_id: comicId
+                        comic_id: comicId,
+                        csrf_token: csrfToken // CSRF-Token hinzufügen
                     };
 
                     fetch(window.location.pathname, {
@@ -2132,7 +2139,8 @@ foreach ($allIds as $id) {
 
             const dataToSend = {
                 action: 'save',
-                page: comicData
+                page: comicData,
+                csrf_token: csrfToken // CSRF-Token hinzufügen
             };
 
             fetch(window.location.pathname, {

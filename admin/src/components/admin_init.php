@@ -3,13 +3,12 @@
  * Zentrales Initialisierungsskript für alle Admin-Seiten (Final gehärtete Version).
  *
  * Dieses Skript übernimmt wiederkehrende Aufgaben und implementiert wichtige Sicherheitsmaßnahmen:
+ * - Dynamische Bestimmung der Basis-URL.
  * - Strikte Sicherheits-Header (CSP mit Nonce, HSTS, Permissions-Policy etc.).
  * - Session-Konfiguration für erhöhte Sicherheit (HTTPOnly, Secure, SameSite).
  * - Schutz vor Session Hijacking durch User-Agent- und IP-Adressen-Bindung.
  * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
  * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
- *
- * Die Variable $debugMode sollte in der aufrufenden Datei VOR dem Einbinden dieses Skripts gesetzt werden.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -44,7 +43,7 @@ if ($debugMode) {
 }
 
 
-// --- 2. Sicherheits-Header & CSP mit Nonce ---
+// --- 2. Sicherheits-Header & CSP mit Nonce (Restriktiv für Admin) ---
 $nonce = bin2hex(random_bytes(16));
 
 // Content-Security-Policy (CSP) als Array für bessere Lesbarkeit und Wartbarkeit.
@@ -52,24 +51,17 @@ $csp = [
     // Standard-Richtlinie: Lade alles nur von der eigenen Domain ('self').
     'default-src' => ["'self'"],
     // Skripte: Erlaube 'self', inline-Skripte und füge die Nonce-Quelle hinzu.
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
-
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
     // Stylesheets: Erlaube 'self', inline-Styles ('unsafe-inline') und vertrauenswürdige CDNs.
-    'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
-
+    'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdn.twokinds.keenspot.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
     // Schriftarten: Erlaube 'self' und CDNs.
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com"],
-
+    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
     // Bilder: Erlaube 'self', data-URIs (für base64-Bilder) und den Placeholder-Dienst.
-    'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com"],
-
-    // *** NEU: connect-src Direktive hinzugefügt ***
+    'img-src' => ["'self'", "data:", "https://cdn.twokinds.keenspot.com", "https://placehold.co"],
     // Erlaubt Verbindungen (z.B. via fetch, XHR) zu den angegebenen Domains.
-    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com"],
-
+    'connect-src' => ["'self'"],
     // Plugins (Flash etc.): Verbiete alles.
     'object-src' => ["'none'"],
-
     // Framing: Erlaube das Einbetten der Seite nur durch sich selbst (Schutz vor Clickjacking).
     'frame-ancestors' => ["'self'"],
     'base-uri' => ["'self'"], // Verhindert, dass die Basis-URL manipuliert wird.
@@ -82,17 +74,12 @@ foreach ($csp as $directive => $sources) {
     $cspHeader .= $directive . ' ' . implode(' ', $sources) . '; ';
 }
 header("Content-Security-Policy: " . trim($cspHeader));
-
-
 // Verhindert, dass der Browser versucht, den MIME-Typ zu erraten (Schutz vor "MIME-Sniffing").
 header('X-Content-Type-Options: nosniff');
-
 // Verhindert Clickjacking-Angriffe. 'frame-ancestors' in CSP ist moderner, aber X-Frame-Options bietet Abwärtskompatibilität.
 header('X-Frame-Options: SAMEORIGIN');
-
 // Kontrolliert, welche Referrer-Informationen gesendet werden, um Datenlecks zu minimieren.
 header('Referrer-Policy: strict-origin-when-cross-origin');
-
 // Permissions Policy: Deaktiviert sensible Browser-Features, die im Admin-Bereich nicht benötigt werden.
 header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
 
@@ -135,11 +122,11 @@ if (isset($_SESSION['session_fingerprint'])) {
     $_SESSION['session_fingerprint'] = $sessionIdentifier;
 }
 
-// Schritt 3b: Regeneriert die Session-ID in regelmäßigen Abständen.
+// Schritt 4b: Regeneriert die Session-ID in regelmäßigen Abständen.
 if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 } elseif (time() - $_SESSION['last_regeneration'] > 900) { // Alle 15 Minuten
-    // WICHTIGE OPTIMIERUNG: Session-Daten sichern, regenerieren, wiederherstellen.
+    // Session-Daten sichern, regenerieren, wiederherstellen.
     $currentSessionData = $_SESSION;
     session_regenerate_id(true); // Erneuert die ID und löscht die alte Session-Datei
     $_SESSION = $currentSessionData;
@@ -149,15 +136,15 @@ if (!isset($_SESSION['last_regeneration'])) {
 }
 
 
-// --- 5: CSRF-Schutz für Logout ---
+// --- 5: CSRF-Schutz ---
 // Erstelle einen CSRF-Token, wenn noch keiner existiert.
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+$csrfTokenForJs = $_SESSION['csrf_token']; // Für JavaScript verfügbar machen
 
-/**
- * Überprüft den CSRF-Token für POST- und AJAX-Anfragen. Bricht bei Fehler ab.
- */
+
+// Überprüft den CSRF-Token für POST- und AJAX-Anfragen. Bricht bei Fehler ab.
 function verify_csrf_token()
 {
     global $debugMode;
@@ -169,25 +156,17 @@ function verify_csrf_token()
         $json_input = file_get_contents('php://input');
         if (!empty($json_input)) {
             $data = json_decode($json_input, true);
-            if (isset($data['csrf_token'])) {
-                $token = $data['csrf_token'];
-            }
+            $token = $data['csrf_token'] ?? null;
         }
     }
 
-    if ($token === null || !hash_equals($_SESSION['csrf_token'], $token)) {
+    // KORRIGIERT: Prüft auf Existenz beider Token, bevor hash_equals aufgerufen wird
+    if ($token === null || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
         error_log("SECURITY WARNING: Ungültiger CSRF-Token bei Anfrage von IP: " . $_SERVER['REMOTE_ADDR']);
-        // Bei AJAX-Anfragen einen JSON-Fehler zurückgeben
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            header('Content-Type: application/json');
-            http_response_code(403);
-            echo json_encode(['status' => 'error', 'message' => 'Ungültige Anfrage (CSRF-Token-Fehler).']);
-        } else {
-            // Bei normalen POST-Anfragen eine generische Fehlermeldung anzeigen
-            die('Ungültige Anfrage. Bitte versuchen Sie es erneut.');
-        }
-        exit;
+        http_response_code(403);
+        die('Ungültige Anfrage (CSRF-Token-Fehler).');
     }
+
     if ($debugMode)
         error_log("DEBUG: CSRF-Token erfolgreich validiert.");
 }
@@ -237,16 +216,19 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 }
 
 // --- 8. Finaler Login-Check ---
-// Dieser Check wird für alle Admin-Seiten außer der Login-Seite selbst durchgeführt.
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    if ($debugMode)
-        error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von admin_init.php (aufgerufen von {$callingScript}).");
+// KORRIGIERT: Schließt die Login-Seite explizit von der Prüfung aus.
+if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        if ($debugMode)
+            error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von admin_init.php (aufgerufen von {$callingScript}).");
 
-    // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
-    ob_end_clean();
-    header('Location: index.php');
-    exit;
+        // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
+        ob_end_clean();
+        header('Location: index.php');
+        exit;
+    }
 }
-if ($debugMode)
+
+if ($debugMode && basename($_SERVER['PHP_SELF']) !== 'index.php')
     error_log("DEBUG: Admin ist angemeldet. Initialisierung durch admin_init.php abgeschlossen.");
 ?>

@@ -14,6 +14,7 @@
  * @param string $siteDescription Die Beschreibung der Seite für SEO und Social Media.
  * @param string $ogImage Die URL zu einem Vorschaubild für Social Media (optional).
  * @param string $robotsContent Inhalt des robots-Meta-Tags (Standard: "index, follow").
+ * @param string $canonicalUrl Eine explizite URL für den Canonical-Tag (optional, überschreibt die automatisch generierte URL).
  * ... weitere Parameter ...
  */
 
@@ -47,9 +48,12 @@ $baseUrl = $protocol . $host . $subfolderPath;
 // Erstellt die vollständige, aktuelle URL für Canonical und OG-Tags.
 $currentPageUrl = rtrim($baseUrl, '/') . $_SERVER['REQUEST_URI'];
 
-// Debug-Ausgabe, falls $debugMode aktiviert ist
+// --- NEU: Flexible Canonical URL ---
+// Nutze die explizit gesetzte $canonicalUrl, ansonsten die automatisch ermittelte $currentPageUrl.
+$finalCanonicalUrl = $canonicalUrl ?? $currentPageUrl;
+
 if (isset($debugMode) && $debugMode) {
-    error_log("DEBUG: Dynamische Basis-URL: " . $baseUrl . " und Dynamische Seiten-URL: " . $currentPageUrl);
+    error_log("DEBUG: Basis-URL: " . $baseUrl . ", Seiten-URL: " . $currentPageUrl . ", Canonical-URL: " . $finalCanonicalUrl);
 }
 
 // --- 2. Prüfung, ob eine Initialisierungsdatei geladen wurde ---
@@ -71,7 +75,6 @@ $additionalScripts = $additionalScripts ?? '';
 $additionalHeadContent = $additionalHeadContent ?? '';
 $viewportContent = $viewportContent ?? 'width=device-width, initial-scale=1.0';
 
-
 // Pfade zu Assets mit Cache-Busting
 $commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.js?c=' . filemtime(__DIR__ . '/js/common.js');
 $cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.css?c=' . filemtime(__DIR__ . '/css/cookie_banner.css');
@@ -92,8 +95,8 @@ $cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.j
     <meta name="description" content="<?php echo htmlspecialchars($siteDescription); ?>" />
 
     <!-- Dynamische Canonical & Open Graph URLs -->
-    <link rel="canonical" href="<?php echo htmlspecialchars($currentPageUrl); ?>" />
-    <meta property="og:url" content="<?php echo htmlspecialchars($currentPageUrl); ?>" />
+    <link rel="canonical" href="<?php echo htmlspecialchars($finalCanonicalUrl); ?>" />
+    <meta property="og:url" content="<?php echo htmlspecialchars($finalCanonicalUrl); ?>" />
     <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s', filemtime(__FILE__)); ?>">
 
     <!-- Open Graph Meta Tags für Social Media -->
@@ -252,11 +255,7 @@ $cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.j
 
     <div id="mainContainer" class="main-container">
         <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
-                target="_blank">twokinds.keenspot.com</a><br><br>⚠ Die
-            Homepage wird grade auf die neuste Version 2.0.0.0 aktualisiert. Der Vorgang kann bis heute (06.09.2025)
-            22:00 Uhr
-            andauern. ⚠<br> In dieser Zeit kann es zu Ladefehlern kommen. Ich bitte um Verständnis. <br> Beste Grüße
-            Felix </center>
+                target="_blank">twokinds.keenspot.com</a></center>
         <div id="banner-lights-off" class="banner-lights-off"></div>
         <div id="banner" class="banner">Twokinds</div>
         <div id="content-area" class="content-area">

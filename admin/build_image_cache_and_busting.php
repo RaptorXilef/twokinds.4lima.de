@@ -10,7 +10,7 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade
@@ -90,11 +90,14 @@ function scanDirectoryForImagesWithCacheBusting(string $dir, string $relativePat
 
 // --- AJAX-Anfrage-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'build_cache') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     ob_end_clean();
     header('Content-Type: application/json');
     $response = ['success' => false, 'message' => '', 'counts' => []];
 
-    // NEU START: Verarbeitet einzelne, komma-getrennte oder 'all' Typen
+    // Verarbeitet einzelne, komma-getrennte oder 'all' Typen
     $typesToProcess = [];
     $typeInput = $_POST['type'] ?? '';
 
@@ -108,7 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
         }
     }
-    // NEU ENDE
 
     if (empty($typesToProcess)) {
         $response['message'] = 'Ungültiger oder kein Typ für Cache-Erstellung angegeben.';
@@ -195,7 +197,7 @@ include $headerPath;
     </div>
 </article>
 
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     #fixed-buttons-container {
         display: flex;
         flex-wrap: wrap;
@@ -294,18 +296,20 @@ include $headerPath;
     }
 </style>
 
-<script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         const buttons = document.querySelectorAll('.cache-build-button');
         const spinner = document.getElementById('loading-spinner');
         const progressText = document.getElementById('progress-text');
         const resultsSection = document.getElementById('generation-results-section');
         const statusMessage = document.getElementById('overall-status-message');
 
-        // NEU START: Refaktorisierte Funktion für den AJAX-Aufruf
         async function runCacheBuild(type) {
             let typeName = type;
-            if (type === 'lowres,hires') {
+            if (type === 'all') {
+                typeName = 'Alle';
+            } else if (type === 'lowres,hires') {
                 typeName = 'Low-Res & High-Res';
             } else {
                 const button = document.querySelector(`.cache-build-button[data-type="${type}"]`);
@@ -324,7 +328,11 @@ include $headerPath;
                 const response = await fetch(window.location.href, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ action: 'build_cache', type: type })
+                    body: new URLSearchParams({
+                        action: 'build_cache',
+                        type: type,
+                        csrf_token: csrfToken // CSRF-Token hinzugefügt
+                    })
                 });
 
                 if (!response.ok) throw new Error(`HTTP-Fehler: Status ${response.status}`);
@@ -353,7 +361,6 @@ include $headerPath;
                 buttons.forEach(b => b.disabled = false);
             }
         }
-        // NEU ENDE
 
         buttons.forEach(button => {
             button.addEventListener('click', function () {
@@ -362,7 +369,7 @@ include $headerPath;
             });
         });
 
-        // NEU START: Autostart-Logik
+        // Autostart-Logik
         const urlParams = new URLSearchParams(window.location.search);
         const autostartType = urlParams.get('autostart');
         if (autostartType) {
@@ -375,7 +382,6 @@ include $headerPath;
                 runCacheBuild(autostartType);
             }
         }
-        // NEU ENDE
     });
 </script>
 

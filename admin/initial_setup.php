@@ -12,7 +12,7 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade zu den benötigten Ressourcen
@@ -256,6 +256,9 @@ function isAlphabeticallySorted(array $data, bool $debugMode): bool
 
 // --- Verarbeitung von POST-Anfragen ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     $action = $_POST['action'] ?? '';
     if ($debugMode)
         error_log("DEBUG: POST-Anfrage erhalten, Aktion: " . $action);
@@ -348,21 +351,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $folderStatuses = getFolderStatuses($requiredFolders, $debugMode);
 $jsonFileStatuses = getJsonFileStatuses($requiredJsonFiles, $jsonTemplatesPath, $debugMode);
 
-$allFoldersExist = true;
-foreach ($folderStatuses as $status) {
-    if (!$status['exists']) {
-        $allFoldersExist = false;
-        break;
-    }
-}
-
-$allJsonFilesExist = true;
-foreach ($jsonFileStatuses as $status) {
-    if (!$status['exists']) {
-        $allJsonFilesExist = false;
-        break;
-    }
-}
+$allFoldersExist = !in_array(false, array_column($folderStatuses, 'exists'));
+$allJsonFilesExist = !in_array(false, array_column($jsonFileStatuses, 'exists'));
 
 $jsonFileExistsForSort = file_exists($comicVarJsonPath);
 $jsonFileSorted = false;
@@ -435,6 +425,8 @@ if (file_exists($headerPath)) {
                 <!-- Schwebender Button für Ordner erstellen -->
                 <div id="fixed-buttons-container-folders" class="fixed-buttons-container">
                     <form action="" method="POST" style="margin: 0;">
+                        <input type="hidden" name="csrf_token"
+                            value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                         <button type="submit" name="action" value="create_folders" class="status-green-button">Fehlende
                             Ordner erstellen</button>
                     </form>
@@ -477,6 +469,7 @@ if (file_exists($headerPath)) {
             </div>
             <?php if (!$allJsonFilesExist): ?>
                 <form action="" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <button type="submit" name="action" value="create_json_files" class="status-green-button">Fehlende
                         Einstellungs-Dateien erstellen</button>
                 </form>
@@ -512,6 +505,7 @@ if (file_exists($headerPath)) {
             <?php else: ?>
                 <p class="status-message status-red">Die Datei `comic_var.json` ist nicht alphabetisch geordnet.</p>
                 <form action="" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                     <button type="submit" name="action" value="sort_json" class="status-red-button">`comic_var.json`
                         alphabetisch ordnen</button>
                 </form>
@@ -522,7 +516,7 @@ if (file_exists($headerPath)) {
     </div>
 </article>
 
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     /* CSS-Variablen für Light- und Dark-Mode */
     :root {
         /* Light Mode Defaults */
@@ -534,7 +528,6 @@ if (file_exists($headerPath)) {
         --generated-item-bg-color: #d4edda;
         --generated-item-text-color: #155724;
         --generated-item-border-color: #c3e6cb;
-
         /* Neue Textfarben für Statusanzeige */
         --status-green-text: #155724;
         --status-red-text: #721c24;
@@ -550,7 +543,6 @@ if (file_exists($headerPath)) {
         --generated-item-bg-color: #2a6177;
         --generated-item-text-color: #fff;
         --generated-item-border-color: #48778a;
-
         /* Neue Textfarben für Statusanzeige im Dark Mode */
         --status-green-text: #28a745;
         /* Helles Grün */
@@ -583,7 +575,6 @@ if (file_exists($headerPath)) {
         border: 1px solid #f5c6cb;
     }
 
-    /* Neue Textfarben für die detaillierte Statusliste */
     .status-green-text {
         color: var(--status-green-text);
     }
@@ -592,7 +583,7 @@ if (file_exists($headerPath)) {
         color: var(--status-red-text);
     }
 
-    /* Neue Button-Stile */
+    /* Button-Stile */
     .status-red-button {
         background-color: #dc3545;
         /* Bootstrap-Rot */
@@ -639,57 +630,6 @@ if (file_exists($headerPath)) {
         cursor: not-allowed;
     }
 
-    /* Spinner CSS (nicht direkt verwendet, aber zur Konsistenz beibehalten) */
-    .spinner {
-        border: 4px solid rgba(0, 0, 0, 0.1);
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border-left-color: #09f;
-        animation: spin 1s ease infinite;
-        margin: 0 auto 10px auto;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-    /* Grid Layout für generierte Elemente (nicht direkt verwendet, aber zur Konsistenz beibehalten) */
-    .generated-items-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 15px;
-        padding-bottom: 20px;
-    }
-
-    .generated-item {
-        text-align: center;
-        border: 1px solid var(--generated-item-border-color);
-        padding: 8px 12px;
-        border-radius: 8px;
-        background-color: var(--generated-item-bg-color);
-        color: var(--generated-item-text-color);
-        font-size: 0.9em;
-        word-break: break-all;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 120px;
-        /* Mindestbreite für bessere Lesbarkeit */
-        max-width: 200px;
-        /* Maximale Breite, bevor Umbruch */
-        flex-grow: 1;
-        /* Elemente können wachsen, um den Platz zu füllen */
-    }
-
     /* Stil für den Button-Container - initial statisch, wird per JS zu 'fixed' */
     .fixed-buttons-container {
         /* Geändert von ID zu Klasse */
@@ -717,155 +657,110 @@ if (file_exists($headerPath)) {
             align-items: flex-end;
             /* Auch im Spalten-Layout rechts ausrichten */
         }
-    }
 
-    /* NEUE STILE FÜR DIE KOMPAKTE LISTE DER FEHLENDEN ELEMENTE */
-    .missing-items-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        /* Abstand zwischen den Elementen */
-        max-height: 300px;
-        /* Maximale Höhe */
-        overflow-y: auto;
-        /* Scrollbar, wenn Inhalt die Höhe überschreitet */
-        border: 1px solid var(--missing-grid-border-color);
-        /* Dynamischer Rahmen */
-        padding: 10px;
-        border-radius: 5px;
-        background-color: var(--missing-grid-bg-color);
-        /* Dynamischer Hintergrund */
-        margin-bottom: 15px;
-        /* Abstand zum Button */
-    }
+        .admin-form-container {
+            max-width: 825px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid rgba(221, 221, 221, 0.2);
+            border-radius: 8px;
+            background-color: rgba(240, 240, 240, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
 
-    .missing-item {
-        background-color: var(--missing-item-bg-color);
-        /* Dynamischer Hintergrund */
-        color: var(--missing-item-text-color);
-        /* Dynamische Textfarbe */
-        padding: 4px 8px;
-        border-radius: 3px;
-        font-size: 0.9em;
-        white-space: nowrap;
-        /* Verhindert Zeilenumbruch innerhalb eines Eintrags */
-        overflow: hidden;
-        text-overflow: ellipsis;
-        /* Fügt "..." hinzu, wenn der Text zu lang ist */
-        max-width: 150px;
-        /* Begrenzt die Breite jedes Eintrags */
-        flex-shrink: 0;
-        /* Verhindert, dass Elemente schrumpfen */
-    }
+        .main-container.lights-off .admin-form-container {
+            background-color: rgba(30, 30, 30, 0.2);
+            border-color: rgba(80, 80, 80, 0.15);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #f0f0f0;
+        }
 
-    /* Bestehende Admin-Formular-Stile beibehalten und anpassen */
-    .admin-form-container {
-        max-width: 825px;
-        /* Angepasst an article Breite */
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid rgba(221, 221, 221, 0.2);
-        border-radius: 8px;
-        background-color: rgba(240, 240, 240, 0.2);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
+        .content-section {
+            /* Ersetzt admin-tool-section für den Hauptinhalt */
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eee;
+        }
 
-    .main-container.lights-off .admin-form-container {
-        background-color: rgba(30, 30, 30, 0.2);
-        border-color: rgba(80, 80, 80, 0.15);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        color: #f0f0f0;
-    }
+        .main-container.lights-off .content-section {
+            border-bottom: 1px dashed #555;
+        }
 
-    .content-section {
-        /* Ersetzt admin-tool-section für den Hauptinhalt */
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px dashed #eee;
-    }
+        .content-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
 
-    .main-container.lights-off .content-section {
-        border-bottom: 1px dashed #555;
-    }
+        .content-section h2,
+        .content-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+            /* Standardfarbe */
+        }
 
-    .content-section:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
+        .main-container.lights-off .admin-form-container h1,
+        .main-container.lights-off .admin-form-container h2,
+        .main-container.lights-off .admin-form-container h3,
+        .main-container.lights-off .admin-form-container p,
+        .main-container.lights-off .admin-form-container li,
+        .main-container.lights-off .admin-form-container span {
+            color: #f0f0f0 !important;
+            /* Textfarbe für Dark Mode */
+        }
 
-    .content-section h2,
-    .content-section h3 {
-        margin-bottom: 10px;
-        color: #333;
-        /* Standardfarbe */
-    }
+        /* Message Box Styling (Behälter für die Statusmeldungen) */
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
 
-    .main-container.lights-off .admin-form-container h1,
-    .main-container.lights-off .admin-form-container h2,
-    .main-container.lights-off .admin-form-container h3,
-    .main-container.lights-off .admin-form-container p,
-    .main-container.lights-off .admin-form-container li,
-    .main-container.lights-off .admin-form-container span {
-        color: #f0f0f0 !important;
-        /* Textfarbe für Dark Mode */
-    }
+        /* Dark Theme für Statusmeldungen (Hintergrund und Rand der Box) */
+        .main-container.lights-off .message .status-green {
+            background-color: rgba(60, 118, 61, 0.3);
+            border-color: rgba(214, 233, 198, 0.3);
+        }
 
-    /* Message Box Styling (Behälter für die Statusmeldungen) */
-    .message {
-        margin-bottom: 15px;
-        padding: 10px;
-        border-radius: 5px;
-        font-weight: bold;
-    }
+        .main-container.lights-off .message .status-red {
+            background-color: rgba(169, 68, 66, 0.3);
+            border-color: rgba(235, 204, 209, 0.3);
+        }
 
-    /* Dark Theme für Statusmeldungen (Hintergrund und Rand der Box) */
-    .main-container.lights-off .message .status-green {
-        background-color: rgba(60, 118, 61, 0.3);
-        border-color: rgba(214, 233, 198, 0.3);
-    }
+        .main-container.lights-off .message .status-orange {
+            background-color: rgba(138, 109, 59, 0.3);
+            border-color: rgba(250, 235, 204, 0.3);
+        }
 
-    .main-container.lights-off .message .status-red {
-        background-color: rgba(169, 68, 66, 0.3);
-        border-color: rgba(235, 204, 209, 0.3);
-    }
+        /* Stile für die Statuslisten */
+        .status-list {
+            margin-top: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid var(--missing-grid-border-color);
+            border-radius: 5px;
+            background-color: var(--missing-grid-bg-color);
+        }
 
-    .main-container.lights-off .message .status-orange {
-        background-color: rgba(138, 109, 59, 0.3);
-        border-color: rgba(250, 235, 204, 0.3);
-    }
+        .status-item {
+            padding: 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed var(--missing-grid-border-color);
+        }
 
-    /* Neue Stile für die Statuslisten */
-    .status-list {
-        margin-top: 10px;
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid var(--missing-grid-border-color);
-        /* Dynamisch */
-        border-radius: 5px;
-        background-color: var(--missing-grid-bg-color);
-        /* Dynamisch */
-    }
+        .status-item:last-child {
+            border-bottom: none;
+        }
 
-    .status-item {
-        padding: 4px 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px dashed var(--missing-grid-border-color);
-        /* Dynamisch */
-    }
-
-    .status-item:last-child {
-        border-bottom: none;
-    }
-
-    .status-indicator {
-        font-weight: bold;
-    }
+        .status-indicator {
+            font-weight: bold;
+        }
 </style>
 
-<script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
         // Übergebe die PHP-Debug-Variable an JavaScript
         const debugModeEnabled = <?php echo json_encode($debugMode); ?>;
@@ -898,18 +793,14 @@ if (file_exists($headerPath)) {
                 // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
                 // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
                 stickyThreshold = initialButtonTopOffset - stickyOffset;
-
                 if (!mainContent) {
                     console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
                 }
             }
 
-            /**
-             * Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
-             */
+            // Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
             function handleScroll() {
-                const currentScrollY = window.scrollY; // Aktuelle Scroll-Position
-
+                const currentScrollY = window.scrollY;
                 if (currentScrollY >= stickyThreshold) {
                     // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
                     if (fixedButtonsContainerFolders.style.position !== 'fixed') {
@@ -936,9 +827,7 @@ if (file_exists($headerPath)) {
                 }
             }
 
-            /**
-             * Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
-             */
+            // Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
             function handleResize() {
                 calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
                 handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten

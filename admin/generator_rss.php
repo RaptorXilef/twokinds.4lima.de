@@ -13,7 +13,7 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
@@ -76,6 +76,9 @@ function loadJsonFile($filePath, $debugMode) // $debugMode als Parameter überge
 
 // Überprüfe, ob der RSS-Generierungs-Request gesendet wurde (AJAX-Call)
 if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     if ($debugMode)
         error_log("DEBUG: AJAX-Anfrage 'generate_rss' erkannt.");
     // WICHTIG: KEINE AUSGABE VOR DIESER ZEILE, wenn JSON gesendet wird!
@@ -91,6 +94,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         if ($comicDataResult['status'] !== 'success') {
             if ($debugMode)
                 error_log("DEBUG: Fehler beim Laden von comic_var.json: " . $comicDataResult['message']);
+            http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Fehler: comic_var.json konnte nicht geladen werden. ' . $comicDataResult['message']]);
             exit;
         }
@@ -134,6 +138,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         if ($comicFiles === false) {
             if ($debugMode)
                 error_log("DEBUG: Fehler beim Lesen des comic-Verzeichnisses.");
+            http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Fehler beim Zugriff auf das Comic-Verzeichnis.']);
             exit;
         }
@@ -293,12 +298,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
         } else {
             if ($debugMode)
                 error_log("DEBUG: Fehler beim Speichern der rss.xml Datei: " . $rssOutputPath);
+            http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern der rss.xml Datei. Bitte Dateiberechtigungen prüfen.']);
         }
     } catch (Exception $e) {
         // Fange unerwartete Fehler ab und gib sie als JSON zurück
         if ($debugMode)
             error_log("DEBUG: Unerwarteter Fehler aufgetreten: " . $e->getMessage());
+        http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Ein unerwarteter Fehler ist aufgetreten: ' . $e->getMessage()]);
     }
     exit; // Wichtig, um zu verhindern, dass der Rest der HTML-Seite gerendert wird
@@ -318,7 +325,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
     }
     $bodyClass = ''; // Keine spezielle Klasse für den Body
     // HIER WIRD DIE JAVASCRIPT-DATEI EINGEBUNDEN:
-    $additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($baseUrl) . "admin/src/js/generator_rss.js?c=" . date('Ymd') . "'></script>";
+    $additionalScripts = "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($baseUrl) . "admin/src/js/generator_rss.js?c=" . date('Ymd') . "'></script>";
+    // SICHERHEIT: CSRF-Token für JS verfügbar machen
+    $additionalScripts .= "<script nonce=\"" . htmlspecialchars($nonce) . "\">const csrfToken = '" . htmlspecialchars($_SESSION['csrf_token']) . "';</script>";
+
     $additionalHeadContent = '';
     $viewportContent = 'width=1099'; // Konsistent mit Original für das Design.
     $siteDescription = 'Verwaltung des RSS-Feeds für die Comic-Webseite.';

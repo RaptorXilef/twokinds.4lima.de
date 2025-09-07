@@ -10,20 +10,22 @@
  * Es wird ein Lückenfüller-Bild angezeigt, falls das Original nicht existiert.
  *
  * Diese Datei wird von den einzelnen Comic-PHP-Dateien (z.B. comic/20250604.php) inkludiert.
+ * Er wird also von den einzelnen PHP-Dateien im /comic/ Verzeichnis eingebunden.
+ *
+ * Diese Version ist an die neue, sichere Architektur mit public_init.php
+ * und einem intelligenten Header angepasst.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ANGEPASST: Lade zentrale Helfer anstelle der alten Skripte ===
-// Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/public_init.php';
+
+// === 2. LADE-SKRIPTE & DATEN ===
 require_once __DIR__ . '/load_comic_data.php';
 // Lade den neuen Helfer, der die Bildpfade aus dem Cache bereitstellt.
 require_once __DIR__ . '/image_cache_helper.php';
-// Lade die Hilfsfunktion zum Rendern der Navigationsbuttons.
-require_once __DIR__ . '/nav_link_helper.php';
-
 
 // Die ID der aktuellen Comic-Seite wird aus dem Dateinamen der AUFRUFENDEN Datei extrahiert.
 $currentComicId = basename($_SERVER['SCRIPT_FILENAME'], '.php');
@@ -32,13 +34,13 @@ $currentComicId = basename($_SERVER['SCRIPT_FILENAME'], '.php');
 $comicTyp = '';
 $comicName = '';
 $comicTranscript = '';
-$urlOriginalbildFilename = ''; // NEU: Initialisieren der Variable
+$urlOriginalbildFilename = '';
 
 if (isset($comicData[$currentComicId])) {
     $comicTyp = $comicData[$currentComicId]['type'];
     $comicName = $comicData[$currentComicId]['name'];
     $comicTranscript = $comicData[$currentComicId]['transcript'];
-    $urlOriginalbildFilename = $comicData[$currentComicId]['url_originalbild'] ?? ''; // NEU: Variable aus JSON lesen
+    $urlOriginalbildFilename = $comicData[$currentComicId]['url_originalbild'] ?? '';
 } else {
     // Fallback-Werte, falls keine Comic-Daten für die aktuelle Seite gefunden werden.
     error_log("FEHLER: Daten für Comic ID '{$currentComicId}' nicht in comic_var.json gefunden.");
@@ -47,15 +49,13 @@ if (isset($comicData[$currentComicId])) {
     $comicTranscript = '<p>Dieser Comic konnte leider nicht geladen werden.</p>';
 }
 
-// === NEUE LOGIK: Bildpfade direkt aus dem Cache abrufen ===
+// === 3. BILD-PFADE & FALLBACKS ===
 $comicImagePath = get_cached_image_path($currentComicId, 'lowres');
 $comicHiresPath = get_cached_image_path($currentComicId, 'hires');
 $socialMediaPreviewUrl = get_cached_image_path($currentComicId, 'socialmedia');
 $bookmarkThumbnailUrl = get_cached_image_path($currentComicId, 'thumbnails');
 
-
 // --- FALLBACK-LOGIK ---
-
 // Fallback für das Haupt-Comicbild
 if (empty($comicImagePath)) {
     // Versuche, das "in_translation"-Bild aus dem Cache als Fallback zu laden.
@@ -66,8 +66,6 @@ if (empty($comicImagePath)) {
 if (empty($comicImagePath)) {
     $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
     $comicHiresPath = 'https://placehold.co/1600x1200/cccccc/333333?text=Bild+nicht+gefunden';
-    if ($debugMode)
-        error_log("DEBUG: Fallback auf externen Placeholder für Hauptcomicbild (Renderer).");
 }
 
 // Fallbacks für Vorschau- und Thumbnail-Bilder
@@ -78,72 +76,28 @@ if (empty($bookmarkThumbnailUrl)) {
     $bookmarkThumbnailUrl = 'https://placehold.co/96x96/cccccc/333333?text=Vorschau%0Afehlt';
 }
 
-
-// Konvertiere die Comic-ID (Datum) ins deutsche Format TT.MM.JJJJ.
+// Konvertiere die Comic-ID (Datum) ins deutsche Format
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
-// Die allgemeine Seitenbeschreibung, die in header.php verwendet wird.
-$siteDescription = 'Ein Webcomic über einen ahnungslosen Helden, eine schelmische Tigerin, einen ängstlichen Krieger und einen geschlechtsverwirrten Wolf. Dies ist eine Fan-Übersetzung von TwoKinds auf Deutsch.';
 
-// === Dynamische Basis-URL Bestimmung ===
-$isLocal = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
-if ($isLocal) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-    $host = $_SERVER['HTTP_HOST'];
-    // Beispiel: /twokinds/default-website/twokinds/comic/20250604.php
-    // Wir wollen die Basis-URL des Projekts: /twokinds/default-website/twokinds/
-    $pathParts = explode('/', $_SERVER['SCRIPT_NAME']);
-    array_pop($pathParts); // Entfernt '20250604.php'
-    array_pop($pathParts); // Entfernt 'comic'
-    $basePath = implode('/', $pathParts);
-    $baseUrl = $protocol . $host . $basePath . '/';
-    if ($debugMode)
-        error_log("DEBUG: Lokale Basis-URL (Renderer): " . $baseUrl);
-} else {
-    $baseUrl = 'https://twokinds.4lima.de/';
-    if ($debugMode)
-        error_log("DEBUG: Live Basis-URL (Renderer): " . $baseUrl);
-}
-
-// Setze Parameter für den Header.
-// Seitentitel für den Browser-Tab: JJJJ.MM.DD
+// === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Comic ' . substr($currentComicId, 0, 4) . '.' . substr($currentComicId, 4, 2) . '.' . substr($currentComicId, 6, 2) . ': ' . $comicName;
-// H1-Header auf der Seite: TT.MM.JJJJ
-// Hinzufügen von " vom " zwischen Comic-Typ und Datum
-$pageHeader = htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
+$siteDescription = 'TwoKinds Comic vom ' . $formattedDateGerman . ' - ' . htmlspecialchars($comicName) . '. ' . strip_tags($comicTranscript);
+$ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . ltrim($socialMediaPreviewUrl, './');
 
-// --- Automatischer Cache-Buster für comic.js ---
-// Pfad zur JS-Datei auf dem Server (von /src/components/ aus gesehen)
+// Cache-Buster für comic.js
 $comicJsPathOnServer = __DIR__ . '/../layout/js/comic.js';
-// Web-URL zur JS-Datei (von der Comic-Seite wie /comic/seite.php aus gesehen)
-$comicJsWebUrl = '../src/layout/js/comic.js';
-// Erstelle den Cache-Buster, falls die Datei existiert
+$comicJsWebUrl = $baseUrl . 'src/layout/js/comic.js';
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
-// Füge die comic.js mit automatischem Cache-Buster als zusätzliches Skript hinzu.
-$additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
+$additionalScripts = "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 
-// Erstelle absolute URLs für Social Media und Lesezeichen
-$absoluteSocialPreviewUrl = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . $socialMediaPreviewUrl;
-$absoluteBookmarkThumbnailUrl = str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : $baseUrl . $bookmarkThumbnailUrl;
+$viewportContent = 'width=1099';
+$robotsContent = 'index, follow'; // Einzelne Comicseiten sollen indexiert werden
 
-$additionalHeadContent = '
-    <link rel="canonical" href="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '.php">
-    <meta property="og:title" content="TwoKinds auf Deutsch - Comic ' . htmlspecialchars($formattedDateGerman) . ': ' . htmlspecialchars($comicName) . '">
-    <meta property="og:description" content="' . htmlspecialchars($siteDescription) . '">
-    <meta property="og:image" content="' . htmlspecialchars($absoluteSocialPreviewUrl) . '">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="' . $baseUrl . 'comic/' . htmlspecialchars($currentComicId) . '.php">
-';
-// Viewport-Meta-Tag an Original angepasst.
-$viewportContent = 'width=1099'; // Konsistent mit Original für das Design.
-
-
-// Binde den gemeinsamen Header ein.
-// Pfad von src/components/ zu src/layout/
-$robotsContent = 'noindex, follow';
-include __DIR__ . '/../layout/header.php';
+// === 5. HEADER EINBINDEN ===
+require_once __DIR__ . '/../layout/header.php';
 ?>
 
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     /* Passt die Größe des Comic-Bildes an die Containerbreite an */
     #comic-image {
         width: 100%;
@@ -154,9 +108,8 @@ include __DIR__ . '/../layout/header.php';
 <article class="comic">
     <header style="position: relative;">
         <!-- H1-Tag im Format des Originals, Datum und Titel werden aus der JSON geladen. -->
-        <h1><?php echo $pageHeader; ?></h1>
-        <!-- Der Lesezeichen-Button wird nun im comicnav-Container platziert,
-            damit die CSS-Regeln aus main.css korrekt angewendet werden können. -->
+        <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName); ?>
+        </h1>
     </header>
 
     <div class='comicnav'>
@@ -166,8 +119,8 @@ include __DIR__ . '/../layout/header.php';
         <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
             data-id="<?php echo htmlspecialchars($currentComicId); ?>"
             data-page="<?php echo htmlspecialchars($currentComicId); ?>"
-            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>"
-            data-thumb="<?php echo htmlspecialchars($absoluteBookmarkThumbnailUrl); ?>">
+            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId); ?>"
+            data-thumb="<?php echo htmlspecialchars(str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : $baseUrl . ltrim($bookmarkThumbnailUrl, './')); ?>">
             Bookmark this page
         </button>
     </div>
@@ -199,7 +152,7 @@ include __DIR__ . '/../layout/header.php';
     </div>
 
     <aside class="transcript">
-        <!-- NEUE STRUKTUR: Flex-Container für Überschrift und Button -->
+        <!-- Flex-Container für Überschrift und Button -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
             <h2>Transkript</h2>
             <?php if (!empty($urlOriginalbildFilename)): ?>
@@ -216,8 +169,8 @@ include __DIR__ . '/../layout/header.php';
     </aside>
 </article>
 
-<!-- NEU: JavaScript zum Kopieren der URL -->
-<script>
+<!-- JavaScript zum Kopieren der URL -->
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
         // URL Kopieren Logik
         const copyLink = document.getElementById('copy-comic-url');
@@ -248,6 +201,7 @@ include __DIR__ . '/../layout/header.php';
             let englishHref = '';
 
             const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
+            const sketchImageUrlBase = 'https://twokindscomic.com/images/';
             const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
 
             function findEnglishUrl(filename) {
@@ -257,17 +211,28 @@ include __DIR__ . '/../layout/header.php';
                     imageExtensions.forEach(ext => {
                         const url = originalImageUrlBase + filename + '.' + ext;
                         const img = new Image();
-                        img.onload = () => {
-                            if (!found) {
-                                found = true;
-                                resolve(url);
-                            }
-                        };
+                        img.onload = () => { if (!found) { found = true; resolve(url); } };
                         img.onerror = () => {
                             attempts++;
-                            if (attempts === imageExtensions.length && !found) {
-                                reject('Kein englisches Bild gefunden');
-                            }
+                            if (attempts === imageExtensions.length && !found) reject('Kein englisches Bild gefunden');
+                        };
+                        img.src = url;
+                    });
+                });
+            }
+
+            function findEnglishSketchUrl(baseFilename) {
+                return new Promise((resolve, reject) => {
+                    const sketchFilename = baseFilename.substring(0, 8) + '_sketch';
+                    let found = false;
+                    let attempts = 0;
+                    imageExtensions.forEach(ext => {
+                        const url = sketchImageUrlBase + sketchFilename + '.' + ext;
+                        const img = new Image();
+                        img.onload = () => { if (!found) { found = true; resolve(url); } };
+                        img.onerror = () => {
+                            attempts++;
+                            if (attempts === imageExtensions.length && !found) reject('Kein englisches Sketch-Bild gefunden');
                         };
                         img.src = url;
                     });
@@ -278,7 +243,7 @@ include __DIR__ . '/../layout/header.php';
                 event.preventDefault();
                 if (isGerman) {
                     // Auf Englisch umschalten
-                    if (englishSrc) {
+                    if (englishSrc && englishHref) {
                         comicImage.src = englishSrc;
                         comicLink.href = englishHref;
                         toggleBtn.textContent = 'Seite auf deutsch anzeigen';
@@ -286,15 +251,29 @@ include __DIR__ . '/../layout/header.php';
                     } else {
                         const originalText = toggleBtn.textContent;
                         toggleBtn.textContent = 'Lade...';
-                        findEnglishUrl(toggleBtn.dataset.englishFilename).then(foundUrl => {
-                            englishSrc = foundUrl;
-                            englishHref = foundUrl; // Für Hi-Res nehmen wir dieselbe URL
+                        const englishFilename = toggleBtn.dataset.englishFilename;
+
+                        const mainImagePromise = findEnglishUrl(englishFilename);
+                        const sketchImagePromise = findEnglishSketchUrl(englishFilename);
+
+                        mainImagePromise.then(mainUrl => {
+                            englishSrc = mainUrl;
                             comicImage.src = englishSrc;
-                            comicLink.href = englishHref;
-                            toggleBtn.textContent = 'Seite auf deutsch anzeigen';
-                            isGerman = false;
-                        }).catch(error => {
-                            console.error(error);
+
+                            sketchImagePromise.then(sketchUrl => {
+                                englishHref = sketchUrl;
+                                comicLink.href = englishHref;
+                            }).catch(sketchError => {
+                                console.warn(sketchError);
+                                englishHref = mainUrl;
+                                comicLink.href = englishHref;
+                            }).finally(() => {
+                                toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                                isGerman = false;
+                            });
+
+                        }).catch(mainError => {
+                            console.error(mainError);
                             toggleBtn.textContent = 'Original nicht gefunden';
                             setTimeout(() => { toggleBtn.textContent = originalText; }, 2000);
                         });
@@ -312,4 +291,4 @@ include __DIR__ . '/../layout/header.php';
 </script>
 
 <!-- Binde den gemeinsamen Footer ein. -->
-<?php include __DIR__ . '/../layout/footer.php'; ?>
+<?php require_once __DIR__ . '/../layout/footer.php'; ?>

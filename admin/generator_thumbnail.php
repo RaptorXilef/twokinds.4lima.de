@@ -10,7 +10,7 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade
@@ -259,6 +259,9 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
 
 // --- AJAX-Anfrage-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_thumbnail') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     ob_end_clean();
     ini_set('display_errors', 0);
     error_reporting(0);
@@ -327,7 +330,7 @@ if (file_exists($headerPath)) {
 
         <h2>Einstellungen & Status</h2>
 
-        <!-- NEU: Format-Umschalter -->
+        <!-- Format-Umschalter -->
         <div class="format-switcher">
             <label>Ausgabeformat:</label>
             <div class="toggle-buttons">
@@ -387,8 +390,7 @@ if (file_exists($headerPath)) {
     </div>
 </article>
 
-<style>
-    /* ... (vorhandene Styles bleiben gleich) ... */
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     :root {
         --missing-grid-border-color: #e0e0e0;
         --missing-grid-bg-color: #f9f9f9;
@@ -561,7 +563,7 @@ if (file_exists($headerPath)) {
         flex-shrink: 0;
     }
 
-    /* NEUE STILE FÜR DEN FORMAT-UMSCHALTER */
+    /* STILE FÜR DEN FORMAT-UMSCHALTER */
     .format-switcher {
         display: flex;
         align-items: center;
@@ -638,8 +640,9 @@ if (file_exists($headerPath)) {
     }
 </style>
 
-<script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         const generateButton = document.getElementById('generate-thumbnails-button');
         const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -659,7 +662,7 @@ if (file_exists($headerPath)) {
         let isPaused = false;
         let isGenerationActive = false;
 
-        // Sticky-Buttons Logik (unverändert)
+        // Sticky-Buttons Logik
         const mainContent = document.getElementById('content');
         const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
         if (!fixedButtonsContainer) return;
@@ -772,7 +775,6 @@ if (file_exists($headerPath)) {
             const currentId = remainingIds.shift();
             progressText.textContent = `Generiere ${createdCount + errorCount + 1} von ${initialMissingIds.length} (${currentId})...`;
 
-            // === ANPASSUNG: Ausgewähltes Format auslesen ===
             const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
 
             try {
@@ -782,7 +784,8 @@ if (file_exists($headerPath)) {
                     body: new URLSearchParams({
                         action: 'generate_single_thumbnail',
                         comic_id: currentId,
-                        output_format: selectedFormat // Format mitsenden
+                        output_format: selectedFormat,  // Format mitsenden
+                        csrf_token: csrfToken
                     })
                 });
 

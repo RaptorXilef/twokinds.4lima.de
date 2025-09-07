@@ -5,55 +5,28 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: lesezeichen.php wird geladen.");
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/src/components/public_init.php';
 
-// Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
-// Dies ist notwendig, um die Titel der Lesezeichen korrekt anzuzeigen.
+// === 2. LADE-SKRIPTE & DATEN ===
+// Die Comic-Daten werden benötigt, um die Titel der Lesezeichen korrekt anzuzeigen.
 require_once __DIR__ . '/src/components/load_comic_data.php';
-if ($debugMode)
-    error_log("DEBUG: load_comic_data.php in lesezeichen.php eingebunden.");
 
-// === Dynamische Basis-URL Bestimmung ===
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'];
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$scriptDir = rtrim(dirname($scriptName), '/');
-$baseUrl = $protocol . $host . ($scriptDir === '' ? '/' : $scriptDir . '/');
-if ($debugMode)
-    error_log("DEBUG: Basis-URL in lesezeichen.php: " . $baseUrl);
-
-
-// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
+// === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Deine Lesezeichen';
-$pageHeader = 'Deine Lesezeichen';
+$siteDescription = 'Verwalte und zeige deine gespeicherten Comic-Lesezeichen an, um schnell zu deinen Lieblingsseiten zurückzukehren.';
+$viewportContent = 'width=1099';
+$robotsContent = 'noindex, follow';
 
-// === ANPASSUNG: Automatischer Cache-Buster für comic.js ===
-// Der Pfad zur JS-Datei auf dem Server
-$comicJsPath = __DIR__ . '/src/layout/js/comic.js';
-// Die Web-URL zur JS-Datei
-$comicJsUrl = $baseUrl . 'src/layout/js/comic.js';
-// Erstelle den Cache-Buster basierend auf dem letzten Änderungsdatum der Datei
-$cacheBuster = file_exists($comicJsPath) ? '?c=' . filemtime($comicJsPath) : '';
-// Füge die comic.js mit automatischem Cache-Buster als zusätzliches Skript hinzu.
-$additionalScripts = "<script type='text/javascript' src='" . htmlspecialchars($comicJsUrl . $cacheBuster) . "'></script>";
-if ($debugMode)
-    error_log("DEBUG: comic.js mit Cache-Buster '" . $cacheBuster . "' in lesezeichen.php hinzugefügt.");
+// Automatischer Cache-Buster für comic.js
+$comicJsPath = $baseUrl . 'src/layout/js/comic.js?c=' . filemtime(__DIR__ . '/src/layout/js/comic.js');
+$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($comicJsPath) . '"></script>';
 
 
-// Die allgemeine Seitenbeschreibung für SEO und Social Media.
-$siteDescription = 'Verwalte und zeige deine gespeicherten Comic-Lesezeichen an.';
-
-// Viewport-Meta-Tag an Original angepasst.
-$viewportContent = 'width=1099'; // Konsistent mit Original für das Design.
-
-// Binde den gemeinsamen Header ein.
-include __DIR__ . "/src/layout/header.php";
-if ($debugMode)
-    error_log("DEBUG: Header in lesezeichen.php eingebunden.");
+// === 4. HEADER EINBINDEN ===
+require_once __DIR__ . "/src/layout/header.php";
 ?>
 
 <div id="bookmarksPage" class="bookmarks-page">
@@ -62,7 +35,7 @@ if ($debugMode)
         <div class="ribbon"></div>
     </div>
 
-    <h2 class="page-header"><?php echo htmlspecialchars($pageHeader); ?></h2>
+    <h2 class="page-header">Deine Lesezeichen</h2>
     <noscript>Entschuldigung, diese Funktion erfordert aktiviertes JavaScript.</noscript>
 
     <div>
@@ -104,9 +77,4 @@ if ($debugMode)
     </template>
 </div>
 
-
-<?php
-include __DIR__ . "/src/layout/footer.php";
-if ($debugMode)
-    error_log("DEBUG: Footer in lesezeichen.php eingebunden.");
-?>
+<?php require_once __DIR__ . "/src/layout/footer.php"; ?>

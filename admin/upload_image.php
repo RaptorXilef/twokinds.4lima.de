@@ -7,15 +7,15 @@
  * wird der Nutzer für jedes Bild individuell über eine interaktive Oberfläche
  * um Bestätigung gebeten.
  *
- * @version 3.5 (Behebung des doppelten Dateierweiterungs-Bugs, Design- und z-index-Korrekturen)
+ * @version 3.6 (Sicherheits-Härtung mit CSRF & CSP)
  * @author Felix
- * @date 2025-08-12
+ * @date 2025-09-07
  */
 
 // === DEBUG-MODUS & KONFIGURATION ===
-$debugMode = true;
+$debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Korrigierte Pfade zu den benötigten Ressourcen
@@ -37,27 +37,12 @@ if (!is_dir($uploadLowresDir)) {
 
 /**
  * Hilfsfunktion, um Dateinamen zu kürzen (JJJJMMTT.ext).
- * Diese Version ist robuster, da sie gezielt nach dem Datum sucht und die korrekte Endung anhängt.
- * @param string $filename Der ursprüngliche Dateiname.
- * @return string Der gekürzte und korrigierte Dateiname.
  */
 function shortenFilename($filename)
 {
-    // Die Dateierweiterung wird mit pathinfo ermittelt.
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
-    // Suche nach einem 8-stelligen Datum im Dateinamen
     preg_match('/(\d{8})/', $filename, $matches);
-
-    // Wenn ein Datum gefunden wurde, nutze es als Basis.
-    if (!empty($matches)) {
-        $shortName = $matches[0];
-    } else {
-        // Fallback: Nutze den ursprünglichen Namen ohne Erweiterung, falls kein Datum gefunden wurde.
-        $shortName = pathinfo($filename, PATHINFO_FILENAME);
-    }
-
-    // Der gekürzte Name wird mit der originalen Erweiterung neu zusammengesetzt.
+    $shortName = !empty($matches) ? $matches[0] : pathinfo($filename, PATHINFO_FILENAME);
     return $shortName . '.' . $extension;
 }
 
@@ -74,6 +59,8 @@ function findExistingFileInDir($shortName, $dir)
 // API-Logik für den initialen Datei-Upload (einzeln pro Request)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
     header('Content-Type: application/json');
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
 
     $file = $_FILES['file'];
 
@@ -98,15 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
         $existingFile = findExistingFileInDir($shortName, $targetDir);
 
         if ($existingFile !== null) {
-            // Bestätigung erforderlich
             $_SESSION['pending_upload'][$shortName] = [
                 'temp_file' => $tempFilePath,
                 'existing_file' => $existingFile,
                 'target_dir' => $targetDir
             ];
-
-            // Korrigierte URL-Erstellung für den Browser
-            // Statt den absoluten Pfad zu manipulieren, verwenden wir einen relativen Pfad
             $existingFileUrl = '../assets/' . basename($targetDir) . '/' . basename($existingFile);
 
             echo json_encode([
@@ -117,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
             ]);
             exit;
         } else {
-            // Kein Überschreiben, führe Upload direkt aus
             $targetPath = $targetDir . '/' . $shortName;
             if (rename($tempFilePath, $targetPath)) {
                 echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' erfolgreich hochgeladen."]);
@@ -136,6 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
 // API-Logik für die Überschreib-Bestätigung
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'confirm_overwrite') {
     header('Content-Type: application/json');
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     $shortName = $_POST['short_name'] ?? null;
     $decision = $_POST['decision'] ?? null;
 
@@ -152,13 +137,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     unset($_SESSION['pending_upload'][$shortName]);
 
     if ($decision === 'yes') {
-        // Überschreiben
         if (file_exists($existingFile)) {
             unlink($existingFile);
         }
-
         $targetPath = $targetDir . '/' . $shortName;
-
         if (rename($tempFilePath, $targetPath)) {
             echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' wurde erfolgreich überschrieben."]);
         } else {
@@ -166,7 +148,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             echo json_encode(['status' => 'error', 'message' => "Fehler beim Überschreiben von '{$shortName}'.", 'temp_file' => basename($tempFilePath)]);
         }
     } else {
-        // Abbrechen
         if (file_exists($tempFilePath)) {
             unlink($tempFilePath);
         }
@@ -179,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $pageTitle = 'Adminbereich - Bild-Upload';
 $pageHeader = 'Bild-Upload für Comic-Seiten (hires und lowres)';
 $siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
-$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+$robotsContent = 'noindex, nofollow';
 if ($debugMode) {
     error_log("DEBUG: Seiten-Titel: " . $pageTitle);
     error_log("DEBUG: Robots-Content: " . $robotsContent);
@@ -248,8 +229,9 @@ if (file_exists($headerPath)) {
 </div>
 </div>
 
-<script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
@@ -334,6 +316,7 @@ if (file_exists($headerPath)) {
         async function uploadFile(file) {
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('csrf_token', csrfToken); // CSRF-Token hinzufügen
 
             const response = await fetch('upload_image.php', {
                 method: 'POST',
@@ -363,6 +346,7 @@ if (file_exists($headerPath)) {
                     formData.append('action', 'confirm_overwrite');
                     formData.append('short_name', data.short_name);
                     formData.append('decision', decision);
+                    formData.append('csrf_token', csrfToken); // CSRF-Token hinzufügen
 
                     const response = await fetch('upload_image.php', {
                         method: 'POST',
@@ -394,8 +378,7 @@ if (file_exists($headerPath)) {
     });
 </script>
 
-<style>
-    /* Allgemeine Layout-Anpassungen */
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     .main-container {
         padding: 20px;
         max-width: 1200px;

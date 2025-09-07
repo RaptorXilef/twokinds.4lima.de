@@ -3,7 +3,7 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfad zur JSON-Datei mit den Archivkapiteln
@@ -162,6 +162,9 @@ $leaveIdEmptyChecked = false; // Flag für die Checkbox
 
 // === POST-Anfragen verarbeiten ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     if ($debugMode)
         error_log("DEBUG: POST-Anfrage erkannt.");
     // Inhalte vom Formular abrufen
@@ -386,23 +389,23 @@ if (isset($_GET['scroll_to'])) {
         error_log("DEBUG: Scroll-To ID aus GET-Parametern: " . $scrollToId);
 }
 
-
 // Setze Parameter für den Header.
 $pageTitle = 'Adminbereich - Archiv Daten Editor';
 $pageHeader = 'Archiv Daten Editor';
 $siteDescription = 'Seite zum Bearbeiten der Archivkapitel-Daten.';
-$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
+$robotsContent = 'noindex, nofollow';
 if ($debugMode) {
     error_log("DEBUG: Seiten-Titel: " . $pageTitle);
     error_log("DEBUG: Robots-Content: " . $robotsContent);
 }
-
-// Heredoc-Syntax für $additionalScripts
+// SICHERHEIT: Nonce zu allen Skripten und Styles hinzufügen
 $additionalScripts = <<<EOT
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
-    <script>
+    <script nonce="{$nonce}" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link nonce="{$nonce}" href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script nonce="{$nonce}">
+        // SICHERHEIT: CSRF-Token für JavaScript verfügbar machen
+        const csrfToken = '{$csrfTokenForJs}';
         document.addEventListener("DOMContentLoaded", function() {
             console.log("DOM fully loaded and parsed."); // Debug-Meldung
 
@@ -590,6 +593,13 @@ $additionalScripts = <<<EOT
                             form.method = "POST";
                             form.style.display = "none";
 
+                            // SICHERHEIT: CSRF-Token zum dynamisch erstellten Formular hinzufügen
+                            const csrfInput = document.createElement("input");
+                            csrfInput.type = "hidden";
+                            csrfInput.name = "csrf_token";
+                            csrfInput.value = csrfToken;
+                            form.appendChild(csrfInput);
+
                             const actionInput = document.createElement("input");
                             actionInput.type = "hidden";
                             actionInput.name = "action";
@@ -740,7 +750,7 @@ EOT;
 
 // Heredoc-Syntax für $additionalHeadContent
 $additionalHeadContent = <<<EOT
-    <style>
+    <style nonce="{$nonce}">
         /* Allgemeine Layout-Anpassungen */
         .admin-container {
             padding: 20px;
@@ -1273,10 +1283,13 @@ include __DIR__ . '/../src/layout/header.php';
         </h2>
         <div class="collapsible-content">
             <form method="POST">
-                <!-- Hidden input for the action (add/edit/delete) -->
+                <!-- SICHERHEIT: CSRF-Token zum Hauptformular hinzufügen -->
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <!-- Versteckte Eingabe für die Aktion (Hinzufügen/Bearbeiten/Löschen) -->
+
                 <input type="hidden" name="action" id="form_action"
                     value="<?php echo htmlspecialchars($formAction); ?>">
-                <!-- Hidden input to store the original chapter ID when editing -->
+                <!-- Versteckte Eingabe zum Speichern der ursprünglichen Kapitel-ID beim Bearbeiten -->
                 <input type="hidden" name="original_chapter_id" id="original_chapter_id_hidden"
                     value="<?php echo htmlspecialchars($originalChapterId); ?>">
 

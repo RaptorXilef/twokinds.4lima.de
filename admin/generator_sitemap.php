@@ -9,7 +9,7 @@
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade zu den benötigten Ressourcen
@@ -141,6 +141,9 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, s
 
 $generationMessage = '';
 if (isset($_POST['generate_sitemap'])) {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     if ($debugMode)
         error_log("DEBUG: 'Sitemap generieren'-Button geklickt.");
     $generationMessage = generateSitemap($sitemapConfigPath, $sitemapOutputPath, $baseUrl, $debugMode);
@@ -164,6 +167,8 @@ if (file_exists($headerPath)) {
     </p>
 
     <form method="POST" action="">
+        <!-- SICHERHEIT: CSRF-Token zum Formular hinzufügen -->
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
         <button type="submit" name="generate_sitemap" class="button">Sitemap generieren / aktualisieren</button>
     </form>
 

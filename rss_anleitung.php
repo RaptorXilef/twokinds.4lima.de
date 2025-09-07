@@ -5,26 +5,21 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: rss_info.php wird geladen.");
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/src/components/public_init.php';
 
-// Binde den gemeinsamen Header ein. DIES MUSS VOR JEDER VERWENDUNG VON $baseUrl ODER ANDEREN VARIABLEN AUS DEM HEADER ERFOLGEN!
-// Der Header bestimmt auch die $baseUrl.
-include __DIR__ . "/src/layout/header.php";
-if ($debugMode)
-    error_log("DEBUG: Header in rss_info.php eingebunden.");
-
-// Setze Parameter für den Header. Diese werden vom Header.php verwendet, wenn sie vor dem Include definiert werden.
+// === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'So nutzen Sie RSS-Feeds';
-$pageHeader = 'So nutzen Sie RSS-Feeds';
-$siteDescription = 'Erfahren Sie, wie Sie RSS-Feeds nutzen, um immer auf dem neuesten Stand zu bleiben.';
-$robotsContent = 'index, follow'; // Diese Seite sollte von Suchmaschinen indexiert werden
+$siteDescription = 'Erfahre mehr darüber, wie du RSS-Feeds nutzen kannst, um mit der deutschen TwoKinds-Übersetzung immer auf dem neuesten Stand zu bleiben.';
+$robotsContent = 'index, follow';
 
 // Die URL des RSS-Feeds, die dynamisch eingefügt wird.
 $rssFeedUrl = htmlspecialchars($baseUrl) . 'rss.xml';
+
+// === 3. HEADER EINBINDEN ===
+require_once __DIR__ . "/src/layout/header.php";
 ?>
 
 <article>
@@ -179,9 +174,4 @@ $rssFeedUrl = htmlspecialchars($baseUrl) . 'rss.xml';
 
 </article>
 
-<?php
-// Binde den gemeinsamen Footer ein.
-include __DIR__ . "/src/layout/footer.php";
-if ($debugMode)
-    error_log("DEBUG: Footer in rss_info.php eingebunden.");
-?>
+<?php require_once __DIR__ . "/src/layout/footer.php"; ?>

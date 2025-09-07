@@ -4,40 +4,44 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-	error_log("DEBUG: ueber_den_comic.php wird geladen.");
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/src/components/public_init.php';
 
-// NEU: Lade die Cache-Busting-Konfiguration und Helferfunktion.
-require_once __DIR__ . '/src/components/cache_config.php';
+// === 2. LADE-SKRIPTE & DATEN ===
+require_once __DIR__ . '/src/components/load_comic_data.php';
 
-// Lade die Comic-Daten aus der JSON-Datei, die alle Comic-Informationen enthält.
-// Der Pfad ist relativ zum aktuellen Verzeichnis (infos.php liegt im Root-Verzeichnis).
-$comicDataPath = __DIR__ . '/src/config/comic_var.json';
-$comicData = [];
-if (file_exists($comicDataPath)) {
-	$jsonContent = file_get_contents($comicDataPath);
-	$comicData = json_decode($jsonContent, true);
-	if (json_last_error() !== JSON_ERROR_NONE) {
-		if ($debugMode)
-			error_log("Fehler beim Dekodieren von comic_var.json in ueber_den_comic.php: " . json_last_error_msg());
-		$comicData = []; // Setze auf leeres Array bei Fehler
+// === 3. DATENVERARBEITUNG ===
+// Ermittelt die Anzahl der Comic-Seiten und Lückenfüller.
+$comicPageCount = 0;
+$fillerPageCount = 0;
+foreach ($comicData as $details) {
+	if (isset($details['type'])) {
+		if ($details['type'] === 'Comicseite') {
+			$comicPageCount++;
+		} elseif ($details['type'] === 'Lückenfüller') {
+			$fillerPageCount++;
+		}
 	}
-	if ($debugMode)
-		error_log("DEBUG: comic_var.json in ueber_den_comic.php erfolgreich geladen.");
-} else {
-	if ($debugMode)
-		error_log("Fehler: comic_var.json nicht gefunden unter: " . $comicDataPath);
 }
 
-// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versehen.
-$pageTitle = 'Über';
-$pageHeader = 'Über'; // Dieser Wert wird im Hauptinhaltsbereich angezeigt.
-include __DIR__ . "/src/layout/header.php";
-if ($debugMode)
-	error_log("DEBUG: Header in ueber_den_comic.php eingebunden.");
+// Berechnet das Alter der Personen.
+$today = new DateTime();
+$birthdateTom = new DateTime('1987-07-28');
+$ageTom = $today->diff($birthdateTom)->y;
+
+$birthdateFelix = new DateTime('1993-03-29');
+$ageFelix = $today->diff($birthdateFelix)->y;
+
+
+// === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
+$pageTitle = 'Über den Comic';
+$siteDescription = 'Erfahre alles über den Webcomic TwoKinds, den Künstler Tom Fischbach und den deutschen Übersetzer Felix Maywald.';
+$robotsContent = 'index, follow';
+
+// === 5. HEADER EINBINDEN ===
+require_once __DIR__ . "/src/layout/header.php";
 ?>
 <section>
 	<h2 class="page-header">Über den Comic</h2>
@@ -48,27 +52,8 @@ if ($debugMode)
 		<b>Übersetzt seit:</b> September 2016 <br>
 		<b>Auf twokinds.4lima.de seit:</b> 2020<br>
 		<b>Art:</b> Fantasy Manga<br>
-
-		<?php
-		// Ermittelt die Anzahl der Comic-Seiten und Lückenfüller aus comic_var.json.
-		$comicPageCount = 0;
-		$fillerPageCount = 0;
-
-		foreach ($comicData as $comicId => $details) {
-			if (isset($details['type'])) {
-				if ($details['type'] === 'Comicseite') {
-					$comicPageCount++;
-				} elseif ($details['type'] === 'Lückenfüller') {
-					$fillerPageCount++;
-				}
-			}
-		}
-		if ($debugMode)
-			error_log("DEBUG: Comicseiten: {$comicPageCount}, Lückenfüller: {$fillerPageCount}");
-
-		echo '<b>Comicseiten:</b> ' . $comicPageCount . '<br>';
-		echo '<b>Lückenfüller:</b> ' . $fillerPageCount;
-		?>
+		<b>Comicseiten:</b> <?php echo $comicPageCount; ?><br>
+		<b>Lückenfüller:</b> <?php echo $fillerPageCount; ?>
 	</p>
 
 	<p><b>Zusammenfassung:</b> Nachdem er in einer mysteriösen Schlacht sein Gedächtnis verloren hat, findet sich Trace
@@ -98,8 +83,8 @@ if ($debugMode)
 		jähzornig. Sie sind jedoch relativ leicht zu unterwerfen und zu dominieren und eignen sich daher ideal als
 		Sklaven für die Menschen. Dies ist seit Jahrhunderten ein Streitpunkt zwischen den beiden Rassen.</p>
 
-	<p><i>Basitins</i> baba sind eine wenig bekannte Rasse von zweibeinigen, langohrigen, braunfelligen,
-		empfindungsfähigen Tieren. Im Gegensatz zu den beiden anderen Rassen leben die Basitins abseits des Festlandes
+	<p><i>Basitins</i> sind eine wenig bekannte Rasse von zweibeinigen, langohrigen, empfindungsfähigen Tieren mit
+		braunem Fell. Im Gegensatz zu den beiden anderen Rassen leben die Basitins abseits des Festlandes
 		auf einem entfernten Inselkontinent. Aufgrund ihrer Isolation werden sie von den anderen beiden Völkern oft
 		vergessen und sich selbst überlassen. Sie sind ein kriegerisches Volk, dessen Gesellschaft ausschließlich aus
 		Soldaten besteht. Sie verhalten sich wie ein Bienenstock und befolgen die Befehle ihrer Vorgesetzten, ohne sie
@@ -114,25 +99,7 @@ if ($debugMode)
 	<p>
 		<b>Name:</b> Tom Fischbach<br>
 		<b>Geboren:</b> 28 Juli 1987<br>
-
-		<?php
-		// Berechnet das Alter des Künstlers.
-		$Geboren = '28.07.1987'; // Geburtsdatum im Format DD.MM.YYYY.
-		
-		// Geburtsdatum in ein Format umwandeln, das von der Funktion strtotime() erkannt wird (YYYY-MM-DD).
-		$geburtstag = date('Y-m-d', strtotime(str_replace('.', '-', $Geboren)));
-
-		// Aktuelles Datum.
-		$heute = date('Y-m-d');
-
-		// Alter berechnen.
-		$alter = date_diff(date_create($geburtstag), date_create($heute))->y;
-		if ($debugMode)
-			error_log("DEBUG: Alter des Künstlers: {$alter} Jahre.");
-
-		echo '<b>Alter:</b> ' . $alter . ' Jahre<br>';
-		?>
-
+		<b>Alter:</b> <?php echo $ageTom; ?> Jahre<br>
 		<b>Ethnie:</b> Asiatisch (Koreanisch)<br>
 		<b>Nationalität:</b> Amerikanisch<br>
 	</p>
@@ -156,32 +123,12 @@ if ($debugMode)
 <section>
 	<h2 class="page-header">Über den Übersetzer</h2>
 
-	<!-- MODIFIZIERT: Bildpfad wird durch die Cache-Busting-Funktion geleitet. -->
-	<img class="float-left" src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/about/Felix.webp')); ?>"
-		alt="Felix" height="275">
+	<img class="float-left" src="assets/img/about/Felix.webp?=c20250907" alt="Felix" height="275">
 
 	<p>
 		<b>Name:</b> Felix Maywald<br>
 		<b>Geboren:</b> März 1993<br>
-
-		<?php
-		// Berechnet das Alter des Übersetzers.
-		$Geboren1 = '29.03.1993'; // Geburtsdatum im Format DD.MM.YYYY.
-		
-		// Geburtsdatum in ein Format umwandeln, das von der Funktion strtotime() erkannt wird (YYYY-MM-DD).
-		$geburtstag1 = date('Y-m-d', strtotime(str_replace('.', '-', $Geboren1)));
-
-		// Aktuelles Datum.
-		$heute1 = date('Y-m-d');
-
-		// Alter berechnen.
-		$alter1 = date_diff(date_create($geburtstag1), date_create($heute1))->y;
-		if ($debugMode)
-			error_log("DEBUG: Alter des Übersetzers: {$alter1} Jahre.");
-
-		echo '<b>Alter:</b> ' . $alter1 . ' Jahre<br>';
-		?>
-
+		<b>Alter:</b> <?php echo $ageFelix; ?> Jahre<br>
 		<b>Ethnie:</b> Deutsch<br>
 		<b>Nationalität:</b> Deutsch<br>
 	</p>
@@ -219,9 +166,4 @@ if ($debugMode)
 		ausleben zu können.</p>
 </section>
 
-<?php
-// Binde den gemeinsamen Footer ein.
-include __DIR__ . "/src/layout/footer.php";
-if ($debugMode)
-	error_log("DEBUG: Footer in ueber_den_comic.php eingebunden.");
-?>
+<?php require_once __DIR__ . "/src/layout/footer.php"; ?>

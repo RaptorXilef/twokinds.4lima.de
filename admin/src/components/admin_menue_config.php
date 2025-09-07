@@ -3,6 +3,9 @@
  * Dieses Skript enthält die Konfiguration für das Navigationsmenü im Admin-Bereich.
  * Es wird dynamisch in src/layout/header.php geladen, wenn sich der Benutzer im Admin-Bereich befindet.
  */
+
+// Die Variable $nonce wird in admin_init.php definiert und ist hier verfügbar.
+$nonce = $nonce ?? '';
 ?>
 
 
@@ -39,7 +42,7 @@
     <a href="./data_editor_sitemap.php">Sitemap Editor</a>
     <a href="./generator_sitemap.php">Sitemap Generator</a>
     </br>
-    <!-- *** GEÄNDERT: CSRF-Token zum Logout-Link hinzugefügt *** -->
+    <!-- CSRF-Token zum Logout-Link hinzugefügt -->
     <a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">Logout</a>
     <br>
     <br>
@@ -49,8 +52,8 @@
   <!-- Menü Ende -->
 </div>
 
-<!-- NEU: CSS für den Session-Timer -->
-<style>
+<!-- NEU: CSS für den Session-Timer mit CSP-Nonce -->
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
   .session-timer {
     background-color: #00425c;
     color: #fff;

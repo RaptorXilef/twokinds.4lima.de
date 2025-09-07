@@ -9,49 +9,35 @@ http_response_code(404);
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: 404.php wird geladen.");
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/src/components/public_init.php';
 
-// === ANGEPASST: Lade den neuen zentralen Image-Cache-Helfer ===
+// === 2. LADE-SKRIPTE & DATEN ===
 require_once __DIR__ . '/src/components/image_cache_helper.php';
 
-// === KORRIGIERTE Dynamische Basis-URL Bestimmung ===
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'];
-$appRootAbsPath = str_replace('\\', '/', dirname(__FILE__));
-$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
-$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
-if (!empty($subfolderPath) && $subfolderPath !== '/') {
-    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
-} elseif (empty($subfolderPath)) {
-    $subfolderPath = '/';
-}
-$baseUrl = $protocol . $host . $subfolderPath;
-
-
-// === NEUE LOGIK: Bildpfade für Low-Res und High-Res aus dem Cache abrufen ===
+// === 3. BILD-PFADE & FALLBACKS ===
 $lowresImage = get_cached_image_path('404', 'lowres');
 $hiresImage = get_cached_image_path('404', 'hires');
 
-$imageToShow = $lowresImage ? $baseUrl . $lowresImage : 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
+// Benutze die globale $baseUrl aus public_init.php
+$imageToShow = $lowresImage ? $baseUrl . ltrim($lowresImage, './') : 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
 // Der Link zeigt auf die Hi-Res-Version, falls vorhanden, ansonsten auf die Low-Res-Version selbst.
-$linkToShow = $hiresImage ? $baseUrl . $hiresImage : $imageToShow;
+$linkToShow = $hiresImage ? $baseUrl . ltrim($hiresImage, './') : $imageToShow;
 
 if ($debugMode && !$lowresImage) {
     error_log("DEBUG: 404-Bild nicht im Cache gefunden, verwende Placeholder.");
 }
 
-
-// Setze Parameter für den Header.
+// === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Fehler 404 - Seite nicht gefunden';
 $pageHeader = 'Fehler 404: Seite nicht gefunden';
 $robotsContent = 'noindex, follow'; // Wichtig für SEO: Seite nicht indexieren
 
-// Binde den gemeinsamen Header ein.
-include __DIR__ . '/src/layout/header.php';
+// === 5. HEADER EINBINDEN ===
+require_once __DIR__ . '/src/layout/header.php';
 ?>
 
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     /* Passt die Größe des Fehler-Bildes an die Containerbreite an */
     #error-image {
         width: 100%;
@@ -95,7 +81,7 @@ include __DIR__ . '/src/layout/header.php';
             </p>
             <ul>
                 <li>Überprüfe die URL auf Tippfehler.</li>
-                <li>Gehe zurück zur <a href="<?php echo htmlspecialchars($baseUrl); ?>index.php">Startseite</a>, um den
+                <li>Gehe zurück zur <a href="<?php echo htmlspecialchars($baseUrl); ?>">Startseite</a>, um den
                     neuesten Comic zu sehen.</li>
                 <li>Besuche das <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv.php">Archiv</a>, um einen
                     bestimmten Comic zu finden.</li>
@@ -110,5 +96,5 @@ include __DIR__ . '/src/layout/header.php';
 
 <?php
 // Binde den gemeinsamen Footer ein.
-include __DIR__ . '/src/layout/footer.php';
+require_once __DIR__ . '/src/layout/footer.php';
 ?>

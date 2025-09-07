@@ -73,4 +73,11 @@ src/config/version.json
 
 #Notizen
 _links/*
+# FTP Verzeichnisse
 sync.ffs_db
+# Charaktere Bilder
+assets/img/charaktere/characters/themaskedgods.png
+assets/img/charaktere/characters/TheMaskedGods2025-2.png
+assets/img/charaktere/characters/TheMaskedGods2025.png
+assets/img/charaktere/characters_webp/templarchart-Original.png
+assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp

@@ -1,6 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 /**
  * Dies ist die Archivseite der TwoKinds-Webseite. (OPTIMIERTE VERSION)
  * Sie zeigt die Comics nach Kapiteln gruppiert an und lädt Informationen
@@ -12,23 +10,12 @@ error_reporting(E_ALL);
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: archiv.php wird geladen.");
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/src/components/public_init.php';
 
-// === Dynamische Basis-URL Bestimmung ===
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'];
-$scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-$baseUrl = $protocol . $host . ($scriptDir === '' ? '/' : $scriptDir . '/');
-
-if ($debugMode)
-    error_log("DEBUG: Basis-URL in archiv.php: " . $baseUrl);
-
-
-// === LADE CACHE UND DATEN ===
+// === 2. LADE-SKRIPTE & DATEN ===
 $archiveChaptersJsonPath = __DIR__ . '/src/config/archive_chapters.json';
 $comicVarJsonPath = __DIR__ . '/src/config/comic_var.json';
-// *** NEU: Pfad zur zentralen Bild-Cache-Datei ***
 $imageCacheJsonPath = __DIR__ . '/src/config/comic_image_cache.json';
 $placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg';
 
@@ -57,13 +44,10 @@ $comicData = loadJsonFile($comicVarJsonPath, $debugMode, 'comic_var.json');
 $imageCache = loadJsonFile($imageCacheJsonPath, $debugMode, 'comic_image_cache.json');
 
 if ($debugMode && empty($imageCache)) {
-    // *** Warnmeldung verweist auf die korrekte Datei ***
     error_log("WARNUNG: Der Bild-Cache (comic_image_cache.json) ist leer oder konnte nicht geladen werden. Führe build_image_cache.php im Admin-Bereich aus.");
 }
 
-
-// === DATENVERARBEITUNG ===
-// Erstelle eine Map von chapterId zu Comic-IDs aus comic_var.json
+// === 3. DATENVERARBEITUNG & SORTIERUNG ===
 $comicsByChapter = [];
 foreach ($comicData as $comicId => $details) {
     $chapterId = $details['chapter'] ?? null;
@@ -126,22 +110,17 @@ usort($archiveChapters, function ($a, $b) {
         return strnatcmp($valA[1], $valB[1]);
     return $valA[1] <=> $valB[1];
 });
-if ($debugMode)
-    error_log("DEBUG: Kapitel nach ID und Titelstatus sortiert.");
 
-
-// === HEADER-PARAMETER ===
+// === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Archiv';
-$pageHeader = 'TwoKinds auf Deutsch - Archiv';
-$siteDescription = 'Das Archiv der TwoKinds Comics, fanübersetzt auf Deutsch.';
+$pageHeader = 'Archiv';
+$siteDescription = 'Das vollständige Archiv aller TwoKinds-Comics, übersichtlich nach Kapiteln geordnet. Finde schnell und einfach deine Lieblingsseite.';
 $robotsContent = 'index, follow';
-$additionalScripts = '<script type="text/javascript" src="' . htmlspecialchars($baseUrl) . 'src/layout/js/archive.js?c=' . filemtime(__DIR__ . '/src/layout/js/archive.js') . '"></script>';
-$additionalHeadContent = '';
+$archiveJsPath = $baseUrl . 'src/layout/js/archive.js?c=' . filemtime(__DIR__ . '/src/layout/js/archive.js');
+$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($archiveJsPath) . '"></script>';
 
-include __DIR__ . '/src/layout/header.php';
-
-if ($debugMode)
-    error_log("DEBUG: Header in archiv.php eingebunden.");
+// === 5. HEADER EINBINDEN ===
+require_once __DIR__ . '/src/layout/header.php';
 ?>
 
 <article>
@@ -171,12 +150,9 @@ if ($debugMode)
                             <p>Für dieses Kapitel sind noch keine Comics verfügbar.</p>
                         <?php else: ?>
                             <?php foreach ($comicsForThisChapter as $comicId => $comicDetails):
-                                // *** Logik angepasst, um den Thumbnail-Pfad aus der neuen Cache-Struktur zu lesen ***
                                 $foundImagePath = $imageCache[$comicId]['thumbnails'] ?? null;
-
-                                $displayImagePath = $foundImagePath ? $baseUrl . $foundImagePath : $baseUrl . $placeholderImagePath;
-
-                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId) . '.php';
+                                $displayImagePath = $foundImagePath ? $baseUrl . ltrim($foundImagePath, './') : $baseUrl . $placeholderImagePath;
+                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId);
                                 $comicDate = DateTime::createFromFormat('Ymd', $comicId);
                                 $displayDate = $comicDate ? $comicDate->format('d.m.Y') : 'Unbekanntes Datum';
                                 ?>
@@ -196,8 +172,4 @@ if ($debugMode)
     <?php endif; ?>
 </article>
 
-<?php
-include __DIR__ . '/src/layout/footer.php';
-if ($debugMode)
-    error_log("DEBUG: Footer in archiv.php eingebunden.");
-?>
+<?php require_once __DIR__ . '/src/layout/footer.php'; ?>

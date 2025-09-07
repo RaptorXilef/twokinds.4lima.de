@@ -6,7 +6,7 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // --- Pfad zur Benutzerdatei ---
@@ -35,6 +35,9 @@ $message = '';
 $currentUser = $_SESSION['admin_username'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     $action = $_POST['action'] ?? '';
 
     switch ($action) {
@@ -92,8 +95,7 @@ if (file_exists($headerPath)) {
 }
 ?>
 <article>
-    <style>
-        /* Stile können in eine zentrale CSS-Datei ausgelagert werden */
+    <style nonce="<?php echo htmlspecialchars($nonce); ?>">
         .admin-form-container {
             max-width: 500px;
             margin: 20px auto;
@@ -191,7 +193,9 @@ if (file_exists($headerPath)) {
     </style>
     <div class="admin-form-container">
         <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-        <p style="text-align: right;"><a href="index.php?action=logout" class="logout-link">Logout</a></p>
+        <p style="text-align: right;"><a
+                href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
+                class="logout-link">Logout</a></p>
 
         <?php if (!empty($message)): ?>
             <div class="message"><?php echo $message; ?></div>
@@ -200,6 +204,7 @@ if (file_exists($headerPath)) {
         <section id="manage-users" style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #eee;">
             <h3>Neuen Benutzer hinzufügen</h3>
             <form action="management_user.php" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                 <input type="hidden" name="action" value="add_user">
                 <div>
                     <label for="add_username">Benutzername für neuen Benutzer:</label>
@@ -224,9 +229,11 @@ if (file_exists($headerPath)) {
                         <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
                         <?php if ($user !== $currentUser): ?>
                             <form action="management_user.php" method="POST" style="margin: 0;">
+                                <input type="hidden" name="csrf_token"
+                                    value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                                 <input type="hidden" name="action" value="delete_user">
                                 <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
-                                <button type="submit" value="delete_user"
+                                <button type="submit"
                                     onclick="return confirm('Sind Sie sicher, dass Sie den Benutzer <?php echo htmlspecialchars($user); ?> löschen möchten?');">Löschen</button>
                             </form>
                         <?php else: ?>

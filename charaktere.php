@@ -1,82 +1,56 @@
 <?php
 /**
  * Diese Datei zeigt Details zu den Charakteren des Comics an.
+ * Version 2.0: Vollständig an die neue, sichere Architektur mit
+ * public_init.php und einem zentralen Bild-Helfer angepasst.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
-if ($debugMode)
-    error_log("DEBUG: charaktere.php wird geladen.");
+// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
+require_once __DIR__ . '/src/components/public_init.php';
 
-// NEU: Lade die Cache-Busting-Konfiguration und Helferfunktion.
-require_once __DIR__ . '/src/components/cache_config.php';
+// === 2. LADE-SKRIPTE & DATEN ===
+// NEU: Lade den zentralen Helfer für Charakter-Bilder
+require_once __DIR__ . '/src/components/character_image_helper.php';
 
-// Setze Parameter für den Header. Der Seitentitel wird im Header automatisch mit Präfix versesehen.
+// === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Charaktere';
-// Der H1-Header für diese Seite ist im Body der Datei selbst (header hidden), daher bleibt $pageHeader leer.
-$pageHeader = '';
+$siteDescription = 'Lerne die Hauptcharaktere von TwoKinds kennen. Detaillierte Biografien und Referenzbilder von Trace, Flora, Keith, Natani und vielen mehr.';
+$robotsContent = 'index, follow';
 
-// === Dynamische Basis-URL Bestimmung für die gesamte Anwendung ===
-// Diese Logik ist notwendig, um korrekte absolute URLs für Skripte und Bilder zu generieren.
-// Die $baseUrl wird hier dupliziert, um sicherzustellen, dass sie verfügbar ist,
-// bevor $additionalScripts definiert wird, die ihrerseits im header.php verwendet werden.
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'];
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$scriptDir = rtrim(dirname($scriptName), '/');
-$baseUrl = $protocol . $host . ($scriptDir === '' ? '/' : $scriptDir . '/');
-
-if ($debugMode)
-    error_log("DEBUG: Basis-URL in charaktere.php: " . $baseUrl);
-
-// Die asset_paths.php wird im header.php inkludiert,
-// sodass die $assetPaths Variable hier verfügbar ist.
-// Wir müssen sie nicht explizit hier einbinden.
-
-// === HINWEIS: WICHTIG FÜR LAZY LOADING ===
-// Die Bilder im char-head (kleine Icons) werden direkt geladen, da sie immer sichtbar sind.
-// Die größeren Porträts und Farbfelder in char-detail-Sektionen werden lazy geladen.
-
-// Füge die charaktere.js zum Laden hinzu
+// Füge die charaktere.js mit Cache-Busting und Nonce hinzu
+$charaktereJsPath = $baseUrl . 'src/layout/js/charaktere.js?c=' . filemtime(__DIR__ . '/src/layout/js/charaktere.js');
 $additionalScripts = '
-    <script>
-        // Übergebe den PHP-Debug-Modus an JavaScript
+    <script nonce="' . htmlspecialchars($nonce) . '">
         window.phpDebugMode = ' . ($debugMode ? 'true' : 'false') . ';
     </script>
-    <script type="text/javascript" src="' . htmlspecialchars($baseUrl) . 'src/layout/js/charaktere.js?c=' . filemtime(__DIR__ . '/src/layout/js/charaktere.js') . '"></script>
+    <script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($charaktereJsPath) . '"></script>
 ';
 
-// Füge CSS für das initiale Ausblenden der Lazy-Load-Bilder hinzu
+// CSS für das initiale Ausblenden der Lazy-Load-Bilder
 $additionalHeadContent = '
-    <style>
-        /* Blendet Bilder mit der Klasse lazy-char-img initial aus */
+    <style nonce="' . htmlspecialchars($nonce) . '">
         img.lazy-char-img {
             opacity: 0;
-            transition: opacity 0.5s ease-in; /* Optional: Sanfter Übergang beim Laden */
+            transition: opacity 0.5s ease-in;
         }
-        /* Zeigt Bilder an, sobald sie geladen sind (Klasse wird von JS hinzugefügt) */
         img.lazy-char-img.loaded {
             opacity: 1;
         }
     </style>
 ';
 
-include __DIR__ . "/src/layout/header.php";
-if ($debugMode)
-    error_log("DEBUG: Header in charaktere.php eingebunden.");
-
-// Standardmäßig die Original-Pfade verwenden.
-// Um lokale Bilder zu verwenden, ändere 'original' zu 'local' in den Pfaden unten.
-// Beispiel: $assetPaths['images']['characters']['trace_portrait']['local']
+// === 4. HEADER EINBINDEN ===
+require_once __DIR__ . "/src/layout/header.php";
 ?>
 <header hidden>
     <h1 class="page-header">Charaktere</h1>
 </header>
 <section>
     <div class="char-head">
-        <!-- Diese kleinen Icons werden direkt geladen, da sie immer sichtbar sind -->
+        <!-- Diese kleinen Icons werden direkt von der Originalseite geladen -->
         <a href="#trace"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_trace.gif" alt="Trace"></a>
         <a href="#flora"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_flora.gif" alt="Flora"></a>
         <a href="#keith"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_keith.gif" alt="Keith"></a>
@@ -96,13 +70,13 @@ if ($debugMode)
                 alt="Madelyn Adelaide"></a>
         <a href="#maren"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maren.gif" alt="Maren"></a>
         <a href="#karen"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_karen.gif" alt="Karen"></a>
-        <a href="#red"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_red.gif" alt="Red-haired guy"></a>
+        <a href="#red"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_red.gif" alt="Red"></a>
         <a href="#alaric"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_alaric.gif" alt="Alaric"></a>
         <a href="#nora"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_nora.gif" alt="Nora"></a>
         <a href="#reni"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_reni.gif" alt="Reni"></a>
         <a href="#adira"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_adira.gif" alt="Adira"></a>
         <a href="#maeve"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maeve.gif" alt="Maeve"></a>
-        <a href="#mask"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_mask.gif" alt="Mask"></a>
+        <a href="#mask"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_mask.gif" alt="Maske"></a>
     </div>
     <header>
         <h2 class="page-header">Hauptcharaktere</h2>
@@ -112,20 +86,19 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Trace2025.webp')); ?>"
-                alt="Trace"><br>
+                data-src="<?php echo get_char_image_path('Trace2025', 'portrait'); ?>" alt="Trace"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif" alt="Color Swatch">
             <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/traceref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('traceref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
             <a href="https://www.patreon.com/posts/tiger-trace-22635887" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/tigertraceref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('tigertraceref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -156,20 +129,19 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Flora2025.webp')); ?>"
-                alt="Flora"><br>
+                data-src="<?php echo get_char_image_path('Flora2025', 'portrait'); ?>" alt="Flora"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/FloraSwatch.gif" alt="Color Swatch">
             <a href="https://www.patreon.com/posts/flora-character-127534701" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/floraref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('floraref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
             <a href="https://www.patreon.com/posts/flora-ref-sheet-26619874" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/flora-oldref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('flora-oldref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -181,7 +153,6 @@ if ($debugMode)
                 <b>Spezies:</b> Tiger Keidran<br>
                 <b>Sprachen:</b> Keidran, Mensch<br>
             </p>
-
             <p><b>Persönlichkeit:</b> Flora ist kontaktfreudig und willensstark, aber auch romantisch. Seit ihrer
                 Kindheit träumt sie davon, die „wahre Liebe“ zu finden.</p>
             <p>Flora wurde in den südlichen Regenwäldern ihres Stammes geboren. Doch im Alter von drei Jahren wurde ihr
@@ -202,15 +173,14 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Keith2025.webp')); ?>"
-                alt="Keith"><br>
+                data-src="<?php echo get_char_image_path('Keith2025', 'portrait'); ?>" alt="Keith"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KeithSwatch.gif" alt="Color Swatch">
             <a href="https://www.patreon.com/posts/keith-ref-sheet-26845156" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/keithref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('keithref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -238,8 +208,7 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Natani2025.webp')); ?>"
-                alt="Natani"><br>
+                data-src="<?php echo get_char_image_path('Natani2025', 'portrait'); ?>" alt="Natani"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/NataniSwatch.gif"
@@ -247,7 +216,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/natani-ref-sheet-25812950" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/nataniref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('nataniref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -280,16 +249,14 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Zen2025.webp')); ?>"
-                alt="Zen"><br>
+                data-src="<?php echo get_char_image_path('Zen2025', 'portrait'); ?>" alt="Zen"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/ZenSwatch.gif" alt="Color Swatch">
             <a href="https://www.patreon.com/posts/zen-ref-sheet-82651895" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/zenref_thumbnail.webp')); ?>"
-                    alt="Ref Sheet"></a>
+                    data-src="<?php echo get_char_image_path('zenref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Zen</h3>
@@ -317,15 +284,14 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Sythe2025.webp')); ?>"
-                alt="Sythe"><br>
+                data-src="<?php echo get_char_image_path('Sythe2025', 'portrait'); ?>" alt="Sythe"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SytheSwatch.gif" alt="Color Swatch">
             <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/sytheref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('sytheref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -354,17 +320,11 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Nibbly2025.webp')); ?>"
-                alt="Mrs Nibbly"><br>
+                data-src="<?php echo get_char_image_path('Nibbly2025', 'portrait'); ?>" alt="Mrs Nibbly"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MrsNibblySwatch.gif"
                 alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/sytheref_thumbnail.webp')); ?>"
-                    alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Mrs. Nibbly</h3>
@@ -397,15 +357,14 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Raine2025.webp')); ?>"
-                alt="Raine"><br>
+                data-src="<?php echo get_char_image_path('Raine2025', 'portrait'); ?>" alt="Raine"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RaineSwatch.gif" alt="Color Swatch">
             <a href="https://www.patreon.com/posts/raine-reference-25826733" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/raineref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('raineref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -435,15 +394,14 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Laura2025.webp')); ?>"
-                alt="Laura"><br>
+                data-src="<?php echo get_char_image_path('Laura2025', 'portrait'); ?>" alt="Laura"><br>
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LauraSwatch.gif" alt="Color Swatch">
             <a href="https://www.patreon.com/posts/laura-reference-30562240" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/lauraref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('lauraref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -477,7 +435,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/saria-ref-sheet-60925868" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/sariaref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('sariaref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -508,7 +466,7 @@ if ($debugMode)
             <img class="char-swatch lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EricSwatch.gif" alt="Color Swatch">
-            <!--<a href="" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets_webp/ericref_thumbnail.webp" alt="Ref Sheet"></a>-->
+            <!-- Kein Ref Sheet Link in der alten Datei vorhanden -->
         </div>
         <div class="char-info">
             <h3>Eric Vaughan</h3>
@@ -541,7 +499,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/kathrin-ref-26592787" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/kathrinref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('kathrinref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -574,7 +532,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/mikeandevalsref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('mikeandevalsref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -606,7 +564,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/mikeandevalsref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('mikeandevalsref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -637,7 +595,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/madelyn-ref-34828699" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/madelynref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('madelynref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -673,7 +631,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/marenkarenref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('marenkarenref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -706,7 +664,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/marenkarenref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('marenkarenref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -741,8 +699,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/red-ref-sheet-90801686" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/redref_thumbnail.webp')); ?>"
-                    alt="Ref Sheet"></a>
+                    data-src="<?php echo get_char_image_path('redref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Red</h3>
@@ -771,7 +728,7 @@ if ($debugMode)
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
                 data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/AlaricSwatch.gif"
                 alt="Color Swatch">
-            <!--<a href="" target="_blank"><img class="char-swatch" src="assets/img/charaktere/ref_sheets_webp/alaricref_thumbnail.webp" alt="Ref Sheet"></a>-->
+            <!-- Kein Ref Sheet Link in der alten Datei vorhanden -->
         </div>
         <div class="char-info">
             <h3>Nickolai Alaric</h3>
@@ -804,8 +761,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/lady-nora-ref-26898478" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/noraref_thumbnail.webp')); ?>"
-                    alt="Ref Sheet"></a>
+                    data-src="<?php echo get_char_image_path('noraref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Lady Nora</h3>
@@ -831,14 +787,11 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Reni2025.webp')); ?>"
-                alt="Reni"><br>
-            <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/reniref_thumbnail.png" alt="Color Swatch">-->
+                data-src="<?php echo get_char_image_path('Reni2025', 'portrait'); ?>" alt="Reni"><br>
             <a href="https://www.patreon.com/posts/reni-ref-sheet-50534633" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/reniref_thumbnail.webp')); ?>"
-                    alt="Ref Sheet"></a>
+                    data-src="<?php echo get_char_image_path('reniref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
             <h3>Prinzessin Reni</h3>
@@ -872,13 +825,11 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Adira2025.webp')); ?>"
-                alt="Adira"><br>
-            <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/adiramaeveref_thumbnail.png" alt="Color Swatch">-->
+                data-src="<?php echo get_char_image_path('Adira2025', 'portrait'); ?>" alt="Adira"><br>
             <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/adiramaeveref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('adiramaeveref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -908,13 +859,11 @@ if ($debugMode)
         <div class="char-img">
             <img class="portrait lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/characters_webp/Maeve2025.webp')); ?>"
-                alt="Maeve"><br>
-            <!--<img class="char-swatch" src="https://cdn.twokinds.keenspot.com/img/adiramaeveref_thumbnail.png" alt="Color Swatch">-->
+                data-src="<?php echo get_char_image_path('Maeve2025', 'portrait'); ?>" alt="Maeve"><br>
             <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/adiramaeveref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('adiramaeveref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -931,9 +880,7 @@ if ($debugMode)
         </div>
         <div class="clear"></div>
     </section>
-</section>
 
-<section>
     <header>
         <h2 class="page-header">Bösewichte</h2>
     </header>
@@ -942,7 +889,7 @@ if ($debugMode)
         <div class="center" style="margin-bottom: 10px;">
             <img class="lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/mask.png" alt="Die Masken">
+                data-src="<?php echo get_char_image_path('TheMaskedGods2025', 'portrait'); ?>" alt="Die Masken">
         </div>
         <div class="char-info" style="width: 800px;">
             <h3>Die Masken</h3>
@@ -950,7 +897,10 @@ if ($debugMode)
                 <b>Klasse:</b> Korrumpierte planetare Wächter<br>
                 <b>Spezies:</b> Maske<br>
             </p>
-            <p>Die Masken Blah Blah Blah</p>
+            <p>Die Masken sind uralte, empfindungsfähige Artefakte, die geschaffen wurden, um das Gleichgewicht der
+                Welt
+                zu wahren. Im Laufe der Jahrhunderte wurden sie jedoch korrumpiert und verfolgen nun ihre eigenen,
+                finsteren Ziele, oft indem sie Sterbliche als ihre Wirte benutzen und manipulieren.</p>
         </div>
         <div class="clear"></div>
     </section>
@@ -959,8 +909,9 @@ if ($debugMode)
         <div class="center" style="margin-bottom: 10px;">
             <img class="lazy-char-img"
                 src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" alt="Bösewichte"
-                style="width: 500px;">
+                <?php /* data-src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" */ ?>
+                data-src="<?php echo get_char_image_path('TemplarChart2025', 'portrait'); ?>"  alt="Bösewichte"
+                style="width: 800px;">
         </div>
         <div class="char-info" style="width: 800px;">
             <h3>Die Meistertempler: Meisterspion, Architekt, Stratege, Seher und Magier.</h3>
@@ -968,10 +919,13 @@ if ($debugMode)
                 <b>Klasse:</b> Meistertempler<br>
                 <b>Spezies:</b> Mensch<br>
             </p>
-            <p>Diese fünf Männer wurden von Großtempler Trace angestellt, um nach seiner Übernahme die Ordnung im Tempel
-                aufrechtzuerhalten. Er ließ sie die bisherigen sechs Meistertempler des vorherigen Großtempels ersetzen.
+            <p>Diese fünf Männer wurden von Großtempler Trace angestellt, um nach seiner Übernahme die Ordnung im
+                Tempel
+                aufrechtzuerhalten. Er ließ sie die bisherigen sechs Meistertempler des vorherigen Großtempels
+                ersetzen.
                 Nach Traces Verschwinden hielt der Tempelmeister den Orden bis zu seiner Rückkehr weiterhin unter
-                Kontrolle. Einige suchen Trace, damit er zurückkehren kann, während andere planen, Trace zu töten und
+                Kontrolle. Einige suchen Trace, damit er zurückkehren kann, während andere planen, Trace zu töten
+                und
                 seine Macht an sich zu reißen. Wieder andere planen, ihn fernzuhalten und zu beschäftigen, damit er
                 möglicherweise überhaupt nicht zurückkehrt.</p>
         </div>
@@ -990,7 +944,7 @@ if ($debugMode)
             <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img
                     class="char-swatch lazy-char-img"
                     src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo htmlspecialchars(versioniere_bild_asset('assets/img/charaktere/ref_sheets_webp/traceref_thumbnail.webp')); ?>"
+                    data-src="<?php echo get_char_image_path('traceref_thumbnail', 'ref_sheet'); ?>"
                     alt="Ref Sheet"></a>
         </div>
         <div class="char-info">
@@ -1002,25 +956,28 @@ if ($debugMode)
                 <b>Spezies:</b> Mensch<br>
                 <b>Sprachen:</b> Mensch, Keidran, Basitin<br>
             </p>
-            <p><b>Persönlichkeit:</b> Trace ist ein herzloser Killer, der nichts Geringeres als den Tod aller Menschen
+            <p><b>Persönlichkeit:</b> Trace ist ein herzloser Killer, der nichts Geringeres als den Tod aller
+                Menschen
                 will. Ihm ist das Leben egal.</p>
             <p>Trace wurde in eine erbärmliche Bauernfamilie hineingeboren, doch seine offensichtlichen natürlichen
                 Talente in der Magie wurden schnell erkannt und in jungen Jahren wurde er in den Templerorden
-                rekrutiert. Er stieg in den Rängen auf und übernahm unweigerlich die Organisation als Großtempel nach
-                dem Tod seiner ersten Frau. Er wurde schnell als großer Herrscher bekannt, der von Menschen und Keidran
+                rekrutiert. Er stieg in den Rängen auf und übernahm unweigerlich die Organisation als Großtempel
+                nach
+                dem Tod seiner ersten Frau. Er wurde schnell als großer Herrscher bekannt, der von Menschen und
+                Keidran
                 gleichermaßen gefürchtet wurde. Seine unglaubliche Macht ermöglichte es ihm, alle zu dominieren, die
                 sich ihm widersetzten.</p>
-            <p>Ephemural raubte ihm jedoch seine Erinnerungen. Jetzt muss er seine Erinnerungen und seine Machtposition
-                wiedererlangen, bevor er sich zu sehr auf das Leben des erbärmlichen Keidran einlässt, mit dem er reist.
+            <p>Ephemural raubte ihm jedoch seine Erinnerungen. Jetzt muss er seine Erinnerungen und seine
+                Machtposition
+                wiedererlangen, bevor er sich zu sehr auf das Leben des erbärmlichen Keidran einlässt, mit dem er
+                reist.
             </p>
         </div>
         <div class="clear"></div>
     </section>
+
 </section>
 
 <?php
-// Binde den gemeinsamen Footer ein.
-include __DIR__ . "/src/layout/footer.php";
-if ($debugMode)
-    error_log("DEBUG: Footer in charaktere.php eingebunden.");
+require_once __DIR__ . "/src/layout/footer.php";
 ?>

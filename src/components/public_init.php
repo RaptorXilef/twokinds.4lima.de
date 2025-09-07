@@ -62,7 +62,8 @@ $csp = [
     'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
     'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
     'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com"],
-    'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "twokindscomic.com"],
+    // KORREKTUR: Fehlende Domains für Lizenzbilder hinzugefügt
+    'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "twokindscomic.com", "https://i.creativecommons.org", "https://licensebuttons.net"],
     'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com"],
     'object-src' => ["'none'"],
     'frame-ancestors' => ["'self'"],

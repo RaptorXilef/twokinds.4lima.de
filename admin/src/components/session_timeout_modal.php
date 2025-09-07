@@ -10,6 +10,8 @@ if (!isset($baseUrl)) {
     $baseUrl = '/'; // Annahme des Stammverzeichnisses
     error_log("WARNUNG: \$baseUrl war in session_timeout_modal.php nicht gesetzt.");
 }
+// Die $nonce wird in der admin_init.php definiert.
+$nonce = $nonce ?? '';
 ?>
 
 <!-- Session-Timeout Modal -->
@@ -26,7 +28,7 @@ if (!isset($baseUrl)) {
     </div>
 </div>
 <!-- Styles für das Session-Timeout Modal -->
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     .session-timeout-modal {
         display: none;
         position: fixed;
@@ -75,5 +77,8 @@ if (!isset($baseUrl)) {
 // Pfad und Cache-Buster für das JavaScript
 // __DIR__ ist hier /src/components/, also gehen wir eine Ebene hoch zu /src/ und dann in /layout/js/
 $sessionTimeoutJsPath = $baseUrl . 'admin/src/js/session_timeout.js?c=' . filemtime(__DIR__ . '/../js/session_timeout.js');
-echo "<script type='text/javascript' src='" . htmlspecialchars($sessionTimeoutJsPath) . "'></script>";
+
+// Übergebe CSRF-Token und Nonce an das JavaScript
+echo "<script nonce=\"" . htmlspecialchars($nonce) . "\">window.csrfToken = '" . htmlspecialchars($_SESSION['csrf_token'] ?? '') . "';</script>";
+echo "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($sessionTimeoutJsPath) . "'></script>";
 ?>

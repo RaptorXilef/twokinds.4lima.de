@@ -9,7 +9,7 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';
 
 // Pfade
@@ -243,12 +243,16 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
 
 // --- AJAX-Anfrage-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_social_media_image') {
+    // SICHERHEIT: CSRF-Token validieren
+    verify_csrf_token();
+
     ob_end_clean();
     header('Content-Type: application/json');
 
     $response = ['success' => false, 'message' => ''];
     if (!extension_loaded('gd')) {
         $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen.";
+        http_response_code(500);
         echo json_encode($response);
         exit;
     }
@@ -259,6 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     if (empty($comicId)) {
         $response['message'] = 'Keine Comic-ID angegeben.';
+        http_response_code(400);
     } else {
         $result = generateSocialMediaImage($comicId, $outputFormat, $resizeMode, $hiresDir, $lowresDir, $socialMediaImageDir, $debugMode);
         if (empty($result['errors'])) {
@@ -268,6 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $response['comicId'] = $comicId;
         } else {
             $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
+            http_response_code(500);
         }
     }
     echo json_encode($response);
@@ -367,7 +373,7 @@ else
     </div>
 </article>
 
-<style>
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
     .settings-container {
         display: flex;
         flex-direction: column;
@@ -632,8 +638,10 @@ else
     }
 </style>
 
-<script>
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
+        // SICHERHEIT: CSRF-Token für JavaScript verfügbar machen
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         const generateButton = document.getElementById('generate-images-button');
         const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -737,7 +745,8 @@ else
                         action: 'generate_single_social_media_image',
                         comic_id: currentId,
                         output_format: selectedFormat,
-                        resize_mode: selectedMode // Neuen Modus mitsenden
+                        resize_mode: selectedMode, // Neuen Modus mitsenden
+                        csrf_token: csrfToken // SICHERHEIT: CSRF-Token mitsenden
                     })
                 });
 
