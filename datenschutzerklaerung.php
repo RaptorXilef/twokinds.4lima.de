@@ -19,6 +19,14 @@ $robotsContent = 'noindex, follow'; // Diese Seite sollte nicht von Suchmaschine
 require_once __DIR__ . "/src/layout/header.php";
 ?>
 
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    /* Stile für den Container des Cookie-Einstellungs-Buttons (CSP-Konformität) */
+    .cookie-settings-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+</style>
+
 <article>
     <header>
         <h1 class="page-header">Datenschutzerklärung</h1>
@@ -135,11 +143,11 @@ require_once __DIR__ . "/src/layout/header.php";
         </ul>
         </p>
         <p>Weitere Informationen zum Umgang mit Nutzerdaten bei Google Analytics finden Sie in der
-            Datenschutzerklärung von Google: <a href="https://support.google.com/analytics/answer/6004245?hl=de"
-                target="_blank">https://support.google.com/analytics/answer/6004245?hl=de</a>.</p>
+            Datenschutzerklärung von Google: <a href="https://support.google.com/analytics/answer/6004245?hl=en"
+                target="_blank">https://support.google.com/analytics/answer/6004245?hl=en</a>.</p>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="button" onclick="window.showCookieBanner()">Cookie-Einstellungen ändern</button>
+        <div class="cookie-settings-container">
+            <button class="button" id="change-cookie-settings-btn">Cookie-Einstellungen ändern</button>
         </div>
     </section>
 
