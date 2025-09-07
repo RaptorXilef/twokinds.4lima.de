@@ -413,9 +413,10 @@ if (file_exists($headerPath)) {
                 zu erstellen.</p>
             <div class="status-list">
                 <?php foreach ($folderStatuses as $folder): ?>
-                    <div class="status-item <?php echo $folder['exists'] ? 'status-green-text' : 'status-red-text'; ?>">
-                        <?php echo htmlspecialchars($folder['basename']); ?>:
-                        <span class="status-indicator">
+                    <div class="status-item">
+                        <span><?php echo htmlspecialchars($folder['basename']); ?>:</span>
+                        <span
+                            class="status-indicator <?php echo $folder['exists'] ? 'status-green-text' : 'status-red-text'; ?>">
                             <?php echo $folder['exists'] ? 'Existiert' : 'Fehlt'; ?>
                         </span>
                     </div>
@@ -448,9 +449,10 @@ if (file_exists($headerPath)) {
                 leer erstellt werden.</p>
             <div class="status-list">
                 <?php foreach ($jsonFileStatuses as $file): ?>
-                    <div class="status-item <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>">
-                        <?php echo htmlspecialchars($file['name']); ?>:
-                        <span class="status-indicator">
+                    <div class="status-item">
+                        <span><?php echo htmlspecialchars($file['name']); ?>:</span>
+                        <span
+                            class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>">
                             <?php
                             if ($file['exists']) {
                                 echo 'Existiert';
@@ -522,13 +524,7 @@ if (file_exists($headerPath)) {
         /* Light Mode Defaults */
         --missing-grid-border-color: #e0e0e0;
         --missing-grid-bg-color: #f9f9f9;
-        --missing-item-bg-color: #e9e9e9;
-        --missing-item-text-color: #333;
-        /* Standardtextfarbe */
-        --generated-item-bg-color: #d4edda;
-        --generated-item-text-color: #155724;
-        --generated-item-border-color: #c3e6cb;
-        /* Neue Textfarben für Statusanzeige */
+        --default-text-color: #333;
         --status-green-text: #155724;
         --status-red-text: #721c24;
     }
@@ -537,23 +533,60 @@ if (file_exists($headerPath)) {
         /* Dark Mode Overrides */
         --missing-grid-border-color: #045d81;
         --missing-grid-bg-color: #03425b;
-        --missing-item-bg-color: #025373;
-        --missing-item-text-color: #f0f0f0;
-        /* Hellerer Text für Dark Mode */
-        --generated-item-bg-color: #2a6177;
-        --generated-item-text-color: #fff;
-        --generated-item-border-color: #48778a;
-        /* Neue Textfarben für Statusanzeige im Dark Mode */
+        --default-text-color: #f0f0f0;
         --status-green-text: #28a745;
-        /* Helles Grün */
         --status-red-text: #dc3545;
-        /* Helles Rot */
     }
 
-    /* Allgemeine Statusmeldungen */
+    /* Allgemeine Container- und Text-Stile */
+    .admin-form-container {
+        max-width: 825px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid rgba(221, 221, 221, 0.2);
+        border-radius: 8px;
+        background-color: rgba(240, 240, 240, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        color: var(--default-text-color);
+    }
+
+    body.theme-night .admin-form-container {
+        background-color: rgba(30, 30, 30, 0.2);
+        border-color: rgba(80, 80, 80, 0.15);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-section {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed #eee;
+    }
+
+    body.theme-night .content-section {
+        border-bottom: 1px dashed #555;
+    }
+
+    .content-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .content-section h2,
+    .content-section h3 {
+        margin-bottom: 10px;
+    }
+
+    /* Statusmeldungen */
+    .message {
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
     .status-message {
         padding: 8px 12px;
         border-radius: 5px;
+        margin-top: 10px;
         margin-bottom: 10px;
     }
 
@@ -575,6 +608,25 @@ if (file_exists($headerPath)) {
         border: 1px solid #f5c6cb;
     }
 
+    body.theme-night .status-green {
+        background-color: rgba(60, 118, 61, 0.3);
+        border-color: rgba(214, 233, 198, 0.3);
+        color: var(--status-green-text);
+    }
+
+    body.theme-night .status-red {
+        background-color: rgba(169, 68, 66, 0.3);
+        border-color: rgba(235, 204, 209, 0.3);
+        color: var(--status-red-text);
+    }
+
+    body.theme-night .status-orange {
+        background-color: rgba(138, 109, 59, 0.3);
+        border-color: rgba(250, 235, 204, 0.3);
+        color: #ffeeba;
+    }
+
+    /* Farbige Texte für Statusanzeigen */
     .status-green-text {
         color: var(--status-green-text);
     }
@@ -584,281 +636,149 @@ if (file_exists($headerPath)) {
     }
 
     /* Button-Stile */
-    .status-red-button {
-        background-color: #dc3545;
-        /* Bootstrap-Rot */
+    .status-red-button,
+    .status-green-button {
         color: white;
-        border: 1px solid #dc3545;
         padding: 8px 15px;
         border-radius: 5px;
         cursor: pointer;
         font-size: 1em;
         transition: background-color 0.2s ease;
+        border: 1px solid transparent;
+        display: block;
+        /* Stellt sicher, dass der Button Platz einnimmt */
+        width: fit-content;
+        /* Passt die Breite an den Inhalt an */
+        margin-top: 10px;
+        /* Abstand nach oben */
+    }
+
+    .status-red-button {
+        background-color: #dc3545;
+        border-color: #dc3545;
     }
 
     .status-red-button:hover {
         background-color: #c82333;
     }
 
-    .status-red-button:disabled {
-        background-color: #e9ecef;
-        color: #6c757d;
-        border-color: #e9ecef;
-        cursor: not-allowed;
-    }
-
     .status-green-button {
         background-color: #28a745;
-        /* Bootstrap-Grün */
-        color: white;
-        border: 1px solid #28a745;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1em;
-        transition: background-color 0.2s ease;
+        border-color: #28a745;
     }
 
     .status-green-button:hover {
         background-color: #218838;
     }
 
-    .status-green-button:disabled {
-        background-color: #e9ecef;
-        color: #6c757d;
-        border-color: #e9ecef;
-        cursor: not-allowed;
-    }
-
-    /* Stil für den Button-Container - initial statisch, wird per JS zu 'fixed' */
+    /* Container für schwebende Buttons */
     .fixed-buttons-container {
-        /* Geändert von ID zu Klasse */
         z-index: 1000;
-        /* Stellt sicher, dass die Buttons über anderen Inhalten liegen */
         display: flex;
-        /* Für nebeneinanderliegende Buttons */
         gap: 10px;
-        /* Abstand zwischen den Buttons */
         margin-top: 20px;
-        /* Fügt etwas Abstand hinzu, wenn die Buttons statisch sind */
         margin-bottom: 20px;
-        /* Abstand nach unten, wenn statisch */
         justify-content: flex-end;
-        /* Richtet die Buttons im statischen Zustand am rechten Rand aus */
-        /* top und right werden dynamisch per JavaScript gesetzt, position wird auch per JS gesetzt */
     }
 
-    /* Anpassung für kleinere Bildschirme, falls die Buttons zu viel Platz einnehmen */
+    /* Status-Liste (das "sichtbare Feld") */
+    .status-list {
+        margin-top: 10px;
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid var(--missing-grid-border-color);
+        border-radius: 5px;
+        background-color: var(--missing-grid-bg-color);
+    }
+
+    .status-item {
+        padding: 4px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed var(--missing-grid-border-color);
+    }
+
+    .status-item:last-child {
+        border-bottom: none;
+    }
+
+    .status-indicator {
+        font-weight: bold;
+    }
+
     @media (max-width: 768px) {
         .fixed-buttons-container {
             flex-direction: column;
-            /* Buttons untereinander auf kleinen Bildschirmen */
             gap: 5px;
             align-items: flex-end;
-            /* Auch im Spalten-Layout rechts ausrichten */
         }
-
-        .admin-form-container {
-            max-width: 825px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid rgba(221, 221, 221, 0.2);
-            border-radius: 8px;
-            background-color: rgba(240, 240, 240, 0.2);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .main-container.lights-off .admin-form-container {
-            background-color: rgba(30, 30, 30, 0.2);
-            border-color: rgba(80, 80, 80, 0.15);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            color: #f0f0f0;
-        }
-
-        .content-section {
-            /* Ersetzt admin-tool-section für den Hauptinhalt */
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #eee;
-        }
-
-        .main-container.lights-off .content-section {
-            border-bottom: 1px dashed #555;
-        }
-
-        .content-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .content-section h2,
-        .content-section h3 {
-            margin-bottom: 10px;
-            color: #333;
-            /* Standardfarbe */
-        }
-
-        .main-container.lights-off .admin-form-container h1,
-        .main-container.lights-off .admin-form-container h2,
-        .main-container.lights-off .admin-form-container h3,
-        .main-container.lights-off .admin-form-container p,
-        .main-container.lights-off .admin-form-container li,
-        .main-container.lights-off .admin-form-container span {
-            color: #f0f0f0 !important;
-            /* Textfarbe für Dark Mode */
-        }
-
-        /* Message Box Styling (Behälter für die Statusmeldungen) */
-        .message {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        /* Dark Theme für Statusmeldungen (Hintergrund und Rand der Box) */
-        .main-container.lights-off .message .status-green {
-            background-color: rgba(60, 118, 61, 0.3);
-            border-color: rgba(214, 233, 198, 0.3);
-        }
-
-        .main-container.lights-off .message .status-red {
-            background-color: rgba(169, 68, 66, 0.3);
-            border-color: rgba(235, 204, 209, 0.3);
-        }
-
-        .main-container.lights-off .message .status-orange {
-            background-color: rgba(138, 109, 59, 0.3);
-            border-color: rgba(250, 235, 204, 0.3);
-        }
-
-        /* Stile für die Statuslisten */
-        .status-list {
-            margin-top: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid var(--missing-grid-border-color);
-            border-radius: 5px;
-            background-color: var(--missing-grid-bg-color);
-        }
-
-        .status-item {
-            padding: 4px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px dashed var(--missing-grid-border-color);
-        }
-
-        .status-item:last-child {
-            border-bottom: none;
-        }
-
-        .status-indicator {
-            font-weight: bold;
-        }
+    }
 </style>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
-        // Übergebe die PHP-Debug-Variable an JavaScript
         const debugModeEnabled = <?php echo json_encode($debugMode); ?>;
+        const mainContent = document.getElementById('content');
+        const fixedButtonsContainerFolders = document.getElementById('fixed-buttons-container-folders');
 
-        // Elemente für die Positionierung der Buttons
-        const mainContent = document.getElementById('content'); // Das Haupt-Content-Element
-        const fixedButtonsContainerFolders = document.getElementById('fixed-buttons-container-folders'); // Spezifischer Container für Ordner-Buttons
-
-        // *** KORREKTUR: Führe den Code für den schwebenden Button nur aus, WENN der Button-Container existiert. ***
         if (fixedButtonsContainerFolders) {
+            let initialButtonTopOffset, stickyThreshold;
+            const stickyOffset = 18;
+            const rightOffset = 24;
 
-            let initialButtonTopOffset; // Die absolute Top-Position der Buttons im Dokument, wenn sie nicht fixed sind
-            let stickyThreshold; // Der Scroll-Y-Wert, ab dem die Buttons fixiert werden sollen
-            const stickyOffset = 18; // Gewünschter Abstand vom oberen Viewport-Rand, wenn sticky
-            const rightOffset = 24; // Gewünschter Abstand vom rechten Rand des Main-Elements, wenn sticky
-
-            /**
-             * Berechnet die initialen Positionen und den Schwellenwert für das "Klebenbleiben".
-             * Diese Funktion muss aufgerufen werden, wenn sich das Layout ändert (z.B. bei Fenstergröße).
-             */
             function calculateInitialPositions() {
-                // Sicherstellen, dass die Buttons nicht 'fixed' sind, um ihre natürliche Position zu ermitteln
                 fixedButtonsContainerFolders.style.position = 'static';
-                fixedButtonsContainerFolders.style.top = 'auto';
-                fixedButtonsContainerFolders.style.right = 'auto';
-
-                // Die absolute Top-Position des Button-Containers im Dokument
                 initialButtonTopOffset = fixedButtonsContainerFolders.getBoundingClientRect().top + window.scrollY;
-
-                // Der Schwellenwert: Wenn der Benutzer so weit scrollt, dass die Buttons
-                // 'stickyOffset' (18px) vom oberen Viewport-Rand entfernt wären, sollen sie fixiert werden.
                 stickyThreshold = initialButtonTopOffset - stickyOffset;
                 if (!mainContent) {
-                    console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden. Die rechte Position der Buttons wird relativ zum Viewport berechnet.");
+                    console.warn("Warnung: Das 'main' Element mit ID 'content' wurde nicht gefunden.");
                 }
             }
 
-            // Behandelt das Scroll-Ereignis, um die Buttons zu fixieren oder freizugeben.
             function handleScroll() {
-                const currentScrollY = window.scrollY;
-                if (currentScrollY >= stickyThreshold) {
-                    // Wenn der Scroll-Y-Wert den Schwellenwert erreicht oder überschreitet, fixiere die Buttons
+                if (window.scrollY >= stickyThreshold) {
                     if (fixedButtonsContainerFolders.style.position !== 'fixed') {
                         fixedButtonsContainerFolders.style.position = 'fixed';
-                        fixedButtonsContainerFolders.style.top = `${stickyOffset}px`; // 18px vom oberen Viewport-Rand
-
-                        // Berechne die rechte Position:
+                        fixedButtonsContainerFolders.style.top = `${stickyOffset}px`;
                         if (mainContent) {
                             const mainRect = mainContent.getBoundingClientRect();
-                            // Abstand vom rechten Viewport-Rand zum rechten Rand des Main-Elements + gewünschter Offset
                             fixedButtonsContainerFolders.style.right = (window.innerWidth - mainRect.right + rightOffset) + 'px';
                         } else {
-                            // Fallback: Wenn mainContent nicht gefunden wird, positioniere relativ zum Viewport-Rand
                             fixedButtonsContainerFolders.style.right = `${rightOffset}px`;
                         }
                     }
                 } else {
-                    // Wenn der Scroll-Y-Wert unter dem Schwellenwert liegt, gib die Buttons frei (normaler Fluss)
                     if (fixedButtonsContainerFolders.style.position === 'fixed') {
-                        fixedButtonsContainerFolders.style.position = 'static'; // Zurück zum normalen Fluss
-                        fixedButtonsContainerFolders.style.top = 'auto';
-                        fixedButtonsContainerFolders.style.right = 'auto';
+                        fixedButtonsContainerFolders.style.position = 'static';
                     }
                 }
             }
 
-            // Behandelt das Resize-Ereignis, um Positionen neu zu berechnen und den Scroll-Status anzupassen.
             function handleResize() {
-                calculateInitialPositions(); // Positionen neu berechnen, da sich das Layout geändert haben könnte
-                handleScroll(); // Den Sticky-Zustand basierend auf den neuen Positionen neu bewerten
+                calculateInitialPositions();
+                handleScroll();
             }
 
-            // Initiales Setup beim Laden der Seite
-            // Zuerst Positionen berechnen, dann den Scroll-Status anpassen
             calculateInitialPositions();
-            handleScroll(); // Setze den initialen Zustand basierend auf der aktuellen Scroll-Position
+            handleScroll();
 
-            // Event Listener für Scroll- und Resize-Ereignisse
             window.addEventListener('scroll', handleScroll);
             window.addEventListener('resize', handleResize);
         } else {
-            // Gib den Hinweis nur aus, wenn der Debug-Modus in PHP aktiviert ist
             if (debugModeEnabled) {
-                console.info("Hinweis: Das Element '#fixed-buttons-container-folders' wurde nicht gefunden, da es nicht benötigt wird (alle Ordner existieren bereits). Der schwebende Button ist daher inaktiv.");
+                console.info("Hinweis: Das Element '#fixed-buttons-container-folders' wurde nicht gefunden, da es nicht benötigt wird. Der schwebende Button ist daher inaktiv.");
             }
         }
     });
 </script>
 
 <?php
-// Binde den gemeinsamen Footer ein.
-// Stelle sicher, dass der Pfad korrekt ist.
 if (file_exists($footerPath)) {
     include $footerPath;
     if ($debugMode)
         error_log("DEBUG: Footer in initial_setup.php eingebunden.");
 } else {
-    // Fallback oder Fehlerbehandlung, wenn der Footer nicht gefunden wird
     die('Fehler: Footer-Datei nicht gefunden. Pfad: ' . htmlspecialchars($footerPath));
 }
 ?>
