@@ -1,9 +1,9 @@
 <?php
 /**
  * Dies ist die Administrationsseite für den Social Media Bild-Generator.
- * Sie kombiniert die Modi "Zuschneiden" (Crop) und "Anpassen" (Fit) sowie die
- * Ausgabeformate JPG, PNG und WebP in einer einzigen, steuerbaren Datei.
- * Die Generierung erfolgt schrittweise über AJAX, um Speicherprobleme zu vermeiden.
+ * V2: Vollständig überarbeitet mit der intelligenten Logik des Thumbnail-Generators.
+ * Bietet Qualitätsregler, verlustfreie Option, eine robuste Fallback-Automatik
+ * (WebP -> PNG -> JPG) und speichert Benutzereinstellungen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -16,17 +16,44 @@ require_once __DIR__ . '/src/components/admin_init.php';
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $hiresDir = __DIR__ . '/../assets/comic_hires/';
-$lowresDir = __DIR__ . '/../assets/comic_lowres/'; // Hinzugefügt für Fallback
+$lowresDir = __DIR__ . '/../assets/comic_lowres/';
 $socialMediaImageDir = __DIR__ . '/../assets/comic_socialmedia/';
+$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 
-// Setze Parameter für den Header.
-$pageTitle = 'Adminbereich - Social Media Bild-Generator';
-$pageHeader = 'Social Media Bild-Generator';
-$siteDescription = 'Seite zum Generieren der Sozial Media Vorschaubilder.';
-$robotsContent = 'noindex, nofollow'; // Diese Seite soll nicht indexiert werden
-if ($debugMode) {
-    error_log("DEBUG: Seiten-Titel: " . $pageTitle);
-    error_log("DEBUG: Robots-Content: " . $robotsContent);
+// --- Einstellungsverwaltung ---
+function loadGeneratorSettings(string $filePath, bool $debugMode): array
+{
+    $defaults = [
+        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
+        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null]
+    ];
+    if (!file_exists($filePath)) {
+        if ($debugMode)
+            error_log("DEBUG: Einstellungsdatei nicht gefunden, erstelle Standard: $filePath");
+        $dir = dirname($filePath);
+        if (!is_dir($dir))
+            mkdir($dir, 0755, true);
+        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        return $defaults;
+    }
+    $content = file_get_contents($filePath);
+    $settings = json_decode($content, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        if ($debugMode)
+            error_log("DEBUG: Fehler beim Dekodieren der Einstellungs-JSON. Verwende Standardwerte.");
+        return $defaults;
+    }
+    if (!isset($settings['generator_socialmedia']))
+        $settings['generator_socialmedia'] = $defaults['generator_socialmedia'];
+    return $settings;
+}
+
+function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+{
+    if ($debugMode)
+        error_log("DEBUG: Speichere Einstellungen in: $filePath");
+    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
+    return file_put_contents($filePath, $jsonContent) !== false;
 }
 
 // GD-Bibliothek-Check
@@ -37,14 +64,12 @@ if (!extension_loaded('gd')) {
     $gdError = null;
 }
 
-/**
- * Scannt die Comic-Verzeichnisse nach vorhandenen Comic-Bildern.
- */
+// Helper-Funktionen
+// Scannt die Comic-Verzeichnisse nach vorhandenen Comic-Bildern.
 function getExistingComicIds(string $hiresDir, string $lowresDir, bool $debugMode): array
 {
     $comicIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
     foreach ([$hiresDir, $lowresDir] as $dir) {
         if (is_dir($dir)) {
             $files = scandir($dir);
@@ -56,19 +81,13 @@ function getExistingComicIds(string $hiresDir, string $lowresDir, bool $debugMod
             }
         }
     }
-    if ($debugMode)
-        error_log("DEBUG: " . count($comicIds) . " eindeutige Comic-IDs gefunden.");
     return array_keys($comicIds);
 }
-
-/**
- * Scannt das Social-Media-Verzeichnis nach vorhandenen Bildern.
- */
+// Scannt das Social-Media-Verzeichnis nach vorhandenen Bildern.
 function getExistingSocialMediaImageIds(string $socialMediaImageDir, bool $debugMode): array
 {
     $imageIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
     if (is_dir($socialMediaImageDir)) {
         $files = scandir($socialMediaImageDir);
         foreach ($files as $file) {
@@ -78,51 +97,26 @@ function getExistingSocialMediaImageIds(string $socialMediaImageDir, bool $debug
             }
         }
     }
-    if ($debugMode)
-        error_log("DEBUG: " . count($imageIds) . " Social Media Bilder gefunden.");
     return array_keys($imageIds);
 }
-
-/**
- * Vergleicht Comic-IDs mit Social-Media-Bild-IDs, um fehlende zu finden.
- */
+// Vergleicht alle Comic-IDs mit den vorhandenen Social-Media-Bildern und gibt die fehlenden IDs zurück.
 function findMissingSocialMediaImages(array $allComicIds, array $existingImageIds, bool $debugMode): array
 {
-    $missing = array_values(array_diff($allComicIds, $existingImageIds));
-    if ($debugMode)
-        error_log("DEBUG: " . count($missing) . " fehlende Social Media Bilder gefunden.");
-    return $missing;
+    return array_values(array_diff($allComicIds, $existingImageIds));
 }
 
-/**
- * Generiert ein einzelnes Social Media Bild in einem spezifizierten Format und Modus.
- * @param string $comicId Die ID des Comics.
- * @param string $outputFormat Das gewünschte Ausgabeformat ('jpg', 'png', 'webp').
- * @param string $resizeMode Der Skalierungsmodus ('crop' oder 'fit').
- * @param string $hiresDir Pfad zum High-Res-Verzeichnis.
- * @param string $lowresDir Pfad zum Low-Res-Verzeichnis.
- * @param string $socialMediaImageDir Pfad zum Zielverzeichnis.
- * @param bool $debugMode Debug-Modus an/aus.
- * @return array Ergebnis-Array mit 'created' und 'errors'.
- */
-function generateSocialMediaImage(string $comicId, string $outputFormat, string $resizeMode, string $hiresDir, string $lowresDir, string $socialMediaImageDir, bool $debugMode): array
+// Generiert ein Social-Media-Bild für eine gegebene Comic-ID mit den angegebenen Einstellungen.
+function generateSocialMediaImage(string $comicId, string $outputFormat, string $resizeMode, string $hiresDir, string $lowresDir, string $socialMediaImageDir, bool $debugMode, array $options = []): array
 {
     $errors = [];
-    if ($debugMode)
-        error_log("DEBUG: Generiere '$comicId' | Format: '$outputFormat' | Modus: '$resizeMode'");
-
-    // Zielverzeichnis prüfen
     if (!is_dir($socialMediaImageDir) && !mkdir($socialMediaImageDir, 0755, true)) {
         return ['created' => '', 'errors' => ["Zielverzeichnis '$socialMediaImageDir' konnte nicht erstellt werden."]];
     }
     if (!is_writable($socialMediaImageDir)) {
         return ['created' => '', 'errors' => ["Zielverzeichnis '$socialMediaImageDir' ist nicht beschreibbar."]];
     }
-
     $targetWidth = 1200;
     $targetHeight = 630;
-
-    // Quellbild finden (priorisiert hires)
     $sourceImagePath = '';
     $possibleExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     foreach ([$hiresDir, $lowresDir] as $dir) {
@@ -134,17 +128,14 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
             }
         }
     }
-
     if (empty($sourceImagePath)) {
         return ['created' => '', 'errors' => ["Quellbild für '$comicId' nicht gefunden."]];
     }
-
     try {
         $imageInfo = @getimagesize($sourceImagePath);
         if ($imageInfo === false)
             return ['created' => '', 'errors' => ["Bildinfo für '$sourceImagePath' nicht lesbar."]];
         list($width, $height, $type) = $imageInfo;
-
         $sourceImage = null;
         switch ($type) {
             case IMAGETYPE_JPEG:
@@ -162,7 +153,6 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
         }
         if (!$sourceImage)
             return ['created' => '', 'errors' => ["Bild '$sourceImagePath' konnte nicht geladen werden."]];
-
         $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
         if (!$tempImage) {
             imagedestroy($sourceImage);
@@ -189,7 +179,6 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
             $srcY = 0;
             $srcW = $width;
             $srcH = $height;
-
             if ($srcRatio > $targetRatio) { // Quelle breiter -> horizontal zentriert beschneiden
                 $srcW = $height * $targetRatio;
                 $srcX = ($width - $srcW) / 2;
@@ -205,34 +194,37 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
             $offsetY = ($targetHeight - $newHeight) / 2;
             imagecopyresampled($tempImage, $sourceImage, (int) $offsetX, (int) $offsetY, 0, 0, (int) $newWidth, (int) $newHeight, $width, $height);
         }
-
-        // Speichern
+        // === BILD SPEICHERN ===
         $socialMediaImagePath = $socialMediaImageDir . $comicId . '.' . $outputFormat;
         $saveSuccess = false;
         switch ($outputFormat) {
             case 'jpg':
-                $saveSuccess = imagejpeg($tempImage, $socialMediaImagePath, 90);
+                $saveSuccess = imagejpeg($tempImage, $socialMediaImagePath, $options['quality'] ?? 90);
                 break;
             case 'png':
-                $saveSuccess = imagepng($tempImage, $socialMediaImagePath, 9);
+                $saveSuccess = imagepng($tempImage, $socialMediaImagePath, $options['quality'] ?? 9);
                 break;
             case 'webp':
                 if (function_exists('imagewebp')) {
-                    $saveSuccess = imagewebp($tempImage, $socialMediaImagePath, 90);
+                    $quality = $options['quality'] ?? 90;
+                    $saveSuccess = imagewebp($tempImage, $socialMediaImagePath, $quality);
                 } else {
                     $errors[] = "WebP-Unterstützung nicht aktiviert.";
                 }
                 break;
         }
-
-        if (!$saveSuccess && empty($errors))
-            $errors[] = "Fehler beim Speichern des Bildes.";
-
+        $createdPath = '';
+        if ($saveSuccess && filesize($socialMediaImagePath) > 0) {
+            $createdPath = $socialMediaImagePath;
+        } else {
+            if (file_exists($socialMediaImagePath))
+                unlink($socialMediaImagePath);
+            if (empty($errors))
+                $errors[] = "Fehler beim Speichern des Bildes (evtl. 0-Byte-Datei).";
+        }
         imagedestroy($sourceImage);
         imagedestroy($tempImage);
-
-        return ['created' => ($saveSuccess ? $socialMediaImagePath : ''), 'errors' => $errors];
-
+        return ['created' => $createdPath, 'errors' => $errors];
     } catch (Throwable $e) {
         return ['created' => '', 'errors' => ["Ausnahme: " . $e->getMessage()]];
     } finally {
@@ -240,202 +232,174 @@ function generateSocialMediaImage(string $comicId, string $outputFormat, string 
         usleep(50000);
     }
 }
-
+// === HAUPTLOGIK FÜR FORMULARVERARBEITUNG UND SEITENRENDERING ===
 // --- AJAX-Anfrage-Handler ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_single_social_media_image') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     // SICHERHEIT: CSRF-Token validieren
     verify_csrf_token();
-
     ob_end_clean();
     header('Content-Type: application/json');
-
+    $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
-    if (!extension_loaded('gd')) {
-        $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen.";
-        http_response_code(500);
-        echo json_encode($response);
-        exit;
-    }
-
-    $outputFormat = in_array($_POST['output_format'] ?? '', ['jpg', 'png', 'webp']) ? $_POST['output_format'] : 'webp';
-    $resizeMode = in_array($_POST['resize_mode'] ?? '', ['crop', 'fit']) ? $_POST['resize_mode'] : 'crop';
-    $comicId = $_POST['comic_id'] ?? '';
-
-    if (empty($comicId)) {
-        $response['message'] = 'Keine Comic-ID angegeben.';
-        http_response_code(400);
-    } else {
-        $result = generateSocialMediaImage($comicId, $outputFormat, $resizeMode, $hiresDir, $lowresDir, $socialMediaImageDir, $debugMode);
-        if (empty($result['errors'])) {
-            $response['success'] = true;
-            $response['message'] = "Bild für $comicId als .$outputFormat ($resizeMode) erstellt.";
-            $response['imageUrl'] = '../assets/comic_socialmedia/' . $comicId . '.' . $outputFormat . '?' . time();
-            $response['comicId'] = $comicId;
-        } else {
-            $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
-            http_response_code(500);
-        }
+    switch ($action) {
+        case 'generate_single_social_media_image':
+            if (!extension_loaded('gd')) {
+                $response['message'] = "FEHLER: GD-Bibliothek nicht geladen.";
+                http_response_code(500);
+                echo json_encode($response);
+                exit;
+            }
+            $outputFormat = in_array($_POST['output_format'] ?? '', ['jpg', 'png', 'webp']) ? $_POST['output_format'] : 'webp';
+            $resizeMode = in_array($_POST['resize_mode'] ?? '', ['crop', 'fit']) ? $_POST['resize_mode'] : 'crop';
+            $comicId = $_POST['comic_id'] ?? '';
+            if (empty($comicId)) {
+                $response['message'] = 'Keine Comic-ID.';
+                http_response_code(400);
+            } else {
+                $options = ['quality' => $_POST['quality'] ?? null];
+                $result = generateSocialMediaImage($comicId, $outputFormat, $resizeMode, $hiresDir, $lowresDir, $socialMediaImageDir, $debugMode, $options);
+                if (empty($result['errors'])) {
+                    $response['success'] = true;
+                    $response['message'] = "Bild für $comicId als .$outputFormat ($resizeMode) erstellt.";
+                    $response['imageUrl'] = '../assets/comic_socialmedia/' . $comicId . '.' . $outputFormat . '?' . time();
+                    $response['comicId'] = $comicId;
+                } else {
+                    $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
+                    http_response_code(500);
+                }
+            }
+            break;
+        case 'save_settings':
+            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $newSocialMediaSettings = [
+                'last_used_format' => $_POST['format'] ?? 'webp',
+                'last_used_quality' => (int) ($_POST['quality'] ?? 90),
+                'last_used_lossless' => ($_POST['lossless'] === 'true'),
+                'last_used_resize_mode' => $_POST['resize_mode'] ?? 'crop',
+                'last_run_timestamp' => time()
+            ];
+            $currentSettings['generator_socialmedia'] = $newSocialMediaSettings;
+            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+                $response['success'] = true;
+                $response['message'] = 'Einstellungen gespeichert.';
+            } else {
+                $response['message'] = 'Fehler beim Speichern der Einstellungen.';
+            }
+            break;
     }
     echo json_encode($response);
     exit;
 }
 // --- Ende AJAX-Anfrage-Handler ---
-
 ob_end_flush();
 
+$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$socialMediaSettings = $settings['generator_socialmedia'];
 $allComicIds = getExistingComicIds($hiresDir, $lowresDir, $debugMode);
 $existingSocialMediaImageIds = getExistingSocialMediaImageIds($socialMediaImageDir, $debugMode);
 $missingSocialMediaImages = findMissingSocialMediaImages($allComicIds, $existingSocialMediaImageIds, $debugMode);
 
+$pageTitle = 'Adminbereich - Social Media Bild-Generator';
+$pageHeader = 'Social Media Bild-Generator';
+$siteDescription = 'Seite zum Generieren der Sozial Media Vorschaubilder.';
+
 if (file_exists($headerPath))
     include $headerPath;
 else
-    echo "<!DOCTYPE html><html><head><title>Fehler</title></head><body><h1>Header nicht gefunden!</h1>";
+    die("Header nicht gefunden!");
 ?>
 
 <article>
     <div class="content-section">
         <?php if ($gdError): ?>
-            <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p><?php endif; ?>
-        <h2>Einstellungen & Status</h2>
+            <p class="status-message status-red"><?php echo htmlspecialchars($gdError); ?></p>
+        <?php endif; ?>
 
-        <div class="settings-container">
-            <!-- Format-Umschalter -->
-            <div class="format-switcher">
-                <label>Format:</label>
-                <div class="toggle-buttons">
-                    <input type="radio" id="format-webp" name="format-toggle" value="webp" checked><label
-                        for="format-webp">WebP</label>
-                    <input type="radio" id="format-png" name="format-toggle" value="png"><label
-                        for="format-png">PNG</label>
-                    <input type="radio" id="format-jpg" name="format-toggle" value="jpg"><label
-                        for="format-jpg">JPG</label>
+        <div id="settings-and-actions-container">
+            <h2>Einstellungen & Status</h2>
+            <div class="settings-grid">
+                <div class="format-switcher">
+                    <label>Modus:</label>
+                    <div class="toggle-buttons">
+                        <input type="radio" id="mode-crop" name="mode-toggle" value="crop">
+                        <label for="mode-crop">Zuschneiden</label>
+                        <input type="radio" id="mode-fit" name="mode-toggle" value="fit">
+                        <label for="mode-fit">Anpassen</label>
+                    </div>
+                </div>
+                <div class="format-switcher">
+                    <label>Format:</label>
+                    <div class="toggle-buttons">
+                        <input type="radio" id="format-webp" name="format-toggle" value="webp">
+                        <label for="format-webp">WebP</label>
+                        <input type="radio" id="format-png" name="format-toggle" value="png">
+                        <label for="format-png">PNG</label>
+                        <input type="radio" id="format-jpg" name="format-toggle" value="jpg">
+                        <label for="format-jpg">JPG</label>
+                    </div>
+                </div>
+                <div id="quality-control-container">
+                    <label for="quality-slider">Qualität: <span id="quality-value">90</span></label>
+                    <input type="range" id="quality-slider" min="1" max="100" value="90" class="slider">
+                </div>
+                <div id="lossless-control-container">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="lossless-checkbox">
+                        Verlustfrei
+                    </label>
                 </div>
             </div>
-            <!-- NEU: Modus-Umschalter -->
-            <div class="format-switcher">
-                <label>Modus:</label>
-                <div class="toggle-buttons">
-                    <input type="radio" id="mode-crop" name="mode-toggle" value="crop" checked><label
-                        for="mode-crop">Zuschneiden</label>
-                    <input type="radio" id="mode-fit" name="mode-toggle" value="fit"><label
-                        for="mode-fit">Anpassen</label>
-                </div>
+            <div id="fixed-buttons-container">
+                <button type="button" id="generate-images-button" <?php echo $gdError || empty($missingSocialMediaImages) ? 'disabled' : ''; ?>>Fehlende Bilder erstellen</button>
+                <button type="button" id="toggle-pause-resume-button" class="hidden-by-default"></button>
             </div>
         </div>
 
-        <div id="fixed-buttons-container">
-            <button type="button" id="generate-images-button" <?php echo $gdError || empty($missingSocialMediaImages) ? 'disabled' : ''; ?>>Fehlende Bilder erstellen</button>
-            <button type="button" id="toggle-pause-resume-button" style="display:none;"></button>
-        </div>
-
-        <div id="generation-results-section" style="margin-top: 20px; display: none;">
-            <h2 style="margin-top: 20px;">Ergebnisse der Generierung</h2>
-            <p id="overall-status-message" class="status-message"></p>
+        <div id="generation-results-section" class="hidden-by-default">
+            <h2 class="results-header">Ergebnisse der Generierung</h2>
             <div id="created-images-container" class="image-grid"></div>
-            <p class="status-message status-red" style="display: none;" id="error-header-message">Fehler:</p>
-            <ul id="generation-errors-list"></ul>
+            <h3 class="status-red hidden-by-default" id="error-header">Protokoll & Fehler:</h3>
+            <ul id="generation-log-list"></ul>
         </div>
 
-        <div id="cache-update-notification" class="notification-box" style="display:none; margin-top: 20px;">
+        <div id="cache-update-notification" class="notification-box hidden-by-default">
             <h4>Nächster Schritt: Cache aktualisieren</h4>
             <p>
                 Da neue Bilder hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
                 <br>
-                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder generiert sind, da der Prozess
-                kurzzeitig hohe Serverlast verursachen kann.
+                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder generiert sind.
             </p>
             <a href="build_image_cache_and_busting.php?autostart=socialmedia" class="button">Cache jetzt
                 aktualisieren</a>
         </div>
 
-        <div id="loading-spinner" style="display: none; text-align: center; margin-top: 20px;">
+        <div id="loading-spinner" class="hidden-by-default">
             <div class="spinner"></div>
             <p id="progress-text">Generiere Bilder...</p>
         </div>
 
-        <?php if (empty($allComicIds)): ?>
-            <p class="status-message status-orange">Keine Comic-Bilder in den Verzeichnissen gefunden.</p>
-        <?php elseif (empty($missingSocialMediaImages)): ?>
-            <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Social Media Bilder sind
-                vorhanden.</p>
-        <?php else: ?>
-            <p class="status-message status-red">Es fehlen <?php echo count($missingSocialMediaImages); ?> Social Media
-                Bilder.</p>
-            <h3>Fehlende Bilder (IDs):</h3>
-            <div id="missing-images-grid" class="missing-items-grid">
-                <?php foreach ($missingSocialMediaImages as $id): ?>
-                    <span class="missing-item"
-                        data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+        <div id="initial-status-container">
+            <?php if (empty($allComicIds)): ?>
+                <p class="status-message status-orange">Keine Comic-Bilder in den Verzeichnissen gefunden.</p>
+            <?php elseif (empty($missingSocialMediaImages)): ?>
+                <p class="status-message status-green">Alle <?php echo count($allComicIds); ?> Social Media Bilder sind
+                    vorhanden.</p>
+            <?php else: ?>
+                <p class="status-message status-red">Es fehlen <?php echo count($missingSocialMediaImages); ?> Social Media
+                    Bilder.</p>
+                <h3>Fehlende Bilder (IDs):</h3>
+                <div id="missing-images-grid" class="missing-items-grid">
+                    <?php foreach ($missingSocialMediaImages as $id): ?>
+                        <span class="missing-item"
+                            data-comic-id="<?php echo htmlspecialchars($id); ?>"><?php echo htmlspecialchars($id); ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 </article>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    .settings-container {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-
-    .format-switcher {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-
-    .format-switcher label {
-        font-weight: bold;
-        min-width: 60px;
-    }
-
-    .toggle-buttons {
-        display: flex;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        overflow: hidden;
-    }
-
-    .toggle-buttons input[type="radio"] {
-        display: none;
-    }
-
-    .toggle-buttons label {
-        padding: 8px 16px;
-        cursor: pointer;
-        background-color: #f0f0f0;
-        color: #333;
-        transition: background-color 0.2s ease;
-        border-left: 1px solid #ccc;
-    }
-
-    .toggle-buttons label:first-of-type {
-        border-left: none;
-    }
-
-    .toggle-buttons input[type="radio"]:checked+label {
-        background-color: #007bff;
-        color: white;
-    }
-
-    body.theme-night .toggle-buttons {
-        border-color: #045d81;
-    }
-
-    body.theme-night .toggle-buttons label {
-        background-color: #025373;
-        color: #f0f0f0;
-        border-left-color: #045d81;
-    }
-
-    body.theme-night .toggle-buttons input[type="radio"]:checked+label {
-        background-color: #09f;
-    }
-
     :root {
         --missing-grid-border-color: #e0e0e0;
         --missing-grid-bg-color: #f9f9f9;
@@ -572,23 +536,6 @@ else
         }
     }
 
-    #fixed-buttons-container {
-        z-index: 1000;
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        justify-content: flex-end;
-    }
-
-    @media (max-width: 768px) {
-        #fixed-buttons-container {
-            flex-direction: column;
-            gap: 5px;
-            align-items: flex-end;
-        }
-    }
-
     .missing-items-grid {
         display: flex;
         flex-wrap: wrap;
@@ -607,11 +554,6 @@ else
         padding: 4px 8px;
         border-radius: 3px;
         font-size: 0.9em;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-        flex-shrink: 0;
     }
 
     .notification-box {
@@ -622,19 +564,116 @@ else
         border-radius: 5px;
     }
 
-    .notification-box h4 {
-        margin-top: 0;
-    }
-
-    .notification-box .button {
-        margin-top: 10px;
-        display: inline-block;
-    }
-
     body.theme-night .notification-box {
         background-color: #0c5460;
         border-color: #17a2b8;
         color: #f8f9fa;
+    }
+
+    .settings-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 15px 20px;
+        align-items: center;
+        margin-bottom: 20px;
+        max-width: 500px;
+    }
+
+    .format-switcher {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    #quality-control-container,
+    #lossless-control-container {
+        display: contents;
+    }
+
+    .slider {
+        width: 100%;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
+    }
+
+    #generation-log-list {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 10px;
+        background-color: var(--missing-grid-bg-color);
+        border: 1px solid var(--missing-grid-border-color);
+        border-radius: 5px;
+        padding: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    #generation-log-list li {
+        padding: 5px;
+        border-bottom: 1px dashed var(--missing-grid-border-color);
+    }
+
+    #generation-log-list li:last-child {
+        border-bottom: none;
+    }
+
+    .log-info {
+        color: #0c5460;
+    }
+
+    .log-success {
+        color: #155724;
+    }
+
+    .log-warning {
+        color: #856404;
+    }
+
+    .log-error {
+        color: #721c24;
+    }
+
+    body.theme-night .log-info {
+        color: #69d3e8;
+    }
+
+    body.theme-night .log-success {
+        color: #28a745;
+    }
+
+    body.theme-night .log-warning {
+        color: #ffc107;
+    }
+
+    body.theme-night .log-error {
+        color: #dc3545;
+    }
+
+    #fixed-buttons-container {
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        #fixed-buttons-container {
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-end;
+        }
+    }
+
+    .hidden-by-default {
+        display: none;
     }
 </style>
 
@@ -642,6 +681,10 @@ else
     document.addEventListener('DOMContentLoaded', function () {
         // SICHERHEIT: CSRF-Token für JavaScript verfügbar machen
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
+        const settings = <?php echo json_encode($socialMediaSettings); ?>;
+
+        const settingsAndActionsContainer = document.getElementById('settings-and-actions-container');
+        const initialStatusContainer = document.getElementById('initial-status-container');
         const generateButton = document.getElementById('generate-images-button');
         const togglePauseResumeButton = document.getElementById('toggle-pause-resume-button');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -649,26 +692,142 @@ else
         const missingImagesGrid = document.getElementById('missing-images-grid');
         const createdImagesContainer = document.getElementById('created-images-container');
         const generationResultsSection = document.getElementById('generation-results-section');
-        const overallStatusMessage = document.getElementById('overall-status-message');
-        const errorHeaderMessage = document.getElementById('error-header-message');
-        const errorsList = document.getElementById('generation-errors-list');
+        const errorHeader = document.getElementById('error-header');
+        const logList = document.getElementById('generation-log-list');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
+        const qualitySlider = document.getElementById('quality-slider');
+        const qualityValueSpan = document.getElementById('quality-value');
+        const losslessCheckbox = document.getElementById('lossless-checkbox');
+        const qualityControlContainer = document.getElementById('quality-control-container');
+        const formatToggleInputs = document.querySelectorAll('input[name="format-toggle"]');
+        const modeToggleInputs = document.querySelectorAll('input[name="mode-toggle"]');
 
         const initialMissingIds = <?php echo json_encode($missingSocialMediaImages); ?>;
-        let remainingIds = [];
-        let createdCount = 0, errorCount = 0, isPaused = false, isGenerationActive = false;
+        let isPaused = false;
+        let isGenerationActive = false;
 
-        // Sticky-Buttons Logik (vereinfacht)
-        const fixedButtonsContainer = document.getElementById('fixed-buttons-container');
-        if (fixedButtonsContainer) {
-            let stickyThreshold = fixedButtonsContainer.offsetTop;
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > stickyThreshold) {
-                    // Logik für sticky-Positionierung kann hier hinzugefügt werden
+        function applySettings() {
+            document.querySelector(`input[name="format-toggle"][value="${settings.last_used_format}"]`).checked = true;
+            document.querySelector(`input[name="mode-toggle"][value="${settings.last_used_resize_mode}"]`).checked = true;
+            qualitySlider.value = settings.last_used_quality;
+            qualityValueSpan.textContent = settings.last_used_quality;
+            losslessCheckbox.checked = settings.last_used_lossless;
+            updateUiFromSettings();
+        }
+
+        function updateUiFromSettings() {
+            const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
+            const isLossless = losslessCheckbox.checked;
+            qualityControlContainer.style.display = (isLossless || selectedFormat === 'png') ? 'none' : 'contents';
+            losslessCheckbox.parentElement.parentElement.style.display = (selectedFormat === 'webp') ? 'contents' : 'none';
+        }
+
+        qualitySlider.addEventListener('input', () => { qualityValueSpan.textContent = qualitySlider.value; });
+        losslessCheckbox.addEventListener('change', updateUiFromSettings);
+        formatToggleInputs.forEach(input => input.addEventListener('change', updateUiFromSettings));
+        applySettings();
+
+        function addLogMessage(message, type) {
+            const li = document.createElement('li');
+            li.className = `log-${type}`;
+            li.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logList.appendChild(li);
+            errorHeader.style.display = 'block';
+            li.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        async function saveSettings(format, quality, lossless, resizeMode) {
+            const formData = new URLSearchParams({ action: 'save_settings', csrf_token: csrfToken, format, quality, lossless: lossless.toString(), resize_mode: resizeMode });
+            await fetch(window.location.href, { method: 'POST', body: formData });
+        }
+
+        async function generateSingleImage(comicId, format, quality, resizeMode) {
+            const formData = new URLSearchParams({ action: 'generate_single_social_media_image', comic_id: comicId, output_format: format, resize_mode: resizeMode, csrf_token: csrfToken });
+            if (quality !== null) { formData.append('quality', quality); }
+            try {
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`Server-Antwort: ${response.status}`);
+                return await response.json();
+            } catch (error) { return { success: false, message: `Netzwerkfehler: ${error.message}` }; }
+        }
+
+        async function processGenerationQueue() {
+            const userFormat = document.querySelector('input[name="format-toggle"]:checked').value;
+            const userQuality = parseInt(qualitySlider.value, 10);
+            const userLossless = losslessCheckbox.checked;
+            const userResizeMode = document.querySelector('input[name="mode-toggle"]:checked').value;
+
+            isGenerationActive = true;
+            updateButtonState();
+
+            loadingSpinner.style.display = 'block';
+            generationResultsSection.style.display = 'block';
+            createdImagesContainer.innerHTML = '';
+            logList.innerHTML = '';
+            errorHeader.style.display = 'none';
+            cacheUpdateNotification.style.display = 'none';
+
+            let createdCount = 0;
+            let lastSuccessfulSettings = {};
+
+            for (let i = 0; i < initialMissingIds.length; i++) {
+                if (isPaused) { await new Promise(resolve => { const interval = setInterval(() => { if (!isPaused) { clearInterval(interval); resolve(); } }, 200); }); }
+                const currentId = initialMissingIds[i];
+                progressText.textContent = `Verarbeite ${i + 1} von ${initialMissingIds.length} (${currentId})...`;
+
+                const fallbackChain = [];
+                if (userFormat === 'webp') {
+                    if (userLossless) fallbackChain.push({ format: 'webp', quality: 101, lossless: true });
+                    fallbackChain.push({ format: 'webp', quality: userQuality, lossless: false });
+                    fallbackChain.push({ format: 'png', quality: 9, lossless: false });
+                    fallbackChain.push({ format: 'jpg', quality: 90, lossless: false });
+                } else if (userFormat === 'png') {
+                    fallbackChain.push({ format: 'png', quality: 9, lossless: false });
+                    fallbackChain.push({ format: 'jpg', quality: 90, lossless: false });
                 } else {
-                    // Logik zum Entfernen der sticky-Positionierung
+                    fallbackChain.push({ format: 'jpg', quality: userQuality, lossless: false });
                 }
-            });
+
+                let success = false;
+                for (const attempt of fallbackChain) {
+                    addLogMessage(`Versuch für '${currentId}': Modus=${userResizeMode}, Format=${attempt.format}, Qualität=${attempt.quality}`, 'info');
+                    const result = await generateSingleImage(currentId, attempt.format, attempt.quality, userResizeMode);
+                    if (result.success) {
+                        createdCount++;
+                        const imageDiv = document.createElement('div');
+                        imageDiv.className = 'image-item';
+                        imageDiv.innerHTML = `<img src="${result.imageUrl}" alt="Social Media Bild ${result.comicId}"><span>${result.comicId}</span>`;
+                        createdImagesContainer.appendChild(imageDiv);
+                        const missingItem = missingImagesGrid.querySelector(`span[data-comic-id="${result.comicId}"]`);
+                        if (missingItem) missingItem.remove();
+                        lastSuccessfulSettings = { ...attempt, resize_mode: userResizeMode };
+                        addLogMessage(`Erfolgreich für '${currentId}' mit Format ${attempt.format}.`, 'success');
+                        success = true;
+                        break;
+                    } else {
+                        addLogMessage(`Fehlgeschlagen für '${currentId}' mit Format ${attempt.format}: ${result.message}`, 'warning');
+                    }
+                }
+                if (!success) { addLogMessage(`Alle Versuche für '${currentId}' fehlgeschlagen. Breche für dieses Bild ab.`, 'error'); }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            loadingSpinner.style.display = 'none';
+            isGenerationActive = false;
+            progressText.textContent = 'Prozess abgeschlossen.';
+
+            if (settingsAndActionsContainer) settingsAndActionsContainer.style.display = 'none';
+            if (initialStatusContainer) initialStatusContainer.style.display = 'none';
+
+
+            if (Object.keys(lastSuccessfulSettings).length > 0) {
+                await saveSettings(lastSuccessfulSettings.format, lastSuccessfulSettings.quality, lastSuccessfulSettings.lossless, lastSuccessfulSettings.resize_mode);
+                addLogMessage(`Erfolgreiche Einstellungen (Modus: ${lastSuccessfulSettings.resize_mode}, Format: ${lastSuccessfulSettings.format}, Qualität: ${lastSuccessfulSettings.quality}) wurden gespeichert.`, 'info');
+            }
+
+            if (createdCount > 0) {
+                cacheUpdateNotification.style.display = 'block';
+            }
         }
 
         function updateButtonState() {
@@ -676,115 +835,33 @@ else
                 generateButton.disabled = true;
                 togglePauseResumeButton.style.display = 'none';
             } else if (isGenerationActive) {
-                generateButton.style.display = 'none';
+                settingsAndActionsContainer.style.display = 'none';
                 togglePauseResumeButton.style.display = 'inline-block';
                 if (isPaused) {
                     togglePauseResumeButton.textContent = 'Fortsetzen';
                     togglePauseResumeButton.className = 'status-green-button';
-                    progressText.textContent = `Pausiert. ${createdCount + errorCount} von ${initialMissingIds.length} verarbeitet.`;
                 } else {
                     togglePauseResumeButton.textContent = 'Pause';
                     togglePauseResumeButton.className = 'status-red-button';
                 }
             } else {
+                settingsAndActionsContainer.style.display = 'block';
                 generateButton.style.display = 'inline-block';
                 generateButton.disabled = false;
                 togglePauseResumeButton.style.display = 'none';
             }
         }
 
-        generateButton.addEventListener('click', function () {
-            if (initialMissingIds.length === 0) return;
-            remainingIds = [...initialMissingIds];
-            createdImagesContainer.innerHTML = '';
-            errorsList.innerHTML = '';
-            errorHeaderMessage.style.display = 'none';
-            overallStatusMessage.style.display = 'none';
-            generationResultsSection.style.display = 'block';
-            createdCount = 0; errorCount = 0; isPaused = false; isGenerationActive = true;
-            cacheUpdateNotification.style.display = 'none';
-            updateButtonState();
-            loadingSpinner.style.display = 'block';
-            processNextImage();
-        });
-
-        togglePauseResumeButton.addEventListener('click', function () {
-            isPaused = !isPaused;
-            updateButtonState();
-            if (!isPaused) processNextImage();
-        });
-
-        async function processNextImage() {
-            if (isPaused || remainingIds.length === 0) {
-                if (remainingIds.length === 0 && isGenerationActive) {
-                    loadingSpinner.style.display = 'none';
-                    isGenerationActive = false;
-                    updateButtonState();
-                    overallStatusMessage.textContent = `Abgeschlossen: ${createdCount} erfolgreich, ${errorCount} Fehler.`;
-                    overallStatusMessage.className = `status-message ${errorCount > 0 ? 'status-orange' : 'status-green'}`;
-                    overallStatusMessage.style.display = 'block';
-                    if (createdCount > 0) {
-                        cacheUpdateNotification.style.display = 'block';
-                    }
-                }
-                return;
-            }
-
-            const currentId = remainingIds.shift();
-            progressText.textContent = `Generiere ${createdCount + errorCount + 1} von ${initialMissingIds.length} (${currentId})...`;
-
-            // === ANPASSUNG: BEIDE Einstellungen auslesen ===
-            const selectedFormat = document.querySelector('input[name="format-toggle"]:checked').value;
-            const selectedMode = document.querySelector('input[name="mode-toggle"]:checked').value;
-
-            try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        action: 'generate_single_social_media_image',
-                        comic_id: currentId,
-                        output_format: selectedFormat,
-                        resize_mode: selectedMode, // Neuen Modus mitsenden
-                        csrf_token: csrfToken // SICHERHEIT: CSRF-Token mitsenden
-                    })
-                });
-
-                if (!response.ok) throw new Error(`HTTP-Fehler! Status: ${response.status}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    createdCount++;
-                    const imageDiv = document.createElement('div');
-                    imageDiv.className = 'image-item';
-                    imageDiv.innerHTML = `<img src="${data.imageUrl}" alt="Social Media Bild ${data.comicId}"><span>${data.comicId}</span>`;
-                    createdImagesContainer.appendChild(imageDiv);
-                    const missingItemSpan = missingImagesGrid?.querySelector(`span[data-comic-id="${data.comicId}"]`);
-                    if (missingItemSpan) missingItemSpan.remove();
-                } else {
-                    errorCount++;
-                    const errorItem = document.createElement('li');
-                    errorItem.textContent = data.message || 'Unbekannter Fehler.';
-                    errorsList.appendChild(errorItem);
-                    errorHeaderMessage.style.display = 'block';
-                }
-            } catch (error) {
-                errorCount++;
-                const errorItem = document.createElement('li');
-                errorItem.textContent = `Netzwerk/Skriptfehler bei ${currentId}: ${error.message}`;
-                errorsList.appendChild(errorItem);
-                errorHeaderMessage.style.display = 'block';
-            }
-
-            setTimeout(processNextImage, 1000);
-        }
+        generateButton.addEventListener('click', processGenerationQueue);
+        togglePauseResumeButton.addEventListener('click', () => { isPaused = !isPaused; updateButtonState(); });
         updateButtonState();
     });
 </script>
 
 <?php
-if (file_exists($footerPath))
+if (file_exists($footerPath)) {
     include $footerPath;
-else
+} else {
     echo "</body></html>";
+}
 ?>
