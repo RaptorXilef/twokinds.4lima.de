@@ -1,7 +1,7 @@
 <?php
 /**
  * Adminseite zum Generieren des RSS-Feeds für die Comic-Webseite.
- * V2.1: Design an den Admin-Standard angepasst und Speicherfunktion integriert.
+ * V2.2: Design vollständig an den Admin-Standard angepasst.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -200,290 +200,65 @@ include $headerPath;
 ?>
 
 <article>
-    <div class="admin-form-container">
-        <div class="content-section">
-            <div id="settings-and-actions-container">
-                <div id="last-run-container">
-                    <?php if ($rssSettings['last_run_timestamp']): ?>
-                        <p class="status-message status-info">Letzte Ausführung am
-                            <?php echo date('d.m.Y \u\m H:i:s', $rssSettings['last_run_timestamp']); ?> Uhr.
-                        </p>
-                    <?php endif; ?>
+    <div class="content-section">
+        <div id="settings-and-actions-container">
+            <div id="last-run-container">
+                <?php if ($rssSettings['last_run_timestamp']): ?>
+                    <p class="status-message status-info">Letzte Ausführung am
+                        <?php echo date('d.m.Y \u\m H:i:s', $rssSettings['last_run_timestamp']); ?> Uhr.
+                    </p>
+                <?php endif; ?>
+            </div>
+
+            <h2>RSS-Feed generieren</h2>
+            <p>Dieses Tool erstellt die <code>rss.xml</code>-Datei im Hauptverzeichnis der Webseite. Es liest die
+                neuesten Comic-Einträge und die Konfigurationen aus den entsprechenden JSON-Dateien.</p>
+
+            <div class="status-list">
+                <div class="status-item">
+                    <?php echo htmlspecialchars(basename($comicVarJsonPath)); ?>:
+                    <span
+                        class="status-indicator <?php echo ($comicDataResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $comicDataResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
                 </div>
-
-                <h2>RSS-Feed generieren</h2>
-                <p>Dieses Tool erstellt die <code>rss.xml</code>-Datei im Hauptverzeichnis der Webseite. Es liest die
-                    neuesten Comic-Einträge und die Konfigurationen aus den entsprechenden JSON-Dateien.</p>
-
-                <div class="status-list">
-                    <div
-                        class="status-item <?php echo ($comicDataResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>">
-                        <?php echo htmlspecialchars(basename($comicVarJsonPath)); ?>:
-                        <span
-                            class="status-indicator"><?php echo $comicDataResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
-                    </div>
-                    <div
-                        class="status-item <?php echo ($rssConfigResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>">
-                        <?php echo htmlspecialchars(basename($rssConfigJsonPath)); ?>:
-                        <span
-                            class="status-indicator"><?php echo $rssConfigResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
-                    </div>
-                </div>
-
-                <div id="fixed-buttons-container">
-                    <button id="generateRss" class="button" <?php echo ($comicDataResult['status'] !== 'success' || $rssConfigResult['status'] !== 'success') ? 'disabled' : ''; ?>>
-                        RSS-Feed jetzt erstellen/aktualisieren
-                    </button>
+                <div class="status-item">
+                    <?php echo htmlspecialchars(basename($rssConfigJsonPath)); ?>:
+                    <span
+                        class="status-indicator <?php echo ($rssConfigResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $rssConfigResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
                 </div>
             </div>
 
-            <div id="loading-spinner" class="hidden-by-default">
-                <div class="spinner"></div>
-                <p id="progress-text">Generiere RSS-Feed...</p>
+            <div id="fixed-buttons-container">
+                <button id="generateRss" class="button" <?php echo ($comicDataResult['status'] !== 'success' || $rssConfigResult['status'] !== 'success') ? 'disabled' : ''; ?>>
+                    RSS-Feed jetzt erstellen/aktualisieren
+                </button>
             </div>
+        </div>
 
-            <div id="generation-results-section" class="hidden-by-default">
-                <h2>Ergebnis</h2>
-                <p id="overall-status-message" class="status-message"></p>
-            </div>
+        <div id="loading-spinner" class="hidden-by-default">
+            <div class="spinner"></div>
+            <p id="progress-text">Generiere RSS-Feed...</p>
+        </div>
+
+        <div id="generation-results-section" class="hidden-by-default">
+            <h2>Ergebnis</h2>
+            <p id="overall-status-message" class="status-message"></p>
         </div>
     </div>
 </article>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* CSS-Variablen für Light- und Dark-Mode */
     :root {
-        /* Light Mode Defaults */
         --missing-grid-border-color: #e0e0e0;
         --missing-grid-bg-color: #f9f9f9;
-        --default-text-color: #333;
         --status-green-text: #155724;
         --status-red-text: #721c24;
     }
 
     body.theme-night {
-        /* Dark Mode Overrides */
         --missing-grid-border-color: #045d81;
         --missing-grid-bg-color: #03425b;
-        --default-text-color: #f0f0f0;
         --status-green-text: #28a745;
         --status-red-text: #dc3545;
-    }
-
-    /* Allgemeine Container- und Text-Stile */
-    .admin-form-container {
-        max-width: 825px;
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid rgba(221, 221, 221, 0.2);
-        border-radius: 8px;
-        background-color: rgba(240, 240, 240, 0.2);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        color: var(--default-text-color);
-    }
-
-    body.theme-night .admin-form-container {
-        background-color: rgba(30, 30, 30, 0.2);
-        border-color: rgba(80, 80, 80, 0.15);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .content-section {
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px dashed #eee;
-    }
-
-    body.theme-night .content-section {
-        border-bottom: 1px dashed #555;
-    }
-
-    .content-section:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
-
-    .content-section h2,
-    .content-section h3 {
-        margin-bottom: 10px;
-    }
-
-    /* Statusmeldungen */
-    .message {
-        margin-bottom: 15px;
-        font-weight: bold;
-    }
-
-    .status-message {
-        padding: 8px 12px;
-        border-radius: 5px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
-    .status-green {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
-    .status-orange {
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
-    }
-
-    .status-red {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    body.theme-night .status-green {
-        background-color: rgba(60, 118, 61, 0.3);
-        border-color: rgba(214, 233, 198, 0.3);
-        color: var(--status-green-text);
-    }
-
-    body.theme-night .status-red {
-        background-color: rgba(169, 68, 66, 0.3);
-        border-color: rgba(235, 204, 209, 0.3);
-        color: var(--status-red-text);
-    }
-
-    body.theme-night .status-orange {
-        background-color: rgba(138, 109, 59, 0.3);
-        border-color: rgba(250, 235, 204, 0.3);
-        color: #ffeeba;
-    }
-
-    /* Farbige Texte für Statusanzeigen */
-    .status-green-text {
-        color: var(--status-green-text);
-    }
-
-    .status-red-text {
-        color: var(--status-red-text);
-    }
-
-    /* Button-Stile */
-    .status-red-button,
-    .status-green-button {
-        color: white;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1em;
-        transition: background-color 0.2s ease;
-        border: 1px solid transparent;
-        display: block;
-        /* Stellt sicher, dass der Button Platz einnimmt */
-        width: fit-content;
-        /* Passt die Breite an den Inhalt an */
-        margin-top: 10px;
-        /* Abstand nach oben */
-    }
-
-    .status-red-button {
-        background-color: #dc3545;
-        border-color: #dc3545;
-    }
-
-    .status-red-button:hover {
-        background-color: #c82333;
-    }
-
-    .status-green-button {
-        background-color: #28a745;
-        border-color: #28a745;
-    }
-
-    .status-green-button:hover {
-        background-color: #218838;
-    }
-
-    /* Container für schwebende Buttons */
-    .fixed-buttons-container {
-        z-index: 1000;
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        justify-content: flex-end;
-    }
-
-    /* Status-Liste (das "sichtbare Feld") */
-    .status-list {
-        margin-top: 10px;
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid var(--missing-grid-border-color);
-        border-radius: 5px;
-        background-color: var(--missing-grid-bg-color);
-    }
-
-    .status-item {
-        padding: 4px 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px dashed var(--missing-grid-border-color);
-    }
-
-    .status-item:last-child {
-        border-bottom: none;
-    }
-
-    .status-indicator {
-        font-weight: bold;
-    }
-
-    @media (max-width: 768px) {
-        .fixed-buttons-container {
-            flex-direction: column;
-            gap: 5px;
-            align-items: flex-end;
-        }
-    }
-
-    /* Allgemeine Container- und Text-Stile */
-    .admin-form-container {
-        max-width: 825px;
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid rgba(221, 221, 221, 0.2);
-        border-radius: 8px;
-        background-color: rgba(240, 240, 240, 0.2);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        color: var(--default-text-color);
-    }
-
-    body.theme-night .admin-form-container {
-        background-color: rgba(30, 30, 30, 0.2);
-        border-color: rgba(80, 80, 80, 0.15);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .content-section {
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px dashed #eee;
-    }
-
-    body.theme-night .content-section {
-        border-bottom: 1px dashed #555;
-    }
-
-    .content-section:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
-
-    .content-section h2,
-    .content-section h3 {
-        margin-bottom: 10px;
     }
 
     .status-message {
@@ -511,21 +286,18 @@ include $headerPath;
         border: 1px solid #bee5eb;
     }
 
-    /* Status-Liste (das "sichtbare Feld") */
     .status-list {
-        margin-top: 10px;
-        margin-bottom: 15px;
-        padding: 10px;
+        margin-top: 15px;
         border: 1px solid var(--missing-grid-border-color);
         border-radius: 5px;
+        padding: 10px;
         background-color: var(--missing-grid-bg-color);
     }
 
     .status-item {
-        padding: 4px 0;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        padding: 4px 0;
         border-bottom: 1px dashed var(--missing-grid-border-color);
     }
 
@@ -538,19 +310,11 @@ include $headerPath;
     }
 
     .status-green-text {
-        color: #155724;
-    }
-
-    body.theme-night .status-green-text {
-        color: #28a745;
+        color: var(--status-green-text);
     }
 
     .status-red-text {
-        color: #721c24;
-    }
-
-    body.theme-night .status-red-text {
-        color: #dc3545;
+        color: var(--status-red-text);
     }
 
     #fixed-buttons-container {
