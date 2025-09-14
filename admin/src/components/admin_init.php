@@ -53,11 +53,12 @@ if ($debugMode) {
 $nonce = bin2hex(random_bytes(16));
 $csp = [
     'default-src' => ["'self'"],
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
-    'style-src' => ["'self'", "'nonce-{$nonce}'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"], // 'unsafe-inline' für Summernote
-    'font-src' => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"], // 'data:' für Summernote
-    'img-src' => ["'self'", "data:"],
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
+    'style-src' => ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://code.jquery.com/", "https://cdnjs.cloudflare.com"], // 'unsafe-inline' für Summernote
+    'font-src' => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"], // 'data:' für Summernote
+    'img-src' => ["'self'", "data:", "https://www.googletagmanager.com"],
     'object-src' => ["'none'"],
+    'connect-src' => ["'self'", "https://cdn.jsdelivr.net", "https://*.google-analytics.com"],
     'frame-ancestors' => ["'self'"],
     'base-uri' => ["'self'"],
     'form-action' => ["'self'"],
