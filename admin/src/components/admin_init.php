@@ -9,6 +9,8 @@
  * - Schutz vor Session Hijacking durch User-Agent- und IP-Adressen-Bindung.
  * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
  * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
+ *
+ * V2.2: CSP erweitert für Summernote-Ressourcen und Inline-Styles.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -51,17 +53,19 @@ $csp = [
     // Standard-Richtlinie: Lade alles nur von der eigenen Domain ('self').
     'default-src' => ["'self'"],
     // Skripte: Erlaube 'self', inline-Skripte und füge die Nonce-Quelle hinzu.
-    // KORRIGIERT: Google Tag Manager für Analytics hinzugefügt
     'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
     // Stylesheets: Erlaube 'self', inline-Styles ('unsafe-inline') und vertrauenswürdige CDNs.
-    'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdn.twokinds.keenspot.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
+    // KORREKTUR: Die 'nonce' wird hier entfernt. Wenn 'nonce' vorhanden ist, ignoriert der Browser FireFox 'unsafe-inline',
+    // was Summernote zum Funktionieren seiner Tooltips und Dialoge aber benötigt. Dies ist ein notwendiger Kompromiss.
+    'style-src' => ["'self'", "'unsafe-inline'", "https://cdn.twokinds.keenspot.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://code.jquery.com/"],
     // Schriftarten: Erlaube 'self' und CDNs.
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+    // KORREKTUR: cdn.jsdelivr.net für Summernote-Schriftarten hinzugefügt
+    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
     // Bilder: Erlaube 'self', data-URIs (für base64-Bilder) und den Placeholder-Dienst.
     'img-src' => ["'self'", "data:", "https://cdn.twokinds.keenspot.com", "https://placehold.co"],
     // Erlaubt Verbindungen (z.B. via fetch, XHR) zu den angegebenen Domains.
-    // KORRIGIERT: Notwendige Domains für Analytics und CSS Source Maps hinzugefügt
-    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://*.google-analytics.com"],
+    // KORREKTUR: cdn.jsdelivr.net für Summernote-Schriftarten hinzugefügt
+    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://*.google-analytics.com", "https://cdn.jsdelivr.net"],
     // Plugins (Flash etc.): Verbiete alles.
     'object-src' => ["'none'"],
     // Framing: Erlaube das Einbetten der Seite nur durch sich selbst (Schutz vor Clickjacking).
