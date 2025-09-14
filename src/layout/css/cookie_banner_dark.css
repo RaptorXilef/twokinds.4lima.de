@@ -1,102 +1,46 @@
-/* cookie_banner_dark.css */
-
+@charset "UTF-8";
+/* SCSS-Datei für den dunklen Modus des Cookie-Banners */
 body.theme-night #cookieConsentBanner {
-    background-color: #00334c; /* Dunkler Hintergrund für den Banner */
-    color: #fff; /* Heller Text */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  background-color: #00334c;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
-
 body.theme-night #cookieConsentBanner h3 {
-    color: #fff; /* Überschrift Farbe im dunklen Modus */
+  color: #fff;
 }
-
 body.theme-night #cookieConsentBanner .cookie-category {
-    background-color: #00425c; /* Dunklerer Hintergrund für Kategorien */
+  background-color: #00425c;
 }
-
-body.theme-night #cookieConsentBanner .cookie-category .description {
-    color: #ccc;
+body.theme-night #cookieConsentBanner .description {
+  color: #ccc;
 }
-
 body.theme-night #cookieConsentBanner #acceptAllCookies {
-    background-color: #2a6177; /* Akzeptieren-Button im dunklen Modus */
-    color: #fff;
+  background-color: #2a6177;
+  color: #fff;
 }
-
 body.theme-night #cookieConsentBanner #acceptAllCookies:hover {
-    background-color: #48778a;
+  background-color: #48778a;
 }
-
 body.theme-night #cookieConsentBanner #rejectAllCookies {
-    background-color: #002b3c; /* Ablehnen-Button im dunklen Modus */
-    color: #fff;
+  background-color: #002b3c;
+  color: #fff;
 }
-
 body.theme-night #cookieConsentBanner #rejectAllCookies:hover {
-    background-color: #00425c;
+  background-color: #00425c;
 }
-
 body.theme-night #cookieConsentBanner #saveCookiePreferences {
-    background-color: #002b3c; /* Speichern-Button im dunklen Modus */
-    color: #fff;
+  background-color: #002b3c;
+  color: #fff;
 }
-
 body.theme-night #cookieConsentBanner #saveCookiePreferences:hover {
-    background-color: #00425c;
+  background-color: #00425c;
 }
-
-
-
-/* Einklappfunktion */
-
-.collapsible-content {
-    display: none; /* Standardmäßig ausgeblendet */
-    margin-top: 5px;
-    padding-left: 15px; /* Einrückung für den Inhalt */
-    font-size: 0.9em;
-    border-left: 2px solid #ccc; /* Optische Trennung */
-    padding-bottom: 5px;
-}
-
-.cookie-category ul {
-    list-style-type: none; /* Entfernt Standard-Listenpunkte */
-    padding-left: 0;
-    margin-top: 10px;
-}
-
-.cookie-category ul li {
-    margin-bottom: 10px;
-}
-
-.cookie-category ul li:last-child {
-    margin-bottom: 0;
-}
-
-.toggle-details {
-    cursor: pointer;
-    font-size: 0.9em;
-    color: #007bff; /* Link-Farbe */
-    text-decoration: underline;
-    margin-left: 10px;
-    white-space: nowrap; /* Verhindert Umbruch des Links */
-}
-
-.toggle-details:hover {
-    color: #0056b3;
-}
-
-.toggle-icon {
-    margin-left: 5px;
-    transition: transform 0.2s ease;
-}
-
-/* Für den dunklen Modus (in cookie_banner_dark.css) */
 body.theme-night .collapsible-content {
-    border-left-color: #2a6177;
+  border-left-color: #2a6177;
 }
 body.theme-night .toggle-details {
-    color: #81dbfe; /* Hellere Link-Farbe im dunklen Modus */
+  color: #81dbfe;
 }
 body.theme-night .toggle-details:hover {
-    color: #a0eaff;
+  color: #a0eaff;
 }

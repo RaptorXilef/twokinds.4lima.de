@@ -1,0 +1,80 @@
+$base_url: 'https://twokinds.4lima.de';
+
+/* SCSS-Datei für den dunklen Modus des Cookie-Banners */
+
+// --- Variablen-Definition ---
+$dark-bg         : #00334c;
+$dark-text       : #fff;
+$dark-category-bg: #00425c;
+$dark-description: #ccc;
+$dark-link       : #81dbfe;
+$dark-link-hover : #a0eaff;
+$dark-border     : #2a6177;
+
+// Dunkle Button-Farben
+$dark-accept-bg   : #2a6177;
+$dark-accept-hover: #48778a;
+$dark-reject-bg   : #002b3c;
+$dark-reject-hover: #00425c;
+$dark-save-bg     : #002b3c;
+$dark-save-hover  : #00425c;
+
+// --- Dunkler Modus-Styling ---
+body.theme-night {
+    #cookieConsentBanner {
+        background-color: $dark-bg;
+        color           : $dark-text;
+        box-shadow      : 0 4px 15px rgba(0, 0, 0, 0.4);
+
+        h3 {
+            color: $dark-text;
+        }
+
+        .cookie-category {
+            background-color: $dark-category-bg;
+        }
+
+        .description {
+            color: $dark-description;
+        }
+
+        #acceptAllCookies {
+            background-color: $dark-accept-bg;
+            color           : $dark-text;
+
+            &:hover {
+                background-color: $dark-accept-hover;
+            }
+        }
+
+        #rejectAllCookies {
+            background-color: $dark-reject-bg;
+            color           : $dark-text;
+
+            &:hover {
+                background-color: $dark-reject-hover;
+            }
+        }
+
+        #saveCookiePreferences {
+            background-color: $dark-save-bg;
+            color           : $dark-text;
+
+            &:hover {
+                background-color: $dark-save-hover;
+            }
+        }
+    }
+
+    .collapsible-content {
+        border-left-color: $dark-border;
+    }
+
+    .toggle-details {
+        color: $dark-link;
+
+        &:hover {
+            color: $dark-link-hover;
+        }
+    }
+}

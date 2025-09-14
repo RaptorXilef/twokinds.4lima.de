@@ -72,7 +72,9 @@ $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 $pageTitle = 'Das Webcomic auf Deutsch';
 $siteDescription = 'Tauche ein in die Welt von Twokinds – dem beliebten Fantasy-Webcomic von Tom Fischbach, jetzt komplett auf Deutsch verfügbar. Erlebe die spannende Geschichte von Trace und Flora und entdecke die Rassenkonflikte zwischen Menschen und Keidran.';
 $ogImage = str_starts_with($comicPreviewUrl, 'http') ? $comicPreviewUrl : $baseUrl . $comicPreviewUrl;
-$additionalScripts = "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
+// Pfade zu Assets mit Cache-Busting
+$comicJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/comic.min.js?c=' . filemtime(__DIR__ . '/src/layout/js/comic.min.js');
+$additionalScripts = "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($comicJsWebPathWithCacheBuster) . "'></script>";
 $viewportContent = 'width=1099'; // Konsistent mit Comic-Seiten für das Design.
 
 // === 5. HEADER EINBINDEN ===
@@ -118,7 +120,7 @@ require_once __DIR__ . '/src/layout/header.php';
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
             src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : './' . $comicImagePath); ?>"
-            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page">
+            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page" fetchpriority="high">
     </a>
 
     <div class='comicnav bottomnav'>

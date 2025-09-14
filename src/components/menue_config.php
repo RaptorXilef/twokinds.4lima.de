@@ -62,7 +62,7 @@
                 class="themename">LICHT AUS</span></a>
         <br>
         <a href='https://twokinds.keenspot.com'>Zum Original<p>auf Englisch</p><img
-                src='https://www.2kinds.com/images/tkbutton3.png' alt='Twokinds'></a>
+                src='<?php echo htmlspecialchars($baseUrl); ?>assets/img/tkbutton3.webp' alt='Twokinds'></a>
     </nav>
     <!-- Menü Ende -->
 </div>

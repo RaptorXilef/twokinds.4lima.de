@@ -1,0 +1,237 @@
+$base_url: 'https://twokinds.4lima.de';
+
+$page-bg           : #002B3C;
+$content-bg        : #00425c;
+$accent-dark       : #00334C;
+$accent-light      : #48778a;
+$button-color      : #2a6177;
+$text-color        : #fff;
+$link-color        : #08c;
+$link-visited-color: #08c;
+
+body.theme-night #banner,
+#banner-lights-off {
+	background-image: url($base_url + "/assets/img/spring2025banner.png");
+}
+
+.banner-lights-off {
+	position: absolute;
+	top     : 0;
+	left    : 0;
+	height  : 0;
+	width   : 0;
+}
+
+body.theme-night {
+	background-color: $page-bg;
+	color           : $text-color;
+
+	hr {
+		border-color: $button-color;
+	}
+
+	.main-container {
+		background-color: $content-bg;
+
+		button,
+		a.button {
+			background-color: $button-color;
+			color           : $text-color;
+		}
+
+		.arrow-down,
+		.arrow-left {
+			background-image: url($base_url + "/assets/svg/dropdown_dark.svg");
+		}
+	}
+
+	.maintbanner {
+
+		a,
+		a:link,
+		a:visited,
+		a:active {
+			color: #000;
+		}
+	}
+
+	.sidebar {
+		.sidebar-content {
+			background-color: $accent-dark;
+
+			.menu {
+				a {
+					background-color: $button-color;
+					color           : $text-color;
+				}
+
+				a.theme {
+					span.themelabel {
+						background-color: #628492;
+						color           : $text-color;
+					}
+				}
+
+				a:hover {
+					background-color: $accent-light;
+				}
+
+				a.menu-new:after {
+					background-color: #628492;
+					color           : $text-color;
+				}
+			}
+		}
+	}
+
+	a {
+		color: $link-color;
+	}
+
+	a:visited {
+		color: $link-visited-color;
+	}
+
+	.content {
+		border-color: $page-bg;
+
+		table {
+			border-color: $page-bg;
+		}
+
+		th {
+			background-color: $accent-light;
+		}
+
+		td,
+		th {
+			border-color: $page-bg;
+		}
+
+		h1.page-header,
+		h2.page-header,
+		h3.page-header,
+		h4.page-header,
+		h5.page-header,
+		h6.page-header {
+			background-color: $page-bg;
+		}
+	}
+
+	/* COMIC SECTION */
+	.comic {
+		.transcript .transcript-content {
+			background-color: $accent-dark;
+			border-color    : $page-bg;
+		}
+
+		.comicnav {
+			color           : $text-color;
+			background-color: $accent-dark;
+
+			a {
+				color: $text-color;
+			}
+
+			a.visited {
+				color: $text-color;
+			}
+
+			.navarrow:not(.disabled):hover {
+				background-color: $content-bg;
+			}
+
+			.navarchive {
+				background-color: $button-color;
+			}
+
+			.navarchive:hover {
+				background-color: $accent-light;
+			}
+
+			.navbegin .nav-wrapper {
+				background-image: url($base_url + "/assets/navigation/comic-nav-begin-dark.png");
+			}
+
+			.navprev .nav-wrapper {
+				background-image: url($base_url + "/assets/navigation/comic-nav-arrow-left-dark.png");
+			}
+
+			.navnext .nav-wrapper {
+				background-image: url($base_url + "/assets/navigation/comic-nav-arrow-right-dark.png");
+			}
+
+			.navend .nav-wrapper {
+				background-image: url($base_url + "/assets/navigation/comic-nav-end-dark.png");
+			}
+		}
+	}
+
+	.bottom {
+		border-color: $page-bg;
+	}
+
+	/* ARCHIVE */
+	.chapter {
+		h2 {
+			color: $text-color;
+		}
+
+		.chapter-links {
+			a {
+				background-color: $button-color;
+				color           : $text-color;
+			}
+
+			a:visited {
+				color: $text-color;
+			}
+		}
+	}
+
+	/* CHAT PAGE */
+	div.page-chat .chat-button {
+		a {
+			background-color: $button-color;
+			color           : $text-color;
+		}
+
+		a:hover {
+			background-color: $accent-light;
+		}
+	}
+
+	/* FANART */
+	.fanart-list .fanart-item {
+		border-color: $page-bg;
+
+		.thumbnail a {
+			background-color: $button-color;
+			color           : $text-color;
+		}
+	}
+
+	/* POPUP DIALOG */
+	.dialog {
+		background-color: $content-bg;
+
+		a {
+			color: $text-color;
+		}
+
+		.dialog-title {
+			background-color: $accent-dark;
+		}
+
+		.dialog-x {
+			color           : $text-color;
+			background-color: $button-color;
+		}
+
+		input.embed {
+			color           : $text-color;
+			border          : 1px solid $page-bg;
+			background-color: $accent-light;
+		}
+	}
+}

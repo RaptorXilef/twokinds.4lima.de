@@ -76,10 +76,12 @@ $additionalHeadContent = $additionalHeadContent ?? '';
 $viewportContent = $viewportContent ?? 'width=device-width, initial-scale=1.0';
 
 // Pfade zu Assets mit Cache-Busting
-$commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.js?c=' . filemtime(__DIR__ . '/js/common.js');
-$cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.css?c=' . filemtime(__DIR__ . '/css/cookie_banner.css');
-$cookieBannerDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner_dark.css?c=' . filemtime(__DIR__ . '/css/cookie_banner_dark.css');
-$cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.js?c=' . filemtime(__DIR__ . '/js/cookie_consent.js');
+$commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.min.js?c=' . filemtime(__DIR__ . '/js/common.min.js');
+$mainCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main.min.css?c=' . filemtime(__DIR__ . '/css/main.min.css');
+$mainDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main_dark.min.css?c=' . filemtime(__DIR__ . '/css/main_dark.min.css');
+$cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.min.css?c=' . filemtime(__DIR__ . '/css/cookie_banner.min.css');
+$cookieBannerDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner_dark.min.css?c=' . filemtime(__DIR__ . '/css/cookie_banner_dark.min.css');
+$cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.min.js?c=' . filemtime(__DIR__ . '/js/cookie_consent.min.js');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -114,22 +116,22 @@ $cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.j
 
     <!-- Stylesheets -->
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="https://cdn.twokinds.keenspot.com/css/main.css?c=20250524">
+        href="<?php echo htmlspecialchars($mainCssPathWithCacheBuster); ?>" fetchpriority="high">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="https://cdn.twokinds.keenspot.com/css/main_dark.css?c=20250524">
+        href="<?php echo htmlspecialchars($mainDarkCssPathWithCacheBuster); ?>" fetchpriority="high">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
         href="<?php echo htmlspecialchars($cookieBannerCssPathWithCacheBuster); ?>">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
         href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
     <?php if ($isAdminPage): ?>
         <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <?php endif; ?>
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="https://cdn.twokinds.keenspot.com/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" type="image/png" href="https://cdn.twokinds.keenspot.com/appleicon.png">
+    <link rel="icon" type="image/x-icon" href="https://twokinds.4lima.de/favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="https://twokinds.4lima.de/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" type="image/png" href="https://twokinds.4lima.de/appleicon.png">
 
     <!-- JavaScript -->
     <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'

@@ -143,7 +143,7 @@ require_once __DIR__ . '/../layout/header.php';
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
             src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : '../' . $comicImagePath); ?>"
-            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page">
+            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page" fetchpriority="high">
     </a>
 
     <div class='comicnav bottomnav'>

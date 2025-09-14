@@ -70,7 +70,8 @@ $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 $pageTitle = 'Neueste Comicseite';
 $siteDescription = 'Die neueste Comicseite von TwoKinds in deutscher Übersetzung. ' . htmlspecialchars($comicName);
 $ogImage = str_starts_with($comicPreviewUrl, 'http') ? $comicPreviewUrl : $baseUrl . ltrim($comicPreviewUrl, './');
-$additionalScripts = "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='https://cdn.twokinds.keenspot.com/js/comic.js?c=20250531'></script>";
+$comicJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/comic.min.js?c=' . filemtime(__DIR__ . '/../src/layout/js/comic.min.js');
+$additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebPathWithCacheBuster) . "'></script>";
 $viewportContent = 'width=1099'; // Konsistent mit Comic-Seiten für das Design.
 $robotsContent = 'noindex, follow'; // Verhindert, dass DIESE Seite indexiert wird. Der Canonical-Tag ist wichtiger.
 
@@ -120,7 +121,7 @@ require_once __DIR__ . '/../src/layout/header.php';
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
             src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : '../' . $comicImagePath); ?>"
-            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page">
+            title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page" fetchpriority="high">
     </a>
 
     <div class='comicnav bottomnav'>
