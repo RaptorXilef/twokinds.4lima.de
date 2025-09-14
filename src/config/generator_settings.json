@@ -1,0 +1,37 @@
+{
+    "generator_thumbnail": {
+        "last_used_format": "webp",
+        "last_used_quality": 90,
+        "last_used_lossless": false,
+        "last_run_timestamp": 1757872288
+    },
+    "generator_socialmedia": {
+        "last_used_format": "webp",
+        "last_used_quality": 90,
+        "last_used_lossless": false,
+        "last_used_resize_mode": "crop",
+        "last_run_timestamp": 1757872293
+    },
+    "build_image_cache": {
+        "last_run_type": "all",
+        "last_run_timestamp": 1757872300
+    },
+    "generator_comic": {
+        "last_run_timestamp": null
+    },
+    "upload_image": {
+        "last_run_timestamp": null
+    },
+    "generator_rss": {
+        "last_run_timestamp": null
+    },
+    "data_editor_sitemap": {
+        "last_run_timestamp": null
+    },
+    "data_editor_archiv": {
+        "last_run_timestamp": null
+    },
+    "data_editor_comic": {
+        "last_run_timestamp": null
+    }
+}

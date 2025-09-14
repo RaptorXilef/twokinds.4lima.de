@@ -35,7 +35,6 @@ ErrorDocument 404 /404.php
 
 # --- Block 3: Grundlegende Servereinstellungen & Basisschutz ---
 # Verbessert die Sicherheit, indem Standard-Serververhalten angepasst wird.
-
 # Verhindert "Directory Listing", also dass Besucher die Dateiliste eines Verzeichnisses sehen können,
 # falls dort keine Index-Datei (z.B. index.php) liegt.
 Options -Indexes
@@ -52,14 +51,13 @@ RewriteEngine On
 # 4a: Kanonische URL erzwingen (HTTPS & non-www)
 # Leitet alle Anfragen auf eine einzige, offizielle Version der URL um (https://twokinds.4lima.de),
 # um doppelten Inhalt (Duplicate Content) bei Suchmaschinen zu vermeiden.
-
 # Erzwingt HTTPS für alle Anfragen.
 RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+RewriteRule ^(.\*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 # Erzwingt die "non-www"-Version (ohne www. davor).
 RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+RewriteRule ^(.\*)$ https://%1/$1 [R=301,L]
 
 # 4b: Schutz vor Hotlinking von Bildern
 # Verhindert, dass andere Webseiten deine Bilder direkt einbinden und so deinen Traffic verbrauchen.
@@ -82,7 +80,7 @@ RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 # Entfernt den Schrägstrich (/) am Ende von URLs, um Duplicate Content zu vermeiden.
 # Beispiel: /kontakt/ wird permanent (301) zu /kontakt umgeleitet.
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)/$ /$1 [R=301,L]
+RewriteRule ^(.\*)/$ /$1 [R=301,L]
 
 # 4e: Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
 # Ermöglicht den Aufruf von PHP-Dateien, ohne dass ".php" in der URL stehen muss.
@@ -95,7 +93,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 # Bedingung: Eine .php-Datei mit dem angefragten Namen muss existieren.
 RewriteCond %{REQUEST_FILENAME}\.php -f
 # Regel: Schreibe die Anfrage intern auf die entsprechende .php-Datei um.
-RewriteRule ^(.*)$ $1.php [L]
+RewriteRule ^(.\*)$ $1.php [L]
 
 # --- Block 5: GZIP-Komprimierung (Performance) ---
 # Komprimiert textbasierte Dateien (HTML, CSS, JS etc.) vor der Übertragung an den Browser.
@@ -151,7 +149,6 @@ RewriteRule ^(.*)$ $1.php [L]
     AddType font/woff2                      .woff2
 </IfModule>
 
-
 # --- Block 8: ETags entfernen (Performance-Optimierung) ---
 # ETags sind eine Methode zur Validierung von Cache-Dateien. In manchen Konfigurationen
 # können sie das Caching behindern oder unnötige Server-Informationen preisgeben.
@@ -171,7 +168,7 @@ FileETag None
     default-src 'self'; \
     script-src 'self' 'unsafe-inline' https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://www.2kinds.com https://cdnjs.cloudflare.com https://placehold.co https://www.googletagmanager.com https://cdn.tailwindcss.com https://code.jquery.com https://cdn.jsdelivr.net; \
     style-src 'self' 'unsafe-inline' https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://www.2kinds.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net; \
-    img-src 'self' data: https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://twokindscomic.com https://www.2kinds.com https://placehold.co https://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png https://licensebuttons.net; \
+    img-src 'self' data: https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://twokindscomic.com https://www.2kinds.com https://placehold.co https://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png https://licensebuttons.net https://twokinds.4lima.de; \
     font-src 'self' https://cdnjs.cloudflare.com https://cdn.twokinds.keenspot.com https://fonts.gstatic.com https://cdn.jsdelivr.net; \
     connect-src 'self' https://*.google-analytics.com https://cdn.twokinds.keenspot.com https://cdn.jsdelivr.net;"
     # HTTP Strict Transport Security (HSTS): Weist den Browser an, die Seite nur über HTTPS aufzurufen.

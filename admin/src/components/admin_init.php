@@ -10,7 +10,7 @@
  * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
  * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
  *
- * V2.2: CSP erweitert für Summernote-Ressourcen und Inline-Styles.
+ * V2.3: Session-Fingerprinting zur Erhöhung der Sicherheit wieder hinzugefügt.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -40,41 +40,28 @@ if (!empty($subfolderPath) && $subfolderPath !== '/') {
 }
 $baseUrl = $protocol . $host . $subfolderPath;
 
+// --- Server-Root-Pfad bestimmen ---
+$projectRoot = $appRootAbsPath;
+
 if ($debugMode) {
-    error_log("DEBUG (admin_init.php): Basis-URL bestimmt: " . $baseUrl);
+    error_log("DEBUG: Basis-URL: " . $baseUrl);
+    error_log("DEBUG: Projekt-Root: " . $projectRoot);
 }
 
 
-// --- 2. Sicherheits-Header & CSP mit Nonce (Restriktiv für Admin) ---
+// --- 2. Universelle Sicherheits-Header & CSP mit Nonce ---
 $nonce = bin2hex(random_bytes(16));
-
-// Content-Security-Policy (CSP) als Array für bessere Lesbarkeit und Wartbarkeit.
 $csp = [
-    // Standard-Richtlinie: Lade alles nur von der eigenen Domain ('self').
     'default-src' => ["'self'"],
-    // Skripte: Erlaube 'self', inline-Skripte und füge die Nonce-Quelle hinzu.
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
-    // Stylesheets: Erlaube 'self', inline-Styles ('unsafe-inline') und vertrauenswürdige CDNs.
-    // KORREKTUR: Die 'nonce' wird hier entfernt. Wenn 'nonce' vorhanden ist, ignoriert der Browser FireFox 'unsafe-inline',
-    // was Summernote zum Funktionieren seiner Tooltips und Dialoge aber benötigt. Dies ist ein notwendiger Kompromiss.
-    'style-src' => ["'self'", "'unsafe-inline'", "https://cdn.twokinds.keenspot.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://code.jquery.com/"],
-    // Schriftarten: Erlaube 'self' und CDNs.
-    // KORREKTUR: cdn.jsdelivr.net für Summernote-Schriftarten hinzugefügt
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
-    // Bilder: Erlaube 'self', data-URIs (für base64-Bilder) und den Placeholder-Dienst.
-    'img-src' => ["'self'", "data:", "https://cdn.twokinds.keenspot.com", "https://placehold.co"],
-    // Erlaubt Verbindungen (z.B. via fetch, XHR) zu den angegebenen Domains.
-    // KORREKTUR: cdn.jsdelivr.net für Summernote-Schriftarten hinzugefügt
-    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://*.google-analytics.com", "https://cdn.jsdelivr.net"],
-    // Plugins (Flash etc.): Verbiete alles.
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+    'style-src' => ["'self'", "'nonce-{$nonce}'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"], // 'unsafe-inline' für Summernote
+    'font-src' => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"], // 'data:' für Summernote
+    'img-src' => ["'self'", "data:"],
     'object-src' => ["'none'"],
-    // Framing: Erlaube das Einbetten der Seite nur durch sich selbst (Schutz vor Clickjacking).
     'frame-ancestors' => ["'self'"],
-    'base-uri' => ["'self'"], // Verhindert, dass die Basis-URL manipuliert wird.
-    'form-action' => ["'self'"], // Erlaubt Formular-Übermittlungen nur an die eigene Domain.
+    'base-uri' => ["'self'"],
+    'form-action' => ["'self'"],
 ];
-
-// Baue den CSP-Header-String aus dem Array zusammen.
 $cspHeader = '';
 foreach ($csp as $directive => $sources) {
     $cspHeader .= $directive . ' ' . implode(' ', $sources) . '; ';
@@ -89,35 +76,34 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 // Permissions Policy: Deaktiviert sensible Browser-Features, die im Admin-Bereich nicht benötigt werden.
 header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
 
-// HTTP Strict Transport Security (HSTS): Weist den Browser an, für eine lange Zeit nur über HTTPS zu kommunizieren.
-// WICHTIG: Nur aktivieren, wenn du sicher bist, dass deine Seite dauerhaft und ausschließlich über HTTPS laufen wird.
-// Einmal gesetzt, erzwingt der Browser für die angegebene Zeit (hier 1 Jahr) HTTPS.
-// if (isset($_SERVER['HTTPS'])) {
-//     header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
-// }
 
-
-// --- 3: Strikte Session-Konfiguration ---
+// --- 3. Strikte Session-Konfiguration ---
 session_set_cookie_params([
-    'lifetime' => 0, // Session-Cookie gilt bis zum Schließen des Browsers
-    'path' => '/', // Gilt für die gesamte Domain
+    'lifetime' => 0,
+    'path' => '/',
     'domain' => $_SERVER['HTTP_HOST'],
-    'secure' => isset($_SERVER['HTTPS']), // Cookie nur über HTTPS senden
-    'httponly' => true, // Verhindert Zugriff durch JavaScript (Schutz vor XSS)
-    'samesite' => 'Strict' // Schutz vor CSRF-Angriffen
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Strict'
 ]);
-
-// Starte die PHP-Sitzung, falls noch keine aktiv ist.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- 4: Schutz vor Session Hijacking & Fixation ---
-// Schritt 4a: Binde die Session an den User Agent und die IP-Adresse (anonymisiert).
+// --- 4. Schutz vor Session Fixation und Hijacking ---
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 900)) { // 15 Minuten
+    session_regenerate_id(true);
+    $_SESSION['last_activity'] = time();
+}
+if (!isset($_SESSION['last_activity'])) {
+    $_SESSION['last_activity'] = time();
+}
+
+// NEU: Robuster Session-Fingerabdruck (User-Agent + IP-Netzwerk)
 $sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
 if (isset($_SESSION['session_fingerprint'])) {
     if ($_SESSION['session_fingerprint'] !== $sessionIdentifier) {
-        // User Agent hat sich geändert -> Möglicher Angriff! Session zerstören.
+        // Fingerabdruck hat sich geändert -> Möglicher Angriff! Session zerstören.
         error_log("SECURITY ALERT: Session-Fingerabdruck hat sich geändert. Möglicher Hijacking-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
         session_unset();
         session_destroy();
@@ -128,70 +114,78 @@ if (isset($_SESSION['session_fingerprint'])) {
     $_SESSION['session_fingerprint'] = $sessionIdentifier;
 }
 
-// Schritt 4b: Regeneriert die Session-ID in regelmäßigen Abständen.
-if (!isset($_SESSION['last_regeneration'])) {
-    $_SESSION['last_regeneration'] = time();
-} elseif (time() - $_SESSION['last_regeneration'] > 900) { // Alle 15 Minuten
-    // Session-Daten sichern, regenerieren, wiederherstellen.
-    $currentSessionData = $_SESSION;
-    session_regenerate_id(true); // Erneuert die ID und löscht die alte Session-Datei
-    $_SESSION = $currentSessionData;
-    $_SESSION['last_regeneration'] = time();
-    if ($debugMode)
-        error_log("DEBUG: Session-ID wurde aus Sicherheitsgründen erneuert.");
-}
 
-
-// --- 5: CSRF-Schutz ---
-// Erstelle einen CSRF-Token, wenn noch keiner existiert.
+// --- 5. Umfassender CSRF-Schutz ---
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
-$csrfTokenForJs = $_SESSION['csrf_token']; // Für JavaScript verfügbar machen
+$csrfToken = $_SESSION['csrf_token'];
 
-
-// Überprüft den CSRF-Token für POST- und AJAX-Anfragen. Bricht bei Fehler ab.
 function verify_csrf_token()
 {
-    global $debugMode;
+    global $debugMode, $callingScript;
     $token = null;
 
     if (!empty($_POST['csrf_token'])) {
         $token = $_POST['csrf_token'];
+    } elseif (!empty($_GET['token'])) {
+        $token = $_GET['token'];
     } else {
-        $json_input = file_get_contents('php://input');
-        if (!empty($json_input)) {
-            $data = json_decode($json_input, true);
-            $token = $data['csrf_token'] ?? null;
+        $headers = getallheaders();
+        if (isset($headers['X-Csrf-Token'])) {
+            $token = $headers['X-Csrf-Token'];
         }
     }
 
-    // KORRIGIERT: Prüft auf Existenz beider Token, bevor hash_equals aufgerufen wird
-    if ($token === null || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
-        error_log("SECURITY WARNING: Ungültiger CSRF-Token bei Anfrage von IP: " . $_SERVER['REMOTE_ADDR']);
-        http_response_code(403);
-        die('Ungültige Anfrage (CSRF-Token-Fehler).');
-    }
-
     if ($debugMode)
-        error_log("DEBUG: CSRF-Token erfolgreich validiert.");
-}
+        error_log("DEBUG ({$callingScript}): CSRF-Prüfung. Erhaltener Token: " . ($token ?? 'KEINER') . ". Session-Token: " . $_SESSION['csrf_token']);
 
-// --- 6. Session-Timeout ---
-// Binde die zentrale Sicherheits- und Sitzungsüberprüfung (Timeout) ein.
-require_once __DIR__ . '/security_check.php';
-
-// --- 7. Logout-Funktion ---
-// Logout-Funktion mit CSRF-Token-Überprüfung
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    if (!isset($_GET['token']) || !hash_equals($_SESSION['csrf_token'], $_GET['token'])) {
-        // Logge den fehlgeschlagenen Versuch (auch ohne Debug-Modus)
-        error_log("SECURITY WARNING: Logout-Versuch mit ungültigem CSRF-Token von IP: " . $_SERVER['REMOTE_ADDR']);
-        // Leite einfach zum Dashboard zurück, ohne Fehlermeldung, um keine Infos preiszugeben.
-        header('Location: management_user.php');
+    if (!isset($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
+        if ($debugMode)
+            error_log("FEHLER ({$callingScript}): CSRF-Token-Validierung fehlgeschlagen.");
+        // Definiere IS_API_CALL, wenn es nicht existiert
+        if (!defined('IS_API_CALL')) {
+            define('IS_API_CALL', false);
+        }
+        if (IS_API_CALL) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Ungültige Anfrage (CSRF-Token fehlt oder ist falsch).']);
+        } else {
+            die('CSRF-Token-Validierung fehlgeschlagen.');
+        }
         exit;
     }
+}
 
+
+// --- 6. Hilfsfunktionen für Einstellungs-JSON ---
+function load_settings(string $filePath, string $key, bool $debugMode): array
+{
+    $defaults = ['last_run_timestamp' => null];
+    if (!file_exists($filePath)) {
+        if ($debugMode)
+            error_log("DEBUG: Einstellungsdatei $filePath nicht gefunden, verwende Standardwerte.");
+        return $defaults;
+    }
+    $allSettings = json_decode(file_get_contents($filePath), true);
+    return $allSettings[$key] ?? $defaults;
+}
+
+function save_settings(string $filePath, string $key, array $data, bool $debugMode): void
+{
+    $allSettings = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
+    if (!is_array($allSettings))
+        $allSettings = [];
+    $allSettings[$key] = $data;
+    file_put_contents($filePath, json_encode($allSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    if ($debugMode)
+        error_log("DEBUG: Einstellungen für Schlüssel '$key' in $filePath gespeichert.");
+}
+
+
+// --- 7. Logout-Logik ---
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    verify_csrf_token(); // Überprüfe den CSRF-Token, bevor du den Logout durchführst.
     if ($debugMode)
         error_log("DEBUG: Logout-Aktion mit gültigem CSRF-Token erkannt.");
 
@@ -229,12 +223,22 @@ if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
             error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von admin_init.php (aufgerufen von {$callingScript}).");
 
         // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
-        ob_end_clean();
         header('Location: index.php');
         exit;
     }
 }
 
-if ($debugMode && basename($_SERVER['PHP_SELF']) !== 'index.php')
-    error_log("DEBUG: Admin ist angemeldet. Initialisierung durch admin_init.php abgeschlossen.");
+// --- 9. Session-Timeout-Logik ---
+define('SESSION_TIMEOUT_SECONDS', 600); // 10 Minuten
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT_SECONDS)) {
+    if ($debugMode)
+        error_log("DEBUG: Session abgelaufen. Letzte Aktivität vor " . (time() - $_SESSION['last_activity']) . " Sekunden.");
+
+    session_unset();
+    session_destroy();
+    header("Location: index.php?reason=session_expired");
+    exit;
+}
+$_SESSION['last_activity'] = time();
+
 ?>

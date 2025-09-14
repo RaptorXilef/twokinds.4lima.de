@@ -7757,13 +7757,13 @@
         "socialmedia": "assets/comic_socialmedia/20250315.webp?c=1756592014"
     },
     "in_translation-leer": {
-        "thumbnails": "assets/comic_thumbnails/in_translation-leer.webp?c=1757029809",
+        "thumbnails": "assets/comic_thumbnails/in_translation-leer.webp?c=1757099473",
         "lowres": "assets/comic_lowres/in_translation-leer.webp?c=1755356567",
         "socialmedia": "assets/comic_socialmedia/in_translation-leer.webp?c=1757085544"
     },
     "in_translation": {
         "thumbnails": "assets/comic_thumbnails/in_translation.jpg?c=1751487845",
-        "lowres": "assets/comic_lowres/in_translation.webp?c=1757011392",
+        "lowres": "assets/comic_lowres/in_translation.webp?c=1757850699",
         "hires": "assets/comic_hires/in_translation.jpg?c=1751060061",
         "socialmedia": "assets/comic_socialmedia/in_translation.webp?c=1755901347"
     },
@@ -7771,15 +7771,20 @@
         "thumbnails": "assets/comic_thumbnails/placeholder.jpg?c=1751487845"
     },
     "403": {
-        "thumbnails": "assets/comic_thumbnails/403.webp?c=1757085534",
+        "thumbnails": "assets/comic_thumbnails/403.webp?c=1757099470",
         "lowres": "assets/comic_lowres/403.webp?c=1757014432",
         "hires": "assets/comic_hires/403.webp?c=1757086553",
         "socialmedia": "assets/comic_socialmedia/403.webp?c=1757085542"
     },
     "404": {
-        "thumbnails": "assets/comic_thumbnails/404.webp?c=1757085535",
+        "thumbnails": "assets/comic_thumbnails/404.webp?c=1757099471",
         "lowres": "assets/comic_lowres/404.webp?c=1757014141",
         "hires": "assets/comic_hires/404.webp?c=1757086587",
         "socialmedia": "assets/comic_socialmedia/404.webp?c=1757085543"
+    },
+    "in_translation-Original": {
+        "thumbnails": "assets/comic_thumbnails/in_translation-Original.webp?c=1757872288",
+        "lowres": "assets/comic_lowres/in_translation-Original.webp?c=1757011392",
+        "socialmedia": "assets/comic_socialmedia/in_translation-Original.webp?c=1757872293"
     }
 }
