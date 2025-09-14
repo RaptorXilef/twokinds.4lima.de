@@ -634,7 +634,7 @@ footer {
   border-radius: 0;
 }
 .comic .comicnav button.bookmark.bookmarked {
-  background: url("https://twokinds.4lima.de/assets/lesezeicheng/bookmark_active.png") 0 0 no-repeat;
+  background: url("https://twokinds.4lima.de/assets/lesezeichen/bookmark_active.png") 0 0 no-repeat;
   background-size: contain;
 }
 .comic .comicnav img {

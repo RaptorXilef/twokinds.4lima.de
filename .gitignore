@@ -93,12 +93,6 @@ package.json
 
 
 # SASS Compiler für CSS (Wird verwenden um die CSS Dateien aus SCSS zu erstellen)
-# HauptBefehl: cd src\layout\css && sass --no-source-map main.scss main.css && npx clean-css-cli --source-map -o main.min.css main.css && sass --no-source-map main_dark.scss main_dark.css && npx clean-css-cli --source-map -o main_dark.min.css main_dark.css && sass --no-source-map cookie_banner.scss cookie_banner.css && npx clean-css-cli --source-map -o cookie_banner.min.css cookie_banner.css && sass --no-source-map cookie_banner_dark.scss cookie_banner_dark.css && npx clean-css-cli --source-map -o cookie_banner_dark.min.css cookie_banner_dark.css && cd ../ && cd js && npx terser archive.js --source-map "filename=archive.min.js.map" --output archive.min.js && npx terser character.js --source-map "filename=character.min.js.map" --output character.min.js && npx terser comic.js --source-map "filename=comic.min.js.map" --output comic.min.js && npx terser common.js --source-map "filename=common.min.js.map" --output common.min.js && npx terser cookie_consent.js --source-map "filename=cookie_consent.min.js.map" --output cookie_consent.min.js && cd ../../../
-
-
-
-# Alternative Befehle (aufgespalten, falls Probleme auftreten)
-# SASS Compiler für CSS (Wird verwenden um die CSS Dateien aus SCSS zu erstellen)
 # Befehl: cd src\layout\css
 # Befehl: sass --no-source-map main.scss main.css && npx clean-css-cli --source-map -o main.min.css main.css
 # Befehl: sass --no-source-map main_dark.scss main_dark.css && npx clean-css-cli --source-map -o main_dark.min.css main_dark.css
@@ -107,7 +101,7 @@ package.json
 # Befehl: cd ../
 # Befehl: cd js
 # Befehl: npx terser archive.js --source-map "filename=archive.min.js.map" --output archive.min.js
-# Befehl: npx terser character.js --source-map "filename=character.min.js.map" --output character.min.js
+# Befehl: npx terser charaktere.js --source-map "filename=charaktere.min.js.map" --output charaktere.min.js
 # Befehl: npx terser comic.js --source-map "filename=comic.min.js.map" --output comic.min.js
 # Befehl: npx terser common.js --source-map "filename=common.min.js.map" --output common.min.js
 # Befehl: npx terser cookie_consent.js --source-map "filename=cookie_consent.min.js.map" --output cookie_consent.min.js
@@ -131,7 +125,7 @@ package.json
 # Befehl: cd ../
 # Befehl: cd js
 # Befehl: npx terser archive.js --source-map "filename=archive.min.js.map" --output archive.min.js
-# Befehl: npx terser character.js --source-map "filename=character.min.js.map" --output character.min.js
+# Befehl: npx terser charaktere.js --source-map "filename=charaktere.min.js.map" --output charaktere.min.js
 # Befehl: npx terser comic.js --source-map "filename=comic.min.js.map" --output comic.min.js
 # Befehl: npx terser common.js --source-map "filename=common.min.js.map" --output common.min.js
 # Befehl: npx terser cookie_consent.js --source-map "filename=cookie_consent.min.js.map" --output cookie_consent.min.js
