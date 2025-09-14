@@ -75,6 +75,10 @@ $additionalScripts = $additionalScripts ?? '';
 $additionalHeadContent = $additionalHeadContent ?? '';
 $viewportContent = $viewportContent ?? 'width=device-width, initial-scale=1.0';
 
+// --- Web-Pfade mit Cache-Buster generieren ---
+$faviconUrl = $baseUrl . 'favicon.ico?v=' . filemtime($appRootAbsPath . '/favicon.ico');
+$appleIconUrl = $baseUrl . 'appleicon.png?v=' . filemtime($appRootAbsPath . '/appleicon.png');
+
 // Pfade zu Assets mit Cache-Busting
 $commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.min.js?c=' . filemtime(__DIR__ . '/js/common.min.js');
 $mainCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main.min.css?c=' . filemtime(__DIR__ . '/css/main.min.css');
@@ -129,9 +133,9 @@ $cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.m
     <?php endif; ?>
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="https://twokinds.4lima.de/favicon.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="https://twokinds.4lima.de/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" type="image/png" href="https://twokinds.4lima.de/appleicon.png">
+    <link rel="icon" type="image/x-icon" href="<?php echo htmlspecialchars($faviconUrl); ?>">
+    <link rel="shortcut icon" type="image/x-icon" href="<?php echo htmlspecialchars($faviconUrl); ?>">
+    <link rel="apple-touch-icon-precomposed" type="image/png" href="<?php echo htmlspecialchars($appleIconUrl); ?>">
 
     <!-- JavaScript -->
     <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'
