@@ -54,6 +54,8 @@ comic/*
 
 # Zip-Archive
 *.zip
+*.7z
+*.rar
 
 # Googles
 google5c760f191f071105.html
@@ -73,6 +75,10 @@ src/config/version.json
 
 #Notizen
 _links/*
+*.url
+* - Kopie*
+test*.php
+*backup*
 # FTP Verzeichnisse
 sync.ffs_db
 # Charaktere Bilder

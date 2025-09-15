@@ -312,8 +312,8 @@ include $headerPath;
         margin: auto;
         padding: 20px;
         border-radius: 8px;
-        width: 90%;
-        max-width: 800px;
+        width: 100%;
+        max-width: 1035px;
         position: relative;
     }
 
