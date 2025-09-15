@@ -54,6 +54,9 @@ $comicImagePath = get_cached_image_path($currentComicId, 'lowres');
 $comicHiresPath = get_cached_image_path($currentComicId, 'hires');
 $socialMediaPreviewUrl = get_cached_image_path($currentComicId, 'socialmedia');
 $bookmarkThumbnailUrl = get_cached_image_path($currentComicId, 'thumbnails');
+$urlOriginalbildFromCache = get_cached_image_path($currentComicId, 'url_originalbild');
+$urlOriginalsketchFromCache = get_cached_image_path($currentComicId, 'url_originalsketch');
+
 
 // --- FALLBACK-LOGIK ---
 // Fallback für das Haupt-Comicbild
@@ -84,9 +87,9 @@ $pageTitle = 'Comic ' . substr($currentComicId, 0, 4) . '.' . substr($currentCom
 $siteDescription = 'TwoKinds Comic vom ' . $formattedDateGerman . ' - ' . htmlspecialchars($comicName) . '. ' . strip_tags($comicTranscript);
 $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . ltrim($socialMediaPreviewUrl, './');
 
-// Cache-Buster für comic.js
-$comicJsPathOnServer = __DIR__ . '/../layout/js/comic.js';
-$comicJsWebUrl = $baseUrl . 'src/layout/js/comic.js';
+// Cache-Buster für comic.js (verweist auf die minified version)
+$comicJsPathOnServer = __DIR__ . '/../layout/js/comic.min.js';
+$comicJsWebUrl = $baseUrl . 'src/layout/js/comic.min.js';
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 
@@ -130,10 +133,10 @@ require_once __DIR__ . '/../layout/header.php';
         <!-- Lesezeichen-Button mit der Original-Klasse und den Datenattributen -->
         <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
             data-id="<?php echo htmlspecialchars($currentComicId); ?>"
-            data-page="<?php echo htmlspecialchars($currentComicId); ?>"
-            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId); ?>"
+            data-page="<?php echo htmlspecialchars($comicName); ?>"
+            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>"
             data-thumb="<?php echo htmlspecialchars(str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : $baseUrl . ltrim($bookmarkThumbnailUrl, './')); ?>">
-            Bookmark this page
+            Seite merken
         </button>
     </div>
 
@@ -171,7 +174,10 @@ require_once __DIR__ . '/../layout/header.php';
                 <a href="#" class="button" id="toggle-language-btn"
                     data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : '../' . $comicImagePath); ?>"
                     data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : '../' . $comicHiresPath); ?>"
-                    data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>">Seite auf englisch
+                    data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>"
+                    data-english-url-from-cache="<?php echo htmlspecialchars($urlOriginalbildFromCache ?? ''); ?>"
+                    data-english-sketch-url-from-cache="<?php echo htmlspecialchars($urlOriginalsketchFromCache ?? ''); ?>">Seite
+                    auf englisch
                     anzeigen</a>
             <?php endif; ?>
         </div>
@@ -181,7 +187,7 @@ require_once __DIR__ . '/../layout/header.php';
     </aside>
 </article>
 
-<!-- JavaScript zum Kopieren der URL -->
+<!-- JavaScript zum Kopieren der URL und Sprache umschalten -->
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
         // URL Kopieren Logik
@@ -196,7 +202,6 @@ require_once __DIR__ . '/../layout/header.php';
                     setTimeout(() => { this.textContent = originalText; }, 2000);
                 }).catch(err => {
                     console.error('Fehler beim Kopieren der URL: ', err);
-                    // Fallback oder Fehlermeldung
                     this.textContent = 'Fehler beim Kopieren';
                     setTimeout(() => { this.textContent = originalText; }, 2000);
                 });
@@ -212,9 +217,19 @@ require_once __DIR__ . '/../layout/header.php';
             let englishSrc = '';
             let englishHref = '';
 
+            // --- Helper functions ---
             const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
             const sketchImageUrlBase = 'https://twokindscomic.com/images/';
             const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
+            function checkUrl(url) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(url);
+                    img.onerror = () => reject(`Bild unter ${url} nicht gefunden.`);
+                    img.src = url;
+                });
+            }
 
             function findEnglishUrl(filename) {
                 return new Promise((resolve, reject) => {
@@ -226,7 +241,7 @@ require_once __DIR__ . '/../layout/header.php';
                         img.onload = () => { if (!found) { found = true; resolve(url); } };
                         img.onerror = () => {
                             attempts++;
-                            if (attempts === imageExtensions.length && !found) reject('Kein englisches Bild gefunden');
+                            if (attempts === imageExtensions.length && !found) reject('Kein englisches Bild gefunden (Fallback-Suche)');
                         };
                         img.src = url;
                     });
@@ -251,47 +266,83 @@ require_once __DIR__ . '/../layout/header.php';
                 });
             }
 
+            function setEnglishImage(mainUrl) {
+                englishSrc = mainUrl;
+                comicImage.src = englishSrc;
+
+                const sketchUrlFromCache = toggleBtn.dataset.englishSketchUrlFromCache;
+
+                const setHref = (url) => {
+                    englishHref = url;
+                    comicLink.href = englishHref;
+                    toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                    isGerman = false;
+                };
+
+                const runSketchProbingLogic = () => {
+                    findEnglishSketchUrl(toggleBtn.dataset.englishFilename)
+                        .then(foundSketchUrl => setHref(foundSketchUrl))
+                        .catch(sketchProbeError => {
+                            console.warn(sketchProbeError);
+                            setHref(mainUrl);
+                        });
+                };
+
+                if (sketchUrlFromCache) {
+                    checkUrl(sketchUrlFromCache)
+                        .then(validSketchUrl => setHref(validSketchUrl))
+                        .catch(sketchCacheError => {
+                            console.warn(sketchCacheError);
+                            console.log("Sketch-URL aus Cache nicht erreichbar. Starte Fallback-Suche...");
+                            runSketchProbingLogic();
+                        });
+                } else {
+                    runSketchProbingLogic();
+                }
+            }
+
+            function runOriginalProbingLogic() {
+                const originalText = toggleBtn.textContent;
+                toggleBtn.textContent = 'Lade...';
+                const englishFilename = toggleBtn.dataset.englishFilename;
+
+                findEnglishUrl(englishFilename).then(mainUrl => {
+                    setEnglishImage(mainUrl);
+                }).catch(mainError => {
+                    console.error(mainError);
+                    toggleBtn.textContent = 'Original nicht gefunden';
+                    setTimeout(() => { toggleBtn.textContent = originalText; }, 2000);
+                });
+            }
+
+            // --- Main click event listener ---
             toggleBtn.addEventListener('click', function (event) {
                 event.preventDefault();
                 if (isGerman) {
-                    // Auf Englisch umschalten
                     if (englishSrc && englishHref) {
                         comicImage.src = englishSrc;
                         comicLink.href = englishHref;
                         toggleBtn.textContent = 'Seite auf deutsch anzeigen';
                         isGerman = false;
-                    } else {
-                        const originalText = toggleBtn.textContent;
+                        return;
+                    }
+
+                    const urlFromCache = toggleBtn.dataset.englishUrlFromCache;
+
+                    if (urlFromCache) {
                         toggleBtn.textContent = 'Lade...';
-                        const englishFilename = toggleBtn.dataset.englishFilename;
-
-                        const mainImagePromise = findEnglishUrl(englishFilename);
-                        const sketchImagePromise = findEnglishSketchUrl(englishFilename);
-
-                        mainImagePromise.then(mainUrl => {
-                            englishSrc = mainUrl;
-                            comicImage.src = englishSrc;
-
-                            sketchImagePromise.then(sketchUrl => {
-                                englishHref = sketchUrl;
-                                comicLink.href = englishHref;
-                            }).catch(sketchError => {
-                                console.warn(sketchError);
-                                englishHref = mainUrl;
-                                comicLink.href = englishHref;
-                            }).finally(() => {
-                                toggleBtn.textContent = 'Seite auf deutsch anzeigen';
-                                isGerman = false;
-                            });
-
-                        }).catch(mainError => {
-                            console.error(mainError);
-                            toggleBtn.textContent = 'Original nicht gefunden';
-                            setTimeout(() => { toggleBtn.textContent = originalText; }, 2000);
+                        checkUrl(urlFromCache).then(validUrl => {
+                            setEnglishImage(validUrl);
+                        }).catch(cacheUrlError => {
+                            console.warn(cacheUrlError);
+                            console.log("URL aus Cache nicht erreichbar. Starte Fallback-Suche...");
+                            runOriginalProbingLogic();
                         });
+                    } else {
+                        runOriginalProbingLogic();
                     }
                 } else {
-                    // Zurück auf Deutsch umschalten
+                    // Switch back to German
                     comicImage.src = toggleBtn.dataset.germanSrc;
                     comicLink.href = toggleBtn.dataset.germanHref;
                     toggleBtn.textContent = 'Seite auf englisch anzeigen';

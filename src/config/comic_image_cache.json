@@ -7759,7 +7759,8 @@
         "lowres": "assets/comic_lowres/20250315.webp?c=1756591949",
         "hires": "assets/comic_hires/20250315.webp?c=1756592004",
         "socialmedia": "assets/comic_socialmedia/20250315.webp?c=1756592014",
-        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20250315?c=20250915.png"
+        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20250315.png?c=20250915",
+        "url_originalsketch": "https://twokindscomic.com/images/20250315_sketch.png?c=20250915"
     },
     "in_translation-leer": {
         "thumbnails": "assets/comic_thumbnails/in_translation-leer.webp?c=1757099473",

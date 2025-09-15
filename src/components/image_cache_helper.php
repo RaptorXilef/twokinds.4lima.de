@@ -31,48 +31,50 @@ class ImageCache
                 error_log("BILD-CACHE WARNUNG: comic_image_cache.json ist korrupt oder leer.");
             }
         } else {
-            error_log("BILD-CACHE WARNUNG: comic_image_cache.json nicht gefunden. Bitte im Admin-Bereich generieren.");
+            error_log("BILD-CACHE FEHLER: comic_image_cache.json nicht gefunden unter: " . $cachePath);
         }
     }
 
     /**
      * Stellt die Singleton-Instanz der Klasse bereit.
-     * @return ImageCache Die einzige Instanz der ImageCache-Klasse.
+     * @return ImageCache Die Singleton-Instanz.
      */
     public static function getInstance(): ImageCache
     {
         if (self::$instance === null) {
-            self::$instance = new ImageCache();
+            self::$instance = new self();
         }
         return self::$instance;
     }
 
     /**
-     * Ruft den gecachten Pfad für ein Bild anhand seiner ID und seines Typs ab
-     * und überprüft, ob die Datei tatsächlich existiert.
-     *
-     * @param string $id Die Comic-ID oder der Basis-Dateiname des Bildes.
-     * @param string $type Der Bildtyp (z.B. 'lowres', 'hires', 'thumbnails', 'socialmedia').
+     * Ruft den Pfad für einen bestimmten Bildtyp und eine ID aus dem Cache ab.
+     * Prüft, ob die referenzierte lokale Datei existiert, bevor der Pfad zurückgegeben wird.
+     * @param string $id Die Comic-ID oder der Basis-Dateiname (z.B. '20250312', 'in_translation').
+     * @param string $type Der Bildtyp (z.B. 'lowres', 'hires', 'socialmedia', 'url_originalbild').
      * @return string|null Den relativen Pfad mit Cache-Buster oder null, wenn der Eintrag nicht gefunden oder die Datei nicht existent ist.
      */
     public function getPath(string $id, string $type): ?string
     {
-        $relativePath = $this->cacheData[$id][$type] ?? null;
+        $pathValue = $this->cacheData[$id][$type] ?? null;
 
-        if ($relativePath === null) {
+        if ($pathValue === null) {
             return null; // Eintrag nicht im Cache gefunden
         }
 
-        // Entferne den Cache-Buster-Teil für die Dateisystem-Prüfung
-        $pathWithoutQuery = strtok($relativePath, '?');
-        $absolutePath = $this->projectRoot . '/' . $pathWithoutQuery;
-
-        // Prüfe, ob die im Cache referenzierte Datei auch wirklich existiert
-        if (file_exists($absolutePath)) {
-            return $relativePath; // Wenn ja, gib den vollen Pfad mit Cache-Buster zurück
+        // KORREKTUR: Wenn der Wert eine vollständige URL ist, gib sie direkt zurück, ohne sie lokal zu prüfen.
+        if (str_starts_with($pathValue, 'http')) {
+            return $pathValue;
         }
 
-        // Wenn die Datei nicht existiert, protokolliere einen Fehler und gib null zurück
+        // Für lokale Pfade, fahre mit der Dateiprüfung fort
+        $pathWithoutQuery = strtok($pathValue, '?');
+        $absolutePath = $this->projectRoot . '/' . $pathWithoutQuery;
+
+        if (file_exists($absolutePath)) {
+            return $pathValue; // Wenn ja, gib den vollen Pfad mit Cache-Buster zurück
+        }
+
         error_log("BILD-CACHE FEHLER: Datei für '$id' ('$type') in JSON gefunden, aber nicht auf dem Server: " . $absolutePath);
         return null;
     }
