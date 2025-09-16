@@ -955,16 +955,19 @@ include $headerPath;
             });
         }
 
-        async function updateImagePreviews(comicId, originalFilename, sketchFilename) {
+        async function updateImagePreviews() {
+            const originalFilename = document.getElementById('modal-url').value;
+            const sketchFilename = document.getElementById('modal-url-sketch').value;
+
             const deImg = modalPreviewDe.querySelector('img');
             const enImg = modalPreviewEn.querySelector('img');
             const sketchImg = modalPreviewSketch.querySelector('img');
             const placeholderSrc = (cachedImages['placeholder'] && cachedImages['placeholder'].lowres) ? `../${cachedImages['placeholder'].lowres}` : '../assets/comic_thumbnails/placeholder.jpg';
 
-            deImg.src = (cachedImages[comicId] && cachedImages[comicId].lowres) ? `../${cachedImages[comicId].lowres}` : placeholderSrc;
+            deImg.src = (cachedImages[activeEditId] && cachedImages[activeEditId].lowres) ? `../${cachedImages[activeEditId].lowres}` : placeholderSrc;
 
-            findAndCacheUrl(comicId, originalFilename, 'https://cdn.twokinds.keenspot.com/comics/', 'url_originalbild', enImg, placeholderSrc);
-            findAndCacheUrl(comicId, sketchFilename, 'https://twokindscomic.com/images/', 'url_originalsketch', sketchImg, placeholderSrc);
+            findAndCacheUrl(activeEditId, originalFilename, 'https://cdn.twokinds.keenspot.com/comics/', 'url_originalbild', enImg, placeholderSrc);
+            findAndCacheUrl(activeEditId, sketchFilename, 'https://twokindscomic.com/images/', 'url_originalsketch', sketchImg, placeholderSrc);
         }
 
         function findAndCacheUrl(comicId, filename, baseUrl, cacheKey, imgElement, placeholderSrc) {
@@ -973,7 +976,6 @@ include $headerPath;
                 return;
             }
 
-            // NEU V4.2: Automatisches Anhängen von '_sketch'
             if (cacheKey === 'url_originalsketch') {
                 filename += '_sketch';
             }
@@ -981,12 +983,18 @@ include $headerPath;
             imgElement.src = '../assets/icons/loading.webp';
 
             if (cachedImages[comicId] && cachedImages[comicId][cacheKey]) {
-                imgElement.src = cachedImages[comicId][cacheKey];
-                imgElement.onerror = () => {
-                    delete cachedImages[comicId][cacheKey];
-                    findAndCacheUrl(comicId, filename, baseUrl, cacheKey, imgElement, placeholderSrc); // Retry on error
-                };
-                return;
+                const cachedUrl = new URL(cachedImages[comicId][cacheKey]);
+                const baseCachedUrl = `${cachedUrl.origin}${cachedUrl.pathname}`;
+                const expectedBaseUrl = baseUrl + filename;
+
+                if (baseCachedUrl.includes(expectedBaseUrl)) {
+                    imgElement.src = cachedImages[comicId][cacheKey];
+                    imgElement.onerror = () => {
+                        delete cachedImages[comicId][cacheKey];
+                        findAndCacheUrl(comicId, filename, baseUrl, cacheKey, imgElement, placeholderSrc);
+                    };
+                    return;
+                }
             }
 
             const imageExtensions = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
@@ -1102,7 +1110,7 @@ include $headerPath;
                 document.getElementById('modal-title-header').textContent = `Eintrag bearbeiten (${activeEditId})`;
 
                 document.getElementById('modal-image-preview-section').style.display = 'block';
-                updateImagePreviews(activeEditId, chapter.url_originalbild, chapter.url_originalsketch);
+                updateImagePreviews();
                 setImageView('de');
 
                 editModal.style.display = 'flex';
@@ -1128,6 +1136,11 @@ include $headerPath;
                 renderTable();
             }
         });
+
+        // Live-Update für Bildvorschauen
+        document.getElementById('modal-url').addEventListener('input', updateImagePreviews);
+        document.getElementById('modal-url-sketch').addEventListener('input', updateImagePreviews);
+
 
         modalSaveBtn.addEventListener('click', () => {
             let idToUpdate;
