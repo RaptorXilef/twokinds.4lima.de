@@ -1,9 +1,8 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der comic_var.json Konfigurationsdatei.
- * V4.2: Behebt kritische JavaScript-Fehler, implementiert Live-Vorschau-Updates,
- * korrigiert die Speicher- und Caching-Logik für Skizzen und automatisiert
- * das Hinzufügen des '_sketch'-Suffixes.
+ * V5.1: Korrigiert Fehler beim Laden von Bestandsdaten und implementiert die
+ * Charakter-Auswahl korrekt mit CSS-basiertem Aktiv/Inaktiv-Status.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -20,6 +19,8 @@ $comicVarJsonPath = __DIR__ . '/../src/config/comic_var.json';
 $comicPhpPagesPath = __DIR__ . '/../comic/';
 $settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 $imageCachePath = __DIR__ . '/../src/config/comic_image_cache.json';
+$charaktereJsonPath = __DIR__ . '/../src/config/charaktere.json';
+
 
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
@@ -50,7 +51,7 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
 }
 
 // --- Comic-Daten Funktionen ---
-function loadComicData(string $path, bool $debugMode): array
+function loadJsonData(string $path, bool $debugMode): array
 {
     if (!file_exists($path) || filesize($path) === 0)
         return [];
@@ -185,7 +186,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $settings = loadGeneratorSettings($settingsFilePath, $debugMode);
 $comicEditorSettings = $settings['data_editor_comic'];
 
-$jsonData = loadComicData($comicVarJsonPath, $debugMode);
+$jsonData = loadJsonData($comicVarJsonPath, $debugMode);
+$charaktereData = loadJsonData($charaktereJsonPath, $debugMode);
 $imageDirs = [__DIR__ . '/../assets/comic_lowres/', __DIR__ . '/../assets/comic_hires/'];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
 $phpIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
@@ -195,16 +197,18 @@ sort($allIds);
 
 $fullComicData = [];
 foreach ($allIds as $id) {
-    $fullComicData[$id] = $jsonData[$id] ?? [
+    $defaults = [
         'type' => 'Comicseite',
         'name' => '',
         'transcript' => '',
         'chapter' => null,
         'datum' => $id,
         'url_originalbild' => '',
-        'url_originalsketch' => ''
+        'url_originalsketch' => '',
+        'charaktere' => []
     ];
-    $fullComicData[$id] += ['type' => 'Comicseite', 'name' => '', 'transcript' => '', 'chapter' => null, 'datum' => $id, 'url_originalbild' => '', 'url_originalsketch' => ''];
+    $existingData = $jsonData[$id] ?? [];
+    $fullComicData[$id] = array_merge($defaults, $existingData);
 
     $sources = [];
     if (isset($jsonData[$id]))
@@ -336,6 +340,10 @@ include $headerPath;
                     <img src="" alt="Original Skizze Vorschau">
                 </div>
             </div>
+        </div>
+
+        <div id="modal-charaktere-section">
+            <!-- Charakterauswahl wird hier per JS eingefügt -->
         </div>
 
         <div class="modal-buttons">
@@ -790,6 +798,59 @@ include $headerPath;
     body.theme-night .image-preview-box img {
         border-color: #045d81;
     }
+
+    #modal-charaktere-section {
+        margin-top: 20px;
+        border-top: 1px solid var(--missing-grid-border-color);
+        padding-top: 15px;
+    }
+
+    .charakter-kategorie {
+        margin-bottom: 15px;
+    }
+
+    .charakter-kategorie h3 {
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        border-bottom: 1px solid var(--missing-grid-border-color);
+        padding-bottom: 5px;
+    }
+
+    .charaktere-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .charakter-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .charakter-item img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid transparent;
+        transition: border-color 0.3s, filter 0.3s;
+    }
+
+    .charakter-item:not(.active) img {
+        filter: grayscale(100%);
+    }
+
+    .charakter-item.active img {
+        border-color: #007bff;
+        filter: grayscale(0%);
+    }
+
+    .charakter-item span {
+        margin-top: 5px;
+        font-size: 0.8em;
+    }
 </style>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -798,6 +859,7 @@ include $headerPath;
         let comicData = <?php echo json_encode($fullComicData, JSON_UNESCAPED_SLASHES); ?>;
         let allComicIds = Object.keys(comicData);
         let cachedImages = <?php echo json_encode($cachedImagesForJs, JSON_UNESCAPED_SLASHES); ?>;
+        const charaktereData = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
 
         const tableBody = document.querySelector('#comic-table tbody');
         const saveAllBtn = document.getElementById('save-all-btn');
@@ -814,7 +876,9 @@ include $headerPath;
         const modalPreviewDe = document.getElementById('modal-preview-de');
         const modalPreviewEn = document.getElementById('modal-preview-en');
         const modalPreviewSketch = document.getElementById('modal-preview-sketch');
+        const modalCharaktereSection = document.getElementById('modal-charaktere-section');
         let activeEditId = null;
+        let debounceTimer;
 
         const ITEMS_PER_PAGE = <?php echo COMIC_PAGES_PER_PAGE; ?>;
         let currentPage = 1;
@@ -822,27 +886,6 @@ include $headerPath;
         $('#modal-transcript').summernote({
             placeholder: "Transkript hier eingeben...", tabsize: 2, height: 200,
             toolbar: [['style', ['style']], ['font', ['bold', 'italic', 'underline', 'clear']], ['para', ['ul', 'ol', 'paragraph']], ['insert', ['link']], ['view', ['codeview']]],
-            callbacks: {
-                onPaste: function (e) {
-                    var clipboardData = e.originalEvent.clipboardData || window.clipboardData;
-                    var pastedData = clipboardData.getData('text/html');
-                    if (pastedData) {
-                        e.preventDefault();
-                        let cleanedData = pastedData.replace(/<!--[\s\S]*?-->/g, '');
-                            cleanedData = cleanedData.replace(/<(\w+)([^>]*)>/g, (match, tagName, attrs) => {
-                                let preservedAttrs = '';
-                                if (tagName.toLowerCase() === 'a') {
-                                    const hrefMatch = attrs.match(/href="([^"]*)"/i);
-                                    if (hrefMatch) preservedAttrs = ` href="${hrefMatch[1]}" target="_blank"`;
-                                }
-                                return `<${tagName}${preservedAttrs}>`;
-                            });
-                        cleanedData = cleanedData.replace(/<b>/gi, '<strong>').replace(/<\/b>/gi, '</strong>');
-                        cleanedData = cleanedData.replace(/<i>/gi, '<em>').replace(/<\/i>/gi, '</em>');
-                        $('#modal-transcript').summernote('pasteHTML', cleanedData);
-                    }
-                }
-            }
         });
 
         const renderTable = () => {
@@ -955,10 +998,14 @@ include $headerPath;
             });
         }
 
+        function updateImagePreviewsWithDebounce() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(updateImagePreviews, 500); // 500ms Verzögerung
+        }
+
         async function updateImagePreviews() {
             const originalFilename = document.getElementById('modal-url').value;
             const sketchFilename = document.getElementById('modal-url-sketch').value;
-
             const deImg = modalPreviewDe.querySelector('img');
             const enImg = modalPreviewEn.querySelector('img');
             const sketchImg = modalPreviewSketch.querySelector('img');
@@ -976,8 +1023,9 @@ include $headerPath;
                 return;
             }
 
+            let finalFilename = filename;
             if (cacheKey === 'url_originalsketch') {
-                filename += '_sketch';
+                finalFilename += '_sketch';
             }
 
             imgElement.src = '../assets/icons/loading.webp';
@@ -985,7 +1033,7 @@ include $headerPath;
             if (cachedImages[comicId] && cachedImages[comicId][cacheKey]) {
                 const cachedUrl = new URL(cachedImages[comicId][cacheKey]);
                 const baseCachedUrl = `${cachedUrl.origin}${cachedUrl.pathname}`;
-                const expectedBaseUrl = baseUrl + filename;
+                const expectedBaseUrl = baseUrl + finalFilename;
 
                 if (baseCachedUrl.includes(expectedBaseUrl)) {
                     imgElement.src = cachedImages[comicId][cacheKey];
@@ -1006,7 +1054,7 @@ include $headerPath;
                     imgElement.onerror = null;
                     return;
                 }
-                const testUrl = baseUrl + filename + '.' + imageExtensions[currentExtIndex];
+                const testUrl = baseUrl + finalFilename + '.' + imageExtensions[currentExtIndex];
                 imgElement.src = testUrl;
                 currentExtIndex++;
             }
@@ -1056,6 +1104,77 @@ include $headerPath;
             modalPreviewSketch.style.display = view === 'sketch' ? 'flex' : 'none';
         }
 
+        function renderCharakterSelection(comicId) {
+            modalCharaktereSection.innerHTML = '';
+            const selectedCharaktere = comicData[comicId]?.charaktere || [];
+
+            const categories = {
+                'Hauptcharaktere': 'charaktere_main',
+                'Nebencharaktere': 'charaktere_secondary',
+                'Andere Charaktere': 'charaktere_other_main',
+                'Andere seltene Charaktere': 'charaktere_other'
+            };
+
+            for (const [title, key] of Object.entries(categories)) {
+                if (charaktereData[key]) {
+                    const kategorieDiv = document.createElement('div');
+                    kategorieDiv.className = 'charakter-kategorie';
+                    kategorieDiv.innerHTML = `<h3>${title}</h3>`;
+
+                    const grid = document.createElement('div');
+                    grid.className = 'charaktere-grid';
+
+                    for (const [name, urls] of Object.entries(charaktereData[key])) {
+                        const item = document.createElement('div');
+                        item.className = 'charakter-item';
+                        item.dataset.charakterName = name;
+
+                        const img = document.createElement('img');
+                        const isActive = selectedCharaktere.includes(name);
+                        img.src = `../${urls.charaktere_pic_url}`;
+                        img.alt = name;
+                        if (isActive) item.classList.add('active');
+
+                        const nameSpan = document.createElement('span');
+                        nameSpan.textContent = name;
+
+                        item.appendChild(img);
+                        item.appendChild(nameSpan);
+                        grid.appendChild(item);
+                    }
+                    kategorieDiv.appendChild(grid);
+                    modalCharaktereSection.appendChild(kategorieDiv);
+                }
+            }
+        }
+
+        modalCharaktereSection.addEventListener('click', (e) => {
+            const item = e.target.closest('.charakter-item');
+            if (!item) return;
+
+            const charakterName = item.dataset.charakterName;
+            item.classList.toggle('active');
+            const isActive = item.classList.contains('active');
+
+            if (!comicData[activeEditId].charaktere) {
+                comicData[activeEditId].charaktere = [];
+            }
+
+            const charakterArray = comicData[activeEditId].charaktere;
+            const index = charakterArray.indexOf(charakterName);
+
+            if (isActive) {
+                if (index === -1) {
+                    charakterArray.push(charakterName);
+                }
+            } else {
+                if (index > -1) {
+                    charakterArray.splice(index, 1);
+                }
+            }
+        });
+
+
         modalImageControls.addEventListener('click', (e) => {
             if (e.target.matches('.button-toggle')) {
                 setImageView(e.target.dataset.view);
@@ -1090,6 +1209,7 @@ include $headerPath;
             document.getElementById('modal-url-sketch').value = '';
             document.getElementById('modal-title-header').textContent = 'Neuen Eintrag erstellen';
             document.getElementById('modal-image-preview-section').style.display = 'none';
+            modalCharaktereSection.innerHTML = '';
             editModal.style.display = 'flex';
         });
 
@@ -1101,16 +1221,17 @@ include $headerPath;
                 const chapter = comicData[activeEditId];
                 document.getElementById('modal-comic-id').value = activeEditId;
                 document.getElementById('modal-comic-id').disabled = true;
-                document.getElementById('modal-type').value = chapter.type;
-                document.getElementById('modal-name').value = chapter.name;
-                $('#modal-transcript').summernote('code', chapter.transcript);
-                document.getElementById('modal-chapter').value = chapter.chapter;
-                document.getElementById('modal-url').value = chapter.url_originalbild;
-                document.getElementById('modal-url-sketch').value = chapter.url_originalsketch;
+                document.getElementById('modal-type').value = chapter.type || 'Comicseite';
+                document.getElementById('modal-name').value = chapter.name || '';
+                $('#modal-transcript').summernote('code', chapter.transcript || '');
+                document.getElementById('modal-chapter').value = chapter.chapter || '';
+                document.getElementById('modal-url').value = chapter.url_originalbild || '';
+                document.getElementById('modal-url-sketch').value = chapter.url_originalsketch || '';
                 document.getElementById('modal-title-header').textContent = `Eintrag bearbeiten (${activeEditId})`;
 
                 document.getElementById('modal-image-preview-section').style.display = 'block';
                 updateImagePreviews();
+                renderCharakterSelection(activeEditId);
                 setImageView('de');
 
                 editModal.style.display = 'flex';
@@ -1137,10 +1258,8 @@ include $headerPath;
             }
         });
 
-        // Live-Update für Bildvorschauen
-        document.getElementById('modal-url').addEventListener('input', updateImagePreviews);
-        document.getElementById('modal-url-sketch').addEventListener('input', updateImagePreviews);
-
+        document.getElementById('modal-url').addEventListener('input', updateImagePreviewsWithDebounce);
+        document.getElementById('modal-url-sketch').addEventListener('input', updateImagePreviewsWithDebounce);
 
         modalSaveBtn.addEventListener('click', () => {
             let idToUpdate;
@@ -1157,7 +1276,7 @@ include $headerPath;
                     return;
                 }
                 idToUpdate = newId;
-                comicData[idToUpdate] = { sources: ['json'] };
+                comicData[idToUpdate] = { sources: ['json'], charaktere: [] };
                 if (!allComicIds.includes(idToUpdate)) {
                     allComicIds.push(idToUpdate);
                 }
@@ -1170,6 +1289,10 @@ include $headerPath;
             comicData[idToUpdate].url_originalbild = document.getElementById('modal-url').value;
             comicData[idToUpdate].url_originalsketch = document.getElementById('modal-url-sketch').value;
             comicData[idToUpdate].datum = idToUpdate;
+
+            if (!comicData[idToUpdate].charaktere) {
+                comicData[idToUpdate].charaktere = [];
+            }
 
             renderTable();
             editModal.style.display = 'none';

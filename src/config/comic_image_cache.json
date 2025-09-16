@@ -3,7 +3,8 @@
         "thumbnails": "assets/comic_thumbnails/20031022.webp?c=1755204507",
         "lowres": "assets/comic_lowres/20031022.webp?c=1756554209",
         "hires": "assets/comic_hires/20031022.jpg?c=1688830043",
-        "socialmedia": "assets/comic_socialmedia/20031022.webp?c=1755899525"
+        "socialmedia": "assets/comic_socialmedia/20031022.webp?c=1755899525",
+        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20031022.jpg?c=20250916"
     },
     "20031024": {
         "thumbnails": "assets/comic_thumbnails/20031024.webp?c=1755204508",
@@ -7732,7 +7733,8 @@
         "lowres": "assets/comic_lowres/20250301.webp?c=1756556534",
         "hires": "assets/comic_hires/20250301.jpg?c=1748897892",
         "socialmedia": "assets/comic_socialmedia/20250301.webp?c=1755901341",
-        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20250301.png?c=20250915"
+        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20250301.png?c=20250915",
+        "url_originalsketch": "https://twokindscomic.com/images/20250301_sketch.png?c=20250916"
     },
     "20250305": {
         "thumbnails": "assets/comic_thumbnails/20250305.webp?c=1755281273",
@@ -7748,7 +7750,7 @@
         "hires": "assets/comic_hires/20250309.jpg?c=1749506495",
         "socialmedia": "assets/comic_socialmedia/20250309.webp?c=1755901344",
         "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20250309.png?c=20250915",
-        "url_originalsketch": "https://localhost/assets/comic_thumbnails/placeholder.jpg?c=20250916"
+        "url_originalsketch": "https://twokindscomic.com/images/20250309_sketch.png?c=20250916"
     },
     "20250312": {
         "thumbnails": "assets/comic_thumbnails/20250312.webp?c=1757029719",
