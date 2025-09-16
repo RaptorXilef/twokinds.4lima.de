@@ -525,7 +525,7 @@ footer {
 }
 .comic .transcript .transcript-content {
   border: 1px solid #ccc;
-  max-height: 150px;
+  max-height: 550px;
   overflow: auto;
   padding: 3px;
   margin-top: 5px;

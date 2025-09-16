@@ -173,7 +173,6 @@ require_once __DIR__ . '/../layout/header.php';
 
     <div class="below-nav jsdep">
         <div class="nav-instruction">
-            <!-- Hinweis zur Navigation mit Tastaturpfeilen auf Deutsch. -->
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
         </div>
@@ -192,6 +191,11 @@ require_once __DIR__ . '/../layout/header.php';
             <?php echo $comicTranscript; ?>
         </div>
     </aside>
+
+    <?php
+    // NEU: Binde das Modul zur Anzeige der Charaktere ein
+    require_once __DIR__ . '/character_display.php';
+    ?>
 </article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">

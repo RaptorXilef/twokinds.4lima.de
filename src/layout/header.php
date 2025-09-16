@@ -86,6 +86,8 @@ $mainDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main_dark.min.css?c
 $cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.min.css?c=' . filemtime(__DIR__ . '/css/cookie_banner.min.css');
 $cookieBannerDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner_dark.min.css?c=' . filemtime(__DIR__ . '/css/cookie_banner_dark.min.css');
 $cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.min.js?c=' . filemtime(__DIR__ . '/js/cookie_consent.min.js');
+// NEU: Pfad für die Charakter-Anzeige CSS, im Stil der bestehenden Pfade
+$characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_display.min.css?c=' . filemtime(__DIR__ . '/css/character_display.css');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -127,6 +129,10 @@ $cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.m
         href="<?php echo htmlspecialchars($cookieBannerCssPathWithCacheBuster); ?>">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
         href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
+    <!-- NEU: Stylesheet für Charakter-Anzeige -->
+    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
+        href="<?php echo htmlspecialchars($characterDisplayCssPathWithCacheBuster); ?>">
+
     <?php if ($isAdminPage): ?>
         <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
@@ -269,7 +275,7 @@ $cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.m
                 <?php
                 // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
                 if ($isAdminPage) {
-                    // ***  BESTIMMUNGS-LOGIK ***
+                    // *** BESTIMMUNGS-LOGIK ***
                     // Lade das Admin-Menü und das Timeout-Modal NUR, wenn der Admin auch wirklich eingeloggt ist.
                     // Die Prüfung 'isset($_SESSION['admin_logged_in'])' stellt sicher, dass das Menü nicht auf der Login-Seite angezeigt wird.
                     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {

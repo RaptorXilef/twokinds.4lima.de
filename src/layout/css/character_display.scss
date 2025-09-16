@@ -1,0 +1,77 @@
+/* Stile für die Charakter-Anzeige auf Comic-Seiten */
+.comic-characters {
+    margin          : 20px 0;
+    padding         : 15px;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius   : 8px;
+    border          : 1px solid rgba(0, 0, 0, 0.1);
+
+    h3 {
+        text-align   : center;
+        margin-bottom: 15px;
+        font-size    : 1.1em;
+        color        : #555;
+    }
+}
+
+.character-list {
+    display        : flex;
+    flex-wrap      : wrap;
+    justify-content: center;
+    gap            : 20px;
+}
+
+.character-item {
+    text-align: center;
+
+    a {
+        display        : block;
+        text-decoration: none;
+        color          : inherit;
+        transition     : transform 0.2s ease-in-out;
+
+        &:hover {
+            transform: translateY(-5px);
+
+            .character-name {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    .character-name {
+        display      : block;
+        margin-bottom: 5px;
+        font-size    : 0.9em;
+        font-weight  : bold;
+    }
+
+    img {
+        width           : 80px;
+        height          : 80px;
+        border-radius   : 50%;
+        object-fit      : cover;
+        border          : 2px solid #ccc;
+        box-shadow      : 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        /* Falls Bilder transparente Bereiche haben */
+    }
+}
+
+
+/* Dark-Mode Anpassungen */
+body.theme-night {
+    .comic-characters {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-color    : rgba(255, 255, 255, 0.15);
+
+        h3 {
+            color: #bbb;
+        }
+    }
+
+    .character-item img {
+        border-color    : #48778a; // accent-light from dark theme
+        background-color: #00425c; // content-bg from dark theme
+    }
+}

@@ -174,6 +174,11 @@ require_once __DIR__ . '/src/layout/header.php';
             <?php echo $comicTranscript; ?>
         </div>
     </aside>
+
+    <?php
+    // NEU: Binde das Modul zur Anzeige der Charaktere ein
+    require_once __DIR__ . '/src/components/character_display.php';
+    ?>
 </article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
