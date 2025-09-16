@@ -696,7 +696,8 @@ footer {
 			margin: 0 4px;
 		}
 
-		a {
+		a,
+		button {
 			color          : #000;
 			text-decoration: none;
 		}
@@ -724,22 +725,22 @@ footer {
 		}
 
 		.navbegin .nav-wrapper {
-			background  : url($base_url + "/assets/navigation/comic-nav-begin.png") 0 50% no-repeat;
+			background  : url($base_url + "/assets/navigation/comic-nav-begin.png?c=20250916") 0 50% no-repeat;
 			padding-left: 35px;
 		}
 
 		.navprev .nav-wrapper {
-			background  : url($base_url + "/assets/navigation/comic-nav-arrow-left.png") 0 50% no-repeat;
+			background  : url($base_url + "/assets/navigation/comic-nav-arrow-left.png?c=20250916") 0 50% no-repeat;
 			padding-left: 26px;
 		}
 
 		.navnext .nav-wrapper {
-			background   : url($base_url + "/assets/navigation/comic-nav-arrow-right.png") 100% 50% no-repeat;
+			background   : url($base_url + "/assets/navigation/comic-nav-arrow-right.png?c=20250916") 100% 50% no-repeat;
 			padding-right: 26px;
 		}
 
 		.navend .nav-wrapper {
-			background   : url($base_url + "/assets/navigation/comic-nav-end.png") 100% 50% no-repeat;
+			background   : url($base_url + "/assets/navigation/comic-nav-end.png?c=20250916") 100% 50% no-repeat;
 			padding-right: 35px;
 		}
 
@@ -763,6 +764,17 @@ footer {
 		.disabled {
 			opacity: 0.4;
 			cursor : default;
+		}
+
+		&.bottomnav {
+			.nav-lang-toggle {
+				width: auto;
+
+				.nav-wrapper {
+					background  : url($base_url + "/assets/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
+					padding-left: 55px;
+				}
+			}
 		}
 	}
 }

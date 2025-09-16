@@ -18,6 +18,8 @@ require_once __DIR__ . '/../src/components/image_cache_helper.php';
 // Ermittle die ID des neuesten Comics
 $comicKeys = array_keys($comicData);
 $latestComicId = !empty($comicKeys) ? end($comicKeys) : '';
+
+// Setze die aktuelle Comic-ID für diese Seite auf die ID des neuesten Comics.
 $currentComicId = $latestComicId;
 
 // Hole die Daten für den neuesten Comic
@@ -73,8 +75,8 @@ $comicJsWebUrl = $baseUrl . 'src/layout/js/comic.min.js';
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 $viewportContent = 'width=1099';
-$robotsContent = 'noindex, follow';
-$canonicalUrl = $baseUrl;
+$robotsContent = 'noindex, follow'; // Diese Seite soll nicht indexiert werden, da der Inhalt auf der Hauptseite kanonisch ist.
+$canonicalUrl = $baseUrl; // Verweist auf die Haupt-Startseite
 
 // === 5. HEADER EINBINDEN ===
 require_once __DIR__ . '/../src/layout/header.php';
@@ -121,10 +123,10 @@ require_once __DIR__ . '/../src/layout/header.php';
     </div>
 
     <a id="comic-image-link"
-        href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : '../' . $comicHiresPath); ?>"
+        href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : $baseUrl . ltrim($comicHiresPath, './')); ?>"
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
-            src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : '../' . $comicImagePath); ?>"
+            src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : $baseUrl . ltrim($comicImagePath, './')); ?>"
             title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page" fetchpriority="high">
     </a>
 
@@ -134,6 +136,19 @@ require_once __DIR__ . '/../src/layout/header.php';
         include __DIR__ . '/../src/layout/comic_navigation.php';
         unset($isCurrentPageLatest);
         ?>
+        <!-- NEUER SPRACHUMSCHALTER-BUTTON -->
+        <?php if (!empty($urlOriginalbildFilename)): ?>
+            <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
+                data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : $baseUrl . ltrim($comicImagePath, './')); ?>"
+                data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : $baseUrl . ltrim($comicHiresPath, './')); ?>"
+                data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>"
+                data-english-url-from-cache="<?php echo htmlspecialchars($urlOriginalbildFromCache ?? ''); ?>"
+                data-english-sketch-url-from-cache="<?php echo htmlspecialchars($urlOriginalsketchFromCache ?? ''); ?>">
+                <span class="nav-wrapper">
+                    <span class="nav-text" id="lang-toggle-text">EN</span>
+                </span>
+            </button>
+        <?php endif; ?>
     </div>
 
     <div class="below-nav jsdep">
@@ -150,15 +165,7 @@ require_once __DIR__ . '/../src/layout/header.php';
     <aside class="transcript">
         <div class="transcript-header">
             <h2>Transkript</h2>
-            <?php if (!empty($urlOriginalbildFilename)): ?>
-                <a href="#" class="button" id="toggle-language-btn"
-                    data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : '../' . $comicImagePath); ?>"
-                    data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : '../' . $comicHiresPath); ?>"
-                    data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>"
-                    data-english-url-from-cache="<?php echo htmlspecialchars($urlOriginalbildFromCache ?? ''); ?>"
-                    data-english-sketch-url-from-cache="<?php echo htmlspecialchars($urlOriginalsketchFromCache ?? ''); ?>">Seite
-                    auf englisch anzeigen</a>
-            <?php endif; ?>
+            <!-- DER ALTE BUTTON WURDE HIER ENTFERNT -->
         </div>
         <div class="transcript-content">
             <?php echo $comicTranscript; ?>
@@ -184,10 +191,12 @@ require_once __DIR__ . '/../src/layout/header.php';
             });
         }
 
+        // --- ANGEPASSTE LOGIK FÜR SPRACHUMSCHALTUNG ---
         const toggleBtn = document.getElementById('toggle-language-btn');
         if (toggleBtn) {
             const comicLink = document.getElementById('comic-image-link');
             const comicImage = document.getElementById('comic-image');
+            const langToggleText = document.getElementById('lang-toggle-text'); // NEU
             let isGerman = true;
             let englishSrc = '', englishHref = '';
             const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
@@ -243,7 +252,7 @@ require_once __DIR__ . '/../src/layout/header.php';
                 const setHref = (url) => {
                     englishHref = url;
                     comicLink.href = englishHref;
-                    toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                    if (langToggleText) langToggleText.textContent = 'DE'; // Geändert
                     isGerman = false;
                 };
                 const runSketchProbingLogic = () => {
@@ -263,14 +272,14 @@ require_once __DIR__ . '/../src/layout/header.php';
             }
 
             function runOriginalProbingLogic() {
-                const originalText = toggleBtn.textContent;
-                toggleBtn.textContent = 'Lade...';
+                const originalText = langToggleText ? langToggleText.textContent : 'EN';
+                if (langToggleText) langToggleText.textContent = 'Lade...';
                 findEnglishUrl(toggleBtn.dataset.englishFilename)
                     .then(setEnglishImage)
                     .catch(err => {
                         console.error(err);
-                        toggleBtn.textContent = 'Original nicht gefunden';
-                        setTimeout(() => { toggleBtn.textContent = originalText; }, 2000);
+                        if (langToggleText) langToggleText.textContent = 'Original nicht gefunden';
+                        setTimeout(() => { if (langToggleText) langToggleText.textContent = originalText; }, 2000);
                     });
             }
 
@@ -280,13 +289,13 @@ require_once __DIR__ . '/../src/layout/header.php';
                     if (englishSrc && englishHref) {
                         comicImage.src = englishSrc;
                         comicLink.href = englishHref;
-                        toggleBtn.textContent = 'Seite auf deutsch anzeigen';
+                        if (langToggleText) langToggleText.textContent = 'DE'; // Geändert
                         isGerman = false;
                         return;
                     }
                     const urlFromCache = toggleBtn.dataset.englishUrlFromCache;
                     if (urlFromCache) {
-                        toggleBtn.textContent = 'Lade...';
+                        if (langToggleText) langToggleText.textContent = 'Lade...'; // Geändert
                         checkUrl(urlFromCache).then(setEnglishImage).catch(err => {
                             console.warn(err);
                             runOriginalProbingLogic();
@@ -297,7 +306,7 @@ require_once __DIR__ . '/../src/layout/header.php';
                 } else {
                     comicImage.src = toggleBtn.dataset.germanSrc;
                     comicLink.href = toggleBtn.dataset.germanHref;
-                    toggleBtn.textContent = 'Seite auf englisch anzeigen';
+                    if (langToggleText) langToggleText.textContent = 'EN'; // Geändert
                     isGerman = true;
                 }
             });

@@ -79,6 +79,7 @@ _links/*
 * - Kopie*
 test*.php
 *backup*
+*.psd
 # FTP Verzeichnisse
 sync.ffs_db
 # Charaktere Bilder

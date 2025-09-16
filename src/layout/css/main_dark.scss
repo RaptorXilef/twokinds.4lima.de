@@ -129,7 +129,8 @@ body.theme-night {
 			color           : $text-color;
 			background-color: $accent-dark;
 
-			a {
+			a,
+			button {
 				color: $text-color;
 			}
 
@@ -150,19 +151,25 @@ body.theme-night {
 			}
 
 			.navbegin .nav-wrapper {
-				background-image: url($base_url + "/assets/navigation/comic-nav-begin-dark.png");
+				background-image: url($base_url + "/assets/navigation/comic-nav-begin-dark.png?c=20250916");
 			}
 
 			.navprev .nav-wrapper {
-				background-image: url($base_url + "/assets/navigation/comic-nav-arrow-left-dark.png");
+				background-image: url($base_url + "/assets/navigation/comic-nav-arrow-left-dark.png?c=20250916");
 			}
 
 			.navnext .nav-wrapper {
-				background-image: url($base_url + "/assets/navigation/comic-nav-arrow-right-dark.png");
+				background-image: url($base_url + "/assets/navigation/comic-nav-arrow-right-dark.png?c=20250916");
 			}
 
 			.navend .nav-wrapper {
-				background-image: url($base_url + "/assets/navigation/comic-nav-end-dark.png");
+				background-image: url($base_url + "/assets/navigation/comic-nav-end-dark.png?c=20250916");
+			}
+
+			&.bottomnav {
+				.nav-lang-toggle .nav-wrapper {
+					background-image: url($base_url + "/assets/navigation/comic-nav-de-en-dark.png?c=20250916");
+				}
 			}
 		}
 	}

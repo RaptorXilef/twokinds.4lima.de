@@ -640,7 +640,8 @@ footer {
 .comic .comicnav img {
   margin: 0 4px;
 }
-.comic .comicnav a {
+.comic .comicnav a,
+.comic .comicnav button {
   color: #000;
   text-decoration: none;
 }
@@ -664,19 +665,19 @@ footer {
   background-color: #aac8aa;
 }
 .comic .comicnav .navbegin .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-begin.png") 0 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-begin.png?c=20250916") 0 50% no-repeat;
   padding-left: 35px;
 }
 .comic .comicnav .navprev .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-arrow-left.png") 0 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-arrow-left.png?c=20250916") 0 50% no-repeat;
   padding-left: 26px;
 }
 .comic .comicnav .navnext .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-arrow-right.png") 100% 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-arrow-right.png?c=20250916") 100% 50% no-repeat;
   padding-right: 26px;
 }
 .comic .comicnav .navend .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-end.png") 100% 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-end.png?c=20250916") 100% 50% no-repeat;
   padding-right: 35px;
 }
 .comic .comicnav .navarchive {
@@ -697,6 +698,13 @@ footer {
 .comic .comicnav .disabled {
   opacity: 0.4;
   cursor: default;
+}
+.comic .comicnav.bottomnav .nav-lang-toggle {
+  width: auto;
+}
+.comic .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
+  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
+  padding-left: 55px;
 }
 
 /* BEGIN ALTERNATE PAGES */
