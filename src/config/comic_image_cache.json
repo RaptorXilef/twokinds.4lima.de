@@ -10,7 +10,8 @@
         "thumbnails": "assets/comic_thumbnails/20031024.webp?c=1755204508",
         "lowres": "assets/comic_lowres/20031024.webp?c=1756554225",
         "hires": "assets/comic_hires/20031024.jpg?c=1688830229",
-        "socialmedia": "assets/comic_socialmedia/20031024.webp?c=1755899526"
+        "socialmedia": "assets/comic_socialmedia/20031024.webp?c=1755899526",
+        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20031024.jpg?c=20250917"
     },
     "20031027": {
         "thumbnails": "assets/comic_thumbnails/20031027.webp?c=1755204509",
@@ -22,7 +23,8 @@
         "thumbnails": "assets/comic_thumbnails/20031029.webp?c=1755204511",
         "lowres": "assets/comic_lowres/20031029.webp?c=1756554221",
         "hires": "assets/comic_hires/20031029.jpg?c=1688830228",
-        "socialmedia": "assets/comic_socialmedia/20031029.webp?c=1755899529"
+        "socialmedia": "assets/comic_socialmedia/20031029.webp?c=1755899529",
+        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20031029.jpg?c=20250917"
     },
     "20031103": {
         "thumbnails": "assets/comic_thumbnails/20031103.webp?c=1755204512",
@@ -7726,7 +7728,8 @@
         "thumbnails": "assets/comic_thumbnails/20250223.webp?c=1755281270",
         "lowres": "assets/comic_lowres/20250223.webp?c=1756556535",
         "hires": "assets/comic_hires/20250223.jpg?c=1748811418",
-        "socialmedia": "assets/comic_socialmedia/20250223.webp?c=1755901339"
+        "socialmedia": "assets/comic_socialmedia/20250223.webp?c=1755901339",
+        "url_originalbild": "https://cdn.twokinds.keenspot.com/comics/20250223.png?c=20250917"
     },
     "20250301": {
         "thumbnails": "assets/comic_thumbnails/20250301.webp?c=1755281271",
