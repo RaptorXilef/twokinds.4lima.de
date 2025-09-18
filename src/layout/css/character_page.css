@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*
  * Stile für die Charakter-Auftritts-Seite & Lesezeichen-Seite
- * Angepasst, um optisch identisch mit der gerenderten lesezeichen.php zu sein.
+ * Angepasst, um ein einheitliches, modernes Kachel-Design zu verwenden.
  */
 .bookmarks-page .page-header {
   display: flex;
@@ -43,7 +43,6 @@
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0px;
-  /* KORRIGIERT  : Deine Anpassung für den Abstand */
 }
 .bookmarks-page .bookmark-example .ribbon {
   height: 36px;

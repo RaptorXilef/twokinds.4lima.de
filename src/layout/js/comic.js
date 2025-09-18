@@ -200,12 +200,6 @@
     const chapterLinksContainer =
       bookmarksSection.querySelector(".chapter-links");
 
-    // === NEU HINZUGEFÜGT: Füge die Klasse 'tag-page-links' hinzu ===
-    if (chapterLinksContainer) {
-      chapterLinksContainer.classList.add("tag-page-links");
-    }
-    // =============================================================
-
     const bookmarksSorted = new Map(
       [...bookmarkMap].sort((a, b) => b[1].id.localeCompare(a[1].id))
     ); // Sort descending by ID (newest first)
@@ -214,26 +208,50 @@
       const bookmark = pageBookmarkTemplate.content.cloneNode(true);
       const link = bookmark.querySelector("a");
       link.href = b.permalink;
-      const pageNum = bookmark.querySelector("span");
-      const pageNumTextNode = document.createTextNode(b.page || "");
-      pageNum.appendChild(pageNumTextNode);
+
+      const pageNumSpan = bookmark.querySelector("span");
+
+      // --- KORRIGIERTE LOGIK ZUR TEXTERSTELLUNG ---
+      let pageName = "";
+      // Prüfe, ob die globalen Comic-Daten vorhanden sind
+      if (window.comicData && window.comicData[b.id]) {
+        const comicDetails = window.comicData[b.id];
+        const comicId = b.id; // z.B. "20250315"
+        const year = comicId.substring(0, 4);
+        const month = comicId.substring(4, 6);
+        const day = comicId.substring(6, 8);
+        const formattedDate = `${day}.${month}.${year}`;
+
+        pageName = `Seite vom ${formattedDate}`;
+        if (comicDetails.name && comicDetails.name.trim() !== "") {
+          pageName += `: ${comicDetails.name}`;
+        }
+      } else {
+        // Fallback, falls die Daten nicht gefunden werden
+        pageName = b.page || "";
+      }
+
+      const pageNumTextNode = document.createTextNode(pageName);
+      // Füge den Text VOR dem Löschen-Button ein
+      pageNumSpan.insertBefore(
+        pageNumTextNode,
+        pageNumSpan.querySelector(".delete")
+      );
+      link.title = pageName; // Setze den Titel für den Hover-Effekt des Links
+      // --- ENDE DER KORRIGIERTEN LOGIK ---
+
       const image = bookmark.querySelector("img");
-      image.src = b.thumb; // This is where the thumbnail URL is set
-      image.alt = b.page || "Page";
+      image.src = b.thumb;
+      image.alt = pageName; // Benutze den neuen Namen auch für den Alt-Text
 
-      // Add the 'loaded' class to the link element to trigger CSS styling
-      // This will make the image visible and control the overlay visibility
-      link.classList.add("loaded"); // <--- NEU HINZUGEFÜGT
+      pageNumSpan
+        .querySelector(".delete")
+        .addEventListener("click", async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          await handleRemoveBookmarkById(b.id);
+        });
 
-      // Add event listener to the delete button within the cloned bookmark item
-      // The delete button is inside the span, which is a child of the link
-      pageNum.querySelector(".delete").addEventListener("click", async (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // Prevent the link from being followed
-        await handleRemoveBookmarkById(b.id);
-      });
-
-      // Append the individual bookmark item to the chapterLinksContainer
       if (chapterLinksContainer) {
         chapterLinksContainer.appendChild(bookmark);
       } else {
