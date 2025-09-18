@@ -165,9 +165,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Globale Buttons
-  document
-    .getElementById("add-character-btn")
-    .addEventListener("click", () => openModal());
+  document.querySelectorAll(".add-character-btn").forEach((button) => {
+    button.addEventListener("click", () => openModal());
+  });
 
   document
     .getElementById("save-all-btn")

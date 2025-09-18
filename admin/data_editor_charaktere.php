@@ -86,12 +86,16 @@ include $headerPath;
 <div class="admin-container">
     <div id="message-container"></div>
     <div class="controls">
-        <button id="add-character-btn" class="button">Neuen Charakter hinzufügen</button>
-        <button id="save-all-btn" class="button save-button">Änderungen speichern</button>
+        <button class="button add-character-btn">Neuen Charakter hinzufügen</button>
     </div>
 
     <div id="character-editor-container" class="data-editor-container">
         <!-- Charakter-Gruppen und -Einträge werden hier per JS eingefügt -->
+    </div>
+
+    <div class="controls" style="margin-top: 20px;">
+        <button class="button add-character-btn">Neuen Charakter hinzufügen</button>
+        <button id="save-all-btn" class="button save-button">Änderungen speichern</button>
     </div>
 </div>
 
@@ -250,11 +254,6 @@ include $headerPath;
         max-width: 600px;
     }
 
-    body.theme-night .modal-content {
-        background-color: #00425c;
-        color: #fff;
-    }
-
     .close-button {
         color: #aaa;
         float: right;
@@ -285,13 +284,6 @@ include $headerPath;
         font-size: 0.8em;
     }
 
-    body.theme-night .form-group input,
-    body.theme-night .form-group select {
-        background-color: #002B3C;
-        border-color: #2a6177;
-        color: #fff;
-    }
-
     .preview-container img {
         max-width: 100px;
         max-height: 100px;
@@ -303,6 +295,58 @@ include $headerPath;
     .modal-buttons {
         text-align: right;
         margin-top: 20px;
+    }
+
+    /* --- Dark Mode Anpassungen --- */
+    body.theme-night .admin-container {
+        background-color: #002B3C;
+        color: #eee;
+    }
+
+    body.theme-night .character-group {
+        background-color: #00425c;
+        border-color: #2a6177;
+    }
+
+    body.theme-night .character-group h3 {
+        background-color: #00334C;
+        border-bottom-color: #2a6177;
+    }
+
+    body.theme-night .character-entry {
+        border-bottom-color: #2a6177;
+    }
+
+    body.theme-night .character-info p {
+        color: #bbb;
+    }
+
+    body.theme-night .modal-content {
+        background-color: #00425c;
+        color: #fff;
+    }
+
+    body.theme-night .form-group input,
+    body.theme-night .form-group select {
+        background-color: #002B3C;
+        border-color: #2a6177;
+        color: #fff;
+    }
+
+    body.theme-night .form-group small {
+        color: #aaa;
+    }
+
+    body.theme-night .preview-container img {
+        border-color: #2a6177;
+    }
+
+    body.theme-night .close-button {
+        color: #ccc;
+    }
+
+    body.theme-night .close-button:hover {
+        color: #fff;
     }
 </style>
 
