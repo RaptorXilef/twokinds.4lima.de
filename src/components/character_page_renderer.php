@@ -27,6 +27,8 @@ if (!empty($comicData) && is_array($comicData)) {
     }
 }
 krsort($characterComics);
+// Zähle die Anzahl der gefundenen Comics
+$comicCount = count($characterComics);
 
 // === 5. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Alle Auftritte von ' . htmlspecialchars($characterName);
@@ -45,7 +47,12 @@ require_once __DIR__ . '/../layout/header.php';
 ?>
 
 <div id="characterPage" class="bookmarks-page">
-    <h2 class="page-header">Alle Auftritte von <strong><?php echo htmlspecialchars($characterName); ?></strong></h2>
+    <h2 class="page-header">
+        <span>Alle Auftritte von <strong><?php echo htmlspecialchars($characterName); ?></strong></span>
+        <?php if ($comicCount > 0): ?>
+            <span class="comic-count-badge"><?php echo $comicCount; ?></span>
+        <?php endif; ?>
+    </h2>
 
     <?php if (empty($characterComics)): ?>
         <div class="no-bookmarks">

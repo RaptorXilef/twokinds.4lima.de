@@ -4,6 +4,14 @@
  * Angepasst, um optisch identisch mit der gerenderten lesezeichen.php zu sein.
  */
 .bookmarks-page .page-header {
+  display: flex;
+  /* NEU         : Flexbox für saubere Ausrichtung */
+  justify-content: center;
+  /* NEU         : Zentriert den Inhalt */
+  align-items: center;
+  /* NEU         : Vertikale Ausrichtung */
+  gap: 12px;
+  /* NEU         : Abstand zwischen Titel und Zähler */
   text-align: center;
   margin-bottom: 25px;
   font-size: 1.8em;
@@ -14,6 +22,24 @@
   font-weight: 700;
   color: #333;
 }
+.bookmarks-page {
+  /* NEU: Styling für den Zähler-Badge */
+}
+.bookmarks-page .comic-count-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background-color: #6c8f6c;
+  /* Passende Farbe zum Design */
+  border-radius: 12px;
+  /* Abgerundete Form */
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
 .bookmarks-page .tag-page-links {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
@@ -23,32 +49,23 @@
 }
 .bookmarks-page .tag-page-links a {
   position: relative;
-  /* Wichtig für das Text-Overlay */
   display: block;
   text-decoration: none;
   color: white;
-  /* Textfarbe für das Overlay */
   border-radius: 5px;
   overflow: hidden;
-  /* Stellt sicher, dass das Bild die abgerundeten Ecken nicht überlappt */
   aspect-ratio: 1/1;
-  /* Sorgt für quadratische Kacheln */
 }
 .bookmarks-page .tag-page-links a img {
-  /* BEHÄLT DEINE GEWÜNSCHTEN STILE BEI */
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 3px;
   transition: transform 0.2s ease-in-out;
-  /* ÜBERSCHREIBT DIE KONFLIKTIERENDEN GLOBALEN STILE AUS main.scss */
   position: static;
-  /* Setzt 'position: absolute' zurück */
   opacity: 1;
-  /* Stellt sicher, dass das Bild immer sichtbar ist */
   transform: none;
-  /* Entfernt die fehlerhafte vertikale Zentrierung */
 }
 .bookmarks-page .tag-page-links a span {
   position: absolute;
@@ -56,7 +73,6 @@
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.65);
-  /* Halbtransparenter Hintergrund */
   padding: 5px;
   font-size: 12px;
   text-align: center;
@@ -67,7 +83,6 @@
   transition: background-color 0.2s;
 }
 .bookmarks-page .tag-page-links a:hover img {
-  /* DEIN GEWÜNSCHTER HOVER-EFFEKT BLEIBT ERHALTEN */
   transform: scale(1.05);
 }
 .bookmarks-page .tag-page-links a:hover span {
@@ -90,6 +105,11 @@
 /* Dark-Mode Anpassungen */
 body.theme-night .bookmarks-page .page-header strong {
   color: #DDD;
+}
+body.theme-night .bookmarks-page .comic-count-badge {
+  background-color: #2a6177;
+  /* Angepasste Farbe für Dark-Mode */
+  color: #fff;
 }
 body.theme-night .bookmarks-page .no-bookmarks {
   color: #ccc;
