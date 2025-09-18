@@ -1,3 +1,6 @@
+/**
+ * V1.4: Fügt Drag-and-Drop-Sortierung für Charaktere hinzu (benötigt SortableJS).
+ */
 document.addEventListener("DOMContentLoaded", () => {
   // Globale Variablen und DOM-Elemente
   let characterData = window.characterData || {};
@@ -37,6 +40,50 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
+   * Initialisiert die Drag-and-Drop-Funktionalität für alle Charaktergruppen.
+   */
+  function initSortable() {
+    const sortableLists = editorContainer.querySelectorAll(
+      ".character-list-sortable"
+    );
+    sortableLists.forEach((list) => {
+      new Sortable(list, {
+        animation: 150,
+        ghostClass: "sortable-ghost",
+        dragClass: "sortable-drag",
+        onEnd: (evt) => {
+          const groupName = evt.from.dataset.group;
+          const newKeyOrder = Array.from(evt.from.children).map(
+            (el) => el.dataset.key
+          );
+
+          const originalGroup = characterData[groupName];
+          const newOrderedGroup = {};
+
+          newKeyOrder.forEach((key) => {
+            if (originalGroup[key]) {
+              newOrderedGroup[key] = originalGroup[key];
+            }
+          });
+
+          // Behalte Charaktere bei, die evtl. nicht im DOM waren (sollte nicht passieren, aber sicher ist sicher)
+          for (const key in originalGroup) {
+            if (!newOrderedGroup[key]) {
+              newOrderedGroup[key] = originalGroup[key];
+            }
+          }
+
+          characterData[groupName] = newOrderedGroup;
+          showMessage(
+            "Reihenfolge aktualisiert. Speichern nicht vergessen!",
+            "success"
+          );
+        },
+      });
+    });
+  }
+
+  /**
    * Rendert den gesamten Editor-Inhalt basierend auf den aktuellen characterData.
    */
   function renderEditor() {
@@ -51,12 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const groupContainer = document.createElement("div");
       groupContainer.className = "character-group";
 
-      let groupHTML = `<h3>${groupName}</h3>`;
-
-      if (Object.keys(group).length === 0) {
-        groupHTML +=
-          '<p style="padding: 10px;">Diese Gruppe enthält keine Charaktere.</p>';
-      } else {
+      let listHTML = "";
+      if (Object.keys(group).length > 0) {
         for (const charKey in group) {
           const character = group[charKey];
           const picUrl = character.charaktere_pic_url || "";
@@ -64,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ? `${window.baseUrl}${picUrl}`
             : "https://placehold.co/50x50/cccccc/333333?text=?";
 
-          groupHTML += `
+          listHTML += `
                         <div class="character-entry" data-key="${charKey}" data-group="${groupName}">
                             <img src="${fullPicUrl}" alt="${charKey}" onerror="this.src='https://placehold.co/50x50/cccccc/333333?text=Error'">
                             <div class="character-info">
@@ -79,9 +122,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     `;
         }
       }
-      groupContainer.innerHTML = groupHTML;
+
+      groupContainer.innerHTML = `<h3>${groupName}</h3>`;
+      const sortableList = document.createElement("div");
+      sortableList.className = "character-list-sortable";
+      sortableList.dataset.group = groupName;
+      sortableList.innerHTML =
+        listHTML ||
+        '<p style="padding: 10px;">Diese Gruppe enthält keine Charaktere.</p>';
+
+      groupContainer.appendChild(sortableList);
       editorContainer.appendChild(groupContainer);
     }
+
+    // Initialisiere Drag & Drop nach dem Rendern
+    initSortable();
   }
 
   /**

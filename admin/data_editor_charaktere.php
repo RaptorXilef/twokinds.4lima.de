@@ -1,8 +1,7 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der charaktere.json.
- * Ermöglicht das Hinzufügen, Bearbeiten und Löschen von Charakteren
- * und deren Bild-URLs mit einer Live-Vorschau.
+ * V1.4: Fügt Drag-and-Drop-Sortierung für Charaktere innerhalb ihrer Gruppen hinzu.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -77,7 +76,8 @@ $robotsContent = 'noindex, nofollow';
 $bodyClass = 'admin-page';
 
 // Zusätzliche Skripte für diese Seite
-$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="src/js/data_editor_charaktere.js"></script>';
+$additionalScripts = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js" nonce="' . htmlspecialchars($nonce) . '"></script>';
+$additionalScripts .= '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="src/js/data_editor_charaktere.js"></script>';
 
 
 include $headerPath;
@@ -231,6 +231,27 @@ include $headerPath;
     .character-actions button {
         margin-left: 5px;
     }
+
+    /* --- NEU: Stile für Drag & Drop --- */
+    .character-list-sortable .character-entry {
+        cursor: grab;
+    }
+
+    .character-list-sortable .character-entry:active {
+        cursor: grabbing;
+    }
+
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #c8ebfb;
+    }
+
+    .sortable-drag {
+        opacity: 1 !important;
+        background: #e2f3fe;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
 
     /* Modal Styles */
     .modal {
