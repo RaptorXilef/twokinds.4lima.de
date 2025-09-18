@@ -29,7 +29,9 @@ $nonce = $nonce ?? '';
     <a href="./generator_image_socialmedia.php">Social Media Vorschau Generator</a>
     <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
     <a href="./build_image_cache_and_busting.php">Bild-Cache-Generator</a>
-    <br>
+    </br>
+    <a href="./data_editor_charaktere.php">Charakter Daten Editor</a>
+    </br>
     <a href="./data_editor_comic.php">Comic Daten Editor</a>
     <a href="./generator_comic.php">Comic-Seiten-Generator</a>
     </br>
@@ -56,23 +58,18 @@ $nonce = $nonce ?? '';
     background-color: #00425c;
     color: #fff;
     padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
     text-align: center;
     font-size: 0.9em;
-  }
-
-  body.theme-night .session-timer {
-    background-color: #002b3c;
+    border-radius: 5px;
+    margin-bottom: 15px;
   }
 
   .session-timer i {
     margin-right: 8px;
   }
 
-  .session-timer strong {
-    margin-left: 5px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.1em;
+  body.theme-night .session-timer {
+    background-color: #002B3C;
+    border: 1px solid #2a6177;
   }
 </style>
