@@ -44,7 +44,6 @@ $additionalHeadContent = '<link nonce="' . htmlspecialchars($nonce) . '" rel="st
 require_once __DIR__ . '/../layout/header.php';
 ?>
 
-<!-- Die Struktur wurde exakt an die gerenderte lesezeichen.php angepasst -->
 <div id="characterPage" class="bookmarks-page">
     <h2 class="page-header">Alle Auftritte von <strong><?php echo htmlspecialchars($characterName); ?></strong></h2>
 
@@ -64,11 +63,18 @@ require_once __DIR__ . '/../layout/header.php';
                     }
                     $fullThumbnailUrl = str_starts_with($thumbnailUrl, 'http') ? $thumbnailUrl : $baseUrl . ltrim($thumbnailUrl, './');
                     $formattedDate = date('d.m.Y', strtotime($comicId));
-                    $pageName = !empty($comicDetails['name']) ? $comicDetails['name'] : 'Seite vom ' . $formattedDate;
+
+                    // --- NEUE LOGIK ZUR NAMENSERSTELLUNG ---
+                    // Beginnt immer mit "Seite vom [Datum]"
+                    $pageName = 'Seite vom ' . $formattedDate;
+                    // Wenn ein Name vorhanden ist, wird er angehängt
+                    if (!empty($comicDetails['name'])) {
+                        $pageName .= ': ' . $comicDetails['name'];
+                    }
+
                     $pageLink = $baseUrl . 'comic/' . $comicId . '.php';
                     ?>
                     <a href="<?php echo htmlspecialchars($pageLink); ?>" title="<?php echo htmlspecialchars($pageName); ?>">
-                        <!-- Reihenfolge getauscht: Span VOR Img für korrektes Styling -->
                         <span><?php echo htmlspecialchars($pageName); ?></span>
                         <img src="<?php echo htmlspecialchars($fullThumbnailUrl); ?>"
                             alt="Thumbnail für '<?php echo htmlspecialchars($pageName); ?>'" loading="lazy">
