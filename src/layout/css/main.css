@@ -946,12 +946,17 @@ footer {
   .chapter-links.tag-page-links a {
     zoom: 1.5;
   }
-  .bookmarks-page .bookmark-example {
-    font-size: 1.4em;
-  }
-  .bookmarks-page button:not(.delete) {
-    font-size: 1.4em;
-  }
+  /*
+  	.bookmarks-page {
+  		.bookmark-example {
+  			font-size: 1.4em;
+  		}
+
+  		button:not(.delete) {
+  			font-size: 1.4em;
+  		}
+  	}
+  */
   .comic .transcript-content {
     font-size: 1.3em;
   }
@@ -1076,31 +1081,39 @@ div.page-chat .chat-button a:hover {
 }
 
 /* BOOKMARKS PAGE */
-.bookmarks-page .bookmark-example {
-  font-style: italic;
-  text-align: center;
-  font-size: 0.9em;
-  margin-right: 1rem;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.5rem;
+/*
+.bookmarks-page {
+	.bookmark-example {
+		font-style     : italic;
+		text-align     : center;
+		font-size      : 0.9em;
+		margin-right   : 1rem;
+		display        : flex;
+		flex-flow      : row nowrap;
+		justify-content: flex-end;
+		align-items    : center;
+		gap            : 0.5rem;
+
+		.ribbon {
+			height         : 36px;
+			width          : 27px;
+			flex           : 0 0 auto;
+			background     : url($base_url + "/assets/lesezeichen/bookmark.png") 0 0 no-repeat;
+			background-size: contain;
+		}
+	}
+
+	.no-bookmarks {
+		text-align: center;
+	}
+
+	input[type=file] {
+		display: none;
+	}
+
+	button {
+		margin-right: 0.3rem;
+		font-size   : 0.9em;
+	}
 }
-.bookmarks-page .bookmark-example .ribbon {
-  height: 36px;
-  width: 27px;
-  flex: 0 0 auto;
-  background: url("https://twokinds.4lima.de/assets/lesezeichen/bookmark.png") 0 0 no-repeat;
-  background-size: contain;
-}
-.bookmarks-page .no-bookmarks {
-  text-align: center;
-}
-.bookmarks-page input[type=file] {
-  display: none;
-}
-.bookmarks-page button {
-  margin-right: 0.3rem;
-  font-size: 0.9em;
-}
+	*/

@@ -1,19 +1,16 @@
 @charset "UTF-8";
 /*
- * Stile für die Charakter-Auftritts-Seite
+ * Stile für die Charakter-Auftritts-Seite & Lesezeichen-Seite
  * Angepasst, um optisch identisch mit der gerenderten lesezeichen.php zu sein.
  */
 .bookmarks-page .page-header {
   display: flex;
-  /* NEU         : Flexbox für saubere Ausrichtung */
   justify-content: center;
-  /* NEU         : Zentriert den Inhalt */
   align-items: center;
-  /* NEU         : Vertikale Ausrichtung */
   gap: 12px;
-  /* NEU         : Abstand zwischen Titel und Zähler */
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 0;
+  /* Entfernt den Abstand nach unten, damit der Banner andockt */
   font-size: 1.8em;
   font-weight: 300;
   padding-top: 10px;
@@ -21,9 +18,6 @@
 .bookmarks-page .page-header strong {
   font-weight: 700;
   color: #333;
-}
-.bookmarks-page {
-  /* NEU: Styling für den Zähler-Badge */
 }
 .bookmarks-page .comic-count-badge {
   display: inline-block;
@@ -33,12 +27,30 @@
   line-height: 1;
   color: #fff;
   background-color: #6c8f6c;
-  /* Passende Farbe zum Design */
   border-radius: 12px;
-  /* Abgerundete Form */
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
+}
+.bookmarks-page .bookmark-example {
+  font-style: italic;
+  text-align: center;
+  font-size: 0.9em;
+  margin-right: 1rem;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0px;
+  /* KORRIGIERT  : Deine Anpassung für den Abstand */
+}
+.bookmarks-page .bookmark-example .ribbon {
+  height: 36px;
+  width: 27px;
+  flex: 0 0 auto;
+  background: url(https://twokinds.4lima.de/assets/lesezeichen/bookmark.png) 0 0 no-repeat;
+  background-size: contain;
 }
 .bookmarks-page .tag-page-links {
   display: grid;
@@ -82,11 +94,32 @@
   box-sizing: border-box;
   transition: background-color 0.2s;
 }
+.bookmarks-page .tag-page-links a span .delete {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+}
 .bookmarks-page .tag-page-links a:hover img {
   transform: scale(1.05);
 }
 .bookmarks-page .tag-page-links a:hover span {
   background: rgba(0, 0, 0, 0.8);
+}
+.bookmarks-page .tag-page-links a:hover span .delete {
+  opacity: 1;
+}
+.bookmarks-page .tag-page-links a:hover span .delete:hover {
+  background: rgba(255, 80, 80, 0.8);
 }
 .bookmarks-page .no-bookmarks {
   padding: 2rem 1rem;
@@ -101,6 +134,34 @@
   margin: 0;
   line-height: 1.5;
 }
+.bookmarks-page .bookmarks-controls {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.bookmarks-page .bookmarks-controls hr {
+  border: 0;
+  height: 1px;
+  background-color: #ddd;
+  margin-bottom: 20px;
+}
+.bookmarks-page .bookmarks-controls button {
+  background-color: #6c8f6c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.9em;
+}
+.bookmarks-page .bookmarks-controls button:hover {
+  background-color: #85aa85;
+}
+.bookmarks-page .bookmarks-controls .hidden-file-input {
+  display: none;
+}
 
 /* Dark-Mode Anpassungen */
 body.theme-night .bookmarks-page .page-header strong {
@@ -108,10 +169,24 @@ body.theme-night .bookmarks-page .page-header strong {
 }
 body.theme-night .bookmarks-page .comic-count-badge {
   background-color: #2a6177;
-  /* Angepasste Farbe für Dark-Mode */
   color: #fff;
+}
+body.theme-night .bookmarks-page .bookmark-example {
+  color: #ccc;
+  /*            .ribbon {
+      filter: invert(1) brightness(0.8);
+  }*/
 }
 body.theme-night .bookmarks-page .no-bookmarks {
   color: #ccc;
   border-color: #2a6177;
+}
+body.theme-night .bookmarks-page .bookmarks-controls hr {
+  background-color: #2a6177;
+}
+body.theme-night .bookmarks-page .bookmarks-controls button {
+  background-color: #2a6177;
+}
+body.theme-night .bookmarks-page .bookmarks-controls button:hover {
+  background-color: #48778a;
 }
