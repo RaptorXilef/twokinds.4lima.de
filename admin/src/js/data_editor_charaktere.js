@@ -1,18 +1,18 @@
 /**
- * V1.4: Fügt Drag-and-Drop-Sortierung für Charaktere hinzu (benötigt SortableJS).
+ * V2.1: Behebt einen Fehler, bei dem der falsche ID-Selektor für die
+ * Nachrichten-Box verwendet wurde, was zu einem Fehler beim Speichern führte.
  */
 document.addEventListener("DOMContentLoaded", () => {
   // Globale Variablen und DOM-Elemente
   let characterData = window.characterData || {};
   const editorContainer = document.getElementById("character-editor-container");
-  const messageContainer = document.getElementById("message-container");
+  const messageBox = document.getElementById("message-box");
+  const lastRunContainer = document.getElementById("last-run-container");
 
   // Modal-Elemente
   const modal = document.getElementById("edit-modal");
   const modalTitle = document.getElementById("modal-title");
   const modalCloseBtn = modal.querySelector(".close-button");
-  const modalSaveBtn = document.getElementById("modal-save-btn");
-  const modalCancelBtn = document.getElementById("modal-cancel-btn");
   const editForm = document.getElementById("edit-form");
 
   // Formular-Felder
@@ -22,70 +22,61 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalPicUrlInput = document.getElementById("modal-pic-url");
   const modalImagePreview = document.getElementById("modal-image-preview");
 
-  let activeEditKey = null; // Speichert den Schlüssel des zu bearbeitenden Charakters
-  let activeEditGroup = null; // Speichert die Gruppe des zu bearbeitenden Charakters
+  let activeEditKey = null;
+  let activeEditGroup = null;
 
-  /**
-   * Zeigt eine Statusnachricht an.
-   * @param {string} message - Die anzuzeigende Nachricht.
-   * @param {string} type - 'success' (grün) oder 'error' (rot).
-   */
   function showMessage(message, type = "success") {
-    messageContainer.innerHTML = `<div class="message message-${
+    if (!messageBox) return;
+    messageBox.textContent = message;
+    messageBox.className = `status-message status-${
       type === "success" ? "green" : "red"
-    }"><p>${message}</p></div>`;
+    }`;
+    messageBox.style.display = "block";
+
     setTimeout(() => {
-      messageContainer.innerHTML = "";
+      messageBox.style.display = "none";
     }, 5000);
   }
 
-  /**
-   * Initialisiert die Drag-and-Drop-Funktionalität für alle Charaktergruppen.
-   */
-  function initSortable() {
-    const sortableLists = editorContainer.querySelectorAll(
-      ".character-list-sortable"
-    );
-    sortableLists.forEach((list) => {
-      new Sortable(list, {
-        animation: 150,
-        ghostClass: "sortable-ghost",
-        dragClass: "sortable-drag",
-        onEnd: (evt) => {
-          const groupName = evt.from.dataset.group;
-          const newKeyOrder = Array.from(evt.from.children).map(
-            (el) => el.dataset.key
-          );
-
-          const originalGroup = characterData[groupName];
-          const newOrderedGroup = {};
-
-          newKeyOrder.forEach((key) => {
-            if (originalGroup[key]) {
-              newOrderedGroup[key] = originalGroup[key];
-            }
-          });
-
-          // Behalte Charaktere bei, die evtl. nicht im DOM waren (sollte nicht passieren, aber sicher ist sicher)
-          for (const key in originalGroup) {
-            if (!newOrderedGroup[key]) {
-              newOrderedGroup[key] = originalGroup[key];
-            }
-          }
-
-          characterData[groupName] = newOrderedGroup;
-          showMessage(
-            "Reihenfolge aktualisiert. Speichern nicht vergessen!",
-            "success"
-          );
-        },
-      });
-    });
+  function updateLastSavedTimestamp() {
+    if (lastRunContainer) {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const formattedDate = `${day}.${month}.${year} um ${hours}:${minutes}:${seconds}`;
+      lastRunContainer.innerHTML = `<p class="status-message status-info">Letzte Speicherung am ${formattedDate} Uhr.</p>`;
+    }
   }
 
-  /**
-   * Rendert den gesamten Editor-Inhalt basierend auf den aktuellen characterData.
-   */
+  function initSortable() {
+    editorContainer
+      .querySelectorAll(".character-list-sortable")
+      .forEach((list) => {
+        new Sortable(list, {
+          animation: 150,
+          ghostClass: "sortable-ghost",
+          onEnd: () => {
+            const groupName = list.dataset.group;
+            const newKeyOrder = Array.from(list.children).map(
+              (el) => el.dataset.key
+            );
+            const originalGroup = characterData[groupName];
+            const newOrderedGroup = {};
+            newKeyOrder.forEach((key) => {
+              if (originalGroup[key]) {
+                newOrderedGroup[key] = originalGroup[key];
+              }
+            });
+            characterData[groupName] = newOrderedGroup;
+          },
+        });
+      });
+  }
+
   function renderEditor() {
     editorContainer.innerHTML = "";
     if (Object.keys(characterData).length === 0) {
@@ -97,30 +88,33 @@ document.addEventListener("DOMContentLoaded", () => {
       const group = characterData[groupName];
       const groupContainer = document.createElement("div");
       groupContainer.className = "character-group";
-
       let listHTML = "";
-      if (Object.keys(group).length > 0) {
-        for (const charKey in group) {
-          const character = group[charKey];
-          const picUrl = character.charaktere_pic_url || "";
-          const fullPicUrl = picUrl
-            ? `${window.baseUrl}${picUrl}`
-            : "https://placehold.co/50x50/cccccc/333333?text=?";
 
-          listHTML += `
-                        <div class="character-entry" data-key="${charKey}" data-group="${groupName}">
-                            <img src="${fullPicUrl}" alt="${charKey}" onerror="this.src='https://placehold.co/50x50/cccccc/333333?text=Error'">
-                            <div class="character-info">
-                                <strong>${charKey.replace(/_/g, " ")}</strong>
-                                <p>${picUrl || "Kein Bildpfad angegeben"}</p>
-                            </div>
-                            <div class="character-actions">
-                                <button class="button edit-btn">Bearbeiten</button>
-                                <button class="button delete-button delete-btn">Löschen</button>
-                            </div>
-                        </div>
-                    `;
+      for (const charKey in group) {
+        const character = group[charKey];
+        const picUrl = character.charaktere_pic_url || "";
+
+        let imgSrc;
+        let imgClass = "character-image";
+        if (!picUrl) {
+          imgSrc = "https://placehold.co/50x50/cccccc/333333?text=?";
+        } else {
+          imgSrc = `${window.baseUrl}${picUrl}`;
+          imgClass += " character-image-live";
         }
+
+        listHTML += `
+                    <div class="character-entry" data-key="${charKey}" data-group="${groupName}">
+                        <img src="${imgSrc}" alt="${charKey}" class="${imgClass}">
+                        <div class="character-info">
+                            <strong>${charKey.replace(/_/g, " ")}</strong>
+                            <p>${picUrl || "Kein Bildpfad angegeben"}</p>
+                        </div>
+                        <div class="character-actions">
+                            <button class="button edit-btn">Bearbeiten</button>
+                            <button class="button delete-button delete-btn">Löschen</button>
+                        </div>
+                    </div>`;
       }
 
       groupContainer.innerHTML = `<h3>${groupName}</h3>`;
@@ -128,28 +122,17 @@ document.addEventListener("DOMContentLoaded", () => {
       sortableList.className = "character-list-sortable";
       sortableList.dataset.group = groupName;
       sortableList.innerHTML =
-        listHTML ||
-        '<p style="padding: 10px;">Diese Gruppe enthält keine Charaktere.</p>';
-
+        listHTML || '<p style="padding: 10px;">Diese Gruppe ist leer.</p>';
       groupContainer.appendChild(sortableList);
       editorContainer.appendChild(groupContainer);
     }
-
-    // Initialisiere Drag & Drop nach dem Rendern
     initSortable();
   }
 
-  /**
-   * Öffnet und konfiguriert das Bearbeitungs-Modal.
-   * @param {string|null} charKey - Der Schlüssel des Charakters oder null für einen neuen Charakter.
-   * @param {string|null} groupName - Der Name der Gruppe.
-   */
   function openModal(charKey = null, groupName = null) {
     editForm.reset();
     activeEditKey = charKey;
     activeEditGroup = groupName;
-
-    // Gruppen-Dropdown füllen
     modalGroupSelect.innerHTML = "";
     Object.keys(characterData).forEach((group) => {
       const option = document.createElement("option");
@@ -157,78 +140,66 @@ document.addEventListener("DOMContentLoaded", () => {
       option.textContent = group;
       modalGroupSelect.appendChild(option);
     });
-
     if (charKey && groupName) {
-      // Bearbeiten-Modus
       modalTitle.textContent = "Charakter bearbeiten";
-      modalNameInput.readOnly = true; // Den Schlüssel sollte man nicht ändern
-
+      modalNameInput.readOnly = true;
       const character = characterData[groupName][charKey];
       modalGroupSelect.value = groupName;
       modalNameInput.value = charKey;
       modalPicUrlInput.value = character.charaktere_pic_url || "";
     } else {
-      // Hinzufügen-Modus
       modalTitle.textContent = "Neuen Charakter hinzufügen";
       modalNameInput.readOnly = false;
     }
-
     updateImagePreview();
     modal.style.display = "block";
   }
 
-  /**
-   * Aktualisiert die Bildvorschau im Modal.
-   */
   function updateImagePreview() {
     const picUrl = modalPicUrlInput.value;
-    if (picUrl) {
-      modalImagePreview.src = `${window.baseUrl}${picUrl}`;
-    } else {
-      modalImagePreview.src =
-        "https://placehold.co/100x100/cccccc/333333?text=Kein+Bild";
-    }
+    modalImagePreview.src = picUrl
+      ? `${window.baseUrl}${picUrl}`
+      : "https://placehold.co/100x100/cccccc/333333?text=?";
   }
 
-  // --- EVENT LISTENERS ---
-
-  // Editor-Container für Edit/Delete-Buttons (Event Delegation)
   editorContainer.addEventListener("click", (e) => {
-    const target = e.target;
-    const entry = target.closest(".character-entry");
+    const entry = e.target.closest(".character-entry");
     if (!entry) return;
-
     const charKey = entry.dataset.key;
     const groupName = entry.dataset.group;
-
-    if (target.classList.contains("edit-btn")) {
+    if (e.target.classList.contains("edit-btn")) {
       openModal(charKey, groupName);
-    } else if (target.classList.contains("delete-btn")) {
-      if (
-        confirm(
-          `Sind Sie sicher, dass Sie den Charakter "${charKey}" löschen möchten?`
-        )
-      ) {
+    } else if (e.target.classList.contains("delete-btn")) {
+      if (confirm(`Sind Sie sicher, dass Sie "${charKey}" löschen möchten?`)) {
         delete characterData[groupName][charKey];
-        showMessage(
-          `Charakter "${charKey}" zum Löschen vorgemerkt.`,
-          "success"
-        );
         renderEditor();
       }
     }
   });
 
-  // Globale Buttons
-  document.querySelectorAll(".add-character-btn").forEach((button) => {
-    button.addEventListener("click", () => openModal());
-  });
+  editorContainer.addEventListener(
+    "error",
+    (e) => {
+      if (
+        e.target?.tagName === "IMG" &&
+        e.target.classList.contains("character-image-live")
+      ) {
+        e.target.onerror = null;
+        e.target.src = "https://placehold.co/50x50/cccccc/333333?text=Fehlt";
+        e.target.classList.remove("character-image-live");
+      }
+    },
+    true
+  );
 
+  document
+    .querySelectorAll(".add-character-btn")
+    .forEach((btn) => btn.addEventListener("click", () => openModal()));
   document
     .getElementById("save-all-btn")
     .addEventListener("click", async () => {
       try {
-        const response = await fetch("data_editor_charaktere.php", {
+        const response = await fetch(window.location.href, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -236,87 +207,64 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           body: JSON.stringify(characterData),
         });
-
-        if (!response.ok) {
-          throw new Error(`Server-Fehler: ${response.statusText}`);
-        }
-
         const result = await response.json();
         if (result.success) {
           showMessage(result.message, "success");
+          updateLastSavedTimestamp();
         } else {
           showMessage(
             result.message || "Ein unbekannter Fehler ist aufgetreten.",
             "error"
           );
+          if (result.message.includes("CSRF")) {
+            setTimeout(() => window.location.reload(), 3000);
+          }
         }
       } catch (error) {
         showMessage(`Speichern fehlgeschlagen: ${error.message}`, "error");
       }
     });
 
-  // Modal-Interaktionen
   modalCloseBtn.addEventListener("click", () => (modal.style.display = "none"));
-  modalCancelBtn.addEventListener(
-    "click",
-    () => (modal.style.display = "none")
-  );
+  document
+    .getElementById("modal-cancel-btn")
+    .addEventListener("click", () => (modal.style.display = "none"));
   modalPicUrlInput.addEventListener("input", updateImagePreview);
-
-  modalImagePreview.onerror = function () {
-    this.src = "https://placehold.co/100x100/cccccc/333333?text=Pfad+falsch";
-  };
+  modalImagePreview.addEventListener("error", function () {
+    this.onerror = null;
+    this.src = "https://placehold.co/100x100/cccccc/333333?text=Fehlt";
+  });
 
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
-
     const name = modalNameInput.value.trim().replace(/\s+/g, "_");
-    if (!name) {
-      alert("Der Charakter-Name darf nicht leer sein.");
-      return;
-    }
-
+    if (!name) return alert("Der Charakter-Name darf nicht leer sein.");
     let group = modalNewGroupInput.value.trim() || modalGroupSelect.value;
-    if (!group) {
-      alert("Bitte eine Gruppe auswählen oder eine neue erstellen.");
-      return;
-    }
+    if (!group)
+      return alert("Bitte eine Gruppe auswählen oder eine neue erstellen.");
 
-    // Neue Gruppe erstellen, falls nicht vorhanden
-    if (!characterData[group]) {
-      characterData[group] = {};
-    }
+    if (!characterData[group]) characterData[group] = {};
 
     const characterDetails = {
       charaktere_pic_url: modalPicUrlInput.value.trim(),
     };
 
-    if (activeEditKey) {
-      // Bearbeiten
-      // Wenn die Gruppe geändert wurde, muss der Charakter verschoben werden
-      if (group !== activeEditGroup) {
-        delete characterData[activeEditGroup][activeEditKey];
-      }
-      characterData[group][activeEditKey] = characterDetails;
-      showMessage(`Charakter "${activeEditKey}" aktualisiert.`);
-    } else {
-      // Hinzufügen
-      if (characterData[group][name]) {
-        alert(
-          `Ein Charakter mit dem Namen "${name}" existiert bereits in dieser Gruppe.`
-        );
-        return;
-      }
-      characterData[group][name] = characterDetails;
-      showMessage(
-        `Neuer Charakter "${name}" in Gruppe "${group}" hinzugefügt.`
+    if (activeEditKey && activeEditKey !== name) {
+      alert(
+        "Der Name eines existierenden Charakters kann nicht geändert werden."
       );
+      return;
     }
+
+    if (activeEditKey && group !== activeEditGroup) {
+      delete characterData[activeEditGroup][activeEditKey];
+    }
+
+    characterData[group][name] = characterDetails;
 
     modal.style.display = "none";
     renderEditor();
   });
 
-  // Initiales Rendern
   renderEditor();
 });

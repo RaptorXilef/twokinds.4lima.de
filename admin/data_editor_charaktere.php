@@ -1,7 +1,8 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der charaktere.json.
- * V1.4: Fügt Drag-and-Drop-Sortierung für Charaktere innerhalb ihrer Gruppen hinzu.
+ * V2.2: Passt die Position des Zeitstempels und der Erfolgsmeldung
+ * für ein konsistentes Admin-UI an.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -17,28 +18,27 @@ $charaktereJsonPath = __DIR__ . '/../src/config/charaktere.json';
 
 // --- DATENVERARBEITUNG BEI POST-REQUEST (VIA FETCH API) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CSRF-Token aus den Headern oder dem Body holen (flexibel für Fetch)
-    $token = $_POST['csrf_token'] ?? '';
-    if (empty($token)) {
-        $headers = getallheaders();
-        $token = $headers['X-CSRF-Token'] ?? '';
+    $token = '';
+    $headers = getallheaders();
+    $normalizedHeaders = array_change_key_case($headers, CASE_LOWER);
+    if (isset($normalizedHeaders['x-csrf-token'])) {
+        $token = $normalizedHeaders['x-csrf-token'];
     }
 
-    if (!verify_csrf_token($token, true)) {
+    if (empty($token) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
         header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Ungültiges CSRF-Token.']);
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'CSRF-Token-Validierung fehlgeschlagen. Die Seite wird neu geladen.']);
         exit;
     }
 
     $inputData = json_decode(file_get_contents('php://input'), true);
 
     if (json_last_error() === JSON_ERROR_NONE && is_array($inputData)) {
-        // Backup der alten Datei erstellen
         if (file_exists($charaktereJsonPath)) {
             copy($charaktereJsonPath, $charaktereJsonPath . '.bak');
         }
 
-        // Neue Daten schreiben
         if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'message' => 'Charakter-Daten erfolgreich gespeichert.']);
@@ -68,6 +68,8 @@ if (file_exists($charaktereJsonPath)) {
         }
     }
 }
+$lastSavedTimestamp = file_exists($charaktereJsonPath) ? filemtime($charaktereJsonPath) : null;
+
 
 // === HEADER-VARIABLEN SETZEN ===
 $pageTitle = 'Charakter-Datenbank Editor';
@@ -75,31 +77,46 @@ $pageHeader = 'Charakter-Datenbank Editor';
 $robotsContent = 'noindex, nofollow';
 $bodyClass = 'admin-page';
 
-// Zusätzliche Skripte für diese Seite
-$additionalScripts = '<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js" nonce="' . htmlspecialchars($nonce) . '"></script>';
-$additionalScripts .= '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="src/js/data_editor_charaktere.js"></script>';
+// Zusätzliche Skripte
+$additionalScripts = '
+    <script nonce="' . htmlspecialchars($nonce) . '" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="src/js/data_editor_charaktere.js"></script>';
 
 
 include $headerPath;
 ?>
 
 <div class="admin-container">
-    <div id="message-container"></div>
+
+    <!-- Zeitstempel jetzt ganz oben -->
+    <div id="last-run-container">
+        <?php if ($lastSavedTimestamp): ?>
+            <p class="status-message status-info">Letzte Speicherung am
+                <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
+            </p>
+        <?php endif; ?>
+    </div>
+
     <div class="controls">
         <button class="button add-character-btn">Neuen Charakter hinzufügen</button>
     </div>
 
     <div id="character-editor-container" class="data-editor-container">
-        <!-- Charakter-Gruppen und -Einträge werden hier per JS eingefügt -->
+        <!-- JS-generierter Inhalt -->
     </div>
 
-    <div class="controls" style="margin-top: 20px;">
+    <div class="controls bottom-controls">
         <button class="button add-character-btn">Neuen Charakter hinzufügen</button>
         <button id="save-all-btn" class="button save-button">Änderungen speichern</button>
     </div>
+
+    <!-- Container für die Erfolgsmeldung unten -->
+    <div class="editor-footer-info">
+        <div id="message-box" style="display: none;"></div>
+    </div>
 </div>
 
-<!-- Modal zum Bearbeiten/Hinzufügen von Charakteren -->
+<!-- Modal -->
 <div id="edit-modal" class="modal">
     <div class="modal-content">
         <span class="close-button">&times;</span>
@@ -107,28 +124,24 @@ include $headerPath;
         <form id="edit-form">
             <div class="form-group">
                 <label for="modal-group">Charakter-Gruppe:</label>
-                <select id="modal-group" name="group" required>
-                    <!-- Optionen werden per JS gefüllt -->
-                </select>
+                <select id="modal-group" name="group" required></select>
                 <input type="text" id="modal-new-group" name="new_group" placeholder="Oder neue Gruppe eingeben...">
             </div>
             <div class="form-group">
                 <label for="modal-name">Charakter-Name:</label>
                 <input type="text" id="modal-name" name="name" required>
-                <small>Dies ist der interne Schlüssel (z.B. "Trace", "Red", "Trace_böse"). Keine Leerzeichen.</small>
+                <small>Interner Schlüssel (z.B. "Trace", "Red"). Keine Leerzeichen.</small>
             </div>
             <div class="form-group">
                 <label for="modal-pic-url">Bild-Pfad:</label>
                 <input type="text" id="modal-pic-url" name="charaktere_pic_url">
-                <small>Relativer Pfad vom Hauptverzeichnis, z.B.
-                    "assets/img/charaktere/charaktere_1x1_webp/Trace.webp"</small>
+                <small>Relativer Pfad, z.B. "assets/img/charaktere/charaktere_1x1_webp/Trace.webp"</small>
             </div>
             <div class="form-group preview-container">
                 <label>Bild-Vorschau:</label>
-                <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=Kein+Bild"
+                <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?"
                     alt="Charakter Vorschau">
             </div>
-
             <div class="modal-buttons">
                 <button type="submit" id="modal-save-btn" class="button save-button">Speichern</button>
                 <button type="button" id="modal-cancel-btn" class="button delete-button">Abbrechen</button>
@@ -137,8 +150,49 @@ include $headerPath;
     </div>
 </div>
 
-
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    /* Stile für Statusmeldungen */
+    .status-message {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        border: 1px solid transparent;
+    }
+
+    .status-green {
+        background-color: #dff0d8;
+        border-color: #d6e9c6;
+        color: #3c763d;
+    }
+
+    .status-red {
+        background-color: #f2dede;
+        border-color: #ebccd1;
+        color: #a94442;
+    }
+
+    .status-info {
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+        color: #31708f;
+    }
+
+    #message-box {
+        margin-top: 10px;
+    }
+
+    #last-run-container .status-message {
+        margin-bottom: 20px;
+    }
+
+    /* Abstand nach unten für den oberen Zeitstempel */
+    .editor-footer-info {
+        margin-top: 20px;
+        border-top: 1px solid #ddd;
+        padding-top: 15px;
+    }
+
+    /* Allgemeine Stile */
     .admin-container {
         max-width: 1200px;
         margin: 20px auto;
@@ -151,6 +205,11 @@ include $headerPath;
         margin-bottom: 20px;
         display: flex;
         gap: 10px;
+    }
+
+    .bottom-controls {
+        margin-top: 20px;
+        margin-bottom: 0;
     }
 
     .button {
@@ -226,19 +285,11 @@ include $headerPath;
         margin: 2px 0;
         color: #666;
         font-family: monospace;
+        word-break: break-all;
     }
 
     .character-actions button {
         margin-left: 5px;
-    }
-
-    /* --- NEU: Stile für Drag & Drop --- */
-    .character-list-sortable .character-entry {
-        cursor: grab;
-    }
-
-    .character-list-sortable .character-entry:active {
-        cursor: grabbing;
     }
 
     .sortable-ghost {
@@ -246,14 +297,10 @@ include $headerPath;
         background: #c8ebfb;
     }
 
-    .sortable-drag {
-        opacity: 1 !important;
-        background: #e2f3fe;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    .character-entry:hover {
+        cursor: grab;
     }
 
-
-    /* Modal Styles */
     .modal {
         display: none;
         position: fixed;
@@ -300,6 +347,10 @@ include $headerPath;
         border-radius: 4px;
     }
 
+    #modal-new-group {
+        margin-top: 5px;
+    }
+
     .form-group small {
         color: #888;
         font-size: 0.8em;
@@ -318,7 +369,7 @@ include $headerPath;
         margin-top: 20px;
     }
 
-    /* --- Dark Mode Anpassungen --- */
+    /* Dark Mode */
     body.theme-night .admin-container {
         background-color: #002B3C;
         color: #eee;
@@ -369,10 +420,31 @@ include $headerPath;
     body.theme-night .close-button:hover {
         color: #fff;
     }
+
+    body.theme-night .editor-footer-info {
+        border-top-color: #2a6177;
+    }
+
+    body.theme-night .status-green {
+        background-color: #2a6177;
+        border-color: #3c763d;
+        color: #dff0d8;
+    }
+
+    body.theme-night .status-red {
+        background-color: #a94442;
+        border-color: #ebccd1;
+        color: #f2dede;
+    }
+
+    body.theme-night .status-info {
+        background-color: #31708f;
+        border-color: #bce8f1;
+        color: #d9edf7;
+    }
 </style>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
-    // PHP-Daten an JavaScript übergeben
     window.characterData = <?php echo json_encode($allCharaktereData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES); ?>;
     window.baseUrl = '<?php echo $baseUrl; ?>';
     window.csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';

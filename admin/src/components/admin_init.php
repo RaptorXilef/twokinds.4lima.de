@@ -53,10 +53,10 @@ if ($debugMode) {
 $nonce = bin2hex(random_bytes(16));
 $csp = [
     'default-src' => ["'self'"],
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co"],
     'style-src' => ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://code.jquery.com/", "https://cdnjs.cloudflare.com"], // 'unsafe-inline' für Summernote
     'font-src' => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"], // 'data:' für Summernote
-    'img-src' => ["'self'", "data:", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com"],
+    'img-src' => ["'self'", "data:", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://placehold.co"],
     'object-src' => ["'none'"],
     'connect-src' => ["'self'", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://*.google-analytics.com"],
     'frame-ancestors' => ["'self'"],

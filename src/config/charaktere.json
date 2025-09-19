@@ -1,93 +1,93 @@
 {
-  "charaktere_main": {
-    "Trace": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Trace.webp"
+    "charaktere_main": {
+        "Trace": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Trace.webp"
+        },
+        "Flora": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Flora.webp"
+        },
+        "Keith": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Keith.webp"
+        },
+        "Natani": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Natani.webp"
+        },
+        "Zen": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Zen.webp"
+        },
+        "Sythe": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Sythe.webp"
+        },
+        "Nibbly": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nibbly.webp"
+        },
+        "Raine": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Raine.webp"
+        },
+        "Eric": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Eric.webp"
+        },
+        "Kathrin": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Kathrin.webp"
+        },
+        "Mike": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Mike.webp"
+        },
+        "Evals": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Evals.webp"
+        },
+        "Madelyn": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Madelyn.webp"
+        },
+        "Maren": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maren.webp"
+        },
+        "Karen": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Karen.webp"
+        },
+        "Red": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Red.webp"
+        },
+        "Trace_b\u00f6se": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Trace_boese.webp"
+        }
     },
-    "Flora": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Flora.webp"
+    "charaktere_secondary": {
+        "Nora": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nora.webp"
+        },
+        "Reni": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Reni.webp"
+        },
+        "Adira": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Adira.webp"
+        },
+        "Maeve": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maeve.webp"
+        },
+        "Clovis": []
     },
-    "Keith": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Keith.webp"
+    "charaktere_other_main": {
+        "Laura": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Laura.webp"
+        },
+        "Saria": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Saria.webp"
+        },
+        "Nickolai": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nickolai.webp"
+        },
+        "Masken": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maske.webp"
+        },
+        "Keiren": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Keiren.webp"
+        },
+        "Reed": []
     },
-    "Natani": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Natani.webp"
-    },
-    "Zen": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Zen.webp"
-    },
-    "Sythe": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Sythe.webp"
-    },
-    "Nibbly": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nibbly.webp"
-    },
-    "Raine": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Raine.webp"
-    },
-    "Eric": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Eric.webp"
-    },
-    "Kathrin": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Kathrin.webp"
-    },
-    "Mike": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Mike.webp"
-    },
-    "Evals": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Evals.webp"
-    },
-    "Madelyn": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Madelyn.webp"
-    },
-    "Maren": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maren.webp"
-    },
-    "Karen": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Karen.webp"
-    },
-    "Red": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Red.webp"
-    },
-    "Trace_böse": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Trace_boese.webp"
+    "charaktere_other": {
+        "Vanity": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Vanity.webp"
+        }
     }
-  },
-  "charaktere_secondary": {
-    "Nora": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nora.webp"
-    },
-    "Reni": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Reni.webp"
-    },
-    "Adira": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Adira.webp"
-    },
-    "Maeve": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maeve.webp"
-    },
-    "Clovis": {}
-  },
-  "charaktere_other_main": {
-    "Laura": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Laura.webp"
-    },
-    "Saria": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Saria.webp"
-    },
-    "Nickolai": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nickolai.webp"
-    },
-    "Masken": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maske.webp"
-    },
-    "Keiren": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Keiren.webp"
-    },
-    "Reed": {}
-  },
-  "charaktere_other": {
-    "Vanity": {
-      "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Vanity.webp"
-    }
-  }
 }
