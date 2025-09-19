@@ -275,6 +275,7 @@ include $headerPath;
 
     .character-info {
         flex-grow: 1;
+        max-width: 500px;
     }
 
     .character-info strong {
