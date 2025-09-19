@@ -32,7 +32,7 @@ $comicCharacters = $comicData[$currentComicId]['charaktere'] ?? [];
 if (!empty($comicCharacters) && !empty($allCharaktereData)):
     ?>
     <div class="comic-characters">
-        <h3>Charaktere auf dieser Seite:</h3>
+        <h3>Charaktere auf dieser Seite: (Aktuell in Arbeit)</h3>
         <div class="character-list">
             <?php foreach ($comicCharacters as $characterName): ?>
                 <?php
@@ -44,7 +44,7 @@ if (!empty($comicCharacters) && !empty($allCharaktereData)):
                 $imageClass = '';
                 if (empty($imageUrl)) {
                     // Kein Pfad in der JSON -> '?'
-                    $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=?';
+                    $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild\\nnicht\\ndefiniert';
                     $imageClass = ''; // Kein Fallback-Listener nötig
                 } else {
                     // Pfad ist vorhanden, aber Datei könnte fehlen -> 'Fehlt'
@@ -72,7 +72,7 @@ if (!empty($comicCharacters) && !empty($allCharaktereData)):
                 img.addEventListener('error', function () {
                     this.onerror = null;
                     // NEU: Zeigt "Fehlt" an, wenn die Datei nicht geladen werden kann
-                    this.src = 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
+                    this.src = 'https://placehold.co/80x80/cccccc/333333?text=Bild\\nFehlt';
                 });
             });
         });

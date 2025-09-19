@@ -97,7 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let imgSrc;
         let imgClass = "character-image";
         if (!picUrl) {
-          imgSrc = "https://placehold.co/50x50/cccccc/333333?text=?";
+          imgSrc =
+            "https://placehold.co/50x50/cccccc/333333?text=Bild\\nnicht\\ndefiniert";
         } else {
           imgSrc = `${window.baseUrl}${picUrl}`;
           imgClass += " character-image-live";
@@ -159,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const picUrl = modalPicUrlInput.value;
     modalImagePreview.src = picUrl
       ? `${window.baseUrl}${picUrl}`
-      : "https://placehold.co/100x100/cccccc/333333?text=?";
+      : "https://placehold.co/100x100/cccccc/333333?text=Bild\\nnicht\\ndefiniert";
   }
 
   editorContainer.addEventListener("click", (e) => {
@@ -185,7 +186,8 @@ document.addEventListener("DOMContentLoaded", () => {
         e.target.classList.contains("character-image-live")
       ) {
         e.target.onerror = null;
-        e.target.src = "https://placehold.co/50x50/cccccc/333333?text=Fehlt";
+        e.target.src =
+          "https://placehold.co/50x50/cccccc/333333?text=Bild\\nFehlt";
         e.target.classList.remove("character-image-live");
       }
     },
@@ -232,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
   modalPicUrlInput.addEventListener("input", updateImagePreview);
   modalImagePreview.addEventListener("error", function () {
     this.onerror = null;
-    this.src = "https://placehold.co/100x100/cccccc/333333?text=Fehlt";
+    this.src = "https://placehold.co/100x100/cccccc/333333?text=Bild\\nFehlt";
   });
 
   editForm.addEventListener("submit", (e) => {
