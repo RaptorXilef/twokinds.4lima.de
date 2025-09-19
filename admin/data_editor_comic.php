@@ -1,8 +1,8 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der comic_var.json Konfigurationsdatei.
- * V5.2: Fügt eine funktionale Suche mit korrekter Paginierung hinzu.
- * Die Suche filtert nach Comic-ID und Comic-Namen.
+ * V5.4: Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
+ * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -252,7 +252,6 @@ include $headerPath;
         </div>
 
         <div class="table-controls">
-            <!-- NEU: Suchfeld -->
             <div class="search-container">
                 <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
                 <button id="clear-search-btn" class="button" style="display: none;">&times;</button>
@@ -895,7 +894,7 @@ include $headerPath;
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         let comicData = <?php echo json_encode($fullComicData, JSON_UNESCAPED_SLASHES); ?>;
         const allComicIds = Object.keys(comicData);
-        let filteredComicIds = [...allComicIds]; // KORREKTUR: Eigene Variable für gefilterte IDs
+        let filteredComicIds = [...allComicIds];
         let cachedImages = <?php echo json_encode($cachedImagesForJs, JSON_UNESCAPED_SLASHES); ?>;
         const charaktereData = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
 
@@ -905,8 +904,8 @@ include $headerPath;
         const messageBox = document.getElementById('message-box');
         const lastRunContainer = document.getElementById('last-run-container');
         const paginationContainer = document.querySelector('.pagination');
-        const searchInput = document.getElementById('search-input'); // NEU
-        const clearSearchBtn = document.getElementById('clear-search-btn'); // NEU
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
 
         const editModal = document.getElementById('edit-modal');
         const modalCloseBtn = editModal.querySelector('.close-button');
@@ -929,11 +928,11 @@ include $headerPath;
         });
 
         const renderTable = () => {
-            filteredComicIds.sort(); // KORREKTUR: Gefilterte IDs sortieren
+            filteredComicIds.sort();
             tableBody.innerHTML = '';
             const start = (currentPage - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
-            const paginatedIds = filteredComicIds.slice(start, end); // KORREKTUR: Gefilterte IDs für Paginierung verwenden
+            const paginatedIds = filteredComicIds.slice(start, end);
 
             paginatedIds.forEach(id => {
                 const chapter = comicData[id];
@@ -996,12 +995,11 @@ include $headerPath;
         };
 
         const renderPagination = () => {
-            const totalPages = Math.ceil(filteredComicIds.length / ITEMS_PER_PAGE); // KORREKTUR: Länge der gefilterten IDs verwenden
+            const totalPages = Math.ceil(filteredComicIds.length / ITEMS_PER_PAGE);
             paginationContainer.innerHTML = '';
             if (totalPages <= 1) return;
             if (currentPage > 1) paginationContainer.innerHTML += `<a data-page="${currentPage - 1}">&laquo;</a>`;
 
-            // Logik für die Anzeige von Paginierungslinks (gekürzt für Übersicht)
             let startPage = Math.max(1, currentPage - 2);
             let endPage = Math.min(totalPages, currentPage + 15);
 
@@ -1050,7 +1048,7 @@ include $headerPath;
 
         function updateImagePreviewsWithDebounce() {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(updateImagePreviews, 500); // 500ms Verzögerung
+            debounceTimer = setTimeout(updateImagePreviews, 500);
         }
 
         async function updateImagePreviews() {
@@ -1154,6 +1152,7 @@ include $headerPath;
             modalPreviewSketch.style.display = view === 'sketch' ? 'flex' : 'none';
         }
 
+        // KORREKTUR: Robuste Funktion für Charakter-Bilder
         function renderCharakterSelection(comicId) {
             modalCharaktereSection.innerHTML = '';
             const selectedCharaktere = comicData[comicId]?.charaktere || [];
@@ -1164,6 +1163,9 @@ include $headerPath;
                 'Andere Charaktere': 'charaktere_other_main',
                 'Andere seltene Charaktere': 'charaktere_other'
             };
+
+            const placeholderUrlUnknown = 'https://placehold.co/60x60/cccccc/333333?text=Bild\\nnicht\\ndefiniert';
+            const placeholderUrlMissing = 'https://placehold.co/60x60/dc3545/ffffff?text=Bild\\nFehlt';
 
             for (const [title, key] of Object.entries(categories)) {
                 if (charaktereData[key]) {
@@ -1180,10 +1182,22 @@ include $headerPath;
                         item.dataset.charakterName = name;
 
                         const img = document.createElement('img');
-                        const isActive = selectedCharaktere.includes(name);
-                        img.src = `../${urls.charaktere_pic_url}`;
+                        const imageUrl = urls ? urls.charaktere_pic_url : null;
+
+                        if (imageUrl) {
+                            img.src = `../${imageUrl}`;
+                            img.addEventListener('error', function () {
+                                this.onerror = null;
+                                this.src = placeholderUrlMissing;
+                            }, { once: true });
+                        } else {
+                            img.src = placeholderUrlUnknown;
+                        }
+
                         img.alt = name;
-                        if (isActive) item.classList.add('active');
+                        if (selectedCharaktere.includes(name)) {
+                            item.classList.add('active');
+                        }
 
                         const nameSpan = document.createElement('span');
                         nameSpan.textContent = name;
@@ -1197,6 +1211,7 @@ include $headerPath;
                 }
             }
         }
+
 
         modalCharaktereSection.addEventListener('click', (e) => {
             const item = e.target.closest('.charakter-item');
@@ -1293,7 +1308,6 @@ include $headerPath;
                     const row = deleteBtn.closest('tr');
                     const idToDelete = row.dataset.id;
                     delete comicData[idToDelete];
-                    // KORREKTUR: Filtere die gelöschte ID aus beiden Listen
                     allComicIds = allComicIds.filter(id => id !== idToDelete);
                     filteredComicIds = filteredComicIds.filter(id => id !== idToDelete);
                     renderTable();
@@ -1310,7 +1324,6 @@ include $headerPath;
             }
         });
 
-        // NEU: Event Listener für die Suche
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
             clearSearchBtn.style.display = searchTerm ? 'inline-block' : 'none';
@@ -1324,14 +1337,13 @@ include $headerPath;
                     return id.includes(searchTerm) || name.includes(searchTerm);
                 });
             }
-            currentPage = 1; // Wichtig: Bei jeder Suche auf die erste Seite zurückspringen
+            currentPage = 1;
             renderTable();
         });
 
-        // NEU: Event Listener für den "Löschen"-Button der Suche
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input')); // Simuliert eine Eingabe, um den Filter zurückzusetzen
+            searchInput.dispatchEvent(new Event('input'));
         });
 
         document.getElementById('modal-url').addEventListener('input', updateImagePreviewsWithDebounce);
@@ -1355,7 +1367,6 @@ include $headerPath;
                 comicData[idToUpdate] = { sources: ['json'], charaktere: [] };
                 if (!allComicIds.includes(idToUpdate)) {
                     allComicIds.push(idToUpdate);
-                    // NEU: Füge neue ID auch zur gefilterten Liste hinzu (falls sie dem Filter entspricht)
                     const searchTerm = searchInput.value.toLowerCase().trim();
                     if (!searchTerm || idToUpdate.includes(searchTerm)) {
                         filteredComicIds.push(idToUpdate);
