@@ -1,8 +1,8 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der comic_var.json Konfigurationsdatei.
- * V5.1: Korrigiert Fehler beim Laden von Bestandsdaten und implementiert die
- * Charakter-Auswahl korrekt mit CSS-basiertem Aktiv/Inaktiv-Status.
+ * V5.2: Fügt eine funktionale Suche mit korrekter Paginierung hinzu.
+ * Die Suche filtert nach Comic-ID und Comic-Namen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -252,24 +252,32 @@ include $headerPath;
         </div>
 
         <div class="table-controls">
-            <div class="marker-legend">
-                <strong>Quellen:</strong>
-                <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
-                <span class="source-marker source-image" title="Mindestens eine Bilddatei existiert lokal">Bild</span>
-                <span class="source-marker source-php"
-                    title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
-                <span class="source-marker source-url" title="Ein Originalbild ist via URL verknüpft">URL</span>
+            <!-- NEU: Suchfeld -->
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
+                <button id="clear-search-btn" class="button" style="display: none;">&times;</button>
             </div>
-            <div class="marker-legend">
-                <strong>Status:</strong>
-                <span class="source-marker status-json present"
-                    title="JSON-Daten vollständig (Name, Transkript, etc.)">J</span>
-                <span class="source-marker status-lowres" title="Low-Res Bild">L</span>
-                <span class="source-marker status-hires" title="High-Res Bild">H</span>
-                <span class="source-marker status-php present" title="PHP-Datei">P</span>
-                <span class="source-marker status-socialmedia" title="Social Media Bild">S</span>
-                <span class="source-marker status-thumbnails" title="Thumbnail">T</span>
-                <span class="source-marker source-url" title="URL zum Originalbild">U</span>
+            <div class="marker-legend-group">
+                <div class="marker-legend">
+                    <strong>Quellen:</strong>
+                    <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
+                    <span class="source-marker source-image"
+                        title="Mindestens eine Bilddatei existiert lokal">Bild</span>
+                    <span class="source-marker source-php"
+                        title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
+                    <span class="source-marker source-url" title="Ein Originalbild ist via URL verknüpft">URL</span>
+                </div>
+                <div class="marker-legend">
+                    <strong>Status:</strong>
+                    <span class="source-marker status-json present"
+                        title="JSON-Daten vollständig (Name, Transkript, etc.)">J</span>
+                    <span class="source-marker status-lowres" title="Low-Res Bild">L</span>
+                    <span class="source-marker status-hires" title="High-Res Bild">H</span>
+                    <span class="source-marker status-php present" title="PHP-Datei">P</span>
+                    <span class="source-marker status-socialmedia" title="Social Media Bild">S</span>
+                    <span class="source-marker status-thumbnails" title="Thumbnail">T</span>
+                    <span class="source-marker source-url" title="URL zum Originalbild">U</span>
+                </div>
             </div>
         </div>
 
@@ -714,7 +722,36 @@ include $headerPath;
         align-items: center;
         margin-bottom: 15px;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 20px;
+        /* Erhöhter Abstand */
+    }
+
+    .search-container {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+
+    #search-input {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+
+    body.theme-night #search-input {
+        background-color: #03425b;
+        border-color: #045d81;
+        color: #f0f0f0;
+    }
+
+    #clear-search-btn {
+        padding: 5px 10px;
+    }
+
+    .marker-legend-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
     }
 
     #modal-image-preview-section {
@@ -857,7 +894,8 @@ include $headerPath;
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         let comicData = <?php echo json_encode($fullComicData, JSON_UNESCAPED_SLASHES); ?>;
-        let allComicIds = Object.keys(comicData);
+        const allComicIds = Object.keys(comicData);
+        let filteredComicIds = [...allComicIds]; // KORREKTUR: Eigene Variable für gefilterte IDs
         let cachedImages = <?php echo json_encode($cachedImagesForJs, JSON_UNESCAPED_SLASHES); ?>;
         const charaktereData = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
 
@@ -867,6 +905,8 @@ include $headerPath;
         const messageBox = document.getElementById('message-box');
         const lastRunContainer = document.getElementById('last-run-container');
         const paginationContainer = document.querySelector('.pagination');
+        const searchInput = document.getElementById('search-input'); // NEU
+        const clearSearchBtn = document.getElementById('clear-search-btn'); // NEU
 
         const editModal = document.getElementById('edit-modal');
         const modalCloseBtn = editModal.querySelector('.close-button');
@@ -889,11 +929,11 @@ include $headerPath;
         });
 
         const renderTable = () => {
-            allComicIds.sort();
+            filteredComicIds.sort(); // KORREKTUR: Gefilterte IDs sortieren
             tableBody.innerHTML = '';
             const start = (currentPage - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
-            const paginatedIds = allComicIds.slice(start, end);
+            const paginatedIds = filteredComicIds.slice(start, end); // KORREKTUR: Gefilterte IDs für Paginierung verwenden
 
             paginatedIds.forEach(id => {
                 const chapter = comicData[id];
@@ -956,14 +996,24 @@ include $headerPath;
         };
 
         const renderPagination = () => {
-            const totalPages = Math.ceil(allComicIds.length / ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(filteredComicIds.length / ITEMS_PER_PAGE); // KORREKTUR: Länge der gefilterten IDs verwenden
             paginationContainer.innerHTML = '';
             if (totalPages <= 1) return;
             if (currentPage > 1) paginationContainer.innerHTML += `<a data-page="${currentPage - 1}">&laquo;</a>`;
-            for (let i = 1; i <= totalPages; i++) {
+
+            // Logik für die Anzeige von Paginierungslinks (gekürzt für Übersicht)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 15);
+
+            if (startPage > 1) paginationContainer.innerHTML += `<a data-page="1">1</a><span>...</span>`;
+
+            for (let i = startPage; i <= endPage; i++) {
                 if (i === currentPage) paginationContainer.innerHTML += `<span class="current-page">${i}</span>`;
                 else paginationContainer.innerHTML += `<a data-page="${i}">${i}</a>`;
             }
+
+            if (endPage < totalPages) paginationContainer.innerHTML += `<span>...</span><a data-page="${totalPages}">${totalPages}</a>`;
+
             if (currentPage < totalPages) paginationContainer.innerHTML += `<a data-page="${currentPage + 1}">&raquo;</a>`;
         };
 
@@ -1243,7 +1293,9 @@ include $headerPath;
                     const row = deleteBtn.closest('tr');
                     const idToDelete = row.dataset.id;
                     delete comicData[idToDelete];
-                    allComicIds = Object.keys(comicData);
+                    // KORREKTUR: Filtere die gelöschte ID aus beiden Listen
+                    allComicIds = allComicIds.filter(id => id !== idToDelete);
+                    filteredComicIds = filteredComicIds.filter(id => id !== idToDelete);
                     renderTable();
                     showMessage('Eintrag zum Löschen vorgemerkt. Klicken Sie auf "Änderungen speichern".', 'orange', 10000);
                 }
@@ -1256,6 +1308,30 @@ include $headerPath;
                 currentPage = parseInt(e.target.dataset.page, 10);
                 renderTable();
             }
+        });
+
+        // NEU: Event Listener für die Suche
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            clearSearchBtn.style.display = searchTerm ? 'inline-block' : 'none';
+
+            if (!searchTerm) {
+                filteredComicIds = [...allComicIds];
+            } else {
+                filteredComicIds = allComicIds.filter(id => {
+                    const comic = comicData[id];
+                    const name = comic.name ? comic.name.toLowerCase() : '';
+                    return id.includes(searchTerm) || name.includes(searchTerm);
+                });
+            }
+            currentPage = 1; // Wichtig: Bei jeder Suche auf die erste Seite zurückspringen
+            renderTable();
+        });
+
+        // NEU: Event Listener für den "Löschen"-Button der Suche
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input')); // Simuliert eine Eingabe, um den Filter zurückzusetzen
         });
 
         document.getElementById('modal-url').addEventListener('input', updateImagePreviewsWithDebounce);
@@ -1279,6 +1355,11 @@ include $headerPath;
                 comicData[idToUpdate] = { sources: ['json'], charaktere: [] };
                 if (!allComicIds.includes(idToUpdate)) {
                     allComicIds.push(idToUpdate);
+                    // NEU: Füge neue ID auch zur gefilterten Liste hinzu (falls sie dem Filter entspricht)
+                    const searchTerm = searchInput.value.toLowerCase().trim();
+                    if (!searchTerm || idToUpdate.includes(searchTerm)) {
+                        filteredComicIds.push(idToUpdate);
+                    }
                 }
             }
 
