@@ -70,7 +70,7 @@ if (empty($bookmarkThumbnailUrl)) {
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 
 // === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
-$pageTitle = 'Das Webcomic auf Deutsch';
+$pageTitle = 'Startseite der Fan-Übersetzung';
 $siteDescription = 'Tauche ein in die Welt von Twokinds – dem beliebten Fantasy-Webcomic von Tom Fischbach, jetzt komplett auf Deutsch verfügbar. Erlebe die spannende Geschichte von Trace und Flora und entdecke die Rassenkonflikte zwischen Menschen und Keidran.';
 $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . ltrim($socialMediaPreviewUrl, './');
 $comicJsPathOnServer = __DIR__ . '/src/layout/js/comic.min.js';
