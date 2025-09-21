@@ -80,6 +80,8 @@ _links/*
 test*.php
 *backup*
 *.psd
+*.c2paws
+*.bak
 # FTP Verzeichnisse
 sync.ffs_db
 # Charaktere Bilder
