@@ -95,6 +95,24 @@ RewriteCond %{REQUEST_FILENAME}\.php -f
 # Regel: Schreibe die Anfrage intern auf die entsprechende .php-Datei um.
 RewriteRule ^(.\*)$ $1.php [L]
 
+# --- NEUE REGELN FÜR URL-VERARBEITUNG ---
+# 1. Interne Umschreibung: /comic/20250909 -> /comic/20250909.php
+# Wenn die URL mit /comic/ beginnt und keine .php-Endung hat, aber die entsprechende
+# .php-Datei existiert, wird die Anfrage intern umgeschrieben.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} ^/comic/(\d{8})$
+RewriteCond %{DOCUMENT_ROOT}/comic/%1.php -f
+RewriteRule ^comic/(\d{8})$ /comic/$1.php [L]
+
+# 2. Permanente Weiterleitung: /20250909 -> /comic/20250909.php
+# Wenn die Anfrage eine 8-stellige Zahl im Hauptverzeichnis ist, die Datei aber
+# nicht existiert, wird der Besucher permanent zum korrekten comic-Pfad weitergeleitet.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
+RewriteRule ^(\d{8})$ /comic/$1 [R=301,L]
+
 # --- Block 5: GZIP-Komprimierung (Performance) ---
 # Komprimiert textbasierte Dateien (HTML, CSS, JS etc.) vor der Übertragung an den Browser.
 # Dies reduziert die Dateigröße und beschleunigt die Ladezeit erheblich.
