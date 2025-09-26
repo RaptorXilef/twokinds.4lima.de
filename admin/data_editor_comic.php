@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.5.4
+ * @version   5.5.5
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
@@ -17,6 +17,7 @@
  * @since     5.5.2 Nach Bearbeitung scrollt die Ansicht zur bearbeiteten Zeile, die zur Hervorhebung kurz aufleuchtet.
  * @since     5.5.3 Erstellt/Löscht automatisch die zugehörigen PHP-Dateien im /comic/-Ordner beim Speichern von Änderungen.
  * @since     5.5.4 Korrigiert den Inhalt neu erstellter PHP-Dateien auf die korrekte einzelne require_once-Anweisung.
+ * @since     5.5.5 Behebt Fehler beim Löschen von Einträgen, Erstellen von PHP-Dateien und der Anzeige im "Neu"-Dialog.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -981,7 +982,7 @@ include $headerPath;
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         let comicData = <?php echo json_encode($fullComicData, JSON_UNESCAPED_SLASHES); ?>;
-        const allComicIds = Object.keys(comicData);
+        let allComicIds = Object.keys(comicData);
         let filteredComicIds = [...allComicIds];
         let cachedImages = <?php echo json_encode($cachedImagesForJs, JSON_UNESCAPED_SLASHES); ?>;
         const charaktereData = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
@@ -1178,6 +1179,13 @@ include $headerPath;
             const enImg = modalPreviewEn.querySelector('img');
             const sketchImg = modalPreviewSketch.querySelector('img');
             const placeholderSrc = (cachedImages['placeholder'] && cachedImages['placeholder'].lowres) ? `../${cachedImages['placeholder'].lowres}` : '../assets/comic_thumbnails/placeholder.jpg';
+
+            if (activeEditId === 'new_entry') {
+                deImg.src = placeholderSrc;
+                enImg.src = placeholderSrc;
+                sketchImg.src = placeholderSrc;
+                return;
+            }
 
             deImg.src = (cachedImages[activeEditId] && cachedImages[activeEditId].lowres) ? `../${cachedImages[activeEditId].lowres}` : placeholderSrc;
 
@@ -1383,7 +1391,19 @@ include $headerPath;
         });
 
         addRowBtn.addEventListener('click', () => {
-            activeEditId = null;
+            activeEditId = 'new_entry';
+            comicData['new_entry'] = {
+                type: 'Comicseite',
+                name: '',
+                transcript: '',
+                chapter: null,
+                datum: '',
+                url_originalbild: '',
+                url_originalsketch: '',
+                charaktere: [],
+                sources: []
+            };
+
             document.getElementById('modal-comic-id').value = '';
             document.getElementById('modal-comic-id').disabled = false;
             document.getElementById('modal-type').value = 'Comicseite';
@@ -1393,8 +1413,12 @@ include $headerPath;
             document.getElementById('modal-url').value = '';
             document.getElementById('modal-url-sketch').value = '';
             document.getElementById('modal-title-header').textContent = 'Neuen Eintrag erstellen';
-            document.getElementById('modal-image-preview-section').style.display = 'none';
-            modalCharaktereSection.innerHTML = '';
+
+            document.getElementById('modal-image-preview-section').style.display = 'block';
+            updateImagePreviews();
+            renderCharakterSelection('new_entry');
+            setImageView('de');
+
             editModal.style.display = 'flex';
         });
 
@@ -1436,7 +1460,7 @@ include $headerPath;
             }
         });
 
-        document.querySelectorAll('.pagination').forEach(container => {
+        paginationContainers.forEach(container => {
             container.addEventListener('click', (e) => {
                 if (e.target.tagName === 'A' && e.target.dataset.page) {
                     e.preventDefault();
@@ -1473,9 +1497,12 @@ include $headerPath;
 
         modalSaveBtn.addEventListener('click', () => {
             let idToUpdate;
-            if (activeEditId) {
+            let isNewEntry = false;
+
+            if (activeEditId && activeEditId !== 'new_entry') {
                 idToUpdate = activeEditId;
             } else {
+                isNewEntry = true;
                 const newId = document.getElementById('modal-comic-id').value;
                 if (!/^\d{8}$/.test(newId)) {
                     alert('Bitte geben Sie eine gültige ID im Format JJJJMMTT ein.');
@@ -1486,7 +1513,10 @@ include $headerPath;
                     return;
                 }
                 idToUpdate = newId;
-                comicData[idToUpdate] = { sources: ['json'], charaktere: [] };
+
+                comicData[idToUpdate] = { ...comicData['new_entry'] };
+                delete comicData['new_entry'];
+
                 if (!allComicIds.includes(idToUpdate)) {
                     allComicIds.push(idToUpdate);
                     const searchTerm = searchInput.value.toLowerCase().trim();
@@ -1504,8 +1534,8 @@ include $headerPath;
             comicData[idToUpdate].url_originalsketch = document.getElementById('modal-url-sketch').value;
             comicData[idToUpdate].datum = idToUpdate;
 
-            if (!comicData[idToUpdate].charaktere) {
-                comicData[idToUpdate].charaktere = [];
+            if (isNewEntry) {
+                comicData[idToUpdate].sources = ['json'];
             }
 
             renderTable();
@@ -1524,8 +1554,15 @@ include $headerPath;
             showMessage('Änderung zwischengespeichert. Klicken Sie auf "Änderungen speichern", um sie permanent zu machen.', 'orange', 10000);
         });
 
-        modalCancelBtn.addEventListener('click', () => { editModal.style.display = 'none'; activeEditId = null; });
-        modalCloseBtn.addEventListener('click', () => modalCancelBtn.click());
+        const cancelAction = () => {
+            if (activeEditId === 'new_entry') {
+                delete comicData['new_entry'];
+            }
+            editModal.style.display = 'none';
+            activeEditId = null;
+        };
+        modalCancelBtn.addEventListener('click', cancelAction);
+        modalCloseBtn.addEventListener('click', cancelAction);
 
         renderTable();
     });
