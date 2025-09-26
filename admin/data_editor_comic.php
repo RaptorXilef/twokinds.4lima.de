@@ -12,6 +12,8 @@
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
+ * @since     5.5.1 Fügt die fehlenden Schaltflächen für "Vorherige" (‹) und "Nächste" (›) -Seite hinzu. 
+ * Die Schaltfläche für die aktuell ausgewählte Seite wird jetzt in beiden Themes (Hell und Dunkel) korrekt hervorgehoben.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -611,6 +613,12 @@ include $headerPath;
         background-color: #00425c;
     }
 
+    body.theme-night .pagination span.current-page {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
     .modal {
         display: none;
         position: fixed;
@@ -917,7 +925,7 @@ include $headerPath;
         const addRowBtn = document.getElementById('add-row-btn');
         const messageBox = document.getElementById('message-box');
         const lastRunContainer = document.getElementById('last-run-container');
-        const paginationContainer = document.querySelector('.pagination');
+        const paginationContainers = document.querySelectorAll('.pagination');
         const searchInput = document.getElementById('search-input');
         const clearSearchBtn = document.getElementById('clear-search-btn');
 
@@ -1012,23 +1020,53 @@ include $headerPath;
 
         const renderPagination = () => {
             const totalPages = Math.ceil(filteredComicIds.length / ITEMS_PER_PAGE);
-            paginationContainer.innerHTML = '';
-            if (totalPages <= 1) return;
-            if (currentPage > 1) paginationContainer.innerHTML += `<a data-page="${currentPage - 1}">&laquo;</a>`;
 
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, currentPage + 15);
+            paginationContainers.forEach(container => {
+                container.innerHTML = '';
+                if (totalPages <= 1) return;
 
-            if (startPage > 1) paginationContainer.innerHTML += `<a data-page="1">1</a><span>...</span>`;
+                let htmlParts = [];
 
-            for (let i = startPage; i <= endPage; i++) {
-                if (i === currentPage) paginationContainer.innerHTML += `<span class="current-page">${i}</span>`;
-                else paginationContainer.innerHTML += `<a data-page="${i}">${i}</a>`;
-            }
+                // "First" and "Previous" buttons
+                if (currentPage > 1) {
+                    htmlParts.push(`<a data-page="1">&laquo;</a>`); // First
+                    htmlParts.push(`<a data-page="${currentPage - 1}">&lsaquo;</a>`); // Previous
+                }
 
-            if (endPage < totalPages) paginationContainer.innerHTML += `<span>...</span><a data-page="${totalPages}">${totalPages}</a>`;
+                // Page numbers logic
+                let startPage = Math.max(1, currentPage - 4);
+                let endPage = Math.min(totalPages, currentPage + 4);
 
-            if (currentPage < totalPages) paginationContainer.innerHTML += `<a data-page="${currentPage + 1}">&raquo;</a>`;
+                if (startPage > 1) {
+                    htmlParts.push(`<a data-page="1">1</a>`);
+                    if (startPage > 2) {
+                        htmlParts.push(`<span>...</span>`);
+                    }
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    if (i === currentPage) {
+                        htmlParts.push(`<span class="current-page">${i}</span>`);
+                    } else {
+                        htmlParts.push(`<a data-page="${i}">${i}</a>`);
+                    }
+                }
+
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        htmlParts.push(`<span>...</span>`);
+                    }
+                    htmlParts.push(`<a data-page="${totalPages}">${totalPages}</a>`);
+                }
+
+                // "Next" and "Last" buttons
+                if (currentPage < totalPages) {
+                    htmlParts.push(`<a data-page="${currentPage + 1}">&rsaquo;</a>`); // Next
+                    htmlParts.push(`<a data-page="${totalPages}">&raquo;</a>`); // Last
+                }
+
+                container.innerHTML = htmlParts.join('');
+            });
         };
 
         function showMessage(message, type, duration = 5000) {
@@ -1332,13 +1370,16 @@ include $headerPath;
             }
         });
 
-        paginationContainer.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.dataset.page) {
-                e.preventDefault();
-                currentPage = parseInt(e.target.dataset.page, 10);
-                renderTable();
-            }
+        document.querySelectorAll('.pagination').forEach(container => {
+            container.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && e.target.dataset.page) {
+                    e.preventDefault();
+                    currentPage = parseInt(e.target.dataset.page, 10);
+                    renderTable();
+                }
+            });
         });
+
 
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
