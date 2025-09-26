@@ -1,8 +1,7 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der sitemap.json Konfigurationsdatei.
- * V2.2: Behebt CSS-Anzeigefehler im Dark-Mode und implementiert Paginierung
- * ohne Neuladen, um Datenverlust zu verhindern.
+ * V2.3: Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -113,51 +112,40 @@ function scanComicDirectory(string $dirPath, bool $debugMode): array
     return $comicFiles;
 }
 
+// --- AJAX-Handler (Korrigiert) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verify_csrf_token();
+    require_once __DIR__ . '/src/components/security_check.php';
+
     ob_end_clean();
     header('Content-Type: application/json');
-    $input = file_get_contents('php://input');
-    $requestData = json_decode($input, true);
 
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'Fehler beim Dekodieren der JSON-Daten.']);
-        exit;
-    }
-
-    $action = $requestData['action'] ?? '';
-    $response = ['success' => false, 'message' => ''];
+    $action = $_POST['action'] ?? '';
+    $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
     switch ($action) {
         case 'save_sitemap':
-            $allPagesToSave = [];
-            if (isset($requestData['pages']) && is_array($requestData['pages'])) {
-                foreach ($requestData['pages'] as $page) {
-                    if (empty($page['loc']) || empty($page['name']))
-                        continue;
-                    $allPagesToSave[] = [
-                        'loc' => trim($page['loc']),
-                        'name' => trim($page['name']),
-                        'path' => trim($page['path']),
-                        'priority' => (float) $page['priority'],
-                        'changefreq' => trim($page['changefreq'])
-                    ];
-                }
-            }
-            if (saveSitemapData($sitemapJsonPath, ['pages' => $allPagesToSave], $debugMode)) {
+            $pagesToSaveStr = $_POST['pages'] ?? '[]';
+            $allPagesToSave = json_decode($pagesToSaveStr, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $response['message'] = 'Fehler: Die übermittelten Seitendaten sind kein gültiges JSON.';
+                http_response_code(400);
+            } elseif (saveSitemapData($sitemapJsonPath, ['pages' => $allPagesToSave], $debugMode)) {
                 $response = ['success' => true, 'message' => 'Sitemap-Daten erfolgreich gespeichert!'];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Sitemap-Daten.';
                 http_response_code(500);
             }
             break;
-
         case 'save_settings':
             $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
             $currentSettings['data_editor_sitemap']['last_run_timestamp'] = time();
             if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
+                $response['message'] = 'Zeitstempel gespeichert.';
+            } else {
+                $response['message'] = 'Fehler beim Speichern des Zeitstempels.';
+                http_response_code(500);
             }
             break;
     }
@@ -207,8 +195,6 @@ include $headerPath;
             <p>Verwalte hier die Einträge für deine Sitemap. Comic-Seiten werden automatisch erkannt und hinzugefügt.
             </p>
         </div>
-
-        <div id="message-box" class="hidden-by-default"></div>
 
         <div class="collapsible-section expanded" id="general-sitemap-section">
             <div class="collapsible-header">
@@ -267,7 +253,8 @@ include $headerPath;
 
         <div id="fixed-buttons-container">
             <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
-        </div>
+        </div><br>
+        <div id="message-box" class="hidden-by-default"></div>
     </div>
 </article>
 
@@ -379,7 +366,6 @@ include $headerPath;
         border-radius: 3px;
         border: 1px solid #ccc;
         box-sizing: border-box;
-        /* KORREKTUR: Verhindert Überlaufen */
     }
 
     body.theme-night .sitemap-table {
@@ -541,27 +527,39 @@ include $headerPath;
         }
 
         async function saveSettings() {
+            const formData = new FormData();
+            formData.append('action', 'save_settings');
+            formData.append('csrf_token', csrfToken);
             await fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'save_settings', csrf_token: csrfToken })
+                body: formData
             });
         }
 
         saveAllBtn.addEventListener('click', async () => {
             let allPages = [...generalPagesData, ...fullComicPagesData];
             try {
+                const formData = new FormData();
+                formData.append('action', 'save_sitemap');
+                formData.append('pages', JSON.stringify(allPages));
+                formData.append('csrf_token', csrfToken);
+
                 const response = await fetch(window.location.href, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'save_sitemap', pages: allPages, csrf_token: csrfToken })
+                    body: formData
                 });
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    showMessage('Sitemap erfolgreich gespeichert!', 'green');
-                    await saveSettings();
-                    updateTimestamp();
-                } else { showMessage(`Fehler: ${data.message}`, 'red'); }
+
+                const responseText = await response.text();
+                try {
+                    const data = JSON.parse(responseText);
+                    if (response.ok && data.success) {
+                        showMessage('Sitemap erfolgreich gespeichert!', 'green');
+                        await saveSettings();
+                        updateTimestamp();
+                    } else { showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red'); }
+                } catch (e) {
+                    throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
+                }
             } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red'); }
         });
 

@@ -1,7 +1,8 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der archive_chapters.json.
- * V2.9: Integriert manuelle z-index-Korrekturen für Summernote-Modals.
+ * V3.2: Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token.
+ * Die ursprüngliche UI und PHP-Logik bleiben vollständig erhalten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -102,20 +103,26 @@ function saveArchiveChapters(string $path, array $data, bool $debugMode): bool
     return file_put_contents($path, $jsonContent) !== false;
 }
 
-// --- AJAX-Handler ---
+// --- AJAX-Handler (Korrigiert) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = file_get_contents('php://input');
-    $requestData = json_decode($input, true);
-    verify_csrf_token();
+    // Die Sicherheitsprüfung wird zuerst ausgeführt und prüft den CSRF-Token aus $_POST.
+    require_once __DIR__ . '/src/components/security_check.php';
+
     ob_end_clean();
     header('Content-Type: application/json');
-    $action = $requestData['action'] ?? '';
-    $response = ['success' => false, 'message' => ''];
+
+    $action = $_POST['action'] ?? '';
+    $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
     switch ($action) {
         case 'save_archive':
-            $chaptersToSave = $requestData['chapters'] ?? [];
-            if (saveArchiveChapters($archiveChaptersJsonPath, $chaptersToSave, $debugMode)) {
+            $chaptersToSaveStr = $_POST['chapters'] ?? '[]';
+            $chaptersToSave = json_decode($chaptersToSaveStr, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $response['message'] = 'Fehler: Die übermittelten Kapiteldaten sind kein gültiges JSON.';
+                http_response_code(400);
+            } elseif (saveArchiveChapters($archiveChaptersJsonPath, $chaptersToSave, $debugMode)) {
                 $response = ['success' => true, 'message' => 'Archiv-Daten erfolgreich in der JSON-Datei gespeichert!'];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Archiv-Daten.';
@@ -127,12 +134,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $currentSettings['data_editor_archiv']['last_run_timestamp'] = time();
             if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
+                $response['message'] = 'Zeitstempel gespeichert.';
+            } else {
+                $response['message'] = 'Fehler beim Speichern des Zeitstempels.';
+                http_response_code(500);
             }
             break;
     }
     echo json_encode($response);
     exit;
 }
+
 
 $settings = loadGeneratorSettings($settingsFilePath, $debugMode);
 $archiveSettings = $settings['data_editor_archiv'];
@@ -516,28 +528,44 @@ include $headerPath;
         }
 
         async function saveSettings() {
+            const formData = new FormData();
+            formData.append('action', 'save_settings');
+            formData.append('csrf_token', csrfToken);
             await fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'save_settings', csrf_token: csrfToken })
+                body: formData
             });
         }
 
         saveAllBtn.addEventListener('click', async () => {
             try {
+                const formData = new FormData();
+                formData.append('action', 'save_archive');
+                formData.append('chapters', JSON.stringify(chaptersData));
+                formData.append('csrf_token', csrfToken);
+
                 const response = await fetch(window.location.href, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'save_archive', chapters: chaptersData, csrf_token: csrfToken })
+                    body: formData
                 });
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    showMessage(data.message, 'green', 5000, saveConfirmationBox);
-                    messageBox.style.display = 'none';
-                    await saveSettings();
-                    updateTimestamp();
-                } else { showMessage(`Fehler: ${data.message}`, 'red', 5000, saveConfirmationBox); }
-            } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red', 5000, saveConfirmationBox); }
+
+                const responseText = await response.text();
+                try {
+                    const data = JSON.parse(responseText);
+                    if (response.ok && data.success) {
+                        showMessage(data.message, 'green', 5000, saveConfirmationBox);
+                        messageBox.style.display = 'none';
+                        await saveSettings();
+                        updateTimestamp();
+                    } else {
+                        showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red', 5000, saveConfirmationBox);
+                    }
+                } catch (e) {
+                    throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
+                }
+            } catch (error) {
+                showMessage(`Netzwerkfehler: ${error.message}`, 'red', 10000, saveConfirmationBox);
+            }
         });
 
         addRowBtn.addEventListener('click', () => {
