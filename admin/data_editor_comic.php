@@ -8,13 +8,15 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.5.0
+ * @version   5.5.4
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
  * @since     5.5.1 Fügt die fehlenden Schaltflächen für "Vorherige" (‹) und "Nächste" (›) -Seite hinzu. 
  * Die Schaltfläche für die aktuell ausgewählte Seite wird jetzt in beiden Themes (Hell und Dunkel) korrekt hervorgehoben.
  * @since     5.5.2 Nach Bearbeitung scrollt die Ansicht zur bearbeiteten Zeile, die zur Hervorhebung kurz aufleuchtet.
+ * @since     5.5.3 Erstellt/Löscht automatisch die zugehörigen PHP-Dateien im /comic/-Ordner beim Speichern von Änderungen.
+ * @since     5.5.4 Korrigiert den Inhalt neu erstellter PHP-Dateien auf die korrekte einzelne require_once-Anweisung.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -152,8 +154,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($action) {
         case 'save_comic_data':
             $comicDataToSave = $requestData['comics'] ?? [];
+            $currentData = loadJsonData($comicVarJsonPath, $debugMode);
+
+            $newIds = array_keys(array_diff_key($comicDataToSave, $currentData));
+            $deletedIds = array_keys(array_diff_key($currentData, $comicDataToSave));
+
+            $createdCount = 0;
+            foreach ($newIds as $id) {
+                $filePath = $comicPhpPagesPath . $id . '.php';
+                if (!file_exists($filePath)) {
+                    $phpContent = "<?php require_once __DIR__ . '/../src/components/comic_page_renderer.php'; ?>";
+                    if (file_put_contents($filePath, $phpContent) !== false) {
+                        $createdCount++;
+                    }
+                }
+            }
+
+            $deletedCount = 0;
+            foreach ($deletedIds as $id) {
+                $filePath = $comicPhpPagesPath . $id . '.php';
+                if (file_exists($filePath)) {
+                    if (unlink($filePath)) {
+                        $deletedCount++;
+                    }
+                }
+            }
+
             if (saveComicData($comicVarJsonPath, $comicDataToSave, $debugMode)) {
-                $response = ['success' => true, 'message' => 'Comic-Daten erfolgreich gespeichert!'];
+                $message = "Comic-Daten erfolgreich gespeichert!";
+                if ($createdCount > 0) {
+                    $message .= " $createdCount PHP-Datei(en) erstellt.";
+                }
+                if ($deletedCount > 0) {
+                    $message .= " $deletedCount PHP-Datei(en) gelöscht.";
+                }
+                $response = ['success' => true, 'message' => $message];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Comic-Daten.';
                 http_response_code(500);
@@ -263,6 +298,8 @@ include $headerPath;
                 automatisch hinzugefügt.</p>
         </div>
 
+        <div class="pagination"></div>
+
         <div class="table-controls">
             <div class="search-container">
                 <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
@@ -282,12 +319,12 @@ include $headerPath;
                     <strong>Status:</strong>
                     <span class="source-marker status-json present"
                         title="JSON-Daten vollständig (Name, Transkript, etc.)">J</span>
-                    <span class="source-marker status-lowres" title="Low-Res Bild">L</span>
-                    <span class="source-marker status-hires" title="High-Res Bild">H</span>
+                    <span class="source-marker status-lowres present" title="Low-Res Bild">L</span>
+                    <span class="source-marker status-hires present" title="High-Res Bild">H</span>
                     <span class="source-marker status-php present" title="PHP-Datei">P</span>
-                    <span class="source-marker status-socialmedia" title="Social Media Bild">S</span>
-                    <span class="source-marker status-thumbnails" title="Thumbnail">T</span>
-                    <span class="source-marker source-url" title="URL zum Originalbild">U</span>
+                    <span class="source-marker status-socialmedia present" title="Social Media Bild">S</span>
+                    <span class="source-marker status-thumbnails present" title="Thumbnail">T</span>
+                    <span class="source-marker source-url present" title="URL zum Originalbild">U</span>
                     <span class="source-marker status-charaktere present" title="Charaktere zugewiesen">C</span>
                 </div>
             </div>
@@ -1408,7 +1445,6 @@ include $headerPath;
                 }
             });
         });
-
 
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
