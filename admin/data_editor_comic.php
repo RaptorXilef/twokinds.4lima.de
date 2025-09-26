@@ -14,6 +14,7 @@
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
  * @since     5.5.1 Fügt die fehlenden Schaltflächen für "Vorherige" (‹) und "Nächste" (›) -Seite hinzu. 
  * Die Schaltfläche für die aktuell ausgewählte Seite wird jetzt in beiden Themes (Hell und Dunkel) korrekt hervorgehoben.
+ * @since     5.5.2 Nach Bearbeitung scrollt die Ansicht zur bearbeiteten Zeile, die zur Hervorhebung kurz aufleuchtet.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -641,6 +642,34 @@ include $headerPath;
         width: 100%;
         max-width: 1045px;
         position: relative;
+    }
+
+    @keyframes highlight-row {
+        from {
+            background-color: #d4edda;
+        }
+
+        to {
+            background-color: transparent;
+        }
+    }
+
+    .row-highlight {
+        animation: highlight-row 8s ease-out;
+    }
+
+    body.theme-night .row-highlight {
+        animation: highlight-row-dark 8s ease-out;
+    }
+
+    @keyframes highlight-row-dark {
+        from {
+            background-color: #1a4d2e;
+        }
+
+        to {
+            background-color: transparent;
+        }
     }
 
     body.theme-night .modal-content {
@@ -1445,6 +1474,16 @@ include $headerPath;
 
             renderTable();
             editModal.style.display = 'none';
+
+            const updatedRow = tableBody.querySelector(`tr[data-id="${idToUpdate}"]`);
+            if (updatedRow) {
+                updatedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                updatedRow.classList.add('row-highlight');
+                setTimeout(() => {
+                    updatedRow.classList.remove('row-highlight');
+                }, 8000);
+            }
+
             activeEditId = null;
             showMessage('Änderung zwischengespeichert. Klicken Sie auf "Änderungen speichern", um sie permanent zu machen.', 'orange', 10000);
         });
