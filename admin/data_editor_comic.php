@@ -1,8 +1,17 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der comic_var.json Konfigurationsdatei.
- * V5.4: Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
+ *
+ * @file      /admin/data_editor_comic.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   5.5.0
+ * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
+ * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -276,6 +285,7 @@ include $headerPath;
                     <span class="source-marker status-socialmedia" title="Social Media Bild">S</span>
                     <span class="source-marker status-thumbnails" title="Thumbnail">T</span>
                     <span class="source-marker source-url" title="URL zum Originalbild">U</span>
+                    <span class="source-marker status-charaktere present" title="Charaktere zugewiesen">C</span>
                 </div>
             </div>
         </div>
@@ -554,6 +564,10 @@ include $headerPath;
     .status-thumbnails {
         background-color: #ffc107;
         color: #333;
+    }
+
+    .status-charaktere {
+        background-color: #6f42c1;
     }
 
     .status-icon.present {
@@ -955,6 +969,7 @@ include $headerPath;
                 const hasHires = cachedImages[id]?.hires;
                 const hasThumb = cachedImages[id]?.thumbnails;
                 const hasSocial = cachedImages[id]?.socialmedia;
+                const hasCharacters = chapter.charaktere && chapter.charaktere.length > 0;
                 const thumbnailPath = (cachedImages[id] && cachedImages[id].thumbnails) ? `../${cachedImages[id].thumbnails}` : (cachedImages['placeholder'] && cachedImages['placeholder'].lowres ? `../${cachedImages['placeholder'].lowres}` : '../assets/comic_thumbnails/placeholder.jpg');
 
                 row.innerHTML = `
@@ -982,6 +997,7 @@ include $headerPath;
                         <span class="status-icon ${hasSocial ? 'present' : 'missing'}" title="Social Media Bild">S</span>
                         <span class="status-icon ${hasThumb ? 'present' : 'missing'}" title="Thumbnail">T</span>
                         <span class="status-icon ${hasUrl ? 'present' : 'missing'}" title="URL zum Originalbild">U</span>
+                        <span class="status-icon ${hasCharacters ? 'present' : 'missing'}" title="Charaktere zugewiesen">C</span>
                     </div>
                 </td>
                 <td class="action-buttons">
