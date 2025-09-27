@@ -9,10 +9,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.3.2
- * @since     1.3.0 Fügt Sortierung und Gruppierung gemäß charaktere.json hinzu.
- * @since     1.3.1 Korrigiert die Schlüssel für die Gruppenzuordnung.
+ * @version   1.4.1
  * @since     1.3.2 Entfernt das feste Mapping und liest Gruppennamen dynamisch aus.
+ * @since     1.4.0 Fügt eine Variable hinzu, um die Hauptüberschrift optional auszublenden.
+ * @since     1.4.1 Korrigiert den Link, sodass er auf die individuelle Charakter-PHP-Seite verweist.
  */
 
 // Pfad zur Charakter-Definitionsdatei
@@ -41,15 +41,19 @@ $pageCharaktere = $comicData[$currentComicId]['charaktere'] ?? [];
 
 // Wenn keine Charaktere für diese Seite definiert sind oder die Charakter-Daten fehlen, zeige nichts an.
 if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
+
+    // Standardwert für die Sichtbarkeit der Überschrift. Kann von der aufrufenden Datei überschrieben werden.
+    if (!isset($showCharacterSectionTitle)) {
+        $showCharacterSectionTitle = true;
+    }
     ?>
 
     <div class="comic-characters">
-        <h3>Charaktere auf dieser Seite:</h3>
+        <?php if ($showCharacterSectionTitle): ?>
+            <h3>Charaktere auf dieser Seite:</h3>
+        <?php endif; ?>
         <div class="character-list">
             <?php
-            // Das feste Mapping-Array für Überschriften wurde entfernt.
-            // Die Überschriften werden jetzt direkt aus den Schlüsseln der JSON-Datei genommen.
-        
             // Iteriere durch die Gruppen in der Reihenfolge, wie sie in charaktere.json definiert sind
             foreach ($decodedCharaktere as $groupName => $charactersInGroup):
                 // Finde heraus, welche Charaktere aus dieser Gruppe auf der aktuellen Seite sind
@@ -67,7 +71,8 @@ if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
                                 // Zeige den Charakter nur an, wenn er auf dieser Seite vorkommen soll
                                 if (in_array($characterName, $charactersToShowInGroup)):
                                     $characterData = $allCharaktereData[$characterName] ?? null;
-                                    $characterLink = $baseUrl . 'charaktere#' . urlencode($characterName);
+                                    // KORREKTUR: Der Link verweist jetzt auf die .php-Datei des Charakters.
+                                    $characterLink = $baseUrl . 'charaktere/' . urlencode($characterName) . '.php';
 
                                     $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt'; // Standard-Platzhalter
                                     $imageClass = '';
@@ -91,9 +96,9 @@ if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
                                 endif;
                             endforeach;
                             ?>
-                                                </div>
-                                                </div>
-                                    <?php
+                                    </div>
+                                    </div>
+                        <?php
                 endif;
             endforeach;
             ?>

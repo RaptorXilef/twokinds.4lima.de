@@ -52,6 +52,9 @@ comic/*
 !comic/20250604.php
 !comic/index.php
 
+# temp Config
+src/config/*
+
 # Zip-Archive
 *.zip
 *.7z
