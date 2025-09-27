@@ -3,6 +3,14 @@
  * Konfigurationsdatei für das Navigationsmenü.
  * Enthält Links zu den verschiedenen Bereichen der Webseite.
  * CSP-konform gemacht durch Entfernen von Inline-Styles und Hinzufügen von Nonces.
+ * 
+ * @file      /src/components/menu_config.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
  */
 
 // Die Variable $baseUrl wird nun IMMER von header.php gesetzt.

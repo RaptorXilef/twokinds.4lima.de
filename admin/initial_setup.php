@@ -3,8 +3,15 @@
  * Dies ist die Administrationsseite für die Erstkonfiguration der Webseite.
  * Hier können grundlegende Einstellungen wie die Erstellung notwendiger Ordner
  * und die Überprüfung/Sortierung der Comic-Datenbankdatei vorgenommen werden.
- *
- * Angepasst an das neue Design mit einheitlichen Statusmeldungen, Button-Stilen
+ * 
+ * @file      /admin/initial_setup.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.0
+ * @since     2.1.0 Angepasst an das neue Design mit einheitlichen Statusmeldungen, Button-Stilen
  * und einem schwebenden Button für die Ordnererstellung.
  */
 

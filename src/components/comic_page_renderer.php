@@ -5,6 +5,14 @@
  * Dieses Skript wird von den einzelnen Comic-Seiten im /comic/ Verzeichnis aufgerufen.
  * Es extrahiert die Comic-ID aus dem Dateinamen, lädt die entsprechenden Daten
  * und rendert die vollständige HTML-Seite für den jeweiligen Comic.
+ * 
+ * @file      /src/components/comic_page_renderer.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
  */
 
 // === 1. ZENTRALE INITIALISIERUNG ===

@@ -1,7 +1,15 @@
 <?php
 /**
  * Administrationsseite zum asynchronen Hochladen von Comic-Bildern.
- * V4.1: Integriert das Speichern und Anzeigen der letzten Ausführung konsistent.
+ * 
+ * @file      /admin/upload_image.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   4.1.0
+ * @since     4.1.0 Integriert das Speichern und Anzeigen der letzten Ausführung konsistent.
  */
 
 // === DEBUG-MODUS & KONFIGURATION ===

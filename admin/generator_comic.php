@@ -1,8 +1,15 @@
 <?php
 /**
  * Administrationsseite für den Comic-Seiten-Generator.
- * V2: Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung
- * und detailliertem Protokoll, analog zu den anderen Generatoren.
+ * 
+ * @file      /admin/generator_comic.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.0.0
+ * @since     2.0.0 Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung und detailliertem Protokoll, analog zu den anderen Generatoren.
  */
 
 // === DEBUG-MODUS STEUERUNG ===

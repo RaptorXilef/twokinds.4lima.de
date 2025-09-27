@@ -3,6 +3,14 @@
  * Dies ist die Startseite der TwoKinds-Webseite.
  * Sie lädt dynamisch den neuesten Comic und zeigt ihn an.
  * Der Seitentitel und Open Graph Metadaten werden spezifisch für die Startseite gesetzt.
+ * 
+ * @file      /index.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.0
  */
 
 // === DEBUG-MODUS STEUERUNG ===

@@ -2,6 +2,16 @@
 /**
  * Helper-Funktion zum Auffinden des korrekten Bildpfads und der Dateierweiterung für Comic-Bilder.
  * Sucht nach .webp, .jpg, .jpeg, .png und .gif in der angegebenen Reihenfolge im Basisverzeichnis.
+ * 
+ * @file      /src/components/get_comic_image_path.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
+ * 
+ * 
  *
  * @param string $comicId Die ID des Comics (typischerweise das Datum, z.B. '20250312').
  * @param string $baseDir Das Basisverzeichnis (z.B. './assets/comic_lowres/' oder './assets/comic_hires/').

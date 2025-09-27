@@ -2,6 +2,14 @@
 /**
  * Dies ist eine Informationsseite über die Nutzung von RSS-Feeds.
  * Sie erklärt, was RSS-Feeds sind, ihre Vorteile und wie man sie mit verschiedenen Readern nutzt.
+ * 
+ * @file      /rss_anleitung.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
  */
 
 // === DEBUG-MODUS STEUERUNG ===

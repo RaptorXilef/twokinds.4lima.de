@@ -7,6 +7,14 @@
  * - Starten und sicheres Konfigurieren der PHP-Session.
  * - Setzen von strikten HTTP-Sicherheits-Headern.
  * - Generierung einer einmaligen Nonce für die Content-Security-Policy (CSP) zum Schutz vor XSS.
+ * 
+ * @file      /src/components/public_init.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
  */
 
 // === DEBUG-MODUS STEUERUNG ===

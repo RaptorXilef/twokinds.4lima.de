@@ -3,6 +3,15 @@
  * Hilfsfunktion zum Rendern eines Navigationsbuttons.
  * Erzeugt entweder einen <a>-Tag (wenn nicht deaktiviert) oder einen <span>-Tag (wenn deaktiviert)
  * mit den entsprechenden Klassen und Texten.
+ * 
+ * @file      /src/components/nav_link_helper.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
+ * 
  *
  * @param string $href Der href-Wert des Links oder '#' wenn deaktiviert.
  * @param string $class Die CSS-Klasse(n) für den Button (z.B. 'navbegin', 'navprev').

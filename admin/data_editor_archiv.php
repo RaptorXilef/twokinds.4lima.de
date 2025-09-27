@@ -1,8 +1,15 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der archive_chapters.json.
- * V3.2: Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token.
- * Die ursprüngliche UI und PHP-Logik bleiben vollständig erhalten.
+ * 
+ * @file      /admin/data_editor_archiv.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   3.2.0
+ * @since     3.2.0 Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token. Die ursprüngliche UI und PHP-Logik bleiben vollständig erhalten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===

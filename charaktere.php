@@ -3,6 +3,14 @@
  * Diese Datei zeigt Details zu den Charakteren des Comics an.
  * Version 2.0: Vollständig an die neue, sichere Architektur mit
  * public_init.php und einem zentralen Bild-Helfer angepasst.
+ * 
+ * @file      /charaktere.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
  */
 
 // === DEBUG-MODUS STEUERUNG ===

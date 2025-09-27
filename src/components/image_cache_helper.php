@@ -4,6 +4,14 @@
  * um versionierte Bildpfade effizient abzurufen.
  * Verwendet ein Singleton-Pattern, um sicherzustellen, dass die JSON-Cache-Datei
  * pro Anfrage nur einmal gelesen und verarbeitet wird.
+ * 
+ * @file      /src/components/image_cache_helper.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.0.0
  */
 
 class ImageCache

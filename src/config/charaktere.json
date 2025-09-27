@@ -1,0 +1,171 @@
+{
+    "charaktere_main": {
+        "Trace": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Trace.webp?c=20250920"
+        },
+        "Trace b\u00f6se": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Trace_boese.webp?c=20250920",
+            "charaktere_desc_url": ""
+        },
+        "Flora": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Flora.webp?c=20250920"
+        },
+        "Keith": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Keith.webp?c=20250920"
+        },
+        "Natani": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Natani.webp?c=20250920"
+        },
+        "Zen": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Zen.webp?c=20250920"
+        },
+        "Sythe": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Sythe.webp?c=20250920"
+        },
+        "Nibbly": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nibbly.webp?c=20250920"
+        },
+        "Raine": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Raine.webp?c=20250920"
+        },
+        "Eric": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Eric.webp"
+        },
+        "Kathrin": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Kathrin.webp"
+        },
+        "Mike": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Mike.webp"
+        },
+        "Mike weiblich": {
+            "charaktere_pic_url": "",
+            "charaktere_desc_url": ""
+        },
+        "Evals": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Evals.webp"
+        },
+        "Madelyn": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Madelyn.webp"
+        },
+        "Maren": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maren.webp"
+        },
+        "Karen": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Karen.webp"
+        },
+        "Red": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Red.webp"
+        },
+        "Tom": {
+            "charaktere_pic_url": ""
+        }
+    },
+    "charaktere_secondary": {
+        "Adira": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Adira.webp?c=20250920"
+        },
+        "Maeve": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maeve.webp?c=20250920"
+        },
+        "Clovis": [],
+        "Nora": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nora.webp"
+        },
+        "Reni": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Reni.webp?c=20250920"
+        }
+    },
+    "charaktere_other_main": {
+        "Ephemural": {
+            "charaktere_pic_url": ""
+        },
+        "Laura": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Laura.webp?c=20250920"
+        },
+        "Masken": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Maske.webp"
+        },
+        "Nickolai": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Nickolai.webp"
+        },
+        "Saria": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Saria.webp"
+        },
+        "Meisterseher": {
+            "charaktere_pic_url": ""
+        },
+        "Euchre": {
+            "charaktere_pic_url": ""
+        },
+        "Meisterspion": {
+            "charaktere_pic_url": ""
+        },
+        "Meisterarchitekt": {
+            "charaktere_pic_url": ""
+        },
+        "Meisterstratege": {
+            "charaktere_pic_url": ""
+        },
+        "Meistermagier": {
+            "charaktere_pic_url": ""
+        },
+        "Tochter des Meisterseher": {
+            "charaktere_pic_url": "",
+            "charaktere_desc_url": ""
+        },
+        "General Alabaster": {
+            "charaktere_pic_url": "",
+            "charaktere_desc_url": ""
+        }
+    },
+    "charaktere_other": {
+        "Keiren": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Keiren.webp?c=20250920"
+        },
+        "Reed": {
+            "charaktere_pic_url": ""
+        },
+        "Vanity": {
+            "charaktere_pic_url": "assets/img/charaktere/charaktere_1x1_webp/Vanity.webp?c=20250920"
+        },
+        "Sirus": {
+            "charaktere_pic_url": ""
+        },
+        "Mary": {
+            "charaktere_pic_url": ""
+        },
+        "Templer": {
+            "charaktere_pic_url": ""
+        },
+        "Kopfgeldj\u00e4ger": {
+            "charaktere_pic_url": ""
+        },
+        "Sirvitine": {
+            "charaktere_pic_url": ""
+        },
+        "Baron": {
+            "charaktere_pic_url": ""
+        },
+        "Roderick": {
+            "charaktere_pic_url": ""
+        },
+        "Dorfbewohner": {
+            "charaktere_pic_url": ""
+        },
+        "Basitin-Soldaten": {
+            "charaktere_pic_url": ""
+        },
+        "Metzger": {
+            "charaktere_pic_url": ""
+        },
+        "Heiler": {
+            "charaktere_pic_url": ""
+        },
+        "Randal": {
+            "charaktere_pic_url": ""
+        },
+        "Basitin-\u00c4rztin": {
+            "charaktere_pic_url": ""
+        }
+    }
+}

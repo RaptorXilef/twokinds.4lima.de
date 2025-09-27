@@ -1,0 +1,40 @@
+{
+    "generator_thumbnail": {
+        "last_used_format": "webp",
+        "last_used_quality": 60,
+        "last_used_lossless": false,
+        "last_run_timestamp": 1757266720
+    },
+    "generator_socialmedia": {
+        "last_used_format": "webp",
+        "last_used_quality": 90,
+        "last_used_lossless": false,
+        "last_used_resize_mode": "crop",
+        "last_run_timestamp": 1757268995
+    },
+    "build_image_cache": {
+        "last_run_type": "all",
+        "last_run_timestamp": 1758923031
+    },
+    "generator_comic": {
+        "last_run_timestamp": 1757272454
+    },
+    "upload_image": {
+        "last_run_timestamp": 1757275260
+    },
+    "data_editor_sitemap": {
+        "last_run_timestamp": 1758922516
+    },
+    "generator_sitemap": {
+        "last_run_timestamp": 1758907272
+    },
+    "data_editor_archiv": {
+        "last_run_timestamp": 1758909321
+    },
+    "data_editor_comic": {
+        "last_run_timestamp": 1758932861
+    },
+    "generator_rss": {
+        "last_run_timestamp": 1758907286
+    }
+}
