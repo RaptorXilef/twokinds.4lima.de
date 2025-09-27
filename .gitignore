@@ -52,6 +52,12 @@ comic/*
 !comic/20250604.php
 !comic/index.php
 
+# Charaktere-Ordner
+charaktere/*
+!charaktere/index.php
+!charaktere/Trace.php
+!charaktere/Flora.php
+
 # temp Config
 src/config/*
 
