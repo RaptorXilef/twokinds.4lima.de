@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.5.5
+ * @version   5.6.0
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
@@ -18,6 +18,7 @@
  * @since     5.5.3 Erstellt/Löscht automatisch die zugehörigen PHP-Dateien im /comic/-Ordner beim Speichern von Änderungen.
  * @since     5.5.4 Korrigiert den Inhalt neu erstellter PHP-Dateien auf die korrekte einzelne require_once-Anweisung.
  * @since     5.5.5 Behebt Fehler beim Löschen von Einträgen, Erstellen von PHP-Dateien und der Anzeige im "Neu"-Dialog.
+ * @since     5.6.0 Passt die Charakter-Auswahl im Modal an die neue, dynamische Gruppenstruktur der charaktere.json an.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -1285,26 +1286,20 @@ include $headerPath;
             modalCharaktereSection.innerHTML = '';
             const selectedCharaktere = comicData[comicId]?.charaktere || [];
 
-            const categories = {
-                'Hauptcharaktere': 'charaktere_main',
-                'Nebencharaktere': 'charaktere_secondary',
-                'Andere Charaktere': 'charaktere_other_main',
-                'Andere seltene Charaktere': 'charaktere_other'
-            };
-
             const placeholderUrlUnknown = 'https://placehold.co/60x60/cccccc/333333?text=Bild\\nnicht\\ndefiniert';
             const placeholderUrlMissing = 'https://placehold.co/60x60/dc3545/ffffff?text=Bild\\nFehlt';
 
-            for (const [title, key] of Object.entries(categories)) {
-                if (charaktereData[key]) {
+            // Neue, dynamische Logik
+            for (const [groupName, charactersInGroup] of Object.entries(charaktereData)) {
+                if (charactersInGroup && typeof charactersInGroup === 'object') {
                     const kategorieDiv = document.createElement('div');
                     kategorieDiv.className = 'charakter-kategorie';
-                    kategorieDiv.innerHTML = `<h3>${title}</h3>`;
+                    kategorieDiv.innerHTML = `<h3>${groupName}</h3>`;
 
                     const grid = document.createElement('div');
                     grid.className = 'charaktere-grid';
 
-                    for (const [name, urls] of Object.entries(charaktereData[key])) {
+                    for (const [name, urls] of Object.entries(charactersInGroup)) {
                         const item = document.createElement('div');
                         item.className = 'charakter-item';
                         item.dataset.charakterName = name;
@@ -1328,7 +1323,7 @@ include $headerPath;
                         }
 
                         const nameSpan = document.createElement('span');
-                        nameSpan.textContent = name;
+                        nameSpan.textContent = name.replace(/_/g, ' ');
 
                         item.appendChild(img);
                         item.appendChild(nameSpan);
