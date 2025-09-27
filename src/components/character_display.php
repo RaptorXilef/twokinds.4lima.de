@@ -1,16 +1,18 @@
 <?php
 /**
  * Dieses Modul zeigt die Charaktere an, die auf einer bestimmten Comic-Seite vorkommen.
- * NEU: Die Charaktere werden nun nach den Gruppen und der Reihenfolge aus charaktere.json sortiert.
+ * Die Charaktere werden nach den Gruppen und der Reihenfolge aus charaktere.json sortiert.
+ * Die Gruppen-Überschriften werden dynamisch aus der charaktere.json geladen.
  * * @file      /src/components/character_display.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.3.0
- * @since     1.2.0 Verbessert die Platzhalter für fehlende Bilder.
+ * @version   1.3.2
  * @since     1.3.0 Fügt Sortierung und Gruppierung gemäß charaktere.json hinzu.
+ * @since     1.3.1 Korrigiert die Schlüssel für die Gruppenzuordnung.
+ * @since     1.3.2 Entfernt das feste Mapping und liest Gruppennamen dynamisch aus.
  */
 
 // Pfad zur Charakter-Definitionsdatei
@@ -45,16 +47,11 @@ if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
         <h3>Charaktere auf dieser Seite:</h3>
         <div class="character-list">
             <?php
-            // Mapping von Gruppen-Keys zu anzeigbaren Überschriften
-            $groupHeadings = [
-                'charaktere_main' => 'Hauptcharaktere',
-                'charaktere_nebencharaktere' => 'Nebencharaktere',
-                'charaktere_gegener' => 'Gegner',
-                'charaktere_other' => 'Andere Charaktere',
-            ];
-
+            // Das feste Mapping-Array für Überschriften wurde entfernt.
+            // Die Überschriften werden jetzt direkt aus den Schlüsseln der JSON-Datei genommen.
+        
             // Iteriere durch die Gruppen in der Reihenfolge, wie sie in charaktere.json definiert sind
-            foreach ($decodedCharaktere as $groupKey => $charactersInGroup):
+            foreach ($decodedCharaktere as $groupName => $charactersInGroup):
                 // Finde heraus, welche Charaktere aus dieser Gruppe auf der aktuellen Seite sind
                 $charactersToShowInGroup = array_intersect(array_keys($charactersInGroup), $pageCharaktere);
 
@@ -62,7 +59,7 @@ if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
                 if (!empty($charactersToShowInGroup)):
                     ?>
                     <div class="character-group">
-                        <h4><?php echo htmlspecialchars($groupHeadings[$groupKey] ?? 'Weitere'); ?></h4>
+                        <h4><?php echo htmlspecialchars($groupName); ?></h4>
                         <div class="character-group-list">
                             <?php
                             // Iteriere nun durch die Charaktere in der Reihenfolge von charaktere.json
@@ -94,9 +91,9 @@ if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
                                 endif;
                             endforeach;
                             ?>
-                                </div>
-                                </div>
-                                <?php
+                                                </div>
+                                                </div>
+                                    <?php
                 endif;
             endforeach;
             ?>
