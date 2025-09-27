@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.8.1
+ * @version   2.8.2
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -19,7 +19,8 @@
  * @since     2.6.1 Entfernt die automatische Erstellung und Aktualisierung der Charakter-Übersichtsseite (index.php).
  * @since     2.7.0 Entfernt das automatische Neuladen nach dem Speichern für eine bessere Benutzererfahrung.
  * @since     2.8.0 Implementiert Drag & Drop zum Sortieren der Charaktergruppen.
- * @since     2.8.1 Behebt zwei Fehler: Entfernt das Drag-Handle-Icon vor Gruppentiteln und stellt die korrekten Bild-Platzhalter wieder her.
+ * @since     2.8.1 Behebt zwei Fehler: Korrigiert das Drag-Handle-Icon vor Gruppentiteln und stellt die korrekten Bild-Platzhalter wieder her.
+ * @since     2.8.2 Korrigiert die Darstellung des Hamburger-Icons durch Anpassung der CSS-Syntax.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -319,7 +320,7 @@ include $headerPath;
     }
 
     .character-group h3::before {
-        content: '\\2630';
+        content: '\2630';
         margin-right: 10px;
         color: #999;
     }
