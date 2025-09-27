@@ -10,9 +10,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.1
+ * @version   1.0.2
  * @since     1.0.0 Grundlegende Menüstruktur und Links.
  * @since     1.0.1 Link zu Charakter-Übersicht hinzugefügt.
+ * @since     1.0.2 Visuelles Feedback beim Kopieren der RSS-URL hinzugefügt.
  */
 
 // Die Variable $baseUrl wird nun IMMER von header.php gesetzt.
@@ -48,6 +49,7 @@
                 id="rssFeedLink">
                 <img class="social-icon" src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/rss-feed.png"
                     alt="RSS" width="32" height="32">
+                <span class="copy-feedback">URL Kopiert!</span>
             </a>
         </div>
     </div>
@@ -99,13 +101,17 @@ alt="Patreon-Logo" width="15"></a></p>
                 // Verhindere das Standardverhalten des Links (das Öffnen der URL)
                 event.preventDefault();
 
-                // Die URL, die kopiert werden soll, ist der href-Wert des umgebenden <a>-Tags
-                const rssUrl = this.href; // 'this' bezieht sich hier auf das <a>-Element
+                const rssUrl = this.href;
+                const feedbackElement = this.querySelector('.copy-feedback');
 
-                // Versuche, in die Zwischenablage zu kopieren
                 navigator.clipboard.writeText(rssUrl)
                     .then(() => {
-                        // Da alert() blockiert wird, nutzen wir eine Alternative
+                        if (feedbackElement) {
+                            feedbackElement.classList.add('show');
+                            setTimeout(() => {
+                                feedbackElement.classList.remove('show');
+                            }, 2000);
+                        }
                         console.log('RSS-Feed URL erfolgreich kopiert: ' + rssUrl);
                     })
                     .catch(err => {
@@ -118,6 +124,14 @@ alt="Patreon-Logo" width="15"></a></p>
                             tempInput.select();
                             document.execCommand('copy');
                             document.body.removeChild(tempInput);
+                            if (feedbackElement) {
+                                feedbackElement.textContent = 'Kopiert! (Fallback)';
+                                feedbackElement.classList.add('show');
+                                setTimeout(() => {
+                                    feedbackElement.classList.remove('show');
+                                    feedbackElement.textContent = 'Kopiert!';
+                                }, 2000);
+                            }
                             console.log('RSS-Feed URL kopiert (Fallback): ' + rssUrl);
                         } catch (copyErr) {
                             console.error('Fallback-Kopieren fehlgeschlagen: ', copyErr);
@@ -141,8 +155,36 @@ alt="Patreon-Logo" width="15"></a></p>
         border-radius: 5px;
     }
 
+    #rssFeedLink {
+        position: relative;
+        /* Wichtig für die Positionierung der Feedback-Nachricht */
+    }
+
     #rssFeedLink .social-icon {
         cursor: pointer;
+    }
+
+    /* Stile für die "Kopiert!"-Nachricht */
+    .copy-feedback {
+        position: absolute;
+        bottom: 110%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+        z-index: 10;
+    }
+
+    .copy-feedback.show {
+        opacity: 1;
+        visibility: visible;
     }
 
     /* Standard-Stile für das Light-Theme */
@@ -165,5 +207,9 @@ alt="Patreon-Logo" width="15"></a></p>
     body.theme-night .patreon-icon-wrapper .patreon-dark-icon {
         display: inline-block;
         /* Zeige das dunkle Icon im Dark-Theme an */
+    }
+
+    body.theme-night .copy-feedback {
+        background-color: #3c763d;
     }
 </style>

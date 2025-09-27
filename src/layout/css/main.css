@@ -188,7 +188,7 @@ hr {
   height: 314px;
   padding-top: 10px;
   position: relative;
-  z-index: 105;
+  z-index: 99;
   margin-left: -10px;
   background: transparent url("https://twokinds.4lima.de/assets/img/spring2025banner.webp") 0 10px no-repeat;
   text-indent: 105%;
