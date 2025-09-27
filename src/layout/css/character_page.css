@@ -3,6 +3,11 @@
  * Stile für die Charakter-Auftritts-Seite & Lesezeichen-Seite
  * Angepasst, um optisch identisch mit der gerenderten lesezeichen.php zu sein.
  */
+.charaktere-overview .character-overview-intro {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
 .bookmarks-page .page-header {
   display: flex;
   justify-content: center;

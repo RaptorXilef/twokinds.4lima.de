@@ -3,13 +3,15 @@
  * Index-Seite für die Charakter-Übersicht.
  * Diese Seite lädt alle Charaktere aus der charaktere.json und zeigt sie
  * mithilfe der wiederverwendeten character_display.php Komponente an.
- * * @file      /charaktere/index.php
+ * 
+ * @file      /charaktere/index.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.1
+ * @version   1.1.0
+ * @since     1.1.0 Entfernt Inline-Style, um CSP-Konformität zu gewährleisten.
  */
 
 // === 1. ZENTRALE INITIALISIERUNG ===
@@ -56,8 +58,9 @@ require_once __DIR__ . '/../src/layout/header.php';
 <article class="charaktere-overview">
     <header>
         <h1>Alle Charaktere im Überblick</h1>
-        <p style="text-align: center; margin-bottom: 20px;">Hier findest du eine Liste aller Charaktere, die im Comic
-            eine Rolle spielen, sortiert nach ihren Gruppen.</p>
+        <!-- KORREKTUR: Inline-Style durch eine CSS-Klasse ersetzt -->
+        <p class="character-overview-intro">Hier findest du eine Liste aller Charaktere, die im Comic eine Rolle
+            spielen, sortiert nach ihren Gruppen.</p>
     </header>
 
     <?php

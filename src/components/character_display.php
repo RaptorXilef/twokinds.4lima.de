@@ -3,7 +3,8 @@
  * Dieses Modul zeigt die Charaktere an, die auf einer bestimmten Comic-Seite vorkommen.
  * Die Charaktere werden nach den Gruppen und der Reihenfolge aus charaktere.json sortiert.
  * Die Gruppen-Überschriften werden dynamisch aus der charaktere.json geladen.
- * * @file      /src/components/character_display.php
+ * 
+ * @file      /src/components/character_display.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
