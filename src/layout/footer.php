@@ -2,6 +2,14 @@
 /**
  * Gemeinsamer Footer für alle Seiten.
  * Enthält Copyright-Informationen und schließt die HTML-Struktur ab.
+ * 
+ * @file      /src/layout/footer.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.0
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -11,7 +19,7 @@
 
 // Pfad zur version.json Datei
 // Die $baseUrl sollte von der header.php verfügbar sein, da diese Datei nach dem Header eingebunden wird.
-$versionJsonPath = __DIR__ . '/../config/version.json'; // Relativer Pfad von src/layout/footer.php
+$versionJsonPath = __DIR__ . '/../../version.json'; // Relativer Pfad von src/layout/footer.php
 
 $versionInfo = [
     'version' => 'Unbekannt',
