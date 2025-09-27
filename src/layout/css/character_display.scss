@@ -1,20 +1,41 @@
 /* Stile für die Charakter-Anzeige auf Comic-Seiten */
 .comic-characters {
-    margin          : 20px 0;
-    padding         : 15px;
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius   : 8px;
-    border          : 1px solid rgba(0, 0, 0, 0.1);
+    margin       : 20px 0;
+    padding      : 15px;
+    border-radius: 8px;
+    border       : 1px solid #ccc;
 
     h3 {
         text-align   : center;
-        margin-bottom: 15px;
-        font-size    : 1.1em;
+        margin-bottom: 20px;
+        font-size    : 1.2em;
         color        : #555;
     }
 }
 
 .character-list {
+    display       : flex;
+    flex-direction: column;
+    gap           : 20px;
+}
+
+/* NEU: Container für eine einzelne Charakter-Gruppe */
+.character-group {
+    width: 100%;
+
+    h4 {
+        text-align    : center;
+        margin-bottom : 15px;
+        padding-bottom: 5px;
+        border-bottom : 1px solid rgba(0, 0, 0, 0.1);
+        font-size     : 1.1em;
+        color         : #333;
+        font-weight   : bold;
+    }
+}
+
+/* NEU: Flex-Container für die Bilder innerhalb einer Gruppe */
+.character-group-list {
     display        : flex;
     flex-wrap      : wrap;
     justify-content: center;
@@ -62,11 +83,16 @@
 /* Dark-Mode Anpassungen */
 body.theme-night {
     .comic-characters {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-color    : rgba(255, 255, 255, 0.15);
+        background-color: #00334c;
+        border-color    : #002b3c;
 
         h3 {
             color: #bbb;
+        }
+
+        h4 {
+            color        : #ddd;
+            border-bottom: 1px solid #48778a;
         }
     }
 

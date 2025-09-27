@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*
  * Stile für die Charakter-Auftritts-Seite & Lesezeichen-Seite
- * Angepasst, um ein einheitliches, modernes Kachel-Design zu verwenden.
+ * Angepasst, um optisch identisch mit der gerenderten lesezeichen.php zu sein.
  */
 .bookmarks-page .page-header {
   display: flex;

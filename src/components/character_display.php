@@ -1,20 +1,22 @@
 <?php
 /**
  * Dieses Modul zeigt die Charaktere an, die auf einer bestimmten Comic-Seite vorkommen.
- * 
- * @file      /src/components/character_display.php
+ * NEU: Die Charaktere werden nun nach den Gruppen und der Reihenfolge aus charaktere.json sortiert.
+ * * @file      /src/components/character_display.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.2.0
+ * @version   1.3.0
  * @since     1.2.0 Verbessert die Platzhalter für fehlende Bilder.
+ * @since     1.3.0 Fügt Sortierung und Gruppierung gemäß charaktere.json hinzu.
  */
 
 // Pfad zur Charakter-Definitionsdatei
 $charaktereJsonPath = __DIR__ . '/../config/charaktere.json';
 $allCharaktereData = [];
+$decodedCharaktere = [];
 
 // Lade und verarbeite die Charakterdaten nur einmal
 if (file_exists($charaktereJsonPath)) {
@@ -28,49 +30,76 @@ if (file_exists($charaktereJsonPath)) {
             }
         }
     } else {
-        error_log("Fehler beim Dekodieren von charaktere.json: " . json_last_error_msg());
+        $decodedCharaktere = []; // Sicherstellen, dass es ein leeres Array ist, wenn JSON fehlerhaft ist
     }
-} else {
-    error_log("Fehler: charaktere.json wurde nicht gefunden unter " . $charaktereJsonPath);
 }
 
-// Hole die Charaktere für den aktuellen Comic
-$comicCharacters = $comicData[$currentComicId]['charaktere'] ?? [];
+// Hole die Liste der Charaktere für die aktuelle Seite aus den Comic-Daten.
+$pageCharaktere = $comicData[$currentComicId]['charaktere'] ?? [];
 
-if (!empty($comicCharacters) && !empty($allCharaktereData)):
+// Wenn keine Charaktere für diese Seite definiert sind oder die Charakter-Daten fehlen, zeige nichts an.
+if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
     ?>
-    <div class="comic-characters">
-        <h3>Charaktere auf dieser Seite: (Aktuell in Arbeit)</h3>
-        <div class="character-list">
-            <?php foreach ($comicCharacters as $characterName): ?>
-                <?php
-                $imageUrl = $allCharaktereData[$characterName]['charaktere_pic_url'] ?? null;
-                $characterLink = $baseUrl . 'charaktere/' . rawurlencode($characterName) . '.php';
 
-                // NEUE LOGIK: Unterscheide zwischen "nicht eingetragen" und "potenziell fehlend"
-                $imageSrc = '';
-                $imageClass = '';
-                if (empty($imageUrl)) {
-                    // Kein Pfad in der JSON -> '?'
-                    $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild\\nnicht\\ndefiniert';
-                    $imageClass = ''; // Kein Fallback-Listener nötig
-                } else {
-                    // Pfad ist vorhanden, aber Datei könnte fehlen -> 'Fehlt'
-                    $imageSrc = $baseUrl . $imageUrl;
-                    $imageClass = 'character-image-fallback'; // Fallback-Listener wird aktiv
-                }
-                ?>
-                <div class="character-item">
-                    <a href="<?php echo htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
-                        title="Mehr über <?php echo htmlspecialchars($characterName); ?> erfahren">
-                        <span
-                            class="character-name"><?php echo htmlspecialchars(str_replace('_', ' ', $characterName)); ?></span>
-                        <img src="<?php echo htmlspecialchars($imageSrc); ?>"
-                            alt="Bild von <?php echo htmlspecialchars($characterName); ?>" loading="lazy" width="80" height="80"
-                            class="<?php echo $imageClass; ?>">
-                    </a>
-                </div>
-            <?php endforeach; ?>
+    <div class="comic-characters">
+        <h3>Charaktere auf dieser Seite:</h3>
+        <div class="character-list">
+            <?php
+            // Mapping von Gruppen-Keys zu anzeigbaren Überschriften
+            $groupHeadings = [
+                'charaktere_main' => 'Hauptcharaktere',
+                'charaktere_nebencharaktere' => 'Nebencharaktere',
+                'charaktere_gegener' => 'Gegner',
+                'charaktere_other' => 'Andere Charaktere',
+            ];
+
+            // Iteriere durch die Gruppen in der Reihenfolge, wie sie in charaktere.json definiert sind
+            foreach ($decodedCharaktere as $groupKey => $charactersInGroup):
+                // Finde heraus, welche Charaktere aus dieser Gruppe auf der aktuellen Seite sind
+                $charactersToShowInGroup = array_intersect(array_keys($charactersInGroup), $pageCharaktere);
+
+                // Wenn in dieser Gruppe Charaktere angezeigt werden sollen, erstelle den Gruppen-Container
+                if (!empty($charactersToShowInGroup)):
+                    ?>
+                    <div class="character-group">
+                        <h4><?php echo htmlspecialchars($groupHeadings[$groupKey] ?? 'Weitere'); ?></h4>
+                        <div class="character-group-list">
+                            <?php
+                            // Iteriere nun durch die Charaktere in der Reihenfolge von charaktere.json
+                            foreach ($charactersInGroup as $characterName => $characterDetails):
+                                // Zeige den Charakter nur an, wenn er auf dieser Seite vorkommen soll
+                                if (in_array($characterName, $charactersToShowInGroup)):
+                                    $characterData = $allCharaktereData[$characterName] ?? null;
+                                    $characterLink = $baseUrl . 'charaktere#' . urlencode($characterName);
+
+                                    $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt'; // Standard-Platzhalter
+                                    $imageClass = '';
+
+                                    if ($characterData && !empty($characterData['charaktere_pic_url'])) {
+                                        $imageSrc = $baseUrl . htmlspecialchars($characterData['charaktere_pic_url']);
+                                        $imageClass = 'character-image-fallback';
+                                    }
+                                    ?>
+                                    <div class="character-item">
+                                        <a href="<?php echo htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
+                                            title="Mehr über <?php echo htmlspecialchars($characterName); ?> erfahren">
+                                            <span
+                                                class="character-name"><?php echo htmlspecialchars(str_replace('_', ' ', $characterName)); ?></span>
+                                            <img src="<?php echo htmlspecialchars($imageSrc); ?>"
+                                                alt="Bild von <?php echo htmlspecialchars($characterName); ?>" loading="lazy" width="80"
+                                                height="80" class="<?php echo $imageClass; ?>">
+                                        </a>
+                                    </div>
+                                <?php
+                                endif;
+                            endforeach;
+                            ?>
+                                </div>
+                                </div>
+                                <?php
+                endif;
+            endforeach;
+            ?>
         </div>
     </div>
 
@@ -79,8 +108,7 @@ if (!empty($comicCharacters) && !empty($allCharaktereData)):
             document.querySelectorAll('.character-image-fallback').forEach(function (img) {
                 img.addEventListener('error', function () {
                     this.onerror = null;
-                    // NEU: Zeigt "Fehlt" an, wenn die Datei nicht geladen werden kann
-                    this.src = 'https://placehold.co/80x80/cccccc/333333?text=Bild\\nFehlt';
+                    this.src = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0AFehlt';
                 });
             });
         });
