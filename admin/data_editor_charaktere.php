@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.8.2
+ * @version   2.8.3
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -21,6 +21,7 @@
  * @since     2.8.0 Implementiert Drag & Drop zum Sortieren der Charaktergruppen.
  * @since     2.8.1 Behebt zwei Fehler: Korrigiert das Drag-Handle-Icon vor Gruppentiteln und stellt die korrekten Bild-Platzhalter wieder her.
  * @since     2.8.2 Korrigiert die Darstellung des Hamburger-Icons durch Anpassung der CSS-Syntax.
+ * @since     2.8.3 Duplikatprüfung auf Gruppenebene für mehrfache Charakterzuweisungen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -609,9 +610,9 @@ include $headerPath;
                         const actionsDiv = document.createElement('div');
                         actionsDiv.className = 'character-actions';
                         actionsDiv.innerHTML = `
-                        <button class="button edit-btn">Bearbeiten</button>
-                        <button class="button delete delete-btn">Löschen</button>
-                    `;
+                            <button class="button edit-btn">Bearbeiten</button>
+                            <button class="button delete delete-btn">Löschen</button>
+                        `;
 
                         charEntry.appendChild(img);
                         charEntry.appendChild(infoDiv);
@@ -746,15 +747,10 @@ include $headerPath;
                 return;
             }
 
-            if (!originalId || originalId !== newName) {
-                let exists = false;
-                Object.values(characterData).forEach(g => {
-                    if (g && g[newName]) exists = true;
-                });
-                if (exists) {
-                    alert('Ein Charakter mit diesem Namen existiert bereits.');
-                    return;
-                }
+            // Duplikatprüfung nur innerhalb der Ziel-Gruppe
+            if ((!originalId || originalId !== newName || originalGroup !== newGroup) && characterData[newGroup] && characterData[newGroup][newName]) {
+                alert(`Ein Charakter mit dem Namen "${newName}" existiert bereits in der Gruppe "${newGroup}".`);
+                return;
             }
 
             const entryData = { charaktere_pic_url: picUrl };
