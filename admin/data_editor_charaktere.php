@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.2.0
+ * @version   3.2.1
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -26,6 +26,7 @@
  * @since     3.0.0 Trennung von Charakter-Stammdaten und Gruppenzuweisung.
  * @since     3.1.0 Umstellung auf einfaches Textfeld für Beschreibung, Entfernung von Summernote.
  * @since     3.2.0 Vollständige Neuimplementierung basierend auf v2.8.3 zur korrekten Umsetzung aller ID-System-Anforderungen.
+ * @since     3.2.1 CSS-Anpassungen und Hinzufügen der ID-Anzeige im Gruppeneditor.
  */
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -176,6 +177,10 @@ include $headerPath;
         <form id="edit-form">
             <input type="hidden" id="modal-char-id">
             <div class="form-group">
+                <label for="modal-id-display">Charakter-ID:</label>
+                <input type="text" id="modal-id-display" disabled>
+            </div>
+            <div class="form-group">
                 <label for="modal-name">Charakter-Name:</label>
                 <input type="text" id="modal-name" required>
                 <small>Wird für die URL und Anzeige verwendet. Muss eindeutig sein.</small>
@@ -305,6 +310,21 @@ include $headerPath;
         max-width: 800px;
     }
 
+    .character-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-grow: 1;
+    }
+
+    .char-id-display {
+        font-size: 0.8em;
+        color: #888;
+        /* background-color: #eee; */
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
     body.theme-night .admin-container {
         background-color: #002b3c;
         color: #eee;
@@ -319,6 +339,11 @@ include $headerPath;
         color: #aaa;
     }
 
+    body.theme-night .char-id-display {
+        /* background-color: #002b3c; */
+        color: #aaa;
+    }
+
     body.theme-night .character-group-header {
         background-color: #00334c;
         border-bottom-color: #2a6177;
@@ -328,7 +353,7 @@ include $headerPath;
         border-top-color: #2a6177;
     }
 
-    /* Inherited styles from previous versions */
+    /* Inherited styles from v2.8.3 */
     .status-message {
         padding: 10px;
         margin-bottom: 15px;
@@ -432,21 +457,6 @@ include $headerPath;
         background-color: #ccc;
     }
 
-    .character-info {
-        flex-grow: 1;
-    }
-
-    .character-info strong {
-        font-size: 1.1em;
-    }
-
-    .character-info p {
-        margin: 2px 0;
-        color: #666;
-        font-family: monospace;
-        word-break: break-all;
-    }
-
     .character-actions {
         display: flex;
         gap: 5px;
@@ -488,7 +498,7 @@ include $headerPath;
         color: #aaa;
         float: right;
         font-size: 28px;
-        font-weight: bold;
+        font-weight: 700;
         cursor: pointer;
     }
 
@@ -557,10 +567,6 @@ include $headerPath;
 
     body.theme-night .character-entry {
         border-bottom-color: #2a6177;
-    }
-
-    body.theme-night .character-info p {
-        color: #bbb;
     }
 
     body.theme-night .modal-content {
@@ -678,8 +684,13 @@ include $headerPath;
                     charEntry.dataset.charId = charId;
                     charEntry.innerHTML = `
                     <img src="${imgSrc}" alt="${char ? char.name : 'Unbekannt'}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/dc3545/ffffff?text=X';">
-                    <div class="character-info"><strong>${displayName}</strong></div>
-                    <div class="character-actions"><button class="button delete-button remove-char-btn">X</button></div>`;
+                    <div class="character-info">
+                        <strong>${displayName}</strong>
+                        <span class="char-id-display">${charId}</span>
+                    </div>
+                    <div class="character-actions">
+                        <button class="button delete-button remove-char-btn" title="Aus Gruppe entfernen">X</button>
+                    </div>`;
                     listContainer.appendChild(charEntry);
                 });
                 groupsContainer.appendChild(groupDiv);
@@ -689,16 +700,20 @@ include $headerPath;
 
         const openEditModal = (charId = null) => {
             editForm.reset();
+            const idDisplay = editModal.querySelector('#modal-id-display');
             if (charId) {
                 const char = characterData.characters[charId];
                 editModal.querySelector('#modal-title').textContent = 'Charakter bearbeiten';
                 editModal.querySelector('#modal-char-id').value = charId;
+                idDisplay.value = charId;
                 editModal.querySelector('#modal-name').value = char.name;
                 editModal.querySelector('#modal-pic-url').value = char.pic_url || '';
                 editModal.querySelector('#modal-description').value = char.description || '';
             } else {
+                const newId = 'char_' + Date.now();
                 editModal.querySelector('#modal-title').textContent = 'Neuen Charakter anlegen';
-                editModal.querySelector('#modal-char-id').value = 'char_' + Date.now();
+                editModal.querySelector('#modal-char-id').value = newId;
+                idDisplay.value = newId;
             }
             updateImagePreview();
             editModal.style.display = 'block';
