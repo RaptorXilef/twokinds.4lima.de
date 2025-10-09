@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.6.0
+ * @version   5.7.0
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
@@ -19,6 +19,7 @@
  * @since     5.5.4 Korrigiert den Inhalt neu erstellter PHP-Dateien auf die korrekte einzelne require_once-Anweisung.
  * @since     5.5.5 Behebt Fehler beim Löschen von Einträgen, Erstellen von PHP-Dateien und der Anzeige im "Neu"-Dialog.
  * @since     5.6.0 Passt die Charakter-Auswahl im Modal an die neue, dynamische Gruppenstruktur der charaktere.json an.
+ * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten. Stellt sicher, dass mehrfach zugeordnete Charaktere synchron ausgewählt werden.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -77,6 +78,20 @@ function loadJsonData(string $path, bool $debugMode): array
     $data = json_decode($content, true);
     return is_array($data) ? $data : [];
 }
+
+function loadCharacterDataWithSchema(string $path): array
+{
+    $charData = loadJsonData($path, false);
+    if (!isset($charData['schema_version']) || $charData['schema_version'] < 2) {
+        return ['charactersById' => [], 'groupsWithChars' => [], 'schema_version' => 1];
+    }
+    return [
+        'charactersById' => $charData['characters'] ?? [],
+        'groupsWithChars' => $charData['groups'] ?? [],
+        'schema_version' => $charData['schema_version']
+    ];
+}
+
 
 function saveComicData(string $path, array $data, bool $debugMode): bool
 {
@@ -236,7 +251,7 @@ $settings = loadGeneratorSettings($settingsFilePath, $debugMode);
 $comicEditorSettings = $settings['data_editor_comic'];
 
 $jsonData = loadJsonData($comicVarJsonPath, $debugMode);
-$charaktereData = loadJsonData($charaktereJsonPath, $debugMode);
+$charaktereData = loadCharacterDataWithSchema($charaktereJsonPath);
 $imageDirs = [__DIR__ . '/../assets/comic_lowres/', __DIR__ . '/../assets/comic_hires/'];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
 $phpIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
@@ -953,6 +968,9 @@ include $headerPath;
         flex-direction: column;
         align-items: center;
         cursor: pointer;
+        width: 80px;
+        /* Breite für konsistentes Layout */
+        text-align: center;
     }
 
     .charakter-item img {
@@ -976,6 +994,7 @@ include $headerPath;
     .charakter-item span {
         margin-top: 5px;
         font-size: 0.8em;
+        word-break: break-word;
     }
 </style>
 
@@ -986,7 +1005,9 @@ include $headerPath;
         let allComicIds = Object.keys(comicData);
         let filteredComicIds = [...allComicIds];
         let cachedImages = <?php echo json_encode($cachedImagesForJs, JSON_UNESCAPED_SLASHES); ?>;
-        const charaktereData = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
+        const charaktereInfo = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
+        const allCharactersData = charaktereInfo.charactersById;
+        const characterGroups = charaktereInfo.groupsWithChars;
 
         const tableBody = document.querySelector('#comic-table tbody');
         const saveAllBtn = document.getElementById('save-all-btn');
@@ -1011,6 +1032,11 @@ include $headerPath;
 
         const ITEMS_PER_PAGE = <?php echo COMIC_PAGES_PER_PAGE; ?>;
         let currentPage = 1;
+
+        if (charaktereInfo.schema_version < 2) {
+            showMessage('Fehler: Veraltetes `charaktere.json`-Format. Bitte migrieren.', 'red', 0);
+            return;
+        }
 
         $('#modal-transcript').summernote({
             placeholder: "Transkript hier eingeben...", tabsize: 2, height: 200,
@@ -1281,58 +1307,58 @@ include $headerPath;
             modalPreviewSketch.style.display = view === 'sketch' ? 'flex' : 'none';
         }
 
-        // KORREKTUR: Robuste Funktion für Charakter-Bilder
         function renderCharakterSelection(comicId) {
             modalCharaktereSection.innerHTML = '';
-            const selectedCharaktere = comicData[comicId]?.charaktere || [];
+            const selectedCharIds = comicData[comicId]?.charaktere || [];
+            /* Doch wieder zu ? und Fehlt geändert. Wird einfach besser lesbar angezeigt! */
+            const placeholderUrlUnknown = 'https://placehold.co/60x60/cccccc/333333?text=?';
+            const placeholderUrlMissing = 'https://placehold.co/60x60/dc3545/ffffff?text=Fehlt';
 
-            const placeholderUrlUnknown = 'https://placehold.co/60x60/cccccc/333333?text=Bild\\nnicht\\ndefiniert';
-            const placeholderUrlMissing = 'https://placehold.co/60x60/dc3545/ffffff?text=Bild\\nFehlt';
+            Object.keys(characterGroups).forEach(groupName => {
+                const kategorieDiv = document.createElement('div');
+                kategorieDiv.className = 'charakter-kategorie';
+                kategorieDiv.innerHTML = `<h3>${groupName}</h3>`;
 
-            // Neue, dynamische Logik
-            for (const [groupName, charactersInGroup] of Object.entries(charaktereData)) {
-                if (charactersInGroup && typeof charactersInGroup === 'object') {
-                    const kategorieDiv = document.createElement('div');
-                    kategorieDiv.className = 'charakter-kategorie';
-                    kategorieDiv.innerHTML = `<h3>${groupName}</h3>`;
+                const grid = document.createElement('div');
+                grid.className = 'charaktere-grid';
 
-                    const grid = document.createElement('div');
-                    grid.className = 'charaktere-grid';
+                characterGroups[groupName].forEach(charId => {
+                    const charInfo = allCharactersData[charId];
+                    if (!charInfo) return;
 
-                    for (const [name, urls] of Object.entries(charactersInGroup)) {
-                        const item = document.createElement('div');
-                        item.className = 'charakter-item';
-                        item.dataset.charakterName = name;
+                    const item = document.createElement('div');
+                    item.className = 'charakter-item';
+                    item.dataset.charakterId = charId;
 
-                        const img = document.createElement('img');
-                        const imageUrl = urls ? urls.charaktere_pic_url : null;
+                    const img = document.createElement('img');
+                    const imageUrl = charInfo.pic_url;
 
-                        if (imageUrl) {
-                            img.src = `../${imageUrl}`;
-                            img.addEventListener('error', function () {
-                                this.onerror = null;
-                                this.src = placeholderUrlMissing;
-                            }, { once: true });
-                        } else {
-                            img.src = placeholderUrlUnknown;
-                        }
-
-                        img.alt = name;
-                        if (selectedCharaktere.includes(name)) {
-                            item.classList.add('active');
-                        }
-
-                        const nameSpan = document.createElement('span');
-                        nameSpan.textContent = name.replace(/_/g, ' ');
-
-                        item.appendChild(img);
-                        item.appendChild(nameSpan);
-                        grid.appendChild(item);
+                    if (imageUrl) {
+                        img.src = `../${imageUrl}`;
+                        img.addEventListener('error', function () {
+                            this.onerror = null;
+                            this.src = placeholderUrlMissing;
+                        }, { once: true });
+                    } else {
+                        img.src = placeholderUrlUnknown;
                     }
-                    kategorieDiv.appendChild(grid);
-                    modalCharaktereSection.appendChild(kategorieDiv);
-                }
-            }
+
+                    img.alt = charInfo.name;
+                    if (selectedCharIds.includes(charId)) {
+                        item.classList.add('active');
+                    }
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = charInfo.name;
+
+                    item.appendChild(img);
+                    item.appendChild(nameSpan);
+                    grid.appendChild(item);
+                });
+
+                kategorieDiv.appendChild(grid);
+                modalCharaktereSection.appendChild(kategorieDiv);
+            });
         }
 
 
@@ -1340,24 +1366,28 @@ include $headerPath;
             const item = e.target.closest('.charakter-item');
             if (!item) return;
 
-            const charakterName = item.dataset.charakterName;
-            item.classList.toggle('active');
-            const isActive = item.classList.contains('active');
+            const charId = item.dataset.charakterId;
+            const isActiveNow = !item.classList.contains('active');
+
+            // Synchronize all items with the same character ID
+            const allItemsForId = modalCharaktereSection.querySelectorAll(`.charakter-item[data-charakter-id="${charId}"]`);
+            allItemsForId.forEach(el => el.classList.toggle('active', isActiveNow));
 
             if (!comicData[activeEditId].charaktere) {
                 comicData[activeEditId].charaktere = [];
             }
 
             const charakterArray = comicData[activeEditId].charaktere;
-            const index = charakterArray.indexOf(charakterName);
+            const index = charakterArray.indexOf(charId);
 
-            if (isActive) {
+            if (isActiveNow) {
                 if (index === -1) {
-                    charakterArray.push(charakterName);
+                    charakterArray.push(charId);
                 }
             } else {
                 if (index > -1) {
-                    charakterArray.splice(index, 1);
+                    // Remove all occurrences just in case of data duplication
+                    comicData[activeEditId].charaktere = charakterArray.filter(id => id !== charId);
                 }
             }
         });
