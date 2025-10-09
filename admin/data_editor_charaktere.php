@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.8.3
+ * @version   3.2.0
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -22,10 +22,11 @@
  * @since     2.8.1 Behebt zwei Fehler: Korrigiert das Drag-Handle-Icon vor Gruppentiteln und stellt die korrekten Bild-Platzhalter wieder her.
  * @since     2.8.2 Korrigiert die Darstellung des Hamburger-Icons durch Anpassung der CSS-Syntax.
  * @since     2.8.3 Duplikatprüfung auf Gruppenebene für mehrfache Charakterzuweisungen.
+ * @since     2.9.0 Umstellung auf eindeutige Charakter-IDs statt Namen als Schlüssel.
+ * @since     3.0.0 Trennung von Charakter-Stammdaten und Gruppenzuweisung.
+ * @since     3.1.0 Umstellung auf einfaches Textfeld für Beschreibung, Entfernung von Summernote.
+ * @since     3.2.0 Vollständige Neuimplementierung basierend auf v2.8.3 zur korrekten Umsetzung aller ID-System-Anforderungen.
  */
-
-// === DEBUG-MODUS STEUERUNG ===
-$debugMode = false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';
@@ -36,8 +37,7 @@ $footerPath = __DIR__ . '/../src/layout/footer.php';
 $charaktereJsonPath = __DIR__ . '/../src/config/charaktere.json';
 $charakterePhpPath = __DIR__ . '/../charaktere/';
 
-// --- HELPER FUNKTIONEN ---
-function loadCharakterJsonData(string $path): array
+function loadJsonData(string $path): array
 {
     if (!file_exists($path) || filesize($path) === 0)
         return [];
@@ -48,92 +48,63 @@ function loadCharakterJsonData(string $path): array
     return is_array($data) ? $data : [];
 }
 
-function get_all_char_names(array $data): array
-{
-    $names = [];
-    foreach ($data as $categoryData) {
-        if (is_array($categoryData)) {
-            $names = array_merge($names, array_keys($categoryData));
-        }
-    }
-    return array_unique($names);
-}
-
-function getCharPhpFiles(string $pagesDir): array
-{
-    $phpFiles = [];
-    if (is_dir($pagesDir)) {
-        $files = scandir($pagesDir);
-        foreach ($files as $file) {
-            if (pathinfo($file, PATHINFO_EXTENSION) === 'php' && $file !== 'index.php') {
-                $charName = str_replace('_', ' ', pathinfo($file, PATHINFO_FILENAME));
-                $phpFiles[] = $charName;
-            }
-        }
-    }
-    return $phpFiles;
-}
-
-// --- DATENVERARBEITUNG BEI POST-REQUEST (VIA FETCH API) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_end_clean();
     header('Content-Type: application/json');
-
-    $token = '';
-    $headers = getallheaders();
-    $normalizedHeaders = array_change_key_case($headers, CASE_LOWER);
-    if (isset($normalizedHeaders['x-csrf-token'])) {
-        $token = $normalizedHeaders['x-csrf-token'];
-    }
-
+    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     if (empty($token) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'CSRF-Token-Validierung fehlgeschlagen.']);
         exit;
     }
-
     $inputData = json_decode(file_get_contents('php://input'), true);
-
-    if (json_last_error() === JSON_ERROR_NONE && is_array($inputData)) {
-        $dataToSave = $inputData;
-
-        $currentData = loadCharakterJsonData($charaktereJsonPath);
-        $currentCharNames = get_all_char_names($currentData);
-        $newCharNames = get_all_char_names($dataToSave);
-
-        $deletedNames = array_diff($currentCharNames, $newCharNames);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($inputData) && isset($inputData['characters'], $inputData['groups'])) {
+        $currentData = loadJsonData($charaktereJsonPath);
+        $currentCharObjects = $currentData['characters'] ?? [];
         $deletedCount = 0;
-        foreach ($deletedNames as $name) {
-            $fileName = str_replace(' ', '_', $name) . '.php';
+        $renamedCount = 0;
+        $createdCount = 0;
+        $deletedIds = array_diff_key($currentCharObjects, $inputData['characters']);
+        foreach ($deletedIds as $charId => $charObject) {
+            $fileName = str_replace(' ', '_', $charObject['name']) . '.php';
             $filePath = $charakterePhpPath . $fileName;
             if (file_exists($filePath) && unlink($filePath)) {
                 $deletedCount++;
             }
         }
-
-        $createdCount = 0;
-        foreach ($newCharNames as $name) {
-            $fileName = str_replace(' ', '_', $name) . '.php';
-            $filePath = $charakterePhpPath . $fileName;
-            if (!file_exists($filePath)) {
-                $phpContent = "<?php require_once __DIR__ . '/../src/components/character_page_renderer.php'; ?>";
-                if (file_put_contents($filePath, $phpContent) !== false) {
-                    $createdCount++;
+        foreach ($inputData['characters'] as $charId => $charObject) {
+            $newName = $charObject['name'];
+            if (isset($currentCharObjects[$charId])) {
+                $oldName = $currentCharObjects[$charId]['name'];
+                if ($oldName !== $newName) {
+                    $oldFilePath = $charakterePhpPath . str_replace(' ', '_', $oldName) . '.php';
+                    $newFilePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
+                    if (file_exists($oldFilePath) && is_writable(dirname($oldFilePath)) && rename($oldFilePath, $newFilePath)) {
+                        $renamedCount++;
+                    }
+                }
+            } else {
+                $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
+                if (!file_exists($filePath)) {
+                    $phpContent = "<?php require_once __DIR__ . '/../src/components/character_page_renderer.php'; ?>";
+                    if (file_put_contents($filePath, $phpContent) !== false) {
+                        $createdCount++;
+                    }
                 }
             }
         }
-
-        if (file_put_contents($charaktereJsonPath, json_encode($dataToSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+        if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
             $message = "Charakter-Daten erfolgreich gespeichert.";
             if ($createdCount > 0)
                 $message .= " $createdCount PHP-Datei(en) erstellt.";
             if ($deletedCount > 0)
                 $message .= " $deletedCount PHP-Datei(en) gelöscht.";
-
+            if ($renamedCount > 0)
+                $message .= " $renamedCount PHP-Datei(en) umbenannt.";
             echo json_encode(['success' => true, 'message' => $message]);
         } else {
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Fehler beim Schreiben der JSON-Datei.']);
+            echo json_encode(['success' => false, 'message' => 'Fehler beim Schreiben der charaktere.json.']);
         }
     } else {
         http_response_code(400);
@@ -142,10 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$allCharaktereData = loadCharakterJsonData($charaktereJsonPath);
-$existingPhpFiles = getCharPhpFiles($charakterePhpPath);
+$allCharaktereData = loadJsonData($charaktereJsonPath);
 $lastSavedTimestamp = file_exists($charaktereJsonPath) ? filemtime($charaktereJsonPath) : null;
-
 $pageTitle = 'Charakter-Datenbank Editor';
 $pageHeader = 'Charakter-Datenbank Editor';
 $robotsContent = 'noindex, nofollow';
@@ -164,45 +133,56 @@ include $headerPath;
         <?php endif; ?>
     </div>
 
-    <div class="controls">
-        <button class="button add-character-btn">Neuen Charakter hinzufügen</button>
+    <!-- 1. Charakter-Stammdaten -->
+    <div class="section-container">
+        <h2>Charakter-Stammdaten</h2>
+        <div class="controls">
+            <button class="button add-character-btn">Neuen Charakter anlegen</button>
+        </div>
+        <div id="character-master-list" class="master-list-container">
+            <!-- JS-generierter Inhalt -->
+        </div>
     </div>
 
-    <div id="character-editor-container" class="data-editor-container">
-        <!-- JS-generierter Inhalt -->
+    <hr class="section-divider">
+
+    <!-- 2. Gruppen-Zuweisung -->
+    <div class="section-container">
+        <h2>Gruppen-Zuweisung</h2>
+        <div class="controls">
+            <button class="button add-group-btn">Neue Gruppe hinzufügen</button>
+        </div>
+        <div id="character-groups-container" class="data-editor-container">
+            <!-- JS-generierter Inhalt -->
+        </div>
     </div>
 
     <div class="controls bottom-controls">
-        <button class="button add-character-btn">Neuen Charakter hinzufügen</button>
-        <button id="save-all-btn" class="button save-button">Änderungen speichern</button>
+        <button id="save-all-btn" class="button save-button">Alle Änderungen speichern</button>
     </div>
 
     <div class="editor-footer-info">
-        <p><strong>Info:</strong> Die finale URL eines Charakters wird aus dem Namen generiert. Leerzeichen werden
-            durch Unterstriche (`_`) ersetzt. Z.B. wird "Red Haired Guy" zu `Red_Haired_Guy.php`.</p>
+        <p><strong>Info:</strong> Die URL eines Charakters wird aus dem Namen generiert. Leerzeichen werden durch
+            Unterstriche (`_`) ersetzt. Bei Namensänderung wird die zugehörige PHP-Datei automatisch umbenannt.</p>
         <div id="message-box" style="display: none;"></div>
     </div>
 </div>
 
-<!-- Modal -->
-<div id="edit-modal" class="modal">
-    <div class="modal-content">
+<!-- Modals -->
+<div id="edit-char-modal" class="modal">
+    <div class="modal-content wide">
         <span class="close-button">&times;</span>
         <h2 id="modal-title">Charakter bearbeiten</h2>
         <form id="edit-form">
-            <div class="form-group">
-                <label for="modal-group">Charakter-Gruppe:</label>
-                <select id="modal-group" name="group" required></select>
-                <input type="text" id="modal-new-group" name="new_group" placeholder="Oder neue Gruppe eingeben...">
-            </div>
+            <input type="hidden" id="modal-char-id">
             <div class="form-group">
                 <label for="modal-name">Charakter-Name:</label>
-                <input type="text" id="modal-name" name="name" required>
-                <small>Interner Schlüssel (z.B. "Trace", "Red Haired Guy"). Leerzeichen sind erlaubt.</small>
+                <input type="text" id="modal-name" required>
+                <small>Wird für die URL und Anzeige verwendet. Muss eindeutig sein.</small>
             </div>
             <div class="form-group">
                 <label for="modal-pic-url">Bild-Pfad:</label>
-                <input type="text" id="modal-pic-url" name="charaktere_pic_url">
+                <input type="text" id="modal-pic-url">
                 <small>Relativer Pfad, z.B. "assets/img/charaktere/faces/icon_trace.gif"</small>
             </div>
             <div class="form-group preview-container">
@@ -210,16 +190,145 @@ include $headerPath;
                 <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?"
                     alt="Charakter Vorschau">
             </div>
+            <div class="form-group">
+                <label for="modal-description">Beschreibung:</label>
+                <textarea id="modal-description" rows="5"></textarea>
+            </div>
             <div class="modal-buttons">
-                <button type="submit" id="modal-save-btn" class="button save-button">Speichern</button>
-                <button type="button" id="modal-cancel-btn" class="button delete-button">Abbrechen</button>
+                <button type="submit" class="button save-button">Speichern</button>
+                <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="add-to-group-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Charakter zu Gruppe hinzufügen</h2>
+        <form id="add-to-group-form">
+            <input type="hidden" id="add-group-name">
+            <div class="form-group">
+                <label for="char-select">Charakter auswählen:</label>
+                <select id="char-select" required></select>
+            </div>
+            <div class="modal-buttons">
+                <button type="submit" class="button save-button">Hinzufügen</button>
+                <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
             </div>
         </form>
     </div>
 </div>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* Stile für Statusmeldungen */
+    .admin-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .section-container {
+        margin-bottom: 2rem;
+    }
+
+    .section-divider {
+        border: 0;
+        border-top: 1px solid #ddd;
+        margin: 2rem 0;
+    }
+
+    .master-list-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .master-char-entry {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        text-align: center;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .master-char-entry img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 10px;
+    }
+
+    .master-char-entry strong {
+        display: block;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+    }
+
+    .master-char-entry small {
+        display: block;
+        color: #888;
+        font-size: 0.8em;
+        margin-bottom: 10px;
+        word-wrap: break-word;
+    }
+
+    .character-group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #eee;
+        padding: 10px;
+        margin: 0;
+        border-bottom: 1px solid #ddd;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .character-group-header h3 {
+        margin: 0;
+        cursor: move;
+        flex-grow: 1
+    }
+
+    .character-group-header h3::before {
+        content: '\2630';
+        margin-right: 10px;
+        color: #999
+    }
+
+    .modal-content.wide {
+        max-width: 800px;
+    }
+
+    body.theme-night .admin-container {
+        background-color: #002b3c;
+        color: #eee;
+    }
+
+    body.theme-night .master-char-entry {
+        background-color: #00425c;
+        border-color: #2a6177;
+    }
+
+    body.theme-night .master-char-entry small {
+        color: #aaa;
+    }
+
+    body.theme-night .character-group-header {
+        background-color: #00334c;
+        border-bottom-color: #2a6177;
+    }
+
+    body.theme-night hr.section-divider {
+        border-top-color: #2a6177;
+    }
+
+    /* Inherited styles from previous versions */
     .status-message {
         padding: 10px;
         margin-bottom: 15px;
@@ -257,14 +366,6 @@ include $headerPath;
         margin-top: 20px;
         border-top: 1px solid #ddd;
         padding-top: 15px;
-    }
-
-    .admin-container {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
     }
 
     .controls {
@@ -311,21 +412,6 @@ include $headerPath;
         background-color: #fff;
     }
 
-    .character-group h3 {
-        background-color: #eee;
-        padding: 10px;
-        margin: 0;
-        border-bottom: 1px solid #ddd;
-        border-radius: 5px 5px 0 0;
-        cursor: move;
-    }
-
-    .character-group h3::before {
-        content: '\2630';
-        margin-right: 10px;
-        color: #999;
-    }
-
     .character-entry {
         display: flex;
         align-items: center;
@@ -364,6 +450,8 @@ include $headerPath;
     .character-actions {
         display: flex;
         gap: 5px;
+        flex-direction: row;
+        justify-content: center;
     }
 
     .sortable-ghost {
@@ -414,7 +502,8 @@ include $headerPath;
     }
 
     .form-group input,
-    .form-group select {
+    .form-group select,
+    .form-group textarea {
         width: 100%;
         padding: 8px;
         border: 1px solid #ccc;
@@ -436,6 +525,8 @@ include $headerPath;
         border: 1px solid #ddd;
         border-radius: 5px;
         margin-top: 5px;
+        border-radius: 50%;
+        object-fit: cover;
     }
 
     .modal-buttons {
@@ -448,39 +539,20 @@ include $headerPath;
         padding: 2px 8px;
         border-radius: 10px;
         font-weight: bold;
-        color: white;
-    }
-
-    .status-green {
-        background-color: #28a745;
-    }
-
-    .status-red {
-        background-color: #dc3545;
+        color: #fff;
     }
 
     .banner {
         z-index: 99 !important;
     }
 
-    /* Dark Mode */
     body.theme-night .admin-container {
-        background-color: #002B3C;
         color: #eee;
     }
 
     body.theme-night .character-group {
         background-color: #00425c;
         border-color: #2a6177;
-    }
-
-    body.theme-night .character-group h3 {
-        background-color: #00334C;
-        border-bottom-color: #2a6177;
-    }
-
-    body.theme-night .character-group h3::before {
-        color: #888;
     }
 
     body.theme-night .character-entry {
@@ -497,8 +569,9 @@ include $headerPath;
     }
 
     body.theme-night .form-group input,
-    body.theme-night .form-group select {
-        background-color: #002B3C;
+    body.theme-night .form-group select,
+    body.theme-night .form-group textarea {
+        background-color: #002b3c;
         border-color: #2a6177;
         color: #fff;
     }
@@ -523,18 +596,6 @@ include $headerPath;
         border-top-color: #2a6177;
     }
 
-    body.theme-night .status-green {
-        background-color: #2a6177;
-        border-color: #3c763d;
-        color: #dff0d8;
-    }
-
-    body.theme-night .status-red {
-        background-color: #a94442;
-        border-color: #ebccd1;
-        color: #f2dede;
-    }
-
     body.theme-night .status-info {
         background-color: #31708f;
         border-color: #bce8f1;
@@ -545,304 +606,244 @@ include $headerPath;
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', () => {
         let characterData = <?php echo json_encode($allCharaktereData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES); ?>;
-        let existingPhpFiles = <?php echo json_encode($existingPhpFiles, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-        const editorContainer = document.getElementById('character-editor-container');
+        if (!characterData || typeof characterData !== 'object') characterData = {};
+        if (!characterData.characters) characterData.characters = {};
+        if (!characterData.groups) characterData.groups = {};
+
+        // UI Elements
+        const masterListContainer = document.getElementById('character-master-list');
+        const groupsContainer = document.getElementById('character-groups-container');
         const saveAllBtn = document.getElementById('save-all-btn');
         const messageBox = document.getElementById('message-box');
-        const modal = document.getElementById('edit-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalForm = document.getElementById('edit-form');
-        const groupSelect = document.getElementById('modal-group');
-        const newGroupInput = document.getElementById('modal-new-group');
-        const nameInput = document.getElementById('modal-name');
-        const picUrlInput = document.getElementById('modal-pic-url');
-        const imagePreview = document.getElementById('modal-image-preview');
-        let currentEdit = { group: null, id: null };
 
-        // KORREKTUR: Platzhalter-URLs als Konstanten definieren
-        const placeholderUrlUnknown = 'https://placehold.co/50x50/cccccc/333333?text=Pfad?';
-        const placeholderUrlMissing = 'https://placehold.co/50x50/dc3545/ffffff?text=Fehlt';
-        const modalPlaceholderUrlUnknown = 'https://placehold.co/100x100/cccccc/333333?text=Pfad?';
-        const modalPlaceholderUrlMissing = 'https://placehold.co/100x100/dc3545/ffffff?text=Fehlt';
+        // Modals
+        const editModal = document.getElementById('edit-char-modal');
+        const editForm = document.getElementById('edit-form');
+        const addToGroupModal = document.getElementById('add-to-group-modal');
+        const addToGroupForm = document.getElementById('add-to-group-form');
 
+        const placeholderUrl = 'https://placehold.co/80x80/cccccc/333333?text=Pfad?';
+        const errorUrl = 'https://placehold.co/80x80/dc3545/ffffff?text=Fehlt';
 
-        const renderEditor = () => {
-            editorContainer.innerHTML = '';
-            Object.keys(characterData).forEach(groupName => {
+        const getSortedCharacters = () => Object.entries(characterData.characters).sort(([, a], [, b]) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
+
+        const renderMasterList = () => {
+            masterListContainer.innerHTML = '';
+            getSortedCharacters().forEach(([id, char]) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'master-char-entry';
+                entryDiv.dataset.charId = id;
+                const imgSrc = char.pic_url ? `../${char.pic_url}` : placeholderUrl;
+                entryDiv.innerHTML = `
+                <div>
+                    <img src="${imgSrc}" alt="${char.name}" onerror="this.onerror=null;this.src='${errorUrl}';">
+                    <strong>${char.name}</strong>
+                    <small>ID: ${id}</small>
+                </div>
+                <div class="character-actions">
+                    <button class="button edit-master-btn">Bearbeiten</button>
+                    <button class="button delete-button delete-master-btn">Löschen</button>
+                </div>`;
+                masterListContainer.appendChild(entryDiv);
+            });
+        };
+
+        const renderGroups = () => {
+            const groupOrder = Object.keys(characterData.groups);
+            groupsContainer.innerHTML = ''; // Clear before re-rendering
+            new Sortable(groupsContainer, { animation: 150, handle: 'h3', ghostClass: 'sortable-ghost' });
+
+            groupOrder.forEach(groupName => {
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'character-group';
-                groupDiv.dataset.group = groupName;
-                const title = document.createElement('h3');
-                title.textContent = groupName;
-                groupDiv.appendChild(title);
-                const listContainer = document.createElement('div');
-                listContainer.className = 'character-list-container';
-                groupDiv.appendChild(listContainer);
+                groupDiv.dataset.groupName = groupName;
+                groupDiv.innerHTML = `
+                <div class="character-group-header">
+                    <h3>${groupName}</h3>
+                    <div>
+                        <button class="button add-char-to-group-btn" title="Charakter zu dieser Gruppe hinzufügen">+</button>
+                        <button class="button delete-button delete-group-btn" title="Gruppe löschen">X</button>
+                    </div>
+                </div>
+                <div class="character-list-container"></div>`;
+                const listContainer = groupDiv.querySelector('.character-list-container');
+                (characterData.groups[groupName] || []).forEach(charId => {
+                    const char = characterData.characters[charId];
+                    const displayName = char ? char.name : `<span style="color:red">[ID nicht gefunden: ${charId}]</span>`;
+                    const picUrl = char ? char.pic_url : '';
+                    const imgSrc = picUrl ? `../${picUrl}` : 'https://placehold.co/50x50/cccccc/333333?text=?';
 
-                if (characterData[groupName]) {
-                    Object.keys(characterData[groupName]).forEach(charId => {
-                        const charData = characterData[groupName][charId] || {};
-                        const charEntry = document.createElement('div');
-                        charEntry.className = 'character-entry';
-                        charEntry.dataset.id = charId;
-
-                        const hasPic = charData.charaktere_pic_url && charData.charaktere_pic_url.trim() !== '';
-                        const hasPhpFile = existingPhpFiles.includes(charId);
-
-                        const img = document.createElement('img');
-                        // KORREKTUR: Korrekten Placeholder verwenden, wenn kein Pfad existiert
-                        img.src = hasPic ? `../${charData.charaktere_pic_url}` : placeholderUrlUnknown;
-                        img.alt = charId;
-                        img.addEventListener('error', function () {
-                            this.onerror = null;
-                            // KORREKTUR: Korrekten Placeholder für Ladefehler verwenden
-                            this.src = placeholderUrlMissing;
-                        }, { once: true });
-
-                        const infoDiv = document.createElement('div');
-                        infoDiv.className = 'character-info';
-                        infoDiv.innerHTML = `<strong>${charId}</strong><p>${charData.charaktere_pic_url || '<em>Kein Bildpfad</em>'}</p>`;
-
-                        const statusDiv = document.createElement('div');
-                        statusDiv.className = 'status-cell';
-                        statusDiv.innerHTML = `<span class="status-indicator ${hasPhpFile ? 'status-green' : 'status-red'}" title="PHP-Datei vorhanden">P</span>`;
-
-                        const actionsDiv = document.createElement('div');
-                        actionsDiv.className = 'character-actions';
-                        actionsDiv.innerHTML = `
-                            <button class="button edit-btn">Bearbeiten</button>
-                            <button class="button delete delete-btn">Löschen</button>
-                        `;
-
-                        charEntry.appendChild(img);
-                        charEntry.appendChild(infoDiv);
-                        charEntry.appendChild(statusDiv);
-                        charEntry.appendChild(actionsDiv);
-                        listContainer.appendChild(charEntry);
-                    });
-                }
-                editorContainer.appendChild(groupDiv);
-                new Sortable(listContainer, {
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    group: 'shared',
-                    onEnd: () => {
-                        const newCharacterData = {};
-                        document.querySelectorAll('.character-group').forEach(groupDiv => {
-                            const groupName = groupDiv.dataset.group;
-                            newCharacterData[groupName] = {};
-                            groupDiv.querySelectorAll('.character-entry').forEach(entry => {
-                                const charId = entry.dataset.id;
-                                newCharacterData[groupName][charId] = findCharacterData(charId);
-                            });
-                        });
-                        characterData = newCharacterData;
-                        showMessage('Reihenfolge geändert. Speichern nicht vergessen!', 'status-info');
-                    }
+                    const charEntry = document.createElement('div');
+                    charEntry.className = 'character-entry';
+                    charEntry.dataset.charId = charId;
+                    charEntry.innerHTML = `
+                    <img src="${imgSrc}" alt="${char ? char.name : 'Unbekannt'}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/dc3545/ffffff?text=X';">
+                    <div class="character-info"><strong>${displayName}</strong></div>
+                    <div class="character-actions"><button class="button delete-button remove-char-btn">X</button></div>`;
+                    listContainer.appendChild(charEntry);
                 });
-            });
-
-            new Sortable(editorContainer, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                handle: 'h3',
-                onEnd: () => {
-                    const newCharacterData = {};
-                    document.querySelectorAll('.character-group').forEach(groupDiv => {
-                        const groupName = groupDiv.dataset.group;
-                        newCharacterData[groupName] = characterData[groupName];
-                    });
-                    characterData = newCharacterData;
-                    showMessage('Gruppen-Reihenfolge geändert. Speichern nicht vergessen!', 'status-info');
-                }
+                groupsContainer.appendChild(groupDiv);
+                new Sortable(listContainer, { animation: 150, group: 'shared-chars', ghostClass: 'sortable-ghost' });
             });
         };
 
-        const populateGroupDropdown = () => {
-            groupSelect.innerHTML = '';
-            Object.keys(characterData).forEach(groupName => {
-                const option = document.createElement('option');
-                option.value = groupName;
-                option.textContent = groupName;
-                groupSelect.appendChild(option);
-            });
-        };
-
-        const openModal = (charId = null, groupName = null) => {
-            currentEdit = { id: charId, group: groupName };
-            populateGroupDropdown();
-
-            nameInput.disabled = false;
-
-            if (charId && groupName) {
-                modalTitle.textContent = 'Charakter bearbeiten';
-                const data = characterData[groupName][charId] || {};
-                nameInput.value = charId;
-                groupSelect.value = groupName;
-                newGroupInput.value = '';
-                picUrlInput.value = data.charaktere_pic_url || '';
+        const openEditModal = (charId = null) => {
+            editForm.reset();
+            if (charId) {
+                const char = characterData.characters[charId];
+                editModal.querySelector('#modal-title').textContent = 'Charakter bearbeiten';
+                editModal.querySelector('#modal-char-id').value = charId;
+                editModal.querySelector('#modal-name').value = char.name;
+                editModal.querySelector('#modal-pic-url').value = char.pic_url || '';
+                editModal.querySelector('#modal-description').value = char.description || '';
             } else {
-                modalTitle.textContent = 'Neuen Charakter hinzufügen';
-                nameInput.value = '';
-                newGroupInput.value = '';
-                picUrlInput.value = '';
+                editModal.querySelector('#modal-title').textContent = 'Neuen Charakter anlegen';
+                editModal.querySelector('#modal-char-id').value = 'char_' + Date.now();
             }
             updateImagePreview();
-            modal.style.display = 'block';
-        };
-
-        const closeModal = () => {
-            modal.style.display = 'none';
-            modalForm.reset();
+            editModal.style.display = 'block';
         };
 
         const updateImagePreview = () => {
-            const path = picUrlInput.value;
-            // KORREKTUR: Korrekten Placeholder für das Modal verwenden
-            imagePreview.src = path ? `../${path}` : modalPlaceholderUrlUnknown;
-            imagePreview.onerror = () => {
-                // KORREKTUR: Korrekten Fehler-Placeholder für das Modal verwenden
-                imagePreview.src = modalPlaceholderUrlMissing;
-            };
+            const path = editModal.querySelector('#modal-pic-url').value;
+            const preview = editModal.querySelector('#modal-image-preview');
+            preview.src = path ? `../${path}` : 'https://placehold.co/100x100/cccccc/333333?text=?';
+            preview.onerror = () => { preview.src = 'https://placehold.co/100x100/dc3545/ffffff?text=X'; };
         };
-        picUrlInput.addEventListener('input', updateImagePreview);
 
-        editorContainer.addEventListener('click', (e) => {
-            const editBtn = e.target.closest('.edit-btn');
-            if (editBtn) {
-                const entry = editBtn.closest('.character-entry');
-                const group = entry.closest('.character-group').dataset.group;
-                openModal(entry.dataset.id, group);
+        const openAddToGroupModal = (groupName) => {
+            const form = addToGroupModal.querySelector('form');
+            form.reset();
+            form.querySelector('#add-group-name').value = groupName;
+            const select = form.querySelector('#char-select');
+            select.innerHTML = '<option value="">-- Charakter wählen --</option>';
+            const charsInGroup = new Set(characterData.groups[groupName] || []);
+            getSortedCharacters().forEach(([id, char]) => {
+                if (!charsInGroup.has(id)) {
+                    select.innerHTML += `<option value="${id}">${char.name}</option>`;
+                }
+            });
+            addToGroupModal.style.display = 'block';
+        };
+
+        document.querySelector('.admin-container').addEventListener('click', e => {
+            if (e.target.matches('.add-character-btn')) openEditModal();
+            if (e.target.matches('.edit-master-btn')) openEditModal(e.target.closest('.master-char-entry').dataset.charId);
+            if (e.target.matches('.add-group-btn')) {
+                const name = prompt("Name der neuen Gruppe:");
+                if (name && name.trim()) {
+                    if (characterData.groups[name] === undefined) {
+                        characterData.groups[name] = [];
+                        renderGroups();
+                    } else alert("Gruppe existiert bereits.");
+                }
             }
-
-            const deleteBtn = e.target.closest('.delete-btn');
-            if (deleteBtn) {
-                const entry = deleteBtn.closest('.character-entry');
-                const group = entry.closest('.character-group').dataset.group;
-                if (confirm(`Sicher, dass du "${entry.dataset.id}" löschen willst?`)) {
-                    delete characterData[group][entry.dataset.id];
-                    if (Object.keys(characterData[group]).length === 0) {
-                        delete characterData[group];
-                    }
-                    renderEditor();
+            if (e.target.matches('.delete-master-btn')) {
+                const entry = e.target.closest('.master-char-entry');
+                if (confirm(`"${entry.querySelector('strong').textContent}" wirklich endgültig löschen? Er wird aus ALLEN Gruppen entfernt.`)) {
+                    delete characterData.characters[entry.dataset.charId];
+                    renderMasterList(); renderGroups();
                     showMessage('Charakter zum Löschen vorgemerkt. Speichern, um die Änderung zu übernehmen.', 'status-info');
                 }
             }
-        });
-
-        document.querySelectorAll('.add-character-btn').forEach(btn => btn.addEventListener('click', () => openModal()));
-        modal.querySelector('.close-button').addEventListener('click', closeModal);
-        document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
-
-        modalForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const originalId = currentEdit.id;
-            const originalGroup = currentEdit.group;
-            const newName = nameInput.value.trim();
-            const newGroup = newGroupInput.value.trim() || groupSelect.value;
-            const picUrl = picUrlInput.value.trim();
-
-            if (!newName) {
-                alert('Der Charaktername darf nicht leer sein.');
-                return;
-            }
-
-            // Duplikatprüfung nur innerhalb der Ziel-Gruppe
-            if ((!originalId || originalId !== newName || originalGroup !== newGroup) && characterData[newGroup] && characterData[newGroup][newName]) {
-                alert(`Ein Charakter mit dem Namen "${newName}" existiert bereits in der Gruppe "${newGroup}".`);
-                return;
-            }
-
-            const entryData = { charaktere_pic_url: picUrl };
-
-            if (originalId && characterData[originalGroup] && characterData[originalGroup][originalId]) {
-                Object.assign(entryData, characterData[originalGroup][originalId], { charaktere_pic_url: picUrl });
-            }
-
-            if (originalId && (originalId !== newName || originalGroup !== newGroup)) {
-                if (characterData[originalGroup] && characterData[originalGroup][originalId]) {
-                    delete characterData[originalGroup][originalId];
-                    if (Object.keys(characterData[originalGroup]).length === 0) {
-                        delete characterData[originalGroup];
-                    }
+            if (e.target.matches('.delete-group-btn')) {
+                const groupDiv = e.target.closest('.character-group');
+                if (confirm(`Gruppe "${groupDiv.dataset.groupName}" wirklich löschen?`)) {
+                    delete characterData.groups[groupDiv.dataset.groupName];
+                    renderGroups();
+                    showMessage('Gruppe zum Löschen vorgemerkt. Speichern, um die Änderung zu übernehmen.', 'status-info');
                 }
-            } else if (originalId) { // This handles simple edits where only the pic_url might change
-                characterData[originalGroup][originalId] = entryData;
             }
-
-            if (!characterData[newGroup]) {
-                characterData[newGroup] = {};
+            if (e.target.matches('.add-char-to-group-btn')) openAddToGroupModal(e.target.closest('.character-group').dataset.groupName);
+            if (e.target.matches('.remove-char-btn')) {
+                if (confirm('Charakter wirklich aus dieser Gruppe entfernen?')) {
+                    e.target.closest('.character-entry').remove();
+                    showMessage('Charakter aus Gruppe entfernt. Speichern nicht vergessen!', 'status-info');
+                }
             }
-            characterData[newGroup][newName] = entryData;
-
-            renderEditor();
-            closeModal();
-            showMessage('Änderung vorgemerkt. Speichern nicht vergessen!', 'status-info');
         });
 
+        editForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const id = editModal.querySelector('#modal-char-id').value;
+            const name = editModal.querySelector('#modal-name').value.trim();
+            const pic_url = editModal.querySelector('#modal-pic-url').value.trim();
+            const description = editModal.querySelector('#modal-description').value.trim();
+            if (!name) return alert('Name darf nicht leer sein.');
+            const isDuplicate = Object.entries(characterData.characters).some(([charId, char]) => char.name.toLowerCase() === name.toLowerCase() && charId !== id);
+            if (isDuplicate) return alert('Ein Charakter mit diesem Namen existiert bereits.');
+            characterData.characters[id] = { name, pic_url, description };
+            renderMasterList(); renderGroups();
+            editModal.style.display = 'none';
+            showMessage('Charakter-Daten aktualisiert. Speichern nicht vergessen!', 'status-info');
+        });
+
+        addToGroupForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const charId = addToGroupModal.querySelector('#char-select').value;
+            const groupName = addToGroupModal.querySelector('#add-group-name').value;
+            if (charId && groupName && characterData.groups[groupName]) {
+                if (!characterData.groups[groupName].includes(charId)) {
+                    characterData.groups[groupName].push(charId);
+                }
+                renderGroups();
+            }
+            addToGroupModal.style.display = 'none';
+        });
+
+        document.querySelectorAll('.modal .close-button, .modal .cancel-btn').forEach(btn => btn.addEventListener('click', () => {
+            btn.closest('.modal').style.display = 'none';
+        }));
+        editModal.querySelector('#modal-pic-url').addEventListener('input', updateImagePreview);
 
         saveAllBtn.addEventListener('click', async () => {
-            const newCharacterData = {};
-            document.querySelectorAll('.character-group').forEach(groupDiv => {
-                const groupName = groupDiv.dataset.group;
-                newCharacterData[groupName] = {};
+            const dataToSave = { schema_version: 2, characters: {}, groups: {} };
+
+            document.querySelectorAll('#character-groups-container .character-group').forEach(groupDiv => {
+                const groupName = groupDiv.dataset.groupName;
+                const charIdsInGroup = [];
                 groupDiv.querySelectorAll('.character-entry').forEach(entry => {
-                    const charId = entry.dataset.id;
-                    newCharacterData[groupName][charId] = findCharacterData(charId);
+                    charIdsInGroup.push(entry.dataset.charId);
                 });
+                dataToSave.groups[groupName] = charIdsInGroup;
             });
-            characterData = newCharacterData;
+
+            dataToSave.characters = { ...characterData.characters };
 
             try {
                 const response = await fetch('', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>'
-                    },
-                    body: JSON.stringify(characterData)
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>' },
+                    body: JSON.stringify(dataToSave)
                 });
                 const result = await response.json();
                 if (result.success) {
+                    characterData = dataToSave;
+                    renderMasterList();
+                    renderGroups();
                     showMessage(result.message, 'status-green');
-                    const lastRunContainer = document.getElementById('last-run-container');
-                    const now = new Date();
-                    const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const time = now.toLocaleTimeString('de-DE');
-                    let pElement = lastRunContainer.querySelector('.status-message');
-                    if (!pElement) {
-                        pElement = document.createElement('p');
-                        pElement.className = 'status-message status-info';
-                        lastRunContainer.prepend(pElement);
-                    }
-                    pElement.innerHTML = `Letzte Speicherung am ${date} um ${time} Uhr.`;
                 } else {
-                    showMessage(result.message || 'Ein unbekannter Fehler ist aufgetreten.', 'status-red');
+                    showMessage(result.message || 'Ein Fehler ist aufgetreten.', 'status-red');
                 }
             } catch (error) {
                 showMessage('Netzwerkfehler: ' + error.message, 'status-red');
             }
         });
 
-        function findCharacterData(charId) {
-            for (const group in characterData) {
-                if (characterData[group][charId]) {
-                    return characterData[group][charId];
-                }
-            }
-            return {};
-        }
-
         function showMessage(message, className, duration = 5000) {
             messageBox.textContent = message;
             messageBox.className = `status-message ${className}`;
             messageBox.style.display = 'block';
-            if (duration > 0) {
-                setTimeout(() => { messageBox.style.display = 'none'; }, duration);
-            }
+            setTimeout(() => { messageBox.style.display = 'none'; }, duration);
         }
 
-        renderEditor();
+        if (characterData && characterData.schema_version >= 2) {
+            renderMasterList();
+            renderGroups();
+        } else {
+            groupsContainer.innerHTML = '<p class="status-message status-red"><strong>Fehler:</strong> Die `charaktere.json` hat ein veraltetes Format. Bitte führe zuerst das Migrationsskript aus: <a href="migration_char_id.php">migration_char_id.php</a></p>';
+            masterListContainer.innerHTML = '<p class="status-message status-red">Bitte zuerst migrieren.</p>';
+        }
     });
 </script>
 
