@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.2.1
+ * @version   3.2.2
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -27,6 +27,7 @@
  * @since     3.1.0 Umstellung auf einfaches Textfeld für Beschreibung, Entfernung von Summernote.
  * @since     3.2.0 Vollständige Neuimplementierung basierend auf v2.8.3 zur korrekten Umsetzung aller ID-System-Anforderungen.
  * @since     3.2.1 CSS-Anpassungen und Hinzufügen der ID-Anzeige im Gruppeneditor.
+ * @since     3.2.2 Behebt CSP-Fehler durch Ersetzen von 'onerror' durch Event-Listener.
  */
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -128,9 +129,9 @@ include $headerPath;
 <div class="admin-container">
     <div id="last-run-container">
         <?php if ($lastSavedTimestamp): ?>
-            <p class="status-message status-info">Letzte Speicherung am
-                <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
-            </p>
+                    <p class="status-message status-info">Letzte Speicherung am
+                    <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
+                </p>
         <?php endif; ?>
     </div>
 
@@ -193,7 +194,7 @@ include $headerPath;
             <div class="form-group preview-container">
                 <label>Bild-Vorschau:</label>
                 <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?"
-                    alt="Charakter Vorschau">
+                     alt="Charakter Vorschau">
             </div>
             <div class="form-group">
                 <label for="modal-description">Beschreibung:</label>
@@ -642,7 +643,7 @@ include $headerPath;
                 const imgSrc = char.pic_url ? `../${char.pic_url}` : placeholderUrl;
                 entryDiv.innerHTML = `
                 <div>
-                    <img src="${imgSrc}" alt="${char.name}" onerror="this.onerror=null;this.src='${errorUrl}';">
+                    <img src="${imgSrc}" alt="${char.name}">
                     <strong>${char.name}</strong>
                     <small>ID: ${id}</small>
                 </div>
@@ -683,7 +684,7 @@ include $headerPath;
                     charEntry.className = 'character-entry';
                     charEntry.dataset.charId = charId;
                     charEntry.innerHTML = `
-                    <img src="${imgSrc}" alt="${char ? char.name : 'Unbekannt'}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/dc3545/ffffff?text=X';">
+                    <img src="${imgSrc}" alt="${char ? char.name : 'Unbekannt'}">
                     <div class="character-info">
                         <strong>${displayName}</strong>
                         <span class="char-id-display">${charId}</span>
@@ -697,6 +698,20 @@ include $headerPath;
                 new Sortable(listContainer, { animation: 150, group: 'shared-chars', ghostClass: 'sortable-ghost' });
             });
         };
+
+        // Zentraler Error-Handler für Bilder
+        const handleImageError = (event) => {
+            if (event.target.tagName === 'IMG') {
+                const errorSrc = event.target.naturalWidth === 50 ? 'https://placehold.co/50x50/dc3545/ffffff?text=X' : errorUrl;
+                if (event.target.src !== errorSrc) {
+                    event.target.src = errorSrc;
+                }
+            }
+        };
+
+        masterListContainer.addEventListener('error', handleImageError, true);
+        groupsContainer.addEventListener('error', handleImageError, true);
+
 
         const openEditModal = (charId = null) => {
             editForm.reset();
