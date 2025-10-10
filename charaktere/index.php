@@ -14,6 +14,9 @@
  * @since     1.1.0 Entfernt Inline-Style, um CSP-Konformität zu gewährleisten.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // === 1. ZENTRALE INITIALISIERUNG ===
 // Der Pfad ist relativ zum /charaktere/ Ordner
 require_once __DIR__ . '/../src/components/public_init.php';
