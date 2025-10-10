@@ -1,5 +1,0 @@
-admin/generator_sitemap.php: Erstellt die Sitemap und benötigt eine Liste aller Comic-Seiten aus der JSON-Datei.
-
-admin/consolenanwendung/combine_comics.php: Dieses Skript scheint Daten zu kombinieren und in die comic_var.json zu schreiben. Es muss unbedingt angepasst werden, damit es die Daten im neuen v2-Format speichert.
-
-admin/consolenanwendung/scrape_comics.php: Dieses Skript liest wahrscheinlich die comic_var.json, um zu wissen, welche Comics bereits vorhanden sind.
