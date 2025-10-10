@@ -10,13 +10,12 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
+ * @version   2.2.0
  * @since     2.1.0 Angepasst an das neue Design mit einheitlichen Statusmeldungen, Button-Stilen
- * und einem schwebenden Button für die Ordnererstellung.
+ * @since     2.2.0 Anpassung an versionierte comic_var.json (Schema v2).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
@@ -46,7 +45,7 @@ $requiredJsonFiles = [
     'comic_var.json' => __DIR__ . '/../src/config/comic_var.json',
     'rss_config.json' => __DIR__ . '/../src/config/rss_config.json',
     'sitemap.json' => __DIR__ . '/../src/config/sitemap.json',
-    'version.json' => __DIR__ . '/../src/config/version.json',
+    'version.json' => __DIR__ . '/../version.json',
 ];
 $jsonTemplatesPath = __DIR__ . '/json-vorlagen/';
 if ($debugMode) {
@@ -166,8 +165,16 @@ function createJsonFiles(array $jsonFiles, string $templatesPath, bool $debugMod
                     error_log("Fehler: Fehler beim Kopieren der JSON-Vorlage " . $templatePath . " nach " . $path);
                 }
             } else {
-                // Leere Datei erstellen
-                $emptyContent = ($name === 'comic_var.json') ? json_encode([], JSON_PRETTY_PRINT) : json_encode(new stdClass(), JSON_PRETTY_PRINT);
+                // *** ANPASSUNG FÜR V2-SCHEMA ***
+                $emptyContent = '';
+                if ($name === 'comic_var.json') {
+                    $emptyData = ['schema_version' => 2, 'comics' => new stdClass()];
+                    $emptyContent = json_encode($emptyData, JSON_PRETTY_PRINT);
+                } else {
+                    $emptyContent = json_encode(new stdClass(), JSON_PRETTY_PRINT);
+                }
+                // *** ENDE ANPASSUNG ***
+
                 if (file_put_contents($path, $emptyContent) !== false) {
                     $results[] = ['name' => $name, 'status' => 'created_empty', 'message' => 'leer erstellt'];
                     if ($debugMode)
@@ -184,7 +191,7 @@ function createJsonFiles(array $jsonFiles, string $templatesPath, bool $debugMod
 
 
 /**
- * Liest die Comic-Daten aus der JSON-Datei.
+ * Liest die Comic-Daten aus der JSON-Datei und extrahiert sie bei v2-Schema.
  * @param string $filePath Der Pfad zur JSON-Datei.
  * @return array|null Die dekodierten Daten als assoziatives Array oder null bei Fehler/nicht existent.
  */
@@ -211,18 +218,27 @@ function getComicData(string $filePath, bool $debugMode): ?array
     }
     if ($debugMode)
         error_log("DEBUG: Comic-Daten aus JSON erfolgreich geladen.");
-    return is_array($data) ? $data : [];
+
+    // *** ANPASSUNG FÜR V2-SCHEMA ***
+    if (is_array($data)) {
+        if (isset($data['schema_version']) && $data['schema_version'] >= 2 && isset($data['comics'])) {
+            return $data['comics']; // Nur die Comic-Daten zurückgeben
+        }
+        return $data; // Fallback für v1
+    }
+    // *** ENDE ANPASSUNG ***
+
+    return [];
 }
 
 /**
- * Speichert Comic-Daten in die JSON-Datei.
+ * Speichert Comic-Daten im v2-Schema in die JSON-Datei.
  * @param string $filePath Der Pfad zur JSON-Datei.
- * @param array $data Die zu speichernden Daten.
+ * @param array $comicsData Die zu speichernden Comic-Daten.
  * @return bool True bei Erfolg, False bei Fehler.
  */
-function saveComicData(string $filePath, array $data, bool $debugMode): bool
+function saveComicData(string $filePath, array $comicsData, bool $debugMode): bool
 {
-    // Sicherstellen, dass das Verzeichnis existiert
     $dir = dirname($filePath);
     if (!is_dir($dir)) {
         if (!mkdir($dir, 0777, true)) {
@@ -233,7 +249,14 @@ function saveComicData(string $filePath, array $data, bool $debugMode): bool
         }
     }
 
-    $result = file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT));
+    // *** ANPASSUNG FÜR V2-SCHEMA ***
+    $dataToSave = [
+        'schema_version' => 2,
+        'comics' => $comicsData
+    ];
+    // *** ENDE ANPASSUNG ***
+
+    $result = file_put_contents($filePath, json_encode($dataToSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     if ($result === false) {
         error_log("Fehler beim Schreiben der JSON-Datei: " . $filePath);
         if ($debugMode)
@@ -294,7 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
 
-        case 'create_json_files': // NEUE AKTION FÜR JSON-DATEIEN
+        case 'create_json_files': // AKTION FÜR JSON-DATEIEN
             $results = createJsonFiles($requiredJsonFiles, $jsonTemplatesPath, $debugMode);
             $successCount = 0;
             $errorCount = 0;
