@@ -66,7 +66,7 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
                                     if ($characterDetails):
                                         $characterName = $characterDetails['name'];
                                         // KORREKTUR: Link verweist wieder auf die .php-Datei des Charakters.
-                                        $characterLink = $baseUrl . 'charaktere/' . urlencode($characterName) . '.php';
+                                        $characterLink = $baseUrl . 'charaktere/' . urlencode($characterName) . $dateiendungPHP;
 
                                         $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
                                         if (!empty($characterDetails['pic_url'])) {

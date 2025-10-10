@@ -67,20 +67,20 @@ if (!empty($comicData)) {
         // Link für "Erste Seite": Wenn es die erste Seite ist, deaktiviere den Link.
         // Ansonsten generiere den Link zur ersten Comic-Seite.
         if (!$isCurrentPageFirst) {
-            $firstPageUrl = $baseUrl . 'comic/' . htmlspecialchars($firstComicId) . '.php';
+            $firstPageUrl = $baseUrl . 'comic/' . htmlspecialchars($firstComicId) . $dateiendungPHP;
         }
 
         // Link für "Vorherige Seite": Wenn es nicht die erste Seite ist, nimm die vorherige Seite
         // und generiere den Link.
         if ($currentIndex > 0) {
-            $prevPageUrl = $baseUrl . 'comic/' . htmlspecialchars($comicKeys[$currentIndex - 1]) . '.php';
+            $prevPageUrl = $baseUrl . 'comic/' . htmlspecialchars($comicKeys[$currentIndex - 1]) . $dateiendungPHP;
         }
 
         // Link für "Nächste Seite": Wenn es die neueste Seite ist (index.php-Szenario)
         // oder wenn es die letzte Seite in der Comic-Liste ist, deaktiviere den Link.
         // Ansonsten generiere den Link.
         if (!$isCurrentPageLatest && ($currentIndex < count($comicKeys) - 1)) {
-            $nextPageUrl = $baseUrl . 'comic/' . htmlspecialchars($comicKeys[$currentIndex + 1]) . '.php';
+            $nextPageUrl = $baseUrl . 'comic/' . htmlspecialchars($comicKeys[$currentIndex + 1]) . $dateiendungPHP;
         } else {
             // Wenn die aktuelle Seite die logisch letzte (neueste) ist, gibt es keine "Nächste Seite".
             // Der Link wird durch leeren string oder javascript:void(0) deaktiviert, je nachdem wie renderNavLink es handhabt.

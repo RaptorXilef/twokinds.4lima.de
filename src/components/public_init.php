@@ -23,6 +23,11 @@ if (!isset($debugMode)) {
     $debugMode = false;
 }
 
+require_once __DIR__ . '/../../../../twokinds_config/configLoader.php';
+if ($debugMode) {
+    error_log("DEBUG (public_init.php): CONFIG_PATH = " . CONFIG_PATH);
+}
+
 // Setzt das maximale Ausführungszeitlimit für das Skript.
 // set_time_limit(300);
 

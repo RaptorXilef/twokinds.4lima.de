@@ -57,19 +57,19 @@
     <!-- Menü-Navigation -->
     <nav id="menu" class="menu">
         <a href="<?php echo htmlspecialchars($baseUrl); ?>comic/">Comic</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv.php">Archiv</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen.php">Lesezeichen</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic.php">Über den Comic</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv<?php echo $dateiendungPHP; ?>">Archiv</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen<?php echo $dateiendungPHP; ?>">Lesezeichen</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic<?php echo $dateiendungPHP; ?>">Über den Comic</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere<?php echo $dateiendungPHP; ?>">Charaktere</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere">Charakter-übersicht</a>
         <br>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>faq.php">FAQ</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>faq<?php echo $dateiendungPHP; ?>">FAQ</a>
         <br>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>rss_anleitung.php">RSS-Feed Info</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>rss_anleitung<?php echo $dateiendungPHP; ?>">RSS-Feed Info</a>
         <br>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz.php">Lizenz</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>datenschutzerklaerung.php">Datenschutz</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>impressum.php">Impressum</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz<?php echo $dateiendungPHP; ?>">Lizenz</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>datenschutzerklaerung<?php echo $dateiendungPHP; ?>">Datenschutz</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>impressum<?php echo $dateiendungPHP; ?>">Impressum</a>
         <br>
         <a id="toggle_lights" class="theme jsdep" href=""><span class="themelabel">Theme</span><span
                 class="themename">LICHT AUS</span></a>

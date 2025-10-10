@@ -180,7 +180,7 @@ require_once __DIR__ . '/src/layout/header.php';
                             <?php foreach ($comicsForThisChapter as $comicId => $comicDetails):
                                 $foundImagePath = $imageCache[$comicId]['thumbnails'] ?? null;
                                 $displayImagePath = $foundImagePath ? $baseUrl . ltrim($foundImagePath, './') : $baseUrl . $placeholderImagePath;
-                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId)/* . '.php'*/ ; // Link korrigieren wenn htacces nicht auf PHP-Dateien zeigt
+                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId)/* . '.php'*/ ; // Kommentar entfernen, wenn htaccess nicht auf PHP-Dateien zeigt
                                 $comicDate = DateTime::createFromFormat('Ymd', $comicId);
                                 $displayDate = $comicDate ? $comicDate->format('d.m.Y') : 'Unbekanntes Datum';
                                 ?>

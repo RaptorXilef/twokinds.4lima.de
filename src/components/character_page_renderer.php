@@ -107,7 +107,7 @@ require_once __DIR__ . '/../layout/header.php';
                                 $pageName .= ': ' . $comicDetails['name'];
                             }
 
-                            $pageLink = $baseUrl . 'comic/' . $comicId . '.php';
+                            $pageLink = $baseUrl . 'comic/' . $comicId . $dateiendungPHP;
                             ?>
                             <a href="<?php echo htmlspecialchars($pageLink); ?>" title="<?php echo htmlspecialchars($pageName); ?>">
                                 <span><?php echo htmlspecialchars($pageName); ?></span>

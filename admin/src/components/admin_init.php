@@ -23,6 +23,11 @@ if (!isset($debugMode)) {
 if ($debugMode)
     error_log("DEBUG: admin_init.php wird von {$callingScript} eingebunden.");
 
+require_once __DIR__ . '/../../../../../twokinds_config/configLoader.php';
+if ($debugMode) {
+    error_log("DEBUG (public_init.php): CONFIG_PATH = " . CONFIG_PATH);
+}
+
 ob_start();
 
 
