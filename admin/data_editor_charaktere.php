@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.2.2
+ * @version   3.2.3
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -28,6 +28,7 @@
  * @since     3.2.0 Vollständige Neuimplementierung basierend auf v2.8.3 zur korrekten Umsetzung aller ID-System-Anforderungen.
  * @since     3.2.1 CSS-Anpassungen und Hinzufügen der ID-Anzeige im Gruppeneditor.
  * @since     3.2.2 Behebt CSP-Fehler durch Ersetzen von 'onerror' durch Event-Listener.
+ * @since     3.2.3 Fügt die Möglichkeit hinzu, bestehende Gruppennamen zu bearbeiten.
  */
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -129,7 +130,7 @@ include $headerPath;
 <div class="admin-container">
     <div id="last-run-container">
         <?php if ($lastSavedTimestamp): ?>
-                    <p class="status-message status-info">Letzte Speicherung am
+                <p class="status-message status-info">Letzte Speicherung am
                     <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
                 </p>
         <?php endif; ?>
@@ -413,6 +414,11 @@ include $headerPath;
         font-size: 1em;
     }
 
+    .edit-group-btn {
+        background-color: #f0ad4e;
+        color: white;
+    }
+
     .save-button {
         background-color: #6c8f6c;
         color: white;
@@ -668,6 +674,7 @@ include $headerPath;
                 <div class="character-group-header">
                     <h3>${groupName}</h3>
                     <div>
+                        <button class="button edit-group-btn" title="Gruppe umbenennen">&#9998;</button>
                         <button class="button add-char-to-group-btn" title="Charakter zu dieser Gruppe hinzufügen">+</button>
                         <button class="button delete-button delete-group-btn" title="Gruppe löschen">X</button>
                     </div>
@@ -702,7 +709,7 @@ include $headerPath;
         // Zentraler Error-Handler für Bilder
         const handleImageError = (event) => {
             if (event.target.tagName === 'IMG') {
-                const errorSrc = event.target.naturalWidth === 50 ? 'https://placehold.co/50x50/dc3545/ffffff?text=X' : errorUrl;
+                const errorSrc = event.target.naturalWidth <= 50 ? 'https://placehold.co/50x50/dc3545/ffffff?text=X' : errorUrl;
                 if (event.target.src !== errorSrc) {
                     event.target.src = errorSrc;
                 }
@@ -762,10 +769,35 @@ include $headerPath;
             if (e.target.matches('.add-group-btn')) {
                 const name = prompt("Name der neuen Gruppe:");
                 if (name && name.trim()) {
-                    if (characterData.groups[name] === undefined) {
-                        characterData.groups[name] = [];
+                    if (characterData.groups[name.trim()] === undefined) {
+                        characterData.groups[name.trim()] = [];
                         renderGroups();
                     } else alert("Gruppe existiert bereits.");
+                }
+            }
+            if (e.target.matches('.edit-group-btn')) {
+                const groupDiv = e.target.closest('.character-group');
+                const oldName = groupDiv.dataset.groupName;
+                const newName = prompt("Neuen Namen für die Gruppe eingeben:", oldName);
+
+                if (newName && newName.trim() && newName.trim() !== oldName) {
+                    const cleanNewName = newName.trim();
+                    if (characterData.groups.hasOwnProperty(cleanNewName)) {
+                        alert("Eine Gruppe mit diesem Namen existiert bereits.");
+                        return;
+                    }
+                    // Create a new object to preserve order
+                    const newGroups = {};
+                    Object.keys(characterData.groups).forEach(key => {
+                        if (key === oldName) {
+                            newGroups[cleanNewName] = characterData.groups[oldName];
+                        } else {
+                            newGroups[key] = characterData.groups[key];
+                        }
+                    });
+                    characterData.groups = newGroups;
+                    renderGroups();
+                    showMessage('Gruppe umbenannt. Speichern nicht vergessen!', 'status-info');
                 }
             }
             if (e.target.matches('.delete-master-btn')) {
