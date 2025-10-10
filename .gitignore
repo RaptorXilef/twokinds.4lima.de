@@ -1,65 +1,70 @@
 # assets und Bilder
-assets/comic_hires/*.jpg
-assets/comic_hires/*.png
-assets/comic_hires/*gif
-assets/comic_hires/*.webp
-!assets/comic_hires/in_translation.*
-!assets/comic_hires/index.php
-!assets/comic_hires/.htaccess
+public/assets/comic_hires/*.jpg
+public/assets/comic_hires/*.png
+public/assets/comic_hires/*gif
+public/assets/comic_hires/*.webp
+!public/assets/comic_hires/in_translation.*
+!public/assets/comic_hires/index.php
+!public/assets/comic_hires/.htaccess
 
-assets/comic_lowres/*.jpg
-assets/comic_lowres/*.png
-assets/comic_lowres/*gif
-assets/comic_lowres/*.webp
-!assets/comic_lowres/in_translation.*
-!assets/comic_lowres/index.php
-!assets/comic_lowres/.htaccess
+public/assets/comic_lowres/*.jpg
+public/assets/comic_lowres/*.png
+public/assets/comic_lowres/*gif
+public/assets/comic_lowres/*.webp
+!public/assets/comic_lowres/in_translation.*
+!public/assets/comic_lowres/index.php
+!public/assets/comic_lowres/.htaccess
 
-assets/comic_lowres_png/*
+public/assets/comic_lowres_png/*
 
-assets/comic_socialmedia/*.jpg
-assets/comic_socialmedia/*.png
-assets/comic_socialmedia/*gif
-assets/comic_socialmedia/*.webp
-!assets/comic_socialmedia/index.php
-!assets/comic_socialmedia/.htaccess
+public/assets/comic_socialmedia/*.jpg
+public/assets/comic_socialmedia/*.png
+public/assets/comic_socialmedia/*gif
+public/assets/comic_socialmedia/*.webp
+!public/assets/comic_socialmedia/index.php
+!public/assets/comic_socialmedia/.htaccess
 
-assets/comic_thumbnails/*.jpg
-assets/comic_thumbnails/*.png
-assets/comic_thumbnails/*gif
-assets/comic_thumbnails/*.webp
-!assets/comic_thumbnails/placeholder.*
-!assets/comic_thumbnails/in_translation.*
-!assets/comic_thumbnails/index.php
-!assets/comic_thumbnails/.htaccess
+public/assets/comic_thumbnails/*.jpg
+public/assets/comic_thumbnails/*.png
+public/assets/comic_thumbnails/*gif
+public/assets/comic_thumbnails/*.webp
+!public/assets/comic_thumbnails/placeholder.*
+!public/assets/comic_thumbnails/in_translation.*
+!public/assets/comic_thumbnails/index.php
+!public/assets/comic_thumbnails/.htaccess
 
-assets/img/github/twokinds.4lima.de.psd
-assets/img/about/*
+public/assets/img/github/twokinds.4lima.de.psd
+public/assets/img/about/*
 
 # Fehlerseiten
-!assets/comic_lowres/404.*
-!assets/comic_hires/404.*
-!assets/comic_lowres/403.*
-!assets/comic_hires/403.*
+!public/assets/comic_lowres/404.*
+!public/assets/comic_hires/404.*
+!public/assets/comic_lowres/403.*
+!public/assets/comic_hires/403.*
 
 # Nicht verwendete Icons
-assets/icons/nicht verwendet/*
+public/assets/icons/nicht verwendet/*
 
 # Comic-Ordner
-comic/*
-!comic/20170728.php
-!comic/20250312.php
-!comic/20250604.php
-!comic/index.php
+public/comic/*
+!public/comic/20170728.php
+!public/comic/20250312.php
+!public/comic/20250604.php
+!public/comic/index.php
 
 # Charaktere-Ordner
-charaktere/*
-!charaktere/index.php
-!charaktere/Trace.php
-!charaktere/Flora.php
+public/charaktere/*
+!public/charaktere/index.php
+!public/charaktere/Trace.php
+!public/charaktere/Flora.php
 
 # temp Config
-src/config/*
+public/src/config/*
+public/sitemap.xml
+public/rss.xml
+public/assets/Ordnerstruktur.txt
+public/admin/json-vorlagen/*
+public/admin/consolenanwendung/*
 
 # Zip-Archive
 *.zip
@@ -68,11 +73,11 @@ src/config/*
 
 # Googles
 google5c760f191f071105.html
-src/layout/js_backup/gtag.js
+public/src/layout/js_backup/gtag.js
 
 #Notizen
-_links/*
-_debug/*
+public/_links/*
+public/_debug/*
 *.url
 * - Kopie*
 test*.php
@@ -83,11 +88,11 @@ test*.php
 # FTP Verzeichnisse
 sync.ffs_db
 # Charaktere Bilder
-assets/img/charaktere/characters/themaskedgods.png
-assets/img/charaktere/characters/TheMaskedGods2025-2.png
-assets/img/charaktere/characters/TheMaskedGods2025.png
-assets/img/charaktere/characters_webp/templarchart-Original.png
-assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
+public/assets/img/charaktere/characters/themaskedgods.png
+public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
+public/assets/img/charaktere/characters/TheMaskedGods2025.png
+public/assets/img/charaktere/characters_webp/templarchart-Original.png
+public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
 
 # CSS minified Tool
 node_modules/*
@@ -145,3 +150,6 @@ package.json
 # wieder aktivieren:
 # git update-index --no-assume-unchanged src/config/comic_var.json
 # git update-index --no-assume-unchanged src/config/archive_chapters.json
+
+twokinds_src/*
+config/secrets/*
