@@ -8,8 +8,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
- * @since     2.0.0 Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung und detailliertem Protokoll, analog zu den anderen Generatoren.
+ * @version   2.1.0
+ * @since     2.0.0 Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung und detailliertem Protokoll.
+ * @since     2.1.0 Anpassung an versionierte comic_var.json (Schema v2).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -30,9 +31,6 @@ $settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
-        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
-        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
-        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
         'generator_comic' => ['last_run_timestamp' => null]
     ];
     if (!file_exists($filePath)) {
@@ -58,6 +56,9 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
 }
 
 // --- Hilfsfunktionen ---
+/**
+ * Liest die Comic-Daten aus der JSON-Datei und extrahiert sie bei v2-Schema.
+ */
 function getComicData(string $filePath, bool $debugMode): ?array
 {
     if (!file_exists($filePath))
@@ -65,8 +66,17 @@ function getComicData(string $filePath, bool $debugMode): ?array
     $content = file_get_contents($filePath);
     if ($content === false)
         return null;
-    $data = json_decode($content, true);
-    return is_array($data) ? $data : [];
+    $decodedData = json_decode($content, true);
+    if (json_last_error() !== JSON_ERROR_NONE && is_array($decodedData)) {
+        // Prüfe auf die neue, versionierte Struktur
+        if (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2 && isset($decodedData['comics'])) {
+            return $decodedData['comics'];
+        } else {
+            // Fallback für die alte, flache Struktur
+            return $decodedData;
+        }
+    }
+    return [];
 }
 
 function getComicIdsFromImages(string $dirPath, bool $debugMode): array

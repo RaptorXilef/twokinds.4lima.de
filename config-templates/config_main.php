@@ -1,7 +1,4 @@
 <?php
-define('ROOT_PATH', __DIR__ . '/../');
-define('CONFIG_PATH', __DIR__ . '/');
-
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
 $debugMode = false; // true = AN, false = AUS
 
