@@ -12,7 +12,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
+ * @since     1.0.0 Verarbeitung der Daten aus archive_chapters.json und comic_var.json.
+ * @since     1.1.0 Anpassung an versionalisierte comic_var.json (Schema v2).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -28,28 +30,46 @@ $imageCacheJsonPath = __DIR__ . '/src/config/comic_image_cache.json';
 $placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg';
 
 // Funktion zum Laden von JSON-Dateien
-function loadJsonFile(string $path, bool $debugMode, string $fileName): array
+function loadJsonFile(string $path, bool $debugMode, string $fileName): ?array
 {
     if (!file_exists($path) || filesize($path) === 0) {
         if ($debugMode)
             error_log("DEBUG: {$fileName} nicht gefunden oder leer: " . $path);
-        return [];
+        return null;
     }
     $content = file_get_contents($path);
+    if ($content === false) {
+        if ($debugMode)
+            error_log("Fehler beim Lesen von {$fileName}: " . $path);
+        return null;
+    }
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
         if ($debugMode)
             error_log("Fehler beim Dekodieren von {$fileName}: " . json_last_error_msg());
-        return [];
+        return null;
     }
     if ($debugMode)
         error_log("DEBUG: {$fileName} erfolgreich geladen.");
     return $data;
 }
 
-$archiveChapters = loadJsonFile($archiveChaptersJsonPath, $debugMode, 'archive_chapters.json');
-$comicData = loadJsonFile($comicVarJsonPath, $debugMode, 'comic_var.json');
-$imageCache = loadJsonFile($imageCacheJsonPath, $debugMode, 'comic_image_cache.json');
+$archiveChapters = loadJsonFile($archiveChaptersJsonPath, $debugMode, 'archive_chapters.json') ?? [];
+
+// *** ANPASSUNG FÜR V2-SCHEMA ***
+$rawComicData = loadJsonFile($comicVarJsonPath, $debugMode, 'comic_var.json');
+$comicData = [];
+if (is_array($rawComicData)) {
+    if (isset($rawComicData['schema_version']) && $rawComicData['schema_version'] >= 2 && isset($rawComicData['comics'])) {
+        $comicData = $rawComicData['comics']; // v2 format
+    } else {
+        $comicData = $rawComicData; // v1 format (fallback)
+    }
+}
+// *** ENDE ANPASSUNG ***
+
+$imageCache = loadJsonFile($imageCacheJsonPath, $debugMode, 'comic_image_cache.json') ?? [];
+
 
 if ($debugMode && empty($imageCache)) {
     error_log("WARNUNG: Der Bild-Cache (comic_image_cache.json) ist leer oder konnte nicht geladen werden. Führe build_image_cache.php im Admin-Bereich aus.");
@@ -71,7 +91,7 @@ if ($debugMode)
 
 // Füge fehlende Kapitel aus comic_var.json hinzu
 $existingChapterIds = array_column($archiveChapters, 'chapterId');
-foreach ($comicsByChapter as $chId => $comics) {
+foreach (array_keys($comicsByChapter) as $chId) {
     if (!in_array($chId, $existingChapterIds)) {
         $archiveChapters[] = [
             'chapterId' => (string) $chId,
@@ -115,7 +135,7 @@ usort($archiveChapters, function ($a, $b) {
     if ($valA[0] !== $valB[0])
         return $valA[0] <=> $valB[0];
     if ($valA[0] === 1)
-        return strnatcmp($valA[1], $valB[1]);
+        return strnatcmp((string) $valA[1], (string) $valB[1]);
     return $valA[1] <=> $valB[1];
 });
 
@@ -160,7 +180,7 @@ require_once __DIR__ . '/src/layout/header.php';
                             <?php foreach ($comicsForThisChapter as $comicId => $comicDetails):
                                 $foundImagePath = $imageCache[$comicId]['thumbnails'] ?? null;
                                 $displayImagePath = $foundImagePath ? $baseUrl . ltrim($foundImagePath, './') : $baseUrl . $placeholderImagePath;
-                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId);
+                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId)/* . '.php'*/ ; // Link korrigieren wenn htacces nicht auf PHP-Dateien zeigt
                                 $comicDate = DateTime::createFromFormat('Ymd', $comicId);
                                 $displayDate = $comicDate ? $comicDate->format('d.m.Y') : 'Unbekanntes Datum';
                                 ?>
