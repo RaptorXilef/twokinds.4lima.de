@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.7.0
+ * @version   5.8.0
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
@@ -20,6 +20,7 @@
  * @since     5.5.5 Behebt Fehler beim Löschen von Einträgen, Erstellen von PHP-Dateien und der Anzeige im "Neu"-Dialog.
  * @since     5.6.0 Passt die Charakter-Auswahl im Modal an die neue, dynamische Gruppenstruktur der charaktere.json an.
  * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten. Stellt sicher, dass mehrfach zugeordnete Charaktere synchron ausgewählt werden.
+ * @since     5.8.0 Anpassung an versionierte comic_var.json (Schema v2).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -93,10 +94,18 @@ function loadCharacterDataWithSchema(string $path): array
 }
 
 
-function saveComicData(string $path, array $data, bool $debugMode): bool
+function saveComicData(string $path, array $comics, bool $debugMode): bool
 {
-    ksort($data);
-    $jsonContent = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    // Sortiere die Comic-Daten selbst nach ID (Schlüssel)
+    ksort($comics);
+
+    // Erstelle die finale Datenstruktur für Schema v2
+    $dataToSave = [
+        'schema_version' => 2,
+        'comics' => $comics
+    ];
+
+    $jsonContent = json_encode($dataToSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     if ($jsonContent === false)
         return false;
     return file_put_contents($path, $jsonContent) !== false;
@@ -171,7 +180,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($action) {
         case 'save_comic_data':
             $comicDataToSave = $requestData['comics'] ?? [];
-            $currentData = loadJsonData($comicVarJsonPath, $debugMode);
+
+            // Lade die aktuelle v1/v2-Datenstruktur, um einen Vergleich zu ermöglichen
+            $decodedCurrentData = loadJsonData($comicVarJsonPath, $debugMode);
+            $currentData = [];
+            if (isset($decodedCurrentData['schema_version']) && $decodedCurrentData['schema_version'] >= 2) {
+                $currentData = $decodedCurrentData['comics'] ?? [];
+            } else {
+                $currentData = $decodedCurrentData;
+            }
 
             $newIds = array_keys(array_diff_key($comicDataToSave, $currentData));
             $deletedIds = array_keys(array_diff_key($currentData, $comicDataToSave));
@@ -250,14 +267,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $settings = loadGeneratorSettings($settingsFilePath, $debugMode);
 $comicEditorSettings = $settings['data_editor_comic'];
 
-$jsonData = loadJsonData($comicVarJsonPath, $debugMode);
+// Lade Comic-Daten und packe sie bei Bedarf aus
+$decodedData = loadJsonData($comicVarJsonPath, $debugMode);
+$jsonData = [];
+if (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) {
+    $jsonData = $decodedData['comics'] ?? [];
+} else {
+    $jsonData = $decodedData; // Fallback für v1
+}
+
 $charaktereData = loadCharacterDataWithSchema($charaktereJsonPath);
 $imageDirs = [__DIR__ . '/../assets/comic_lowres/', __DIR__ . '/../assets/comic_hires/'];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
 $phpIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
 
 $allIds = array_unique(array_merge(array_keys($jsonData), $imageIds, $phpIds));
-sort($allIds);
+rsort($allIds); // Neueste zuerst
 
 $fullComicData = [];
 foreach ($allIds as $id) {
@@ -305,9 +330,9 @@ include $headerPath;
         <div id="settings-and-actions-container">
             <div id="last-run-container">
                 <?php if ($comicEditorSettings['last_run_timestamp']): ?>
-                    <p class="status-message status-info">Letzte Speicherung am
-                        <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
-                    </p>
+                            <p class="status-message status-info">Letzte Speicherung am
+                            <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
+                        </p>
                 <?php endif; ?>
             </div>
             <h2>Comic Daten Editor</h2>
@@ -1044,7 +1069,7 @@ include $headerPath;
         });
 
         const renderTable = () => {
-            filteredComicIds.sort();
+            filteredComicIds.sort().reverse(); // Sortiert absteigend (neueste zuerst)
             tableBody.innerHTML = '';
             const start = (currentPage - 1) * ITEMS_PER_PAGE;
             const end = start + ITEMS_PER_PAGE;
