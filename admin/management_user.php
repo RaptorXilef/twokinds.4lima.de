@@ -12,7 +12,7 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-$debugMode = false;
+$debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
 require_once __DIR__ . '/src/components/admin_init.php';

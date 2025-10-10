@@ -14,7 +14,7 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-$debugMode = false;
+$debugMode = $debugMode ?? false;
 
 if ($debugMode)
     error_log("DEBUG: index.php (Login) wird geladen.");

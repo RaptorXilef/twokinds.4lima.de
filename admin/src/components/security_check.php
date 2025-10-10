@@ -5,8 +5,7 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren.
-$debugMode = false;
+$debugMode = $debugMode ?? false;
 
 // Starte die PHP-Sitzung, falls noch keine aktiv ist.
 if (session_status() === PHP_SESSION_NONE) {

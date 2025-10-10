@@ -26,6 +26,9 @@
  * ... weitere Parameter ...
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // --- 1. Dynamische Basis-URL und Seiten-URL Bestimmung ---
 // Diese Logik ermittelt die Basis-URL dynamisch, unabhängig davon, ob die Seite lokal,
 // im Intranet oder auf einem externen Server läuft und ob sie in einem Unterordner installiert ist.

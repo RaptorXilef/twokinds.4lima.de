@@ -15,6 +15,9 @@
  * @version   1.0.0
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // === 1. ZENTRALE INITIALISIERUNG ===
 require_once __DIR__ . '/public_init.php';
 

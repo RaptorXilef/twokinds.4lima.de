@@ -15,8 +15,7 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
-/* $debugMode = false; */
+$debugMode = $debugMode ?? false;
 
 // Lade die Hilfsfunktion zum Rendern der Navigationsbuttons.
 // Diese Datei sollte nur einmal pro Request eingebunden werden, um den "Cannot redeclare function"-Fehler zu vermeiden.

@@ -16,7 +16,10 @@
  * @since     1.0.2 Visuelles Feedback beim Kopieren der RSS-URL hinzugefügt.
  */
 
-// Die Variable $baseUrl wird nun IMMER von header.php gesetzt.
+// Die Variable $baseUrl wird IMMER von header.php gesetzt.
+
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
 
 ?>
 

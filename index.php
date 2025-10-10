@@ -14,7 +14,7 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-$debugMode = false;
+$debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 require_once __DIR__ . '/src/components/public_init.php';

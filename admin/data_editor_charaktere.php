@@ -31,6 +31,9 @@
  * @since     3.2.3 Fügt die Möglichkeit hinzu, bestehende Gruppennamen zu bearbeiten.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';
 

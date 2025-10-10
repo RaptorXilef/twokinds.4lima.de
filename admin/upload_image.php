@@ -12,8 +12,8 @@
  * @since     4.1.0 Integriert das Speichern und Anzeigen der letzten Ausführung konsistent.
  */
 
-// === DEBUG-MODUS & KONFIGURATION ===
-$debugMode = false;
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';

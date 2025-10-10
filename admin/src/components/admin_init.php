@@ -16,17 +16,16 @@
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
 $callingScript = basename($_SERVER['PHP_SELF']);
 
-if (!isset($debugMode)) {
-    $debugMode = false;
-}
-
-if ($debugMode)
-    error_log("DEBUG: admin_init.php wird von {$callingScript} eingebunden.");
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
 
 require_once __DIR__ . '/../../../../../twokinds_config/configLoader.php';
 if ($debugMode) {
     error_log("DEBUG (public_init.php): CONFIG_PATH = " . CONFIG_PATH);
 }
+
+if ($debugMode)
+    error_log("DEBUG: admin_init.php wird von {$callingScript} eingebunden.");
 
 ob_start();
 

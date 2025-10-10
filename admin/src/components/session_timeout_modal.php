@@ -4,6 +4,9 @@
  * Dieses Skript wird nur für angemeldete Administratoren geladen.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // Die $baseUrl wird in der header.php definiert und sollte hier verfügbar sein.
 if (!isset($baseUrl)) {
     // Fallback, falls $baseUrl nicht gesetzt ist (sollte nicht passieren)

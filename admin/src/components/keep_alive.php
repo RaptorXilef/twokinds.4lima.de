@@ -9,6 +9,9 @@
  * @date 2025-09-07
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // Definiere eine Konstante, damit admin_init.php weiß, dass dies ein API-Aufruf ist.
 define('IS_API_CALL', true);
 

@@ -18,6 +18,9 @@
  * @since     2.1.0 Stellt die Link-Struktur auf individuelle PHP-Dateien (/charaktere/Trace.php) wieder her.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // Pfad zur Charakter-Definitionsdatei
 $charaktereJsonPath = __DIR__ . '/../config/charaktere.json';
 $charaktereData = [];

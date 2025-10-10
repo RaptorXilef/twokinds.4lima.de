@@ -21,9 +21,7 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
-// Diese Variable wird in dieser Datei aktuell nicht verwendet, da keine error_log Aufrufe vorhanden sind.
-/* $debugMode = false; */
+$debugMode = $debugMode ?? false;
 
 function renderNavLink(string $href, string $class, string $text, bool $isDisabled): string
 {

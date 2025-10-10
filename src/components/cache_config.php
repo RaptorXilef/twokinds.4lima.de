@@ -12,6 +12,9 @@
  * @version   1.0.0
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // Setze auf true, um Cache Busting zu aktivieren (Produktivmodus).
 // Setze auf false, um es zu deaktivieren (Entwicklungsmodus/Debugging).
 define('ENABLE_CACHE_BUSTING', true);

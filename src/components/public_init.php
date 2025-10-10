@@ -19,9 +19,7 @@
 
 // === DEBUG-MODUS STEUERUNG ===
 // Kann in der aufrufenden Datei VOR dem Include gesetzt werden.
-if (!isset($debugMode)) {
-    $debugMode = false;
-}
+$debugMode = $debugMode ?? false;
 
 require_once __DIR__ . '/../../../../twokinds_config/configLoader.php';
 if ($debugMode) {

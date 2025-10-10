@@ -24,11 +24,15 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-$debugMode = false;
-define('COMIC_PAGES_PER_PAGE', 50);
+$debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';
+
+// === VARIABLEN ===
+// Anzahl der Comic-Seiten pro Seite in der Übersicht des Comicseiten Editors.
+$comicPagesPerPage = $comicPagesPerPage ?? 50;
+define('COMIC_PAGES_PER_PAGE', $comicPagesPerPage);
 
 // Pfade
 $headerPath = __DIR__ . '/../src/layout/header.php';

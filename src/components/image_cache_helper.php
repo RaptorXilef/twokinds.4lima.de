@@ -14,6 +14,9 @@
  * @version   1.0.0
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 class ImageCache
 {
     private static $instance = null;

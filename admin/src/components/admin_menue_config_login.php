@@ -3,8 +3,10 @@
  * Dieses Skript enthält die Konfiguration für das Navigationsmenü im Admin-Bereich.
  * Es wird dynamisch in src/layout/header.php geladen, wenn sich der Benutzer im Admin-Bereich befindet.
  */
-?>
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+?>
 
 <div class="sidebar-content">
   <!-- Menü-Navigation -->

@@ -17,6 +17,9 @@
  * @since     2.1.0 Liest Charakternamen aus Dateinamen, filtert aber nach ID.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // === 1. ZENTRALE INITIALISIERUNG ===
 require_once __DIR__ . '/public_init.php';
 

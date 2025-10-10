@@ -19,6 +19,10 @@
  * @param string $type Der Typ des Bildes ('portrait' oder 'ref_sheet').
  * @return string Der vollständige, relative Pfad zum Bild mit Cache-Buster-Parameter.
  */
+
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 function get_char_image_path(string $imageName, string $type): string
 {
     $basePath = '';

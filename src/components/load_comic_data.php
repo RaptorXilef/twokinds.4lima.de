@@ -13,6 +13,9 @@
  * @since     2.0.1 Stellt die ksort-Sortierung wieder her, um die korrekte Reihenfolge sicherzustellen.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 $comicDataJsonPath = __DIR__ . '/../config/comic_var.json';
 $comicData = [];
 

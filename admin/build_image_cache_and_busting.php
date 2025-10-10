@@ -13,7 +13,7 @@
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-$debugMode = false;
+$debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/src/components/admin_init.php';

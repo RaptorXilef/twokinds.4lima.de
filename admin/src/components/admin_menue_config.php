@@ -4,6 +4,9 @@
  * Es wird dynamisch in src/layout/header.php geladen, wenn sich der Benutzer im Admin-Bereich befindet.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
 // Die Variable $nonce wird in admin_init.php definiert und ist hier verfügbar.
 $nonce = $nonce ?? '';
 ?>
