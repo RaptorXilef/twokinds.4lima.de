@@ -21,16 +21,15 @@ $debugMode = $debugMode ?? false;
 /* $debugMode = false; */
 
 // Pfad zur version.json Datei
-// Die $baseUrl sollte von der header.php verfügbar sein, da diese Datei nach dem Header eingebunden wird.
-$versionJsonPath = __DIR__ . '/../../version.json'; // Relativer Pfad von src/layout/footer.php
+VERSION_JSON;
 
 $versionInfo = [
     'version' => 'Unbekannt',
     'type' => 'Unbekannt'
 ];
 
-if (file_exists($versionJsonPath)) {
-    $versionContent = file_get_contents($versionJsonPath);
+if (file_exists(VERSION_JSON)) {
+    $versionContent = file_get_contents(VERSION_JSON);
     $decodedVersion = json_decode($versionContent, true);
 
     if (json_last_error() === JSON_ERROR_NONE && is_array($decodedVersion)) {
@@ -41,7 +40,7 @@ if (file_exists($versionJsonPath)) {
         $versionInfo['version'] = 'Fehler beim Laden (JSON)';
     }
 } else {
-    error_log("version.json nicht gefunden unter: " . $versionJsonPath);
+    error_log("version.json nicht gefunden unter: " . VERSION_JSON);
     $versionInfo['version'] = 'Fehler beim Laden (Datei nicht gefunden)';
 }
 

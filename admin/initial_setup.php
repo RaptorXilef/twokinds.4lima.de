@@ -10,7 +10,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.1.0
+ * @version   3.1.1
  * @since     2.1.0 Angepasst an das neue Design mit einheitlichen Statusmeldungen, Button-Stilen
  * @since     2.2.0 Anpassung an versionierte comic_var.json (Schema v2).
  * @since     3.0.0 Umstellung auf neue, ausgelagerte Verzeichnisstruktur (twokinds_src).
@@ -30,13 +30,13 @@ $footerPath = __DIR__ . '/../src/layout/footer.php';
 $configTemplatesPath = __DIR__ . '/../config_templates/';
 
 // Fallback-Pfade, falls die Konfiguration noch nicht geladen werden konnte
-$srcRootPath = __DIR__ . '/../../../../../twokinds_src';
-$configsPath = $srcRootPath . '/configs';
-$dbAssetsPath = $srcRootPath . '/assets';
+$srcPrivatPath = __DIR__ . '/../../../../../twokinds_src';
+$configsPath = $srcPrivatPath . '/configs';
+$dbAssetsPath = $srcPrivatPath . '/assets';
 
 // Pfad-Konstanten aus configLoader.php verwenden, falls verfügbar
 if (isset($configExist) && $configExist === true) {
-    $srcRootPath = ROOT_SRC_PATH;
+    $srcPrivatPath = PRIVAT_SRC_PATH;
     $configsPath = CONFIG_PATH;
     $dbAssetsPath = DB_ASSETS_PATH;
 }
@@ -44,7 +44,7 @@ $comicVarJsonPath = $dbAssetsPath . '/comic_var.json';
 
 // Definiere die benötigten Ordner und Dateien
 $requiredSrcFolders = [
-    'Source-Verzeichnis' => $srcRootPath,
+    'Source-Verzeichnis' => $srcPrivatPath,
     'Configs-Verzeichnis' => $configsPath,
     'Assets-Verzeichnis' => $dbAssetsPath,
 ];
@@ -56,7 +56,7 @@ $requiredPublicFolders = [
     '../assets/comic_thumbnails' => __DIR__ . '/../assets/comic_thumbnails',
 ];
 $requiredConfigFiles = [
-    'configLoader.php' => ['target' => $srcRootPath . '/configLoader.php', 'template_subpath' => 'configLoader.example.php'],
+    'configLoader.php' => ['target' => $srcPrivatPath . '/configLoader.php', 'template_subpath' => 'configLoader.example.php'],
     'config_main.php' => ['target' => $configsPath . '/config_main.php', 'template_subpath' => 'configs/config_main.example.php'],
     'version.json' => ['target' => __DIR__ . '/../version.json', 'template_subpath' => 'configs/version.example.json'],
 ];
@@ -292,7 +292,7 @@ include $headerPath;
                 <div class="status-list">
                     <?php foreach ($configStatuses as $file): ?>
                         <div class="status-item"><span><?php echo htmlspecialchars($file['name']); ?>:</span><span
-                                class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : ($file['templateExists'] ? 'Fehlt (Vorlage da)' : 'Fehlt'); ?></span>
+                                class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : ($file['templateExists'] ? 'Fehlt (Vorlage verfügbar)' : 'Fehlt (Vorlage auf GitHub verfügbar)'); ?></span>
                     </div>
                 <?php endforeach; ?>
                 </div>
@@ -308,7 +308,7 @@ include $headerPath;
             <div class="status-list">
                 <?php foreach ($assetStatuses as $file): ?>
                     <div class="status-item"><span><?php echo htmlspecialchars($file['name']); ?>:</span><span
-                            class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : ($file['templateExists'] ? 'Fehlt (Vorlage da)' : 'Fehlt'); ?></span>
+                            class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : ($file['templateExists'] ? 'Fehlt (Vorlage verfügbar)' : 'Fehlt (Vorlage auf GitHub verfügbar)'); ?></span>
                 </div>
                 <?php endforeach; ?>
             </div>

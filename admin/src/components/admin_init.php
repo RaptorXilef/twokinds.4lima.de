@@ -19,7 +19,7 @@ $callingScript = basename($_SERVER['PHP_SELF']);
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-require_once __DIR__ . '/../../../../../twokinds_src/configLoader.php';
+include_once __DIR__ . '/../../../../../twokinds_src/configLoader.php';
 if ($debugMode) {
     error_log("DEBUG (public_init.php): CONFIG_PATH = " . CONFIG_PATH);
 }
