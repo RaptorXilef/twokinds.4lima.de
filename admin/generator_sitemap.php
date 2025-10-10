@@ -8,8 +8,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   2.1.0
  * @since     2.0.0 Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung und AJAX-basierter Generierung.
+ * @since     2.1.0 Anpassung an v2-Schema der comic_var.json und dynamisches Hinzufügen aller Comic-Seiten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -22,6 +23,8 @@ require_once __DIR__ . '/src/components/admin_init.php';
 $headerPath = __DIR__ . '/../src/layout/header.php';
 $footerPath = __DIR__ . '/../src/layout/footer.php';
 $sitemapConfigPath = __DIR__ . '/../src/config/sitemap.json';
+$comicVarJsonPath = __DIR__ . '/../src/config/comic_var.json';
+$comicPhpPagesPath = __DIR__ . '/../comic/';
 $sitemapOutputPath = __DIR__ . '/../sitemap.xml';
 $settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 
@@ -29,13 +32,6 @@ $settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
-        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
-        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
-        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
-        'generator_comic' => ['last_run_timestamp' => null],
-        'upload_image' => ['last_run_timestamp' => null],
-        'generator_rss' => ['last_run_timestamp' => null],
-        'data_editor_sitemap' => ['last_run_timestamp' => null],
         'generator_sitemap' => ['last_run_timestamp' => null]
     ];
     if (!file_exists($filePath)) {
@@ -63,7 +59,7 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
 /**
  * Generiert die Sitemap.xml.
  */
-function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, bool $debugMode): array
+function generateSitemap(string $sitemapConfigPath, string $comicVarJsonPath, string $comicPhpPagesPath, string $sitemapOutputPath, bool $debugMode): array
 {
     if (!file_exists($sitemapConfigPath)) {
         return ['success' => false, 'message' => 'Fehler: Konfigurationsdatei sitemap.json nicht gefunden.'];
@@ -100,6 +96,7 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, b
     $urlset->setAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
     $xml->appendChild($urlset);
 
+    // Statische Seiten aus sitemap.json hinzufügen
     foreach ($sitemapConfig['pages'] as $page) {
         if (!isset($page['loc']))
             continue;
@@ -119,6 +116,36 @@ function generateSitemap(string $sitemapConfigPath, string $sitemapOutputPath, b
         $urlset->appendChild($url);
     }
 
+    // *** NEU: Dynamisch Comic-Seiten hinzufügen ***
+    if (file_exists($comicVarJsonPath)) {
+        $comicJsonContent = file_get_contents($comicVarJsonPath);
+        $decodedData = json_decode($comicJsonContent, true);
+        $comicData = [];
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decodedData)) {
+            if (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2 && isset($decodedData['comics'])) {
+                $comicData = $decodedData['comics']; // v2 format
+            } else {
+                $comicData = $decodedData; // v1 format (fallback)
+            }
+
+            foreach (array_keys($comicData) as $comicId) {
+                $comicFilePath = $comicPhpPagesPath . $comicId . '.php';
+                if (file_exists($comicFilePath)) {
+                    $url = $xml->createElement('url');
+                    $locValue = $baseUrl . 'comic/' . $comicId . '.php';
+                    $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
+                    $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($comicFilePath))));
+                    $url->appendChild($xml->createElement('changefreq', 'weekly')); // Sinnvoller Standard für Comic-Seiten
+                    $url->appendChild($xml->createElement('priority', '0.7')); // Etwas niedriger als Hauptseiten
+                    $urlset->appendChild($url);
+                }
+            }
+        }
+    }
+    // *** ENDE NEU ***
+
+
     if ($xml->save($sitemapOutputPath) !== false) {
         return ['success' => true, 'message' => 'Sitemap.xml erfolgreich generiert.', 'sitemapUrl' => $baseUrl . 'sitemap.xml'];
     } else {
@@ -136,7 +163,7 @@ if (isset($_POST['action'])) {
 
     switch ($action) {
         case 'generate_sitemap':
-            $result = generateSitemap($sitemapConfigPath, $sitemapOutputPath, $debugMode);
+            $result = generateSitemap($sitemapConfigPath, $comicVarJsonPath, $comicPhpPagesPath, $sitemapOutputPath, $debugMode);
             $response = $result;
             break;
         case 'save_settings':
@@ -172,7 +199,8 @@ include $headerPath;
             </div>
             <h2>Sitemap Generator</h2>
             <p>Dieses Tool erstellt die <code>sitemap.xml</code>-Datei basierend auf der Konfiguration in
-                <code>sitemap.json</code>. Die Sitemap wird im Hauptverzeichnis der Webseite abgelegt.
+                <code>sitemap.json</code> und fügt automatisch alle Comic-Seiten aus <code>comic_var.json</code> hinzu.
+                Die Sitemap wird im Hauptverzeichnis der Webseite abgelegt.
             </p>
 
             <div id="fixed-buttons-container">
