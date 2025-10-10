@@ -8,8 +8,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.2.0
+ * @version   2.3.0
  * @since     2.2.0 Design vollständig an den Admin-Standard angepasst.
+ * @since     2.3.0 Anpassung an versionierte comic_var.json (Schema v2).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -111,7 +112,18 @@ if (isset($_POST['action'])) {
                     $rssConfig = array_merge($rssConfig, $rssConfigResult['data']);
                 }
 
-                $comicData = $comicDataResult['data'];
+                // *** NEU: Daten aus v2-Struktur auspacken ***
+                $decodedData = $comicDataResult['data'];
+                $comicData = [];
+                if (is_array($decodedData)) {
+                    if (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2 && isset($decodedData['comics'])) {
+                        $comicData = $decodedData['comics']; // v2 format
+                    } else {
+                        $comicData = $decodedData; // v1 format (fallback)
+                    }
+                }
+                // *** ENDE NEU ***
+
                 $maxItems = $rssConfig['max_items'];
                 $comicFiles = glob(__DIR__ . '/../comic/*.php');
                 if ($comicFiles === false) {
@@ -212,9 +224,9 @@ include $headerPath;
         <div id="settings-and-actions-container">
             <div id="last-run-container">
                 <?php if ($rssSettings['last_run_timestamp']): ?>
-                    <p class="status-message status-info">Letzte Ausführung am
-                        <?php echo date('d.m.Y \u\m H:i:s', $rssSettings['last_run_timestamp']); ?> Uhr.
-                    </p>
+                            <p class="status-message status-info">Letzte Ausführung am
+                            <?php echo date('d.m.Y \u\m H:i:s', $rssSettings['last_run_timestamp']); ?> Uhr.
+                        </p>
                 <?php endif; ?>
             </div>
 
