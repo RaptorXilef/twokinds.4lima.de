@@ -10,40 +10,35 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.4.1
+ * @version   2.1.0
  * @since     1.3.2 Entfernt das feste Mapping und liest Gruppennamen dynamisch aus.
  * @since     1.4.0 Fügt eine Variable hinzu, um die Hauptüberschrift optional auszublenden.
  * @since     1.4.1 Korrigiert den Link, sodass er auf die individuelle Charakter-PHP-Seite verweist.
+ * @since     2.0.0 Umstellung auf das neue ID-basierte Charaktersystem.
+ * @since     2.1.0 Stellt die Link-Struktur auf individuelle PHP-Dateien (/charaktere/Trace.php) wieder her.
  */
 
 // Pfad zur Charakter-Definitionsdatei
 $charaktereJsonPath = __DIR__ . '/../config/charaktere.json';
-$allCharaktereData = [];
-$decodedCharaktere = [];
+$charaktereData = [];
 
 // Lade und verarbeite die Charakterdaten nur einmal
 if (file_exists($charaktereJsonPath)) {
     $charaktereJsonContent = file_get_contents($charaktereJsonPath);
-    $decodedCharaktere = json_decode($charaktereJsonContent, true);
+    $decodedData = json_decode($charaktereJsonContent, true);
 
-    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCharaktere)) {
-        foreach ($decodedCharaktere as $group) {
-            if (is_array($group)) {
-                $allCharaktereData = array_merge($allCharaktereData, $group);
-            }
-        }
-    } else {
-        $decodedCharaktere = []; // Sicherstellen, dass es ein leeres Array ist, wenn JSON fehlerhaft ist
+    if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['characters']) && isset($decodedData['groups'])) {
+        $charaktereData = $decodedData;
     }
 }
 
-// Hole die Liste der Charaktere für die aktuelle Seite aus den Comic-Daten.
-$pageCharaktere = $comicData[$currentComicId]['charaktere'] ?? [];
+// Hole die Liste der Charakter-IDs für die aktuelle Seite aus den Comic-Daten.
+$pageCharaktereIDs = $comicData[$currentComicId]['charaktere'] ?? [];
 
 // Wenn keine Charaktere für diese Seite definiert sind oder die Charakter-Daten fehlen, zeige nichts an.
-if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
+if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
 
-    // Standardwert für die Sichtbarkeit der Überschrift. Kann von der aufrufenden Datei überschrieben werden.
+    // Standardwert für die Sichtbarkeit der Überschrift.
     if (!isset($showCharacterSectionTitle)) {
         $showCharacterSectionTitle = true;
     }
@@ -55,51 +50,46 @@ if (!empty($pageCharaktere) && !empty($decodedCharaktere)):
         <?php endif; ?>
         <div class="character-list">
             <?php
-            // Iteriere durch die Gruppen in der Reihenfolge, wie sie in charaktere.json definiert sind
-            foreach ($decodedCharaktere as $groupName => $charactersInGroup):
-                // Finde heraus, welche Charaktere aus dieser Gruppe auf der aktuellen Seite sind
-                $charactersToShowInGroup = array_intersect(array_keys($charactersInGroup), $pageCharaktere);
+            foreach ($charaktereData['groups'] as $groupName => $char_id_list):
+                $idsToShowInGroup = array_intersect($char_id_list, $pageCharaktereIDs);
 
-                // Wenn in dieser Gruppe Charaktere angezeigt werden sollen, erstelle den Gruppen-Container
-                if (!empty($charactersToShowInGroup)):
+                if (!empty($idsToShowInGroup)):
                     ?>
                     <div class="character-group">
                         <h4><?php echo htmlspecialchars($groupName); ?></h4>
                         <div class="character-group-list">
                             <?php
-                            // Iteriere nun durch die Charaktere in der Reihenfolge von charaktere.json
-                            foreach ($charactersInGroup as $characterName => $characterDetails):
-                                // Zeige den Charakter nur an, wenn er auf dieser Seite vorkommen soll
-                                if (in_array($characterName, $charactersToShowInGroup)):
-                                    $characterData = $allCharaktereData[$characterName] ?? null;
-                                    // KORREKTUR: Der Link verweist jetzt auf die .php-Datei des Charakters.
-                                    $characterLink = $baseUrl . 'charaktere/' . urlencode($characterName) . '.php';
+                            foreach ($char_id_list as $char_id):
+                                if (in_array($char_id, $idsToShowInGroup)):
+                                    $characterDetails = $charaktereData['characters'][$char_id] ?? null;
 
-                                    $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt'; // Standard-Platzhalter
-                                    $imageClass = '';
+                                    if ($characterDetails):
+                                        $characterName = $characterDetails['name'];
+                                        // KORREKTUR: Link verweist wieder auf die .php-Datei des Charakters.
+                                        $characterLink = $baseUrl . 'charaktere/' . urlencode($characterName) . '.php';
 
-                                    if ($characterData && !empty($characterData['charaktere_pic_url'])) {
-                                        $imageSrc = $baseUrl . htmlspecialchars($characterData['charaktere_pic_url']);
-                                        $imageClass = 'character-image-fallback';
-                                    }
-                                    ?>
-                                    <div class="character-item">
-                                        <a href="<?php echo htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
-                                            title="Mehr über <?php echo htmlspecialchars($characterName); ?> erfahren">
-                                            <span
-                                                class="character-name"><?php echo htmlspecialchars(str_replace('_', ' ', $characterName)); ?></span>
-                                            <img src="<?php echo htmlspecialchars($imageSrc); ?>"
-                                                alt="Bild von <?php echo htmlspecialchars($characterName); ?>" loading="lazy" width="80"
-                                                height="80" class="<?php echo $imageClass; ?>">
-                                        </a>
-                                    </div>
-                                <?php
+                                        $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
+                                        if (!empty($characterDetails['pic_url'])) {
+                                            $imageSrc = $baseUrl . htmlspecialchars($characterDetails['pic_url']);
+                                        }
+                                        ?>
+                                        <div class="character-item">
+                                            <a href="<?php echo htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
+                                                title="Mehr über <?php echo htmlspecialchars($characterName); ?> erfahren">
+                                                <span class="character-name"><?php echo htmlspecialchars($characterName); ?></span>
+                                                <img src="<?php echo htmlspecialchars($imageSrc); ?>"
+                                                    alt="Bild von <?php echo htmlspecialchars($characterName); ?>" loading="lazy" width="80"
+                                                    height="80" class="character-image-fallback">
+                                            </a>
+                                        </div>
+                                        <?php
+                                    endif;
                                 endif;
                             endforeach;
                             ?>
-                                    </div>
-                                    </div>
-                        <?php
+                        </div>
+                    </div>
+                    <?php
                 endif;
             endforeach;
             ?>

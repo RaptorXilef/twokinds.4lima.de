@@ -12,7 +12,8 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   2.0.0
+ * @since     2.0.0 Umstellung auf GET-Parameter und ID-basiertes Filtern.
  */
 
 // === 1. ZENTRALE INITIALISIERUNG ===
@@ -22,21 +23,49 @@ require_once __DIR__ . '/public_init.php';
 require_once __DIR__ . '/load_comic_data.php';
 require_once __DIR__ . '/image_cache_helper.php';
 
-// === 3. CHARAKTER-NAMEN ERMITTELN ===
-$characterName = basename($_SERVER['SCRIPT_FILENAME'], '.php');
+// === 3. CHARAKTER-NAMEN & ID ERMITTELN ===
+if (!isset($_GET['char']) || empty($_GET['char'])) {
+    // Wenn kein Charakter-Parameter übergeben wurde, zeige eine Fehlermeldung.
+    http_response_code(400);
+    $pageTitle = 'Fehler';
+    require_once __DIR__ . '/../layout/header.php';
+    echo '<div class="container text-center" style="margin-top: 50px;"><p>Fehler: Es wurde kein Charakter zum Anzeigen ausgewählt.</p></div>';
+    require_once __DIR__ . '/../layout/footer.php';
+    exit;
+}
+$characterName = $_GET['char'];
+
+// Lade Charakterdaten, um die ID anhand des Namens zu finden
+$charaktereJsonPath = __DIR__ . '/../config/charaktere.json';
+$characterId = null;
+if (file_exists($charaktereJsonPath)) {
+    $charaktereJsonContent = file_get_contents($charaktereJsonPath);
+    $charData = json_decode($charaktereJsonContent, true);
+    $allCharacters = $charData['characters'] ?? [];
+
+    // Finde die ID, die zum übergebenen Namen passt (Groß-/Kleinschreibung ignorieren)
+    foreach ($allCharacters as $id => $char) {
+        if (strcasecmp($char['name'], $characterName) === 0) {
+            $characterId = $id;
+            break;
+        }
+    }
+}
 
 // === 4. COMICS FÜR DEN CHARAKTER FILTERN ===
 $characterComics = [];
-if (!empty($comicData) && is_array($comicData)) {
+if ($characterId !== null && !empty($comicData) && is_array($comicData)) {
     foreach ($comicData as $comicId => $details) {
-        if (isset($details['charaktere']) && is_array($details['charaktere']) && in_array($characterName, $details['charaktere'])) {
+        // Filtere nach der Charakter-ID anstatt des Namens
+        if (isset($details['charaktere']) && is_array($details['charaktere']) && in_array($characterId, $details['charaktere'])) {
             $characterComics[$comicId] = $details;
         }
     }
 }
+// Sortiere die Comics in absteigender Reihenfolge nach Datum (ID)
 krsort($characterComics);
-// Zähle die Anzahl der gefundenen Comics
 $comicCount = count($characterComics);
+
 
 // === 5. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Alle Auftritte von ' . htmlspecialchars($characterName);
@@ -62,7 +91,7 @@ require_once __DIR__ . '/../layout/header.php';
         <?php endif; ?>
     </h2>
 
-    <?php if (empty($characterComics)): ?>
+    <?php if (empty($characterComics) || $characterId === null): ?>
         <div class="no-bookmarks">
             <p>Für den Charakter "<?php echo htmlspecialchars($characterName); ?>" wurden leider keine Comic-Auftritte in
                 der Datenbank gefunden.</p>
@@ -79,10 +108,8 @@ require_once __DIR__ . '/../layout/header.php';
                     $fullThumbnailUrl = str_starts_with($thumbnailUrl, 'http') ? $thumbnailUrl : $baseUrl . ltrim($thumbnailUrl, './');
                     $formattedDate = date('d.m.Y', strtotime($comicId));
 
-                    // --- NEUE LOGIK ZUR NAMENSERSTELLUNG ---
-                    // Beginnt immer mit "Seite vom [Datum]"
+                    // Die Logik zur Namenserstellung bleibt unverändert
                     $pageName = 'Seite vom ' . $formattedDate;
-                    // Wenn ein Name vorhanden ist, wird er angehängt
                     if (!empty($comicDetails['name'])) {
                         $pageName .= ': ' . $comicDetails['name'];
                     }
