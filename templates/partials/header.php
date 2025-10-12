@@ -8,12 +8,14 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.7.2
+ * @version   4.0.0
  * @since     2.6.0 Diese Datei wurde verschlankt und konzentriert sich auf die HTML-Struktur und das Asset-Management.
  * Die sicherheitsrelevanten Initialisierungen wurden in separate `init.php`-Dateien ausgelagert.
  * @since     2.7.0 Entfernung redundanter URL-Berechnung und Ersetzung von Pfaden durch globale Konstanten.
  * @since     2.7.1 Korrektur der JS-Asset-Pfade auf Basis der finalen config_folder_path.php.
  * @since     2.7.2 Finale Validierung gegen die neueste Pfad-Konfiguration.
+ * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, BASE_URL).
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  *
  * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
  * @param string $pageHeader Der sichtbare H1-Header für die aktuelle Seite im Hauptinhaltsbereich.
@@ -30,28 +32,25 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// --- 1. Prüfung, ob eine Initialisierungsdatei geladen wurde ---
-// Die init-Dateien stellen $baseUrl und $nonce bereit. Hier wird ein Fallback sichergestellt.
-if (!isset($baseUrl) || !isset($nonce)) {
+// --- 1. PRÜFUNG, OB INITIALISIERUNG ERFOLGTE ---
+// Die init-Dateien stellen BASE_URL und $nonce bereit. Hier wird ein Fallback sichergestellt.
+if (!defined('BASE_URL') || !isset($nonce)) {
     $nonce = bin2hex(random_bytes(16));
-    // Notfall-URL-Bestimmung, falls init.php fehlt. Dies sollte im Normalbetrieb nie passieren.
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'];
-    $baseUrl = $protocol . $host . '/';
+    define('BASE_URL', $protocol . $host);
     error_log("WARNUNG: Keine init.php-Datei vor dem Header geladen. Fallback-Werte werden verwendet.");
 }
 
-// --- 2. Seiten-URL und Canonical-URL bestimmen ---
-// Erstellt die vollständige, aktuelle URL für Canonical und OG-Tags basierend auf der globalen $baseUrl.
-$currentPageUrl = rtrim($baseUrl, '/') . $_SERVER['REQUEST_URI'];
-// Nutze die explizit gesetzte $canonicalUrl, ansonsten die automatisch ermittelte $currentPageUrl.
+// --- 2. SEITEN-URL UND CANONICAL-URL BESTIMMEN ---
+$currentPageUrl = rtrim(BASE_URL, '/') . $_SERVER['REQUEST_URI'];
 $finalCanonicalUrl = $canonicalUrl ?? $currentPageUrl;
 
 if (isset($debugMode) && $debugMode) {
-    error_log("DEBUG (header.php): Basis-URL: " . $baseUrl . ", Seiten-URL: " . $currentPageUrl . ", Canonical-URL: " . $finalCanonicalUrl);
+    error_log("DEBUG (header.php): Basis-URL: " . BASE_URL . ", Seiten-URL: " . $currentPageUrl . ", Canonical-URL: " . $finalCanonicalUrl);
 }
 
-// --- 3. Setup der Seiten-Variablen mit Standardwerten ---
+// --- 3. SETUP DER SEITEN-VARIABLEN MIT STANDARDWERTEN ---
 $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
 $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
 $pageTitlePrefix = 'Twokinds – Das Webcomic auf Deutsch | ';
@@ -64,19 +63,18 @@ $additionalScripts = $additionalScripts ?? '';
 $additionalHeadContent = $additionalHeadContent ?? '';
 $viewportContent = $viewportContent ?? 'width=device-width, initial-scale=1.0';
 
-// --- 4. Web-Pfade mit Cache-Buster generieren ---
-// Die Web-Pfade werden mit der globalen $baseUrl gebildet.
-// Die Server-Pfade für filemtime() nutzen die globalen Konstanten für maximale Zuverlässigkeit.
-$faviconUrl = $baseUrl . 'favicon.ico?v=' . filemtime(PUBLIC_PATH . DIRECTORY_SEPARATOR . 'favicon.ico');
-$appleIconUrl = $baseUrl . 'appleicon.png?v=' . filemtime(PUBLIC_PATH . DIRECTORY_SEPARATOR . 'appleicon.png');
+// --- 4. WEB-PFADE MIT CACHE-BUSTER GENERIEREN (NEUE METHODE) ---
+// Die URLs werden jetzt mit der Path-Klasse generiert, die Server-Pfade für filemtime() mit den Verzeichnis-Konstanten.
+$faviconUrl = BASE_URL . '/favicon.ico?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'favicon.ico');
+$appleIconUrl = BASE_URL . '/appleicon.png?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'appleicon.png');
 
-$commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.min.js?c=' . filemtime(PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'common.min.js');
-$mainCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'main.min.css');
-$mainDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main_dark.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'main_dark.min.css');
-$cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
-$cookieBannerDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner_dark.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
-$cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.min.js?c=' . filemtime(PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
-$characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_display.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'character_display.css');
+$commonJsWebPathWithCacheBuster = Path::getJsUrl('common.min.js') . '?c=' . filemtime(DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'common.min.js');
+$mainCssPathWithCacheBuster = Path::getCssUrl('main.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main.min.css');
+$mainDarkCssPathWithCacheBuster = Path::getCssUrl('main_dark.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main_dark.min.css');
+$cookieBannerCssPathWithCacheBuster = Path::getCssUrl('cookie_banner.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
+$cookieBannerDarkCssPathWithCacheBuster = Path::getCssUrl('cookie_banner_dark.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
+$cookieConsentJsPathWithCacheBuster = Path::getJsUrl('cookie_consent.min.js') . '?c=' . filemtime(DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
+$characterDisplayCssPathWithCacheBuster = Path::getCssUrl('character_display.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_display.min.css');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -261,18 +259,16 @@ $characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_d
         <div id="content-area" class="content-area">
             <div id="sidebar" class="sidebar">
                 <?php
-                // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
+                // Dynamisches Laden der Menükonfiguration mit der Path-Klasse
                 if ($isAdminPage) {
-                    // Lade das Admin-Menü und das Timeout-Modal NUR, wenn der Admin auch wirklich eingeloggt ist.
                     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-                        require_once ADMIN_MENU;
-                        require_once ADMIN_SESSION_TIMEOUT_MODAL;
+                        require_once Path::getAdminComponent('admin_menue_config.php');
+                        require_once Path::getAdminComponent('session_timeout_modal.php');
                     } else {
-                        require_once ADMIN_MENU_LOGIN;
+                        require_once Path::getAdminComponent('admin_menue_config_login.php');
                     }
                 } else {
-                    // Andernfalls lade das normale Seitenmenü für öffentliche Seiten
-                    require_once MENU_PATH;
+                    require_once Path::getComponent('public_menue_config.php');
                 }
                 ?>
             </div>
