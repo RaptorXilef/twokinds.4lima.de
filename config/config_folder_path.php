@@ -6,11 +6,14 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   2.0.2
  * @since     1.0.0 Initiale Erstellung
  * @since     1.0.2 Konstanten für wichtige Dateien hinzugefügt.
  * @since     1.0.3 Pfadkonstanten robuster gestaltet: realpath() von abhängigen Pfaden entfernt und durch direkte String-Verkettung mit DIRECTORY_SEPARATOR ersetzt, um Existenzunabhängigkeit zu gewährleisten.
  * @since     2.0.0 Konstanten für relative Pfade von URL ausgehend hinzugefügt.
+ * @since     2.0.1 Fehlende URL-Konstanten für einige Verzeichnisse ergänzt.
+ * @since     2.0.2 Fehlende DIRECTORY_PUBLIC_ASSETS_URL Konstante ergänzt.
+ *
  */
 
 // Die Konstante DIRECTORY_SEPARATOR wird von PHP automatisch mit dem korrekten Trennzeichen (\ oder /) befüllt.
@@ -32,7 +35,8 @@ $normalizedSubfolder = '/' . ltrim(trim($subfolderPath, '/'), '/'); // Normalisi
 if (strlen($normalizedSubfolder) > 1) {
     $normalizedSubfolder .= '/'; // Füge einen abschließenden Slash hinzu, wenn der Pfad nicht nur aus "/" besteht.
 }
-define('BASE_URL', $protocol . $host . $normalizedSubfolder);
+define('BASE_URL', $protocol . $host . rtrim($normalizedSubfolder, '/')); // NICHT IM PROJEKT VERWENDEN! STATDTESSEN -> DIRECTORY_PUBLIC_URL <- IM PROJEKT VERWENDEN!
+
 
 ######################################################################
 // AB HIER KÖNNEN DIE PFAD-KONSTANTEN BEARBEITET WERDEN
@@ -43,7 +47,7 @@ define('BASE_URL', $protocol . $host . $normalizedSubfolder);
 define('DIRECTORY_ROOT', realpath(__DIR__ . '/..'));
 // --- PUBLIC Pfade ---
 define('DIRECTORY_PUBLIC', DIRECTORY_ROOT . DIRECTORY_SEPARATOR . 'public');
-define('DIRECTORY_PUBLIC_URL', realpath(BASE_URL));
+define('DIRECTORY_PUBLIC_URL', BASE_URL);
 
 
 // ###################################################################
@@ -60,26 +64,24 @@ define('DIRECTORY_PUBLIC_CHARAKTERE_URL', DIRECTORY_PUBLIC_URL . DIRECTORY_SEPAR
 // --- ÖFFENTLICHE SRC Pfade ---
 // PUBLIC SRC Pfad
 define('DIRECTORY_PUBLIC_SRC', DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'src');
-define('DIRECTORY_PUBLIC_ASSETS', DIRECTORY_PUBLIC_SRC . DIRECTORY_SEPARATOR . 'layout'); // assets // TODO: Pfade anpassen
-define('DIRECTORY_PUBLIC_JS', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'js'); // TODO: Pfade anpassen
-define('DIRECTORY_PUBLIC_CSS', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'css'); // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_LAYOUT', DIRECTORY_PUBLIC_SRC . DIRECTORY_SEPARATOR . 'layout'); // assets // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_JS', DIRECTORY_PUBLIC_LAYOUT . DIRECTORY_SEPARATOR . 'js'); // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_CSS', DIRECTORY_PUBLIC_LAYOUT . DIRECTORY_SEPARATOR . 'css'); // TODO: Pfade anpassen
 // TODO: SCSS und JS-ASSETS anlegen
 define('DIRECTORY_PUBLIC_COMPONENTS', DIRECTORY_PUBLIC_SRC . DIRECTORY_SEPARATOR . 'components'); // TODO: Pfade anpassen auf PRIVAT
 // URLs
 define('DIRECTORY_PUBLIC_SRC_URL', DIRECTORY_PUBLIC_URL . DIRECTORY_SEPARATOR . 'src');
-define('DIRECTORY_PUBLIC_ASSETS_URL', DIRECTORY_PUBLIC_SRC_URL . DIRECTORY_SEPARATOR . 'layout'); // assets // TODO: Pfade anpassen
-define('DIRECTORY_PUBLIC_JS_URL', DIRECTORY_PUBLIC_ASSETS_URL . DIRECTORY_SEPARATOR . 'js'); // TODO: Pfade anpassen
-define('DIRECTORY_PUBLIC_CSS_URL', DIRECTORY_PUBLIC_ASSETS_URL . DIRECTORY_SEPARATOR . 'css'); // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_LAYOUT_URL', DIRECTORY_PUBLIC_SRC_URL . DIRECTORY_SEPARATOR . 'layout'); // assets // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_JS_URL', DIRECTORY_PUBLIC_LAYOUT_URL . DIRECTORY_SEPARATOR . 'js'); // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_CSS_URL', DIRECTORY_PUBLIC_LAYOUT_URL . DIRECTORY_SEPARATOR . 'css'); // TODO: Pfade anpassen
 
 
 // ADMIN SRC Pfad
-define('DIRECTORY_PUBLIC_ADMIN_SRC', DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'admin/src'); // TODO: Pfade anpassen
-define('DIRECTORY_PUBLIC_ADMIN_SRC', DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'admin/src'); // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_ADMIN_SRC', DIRECTORY_PUBLIC_ADMIN . DIRECTORY_SEPARATOR . 'src'); // TODO: Pfade anpassen
 define('DIRECTORY_PUBLIC_ADMIN_JS', DIRECTORY_PUBLIC_ADMIN_SRC . DIRECTORY_SEPARATOR . 'js'); // TODO: Pfade anpassen
 define('DIRECTORY_PUBLIC_ADMIN_COMPONENTS', DIRECTORY_PUBLIC_ADMIN_SRC . DIRECTORY_SEPARATOR . 'components'); // TODO: Pfade anpassen auf PRIVAT
 // URLs
-define('DIRECTORY_PUBLIC_ADMIN_SRC_URL', DIRECTORY_PUBLIC_URL . DIRECTORY_SEPARATOR . 'admin/src'); // TODO: Pfade anpassen
-define('DIRECTORY_PUBLIC_ADMIN_SRC_URL', DIRECTORY_PUBLIC_URL . DIRECTORY_SEPARATOR . 'admin/src'); // TODO: Pfade anpassen
+define('DIRECTORY_PUBLIC_ADMIN_SRC_URL', DIRECTORY_PUBLIC_ADMIN_URL . DIRECTORY_SEPARATOR . 'src'); // TODO: Pfade anpassen
 define('DIRECTORY_PUBLIC_ADMIN_JS_URL', DIRECTORY_PUBLIC_ADMIN_SRC_URL . DIRECTORY_SEPARATOR . 'js'); // TODO: Pfade anpassen
 
 
@@ -114,6 +116,9 @@ define('DIRECTORY_PUBLIC_IMG_CHARAKTERE_REFSHEETS', DIRECTORY_PUBLIC_IMG_CHARAKT
 define('DIRECTORY_PUBLIC_IMG_CHARAKTERE_SWATCHES', DIRECTORY_PUBLIC_IMG_CHARAKTERE_ASSETS . DIRECTORY_SEPARATOR . 'swatches');
 
 // URLs
+// ASSETS Pfad
+define('DIRECTORY_PUBLIC_ASSETS_URL', DIRECTORY_PUBLIC_URL . DIRECTORY_SEPARATOR . 'assets');
+
 // COMIC-IMAGES Pfad
 define('DIRECTORY_PUBLIC_IMG_COMIC_HIRES_URL', DIRECTORY_PUBLIC_ASSETS_URL . DIRECTORY_SEPARATOR . 'comic_hires');
 define('DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL', DIRECTORY_PUBLIC_ASSETS_URL . DIRECTORY_SEPARATOR . 'comic_lowres');
@@ -152,6 +157,5 @@ define('DIRECTORY_PRIVATE_COMPONENTS', DIRECTORY_PRIVATE_SRC . DIRECTORY_SEPARAT
 // templates Pfad
 define('DIRECTORY_PRIVATE_TEMPLATES', DIRECTORY_ROOT . DIRECTORY_SEPARATOR . 'templates');
 define('DIRECTORY_PRIVATE_PARTIAL_TEMLATES', DIRECTORY_PRIVATE_TEMPLATES . DIRECTORY_SEPARATOR . 'partials');
-
 
 ?>

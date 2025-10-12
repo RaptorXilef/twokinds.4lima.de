@@ -11,16 +11,16 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.2.0
+ * @version   4.0.0
  * @since     1.2.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Lade die Hilfsfunktion zum Rendern der Navigationsbuttons (Jetzt mit Konstante).
-// Diese Datei sollte nur einmal pro Request eingebunden werden, um den "Cannot redeclare function"-Fehler zu vermeiden.
-require_once NAV_LINK_HELPER_PATH;
+// Lade die Hilfsfunktion zum Rendern der Navigationsbuttons (Jetzt mit der Path-Klasse).
+require_once Path::getComponent('nav_link_helper.php');
 
 // Prüfe, ob die essentiellen Daten verfügbar sind.
 if (!isset($comicData)) {
@@ -28,13 +28,12 @@ if (!isset($comicData)) {
         error_log("FEHLER: \$comicData ist in comic_navigation.php nicht verfügbar. Navigation kann nicht gerendert werden.");
     return; // Skript beenden, wenn Daten fehlen
 }
-if (!isset($baseUrl)) {
+if (!defined('DIRECTORY_PUBLIC_URL')) {
     if ($debugMode)
-        error_log("FEHLER: \$baseUrl ist in comic_navigation.php nicht verfügbar. Absolute Links können nicht generiert werden.");
+        error_log("FEHLER: DIRECTORY_PUBLIC_URL ist in comic_navigation.php nicht verfügbar. Absolute Links können nicht generiert werden.");
     return; // Skript beenden, wenn Basis-URL fehlt
 }
 if (!isset($currentComicId)) {
-    // Dieser Fall sollte durch die aufrufenden Seiten verhindert werden, ist aber ein Fallback.
     if ($debugMode)
         error_log("WARNUNG: \$currentComicId ist in comic_navigation.php nicht verfügbar.");
 }
@@ -43,7 +42,7 @@ if (!isset($currentComicId)) {
 $prevPageUrl = 'javascript:void(0)';
 $nextPageUrl = 'javascript:void(0)';
 $firstPageUrl = 'javascript:void(0)';
-$lastPageUrl = $baseUrl; // Die "Letzte Seite" zeigt immer auf die Haupt-Indexseite des Projekts (neuester Comic)
+$lastPageUrl = DIRECTORY_PUBLIC_URL; // Die "Letzte Seite" zeigt immer auf die Haupt-Indexseite
 
 // Standardwerte für die Flags, falls nicht von der aufrufenden Seite gesetzt.
 // $isCurrentPageLatest wird von index.php im Root gesetzt, um den "Letzte Seite" Button zu deaktivieren.
@@ -67,20 +66,20 @@ if (!empty($comicData)) {
         // Link für "Erste Seite": Wenn es die erste Seite ist, deaktiviere den Link.
         // Ansonsten generiere den Link zur ersten Comic-Seite.
         if (!$isCurrentPageFirst) {
-            $firstPageUrl = $baseUrl . 'comic/' . htmlspecialchars($firstComicId) . $dateiendungPHP;
+            $firstPageUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . htmlspecialchars($firstComicId) . $dateiendungPHP;
         }
 
         // Link für "Vorherige Seite": Wenn es nicht die erste Seite ist, nimm die vorherige Seite
         // und generiere den Link.
         if ($currentIndex > 0) {
-            $prevPageUrl = $baseUrl . 'comic/' . htmlspecialchars($comicKeys[$currentIndex - 1]) . $dateiendungPHP;
+            $prevPageUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . htmlspecialchars($comicKeys[$currentIndex - 1]) . $dateiendungPHP;
         }
 
         // Link für "Nächste Seite": Wenn es die neueste Seite ist (index.php-Szenario)
         // oder wenn es die letzte Seite in der Comic-Liste ist, deaktiviere den Link.
         // Ansonsten generiere den Link.
         if (!$isCurrentPageLatest && ($currentIndex < count($comicKeys) - 1)) {
-            $nextPageUrl = $baseUrl . 'comic/' . htmlspecialchars($comicKeys[$currentIndex + 1]) . $dateiendungPHP;
+            $nextPageUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . htmlspecialchars($comicKeys[$currentIndex + 1]) . $dateiendungPHP;
         } else {
             // Wenn die aktuelle Seite die logisch letzte (neueste) ist, gibt es keine "Nächste Seite".
             // Der Link wird durch leeren string oder javascript:void(0) deaktiviert, je nachdem wie renderNavLink es handhabt.
@@ -89,12 +88,11 @@ if (!empty($comicData)) {
     } else {
         // Fallback, falls die aktuelle Comic-ID nicht gefunden wird.
         if ($debugMode)
-            error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in " . COMIC_VAR_JSON_FILE . " gefunden. Navigation möglicherweise fehlerhaft.");
+            error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in " . Path::getData('comic_var.json') . " gefunden. Navigation möglicherweise fehlerhaft.");
         $isCurrentPageFirst = true;
         $isCurrentPageLatest = true;
     }
 } else {
-    // Wenn comicData leer ist, sollten alle Navigationslinks deaktiviert sein.
     if ($debugMode)
         error_log("WARNUNG: \$comicData ist leer. Alle Navigationslinks werden deaktiviert.");
     $isCurrentPageFirst = true;
@@ -110,7 +108,7 @@ $disableLast = $isCurrentPageLatest; // Letzte ist deaktiviert, wenn es die neue
 ?>
 <?php echo renderNavLink($firstPageUrl, 'navbegin', 'Erste Seite', $disableFirst); ?>
 <?php echo renderNavLink($prevPageUrl, 'navprev', 'Vorherige Seite', $disablePrev); ?>
-<a href="<?php echo $baseUrl; ?>archiv.php" class="navarchive">
+<a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/archiv.php" class="navarchive">
     <span class="nav-wrapper">Archiv</span>
 </a>
 <?php echo renderNavLink($nextPageUrl, 'navnext', 'Nächste Seite', $disableNext); ?>

@@ -12,40 +12,35 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   4.0.0
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
-require_once __DIR__ . '/../../../src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
+require_once __DIR__ . '/../../../src/components/config_loader.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
-require_once LOAD_COMIC_DATA_PATH;
-require_once IMAGE_CACHE_HELPER_PATH;
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+require_once Path::getComponent('load_comic_data.php');
+require_once Path::getComponent('image_cache_helper.php');
 
 // === 3. AKTUELLE COMIC-ID ERMITTELN ===
 $currentComicId = basename($_SERVER['SCRIPT_FILENAME'], '.php');
-
-// Hole die Daten für die aktuelle Comic-Seite
-$comicTyp = '';
-$comicName = '';
-$comicTranscript = '';
-$urlOriginalbildFilename = '';
 
 // === 4. DATENVALIDIERUNG UND 404-HANDLING ===
 if (!isset($comicData[$currentComicId])) {
     http_response_code(404);
     $pageTitle = 'Seite nicht gefunden (404)';
     $siteDescription = 'Der gesuchte Comic konnte leider nicht gefunden werden.';
-    require_once TEMPLATE_HEADER;
+    require_once Path::getTemplatePartial('header.php');
     echo '<h1>404 - Seite nicht gefunden</h1>';
     echo '<p>Leider existiert unter dieser Adresse kein Comic. Möglicherweise haben Sie sich vertippt oder die Seite wurde verschoben.</p>';
-    echo '<p><a href="' . htmlspecialchars($baseUrl) . '">Zurück zur neuesten Comicseite</a></p>';
-    require_once TEMPLATE_FOOTER;
+    echo '<p><a href="' . htmlspecialchars(DIRECTORY_PUBLIC_URL) . '">Zurück zur neuesten Comicseite</a></p>';
+    require_once Path::getTemplatePartial('footer.php');
     exit();
 }
 
@@ -90,17 +85,18 @@ $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 // === 7. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = htmlspecialchars($comicTyp) . ': ' . htmlspecialchars($comicName);
 $siteDescription = 'TwoKinds auf Deutsch - ' . htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
-$ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . ltrim($socialMediaPreviewUrl, './');
-$comicJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'comic.min.js';
-$comicJsWebUrl = $baseUrl . 'src/layout/js/comic.min.js';
+$ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($socialMediaPreviewUrl, '/');
+
+$comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.min.js';
+$comicJsWebUrl = Path::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 $viewportContent = 'width=1099';
-$robotsContent = 'index, follow'; // Einzelne Comicseiten sollen indexiert werden
-$canonicalUrl = $baseUrl . 'comic/' . $currentComicId . '.php';
+$robotsContent = 'index, follow';
+$canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . $dateiendungPHP;
 
-// === 8. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 8. HEADER EINBINDEN ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -137,7 +133,7 @@ require_once TEMPLATE_HEADER;
         if ($currentComicId === $latestComicId) {
             $isCurrentPageLatest = true;
         }
-        include COMIC_NAVIGATION_PATH;
+        include Path::getComponent('comic_navigation.php');
         if (isset($isCurrentPageLatest)) {
             unset($isCurrentPageLatest);
         }
@@ -146,16 +142,16 @@ require_once TEMPLATE_HEADER;
             data-id="<?php echo htmlspecialchars($currentComicId); ?>"
             data-page="<?php echo htmlspecialchars($comicName); ?>"
             data-permalink="<?php echo htmlspecialchars($canonicalUrl); ?>"
-            data-thumb="<?php echo htmlspecialchars(str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : $baseUrl . ltrim($bookmarkThumbnailUrl, './')); ?>">
+            data-thumb="<?php echo htmlspecialchars(str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($bookmarkThumbnailUrl, '/')); ?>">
             Seite merken
         </button>
     </div>
 
     <a id="comic-image-link"
-        href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : $baseUrl . ltrim($comicHiresPath, './')); ?>"
+        href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, '/')); ?>"
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
-            src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : $baseUrl . ltrim($comicImagePath, './')); ?>"
+            src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, '/')); ?>"
             title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page" fetchpriority="high">
     </a>
 
@@ -164,7 +160,7 @@ require_once TEMPLATE_HEADER;
         if ($currentComicId === $latestComicId) {
             $isCurrentPageLatest = true;
         }
-        include COMIC_NAVIGATION_PATH;
+        include Path::getComponent('comic_navigation.php');
         if (isset($isCurrentPageLatest)) {
             unset($isCurrentPageLatest);
         }
@@ -172,8 +168,8 @@ require_once TEMPLATE_HEADER;
         <!-- NEUER SPRACHUMSCHALTER-BUTTON -->
         <?php if (!empty($urlOriginalbildFilename)): ?>
             <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
-                data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : $baseUrl . ltrim($comicImagePath, './')); ?>"
-                data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : $baseUrl . ltrim($comicHiresPath, './')); ?>"
+                data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, '/')); ?>"
+                data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, '/')); ?>"
                 data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>"
                 data-english-url-from-cache="<?php echo htmlspecialchars($urlOriginalbildFromCache ?? ''); ?>"
                 data-english-sketch-url-from-cache="<?php echo htmlspecialchars($urlOriginalsketchFromCache ?? ''); ?>">
@@ -206,8 +202,8 @@ require_once TEMPLATE_HEADER;
     </aside>
 
     <?php
-    // NEU: Binde das Modul zur Anzeige der Charaktere ein (Jetzt mit Konstante)
-    require_once CHARAKTERE_DISPLAY_PATH;
+    // Binde das Modul zur Anzeige der Charaktere ein (Jetzt mit Path-Klasse)
+    require_once Path::getComponent('character_display.php');
     ?>
 </article>
 
@@ -353,6 +349,6 @@ require_once TEMPLATE_HEADER;
 </script>
 
 <?php
-// === 9. FOOTER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_FOOTER;
+// === 9. FOOTER EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('footer.php');
 ?>

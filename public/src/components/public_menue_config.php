@@ -10,13 +10,12 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.2
+ * @version   4.0.0
  * @since     1.0.0 Grundlegende Menüstruktur und Links.
  * @since     1.0.1 Link zu Charakter-Übersicht hinzugefügt.
  * @since     1.0.2 Visuelles Feedback beim Kopieren der RSS-URL hinzugefügt.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
-
-// Die Variable $baseUrl wird IMMER von header.php gesetzt.
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -30,28 +29,26 @@ $debugMode = $debugMode ?? false;
             <!-- Patreon Icon -->
             <a href="https://www.patreon.com/RaptorXilef" target="_blank" rel="noopener noreferrer">
                 <!-- Bild für den hellen Modus -->
-                <img class="patreon-light-icon social-icon"
-                    src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/patreon.png" alt="Patreon" width="32"
-                    height="32">
+                <img class="patreon-light-icon social-icon" src="<?php echo Path::getIcon('patreon.png'); ?>"
+                    alt="Patreon" width="32" height="32">
                 <!-- Bild für den dunklen Modus -->
-                <img class="patreon-dark-icon social-icon"
-                    src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/patreon_dark.png" alt="Patreon Dark"
-                    width="32" height="32">
+                <img class="patreon-dark-icon social-icon" src="<?php echo Path::getIcon('patreon_dark.png'); ?>"
+                    alt="Patreon Dark" width="32" height="32">
             </a>
             <!-- InkBunny Icon -->
             <a href="https://inkbunny.net/RaptorXilefSFW" target="_blank" title="Mein InkBunny">
-                <img class="social-icon" src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/inkbunny.png"
-                    alt="InkBunny" width="32" height="32">
+                <img class="social-icon" src="<?php echo Path::getIcon('inkbunny.png'); ?>" alt="InkBunny" width="32"
+                    height="32">
             </a>
             <!-- PayPal Icon -->
             <a href="https://paypal.me/RaptorXilef?country.x=DE&locale.x=de_DE" target="_blank" title="Mein Paypal">
-                <img class="social-icon" src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/paypal.png"
-                    alt="PayPal" width="32" height="32">
+                <img class="social-icon" src="<?php echo Path::getIcon('paypal.png'); ?>" alt="PayPal" width="32"
+                    height="32">
             </a>
-            <a href="<?php echo htmlspecialchars($baseUrl); ?>rss.xml" target="_blank" title="Mein RSS-Feed"
+            <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/rss.xml" target="_blank" title="Mein RSS-Feed"
                 id="rssFeedLink">
-                <img class="social-icon" src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/rss-feed.png"
-                    alt="RSS" width="32" height="32">
+                <img class="social-icon" src="<?php echo Path::getIcon('rss-feed.png'); ?>" alt="RSS" width="32"
+                    height="32">
                 <span class="copy-feedback">URL Kopiert!</span>
             </a>
         </div>
@@ -59,28 +56,28 @@ $debugMode = $debugMode ?? false;
 
     <!-- Menü-Navigation -->
     <nav id="menu" class="menu">
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>comic/">Comic</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv<?php echo $dateiendungPHP; ?>">Archiv</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen<?php echo $dateiendungPHP; ?>">Lesezeichen</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic<?php echo $dateiendungPHP; ?>">Über den
+        <a href="<?php echo DIRECTORY_PUBLIC_COMIC_URL; ?>">Comic</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/archiv<?php echo $dateiendungPHP; ?>">Archiv</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/lesezeichen<?php echo $dateiendungPHP; ?>">Lesezeichen</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/ueber_den_comic<?php echo $dateiendungPHP; ?>">Über den
             Comic</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere">Charakter-übersicht</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/charaktere.php">Charaktere</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_CHARAKTERE_URL; ?>">Charakter-Übersicht</a>
         <br>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>faq<?php echo $dateiendungPHP; ?>">FAQ</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/faq<?php echo $dateiendungPHP; ?>">FAQ</a>
         <br>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>rss_anleitung<?php echo $dateiendungPHP; ?>">RSS-Feed Info</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/rss_anleitung<?php echo $dateiendungPHP; ?>">RSS-Feed Info</a>
         <br>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz<?php echo $dateiendungPHP; ?>">Lizenz</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/lizenz<?php echo $dateiendungPHP; ?>">Lizenz</a>
         <a
-            href="<?php echo htmlspecialchars($baseUrl); ?>datenschutzerklaerung<?php echo $dateiendungPHP; ?>">Datenschutz</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>impressum<?php echo $dateiendungPHP; ?>">Impressum</a>
+            href="<?php echo DIRECTORY_PUBLIC_URL; ?>/datenschutzerklaerung<?php echo $dateiendungPHP; ?>">Datenschutz</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/impressum<?php echo $dateiendungPHP; ?>">Impressum</a>
         <br>
         <a id="toggle_lights" class="theme jsdep" href=""><span class="themelabel">Theme</span><span
                 class="themename">LICHT AUS</span></a>
         <br>
         <a href='https://twokinds.keenspot.com'>Zum Original<p>auf Englisch</p><img
-                src='<?php echo htmlspecialchars($baseUrl); ?>assets/img/tkbutton3.webp' alt='Twokinds'></a>
+                src='<?php echo Path::getImg('tkbutton3.webp'); ?>' alt='Twokinds'></a>
     </nav>
     <!-- Menü Ende -->
 </div>

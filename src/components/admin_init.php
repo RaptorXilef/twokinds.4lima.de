@@ -16,8 +16,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.2.3
+ * @version   2.0.0
  * @since     1.2.3 Session-Fingerprinting zur Erhöhung der Sicherheit wieder hinzugefügt.
+ * @since     2.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -26,24 +27,17 @@ $callingScript = basename($_SERVER['PHP_SELF']);
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-include_once __DIR__ . '/configLoader.php';
-if ($debugMode) {
-    error_log("DEBUG (admin_init.php): CONFIG_PATH = /configLoader.php");
-}
+// Lädt die zentrale Konfiguration, Konstanten und die Path-Klasse.
+require_once __DIR__ . '/config_loader.php';
 
-if ($debugMode)
+if ($debugMode) {
     error_log("DEBUG: admin_init.php wird von {$callingScript} eingebunden.");
+    error_log("DEBUG (config_loader): Basis-URL bestimmt: " . (defined('DIRECTORY_PUBLIC_URL') ? DIRECTORY_PUBLIC_URL : 'NICHT DEFINIERT'));
+}
 
 ob_start();
 
-
-// --- 1. Dynamische Basis-URL Bestimmung ---
-// Findet nun in der config_folder.php statt.
-if ($debugMode)
-    error_log("DEBUG (config_folder.php): Basis-URL bestimmt: " . BASE_URL);
-
-
-// --- 2. Universelle Sicherheits-Header & CSP mit Nonce ---
+// --- 1. SICHERHEITS-HEADER & CSP MIT NONCE ---
 $nonce = bin2hex(random_bytes(16));
 $csp = [
     'default-src' => ["'self'"],
@@ -62,17 +56,12 @@ foreach ($csp as $directive => $sources) {
     $cspHeader .= $directive . ' ' . implode(' ', $sources) . '; ';
 }
 header("Content-Security-Policy: " . trim($cspHeader));
-// Verhindert, dass der Browser versucht, den MIME-Typ zu erraten (Schutz vor "MIME-Sniffing").
 header('X-Content-Type-Options: nosniff');
-// Verhindert Clickjacking-Angriffe. 'frame-ancestors' in CSP ist moderner, aber X-Frame-Options bietet Abwärtskompatibilität.
 header('X-Frame-Options: SAMEORIGIN');
-// Kontrolliert, welche Referrer-Informationen gesendet werden, um Datenlecks zu minimieren.
 header('Referrer-Policy: strict-origin-when-cross-origin');
-// Permissions Policy: Deaktiviert sensible Browser-Features, die im Admin-Bereich nicht benötigt werden.
 header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
 
-
-// --- 3. Strikte Session-Konfiguration ---
+// --- 2. STRIKTE SESSION-KONFIGURATION ---
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
@@ -85,16 +74,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- 4. Schutz vor Session Fixation und Hijacking ---
+// --- 3. SCHUTZ VOR SESSION FIXATION UND HIJACKING ---
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 900)) { // 15 Minuten
     session_regenerate_id(true);
-    $_SESSION['last_activity'] = time();
 }
-if (!isset($_SESSION['last_activity'])) {
-    $_SESSION['last_activity'] = time();
-}
+$_SESSION['last_activity'] = time();
 
-// NEU: Robuster Session-Fingerabdruck (User-Agent + IP-Netzwerk)
+// Robuster Session-Fingerabdruck (User-Agent + IP-Netzwerk)
 $sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
 if (isset($_SESSION['session_fingerprint'])) {
     if ($_SESSION['session_fingerprint'] !== $sessionIdentifier) {
@@ -109,85 +95,85 @@ if (isset($_SESSION['session_fingerprint'])) {
     $_SESSION['session_fingerprint'] = $sessionIdentifier;
 }
 
-
-// --- 5. Umfassender CSRF-Schutz ---
+// --- 4. UMFASSENDER CSRF-SCHUTZ ---
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrfToken = $_SESSION['csrf_token'];
 
-function verify_csrf_token()
-{
-    global $debugMode, $callingScript;
-    $token = null;
+if (!function_exists('verify_csrf_token')) {
+    function verify_csrf_token()
+    {
+        global $debugMode, $callingScript;
+        $token = null;
 
-    if (!empty($_POST['csrf_token'])) {
-        $token = $_POST['csrf_token'];
-    } elseif (!empty($_GET['token'])) {
-        $token = $_GET['token'];
-    } else {
-        $headers = getallheaders();
-        if (isset($headers['X-Csrf-Token'])) {
-            $token = $headers['X-Csrf-Token'];
-        }
-    }
-
-    if ($debugMode)
-        error_log("DEBUG ({$callingScript}): CSRF-Prüfung. Erhaltener Token: " . ($token ?? 'KEINER') . ". Session-Token: " . $_SESSION['csrf_token']);
-
-    if (!isset($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
-        if ($debugMode)
-            error_log("FEHLER ({$callingScript}): CSRF-Token-Validierung fehlgeschlagen.");
-        // Definiere IS_API_CALL, wenn es nicht existiert
-        if (!defined('IS_API_CALL')) {
-            define('IS_API_CALL', false);
-        }
-        if (IS_API_CALL) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Ungültige Anfrage (CSRF-Token fehlt oder ist falsch).']);
+        if (!empty($_POST['csrf_token'])) {
+            $token = $_POST['csrf_token'];
+        } elseif (!empty($_GET['token'])) {
+            $token = $_GET['token'];
         } else {
-            die('CSRF-Token-Validierung fehlgeschlagen.');
+            $headers = getallheaders();
+            if (isset($headers['X-Csrf-Token'])) {
+                $token = $headers['X-Csrf-Token'];
+            }
         }
-        exit;
-    }
-}
 
-
-// --- 6. Hilfsfunktionen für Einstellungs-JSON ---
-function load_settings(string $filePath, string $key, bool $debugMode): array
-{
-    $defaults = ['last_run_timestamp' => null];
-    if (!file_exists($filePath)) {
         if ($debugMode)
-            error_log("DEBUG: Einstellungsdatei $filePath nicht gefunden, verwende Standardwerte.");
-        return $defaults;
+            error_log("DEBUG ({$callingScript}): CSRF-Prüfung. Erhaltener Token: " . ($token ?? 'KEINER') . ". Session-Token: " . $_SESSION['csrf_token']);
+
+        if (!isset($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            if ($debugMode)
+                error_log("FEHLER ({$callingScript}): CSRF-Token-Validierung fehlgeschlagen.");
+
+            $isApiCall = (defined('IS_API_CALL') && IS_API_CALL === true);
+
+            if ($isApiCall) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Ungültige Anfrage (CSRF-Token fehlt oder ist falsch).']);
+            } else {
+                die('CSRF-Token-Validierung fehlgeschlagen.');
+            }
+            exit;
+        }
     }
-    $allSettings = json_decode(file_get_contents($filePath), true);
-    return $allSettings[$key] ?? $defaults;
 }
 
-function save_settings(string $filePath, string $key, array $data, bool $debugMode): void
-{
-    $allSettings = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
-    if (!is_array($allSettings))
-        $allSettings = [];
-    $allSettings[$key] = $data;
-    file_put_contents($filePath, json_encode($allSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    if ($debugMode)
-        error_log("DEBUG: Einstellungen für Schlüssel '$key' in $filePath gespeichert.");
+// --- 5. HILFSFUNKTIONEN FÜR EINSTELLUNGS-JSON ---
+if (!function_exists('load_settings')) {
+    function load_settings(string $filePath, string $key, bool $debugMode): array
+    {
+        $defaults = ['last_run_timestamp' => null];
+        if (!file_exists($filePath)) {
+            if ($debugMode)
+                error_log("DEBUG: Einstellungsdatei $filePath nicht gefunden, verwende Standardwerte.");
+            return $defaults;
+        }
+        $allSettings = json_decode(file_get_contents($filePath), true);
+        return $allSettings[$key] ?? $defaults;
+    }
 }
 
+if (!function_exists('save_settings')) {
+    function save_settings(string $filePath, string $key, array $data, bool $debugMode): void
+    {
+        $allSettings = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
+        if (!is_array($allSettings))
+            $allSettings = [];
+        $allSettings[$key] = $data;
+        file_put_contents($filePath, json_encode($allSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        if ($debugMode)
+            error_log("DEBUG: Einstellungen für Schlüssel '$key' in $filePath gespeichert.");
+    }
+}
 
-// --- 7. Logout-Logik ---
+// --- 6. LOGOUT-LOGIK ---
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    verify_csrf_token(); // Überprüfe den CSRF-Token, bevor du den Logout durchführst.
+    verify_csrf_token();
     if ($debugMode)
         error_log("DEBUG: Logout-Aktion mit gültigem CSRF-Token erkannt.");
 
-    // Zerstöre alle Session-Variablen.
     $_SESSION = array();
 
-    // Lösche das Session-Cookie, um einen sauberen Logout zu gewährleisten.
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
         setcookie(
@@ -201,29 +187,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
         );
     }
 
-    // Zerstöre die Session auf dem Server.
     session_destroy();
-
-    // Leere den Output Buffer und leite zur Login-Seite weiter.
     ob_end_clean();
     header('Location: index.php');
     exit;
 }
 
-// --- 8. Finaler Login-Check ---
-// KORRIGIERT: Schließt die Login-Seite explizit von der Prüfung aus.
+// --- 7. FINALER LOGIN-CHECK ---
 if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
         if ($debugMode)
             error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von admin_init.php (aufgerufen von {$callingScript}).");
 
-        // Wenn nicht angemeldet, zur Login-Seite weiterleiten.
         header('Location: index.php');
         exit;
     }
 }
 
-// --- 9. Session-Timeout-Logik ---
+// --- 8. SESSION-TIMEOUT-LOGIK ---
 define('SESSION_TIMEOUT_SECONDS', 600); // 10 Minuten
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT_SECONDS)) {
     if ($debugMode)

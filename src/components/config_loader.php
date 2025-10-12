@@ -1,6 +1,6 @@
 <?php
 /**
- * @file      ROOT/src/components/configLoader.php
+ * @file      ROOT/src/components/config_loader.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
@@ -11,7 +11,14 @@
  */
 
 $configExist = true;
+// Lädt die Haupt-Konfigurationsdatei.
 include_once __DIR__ . '/../../config/config_main.php';
+
+// Lädt die grundlegenden Verzeichnis-Konstanten.
+include_once __DIR__ . '/../../config/config_folder_path.php';
+
+// Lädt die neue Path-Helfer-Klasse für dynamische Pfad-Generierung.
+include_once 'path_helper.php';
 
 
 

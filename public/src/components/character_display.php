@@ -10,24 +10,25 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.1
+ * @version   3.0.0
  * @since     1.3.2 Entfernt das feste Mapping und liest Gruppennamen dynamisch aus.
  * @since     1.4.0 Fügt eine Variable hinzu, um die Hauptüberschrift optional auszublenden.
  * @since     1.4.1 Korrigiert den Link, sodass er auf die individuelle Charakter-PHP-Seite verweist.
  * @since     2.0.0 Umstellung auf das neue ID-basierte Charaktersystem.
  * @since     2.1.0 Stellt die Link-Struktur auf individuelle PHP-Dateien (/charaktere/Trace.php) wieder her.
  * @since     2.1.1 Code-Bereinigung und Korrektur des Dateipfads im Doc-Block.
+ * @since     3.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Pfad zur Charakter-Definitionsdatei ist über Konstante CHARAKTERE_JSON verfügbar
 $charaktereData = [];
 
-// Lade und verarbeite die Charakterdaten nur einmal
-if (file_exists(CHARAKTERE_JSON)) {
-    $charaktereJsonContent = file_get_contents(CHARAKTERE_JSON);
+// Lade und verarbeite die Charakterdaten nur einmal mit der Path-Klasse
+$charaktereJsonPath = Path::getData('charaktere.json');
+if (file_exists($charaktereJsonPath)) {
+    $charaktereJsonContent = file_get_contents($charaktereJsonPath);
     $decodedData = json_decode($charaktereJsonContent, true);
 
     if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['characters']) && isset($decodedData['groups'])) {
@@ -68,12 +69,13 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
 
                                     if ($characterDetails):
                                         $characterName = $characterDetails['name'];
-                                        // KORREKTUR: Link verweist wieder auf die .php-Datei des Charakters.
-                                        $characterLink = $baseUrl . 'charaktere/' . urlencode($characterName) . $dateiendungPHP;
+                                        // Link mit DIRECTORY_PUBLIC_URL erstellen
+                                        $characterLink = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . urlencode($characterName) . $dateiendungPHP;
 
                                         $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
                                         if (!empty($characterDetails['pic_url'])) {
-                                            $imageSrc = $baseUrl . htmlspecialchars($characterDetails['pic_url']);
+                                            // Bild-URL mit DIRECTORY_PUBLIC_URL erstellen
+                                            $imageSrc = DIRECTORY_PUBLIC_URL . '/' . htmlspecialchars($characterDetails['pic_url']);
                                         }
                                         ?>
                                         <div class="character-item">

@@ -11,16 +11,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
-
-
-
- * HINWEIS: Diese Klasse ist auf die Verfügbarkeit der folgenden global definierten PHP-Konstanten angewiesen:
- * @uses COMIC_IMAGE_CACHE_JSON Der vollständige Pfad zur JSON-Cache-Datei.
- * @uses COMIC_IMAGE_CACHE_JSON_FILE Der Dateiname der JSON-Cache-Datei (für Logs).
+ * @version   4.0.0
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
-
-// TODO: HIER GEHTS WEITER + data_editor_comic.php CRF Fehler beim speichern beheben
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -29,27 +22,25 @@ class ImageCache
 {
     private static $instance = null;
     private $cacheData = [];
-    private $projectRoot = ''; // Hinzugefügt, um den Root-Pfad zu speichern
 
     /**
      * Der Konstruktor ist privat, um eine direkte Instanziierung zu verhindern.
-     * Er lädt die Cache-Daten aus der JSON-Datei.
+     * Er lädt die Cache-Daten aus der JSON-Datei mithilfe der Path-Klasse.
      */
     private function __construct()
     {
-        // Der Root-Pfad wird einmalig bestimmt (zwei Ebenen über dem aktuellen Verzeichnis /src/components/) #################################################################
-        $this->projectRoot = dirname(__DIR__, 2);
+        $cacheFilePath = Path::getCache('comic_image_cache.json');
 
-        if (file_exists(COMIC_IMAGE_CACHE_JSON)) {
-            $content = file_get_contents(COMIC_IMAGE_CACHE_JSON);
+        if (file_exists($cacheFilePath)) {
+            $content = file_get_contents($cacheFilePath);
             $this->cacheData = json_decode($content, true);
             // Fallback, falls die JSON-Datei korrupt oder leer ist.
             if (!is_array($this->cacheData)) {
                 $this->cacheData = [];
-                error_log("BILD-CACHE WARNUNG: " . COMIC_IMAGE_CACHE_JSON_FILE . " ist korrupt oder leer.");
+                error_log("BILD-CACHE WARNUNG: 'comic_image_cache.json' ist korrupt oder leer.");
             }
         } else {
-            error_log("BILD-CACHE FEHLER: " . COMIC_IMAGE_CACHE_JSON_FILE . " nicht gefunden unter: " . COMIC_IMAGE_CACHE_JSON);
+            error_log("BILD-CACHE FEHLER: 'comic_image_cache.json' nicht gefunden unter: " . $cacheFilePath);
         }
     }
 
@@ -80,14 +71,14 @@ class ImageCache
             return null; // Eintrag nicht im Cache gefunden
         }
 
-        // KORREKTUR: Wenn der Wert eine vollständige URL ist, gib sie direkt zurück, ohne sie lokal zu prüfen.
+        // Wenn der Wert eine vollständige URL ist, gib sie direkt zurück.
         if (str_starts_with($pathValue, 'https://') || str_starts_with($pathValue, 'http://')) {
             return $pathValue;
         }
 
-        // Für lokale Pfade, fahre mit der Dateiprüfung fort
+        // Für lokale Pfade: Erstelle den absoluten Server-Pfad zur Überprüfung.
         $pathWithoutQuery = strtok($pathValue, '?');
-        $absolutePath = $this->projectRoot . '/' . $pathWithoutQuery;
+        $absolutePath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $pathWithoutQuery);
 
         if (file_exists($absolutePath)) {
             return $pathValue; // Wenn ja, gib den vollen Pfad mit Cache-Buster zurück

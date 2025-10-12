@@ -12,7 +12,7 @@
  * @version   4.0.0
  * @since     2.2.0 Redundanter include für configLoader.php entfernt, da die Konstanten global verfügbar sind.
  * @since     2.2.0 Redundanter include für configLoader.php entfernt, da die Konstanten global verfügbar sind.
- * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, BASE_URL).
+ * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, DIRECTORY_PUBLIC_URL).
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 

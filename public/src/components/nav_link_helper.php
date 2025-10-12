@@ -10,8 +10,8 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
- * 
+ * @version   4.0.0
+ * @since     4.0.0 Überprüfung und Bestätigung der Kompatibilität mit der Path-Klasse.
  *
  * @param string $href Der href-Wert des Links oder '#' wenn deaktiviert.
  * @param string $class Die CSS-Klasse(n) für den Button (z.B. 'navbegin', 'navprev').
@@ -23,12 +23,15 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-function renderNavLink(string $href, string $class, string $text, bool $isDisabled): string
-{
-    $tag = $isDisabled ? 'span' : 'a'; // Tag ist <span> wenn deaktiviert, sonst <a>
-    $linkAttr = $isDisabled ? '' : ' href="' . htmlspecialchars($href) . '"'; // href nur für <a>
-    $disabledClass = $isDisabled ? ' disabled' : ''; // 'disabled' Klasse hinzufügen, wenn deaktiviert
-    return '<' . $tag . $linkAttr . ' class="navarrow ' . $class . $disabledClass . '">' .
-        '    <span class="nav-wrapper"><span class="nav-text">' . htmlspecialchars($text) . '</span></span>' .
-        '</' . $tag . '>';
+if (!function_exists('renderNavLink')) {
+    function renderNavLink(string $href, string $class, string $text, bool $isDisabled): string
+    {
+        $tag = $isDisabled ? 'span' : 'a'; // Tag ist <span> wenn deaktiviert, sonst <a>
+        $linkAttr = $isDisabled ? '' : ' href="' . htmlspecialchars($href) . '"'; // href nur für <a>
+        $disabledClass = $isDisabled ? ' disabled' : ''; // 'disabled' Klasse hinzufügen, wenn deaktiviert
+        return '<' . $tag . $linkAttr . ' class="navarrow ' . $class . $disabledClass . '">' .
+            '    <span class="nav-wrapper"><span class="nav-text">' . htmlspecialchars($text) . '</span></span>' .
+            '</' . $tag . '>';
+    }
 }
+?>

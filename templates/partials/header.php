@@ -14,7 +14,7 @@
  * @since     2.7.0 Entfernung redundanter URL-Berechnung und Ersetzung von Pfaden durch globale Konstanten.
  * @since     2.7.1 Korrektur der JS-Asset-Pfade auf Basis der finalen config_folder_path.php.
  * @since     2.7.2 Finale Validierung gegen die neueste Pfad-Konfiguration.
- * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, BASE_URL).
+ * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, DIRECTORY_PUBLIC_URL).
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  *
  * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
@@ -34,20 +34,20 @@ $debugMode = $debugMode ?? false;
 
 // --- 1. PRÜFUNG, OB INITIALISIERUNG ERFOLGTE ---
 // Die init-Dateien stellen BASE_URL und $nonce bereit. Hier wird ein Fallback sichergestellt.
-if (!defined('BASE_URL') || !isset($nonce)) {
+/*if (!defined('BASE_URL') || !isset($nonce)) {
     $nonce = bin2hex(random_bytes(16));
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'];
     define('BASE_URL', $protocol . $host);
     error_log("WARNUNG: Keine init.php-Datei vor dem Header geladen. Fallback-Werte werden verwendet.");
-}
+}*/
 
 // --- 2. SEITEN-URL UND CANONICAL-URL BESTIMMEN ---
-$currentPageUrl = rtrim(BASE_URL, '/') . $_SERVER['REQUEST_URI'];
+$currentPageUrl = rtrim(DIRECTORY_PUBLIC_URL, '/') . $_SERVER['REQUEST_URI'];
 $finalCanonicalUrl = $canonicalUrl ?? $currentPageUrl;
 
 if (isset($debugMode) && $debugMode) {
-    error_log("DEBUG (header.php): Basis-URL: " . BASE_URL . ", Seiten-URL: " . $currentPageUrl . ", Canonical-URL: " . $finalCanonicalUrl);
+    error_log("DEBUG (header.php): Basis-URL: " . DIRECTORY_PUBLIC_URL . ", Seiten-URL: " . $currentPageUrl . ", Canonical-URL: " . $finalCanonicalUrl);
 }
 
 // --- 3. SETUP DER SEITEN-VARIABLEN MIT STANDARDWERTEN ---
@@ -64,17 +64,28 @@ $additionalHeadContent = $additionalHeadContent ?? '';
 $viewportContent = $viewportContent ?? 'width=device-width, initial-scale=1.0';
 
 // --- 4. WEB-PFADE MIT CACHE-BUSTER GENERIEREN (NEUE METHODE) ---
-// Die URLs werden jetzt mit der Path-Klasse generiert, die Server-Pfade für filemtime() mit den Verzeichnis-Konstanten.
-$faviconUrl = BASE_URL . '/favicon.ico?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'favicon.ico');
-$appleIconUrl = BASE_URL . '/appleicon.png?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'appleicon.png');
+// Helferfunktion, um die URL-Generierung und das Cache-Busting zu kapseln.
+function getVersionedUrl(string $url, string $serverPath): string
+{
+    if (file_exists($serverPath)) {
+        return $url . '?c=' . filemtime($serverPath);
+    }
+    return $url;
+}
 
-$commonJsWebPathWithCacheBuster = Path::getJsUrl('common.min.js') . '?c=' . filemtime(DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'common.min.js');
-$mainCssPathWithCacheBuster = Path::getCssUrl('main.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main.min.css');
-$mainDarkCssPathWithCacheBuster = Path::getCssUrl('main_dark.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main_dark.min.css');
-$cookieBannerCssPathWithCacheBuster = Path::getCssUrl('cookie_banner.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
-$cookieBannerDarkCssPathWithCacheBuster = Path::getCssUrl('cookie_banner_dark.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
-$cookieConsentJsPathWithCacheBuster = Path::getJsUrl('cookie_consent.min.js') . '?c=' . filemtime(DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
-$characterDisplayCssPathWithCacheBuster = Path::getCssUrl('character_display.min.css') . '?c=' . filemtime(DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_display.min.css');
+$faviconUrl = DIRECTORY_PUBLIC_URL . '/favicon.ico?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'favicon.ico');
+$appleIconUrl = DIRECTORY_PUBLIC_URL . '/appleicon.png?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'appleicon.png');
+
+// Generiere versionierte URLs für CSS und JS mit der Path-Klasse
+$mainCssUrl = getVersionedUrl(Path::getCssUrl('main.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main.min.css');
+$mainDarkCssUrl = getVersionedUrl(Path::getCssUrl('main_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main_dark.min.css');
+$cookieBannerCssUrl = getVersionedUrl(Path::getCssUrl('cookie_banner.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
+$cookieBannerDarkCssUrl = getVersionedUrl(Path::getCssUrl('cookie_banner_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
+$characterDisplayCssUrl = getVersionedUrl(Path::getCssUrl('character_display.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_display.min.css');
+
+$commonJsUrl = getVersionedUrl(Path::getJsUrl('common.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'common.min.js');
+$cookieConsentJsUrl = getVersionedUrl(Path::getJsUrl('cookie_consent.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -109,15 +120,15 @@ $characterDisplayCssPathWithCacheBuster = Path::getCssUrl('character_display.min
 
     <!-- Stylesheets -->
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($mainCssPathWithCacheBuster); ?>" fetchpriority="high">
+        href="<?php echo htmlspecialchars($mainCssUrl); ?>" fetchpriority="high">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($mainDarkCssPathWithCacheBuster); ?>" fetchpriority="high">
+        href="<?php echo htmlspecialchars($mainDarkCssUrl); ?>" fetchpriority="high">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($cookieBannerCssPathWithCacheBuster); ?>">
+        href="<?php echo htmlspecialchars($cookieBannerCssUrl); ?>">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
+        href="<?php echo htmlspecialchars($cookieBannerDarkCssUrl); ?>">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($characterDisplayCssPathWithCacheBuster); ?>">
+        href="<?php echo htmlspecialchars($characterDisplayCssUrl); ?>">
 
     <?php if ($isAdminPage): ?>
         <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet"
@@ -131,9 +142,9 @@ $characterDisplayCssPathWithCacheBuster = Path::getCssUrl('character_display.min
 
     <!-- JavaScript -->
     <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'
-        src='<?php echo htmlspecialchars($commonJsWebPathWithCacheBuster); ?>'></script>
+        src='<?php echo htmlspecialchars($commonJsUrl); ?>'></script>
     <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'
-        src='<?php echo htmlspecialchars($cookieConsentJsPathWithCacheBuster); ?>'></script>
+        src='<?php echo htmlspecialchars($cookieConsentJsUrl); ?>'></script>
     <script nonce="<?php echo htmlspecialchars($nonce); ?>"
         type='text/javascript'>window.isAdminPage = <?php echo ($isAdminPage ? 'true' : 'false'); ?>;</script>
 

@@ -10,10 +10,11 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.1
  * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
  * @since     3.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     4.0.1 Umstellung von BASE_URL auf DIRECTORY_PUBLIC_URL für interne Konsistenz.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -21,7 +22,7 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../src/components/config_loader.php';
+require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
 require_once Path::getComponent('load_comic_data.php');
@@ -195,14 +196,13 @@ require_once Path::getTemplatePartial('header.php');
     ?>
 </article>
 
-
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
         const copyLink = document.getElementById('copy-comic-url');
         if (copyLink) {
             copyLink.addEventListener('click', function (event) {
                 event.preventDefault();
-                const urlToCopy = '<?php echo $baseUrl . 'comic/' . $latestComicId . '.php'; ?>';
+                const urlToCopy = '<?php echo DIRECTORY_PUBLIC_COMIC_URL . DIRECTORY_SEPARATOR . $latestComicId . '.php'; ?>';
                 const originalText = this.textContent;
                 navigator.clipboard.writeText(urlToCopy).then(() => {
                     this.textContent = 'Kopiert!';
@@ -214,7 +214,7 @@ require_once Path::getTemplatePartial('header.php');
             });
         }
 
-        // --- ANGEPASSTE LOGIK FÜR SPRACHUMSCHALTUNG ---
+        // --- Logik für Sprachumschaltung ---
         const toggleBtn = document.getElementById('toggle-language-btn');
         if (toggleBtn) {
             const comicLink = document.getElementById('comic-image-link');
@@ -336,5 +336,6 @@ require_once Path::getTemplatePartial('header.php');
         }
     });
 </script>
+
 
 <?php require_once Path::getTemplatePartial('footer.php'); ?>

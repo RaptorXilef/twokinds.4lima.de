@@ -14,21 +14,16 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   2.0.0
+ * @since     2.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 // Kann in der aufrufenden Datei VOR dem Include gesetzt werden.
 $debugMode = $debugMode ?? false;
 
-require_once __DIR__ . '/configLoader.php';
-if ($debugMode) {
-    error_log("DEBUG (public_init.php): CONFIG_PATH = /configLoader.php");
-}
-
-// Setzt das maximale Ausführungszeitlimit für das Skript.
-// set_time_limit(300);
-
+// Lädt die zentrale Konfiguration, Konstanten und die Path-Klasse.
+require_once __DIR__ . '/config_loader.php';
 
 // --- 1. Strikte Session-Konfiguration (für alle Seiten) ---
 session_set_cookie_params([
@@ -44,14 +39,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
-// --- 2. Dynamische Basis-URL Bestimmung ---
-// Findet nun in der config_folder.php statt.
-if ($debugMode)
-    error_log("DEBUG (config_folder.php): Basis-URL bestimmt: " . BASE_URL);
-
-
-// --- 3. Universelle Sicherheits-Header & CSP mit Nonce ---
+// --- 2. Universelle Sicherheits-Header & CSP mit Nonce ---
 $nonce = bin2hex(random_bytes(16));
 
 // Content-Security-Policy (CSP)
@@ -60,7 +48,6 @@ $csp = [
     'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
     'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
     'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com"],
-    // KORREKTUR: Fehlende Domains für Lizenzbilder und tkbutton hinzugefügt
     'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "twokindscomic.com", "https://www.2kinds.com", "https://i.creativecommons.org", "https://licensebuttons.net"],
     'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com"],
     'object-src' => ["'none'"],

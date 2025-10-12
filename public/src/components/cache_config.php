@@ -10,6 +10,8 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   1.0.0
+ * @version   2.0.0
+ * @since     2.0.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -20,10 +22,10 @@ $debugMode = $debugMode ?? false;
 define('ENABLE_CACHE_BUSTING', true);
 
 /**
- * Hängt den Zeitstempel der letzten Dateiänderung als Query-String an einen Bild-Asset-Pfad an.
- * Diese Funktion ist robust und funktioniert unabhängig vom Aufrufort des Skripts.
+ * Hängt den Zeitstempel der letzten Dateiänderung als Query-String an einen Asset-Pfad an.
+ * Diese Funktion nutzt die globale Konstante DIRECTORY_PUBLIC für einen robusten Pfadaufbau.
  *
- * @param string $path Der relative Pfad zur Bilddatei vom Projekt-Root aus (z.B. 'assets/img/bild.webp').
+ * @param string $path Der relative Pfad zur Datei vom /public-Verzeichnis aus (z.B. 'assets/img/bild.webp').
  * @return string Der Pfad mit dem angehängten Versions-Query-String, falls die Datei existiert.
  */
 function versioniere_bild_asset(string $path): string
@@ -33,10 +35,8 @@ function versioniere_bild_asset(string $path): string
         return $path;
     }
 
-    // Erstelle einen absoluten Pfad zur Datei. __DIR__ ist hier '.../src/components'.
-    // Wir gehen zwei Ebenen hoch zum Projekt-Root.
-    $projectRoot = dirname(__DIR__, 2);
-    $absolutePath = $projectRoot . '/' . ltrim($path, '/\\');
+    // Erstelle einen absoluten Server-Pfad zur Datei, basierend auf dem public-Verzeichnis.
+    $absolutePath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
 
     // Prüfe, ob die Datei unter dem absoluten Pfad existiert.
     if (file_exists($absolutePath)) {
@@ -45,6 +45,9 @@ function versioniere_bild_asset(string $path): string
     }
 
     // Wenn die Datei nicht gefunden wird, gib den Originalpfad zurück, um Fehler zu vermeiden.
+    if ($debugMode) {
+        error_log("CACHE_CONFIG WARNUNG: Datei für Versionierung nicht gefunden: " . $absolutePath);
+    }
     return $path;
 }
 ?>
