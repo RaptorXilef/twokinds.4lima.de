@@ -9,23 +9,25 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.2.0
+ * @version   4.0.0
  * @since     2.2.0 Redundanter include für configLoader.php entfernt, da die Konstanten global verfügbar sind.
+ * @since     2.2.0 Redundanter include für configLoader.php entfernt, da die Konstanten global verfügbar sind.
+ * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, BASE_URL).
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
-
-// Die Konstante VERSION_JSON wird jetzt zentral über public_init.php geladen.
-/** @uses VERSION_JSON */
 
 $versionInfo = [
     'version' => 'Unbekannt',
     'type' => 'Unbekannt'
 ];
 
-if (defined('VERSION_JSON') && file_exists(VERSION_JSON)) {
-    $versionContent = file_get_contents(VERSION_JSON);
+// Lade Versions-Informationen mit der neuen Path-Klasse
+$versionJsonPath = Path::getData('version.json');
+if (file_exists($versionJsonPath)) {
+    $versionContent = file_get_contents($versionJsonPath);
     $decodedVersion = json_decode($versionContent, true);
 
     if (json_last_error() === JSON_ERROR_NONE && is_array($decodedVersion)) {
@@ -33,13 +35,12 @@ if (defined('VERSION_JSON') && file_exists(VERSION_JSON)) {
         $versionInfo['type'] = htmlspecialchars($decodedVersion['type'] ?? 'Unbekannt');
     } else {
         if ($debugMode)
-            error_log("Fehler beim Dekodieren von version.json: " . json_last_error_msg());
+            error_log("Fehler beim Dekodieren von 'version.json': " . json_last_error_msg());
         $versionInfo['version'] = 'Fehler (JSON)';
     }
 } else {
-    $versionJsonPath = defined('VERSION_JSON') ? VERSION_JSON : 'nicht definiert';
     if ($debugMode)
-        error_log("version.json nicht gefunden unter: " . $versionJsonPath);
+        error_log("'version.json' nicht gefunden unter: " . $versionJsonPath);
     $versionInfo['version'] = 'Fehler (Datei)';
 }
 
