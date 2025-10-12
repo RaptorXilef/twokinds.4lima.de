@@ -18,6 +18,7 @@
  * @since     3.1.0 Implementiert GitHub-Fallback für fehlende Konfigurationsvorlagen.
  * @since     3.5.0 Vollständige Umstellung auf Konstanten und reinen GitHub-Download, Entfernung lokaler Vorlagen.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     4.0.1 Zwei Korrekturen bei $requiredFiles [getComponent wird zu getConfig für config_main.php und config_folder_path.php
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -41,8 +42,8 @@ $requiredFolders = [
 ];
 
 $requiredFiles = [
-    'config_main.php' => ['target' => Path::getComponent('config_main.php', true), 'github_path' => 'config/config_main.php'],
-    'config_folder_path.php' => ['target' => Path::getComponent('config_folder_path.php', true), 'github_path' => 'config/config_folder_path.php'],
+    'config_main.php' => ['target' => Path::getConfig('config_main.php'), 'github_path' => 'config/config_main.php'],
+    'config_folder_path.php' => ['target' => Path::getConfig('config_folder_path.php'), 'github_path' => 'config/config_folder_path.php'],
     'admin_users.json' => ['target' => Path::getSecret('admin_users.json'), 'github_path' => 'config/secrets/admin_users.json'],
     'login_attempts.json' => ['target' => Path::getSecret('login_attempts.json'), 'github_path' => 'config/secrets/login_attempts.json'],
     'version.json' => ['target' => Path::getData('version.json'), 'github_path' => 'data/version.json'],
