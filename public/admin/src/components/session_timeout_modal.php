@@ -2,18 +2,21 @@
 /**
  * Stellt das Modal für den Session-Timeout und die zugehörige Logik bereit.
  * Dieses Skript wird nur für angemeldete Administratoren geladen.
+ *
+ * @file      ROOT/public/admin/src/components/session_timeout_modal.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   4.0.0
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Die $baseUrl wird in der header.php definiert und sollte hier verfügbar sein.
-if (!isset($baseUrl)) {
-    // Fallback, falls $baseUrl nicht gesetzt ist (sollte nicht passieren)
-    $baseUrl = '/'; // Annahme des Stammverzeichnisses
-    error_log("WARNUNG: \$baseUrl war in session_timeout_modal.php nicht gesetzt.");
-}
-// Die $nonce und der CSRF-Token werden in der admin_init.php definiert.
+// Die $nonce und der CSRF-Token werden in der admin_init.php definiert und sind hier verfügbar.
 $nonce = $nonce ?? '';
 $csrfToken = $_SESSION['csrf_token'] ?? '';
 ?>
@@ -31,13 +34,13 @@ $csrfToken = $_SESSION['csrf_token'] ?? '';
         </div>
     </div>
 </div>
+
 <!-- Styles für das Session-Timeout Modal -->
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
     .session-timeout-modal {
         display: none;
         position: fixed;
         z-index: 10001;
-        /* Höher als der Cookie-Banner und andere Elemente */
         left: 0;
         top: 0;
         width: 100%;
@@ -78,10 +81,13 @@ $csrfToken = $_SESSION['csrf_token'] ?? '';
 </style>
 
 <?php
-// Pfad und Cache-Buster für das JavaScript
-$sessionTimeoutJsPath = $baseUrl . 'admin/src/js/session_timeout.js?c=' . filemtime(__DIR__ . '/../js/session_timeout.js');
+// Pfad und Cache-Buster für das JavaScript (NEUE METHODE)
+$sessionTimeoutJsFile = 'session_timeout.js';
+$sessionTimeoutJsPathOnServer = DIRECTORY_PUBLIC_ADMIN_JS . DIRECTORY_SEPARATOR . $sessionTimeoutJsFile;
+$sessionTimeoutJsWebUrl = Path::getAdminJsUrl($sessionTimeoutJsFile);
+$cacheBuster = file_exists($sessionTimeoutJsPathOnServer) ? '?c=' . filemtime($sessionTimeoutJsPathOnServer) : '';
 
-// KORREKTUR: Übergebe den CSRF-Token als globale JavaScript-Variable, bevor das Skript geladen wird.
+// Übergebe den CSRF-Token als globale JavaScript-Variable, bevor das Skript geladen wird.
 echo "<script nonce=\"" . htmlspecialchars($nonce) . "\">window.csrfToken = '" . htmlspecialchars($csrfToken) . "';</script>";
-echo "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($sessionTimeoutJsPath) . "'></script>";
+echo "<script nonce=\"" . htmlspecialchars($nonce) . "\" type='text/javascript' src='" . htmlspecialchars($sessionTimeoutJsWebUrl . $cacheBuster) . "'></script>";
 ?>

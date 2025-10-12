@@ -22,7 +22,7 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../../../src/components/config_loader.php';
+require_once __DIR__ . '/../../../src/components/public_init.php';
 
 // === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
 require_once Path::getComponent('load_comic_data.php');

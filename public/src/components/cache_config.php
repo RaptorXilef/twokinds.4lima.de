@@ -28,7 +28,7 @@ define('ENABLE_CACHE_BUSTING', true);
  * @param string $path Der relative Pfad zur Datei vom /public-Verzeichnis aus (z.B. 'assets/img/bild.webp').
  * @return string Der Pfad mit dem angehängten Versions-Query-String, falls die Datei existiert.
  */
-function versioniere_bild_asset(string $path): string
+function versioniere_bild_asset(string $path, bool $debugMode): string
 {
     // Wenn Cache Busting deaktiviert ist, den Originalpfad zurückgeben.
     if (!defined('ENABLE_CACHE_BUSTING') || ENABLE_CACHE_BUSTING === false) {

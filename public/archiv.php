@@ -12,21 +12,22 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   4.0.0
  * @since     1.0.0 Verarbeitung der Daten aus archive_chapters.json und comic_var.json.
  * @since     1.1.0 Anpassung an versionalisierte comic_var.json (Schema v2).
  * @since     1.2.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. LADE-SKRIPTE & DATEN ===
-$placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg';
+$placeholderImagePathUrl = DIRECTORY_PUBLIC_URL . '/assets/comic_thumbnails/placeholder.jpg';
 
 // Funktion zum Laden von JSON-Dateien
 function loadJsonFile(string $path, bool $debugMode, string $fileName): ?array
@@ -53,10 +54,12 @@ function loadJsonFile(string $path, bool $debugMode, string $fileName): ?array
     return $data;
 }
 
-$archiveChapters = loadJsonFile(ARCHIVE_CHAPTERS_JSON, $debugMode, ARCHIVE_CHAPTERS_JSON_FILE) ?? [];
+// Lade JSON-Daten mit der Path-Klasse
+$archiveChapters = loadJsonFile(Path::getData('archive_chapters.json'), $debugMode, 'archive_chapters.json') ?? [];
+$rawComicData = loadJsonFile(Path::getData('comic_var.json'), $debugMode, 'comic_var.json');
+$imageCache = loadJsonFile(Path::getCache('comic_image_cache.json'), $debugMode, 'comic_image_cache.json') ?? [];
 
 // *** ANPASSUNG FÜR V2-SCHEMA ***
-$rawComicData = loadJsonFile(COMIC_VAR_JSON, $debugMode, COMIC_VAR_JSON_FILE);
 $comicData = [];
 if (is_array($rawComicData)) {
     if (isset($rawComicData['schema_version']) && $rawComicData['schema_version'] >= 2 && isset($rawComicData['comics'])) {
@@ -67,11 +70,8 @@ if (is_array($rawComicData)) {
 }
 // *** ENDE ANPASSUNG ***
 
-$imageCache = loadJsonFile(COMIC_IMAGE_CACHE_JSON, $debugMode, COMIC_IMAGE_CACHE_JSON_FILE) ?? [];
-
-
 if ($debugMode && empty($imageCache)) {
-    error_log("WARNUNG: Der Bild-Cache (" . COMIC_IMAGE_CACHE_JSON_FILE . ") ist leer oder konnte nicht geladen werden. Führe build_image_cache.php im Admin-Bereich aus.");
+    error_log("WARNUNG: Der Bild-Cache ('comic_image_cache.json') ist leer oder konnte nicht geladen werden. Führe build_image_cache.php im Admin-Bereich aus.");
 }
 
 // === 3. DATENVERARBEITUNG & SORTIERUNG ===
@@ -143,14 +143,14 @@ $pageTitle = 'Archiv';
 $pageHeader = 'Archiv';
 $siteDescription = 'Das vollständige Archiv aller TwoKinds-Comics, übersichtlich nach Kapiteln geordnet. Finde schnell und einfach deine Lieblingsseite.';
 $robotsContent = 'index, follow';
-$archiveJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'archive.js';
-$archiveJsWebUrl = $baseUrl . 'src/layout/js/archive.js';
+
+$archiveJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'archive.js';
+$archiveJsWebUrl = Path::getJsUrl('archive.js');
 $cacheBuster = file_exists($archiveJsPathOnServer) ? '?c=' . filemtime($archiveJsPathOnServer) : '';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($archiveJsWebUrl . $cacheBuster) . '"></script>';
 
-
-// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 5. HEADER EINBINDEN (mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -167,22 +167,30 @@ require_once TEMPLATE_HEADER;
             $chapterTitle = !empty(trim(strip_tags($chapter['title'] ?? ''))) ? $chapter['title'] : 'Dieses Kapitel wird im Moment bearbeitet.';
             $chapterDescription = $chapter['description'] ?? 'Die Informationen zu diesem Kapitel werden noch erstellt.';
             ?>
-            <section class="chapter collapsible-section" data-ch-id="<?php echo htmlspecialchars($chapterId); ?>">
-                <h2 class="collapsible-header"><?php echo $chapterTitle; ?><span class="arrow-left jsdep"></span></h2>
-                <p><?php echo $chapterDescription; ?></p>
+            <section class="chapter collapsible-section"
+                data-ch-id="<?php echo htmlspecialchars($chapter['chapterId'] ?? 'N/A'); ?>">
+                <h2 class="collapsible-header">
+                    <?php echo ($chapter['title'] ?? 'Dieses Kapitel wird im Moment bearbeitet.'); ?><span
+                        class="arrow-left jsdep"></span>
+                </h2>
+                <p><?php echo ($chapter['description'] ?? 'Die Informationen zu diesem Kapitel werden noch erstellt.'); ?></p>
                 <div class="collapsible-content">
                     <aside class="chapter-links">
                         <?php
                         $comicsForThisChapter = $comicsByChapter[$chapterId] ?? [];
                         ksort($comicsForThisChapter);
 
-                        if (empty($comicsForThisChapter)): ?>
+                        if (empty($comicsByChapter[$chapter['chapterId'] ?? ''] ?? [])): ?>
                             <p>Für dieses Kapitel sind noch keine Comics verfügbar.</p>
                         <?php else: ?>
-                            <?php foreach ($comicsForThisChapter as $comicId => $comicDetails):
+                            <?php
+                            $comicsForThisChapter = $comicsByChapter[$chapter['chapterId']];
+                            ksort($comicsForThisChapter);
+                            foreach ($comicsForThisChapter as $comicId => $comicDetails):
                                 $foundImagePath = $imageCache[$comicId]['thumbnails'] ?? null;
-                                $displayImagePath = $foundImagePath ? $baseUrl . ltrim($foundImagePath, './') : $baseUrl . $placeholderImagePath;
-                                $comicPagePath = $baseUrl . 'comic/' . htmlspecialchars($comicId)/* . '.php'*/ ; // Kommentar entfernen, wenn htaccess nicht auf PHP-Dateien zeigt
+                                // URLs mit DIRECTORY_PUBLIC_URL erstellen
+                                $displayImagePath = $foundImagePath ? DIRECTORY_PUBLIC_URL . '/' . ltrim($foundImagePath, '/') : $placeholderImagePathUrl;
+                                $comicPagePath = DIRECTORY_PUBLIC_COMIC_URL . '/' . htmlspecialchars($comicId) . $dateiendungPHP;
                                 $comicDate = DateTime::createFromFormat('Ymd', $comicId);
                                 $displayDate = $comicDate ? $comicDate->format('d.m.Y') : 'Unbekanntes Datum';
                                 ?>
@@ -203,6 +211,6 @@ require_once TEMPLATE_HEADER;
 </article>
 
 <?php
-// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
-require_once TEMPLATE_FOOTER;
+// Binde den gemeinsamen Footer ein (mit Path-Klasse).
+require_once Path::getTemplatePartial('footer.php');
 ?>

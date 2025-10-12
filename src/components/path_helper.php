@@ -6,9 +6,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-Share-Alike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   1.1.1
  * @since     1.0.0 Initiale Erstellung
  * @since     1.1.0 Methoden für Bild-URL-Pfade hinzugefügt.
+ * @since     1.1.1 getConfig hinzugefügt
  * @comment   Diese Klasse ersetzt die Notwendigkeit, für jede Datei eine eigene Konstante zu definieren.
  * Sie nutzt die Basis-Verzeichniskonstanten aus 'config_folder_path.php', um dynamisch
  * Pfade zu Dateien und URLs zu generieren.
@@ -36,6 +37,16 @@ class Path
     public static function getCache(string $filename): string
     {
         return DIRECTORY_PRIVATE_CACHE . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    /**
+     * Gibt den vollständigen Pfad zu einer Datei im 'config' Verzeichnis zurück.
+     * @param string $filename Der Dateiname (z.B. 'generator_settings.json').
+     * @return string Der absolute Server-Pfad zur Datei.
+     */
+    public static function getConfig(string $filename): string
+    {
+        return DIRECTORY_PRIVATE_CONFIG . DIRECTORY_SEPARATOR . $filename;
     }
 
     /**

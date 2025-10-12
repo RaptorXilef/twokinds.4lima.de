@@ -8,15 +8,16 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   4.0.0
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -24,8 +25,8 @@ $pageTitle = 'Lizenz';
 $siteDescription = 'Informationen zu den Creative Commons-Lizenzen, unter denen der TwoKinds-Comic und diese Webseite stehen.';
 $robotsContent = 'index, follow';
 
-// === 3. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -83,11 +84,10 @@ require_once TEMPLATE_HEADER;
         einverstanden ist. Er verzichtet nicht auf alle Rechte an seiner Arbeit, aber er gibt Ihnen einige davon frei.
     </p>
 
-
     Quelle: <a href="https://twokinds.keenspot.com/license/"> https://twokinds.keenspot.com/license/ </a>
 </article>
 
 <?php
-// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
-require_once TEMPLATE_FOOTER;
+// === FUSSZEILE EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('footer.php');
 ?>

@@ -10,9 +10,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   4.0.0
  * @since     2.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.0.0 Vollständige Integration der admin_init.php, Entfernung redundanter Sicherheits-Header und Funktionen.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -20,7 +21,6 @@ $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 // Lädt alle Konfigurationen, Sicherheits-Header, Session-Einstellungen und CSRF-Schutz.
-// Die admin_init.php ist so konzipiert, dass sie auf der index.php selbst keine "Nicht-eingeloggt"-Weiterleitung durchführt.
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
 if ($debugMode)
@@ -30,43 +30,47 @@ if ($debugMode)
 define('MAX_LOGIN_ATTEMPTS', 3);
 define('LOGIN_BLOCK_SECONDS', 900);
 
-// --- Hilfsfunktionen ---
+// --- Hilfsfunktionen (jetzt mit Path-Klasse) ---
 function getUsers(): array
 {
-    if (!file_exists(SECRET_ADMIN_USERS_JSON) || filesize(SECRET_ADMIN_USERS_JSON) === 0)
+    $filePath = Path::getSecret('admin_users.json');
+    if (!file_exists($filePath) || filesize($filePath) === 0)
         return [];
-    $content = file_get_contents(SECRET_ADMIN_USERS_JSON);
+    $content = file_get_contents($filePath);
     $users = json_decode($content, true);
     return is_array($users) ? $users : [];
 }
 
 function saveUsers(array $users): bool
 {
-    $dir = dirname(SECRET_ADMIN_USERS_JSON);
+    $filePath = Path::getSecret('admin_users.json');
+    $dir = dirname($filePath);
     if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
         error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
         return false;
     }
     $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents(SECRET_ADMIN_USERS_JSON, $jsonContent) !== false;
+    return file_put_contents($filePath, $jsonContent) !== false;
 }
 
 function getLoginAttempts(): array
 {
-    if (!file_exists(SECRET_LOGIN_ATTEMPTS_JSON))
+    $filePath = Path::getSecret('login_attempts.json');
+    if (!file_exists($filePath))
         return [];
-    $content = file_get_contents(SECRET_LOGIN_ATTEMPTS_JSON);
+    $content = file_get_contents($filePath);
     $attempts = json_decode($content, true);
     return is_array($attempts) ? $attempts : [];
 }
 
 function saveLoginAttempts(array $attempts): bool
 {
-    $dir = dirname(SECRET_LOGIN_ATTEMPTS_JSON);
+    $filePath = Path::getSecret('login_attempts.json');
+    $dir = dirname($filePath);
     if (!is_dir($dir))
         mkdir($dir, 0755, true);
     $jsonContent = json_encode($attempts, JSON_PRETTY_PRINT);
-    return file_put_contents(SECRET_LOGIN_ATTEMPTS_JSON, $jsonContent) !== false;
+    return file_put_contents($filePath, $jsonContent) !== false;
 }
 
 // --- Logik ---
@@ -81,9 +85,8 @@ if (isset($_GET['reason'])) {
     }
 }
 
-
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-    header('Location: management_user.php');
+    header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
     exit;
 }
 
@@ -105,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $users[$username] = ['passwordHash' => $hashedPassword];
                     if (saveUsers($users)) {
                         $message = '<p class="message-green">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p>';
-                        header('Location: index.php'); // Leitet um, um die "Erstellen"-Ansicht zu entfernen
+                        header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'); // Leitet um, um die "Erstellen"-Ansicht zu entfernen
                         exit;
                     } else {
                         $message = '<p class="message-red">Fehler beim Speichern des Benutzers.</p>';
@@ -147,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     unset($attempts[$userIp]);
                     saveLoginAttempts($attempts);
                 }
-                header('Location: management_user.php');
+                header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
                 exit;
             } else {
                 if (!isset($attempts[$userIp])) {
@@ -168,7 +171,7 @@ $pageHeader = 'Adminbereich - Login';
 $siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung.';
 $robotsContent = 'noindex, nofollow';
 
-include TEMPLATE_HEADER;
+require_once Path::getTemplatePartial('header.php');
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -276,7 +279,7 @@ include TEMPLATE_HEADER;
             ?>
             <h2>Ersten Admin-Benutzer erstellen</h2>
             <p>Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
-            <form action="index.php" method="POST" class="admin-form">
+            <form action="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <div>
                     <label for="create_username">Benutzername:</label>
@@ -290,7 +293,7 @@ include TEMPLATE_HEADER;
             </form>
         <?php else: ?>
             <h2>Login</h2>
-            <form action="index.php" method="POST" class="admin-form">
+            <form action="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <div>
                     <label for="login_username">Benutzername:</label>
@@ -306,6 +309,6 @@ include TEMPLATE_HEADER;
     </div>
 </article>
 <?php
-include TEMPLATE_FOOTER;
+require_once Path::getTemplatePartial('footer.php');
 ob_end_flush();
 ?>

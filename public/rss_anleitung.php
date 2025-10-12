@@ -9,15 +9,16 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   4.0.0
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -26,10 +27,10 @@ $siteDescription = 'Erfahre mehr darüber, wie du RSS-Feeds nutzen kannst, um mi
 $robotsContent = 'index, follow';
 
 // Die URL des RSS-Feeds, die dynamisch eingefügt wird.
-$rssFeedUrl = htmlspecialchars($baseUrl) . 'rss.xml';
+$rssFeedUrl = htmlspecialchars(DIRECTORY_PUBLIC_URL) . '/rss.xml';
 
-// === 3. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -78,10 +79,10 @@ require_once TEMPLATE_HEADER;
         Inhalte übersichtlich darstellt.</p>
 
     <p>Die URL meines RSS-Feeds findest du meist als kleines Icon
-        (<a href="<?php echo htmlspecialchars($baseUrl); ?>rss.xml" target="_blank" title="Mein RSS-Feed"
+        (<a href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/rss.xml" target="_blank" title="Mein RSS-Feed"
             id="rssFeedLink">
-            <img src="<?php echo htmlspecialchars($baseUrl); ?>assets/icons/rss-feed.png" alt="RSS" width="16"
-                height="16" class="rss-icon-inline">
+            <img src="<?php echo Path::getIcon('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
+                class="rss-icon-inline">
         </a>)
         auf meiner Webseite oder du kannst sie direkt hier abrufen: <code><?php echo $rssFeedUrl; ?></code></p>
 
@@ -193,6 +194,6 @@ require_once TEMPLATE_HEADER;
 </article>
 
 <?php
-// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
-require_once TEMPLATE_FOOTER;
+// === FUSSZEILE EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('footer.php');
 ?>

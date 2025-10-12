@@ -16,44 +16,43 @@
  * @since     3.0.0 Umstellung auf neue, ausgelagerte Verzeichnisstruktur (twokinds_src).
  * @since     3.0.1 asset Ordner wieder prüfen
  * @since     3.1.0 Implementiert GitHub-Fallback für fehlende Konfigurationsvorlagen.
- * @since     4.0.0 Vollständige Umstellung auf Konstanten und reinen GitHub-Download, Entfernung lokaler Vorlagen.
+ * @since     3.5.0 Vollständige Umstellung auf Konstanten und reinen GitHub-Download, Entfernung lokaler Vorlagen.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-// Lädt alle Konfigurationen. Die Seite funktioniert auch eingeschränkt, wenn die Konfiguration fehlt.
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // --- ZU PRÜFENDE ORDNER UND DATEIEN ---
 $requiredFolders = [
-    'Private > Source' => PRIVATE_SRC_PATH,
-    'Private > Config' => PRIVATE_CONFIG_PATH,
-    'Private > Config > Secrets' => PRIVATE_SECRETS_PATH,
-    'Private > Data' => PRIVATE_DATA_PATH,
-    'Private > Data > Cache' => PRIVATE_CACHE_PATH,
-    'Public > Assets' => PUBLIC_ASSETS_PATH,
-    'Public > Assets > Comic Hires' => PUBLIC_IMG_COMIC_HIRES_PATH,
-    'Public > Assets > Comic Lowres' => PUBLIC_IMG_COMIC_LOWRES_PATH,
-    'Public > Assets > Comic Socialmedia' => PUBLIC_IMG_COMIC_SOCIALMEDIA_PATH,
-    'Public > Assets > Comic Thumbnails' => PUBLIC_IMG_COMIC_THUMBNAILS_PATH,
+    'Private > Source' => DIRECTORY_PRIVATE_SRC,
+    'Private > Config' => DIRECTORY_PRIVATE_CONFIG,
+    'Private > Config > Secrets' => DIRECTORY_PRIVATE_SECRETS,
+    'Private > Data' => DIRECTORY_PRIVATE_DATA,
+    'Private > Data > Cache' => DIRECTORY_PRIVATE_CACHE,
+    'Public > Assets' => DIRECTORY_PUBLIC_ASSETS,
+    'Public > Assets > Comic Hires' => DIRECTORY_PUBLIC_IMG_COMIC_HIRES,
+    'Public > Assets > Comic Lowres' => DIRECTORY_PUBLIC_IMG_COMIC_LOWRES,
+    'Public > Assets > Comic Socialmedia' => DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA,
+    'Public > Assets > Comic Thumbnails' => DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS,
 ];
 
 $requiredFiles = [
-    'config_main.php' => ['target' => CONFIG_MAIN_PHP, 'github_path' => 'config/config_main.php'],
-    'config_folder_path.php' => ['target' => CONFIG_FOLDER_PATH_PHP, 'github_path' => 'config/config_folder_path.php'],
-    'config_file_path.php' => ['target' => CONFIG_FILE_PATH_PHP, 'github_path' => 'config/config_file_path.php'],
-    'admin_users.json' => ['target' => SECRET_ADMIN_USERS_JSON, 'github_path' => 'config/secrets/admin_users.json'],
-    'login_attempts.json' => ['target' => SECRET_LOGIN_ATTEMPTS_JSON, 'github_path' => 'config/secrets/login_attempts.json'],
-    'version.json' => ['target' => VERSION_JSON, 'github_path' => 'data/version.json'],
-    'archive_chapters.json' => ['target' => ARCHIVE_CHAPTERS_JSON, 'github_path' => 'data/archive_chapters.json'],
-    'charaktere.json' => ['target' => CHARAKTERE_JSON, 'github_path' => 'data/charaktere.json'],
-    'comic_image_cache.json' => ['target' => COMIC_IMAGE_CACHE_JSON, 'github_path' => 'data/cache/comic_image_cache.json'],
-    'comic_var.json' => ['target' => COMIC_VAR_JSON, 'github_path' => 'data/comic_var.json'],
-    'generator_settings.json' => ['target' => CONFIG_GENERATOR_SETTINGS_JSON, 'github_path' => 'config/generator_settings.json'],
-    'rss_config.json' => ['target' => CONFIG_RSS_CONFIG_JSON, 'github_path' => 'config/rss_config.json'],
-    'sitemap.json' => ['target' => SITEMAP_JSON, 'github_path' => 'data/sitemap.json'],
+    'config_main.php' => ['target' => Path::getComponent('config_main.php', true), 'github_path' => 'config/config_main.php'],
+    'config_folder_path.php' => ['target' => Path::getComponent('config_folder_path.php', true), 'github_path' => 'config/config_folder_path.php'],
+    'admin_users.json' => ['target' => Path::getSecret('admin_users.json'), 'github_path' => 'config/secrets/admin_users.json'],
+    'login_attempts.json' => ['target' => Path::getSecret('login_attempts.json'), 'github_path' => 'config/secrets/login_attempts.json'],
+    'version.json' => ['target' => Path::getData('version.json'), 'github_path' => 'data/version.json'],
+    'archive_chapters.json' => ['target' => Path::getData('archive_chapters.json'), 'github_path' => 'data/archive_chapters.json'],
+    'charaktere.json' => ['target' => Path::getData('charaktere.json'), 'github_path' => 'data/charaktere.json'],
+    'comic_image_cache.json' => ['target' => Path::getCache('comic_image_cache.json'), 'github_path' => 'data/cache/comic_image_cache.json'],
+    'comic_var.json' => ['target' => Path::getData('comic_var.json'), 'github_path' => 'data/comic_var.json'],
+    'config_generator_settings.json' => ['target' => Path::getConfig('config_generator_settings.json'), 'github_path' => 'config/config_generator_settings.json'],
+    'config_rss.json' => ['target' => Path::getConfig('config_rss.json'), 'github_path' => 'config/config_rss.json'],
+    'sitemap.json' => ['target' => Path::getData('sitemap.json'), 'github_path' => 'data/sitemap.json'],
 ];
 
 $message = '';
@@ -153,6 +152,7 @@ function isAlphabeticallySorted(array $data): bool
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
     $action = $_POST['action'] ?? '';
+    $comicVarJsonPath = Path::getData('comic_var.json'); // Definiere den Pfad hier
 
     switch ($action) {
         case 'create_folders':
@@ -198,11 +198,15 @@ $folderStatuses = getFolderStatuses($requiredFolders);
 $fileStatuses = getFileStatuses($requiredFiles);
 $allFoldersExist = !in_array(false, array_column($folderStatuses, 'exists'));
 $allFilesExist = !in_array(false, array_column($fileStatuses, 'exists'));
-// ... (json sorted check bleibt unverändert)
+
+$comicVarJsonPathForCheck = Path::getData('comic_var.json');
+$currentComicData = getComicData($comicVarJsonPathForCheck);
+$jsonFileSorted = $currentComicData === null ? false : isAlphabeticallySorted($currentComicData);
+
 
 $pageTitle = 'Adminbereich - Ersteinrichtung';
 $pageHeader = 'Webseiten-Ersteinrichtung';
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -223,7 +227,7 @@ include TEMPLATE_HEADER;
                 <?php endforeach; ?>
             </div>
             <?php if (!$allFoldersExist): ?>
-            <form action="" method="POST"><input type="hidden" name="csrf_token"
+                <form action="" method="POST"><input type="hidden" name="csrf_token"
                         value="<?php echo htmlspecialchars($csrfToken); ?>"><button type="submit" name="action"
                         value="create_folders" class="status-green-button">Fehlende Ordner erstellen</button></form>
             <?php endif; ?>
@@ -254,9 +258,9 @@ include TEMPLATE_HEADER;
             <?php elseif ($jsonFileSorted): ?>
                 <p class="status-message status-green">Datei `comic_var.json` ist bereits korrekt alphabetisch geordnet.</p>
             <?php else: ?>
-                    <p class="status-message status-red">Datei `comic_var.json` ist nicht alphabetisch geordnet.</p>
-                    <form action="" method="POST"><input type="hidden" name="csrf_token"
-                            value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
+                <p class="status-message status-red">Datei `comic_var.json` ist nicht alphabetisch geordnet.</p>
+                <form action="" method="POST"><input type="hidden" name="csrf_token"
+                        value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
                         value="sort_json" class="status-red-button">`comic_var.json` alphabetisch ordnen</button></form>
             <?php endif; ?>
         </section>
@@ -417,4 +421,4 @@ include TEMPLATE_HEADER;
     }
 </style>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

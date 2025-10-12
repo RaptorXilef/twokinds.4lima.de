@@ -8,19 +8,20 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   4.0.0
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
-require_once LOAD_COMIC_DATA_PATH;
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+require_once Path::getComponent('load_comic_data.php');
 
 // === 3. DATENVERARBEITUNG ===
 // Ermittelt die Anzahl der Comic-Seiten und Lückenfüller.
@@ -44,21 +45,20 @@ $ageTom = $today->diff($birthdateTom)->y;
 $birthdateFelix = new DateTime('1993-03-29');
 $ageFelix = $today->diff($birthdateFelix)->y;
 
-// Bild-Pfad für den Übersetzer mit Cache-Buster
-$felixImagePathOnServer = PUBLIC_IMG_ABOUT_PATH . DIRECTORY_SEPARATOR . 'Felix.webp';
-$felixImageWebUrl = $baseUrl . 'assets/img/about/Felix.webp';
+// Bild-Pfad für den Übersetzer mit Cache-Buster (NEUE METHODE)
+$felixImageWebUrl = Path::getImg('about/Felix.webp');
+$felixImagePathOnServer = DIRECTORY_PUBLIC_IMG_ABOUT . DIRECTORY_SEPARATOR . 'Felix.webp';
 if (file_exists($felixImagePathOnServer)) {
 	$felixImageWebUrl .= '?c=' . filemtime($felixImagePathOnServer);
 }
-
 
 // === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Über den Comic';
 $siteDescription = 'Erfahre alles über den Webcomic TwoKinds, den Künstler Tom Fischbach und den deutschen Übersetzer Felix Maywald.';
 $robotsContent = 'index, follow';
 
-// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 5. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 <section>
 	<h2 class="page-header">Über den Comic</h2>
@@ -184,6 +184,6 @@ require_once TEMPLATE_HEADER;
 </section>
 
 <?php
-// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
-require_once TEMPLATE_FOOTER;
+// === FUSSZEILE EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('footer.php');
 ?>

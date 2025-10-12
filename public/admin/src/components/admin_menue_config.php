@@ -1,7 +1,16 @@
 <?php
 /**
  * Dieses Skript enthält die Konfiguration für das Navigationsmenü im Admin-Bereich.
- * Es wird dynamisch in src/layout/header.php geladen, wenn sich der Benutzer im Admin-Bereich befindet.
+ * Es wird dynamisch in header.php geladen, wenn sich der Benutzer im Admin-Bereich befindet.
+ *
+ * @file      ROOT/public/admin/src/components/admin_menue_config.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   4.0.0
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und URL-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -10,7 +19,6 @@ $debugMode = $debugMode ?? false;
 // Die Variable $nonce wird in admin_init.php definiert und ist hier verfügbar.
 $nonce = $nonce ?? '';
 ?>
-
 
 <div class="sidebar-content">
   <!-- NEU: Session-Timer-Anzeige -->
@@ -22,28 +30,39 @@ $nonce = $nonce ?? '';
 
   <!-- Menü-Navigation -->
   <nav id="menu" class="menu">
-    <a href="./management_user.php">Benutzer verwalten</a>
-    <a href="./management_login.php">Eigene Anmeldedaten ändern</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user' . $dateiendungPHP; ?>">Benutzer
+      verwalten</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_login' . $dateiendungPHP; ?>">Eigene Anmeldedaten
+      ändern</a>
     </br>
-    <a href="./initial_setup.php">Webseiten-Ersteinrichtung</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup' . $dateiendungPHP; ?>">Webseiten-Ersteinrichtung</a>
     </br>
-    <a href="./upload_image.php">Bild-Upload</a>
-    <a href="./generator_thumbnail.php">Thumbnail-Generator</a>
-    <a href="./generator_image_socialmedia.php">Social Media Vorschau Generator</a>
-    <!--<a href="./generator_image_socialmedia.php">Social Media Bild-Generator</a>-->
-    <a href="./build_image_cache_and_busting.php">Bild-Cache-Generator</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image' . $dateiendungPHP; ?>">Bild-Upload</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail' . $dateiendungPHP; ?>">Thumbnail-Generator</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . $dateiendungPHP; ?>">Social
+      Media Vorschau Generator</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . $dateiendungPHP; ?>">Bild-Cache-Generator</a>
     </br>
-    <a href="./data_editor_charaktere.php">Charakter Daten Editor</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter
+      Daten Editor</a>
     </br>
-    <a href="./data_editor_comic.php">Comic Daten Editor</a>
-    <a href="./generator_comic.php">Comic-Seiten-Generator</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Daten
+      Editor</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Comic-Seiten-Generator</a>
     </br>
-    <a href="./generator_rss.php">RSS-Generator</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS-Generator</a>
     </br>
-    <a href="./data_editor_archiv.php">Archiv Daten Editor</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Daten
+      Editor</a>
     </br>
-    <a href="./data_editor_sitemap.php">Sitemap Editor</a>
-    <a href="./generator_sitemap.php">Sitemap Generator</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_sitemap' . $dateiendungPHP; ?>">Sitemap
+      Editor</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_sitemap' . $dateiendungPHP; ?>">Sitemap
+      Generator</a>
     </br>
     <!-- CSRF-Token zum Logout-Link hinzugefügt -->
     <a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">Logout</a>

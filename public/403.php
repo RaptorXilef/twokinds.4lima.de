@@ -8,8 +8,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   4.0.0
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // Setze den HTTP-Statuscode, damit Browser und Suchmaschinen wissen, dass dies ein Fehler ist.
@@ -19,20 +20,19 @@ http_response_code(403);
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
-require_once IMAGE_CACHE_HELPER_PATH;
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+require_once Path::getComponent('image_cache_helper.php');
 
 // === 3. BILD-PFADE & FALLBACKS ===
 $lowresImage = get_cached_image_path('403', 'lowres');
 $hiresImage = get_cached_image_path('403', 'hires');
 
-// Benutze die globale $baseUrl aus public_init.php
-$imageToShow = $lowresImage ? $baseUrl . ltrim($lowresImage, './') : 'https://placehold.co/800x600/cccccc/333333?text=Zugriff+verweigert';
-// Der Link zeigt auf die Hi-Res-Version, falls vorhanden, ansonsten auf die Low-Res-Version selbst.
-$linkToShow = $hiresImage ? $baseUrl . ltrim($hiresImage, './') : $imageToShow;
+// URLs mit DIRECTORY_PUBLIC_URL erstellen
+$imageToShow = $lowresImage ? DIRECTORY_PUBLIC_URL . '/' . ltrim($lowresImage, '/') : 'https://placehold.co/800x600/cccccc/333333?text=Zugriff+verweigert';
+$linkToShow = $hiresImage ? DIRECTORY_PUBLIC_URL . '/' . ltrim($hiresImage, '/') : $imageToShow;
 
 if ($debugMode && !$lowresImage) {
     error_log("DEBUG: 403-Bild nicht im Cache gefunden, verwende Placeholder.");
@@ -43,8 +43,8 @@ $pageTitle = 'Fehler 403 - Zugriff verweigert';
 $pageHeader = 'Fehler 403: Zugriff verweigert';
 $robotsContent = 'noindex, follow'; // Wichtig für SEO: Seite nicht indexieren
 
-// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 5. HEADER EINBINDEN (mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -95,7 +95,8 @@ require_once TEMPLATE_HEADER;
                 <li>Die Berechtigungen für die angeforderte Ressource sind absichtlich eingeschränkt.</li>
             </ul>
             <p>
-                Am besten kehrst du einfach zur <a href="<?php echo htmlspecialchars($baseUrl); ?>">Startseite</a>
+                Am besten kehrst du einfach zur <a
+                    href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>">Startseite</a>
                 zurück und setzt deine Reise von dort aus fort.
             </p>
         </div>
@@ -103,6 +104,6 @@ require_once TEMPLATE_HEADER;
 </article>
 
 <?php
-// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
-require_once TEMPLATE_FOOTER;
+// Binde den gemeinsamen Footer ein (mit Path-Klasse).
+require_once Path::getTemplatePartial('footer.php');
 ?>

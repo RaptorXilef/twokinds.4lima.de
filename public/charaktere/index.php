@@ -10,33 +10,30 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.2.0
+ * @version   4.0.0
  * @since     1.1.0 Entfernt Inline-Style, um CSP-Konformität zu gewährleisten.
  * @since     1.2.0 Hartcodierte Pfade durch globale Konstanten ersetzt.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und URL-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG ===
-// Dieser Aufruf lädt die Konfigurationen, setzt Sicherheits-Header und startet die Session.
-// Der Pfad ist relativ, da die Konstanten erst durch diese Datei verfügbar werden.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../../src/components/public_init.php';
 
 // === 2. DATEN VORBEREITEN ===
-// Lade die Charakterdaten, um eine vollständige Liste aller Charaktere zu erstellen.
-$allCharacterNames = [];
-if (file_exists(CHARAKTERE_JSON)) {
-    $charaktereJsonContent = file_get_contents(CHARAKTERE_JSON);
+// Lade die Charakterdaten, um eine vollständige Liste aller Charakter-IDs zu erstellen.
+$allCharacterIDs = [];
+$charaktereJsonPath = Path::getData('charaktere.json');
+if (file_exists($charaktereJsonPath)) {
+    $charaktereJsonContent = file_get_contents($charaktereJsonPath);
     $decodedCharaktere = json_decode($charaktereJsonContent, true);
 
-    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCharaktere)) {
-        // Sammle die Namen (Schlüssel) aller Charaktere aus allen Gruppen
-        foreach ($decodedCharaktere as $group) {
-            if (is_array($group)) {
-                $allCharacterNames = array_merge($allCharacterNames, array_keys($group));
-            }
-        }
+    if (json_last_error() === JSON_ERROR_NONE && isset($decodedCharaktere['characters'])) {
+        // Sammle die IDs (Schlüssel) aller Charaktere.
+        $allCharacterIDs = array_keys($decodedCharaktere['characters']);
     }
 }
 
@@ -45,18 +42,18 @@ if (file_exists(CHARAKTERE_JSON)) {
 $currentComicId = 'all_characters';
 $comicData = [
     $currentComicId => [
-        'charaktere' => $allCharacterNames
+        'charaktere' => $allCharacterIDs
     ]
 ];
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Charakterübersicht';
 $siteDescription = 'Eine Übersicht aller Haupt- und Nebencharaktere, die im TwoKinds Webcomic vorkommen. Erfahre mehr über Trace, Flora, Keith und viele andere.';
-$canonicalUrl = $baseUrl . 'charaktere/'; // Verweist auf den Ordner
+$canonicalUrl = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/'; // Verweist auf den Ordner
 $robotsContent = 'index, follow';
 
 // === 4. HEADER EINBINDEN ===
-require_once TEMPLATE_HEADER;
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article class="charaktere-overview">
@@ -70,11 +67,11 @@ require_once TEMPLATE_HEADER;
     // === 5. CHARAKTER-ANZEIGE KOMPONENTE EINBINDEN ===
     // Setze die Variable, um die Standard-Überschrift in der Komponente auszublenden.
     $showCharacterSectionTitle = false;
-    require_once CHARAKTERE_DISPLAY_PATH;
+    require_once Path::getComponent('character_display.php');
     ?>
 </article>
 
 <?php
 // === 6. FOOTER EINBINDEN ===
-require_once TEMPLATE_FOOTER;
+require_once Path::getTemplatePartial('footer.php');
 ?>

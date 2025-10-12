@@ -10,19 +10,20 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   4.0.0
  * @since     2.0.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
-require_once CHARACTER_IMAGE_HELPER_PATH;
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+require_once Path::getComponent('character_image_helper.php');
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Charaktere';
@@ -30,8 +31,8 @@ $siteDescription = 'Lerne die Hauptcharaktere von TwoKinds kennen. Detaillierte 
 $robotsContent = 'index, follow';
 
 // Füge die charaktere.js mit Cache-Busting und Nonce hinzu
-$charaktereJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'charaktere.js';
-$charaktereJsWebUrl = $baseUrl . 'src/layout/js/charaktere.js';
+$charaktereJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'charaktere.js';
+$charaktereJsWebUrl = Path::getJsUrl('charaktere.js');
 $cacheBuster = file_exists($charaktereJsPathOnServer) ? '?c=' . filemtime($charaktereJsPathOnServer) : '';
 
 $additionalScripts = '
@@ -63,8 +64,8 @@ $additionalHeadContent = '
     </style>
 ';
 
-// === 4. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 4. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 <header hidden>
     <h1 class="page-header">Charaktere</h1>
@@ -998,4 +999,4 @@ require_once TEMPLATE_HEADER;
 
 </section>
 
-<?php require_once __DIR__ . "/src/layout/footer.php"; ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

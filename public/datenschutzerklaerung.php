@@ -9,15 +9,16 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
- * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
+ * @version   4.0.0
+ * @since     1.1.0 Umstellung auf globale Pfad-Konstanten. 
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -25,8 +26,8 @@ $pageTitle = 'Datenschutzerklärung';
 $siteDescription = 'Erfahre mehr über den Datenschutz auf der deutschen TwoKinds-Webseite und wie wir deine Daten schützen.';
 $robotsContent = 'noindex, follow'; // Diese Seite sollte nicht von Suchmaschinen indexiert werden
 
-// === 3. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -45,7 +46,7 @@ require_once TEMPLATE_HEADER;
     <section>
         <h2>1. Einleitung und Verantwortlicher</h2>
         <p>Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und den Zweck der Verarbeitung von
-            personenbezogenen Daten (nachfolgend kurz „Daten“) innerhalb unseres Onlineangebotes und der mit ihm
+            personenogenen Daten (nachfolgend kurz „Daten“) innerhalb unseres Onlineangebotes und der mit ihm
             verbundenen Webseiten, Funktionen und Inhalte sowie externen Onlinepräsenzen, wie z.B. unser Social Media
             Profil, auf. (nachfolgend gemeinsam bezeichnet als „Onlineangebot“).</p>
         <br>
@@ -54,7 +55,8 @@ require_once TEMPLATE_HEADER;
             Felix Maywald
         </p>
         <p>Die vollständigen Kontaktdaten findest du in unserem <a
-                href="<?php echo htmlspecialchars($baseUrl); ?>impressum.php">Impressum</a>.</p>
+                href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/impressum<?php echo $dateiendungPHP; ?>">Impressum</a>.
+        </p>
     </section>
 
     <section>
@@ -195,6 +197,6 @@ require_once TEMPLATE_HEADER;
 </script>
 
 <?php
-// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
-require_once TEMPLATE_FOOTER;
+// === FUSSZEILE EINBINDEN (Jetzt mit Path-Klasse) ===
+require_once Path::getTemplatePartial('footer.php');
 ?>
