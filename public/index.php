@@ -10,20 +10,22 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.2.0
+ * @version   4.0.0
  * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     3.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
-require_once __DIR__ . '/../src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
+require_once __DIR__ . '/../src/components/config_loader.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
-require_once LOAD_COMIC_DATA_PATH;
-require_once IMAGE_CACHE_HELPER_PATH;
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+require_once Path::getComponent('load_comic_data.php');
+require_once Path::getComponent('image_cache_helper.php');
 
 // Ermittle die ID des neuesten Comics
 $comicKeys = array_keys($comicData);
@@ -45,8 +47,8 @@ if (isset($comicData[$currentComicId])) {
     $urlOriginalbildFilename = $comicData[$currentComicId]['url_originalbild'] ?? '';
 } else {
     // Fallback-Werte, falls keine Comic-Daten oder der neueste Comic nicht gefunden wird.
-    error_log("Fehler: Daten für den neuesten Comic (ID '{$currentComicId}') nicht in " . COMIC_VAR_JSON_FILE . " gefunden.");
-    $comicTyp = 'Comicseite'; // Angepasst, da "vom" nun im H1 hinzugefügt wird
+    error_log("Fehler: Daten für den neuesten Comic (ID '{$currentComicId}') nicht in 'comic_var.json' gefunden.");
+    $comicTyp = 'Comicseite';
     $comicName = 'Willkommen';
     $comicTranscript = '<p>Willkommen auf TwoKinds auf Deutsch! Leider konnte der neueste Comic nicht geladen werden.</p>';
 }
@@ -78,21 +80,21 @@ if (empty($bookmarkThumbnailUrl)) {
 
 $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 
-// === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
+// === 4. VARIABLEN FÜR DEN HEADER SETZEN (mit Path-Klasse und DIRECTORY_PUBLIC_URL) ===
 $pageTitle = 'Startseite der Fan-Übersetzung';
 $siteDescription = 'Tauche ein in die Welt von Twokinds – dem beliebten Fantasy-Webcomic von Tom Fischbach, jetzt komplett auf Deutsch verfügbar. Erlebe die spannende Geschichte von Trace und Flora und entdecke die Rassenkonflikte zwischen Menschen und Keidran.';
-$ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . ltrim($socialMediaPreviewUrl, './');
-// Pfad zur JS-Datei jetzt über Konstante ermittelt
-$comicJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'comic.min.js';
-$comicJsWebUrl = $baseUrl . 'src/layout/js/comic.min.js';
+$ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($socialMediaPreviewUrl, './');
+
+$comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.min.js';
+$comicJsWebUrl = Path::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 $viewportContent = 'width=1099';
 $robotsContent = 'index, follow'; // Die Startseite soll indexiert werden
-$canonicalUrl = $baseUrl;
+$canonicalUrl = DIRECTORY_PUBLIC_URL;
 
-// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
-require_once TEMPLATE_HEADER;
+// === 5. HEADER EINBINDEN (mit Path-Klasse) ===
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -123,39 +125,39 @@ require_once TEMPLATE_HEADER;
     <div class='comicnav'>
         <?php
         $isCurrentPageLatest = true;
-        // Pfad zur Navigation jetzt über Konstante
-        include COMIC_NAVIGATION_PATH;
+        // Pfad zur Navigation jetzt über Path-Klasse
+        include Path::getComponent('comic_navigation.php');
         unset($isCurrentPageLatest);
         ?>
         <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
             data-id="<?php echo htmlspecialchars($currentComicId); ?>"
             data-page="<?php echo htmlspecialchars($comicName); ?>"
-            data-permalink="<?php echo htmlspecialchars($baseUrl . 'comic/' . $currentComicId . '.php'); ?>"
-            data-thumb="<?php echo htmlspecialchars(str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : $baseUrl . ltrim($bookmarkThumbnailUrl, './')); ?>">
+            data-permalink="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL . '/comic/' . $currentComicId . $dateiendungPHP); ?>"
+            data-thumb="<?php echo htmlspecialchars(str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($bookmarkThumbnailUrl, './')); ?>">
             Seite merken
         </button>
     </div>
 
     <a id="comic-image-link"
-        href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : $baseUrl . ltrim($comicHiresPath, './')); ?>"
+        href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, './')); ?>"
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
-            src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : $baseUrl . ltrim($comicImagePath, './')); ?>"
+            src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, './')); ?>"
             title="<?php echo htmlspecialchars($comicName); ?>" alt="Comic Page" fetchpriority="high">
     </a>
 
     <div class='comicnav bottomnav'>
         <?php
         $isCurrentPageLatest = true;
-        // Pfad zur Navigation jetzt über Konstante
-        include COMIC_NAVIGATION_PATH;
+        // Pfad zur Navigation jetzt über Path-Klasse
+        include Path::getComponent('comic_navigation.php');
         unset($isCurrentPageLatest);
         ?>
         <!-- NEUER SPRACHUMSCHALTER-BUTTON -->
         <?php if (!empty($urlOriginalbildFilename)): ?>
             <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
-                data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : $baseUrl . ltrim($comicImagePath, './')); ?>"
-                data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : $baseUrl . ltrim($comicHiresPath, './')); ?>"
+                data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, './')); ?>"
+                data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, './')); ?>"
                 data-english-filename="<?php echo htmlspecialchars($urlOriginalbildFilename); ?>"
                 data-english-url-from-cache="<?php echo htmlspecialchars($urlOriginalbildFromCache ?? ''); ?>"
                 data-english-sketch-url-from-cache="<?php echo htmlspecialchars($urlOriginalsketchFromCache ?? ''); ?>">
@@ -188,10 +190,11 @@ require_once TEMPLATE_HEADER;
     </aside>
 
     <?php
-    // NEU: Binde das Modul zur Anzeige der Charaktere ein (Jetzt mit Konstante)
-    require_once CHARAKTERE_DISPLAY_PATH;
+    // Binde das Modul zur Anzeige der Charaktere ein (Jetzt mit Path-Klasse)
+    require_once Path::getComponent('character_display.php');
     ?>
 </article>
+
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {
@@ -334,4 +337,4 @@ require_once TEMPLATE_HEADER;
     });
 </script>
 
-<?php require_once TEMPLATE_FOOTER; ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>
