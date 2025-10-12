@@ -19,7 +19,6 @@
   gap: 20px;
 }
 
-/* NEU: Container für eine einzelne Charakter-Gruppe */
 .character-group {
   width: 100%;
 }
@@ -33,7 +32,6 @@
   font-weight: bold;
 }
 
-/* NEU: Flex-Container für die Bilder innerhalb einer Gruppe */
 .character-group-list {
   display: flex;
   flex-wrap: wrap;
@@ -42,13 +40,20 @@
 }
 
 .character-item {
+  /* Gib dem Container eine feste Breite, damit der Umbruch stattfinden kann */
+  width: 120px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .character-item a {
   display: block;
   text-decoration: none;
   color: inherit;
   transition: transform 0.2s ease-in-out;
+  /* Verhindert, dass der Link die Breite des Containers überschreitet */
+  max-width: 100%;
 }
 .character-item a:hover {
   transform: translateY(-5px);
@@ -58,9 +63,16 @@
 }
 .character-item .character-name {
   display: block;
-  margin-bottom: 5px;
+  margin-top: 5px;
+  /* Abstand zwischen Bild und Name */
   font-size: 0.9em;
   font-weight: bold;
+  /* Diese Regeln sorgen für den korrekten Umbruch, aber ohne aggressive Silbentrennung */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  /* hyphens   : auto; wurde entfernt, um den Umbruch mitten im Wort zu verhindern */
+  line-height: 1.3;
+  /* Verbessert die Lesbarkeit bei Umbruch */
 }
 .character-item img {
   width: 80px;
@@ -70,7 +82,6 @@
   border: 2px solid #ccc;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: #fff;
-  /* Falls Bilder transparente Bereiche haben */
 }
 
 /* Dark-Mode Anpassungen */

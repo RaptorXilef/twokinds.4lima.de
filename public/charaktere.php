@@ -4,24 +4,25 @@
  * Version 2.0: Vollständig an die neue, sichere Architektur mit
  * public_init.php und einem zentralen Bild-Helfer angepasst.
  * 
- * @file      /charaktere.php
+ * @file      ROOT/public/charaktere.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   2.0.0
+ * @since     2.0.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN ===
-// NEU: Lade den zentralen Helfer für Charakter-Bilder
-require_once __DIR__ . '/src/components/character_image_helper.php';
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
+require_once CHARACTER_IMAGE_HELPER_PATH;
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Charaktere';
@@ -29,12 +30,15 @@ $siteDescription = 'Lerne die Hauptcharaktere von TwoKinds kennen. Detaillierte 
 $robotsContent = 'index, follow';
 
 // Füge die charaktere.js mit Cache-Busting und Nonce hinzu
-$charaktereJsPath = $baseUrl . 'src/layout/js/charaktere.js?c=' . filemtime(__DIR__ . '/src/layout/js/charaktere.js');
+$charaktereJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'charaktere.js';
+$charaktereJsWebUrl = $baseUrl . 'src/layout/js/charaktere.js';
+$cacheBuster = file_exists($charaktereJsPathOnServer) ? '?c=' . filemtime($charaktereJsPathOnServer) : '';
+
 $additionalScripts = '
     <script nonce="' . htmlspecialchars($nonce) . '">
         window.phpDebugMode = ' . ($debugMode ? 'true' : 'false') . ';
     </script>
-    <script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($charaktereJsPath) . '"></script>
+    <script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($charaktereJsWebUrl . $cacheBuster) . '"></script>
 ';
 
 // CSS für das initiale Ausblenden der Lazy-Load-Bilder und die Korrekturen für die Bösewichte-Sektion
@@ -59,8 +63,8 @@ $additionalHeadContent = '
     </style>
 ';
 
-// === 4. HEADER EINBINDEN ===
-require_once __DIR__ . "/src/layout/header.php";
+// === 4. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 <header hidden>
     <h1 class="page-header">Charaktere</h1>

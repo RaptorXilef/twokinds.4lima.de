@@ -3,7 +3,7 @@
  * Zentrale Konfiguration für das Cache Busting.
  * Definiert die Konstante ENABLE_CACHE_BUSTING und eine Helferfunktion.
  * 
- * @file      /src/components/cache_config.php
+ * @file      ROOT/public/src/components/cache_config.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.

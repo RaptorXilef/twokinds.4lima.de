@@ -3,32 +3,28 @@
  * Gemeinsamer Footer für alle Seiten.
  * Enthält Copyright-Informationen und schließt die HTML-Struktur ab.
  * 
- * @file      /src/layout/footer.php
+ * @file      ROOT/templates/partials/footer.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
+ * @version   2.2.0
+ * @since     2.2.0 Redundanter include für configLoader.php entfernt, da die Konstanten global verfügbar sind.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// === DEBUG-MODUS STEUERUNG ===
-// Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
-// Diese Variable wird in dieser Datei aktuell nicht verwendet, da keine error_log Aufrufe vorhanden sind.
-/* $debugMode = false; */
-
-// Pfad zur version.json Datei
-VERSION_JSON;
+// Die Konstante VERSION_JSON wird jetzt zentral über public_init.php geladen.
+/** @uses VERSION_JSON */
 
 $versionInfo = [
     'version' => 'Unbekannt',
     'type' => 'Unbekannt'
 ];
 
-if (file_exists(VERSION_JSON)) {
+if (defined('VERSION_JSON') && file_exists(VERSION_JSON)) {
     $versionContent = file_get_contents(VERSION_JSON);
     $decodedVersion = json_decode($versionContent, true);
 
@@ -36,12 +32,15 @@ if (file_exists(VERSION_JSON)) {
         $versionInfo['version'] = htmlspecialchars($decodedVersion['version'] ?? 'Unbekannt');
         $versionInfo['type'] = htmlspecialchars($decodedVersion['type'] ?? 'Unbekannt');
     } else {
-        error_log("Fehler beim Dekodieren von version.json: " . json_last_error_msg());
-        $versionInfo['version'] = 'Fehler beim Laden (JSON)';
+        if ($debugMode)
+            error_log("Fehler beim Dekodieren von version.json: " . json_last_error_msg());
+        $versionInfo['version'] = 'Fehler (JSON)';
     }
 } else {
-    error_log("version.json nicht gefunden unter: " . VERSION_JSON);
-    $versionInfo['version'] = 'Fehler beim Laden (Datei nicht gefunden)';
+    $versionJsonPath = defined('VERSION_JSON') ? VERSION_JSON : 'nicht definiert';
+    if ($debugMode)
+        error_log("version.json nicht gefunden unter: " . $versionJsonPath);
+    $versionInfo['version'] = 'Fehler (Datei)';
 }
 
 ?>

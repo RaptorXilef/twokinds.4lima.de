@@ -4,7 +4,7 @@
  * Erzeugt entweder einen <a>-Tag (wenn nicht deaktiviert) oder einen <span>-Tag (wenn deaktiviert)
  * mit den entsprechenden Klassen und Texten.
  * 
- * @file      /src/components/nav_link_helper.php
+ * @file      ROOT/public/src/components/nav_link_helper.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.

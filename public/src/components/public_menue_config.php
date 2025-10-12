@@ -4,7 +4,7 @@
  * Enthält Links zu den verschiedenen Bereichen der Webseite.
  * CSP-konform gemacht durch Entfernen von Inline-Styles und Hinzufügen von Nonces.
  * 
- * @file      /src/components/menu_config.php
+ * @file      ROOT/public/src/components/menu_config.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
@@ -62,8 +62,9 @@ $debugMode = $debugMode ?? false;
         <a href="<?php echo htmlspecialchars($baseUrl); ?>comic/">Comic</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>archiv<?php echo $dateiendungPHP; ?>">Archiv</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>lesezeichen<?php echo $dateiendungPHP; ?>">Lesezeichen</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic<?php echo $dateiendungPHP; ?>">Über den Comic</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere<?php echo $dateiendungPHP; ?>">Charaktere</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>ueber_den_comic<?php echo $dateiendungPHP; ?>">Über den
+            Comic</a>
+        <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere.php">Charaktere</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>charaktere">Charakter-übersicht</a>
         <br>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>faq<?php echo $dateiendungPHP; ?>">FAQ</a>
@@ -71,7 +72,8 @@ $debugMode = $debugMode ?? false;
         <a href="<?php echo htmlspecialchars($baseUrl); ?>rss_anleitung<?php echo $dateiendungPHP; ?>">RSS-Feed Info</a>
         <br>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>lizenz<?php echo $dateiendungPHP; ?>">Lizenz</a>
-        <a href="<?php echo htmlspecialchars($baseUrl); ?>datenschutzerklaerung<?php echo $dateiendungPHP; ?>">Datenschutz</a>
+        <a
+            href="<?php echo htmlspecialchars($baseUrl); ?>datenschutzerklaerung<?php echo $dateiendungPHP; ?>">Datenschutz</a>
         <a href="<?php echo htmlspecialchars($baseUrl); ?>impressum<?php echo $dateiendungPHP; ?>">Impressum</a>
         <br>
         <a id="toggle_lights" class="theme jsdep" href=""><span class="themelabel">Theme</span><span

@@ -2,48 +2,59 @@
 /**
  * Diese Seite erlaubt einem angemeldeten Benutzer, die eigenen Anmeldedaten zu ändern.
  * 
- * @file      /admin/management_login.php
+ * @file      ROOT/public/admin/management_login.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   2.1.0
+ * @since     1.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     2.0.0 Vollständige Integration der admin_init.php und Code-Modernisierung.
+ * @since     2.1.0 Entfernung des redundanten Logout-Buttons.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
-require_once __DIR__ . '/src/components/admin_init.php';
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce, CSRF-Setup, Session-Handling) ===
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// --- Pfad zur Benutzerdatei ---
-$usersFile = __DIR__ . '/../../../admin_users.json';
-
-// --- Hilfsfunktionen (unverändert) ---
+// --- HILFSFUNKTIONEN ---
+/**
+ * Ruft die Liste aller Admin-Benutzer aus der JSON-Datei ab.
+ * @uses SECRET_ADMIN_USERS_JSON
+ */
 function getUsers(): array
 {
-    global $usersFile;
-    if (!file_exists($usersFile) || filesize($usersFile) === 0)
+    if (!file_exists(SECRET_ADMIN_USERS_JSON) || filesize(SECRET_ADMIN_USERS_JSON) === 0) {
         return [];
-    $content = file_get_contents($usersFile);
+    }
+    $content = file_get_contents(SECRET_ADMIN_USERS_JSON);
     $users = json_decode($content, true);
     return is_array($users) ? $users : [];
 }
 
+/**
+ * Speichert die Admin-Benutzer in der JSON-Datei.
+ * @uses SECRET_ADMIN_USERS_JSON
+ */
 function saveUsers(array $users): bool
 {
-    global $usersFile;
+    $dir = dirname(SECRET_ADMIN_USERS_JSON);
+    if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
+        return false;
+    }
     $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents($usersFile, $jsonContent) !== false;
+    return file_put_contents(SECRET_ADMIN_USERS_JSON, $jsonContent) !== false;
 }
 
-// --- Logik ---
+// --- LOGIK ---
 $message = '';
 $currentUser = $_SESSION['admin_username'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'change_credentials') {
-    // SICHERHEIT: CSRF-Token validieren
     verify_csrf_token();
 
     $oldPassword = $_POST['old_password'] ?? '';
@@ -53,18 +64,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $users = getUsers();
 
     if ($newPassword !== $confirmNewPassword) {
-        $message = '<p class="message-red">Die neuen Passwörter stimmen nicht überein.</p>';
+        $message = '<p class="status-message status-red">Die neuen Passwörter stimmen nicht überein.</p>';
     } elseif (!isset($users[$currentUser]) || !password_verify($oldPassword, $users[$currentUser]['passwordHash'])) {
-        $message = '<p class="message-red">Das aktuelle Passwort ist inkorrekt.</p>';
+        $message = '<p class="status-message status-red">Das aktuelle Passwort ist inkorrekt.</p>';
     } elseif (empty($newUsername) && empty($newPassword)) {
-        $message = '<p class="message-orange">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein.</p>';
+        $message = '<p class="status-message status-orange">Bitte geben Sie einen neuen Benutzernamen oder ein neues Passwort ein.</p>';
     } else {
         $userUpdated = false;
         $newUsersArray = $users;
 
         if (!empty($newUsername) && $newUsername !== $currentUser) {
             if (isset($newUsersArray[$newUsername])) {
-                $message = '<p class="message-red">Neuer Benutzername ist bereits vergeben.</p>';
+                $message = '<p class="status-message status-red">Neuer Benutzername ist bereits vergeben.</p>';
             } else {
                 $newUsersArray[$newUsername] = $newUsersArray[$currentUser];
                 unset($newUsersArray[$currentUser]);
@@ -82,9 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         if ($userUpdated && empty($message)) {
             if (saveUsers($newUsersArray)) {
-                $message = '<p class="message-green">Anmeldedaten erfolgreich aktualisiert.</p>';
+                $message = '<p class="status-message status-green">Anmeldedaten erfolgreich aktualisiert.</p>';
             } else {
-                $message = '<p class="message-red">Fehler beim Speichern der neuen Anmeldedaten.</p>';
+                $message = '<p class="status-message status-red">Fehler beim Speichern der neuen Anmeldedaten.</p>';
             }
         }
     }
@@ -94,12 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $pageTitle = 'Adminbereich - Anmeldedaten ändern';
 $pageHeader = 'Eigene Anmeldedaten ändern';
 $robotsContent = 'noindex, nofollow';
-$headerPath = __DIR__ . '/../src/layout/header.php';
-if (file_exists($headerPath)) {
-    include $headerPath;
-} else {
-    die('Fehler: Header-Datei nicht gefunden.');
-}
+
+include TEMPLATE_HEADER;
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -113,7 +120,7 @@ if (file_exists($headerPath)) {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .main-container.lights-off .admin-form-container {
+        body.theme-night .admin-form-container {
             background-color: rgba(30, 30, 30, 0.2);
             border-color: rgba(80, 80, 80, 0.15);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -154,35 +161,37 @@ if (file_exists($headerPath)) {
             background-color: #5cb85c;
         }
 
-        .message {
+        .status-message {
             margin-bottom: 15px;
             padding: 10px;
             border-radius: 5px;
             font-weight: bold;
         }
 
-        .message p {
+        .status-message p {
             margin: 0;
         }
 
-        .message-red {
-            color: red;
+        .status-red {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
-        .message-green {
-            color: green;
+        .status-green {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
-        .message-orange {
-            color: orange;
-        }
-
-        .text-right {
-            text-align: right;
+        .status-orange {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
         }
 
         .section-divider {
-            margin-top: 30px;
+            margin-top: 20px;
             padding-top: 20px;
             border-top: 1px dashed #eee;
         }
@@ -200,17 +209,15 @@ if (file_exists($headerPath)) {
     </style>
     <div class="admin-form-container">
         <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-        <p class="text-right"><a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
-                class="logout-link">Logout</a></p>
 
         <?php if (!empty($message)): ?>
-            <div class="message"><?php echo $message; ?></div>
+            <?php echo $message; ?>
         <?php endif; ?>
 
         <section class="section-divider">
             <h3>Benutzerdaten ändern</h3>
             <form id="change-credentials-form" action="management_login.php" method="POST" class="admin-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <input type="hidden" name="action" value="change_credentials">
                 <div>
                     <label for="new_username">Benutzername:</label>
@@ -231,33 +238,28 @@ if (file_exists($headerPath)) {
                     <input type="password" id="old_password" name="old_password" required
                         autocomplete="current-password">
                 </div>
-                <button type="submit">Daten ändern</button>
+                <button type="submit" class="button">Daten ändern</button>
             </form>
         </section>
     </div>
 </article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
-    // Fügt eine einfache clientseitige Validierung hinzu, um zu prüfen, ob die neuen Passwörter übereinstimmen.
     document.getElementById('change-credentials-form').addEventListener('submit', function (event) {
         const newPassword = document.getElementById('new_password').value;
         const confirmNewPassword = document.getElementById('confirm_new_password').value;
 
-        // Führe die Prüfung nur aus, wenn ein neues Passwort eingegeben wird.
         if (newPassword !== '' || confirmNewPassword !== '') {
             if (newPassword !== confirmNewPassword) {
-                // Verwende eine benutzerfreundlichere Meldung statt alert()
-                const messageContainer = document.querySelector('.message');
-                // Erstelle eine neue Nachricht, falls kein Container existiert
-                const messageDiv = messageContainer || document.createElement('div');
-                messageDiv.className = 'message';
-                messageDiv.innerHTML = '<p class="message-red">Die neuen Passwörter stimmen nicht überein.</p>';
-
-                // Füge die Nachricht nur hinzu, wenn sie noch nicht da war
+                let messageContainer = document.querySelector('.admin-form-container .status-message');
                 if (!messageContainer) {
-                    const form = document.getElementById('change-credentials-form');
-                    form.parentNode.insertBefore(messageDiv, form);
+                    messageContainer = document.createElement('div');
+                    const formContainer = document.querySelector('.admin-form-container');
+                    formContainer.insertBefore(messageContainer, formContainer.querySelector('h2').nextSibling);
                 }
+
+                messageContainer.className = 'status-message status-red';
+                messageContainer.innerHTML = '<p>Die neuen Passwörter stimmen nicht überein.</p>';
 
                 event.preventDefault();
             }
@@ -266,9 +268,6 @@ if (file_exists($headerPath)) {
 </script>
 
 <?php
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-if (file_exists($footerPath)) {
-    include $footerPath;
-}
+include TEMPLATE_FOOTER;
 ob_end_flush();
 ?>

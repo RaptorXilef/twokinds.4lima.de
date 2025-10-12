@@ -1,3 +1,89 @@
+###################
+# --- GITIGNORE ---
+###################
+
+# --- BACKUP & ARCHIVE ---
+*.bak
+*.backup
+*.old
+*.orig
+*~
+# Archive
+*.zip
+*.7z
+*.rar
+# Backup-Ordner
+*backup*
+# Photoshop Backup-Dateien
+*.psd
+*.c2paws
+# andere temporäre Dateien
+*.log
+*.tmp
+*.url
+* - Kopie*
+test*.php
+
+
+
+
+
+# --- CONFIG ---
+# - SECRETS -
+config/secrets/*
+
+# --- DATA ---
+data/*
+!data/version.json
+
+# --- Modules ---
+node_modules/*
+vendor/*
+
+# --- PUBLIC ---
+
+# Comic-Ordner
+public/comic/*
+!public/comic/20170728.php
+!public/comic/20250312.php
+!public/comic/20250604.php
+!public/comic/index.php
+
+
+
+
+
+
+# --- SRC ---
+
+
+
+# Googles
+public/google5c760f191f071105.html
+public/src/layout/js_backup/gtag.js
+
+#Notizen
+public/_links/*
+public/_debug/*
+_Notizen/*
+
+
+
+
+
+
+###########################
+# --- Temporäre Dateien ---
+###########################
+
+
+
+
+
+########################
+# --- ALTE GITIGNORE ---
+########################
+
 # assets und Bilder
 public/assets/comic_hires/*.jpg
 public/assets/comic_hires/*.png
@@ -45,12 +131,7 @@ public/assets/img/about/*
 # Nicht verwendete Icons
 public/assets/icons/nicht verwendet/*
 
-# Comic-Ordner
-public/comic/*
-!public/comic/20170728.php
-!public/comic/20250312.php
-!public/comic/20250604.php
-!public/comic/index.php
+
 
 # Charaktere-Ordner
 public/charaktere/*
@@ -66,25 +147,12 @@ public/assets/Ordnerstruktur.txt
 public/admin/json-vorlagen/*
 public/admin/consolenanwendung/*
 
-# Zip-Archive
-*.zip
-*.7z
-*.rar
 
-# Googles
-google5c760f191f071105.html
-public/src/layout/js_backup/gtag.js
 
-#Notizen
-public/_links/*
-public/_debug/*
-*.url
-* - Kopie*
-test*.php
-*backup*
-*.psd
-*.c2paws
-*.bak
+
+
+
+
 # FTP Verzeichnisse
 sync.ffs_db
 # Charaktere Bilder
@@ -95,7 +163,6 @@ public/assets/img/charaktere/characters_webp/templarchart-Original.png
 public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
 
 # CSS minified Tool
-node_modules/*
 package-lock.json
 package.json
 
@@ -151,5 +218,4 @@ package.json
 # git update-index --no-assume-unchanged src/config/comic_var.json
 # git update-index --no-assume-unchanged src/config/archive_chapters.json
 
-twokinds_src/*
-config/secrets/*
+

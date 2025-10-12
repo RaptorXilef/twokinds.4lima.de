@@ -2,48 +2,58 @@
 /**
  * Diese Seite dient der Verwaltung von Benutzern (Hinzufügen, Löschen, Anzeigen).
  * 
- * @file      /admin/management_user.php
+ * @file      ROOT/public/admin/management_user.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   2.0.0
+ * @since     1.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     2.0.0 Vollständige Integration der admin_init.php, Entfernung des redundanten Logout-Buttons und Stil-Anpassungen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce und CSRF-Setup) ===
-require_once __DIR__ . '/src/components/admin_init.php';
+// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce, CSRF-Setup, Session-Handling) ===
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// --- Pfad zur Benutzerdatei ---
-$usersFile = __DIR__ . '/../../../admin_users.json';
-
-// --- Hilfsfunktionen (unverändert) ---
+// --- HILFSFUNKTIONEN ---
+/**
+ * Ruft die Liste aller Admin-Benutzer aus der JSON-Datei ab.
+ * @uses SECRET_ADMIN_USERS_JSON
+ */
 function getUsers(): array
 {
-    global $usersFile;
-    if (!file_exists($usersFile) || filesize($usersFile) === 0)
+    if (!file_exists(SECRET_ADMIN_USERS_JSON) || filesize(SECRET_ADMIN_USERS_JSON) === 0) {
         return [];
-    $content = file_get_contents($usersFile);
+    }
+    $content = file_get_contents(SECRET_ADMIN_USERS_JSON);
     $users = json_decode($content, true);
     return is_array($users) ? $users : [];
 }
 
+/**
+ * Speichert die Admin-Benutzer in der JSON-Datei.
+ * @uses SECRET_ADMIN_USERS_JSON
+ */
 function saveUsers(array $users): bool
 {
-    global $usersFile;
+    $dir = dirname(SECRET_ADMIN_USERS_JSON);
+    if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
+        error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
+        return false;
+    }
     $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents($usersFile, $jsonContent) !== false;
+    return file_put_contents(SECRET_ADMIN_USERS_JSON, $jsonContent) !== false;
 }
 
-// --- Logik ---
+// --- LOGIK ---
 $message = '';
 $currentUser = $_SESSION['admin_username'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // SICHERHEIT: CSRF-Token validieren
     verify_csrf_token();
 
     $action = $_POST['action'] ?? '';
@@ -54,16 +64,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newPassword = $_POST['add_password'] ?? '';
             $users = getUsers();
             if (empty($newUsername) || empty($newPassword)) {
-                $message = '<p class="message-red">Benutzername und Passwort für den neuen Benutzer dürfen nicht leer sein.</p>';
+                $message = '<p class="status-message status-red">Benutzername und Passwort für den neuen Benutzer dürfen nicht leer sein.</p>';
             } elseif (isset($users[$newUsername])) {
-                $message = '<p class="message-red">Benutzername "' . htmlspecialchars($newUsername) . '" existiert bereits.</p>';
+                $message = '<p class="status-message status-red">Benutzername "' . htmlspecialchars($newUsername) . '" existiert bereits.</p>';
             } else {
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
                 $users[$newUsername] = ['passwordHash' => $hashedPassword];
                 if (saveUsers($users)) {
-                    $message = '<p class="message-green">Benutzer "' . htmlspecialchars($newUsername) . '" erfolgreich hinzugefügt.</p>';
+                    $message = '<p class="status-message status-green">Benutzer "' . htmlspecialchars($newUsername) . '" erfolgreich hinzugefügt.</p>';
                 } else {
-                    $message = '<p class="message-red">Fehler beim Hinzufügen des Benutzers.</p>';
+                    $message = '<p class="status-message status-red">Fehler beim Hinzufügen des Benutzers.</p>';
                 }
             }
             break;
@@ -71,20 +81,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'delete_user':
             $userToDelete = filter_input(INPUT_POST, 'user_to_delete', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             if (empty($userToDelete)) {
-                $message = '<p class="message-red">Kein Benutzer zum Löschen ausgewählt.</p>';
+                $message = '<p class="status-message status-red">Kein Benutzer zum Löschen ausgewählt.</p>';
             } elseif ($userToDelete === $currentUser) {
-                $message = '<p class="message-red">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen.</p>';
+                $message = '<p class="status-message status-red">Sie können Ihren eigenen angemeldeten Benutzer nicht löschen.</p>';
             } else {
                 $users = getUsers();
                 if (isset($users[$userToDelete])) {
                     unset($users[$userToDelete]);
                     if (saveUsers($users)) {
-                        $message = '<p class="message-green">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht.</p>';
+                        $message = '<p class="status-message status-green">Benutzer "' . htmlspecialchars($userToDelete) . '" erfolgreich gelöscht.</p>';
                     } else {
-                        $message = '<p class="message-red">Fehler beim Löschen des Benutzers.</p>';
+                        $message = '<p class="status-message status-red">Fehler beim Löschen des Benutzers.</p>';
                     }
                 } else {
-                    $message = '<p class="message-red">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden.</p>';
+                    $message = '<p class="status-message status-red">Benutzer "' . htmlspecialchars($userToDelete) . '" nicht gefunden.</p>';
                 }
             }
             break;
@@ -95,12 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = 'Adminbereich - Benutzerverwaltung';
 $pageHeader = 'Benutzerverwaltung';
 $robotsContent = 'noindex, nofollow';
-$headerPath = __DIR__ . '/../src/layout/header.php';
-if (file_exists($headerPath)) {
-    include $headerPath;
-} else {
-    die('Fehler: Header-Datei nicht gefunden.');
-}
+
+include TEMPLATE_HEADER;
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -114,7 +120,7 @@ if (file_exists($headerPath)) {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .main-container.lights-off .admin-form-container {
+        body.theme-night .admin-form-container {
             background-color: rgba(30, 30, 30, 0.2);
             border-color: rgba(80, 80, 80, 0.15);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -164,23 +170,27 @@ if (file_exists($headerPath)) {
             padding: 5px 10px;
         }
 
-        .message {
+        .status-message {
             margin-bottom: 15px;
             padding: 10px;
             border-radius: 5px;
             font-weight: bold;
         }
 
-        .message p {
+        .status-message p {
             margin: 0;
         }
 
-        .message-red {
-            color: red;
+        .status-red {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
-        .message-green {
-            color: green;
+        .status-green {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
         ul {
@@ -197,18 +207,19 @@ if (file_exists($headerPath)) {
             align-items: center;
         }
 
-        .main-container.lights-off li {
+        body.theme-night li {
             border-bottom-color: #555;
         }
 
-        span.user-name,
-        body.theme-night span.user-name {
-            font-weight: bold;
-            color: inherit;
-        }
+        span.user-name {
+            body.theme-night span.user-name {
+                font-weight: bold;
+                color: inherit;
+            }
 
-        .text-right {
-            text-align: right;
+            .text-right {
+                text-align: right;
+            }
         }
 
         .section-divider {
@@ -229,17 +240,15 @@ if (file_exists($headerPath)) {
     </style>
     <div class="admin-form-container">
         <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
-        <p class="text-right"><a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"
-                class="logout-link">Logout</a></p>
 
         <?php if (!empty($message)): ?>
-            <div class="message"><?php echo $message; ?></div>
+            <?php echo $message; ?>
         <?php endif; ?>
 
         <section id="manage-users" class="section-divider">
             <h3>Neuen Benutzer hinzufügen</h3>
             <form action="management_user.php" method="POST" class="admin-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <input type="hidden" name="action" value="add_user">
                 <div>
                     <label for="add_username">Benutzername für neuen Benutzer:</label>
@@ -249,7 +258,7 @@ if (file_exists($headerPath)) {
                     <label for="add_password">Passwort für neuen Benutzer:</label>
                     <input type="password" id="add_password" name="add_password" required autocomplete="new-password">
                 </div>
-                <button type="submit">Benutzer hinzufügen</button>
+                <button type="submit" class="button">Benutzer hinzufügen</button>
             </form>
         </section>
 
@@ -264,11 +273,10 @@ if (file_exists($headerPath)) {
                         <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
                         <?php if ($user !== $currentUser): ?>
                             <form action="management_user.php" method="POST" class="delete-form">
-                                <input type="hidden" name="csrf_token"
-                                    value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                 <input type="hidden" name="action" value="delete_user">
                                 <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
-                                <button type="submit" class="delete-button">Löschen</button>
+                                <button type="submit" class="button delete-button">Löschen</button>
                             </form>
                         <?php else: ?>
                             <span class="current-user-tag">(Sie)</span>
@@ -287,7 +295,7 @@ if (file_exists($headerPath)) {
             form.addEventListener('submit', function (event) {
                 const userToDelete = form.querySelector('input[name="user_to_delete"]').value;
                 if (!confirm('Sind Sie sicher, dass Sie den Benutzer "' + userToDelete + '" löschen möchten?')) {
-                    event.preventDefault(); // Verhindert das Absenden des Formulars, wenn der Benutzer auf "Abbrechen" klickt.
+                    event.preventDefault();
                 }
             });
         });
@@ -295,9 +303,6 @@ if (file_exists($headerPath)) {
 </script>
 
 <?php
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-if (file_exists($footerPath)) {
-    include $footerPath;
-}
+include TEMPLATE_FOOTER;
 ob_end_flush();
 ?>

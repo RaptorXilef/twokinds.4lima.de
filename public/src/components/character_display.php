@@ -4,30 +4,30 @@
  * Die Charaktere werden nach den Gruppen und der Reihenfolge aus charaktere.json sortiert.
  * Die Gruppen-Überschriften werden dynamisch aus der charaktere.json geladen.
  * 
- * @file      /src/components/character_display.php
+ * @file      ROOT/public/public/src/components/character_display.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
+ * @version   2.1.1
  * @since     1.3.2 Entfernt das feste Mapping und liest Gruppennamen dynamisch aus.
  * @since     1.4.0 Fügt eine Variable hinzu, um die Hauptüberschrift optional auszublenden.
  * @since     1.4.1 Korrigiert den Link, sodass er auf die individuelle Charakter-PHP-Seite verweist.
  * @since     2.0.0 Umstellung auf das neue ID-basierte Charaktersystem.
  * @since     2.1.0 Stellt die Link-Struktur auf individuelle PHP-Dateien (/charaktere/Trace.php) wieder her.
+ * @since     2.1.1 Code-Bereinigung und Korrektur des Dateipfads im Doc-Block.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Pfad zur Charakter-Definitionsdatei
-$charaktereJsonPath = __DIR__ . '/../config/charaktere.json';
+// Pfad zur Charakter-Definitionsdatei ist über Konstante CHARAKTERE_JSON verfügbar
 $charaktereData = [];
 
 // Lade und verarbeite die Charakterdaten nur einmal
-if (file_exists($charaktereJsonPath)) {
-    $charaktereJsonContent = file_get_contents($charaktereJsonPath);
+if (file_exists(CHARAKTERE_JSON)) {
+    $charaktereJsonContent = file_get_contents(CHARAKTERE_JSON);
     $decodedData = json_decode($charaktereJsonContent, true);
 
     if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['characters']) && isset($decodedData['groups'])) {

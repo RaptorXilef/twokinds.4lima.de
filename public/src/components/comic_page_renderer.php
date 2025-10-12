@@ -6,24 +6,26 @@
  * Es extrahiert die Comic-ID aus dem Dateinamen, lädt die entsprechenden Daten
  * und rendert die vollständige HTML-Seite für den jeweiligen Comic.
  * 
- * @file      /src/components/comic_page_renderer.php
+ * @file      ROOT/public/src/components/comic_page_renderer.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
+ * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG ===
-require_once __DIR__ . '/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../../../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN ===
-require_once __DIR__ . '/load_comic_data.php';
-require_once __DIR__ . '/image_cache_helper.php';
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
+require_once LOAD_COMIC_DATA_PATH;
+require_once IMAGE_CACHE_HELPER_PATH;
 
 // === 3. AKTUELLE COMIC-ID ERMITTELN ===
 $currentComicId = basename($_SERVER['SCRIPT_FILENAME'], '.php');
@@ -39,11 +41,11 @@ if (!isset($comicData[$currentComicId])) {
     http_response_code(404);
     $pageTitle = 'Seite nicht gefunden (404)';
     $siteDescription = 'Der gesuchte Comic konnte leider nicht gefunden werden.';
-    require_once __DIR__ . '/../layout/header.php';
+    require_once TEMPLATE_HEADER;
     echo '<h1>404 - Seite nicht gefunden</h1>';
     echo '<p>Leider existiert unter dieser Adresse kein Comic. Möglicherweise haben Sie sich vertippt oder die Seite wurde verschoben.</p>';
     echo '<p><a href="' . htmlspecialchars($baseUrl) . '">Zurück zur neuesten Comicseite</a></p>';
-    require_once __DIR__ . '/../layout/footer.php';
+    require_once TEMPLATE_FOOTER;
     exit();
 }
 
@@ -89,7 +91,7 @@ $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 $pageTitle = htmlspecialchars($comicTyp) . ': ' . htmlspecialchars($comicName);
 $siteDescription = 'TwoKinds auf Deutsch - ' . htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman . ': ' . htmlspecialchars($comicName);
 $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . ltrim($socialMediaPreviewUrl, './');
-$comicJsPathOnServer = __DIR__ . '/../layout/js/comic.min.js';
+$comicJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'comic.min.js';
 $comicJsWebUrl = $baseUrl . 'src/layout/js/comic.min.js';
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
@@ -97,8 +99,8 @@ $viewportContent = 'width=1099';
 $robotsContent = 'index, follow'; // Einzelne Comicseiten sollen indexiert werden
 $canonicalUrl = $baseUrl . 'comic/' . $currentComicId . '.php';
 
-// === 8. HEADER EINBINDEN ===
-require_once __DIR__ . '/../layout/header.php';
+// === 8. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -135,7 +137,7 @@ require_once __DIR__ . '/../layout/header.php';
         if ($currentComicId === $latestComicId) {
             $isCurrentPageLatest = true;
         }
-        include __DIR__ . '/../layout/comic_navigation.php';
+        include COMIC_NAVIGATION_PATH;
         if (isset($isCurrentPageLatest)) {
             unset($isCurrentPageLatest);
         }
@@ -162,7 +164,7 @@ require_once __DIR__ . '/../layout/header.php';
         if ($currentComicId === $latestComicId) {
             $isCurrentPageLatest = true;
         }
-        include __DIR__ . '/../layout/comic_navigation.php';
+        include COMIC_NAVIGATION_PATH;
         if (isset($isCurrentPageLatest)) {
             unset($isCurrentPageLatest);
         }
@@ -204,8 +206,8 @@ require_once __DIR__ . '/../layout/header.php';
     </aside>
 
     <?php
-    // NEU: Binde das Modul zur Anzeige der Charaktere ein
-    require_once __DIR__ . '/character_display.php';
+    // NEU: Binde das Modul zur Anzeige der Charaktere ein (Jetzt mit Konstante)
+    require_once CHARAKTERE_DISPLAY_PATH;
     ?>
 </article>
 
@@ -350,4 +352,7 @@ require_once __DIR__ . '/../layout/header.php';
     });
 </script>
 
-<?php require_once __DIR__ . '/../layout/footer.php'; ?>
+<?php
+// === 9. FOOTER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_FOOTER;
+?>

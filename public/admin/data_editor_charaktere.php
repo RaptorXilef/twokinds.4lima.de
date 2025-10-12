@@ -2,13 +2,13 @@
 /**
  * Administrationsseite zum Bearbeiten der charaktere.json.
  *
- * @file      /admin/data_editor_charaktere.php
+ * @file      ROOT/public/admin/data_editor_charaktere.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.2.3
+ * @version   3.4.0
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -29,19 +29,18 @@
  * @since     3.2.1 CSS-Anpassungen und Hinzufügen der ID-Anzeige im Gruppeneditor.
  * @since     3.2.2 Behebt CSP-Fehler durch Ersetzen von 'onerror' durch Event-Listener.
  * @since     3.2.3 Fügt die Möglichkeit hinzu, bestehende Gruppennamen zu bearbeiten.
+ * @since     3.3.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     3.4.0 Umstellung auf neue, granulare Asset-Pfad-Konstanten und Korrektur des Renderer-Pfades.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$charaktereJsonPath = __DIR__ . '/../src/config/charaktere.json';
-$charakterePhpPath = __DIR__ . '/../charaktere/';
+// HINWEIS: Der Pfad zu den Charakter-PHP-Seiten wird direkt aus der PUBLIC_CHARAKTERE_PATH-Konstante abgeleitet.
+$charakterePhpPath = PUBLIC_CHARAKTERE_PATH;
 
 function loadJsonData(string $path): array
 {
@@ -57,15 +56,13 @@ function loadJsonData(string $path): array
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_end_clean();
     header('Content-Type: application/json');
-    $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    if (empty($token) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'CSRF-Token-Validierung fehlgeschlagen.']);
-        exit;
-    }
+
+    // Die CSRF-Token-Validierung wird von der zentralen Funktion aus admin_init.php übernommen.
+    verify_csrf_token();
+
     $inputData = json_decode(file_get_contents('php://input'), true);
     if (json_last_error() === JSON_ERROR_NONE && is_array($inputData) && isset($inputData['characters'], $inputData['groups'])) {
-        $currentData = loadJsonData($charaktereJsonPath);
+        $currentData = loadJsonData(CHARAKTERE_JSON);
         $currentCharObjects = $currentData['characters'] ?? [];
         $deletedCount = 0;
         $renamedCount = 0;
@@ -92,14 +89,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
                 if (!file_exists($filePath)) {
-                    $phpContent = "<?php require_once __DIR__ . '/../src/components/character_page_renderer.php'; ?>";
+                    // KORREKTUR: Der Pfad zum Renderer muss von der neuen Datei im /public/charaktere/ Verzeichnis aus relativ sein.
+                    $phpContent = "<?php require_once __DIR__ . '/../../src/components/character_page_renderer.php'; ?>";
                     if (file_put_contents($filePath, $phpContent) !== false) {
                         $createdCount++;
                     }
                 }
             }
         }
-        if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+        if (file_put_contents(CHARAKTERE_JSON, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
             $message = "Charakter-Daten erfolgreich gespeichert.";
             if ($createdCount > 0)
                 $message .= " $createdCount PHP-Datei(en) erstellt.";
@@ -110,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => true, 'message' => $message]);
         } else {
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Fehler beim Schreiben der charaktere.json.']);
+            echo json_encode(['success' => false, 'message' => 'Fehler beim Schreiben der ' . CHARAKTERE_JSON_FILE . '.']);
         }
     } else {
         http_response_code(400);
@@ -119,23 +117,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$allCharaktereData = loadJsonData($charaktereJsonPath);
-$lastSavedTimestamp = file_exists($charaktereJsonPath) ? filemtime($charaktereJsonPath) : null;
+$allCharaktereData = loadJsonData(CHARAKTERE_JSON);
+$lastSavedTimestamp = file_exists(CHARAKTERE_JSON) ? filemtime(CHARAKTERE_JSON) : null;
 $pageTitle = 'Charakter-Datenbank Editor';
 $pageHeader = 'Charakter-Datenbank Editor';
 $robotsContent = 'noindex, nofollow';
 $bodyClass = 'admin-page';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>';
 
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <div class="admin-container">
     <div id="last-run-container">
         <?php if ($lastSavedTimestamp): ?>
                 <p class="status-message status-info">Letzte Speicherung am
-                    <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
-                </p>
+                <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
+            </p>
         <?php endif; ?>
     </div>
 
@@ -198,7 +196,7 @@ include $headerPath;
             <div class="form-group preview-container">
                 <label>Bild-Vorschau:</label>
                 <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?"
-                     alt="Charakter Vorschau">
+                    alt="Charakter Vorschau">
             </div>
             <div class="form-group">
                 <label for="modal-description">Beschreibung:</label>
@@ -325,7 +323,6 @@ include $headerPath;
     .char-id-display {
         font-size: 0.8em;
         color: #888;
-        /* background-color: #eee; */
         padding: 2px 6px;
         border-radius: 4px;
     }
@@ -345,7 +342,6 @@ include $headerPath;
     }
 
     body.theme-night .char-id-display {
-        /* background-color: #002b3c; */
         color: #aaa;
     }
 
@@ -906,10 +902,10 @@ include $headerPath;
             renderMasterList();
             renderGroups();
         } else {
-            groupsContainer.innerHTML = '<p class="status-message status-red"><strong>Fehler:</strong> Die `charaktere.json` hat ein veraltetes Format. Bitte führe zuerst das Migrationsskript aus: <a href="migration_char_id.php">migration_char_id.php</a></p>';
+            groupsContainer.innerHTML = '<p class="status-message status-red"><strong>Fehler:</strong> Die `<?php echo CHARAKTERE_JSON_FILE ?>` hat ein veraltetes Format. Bitte führe zuerst das Migrationsskript aus: <a href="migration_char_id.php">migration_char_id.php</a></p>';
             masterListContainer.innerHTML = '<p class="status-message status-red">Bitte zuerst migrieren.</p>';
         }
     });
 </script>
 
-<?php include $footerPath; ?>
+<?php include TEMPLATE_FOOTER; ?>

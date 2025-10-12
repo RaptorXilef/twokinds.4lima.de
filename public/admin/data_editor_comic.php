@@ -2,13 +2,13 @@
 /**
  * Administrationsseite zum Bearbeiten der comic_var.json Konfigurationsdatei.
  *
- * @file      /admin/data_editor_comic.php
+ * @file      ROOT/public/admin/data_editor_comic.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.8.0
+ * @version   6.1.0
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
@@ -21,30 +21,53 @@
  * @since     5.6.0 Passt die Charakter-Auswahl im Modal an die neue, dynamische Gruppenstruktur der charaktere.json an.
  * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten. Stellt sicher, dass mehrfach zugeordnete Charaktere synchron ausgewählt werden.
  * @since     5.8.0 Anpassung an versionierte comic_var.json (Schema v2).
+ * @since     5.9.0 Umstellung auf zentrale Pfad-Konstanten, direkte Verwendung und Bugfixes.
+ * @since     6.0.0 Implementierung einer dynamischen relativen Pfadberechnung für generierte PHP-Dateien.
+ * @since     6.1.0 Korrigiert den Zeilenumbruch für Charakternamen im Editor-Modal.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // === VARIABLEN ===
-// Anzahl der Comic-Seiten pro Seite in der Übersicht des Comicseiten Editors.
 $comicPagesPerPage = $comicPagesPerPage ?? 50;
 define('COMIC_PAGES_PER_PAGE', $comicPagesPerPage);
 
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$comicVarJsonPath = __DIR__ . '/../src/config/comic_var.json';
-$comicPhpPagesPath = __DIR__ . '/../comic/';
-$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
-$imageCachePath = __DIR__ . '/../src/config/comic_image_cache.json';
-$charaktereJsonPath = __DIR__ . '/../src/config/charaktere.json';
+
+// --- HILFSFUNKTIONEN ---
+
+/**
+ * Berechnet den relativen Pfad von einem Start- zu einem Zielpfad.
+ *
+ * @param string $from Der absolute Startpfad (Verzeichnis).
+ * @param string $to Der absolute Zielpfad (Datei).
+ * @return string Der berechnete relative Pfad.
+ */
+function getRelativePath(string $from, string $to): string
+{
+    $from = str_replace('\\', '/', $from);
+    $to = str_replace('\\', '/', $to);
+
+    $from = explode('/', rtrim($from, '/'));
+    $to = explode('/', rtrim($to, '/'));
+    $toFilename = array_pop($to); // Dateinamen für später aufheben
+
+    while (count($from) && count($to) && ($from[0] == $to[0])) {
+        array_shift($from);
+        array_shift($to);
+    }
+
+    $relativePath = str_repeat('../', count($from));
+    $relativePath .= implode('/', $to);
+    $relativePath .= '/' . $toFilename;
+
+    return $relativePath;
+}
 
 
-// --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
@@ -171,12 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         parse_str($input, $requestData);
     }
 
-    $token = $requestData['csrf_token'] ?? null;
-    if (empty($token) || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'CSRF-Token-Validierung fehlgeschlagen. Bitte laden Sie die Seite neu.']);
-        exit;
-    }
+    verify_csrf_token(); // Zentralisierte CSRF-Prüfung
 
     $action = $requestData['action'] ?? '';
     $response = ['success' => false, 'message' => ''];
@@ -185,23 +203,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'save_comic_data':
             $comicDataToSave = $requestData['comics'] ?? [];
 
-            // Lade die aktuelle v1/v2-Datenstruktur, um einen Vergleich zu ermöglichen
-            $decodedCurrentData = loadJsonData($comicVarJsonPath, $debugMode);
-            $currentData = [];
-            if (isset($decodedCurrentData['schema_version']) && $decodedCurrentData['schema_version'] >= 2) {
-                $currentData = $decodedCurrentData['comics'] ?? [];
-            } else {
-                $currentData = $decodedCurrentData;
-            }
+            $decodedCurrentData = loadJsonData(COMIC_VAR_JSON, $debugMode);
+            $currentData = (isset($decodedCurrentData['schema_version']) && $decodedCurrentData['schema_version'] >= 2) ? ($decodedCurrentData['comics'] ?? []) : $decodedCurrentData;
 
             $newIds = array_keys(array_diff_key($comicDataToSave, $currentData));
             $deletedIds = array_keys(array_diff_key($currentData, $comicDataToSave));
 
             $createdCount = 0;
             foreach ($newIds as $id) {
-                $filePath = $comicPhpPagesPath . $id . '.php';
+                $filePath = PUBLIC_COMIC_PATH . DIRECTORY_SEPARATOR . $id . '.php';
                 if (!file_exists($filePath)) {
-                    $phpContent = "<?php require_once __DIR__ . '/../src/components/comic_page_renderer.php'; ?>";
+                    // Berechne den relativen Pfad dynamisch
+                    $relativePath = getRelativePath(PUBLIC_COMIC_PATH, COMIC_PAGE_RENDERER_PATH);
+                    $phpContent = "<?php require_once __DIR__ . '/" . $relativePath . "'; ?>";
                     if (file_put_contents($filePath, $phpContent) !== false) {
                         $createdCount++;
                     }
@@ -210,22 +224,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $deletedCount = 0;
             foreach ($deletedIds as $id) {
-                $filePath = $comicPhpPagesPath . $id . '.php';
-                if (file_exists($filePath)) {
-                    if (unlink($filePath)) {
-                        $deletedCount++;
-                    }
+                $filePath = PUBLIC_COMIC_PATH . DIRECTORY_SEPARATOR . $id . '.php';
+                if (file_exists($filePath) && unlink($filePath)) {
+                    $deletedCount++;
                 }
             }
 
-            if (saveComicData($comicVarJsonPath, $comicDataToSave, $debugMode)) {
+            if (saveComicData(COMIC_VAR_JSON, $comicDataToSave, $debugMode)) {
                 $message = "Comic-Daten erfolgreich gespeichert!";
-                if ($createdCount > 0) {
+                if ($createdCount > 0)
                     $message .= " $createdCount PHP-Datei(en) erstellt.";
-                }
-                if ($deletedCount > 0) {
+                if ($deletedCount > 0)
                     $message .= " $deletedCount PHP-Datei(en) gelöscht.";
-                }
                 $response = ['success' => true, 'message' => $message];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Comic-Daten.';
@@ -233,9 +243,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
             $currentSettings['data_editor_comic']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -245,15 +255,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cacheKey = $requestData['cache_key'] ?? 'url_originalbild';
 
             if ($comicIdToUpdate && $imageUrlToCache && in_array($cacheKey, ['url_originalbild', 'url_originalsketch'])) {
-                $currentCache = get_image_cache_local($imageCachePath);
-                if (!isset($currentCache[$comicIdToUpdate])) {
+                $currentCache = get_image_cache_local(COMIC_IMAGE_CACHE_JSON);
+                if (!isset($currentCache[$comicIdToUpdate]))
                     $currentCache[$comicIdToUpdate] = [];
-                }
                 $currentCache[$comicIdToUpdate][$cacheKey] = $imageUrlToCache;
 
-                if (file_put_contents($imageCachePath, json_encode($currentCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
-                    $response['success'] = true;
-                    $response['message'] = "Cache für '$cacheKey' von $comicIdToUpdate aktualisiert.";
+                if (file_put_contents(COMIC_IMAGE_CACHE_JSON, json_encode($currentCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+                    $response = ['success' => true, 'message' => "Cache für '$cacheKey' von $comicIdToUpdate aktualisiert."];
                 } else {
                     $response['message'] = "Fehler beim Speichern der Cache-Datei.";
                     http_response_code(500);
@@ -268,25 +276,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
 $comicEditorSettings = $settings['data_editor_comic'];
 
-// Lade Comic-Daten und packe sie bei Bedarf aus
-$decodedData = loadJsonData($comicVarJsonPath, $debugMode);
-$jsonData = [];
-if (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) {
-    $jsonData = $decodedData['comics'] ?? [];
-} else {
-    $jsonData = $decodedData; // Fallback für v1
-}
+$decodedData = loadJsonData(COMIC_VAR_JSON, $debugMode);
+$jsonData = (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : $decodedData;
 
-$charaktereData = loadCharacterDataWithSchema($charaktereJsonPath);
-$imageDirs = [__DIR__ . '/../assets/comic_lowres/', __DIR__ . '/../assets/comic_hires/'];
+$charaktereData = loadCharacterDataWithSchema(CHARAKTERE_JSON);
+$imageDirs = [PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_HIRES_PATH];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
-$phpIds = getComicIdsFromPhpFiles($comicPhpPagesPath, $debugMode);
+$phpIds = getComicIdsFromPhpFiles(PUBLIC_COMIC_PATH, $debugMode);
 
 $allIds = array_unique(array_merge(array_keys($jsonData), $imageIds, $phpIds));
-rsort($allIds); // Neueste zuerst
+rsort($allIds);
 
 $fullComicData = [];
 foreach ($allIds as $id) {
@@ -300,8 +302,7 @@ foreach ($allIds as $id) {
         'url_originalsketch' => '',
         'charaktere' => []
     ];
-    $existingData = $jsonData[$id] ?? [];
-    $fullComicData[$id] = array_merge($defaults, $existingData);
+    $fullComicData[$id] = array_merge($defaults, $jsonData[$id] ?? []);
 
     $sources = [];
     if (isset($jsonData[$id]))
@@ -315,7 +316,7 @@ foreach ($allIds as $id) {
     $fullComicData[$id]['sources'] = $sources;
 }
 
-$cachedImagesForJs = get_image_cache_local($imageCachePath);
+$cachedImagesForJs = get_image_cache_local(COMIC_IMAGE_CACHE_JSON);
 
 $pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
@@ -326,17 +327,18 @@ $additionalScripts = <<<HTML
     <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 HTML;
 
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
+<!-- Der restliche HTML, CSS und JavaScript-Code bleibt unverändert... -->
 <article>
     <div class="content-section">
         <div id="settings-and-actions-container">
             <div id="last-run-container">
                 <?php if ($comicEditorSettings['last_run_timestamp']): ?>
-                            <p class="status-message status-info">Letzte Speicherung am
-                            <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
-                        </p>
+                        <p class="status-message status-info">Letzte Speicherung am
+                        <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
+                    </p>
                 <?php endif; ?>
             </div>
             <h2>Comic Daten Editor</h2>
@@ -354,7 +356,8 @@ include $headerPath;
             <div class="marker-legend-group">
                 <div class="marker-legend">
                     <strong>Quellen:</strong>
-                    <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
+                    <span class="source-marker source-json"
+                        title="Eintrag existiert in <?php echo COMIC_VAR_JSON_FILE ?>">JSON</span>
                     <span class="source-marker source-image"
                         title="Mindestens eine Bilddatei existiert lokal">Bild</span>
                     <span class="source-marker source-php"
@@ -1063,7 +1066,7 @@ include $headerPath;
         let currentPage = 1;
 
         if (charaktereInfo.schema_version < 2) {
-            showMessage('Fehler: Veraltetes `charaktere.json`-Format. Bitte migrieren.', 'red', 0);
+            showMessage("Fehler: Veraltetes `charaktere.json`-Format. Bitte migrieren.", 'red', 0);
             return;
         }
 
@@ -1622,4 +1625,4 @@ include $headerPath;
     });
 </script>
 
-<?php include $footerPath; ?>
+<?php include TEMPLATE_FOOTER; ?>

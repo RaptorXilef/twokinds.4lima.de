@@ -2,27 +2,24 @@
 /**
  * Administrationsseite zum Bearbeiten der archive_chapters.json.
  * 
- * @file      /admin/data_editor_archiv.php
+ * @file      ROOT/public/admin/data_editor_archiv.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.2.0
+ * @version   3.5.0
  * @since     3.2.0 Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token. Die ursprüngliche UI und PHP-Logik bleiben vollständig erhalten.
+ * @since     3.3.0 Umstellung auf zentrale Pfad-Konstanten.
+ * @since     3.4.0 Direkte Verwendung von Konstanten anstelle von temporären Variablen.
+ * @since     3.5.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
-
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$archiveChaptersJsonPath = __DIR__ . '/../src/config/archive_chapters.json';
-$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
@@ -110,10 +107,10 @@ function saveArchiveChapters(string $path, array $data, bool $debugMode): bool
     return file_put_contents($path, $jsonContent) !== false;
 }
 
-// --- AJAX-Handler (Korrigiert) ---
+// --- AJAX-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Die Sicherheitsprüfung wird zuerst ausgeführt und prüft den CSRF-Token aus $_POST.
-    require_once __DIR__ . '/src/components/security_check.php';
+    // Die Sicherheitsprüfung wird zuerst ausgeführt.
+    verify_csrf_token();
 
     ob_end_clean();
     header('Content-Type: application/json');
@@ -129,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $response['message'] = 'Fehler: Die übermittelten Kapiteldaten sind kein gültiges JSON.';
                 http_response_code(400);
-            } elseif (saveArchiveChapters($archiveChaptersJsonPath, $chaptersToSave, $debugMode)) {
+            } elseif (saveArchiveChapters(ARCHIVE_CHAPTERS_JSON, $chaptersToSave, $debugMode)) {
                 $response = ['success' => true, 'message' => 'Archiv-Daten erfolgreich in der JSON-Datei gespeichert!'];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Archiv-Daten.';
@@ -137,9 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
             $currentSettings['data_editor_archiv']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
                 $response['success'] = true;
                 $response['message'] = 'Zeitstempel gespeichert.';
             } else {
@@ -153,9 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
 $archiveSettings = $settings['data_editor_archiv'];
-$chapters = loadArchiveChapters($archiveChaptersJsonPath, $debugMode);
+$chapters = loadArchiveChapters(ARCHIVE_CHAPTERS_JSON, $debugMode);
 
 $pageTitle = 'Adminbereich - Archiv Editor';
 $pageHeader = 'Archiv Editor';
@@ -167,7 +164,7 @@ $additionalScripts = <<<HTML
     <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 HTML;
 
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -636,4 +633,4 @@ include $headerPath;
     });
 </script>
 
-<?php include $footerPath; ?>
+<?php include TEMPLATE_FOOTER; ?>

@@ -8,7 +8,7 @@
  * - Setzen von strikten HTTP-Sicherheits-Headern.
  * - Generierung einer einmaligen Nonce für die Content-Security-Policy (CSP) zum Schutz vor XSS.
  * 
- * @file      /src/components/public_init.php
+ * @file      ROOT/src/components/public_init.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
@@ -21,9 +21,9 @@
 // Kann in der aufrufenden Datei VOR dem Include gesetzt werden.
 $debugMode = $debugMode ?? false;
 
-require_once __DIR__ . '/../../../../twokinds_src/configLoader.php';
+require_once __DIR__ . '/configLoader.php';
 if ($debugMode) {
-    error_log("DEBUG (public_init.php): CONFIG_PATH = " . CONFIG_PATH);
+    error_log("DEBUG (public_init.php): CONFIG_PATH = /configLoader.php");
 }
 
 // Setzt das maximale Ausführungszeitlimit für das Skript.
@@ -46,22 +46,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 
 // --- 2. Dynamische Basis-URL Bestimmung ---
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'];
-// __DIR__ ist /src/components, also gehen wir zwei Ebenen hoch zum Anwendungs-Root.
-$appRootAbsPath = str_replace('\\', '/', dirname(dirname(__DIR__)));
-$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
-$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
-if (!empty($subfolderPath) && $subfolderPath !== '/') {
-    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
-} elseif (empty($subfolderPath)) {
-    $subfolderPath = '/';
-}
-$baseUrl = $protocol . $host . $subfolderPath;
-
-if ($debugMode) {
-    error_log("DEBUG (public_init.php): Basis-URL bestimmt: " . $baseUrl);
-}
+// Findet nun in der config_folder.php statt.
+if ($debugMode)
+    error_log("DEBUG (config_folder.php): Basis-URL bestimmt: " . BASE_URL);
 
 
 // --- 3. Universelle Sicherheits-Header & CSP mit Nonce ---

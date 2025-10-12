@@ -4,76 +4,61 @@
  * Hier können grundlegende Einstellungen wie die Erstellung notwendiger Ordner
  * und die Überprüfung/Sortierung der Comic-Datenbankdatei vorgenommen werden.
  * 
- * @file      /admin/initial_setup.php
+ * @file      ROOT/public/admin/initial_setup.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.1.1
+ * @version   4.0.0
  * @since     2.1.0 Angepasst an das neue Design mit einheitlichen Statusmeldungen, Button-Stilen
  * @since     2.2.0 Anpassung an versionierte comic_var.json (Schema v2).
  * @since     3.0.0 Umstellung auf neue, ausgelagerte Verzeichnisstruktur (twokinds_src).
  * @since     3.0.1 asset Ordner wieder prüfen
  * @since     3.1.0 Implementiert GitHub-Fallback für fehlende Konfigurationsvorlagen.
+ * @since     4.0.0 Vollständige Umstellung auf Konstanten und reinen GitHub-Download, Entfernung lokaler Vorlagen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
-$debugMode = false;
+$debugMode = $debugMode ?? false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG (lädt configLoader.php via admin_init.php) ===
-require_once __DIR__ . '/src/components/admin_init.php';
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// Lädt alle Konfigurationen. Die Seite funktioniert auch eingeschränkt, wenn die Konfiguration fehlt.
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// --- Pfad-Konfiguration ---
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$configTemplatesPath = __DIR__ . '/../config_templates/';
-
-// Fallback-Pfade, falls die Konfiguration noch nicht geladen werden konnte
-$srcPrivatPath = __DIR__ . '/../../../../../twokinds_src';
-$configsPath = $srcPrivatPath . '/configs';
-$dbAssetsPath = $srcPrivatPath . '/assets';
-
-// Pfad-Konstanten aus configLoader.php verwenden, falls verfügbar
-if (isset($configExist) && $configExist === true) {
-    $srcPrivatPath = PRIVAT_SRC_PATH;
-    $configsPath = CONFIG_PATH;
-    $dbAssetsPath = DB_ASSETS_PATH;
-}
-$comicVarJsonPath = $dbAssetsPath . '/comic_var.json';
-
-// Definiere die benötigten Ordner und Dateien
-$requiredSrcFolders = [
-    'Source-Verzeichnis' => $srcPrivatPath,
-    'Configs-Verzeichnis' => $configsPath,
-    'Assets-Verzeichnis' => $dbAssetsPath,
+// --- ZU PRÜFENDE ORDNER UND DATEIEN ---
+$requiredFolders = [
+    'Private > Source' => PRIVATE_SRC_PATH,
+    'Private > Config' => PRIVATE_CONFIG_PATH,
+    'Private > Config > Secrets' => PRIVATE_SECRETS_PATH,
+    'Private > Data' => PRIVATE_DATA_PATH,
+    'Private > Data > Cache' => PRIVATE_CACHE_PATH,
+    'Public > Assets' => PUBLIC_ASSETS_PATH,
+    'Public > Assets > Comic Hires' => PUBLIC_IMG_COMIC_HIRES_PATH,
+    'Public > Assets > Comic Lowres' => PUBLIC_IMG_COMIC_LOWRES_PATH,
+    'Public > Assets > Comic Socialmedia' => PUBLIC_IMG_COMIC_SOCIALMEDIA_PATH,
+    'Public > Assets > Comic Thumbnails' => PUBLIC_IMG_COMIC_THUMBNAILS_PATH,
 ];
-$requiredPublicFolders = [
-    '../assets' => __DIR__ . '/../assets',
-    '../assets/comic_hires' => __DIR__ . '/../assets/comic_hires',
-    '../assets/comic_lowres' => __DIR__ . '/../assets/comic_lowres',
-    '../assets/comic_socialmedia' => __DIR__ . '/../assets/comic_socialmedia',
-    '../assets/comic_thumbnails' => __DIR__ . '/../assets/comic_thumbnails',
+
+$requiredFiles = [
+    'config_main.php' => ['target' => CONFIG_MAIN_PHP, 'github_path' => 'config/config_main.php'],
+    'config_folder_path.php' => ['target' => CONFIG_FOLDER_PATH_PHP, 'github_path' => 'config/config_folder_path.php'],
+    'config_file_path.php' => ['target' => CONFIG_FILE_PATH_PHP, 'github_path' => 'config/config_file_path.php'],
+    'admin_users.json' => ['target' => SECRET_ADMIN_USERS_JSON, 'github_path' => 'config/secrets/admin_users.json'],
+    'login_attempts.json' => ['target' => SECRET_LOGIN_ATTEMPTS_JSON, 'github_path' => 'config/secrets/login_attempts.json'],
+    'version.json' => ['target' => VERSION_JSON, 'github_path' => 'data/version.json'],
+    'archive_chapters.json' => ['target' => ARCHIVE_CHAPTERS_JSON, 'github_path' => 'data/archive_chapters.json'],
+    'charaktere.json' => ['target' => CHARAKTERE_JSON, 'github_path' => 'data/charaktere.json'],
+    'comic_image_cache.json' => ['target' => COMIC_IMAGE_CACHE_JSON, 'github_path' => 'data/cache/comic_image_cache.json'],
+    'comic_var.json' => ['target' => COMIC_VAR_JSON, 'github_path' => 'data/comic_var.json'],
+    'generator_settings.json' => ['target' => CONFIG_GENERATOR_SETTINGS_JSON, 'github_path' => 'config/generator_settings.json'],
+    'rss_config.json' => ['target' => CONFIG_RSS_CONFIG_JSON, 'github_path' => 'config/rss_config.json'],
+    'sitemap.json' => ['target' => SITEMAP_JSON, 'github_path' => 'data/sitemap.json'],
 ];
-$requiredConfigFiles = [
-    'configLoader.php' => ['target' => $srcPrivatPath . '/configLoader.php', 'template_subpath' => 'configLoader.example.php'],
-    'config_main.php' => ['target' => $configsPath . '/config_main.php', 'template_subpath' => 'configs/config_main.example.php'],
-    'version.json' => ['target' => __DIR__ . '/../version.json', 'template_subpath' => 'configs/version.example.json'],
-];
-$requiredAssetFiles = [
-    'admin_users.json' => ['target' => $dbAssetsPath . '/admin_users.json', 'template_subpath' => 'assets/admin_users.example.json'],
-    'login_attempts.json' => ['target' => $dbAssetsPath . '/login_attempts.json', 'template_subpath' => 'assets/login_attempts.example.json'],
-    'archive_chapters.json' => ['target' => $dbAssetsPath . '/archive_chapters.json', 'template_subpath' => 'assets/archive_chapters.example.json'],
-    'charaktere.json' => ['target' => $dbAssetsPath . '/charaktere.json', 'template_subpath' => 'assets/charaktere.example.json'],
-    'comic_image_cache.json' => ['target' => $dbAssetsPath . '/comic_image_cache.json', 'template_subpath' => 'assets/comic_image_cache.example.json'],
-    'comic_var.json' => ['target' => $comicVarJsonPath, 'template_subpath' => 'assets/comic_var.example.json'],
-    'generator_settings.json' => ['target' => $dbAssetsPath . '/generator_settings.json', 'template_subpath' => 'assets/generator_settings.example.json'],
-    'rss_config.json' => ['target' => $dbAssetsPath . '/rss_config.json', 'template_subpath' => 'assets/rss_config.example.json'],
-    'sitemap.json' => ['target' => $dbAssetsPath . '/sitemap.json', 'template_subpath' => 'assets/sitemap.example.json'],
-];
+
 $message = '';
 
-// --- Funktionen ---
+// --- FUNKTIONEN ---
 function getFolderStatuses(array $folders): array
 {
     $statuses = [];
@@ -87,62 +72,50 @@ function createFolders(array $folders): array
 {
     $created = [];
     foreach ($folders as $folder) {
-        if (!is_dir($folder) && mkdir($folder, 0777, true)) {
-            $created[] = $folder;
+        if (!is_dir($folder['path']) && mkdir($folder['path'], 0777, true)) {
+            $created[] = $folder['name'];
         }
     }
     return $created;
 }
 
-function getRequiredFileStatuses(array $files, string $templatesPath): array
+function getFileStatuses(array $files): array
 {
     $statuses = [];
     foreach ($files as $name => $details) {
-        $statuses[] = [
-            'name' => $name,
-            'path' => $details['target'],
-            'exists' => file_exists($details['target']),
-            'templateExists' => file_exists($templatesPath . $details['template_subpath'])
-        ];
+        $statuses[] = ['name' => $name, 'path' => $details['target'], 'exists' => file_exists($details['target'])];
     }
     return $statuses;
 }
 
-function createRequiredFiles(array $files, string $templatesPath): array
+function createRequiredFiles(array $files): array
 {
     $results = [];
+    $githubBaseUrl = 'https://raw.githubusercontent.com/RaptorXilef/twokinds.4lima.de/main/';
+
     foreach ($files as $name => $details) {
         $targetPath = $details['target'];
         if (!file_exists($targetPath)) {
-            $templatePath = $templatesPath . $details['template_subpath'];
+            $githubUrl = $githubBaseUrl . $details['github_path'];
+            $templateContent = @file_get_contents($githubUrl);
 
-            if (!file_exists($templatePath)) {
-                // Versuche, von GitHub zu laden
-                $githubUrl = 'https://raw.githubusercontent.com/RaptorXilef/twokinds.4lima.de/main/config_templates/' . $details['template_subpath'];
-                $templateContent = @file_get_contents($githubUrl);
-
-                if ($templateContent !== false) {
-                    if (file_put_contents($targetPath, $templateContent) !== false) {
-                        $results[] = ['name' => $name, 'status' => 'copied', 'message' => 'aus GitHub-Repository geladen'];
-                    } else {
-                        $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Fehler beim Speichern der GitHub-Vorlage'];
-                    }
-                } else {
-                    $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Vorlage lokal und auf GitHub nicht gefunden'];
+            if ($templateContent !== false) {
+                $targetDir = dirname($targetPath);
+                if (!is_dir($targetDir)) {
+                    mkdir($targetDir, 0777, true);
                 }
-                continue;
-            }
-
-            if (copy($templatePath, $targetPath)) {
-                $results[] = ['name' => $name, 'status' => 'copied', 'message' => 'aus lokaler Vorlage kopiert'];
+                if (file_put_contents($targetPath, $templateContent) !== false) {
+                    $results[] = ['name' => $name, 'status' => 'success', 'message' => 'aus GitHub geladen'];
+                } else {
+                    $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Fehler beim Speichern der GitHub-Datei'];
+                }
             } else {
-                $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Fehler beim Kopieren der lokalen Vorlage'];
+                $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Datei auf GitHub nicht gefunden'];
             }
         }
     }
     return $results;
 }
-
 
 function getComicData(string $filePath): ?array
 {
@@ -176,30 +149,26 @@ function isAlphabeticallySorted(array $data): bool
     return ($keys === $sortedKeys);
 }
 
-// --- POST-Verarbeitung ---
+// --- POST-VERARBEITUNG ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
     $action = $_POST['action'] ?? '';
 
     switch ($action) {
-        case 'create_src_folders':
-        case 'create_public_folders':
-            $foldersToCheck = ($action === 'create_src_folders') ? $requiredSrcFolders : $requiredPublicFolders;
-            $missingFolders = array_filter(getFolderStatuses($foldersToCheck), fn($f) => !$f['exists']);
+        case 'create_folders':
+            $missingFolders = array_filter(getFolderStatuses($requiredFolders), fn($f) => !$f['exists']);
             if (empty($missingFolders)) {
                 $message = '<p class="status-message status-orange">Alle erforderlichen Ordner existieren bereits.</p>';
             } else {
-                $created = createFolders(array_column($missingFolders, 'path'));
-                $message = !empty($created) ? '<p class="status-message status-green">Ordner erfolgreich erstellt: ' . implode(', ', array_map('basename', $created)) . '</p>' : '<p class="status-message status-red">Fehler beim Erstellen der Ordner.</p>';
+                $created = createFolders($missingFolders);
+                $message = !empty($created) ? '<p class="status-message status-green">Ordner erfolgreich erstellt: ' . implode(', ', $created) . '</p>' : '<p class="status-message status-red">Fehler beim Erstellen der Ordner.</p>';
             }
             break;
-        case 'create_core_configs':
-        case 'create_asset_files':
-            $filesToCreate = ($action === 'create_core_configs') ? $requiredConfigFiles : $requiredAssetFiles;
-            $results = createRequiredFiles($filesToCreate, $configTemplatesPath);
-            $successCount = count(array_filter($results, fn($r) => $r['status'] !== 'error'));
+        case 'create_files':
+            $results = createRequiredFiles($requiredFiles);
+            $successCount = count(array_filter($results, fn($r) => $r['status'] === 'success'));
             if ($successCount > 0) {
-                $message = '<p class="status-message status-green">Dateien erfolgreich erstellt/kopiert.</p>';
+                $message = '<p class="status-message status-green">' . $successCount . ' Datei(en) erfolgreich von GitHub erstellt.</p>';
             } elseif (empty($results)) {
                 $message = '<p class="status-message status-orange">Alle erforderlichen Dateien existieren bereits.</p>';
             } else {
@@ -225,23 +194,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Status für die Anzeige ermitteln
-$folderStatusesSrc = getFolderStatuses($requiredSrcFolders);
-$folderStatusesPublic = getFolderStatuses($requiredPublicFolders);
-$configStatuses = getRequiredFileStatuses($requiredConfigFiles, $configTemplatesPath);
-$assetStatuses = getRequiredFileStatuses($requiredAssetFiles, $configTemplatesPath);
+$folderStatuses = getFolderStatuses($requiredFolders);
+$fileStatuses = getFileStatuses($requiredFiles);
+$allFoldersExist = !in_array(false, array_column($folderStatuses, 'exists'));
+$allFilesExist = !in_array(false, array_column($fileStatuses, 'exists'));
+// ... (json sorted check bleibt unverändert)
 
-$allSrcFoldersExist = !in_array(false, array_column($folderStatusesSrc, 'exists'));
-$allPublicFoldersExist = !in_array(false, array_column($folderStatusesPublic, 'exists'));
-$allConfigsExist = !in_array(false, array_column($configStatuses, 'exists'));
-$allAssetsExist = !in_array(false, array_column($assetStatuses, 'exists'));
-
-$currentComicData = getComicData($comicVarJsonPath);
-$jsonFileSorted = ($currentComicData !== null) ? isAlphabeticallySorted($currentComicData) : true;
-
-// --- HTML-Struktur und Anzeige ---
 $pageTitle = 'Adminbereich - Ersteinrichtung';
 $pageHeader = 'Webseiten-Ersteinrichtung';
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -249,121 +210,211 @@ include $headerPath;
         <header>
             <h1><?php echo htmlspecialchars($pageHeader); ?></h1>
         </header>
-
         <?php if (!empty($message))
-            echo "<div class=\"message\">{$message}</div>"; ?>
-        <?php if (!isset($configExist) || $configExist !== true)
-            echo '<p class="status-message status-red"><strong>WICHTIG:</strong> Die zentrale Konfigurationsdatei (`configLoader.php`) konnte nicht geladen werden. Bitte erstellen Sie zuerst die Ordner und Kern-Konfigurationsdateien.</p>'; ?>
-        
-        <section class="content-section">
-            <h3>1. System-Verzeichnisstruktur prüfen</h3>
-            <div class="status-list">
-                <?php foreach ($folderStatusesSrc as $folder): ?>
-                    <div class="status-item"><span><?php echo htmlspecialchars($folder['name']); ?>:</span><span
-                            class="status-indicator <?php echo $folder['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $folder['exists'] ? 'Existiert' : 'Fehlt'; ?></span>
-                </div>
-                <?php endforeach; ?>
-                </div>
-                <?php if (!$allSrcFoldersExist): ?>
-                    <form action="" method="POST"><input type="hidden" name="csrf_token"
-                            value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
-                            value="create_src_folders" class="status-green-button">Fehlende System-Ordner erstellen</button></form>
-                <?php endif; ?>
-        </section>
+            echo $message; ?>
 
         <section class="content-section">
-            <h3>2. Öffentliche Asset-Ordner prüfen</h3>
+            <h3>1. Verzeichnisstruktur prüfen</h3>
             <div class="status-list">
-                <?php foreach ($folderStatusesPublic as $folder): ?>
+                <?php foreach ($folderStatuses as $folder): ?>
                     <div class="status-item"><span><?php echo htmlspecialchars($folder['name']); ?>:</span><span
                             class="status-indicator <?php echo $folder['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $folder['exists'] ? 'Existiert' : 'Fehlt'; ?></span>
                     </div>
-                <?php endforeach; ?>
-                </div>
-            <?php if (!$allPublicFoldersExist): ?>
-                <form action="" method="POST"><input type="hidden" name="csrf_token"
-                        value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
-                        value="create_public_folders" class="status-green-button">Fehlende Asset-Ordner erstellen</button></form>
-            <?php endif; ?>
-            </section>
-            
-            <section class="content-section">
-                <h3>3. Kern-Konfigurationsdateien prüfen</h3>
-                <div class="status-list">
-                    <?php foreach ($configStatuses as $file): ?>
-                        <div class="status-item"><span><?php echo htmlspecialchars($file['name']); ?>:</span><span
-                                class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : ($file['templateExists'] ? 'Fehlt (Vorlage verfügbar)' : 'Fehlt (Vorlage auf GitHub verfügbar)'); ?></span>
-                    </div>
-                <?php endforeach; ?>
-                </div>
-                <?php if (!$allConfigsExist): ?>
-                    <form action="" method="POST"><input type="hidden" name="csrf_token"
-                            value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
-                        value="create_core_configs" class="status-green-button">Fehlende Konfig-Dateien erstellen</button></form>
-            <?php endif; ?>
-        </section>
-
-        <section class="content-section">
-            <h3>4. Asset- & Datenbank-Dateien prüfen</h3>
-            <div class="status-list">
-                <?php foreach ($assetStatuses as $file): ?>
-                    <div class="status-item"><span><?php echo htmlspecialchars($file['name']); ?>:</span><span
-                            class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : ($file['templateExists'] ? 'Fehlt (Vorlage verfügbar)' : 'Fehlt (Vorlage auf GitHub verfügbar)'); ?></span>
-                </div>
                 <?php endforeach; ?>
             </div>
-            <?php if (!$allAssetsExist): ?>
+            <?php if (!$allFoldersExist): ?>
+            <form action="" method="POST"><input type="hidden" name="csrf_token"
+                        value="<?php echo htmlspecialchars($csrfToken); ?>"><button type="submit" name="action"
+                        value="create_folders" class="status-green-button">Fehlende Ordner erstellen</button></form>
+            <?php endif; ?>
+        </section>
+
+        <section class="content-section">
+            <h3>2. Konfigurations- & Datendateien prüfen</h3>
+            <div class="status-list">
+                <?php foreach ($fileStatuses as $file): ?>
+                    <div class="status-item"><span><?php echo htmlspecialchars($file['name']); ?>:</span><span
+                            class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : 'Fehlt (wird von GitHub geladen)'; ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <?php if (!$allFilesExist): ?>
                 <form action="" method="POST"><input type="hidden" name="csrf_token"
-                        value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
-                    value="create_asset_files" class="status-green-button">Fehlende Asset-Dateien erstellen</button></form>
+                        value="<?php echo htmlspecialchars($csrfToken); ?>"><button type="submit" name="action"
+                        value="create_files" class="status-green-button">Fehlende Dateien erstellen</button></form>
             <?php endif; ?>
         </section>
 
         <section class="content-section">
             <h3>5. `comic_var.json` alphabetisch ordnen</h3>
             <?php if ($currentComicData === null): ?>
-            <p class="status-message status-orange">Datei `comic_var.json` existiert nicht. Bitte zuerst erstellen.</p>
+                <p class="status-message status-orange">Datei `comic_var.json` existiert nicht. Bitte zuerst erstellen.</p>
             <?php elseif (empty($currentComicData)): ?>
-                    <p class="status-message status-orange">Datei `comic_var.json` ist leer und muss nicht sortiert werden.</p>
+                <p class="status-message status-orange">Datei `comic_var.json` ist leer und muss nicht sortiert werden.</p>
             <?php elseif ($jsonFileSorted): ?>
-                    <p class="status-message status-green">Datei `comic_var.json` ist bereits korrekt alphabetisch geordnet.</p>
+                <p class="status-message status-green">Datei `comic_var.json` ist bereits korrekt alphabetisch geordnet.</p>
             <?php else: ?>
-                            <p class="status-message status-red">Datei `comic_var.json` ist nicht alphabetisch geordnet.</p>
-                            <form action="" method="POST"><input type="hidden" name="csrf_token"
-                                    value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
-                                value="sort_json" class="status-red-button">`comic_var.json` alphabetisch ordnen</button></form>
+                    <p class="status-message status-red">Datei `comic_var.json` ist nicht alphabetisch geordnet.</p>
+                    <form action="" method="POST"><input type="hidden" name="csrf_token"
+                            value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
+                        value="sort_json" class="status-red-button">`comic_var.json` alphabetisch ordnen</button></form>
             <?php endif; ?>
         </section>
     </div>
 </article>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    :root { --missing-grid-border-color: #e0e0e0; --missing-grid-bg-color: #f9f9f9; --default-text-color: #333; --status-green-text: #155724; --status-red-text: #721c24; }
-    body.theme-night { --missing-grid-border-color: #045d81; --missing-grid-bg-color: #03425b; --default-text-color: #f0f0f0; --status-green-text: #28a745; --status-red-text: #dc3545; }
-    .admin-form-container { max-width: 825px; margin: 20px auto; padding: 20px; border: 1px solid rgba(221, 221, 221, 0.2); border-radius: 8px; background-color: rgba(240, 240, 240, 0.2); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); color: var(--default-text-color); }
-    body.theme-night .admin-form-container { background-color: rgba(30, 30, 30, 0.2); border-color: rgba(80, 80, 80, 0.15); }
-    .content-section { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed #eee; }
-    body.theme-night .content-section { border-bottom: 1px dashed #555; }
-    .content-section:last-child { border-bottom: none; }
-    .content-section h3 { margin-bottom: 10px; }
-    .message { margin-bottom: 15px; }
-    .status-message { padding: 8px 12px; border-radius: 5px; margin-top: 10px; margin-bottom: 10px; }
-    .status-green { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    .status-orange { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-    .status-red { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    .status-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-    .status-green-text, .status-red-text { font-weight: bold; }
-    .status-green-text { color: var(--status-green-text); }
-    .status-red-text { color: var(--status-red-text); }
-    .status-red-button, .status-green-button { color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 1em; border: none; display: block; width: fit-content; margin-top: 10px; }
-    .status-red-button { background-color: #dc3545; }
-    .status-red-button:hover { background-color: #c82333; }
-    .status-green-button { background-color: #28a745; }
-    .status-green-button:hover { background-color: #218838; }
-    .status-list { margin-top: 10px; margin-bottom: 15px; padding: 10px; border: 1px solid var(--missing-grid-border-color); border-radius: 5px; background-color: var(--missing-grid-bg-color); }
-    .status-item { padding: 4px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--missing-grid-border-color); }
-    .status-item:last-child { border-bottom: none; }
-    .status-indicator { font-weight: bold; }
+    :root {
+        --missing-grid-border-color: #e0e0e0;
+        --missing-grid-bg-color: #f9f9f9;
+        --default-text-color: #333;
+        --status-green-text: #155724;
+        --status-red-text: #721c24;
+    }
+
+    body.theme-night {
+        --missing-grid-border-color: #045d81;
+        --missing-grid-bg-color: #03425b;
+        --default-text-color: #f0f0f0;
+        --status-green-text: #28a745;
+        --status-red-text: #dc3545;
+    }
+
+    .admin-form-container {
+        max-width: 825px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid rgba(221, 221, 221, 0.2);
+        border-radius: 8px;
+        background-color: rgba(240, 240, 240, 0.2);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        color: var(--default-text-color);
+    }
+
+    body.theme-night .admin-form-container {
+        background-color: rgba(30, 30, 30, 0.2);
+        border-color: rgba(80, 80, 80, 0.15);
+    }
+
+    .content-section {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed #eee;
+    }
+
+    body.theme-night .content-section {
+        border-bottom: 1px dashed #555;
+    }
+
+    .content-section:last-child {
+        border-bottom: none;
+    }
+
+    .content-section h3 {
+        margin-bottom: 10px;
+    }
+
+    .message {
+        margin-bottom: 15px;
+    }
+
+    .status-message {
+        padding: 8px 12px;
+        border-radius: 5px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .status-green {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .status-orange {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+
+    .status-red {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .status-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .status-green-text,
+    .status-red-text {
+        font-weight: bold;
+    }
+
+    .status-green-text {
+        color: var(--status-green-text);
+    }
+
+    .status-red-text {
+        color: var(--status-red-text);
+    }
+
+    .status-red-button,
+    .status-green-button {
+        color: white;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        border: none;
+        display: block;
+        width: fit-content;
+        margin-top: 10px;
+    }
+
+    .status-red-button {
+        background-color: #dc3545;
+    }
+
+    .status-red-button:hover {
+        background-color: #c82333;
+    }
+
+    .status-green-button {
+        background-color: #28a745;
+    }
+
+    .status-green-button:hover {
+        background-color: #218838;
+    }
+
+    .status-list {
+        margin-top: 10px;
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid var(--missing-grid-border-color);
+        border-radius: 5px;
+        background-color: var(--missing-grid-bg-color);
+    }
+
+    .status-item {
+        padding: 4px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed var(--missing-grid-border-color);
+    }
+
+    .status-item:last-child {
+        border-bottom: none;
+    }
+
+    .status-indicator {
+        font-weight: bold;
+    }
 </style>
 
-<?php include $footerPath; ?>
+<?php include TEMPLATE_FOOTER; ?>

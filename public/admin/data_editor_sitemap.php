@@ -2,39 +2,31 @@
 /**
  * Administrationsseite zum Bearbeiten der sitemap.json Konfigurationsdatei.
  * 
- * @file      /admin/data_editor_sitemap.php
+ * @file      ROOT/public/admin/data_editor_sitemap.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.3.0
+ * @version   3.0.0
  * @since     2.3.0 Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token.
+ * @since     2.4.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     3.0.0 Implementierung einer fortschrittlichen Paginierung und Code-Modernisierung.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$sitemapJsonPath = __DIR__ . '/../src/config/sitemap.json';
-$comicDirPath = realpath(__DIR__ . '/../comic/') . '/';
-$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
+// === KONSTANTEN ===
+define('COMIC_PAGES_PER_PAGE', 50);
 
-// --- Einstellungsverwaltung ---
+// --- HILFSFUNKTIONEN ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
-        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
-        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
-        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
-        'generator_comic' => ['last_run_timestamp' => null],
-        'upload_image' => ['last_run_timestamp' => null],
-        'generator_rss' => ['last_run_timestamp' => null],
         'data_editor_sitemap' => ['last_run_timestamp' => null]
     ];
     if (!file_exists($filePath)) {
@@ -58,8 +50,6 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
     $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
     return file_put_contents($filePath, $jsonContent) !== false;
 }
-
-define('COMIC_PAGES_PER_PAGE', 50);
 
 function loadSitemapData(string $path, bool $debugMode): array
 {
@@ -116,13 +106,13 @@ function scanComicDirectory(string $dirPath, bool $debugMode): array
             $comicFiles[] = $file;
         }
     }
-    sort($comicFiles);
+    rsort($comicFiles); // Sortiert absteigend, neueste zuerst
     return $comicFiles;
 }
 
-// --- AJAX-Handler (Korrigiert) ---
+// --- AJAX-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once __DIR__ . '/src/components/security_check.php';
+    verify_csrf_token(); // Zentralisierte CSRF-Prüfung
 
     ob_end_clean();
     header('Content-Type: application/json');
@@ -138,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $response['message'] = 'Fehler: Die übermittelten Seitendaten sind kein gültiges JSON.';
                 http_response_code(400);
-            } elseif (saveSitemapData($sitemapJsonPath, ['pages' => $allPagesToSave], $debugMode)) {
+            } elseif (saveSitemapData(SITEMAP_JSON, ['pages' => $allPagesToSave], $debugMode)) {
                 $response = ['success' => true, 'message' => 'Sitemap-Daten erfolgreich gespeichert!'];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Sitemap-Daten.';
@@ -146,9 +136,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
             $currentSettings['data_editor_sitemap']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
                 $response['success'] = true;
                 $response['message'] = 'Zeitstempel gespeichert.';
             } else {
@@ -161,9 +151,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
 $sitemapSettings = $settings['data_editor_sitemap'];
-$sitemapData = loadSitemapData($sitemapJsonPath, $debugMode);
+$sitemapData = loadSitemapData(SITEMAP_JSON, $debugMode);
 $existingPages = $sitemapData['pages'];
 $generalPages = [];
 $comicPages = [];
@@ -174,7 +164,7 @@ foreach ($existingPages as $page) {
         $generalPages[] = $page;
     }
 }
-$foundComicFiles = scanComicDirectory($comicDirPath, $debugMode);
+$foundComicFiles = scanComicDirectory(PUBLIC_COMIC_PATH, $debugMode);
 foreach ($foundComicFiles as $filename) {
     $loc = 'comic/' . $filename;
     if (!isset($comicPages[$loc])) {
@@ -186,7 +176,7 @@ ksort($comicPages);
 $pageTitle = 'Adminbereich - Sitemap Editor';
 $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow';
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -504,12 +494,34 @@ include $headerPath;
             paginationContainer.innerHTML = '';
             if (totalPages <= 1) return;
 
-            if (comicCurrentPage > 1) paginationContainer.innerHTML += `<a data-page="${comicCurrentPage - 1}">&laquo;</a>`;
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === comicCurrentPage) paginationContainer.innerHTML += `<span class="current-page">${i}</span>`;
-                else paginationContainer.innerHTML += `<a data-page="${i}">${i}</a>`;
+            let htmlParts = [];
+            if (comicCurrentPage > 1) {
+                htmlParts.push(`<a data-page="1">&laquo;</a>`);
+                htmlParts.push(`<a data-page="${comicCurrentPage - 1}">&lsaquo;</a>`);
             }
-            if (comicCurrentPage < totalPages) paginationContainer.innerHTML += `<a data-page="${comicCurrentPage + 1}">&raquo;</a>`;
+
+            let startPage = Math.max(1, comicCurrentPage - 4);
+            let endPage = Math.min(totalPages, comicCurrentPage + 4);
+
+            if (startPage > 1) {
+                htmlParts.push(`<a data-page="1">1</a>`);
+                if (startPage > 2) htmlParts.push(`<span>...</span>`);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                htmlParts.push(i === comicCurrentPage ? `<span class="current-page">${i}</span>` : `<a data-page="${i}">${i}</a>`);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) htmlParts.push(`<span>...</span>`);
+                htmlParts.push(`<a data-page="${totalPages}">${totalPages}</a>`);
+            }
+
+            if (comicCurrentPage < totalPages) {
+                htmlParts.push(`<a data-page="${comicCurrentPage + 1}">&rsaquo;</a>`);
+                htmlParts.push(`<a data-page="${totalPages}">&raquo;</a>`);
+            }
+            paginationContainer.innerHTML = htmlParts.join('');
         };
 
         function showMessage(message, type) {
@@ -545,7 +557,23 @@ include $headerPath;
         }
 
         saveAllBtn.addEventListener('click', async () => {
-            let allPages = [...generalPagesData, ...fullComicPagesData];
+            // Aktuelle Daten aus den Tabellen sammeln, bevor sie gespeichert werden
+            const updatedGeneralPages = [];
+            generalTableBody.querySelectorAll('tr').forEach(row => {
+                const loc = row.querySelector('.loc-input').value;
+                updatedGeneralPages.push({
+                    loc: loc,
+                    name: loc.includes('/') ? loc.substring(loc.lastIndexOf('/') + 1) : loc,
+                    path: loc.includes('/') ? loc.substring(0, loc.lastIndexOf('/') + 1) : './',
+                    priority: row.querySelector('.priority-input').value,
+                    changefreq: row.querySelector('.changefreq-select').value
+                });
+            });
+            generalPagesData = updatedGeneralPages; // Aktualisiere die globalen Daten
+
+            // Die Daten der Comic-Seiten werden aus `fullComicPagesData` genommen, da sie sich nicht ändern (außer Prio/Freq)
+            const allPages = [...generalPagesData, ...fullComicPagesData];
+
             try {
                 const formData = new FormData();
                 formData.append('action', 'save_sitemap');
@@ -557,17 +585,12 @@ include $headerPath;
                     body: formData
                 });
 
-                const responseText = await response.text();
-                try {
-                    const data = JSON.parse(responseText);
-                    if (response.ok && data.success) {
-                        showMessage('Sitemap erfolgreich gespeichert!', 'green');
-                        await saveSettings();
-                        updateTimestamp();
-                    } else { showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red'); }
-                } catch (e) {
-                    throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
-                }
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    showMessage('Sitemap erfolgreich gespeichert!', 'green');
+                    await saveSettings();
+                    updateTimestamp();
+                } else { showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red'); }
             } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red'); }
         });
 
@@ -580,8 +603,8 @@ include $headerPath;
         generalTableBody.addEventListener('change', (e) => {
             const row = e.target.closest('tr');
             if (!row) return;
-            const loc = row.dataset.loc;
-            const pageIndex = generalPagesData.findIndex(p => p.loc === loc);
+            const originalLoc = row.dataset.loc;
+            const pageIndex = generalPagesData.findIndex(p => p.loc === originalLoc);
             if (pageIndex === -1) return;
 
             const newLoc = row.querySelector('.loc-input').value;
@@ -590,7 +613,7 @@ include $headerPath;
             generalPagesData[pageIndex].path = newLoc.includes('/') ? newLoc.substring(0, newLoc.lastIndexOf('/') + 1) : './';
             generalPagesData[pageIndex].priority = row.querySelector('.priority-input').value;
             generalPagesData[pageIndex].changefreq = row.querySelector('.changefreq-select').value;
-            row.dataset.loc = newLoc;
+            row.dataset.loc = newLoc; // Wichtig: Aktualisiere den Data-Attribut-Wert für zukünftige Änderungen
         });
 
         comicTableBody.addEventListener('change', (e) => {
@@ -640,4 +663,4 @@ include $headerPath;
     });
 </script>
 
-<?php include $footerPath; ?>
+<?php include TEMPLATE_FOOTER; ?>

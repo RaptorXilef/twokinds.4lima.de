@@ -4,145 +4,83 @@
  * Sie verwaltet die Anmeldung und die Erstellung des ersten Admin-Benutzers.
  * Diese Version ist gehärtet mit CSP (Nonce) und CSRF-Schutz.
  * 
- * @file      /admin/index.php
+ * @file      ROOT/public/admin/index.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   2.0.0
+ * @since     2.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     3.0.0 Vollständige Integration der admin_init.php, Entfernung redundanter Sicherheits-Header und Funktionen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
+// Lädt alle Konfigurationen, Sicherheits-Header, Session-Einstellungen und CSRF-Schutz.
+// Die admin_init.php ist so konzipiert, dass sie auf der index.php selbst keine "Nicht-eingeloggt"-Weiterleitung durchführt.
+require_once __DIR__ . '/../../src/components/admin_init.php';
+
 if ($debugMode)
     error_log("DEBUG: index.php (Login) wird geladen.");
-
-ob_start();
-
-// --- SICHERHEITSVERBESSERUNG 1: CSP mit Nonce & weitere Header (aus admin_init.php adaptiert) ---
-$nonce = bin2hex(random_bytes(16));
-$csp = [
-    'default-src' => ["'self'"],
-    // ERWEITERT: Externe Skript-Quellen für den Admin-Bereich hinzugefügt.
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
-    // ERWEITERT: Externe Stil-Quellen hinzugefügt.
-    'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdn.twokinds.keenspot.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
-    // ERWEITERT: Externe Schrift-Quellen hinzugefügt.
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
-    // ERWEITERT: Externe Bild-Quellen hinzugefügt.
-    'img-src' => ["'self'", "data:", "https://cdn.twokinds.keenspot.com", "https://placehold.co"],
-    // ERWEITERT: Google Analytics Domain für das Senden von Tracking-Daten hinzugefügt.
-    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://*.google-analytics.com"],
-    'object-src' => ["'none'"],
-    'frame-ancestors' => ["'self'"],
-    'base-uri' => ["'self'"],
-    'form-action' => ["'self'"],
-];
-
-$cspHeader = '';
-foreach ($csp as $directive => $sources) {
-    $cspHeader .= $directive . ' ' . implode(' ', $sources) . '; ';
-}
-header("Content-Security-Policy: " . trim($cspHeader));
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: SAMEORIGIN');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
-
-// --- SICHERHEITSVERBESSERUNG 2: Strikte Session-Konfiguration (aus admin_init.php) ---
-session_set_cookie_params([
-    'lifetime' => 0,
-    'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'],
-    'secure' => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Strict'
-]);
-
-session_start();
-
-// --- SICHERHEITSVERBESSERUNG 3: CSRF-Schutz (aus admin_init.php adaptiert) ---
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
-/**
- * Überprüft den CSRF-Token für POST-Anfragen. Bricht bei Fehler ab.
- */
-function verify_csrf_token()
-{
-    global $debugMode;
-    if (empty($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-        error_log("SECURITY WARNING: Ungültiger CSRF-Token bei Login-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
-        die('Ungültige Anfrage. Bitte versuchen Sie es erneut.');
-    }
-    if ($debugMode)
-        error_log("DEBUG: CSRF-Token erfolgreich validiert.");
-}
-
-// Binde die zentrale Sicherheits- und Sitzungsüberprüfung ein.
-require_once __DIR__ . '/src/components/security_check.php';
 
 // --- Konfiguration für Brute-Force-Schutz ---
 define('MAX_LOGIN_ATTEMPTS', 3);
 define('LOGIN_BLOCK_SECONDS', 900);
 
-// --- Pfade zu den Datendateien ---
-$usersFile = __DIR__ . '/../../../admin_users.json';
-$loginAttemptsFile = __DIR__ . '/../../../login_attempts.json';
-
-// --- Hilfsfunktionen (unverändert) ---
+// --- Hilfsfunktionen ---
 function getUsers(): array
 {
-    global $usersFile, $debugMode;
-    if (!file_exists($usersFile) || filesize($usersFile) === 0)
+    if (!file_exists(SECRET_ADMIN_USERS_JSON) || filesize(SECRET_ADMIN_USERS_JSON) === 0)
         return [];
-    $content = file_get_contents($usersFile);
+    $content = file_get_contents(SECRET_ADMIN_USERS_JSON);
     $users = json_decode($content, true);
     return is_array($users) ? $users : [];
 }
 
 function saveUsers(array $users): bool
 {
-    global $usersFile, $debugMode;
-    $dir = dirname($usersFile);
+    $dir = dirname(SECRET_ADMIN_USERS_JSON);
     if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
         error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
         return false;
     }
     $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents($usersFile, $jsonContent) !== false;
+    return file_put_contents(SECRET_ADMIN_USERS_JSON, $jsonContent) !== false;
 }
 
 function getLoginAttempts(): array
 {
-    global $loginAttemptsFile;
-    if (!file_exists($loginAttemptsFile))
+    if (!file_exists(SECRET_LOGIN_ATTEMPTS_JSON))
         return [];
-    $content = file_get_contents($loginAttemptsFile);
+    $content = file_get_contents(SECRET_LOGIN_ATTEMPTS_JSON);
     $attempts = json_decode($content, true);
     return is_array($attempts) ? $attempts : [];
 }
 
 function saveLoginAttempts(array $attempts): bool
 {
-    global $loginAttemptsFile;
-    $dir = dirname($loginAttemptsFile);
+    $dir = dirname(SECRET_LOGIN_ATTEMPTS_JSON);
     if (!is_dir($dir))
         mkdir($dir, 0755, true);
     $jsonContent = json_encode($attempts, JSON_PRETTY_PRINT);
-    return file_put_contents($loginAttemptsFile, $jsonContent) !== false;
+    return file_put_contents(SECRET_LOGIN_ATTEMPTS_JSON, $jsonContent) !== false;
 }
 
 // --- Logik ---
 $message = '';
 
-// KORREKTUR: Inline-Stil durch Klasse ersetzt.
-if (isset($_GET['reason']) && $_GET['reason'] === 'session_expired') {
-    $message = '<p class="message-orange">Ihre Sitzung ist aufgrund von Inaktivität abgelaufen. Bitte melden Sie sich erneut an.</p>';
+if (isset($_GET['reason'])) {
+    if ($_GET['reason'] === 'session_expired') {
+        $message = '<p class="message-orange">Ihre Sitzung ist aufgrund von Inaktivität abgelaufen. Bitte melden Sie sich erneut an.</p>';
+    }
+    if ($_GET['reason'] === 'session_hijacked') {
+        $message = '<p class="message-red">Ihre Sitzung wurde aus Sicherheitsgründen beendet. Bitte melden Sie sich erneut an.</p>';
+    }
 }
+
 
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
     header('Location: management_user.php');
@@ -150,7 +88,6 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // SICHERHEIT: CSRF-Token bei jeder POST-Anfrage validieren
     verify_csrf_token();
 
     $action = $_POST['action'] ?? '';
@@ -162,18 +99,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $users = getUsers();
             if (empty($users)) {
                 if (empty($username) || empty($password)) {
-                    // KORREKTUR: Inline-Stil durch Klasse ersetzt.
                     $message = '<p class="message-red">Benutzername und Passwort dürfen nicht leer sein.</p>';
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     $users[$username] = ['passwordHash' => $hashedPassword];
                     if (saveUsers($users)) {
-                        // KORREKTUR: Inline-Stil durch Klasse ersetzt.
                         $message = '<p class="message-green">Erster Admin-Benutzer erfolgreich erstellt. Bitte melden Sie sich an.</p>';
-                        header('Location: index.php');
+                        header('Location: index.php'); // Leitet um, um die "Erstellen"-Ansicht zu entfernen
                         exit;
                     } else {
-                        // KORREKTUR: Inline-Stil durch Klasse ersetzt.
                         $message = '<p class="message-red">Fehler beim Speichern des Benutzers.</p>';
                     }
                 }
@@ -188,7 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $timeSinceLastAttempt = time() - $attempts[$userIp]['last_attempt'];
                 if ($timeSinceLastAttempt < LOGIN_BLOCK_SECONDS) {
                     $remainingTime = LOGIN_BLOCK_SECONDS - $timeSinceLastAttempt;
-                    // KORREKTUR: Inline-Stil durch Klasse ersetzt.
                     $message = '<p class="message-red">Zu viele fehlgeschlagene Login-Versuche. Bitte warten Sie noch ' . ceil($remainingTime / 60) . ' Minute(n).</p>';
                     break;
                 } else {
@@ -202,9 +135,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $users = getUsers();
 
             if (isset($users[$username]) && password_verify($password, $users[$username]['passwordHash'])) {
+                session_regenerate_id(true); // Schutz vor Session Fixation beim Login
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $username;
                 $_SESSION['last_activity'] = time();
+
+                // Session-Fingerprint setzen (aus admin_init)
+                $_SESSION['session_fingerprint'] = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
+
                 if (isset($attempts[$userIp])) {
                     unset($attempts[$userIp]);
                     saveLoginAttempts($attempts);
@@ -219,7 +157,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $attempts[$userIp]['last_attempt'] = time();
                 saveLoginAttempts($attempts);
                 $remainingAttempts = MAX_LOGIN_ATTEMPTS - $attempts[$userIp]['attempts'];
-                // KORREKTUR: Inline-Stil durch Klasse ersetzt.
                 $message = '<p class="message-red">Ungültiger Benutzername oder Passwort. Verbleibende Versuche: ' . $remainingAttempts . '</p>';
             }
             break;
@@ -230,12 +167,8 @@ $pageTitle = 'Adminbereich - Login';
 $pageHeader = 'Adminbereich - Login';
 $siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung.';
 $robotsContent = 'noindex, nofollow';
-$headerPath = __DIR__ . '/../src/layout/header.php';
-if (file_exists($headerPath)) {
-    include $headerPath;
-} else {
-    die('Fehler: Header-Datei nicht gefunden.');
-}
+
+include TEMPLATE_HEADER;
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -249,7 +182,7 @@ if (file_exists($headerPath)) {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .main-container.lights-off .admin-form-container {
+        body.theme-night .admin-form-container {
             background-color: rgba(30, 30, 30, 0.2);
             border-color: rgba(80, 80, 80, 0.15);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -308,20 +241,24 @@ if (file_exists($headerPath)) {
             margin: 0;
         }
 
-        /* Klassen für Nachrichtenfarben */
         .message-red {
-            color: red;
+            color: #a94442;
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
         }
 
         .message-green {
-            color: green;
+            color: #3c763d;
+            background-color: #dff0d8;
+            border: 1px solid #d6e9c6;
         }
 
         .message-orange {
-            color: orange;
+            color: #8a6d3b;
+            background-color: #fcf8e3;
+            border: 1px solid #faebcc;
         }
 
-        /* KORREKTUR: Klasse für Formular-Layout */
         .admin-form {
             display: flex;
             flex-direction: column;
@@ -340,7 +277,7 @@ if (file_exists($headerPath)) {
             <h2>Ersten Admin-Benutzer erstellen</h2>
             <p>Es ist noch kein Admin-Benutzer vorhanden. Bitte erstellen Sie einen.</p>
             <form action="index.php" method="POST" class="admin-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <div>
                     <label for="create_username">Benutzername:</label>
                     <input type="text" id="create_username" name="username" required autocomplete="username">
@@ -349,12 +286,12 @@ if (file_exists($headerPath)) {
                     <label for="create_password">Passwort:</label>
                     <input type="password" id="create_password" name="password" required autocomplete="new-password">
                 </div>
-                <button type="submit" name="action" value="create_initial_user">Admin erstellen</button>
+                <button type="submit" name="action" value="create_initial_user" class="button">Admin erstellen</button>
             </form>
         <?php else: ?>
             <h2>Login</h2>
             <form action="index.php" method="POST" class="admin-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <div>
                     <label for="login_username">Benutzername:</label>
                     <input type="text" id="login_username" name="username" required autocomplete="username">
@@ -363,15 +300,12 @@ if (file_exists($headerPath)) {
                     <label for="login_password">Passwort:</label>
                     <input type="password" id="login_password" name="password" required autocomplete="current-password">
                 </div>
-                <button type="submit" name="action" value="login">Login</button>
+                <button type="submit" name="action" value="login" class="button">Login</button>
             </form>
         <?php endif; ?>
     </div>
 </article>
 <?php
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-if (file_exists($footerPath)) {
-    include $footerPath;
-}
+include TEMPLATE_FOOTER;
 ob_end_flush();
 ?>

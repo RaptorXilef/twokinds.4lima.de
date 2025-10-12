@@ -5,21 +5,22 @@
  * aus dem inkludierenden Skript verfügbar sind.
  * $isCurrentPageLatest ist optional und kann vom inkludierenden Skript gesetzt werden (z.B. von index.php).
  * 
- * @file      /src/layout/comic_navigation.php
+ * @file      ROOT/public/src/layout/comic_navigation.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
+ * @version   1.2.0
+ * @since     1.2.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Lade die Hilfsfunktion zum Rendern der Navigationsbuttons.
+// Lade die Hilfsfunktion zum Rendern der Navigationsbuttons (Jetzt mit Konstante).
 // Diese Datei sollte nur einmal pro Request eingebunden werden, um den "Cannot redeclare function"-Fehler zu vermeiden.
-require_once __DIR__ . '/../components/nav_link_helper.php';
+require_once NAV_LINK_HELPER_PATH;
 
 // Prüfe, ob die essentiellen Daten verfügbar sind.
 if (!isset($comicData)) {
@@ -88,7 +89,7 @@ if (!empty($comicData)) {
     } else {
         // Fallback, falls die aktuelle Comic-ID nicht gefunden wird.
         if ($debugMode)
-            error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in comic_var.json gefunden. Navigation möglicherweise fehlerhaft.");
+            error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in " . COMIC_VAR_JSON_FILE . " gefunden. Navigation möglicherweise fehlerhaft.");
         $isCurrentPageFirst = true;
         $isCurrentPageLatest = true;
     }

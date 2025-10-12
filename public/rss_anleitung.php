@@ -3,20 +3,22 @@
  * Dies ist eine Informationsseite über die Nutzung von RSS-Feeds.
  * Sie erklärt, was RSS-Feeds sind, ihre Vorteile und wie man sie mit verschiedenen Readern nutzt.
  * 
- * @file      /rss_anleitung.php
+ * @file      ROOT/public/rss_anleitung.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
+ * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'So nutzen Sie RSS-Feeds';
@@ -26,8 +28,8 @@ $robotsContent = 'index, follow';
 // Die URL des RSS-Feeds, die dynamisch eingefügt wird.
 $rssFeedUrl = htmlspecialchars($baseUrl) . 'rss.xml';
 
-// === 3. HEADER EINBINDEN ===
-require_once __DIR__ . "/src/layout/header.php";
+// === 3. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -190,4 +192,7 @@ require_once __DIR__ . "/src/layout/header.php";
 
 </article>
 
-<?php require_once __DIR__ . "/src/layout/footer.php"; ?>
+<?php
+// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
+require_once TEMPLATE_FOOTER;
+?>

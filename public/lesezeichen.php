@@ -5,24 +5,26 @@
  * V3: Reparierte Version, die die ursprüngliche Template-Struktur beibehält,
  * aber das neue Kachel-Design über CSS und die verbesserte Hover-Logik nutzt.
  * 
- * @file      /öesezeichen.php
+ * @file      ROOT/public/lesezeichen.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   2.1.0
+ * @since     2.1.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN ===
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
 // Die Comic-Daten werden benötigt, um die Titel der Lesezeichen korrekt anzuzeigen.
-require_once __DIR__ . '/src/components/load_comic_data.php';
+require_once LOAD_COMIC_DATA_PATH;
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Deine Lesezeichen';
@@ -31,17 +33,19 @@ $viewportContent = 'width=1099';
 $robotsContent = 'noindex, follow';
 
 // Automatischer Cache-Buster für comic.js
-$comicJsPath = $baseUrl . 'src/layout/js/comic.js?c=' . filemtime(__DIR__ . '/src/layout/js/comic.js');
-$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($comicJsPath) . '"></script>';
+$comicJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'comic.js';
+$comicJsWebUrl = $baseUrl . 'src/layout/js/comic.js';
+$cacheBusterJs = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
+$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($comicJsWebUrl . $cacheBusterJs) . '"></script>';
 
 // Spezifisches Stylesheet der Charakter-Seite nur hier laden
-$characterPageCssPath = __DIR__ . '/src/layout/css/character_page.min.css';
+$characterPageCssPathOnServer = PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'character_page.min.css';
 $characterPageCssWebUrl = $baseUrl . 'src/layout/css/character_page.min.css';
-$characterPageCssCacheBuster = file_exists($characterPageCssPath) ? '?c=' . filemtime($characterPageCssPath) : '';
-$additionalHeadContent = '<link nonce="' . htmlspecialchars($nonce) . '" rel="stylesheet" type="text/css" href="' . htmlspecialchars($characterPageCssWebUrl . $characterPageCssCacheBuster) . '">';
+$cacheBusterCss = file_exists($characterPageCssPathOnServer) ? '?c=' . filemtime($characterPageCssPathOnServer) : '';
+$additionalHeadContent = '<link nonce="' . htmlspecialchars($nonce) . '" rel="stylesheet" type="text/css" href="' . htmlspecialchars($characterPageCssWebUrl . $cacheBusterCss) . '">';
 
-// === 4. HEADER EINBINDEN ===
-require_once __DIR__ . '/src/layout/header.php';
+// === 4. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 
 <!-- Stelle die Comic-Daten für comic.js zur Verfügung, damit die Hover-Texte korrekt generiert werden können -->
@@ -100,4 +104,7 @@ fill="currentColor"></path>
     </template>
 </div>
 
-<?php require_once __DIR__ . '/src/layout/footer.php'; ?>
+<?php
+// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
+require_once TEMPLATE_FOOTER;
+?>

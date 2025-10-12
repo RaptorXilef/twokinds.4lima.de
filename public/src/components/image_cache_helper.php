@@ -5,14 +5,22 @@
  * Verwendet ein Singleton-Pattern, um sicherzustellen, dass die JSON-Cache-Datei
  * pro Anfrage nur einmal gelesen und verarbeitet wird.
  * 
- * @file      /src/components/image_cache_helper.php
+ * @file      ROOT/public/src/components/image_cache_helper.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   1.0.0
+
+
+
+ * HINWEIS: Diese Klasse ist auf die Verfügbarkeit der folgenden global definierten PHP-Konstanten angewiesen:
+ * @uses COMIC_IMAGE_CACHE_JSON Der vollständige Pfad zur JSON-Cache-Datei.
+ * @uses COMIC_IMAGE_CACHE_JSON_FILE Der Dateiname der JSON-Cache-Datei (für Logs).
  */
+
+// TODO: HIER GEHTS WEITER + data_editor_comic.php CRF Fehler beim speichern beheben
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -29,20 +37,19 @@ class ImageCache
      */
     private function __construct()
     {
-        // Der Root-Pfad wird einmalig bestimmt (zwei Ebenen über dem aktuellen Verzeichnis /src/components/)
+        // Der Root-Pfad wird einmalig bestimmt (zwei Ebenen über dem aktuellen Verzeichnis /src/components/) #################################################################
         $this->projectRoot = dirname(__DIR__, 2);
 
-        $cachePath = $this->projectRoot . '/src/config/comic_image_cache.json';
-        if (file_exists($cachePath)) {
-            $content = file_get_contents($cachePath);
+        if (file_exists(COMIC_IMAGE_CACHE_JSON)) {
+            $content = file_get_contents(COMIC_IMAGE_CACHE_JSON);
             $this->cacheData = json_decode($content, true);
             // Fallback, falls die JSON-Datei korrupt oder leer ist.
             if (!is_array($this->cacheData)) {
                 $this->cacheData = [];
-                error_log("BILD-CACHE WARNUNG: comic_image_cache.json ist korrupt oder leer.");
+                error_log("BILD-CACHE WARNUNG: " . COMIC_IMAGE_CACHE_JSON_FILE . " ist korrupt oder leer.");
             }
         } else {
-            error_log("BILD-CACHE FEHLER: comic_image_cache.json nicht gefunden unter: " . $cachePath);
+            error_log("BILD-CACHE FEHLER: " . COMIC_IMAGE_CACHE_JSON_FILE . " nicht gefunden unter: " . COMIC_IMAGE_CACHE_JSON);
         }
     }
 
@@ -74,7 +81,7 @@ class ImageCache
         }
 
         // KORREKTUR: Wenn der Wert eine vollständige URL ist, gib sie direkt zurück, ohne sie lokal zu prüfen.
-        if (str_starts_with($pathValue, 'http')) {
+        if (str_starts_with($pathValue, 'https://') || str_starts_with($pathValue, 'http://')) {
             return $pathValue;
         }
 

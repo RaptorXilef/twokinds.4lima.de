@@ -2,7 +2,7 @@
 /**
  * Lädt und verarbeitet die Comic-Daten aus der comic_var.json.
  *
- * @file      /src/components/load_comic_data.php
+ * @file      ROOT/public/src/components/load_comic_data.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
@@ -16,11 +16,11 @@
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-$comicDataJsonPath = __DIR__ . '/../config/comic_var.json';
+COMIC_VAR_JSON;
 $comicData = [];
 
-if (file_exists($comicDataJsonPath)) {
-    $comicJsonContent = file_get_contents($comicDataJsonPath);
+if (file_exists(COMIC_VAR_JSON)) {
+    $comicJsonContent = file_get_contents(COMIC_VAR_JSON);
     if ($comicJsonContent !== false) {
         $decodedData = json_decode($comicJsonContent, true);
 
@@ -43,7 +43,7 @@ if (file_exists($comicDataJsonPath)) {
     }
 } else {
     // Optional: Fehlerprotokollierung für den Admin
-    // error_log("Fehler: comic_var.json wurde nicht gefunden unter " . $comicDataJsonPath);
+    // error_log("Fehler: comic_var.json wurde nicht gefunden unter " . COMIC_VAR_JSON);
     $comicData = []; // Leeres Array, wenn Datei nicht existiert
 }
 ?>

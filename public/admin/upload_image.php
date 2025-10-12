@@ -2,40 +2,31 @@
 /**
  * Administrationsseite zum asynchronen Hochladen von Comic-Bildern.
  * 
- * @file      /admin/upload_image.php
+ * @file      ROOT/public/admin/upload_image.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.1.0
+ * @version   5.0.0
  * @since     4.1.0 Integriert das Speichern und Anzeigen der letzten Ausführung konsistent.
+ * @since     4.2.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     5.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur und Code-Bereinigung.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$uploadHiresDir = __DIR__ . '/../assets/comic_hires';
-$uploadLowresDir = __DIR__ . '/../assets/comic_lowres';
+// --- VARIABLEN & KONFIGURATION ---
 $tempDir = sys_get_temp_dir();
-$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
 
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
-    $defaults = [
-        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
-        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
-        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
-        'generator_comic' => ['last_run_timestamp' => null],
-        'upload_image' => ['last_run_timestamp' => null]
-    ];
+    $defaults = ['upload_image' => ['last_run_timestamp' => null]];
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
         if (!is_dir($dir))
@@ -58,11 +49,11 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
     return file_put_contents($filePath, $jsonContent) !== false;
 }
 
-
-if (!is_dir($uploadHiresDir))
-    mkdir($uploadHiresDir, 0777, true);
-if (!is_dir($uploadLowresDir))
-    mkdir($uploadLowresDir, 0777, true);
+// Sicherstellen, dass die Upload-Verzeichnisse existieren
+if (!is_dir(PUBLIC_IMG_COMIC_HIRES_PATH))
+    mkdir(PUBLIC_IMG_COMIC_HIRES_PATH, 0777, true);
+if (!is_dir(PUBLIC_IMG_COMIC_LOWRES_PATH))
+    mkdir(PUBLIC_IMG_COMIC_LOWRES_PATH, 0777, true);
 
 function shortenFilename($filename)
 {
@@ -89,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['file'])) {
         $file = $_FILES['file'];
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            echo json_encode(['status' => 'error', 'message' => 'Fehler beim Upload.']);
+            echo json_encode(['status' => 'error', 'message' => 'Fehler beim Upload. Code: ' . $file['error']]);
             exit;
         }
         $imageFileType = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -103,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (move_uploaded_file($file['tmp_name'], $tempFilePath)) {
             list($width, $height) = getimagesize($tempFilePath);
-            $targetDir = ($width >= 1800 && $height >= 1000) ? $uploadHiresDir : $uploadLowresDir;
+            $targetDir = ($width >= 1800 && $height >= 1000) ? PUBLIC_IMG_COMIC_HIRES_PATH : PUBLIC_IMG_COMIC_LOWRES_PATH;
             $existingFile = findExistingFileInDir($shortName, $targetDir);
 
             if ($existingFile !== null) {
@@ -158,9 +149,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
 
             case 'save_settings':
-                $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+                $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
                 $currentSettings['upload_image']['last_run_timestamp'] = time();
-                if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+                if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
                     $response['success'] = true;
                 }
                 break;
@@ -170,15 +161,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
-$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
 $uploadSettings = $settings['upload_image'];
 $pageTitle = 'Adminbereich - Bild-Upload';
 $pageHeader = 'Bild-Upload';
 $siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
 $robotsContent = 'noindex, nofollow';
 
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -570,8 +560,4 @@ include $headerPath;
     });
 </script>
 
-<?php
-if (file_exists($footerPath)) {
-    include $footerPath;
-}
-?>
+<?php include TEMPLATE_FOOTER; ?>

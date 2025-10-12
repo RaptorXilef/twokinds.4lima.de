@@ -2,13 +2,14 @@
 /**
  * Fehlerseite für den HTTP-Status 403 (Forbidden / Zugriff verweigert).
  * 
- * @file      /403.php
+ * @file      ROOT/public/403.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
+ * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // Setze den HTTP-Statuscode, damit Browser und Suchmaschinen wissen, dass dies ein Fehler ist.
@@ -18,10 +19,11 @@ http_response_code(403);
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN ===
-require_once __DIR__ . '/src/components/image_cache_helper.php';
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
+require_once IMAGE_CACHE_HELPER_PATH;
 
 // === 3. BILD-PFADE & FALLBACKS ===
 $lowresImage = get_cached_image_path('403', 'lowres');
@@ -41,8 +43,8 @@ $pageTitle = 'Fehler 403 - Zugriff verweigert';
 $pageHeader = 'Fehler 403: Zugriff verweigert';
 $robotsContent = 'noindex, follow'; // Wichtig für SEO: Seite nicht indexieren
 
-// === 5. HEADER EINBINDEN ===
-require_once __DIR__ . '/src/layout/header.php';
+// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -101,6 +103,6 @@ require_once __DIR__ . '/src/layout/header.php';
 </article>
 
 <?php
-// Binde den gemeinsamen Footer ein.
-require_once __DIR__ . '/src/layout/footer.php';
+// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
+require_once TEMPLATE_FOOTER;
 ?>

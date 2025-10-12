@@ -6,7 +6,7 @@
  * Die Thumbnail-Pfade werden aus einer vor-generierten Cache-Datei (comic_image_cache.json) gelesen,
  * um die Serverlast drastisch zu reduzieren.
  * 
- * @file      /archiv.php
+ * @file      ROOT/public/archiv.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
@@ -15,18 +15,17 @@
  * @version   1.1.0
  * @since     1.0.0 Verarbeitung der Daten aus archive_chapters.json und comic_var.json.
  * @since     1.1.0 Anpassung an versionalisierte comic_var.json (Schema v2).
+ * @since     1.2.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. LADE-SKRIPTE & DATEN ===
-$archiveChaptersJsonPath = __DIR__ . '/src/config/archive_chapters.json';
-$comicVarJsonPath = __DIR__ . '/src/config/comic_var.json';
-$imageCacheJsonPath = __DIR__ . '/src/config/comic_image_cache.json';
 $placeholderImagePath = 'assets/comic_thumbnails/placeholder.jpg';
 
 // Funktion zum Laden von JSON-Dateien
@@ -54,10 +53,10 @@ function loadJsonFile(string $path, bool $debugMode, string $fileName): ?array
     return $data;
 }
 
-$archiveChapters = loadJsonFile($archiveChaptersJsonPath, $debugMode, 'archive_chapters.json') ?? [];
+$archiveChapters = loadJsonFile(ARCHIVE_CHAPTERS_JSON, $debugMode, ARCHIVE_CHAPTERS_JSON_FILE) ?? [];
 
 // *** ANPASSUNG FÜR V2-SCHEMA ***
-$rawComicData = loadJsonFile($comicVarJsonPath, $debugMode, 'comic_var.json');
+$rawComicData = loadJsonFile(COMIC_VAR_JSON, $debugMode, COMIC_VAR_JSON_FILE);
 $comicData = [];
 if (is_array($rawComicData)) {
     if (isset($rawComicData['schema_version']) && $rawComicData['schema_version'] >= 2 && isset($rawComicData['comics'])) {
@@ -68,11 +67,11 @@ if (is_array($rawComicData)) {
 }
 // *** ENDE ANPASSUNG ***
 
-$imageCache = loadJsonFile($imageCacheJsonPath, $debugMode, 'comic_image_cache.json') ?? [];
+$imageCache = loadJsonFile(COMIC_IMAGE_CACHE_JSON, $debugMode, COMIC_IMAGE_CACHE_JSON_FILE) ?? [];
 
 
 if ($debugMode && empty($imageCache)) {
-    error_log("WARNUNG: Der Bild-Cache (comic_image_cache.json) ist leer oder konnte nicht geladen werden. Führe build_image_cache.php im Admin-Bereich aus.");
+    error_log("WARNUNG: Der Bild-Cache (" . COMIC_IMAGE_CACHE_JSON_FILE . ") ist leer oder konnte nicht geladen werden. Führe build_image_cache.php im Admin-Bereich aus.");
 }
 
 // === 3. DATENVERARBEITUNG & SORTIERUNG ===
@@ -144,11 +143,14 @@ $pageTitle = 'Archiv';
 $pageHeader = 'Archiv';
 $siteDescription = 'Das vollständige Archiv aller TwoKinds-Comics, übersichtlich nach Kapiteln geordnet. Finde schnell und einfach deine Lieblingsseite.';
 $robotsContent = 'index, follow';
-$archiveJsPath = $baseUrl . 'src/layout/js/archive.js?c=' . filemtime(__DIR__ . '/src/layout/js/archive.js');
-$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($archiveJsPath) . '"></script>';
+$archiveJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'archive.js';
+$archiveJsWebUrl = $baseUrl . 'src/layout/js/archive.js';
+$cacheBuster = file_exists($archiveJsPathOnServer) ? '?c=' . filemtime($archiveJsPathOnServer) : '';
+$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($archiveJsWebUrl . $cacheBuster) . '"></script>';
 
-// === 5. HEADER EINBINDEN ===
-require_once __DIR__ . '/src/layout/header.php';
+
+// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -200,4 +202,7 @@ require_once __DIR__ . '/src/layout/header.php';
     <?php endif; ?>
 </article>
 
-<?php require_once __DIR__ . '/src/layout/footer.php'; ?>
+<?php
+// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
+require_once TEMPLATE_FOOTER;
+?>

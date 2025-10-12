@@ -2,32 +2,36 @@
 /**
  * Administrationsseite zum Erstellen des Bild-Caches inkl. Cache-Busting.
  * 
- * @file      /admin/build_image_cache_and_busting.php
+ * @file      ROOT/public/admin/build_image_cache_and_busting.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   2.1.1
  * @since     2.0.0 Überarbeitet mit modernem UI, CSP-Konformität und Speicherung der letzten Ausführung in der zentralen Einstellungs-JSON.
+ * @since     2.1.0 Pfadanpassungen und Einführung von Konstanten
+ * @since     2.1.1 Umstellung auf Template-Pfad-Konstanten
+ * @since     2.2.0 Direkte Verwendung von Konstanten anstelle von temporären Variablen.
+ * @since     2.3.0 Umstellung auf neue, granulare Asset-Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$cachePath = __DIR__ . '/../src/config/comic_image_cache.json';
-$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
+// HINWEIS: Es werden keine temporären Pfad-Variablen mehr benötigt. Die Konstanten werden direkt verwendet.
+
+// Die zu scannenden Verzeichnisse werden nun ebenfalls über die neuen, spezifischen globalen Konstanten aufgebaut.
+
+// TODO: KONSTANTEN ANLEGEN FÜR relativen Pfad
 $dirsToScan = [
-    'thumbnails' => ['path' => __DIR__ . '/../assets/comic_thumbnails/', 'relativePath' => 'assets/comic_thumbnails/'],
-    'lowres' => ['path' => __DIR__ . '/../assets/comic_lowres/', 'relativePath' => 'assets/comic_lowres/'],
-    'hires' => ['path' => __DIR__ . '/../assets/comic_hires/', 'relativePath' => 'assets/comic_hires/'],
-    'socialmedia' => ['path' => __DIR__ . '/../assets/comic_socialmedia/', 'relativePath' => 'assets/comic_socialmedia/']
+    'thumbnails' => ['path' => PUBLIC_IMG_COMIC_THUMBNAILS_PATH, 'relativePath' => 'assets/comic_thumbnails/'],
+    'lowres' => ['path' => PUBLIC_IMG_COMIC_LOWRES_PATH, 'relativePath' => 'assets/comic_lowres/'],
+    'hires' => ['path' => PUBLIC_IMG_COMIC_HIRES_PATH, 'relativePath' => 'assets/comic_hires/'],
+    'socialmedia' => ['path' => PUBLIC_IMG_COMIC_SOCIALMEDIA_PATH, 'relativePath' => 'assets/comic_socialmedia/']
 ];
 
 // --- Einstellungsverwaltung ---
@@ -120,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 exit;
             }
 
-            $existingCache = file_exists($cachePath) ? json_decode(file_get_contents($cachePath), true) : [];
+            $existingCache = file_exists(COMIC_IMAGE_CACHE_JSON) ? json_decode(file_get_contents(COMIC_IMAGE_CACHE_JSON), true) : [];
             if (!is_array($existingCache))
                 $existingCache = [];
 
@@ -134,23 +138,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $existingCache[$comicId][$currentType] = $path;
                 }
             }
-            if (file_put_contents($cachePath, json_encode($existingCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+            if (file_put_contents(COMIC_IMAGE_CACHE_JSON, json_encode($existingCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
                 $response['success'] = true;
                 $response['message'] = 'Cache erfolgreich aktualisiert für: ' . implode(', ', $typesToProcess);
             } else {
                 $response['message'] = 'Fehler: Die Cache-Datei konnte nicht geschrieben werden.';
-                error_log("Fehler beim Schreiben der Cache-Datei: " . $cachePath);
+                error_log("Fehler beim Schreiben der Cache-Datei: " . COMIC_IMAGE_CACHE_JSON);
             }
             break;
 
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
             $newCacheSettings = [
                 'last_run_type' => $_POST['type'] ?? 'unknown',
                 'last_run_timestamp' => time()
             ];
             $currentSettings['build_image_cache'] = $newCacheSettings;
-            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -160,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 ob_end_flush();
 
-$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
 $cacheSettings = $settings['build_image_cache'];
 
 $pageTitle = 'Adminbereich - Bild-Cache & Busting Generator';
@@ -168,7 +172,7 @@ $pageHeader = 'Bild-Cache & Busting Generator';
 $siteDescription = 'Tool zum Erstellen des Bild-Caches mit Cache-Busting-Parametern.';
 $robotsContent = 'noindex, nofollow';
 
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -183,7 +187,9 @@ include $headerPath;
         <h2>Cache inkl. Cache-Busting aktualisieren</h2>
         <p>Dieses Tool scannt die Bildverzeichnisse, hängt den Zeitstempel der letzten Dateiänderung als
             Cache-Busting-Parameter an (<code>?c=...</code>) und speichert das Ergebnis in
-            <code>comic_image_cache.json</code>. Dies stellt sicher, dass Browser immer die neuste Version eines
+            <code><?php echo COMIC_IMAGE_CACHE_JSON_FILE; ?></code>. Dies stellt sicher, dass Browser immer die neuste
+            Version
+            eines
             Bildes laden, nachdem es geändert wurde.
         </p>
 
@@ -410,4 +416,4 @@ include $headerPath;
     });
 </script>
 
-<?php include $footerPath; ?>
+<?php include TEMPLATE_FOOTER; ?>

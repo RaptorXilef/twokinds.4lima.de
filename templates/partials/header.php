@@ -2,16 +2,18 @@
 /**
  * Gemeinsamer, modularer Header für alle Seiten (SEO-optimierte Version).
  * 
- * @file      /src/layout/header.php
+ * @file      ROOT/templates/partials/header.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.6.0
+ * @version   2.7.2
  * @since     2.6.0 Diese Datei wurde verschlankt und konzentriert sich auf die HTML-Struktur und das Asset-Management.
  * Die sicherheitsrelevanten Initialisierungen wurden in separate `init.php`-Dateien ausgelagert.
- * 
+ * @since     2.7.0 Entfernung redundanter URL-Berechnung und Ersetzung von Pfaden durch globale Konstanten.
+ * @since     2.7.1 Korrektur der JS-Asset-Pfade auf Basis der finalen config_folder_path.php.
+ * @since     2.7.2 Finale Validierung gegen die neueste Pfad-Konfiguration.
  *
  * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
  * @param string $pageHeader Der sichtbare H1-Header für die aktuelle Seite im Hauptinhaltsbereich.
@@ -23,54 +25,30 @@
  * @param string $ogImage Die URL zu einem Vorschaubild für Social Media (optional).
  * @param string $robotsContent Inhalt des robots-Meta-Tags (Standard: "index, follow").
  * @param string $canonicalUrl Eine explizite URL für den Canonical-Tag (optional, überschreibt die automatisch generierte URL).
- * ... weitere Parameter ...
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// --- 1. Dynamische Basis-URL und Seiten-URL Bestimmung ---
-// Diese Logik ermittelt die Basis-URL dynamisch, unabhängig davon, ob die Seite lokal,
-// im Intranet oder auf einem externen Server läuft und ob sie in einem Unterordner installiert ist.
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'];
-// Ermittle den absoluten Dateisystempfad des Anwendungs-Roots.
-// __FILE__ ist der absolute Pfad zu header.php (z.B. /var/www/html/deinprojekt/src/layout/header.php)
-// dirname(__FILE__) ist /var/www/html/deinprojekt/src/layout
-// dirname(dirname(__FILE__)) ist /var/www/html/deinprojekt/src
-// dirname(dirname(dirname(__FILE__))) ist /var/www/html/deinprojekt (dies ist der Anwendungs-Root)
-$appRootAbsPath = str_replace('\\', '/', dirname(dirname(dirname(__FILE__))));
-
-// Ermittle den absoluten Dateisystempfad des Webserver-Dokumenten-Roots.
-$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
-
-// Berechne den Unterordner-Pfad relativ zum Dokumenten-Root des Webservers.
-// Wenn documentRoot /var/www/html ist und appRootAbsPath /var/www/html/deinprojekt,
-// dann wird subfolderPath /deinprojekt.
-$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
-
-// Stelle sicher, dass der Unterordner-Pfad mit einem Schrägstrich beginnt und endet.
-if (!empty($subfolderPath) && $subfolderPath !== '/') {
-    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
-} elseif (empty($subfolderPath)) {
-    $subfolderPath = '/'; // Wenn der Anwendungs-Root GLEICH dem Dokumenten-Root ist.
+// --- 1. Prüfung, ob eine Initialisierungsdatei geladen wurde ---
+// Die init-Dateien stellen $baseUrl und $nonce bereit. Hier wird ein Fallback sichergestellt.
+if (!isset($baseUrl) || !isset($nonce)) {
+    $nonce = bin2hex(random_bytes(16));
+    // Notfall-URL-Bestimmung, falls init.php fehlt. Dies sollte im Normalbetrieb nie passieren.
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $baseUrl = $protocol . $host . '/';
+    error_log("WARNUNG: Keine init.php-Datei vor dem Header geladen. Fallback-Werte werden verwendet.");
 }
-$baseUrl = $protocol . $host . $subfolderPath;
-// Erstellt die vollständige, aktuelle URL für Canonical und OG-Tags.
-$currentPageUrl = rtrim($baseUrl, '/') . $_SERVER['REQUEST_URI'];
 
-// --- NEU: Flexible Canonical URL ---
+// --- 2. Seiten-URL und Canonical-URL bestimmen ---
+// Erstellt die vollständige, aktuelle URL für Canonical und OG-Tags basierend auf der globalen $baseUrl.
+$currentPageUrl = rtrim($baseUrl, '/') . $_SERVER['REQUEST_URI'];
 // Nutze die explizit gesetzte $canonicalUrl, ansonsten die automatisch ermittelte $currentPageUrl.
 $finalCanonicalUrl = $canonicalUrl ?? $currentPageUrl;
 
 if (isset($debugMode) && $debugMode) {
-    error_log("DEBUG: Basis-URL: " . $baseUrl . ", Seiten-URL: " . $currentPageUrl . ", Canonical-URL: " . $finalCanonicalUrl);
-}
-
-// --- 2. Prüfung, ob eine Initialisierungsdatei geladen wurde ---
-if (!isset($nonce)) {
-    $nonce = bin2hex(random_bytes(16));
-    error_log("WARNUNG: Keine init.php-Datei vor dem Header geladen. Eine Fallback-Nonce wurde generiert.");
+    error_log("DEBUG (header.php): Basis-URL: " . $baseUrl . ", Seiten-URL: " . $currentPageUrl . ", Canonical-URL: " . $finalCanonicalUrl);
 }
 
 // --- 3. Setup der Seiten-Variablen mit Standardwerten ---
@@ -79,26 +57,26 @@ $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FI
 $pageTitlePrefix = 'Twokinds – Das Webcomic auf Deutsch | ';
 $pageTitle = $pageTitlePrefix . ($pageTitle ?? ucfirst($filenameWithoutExtension));
 $siteDescription = $siteDescription ?? 'Tauche ein in die Welt von Twokinds – dem beliebten Fantasy-Webcomic von Tom Fischbach, jetzt komplett auf Deutsch verfügbar. Erlebe die spannende Geschichte von Trace und Flora und entdecke die Rassenkonflikte zwischen Menschen und Keidran.';
-$ogImage = $ogImage ?? ''; // Standardmäßig kein OG-Image
+$ogImage = $ogImage ?? '';
 $robotsContent = $robotsContent ?? 'index, follow';
 $bodyClass = $bodyClass ?? 'preload';
 $additionalScripts = $additionalScripts ?? '';
 $additionalHeadContent = $additionalHeadContent ?? '';
 $viewportContent = $viewportContent ?? 'width=device-width, initial-scale=1.0';
 
-// --- Web-Pfade mit Cache-Buster generieren ---
-$faviconUrl = $baseUrl . 'favicon.ico?v=' . filemtime($appRootAbsPath . '/favicon.ico');
-$appleIconUrl = $baseUrl . 'appleicon.png?v=' . filemtime($appRootAbsPath . '/appleicon.png');
+// --- 4. Web-Pfade mit Cache-Buster generieren ---
+// Die Web-Pfade werden mit der globalen $baseUrl gebildet.
+// Die Server-Pfade für filemtime() nutzen die globalen Konstanten für maximale Zuverlässigkeit.
+$faviconUrl = $baseUrl . 'favicon.ico?v=' . filemtime(PUBLIC_PATH . DIRECTORY_SEPARATOR . 'favicon.ico');
+$appleIconUrl = $baseUrl . 'appleicon.png?v=' . filemtime(PUBLIC_PATH . DIRECTORY_SEPARATOR . 'appleicon.png');
 
-// Pfade zu Assets mit Cache-Busting
-$commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.min.js?c=' . filemtime(__DIR__ . '/js/common.min.js');
-$mainCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main.min.css?c=' . filemtime(__DIR__ . '/css/main.min.css');
-$mainDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main_dark.min.css?c=' . filemtime(__DIR__ . '/css/main_dark.min.css');
-$cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.min.css?c=' . filemtime(__DIR__ . '/css/cookie_banner.min.css');
-$cookieBannerDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner_dark.min.css?c=' . filemtime(__DIR__ . '/css/cookie_banner_dark.min.css');
-$cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.min.js?c=' . filemtime(__DIR__ . '/js/cookie_consent.min.js');
-// NEU: Pfad für die Charakter-Anzeige CSS, im Stil der bestehenden Pfade
-$characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_display.min.css?c=' . filemtime(__DIR__ . '/css/character_display.css');
+$commonJsWebPathWithCacheBuster = $baseUrl . 'src/layout/js/common.min.js?c=' . filemtime(PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'common.min.js');
+$mainCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'main.min.css');
+$mainDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/main_dark.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'main_dark.min.css');
+$cookieBannerCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
+$cookieBannerDarkCssPathWithCacheBuster = $baseUrl . 'src/layout/css/cookie_banner_dark.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
+$cookieConsentJsPathWithCacheBuster = $baseUrl . 'src/layout/js/cookie_consent.min.js?c=' . filemtime(PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
+$characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_display.min.css?c=' . filemtime(PUBLIC_CSS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'character_display.css');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -140,7 +118,6 @@ $characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_d
         href="<?php echo htmlspecialchars($cookieBannerCssPathWithCacheBuster); ?>">
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
         href="<?php echo htmlspecialchars($cookieBannerDarkCssPathWithCacheBuster); ?>">
-    <!-- NEU: Stylesheet für Charakter-Anzeige -->
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
         href="<?php echo htmlspecialchars($characterDisplayCssPathWithCacheBuster); ?>">
 
@@ -286,18 +263,16 @@ $characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_d
                 <?php
                 // Dynamisches Laden der Menükonfiguration basierend auf dem aktuellen Pfad
                 if ($isAdminPage) {
-                    // *** BESTIMMUNGS-LOGIK ***
                     // Lade das Admin-Menü und das Timeout-Modal NUR, wenn der Admin auch wirklich eingeloggt ist.
-                    // Die Prüfung 'isset($_SESSION['admin_logged_in'])' stellt sicher, dass das Menü nicht auf der Login-Seite angezeigt wird.
                     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-                        require(__DIR__ . '/../../admin/src/components/admin_menue_config.php');
-                        require(__DIR__ . '/../../admin/src/components/session_timeout_modal.php');
+                        require_once ADMIN_MENU;
+                        require_once ADMIN_SESSION_TIMEOUT_MODAL;
                     } else {
-                        require(__DIR__ . '/../../admin/src/components/admin_menue_config_login.php');
+                        require_once ADMIN_MENU_LOGIN;
                     }
                 } else {
                     // Andernfalls lade das normale Seitenmenü für öffentliche Seiten
-                    require(__DIR__ . '/../components/menue_config.php');
+                    require_once MENU_PATH;
                 }
                 ?>
             </div>
@@ -305,7 +280,6 @@ $characterDisplayCssPathWithCacheBuster = $baseUrl . 'src/layout/css/character_d
                 <article>
                     <?php
                     // Der Seiten-Header wird hier dynamisch eingefügt, wenn er übergeben wurde.
-                    // Er wird nur angezeigt, wenn die Seite im Admin-Verzeichnis liegt.
                     if (!empty($pageHeader) && $isAdminPage) {
                         echo '<header><h1 class="page-header">' . htmlspecialchars($pageHeader) . '</h1></header>';
                     }

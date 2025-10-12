@@ -4,24 +4,26 @@
  * Sie lädt dynamisch den neuesten Comic und zeigt ihn an und verweist
  * mittels Canonical-Tag auf die Haupt-Startseite, um Duplicate Content zu vermeiden.
  * 
- * @file      /comic/index.php
+ * @file      ROOT/public/comic/index.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
+ * @version   2.2.0
+ * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/../src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN ===
-require_once __DIR__ . '/../src/components/load_comic_data.php';
-require_once __DIR__ . '/../src/components/image_cache_helper.php';
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
+require_once LOAD_COMIC_DATA_PATH;
+require_once IMAGE_CACHE_HELPER_PATH;
 
 // Ermittle die ID des neuesten Comics
 $comicKeys = array_keys($comicData);
@@ -42,7 +44,7 @@ if (isset($comicData[$currentComicId])) {
     $comicTranscript = $comicData[$currentComicId]['transcript'];
     $urlOriginalbildFilename = $comicData[$currentComicId]['url_originalbild'] ?? '';
 } else {
-    error_log("Fehler: Daten für den neuesten Comic (ID '{$currentComicId}') nicht in comic_var.json gefunden.");
+    error_log("Fehler: Daten für den neuesten Comic (ID '{$currentComicId}') nicht in " . COMIC_VAR_JSON_FILE . " gefunden.");
     $comicTyp = 'Comicseite';
     $comicName = 'Willkommen';
     $comicTranscript = '<p>Willkommen auf TwoKinds auf Deutsch! Leider konnte der neueste Comic nicht geladen werden.</p>';
@@ -78,7 +80,8 @@ $formattedDateGerman = date('d.m.Y', strtotime($currentComicId));
 $pageTitle = 'Neueste Comicseite';
 $siteDescription = 'Die neueste Comicseite von TwoKinds in deutscher Übersetzung. ' . htmlspecialchars($comicName);
 $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : $baseUrl . ltrim($socialMediaPreviewUrl, './');
-$comicJsPathOnServer = __DIR__ . '/../src/layout/js/comic.min.js';
+// Pfad zur JS-Datei jetzt über Konstante ermittelt
+$comicJsPathOnServer = PUBLIC_JS_ASSETS_PATH . DIRECTORY_SEPARATOR . 'comic.min.js';
 $comicJsWebUrl = $baseUrl . 'src/layout/js/comic.min.js';
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
@@ -86,8 +89,8 @@ $viewportContent = 'width=1099';
 $robotsContent = 'noindex, follow'; // Diese Seite soll nicht indexiert werden, da der Inhalt auf der Hauptseite kanonisch ist.
 $canonicalUrl = $baseUrl; // Verweist auf die Haupt-Startseite
 
-// === 5. HEADER EINBINDEN ===
-require_once __DIR__ . '/../src/layout/header.php';
+// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -118,7 +121,8 @@ require_once __DIR__ . '/../src/layout/header.php';
     <div class='comicnav'>
         <?php
         $isCurrentPageLatest = true;
-        include __DIR__ . '/../src/layout/comic_navigation.php';
+        // Pfad zur Navigation jetzt über Konstante
+        include COMIC_NAVIGATION_PATH;
         unset($isCurrentPageLatest);
         ?>
         <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
@@ -141,7 +145,8 @@ require_once __DIR__ . '/../src/layout/header.php';
     <div class='comicnav bottomnav'>
         <?php
         $isCurrentPageLatest = true;
-        include __DIR__ . '/../src/layout/comic_navigation.php';
+        // Pfad zur Navigation jetzt über Konstante
+        include COMIC_NAVIGATION_PATH;
         unset($isCurrentPageLatest);
         ?>
         <!-- NEUER SPRACHUMSCHALTER-BUTTON -->
@@ -181,8 +186,8 @@ require_once __DIR__ . '/../src/layout/header.php';
     </aside>
 
     <?php
-    // NEU: Binde das Modul zur Anzeige der Charaktere ein
-    require_once __DIR__ . '/../src/components/character_display.php';
+    // NEU: Binde das Modul zur Anzeige der Charaktere ein (Jetzt mit Konstante)
+    require_once CHARAKTERE_DISPLAY_PATH;
     ?>
 </article>
 
@@ -327,4 +332,4 @@ require_once __DIR__ . '/../src/layout/header.php';
     });
 </script>
 
-<?php require_once __DIR__ . '/../src/layout/footer.php'; ?>
+<?php require_once TEMPLATE_FOOTER; ?>

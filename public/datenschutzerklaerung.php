@@ -3,28 +3,30 @@
  * Dies ist die Datenschutzerklärung der TwoKinds-Webseite.
  * Sie informiert über die Datenerfassung und -verarbeitung.
  * 
- * @file      /datenschutzerklaerung.php
+ * @file      ROOT/public/datenschutzerklaerung.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
+ * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../src/components/public_init.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Datenschutzerklärung';
 $siteDescription = 'Erfahre mehr über den Datenschutz auf der deutschen TwoKinds-Webseite und wie wir deine Daten schützen.';
 $robotsContent = 'noindex, follow'; // Diese Seite sollte nicht von Suchmaschinen indexiert werden
 
-// === 3. HEADER EINBINDEN ===
-require_once __DIR__ . "/src/layout/header.php";
+// === 3. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -151,8 +153,8 @@ require_once __DIR__ . "/src/layout/header.php";
         </ul>
         </p>
         <p>Weitere Informationen zum Umgang mit Nutzerdaten bei Google Analytics finden Sie in der
-            Datenschutzerklärung von Google: <a href="https://support.google.com/analytics/answer/6004245?hl=en"
-                target="_blank">https://support.google.com/analytics/answer/6004245?hl=en</a>.</p>
+            Datenschutzerklärung von Google: <a href="https://support.google.com/analytics/answer/6004245?hl=de"
+                target="_blank">https://support.google.com/analytics/answer/6004245?hl=de</a>.</p>
 
         <div class="cookie-settings-container">
             <button class="button" id="change-cookie-settings-btn">Cookie-Einstellungen ändern</button>
@@ -193,5 +195,6 @@ require_once __DIR__ . "/src/layout/header.php";
 </script>
 
 <?php
-require_once __DIR__ . "/src/layout/footer.php";
+// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
+require_once TEMPLATE_FOOTER;
 ?>

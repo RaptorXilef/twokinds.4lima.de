@@ -2,23 +2,25 @@
 /**
  * Diese Datei enthält Informationen über den Comic, den Künstler und den Übersetzer.
  * 
- * @file      /ueber_den_comic.php
+ * @file      ROOT/public/ueber_den_comic.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
+ * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-require_once __DIR__ . '/src/components/public_init.php';
+// Dieser Pfad MUSS relativ bleiben, da er die Konstanten erst lädt.
+require_once __DIR__ . '/../src/components/public_init.php';
 
-// === 2. LADE-SKRIPTE & DATEN ===
-require_once __DIR__ . '/src/components/load_comic_data.php';
+// === 2. LADE-SKRIPTE & DATEN (Jetzt mit Konstanten) ===
+require_once LOAD_COMIC_DATA_PATH;
 
 // === 3. DATENVERARBEITUNG ===
 // Ermittelt die Anzahl der Comic-Seiten und Lückenfüller.
@@ -42,14 +44,21 @@ $ageTom = $today->diff($birthdateTom)->y;
 $birthdateFelix = new DateTime('1993-03-29');
 $ageFelix = $today->diff($birthdateFelix)->y;
 
+// Bild-Pfad für den Übersetzer mit Cache-Buster
+$felixImagePathOnServer = PUBLIC_IMG_ABOUT_PATH . DIRECTORY_SEPARATOR . 'Felix.webp';
+$felixImageWebUrl = $baseUrl . 'assets/img/about/Felix.webp';
+if (file_exists($felixImagePathOnServer)) {
+	$felixImageWebUrl .= '?c=' . filemtime($felixImagePathOnServer);
+}
+
 
 // === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Über den Comic';
 $siteDescription = 'Erfahre alles über den Webcomic TwoKinds, den Künstler Tom Fischbach und den deutschen Übersetzer Felix Maywald.';
 $robotsContent = 'index, follow';
 
-// === 5. HEADER EINBINDEN ===
-require_once __DIR__ . "/src/layout/header.php";
+// === 5. HEADER EINBINDEN (Jetzt mit Konstante) ===
+require_once TEMPLATE_HEADER;
 ?>
 <section>
 	<h2 class="page-header">Über den Comic</h2>
@@ -131,7 +140,7 @@ require_once __DIR__ . "/src/layout/header.php";
 <section>
 	<h2 class="page-header">Über den Übersetzer</h2>
 
-	<img class="float-left" src="assets/img/about/Felix.webp?=c20250907" alt="Felix" height="275">
+	<img class="float-left" src="<?php echo htmlspecialchars($felixImageWebUrl); ?>" alt="Felix" height="275">
 
 	<p>
 		<b>Name:</b> Felix Maywald<br>
@@ -174,4 +183,7 @@ require_once __DIR__ . "/src/layout/header.php";
 		ausleben zu können.</p>
 </section>
 
-<?php require_once __DIR__ . "/src/layout/footer.php"; ?>
+<?php
+// Binde den gemeinsamen Footer ein (Jetzt mit Konstante).
+require_once TEMPLATE_FOOTER;
+?>

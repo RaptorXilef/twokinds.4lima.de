@@ -2,32 +2,54 @@
 /**
  * Administrationsseite für den Comic-Seiten-Generator.
  * 
- * @file      /admin/generator_comic.php
+ * @file      ROOT/public/admin/generator_comic.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
+ * @version   3.0.0
  * @since     2.0.0 Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung und detailliertem Protokoll.
  * @since     2.1.0 Anpassung an versionierte comic_var.json (Schema v2).
+ * @since     2.2.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     3.0.0 Implementierung einer dynamischen relativen Pfadberechnung und verbesserte Bilderkennung.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$comicVarJsonPath = __DIR__ . '/../src/config/comic_var.json';
-$comicLowresDirPath = __DIR__ . '/../assets/comic_lowres/';
-$comicPagesDirPath = __DIR__ . '/../comic/';
-$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
+// --- HILFSFUNKTIONEN ---
 
-// --- Einstellungsverwaltung ---
+/**
+ * Berechnet den relativen Pfad von einem Start- zu einem Zielpfad.
+ * @param string $from Der absolute Startpfad (Verzeichnis).
+ * @param string $to Der absolute Zielpfad (Datei).
+ * @return string Der berechnete relative Pfad.
+ */
+function getRelativePath(string $from, string $to): string
+{
+    $from = str_replace('\\', '/', rtrim($from, '/\\'));
+    $to = str_replace('\\', '/', $to);
+
+    $fromParts = explode('/', $from);
+    $toParts = explode('/', $to);
+    $toFilename = array_pop($toParts);
+
+    while (count($fromParts) && count($toParts) && ($fromParts[0] == $toParts[0])) {
+        array_shift($fromParts);
+        array_shift($toParts);
+    }
+
+    $relativePath = str_repeat('../', count($fromParts));
+    $relativePath .= implode('/', $toParts);
+    $relativePath .= '/' . $toFilename;
+
+    return $relativePath;
+}
+
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
@@ -55,10 +77,6 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
     return file_put_contents($filePath, $jsonContent) !== false;
 }
 
-// --- Hilfsfunktionen ---
-/**
- * Liest die Comic-Daten aus der JSON-Datei und extrahiert sie bei v2-Schema.
- */
 function getComicData(string $filePath, bool $debugMode): ?array
 {
     if (!file_exists($filePath))
@@ -67,31 +85,31 @@ function getComicData(string $filePath, bool $debugMode): ?array
     if ($content === false)
         return null;
     $decodedData = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE && is_array($decodedData)) {
-        // Prüfe auf die neue, versionierte Struktur
+    if (is_array($decodedData)) {
         if (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2 && isset($decodedData['comics'])) {
             return $decodedData['comics'];
-        } else {
-            // Fallback für die alte, flache Struktur
-            return $decodedData;
         }
+        return $decodedData;
     }
     return [];
 }
 
-function getComicIdsFromImages(string $dirPath, bool $debugMode): array
+function getComicIdsFromImages(array $dirPaths, bool $debugMode): array
 {
     $imageIds = [];
-    if (is_dir($dirPath)) {
-        $files = scandir($dirPath);
-        if ($files === false)
-            return [];
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..' || substr($file, 0, 1) === '.' || strpos($file, 'in_translation') !== false)
+    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    foreach ($dirPaths as $dirPath) {
+        if (is_dir($dirPath)) {
+            $files = scandir($dirPath);
+            if ($files === false)
                 continue;
-            $info = pathinfo($file);
-            if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                $imageIds[] = $info['filename'];
+            foreach ($files as $file) {
+                if ($file === '.' || $file === '..' || substr($file, 0, 1) === '.' || strpos($file, 'in_translation') !== false)
+                    continue;
+                $info = pathinfo($file);
+                if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), $imageExtensions)) {
+                    $imageIds[] = $info['filename'];
+                }
             }
         }
     }
@@ -117,7 +135,8 @@ function createSingleComicPageFile(string $comicId, string $comicPagesDir, bool 
             return false;
     }
     $filePath = $comicPagesDir . $comicId . '.php';
-    $fileContent = "<?php require_once __DIR__ . '/../src/components/comic_page_renderer.php'; ?>";
+    $relativePath = getRelativePath($comicPagesDir, COMIC_PAGE_RENDERER_PATH);
+    $fileContent = "<?php require_once __DIR__ . '/" . $relativePath . "'; ?>";
     return file_put_contents($filePath, $fileContent) !== false;
 }
 
@@ -134,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if (empty($comicId)) {
                 $response['message'] = 'Keine Comic-ID angegeben.';
                 http_response_code(400);
-            } elseif (createSingleComicPageFile($comicId, $comicPagesDirPath, $debugMode)) {
+            } elseif (createSingleComicPageFile($comicId, PUBLIC_COMIC_PATH, $debugMode)) {
                 $response['success'] = true;
                 $response['message'] = 'Comic-Seite für ' . $comicId . ' erstellt.';
                 $response['comicId'] = $comicId;
@@ -144,10 +163,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
-            $newComicSettings = ['last_run_timestamp' => time()];
-            $currentSettings['generator_comic'] = $newComicSettings;
-            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings['generator_comic'] = ['last_run_timestamp' => time()];
+            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -155,26 +173,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     echo json_encode($response);
     exit;
 }
-ob_end_flush();
 
-$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
 $comicSettings = $settings['generator_comic'];
-$comicIdsFromImages = getComicIdsFromImages($comicLowresDirPath, $debugMode);
-$comicDataFromJson = getComicData($comicVarJsonPath, $debugMode);
-$allComicIds = [];
-if ($comicDataFromJson) {
-    $allComicIds = array_unique(array_merge(array_keys($comicDataFromJson), $comicIdsFromImages));
-} else {
-    $allComicIds = $comicIdsFromImages;
-}
+$comicIdsFromImages = getComicIdsFromImages([PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_HIRES_PATH], $debugMode);
+$comicDataFromJson = getComicData(COMIC_VAR_JSON, $debugMode);
+$allComicIds = $comicDataFromJson ? array_unique(array_merge(array_keys($comicDataFromJson), $comicIdsFromImages)) : $comicIdsFromImages;
 sort($allComicIds);
-$missingComicPages = getMissingComicPageFiles($allComicIds, $comicPagesDirPath, $debugMode);
+$missingComicPages = getMissingComicPageFiles($allComicIds, PUBLIC_COMIC_PATH, $debugMode);
 
 $pageTitle = 'Adminbereich - Comic Generator';
 $pageHeader = 'Comic-Seiten-Generator';
 $siteDescription = 'Generiert fehlende Comic-PHP-Seiten basierend auf vorhandenen Bildern und JSON-Daten.';
 $robotsContent = 'noindex, nofollow';
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -569,7 +581,5 @@ include $headerPath;
 </script>
 
 <?php
-if (file_exists($footerPath)) {
-    include $footerPath;
-}
+include TEMPLATE_FOOTER;
 ?>

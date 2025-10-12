@@ -2,29 +2,23 @@
 /**
  * Dies ist die Administrationsseite für den Thumbnail-Generator.
  * 
- * @file      /admin/generator_thumbnail.php
+ * @file      ROOT/public/admin/generator_thumbnail.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.6.0
+ * @version   3.0.0
  * @since     2.6.0 Behebt einen JavaScript ReferenceError aufgrund eines Scope-Problems.
+ * @since     2.7.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/src/components/admin_init.php';
-
-// Pfade
-$headerPath = __DIR__ . '/../src/layout/header.php';
-$footerPath = __DIR__ . '/../src/layout/footer.php';
-$lowresDir = __DIR__ . '/../assets/comic_lowres/';
-$hiresDir = __DIR__ . '/../assets/comic_hires/';
-$thumbnailDir = __DIR__ . '/../assets/comic_thumbnails/';
-$settingsFilePath = __DIR__ . '/../src/config/generator_settings.json';
+require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
@@ -32,9 +26,6 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
     $defaults = [
         'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
         'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
-        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
-        'generator_comic' => ['last_run_timestamp' => null],
-        'upload_image' => ['last_run_timestamp' => null]
     ];
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
@@ -58,7 +49,12 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
     return file_put_contents($filePath, $jsonContent) !== false;
 }
 
-// ... (Restliche PHP-Funktionen unverändert) ...
+// GD-Bibliothek-Check
+$gdError = !extension_loaded('gd') ? "FEHLER: Die GD-Bibliothek ist nicht geladen. Bilder können nicht generiert werden." : null;
+if ($gdError)
+    error_log($gdError);
+
+// Helper-Funktionen
 function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMode): array
 {
     $comicIds = [];
@@ -76,6 +72,7 @@ function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMod
     }
     return array_keys($comicIds);
 }
+
 function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
 {
     $thumbnailIds = [];
@@ -91,40 +88,23 @@ function getExistingThumbnailIds(string $thumbnailDir, bool $debugMode): array
     }
     return array_keys($thumbnailIds);
 }
+
 function findMissingThumbnails(array $allComicIds, array $existingThumbnailIds, bool $debugMode): array
 {
     return array_values(array_diff($allComicIds, $existingThumbnailIds));
 }
-/**
- * Generiert ein einzelnes Thumbnail in einem spezifizierten Format (jpg, png, oder webp).
- * @param string $comicId Die ID des Comics.
- * @param string $outputFormat Das gewünschte Ausgabeformat ('jpg', 'png', 'webp').
- * @param string $lowresDir Pfad zum Low-Res-Verzeichnis.
- * @param string $hiresDir Pfad zum High-Res-Verzeichnis.
- * @param string $thumbnailDir Pfad zum Thumbnail-Verzeichnis.
- * @param bool $debugMode Debug-Modus an/aus.
- * @return array Ergebnis-Array mit 'created' und 'errors'.
- */
+
 function generateThumbnail(string $comicId, string $outputFormat, string $lowresDir, string $hiresDir, string $thumbnailDir, bool $debugMode, array $options = []): array
 {
     $errors = [];
-    $createdPath = '';
-    if (!is_dir($thumbnailDir)) {
-        if (!mkdir($thumbnailDir, 0755, true)) {
-            $errors[] = "Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden.";
-            return ['created' => '', 'errors' => $errors];
-        }
+    if (!is_dir($thumbnailDir) && !mkdir($thumbnailDir, 0755, true)) {
+        return ['created' => '', 'errors' => ["Zielverzeichnis '$thumbnailDir' konnte nicht erstellt werden."]];
     }
     if (!is_writable($thumbnailDir)) {
-        $errors[] = "Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar.";
-        return ['created' => '', 'errors' => $errors];
+        return ['created' => '', 'errors' => ["Zielverzeichnis '$thumbnailDir' ist nicht beschreibbar."]];
     }
-
-    // Ziel-Dimensionen
     $targetWidth = 198;
     $targetHeight = 258;
-
-    // Quellbild finden
     $sourceImagePath = '';
     $possibleExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     foreach ([$hiresDir, $lowresDir] as $dir) {
@@ -140,12 +120,9 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
         return ['created' => '', 'errors' => ["Quellbild für Comic-ID '$comicId' nicht gefunden."]];
     }
     try {
-        // Quellbild laden
         $imageInfo = @getimagesize($sourceImagePath);
-        if ($imageInfo === false) {
-            $errors[] = "Kann Bildinformationen für '$sourceImagePath' nicht abrufen.";
-            return ['created' => '', 'errors' => $errors];
-        }
+        if ($imageInfo === false)
+            return ['created' => '', 'errors' => ["Kann Bildinformationen für '$sourceImagePath' nicht abrufen."]];
         list($width, $height, $type) = $imageInfo;
         $sourceImage = null;
         switch ($type) {
@@ -168,41 +145,27 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
             $errors[] = "Fehler beim Laden des Bildes von '$sourceImagePath'.";
             return ['created' => '', 'errors' => $errors];
         }
-
-        // Skalierungsberechnung
-        $ratio = min($targetWidth / $width, $targetHeight / $height);
-        $newWidth = $width * $ratio;
-        $newHeight = $height * $ratio;
-
-        // Temporäres Bild erstellen
         $tempImage = imagecreatetruecolor($targetWidth, $targetHeight);
         if ($tempImage === false) {
-            $errors[] = "Fehler beim Erstellen des temporären Bildes.";
             imagedestroy($sourceImage);
-            return ['created' => '', 'errors' => $errors];
+            return ['created' => '', 'errors' => ["Fehler beim Erstellen des temporären Bildes."]];
         }
-
-        // === FORMATSPEZIFISCHER HINTERGRUND ===
         if ($outputFormat === 'jpg') {
-            // Für JPG einen soliden weißen Hintergrund erstellen.
             $backgroundColor = imagecolorallocate($tempImage, 255, 255, 255);
             imagefilledrectangle($tempImage, 0, 0, $targetWidth, $targetHeight, $backgroundColor);
         } else {
-            // Für PNG und WebP einen transparenten Hintergrund erstellen.
             imagealphablending($tempImage, false);
             imagesavealpha($tempImage, true);
-            // Schwarz mit 10% Deckkraft (90% Transparenz)
             $backgroundColor = imagecolorallocatealpha($tempImage, 0, 0, 0, 114);
             imagefilledrectangle($tempImage, 0, 0, $targetWidth, $targetHeight, $backgroundColor);
             imagealphablending($tempImage, true);
         }
-
-        // Bild resamplen und zentrieren
+        $ratio = min($targetWidth / $width, $targetHeight / $height);
+        $newWidth = $width * $ratio;
+        $newHeight = $height * $ratio;
         $offsetX = ($targetWidth - $newWidth) / 2;
         $offsetY = ($targetHeight - $newHeight) / 2;
         imagecopyresampled($tempImage, $sourceImage, (int) $offsetX, (int) $offsetY, 0, 0, (int) $newWidth, (int) $newHeight, $width, $height);
-
-        // === FORMATSPEZIFISCHES SPEICHERN ===
         $thumbnailPath = $thumbnailDir . $comicId . '.' . $outputFormat;
         $saveSuccess = false;
         switch ($outputFormat) {
@@ -214,22 +177,20 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
                 break;
             case 'webp':
                 if (function_exists('imagewebp')) {
-                    $quality = $options['quality'] ?? 90;
-                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, $quality);
+                    $saveSuccess = imagewebp($tempImage, $thumbnailPath, $options['quality'] ?? 90);
                 } else {
                     $errors[] = "WebP-Unterstützung ist auf diesem Server nicht aktiviert.";
                 }
                 break;
         }
+        $createdPath = '';
         if ($saveSuccess && filesize($thumbnailPath) > 0) {
             $createdPath = $thumbnailPath;
         } else {
-            if (file_exists($thumbnailPath)) {
+            if (file_exists($thumbnailPath))
                 unlink($thumbnailPath);
-            }
-            if (empty($errors)) {
+            if (empty($errors))
                 $errors[] = "Fehler beim Speichern des Bildes (evtl. 0-Byte-Datei). Server-Konfiguration prüfen.";
-            }
         }
         imagedestroy($sourceImage);
         imagedestroy($tempImage);
@@ -241,6 +202,7 @@ function generateThumbnail(string $comicId, string $outputFormat, string $lowres
     }
     return ['created' => $createdPath, 'errors' => $errors];
 }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     verify_csrf_token();
     ob_end_clean();
@@ -249,37 +211,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $response = ['success' => false, 'message' => ''];
     switch ($action) {
         case 'generate_single_thumbnail':
-            if (!extension_loaded('gd')) {
-                $response['message'] = "FEHLER: Die GD-Bibliothek ist nicht geladen.";
+            if ($gdError) {
+                $response['message'] = $gdError;
+                http_response_code(500);
                 echo json_encode($response);
                 exit;
             }
-            $outputFormat = $_POST['output_format'] ?? 'webp';
-            if (!in_array($outputFormat, ['jpg', 'png', 'webp'])) {
-                $outputFormat = 'webp';
-            }
+            $outputFormat = in_array($_POST['output_format'] ?? 'webp', ['jpg', 'png', 'webp']) ? $_POST['output_format'] : 'webp';
             $comicId = $_POST['comic_id'] ?? '';
             if (empty($comicId)) {
                 $response['message'] = 'Keine Comic-ID angegeben.';
-                echo json_encode($response);
-                exit;
-            }
-            $options = ['quality' => $_POST['quality'] ?? null];
-            $result = generateThumbnail($comicId, $outputFormat, $lowresDir, $hiresDir, $thumbnailDir, $debugMode, $options);
-            if (empty($result['errors'])) {
-                $response['success'] = true;
-                $response['message'] = "Thumbnail für $comicId als .$outputFormat erstellt.";
-                $response['imageUrl'] = '../assets/comic_thumbnails/' . $comicId . '.' . $outputFormat . '?' . time();
-                $response['comicId'] = $comicId;
+                http_response_code(400);
             } else {
-                $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
+                $options = ['quality' => $_POST['quality'] ?? null];
+                $result = generateThumbnail($comicId, $outputFormat, PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_HIRES_PATH, PUBLIC_IMG_COMIC_THUMBNAILS_PATH, $debugMode, $options);
+                if (empty($result['errors'])) {
+                    $response['success'] = true;
+                    $response['message'] = "Thumbnail für $comicId als .$outputFormat erstellt.";
+                    $response['imageUrl'] = '../assets/comic_thumbnails/' . $comicId . '.' . $outputFormat . '?' . time();
+                    $response['comicId'] = $comicId;
+                } else {
+                    $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
+                }
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($settingsFilePath, $debugMode);
+            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
             $newThumbnailSettings = ['last_used_format' => $_POST['format'] ?? 'webp', 'last_used_quality' => (int) ($_POST['quality'] ?? 90), 'last_used_lossless' => ($_POST['lossless'] === 'true'), 'last_run_timestamp' => time()];
             $currentSettings['generator_thumbnail'] = $newThumbnailSettings;
-            if (saveGeneratorSettings($settingsFilePath, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -287,18 +247,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     echo json_encode($response);
     exit;
 }
-ob_end_flush();
-$settings = loadGeneratorSettings($settingsFilePath, $debugMode);
+
+$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
 $thumbnailSettings = $settings['generator_thumbnail'];
-$allComicIds = getExistingComicIds($lowresDir, $hiresDir, $debugMode);
-$existingThumbnailIds = getExistingThumbnailIds($thumbnailDir, $debugMode);
+$allComicIds = getExistingComicIds(PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_HIRES_PATH, $debugMode);
+$existingThumbnailIds = getExistingThumbnailIds(PUBLIC_IMG_COMIC_THUMBNAILS_PATH, $debugMode);
 $missingThumbnails = findMissingThumbnails($allComicIds, $existingThumbnailIds, $debugMode);
 
 $pageTitle = 'Adminbereich - Thumbnail Generator';
 $pageHeader = 'Thumbnail Generator';
 $siteDescription = 'Seite zum Generieren der Vorschaubilder.';
 
-include $headerPath;
+include TEMPLATE_HEADER;
 ?>
 
 <article>
@@ -801,8 +761,4 @@ include $headerPath;
     });
 </script>
 
-<?php
-if (file_exists($footerPath)) {
-    include $footerPath;
-}
-?>
+<?php include TEMPLATE_FOOTER; ?>

@@ -9,8 +9,15 @@
  * - Schutz vor Session Hijacking durch User-Agent- und IP-Adressen-Bindung.
  * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
  * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
- *
- * V2.3: Session-Fingerprinting zur Erhöhung der Sicherheit wieder hinzugefügt.
+ * 
+ * @file      ROOT/src/components/admin_init.php
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.2.3
+ * @since     1.2.3 Session-Fingerprinting zur Erhöhung der Sicherheit wieder hinzugefügt.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -19,9 +26,9 @@ $callingScript = basename($_SERVER['PHP_SELF']);
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-include_once __DIR__ . '/../../../../../twokinds_src/configLoader.php';
+include_once __DIR__ . '/configLoader.php';
 if ($debugMode) {
-    error_log("DEBUG (public_init.php): CONFIG_PATH = " . CONFIG_PATH);
+    error_log("DEBUG (admin_init.php): CONFIG_PATH = /configLoader.php");
 }
 
 if ($debugMode)
@@ -31,26 +38,9 @@ ob_start();
 
 
 // --- 1. Dynamische Basis-URL Bestimmung ---
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$host = $_SERVER['HTTP_HOST'];
-// __DIR__ ist /admin/src/components, also gehen wir drei Ebenen hoch zum Anwendungs-Root.
-$appRootAbsPath = str_replace('\\', '/', dirname(dirname(dirname(__DIR__))));
-$documentRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'], '/\\'));
-$subfolderPath = str_replace($documentRoot, '', $appRootAbsPath);
-if (!empty($subfolderPath) && $subfolderPath !== '/') {
-    $subfolderPath = '/' . trim($subfolderPath, '/') . '/';
-} elseif (empty($subfolderPath)) {
-    $subfolderPath = '/';
-}
-$baseUrl = $protocol . $host . $subfolderPath;
-
-// --- Server-Root-Pfad bestimmen ---
-$projectRoot = $appRootAbsPath;
-
-if ($debugMode) {
-    error_log("DEBUG: Basis-URL: " . $baseUrl);
-    error_log("DEBUG: Projekt-Root: " . $projectRoot);
-}
+// Findet nun in der config_folder.php statt.
+if ($debugMode)
+    error_log("DEBUG (config_folder.php): Basis-URL bestimmt: " . BASE_URL);
 
 
 // --- 2. Universelle Sicherheits-Header & CSP mit Nonce ---
