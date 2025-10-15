@@ -8,7 +8,8 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   6.1.0
+ * @version   7.1.0
+ * @since     ... (ältere Versionen)
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
@@ -24,6 +25,9 @@
  * @since     5.9.0 Umstellung auf zentrale Pfad-Konstanten, direkte Verwendung und Bugfixes.
  * @since     6.0.0 Implementierung einer dynamischen relativen Pfadberechnung für generierte PHP-Dateien.
  * @since     6.1.0 Korrigiert den Zeilenumbruch für Charakternamen im Editor-Modal.
+ * @since     7.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und Behebung des CSRF-Fehlers.
+ * @since     7.1.0 Umstellung des AJAX-Handlers auf FormData zur Behebung des CSRF-Fehlers.
+ * @since     7.1.1 Klleine Korrekturen im JS Teil
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -33,12 +37,12 @@ $debugMode = $debugMode ?? false;
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // === VARIABLEN ===
-$comicPagesPerPage = $comicPagesPerPage ?? 50;
-define('COMIC_PAGES_PER_PAGE', $comicPagesPerPage);
+if (!defined('COMIC_PAGES_PER_PAGE')) {
+    define('COMIC_PAGES_PER_PAGE', 50);
+}
 
 
 // --- HILFSFUNKTIONEN ---
-
 /**
  * Berechnet den relativen Pfad von einem Start- zu einem Zielpfad.
  *
@@ -50,29 +54,22 @@ function getRelativePath(string $from, string $to): string
 {
     $from = str_replace('\\', '/', $from);
     $to = str_replace('\\', '/', $to);
-
     $from = explode('/', rtrim($from, '/'));
     $to = explode('/', rtrim($to, '/'));
     $toFilename = array_pop($to); // Dateinamen für später aufheben
-
     while (count($from) && count($to) && ($from[0] == $to[0])) {
         array_shift($from);
         array_shift($to);
     }
-
     $relativePath = str_repeat('../', count($from));
     $relativePath .= implode('/', $to);
     $relativePath .= '/' . $toFilename;
-
     return $relativePath;
 }
 
-
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
-    $defaults = [
-        'data_editor_comic' => ['last_run_timestamp' => null]
-    ];
+    $defaults = ['data_editor_comic' => ['last_run_timestamp' => null]];
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
         if (!is_dir($dir))
@@ -95,7 +92,6 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
     return file_put_contents($filePath, $jsonContent) !== false;
 }
 
-// --- Comic-Daten Funktionen ---
 function loadJsonData(string $path, bool $debugMode): array
 {
     if (!file_exists($path) || filesize($path) === 0)
@@ -120,18 +116,12 @@ function loadCharacterDataWithSchema(string $path): array
     ];
 }
 
-
 function saveComicData(string $path, array $comics, bool $debugMode): bool
 {
     // Sortiere die Comic-Daten selbst nach ID (Schlüssel)
     ksort($comics);
-
     // Erstelle die finale Datenstruktur für Schema v2
-    $dataToSave = [
-        'schema_version' => 2,
-        'comics' => $comics
-    ];
-
+    $dataToSave = ['schema_version' => 2, 'comics' => $comics];
     $jsonContent = json_encode($dataToSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
     if ($jsonContent === false)
         return false;
@@ -184,26 +174,29 @@ function get_image_cache_local(string $cachePath): array
 
 // --- AJAX-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf_token(); // Zentralisierte CSRF-Prüfung
     ob_end_clean();
     header('Content-Type: application/json');
 
-    $input = file_get_contents('php://input');
-    $requestData = json_decode($input, true);
+    $action = $_POST['action'] ?? '';
+    $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        parse_str($input, $requestData);
-    }
-
-    verify_csrf_token(); // Zentralisierte CSRF-Prüfung
-
-    $action = $requestData['action'] ?? '';
-    $response = ['success' => false, 'message' => ''];
+    $comicVarJsonPath = Path::getData('comic_var.json');
+    $comicImageCacheJsonPath = Path::getCache('comic_image_cache.json');
+    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
 
     switch ($action) {
         case 'save_comic_data':
-            $comicDataToSave = $requestData['comics'] ?? [];
+            $comicDataToSaveStr = $_POST['comics'] ?? '[]';
+            $comicDataToSave = json_decode($comicDataToSaveStr, true);
 
-            $decodedCurrentData = loadJsonData(COMIC_VAR_JSON, $debugMode);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $response['message'] = 'Fehler: Die übermittelten Comic-Daten sind kein gültiges JSON.';
+                http_response_code(400);
+                break;
+            }
+
+            $decodedCurrentData = loadJsonData($comicVarJsonPath, $debugMode);
             $currentData = (isset($decodedCurrentData['schema_version']) && $decodedCurrentData['schema_version'] >= 2) ? ($decodedCurrentData['comics'] ?? []) : $decodedCurrentData;
 
             $newIds = array_keys(array_diff_key($comicDataToSave, $currentData));
@@ -211,10 +204,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $createdCount = 0;
             foreach ($newIds as $id) {
-                $filePath = PUBLIC_COMIC_PATH . DIRECTORY_SEPARATOR . $id . '.php';
+                $filePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
                 if (!file_exists($filePath)) {
-                    // Berechne den relativen Pfad dynamisch
-                    $relativePath = getRelativePath(PUBLIC_COMIC_PATH, COMIC_PAGE_RENDERER_PATH);
+                    $relativePath = getRelativePath(DIRECTORY_PUBLIC_COMIC, Path::getComponent('comic_page_renderer.php'));
                     $phpContent = "<?php require_once __DIR__ . '/" . $relativePath . "'; ?>";
                     if (file_put_contents($filePath, $phpContent) !== false) {
                         $createdCount++;
@@ -224,13 +216,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $deletedCount = 0;
             foreach ($deletedIds as $id) {
-                $filePath = PUBLIC_COMIC_PATH . DIRECTORY_SEPARATOR . $id . '.php';
+                $filePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
                 if (file_exists($filePath) && unlink($filePath)) {
                     $deletedCount++;
                 }
             }
 
-            if (saveComicData(COMIC_VAR_JSON, $comicDataToSave, $debugMode)) {
+            if (saveComicData($comicVarJsonPath, $comicDataToSave, $debugMode)) {
                 $message = "Comic-Daten erfolgreich gespeichert!";
                 if ($createdCount > 0)
                     $message .= " $createdCount PHP-Datei(en) erstellt.";
@@ -242,25 +234,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 http_response_code(500);
             }
             break;
+
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $currentSettings['data_editor_comic']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
+
         case 'update_original_url_cache':
-            $comicIdToUpdate = $requestData['comic_id'] ?? null;
-            $imageUrlToCache = $requestData['image_url'] ?? null;
-            $cacheKey = $requestData['cache_key'] ?? 'url_originalbild';
+            $comicIdToUpdate = $_POST['comic_id'] ?? null;
+            $imageUrlToCache = $_POST['image_url'] ?? null;
+            $cacheKey = $_POST['cache_key'] ?? 'url_originalbild';
 
             if ($comicIdToUpdate && $imageUrlToCache && in_array($cacheKey, ['url_originalbild', 'url_originalsketch'])) {
-                $currentCache = get_image_cache_local(COMIC_IMAGE_CACHE_JSON);
+                $currentCache = get_image_cache_local($comicImageCacheJsonPath);
                 if (!isset($currentCache[$comicIdToUpdate]))
                     $currentCache[$comicIdToUpdate] = [];
                 $currentCache[$comicIdToUpdate][$cacheKey] = $imageUrlToCache;
 
-                if (file_put_contents(COMIC_IMAGE_CACHE_JSON, json_encode($currentCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+                if (file_put_contents($comicImageCacheJsonPath, json_encode($currentCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
                     $response = ['success' => true, 'message' => "Cache für '$cacheKey' von $comicIdToUpdate aktualisiert."];
                 } else {
                     $response['message'] = "Fehler beim Speichern der Cache-Datei.";
@@ -276,16 +270,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $comicEditorSettings = $settings['data_editor_comic'];
 
-$decodedData = loadJsonData(COMIC_VAR_JSON, $debugMode);
+$decodedData = loadJsonData(Path::getData('comic_var.json'), $debugMode);
 $jsonData = (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : $decodedData;
 
-$charaktereData = loadCharacterDataWithSchema(CHARAKTERE_JSON);
-$imageDirs = [PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_HIRES_PATH];
+$charaktereData = loadCharacterDataWithSchema(Path::getData('charaktere.json'));
+$imageDirs = [DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, DIRECTORY_PUBLIC_IMG_COMIC_HIRES];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
-$phpIds = getComicIdsFromPhpFiles(PUBLIC_COMIC_PATH, $debugMode);
+$phpIds = getComicIdsFromPhpFiles(DIRECTORY_PUBLIC_COMIC, $debugMode);
 
 $allIds = array_unique(array_merge(array_keys($jsonData), $imageIds, $phpIds));
 rsort($allIds);
@@ -303,7 +297,6 @@ foreach ($allIds as $id) {
         'charaktere' => []
     ];
     $fullComicData[$id] = array_merge($defaults, $jsonData[$id] ?? []);
-
     $sources = [];
     if (isset($jsonData[$id]))
         $sources[] = 'json';
@@ -316,7 +309,10 @@ foreach ($allIds as $id) {
     $fullComicData[$id]['sources'] = $sources;
 }
 
-$cachedImagesForJs = get_image_cache_local(COMIC_IMAGE_CACHE_JSON);
+$cachedImagesForJs = get_image_cache_local(Path::getCache('comic_image_cache.json'));
+
+$placeholderUrl = Path::getThumbnails('placeholder.jpg');
+$loadingIconUrl = Path::getIcon('loading.webp');
 
 $pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
@@ -327,16 +323,15 @@ $additionalScripts = <<<HTML
     <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 HTML;
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
-<!-- Der restliche HTML, CSS und JavaScript-Code bleibt unverändert... -->
 <article>
     <div class="content-section">
         <div id="settings-and-actions-container">
             <div id="last-run-container">
                 <?php if ($comicEditorSettings['last_run_timestamp']): ?>
-                        <p class="status-message status-info">Letzte Speicherung am
+                    <p class="status-message status-info">Letzte Speicherung am
                         <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
                     </p>
                 <?php endif; ?>
@@ -357,7 +352,7 @@ include TEMPLATE_HEADER;
                 <div class="marker-legend">
                     <strong>Quellen:</strong>
                     <span class="source-marker source-json"
-                        title="Eintrag existiert in <?php echo COMIC_VAR_JSON_FILE ?>">JSON</span>
+                        title="Eintrag existiert in <?php echo 'comic_var.json' ?>">JSON</span>
                     <span class="source-marker source-image"
                         title="Mindestens eine Bilddatei existiert lokal">Bild</span>
                     <span class="source-marker source-php"
@@ -1040,6 +1035,10 @@ include TEMPLATE_HEADER;
         const charaktereInfo = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
         const allCharactersData = charaktereInfo.charactersById;
         const characterGroups = charaktereInfo.groupsWithChars;
+        const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
+        const placeholderUrl = '<?php echo $placeholderUrl; ?>';
+        const loadingIconUrl = '<?php echo $loadingIconUrl; ?>';
+
 
         const tableBody = document.querySelector('#comic-table tbody');
         const saveAllBtn = document.getElementById('save-all-btn');
@@ -1104,7 +1103,7 @@ include TEMPLATE_HEADER;
                 const hasThumb = cachedImages[id]?.thumbnails;
                 const hasSocial = cachedImages[id]?.socialmedia;
                 const hasCharacters = chapter.charaktere && chapter.charaktere.length > 0;
-                const thumbnailPath = (cachedImages[id] && cachedImages[id].thumbnails) ? `../${cachedImages[id].thumbnails}` : (cachedImages['placeholder'] && cachedImages['placeholder'].lowres ? `../${cachedImages['placeholder'].lowres}` : '../assets/comic_thumbnails/placeholder.jpg');
+                const thumbnailPath = (cachedImages[id] && cachedImages[id].thumbnails) ? `${baseUrl}/${cachedImages[id].thumbnails}` : (cachedImages['placeholder'] && cachedImages['placeholder'].lowres ? `${baseUrl}/${cachedImages['placeholder'].lowres}` : placeholderUrl);
 
                 row.innerHTML = `
                 <td>
@@ -1115,7 +1114,7 @@ include TEMPLATE_HEADER;
                 </td>
                 <td>
                     <span class="comic-type-display">${chapter.type || ''}</span>
-                    <img src="${thumbnailPath}" class="comic-thumbnail" alt="Vorschau" onerror="this.src='../assets/comic_thumbnails/placeholder.jpg'; this.onerror=null;">
+                    <img src="${thumbnailPath}" class="comic-thumbnail" alt="Vorschau" onerror="this.src='${placeholderUrl}'; this.onerror=null;">
                 </td>
                 <td class="${isNameMissing ? 'missing-info' : ''}">
                     ${(isChapterMissing || chapter.chapter === null) ? '' : `<strong>Kap. ${chapter.chapter}:</strong><br>`}
@@ -1144,32 +1143,57 @@ include TEMPLATE_HEADER;
             renderPagination();
         };
 
+        function showMessage(message, type, duration = 5000) {
+            messageBox.textContent = message;
+            messageBox.className = `status-message status-${type}`;
+            messageBox.style.display = 'block';
+            if (duration > 0) {
+                setTimeout(() => { messageBox.style.display = 'none'; }, duration);
+            }
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const time = now.toLocaleTimeString('de-DE');
+            const newStatusText = `Letzte Speicherung am ${date} um ${time} Uhr.`;
+            let pElement = lastRunContainer.querySelector('.status-message');
+            if (!pElement) {
+                pElement = document.createElement('p');
+                pElement.className = 'status-message status-info';
+                lastRunContainer.prepend(pElement);
+            }
+            pElement.innerHTML = newStatusText;
+        }
+
+        async function saveSettings() {
+            const formData = new FormData();
+            formData.append('action', 'save_settings');
+            formData.append('csrf_token', csrfToken);
+            await fetch(window.location.href, {
+                method: 'POST',
+                body: formData
+            });
+        }
+
         const renderPagination = () => {
             const totalPages = Math.ceil(filteredComicIds.length / ITEMS_PER_PAGE);
-
             paginationContainers.forEach(container => {
                 container.innerHTML = '';
                 if (totalPages <= 1) return;
-
                 let htmlParts = [];
-
-                // "First" and "Previous" buttons
                 if (currentPage > 1) {
-                    htmlParts.push(`<a data-page="1">&laquo;</a>`); // First
-                    htmlParts.push(`<a data-page="${currentPage - 1}">&lsaquo;</a>`); // Previous
+                    htmlParts.push(`<a data-page="1">&laquo;</a>`);
+                    htmlParts.push(`<a data-page="${currentPage - 1}">&lsaquo;</a>`);
                 }
-
-                // Page numbers logic
                 let startPage = Math.max(1, currentPage - 4);
                 let endPage = Math.min(totalPages, currentPage + 4);
-
                 if (startPage > 1) {
                     htmlParts.push(`<a data-page="1">1</a>`);
                     if (startPage > 2) {
                         htmlParts.push(`<span>...</span>`);
                     }
                 }
-
                 for (let i = startPage; i <= endPage; i++) {
                     if (i === currentPage) {
                         htmlParts.push(`<span class="current-page">${i}</span>`);
@@ -1177,20 +1201,16 @@ include TEMPLATE_HEADER;
                         htmlParts.push(`<a data-page="${i}">${i}</a>`);
                     }
                 }
-
                 if (endPage < totalPages) {
                     if (endPage < totalPages - 1) {
                         htmlParts.push(`<span>...</span>`);
                     }
                     htmlParts.push(`<a data-page="${totalPages}">${totalPages}</a>`);
                 }
-
-                // "Next" and "Last" buttons
                 if (currentPage < totalPages) {
-                    htmlParts.push(`<a data-page="${currentPage + 1}">&rsaquo;</a>`); // Next
-                    htmlParts.push(`<a data-page="${totalPages}">&raquo;</a>`); // Last
+                    htmlParts.push(`<a data-page="${currentPage + 1}">&rsaquo;</a>`);
+                    htmlParts.push(`<a data-page="${totalPages}">&raquo;</a>`);
                 }
-
                 container.innerHTML = htmlParts.join('');
             });
         };
@@ -1230,14 +1250,13 @@ include TEMPLATE_HEADER;
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(updateImagePreviews, 500);
         }
-
         async function updateImagePreviews() {
             const originalFilename = document.getElementById('modal-url').value;
             const sketchFilename = document.getElementById('modal-url-sketch').value;
             const deImg = modalPreviewDe.querySelector('img');
             const enImg = modalPreviewEn.querySelector('img');
             const sketchImg = modalPreviewSketch.querySelector('img');
-            const placeholderSrc = (cachedImages['placeholder'] && cachedImages['placeholder'].lowres) ? `../${cachedImages['placeholder'].lowres}` : '../assets/comic_thumbnails/placeholder.jpg';
+            const placeholderSrc = (cachedImages['placeholder'] && cachedImages['placeholder'].lowres) ? `${baseUrl}/${cachedImages['placeholder'].lowres}` : placeholderUrl;
 
             if (activeEditId === 'new_entry') {
                 deImg.src = placeholderSrc;
@@ -1246,7 +1265,7 @@ include TEMPLATE_HEADER;
                 return;
             }
 
-            deImg.src = (cachedImages[activeEditId] && cachedImages[activeEditId].lowres) ? `../${cachedImages[activeEditId].lowres}` : placeholderSrc;
+            deImg.src = (cachedImages[activeEditId] && cachedImages[activeEditId].lowres) ? `${baseUrl}/${cachedImages[activeEditId].lowres}` : placeholderSrc;
 
             findAndCacheUrl(activeEditId, originalFilename, 'https://cdn.twokinds.keenspot.com/comics/', 'url_originalbild', enImg, placeholderSrc);
             findAndCacheUrl(activeEditId, sketchFilename, 'https://twokindscomic.com/images/', 'url_originalsketch', sketchImg, placeholderSrc);
@@ -1257,19 +1276,15 @@ include TEMPLATE_HEADER;
                 imgElement.src = placeholderSrc;
                 return;
             }
-
             let finalFilename = filename;
             if (cacheKey === 'url_originalsketch') {
                 finalFilename += '_sketch';
             }
-
-            imgElement.src = '../assets/icons/loading.webp';
-
+            imgElement.src = loadingIconUrl;
             if (cachedImages[comicId] && cachedImages[comicId][cacheKey]) {
                 const cachedUrl = new URL(cachedImages[comicId][cacheKey]);
                 const baseCachedUrl = `${cachedUrl.origin}${cachedUrl.pathname}`;
                 const expectedBaseUrl = baseUrl + finalFilename;
-
                 if (baseCachedUrl.includes(expectedBaseUrl)) {
                     imgElement.src = cachedImages[comicId][cacheKey];
                     imgElement.onerror = () => {
@@ -1279,10 +1294,8 @@ include TEMPLATE_HEADER;
                     return;
                 }
             }
-
             const imageExtensions = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
             let currentExtIndex = 0;
-
             function tryNextExtension() {
                 if (currentExtIndex >= imageExtensions.length) {
                     imgElement.src = placeholderSrc;
@@ -1293,39 +1306,32 @@ include TEMPLATE_HEADER;
                 imgElement.src = testUrl;
                 currentExtIndex++;
             }
-
             imgElement.onload = async () => {
                 const foundUrl = new URL(imgElement.src);
                 const baseUrlWithoutQuery = `${foundUrl.origin}${foundUrl.pathname}`;
-
                 const now = new Date();
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const day = String(now.getDate()).padStart(2, '0');
                 const cacheBuster = `?c=${year}${month}${day}`;
-
                 const urlWithBuster = baseUrlWithoutQuery + cacheBuster;
-
                 if (!cachedImages[comicId]) cachedImages[comicId] = {};
                 cachedImages[comicId][cacheKey] = urlWithBuster;
-
                 try {
+                    const formData = new FormData();
+                    formData.append('action', 'update_original_url_cache');
+                    formData.append('comic_id', comicId);
+                    formData.append('image_url', urlWithBuster);
+                    formData.append('cache_key', cacheKey);
+                    formData.append('csrf_token', csrfToken);
                     await fetch(window.location.href, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'update_original_url_cache',
-                            comic_id: comicId,
-                            image_url: urlWithBuster,
-                            cache_key: cacheKey,
-                            csrf_token: csrfToken
-                        })
+                        body: formData
                     });
                 } catch (error) {
                     console.error(`Fehler beim Cachen der URL für ${cacheKey}:`, error);
                 }
             };
-
             imgElement.onerror = tryNextExtension;
             tryNextExtension();
         }
@@ -1342,7 +1348,6 @@ include TEMPLATE_HEADER;
         function renderCharakterSelection(comicId) {
             modalCharaktereSection.innerHTML = '';
             const selectedCharIds = comicData[comicId]?.charaktere || [];
-            /* Doch wieder zu ? und Fehlt geändert. Wird einfach besser lesbar angezeigt! */
             const placeholderUrlUnknown = 'https://placehold.co/60x60/cccccc/333333?text=?';
             const placeholderUrlMissing = 'https://placehold.co/60x60/dc3545/ffffff?text=Fehlt';
 
@@ -1366,7 +1371,7 @@ include TEMPLATE_HEADER;
                     const imageUrl = charInfo.pic_url;
 
                     if (imageUrl) {
-                        img.src = `../${imageUrl}`;
+                        img.src = `${baseUrl}/${imageUrl}`; // Korrigiert
                         img.addEventListener('error', function () {
                             this.onerror = null;
                             this.src = placeholderUrlMissing;
@@ -1433,17 +1438,27 @@ include TEMPLATE_HEADER;
 
         saveAllBtn.addEventListener('click', async () => {
             try {
+                const formData = new FormData();
+                formData.append('action', 'save_comic_data');
+                formData.append('comics', JSON.stringify(comicData));
+                formData.append('csrf_token', csrfToken);
+
                 const response = await fetch(window.location.href, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'save_comic_data', comics: comicData, csrf_token: csrfToken })
+                    body: formData
                 });
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    showMessage(data.message, 'green');
-                    await saveSettings();
-                    updateTimestamp();
-                } else { showMessage(`Fehler: ${data.message}`, 'red'); }
+
+                const responseText = await response.text();
+                try {
+                    const data = JSON.parse(responseText);
+                    if (response.ok && data.success) {
+                        showMessage(data.message, 'green');
+                        await saveSettings();
+                        updateTimestamp();
+                    } else { showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red'); }
+                } catch (e) {
+                    throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
+                }
             } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red'); }
         });
 
@@ -1625,4 +1640,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

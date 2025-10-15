@@ -1,17 +1,17 @@
 <?php
 /**
  * Dies ist die Administrationsseite für den Thumbnail-Generator.
- * 
+ *
  * @file      ROOT/public/admin/generator_thumbnail.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
+ * @version   4.0.0
  * @since     2.6.0 Behebt einen JavaScript ReferenceError aufgrund eines Scope-Problems.
  * @since     2.7.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
- * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur.
+ * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur. * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -25,7 +25,6 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
         'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
-        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
     ];
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
@@ -55,11 +54,11 @@ if ($gdError)
     error_log($gdError);
 
 // Helper-Funktionen
-function getExistingComicIds(string $lowresDir, string $hiresDir, bool $debugMode): array
+function getExistingComicIds(string $hiresDir, string $lowresDir, bool $debugMode): array
 {
     $comicIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    foreach ([$lowresDir, $hiresDir] as $dir) {
+    foreach ([$hiresDir, $lowresDir] as $dir) {
         if (is_dir($dir)) {
             $files = scandir($dir);
             foreach ($files as $file) {
@@ -209,6 +208,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
+
+    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+
     switch ($action) {
         case 'generate_single_thumbnail':
             if ($gdError) {
@@ -224,11 +226,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 http_response_code(400);
             } else {
                 $options = ['quality' => $_POST['quality'] ?? null];
-                $result = generateThumbnail($comicId, $outputFormat, PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_HIRES_PATH, PUBLIC_IMG_COMIC_THUMBNAILS_PATH, $debugMode, $options);
+                $result = generateThumbnail($comicId, $outputFormat, DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC_IMG_COMIC_HIRES . DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS . DIRECTORY_SEPARATOR, $debugMode, $options);
                 if (empty($result['errors'])) {
                     $response['success'] = true;
                     $response['message'] = "Thumbnail für $comicId als .$outputFormat erstellt.";
-                    $response['imageUrl'] = '../assets/comic_thumbnails/' . $comicId . '.' . $outputFormat . '?' . time();
+                    $response['imageUrl'] = Path::getThumbnails($comicId . '.' . $outputFormat) . '?' . time();
                     $response['comicId'] = $comicId;
                 } else {
                     $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
@@ -236,10 +238,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $newThumbnailSettings = ['last_used_format' => $_POST['format'] ?? 'webp', 'last_used_quality' => (int) ($_POST['quality'] ?? 90), 'last_used_lossless' => ($_POST['lossless'] === 'true'), 'last_run_timestamp' => time()];
             $currentSettings['generator_thumbnail'] = $newThumbnailSettings;
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -248,17 +250,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $thumbnailSettings = $settings['generator_thumbnail'];
-$allComicIds = getExistingComicIds(PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_HIRES_PATH, $debugMode);
-$existingThumbnailIds = getExistingThumbnailIds(PUBLIC_IMG_COMIC_THUMBNAILS_PATH, $debugMode);
+$allComicIds = getExistingComicIds(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC_IMG_COMIC_HIRES . DIRECTORY_SEPARATOR, $debugMode);
+$existingThumbnailIds = getExistingThumbnailIds(DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS . DIRECTORY_SEPARATOR, $debugMode);
 $missingThumbnails = findMissingThumbnails($allComicIds, $existingThumbnailIds, $debugMode);
 
 $pageTitle = 'Adminbereich - Thumbnail Generator';
 $pageHeader = 'Thumbnail Generator';
 $siteDescription = 'Seite zum Generieren der Vorschaubilder.';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -761,4 +763,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

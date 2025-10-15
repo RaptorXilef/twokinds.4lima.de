@@ -30,24 +30,22 @@ $nonce = $nonce ?? '';
 
   <!-- Menü-Navigation -->
   <nav id="menu" class="menu">
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user' . $dateiendungPHP; ?>">Benutzer
-      verwalten</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup' . $dateiendungPHP; ?>">Initial Setup</a>
+    </br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user' . $dateiendungPHP; ?>">Benutzer verwalten</a>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_login' . $dateiendungPHP; ?>">Eigene Anmeldedaten
       ändern</a>
-    </br>
-    <a
-      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup' . $dateiendungPHP; ?>">Webseiten-Ersteinrichtung</a>
     </br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image' . $dateiendungPHP; ?>">Bild-Upload</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail' . $dateiendungPHP; ?>">Thumbnail-Generator</a>
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . $dateiendungPHP; ?>">Social
-      Media Vorschau Generator</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . $dateiendungPHP; ?>">Social Media
+      Vorschau Generator</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . $dateiendungPHP; ?>">Bild-Cache-Generator</a>
     </br>
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter
-      Daten Editor</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter Daten
+      Editor</a>
     </br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Daten
       Editor</a>

@@ -1,19 +1,19 @@
 <?php
 /**
  * Administrationsseite zum Generieren der Sitemap.xml.
- * 
+ *
  * @file      ROOT/public/admin/generate_sitemap.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.1
+ * @version   4.0.0
  * @since     2.0.0 Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung und AJAX-basierter Generierung.
  * @since     2.1.0 Anpassung an v2-Schema der comic_var.json und dynamisches Hinzufügen aller Comic-Seiten.
  * @since     2.2.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur und Entfernung redundanter Logik.
- * @since     3.0.1 Die KONSTANTE PUBLIC_COMIC_PATH wird jetzt verwendet, um den Web-Pfad zu den Comic-Seiten dynamisch zu bestimmen.
+ * @since     3.0.1 Die KONSTANTE PUBLIC_COMIC_PATH wird jetzt verwendet, um den Web-Pfad zu den Comic-Seiten dynamisch zu bestimmen. * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -55,20 +55,22 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
  */
 function generateSitemap(bool $debugMode): array
 {
-    global $baseUrl; // Wird von admin_init.php bereitgestellt
+    $sitemapJsonPath = Path::getData('sitemap.json');
+    $comicVarJsonPath = Path::getData('comic_var.json');
+    $sitemapJsonFile = basename($sitemapJsonPath);
 
-    if (!file_exists(SITEMAP_JSON)) {
-        return ['success' => false, 'message' => 'Fehler: Konfigurationsdatei ' . SITEMAP_JSON_FILE . ' nicht gefunden.'];
+    if (!file_exists($sitemapJsonPath)) {
+        return ['success' => false, 'message' => 'Fehler: Konfigurationsdatei ' . $sitemapJsonFile . ' nicht gefunden.'];
     }
 
-    $configContent = file_get_contents(SITEMAP_JSON);
+    $configContent = file_get_contents($sitemapJsonPath);
     $sitemapConfig = json_decode($configContent, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-        return ['success' => false, 'message' => 'Fehler beim Dekodieren von ' . SITEMAP_JSON_FILE . ': ' . json_last_error_msg()];
+        return ['success' => false, 'message' => 'Fehler beim Dekodieren von ' . $sitemapJsonFile . ': ' . json_last_error_msg()];
     }
     if (!isset($sitemapConfig['pages']) || !is_array($sitemapConfig['pages'])) {
-        return ['success' => false, 'message' => 'Fehler: Ungültiges Format in ' . SITEMAP_JSON_FILE . '.'];
+        return ['success' => false, 'message' => 'Fehler: Ungültiges Format in ' . $sitemapJsonFile . '.'];
     }
 
     $xml = new DOMDocument('1.0', 'UTF-8');
@@ -81,12 +83,12 @@ function generateSitemap(bool $debugMode): array
     foreach ($sitemapConfig['pages'] as $page) {
         if (!isset($page['loc']))
             continue;
-        $filePath = PUBLIC_PATH . DIRECTORY_SEPARATOR . ltrim($page['loc'], './');
+        $filePath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($page['loc'], './');
         if (!is_file($filePath))
             continue;
 
         $url = $xml->createElement('url');
-        $locValue = rtrim($baseUrl, '/') . '/' . ltrim($page['loc'], './');
+        $locValue = DIRECTORY_PUBLIC_URL . '/' . ltrim($page['loc'], './');
         $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
         $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($filePath))));
         if (isset($page['changefreq']))
@@ -97,20 +99,17 @@ function generateSitemap(bool $debugMode): array
     }
 
     // Dynamisch Comic-Seiten hinzufügen
-    if (file_exists(COMIC_VAR_JSON)) {
-        $comicJsonContent = file_get_contents(COMIC_VAR_JSON);
+    if (file_exists($comicVarJsonPath)) {
+        $comicJsonContent = file_get_contents($comicVarJsonPath);
         $decodedData = json_decode($comicJsonContent, true);
         $comicData = (is_array($decodedData) && isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : ($decodedData ?? []);
 
-        // ** NEU: Dynamischer Web-Pfad für Comics **
-        $comicWebPath = str_replace(rtrim(PUBLIC_PATH, '/\\'), '', PUBLIC_COMIC_PATH);
-        $comicWebPath = str_replace('\\', '/', $comicWebPath); // Normalisiere für Web-URL
-
         foreach (array_keys($comicData) as $comicId) {
-            $comicFilePath = PUBLIC_COMIC_PATH . DIRECTORY_SEPARATOR . $comicId . '.php';
+            $comicFileName = $comicId . '.php';
+            $comicFilePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $comicFileName;
             if (file_exists($comicFilePath)) {
                 $url = $xml->createElement('url');
-                $locValue = rtrim($baseUrl, '/') . rtrim($comicWebPath, '/') . '/' . $comicId . '.php';
+                $locValue = Path::getComicUrl($comicFileName);
                 $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
                 $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($comicFilePath))));
                 $url->appendChild($xml->createElement('changefreq', 'weekly'));
@@ -120,9 +119,9 @@ function generateSitemap(bool $debugMode): array
         }
     }
 
-    $sitemapOutputPath = PUBLIC_PATH . DIRECTORY_SEPARATOR . 'sitemap.xml';
+    $sitemapOutputPath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'sitemap.xml';
     if ($xml->save($sitemapOutputPath) !== false) {
-        return ['success' => true, 'message' => 'Sitemap.xml erfolgreich generiert.', 'sitemapUrl' => rtrim($baseUrl, '/') . '/sitemap.xml'];
+        return ['success' => true, 'message' => 'Sitemap.xml erfolgreich generiert.', 'sitemapUrl' => DIRECTORY_PUBLIC_URL . '/sitemap.xml'];
     } else {
         return ['success' => false, 'message' => 'Fehler beim Speichern der sitemap.xml.'];
     }
@@ -141,9 +140,10 @@ if (isset($_POST['action'])) {
             $response = generateSitemap($debugMode);
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $currentSettings['generator_sitemap']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -152,13 +152,13 @@ if (isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $sitemapSettings = $settings['generator_sitemap'];
 $pageTitle = 'Adminbereich - Sitemap Generator';
 $pageHeader = 'Sitemap Generator';
 $robotsContent = 'noindex, nofollow';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -173,8 +173,9 @@ include TEMPLATE_HEADER;
             </div>
             <h2>Sitemap Generator</h2>
             <p>Dieses Tool erstellt die <code>sitemap.xml</code>-Datei basierend auf der Konfiguration in
-                <code><?php echo SITEMAP_JSON_FILE; ?></code> und fügt automatisch alle Comic-Seiten aus
-                <code><?php echo COMIC_VAR_JSON_FILE; ?></code> hinzu.
+                <code><?php echo basename(Path::getData('sitemap.json')); ?></code> und fügt automatisch alle
+                Comic-Seiten aus
+                <code><?php echo basename(Path::getData('comic_var.json')); ?></code> hinzu.
                 Die Sitemap wird im Hauptverzeichnis der Webseite abgelegt.
             </p>
 
@@ -324,4 +325,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

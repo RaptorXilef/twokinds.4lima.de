@@ -1,60 +1,68 @@
 <?php
 /**
  * Einmaliges Migrationsskript zur Umstellung der Charakter-Referenzen von Namen auf eindeutige IDs.
- * Migriert die Daten in charaktere.json und comic_var.json in die neue Struktur von Projektversion 2.3.10.0 und früheren Versionen
- * in das neue Format, das in Version 2.4.0.2 eingeführt wurde.
+ * Migriert die Daten in charaktere.json und comic_var.json in die neue Struktur.
  * Ist nur einmalig auszuführen und sollte danach vom Server gelöscht werden.
  *
  * @file      ROOT/public/admin/migration_char_id.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @version   1.1.0
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.0.0
  * @since     1.1.0 Aktualisiert auf neue Konstanten-Struktur und robustere Verarbeitung.
+ * @since     2.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-// Wird nur benötigt, um die Pfad-Konstanten zu laden.
+// Wird nur benötigt, um die Pfad-Konstanten und die Path-Klasse zu laden.
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
 header('Content-Type: text/plain; charset=utf-8');
 
 echo "Starte Charakter-ID-Migration...\n\n";
 
+// --- Dateipfade definieren ---
+$charaktereJsonPath = Path::getData('charaktere.json');
+$comicVarJsonPath = Path::getData('comic_var.json');
+$charaktereJsonFilename = basename($charaktereJsonPath);
+$comicVarJsonFilename = basename($comicVarJsonPath);
+
 // --- Schritt 1: Überprüfen, ob die Migration bereits durchgeführt wurde ---
 $isAlreadyMigrated = false;
-if (file_exists(CHARAKTERE_JSON)) {
-    $currentContent = json_decode(file_get_contents(CHARAKTERE_JSON), true);
+if (file_exists($charaktereJsonPath)) {
+    $currentContent = json_decode(file_get_contents($charaktereJsonPath), true);
     if (isset($currentContent['schema_version']) && $currentContent['schema_version'] >= 2) {
         $isAlreadyMigrated = true;
     }
 }
 
 if ($isAlreadyMigrated) {
-    die("FEHLER: Die Migration scheint bereits durchgeführt worden zu sein (Schema-Version >= 2 in " . CHARAKTERE_JSON_FILE . " erkannt).\nSkript wird beendet, um Datenverlust zu verhindern.\n");
+    die("FEHLER: Die Migration scheint bereits durchgeführt worden zu sein (Schema-Version >= 2 in {$charaktereJsonFilename} erkannt).\nSkript wird beendet, um Datenverlust zu verhindern.\n");
 }
 
 // --- Schritt 2: Backups erstellen ---
 echo "Erstelle Backups...\n";
-$charaktereBackupPath = CHARAKTERE_JSON . '.bak';
-$comicVarBackupPath = COMIC_VAR_JSON . '.bak';
+$charaktereBackupPath = $charaktereJsonPath . '.bak';
+$comicVarBackupPath = $comicVarJsonPath . '.bak';
 
-if (!copy(CHARAKTERE_JSON, $charaktereBackupPath)) {
-    die("FEHLER: Konnte kein Backup von " . CHARAKTERE_JSON_FILE . " erstellen. Breche ab.\n");
+if (file_exists($charaktereJsonPath) && !copy($charaktereJsonPath, $charaktereBackupPath)) {
+    die("FEHLER: Konnte kein Backup von {$charaktereJsonFilename} erstellen. Breche ab.\n");
 }
-echo "  - Backup von " . CHARAKTERE_JSON_FILE . " erstellt: " . basename($charaktereBackupPath) . "\n";
+echo "  - Backup von {$charaktereJsonFilename} erstellt: " . basename($charaktereBackupPath) . "\n";
 
-if (file_exists(COMIC_VAR_JSON) && !copy(COMIC_VAR_JSON, $comicVarBackupPath)) {
-    die("FEHLER: Konnte kein Backup von " . COMIC_VAR_JSON_FILE . " erstellen. Breche ab.\n");
+if (file_exists($comicVarJsonPath) && !copy($comicVarJsonPath, $comicVarBackupPath)) {
+    die("FEHLER: Konnte kein Backup von {$comicVarJsonFilename} erstellen. Breche ab.\n");
 }
-echo "  - Backup von " . COMIC_VAR_JSON_FILE . " erstellt: " . basename($comicVarBackupPath) . "\n\n";
+echo "  - Backup von {$comicVarJsonFilename} erstellt: " . basename($comicVarBackupPath) . "\n\n";
 
 
 // --- Schritt 3: charaktere.json umwandeln ---
-echo "Wandle " . CHARAKTERE_JSON_FILE . " um...\n";
-$oldCharaktereData = json_decode(file_get_contents(CHARAKTERE_JSON), true);
+echo "Wandle {$charaktereJsonFilename} um...\n";
+$oldCharaktereData = json_decode(file_get_contents($charaktereJsonPath), true);
 if (!$oldCharaktereData) {
-    die("FEHLER: " . CHARAKTERE_JSON_FILE . " konnte nicht gelesen oder dekodiert werden.\n");
+    die("FEHLER: {$charaktereJsonFilename} konnte nicht gelesen oder dekodiert werden.\n");
 }
 
 $newCharaktereData = [
@@ -88,22 +96,21 @@ foreach ($oldCharaktereData as $groupName => $characters) {
     $newCharaktereData['groups'][$groupName] = $groupIds;
 }
 
-if (file_put_contents(CHARAKTERE_JSON, json_encode($newCharaktereData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
-    echo "  - " . CHARAKTERE_JSON_FILE . " erfolgreich in das neue ID-Format konvertiert.\n";
+if (file_put_contents($charaktereJsonPath, json_encode($newCharaktereData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+    echo "  - {$charaktereJsonFilename} erfolgreich in das neue ID-Format konvertiert.\n";
     echo "  - " . count($newCharaktereData['characters']) . " eindeutige Charaktere gefunden und IDs zugewiesen.\n\n";
 } else {
-    die("FEHLER: Konnte die neue " . CHARAKTERE_JSON_FILE . " nicht speichern.\n");
+    die("FEHLER: Konnte die neue {$charaktereJsonFilename} nicht speichern.\n");
 }
 
 
 // --- Schritt 4: comic_var.json aktualisieren ---
-echo "Aktualisiere " . COMIC_VAR_JSON_FILE . " mit den neuen Charakter-IDs...\n";
-$comicVarData = json_decode(file_get_contents(COMIC_VAR_JSON), true);
+echo "Aktualisiere {$comicVarJsonFilename} mit den neuen Charakter-IDs...\n";
+$comicVarData = json_decode(file_get_contents($comicVarJsonPath), true);
 if (!$comicVarData) {
-    die("FEHLER: " . COMIC_VAR_JSON_FILE . " konnte nicht gelesen oder dekodiert werden.\n");
+    die("FEHLER: {$comicVarJsonFilename} konnte nicht gelesen oder dekodiert werden.\n");
 }
 
-// NEU: Prüfen, ob comic_var.json bereits das neue Schema hat (z.B. bei Teil-Migration)
 $comicsToUpdate = [];
 if (isset($comicVarData['schema_version']) && $comicVarData['schema_version'] >= 2) {
     $comicsToUpdate = $comicVarData['comics'];
@@ -122,7 +129,7 @@ foreach ($comicsToUpdate as $comicId => &$comicDetails) {
                 $hasChanged = true;
             } else {
                 $updatedChars[] = $charName; // Behalte unbekannte Einträge bei
-                echo "  - WARNUNG: Charakter '$charName' in Comic '$comicId' wurde in " . CHARAKTERE_JSON_FILE . " nicht gefunden und konnte nicht migriert werden.\n";
+                echo "  - WARNUNG: Charakter '$charName' in Comic '$comicId' wurde in {$charaktereJsonFilename} nicht gefunden und konnte nicht migriert werden.\n";
             }
         }
         if ($hasChanged) {
@@ -133,16 +140,15 @@ foreach ($comicsToUpdate as $comicId => &$comicDetails) {
 }
 unset($comicDetails);
 
-// Erstelle die finale Datenstruktur für Schema v2
 $finalComicVarData = [
     'schema_version' => 2,
     'comics' => $comicsToUpdate
 ];
 
-if (file_put_contents(COMIC_VAR_JSON, json_encode($finalComicVarData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
-    echo "  - " . COMIC_VAR_JSON_FILE . " erfolgreich aktualisiert. $updatedComicsCount Comic-Einträge wurden angepasst.\n\n";
+if (file_put_contents($comicVarJsonPath, json_encode($finalComicVarData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+    echo "  - {$comicVarJsonFilename} erfolgreich aktualisiert. $updatedComicsCount Comic-Einträge wurden angepasst.\n\n";
 } else {
-    die("FEHLER: Konnte die aktualisierte " . COMIC_VAR_JSON_FILE . " nicht speichern.\n");
+    die("FEHLER: Konnte die aktualisierte {$comicVarJsonFilename} nicht speichern.\n");
 }
 
 echo "MIGRATION ERFOLGREICH ABGESCHLOSSEN!\n";

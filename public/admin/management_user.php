@@ -8,45 +8,46 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   4.0.0
  * @since     1.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     2.0.0 Vollständige Integration der admin_init.php, Entfernung des redundanten Logout-Buttons und Stil-Anpassungen.
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// === ZENTRALE ADMIN-INITIALISIERUNG (enthält Nonce, CSRF-Setup, Session-Handling) ===
+// === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // --- HILFSFUNKTIONEN ---
 /**
  * Ruft die Liste aller Admin-Benutzer aus der JSON-Datei ab.
- * @uses SECRET_ADMIN_USERS_JSON
  */
 function getUsers(): array
 {
-    if (!file_exists(SECRET_ADMIN_USERS_JSON) || filesize(SECRET_ADMIN_USERS_JSON) === 0) {
+    $usersFile = Path::getSecret('admin_users.json');
+    if (!file_exists($usersFile) || filesize($usersFile) === 0) {
         return [];
     }
-    $content = file_get_contents(SECRET_ADMIN_USERS_JSON);
+    $content = file_get_contents($usersFile);
     $users = json_decode($content, true);
     return is_array($users) ? $users : [];
 }
 
 /**
  * Speichert die Admin-Benutzer in der JSON-Datei.
- * @uses SECRET_ADMIN_USERS_JSON
  */
 function saveUsers(array $users): bool
 {
-    $dir = dirname(SECRET_ADMIN_USERS_JSON);
+    $usersFile = Path::getSecret('admin_users.json');
+    $dir = dirname($usersFile);
     if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
         error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
         return false;
     }
     $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents(SECRET_ADMIN_USERS_JSON, $jsonContent) !== false;
+    return file_put_contents($usersFile, $jsonContent) !== false;
 }
 
 // --- LOGIK ---
@@ -106,7 +107,7 @@ $pageTitle = 'Adminbereich - Benutzerverwaltung';
 $pageHeader = 'Benutzerverwaltung';
 $robotsContent = 'noindex, nofollow';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -247,7 +248,8 @@ include TEMPLATE_HEADER;
 
         <section id="manage-users" class="section-divider">
             <h3>Neuen Benutzer hinzufügen</h3>
-            <form action="management_user.php" method="POST" class="admin-form">
+            <form action="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user.php'; ?>" method="POST"
+                class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                 <input type="hidden" name="action" value="add_user">
                 <div>
@@ -272,7 +274,8 @@ include TEMPLATE_HEADER;
                     <li>
                         <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
                         <?php if ($user !== $currentUser): ?>
-                            <form action="management_user.php" method="POST" class="delete-form">
+                            <form action="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user.php'; ?>" method="POST"
+                                class="delete-form">
                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                 <input type="hidden" name="action" value="delete_user">
                                 <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
@@ -303,6 +306,6 @@ include TEMPLATE_HEADER;
 </script>
 
 <?php
-include TEMPLATE_FOOTER;
+include Path::getTemplatePartial('footer.php');
 ob_end_flush();
 ?>

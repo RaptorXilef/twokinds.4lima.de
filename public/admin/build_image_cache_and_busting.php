@@ -1,20 +1,22 @@
 <?php
 /**
  * Administrationsseite zum Erstellen des Bild-Caches inkl. Cache-Busting.
- * 
- * @file      ROOT/public/admin/build_image_cache_and_busting.php
+ * * @file      ROOT/public/admin/build_image_cache_and_busting.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.1
+ * @version   3.0.0
  * @since     2.0.0 Überarbeitet mit modernem UI, CSP-Konformität und Speicherung der letzten Ausführung in der zentralen Einstellungs-JSON.
  * @since     2.1.0 Pfadanpassungen und Einführung von Konstanten
  * @since     2.1.1 Umstellung auf Template-Pfad-Konstanten
  * @since     2.2.0 Direkte Verwendung von Konstanten anstelle von temporären Variablen.
  * @since     2.3.0 Umstellung auf neue, granulare Asset-Pfad-Konstanten.
+ * @since     3.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
+
+// TODO: Autoreload entfernen
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -22,26 +24,18 @@ $debugMode = $debugMode ?? false;
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// HINWEIS: Es werden keine temporären Pfad-Variablen mehr benötigt. Die Konstanten werden direkt verwendet.
-
-// Die zu scannenden Verzeichnisse werden nun ebenfalls über die neuen, spezifischen globalen Konstanten aufgebaut.
-
-// TODO: KONSTANTEN ANLEGEN FÜR relativen Pfad
+// Die zu scannenden Verzeichnisse werden dynamisch aufgebaut.
 $dirsToScan = [
-    'thumbnails' => ['path' => PUBLIC_IMG_COMIC_THUMBNAILS_PATH, 'relativePath' => 'assets/comic_thumbnails/'],
-    'lowres' => ['path' => PUBLIC_IMG_COMIC_LOWRES_PATH, 'relativePath' => 'assets/comic_lowres/'],
-    'hires' => ['path' => PUBLIC_IMG_COMIC_HIRES_PATH, 'relativePath' => 'assets/comic_hires/'],
-    'socialmedia' => ['path' => PUBLIC_IMG_COMIC_SOCIALMEDIA_PATH, 'relativePath' => 'assets/comic_socialmedia/']
+    'thumbnails' => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS, 'relativePath' => str_replace(DIRECTORY_PUBLIC_URL, '', DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS_URL) . '/'],
+    'lowres' => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, 'relativePath' => str_replace(DIRECTORY_PUBLIC_URL, '', DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL) . '/'],
+    'hires' => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_HIRES, 'relativePath' => str_replace(DIRECTORY_PUBLIC_URL, '', DIRECTORY_PUBLIC_IMG_COMIC_HIRES_URL) . '/'],
+    'socialmedia' => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA, 'relativePath' => str_replace(DIRECTORY_PUBLIC_URL, '', DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA_URL) . '/']
 ];
 
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
-    $defaults = [
-        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
-        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
-        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null]
-    ];
+    $defaults = ['build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null]];
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
         if (!is_dir($dir))
@@ -85,16 +79,17 @@ function scanDirectoryForImagesWithCacheBusting(string $dir, string $relativePat
     foreach (array_keys($baseNames) as $baseName) {
         foreach ($prioritizedExtensions as $ext) {
             $fileName = $baseName . '.' . $ext;
-            $absolutePath = $dir . $fileName;
+            $absolutePath = $dir . DIRECTORY_SEPARATOR . $fileName;
             if (is_file($absolutePath)) {
                 $lastModified = @filemtime($absolutePath) ?: time();
-                $images[$baseName] = $relativePathPrefix . $fileName . '?c=' . $lastModified;
+                $images[$baseName] = ltrim($relativePathPrefix, '/') . $fileName . '?c=' . $lastModified;
                 break;
             }
         }
     }
     return $images;
 }
+
 
 // --- AJAX-Anfrage-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -103,6 +98,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
+
+    $comicImageCacheJsonPath = Path::getCache('comic_image_cache.json');
+    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+
 
     switch ($action) {
         case 'build_cache':
@@ -124,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 exit;
             }
 
-            $existingCache = file_exists(COMIC_IMAGE_CACHE_JSON) ? json_decode(file_get_contents(COMIC_IMAGE_CACHE_JSON), true) : [];
+            $existingCache = file_exists($comicImageCacheJsonPath) ? json_decode(file_get_contents($comicImageCacheJsonPath), true) : [];
             if (!is_array($existingCache))
                 $existingCache = [];
 
@@ -138,23 +137,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $existingCache[$comicId][$currentType] = $path;
                 }
             }
-            if (file_put_contents(COMIC_IMAGE_CACHE_JSON, json_encode($existingCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+            if (file_put_contents($comicImageCacheJsonPath, json_encode($existingCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
                 $response['success'] = true;
                 $response['message'] = 'Cache erfolgreich aktualisiert für: ' . implode(', ', $typesToProcess);
             } else {
                 $response['message'] = 'Fehler: Die Cache-Datei konnte nicht geschrieben werden.';
-                error_log("Fehler beim Schreiben der Cache-Datei: " . COMIC_IMAGE_CACHE_JSON);
+                error_log("Fehler beim Schreiben der Cache-Datei: " . $comicImageCacheJsonPath);
             }
             break;
 
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $newCacheSettings = [
                 'last_run_type' => $_POST['type'] ?? 'unknown',
                 'last_run_timestamp' => time()
             ];
             $currentSettings['build_image_cache'] = $newCacheSettings;
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -164,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 ob_end_flush();
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $cacheSettings = $settings['build_image_cache'];
 
 $pageTitle = 'Adminbereich - Bild-Cache & Busting Generator';
@@ -172,7 +171,7 @@ $pageHeader = 'Bild-Cache & Busting Generator';
 $siteDescription = 'Tool zum Erstellen des Bild-Caches mit Cache-Busting-Parametern.';
 $robotsContent = 'noindex, nofollow';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -187,7 +186,7 @@ include TEMPLATE_HEADER;
         <h2>Cache inkl. Cache-Busting aktualisieren</h2>
         <p>Dieses Tool scannt die Bildverzeichnisse, hängt den Zeitstempel der letzten Dateiänderung als
             Cache-Busting-Parameter an (<code>?c=...</code>) und speichert das Ergebnis in
-            <code><?php echo COMIC_IMAGE_CACHE_JSON_FILE; ?></code>. Dies stellt sicher, dass Browser immer die neuste
+            <code>comic_image_cache.json</code>. Dies stellt sicher, dass Browser immer die neuste
             Version
             eines
             Bildes laden, nachdem es geändert wurde.
@@ -416,4 +415,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

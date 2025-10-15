@@ -8,10 +8,11 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.0.0
+ * @version   4.4.0
  * @since     4.1.0 Integriert das Speichern und Anzeigen der letzten Ausführung konsistent.
  * @since     4.2.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
- * @since     5.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur und Code-Bereinigung.
+ * @since     4.9.0 Vollständige Umstellung auf neueste Konstanten-Struktur und Code-Bereinigung.
+ * @since     5.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -50,10 +51,10 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
 }
 
 // Sicherstellen, dass die Upload-Verzeichnisse existieren
-if (!is_dir(PUBLIC_IMG_COMIC_HIRES_PATH))
-    mkdir(PUBLIC_IMG_COMIC_HIRES_PATH, 0777, true);
-if (!is_dir(PUBLIC_IMG_COMIC_LOWRES_PATH))
-    mkdir(PUBLIC_IMG_COMIC_LOWRES_PATH, 0777, true);
+if (!is_dir(DIRECTORY_PUBLIC_IMG_COMIC_HIRES))
+    mkdir(DIRECTORY_PUBLIC_IMG_COMIC_HIRES, 0777, true);
+if (!is_dir(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES))
+    mkdir(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, 0777, true);
 
 function shortenFilename($filename)
 {
@@ -65,7 +66,7 @@ function shortenFilename($filename)
 function findExistingFileInDir($shortName, $dir)
 {
     $baseName = pathinfo($shortName, PATHINFO_FILENAME);
-    foreach (glob($dir . '/' . $baseName . '.*') as $file) {
+    foreach (glob($dir . DIRECTORY_SEPARATOR . $baseName . '.*') as $file) {
         return $file;
     }
     return null;
@@ -90,19 +91,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $shortName = shortenFilename($file['name']);
-        $tempFilePath = $tempDir . '/' . uniqid() . '_' . $shortName;
+        $tempFilePath = $tempDir . DIRECTORY_SEPARATOR . uniqid() . '_' . $shortName;
 
         if (move_uploaded_file($file['tmp_name'], $tempFilePath)) {
             list($width, $height) = getimagesize($tempFilePath);
-            $targetDir = ($width >= 1800 && $height >= 1000) ? PUBLIC_IMG_COMIC_HIRES_PATH : PUBLIC_IMG_COMIC_LOWRES_PATH;
+            $targetDir = ($width >= 1800 && $height >= 1000) ? DIRECTORY_PUBLIC_IMG_COMIC_HIRES : DIRECTORY_PUBLIC_IMG_COMIC_LOWRES;
             $existingFile = findExistingFileInDir($shortName, $targetDir);
 
             if ($existingFile !== null) {
                 $_SESSION['pending_upload'][$shortName] = ['temp_file' => $tempFilePath, 'existing_file' => $existingFile, 'target_dir' => $targetDir];
-                $existingFileUrl = '../assets/' . basename($targetDir) . '/' . basename($existingFile);
+
+                // Erzeuge eine korrekte, absolute URL für das existierende Bild
+                $relativeExistingPath = str_replace(DIRECTORY_PUBLIC, '', $existingFile);
+                $existingFileUrl = DIRECTORY_PUBLIC_URL . str_replace(DIRECTORY_SEPARATOR, '/', $relativeExistingPath);
+
                 echo json_encode(['status' => 'confirmation_needed', 'short_name' => $shortName, 'existing_image_url' => $existingFileUrl, 'new_image_data_uri' => 'data:image/' . $imageFileType . ';base64,' . base64_encode(file_get_contents($tempFilePath))]);
             } else {
-                $targetPath = $targetDir . '/' . $shortName;
+                $targetPath = $targetDir . DIRECTORY_SEPARATOR . $shortName;
                 if (rename($tempFilePath, $targetPath)) {
                     echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' erfolgreich hochgeladen."]);
                 } else {
@@ -120,6 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         $action = $_POST['action'];
         $response = ['success' => false, 'message' => ''];
+        $settingsFile = Path::getConfig('config_generator_settings.json');
 
         switch ($action) {
             case 'confirm_overwrite':
@@ -134,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($decision === 'yes') {
                     if (file_exists($uploadData['existing_file']))
                         unlink($uploadData['existing_file']);
-                    if (rename($uploadData['temp_file'], $uploadData['target_dir'] . '/' . $shortName)) {
+                    if (rename($uploadData['temp_file'], $uploadData['target_dir'] . DIRECTORY_SEPARATOR . $shortName)) {
                         echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' wurde überschrieben."]);
                     } else {
                         if (file_exists($uploadData['temp_file']))
@@ -149,9 +155,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
 
             case 'save_settings':
-                $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+                $currentSettings = loadGeneratorSettings($settingsFile, $debugMode);
                 $currentSettings['upload_image']['last_run_timestamp'] = time();
-                if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+                if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
                     $response['success'] = true;
                 }
                 break;
@@ -161,14 +167,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $uploadSettings = $settings['upload_image'];
 $pageTitle = 'Adminbereich - Bild-Upload';
 $pageHeader = 'Bild-Upload';
 $siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
 $robotsContent = 'noindex, nofollow';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -206,7 +212,8 @@ include TEMPLATE_HEADER;
                 <br>
                 <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder hochgeladen sind.
             </p>
-            <a href="build_image_cache_and_busting.php?autostart=lowres,hires" class="button">Cache jetzt
+            <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting.php?autostart=lowres,hires'; ?>"
+                class="button">Cache jetzt
                 aktualisieren</a>
         </div>
 
@@ -235,7 +242,6 @@ include TEMPLATE_HEADER;
 </article>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* ... (CSS-Stile bleiben weitgehend unverändert) ... */
     .drag-drop-zone {
         border: 2px dashed #ccc;
         border-radius: 5px;
@@ -479,7 +485,7 @@ include TEMPLATE_HEADER;
             formData.append('file', file);
             formData.append('csrf_token', csrfToken);
 
-            const response = await fetch('upload_image.php', { method: 'POST', body: formData });
+            const response = await fetch('<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image.php' . $dateiendungPHP; ?>', { method: 'POST', body: formData });
             const result = await response.json();
 
             if (result.status === 'confirmation_needed') {
@@ -505,7 +511,7 @@ include TEMPLATE_HEADER;
                     formData.append('decision', decision);
                     formData.append('csrf_token', csrfToken);
 
-                    const response = await fetch('upload_image.php', { method: 'POST', body: formData });
+                    const response = await fetch('<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image.php' . $dateiendungPHP; ?>', { method: 'POST', body: formData });
                     const result = await response.json();
                     addStatusMessage(result.message, result.status);
                     resolve(result);
@@ -560,4 +566,7 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php
+include Path::getTemplatePartial('footer.php');
+ob_end_flush();
+?>

@@ -1,17 +1,17 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der sitemap.json Konfigurationsdatei.
- * 
- * @file      ROOT/public/admin/data_editor_sitemap.php
+ * * @file      ROOT/public/admin/data_editor_sitemap.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
+ * @version   4.0.0
  * @since     2.3.0 Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token.
  * @since     2.4.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.0.0 Implementierung einer fortschrittlichen Paginierung und Code-Modernisierung.
+ * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -21,7 +21,9 @@ $debugMode = $debugMode ?? false;
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // === KONSTANTEN ===
-define('COMIC_PAGES_PER_PAGE', 50);
+if (!defined('COMIC_PAGES_PER_PAGE')) {
+    define('COMIC_PAGES_PER_PAGE', 50);
+}
 
 // --- HILFSFUNKTIONEN ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
@@ -120,6 +122,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
+    $sitemapJsonPath = Path::getData('sitemap.json');
+    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+
+
     switch ($action) {
         case 'save_sitemap':
             $pagesToSaveStr = $_POST['pages'] ?? '[]';
@@ -128,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $response['message'] = 'Fehler: Die übermittelten Seitendaten sind kein gültiges JSON.';
                 http_response_code(400);
-            } elseif (saveSitemapData(SITEMAP_JSON, ['pages' => $allPagesToSave], $debugMode)) {
+            } elseif (saveSitemapData($sitemapJsonPath, ['pages' => $allPagesToSave], $debugMode)) {
                 $response = ['success' => true, 'message' => 'Sitemap-Daten erfolgreich gespeichert!'];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Sitemap-Daten.';
@@ -136,9 +142,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $currentSettings['data_editor_sitemap']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
                 $response['message'] = 'Zeitstempel gespeichert.';
             } else {
@@ -151,24 +157,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $sitemapSettings = $settings['data_editor_sitemap'];
-$sitemapData = loadSitemapData(SITEMAP_JSON, $debugMode);
+$sitemapData = loadSitemapData(Path::getData('sitemap.json'), $debugMode);
 $existingPages = $sitemapData['pages'];
 $generalPages = [];
 $comicPages = [];
+
+$comicPathPrefix = str_replace(DIRECTORY_PUBLIC_URL, '.', DIRECTORY_PUBLIC_COMIC_URL) . '/';
+
+
 foreach ($existingPages as $page) {
-    if (($page['path'] ?? './') === './comic/') {
+    if (($page['path'] ?? './') === $comicPathPrefix) {
         $comicPages[$page['loc']] = $page;
     } else {
         $generalPages[] = $page;
     }
 }
-$foundComicFiles = scanComicDirectory(PUBLIC_COMIC_PATH, $debugMode);
+$foundComicFiles = scanComicDirectory(DIRECTORY_PUBLIC_COMIC, $debugMode);
 foreach ($foundComicFiles as $filename) {
-    $loc = 'comic/' . $filename;
+    $loc = trim($comicPathPrefix, './') . $filename;
     if (!isset($comicPages[$loc])) {
-        $comicPages[$loc] = ['loc' => $loc, 'name' => $filename, 'path' => './comic/', 'priority' => 0.8, 'changefreq' => 'never'];
+        $comicPages[$loc] = ['loc' => $loc, 'name' => $filename, 'path' => $comicPathPrefix, 'priority' => 0.8, 'changefreq' => 'never'];
     }
 }
 ksort($comicPages);
@@ -176,7 +186,7 @@ ksort($comicPages);
 $pageTitle = 'Adminbereich - Sitemap Editor';
 $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow';
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -663,4 +673,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

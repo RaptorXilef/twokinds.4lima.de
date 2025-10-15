@@ -1,18 +1,19 @@
 <?php
 /**
  * Adminseite zum Generieren des RSS-Feeds für die Comic-Webseite.
- * 
+ *
  * @file      ROOT/public/admin/generator_rss.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
+ * @version   4.0.0
  * @since     2.2.0 Design vollständig an den Admin-Standard angepasst.
  * @since     2.3.0 Anpassung an versionierte comic_var.json (Schema v2).
  * @since     2.4.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur und Entfernung redundanter Logik.
+ * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -22,7 +23,7 @@ $debugMode = $debugMode ?? false;
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
 // --- HILFSFUNKTIONEN ---
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+function loadGeneratorSettings(string $filePath): array
 {
     $defaults = [
         'generator_rss' => ['last_run_timestamp' => null]
@@ -43,13 +44,13 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
     return $settings;
 }
 
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+function saveGeneratorSettings(string $filePath, array $settings): bool
 {
     $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
     return file_put_contents($filePath, $jsonContent) !== false;
 }
 
-function loadJsonFile($filePath, $debugMode)
+function loadJsonFile($filePath)
 {
     if (!file_exists($filePath))
         return ['status' => 'error', 'message' => "Datei nicht gefunden: " . basename($filePath), 'data' => null];
@@ -70,21 +71,24 @@ if (isset($_POST['action'])) {
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
 
+    $comicVarJsonPath = Path::getData('comic_var.json');
+    $rssConfigJsonPath = Path::getConfig('config_rss.json');
+    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+
+
     switch ($action) {
         case 'generate_rss':
             try {
-                // Die $baseUrl wird von admin_init.php bereitgestellt.
-
-                $comicDataResult = loadJsonFile(COMIC_VAR_JSON, $debugMode);
-                $rssConfigResult = loadJsonFile(CONFIG_RSS_CONFIG_JSON, $debugMode);
+                $comicDataResult = loadJsonFile($comicVarJsonPath, $debugMode);
+                $rssConfigResult = loadJsonFile($rssConfigJsonPath, $debugMode);
 
                 if ($comicDataResult['status'] !== 'success') {
                     http_response_code(500);
-                    echo json_encode(['success' => false, 'message' => 'Fehler: ' . COMIC_VAR_JSON_FILE . ' konnte nicht geladen werden.']);
+                    echo json_encode(['success' => false, 'message' => 'Fehler: ' . basename($comicVarJsonPath) . ' konnte nicht geladen werden.']);
                     exit;
                 }
 
-                $rssConfig = ['max_items' => 10, 'feed_title' => 'Twokinds in deutsch - Comic-Feed', 'feed_description' => 'Der offizielle RSS-Feed für die neuesten deutschen Übersetzungen von Twokinds.', 'homepage_url' => $baseUrl];
+                $rssConfig = ['max_items' => 10, 'feed_title' => 'Twokinds in deutsch - Comic-Feed', 'feed_description' => 'Der offizielle RSS-Feed für die neuesten deutschen Übersetzungen von Twokinds.', 'homepage_url' => DIRECTORY_PUBLIC_URL];
                 if ($rssConfigResult['status'] === 'success' && is_array($rssConfigResult['data'])) {
                     $rssConfig = array_merge($rssConfig, $rssConfigResult['data']);
                 }
@@ -93,7 +97,7 @@ if (isset($_POST['action'])) {
                 $comicData = (is_array($decodedData) && isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : $decodedData;
 
                 $maxItems = $rssConfig['max_items'];
-                $comicFiles = glob(PUBLIC_COMIC_PATH . DIRECTORY_SEPARATOR . '*.php');
+                $comicFiles = glob(DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . '*.php');
                 if ($comicFiles === false) {
                     http_response_code(500);
                     echo json_encode(['success' => false, 'message' => 'Fehler beim Zugriff auf das Comic-Verzeichnis.']);
@@ -114,9 +118,9 @@ if (isset($_POST['action'])) {
                                 $imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
                                 foreach ($imageExtensions as $ext) {
                                     $imageFileName = $comicId . $ext;
-                                    if (file_exists(PUBLIC_IMG_COMIC_LOWRES_PATH . DIRECTORY_SEPARATOR . $imageFileName)) {
-                                        $comicLink = htmlspecialchars($baseUrl . 'comic/' . basename($filePath));
-                                        $imageUrl = htmlspecialchars($baseUrl . 'assets/comic_lowres/' . $imageFileName);
+                                    if (file_exists(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR . $imageFileName)) {
+                                        $comicLink = htmlspecialchars(Path::getComicUrl(basename($filePath)));
+                                        $imageUrl = htmlspecialchars(Path::getComicLowres($imageFileName));
                                         $imageHtml = '<p><img src="' . $imageUrl . '" alt="' . htmlspecialchars($comicInfo['name']) . '" style="max-width: 100%; height: auto;" /></p>';
                                         $rssItems[] = [
                                             'title' => htmlspecialchars($comicInfo['name']),
@@ -149,9 +153,9 @@ if (isset($_POST['action'])) {
                     }
                 }
 
-                $rssOutputPath = PUBLIC_PATH . DIRECTORY_SEPARATOR . 'rss.xml';
+                $rssOutputPath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'rss.xml';
                 if (file_put_contents($rssOutputPath, $xml->asXML()) !== false) {
-                    $response = ['success' => true, 'message' => 'RSS-Feed erfolgreich erstellt/aktualisiert.', 'rssUrl' => $baseUrl . 'rss.xml'];
+                    $response = ['success' => true, 'message' => 'RSS-Feed erfolgreich erstellt/aktualisiert.', 'rssUrl' => DIRECTORY_PUBLIC_URL . '/rss.xml'];
                 } else {
                     $response['message'] = 'Fehler beim Speichern der rss.xml. Dateiberechtigungen prüfen.';
                     http_response_code(500);
@@ -163,9 +167,9 @@ if (isset($_POST['action'])) {
             break;
 
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $currentSettings['generator_rss']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -174,17 +178,17 @@ if (isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $rssSettings = $settings['generator_rss'];
-$comicDataResult = loadJsonFile(COMIC_VAR_JSON, $debugMode);
-$rssConfigResult = loadJsonFile(CONFIG_RSS_CONFIG_JSON, $debugMode);
+$comicDataResult = loadJsonFile(Path::getData('comic_var.json'), $debugMode);
+$rssConfigResult = loadJsonFile(Path::getConfig('config_rss.json'), $debugMode);
 
 $pageTitle = 'Adminbereich - RSS Generator';
 $pageHeader = 'RSS Feed Generator';
 $siteDescription = 'Seite zum erstellen des RSS-Feeds.';
 $robotsContent = 'noindex, nofollow';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -192,9 +196,9 @@ include TEMPLATE_HEADER;
         <div id="settings-and-actions-container">
             <div id="last-run-container">
                 <?php if ($rssSettings['last_run_timestamp']): ?>
-                            <p class="status-message status-info">Letzte Ausführung am
-                            <?php echo date('d.m.Y \u\m H:i:s', $rssSettings['last_run_timestamp']); ?> Uhr.
-                        </p>
+                    <p class="status-message status-info">Letzte Ausführung am
+                        <?php echo date('d.m.Y \u\m H:i:s', $rssSettings['last_run_timestamp']); ?> Uhr.
+                    </p>
                 <?php endif; ?>
             </div>
 
@@ -204,12 +208,12 @@ include TEMPLATE_HEADER;
 
             <div class="status-list">
                 <div class="status-item">
-                    <?php echo COMIC_VAR_JSON_FILE; ?>:
+                    <?php echo basename(Path::getData('comic_var.json')); ?>:
                     <span
                         class="status-indicator <?php echo ($comicDataResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $comicDataResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
                 </div>
                 <div class="status-item">
-                    <?php echo CONFIG_RSS_CONFIG_JSON_FILE; ?>:
+                    <?php echo basename(Path::getConfig('config_rss.json')); ?>:
                     <span
                         class="status-indicator <?php echo ($rssConfigResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $rssConfigResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
                 </div>
@@ -407,4 +411,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

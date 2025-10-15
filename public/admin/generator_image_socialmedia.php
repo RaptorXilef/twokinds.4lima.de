@@ -8,12 +8,13 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
+ * @version   4.0.0
  * @since     2.0.0 Vollständig überarbeitet mit der intelligenten Logik des Thumbnail-Generators.
  * Bietet Qualitätsregler, verlustfreie Option, eine robuste Fallback-Automatik (WebP -> PNG -> JPG) und speichert Benutzereinstellungen.
  * @since     2.1.0 Integriert Debug-Funktionen.
  * @since     2.2.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur.
+ * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -25,15 +26,10 @@ require_once __DIR__ . '/../../src/components/admin_init.php';
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
-    if ($debugMode)
-        error_log("DEBUG: Lade Einstellungen von: $filePath");
     $defaults = [
-        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
         'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
     ];
     if (!file_exists($filePath)) {
-        if ($debugMode)
-            error_log("DEBUG: Einstellungsdatei nicht gefunden, erstelle Standard.");
         $dir = dirname($filePath);
         if (!is_dir($dir))
             mkdir($dir, 0755, true);
@@ -43,26 +39,17 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
     $content = file_get_contents($filePath);
     $settings = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        if ($debugMode)
-            error_log("DEBUG: Fehler beim Dekodieren der Einstellungs-JSON. Verwende Standardwerte.");
         return $defaults;
     }
     if (!isset($settings['generator_socialmedia']))
         $settings['generator_socialmedia'] = $defaults['generator_socialmedia'];
-    if ($debugMode)
-        error_log("DEBUG: Einstellungen erfolgreich geladen.");
     return $settings;
 }
 
 function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
 {
-    if ($debugMode)
-        error_log("DEBUG: Speichere Einstellungen in: $filePath");
     $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
-    $result = file_put_contents($filePath, $jsonContent);
-    if ($debugMode)
-        error_log($result === false ? "DEBUG: Fehler beim Speichern der Einstellungen." : "DEBUG: Einstellungen erfolgreich gespeichert.");
-    return $result !== false;
+    return file_put_contents($filePath, $jsonContent) !== false;
 }
 
 // GD-Bibliothek-Check
@@ -70,12 +57,9 @@ $gdError = !extension_loaded('gd') ? "FEHLER: Die GD-Bibliothek ist nicht gelade
 if ($gdError)
     error_log($gdError);
 
-
 // Helper-Funktionen
 function getExistingComicIds(string $hiresDir, string $lowresDir, bool $debugMode): array
 {
-    if ($debugMode)
-        error_log("DEBUG: Scanne nach Comic-IDs...");
     $comicIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     foreach ([$hiresDir, $lowresDir] as $dir) {
@@ -89,15 +73,11 @@ function getExistingComicIds(string $hiresDir, string $lowresDir, bool $debugMod
             }
         }
     }
-    if ($debugMode)
-        error_log("DEBUG: " . count($comicIds) . " eindeutige Comic-IDs gefunden.");
     return array_keys($comicIds);
 }
 
 function getExistingSocialMediaImageIds(string $socialMediaImageDir, bool $debugMode): array
 {
-    if ($debugMode)
-        error_log("DEBUG: Scanne nach existierenden Social Media Bildern...");
     $imageIds = [];
     $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     if (is_dir($socialMediaImageDir)) {
@@ -109,17 +89,12 @@ function getExistingSocialMediaImageIds(string $socialMediaImageDir, bool $debug
             }
         }
     }
-    if ($debugMode)
-        error_log("DEBUG: " . count($imageIds) . " Social Media Bilder gefunden.");
     return array_keys($imageIds);
 }
 
 function findMissingSocialMediaImages(array $allComicIds, array $existingImageIds, bool $debugMode): array
 {
-    $missing = array_values(array_diff($allComicIds, $existingImageIds));
-    if ($debugMode)
-        error_log("DEBUG: " . count($missing) . " fehlende Social Media Bilder gefunden.");
-    return $missing;
+    return array_values(array_diff($allComicIds, $existingImageIds));
 }
 
 function generateSocialMediaImage(string $comicId, string $outputFormat, string $resizeMode, string $hiresDir, string $lowresDir, string $socialMediaImageDir, bool $debugMode, array $options = []): array
@@ -252,6 +227,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
+
+    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+
     switch ($action) {
         case 'generate_single_social_media_image':
             if ($gdError) {
@@ -268,12 +246,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 http_response_code(400);
             } else {
                 $options = ['quality' => $_POST['quality'] ?? null];
-                $result = generateSocialMediaImage($comicId, $outputFormat, $resizeMode, PUBLIC_IMG_COMIC_HIRES_PATH, PUBLIC_IMG_COMIC_LOWRES_PATH, PUBLIC_IMG_COMIC_SOCIALMEDIA_PATH, $debugMode, $options);
+                $result = generateSocialMediaImage($comicId, $outputFormat, $resizeMode, DIRECTORY_PUBLIC_IMG_COMIC_HIRES . DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA . DIRECTORY_SEPARATOR, $debugMode, $options);
                 if (empty($result['errors'])) {
                     $response['success'] = true;
                     $response['message'] = "Bild für $comicId als .$outputFormat ($resizeMode) erstellt.";
-                    // Der relative Pfad vom /admin/-Ordner aus ist korrekt und robust.
-                    $response['imageUrl'] = '../assets/comic_socialmedia/' . $comicId . '.' . $outputFormat . '?' . time();
+                    $response['imageUrl'] = Path::getSocialMedia($comicId . '.' . $outputFormat) . '?' . time();
                     $response['comicId'] = $comicId;
                 } else {
                     $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
@@ -282,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $newSocialMediaSettings = [
                 'last_used_format' => $_POST['format'] ?? 'webp',
                 'last_used_quality' => (int) ($_POST['quality'] ?? 90),
@@ -291,7 +268,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 'last_run_timestamp' => time()
             ];
             $currentSettings['generator_socialmedia'] = $newSocialMediaSettings;
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             }
             break;
@@ -300,17 +277,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $socialMediaSettings = $settings['generator_socialmedia'];
-$allComicIds = getExistingComicIds(PUBLIC_IMG_COMIC_HIRES_PATH, PUBLIC_IMG_COMIC_LOWRES_PATH, $debugMode);
-$existingSocialMediaImageIds = getExistingSocialMediaImageIds(PUBLIC_IMG_COMIC_SOCIALMEDIA_PATH, $debugMode);
+$allComicIds = getExistingComicIds(DIRECTORY_PUBLIC_IMG_COMIC_HIRES . DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR, $debugMode);
+$existingSocialMediaImageIds = getExistingSocialMediaImageIds(DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA . DIRECTORY_SEPARATOR, $debugMode);
 $missingSocialMediaImages = findMissingSocialMediaImages($allComicIds, $existingSocialMediaImageIds, $debugMode);
 
 $pageTitle = 'Adminbereich - Social Media Bild-Generator';
 $pageHeader = 'Social Media Bild-Generator';
 $siteDescription = 'Seite zum Generieren der Sozial Media Vorschaubilder.';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -857,4 +834,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

@@ -1,18 +1,19 @@
 <?php
 /**
  * Administrationsseite zum Bearbeiten der archive_chapters.json.
- * 
+ *
  * @file      ROOT/public/admin/data_editor_archiv.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.5.0
+ * @version   4.0.0
  * @since     3.2.0 Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token. Die ursprüngliche UI und PHP-Logik bleiben vollständig erhalten.
  * @since     3.3.0 Umstellung auf zentrale Pfad-Konstanten.
  * @since     3.4.0 Direkte Verwendung von Konstanten anstelle von temporären Variablen.
  * @since     3.5.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
+ * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -25,13 +26,6 @@ require_once __DIR__ . '/../../src/components/admin_init.php';
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = [
-        'generator_thumbnail' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_run_timestamp' => null],
-        'generator_socialmedia' => ['last_used_format' => 'webp', 'last_used_quality' => 90, 'last_used_lossless' => false, 'last_used_resize_mode' => 'crop', 'last_run_timestamp' => null],
-        'build_image_cache' => ['last_run_type' => null, 'last_run_timestamp' => null],
-        'generator_comic' => ['last_run_timestamp' => null],
-        'upload_image' => ['last_run_timestamp' => null],
-        'generator_rss' => ['last_run_timestamp' => null],
-        'data_editor_sitemap' => ['last_run_timestamp' => null],
         'data_editor_archiv' => ['last_run_timestamp' => null]
     ];
     if (!file_exists($filePath)) {
@@ -55,6 +49,7 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
     $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
     return file_put_contents($filePath, $jsonContent) !== false;
 }
+
 
 // --- Archiv-Daten Funktionen ---
 function getChapterSortValue(array $chapter): array
@@ -107,16 +102,18 @@ function saveArchiveChapters(string $path, array $data, bool $debugMode): bool
     return file_put_contents($path, $jsonContent) !== false;
 }
 
+
 // --- AJAX-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Die Sicherheitsprüfung wird zuerst ausgeführt.
     verify_csrf_token();
-
     ob_end_clean();
     header('Content-Type: application/json');
 
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
+
+    $archiveChaptersJsonPath = Path::getData('archive_chapters.json');
+    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
 
     switch ($action) {
         case 'save_archive':
@@ -126,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $response['message'] = 'Fehler: Die übermittelten Kapiteldaten sind kein gültiges JSON.';
                 http_response_code(400);
-            } elseif (saveArchiveChapters(ARCHIVE_CHAPTERS_JSON, $chaptersToSave, $debugMode)) {
+            } elseif (saveArchiveChapters($archiveChaptersJsonPath, $chaptersToSave, $debugMode)) {
                 $response = ['success' => true, 'message' => 'Archiv-Daten erfolgreich in der JSON-Datei gespeichert!'];
             } else {
                 $response['message'] = 'Fehler beim Speichern der Archiv-Daten.';
@@ -134,9 +131,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $currentSettings['data_editor_archiv']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $currentSettings, $debugMode)) {
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
                 $response['message'] = 'Zeitstempel gespeichert.';
             } else {
@@ -150,9 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-$settings = loadGeneratorSettings(CONFIG_GENERATOR_SETTINGS_JSON, $debugMode);
+$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
 $archiveSettings = $settings['data_editor_archiv'];
-$chapters = loadArchiveChapters(ARCHIVE_CHAPTERS_JSON, $debugMode);
+$chapters = loadArchiveChapters(Path::getData('archive_chapters.json'), $debugMode);
 
 $pageTitle = 'Adminbereich - Archiv Editor';
 $pageHeader = 'Archiv Editor';
@@ -164,7 +161,7 @@ $additionalScripts = <<<HTML
     <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 HTML;
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -633,4 +630,4 @@ include TEMPLATE_HEADER;
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>

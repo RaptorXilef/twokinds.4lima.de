@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.4.0
+ * @version   4.0.0
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -31,6 +31,7 @@
  * @since     3.2.3 Fügt die Möglichkeit hinzu, bestehende Gruppennamen zu bearbeiten.
  * @since     3.3.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.4.0 Umstellung auf neue, granulare Asset-Pfad-Konstanten und Korrektur des Renderer-Pfades.
+ * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und Vereinfachung der Bildpfade.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -39,8 +40,8 @@ $debugMode = $debugMode ?? false;
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin_init.php';
 
-// HINWEIS: Der Pfad zu den Charakter-PHP-Seiten wird direkt aus der PUBLIC_CHARAKTERE_PATH-Konstante abgeleitet.
-$charakterePhpPath = PUBLIC_CHARAKTERE_PATH;
+// HINWEIS: Der Pfad zu den Charakter-PHP-Seiten wird direkt aus der DIRECTORY_PUBLIC_CHARAKTERE-Konstante abgeleitet.
+$charakterePhpPath = DIRECTORY_PUBLIC_CHARAKTERE . DIRECTORY_SEPARATOR;
 
 function loadJsonData(string $path): array
 {
@@ -57,12 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_end_clean();
     header('Content-Type: application/json');
 
-    // Die CSRF-Token-Validierung wird von der zentralen Funktion aus admin_init.php übernommen.
+    // FIX: Read from $_POST instead of php://input to align with FormData
     verify_csrf_token();
 
-    $inputData = json_decode(file_get_contents('php://input'), true);
+    $inputDataStr = $_POST['characterData'] ?? '{}';
+    $inputData = json_decode($inputDataStr, true);
+
     if (json_last_error() === JSON_ERROR_NONE && is_array($inputData) && isset($inputData['characters'], $inputData['groups'])) {
-        $currentData = loadJsonData(CHARAKTERE_JSON);
+        $charaktereJsonPath = Path::getData('charaktere.json');
+        $currentData = loadJsonData($charaktereJsonPath);
         $currentCharObjects = $currentData['characters'] ?? [];
         $deletedCount = 0;
         $renamedCount = 0;
@@ -89,15 +93,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
                 if (!file_exists($filePath)) {
-                    // KORREKTUR: Der Pfad zum Renderer muss von der neuen Datei im /public/charaktere/ Verzeichnis aus relativ sein.
-                    $phpContent = "<?php require_once __DIR__ . '/../../src/components/character_page_renderer.php'; ?>";
+                    $relativePathCharacterPageRenderer = getRelativePath(DIRECTORY_PUBLIC_CHARAKTERE, Path::getComponent('character_page_renderer.php'));
+                    $phpContent = "<?php require_once __DIR__ . '/" . $relativePathCharacterPageRenderer . "'; ?>";
                     if (file_put_contents($filePath, $phpContent) !== false) {
                         $createdCount++;
                     }
                 }
             }
         }
-        if (file_put_contents(CHARAKTERE_JSON, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+        if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
             $message = "Charakter-Daten erfolgreich gespeichert.";
             if ($createdCount > 0)
                 $message .= " $createdCount PHP-Datei(en) erstellt.";
@@ -108,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => true, 'message' => $message]);
         } else {
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Fehler beim Schreiben der ' . CHARAKTERE_JSON_FILE . '.']);
+            echo json_encode(['success' => false, 'message' => 'Fehler beim Schreiben der charaktere.json.']);
         }
     } else {
         http_response_code(400);
@@ -117,21 +121,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$allCharaktereData = loadJsonData(CHARAKTERE_JSON);
-$lastSavedTimestamp = file_exists(CHARAKTERE_JSON) ? filemtime(CHARAKTERE_JSON) : null;
+$allCharaktereData = loadJsonData(Path::getData('charaktere.json'));
+$lastSavedTimestamp = file_exists(Path::getData('charaktere.json')) ? filemtime(Path::getData('charaktere.json')) : null;
 $pageTitle = 'Charakter-Datenbank Editor';
 $pageHeader = 'Charakter-Datenbank Editor';
 $robotsContent = 'noindex, nofollow';
 $bodyClass = 'admin-page';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>';
 
-include TEMPLATE_HEADER;
+include Path::getTemplatePartial('header.php');
 ?>
 
 <div class="admin-container">
     <div id="last-run-container">
         <?php if ($lastSavedTimestamp): ?>
-                <p class="status-message status-info">Letzte Speicherung am
+            <p class="status-message status-info">Letzte Speicherung am
                 <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
             </p>
         <?php endif; ?>
@@ -189,9 +193,11 @@ include TEMPLATE_HEADER;
                 <small>Wird für die URL und Anzeige verwendet. Muss eindeutig sein.</small>
             </div>
             <div class="form-group">
-                <label for="modal-pic-url">Bild-Pfad:</label>
+                <label for="modal-pic-url">Bild-Dateiname:</label>
                 <input type="text" id="modal-pic-url">
-                <small>Relativer Pfad, z.B. "assets/img/charaktere/faces/icon_trace.gif"</small>
+                <small>Dateiname der Bilddatei aus dem Ordner <?php echo DIRECTORY_PUBLIC_IMG_CHARAKTERE_PROFILE; ?>,
+                    z.B. "Trace.webp"</small>
+                <!-- <small>Relativer Pfad vom /public/ Ordner aus, z.B. "assets/img/charaktere/faces/icon_trace.gif"</small> -->
             </div>
             <div class="form-group preview-container">
                 <label>Bild-Vorschau:</label>
@@ -622,6 +628,8 @@ include TEMPLATE_HEADER;
         if (!characterData.characters) characterData.characters = {};
         if (!characterData.groups) characterData.groups = {};
 
+        const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
+        const charProfileUrlBase = '<?php echo Path::getCharProfile(''); ?>';
         // UI Elements
         const masterListContainer = document.getElementById('character-master-list');
         const groupsContainer = document.getElementById('character-groups-container');
@@ -634,7 +642,7 @@ include TEMPLATE_HEADER;
         const addToGroupModal = document.getElementById('add-to-group-modal');
         const addToGroupForm = document.getElementById('add-to-group-form');
 
-        const placeholderUrl = 'https://placehold.co/80x80/cccccc/333333?text=Pfad?';
+        const placeholderUrl = 'https://placehold.co/80x80/cccccc/333333?text=Datei?';
         const errorUrl = 'https://placehold.co/80x80/dc3545/ffffff?text=Fehlt';
 
         const getSortedCharacters = () => Object.entries(characterData.characters).sort(([, a], [, b]) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
@@ -645,7 +653,7 @@ include TEMPLATE_HEADER;
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'master-char-entry';
                 entryDiv.dataset.charId = id;
-                const imgSrc = char.pic_url ? `../${char.pic_url}` : placeholderUrl;
+                const imgSrc = char.pic_url ? `${charProfileUrlBase}/${char.pic_url}` : placeholderUrl;
                 entryDiv.innerHTML = `
                 <div>
                     <img src="${imgSrc}" alt="${char.name}">
@@ -684,7 +692,7 @@ include TEMPLATE_HEADER;
                     const char = characterData.characters[charId];
                     const displayName = char ? char.name : `<span style="color:red">[ID nicht gefunden: ${charId}]</span>`;
                     const picUrl = char ? char.pic_url : '';
-                    const imgSrc = picUrl ? `../${picUrl}` : 'https://placehold.co/50x50/cccccc/333333?text=?';
+                    const imgSrc = picUrl ? `${charProfileUrlBase}/${picUrl}` : 'https://placehold.co/50x50/cccccc/333333?text=?';
 
                     const charEntry = document.createElement('div');
                     charEntry.className = 'character-entry';
@@ -743,7 +751,7 @@ include TEMPLATE_HEADER;
         const updateImagePreview = () => {
             const path = editModal.querySelector('#modal-pic-url').value;
             const preview = editModal.querySelector('#modal-image-preview');
-            preview.src = path ? `../${path}` : 'https://placehold.co/100x100/cccccc/333333?text=?';
+            preview.src = path ? `${charProfileUrlBase}/${path}` : 'https://placehold.co/100x100/cccccc/333333?text=?';
             preview.onerror = () => { preview.src = 'https://placehold.co/100x100/dc3545/ffffff?text=X'; };
         };
 
@@ -872,10 +880,13 @@ include TEMPLATE_HEADER;
             dataToSave.characters = { ...characterData.characters };
 
             try {
+                const formData = new FormData();
+                formData.append('csrf_token', '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>');
+                formData.append('characterData', JSON.stringify(dataToSave));
+
                 const response = await fetch('', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>' },
-                    body: JSON.stringify(dataToSave)
+                    body: formData
                 });
                 const result = await response.json();
                 if (result.success) {
@@ -902,10 +913,10 @@ include TEMPLATE_HEADER;
             renderMasterList();
             renderGroups();
         } else {
-            groupsContainer.innerHTML = '<p class="status-message status-red"><strong>Fehler:</strong> Die `<?php echo CHARAKTERE_JSON_FILE ?>` hat ein veraltetes Format. Bitte führe zuerst das Migrationsskript aus: <a href="migration_char_id.php">migration_char_id.php</a></p>';
+            groupsContainer.innerHTML = '<p class="status-message status-red"><strong>Fehler:</strong> Die <code>charaktere.json</code> hat ein veraltetes Format. Bitte führe zuerst das Migrationsskript aus: <a href="${baseUrl}/admin/migration_char_id.php">migration_char_id.php</a></p>';
             masterListContainer.innerHTML = '<p class="status-message status-red">Bitte zuerst migrieren.</p>';
         }
     });
 </script>
 
-<?php include TEMPLATE_FOOTER; ?>
+<?php include Path::getTemplatePartial('footer.php'); ?>
