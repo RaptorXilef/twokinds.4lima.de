@@ -18,6 +18,7 @@
  * @since     2.1.0 Stellt die Link-Struktur auf individuelle PHP-Dateien (/charaktere/Trace.php) wieder her.
  * @since     2.1.1 Code-Bereinigung und Korrektur des Dateipfads im Doc-Block.
  * @since     3.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     3.0.1 BUG-FIX Charakter-Profilbild-URL angepasst an die neue Konfiguration.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -75,7 +76,7 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
                                         $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
                                         if (!empty($characterDetails['pic_url'])) {
                                             // Bild-URL mit DIRECTORY_PUBLIC_URL erstellen
-                                            $imageSrc = DIRECTORY_PUBLIC_URL . '/' . htmlspecialchars($characterDetails['pic_url']);
+                                            $imageSrc = DIRECTORY_PUBLIC_IMG_CHARAKTERE_PROFILE_URL . '/' . htmlspecialchars($characterDetails['pic_url']);
                                         }
                                         ?>
                                         <div class="character-item">

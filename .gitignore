@@ -26,6 +26,10 @@ test*.php
 
 
 
+# --- BUILD ---
+# - Temporäre Build-Artefakte ignorieren -
+/build/
+
 
 
 # --- CONFIG ---
@@ -66,6 +70,7 @@ public/src/layout/js_backup/gtag.js
 public/_links/*
 public/_debug/*
 _Notizen/*
+*Notizen*
 
 
 
