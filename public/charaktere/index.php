@@ -26,7 +26,7 @@ require_once __DIR__ . '/../../src/components/init_public.php';
 // === 2. DATEN VORBEREITEN ===
 // Lade die Charakterdaten, um eine vollständige Liste aller Charakter-IDs zu erstellen.
 $allCharacterIDs = [];
-$charaktereJsonPath = Path::getData('charaktere.json');
+$charaktereJsonPath = Path::getDataPath('charaktere.json');
 if (file_exists($charaktereJsonPath)) {
     $charaktereJsonContent = file_get_contents($charaktereJsonPath);
     $decodedCharaktere = json_decode($charaktereJsonContent, true);
@@ -53,7 +53,7 @@ $canonicalUrl = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/'; // Verweist auf den Ordne
 $robotsContent = 'index, follow';
 
 // === 4. HEADER EINBINDEN ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article class="charaktere-overview">
@@ -71,4 +71,4 @@ require_once Path::getTemplatePartial('header.php');
     ?>
 </article>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

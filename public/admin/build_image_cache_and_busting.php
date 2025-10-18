@@ -99,8 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
 
-    $comicImageCacheJsonPath = Path::getCache('comic_image_cache.json');
-    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+    $comicImageCacheJsonPath = Path::getCachePath('comic_image_cache.json');
+    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
 
     switch ($action) {
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 ob_end_flush();
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $cacheSettings = $settings['build_image_cache'];
 
 $pageTitle = 'Adminbereich - Bild-Cache & Busting Generator';
@@ -171,7 +171,7 @@ $pageHeader = 'Bild-Cache & Busting Generator';
 $siteDescription = 'Tool zum Erstellen des Bild-Caches mit Cache-Busting-Parametern.';
 $robotsContent = 'noindex, nofollow';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -415,4 +415,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

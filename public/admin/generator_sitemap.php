@@ -55,8 +55,8 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
  */
 function generateSitemap(bool $debugMode): array
 {
-    $sitemapJsonPath = Path::getData('sitemap.json');
-    $comicVarJsonPath = Path::getData('comic_var.json');
+    $sitemapJsonPath = Path::getDataPath('sitemap.json');
+    $comicVarJsonPath = Path::getDataPath('comic_var.json');
     $sitemapJsonFile = basename($sitemapJsonPath);
 
     if (!file_exists($sitemapJsonPath)) {
@@ -109,7 +109,7 @@ function generateSitemap(bool $debugMode): array
             $comicFilePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $comicFileName;
             if (file_exists($comicFilePath)) {
                 $url = $xml->createElement('url');
-                $locValue = Url::getComic($comicFileName);
+                $locValue = Url::getComicPageUrl($comicFileName);
                 $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
                 $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($comicFilePath))));
                 $url->appendChild($xml->createElement('changefreq', 'weekly'));
@@ -140,7 +140,7 @@ if (isset($_POST['action'])) {
             $response = generateSitemap($debugMode);
             break;
         case 'save_settings':
-            $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+            $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
             $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $currentSettings['generator_sitemap']['last_run_timestamp'] = time();
             if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
@@ -152,13 +152,13 @@ if (isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $sitemapSettings = $settings['generator_sitemap'];
 $pageTitle = 'Adminbereich - Sitemap Generator';
 $pageHeader = 'Sitemap Generator';
 $robotsContent = 'noindex, nofollow';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -173,9 +173,9 @@ require_once Path::getTemplatePartial('header.php');
             </div>
             <h2>Sitemap Generator</h2>
             <p>Dieses Tool erstellt die <code>sitemap.xml</code>-Datei basierend auf der Konfiguration in
-                <code><?php echo basename(Path::getData('sitemap.json')); ?></code> und fügt automatisch alle
+                <code><?php echo basename(Path::getDataPath('sitemap.json')); ?></code> und fügt automatisch alle
                 Comic-Seiten aus
-                <code><?php echo basename(Path::getData('comic_var.json')); ?></code> hinzu.
+                <code><?php echo basename(Path::getDataPath('comic_var.json')); ?></code> hinzu.
                 Die Sitemap wird im Hauptverzeichnis der Webseite abgelegt.
             </p>
 
@@ -325,4 +325,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

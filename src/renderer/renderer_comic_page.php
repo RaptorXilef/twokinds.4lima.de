@@ -36,11 +36,11 @@ if (!isset($comicData[$currentComicId])) {
     http_response_code(404);
     $pageTitle = 'Seite nicht gefunden (404)';
     $siteDescription = 'Der gesuchte Comic konnte leider nicht gefunden werden.';
-    require_once Path::getTemplatePartial('header.php');
+    require_once Path::getPartialTemplatePath('header.php');
     echo '<h1>404 - Seite nicht gefunden</h1>';
     echo '<p>Leider existiert unter dieser Adresse kein Comic. Möglicherweise haben Sie sich vertippt oder die Seite wurde verschoben.</p>';
     echo '<p><a href="' . htmlspecialchars(DIRECTORY_PUBLIC_URL) . '">Zurück zur neuesten Comicseite</a></p>';
-    require_once Path::getTemplatePartial('footer.php');
+    require_once Path::getPartialTemplatePath('footer.php');
     exit();
 }
 
@@ -88,7 +88,7 @@ $siteDescription = 'TwoKinds auf Deutsch - ' . htmlspecialchars($comicTyp) . ' v
 $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($socialMediaPreviewUrl, '/');
 
 $comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.min.js';
-$comicJsWebUrl = Url::getJs('comic.min.js');
+$comicJsWebUrl = Url::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 $viewportContent = 'width=1099';
@@ -96,7 +96,7 @@ $robotsContent = 'index, follow';
 $canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . $dateiendungPHP;
 
 // === 8. HEADER EINBINDEN ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -348,4 +348,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

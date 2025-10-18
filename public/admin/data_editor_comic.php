@@ -181,9 +181,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
-    $comicVarJsonPath = Path::getData('comic_var.json');
-    $comicImageCacheJsonPath = Path::getCache('comic_image_cache.json');
-    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+    $comicVarJsonPath = Path::getDataPath('comic_var.json');
+    $comicImageCacheJsonPath = Path::getCachePath('comic_image_cache.json');
+    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
     switch ($action) {
         case 'save_comic_data':
@@ -270,13 +270,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $comicEditorSettings = $settings['data_editor_comic'];
 
-$decodedData = loadJsonData(Path::getData('comic_var.json'), $debugMode);
+$decodedData = loadJsonData(Path::getDataPath('comic_var.json'), $debugMode);
 $jsonData = (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : $decodedData;
 
-$charaktereData = loadCharacterDataWithSchema(Path::getData('charaktere.json'));
+$charaktereData = loadCharacterDataWithSchema(Path::getDataPath('charaktere.json'));
 $imageDirs = [DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, DIRECTORY_PUBLIC_IMG_COMIC_HIRES];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
 $phpIds = getComicIdsFromPhpFiles(DIRECTORY_PUBLIC_COMIC, $debugMode);
@@ -309,10 +309,10 @@ foreach ($allIds as $id) {
     $fullComicData[$id]['sources'] = $sources;
 }
 
-$cachedImagesForJs = get_image_cache_local(Path::getCache('comic_image_cache.json'));
+$cachedImagesForJs = get_image_cache_local(Path::getCachePath('comic_image_cache.json'));
 
-$placeholderUrl = Url::getThumbnails('placeholder.jpg');
-$loadingIconUrl = Url::getIcon('loading.webp');
+$placeholderUrl = Url::getImgComicThumbnailsUrl('placeholder.jpg');
+$loadingIconUrl = Url::getImgIconUrl('loading.webp');
 
 $pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
@@ -323,7 +323,7 @@ $additionalScripts = <<<HTML
     <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 HTML;
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -1640,4 +1640,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

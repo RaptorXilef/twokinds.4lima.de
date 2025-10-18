@@ -34,7 +34,7 @@ require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_
 $characterName = basename($_SERVER['SCRIPT_FILENAME'], '.php');
 $characterId = null;
 
-$charaktereJsonPath = Path::getData('charaktere.json');
+$charaktereJsonPath = Path::getDataPath('charaktere.json');
 if (file_exists($charaktereJsonPath)) {
     $charaktereJsonContent = file_get_contents($charaktereJsonPath);
     $charData = json_decode($charaktereJsonContent, true);
@@ -68,12 +68,12 @@ $robotsContent = 'index, follow';
 
 // Spezifisches Stylesheet nur für diese Seite laden
 $cssServerPath = DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_page.min.css';
-$cssWebUrl = Url::getCss(filename: 'character_page.min.css');
+$cssWebUrl = Url::getCssUrl(filename: 'character_page.min.css');
 $cacheBuster = file_exists($cssServerPath) ? '?c=' . filemtime($cssServerPath) : '';
 $additionalHeadContent = '<link nonce="' . htmlspecialchars($nonce) . '" rel="stylesheet" type="text/css" href="' . htmlspecialchars($cssWebUrl . $cacheBuster) . '">';
 
 // === 6. HEADER EINBINDEN ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <div id="characterPage" class="bookmarks-page">
@@ -119,4 +119,4 @@ require_once Path::getTemplatePartial('header.php');
     <?php endif; ?>
 </div>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

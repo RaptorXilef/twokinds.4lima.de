@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
 
-    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
     switch ($action) {
         case 'create_single_comic_page':
@@ -171,10 +171,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $comicSettings = $settings['generator_comic'];
 $comicIdsFromImages = getComicIdsFromImages([DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, DIRECTORY_PUBLIC_IMG_COMIC_HIRES], $debugMode);
-$comicDataFromJson = getComicData(Path::getData('comic_var.json'), $debugMode);
+$comicDataFromJson = getComicData(Path::getDataPath('comic_var.json'), $debugMode);
 $allComicIds = $comicDataFromJson ? array_unique(array_merge(array_keys($comicDataFromJson), $comicIdsFromImages)) : $comicIdsFromImages;
 sort($allComicIds);
 $missingComicPages = getMissingComicPageFiles($allComicIds, DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR, $debugMode);
@@ -183,7 +183,7 @@ $pageTitle = 'Adminbereich - Comic Generator';
 $pageHeader = 'Comic-Seiten-Generator';
 $siteDescription = 'Generiert fehlende Comic-PHP-Seiten basierend auf vorhandenen Bildern und JSON-Daten.';
 $robotsContent = 'noindex, nofollow';
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -577,4 +577,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

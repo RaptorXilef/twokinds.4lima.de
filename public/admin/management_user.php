@@ -26,7 +26,7 @@ require_once __DIR__ . '/../../src/components/admin/init_admin.php';
  */
 function getUsers(): array
 {
-    $usersFile = Path::getSecret('admin_users.json');
+    $usersFile = Path::getSecretPath('admin_users.json');
     if (!file_exists($usersFile) || filesize($usersFile) === 0) {
         return [];
     }
@@ -40,7 +40,7 @@ function getUsers(): array
  */
 function saveUsers(array $users): bool
 {
-    $usersFile = Path::getSecret('admin_users.json');
+    $usersFile = Path::getSecretPath('admin_users.json');
     $dir = dirname($usersFile);
     if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
         error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
@@ -107,7 +107,7 @@ $pageTitle = 'Adminbereich - Benutzerverwaltung';
 $pageHeader = 'Benutzerverwaltung';
 $robotsContent = 'noindex, nofollow';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -305,5 +305,5 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php');
+<?php require_once Path::getPartialTemplatePath('footer.php');
 ob_end_flush(); ?>

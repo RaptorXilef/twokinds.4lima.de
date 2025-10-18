@@ -44,7 +44,7 @@ $pageHeader = 'Fehler 404: Seite nicht gefunden';
 $robotsContent = 'noindex, follow'; // Wichtig für SEO: Seite nicht indexieren
 
 // === 5. HEADER EINBINDEN (mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <!-- ... (unveränderter CSS-Code) ... -->
@@ -107,4 +107,4 @@ require_once Path::getTemplatePartial('header.php');
     </aside>
 </article>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

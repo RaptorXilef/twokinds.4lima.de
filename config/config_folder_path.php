@@ -6,7 +6,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.4
+ * @version   2.1.0
  * @since     1.0.0 Initiale Erstellung
  * @since     1.0.2 Konstanten für wichtige Dateien hinzugefügt.
  * @since     1.0.3 Pfadkonstanten robuster gestaltet: realpath() von abhängigen Pfaden entfernt und durch direkte String-Verkettung mit DIRECTORY_SEPARATOR ersetzt, um Existenzunabhängigkeit zu gewährleisten.

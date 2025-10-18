@@ -45,7 +45,7 @@ $additionalScripts = '
 ';
 
 // === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <!-- Statisches CSS, das die Tailwind-Stile ersetzt, um CSP-konform zu sein -->
@@ -267,4 +267,4 @@ require_once Path::getTemplatePartial('header.php');
     <p>Vielen Dank für Ihre Mithilfe, die Webseite kontinuierlich zu verbessern!</p>
 </div>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

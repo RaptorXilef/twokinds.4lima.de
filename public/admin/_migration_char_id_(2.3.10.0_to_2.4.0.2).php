@@ -24,8 +24,8 @@ header('Content-Type: text/plain; charset=utf-8');
 echo "Starte Charakter-ID-Migration...\n\n";
 
 // --- Dateipfade definieren ---
-$charaktereJsonPath = Path::getData('charaktere.json');
-$comicVarJsonPath = Path::getData('comic_var.json');
+$charaktereJsonPath = Path::getDataPath('charaktere.json');
+$comicVarJsonPath = Path::getDataPath('comic_var.json');
 $charaktereJsonFilename = basename($charaktereJsonPath);
 $comicVarJsonFilename = basename($comicVarJsonPath);
 

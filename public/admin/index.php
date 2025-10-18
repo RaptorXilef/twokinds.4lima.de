@@ -33,7 +33,7 @@ define('LOGIN_BLOCK_SECONDS', 900);
 // --- Hilfsfunktionen (jetzt mit Path-Klasse) ---
 function getUsers(): array
 {
-    $filePath = Path::getSecret('admin_users.json');
+    $filePath = Path::getSecretPath('admin_users.json');
     if (!file_exists($filePath) || filesize($filePath) === 0)
         return [];
     $content = file_get_contents($filePath);
@@ -43,7 +43,7 @@ function getUsers(): array
 
 function saveUsers(array $users): bool
 {
-    $filePath = Path::getSecret('admin_users.json');
+    $filePath = Path::getSecretPath('admin_users.json');
     $dir = dirname($filePath);
     if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
         error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
@@ -55,7 +55,7 @@ function saveUsers(array $users): bool
 
 function getLoginAttempts(): array
 {
-    $filePath = Path::getSecret('login_attempts.json');
+    $filePath = Path::getSecretPath('login_attempts.json');
     if (!file_exists($filePath))
         return [];
     $content = file_get_contents($filePath);
@@ -65,7 +65,7 @@ function getLoginAttempts(): array
 
 function saveLoginAttempts(array $attempts): bool
 {
-    $filePath = Path::getSecret('login_attempts.json');
+    $filePath = Path::getSecretPath('login_attempts.json');
     $dir = dirname($filePath);
     if (!is_dir($dir))
         mkdir($dir, 0755, true);
@@ -171,7 +171,7 @@ $pageHeader = 'Adminbereich - Login';
 $siteDescription = 'Administrationsbereich für die TwoKinds Fan-Übersetzung.';
 $robotsContent = 'noindex, nofollow';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -308,5 +308,5 @@ require_once Path::getTemplatePartial('header.php');
         <?php endif; ?>
     </div>
 </article>
-<?php require_once Path::getTemplatePartial('footer.php');
+<?php require_once Path::getPartialTemplatePath('footer.php');
 ob_end_flush(); ?>

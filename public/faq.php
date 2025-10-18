@@ -26,7 +26,7 @@ $siteDescription = 'Antworten auf häufig gestellte Fragen zum TwoKinds-Comic, d
 $robotsContent = 'index, follow';
 
 // === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -237,4 +237,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

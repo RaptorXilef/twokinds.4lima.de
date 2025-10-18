@@ -88,7 +88,7 @@ if (!empty($comicData)) {
     } else {
         // Fallback, falls die aktuelle Comic-ID nicht gefunden wird.
         if ($debugMode)
-            error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in " . Path::getData('comic_var.json') . " gefunden. Navigation möglicherweise fehlerhaft.");
+            error_log("WARNUNG: Aktuelle Comic ID '{$currentComicId}' nicht in " . Path::getDataPath('comic_var.json') . " gefunden. Navigation möglicherweise fehlerhaft.");
         $isCurrentPageFirst = true;
         $isCurrentPageLatest = true;
     }

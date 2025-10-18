@@ -27,7 +27,7 @@ $debugMode = $debugMode ?? false;
 $charaktereData = [];
 
 // Lade und verarbeite die Charakterdaten nur einmal mit der Path-Klasse
-$charaktereJsonPath = Path::getData('charaktere.json');
+$charaktereJsonPath = Path::getDataPath('charaktere.json');
 if (file_exists($charaktereJsonPath)) {
     $charaktereJsonContent = file_get_contents($charaktereJsonPath);
     $decodedData = json_decode($charaktereJsonContent, true);

@@ -35,18 +35,18 @@ $robotsContent = 'noindex, follow';
 
 // Automatischer Cache-Buster für comic.js
 $comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.js';
-$comicJsWebUrl = Url::getJs('comic.js');
+$comicJsWebUrl = Url::getJsUrl('comic.js');
 $cacheBusterJs = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($comicJsWebUrl . $cacheBusterJs) . '"></script>';
 
 // Spezifisches Stylesheet der Charakter-Seite nur hier laden
 $characterPageCssPathOnServer = DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_page.min.css';
-$characterPageCssWebUrl = Url::getCss('character_page.min.css');
+$characterPageCssWebUrl = Url::getCssUrl('character_page.min.css');
 $cacheBusterCss = file_exists($characterPageCssPathOnServer) ? '?c=' . filemtime($characterPageCssPathOnServer) : '';
 $additionalHeadContent = '<link nonce="' . htmlspecialchars($nonce) . '" rel="stylesheet" type="text/css" href="' . htmlspecialchars($characterPageCssWebUrl . $cacheBusterCss) . '">';
 
 // === 4. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <!-- Stelle die Comic-Daten für comic.js zur Verfügung, damit die Hover-Texte korrekt generiert werden können -->
@@ -105,4 +105,4 @@ fill="currentColor"></path>
     </template>
 </div>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

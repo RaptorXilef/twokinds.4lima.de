@@ -122,8 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
-    $sitemapJsonPath = Path::getData('sitemap.json');
-    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+    $sitemapJsonPath = Path::getDataPath('sitemap.json');
+    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
 
     switch ($action) {
@@ -157,9 +157,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $sitemapSettings = $settings['data_editor_sitemap'];
-$sitemapData = loadSitemapData(Path::getData('sitemap.json'), $debugMode);
+$sitemapData = loadSitemapData(Path::getDataPath('sitemap.json'), $debugMode);
 $existingPages = $sitemapData['pages'];
 $generalPages = [];
 $comicPages = [];
@@ -186,7 +186,7 @@ ksort($comicPages);
 $pageTitle = 'Adminbereich - Sitemap Editor';
 $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow';
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -673,4 +673,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

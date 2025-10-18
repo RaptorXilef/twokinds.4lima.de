@@ -84,7 +84,7 @@ $csrfToken = $_SESSION['csrf_token'] ?? '';
 // Pfad und Cache-Buster für das JavaScript (NEUE METHODE)
 $sessionTimeoutJsFile = 'session_timeout.js';
 $sessionTimeoutJsPathOnServer = DIRECTORY_PUBLIC_ADMIN_JS . DIRECTORY_SEPARATOR . $sessionTimeoutJsFile;
-$sessionTimeoutJsWebUrl = Url::getAdminJs($sessionTimeoutJsFile);
+$sessionTimeoutJsWebUrl = Url::getAdminJsUrl($sessionTimeoutJsFile);
 $cacheBuster = file_exists($sessionTimeoutJsPathOnServer) ? '?c=' . filemtime($sessionTimeoutJsPathOnServer) : '';
 
 // Erzeuge die korrekte, öffentliche URL zum neuen API-Endpunkt.

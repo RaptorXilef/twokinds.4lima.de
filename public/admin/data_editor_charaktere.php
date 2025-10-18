@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inputData = json_decode($inputDataStr, true);
 
     if (json_last_error() === JSON_ERROR_NONE && is_array($inputData) && isset($inputData['characters'], $inputData['groups'])) {
-        $charaktereJsonPath = Path::getData('charaktere.json');
+        $charaktereJsonPath = Path::getDataPath('charaktere.json');
         $currentData = loadJsonData($charaktereJsonPath);
         $currentCharObjects = $currentData['characters'] ?? [];
         $deletedCount = 0;
@@ -121,15 +121,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$allCharaktereData = loadJsonData(Path::getData('charaktere.json'));
-$lastSavedTimestamp = file_exists(Path::getData('charaktere.json')) ? filemtime(Path::getData('charaktere.json')) : null;
+$allCharaktereData = loadJsonData(Path::getDataPath('charaktere.json'));
+$lastSavedTimestamp = file_exists(Path::getDataPath('charaktere.json')) ? filemtime(Path::getDataPath('charaktere.json')) : null;
 $pageTitle = 'Charakter-Datenbank Editor';
 $pageHeader = 'Charakter-Datenbank Editor';
 $robotsContent = 'noindex, nofollow';
 $bodyClass = 'admin-page';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <div class="admin-container">
@@ -629,7 +629,7 @@ require_once Path::getTemplatePartial('header.php');
         if (!characterData.groups) characterData.groups = {};
 
         const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
-        const charProfileUrlBase = '<?php echo Url::getCharProfile(''); ?>';
+        const charProfileUrlBase = '<?php echo Url::getImgCharacterProfileUrl(''); ?>';
         // UI Elements
         const masterListContainer = document.getElementById('character-master-list');
         const groupsContainer = document.getElementById('character-groups-container');
@@ -919,4 +919,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

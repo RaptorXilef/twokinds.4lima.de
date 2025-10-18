@@ -29,7 +29,7 @@ class ImageCache
      */
     private function __construct()
     {
-        $cacheFilePath = Path::getCache('comic_image_cache.json');
+        $cacheFilePath = Path::getCachePath('comic_image_cache.json');
 
         if (file_exists($cacheFilePath)) {
             $content = file_get_contents($cacheFilePath);

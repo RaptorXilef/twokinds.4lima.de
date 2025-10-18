@@ -87,7 +87,7 @@ $siteDescription = 'Tauche ein in die Welt von Twokinds – dem beliebten Fantas
 $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($socialMediaPreviewUrl, './');
 
 $comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.min.js';
-$comicJsWebUrl = Url::getJs('comic.min.js');
+$comicJsWebUrl = Url::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 $viewportContent = 'width=1099';
@@ -95,7 +95,7 @@ $robotsContent = 'index, follow'; // Die Startseite soll indexiert werden
 $canonicalUrl = DIRECTORY_PUBLIC_URL;
 
 // === 5. HEADER EINBINDEN (mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -338,4 +338,4 @@ require_once Path::getTemplatePartial('header.php');
 </script>
 
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

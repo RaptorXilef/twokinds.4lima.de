@@ -18,7 +18,7 @@
 $debugMode = $debugMode ?? false;
 
 $comicData = [];
-$comicVarJsonPath = Path::getData('comic_var.json');
+$comicVarJsonPath = Path::getDataPath('comic_var.json');
 
 if (file_exists($comicVarJsonPath)) {
     $comicJsonContent = file_get_contents($comicVarJsonPath);

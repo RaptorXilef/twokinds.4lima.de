@@ -42,18 +42,18 @@ $requiredFolders = [
 ];
 
 $requiredFiles = [
-    'config_main.php' => ['target' => Path::getConfig('config_main.php'), 'github_path' => 'config/config_main.php'],
-    'config_folder_path.php' => ['target' => Path::getConfig('config_folder_path.php'), 'github_path' => 'config/config_folder_path.php'],
-    'admin_users.json' => ['target' => Path::getSecret('admin_users.json'), 'github_path' => 'config/secrets/admin_users.json'],
-    'login_attempts.json' => ['target' => Path::getSecret('login_attempts.json'), 'github_path' => 'config/secrets/login_attempts.json'],
-    'version.json' => ['target' => Path::getData('version.json'), 'github_path' => 'data/version.json'],
-    'archive_chapters.json' => ['target' => Path::getData('archive_chapters.json'), 'github_path' => 'data/archive_chapters.json'],
-    'charaktere.json' => ['target' => Path::getData('charaktere.json'), 'github_path' => 'data/charaktere.json'],
-    'comic_image_cache.json' => ['target' => Path::getCache('comic_image_cache.json'), 'github_path' => 'data/cache/comic_image_cache.json'],
-    'comic_var.json' => ['target' => Path::getData('comic_var.json'), 'github_path' => 'data/comic_var.json'],
-    'config_generator_settings.json' => ['target' => Path::getConfig('config_generator_settings.json'), 'github_path' => 'config/config_generator_settings.json'],
-    'config_rss.json' => ['target' => Path::getConfig('config_rss.json'), 'github_path' => 'config/config_rss.json'],
-    'sitemap.json' => ['target' => Path::getData('sitemap.json'), 'github_path' => 'data/sitemap.json'],
+    'config_main.php' => ['target' => Path::getConfigPath('config_main.php'), 'github_path' => 'config/config_main.php'],
+    'config_folder_path.php' => ['target' => Path::getConfigPath('config_folder_path.php'), 'github_path' => 'config/config_folder_path.php'],
+    'admin_users.json' => ['target' => Path::getSecretPath('admin_users.json'), 'github_path' => 'config/secrets/admin_users.json'],
+    'login_attempts.json' => ['target' => Path::getSecretPath('login_attempts.json'), 'github_path' => 'config/secrets/login_attempts.json'],
+    'version.json' => ['target' => Path::getDataPath('version.json'), 'github_path' => 'data/version.json'],
+    'archive_chapters.json' => ['target' => Path::getDataPath('archive_chapters.json'), 'github_path' => 'data/archive_chapters.json'],
+    'charaktere.json' => ['target' => Path::getDataPath('charaktere.json'), 'github_path' => 'data/charaktere.json'],
+    'comic_image_cache.json' => ['target' => Path::getCachePath('comic_image_cache.json'), 'github_path' => 'data/cache/comic_image_cache.json'],
+    'comic_var.json' => ['target' => Path::getDataPath('comic_var.json'), 'github_path' => 'data/comic_var.json'],
+    'config_generator_settings.json' => ['target' => Path::getConfigPath('config_generator_settings.json'), 'github_path' => 'config/config_generator_settings.json'],
+    'config_rss.json' => ['target' => Path::getConfigPath('config_rss.json'), 'github_path' => 'config/config_rss.json'],
+    'sitemap.json' => ['target' => Path::getDataPath('sitemap.json'), 'github_path' => 'data/sitemap.json'],
 ];
 
 $message = '';
@@ -153,7 +153,7 @@ function isAlphabeticallySorted(array $data): bool
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
     $action = $_POST['action'] ?? '';
-    $comicVarJsonPath = Path::getData('comic_var.json'); // Definiere den Pfad hier
+    $comicVarJsonPath = Path::getDataPath('comic_var.json'); // Definiere den Pfad hier
 
     switch ($action) {
         case 'create_folders':
@@ -200,14 +200,14 @@ $fileStatuses = getFileStatuses($requiredFiles);
 $allFoldersExist = !in_array(false, array_column($folderStatuses, 'exists'));
 $allFilesExist = !in_array(false, array_column($fileStatuses, 'exists'));
 
-$comicVarJsonPathForCheck = Path::getData('comic_var.json');
+$comicVarJsonPathForCheck = Path::getDataPath('comic_var.json');
 $currentComicData = getComicData($comicVarJsonPathForCheck);
 $jsonFileSorted = $currentComicData === null ? false : isAlphabeticallySorted($currentComicData);
 
 
 $pageTitle = 'Adminbereich - Ersteinrichtung';
 $pageHeader = 'Webseiten-Ersteinrichtung';
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -422,4 +422,4 @@ require_once Path::getTemplatePartial('header.php');
     }
 </style>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

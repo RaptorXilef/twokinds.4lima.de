@@ -49,7 +49,7 @@ if (!function_exists('get_char_image_path')) {
             if ($debugMode) {
                 error_log("FEHLER in get_char_image_path: Unbekannter Bildtyp '{$type}'.");
             }
-            return Url::getImg('placeholder.png');
+            return Url::getImgBannerUrl('placeholder.png');
         }
 
         // Durchsuche die Erweiterungen, um die korrekte Datei zu finden.
@@ -68,7 +68,7 @@ if (!function_exists('get_char_image_path')) {
         }
 
         // Finaler Fallback, wenn keine Datei gefunden wird.
-        return Url::getImg('placeholder.png');
+        return Url::getImgBannerUrl('placeholder.png');
     }
 }
 ?>

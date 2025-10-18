@@ -30,7 +30,7 @@ $robotsContent = 'index, follow';
 $rssFeedUrl = htmlspecialchars(DIRECTORY_PUBLIC_URL) . '/rss.xml';
 
 // === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -81,7 +81,7 @@ require_once Path::getTemplatePartial('header.php');
     <p>Die URL meines RSS-Feeds findest du meist als kleines Icon
         (<a href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/rss.xml" target="_blank" title="Mein RSS-Feed"
             id="rssFeedLink">
-            <img src="<?php echo Url::getIcon('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
+            <img src="<?php echo Url::getImgIconUrl('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
                 class="rss-icon-inline">
         </a>)
         auf meiner Webseite oder du kannst sie direkt hier abrufen: <code><?php echo $rssFeedUrl; ?></code></p>
@@ -193,4 +193,4 @@ require_once Path::getTemplatePartial('header.php');
 
 </article>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

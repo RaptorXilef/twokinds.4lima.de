@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         $action = $_POST['action'];
         $response = ['success' => false, 'message' => ''];
-        $settingsFile = Path::getConfig('config_generator_settings.json');
+        $settingsFile = Path::getConfigPath('config_generator_settings.json');
 
         switch ($action) {
             case 'confirm_overwrite':
@@ -167,14 +167,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $uploadSettings = $settings['upload_image'];
 $pageTitle = 'Adminbereich - Bild-Upload';
 $pageHeader = 'Bild-Upload';
 $siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
 $robotsContent = 'noindex, nofollow';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -566,5 +566,5 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php');
+<?php require_once Path::getPartialTemplatePath('footer.php');
 ob_end_flush(); ?>

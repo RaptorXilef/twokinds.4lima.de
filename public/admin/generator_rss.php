@@ -71,9 +71,9 @@ if (isset($_POST['action'])) {
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
 
-    $comicVarJsonPath = Path::getData('comic_var.json');
-    $rssConfigJsonPath = Path::getConfig('config_rss.json');
-    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+    $comicVarJsonPath = Path::getDataPath('comic_var.json');
+    $rssConfigJsonPath = Path::getConfigPath('config_rss.json');
+    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
 
     switch ($action) {
@@ -119,8 +119,8 @@ if (isset($_POST['action'])) {
                                 foreach ($imageExtensions as $ext) {
                                     $imageFileName = $comicId . $ext;
                                     if (file_exists(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR . $imageFileName)) {
-                                        $comicLink = htmlspecialchars(Url::getComic(basename($filePath)));
-                                        $imageUrl = htmlspecialchars(Url::getComicLowres($imageFileName));
+                                        $comicLink = htmlspecialchars(Url::getComicPageUrl(basename($filePath)));
+                                        $imageUrl = htmlspecialchars(Url::getImgComicLowresUrl($imageFileName));
                                         $imageHtml = '<p><img src="' . $imageUrl . '" alt="' . htmlspecialchars($comicInfo['name']) . '" style="max-width: 100%; height: auto;" /></p>';
                                         $rssItems[] = [
                                             'title' => htmlspecialchars($comicInfo['name']),
@@ -178,17 +178,17 @@ if (isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $rssSettings = $settings['generator_rss'];
-$comicDataResult = loadJsonFile(Path::getData('comic_var.json'), $debugMode);
-$rssConfigResult = loadJsonFile(Path::getConfig('config_rss.json'), $debugMode);
+$comicDataResult = loadJsonFile(Path::getDataPath('comic_var.json'), $debugMode);
+$rssConfigResult = loadJsonFile(Path::getConfigPath('config_rss.json'), $debugMode);
 
 $pageTitle = 'Adminbereich - RSS Generator';
 $pageHeader = 'RSS Feed Generator';
 $siteDescription = 'Seite zum erstellen des RSS-Feeds.';
 $robotsContent = 'noindex, nofollow';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -208,12 +208,12 @@ require_once Path::getTemplatePartial('header.php');
 
             <div class="status-list">
                 <div class="status-item">
-                    <?php echo basename(Path::getData('comic_var.json')); ?>:
+                    <?php echo basename(Path::getDataPath('comic_var.json')); ?>:
                     <span
                         class="status-indicator <?php echo ($comicDataResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $comicDataResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
                 </div>
                 <div class="status-item">
-                    <?php echo basename(Path::getConfig('config_rss.json')); ?>:
+                    <?php echo basename(Path::getConfigPath('config_rss.json')); ?>:
                     <span
                         class="status-indicator <?php echo ($rssConfigResult['status'] === 'success') ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $rssConfigResult['status'] === 'success' ? 'OK' : 'Fehler'; ?></span>
                 </div>
@@ -411,4 +411,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

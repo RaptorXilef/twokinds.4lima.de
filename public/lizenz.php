@@ -26,7 +26,7 @@ $siteDescription = 'Informationen zu den Creative Commons-Lizenzen, unter denen 
 $robotsContent = 'index, follow';
 
 // === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -87,4 +87,4 @@ require_once Path::getTemplatePartial('header.php');
     Quelle: <a href="https://twokinds.keenspot.com/license/"> https://twokinds.keenspot.com/license/ </a>
 </article>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

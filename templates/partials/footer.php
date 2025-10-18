@@ -25,7 +25,7 @@ $versionInfo = [
 ];
 
 // Lade Versions-Informationen mit der neuen Path-Klasse
-$versionJsonPath = Path::getData('version.json');
+$versionJsonPath = Path::getDataPath('version.json');
 if (file_exists($versionJsonPath)) {
     $versionContent = file_get_contents($versionJsonPath);
     $decodedVersion = json_decode($versionContent, true);

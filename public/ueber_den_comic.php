@@ -46,7 +46,7 @@ $birthdateFelix = new DateTime('1993-03-29');
 $ageFelix = $today->diff($birthdateFelix)->y;
 
 // Bild-Pfad für den Übersetzer mit Cache-Buster (NEUE METHODE)
-$felixImageWebUrl = Url::getImg('about/Felix.webp');
+$felixImageWebUrl = Url::getImgBannerUrl('about/Felix.webp');
 $felixImagePathOnServer = DIRECTORY_PUBLIC_IMG_ABOUT . DIRECTORY_SEPARATOR . 'Felix.webp';
 if (file_exists($felixImagePathOnServer)) {
 	$felixImageWebUrl .= '?c=' . filemtime($felixImagePathOnServer);
@@ -58,7 +58,7 @@ $siteDescription = 'Erfahre alles über den Webcomic TwoKinds, den Künstler Tom
 $robotsContent = 'index, follow';
 
 // === 5. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 <section>
 	<h2 class="page-header">Über den Comic</h2>
@@ -183,4 +183,4 @@ require_once Path::getTemplatePartial('header.php');
 		ausleben zu können.</p>
 </section>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

@@ -32,7 +32,7 @@ $robotsContent = 'index, follow';
 
 // Füge die charaktere.js mit Cache-Busting und Nonce hinzu
 $charaktereJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'charaktere.js';
-$charaktereJsWebUrl = Url::getJs('charaktere.js');
+$charaktereJsWebUrl = Url::getJsUrl('charaktere.js');
 $cacheBuster = file_exists($charaktereJsPathOnServer) ? '?c=' . filemtime($charaktereJsPathOnServer) : '';
 
 $additionalScripts = '
@@ -65,7 +65,7 @@ $additionalHeadContent = '
 ';
 
 // === 4. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 <header hidden>
     <h1 class="page-header">Charaktere</h1>
@@ -999,4 +999,4 @@ require_once Path::getTemplatePartial('header.php');
 
 </section>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

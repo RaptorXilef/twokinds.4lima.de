@@ -112,8 +112,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
-    $archiveChaptersJsonPath = Path::getData('archive_chapters.json');
-    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+    $archiveChaptersJsonPath = Path::getDataPath('archive_chapters.json');
+    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
     switch ($action) {
         case 'save_archive':
@@ -147,9 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $archiveSettings = $settings['data_editor_archiv'];
-$chapters = loadArchiveChapters(Path::getData('archive_chapters.json'), $debugMode);
+$chapters = loadArchiveChapters(Path::getDataPath('archive_chapters.json'), $debugMode);
 
 $pageTitle = 'Adminbereich - Archiv Editor';
 $pageHeader = 'Archiv Editor';
@@ -161,7 +161,7 @@ $additionalScripts = <<<HTML
     <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 HTML;
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -630,4 +630,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

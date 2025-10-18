@@ -55,9 +55,9 @@ function loadJsonFile(string $path, bool $debugMode, string $fileName): ?array
 }
 
 // Lade JSON-Daten mit der Path-Klasse
-$archiveChapters = loadJsonFile(Path::getData('archive_chapters.json'), $debugMode, 'archive_chapters.json') ?? [];
-$rawComicData = loadJsonFile(Path::getData('comic_var.json'), $debugMode, 'comic_var.json');
-$imageCache = loadJsonFile(Path::getCache('comic_image_cache.json'), $debugMode, 'comic_image_cache.json') ?? [];
+$archiveChapters = loadJsonFile(Path::getDataPath('archive_chapters.json'), $debugMode, 'archive_chapters.json') ?? [];
+$rawComicData = loadJsonFile(Path::getDataPath('comic_var.json'), $debugMode, 'comic_var.json');
+$imageCache = loadJsonFile(Path::getCachePath('comic_image_cache.json'), $debugMode, 'comic_image_cache.json') ?? [];
 
 // *** ANPASSUNG FÜR V2-SCHEMA ***
 $comicData = [];
@@ -145,12 +145,12 @@ $siteDescription = 'Das vollständige Archiv aller TwoKinds-Comics, übersichtli
 $robotsContent = 'index, follow';
 
 $archiveJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'archive.js';
-$archiveJsWebUrl = Url::getJs('archive.js');
+$archiveJsWebUrl = Url::getJsUrl('archive.js');
 $cacheBuster = file_exists($archiveJsPathOnServer) ? '?c=' . filemtime($archiveJsPathOnServer) : '';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($archiveJsWebUrl . $cacheBuster) . '"></script>';
 
 // === 5. HEADER EINBINDEN (mit Path-Klasse) ===
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -210,4 +210,4 @@ require_once Path::getTemplatePartial('header.php');
     <?php endif; ?>
 </article>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>

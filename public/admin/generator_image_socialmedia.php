@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $action = $_POST['action'];
     $response = ['success' => false, 'message' => ''];
 
-    $generatorSettingsJsonPath = Path::getConfig('config_generator_settings.json');
+    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
     switch ($action) {
         case 'generate_single_social_media_image':
@@ -250,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 if (empty($result['errors'])) {
                     $response['success'] = true;
                     $response['message'] = "Bild für $comicId als .$outputFormat ($resizeMode) erstellt.";
-                    $response['imageUrl'] = Url::getSocialMedia($comicId . '.' . $outputFormat) . '?' . time();
+                    $response['imageUrl'] = Url::getImgComicSocialMediaUrl($comicId . '.' . $outputFormat) . '?' . time();
                     $response['comicId'] = $comicId;
                 } else {
                     $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
@@ -277,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfig('config_generator_settings.json'), $debugMode);
+$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $socialMediaSettings = $settings['generator_socialmedia'];
 $allComicIds = getExistingComicIds(DIRECTORY_PUBLIC_IMG_COMIC_HIRES . DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR, $debugMode);
 $existingSocialMediaImageIds = getExistingSocialMediaImageIds(DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA . DIRECTORY_SEPARATOR, $debugMode);
@@ -287,7 +287,7 @@ $pageTitle = 'Adminbereich - Social Media Bild-Generator';
 $pageHeader = 'Social Media Bild-Generator';
 $siteDescription = 'Seite zum Generieren der Sozial Media Vorschaubilder.';
 
-require_once Path::getTemplatePartial('header.php');
+require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
@@ -834,4 +834,4 @@ require_once Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php require_once Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>
