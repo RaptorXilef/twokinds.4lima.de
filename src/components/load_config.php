@@ -18,7 +18,8 @@ include_once __DIR__ . '/../../config/config_main.php';
 include_once __DIR__ . '/../../config/config_folder_path.php';
 
 // Lädt die neue Path-Helfer-Klasse für dynamische Pfad-Generierung.
-include_once 'helper_path.php';
+include_once 'Path.php';
+include_once 'Url.php';
 
 
 
