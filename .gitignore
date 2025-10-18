@@ -57,6 +57,12 @@ public/comic/*
 
 
 
+# --- RESOURCES ---
+# favicon
+!resources/favicon/*.psd
+
+
+
 
 # --- SRC ---
 

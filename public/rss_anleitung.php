@@ -19,7 +19,7 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../src/components/public_init.php';
+require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'So nutzen Sie RSS-Feeds';
@@ -81,7 +81,7 @@ require_once Path::getTemplatePartial('header.php');
     <p>Die URL meines RSS-Feeds findest du meist als kleines Icon
         (<a href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/rss.xml" target="_blank" title="Mein RSS-Feed"
             id="rssFeedLink">
-            <img src="<?php echo Path::getIcon('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
+            <img src="<?php echo Url::getIcon('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
                 class="rss-icon-inline">
         </a>)
         auf meiner Webseite oder du kannst sie direkt hier abrufen: <code><?php echo $rssFeedUrl; ?></code></p>
@@ -193,7 +193,4 @@ require_once Path::getTemplatePartial('header.php');
 
 </article>
 
-<?php
-// === FUSSZEILE EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

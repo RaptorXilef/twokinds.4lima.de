@@ -18,10 +18,10 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../src/components/public_init.php';
+require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
-require_once Path::getComponent('load_comic_data.php');
+require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'load_comic_data.php';
 
 // === 3. DATENVERARBEITUNG ===
 // Ermittelt die Anzahl der Comic-Seiten und Lückenfüller.
@@ -46,7 +46,7 @@ $birthdateFelix = new DateTime('1993-03-29');
 $ageFelix = $today->diff($birthdateFelix)->y;
 
 // Bild-Pfad für den Übersetzer mit Cache-Buster (NEUE METHODE)
-$felixImageWebUrl = Path::getImg('about/Felix.webp');
+$felixImageWebUrl = Url::getImg('about/Felix.webp');
 $felixImagePathOnServer = DIRECTORY_PUBLIC_IMG_ABOUT . DIRECTORY_SEPARATOR . 'Felix.webp';
 if (file_exists($felixImagePathOnServer)) {
 	$felixImageWebUrl .= '?c=' . filemtime($felixImagePathOnServer);
@@ -183,7 +183,4 @@ require_once Path::getTemplatePartial('header.php');
 		ausleben zu können.</p>
 </section>
 
-<?php
-// === FUSSZEILE EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

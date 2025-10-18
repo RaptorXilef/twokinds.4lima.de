@@ -2,7 +2,7 @@
 /**
  * Diese Datei zeigt Details zu den Charakteren des Comics an.
  * Version 2.0: Vollständig an die neue, sichere Architektur mit
- * public_init.php und einem zentralen Bild-Helfer angepasst.
+ * init_public.php und einem zentralen Bild-Helfer angepasst.
  * 
  * @file      ROOT/public/charaktere.php
  * @package   twokinds.4lima.de
@@ -20,10 +20,10 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../src/components/public_init.php';
+require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
-require_once Path::getComponent('character_image_helper.php');
+require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_character_image.php';
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Charaktere';
@@ -32,7 +32,7 @@ $robotsContent = 'index, follow';
 
 // Füge die charaktere.js mit Cache-Busting und Nonce hinzu
 $charaktereJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'charaktere.js';
-$charaktereJsWebUrl = Path::getJsUrl('charaktere.js');
+$charaktereJsWebUrl = Url::getJs('charaktere.js');
 $cacheBuster = file_exists($charaktereJsPathOnServer) ? '?c=' . filemtime($charaktereJsPathOnServer) : '';
 
 $additionalScripts = '

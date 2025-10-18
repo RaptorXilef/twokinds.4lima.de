@@ -2,7 +2,7 @@
 /**
  * Index-Seite für die Charakter-Übersicht.
  * Diese Seite lädt alle Charaktere aus der charaktere.json und zeigt sie
- * mithilfe der wiederverwendeten character_display.php Komponente an.
+ * mithilfe der wiederverwendeten display_character.php Komponente an.
  * 
  * @file      ROOT/public/charaktere/index.php
  * @package   twokinds.4lima.de
@@ -21,7 +21,7 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../../src/components/public_init.php';
+require_once __DIR__ . '/../../src/components/init_public.php';
 
 // === 2. DATEN VORBEREITEN ===
 // Lade die Charakterdaten, um eine vollständige Liste aller Charakter-IDs zu erstellen.
@@ -38,7 +38,7 @@ if (file_exists($charaktereJsonPath)) {
 }
 
 // Erstelle einen "virtuellen" Comic-Eintrag, der alle Charaktere enthält.
-// Dies ermöglicht uns, die character_display.php Komponente ohne Änderungen wiederzuverwenden.
+// Dies ermöglicht uns, die display_character.php Komponente ohne Änderungen wiederzuverwenden.
 $currentComicId = 'all_characters';
 $comicData = [
     $currentComicId => [
@@ -67,11 +67,8 @@ require_once Path::getTemplatePartial('header.php');
     // === 5. CHARAKTER-ANZEIGE KOMPONENTE EINBINDEN ===
     // Setze die Variable, um die Standard-Überschrift in der Komponente auszublenden.
     $showCharacterSectionTitle = false;
-    require_once Path::getComponent('character_display.php');
+    require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
 </article>
 
-<?php
-// === 6. FOOTER EINBINDEN ===
-require_once Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

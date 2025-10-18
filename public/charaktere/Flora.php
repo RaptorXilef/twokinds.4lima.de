@@ -15,5 +15,5 @@
  * @version   1.0.0
  */
 
-require_once __DIR__ . '/../src/components/character_page_renderer.php';
+require_once __DIR__ . '/../../src/renderer/renderer_character_page.php';
 ?>

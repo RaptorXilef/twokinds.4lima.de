@@ -20,7 +20,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- HILFSFUNKTIONEN ---
 function loadGeneratorSettings(string $filePath): array
@@ -119,8 +119,8 @@ if (isset($_POST['action'])) {
                                 foreach ($imageExtensions as $ext) {
                                     $imageFileName = $comicId . $ext;
                                     if (file_exists(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR . $imageFileName)) {
-                                        $comicLink = htmlspecialchars(Path::getComicUrl(basename($filePath)));
-                                        $imageUrl = htmlspecialchars(Path::getComicLowres($imageFileName));
+                                        $comicLink = htmlspecialchars(Url::getComic(basename($filePath)));
+                                        $imageUrl = htmlspecialchars(Url::getComicLowres($imageFileName));
                                         $imageHtml = '<p><img src="' . $imageUrl . '" alt="' . htmlspecialchars($comicInfo['name']) . '" style="max-width: 100%; height: auto;" /></p>';
                                         $rssItems[] = [
                                             'title' => htmlspecialchars($comicInfo['name']),
@@ -188,7 +188,7 @@ $pageHeader = 'RSS Feed Generator';
 $siteDescription = 'Seite zum erstellen des RSS-Feeds.';
 $robotsContent = 'noindex, nofollow';
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -411,4 +411,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

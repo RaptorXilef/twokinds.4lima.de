@@ -38,7 +38,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // HINWEIS: Der Pfad zu den Charakter-PHP-Seiten wird direkt aus der DIRECTORY_PUBLIC_CHARAKTERE-Konstante abgeleitet.
 $charakterePhpPath = DIRECTORY_PUBLIC_CHARAKTERE . DIRECTORY_SEPARATOR;
@@ -93,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
                 if (!file_exists($filePath)) {
-                    $relativePathCharacterPageRenderer = getRelativePath(DIRECTORY_PUBLIC_CHARAKTERE, Path::getComponent('character_page_renderer.php'));
+                    $relativePathCharacterPageRenderer = getRelativePath(DIRECTORY_PUBLIC_CHARAKTERE, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_character_page.php'); // TODO: lösen: Netzwerkfehler: Unexpected token '<', "<br /> <b>"... is not valid JSON
                     $phpContent = "<?php require_once __DIR__ . '/" . $relativePathCharacterPageRenderer . "'; ?>";
                     if (file_put_contents($filePath, $phpContent) !== false) {
                         $createdCount++;
@@ -129,7 +129,7 @@ $robotsContent = 'noindex, nofollow';
 $bodyClass = 'admin-page';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>';
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <div class="admin-container">
@@ -629,7 +629,7 @@ include Path::getTemplatePartial('header.php');
         if (!characterData.groups) characterData.groups = {};
 
         const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
-        const charProfileUrlBase = '<?php echo Path::getCharProfile(''); ?>';
+        const charProfileUrlBase = '<?php echo Url::getCharProfile(''); ?>';
         // UI Elements
         const masterListContainer = document.getElementById('character-master-list');
         const groupsContainer = document.getElementById('character-groups-container');
@@ -919,4 +919,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

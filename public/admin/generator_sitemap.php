@@ -20,7 +20,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- HILFSFUNKTIONEN ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
@@ -109,7 +109,7 @@ function generateSitemap(bool $debugMode): array
             $comicFilePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $comicFileName;
             if (file_exists($comicFilePath)) {
                 $url = $xml->createElement('url');
-                $locValue = Path::getComicUrl($comicFileName);
+                $locValue = Url::getComic($comicFileName);
                 $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
                 $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($comicFilePath))));
                 $url->appendChild($xml->createElement('changefreq', 'weekly'));
@@ -158,7 +158,7 @@ $pageTitle = 'Adminbereich - Sitemap Generator';
 $pageHeader = 'Sitemap Generator';
 $robotsContent = 'noindex, nofollow';
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -325,4 +325,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

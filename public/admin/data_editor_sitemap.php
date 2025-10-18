@@ -18,7 +18,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // === KONSTANTEN ===
 if (!defined('COMIC_PAGES_PER_PAGE')) {
@@ -186,7 +186,7 @@ ksort($comicPages);
 $pageTitle = 'Adminbereich - Sitemap Editor';
 $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow';
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -673,4 +673,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

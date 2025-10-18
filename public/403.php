@@ -21,10 +21,10 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../src/components/public_init.php';
+require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
-require_once Path::getComponent('image_cache_helper.php');
+require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
 
 // === 3. BILD-PFADE & FALLBACKS ===
 $lowresImage = get_cached_image_path('403', 'lowres');
@@ -103,7 +103,4 @@ require_once Path::getTemplatePartial('header.php');
     </aside>
 </article>
 
-<?php
-// Binde den gemeinsamen Footer ein (mit Path-Klasse).
-require_once Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

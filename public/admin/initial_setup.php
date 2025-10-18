@@ -25,7 +25,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- ZU PRÜFENDE ORDNER UND DATEIEN ---
 $requiredFolders = [
@@ -207,7 +207,7 @@ $jsonFileSorted = $currentComicData === null ? false : isAlphabeticallySorted($c
 
 $pageTitle = 'Adminbereich - Ersteinrichtung';
 $pageHeader = 'Webseiten-Ersteinrichtung';
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -422,4 +422,4 @@ include Path::getTemplatePartial('header.php');
     }
 </style>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

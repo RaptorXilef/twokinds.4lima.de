@@ -6,5 +6,5 @@
 
 // Inkludiere den zentralen Comic-Renderer.
 // Pfad relativ vom 'comic/' Ordner zum 'src/components/' Ordner.
-require_once __DIR__ . '/../src/components/comic_page_renderer.php';
+require_once __DIR__ . '/../../../src/renderer/renderer_comic_page.php';
 ?>

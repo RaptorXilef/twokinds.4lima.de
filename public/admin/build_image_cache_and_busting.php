@@ -22,7 +22,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // Die zu scannenden Verzeichnisse werden dynamisch aufgebaut.
 $dirsToScan = [
@@ -171,7 +171,7 @@ $pageHeader = 'Bild-Cache & Busting Generator';
 $siteDescription = 'Tool zum Erstellen des Bild-Caches mit Cache-Busting-Parametern.';
 $robotsContent = 'noindex, nofollow';
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -415,4 +415,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

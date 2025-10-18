@@ -17,7 +17,7 @@
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 // Wird nur benötigt, um die Pfad-Konstanten und die Path-Klasse zu laden.
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 header('Content-Type: text/plain; charset=utf-8');
 

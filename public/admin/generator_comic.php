@@ -20,7 +20,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- HILFSFUNKTIONEN ---
 /**
@@ -129,7 +129,7 @@ function createSingleComicPageFile(string $comicId, string $comicPagesDir, bool 
             return false;
     }
     $filePath = $comicPagesDir . $comicId . '.php';
-    $relativePath = getRelativePath($comicPagesDir, Path::getComponent('comic_page_renderer.php'));
+    $relativePath = getRelativePath($comicPagesDir, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_comic_page.php');
     $fileContent = "<?php require_once __DIR__ . '/" . $relativePath . "'; ?>";
     return file_put_contents($filePath, $fileContent) !== false;
 }
@@ -183,7 +183,7 @@ $pageTitle = 'Adminbereich - Comic Generator';
 $pageHeader = 'Comic-Seiten-Generator';
 $siteDescription = 'Generiert fehlende Comic-PHP-Seiten basierend auf vorhandenen Bildern und JSON-Daten.';
 $robotsContent = 'noindex, nofollow';
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -577,6 +577,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php
-include Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

@@ -18,7 +18,7 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../src/components/public_init.php';
+require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Lizenz';
@@ -87,7 +87,4 @@ require_once Path::getTemplatePartial('header.php');
     Quelle: <a href="https://twokinds.keenspot.com/license/"> https://twokinds.keenspot.com/license/ </a>
 </article>
 
-<?php
-// === FUSSZEILE EINBINDEN (Jetzt mit Path-Klasse) ===
-require_once Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

@@ -18,7 +18,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
@@ -230,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 if (empty($result['errors'])) {
                     $response['success'] = true;
                     $response['message'] = "Thumbnail für $comicId als .$outputFormat erstellt.";
-                    $response['imageUrl'] = Path::getThumbnails($comicId . '.' . $outputFormat) . '?' . time();
+                    $response['imageUrl'] = Url::getThumbnails($comicId . '.' . $outputFormat) . '?' . time();
                     $response['comicId'] = $comicId;
                 } else {
                     $response['message'] = 'Fehler bei ' . $comicId . ': ' . implode(', ', $result['errors']);
@@ -260,7 +260,7 @@ $pageTitle = 'Adminbereich - Thumbnail Generator';
 $pageHeader = 'Thumbnail Generator';
 $siteDescription = 'Seite zum Generieren der Vorschaubilder.';
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -763,4 +763,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

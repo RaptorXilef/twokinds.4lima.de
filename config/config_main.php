@@ -21,6 +21,11 @@ $debugMode = false; // true = AN, false = AUS
 $phpBoolen = false; // true = .php anhängen, false = kein .php
 
 
+// Stellt ein, ob Cache-Busting aktiviert ist. 
+// Standard: true
+define('ENABLE_CACHE_BUSTING', true);
+
+
 // ###################################################################
 // Admin-Bereich: 
 

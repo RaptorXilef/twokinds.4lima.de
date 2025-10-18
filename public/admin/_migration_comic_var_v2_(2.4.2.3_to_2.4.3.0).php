@@ -14,13 +14,13 @@
  */
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 $comicVarJsonPath = Path::getData('comic_var.json');
 $comicVarJsonFile = basename($comicVarJsonPath);
 
 $pageTitle = 'Migration: ' . $comicVarJsonFile . ' zu v2';
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -96,6 +96,4 @@ include Path::getTemplatePartial('header.php');
     </div>
 </article>
 
-<?php
-include Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

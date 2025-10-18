@@ -10,7 +10,7 @@
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   4.0.0
  * @since     1.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
- * @since     2.0.0 Vollständige Integration der admin_init.php und Code-Modernisierung.
+ * @since     2.0.0 Vollständige Integration der init_admin.php und Code-Modernisierung.
  * @since     2.1.0 Entfernung des redundanten Logout-Buttons.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
@@ -19,7 +19,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- HILFSFUNKTIONEN ---
 /**
@@ -107,7 +107,7 @@ $pageTitle = 'Adminbereich - Anmeldedaten ändern';
 $pageHeader = 'Eigene Anmeldedaten ändern';
 $robotsContent = 'noindex, nofollow';
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 <article>
     <style nonce="<?php echo htmlspecialchars($nonce); ?>">
@@ -270,7 +270,5 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php
-include Path::getTemplatePartial('footer.php');
-ob_end_flush();
-?>
+<?php require_once Path::getTemplatePartial('footer.php');
+ob_end_flush(); ?>

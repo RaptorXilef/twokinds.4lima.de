@@ -12,7 +12,7 @@
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   4.0.0
  * @since     2.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
- * @since     3.0.0 Vollständige Integration der admin_init.php, Entfernung redundanter Sicherheits-Header und Funktionen.
+ * @since     3.0.0 Vollständige Integration der init_admin.php, Entfernung redundanter Sicherheits-Header und Funktionen.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  */
 
@@ -21,7 +21,7 @@ $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 // Lädt alle Konfigurationen, Sicherheits-Header, Session-Einstellungen und CSRF-Schutz.
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 if ($debugMode)
     error_log("DEBUG: index.php (Login) wird geladen.");
@@ -308,7 +308,5 @@ require_once Path::getTemplatePartial('header.php');
         <?php endif; ?>
     </div>
 </article>
-<?php
-require_once Path::getTemplatePartial('footer.php');
-ob_end_flush();
-?>
+<?php require_once Path::getTemplatePartial('footer.php');
+ob_end_flush(); ?>

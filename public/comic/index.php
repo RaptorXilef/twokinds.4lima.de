@@ -21,11 +21,11 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../../src/components/public_init.php';
+require_once __DIR__ . '/../../src/components/init_public.php';
 
 // === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
-require_once Path::getComponent('load_comic_data.php');
-require_once Path::getComponent('image_cache_helper.php');
+require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'load_comic_data.php';
+require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
 
 // Ermittle die ID des neuesten Comics
 $comicKeys = array_keys($comicData);
@@ -84,7 +84,7 @@ $siteDescription = 'Die neueste Comicseite von TwoKinds in deutscher Übersetzun
 $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreviewUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($socialMediaPreviewUrl, './');
 
 $comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.min.js';
-$comicJsWebUrl = Path::getJsUrl('comic.min.js');
+$comicJsWebUrl = Url::getJs('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 $viewportContent = 'width=1099';
@@ -123,7 +123,7 @@ require_once Path::getTemplatePartial('header.php');
     <div class='comicnav'>
         <?php
         $isCurrentPageLatest = true;
-        include Path::getComponent('comic_navigation.php');
+        include DIRECTORY_PRIVATE_PARTIAL_TEMPLATES . DIRECTORY_SEPARATOR . 'navigation_comic.php';
         unset($isCurrentPageLatest);
         ?>
         <button type="button" id="add-bookmark" class="bookmark" title="Diese Seite mit Lesezeichen versehen"
@@ -146,7 +146,7 @@ require_once Path::getTemplatePartial('header.php');
     <div class='comicnav bottomnav'>
         <?php
         $isCurrentPageLatest = true;
-        include Path::getComponent('comic_navigation.php');
+        include DIRECTORY_PRIVATE_PARTIAL_TEMPLATES . DIRECTORY_SEPARATOR . 'navigation_comic.php';
         unset($isCurrentPageLatest);
         ?>
         <!-- NEUER SPRACHUMSCHALTER-BUTTON -->
@@ -185,7 +185,7 @@ require_once Path::getTemplatePartial('header.php');
     </aside>
 
     <?php
-    require_once Path::getComponent('character_display.php');
+    require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
 </article>
 

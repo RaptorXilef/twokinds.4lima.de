@@ -77,14 +77,14 @@ $faviconUrl = DIRECTORY_PUBLIC_URL . '/favicon.ico?v=' . filemtime(DIRECTORY_PUB
 $appleIconUrl = DIRECTORY_PUBLIC_URL . '/appleicon.png?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'appleicon.png');
 
 // Generiere versionierte URLs für CSS und JS mit der Path-Klasse
-$mainCssUrl = getVersionedUrl(Path::getCssUrl('main.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main.min.css');
-$mainDarkCssUrl = getVersionedUrl(Path::getCssUrl('main_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main_dark.min.css');
-$cookieBannerCssUrl = getVersionedUrl(Path::getCssUrl('cookie_banner.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
-$cookieBannerDarkCssUrl = getVersionedUrl(Path::getCssUrl('cookie_banner_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
-$characterDisplayCssUrl = getVersionedUrl(Path::getCssUrl('character_display.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_display.min.css');
+$mainCssUrl = getVersionedUrl(Url::getCss('main.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main.min.css');
+$mainDarkCssUrl = getVersionedUrl(Url::getCss('main_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main_dark.min.css');
+$cookieBannerCssUrl = getVersionedUrl(Url::getCss('cookie_banner.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
+$cookieBannerDarkCssUrl = getVersionedUrl(Url::getCss('cookie_banner_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
+$characterDisplayCssUrl = getVersionedUrl(Url::getCss('character_display.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_display.min.css');
 
-$commonJsUrl = getVersionedUrl(Path::getJsUrl('common.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'common.min.js');
-$cookieConsentJsUrl = getVersionedUrl(Path::getJsUrl('cookie_consent.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
+$commonJsUrl = getVersionedUrl(Url::getJs('common.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'common.min.js');
+$cookieConsentJsUrl = getVersionedUrl(Url::getJs('cookie_consent.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
 
 ?>
 <!DOCTYPE html>
@@ -273,13 +273,13 @@ $cookieConsentJsUrl = getVersionedUrl(Path::getJsUrl('cookie_consent.min.js'), D
                 // Dynamisches Laden der Menükonfiguration mit der Path-Klasse
                 if ($isAdminPage) {
                     if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-                        require_once Path::getAdminComponent('admin_menue_config.php');
-                        require_once Path::getAdminComponent('session_timeout_modal.php');
+                        require_once Path::getConfig('config_menue_admin.php');
+                        require_once Path::getTemplatePartialAdmin('session_timeout_modal.php');
                     } else {
-                        require_once Path::getAdminComponent('admin_menue_config_login.php');
+                        require_once Path::getConfig('config_menue_admin_login.php');
                     }
                 } else {
-                    require_once Path::getComponent('public_menue_config.php');
+                    require_once Path::getConfig('config_menue_public.php');
                 }
                 ?>
             </div>

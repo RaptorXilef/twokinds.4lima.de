@@ -24,7 +24,7 @@ $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
-require_once __DIR__ . '/../src/components/public_init.php';
+require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. LADE-SKRIPTE & DATEN ===
 $placeholderImagePathUrl = DIRECTORY_PUBLIC_URL . '/assets/comic_thumbnails/placeholder.jpg';
@@ -145,7 +145,7 @@ $siteDescription = 'Das vollständige Archiv aller TwoKinds-Comics, übersichtli
 $robotsContent = 'index, follow';
 
 $archiveJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'archive.js';
-$archiveJsWebUrl = Path::getJsUrl('archive.js');
+$archiveJsWebUrl = Url::getJs('archive.js');
 $cacheBuster = file_exists($archiveJsPathOnServer) ? '?c=' . filemtime($archiveJsPathOnServer) : '';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($archiveJsWebUrl . $cacheBuster) . '"></script>';
 
@@ -210,7 +210,4 @@ require_once Path::getTemplatePartial('header.php');
     <?php endif; ?>
 </article>
 
-<?php
-// Binde den gemeinsamen Footer ein (mit Path-Klasse).
-require_once Path::getTemplatePartial('footer.php');
-?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

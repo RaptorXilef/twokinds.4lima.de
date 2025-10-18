@@ -34,7 +34,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // === VARIABLEN ===
 if (!defined('COMIC_PAGES_PER_PAGE')) {
@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($newIds as $id) {
                 $filePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
                 if (!file_exists($filePath)) {
-                    $relativePath = getRelativePath(DIRECTORY_PUBLIC_COMIC, Path::getComponent('comic_page_renderer.php'));
+                    $relativePath = getRelativePath(DIRECTORY_PUBLIC_COMIC, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_comic_page.php');
                     $phpContent = "<?php require_once __DIR__ . '/" . $relativePath . "'; ?>";
                     if (file_put_contents($filePath, $phpContent) !== false) {
                         $createdCount++;
@@ -311,8 +311,8 @@ foreach ($allIds as $id) {
 
 $cachedImagesForJs = get_image_cache_local(Path::getCache('comic_image_cache.json'));
 
-$placeholderUrl = Path::getThumbnails('placeholder.jpg');
-$loadingIconUrl = Path::getIcon('loading.webp');
+$placeholderUrl = Url::getThumbnails('placeholder.jpg');
+$loadingIconUrl = Url::getIcon('loading.webp');
 
 $pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
@@ -323,7 +323,7 @@ $additionalScripts = <<<HTML
     <script nonce="{$nonce}" src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 HTML;
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -1640,4 +1640,4 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php include Path::getTemplatePartial('footer.php'); ?>
+<?php require_once Path::getTemplatePartial('footer.php'); ?>

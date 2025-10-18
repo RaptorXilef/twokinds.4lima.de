@@ -19,7 +19,7 @@
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
-require_once __DIR__ . '/../../src/components/admin_init.php';
+require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- VARIABLEN & KONFIGURATION ---
 $tempDir = sys_get_temp_dir();
@@ -174,7 +174,7 @@ $pageHeader = 'Bild-Upload';
 $siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
 $robotsContent = 'noindex, nofollow';
 
-include Path::getTemplatePartial('header.php');
+require_once Path::getTemplatePartial('header.php');
 ?>
 
 <article>
@@ -566,7 +566,5 @@ include Path::getTemplatePartial('header.php');
     });
 </script>
 
-<?php
-include Path::getTemplatePartial('footer.php');
-ob_end_flush();
-?>
+<?php require_once Path::getTemplatePartial('footer.php');
+ob_end_flush(); ?>
