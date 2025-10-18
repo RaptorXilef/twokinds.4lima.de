@@ -1,12 +1,12 @@
 <?php
 /**
- * @file      ROOT/src/components/hUrl.php
+ * @file      ROOT/src/components/Url.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-Share-Alike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.3.0
+ * @version   2.3.0
  * @since     1.0.0 Initiale Erstellung
  * @comment   Diese Klasse ersetzt die Notwendigkeit, für jede Datei eine eigene Konstante zu definieren.
  * Sie nutzt die Basis-Verzeichniskonstanten aus 'config_folder_path.php', um dynamisch
@@ -18,132 +18,156 @@
  * @since     1.2.1 Kleinere Fixes
  * @since     1.3.0 Neue private Pfade ergänzt, einige Pfade gelöscht und einige umbenannt
  * @since     2.0.0 helper_path.php wurde in Path.php und Url.php aufgespalten.
+ * @since     2.1.0 Fehlende URL-Methoden ergänzt und Klasse neu sortiert, Klasse in Url umbenannt.
+ * @since     2.3.0 Methoden auf Englisch umgestellt für internationale Konventionen.
  */
 
-class URL
+class Url
 {
+    // =================================================================
+    // --- BASE & PAGE URLS ---
+    // =================================================================
 
-    // --- ÖFFENTLICHE URL-PFADE (für <link>, <script>, <img> etc.) ---
+    public static function getBaseUrl(string $path = ''): string
+    {
+        return DIRECTORY_PUBLIC_URL . ($path ? '/' . ltrim($path, '/') : '');
+    }
 
-    public static function getComic(string $filename): string
+    public static function getAdminPageUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_ADMIN_URL . '/' . $filename;
+    }
+
+    public static function getComicPageUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_COMIC_URL . '/' . $filename;
     }
 
-    public static function getCharaktere(string $filename): string
+    public static function getCharacterPageUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename;
     }
 
-    public static function getCss(string $filename): string
+
+    // =================================================================
+    // --- ASSET URLS (for CSS, JS, Images etc.) ---
+    // =================================================================
+
+    // --- CSS & JS ---
+    public static function getCssUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_CSS_URL . '/' . $filename;
     }
 
-    public static function getAdminCSS(string $filename): string
-    {
-        return DIRECTORY_PUBLIC_ADMIN_CSS_URL . '/' . $filename;
-    }
-
-    public static function getJs(string $filename): string
+    public static function getJsUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_JS_URL . '/' . $filename;
     }
 
-    public static function getAdminJs(string $filename): string
+    public static function getAdminCssUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_ADMIN_CSS_URL . '/' . $filename;
+    }
+
+    public static function getAdminJsUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_ADMIN_JS_URL . '/' . $filename;
     }
 
-    // --- BILD-URLS --- // TODO: Ummer IMG anfügen oder anderen eindeutigen TAG
-
-    public static function getImg(string $filename): string
+    // --- Images: Comic ---
+    public static function getImgComicHiresUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_BANNER_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_COMIC_HIRES_URL . '/' . $filename;
     }
 
-    public static function getAboutImg(string $filename): string
+    public static function getImgComicLowresUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_ABOUT_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL . '/' . $filename;
     }
 
-    public static function getChar(string $filename): string
+    public static function getImgComicSocialMediaUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_ASSETS_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA_URL . '/' . $filename;
     }
 
-    public static function getCharProfile(string $filename): string
+    public static function getImgComicThumbnailsUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_PROFILE_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS_URL . '/' . $filename;
     }
 
-    public static function getCharImg(string $filename): string
-    {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_URL . '/' . $filename;
-    }
-
-    public static function getCharFaces(string $filename): string
-    {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_FACES_URL . '/' . $filename;
-    }
-
-    public static function getCharRefSheets(string $filename): string
-    {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_REFSHEETS_URL . '/' . $filename;
-    }
-
-    public static function getCharSwatches(string $filename): string
-    {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_SWATCHES_URL . '/' . $filename;
-    }
-
-    public static function getIcon(string $filename): string
+    // --- Images: General & Icons ---
+    public static function getImgIconUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_IMG_ICONS_URL . '/' . $filename;
     }
-    public static function getLeseIcon(string $filename): string
+
+    public static function getImgBookmarkIconUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_IMG_LESEZEICHEN_ICON_URL . '/' . $filename;
     }
-    public static function getNaviIcon(string $filename): string
+
+    public static function getImgNavigationIconUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_IMG_NAVIGATION_ICON_URL . '/' . $filename;
     }
-    public static function getSVG(string $filename): string
+
+    public static function getImgSvgUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_IMG_SVG_URL . '/' . $filename;
     }
 
-    // Comicordner
-    public static function getComicHires(string $filename): string
+    public static function getImgBannerUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_COMIC_HIRES_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_BANNER_URL . '/' . $filename;
     }
-    public static function getComicLowres(string $filename): string
+
+    public static function getImgAboutUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_ABOUT_URL . '/' . $filename;
     }
-    public static function getSocialMedia(string $filename): string
+
+    // --- Images: Characters ---
+    public static function getImgCharacterAssetsUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_ASSETS_URL . '/' . $filename;
     }
-    public static function getThumbnails(string $filename): string
+
+    public static function getImgCharacterUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_URL . '/' . $filename;
+    }
+
+    public static function getImgCharacterProfileUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_PROFILE_URL . '/' . $filename;
+    }
+
+    public static function getImgCharacterFacesUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_FACES_URL . '/' . $filename;
+    }
+
+    public static function getImgCharacterRefsheetsUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_REFSHEETS_URL . '/' . $filename;
+    }
+
+    public static function getImgCharacterSwatchesUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_SWATCHES_URL . '/' . $filename;
     }
 }
+
 /*
  * --- ANWENDUNGSBEISPIELE ---
  *
- * <link rel="stylesheet" href="<?php echo Url::getCss('main.min.css'); ?>">
+ * <link rel="stylesheet" href="<?php echo Url::getCssUrl('main.min.css'); ?>">
  *
  * --------------------------------------------------------------------
  *
- * Für Bilder (in HTML/PHP):
- * * Für assets/img/placeholder.png:
- * <img src="<?php echo Url::getImg('placeholder.png'); ?>">
- * * Für assets/img/charaktere/ref_sheets_webp/flora_ref.webp:
- * <img src="<?php echo Url::getCharRefSheet('flora_ref.webp'); ?>">
+ * <img src="<?php echo Url::getImgBanner('header.webp'); ?>">
+ *
+ * <img src="<?php echo Url::getImgCharaktereRefsheets('flora_ref.webp'); ?>">
  *
  */
 ?>
