@@ -19,9 +19,9 @@
  */
 
 // --- BENÖTIGTE BIBLIOTHEKEN (Beispiel für Composer Autoload) ---
-// require_once __DIR__ . '/../../vendor/autoload.php';
-// use ScssPhp\ScssPhp\Compiler;
-// use MatthiasMullie\Minify;
+require_once __DIR__ . '/../../vendor/autoload.php';
+use ScssPhp\ScssPhp\Compiler;
+use MatthiasMullie\Minify;
 
 class AssetManager
 {
