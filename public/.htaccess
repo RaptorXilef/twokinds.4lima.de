@@ -1,0 +1,189 @@
+# ##############################################################################
+# ##                                                                          ##
+# ##      UMFASSENDE .HTACCESS-KONFIGURATION FÜR PERFORMANCE & SICHERHEIT     ##
+# ##                 -- Finale Optimierungsstufe --                           ##
+# ##                                                                          ##
+# ##############################################################################
+# Autor:    Felix Maywald alias RaptorXilef
+# Webseite: https://twokinds.4lima.de
+# GitHub:   https://github.com/RaptorXilef/twokinds.4lima.de
+# Lizenz:   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+#           <https://creativecommons.org/licenses/by-nc-sa/4.0/>
+# Hinweis:  Diese .htaccess-Datei ist speziell für die Webseite twokinds.4lima.de
+#           optimiert und kann als Vorlage für eigene Projekte dienen.
+#           Bitte passe die Domain-Namen und Pfade entsprechend deiner Webseite an.
+# Version:  2.0.1
+
+
+# --- Block 1: Sicherheits- und Kompatibilitäts-Header ---
+# Dieser Block sendet bei jeder Anfrage wichtige HTTP-Header mit,
+# die den Browser anweisen, sich sicherer zu verhalten und die Seite korrekt darzustellen.
+<IfModule mod_headers.c>
+    # Erzwingt, dass der Internet Explorer immer die neueste verfügbare Rendering-Engine verwendet.
+    Header set X-UA-Compatible "IE=Edge"
+
+    # Clickjacking-Schutz: Erlaubt das Einbetten der Seite via <iframe>, <embed> oder <object> nur von der eigenen Domain.
+    Header set X-Frame-Options "SAMEORIGIN"
+
+    # MIME-Type-Sniffing-Schutz: Verhindert, dass der Browser versucht, den Inhaltstyp einer Datei zu "erraten",
+    # was eine Sicherheitslücke sein kann. Der Browser muss dem vom Server deklarierten Content-Type vertrauen.
+    Header set X-Content-Type-Options "nosniff"
+
+    # Referrer-Policy: Kontrolliert, welche Informationen über die Herkunftsseite (Referrer)
+    # bei Klicks auf externe Links gesendet werden. Dies verbessert den Datenschutz.
+    Header set Referrer-Policy "no-referrer-when-downgrade"
+
+</IfModule>
+
+# --- Block 2: Eigene Fehlerseiten (Benutzerfreundlichkeit) ---
+# Zeigt anstelle der technischen Standard-Fehlerseiten des Servers eigene,
+# benutzerfreundliche und im Design der Webseite gehaltene Seiten an.
+# WICHTIG: Du musst die Dateien 403.php und 404.php im Hauptverzeichnis deiner Webseite erstellen.
+ErrorDocument 403 /403.php
+ErrorDocument 404 /404.php
+
+# --- Block 3: Grundlegende Servereinstellungen & Basisschutz ---
+# Verhindert "Directory Listing" und das "Erraten" von Dateinamen (MultiViews).
+Options -Indexes -MultiViews
+
+# Schützt diese .htaccess-Datei selbst und andere sensible Konfigurationsdateien vor direktem Zugriff über den Browser.
+<FilesMatch "(^\.htaccess|php\.ini|licence\.txt|readme\.html)">
+    Require all denied
+</FilesMatch>
+
+# --- Block 4: Umschreibungs- und Weiterleitungsregeln ---
+# Das Herzstück für saubere, SEO-freundliche URLs.
+RewriteEngine On
+
+# 4a: Kanonische URL erzwingen (HTTPS & non-www)
+# Leitet alle Anfragen auf https://meine-domain.de um,
+# um doppelten Inhalt (Duplicate Content) bei Suchmaschinen zu vermeiden.
+# Erzwingt HTTPS für alle Anfragen.
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# Erzwingt die "non-www"-Version (ohne www. davor).
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# 4b: Schutz vor Hotlinking von Bildern
+# Verhindert, dass andere Webseiten deine Bilder direkt einbinden und so deinen Traffic verbrauchen.
+# Bilder werden nur angezeigt, wenn der Aufruf von deiner eigenen Domain kommt.
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.de [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.local [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
+RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [NC,F,L]
+
+# 4c: Permanente Weiterleitungen (Redirects) für alte Comic-Pfade
+# Leitet Besucher und Suchmaschinen von der alten URL-Struktur (z.B. /20250810.php)
+# permanent (301) auf die neue, saubere URL-Struktur (z.B. /comic/20250810) um.
+# Bedingung: Die Anfrage darf nicht bereits im /comic/ Verzeichnis sein (verhindert Loops/Endlosschleifen).
+RewriteCond %{REQUEST_URI} !^/comic/
+RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
+RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
+
+# 4d: Trailing-Slash-Weiterleitung (SEO-Optimierung)
+# Entfernt den Schrägstrich (/) am Ende von URLs (z.B. /kontakt/ -> /kontakt) (301).
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ /$1 [R=301,L]
+
+# 4e: Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
+# Dies ist die zentrale Regel, die für ALLE Ordner gilt.
+# Sie ermöglicht den Aufruf von PHP-Dateien ohne die .php-Endung.
+# Dies geschieht intern auf dem Server; der Besucher sieht die saubere URL.
+# z.B. /kontakt -> /kontakt.php
+# z.B. /charaktere/name -> /charaktere/name.php
+# z.B. /comic/20250810 -> /comic/20250810.php
+RewriteCond %{REQUEST_FILENAME} !-d
+# Bedingung: Die Anfrage ist keine existierende Datei.
+RewriteCond %{REQUEST_FILENAME} !-f
+# Bedingung: Eine .php-Datei mit dem angefragten Namen muss existieren.
+RewriteCond %{REQUEST_FILENAME}\.php -f
+# Regel: Schreibe die Anfrage intern auf die entsprechende .php-Datei um.
+RewriteRule ^(.*)$ $1.php [L]
+
+# ### HINWEIS: Der Block "NEUE REGELN" wurde wieder entfernt. ###
+# Die Funktionalität war bereits durch die Regeln 4c und 4e abgedeckt.
+# Eine einzige, allgemeine Regel (4e) ist sauberer und weniger fehleranfällig.
+
+# --- Block 5: GZIP-Komprimierung (Performance) ---
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE application/x-font-truetype
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE font/otf
+    AddOutputFilterByType DEFLATE font/ttf
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+</IfModule>
+
+# --- Block 6: Browser-Caching (Performance) ---
+# Weist den Browser des Besuchers an, statische Dateien (Bilder, CSS, JS) für einen
+# langen Zeitraum lokal zu speichern. Bei einem erneuten Besuch müssen diese Dateien nicht
+# erneut vom Server geladen werden, was die Seite extrem beschleunigt.
+<IfModule mod_headers.c>
+  # Caching-Regel für Bilder und Schriftarten
+  # Diese Dateien werden sehr selten aktualisiert und können lange gecacht werden.
+ <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|x-icon|ttf|otf|woff2)$">
+    Header set Cache-Control "max-age=31536000, public"
+ </FilesMatch>
+
+  # Caching-Regel für CSS- und JS-Dateien
+  # Diese werden nur für einen Monat im Cache gehalten, wie von dir gewünscht.
+ <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "max-age=2592000, public"
+ </FilesMatch>
+</IfModule>
+
+# --- Block 7: Korrekte MIME-Typen für moderne Formate ---
+# Stellt sicher, dass moderne Dateiformate vom Server mit dem korrekten
+# Content-Type-Header ausgeliefert werden, um Darstellungsprobleme im Browser zu vermeiden.
+<IfModule mod_mime.c>
+    AddType image/webp                      .webp
+    AddType image/svg+xml                   .svg .svgz
+    AddType font/woff2                      .woff2
+</IfModule>
+
+# --- Block 8: ETags entfernen (Performance-Optimierung) ---
+# ETags sind eine Methode zur Validierung von Cache-Dateien. In manchen Konfigurationen
+# können sie das Caching behindern oder unnötige Server-Informationen preisgeben.
+# Das Entfernen ist eine gängige Best-Practice-Optimierung.
+<IfModule mod_headers.c>
+    Header unset ETag
+</IfModule>
+FileETag None
+
+# --- Block 9: Erweiterte Sicherheits-Header (CSP & HSTS) ---
+# Dies sind fortgeschrittene Header, die einen robusten Schutz gegen moderne Web-Angriffe bieten.
+<IfModule mod_headers.c>
+    # Content Security Policy (CSP): Definiert eine Whitelist für ausführbare Ressourcen.
+    # Dies ist eine sehr effektive Maßnahme gegen Cross-Site-Scripting (XSS).
+    # Die Zeilen werden mit einem Backslash (\) zusammengefügt, um die Lesbarkeit zu verbessern.
+    Header set Content-Security-Policy "\
+    default-src 'self'; \
+    script-src 'self' 'unsafe-inline' https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://www.2kinds.com https://cdnjs.cloudflare.com https://placehold.co https://www.googletagmanager.com https://cdn.tailwindcss.com https://code.jquery.com https://cdn.jsdelivr.net; \
+    style-src 'self' 'unsafe-inline' https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://www.2kinds.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net; \
+    img-src 'self' data: https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://twokindscomic.com https://www.2kinds.com https://placehold.co https://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png https://licensebuttons.net https://twokinds.4lima.de; \
+    font-src 'self' https://cdnjs.cloudflare.com https://cdn.twokinds.keenspot.com https://fonts.gstatic.com https://cdn.jsdelivr.net; \
+    connect-src 'self' https://*.google-analytics.com https://cdn.twokinds.keenspot.com https://cdn.jsdelivr.net;"
+ 
+    # HTTP Strict Transport Security (HSTS): Weist den Browser an, die Seite nur über HTTPS aufzurufen.
+    # WICHTIGER HINWEIS: Aktiviere diese Zeile erst, wenn du sicher bist, dass deine HTTPS-Konfiguration
+    # dauerhaft und fehlerfrei funktioniert. Einmal gesetzt, wird der Browser für die angegebene
+    # Zeit (max-age) keine HTTP-Verbindungen mehr zulassen.
+    # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>

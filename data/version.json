@@ -1,0 +1,5 @@
+{
+  "version": "3.5.1.0",
+  "type": "alpha",
+  "_comment_type": "Mögliche Einträge: development, alpha, beta, release_candidate, release, stable, patch"
+}
