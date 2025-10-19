@@ -6,7 +6,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
+ * @version   2.1.1
  * @since     1.0.0 Initiale Erstellung
  * @since     1.0.2 Konstanten für wichtige Dateien hinzugefügt.
  * @since     1.0.3 Pfadkonstanten robuster gestaltet: realpath() von abhängigen Pfaden entfernt und durch direkte String-Verkettung mit DIRECTORY_SEPARATOR ersetzt, um Existenzunabhängigkeit zu gewährleisten.
@@ -16,6 +16,7 @@
  * @since     2.0.3 DIRECTORY_PUBLIC_IMG_HEADERFOOTER_URL zu DIRECTORY_PUBLIC_IMG_BANNER_URL umbenannt.
  * @since     2.0.4 Ersetzt DIRECTORY_SEPARATOR innerhalb von URL-Spezifischen Konstanten durch '/' damit die Trenner auch unter WindowsServern korrekt funktionieren.
  * @since     2.1.0 Anpassung der Pfade innerhalb der KONSTANTEN auf Grundlage der neuen Verzeichnisstrukturen.
+ * @since     2.1.1 Konstanten für die Ordner in resources hinzugefügt.
  * 
  */
 
@@ -149,6 +150,12 @@ define('DIRECTORY_PRIVATE_SECRETS', DIRECTORY_PRIVATE_CONFIG . DIRECTORY_SEPARAT
 // DATA Pfad
 define('DIRECTORY_PRIVATE_DATA', DIRECTORY_ROOT . DIRECTORY_SEPARATOR . 'data');
 define('DIRECTORY_PRIVATE_CACHE', DIRECTORY_PRIVATE_DATA . DIRECTORY_SEPARATOR . 'cache');
+// Resources
+define('DIRECTORY_PRIVATE_RESOURCES', DIRECTORY_ROOT . DIRECTORY_SEPARATOR . 'resources');
+define('DIRECTORY_PRIVATE_RES_JS', DIRECTORY_PRIVATE_RESOURCES . DIRECTORY_SEPARATOR . 'js');
+define('DIRECTORY_PRIVATE_RES_JS_ADMIN', DIRECTORY_PRIVATE_RES_JS . DIRECTORY_SEPARATOR . 'admin');
+define('DIRECTORY_PRIVATE_RES_SCSS', DIRECTORY_PRIVATE_RESOURCES . DIRECTORY_SEPARATOR . 'scss');
+define('DIRECTORY_PRIVATE_RES_SCSS_ADMIN', DIRECTORY_PRIVATE_RES_SCSS . DIRECTORY_SEPARATOR . 'admin');
 // SRC Pfad
 define('DIRECTORY_PRIVATE_SRC', DIRECTORY_ROOT . DIRECTORY_SEPARATOR . 'src');
 define('DIRECTORY_PRIVATE_COMPONENTS', DIRECTORY_PRIVATE_SRC . DIRECTORY_SEPARATOR . 'components');
