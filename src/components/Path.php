@@ -6,7 +6,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-Share-Alike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.3.0
+ * @version   2.3.1
  * @since     1.0.0 Initiale Erstellung
  * @comment   Diese Klasse ersetzt die Notwendigkeit, für jede Datei eine eigene Konstante zu definieren.
  * Sie nutzt die Basis-Verzeichniskonstanten aus 'config_folder_path.php', um dynamisch
@@ -20,6 +20,7 @@
  * @since     2.0.0 helper_path.php wurde in Path.php und Url.php aufgespalten.
  * @since     2.1.0 Fehlende Pfad-Methoden ergänzt und Klasse neu sortiert.
  * @since     2.3.0 Methoden auf Englisch umgestellt für internationale Konventionen.
+ * @since     2.3.1 Konstanten für die Ordner in resources hinzugefügt.
  */
 
 class Path
@@ -47,6 +48,32 @@ class Path
     public static function getCachePath(string $filename): string
     {
         return DIRECTORY_PRIVATE_CACHE . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    // --- Resources ---
+    public static function getResPath(string $filename): string
+    {
+        return DIRECTORY_PRIVATE_RESOURCES . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getgetResSCSSPath(string $filename): string
+    {
+        return DIRECTORY_PRIVATE_RES_SCSS . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getResSCSSAdminPath(string $filename): string
+    {
+        return DIRECTORY_PRIVATE_RES_SCSS_ADMIN . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getgetResJSPath(string $filename): string
+    {
+        return DIRECTORY_PRIVATE_RES_JS . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getResJSAdminPath(string $filename): string
+    {
+        return DIRECTORY_PRIVATE_RES_JS_ADMIN . DIRECTORY_SEPARATOR . $filename;
     }
 
     // --- Source Code ---

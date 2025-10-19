@@ -6,7 +6,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-Share-Alike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.3.0
+ * @version   2.3.1
  * @since     1.0.0 Initiale Erstellung
  * @comment   Diese Klasse ersetzt die Notwendigkeit, für jede Datei eine eigene Konstante zu definieren.
  * Sie nutzt die Basis-Verzeichniskonstanten aus 'config_folder_path.php', um dynamisch
@@ -20,6 +20,7 @@
  * @since     2.0.0 helper_path.php wurde in Path.php und Url.php aufgespalten.
  * @since     2.1.0 Fehlende URL-Methoden ergänzt und Klasse neu sortiert, Klasse in Url umbenannt.
  * @since     2.3.0 Methoden auf Englisch umgestellt für internationale Konventionen.
+ * @since     2.3.1 Konstanten für die Ordner in resources hinzugefügt.
  */
 
 class Url
@@ -59,12 +60,22 @@ class Url
         return DIRECTORY_PUBLIC_CSS_URL . '/' . $filename;
     }
 
+    public static function getCssMinifiedUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_CSS_URL . '/' . $filename;
+    }
+
     public static function getJsUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_JS_URL . '/' . $filename;
     }
 
     public static function getAdminCssUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_ADMIN_CSS_URL . '/' . $filename;
+    }
+
+    public static function getAdminCssMinifiedUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_ADMIN_CSS_URL . '/' . $filename;
     }
