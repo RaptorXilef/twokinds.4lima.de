@@ -30,9 +30,10 @@ $pageTitle = 'Charaktere';
 $siteDescription = 'Lerne die Hauptcharaktere von TwoKinds kennen. Detaillierte Biografien und Referenzbilder von Trace, Flora, Keith, Natani und vielen mehr.';
 $robotsContent = 'index, follow';
 
-// Füge die charaktere.js mit Cache-Busting und Nonce hinzu
-$charaktereJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'charaktere.js';
-$charaktereJsWebUrl = Url::getJsUrl('charaktere.js');
+// Füge die charaktere.min.js mit Cache-Busting und Nonce hinzu
+$charaktereJsFileName = 'charaktere.min.js';
+$charaktereJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . $charaktereJsFileName;
+$charaktereJsWebUrl = Url::getJsUrl($charaktereJsFileName);
 $cacheBuster = file_exists($charaktereJsPathOnServer) ? '?c=' . filemtime($charaktereJsPathOnServer) : '';
 
 $additionalScripts = '

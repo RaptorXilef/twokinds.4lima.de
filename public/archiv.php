@@ -144,8 +144,9 @@ $pageHeader = 'Archiv';
 $siteDescription = 'Das vollständige Archiv aller TwoKinds-Comics, übersichtlich nach Kapiteln geordnet. Finde schnell und einfach deine Lieblingsseite.';
 $robotsContent = 'index, follow';
 
-$archiveJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'archive.js';
-$archiveJsWebUrl = Url::getJsUrl('archive.js');
+$archiveJsFileName = 'archive.min.js';
+$archiveJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . $archiveJsFileName;
+$archiveJsWebUrl = Url::getJsUrl($archiveJsFileName);
 $cacheBuster = file_exists($archiveJsPathOnServer) ? '?c=' . filemtime($archiveJsPathOnServer) : '';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($archiveJsWebUrl . $cacheBuster) . '"></script>';
 

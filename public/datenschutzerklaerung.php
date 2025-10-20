@@ -185,7 +185,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const changeSettingsBtn = document.getElementById('change-cookie-settings-btn');
         if (changeSettingsBtn) {
             changeSettingsBtn.addEventListener('click', function () {
-                // Die Funktion showCookieBanner() wird von cookie_consent.js bereitgestellt
+                // Die Funktion showCookieBanner() wird von cookie_consent.min.js bereitgestellt
                 if (typeof window.showCookieBanner === 'function') {
                     window.showCookieBanner();
                 } else {

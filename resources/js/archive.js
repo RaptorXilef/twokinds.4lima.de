@@ -6,26 +6,28 @@ const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meld
 
 (function () {
   if (debugModeJsArchiv)
-    console.log("DEBUG [archive.js]: Skript wird geladen.");
+    console.log("DEBUG [archive.js/archive.min.js]: Skript wird geladen.");
 
   // Warte, bis das DOM vollständig geladen ist, bevor JavaScript ausgeführt wird.
   addEventListener("DOMContentLoaded", () => {
     if (debugModeJsArchiv)
-      console.log("DEBUG [archive.js]: DOMContentLoaded Event gefeuert.");
+      console.log(
+        "DEBUG [archive.js/archive.min.js]: DOMContentLoaded Event gefeuert."
+      );
 
     // Füge Event-Listener zu allen Kapitelüberschriften hinzu.
     document.querySelectorAll(".chapter h2").forEach((el, index) => {
       el.addEventListener("click", (ev) => {
         if (debugModeJsArchiv)
           console.log(
-            `DEBUG [archive.js]: Kapitel-Header (Index: ${index}) geklickt. Ziel-Element:`,
+            `DEBUG [archive.js/archive.min.js]: Kapitel-Header (Index: ${index}) geklickt. Ziel-Element:`,
             ev.target
           );
         showThumbnails(ev.target.closest(".chapter"));
       });
       if (debugModeJsArchiv)
         console.log(
-          `DEBUG [archive.js]: Event-Listener zu Kapitel-H2 (Index: ${index}) hinzugefügt. Element:`,
+          `DEBUG [archive.js/archive.min.js]: Event-Listener zu Kapitel-H2 (Index: ${index}) hinzugefügt. Element:`,
           el
         );
     });
@@ -36,7 +38,7 @@ const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meld
       el.style.display = "none";
       if (debugModeJsArchiv)
         console.log(
-          `DEBUG [archive.js]: Collapsible-Content Container (Index: ${index}) initial ausgeblendet. Element:`,
+          `DEBUG [archive.js/archive.min.js]: Collapsible-Content Container (Index: ${index}) initial ausgeblendet. Element:`,
           el
         );
     });
@@ -56,13 +58,13 @@ const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meld
         expireTime = storedExpansion.expireTime;
         if (debugModeJsArchiv)
           console.log(
-            "DEBUG [archive.js]: Gespeicherte Archiv-Erweiterung im Local Storage gefunden:",
+            "DEBUG [archive.js/archive.min.js]: Gespeicherte Archiv-Erweiterung im Local Storage gefunden:",
             storedExpansion
           );
       } catch (e) {
         if (debugModeJsArchiv)
           console.error(
-            "DEBUG [archive.js]: Fehler beim Parsen des Local Storage Inhalts:",
+            "DEBUG [archive.js/archive.min.js]: Fehler beim Parsen des Local Storage Inhalts:",
             e
           );
         // Bei einem Fehler den Local Storage Eintrag entfernen, um zukünftige Fehler zu vermeiden.
@@ -80,7 +82,7 @@ const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meld
       if (firstChapter) {
         if (debugModeJsArchiv)
           console.log(
-            "DEBUG [archive.js]: Keine erweiterten Kapitel gefunden oder abgelaufen, klappe das erste Kapitel auf."
+            "DEBUG [archive.js/archive.min.js]: Keine erweiterten Kapitel gefunden oder abgelaufen, klappe das erste Kapitel auf."
           );
         showThumbnails(firstChapter, true, true); // noAnimation = true, noStore = true
       }
@@ -88,7 +90,7 @@ const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meld
       // Stelle die zuvor erweiterten Kapitel wieder her.
       if (debugModeJsArchiv)
         console.log(
-          "DEBUG [archive.js]: Stelle zuvor erweiterte Kapitel aus dem Local Storage wieder her."
+          "DEBUG [archive.js/archive.min.js]: Stelle zuvor erweiterte Kapitel aus dem Local Storage wieder her."
         );
       for (let idx = 0; idx < expandedChapters.length; ++idx) {
         const chapterId = expandedChapters[idx];
@@ -99,12 +101,12 @@ const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meld
           showThumbnails(chapter, true, true); // noAnimation = true, noStore = true
           if (debugModeJsArchiv)
             console.log(
-              `DEBUG [archive.js]: Kapitel mit ID '${chapterId}' erfolgreich wiederhergestellt.`
+              `DEBUG [archive.js/archive.min.js]: Kapitel mit ID '${chapterId}' erfolgreich wiederhergestellt.`
             );
         } else {
           if (debugModeJsArchiv)
             console.warn(
-              `DEBUG [archive.js]: Kapitel mit ID '${chapterId}' aus Local Storage nicht gefunden.`
+              `DEBUG [archive.js/archive.min.js]: Kapitel mit ID '${chapterId}' aus Local Storage nicht gefunden.`
             );
         }
       }
