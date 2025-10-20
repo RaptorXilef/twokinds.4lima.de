@@ -77,7 +77,8 @@ public/_links/*
 public/_debug/*
 _Notizen/*
 *Notizen*
-
+*.docx
+*.xlsx
 
 
 
