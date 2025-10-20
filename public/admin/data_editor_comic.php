@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   7.1.0
+ * @version   7.2.0
  * @since     ... (ältere Versionen)
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
@@ -27,7 +27,8 @@
  * @since     6.1.0 Korrigiert den Zeilenumbruch für Charakternamen im Editor-Modal.
  * @since     7.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und Behebung des CSRF-Fehlers.
  * @since     7.1.0 Umstellung des AJAX-Handlers auf FormData zur Behebung des CSRF-Fehlers.
- * @since     7.1.1 Klleine Korrekturen im JS Teil
+ * @since     7.1.1 Kleine Korrekturen im JS Teil
+ * @since     7.2.0 Korrektur der Charakterbild-Anzeige
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -313,6 +314,7 @@ $cachedImagesForJs = get_image_cache_local(Path::getCachePath('comic_image_cache
 
 $placeholderUrl = Url::getImgComicThumbnailsUrl('placeholder.jpg');
 $loadingIconUrl = Url::getImgIconUrl('loading.webp');
+$charProfileUrlBase = Url::getImgCharacterProfileUrl(''); // NEU: Basispfad für Charakter-Profilbilder
 
 $pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
@@ -1038,6 +1040,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
         const placeholderUrl = '<?php echo $placeholderUrl; ?>';
         const loadingIconUrl = '<?php echo $loadingIconUrl; ?>';
+        const charProfileUrlBase = '<?php echo $charProfileUrlBase; ?>';
 
 
         const tableBody = document.querySelector('#comic-table tbody');
@@ -1371,7 +1374,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     const imageUrl = charInfo.pic_url;
 
                     if (imageUrl) {
-                        img.src = `${baseUrl}/${imageUrl}`; // Korrigiert
+                        img.src = `${charProfileUrlBase}/${imageUrl}`; // KORRIGIERT
                         img.addEventListener('error', function () {
                             this.onerror = null;
                             this.src = placeholderUrlMissing;

@@ -33,9 +33,10 @@ $siteDescription = 'Verwalte und zeige deine gespeicherten Comic-Lesezeichen an,
 $viewportContent = 'width=1099';
 $robotsContent = 'noindex, follow';
 
-// Automatischer Cache-Buster für comic.js
-$comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.js';
-$comicJsWebUrl = Url::getJsUrl('comic.js');
+// Automatischer Cache-Buster für comic.min.js
+$comicJsFileName = 'comic.min.js';
+$comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . $comicJsFileName;
+$comicJsWebUrl = Url::getJsUrl($comicJsFileName);
 $cacheBusterJs = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($comicJsWebUrl . $cacheBusterJs) . '"></script>';
 
@@ -49,7 +50,7 @@ $additionalHeadContent = '<link nonce="' . htmlspecialchars($nonce) . '" rel="st
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<!-- Stelle die Comic-Daten für comic.js zur Verfügung, damit die Hover-Texte korrekt generiert werden können -->
+<!-- Stelle die Comic-Daten für comic.min.js zur Verfügung, damit die Hover-Texte korrekt generiert werden können -->
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     window.comicData = <?php echo json_encode($comicData); ?>;
 </script>
@@ -64,7 +65,7 @@ require_once Path::getPartialTemplatePath('header.php');
     <noscript>Entschuldigung, diese Funktion erfordert aktiviertes JavaScript.</noscript>
 
     <div id="bookmarksWrapper">
-        <!-- Lesezeichen werden hier von comic.js dynamisch eingefügt -->
+        <!-- Lesezeichen werden hier von comic.min.js dynamisch eingefügt -->
     </div>
 
     <div class="bookmarks-controls">
@@ -75,7 +76,7 @@ require_once Path::getPartialTemplatePath('header.php');
         <input type="file" id="import" accept=".json,application/json" class="hidden-file-input">
     </div>
 
-    <!-- Diese Templates werden von comic.js verwendet, um die Lesezeichen zu erstellen -->
+    <!-- Diese Templates werden von comic.min.js verwendet, um die Lesezeichen zu erstellen -->
     <template id="noBookmarks">
         <div class="no-bookmarks">
             <p>Du hast noch keine Lesezeichen!</p>
@@ -91,7 +92,7 @@ require_once Path::getPartialTemplatePath('header.php');
     <template id="pageBookmark">
         <a href="">
             <span>
-                <!-- Der Text wird hier von comic.js eingefügt -->
+                <!-- Der Text wird hier von comic.min.js eingefügt -->
                 <button type="button" class="delete" title="Lesezeichen entfernen">X <?php /*
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 41.336 41.336">
 <path

@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.2
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -32,6 +32,8 @@
  * @since     3.3.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.4.0 Umstellung auf neue, granulare Asset-Pfad-Konstanten und Korrektur des Renderer-Pfades.
  * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und Vereinfachung der Bildpfade.
+ * @since     4.0.1 Behebt einen fatalen Fehler durch Hinzufügen der fehlenden getRelativePath()-Hilfsfunktion.
+ * @since     4.0.2 Behebt einen JavaScript ReferenceError (result vs. data), der fälschlicherweise als JSON-Fehler gemeldet wurde.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -42,6 +44,31 @@ require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // HINWEIS: Der Pfad zu den Charakter-PHP-Seiten wird direkt aus der DIRECTORY_PUBLIC_CHARAKTERE-Konstante abgeleitet.
 $charakterePhpPath = DIRECTORY_PUBLIC_CHARAKTERE . DIRECTORY_SEPARATOR;
+
+/**
+ * Berechnet den relativen Pfad von einem Start- zu einem Zielpfad.
+ *
+ * @param string $from Der absolute Startpfad (Verzeichnis).
+ * @param string $to Der absolute Zielpfad (Datei).
+ * @return string Der berechnete relative Pfad.
+ */
+function getRelativePath(string $from, string $to): string
+{
+    $from = str_replace('\\', '/', $from);
+    $to = str_replace('\\', '/', $to);
+    $from = explode('/', rtrim($from, '/'));
+    $to = explode('/', rtrim($to, '/'));
+    $toFilename = array_pop($to); // Dateinamen für später aufheben
+    while (count($from) && count($to) && ($from[0] == $to[0])) {
+        array_shift($from);
+        array_shift($to);
+    }
+    $relativePath = str_repeat('../', count($from));
+    $relativePath .= implode('/', $to);
+    $relativePath .= '/' . $toFilename;
+    return $relativePath;
+}
+
 
 function loadJsonData(string $path): array
 {
@@ -58,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_end_clean();
     header('Content-Type: application/json');
 
-    // FIX: Read from $_POST instead of php://input to align with FormData
     verify_csrf_token();
 
     $inputDataStr = $_POST['characterData'] ?? '{}';
@@ -93,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
                 if (!file_exists($filePath)) {
-                    $relativePathCharacterPageRenderer = getRelativePath(DIRECTORY_PUBLIC_CHARAKTERE, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_character_page.php'); // TODO: lösen: Netzwerkfehler: Unexpected token '<', "<br /> <b>"... is not valid JSON
+                    $relativePathCharacterPageRenderer = getRelativePath(DIRECTORY_PUBLIC_CHARAKTERE, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_character_page.php');
                     $phpContent = "<?php require_once __DIR__ . '/" . $relativePathCharacterPageRenderer . "'; ?>";
                     if (file_put_contents($filePath, $phpContent) !== false) {
                         $createdCount++;
@@ -653,7 +679,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'master-char-entry';
                 entryDiv.dataset.charId = id;
-                const imgSrc = char.pic_url ? `${charProfileUrlBase}/${char.pic_url}` : placeholderUrl;
+                const imgSrc = char.pic_url ? `${charProfileUrlBase}${char.pic_url}` : placeholderUrl;
                 entryDiv.innerHTML = `
                 <div>
                     <img src="${imgSrc}" alt="${char.name}">
@@ -692,7 +718,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     const char = characterData.characters[charId];
                     const displayName = char ? char.name : `<span style="color:red">[ID nicht gefunden: ${charId}]</span>`;
                     const picUrl = char ? char.pic_url : '';
-                    const imgSrc = picUrl ? `${charProfileUrlBase}/${picUrl}` : 'https://placehold.co/50x50/cccccc/333333?text=?';
+                    const imgSrc = picUrl ? `${charProfileUrlBase}${picUrl}` : 'https://placehold.co/50x50/cccccc/333333?text=?';
 
                     const charEntry = document.createElement('div');
                     charEntry.className = 'character-entry';
@@ -751,7 +777,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const updateImagePreview = () => {
             const path = editModal.querySelector('#modal-pic-url').value;
             const preview = editModal.querySelector('#modal-image-preview');
-            preview.src = path ? `${charProfileUrlBase}/${path}` : 'https://placehold.co/100x100/cccccc/333333?text=?';
+            preview.src = path ? `${charProfileUrlBase}${path}` : 'https://placehold.co/100x100/cccccc/333333?text=?';
             preview.onerror = () => { preview.src = 'https://placehold.co/100x100/dc3545/ffffff?text=X'; };
         };
 
@@ -865,7 +891,8 @@ require_once Path::getPartialTemplatePath('header.php');
         }));
         editModal.querySelector('#modal-pic-url').addEventListener('input', updateImagePreview);
 
-        saveAllBtn.addEventListener('click', async () => {
+        saveAllBtn.addEventListener('click', async (e) => {
+            e.preventDefault(); // VERHINDERT DAS NEULADEN DER SEITE
             const dataToSave = { schema_version: 2, characters: {}, groups: {} };
 
             document.querySelectorAll('#character-groups-container .character-group').forEach(groupDiv => {
@@ -888,17 +915,24 @@ require_once Path::getPartialTemplatePath('header.php');
                     method: 'POST',
                     body: formData
                 });
-                const result = await response.json();
-                if (result.success) {
-                    characterData = dataToSave;
-                    renderMasterList();
-                    renderGroups();
-                    showMessage(result.message, 'status-green');
-                } else {
-                    showMessage(result.message || 'Ein Fehler ist aufgetreten.', 'status-red');
+
+                const responseText = await response.text();
+                try {
+                    const data = JSON.parse(responseText);
+                    if (response.ok && data.success) {
+                        characterData = dataToSave;
+                        renderMasterList();
+                        renderGroups();
+                        showMessage(data.message, 'status-green');
+                    } else {
+                        showMessage(data.message || 'Ein Fehler ist aufgetreten.', 'status-red');
+                    }
+                } catch (e) {
+                    throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
                 }
             } catch (error) {
-                showMessage('Netzwerkfehler: ' + error.message, 'status-red');
+                const userFriendlyMessage = `Netzwerkfehler: Die Antwort vom Server war kein gültiges JSON. Oft liegt das an einem PHP-Fehler. Server-Antwort: ${error.message}`;
+                showMessage(userFriendlyMessage, 'status-red');
             }
         });
 

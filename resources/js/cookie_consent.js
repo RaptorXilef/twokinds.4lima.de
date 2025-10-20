@@ -25,7 +25,9 @@ window.gaConfigured = false; // Initialisiere als false
 
 document.addEventListener("DOMContentLoaded", () => {
   if (debugModeJsCookie)
-    console.log("DEBUG: DOMContentLoaded fired in cookie_consent.js.");
+    console.log(
+      "DEBUG: DOMContentLoaded fired in cookie_consent.js/cookie_consent.min.js."
+    );
   // Initialen Zustand des Banners überprüfen und ggf. anzeigen
   checkConsentAndDisplayBanner();
 
