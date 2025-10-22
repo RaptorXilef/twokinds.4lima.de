@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.1
  * @since     2.6.0 Diese Datei wurde verschlankt und konzentriert sich auf die HTML-Struktur und das Asset-Management.
  * Die sicherheitsrelevanten Initialisierungen wurden in separate `init.php`-Dateien ausgelagert.
  * @since     2.7.0 Entfernung redundanter URL-Berechnung und Ersetzung von Pfaden durch globale Konstanten.
@@ -16,6 +16,7 @@
  * @since     2.7.2 Finale Validierung gegen die neueste Pfad-Konfiguration.
  * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, DIRECTORY_PUBLIC_URL).
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     4.0.1 Aktualisiere den Pfad zur Sitemap-XML im Header
  *
  * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
  * @param string $pageHeader Der sichtbare H1-Header für die aktuelle Seite im Hauptinhaltsbereich.
@@ -115,7 +116,7 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
 
     <!-- Weitere Meta-Informationen -->
     <link rel="sitemap" type="application/xml" title="Sitemap"
-        href="<?php echo htmlspecialchars($baseUrl . 'sitemap.xml'); ?>">
+        href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL . 'sitemap.xml'); ?>">
     <meta name="google-site-verification" content="61orCNrFH-sm-pPvwWMM8uEH8OAnJDeKtI9yzVL3ico" />
 
     <!-- Stylesheets -->

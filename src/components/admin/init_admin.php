@@ -16,9 +16,13 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.0.0
+ * @version   2.1.0
  * @since     1.2.3 Session-Fingerprinting zur Erhöhung der Sicherheit wieder hinzugefügt.
  * @since     2.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     2.1.0 Kleine Fixes die ein fehlgeschlagenen Login durch beschädigte Cookies verhindert haben. Siehe https://github.com/RaptorXilef/twokinds.4lima.de/issues/76
+ * @comment   2.1.0 Der Parameter 'domain' wurde aus `session_set_cookie_params` entfernt, da er bei bestimmten Server-Konfigurationen zu ungültigen Cookies führte.
+ * @comment   2.1.0 `ob_end_clean()` wurde aus der Logout-Logik entfernt. Dieser Aufruf verhinderte, dass der `setcookie`-Header zum Löschen des Session-Cookies korrekt an den Browser gesendet wurde.
+ * @comment   2.1.0 Der `session_save_path` wird nun dynamisch auf ein Verzeichnis (`secret/sessions`) außerhalb des öffentlichen Web-Roots gesetzt. Dies schützt die Session-Dateien vor direktem Zugriff und erhöht die Sicherheit.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -34,6 +38,35 @@ if ($debugMode) {
     error_log("DEBUG: init_admin.php wird von {$callingScript} eingebunden.");
     error_log("DEBUG (config_loader): Basis-URL bestimmt: " . (defined('DIRECTORY_PUBLIC_URL') ? DIRECTORY_PUBLIC_URL : 'NICHT DEFINIERT'));
 }
+
+// --- NEU: Eigener Session-Speicherpfad ---
+// Wir nutzen die Path-Klasse, um einen Pfad im 'secret' (nicht-öffentlichen) Verzeichnis zu definieren.
+// Dieser Ordner muss für den PHP-Prozess beschreibbar sein.
+try {
+    $sessionSavePath = Path::getSecretPath('sessions');
+
+    // Sicherstellen, dass das Verzeichnis existiert
+    if (!is_dir($sessionSavePath)) {
+        // Versuche, es rekursiv zu erstellen. 
+        // 0700 = Nur der Eigentümer (PHP-Prozess) darf lesen/schreiben/ausführen.
+        if (!mkdir($sessionSavePath, 0755, true)) { // Vorzugsweise 0700, bei Shared-Hosting ist 0755 aber die zuverlässigere Wahl.
+            error_log("FEHLER: Konnte das benutzerdefinierte Session-Verzeichnis nicht erstellen: " . $sessionSavePath);
+        } else {
+            // Verzeichnis erfolgreich erstellt, setze den Pfad
+            session_save_path($sessionSavePath);
+            if ($debugMode)
+                error_log("DEBUG: Eigenes Session-Verzeichnis erstellt und Pfad gesetzt auf: " . $sessionSavePath);
+        }
+    } else {
+        // Verzeichnis existiert bereits, setze den Pfad
+        session_save_path($sessionSavePath);
+        if ($debugMode)
+            error_log("DEBUG: Eigenen Session-Pfad gesetzt auf: " . $sessionSavePath);
+    }
+} catch (Exception $e) {
+    error_log("FEHLER beim Setzen des Session-Pfads: " . $e->getMessage());
+}
+// --- ENDE: Eigener Session-Speicherpfad ---
 
 ob_start();
 
@@ -65,7 +98,7 @@ header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'],
+    //'domain' => $_SERVER['HTTP_HOST'], // Das war die wahrscheinlichste Ursache für dein "kaputtes" Cookie.
     'secure' => isset($_SERVER['HTTPS']),
     'httponly' => true,
     'samesite' => 'Strict'
@@ -78,7 +111,7 @@ if (session_status() === PHP_SESSION_NONE) {
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 900)) { // 15 Minuten
     session_regenerate_id(true);
 }
-$_SESSION['last_activity'] = time();
+// $_SESSION['last_activity'] = time();
 
 // Robuster Session-Fingerabdruck (User-Agent + IP-Netzwerk)
 $sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
@@ -188,7 +221,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     }
 
     session_destroy();
-    ob_end_clean();
+    //ob_end_clean();  // Diese Zeile war ein Fehler im Logout-Code. Sie hat verhindert, dass der Befehl zum Löschen des Cookies an den Browser gesendet wird.
     header('Location: index.php');
     exit;
 }
