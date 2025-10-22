@@ -10,10 +10,11 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.1
  * @since     2.1.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.0.0 Vollständige Integration der init_admin.php, Entfernung redundanter Sicherheits-Header und Funktionen.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     4.0.1 Behebt das Problem mit der Race Condition. session_write_close(); -> Session-Daten explizit schreiben, BEVOR wir umleiten.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -150,6 +151,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     unset($attempts[$userIp]);
                     saveLoginAttempts($attempts);
                 }
+                // NEU: Session-Daten explizit schreiben, BEVOR wir umleiten.
+                // Das behebt die Race Condition.
+                session_write_close();
+
                 header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
                 exit;
             } else {
