@@ -6,7 +6,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.1
+ * @version   2.2.0
  * @since     1.0.0 Initiale Erstellung
  * @since     1.0.2 Konstanten für wichtige Dateien hinzugefügt.
  * @since     1.0.3 Pfadkonstanten robuster gestaltet: realpath() von abhängigen Pfaden entfernt und durch direkte String-Verkettung mit DIRECTORY_SEPARATOR ersetzt, um Existenzunabhängigkeit zu gewährleisten.
@@ -17,6 +17,7 @@
  * @since     2.0.4 Ersetzt DIRECTORY_SEPARATOR innerhalb von URL-Spezifischen Konstanten durch '/' damit die Trenner auch unter WindowsServern korrekt funktionieren.
  * @since     2.1.0 Anpassung der Pfade innerhalb der KONSTANTEN auf Grundlage der neuen Verzeichnisstrukturen.
  * @since     2.1.1 Konstanten für die Ordner in resources hinzugefügt.
+ * @since     2.2.0 Anpassung der Comicbilder-Pfade an die neue Struktur.
  * 
  */
 
@@ -89,16 +90,28 @@ define('DIRECTORY_PUBLIC_ADMIN_CSS_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/css/adm
 define('DIRECTORY_PUBLIC_ADMIN_JS_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/js/admin');
 
 
+// ###################################################################
+// --- ÖFFENTLICHE IMAGES Pfade ---
+
+define('DIRECTORY_PUBLIC_IMAGES', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'images');
+// URLs
+define('DIRECTORY_PUBLIC_IMAGES_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/' . 'images');
+
+
+
 
 
 ######################################################################
 // --- COMIC-IMAGES Pfade ---
-// define('DIRECTORY_PUBLIC_ASSETS_IMAGES', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'images');
+define('DIRECTORY_PUBLIC_IMG_COMIC', DIRECTORY_PUBLIC_IMAGES . DIRECTORY_SEPARATOR . 'comic');
+// URLs
+define('DIRECTORY_PUBLIC_IMG_COMIC_URL', DIRECTORY_PUBLIC_IMAGES_URL . '/' . 'comic');
+
 // COMIC-IMAGES Pfad
-define('DIRECTORY_PUBLIC_IMG_COMIC_HIRES', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'comic_hires');
-define('DIRECTORY_PUBLIC_IMG_COMIC_LOWRES', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'comic_lowres');
-define('DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'comic_socialmedia');
-define('DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'comic_thumbnails');
+define('DIRECTORY_PUBLIC_IMG_COMIC_HIRES', DIRECTORY_PUBLIC_IMG_COMIC . DIRECTORY_SEPARATOR . 'hires');
+define('DIRECTORY_PUBLIC_IMG_COMIC_LOWRES', DIRECTORY_PUBLIC_IMG_COMIC . DIRECTORY_SEPARATOR . 'lowres');
+define('DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA', DIRECTORY_PUBLIC_IMG_COMIC . DIRECTORY_SEPARATOR . 'socialmedia');
+define('DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS', DIRECTORY_PUBLIC_IMG_COMIC . DIRECTORY_SEPARATOR . 'thumbnails');
 // IMAGES Pfad
 define('DIRECTORY_PUBLIC_IMG_ICONS', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'icons');
 define('DIRECTORY_PUBLIC_IMG_LESEZEICHEN_ICON', DIRECTORY_PUBLIC_ASSETS . DIRECTORY_SEPARATOR . 'lesezeichen');
@@ -119,10 +132,10 @@ define('DIRECTORY_PUBLIC_IMG_CHARAKTERE_SWATCHES', DIRECTORY_PUBLIC_IMG_CHARAKTE
 
 
 // COMIC-IMAGES Pfad
-define('DIRECTORY_PUBLIC_IMG_COMIC_HIRES_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/' . 'comic_hires');
-define('DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/' . 'comic_lowres');
-define('DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/' . 'comic_socialmedia');
-define('DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/' . 'comic_thumbnails');
+define('DIRECTORY_PUBLIC_IMG_COMIC_HIRES_URL', DIRECTORY_PUBLIC_IMG_COMIC_URL . '/' . 'hires');
+define('DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL', DIRECTORY_PUBLIC_IMG_COMIC_URL . '/' . 'lowres');
+define('DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA_URL', DIRECTORY_PUBLIC_IMG_COMIC_URL . '/' . 'socialmedia');
+define('DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS_URL', DIRECTORY_PUBLIC_IMG_COMIC_URL . '/' . 'thumbnails');
 // IMAGES Pfad
 define('DIRECTORY_PUBLIC_IMG_ICONS_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/' . 'icons');
 define('DIRECTORY_PUBLIC_IMG_LESEZEICHEN_ICON_URL', DIRECTORY_PUBLIC_ASSETS_URL . '/' . 'lesezeichen');
