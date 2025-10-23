@@ -155,6 +155,26 @@ define('DIRECTORY_PUBLIC_IMG_CHARAKTERE_SWATCHES_URL', DIRECTORY_PUBLIC_IMG_CHAR
 
 
 
+
+
+######################################################################
+// --- COMIC-IMAGES Pfade ---
+define('DIRECTORY_PUBLIC_IMG_LAYOUT', DIRECTORY_PUBLIC_IMAGES . DIRECTORY_SEPARATOR . 'layout');
+// URLs
+define('DIRECTORY_PUBLIC_IMG_LAYOUT_URL', DIRECTORY_PUBLIC_IMAGES_URL . '/' . 'layout');
+
+// COMIC-IMAGES Pfad
+define('DIRECTORY_PUBLIC_IMG_LAYOUT_HIRES', DIRECTORY_PUBLIC_IMG_LAYOUT . DIRECTORY_SEPARATOR . 'hires');
+define('DIRECTORY_PUBLIC_IMG_LAYOUT_LOWRES', DIRECTORY_PUBLIC_IMG_LAYOUT . DIRECTORY_SEPARATOR . 'lowres');
+
+// COMIC-IMAGES Pfad
+define('DIRECTORY_PUBLIC_IMG_LAYOUT_HIRES_URL', DIRECTORY_PUBLIC_IMG_LAYOUT_URL . '/' . 'hires');
+define('DIRECTORY_PUBLIC_IMG_LAYOUT_LOWRES_URL', DIRECTORY_PUBLIC_IMG_LAYOUT_URL . '/' . 'lowres');
+
+
+
+
+
 // ###################################################################
 // --- PRIVATE Pfade ---
 // CONFIG Pfad

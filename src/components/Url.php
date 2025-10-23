@@ -106,6 +106,17 @@ class Url
         return DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS_URL . '/' . $filename;
     }
 
+    // --- Images: Layout ---
+    public static function getImgLayoutHiresUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_HIRES_URL . '/' . $filename;
+    }
+
+    public static function getImgLayoutLowresUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_LOWRES_URL . '/' . $filename;
+    }
+
     // --- Images: General & Icons ---
     public static function getImgIconUrl(string $filename): string
     {
