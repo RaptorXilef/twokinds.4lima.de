@@ -148,9 +148,9 @@ class Path
         return DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS . DIRECTORY_SEPARATOR . $filename;
     }
 
-    public static function getImgCharacterPath(string $filename): string
+    public static function getImgCharactersPath(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE . DIRECTORY_SEPARATOR . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_MAIN . DIRECTORY_SEPARATOR . $filename;
     }
 
     // --- Layout Paths ---

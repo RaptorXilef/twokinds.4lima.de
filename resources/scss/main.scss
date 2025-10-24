@@ -177,7 +177,7 @@ hr {
 		display        : inline-block;
 		width          : 1em;
 		height         : 0.6em;
-		background     : transparent url($base_url + "/assets/svg/dropdown.svg") 50% 50% no-repeat;
+		background : transparent url($base_url + "/assets/images/layout/ui/dropdown.svg?c=20251024") 50% 50% no-repeat;
 		background-size: contain;
 
 		&.animate {
@@ -198,7 +198,7 @@ hr {
 	position   : relative;
 	z-index : 99;
 	margin-left: -10px;
-	background : transparent url($base_url + "/assets/img/spring2025banner.webp") 0 10px no-repeat;
+	background : transparent url($base_url + "/assets/images/layout/banner.webp?c=20251024") 0 10px no-repeat;
 	text-indent: 105%;
 	white-space: nowrap;
 	overflow   : hidden;
@@ -482,7 +482,7 @@ footer {
 .footer-img {
 	width     : 100%;
 	height    : 89px;
-	background: transparent url($base_url + "/assets/img/footer.webp") 50% 0 no-repeat;
+	background: transparent url($base_url + "/assets/images/layout/footer.webp?c=20251024") 50% 0 no-repeat;
 	margin-top: 5px;
 }
 
@@ -675,7 +675,7 @@ footer {
 			transform      : translateY(-36px);
 			width          : 27px;
 			flex           : 0 0 auto;
-			background : url($base_url + "/assets/layout/ui/bookmark.png") 0 0 no-repeat;
+			background : url($base_url + "/assets/layout/ui/bookmark.png?c=20251024") 0 0 no-repeat;
 			background-size: contain;
 			overflow       : hidden;
 			text-indent    : -100em;
@@ -687,7 +687,7 @@ footer {
 			border-radius  : 0;
 
 			&.bookmarked {
-				background : url($base_url + "/assets/layout/ui/bookmark_active.png") 0 0 no-repeat;
+				background : url($base_url + "/assets/layout/ui/bookmark_active.png?c=20251024") 0 0 no-repeat;
 				background-size: contain;
 			}
 		}

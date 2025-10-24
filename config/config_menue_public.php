@@ -10,11 +10,12 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.1
  * @since     1.0.0 Grundlegende Menüstruktur und Links.
  * @since     1.0.1 Link zu Charakter-Übersicht hinzugefügt.
  * @since     1.0.2 Visuelles Feedback beim Kopieren der RSS-URL hinzugefügt.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     4.0.1 Anpassung der Pfade zu den Sozial-Icons
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -29,25 +30,25 @@ $debugMode = $debugMode ?? false;
             <!-- Patreon Icon -->
             <a href="https://www.patreon.com/RaptorXilef" target="_blank" rel="noopener noreferrer">
                 <!-- Bild für den hellen Modus -->
-                <img class="patreon-light-icon social-icon" src="<?php echo Url::getImgIconUrl('patreon.png'); ?>"
+                <img class="patreon-light-icon social-icon" src="<?php echo Url::getImgUiUrl('patreon.png'); ?>"
                     alt="Patreon" width="32" height="32">
                 <!-- Bild für den dunklen Modus -->
-                <img class="patreon-dark-icon social-icon" src="<?php echo Url::getImgIconUrl('patreon_dark.png'); ?>"
+                <img class="patreon-dark-icon social-icon" src="<?php echo Url::getImgUiUrl('patreon_dark.png'); ?>"
                     alt="Patreon Dark" width="32" height="32">
             </a>
             <!-- InkBunny Icon -->
             <a href="https://inkbunny.net/RaptorXilefSFW" target="_blank" title="Mein InkBunny">
-                <img class="social-icon" src="<?php echo Url::getImgIconUrl('inkbunny.png'); ?>" alt="InkBunny" width="32"
+                <img class="social-icon" src="<?php echo Url::getImgUiUrl('inkbunny.png'); ?>" alt="InkBunny" width="32"
                     height="32">
             </a>
             <!-- PayPal Icon -->
             <a href="https://paypal.me/RaptorXilef?country.x=DE&locale.x=de_DE" target="_blank" title="Mein Paypal">
-                <img class="social-icon" src="<?php echo Url::getImgIconUrl('paypal.png'); ?>" alt="PayPal" width="32"
+                <img class="social-icon" src="<?php echo Url::getImgUiUrl('paypal.png'); ?>" alt="PayPal" width="32"
                     height="32">
             </a>
             <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/rss.xml" target="_blank" title="Mein RSS-Feed"
                 id="rssFeedLink">
-                <img class="social-icon" src="<?php echo Url::getImgIconUrl('rss-feed.png'); ?>" alt="RSS" width="32"
+                <img class="social-icon" src="<?php echo Url::getImgUiUrl('rss-feed.png'); ?>" alt="RSS" width="32"
                     height="32">
                 <span class="copy-feedback">URL Kopiert!</span>
             </a>
@@ -77,7 +78,7 @@ $debugMode = $debugMode ?? false;
                 class="themename">LICHT AUS</span></a>
         <br>
         <a href='https://twokinds.keenspot.com'>Zum Original<p>auf Englisch</p><img
-                src='<?php echo Url::getImgBannerUrl('tkbutton3.webp'); ?>' alt='Twokinds'></a>
+                src='<?php echo Url::getImgUiUrl('tkbutton3.webp'); ?>' alt='Twokinds'></a>
     </nav>
     <!-- Menü Ende -->
 </div>

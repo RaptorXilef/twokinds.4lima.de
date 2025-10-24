@@ -46,7 +46,7 @@ $birthdateFelix = new DateTime('1993-03-29');
 $ageFelix = $today->diff($birthdateFelix)->y;
 
 // Bild-Pfad für den Übersetzer mit Cache-Buster (NEUE METHODE)
-$felixImageWebUrl = Url::getImgBannerUrl('about/Felix.webp');
+$felixImageWebUrl = Url::getImgAboutUrl('Felix.webp');
 $felixImagePathOnServer = DIRECTORY_PUBLIC_IMG_ABOUT . DIRECTORY_SEPARATOR . 'Felix.webp';
 if (file_exists($felixImagePathOnServer)) {
 	$felixImageWebUrl .= '?c=' . filemtime($felixImagePathOnServer);
