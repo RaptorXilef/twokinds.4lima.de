@@ -133,12 +133,37 @@ class Path
         return DIRECTORY_PUBLIC_IMG_COMIC_HIRES . DIRECTORY_SEPARATOR . $filename;
     }
 
-    public static function getImgCharacterPath(string $filename): string
+    public static function getImgComicLowresPath(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE . DIRECTORY_SEPARATOR . $filename;
+        return DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getImgComicSozialMediaPath(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getImgComicThumbnailsPath(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getImgCharactersPath(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_MAIN . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    // --- Layout Paths ---
+    public static function getImgLayoutHiresPath(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_HIRES . DIRECTORY_SEPARATOR . $filename;
+    }
+
+    public static function getImgLayoutLowresPath(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_LOWRES . DIRECTORY_SEPARATOR . $filename;
     }
 }
-
 
 
 /*

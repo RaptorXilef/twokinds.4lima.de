@@ -221,7 +221,7 @@ require_once Path::getPartialTemplatePath('header.php');
             <div class="form-group">
                 <label for="modal-pic-url">Bild-Dateiname:</label>
                 <input type="text" id="modal-pic-url">
-                <small>Dateiname der Bilddatei aus dem Ordner <?php echo DIRECTORY_PUBLIC_IMG_CHARAKTERE_PROFILE; ?>,
+                <small>Dateiname der Bilddatei aus dem Ordner <?php echo DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES; ?>,
                     z.B. "Trace.webp"</small>
                 <!-- <small>Relativer Pfad vom /public/ Ordner aus, z.B. "assets/img/charaktere/faces/icon_trace.gif"</small> -->
             </div>
@@ -655,7 +655,7 @@ require_once Path::getPartialTemplatePath('header.php');
         if (!characterData.groups) characterData.groups = {};
 
         const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
-        const charProfileUrlBase = '<?php echo Url::getImgCharacterProfileUrl(''); ?>';
+        const charProfileUrlBase = '<?php echo Url::getImgCharactersProfilesUrl(''); ?>';
         // UI Elements
         const masterListContainer = document.getElementById('character-master-list');
         const groupsContainer = document.getElementById('character-groups-container');

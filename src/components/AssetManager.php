@@ -193,7 +193,7 @@ class AssetManager
  * <link rel="stylesheet" href="<?= AssetManager::scss('dashboard.scss', true) ?>">
  *
  * 3. Bild mit automatischer WebP-Auswahl und Versionierung anzeigen:
- * <img src="<?= AssetManager::image(Url::getImgCharacterUrl('flora.png')) ?>" alt="Flora">
+ * <img src="<?= AssetManager::image(Url::getImgCharactersUrl('flora.png')) ?>" alt="Flora">
  *
  * 4. Einfaches Cache Busting für eine JS-Datei:
  * <script src="<?= AssetManager::version(Url::getJsUrl('app.js')) ?>"></script>

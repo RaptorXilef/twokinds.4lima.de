@@ -97,48 +97,48 @@ _Notizen/*
 ########################
 
 # assets und Bilder
-public/assets/comic_hires/*.jpg
-public/assets/comic_hires/*.png
-public/assets/comic_hires/*gif
-public/assets/comic_hires/*.webp
-!public/assets/comic_hires/in_translation.*
-!public/assets/comic_hires/index.php
-!public/assets/comic_hires/.htaccess
+public/assets/images/comic/hires/*.jpg
+public/assets/images/comic/hires/*.png
+public/assets/images/comic/hires/*gif
+public/assets/images/comic/hires/*.webp
+!public/assets/images/comic/hires/in_translation.*
+!public/assets/images/comic/hires/index.php
+!public/assets/images/comic/hires/.htaccess
 
-public/assets/comic_lowres/*.jpg
-public/assets/comic_lowres/*.png
-public/assets/comic_lowres/*gif
-public/assets/comic_lowres/*.webp
-!public/assets/comic_lowres/in_translation.*
-!public/assets/comic_lowres/index.php
-!public/assets/comic_lowres/.htaccess
+public/assets/images/comic/lowres/*.jpg
+public/assets/images/comic/lowres/*.png
+public/assets/images/comic/lowres/*gif
+public/assets/images/comic/lowres/*.webp
+!public/assets/images/comic/lowres/in_translation.*
+!public/assets/images/comic/lowres/index.php
+!public/assets/images/comic/lowres/.htaccess
 
-public/assets/comic_lowres_png/*
+public/assets/images/comic/lowres_png/*
 
-public/assets/comic_socialmedia/*.jpg
-public/assets/comic_socialmedia/*.png
-public/assets/comic_socialmedia/*gif
-public/assets/comic_socialmedia/*.webp
-!public/assets/comic_socialmedia/index.php
-!public/assets/comic_socialmedia/.htaccess
+public/assets/images/comic/socialmedia/*.jpg
+public/assets/images/comic/socialmedia/*.png
+public/assets/images/comic/socialmedia/*gif
+public/assets/images/comic/socialmedia/*.webp
+!public/assets/images/comic/socialmedia/index.php
+!public/assets/images/comic/socialmedia/.htaccess
 
-public/assets/comic_thumbnails/*.jpg
-public/assets/comic_thumbnails/*.png
-public/assets/comic_thumbnails/*gif
-public/assets/comic_thumbnails/*.webp
-!public/assets/comic_thumbnails/placeholder.*
-!public/assets/comic_thumbnails/in_translation.*
-!public/assets/comic_thumbnails/index.php
-!public/assets/comic_thumbnails/.htaccess
+public/assets/images/comic/thumbnails/*.jpg
+public/assets/images/comic/thumbnails/*.png
+public/assets/images/comic/thumbnails/*gif
+public/assets/images/comic/thumbnails/*.webp
+!public/assets/images/comic/thumbnails/placeholder.*
+!public/assets/images/comic/thumbnails/in_translation.*
+!public/assets/images/comic/thumbnails/index.php
+!public/assets/images/comic/thumbnails/.htaccess
 
 public/assets/img/github/twokinds.4lima.de.psd
 public/assets/img/about/*
 
 # Fehlerseiten
-!public/assets/comic_lowres/404.*
-!public/assets/comic_hires/404.*
-!public/assets/comic_lowres/403.*
-!public/assets/comic_hires/403.*
+!public/assets/images/comic/lowres/404.*
+!public/assets/images/comic/hires/404.*
+!public/assets/images/comic/lowres/403.*
+!public/assets/images/comic/hires/403.*
 
 # Nicht verwendete Icons
 public/assets/icons/nicht verwendet/*

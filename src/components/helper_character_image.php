@@ -40,16 +40,16 @@ if (!function_exists('get_char_image_path')) {
         $extensions = ['webp', 'jpg', 'png', 'gif'];
 
         if ($type === 'portrait') {
-            $serverBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERE;
-            $urlBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERE_URL;
+            $serverBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_MAIN;
+            $urlBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_MAIN_URL;
         } elseif ($type === 'ref_sheet') {
-            $serverBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERE_REFSHEETS;
-            $urlBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERE_REFSHEETS_URL;
+            $serverBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_REFSHEETS_THUMBNAILS;
+            $urlBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_REFSHEETS_THUMBNAILS_URL;
         } else {
             if ($debugMode) {
                 error_log("FEHLER in get_char_image_path: Unbekannter Bildtyp '{$type}'.");
             }
-            return Url::getImgBannerUrl('placeholder.png');
+            return Url::getImgCharactersUrl('placeholder.webp');
         }
 
         // Durchsuche die Erweiterungen, um die korrekte Datei zu finden.
@@ -68,7 +68,7 @@ if (!function_exists('get_char_image_path')) {
         }
 
         // Finaler Fallback, wenn keine Datei gefunden wird.
-        return Url::getImgBannerUrl('placeholder.png');
+        return Url::getImgCharactersUrl('placeholder.webp');
     }
 }
 ?>

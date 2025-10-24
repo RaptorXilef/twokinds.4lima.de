@@ -76,7 +76,7 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
                                         $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
                                         if (!empty($characterDetails['pic_url'])) {
                                             // Bild-URL mit DIRECTORY_PUBLIC_URL erstellen
-                                            $imageSrc = DIRECTORY_PUBLIC_IMG_CHARAKTERE_PROFILE_URL . '/' . htmlspecialchars($characterDetails['pic_url']);
+                                            $imageSrc = DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($characterDetails['pic_url']);
                                         }
                                         ?>
                                         <div class="character-item">

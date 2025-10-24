@@ -313,8 +313,8 @@ foreach ($allIds as $id) {
 $cachedImagesForJs = get_image_cache_local(Path::getCachePath('comic_image_cache.json'));
 
 $placeholderUrl = Url::getImgComicThumbnailsUrl('placeholder.jpg');
-$loadingIconUrl = Url::getImgIconUrl('loading.webp');
-$charProfileUrlBase = Url::getImgCharacterProfileUrl(''); // NEU: Basispfad für Charakter-Profilbilder
+$loadingIconUrl = Url::getImgAdminUiUrl('loading.webp');
+$charProfileUrlBase = Url::getImgCharactersProfilesUrl(''); // NEU: Basispfad für Charakter-Profilbilder
 
 $pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';

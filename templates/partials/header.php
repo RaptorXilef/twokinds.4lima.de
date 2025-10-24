@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.1
+ * @version   4.0.2
  * @since     2.6.0 Diese Datei wurde verschlankt und konzentriert sich auf die HTML-Struktur und das Asset-Management.
  * Die sicherheitsrelevanten Initialisierungen wurden in separate `init.php`-Dateien ausgelagert.
  * @since     2.7.0 Entfernung redundanter URL-Berechnung und Ersetzung von Pfaden durch globale Konstanten.
@@ -17,6 +17,7 @@
  * @since     3.0.0 Umstellung auf das finale, granulare Konstanten-System (DIRECTORY_..., ..._URL, DIRECTORY_PUBLIC_URL).
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  * @since     4.0.1 Aktualisiere den Pfad zur Sitemap-XML im Header
+ * @since     4.0.2 Füge Font aus main.css direkt hinzu fonts.googleapis.com/css?family=Open+Sans:400,400i,700
  *
  * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
  * @param string $pageHeader Der sichtbare H1-Header für die aktuelle Seite im Hauptinhaltsbereich.
@@ -29,6 +30,7 @@
  * @param string $robotsContent Inhalt des robots-Meta-Tags (Standard: "index, follow").
  * @param string $canonicalUrl Eine explizite URL für den Canonical-Tag (optional, überschreibt die automatisch generierte URL).
  */
+
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -118,6 +120,15 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
     <link rel="sitemap" type="application/xml" title="Sitemap"
         href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL . 'sitemap.xml'); ?>">
     <meta name="google-site-verification" content="61orCNrFH-sm-pPvwWMM8uEH8OAnJDeKtI9yzVL3ico" />
+
+    <!-- Google Fonts (Open Sans) -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
 
     <!-- Stylesheets -->
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"

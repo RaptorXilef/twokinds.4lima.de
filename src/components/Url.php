@@ -6,7 +6,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-Share-Alike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.3.1
+ * @version   2.3.2
  * @since     1.0.0 Initiale Erstellung
  * @comment   Diese Klasse ersetzt die Notwendigkeit, für jede Datei eine eigene Konstante zu definieren.
  * Sie nutzt die Basis-Verzeichniskonstanten aus 'config_folder_path.php', um dynamisch
@@ -21,6 +21,7 @@
  * @since     2.1.0 Fehlende URL-Methoden ergänzt und Klasse neu sortiert, Klasse in Url umbenannt.
  * @since     2.3.0 Methoden auf Englisch umgestellt für internationale Konventionen.
  * @since     2.3.1 Konstanten für die Ordner in resources hinzugefügt.
+ * @since     2.3.2 Anpassung der ICON und UI Pfade
  */
 
 class Url
@@ -106,10 +107,26 @@ class Url
         return DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS_URL . '/' . $filename;
     }
 
-    // --- Images: General & Icons ---
-    public static function getImgIconUrl(string $filename): string
+    // --- Images: Layout ---
+    public static function getImgLayoutHiresUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_ICONS_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_HIRES_URL . '/' . $filename;
+    }
+
+    public static function getImgLayoutLowresUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_LOWRES_URL . '/' . $filename;
+    }
+
+    // --- Images: General & Icons ---
+    public static function getImgUiUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_UI_URL . '/' . $filename;
+    }
+
+    public static function getImgAdminUiUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_ADMIN_UI_URL . '/' . $filename;
     }
 
     public static function getImgBookmarkIconUrl(string $filename): string
@@ -122,50 +139,46 @@ class Url
         return DIRECTORY_PUBLIC_IMG_NAVIGATION_ICON_URL . '/' . $filename;
     }
 
-    public static function getImgSvgUrl(string $filename): string
-    {
-        return DIRECTORY_PUBLIC_IMG_SVG_URL . '/' . $filename;
-    }
-
-    public static function getImgBannerUrl(string $filename): string
-    {
-        return DIRECTORY_PUBLIC_IMG_BANNER_URL . '/' . $filename;
-    }
-
     public static function getImgAboutUrl(string $filename): string
     {
         return DIRECTORY_PUBLIC_IMG_ABOUT_URL . '/' . $filename;
     }
 
     // --- Images: Characters ---
-    public static function getImgCharacterAssetsUrl(string $filename): string
+    public static function getImgCharactersUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_ASSETS_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_URL . '/' . $filename;
     }
 
-    public static function getImgCharacterUrl(string $filename): string
+
+    public static function getImgCharactersMainUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_MAIN_URL . '/' . $filename;
     }
 
-    public static function getImgCharacterProfileUrl(string $filename): string
+    public static function getImgCharactersProfilesUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_PROFILE_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . $filename;
     }
 
-    public static function getImgCharacterFacesUrl(string $filename): string
+    public static function getImgCharactersFacesUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_FACES_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_FACES_URL . '/' . $filename;
     }
 
-    public static function getImgCharacterRefsheetsUrl(string $filename): string
+    public static function getImgCharactersRefsheetsUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_REFSHEETS_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_REFSHEETS_URL . '/' . $filename;
     }
 
-    public static function getImgCharacterSwatchesUrl(string $filename): string
+    public static function getImgCharactersRefsheetsThumbnailsUrl(string $filename): string
     {
-        return DIRECTORY_PUBLIC_IMG_CHARAKTERE_SWATCHES_URL . '/' . $filename;
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_REFSHEETS_THUMBNAILS_URL . '/' . $filename;
+    }
+
+    public static function getImgCharactersSwatchesUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_CHARAKTERS_SWATCHES_URL . '/' . $filename;
     }
 }
 

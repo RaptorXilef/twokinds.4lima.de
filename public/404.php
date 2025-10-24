@@ -8,9 +8,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.1
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     4.0.1 Umstellung der Bildpfade und Logik auf das neue Layout.
  */
 
 // Setze den HTTP-Statuscode, damit Browser und Suchmaschinen wissen, dass dies ein Fehler ist.
@@ -24,15 +25,22 @@ $debugMode = $debugMode ?? false;
 require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
-require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
+// require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
 
 // === 3. BILD-PFADE & FALLBACKS ===
-$lowresImage = get_cached_image_path('404', 'lowres');
-$hiresImage = get_cached_image_path('404', 'hires');
+// URLs erstellen (für die Ausgabe im HTML)
+$lowresImage = URL::getImgLayoutLowresUrl('404.webp');
+$hiresImage = URL::getImgLayoutHiresUrl('404.webp');
+
+// Lokale Pfade erstellen (für die Existenzprüfung)
+$lowresImagePath = Path::getImgLayoutLowresPath('404.webp');
+$hiresImagePath = Path::getImgLayoutHiresPath('404.webp');
+
+$placeholderUrl = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
 
 // URLs mit DIRECTORY_PUBLIC_URL erstellen
-$imageToShow = $lowresImage ? DIRECTORY_PUBLIC_URL . '/' . ltrim($lowresImage, '/') : 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
-$linkToShow = $hiresImage ? DIRECTORY_PUBLIC_URL . '/' . ltrim($hiresImage, '/') : $imageToShow;
+$imageToShow = ($lowresImage && file_exists($lowresImagePath)) ? ltrim($lowresImage, '/') : $placeholderUrl;
+$linkToShow = ($hiresImage && file_exists($hiresImagePath)) ? ltrim($hiresImage, '/') : $imageToShow;
 
 if ($debugMode && !$lowresImage) {
     error_log("DEBUG: 404-Bild nicht im Cache gefunden, verwende Placeholder.");

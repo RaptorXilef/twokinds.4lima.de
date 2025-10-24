@@ -55,6 +55,13 @@ Options -Indexes -MultiViews
 # Das Herzstück für saubere, SEO-freundliche URLs.
 RewriteEngine On
 
+# Stoppt die Umschreibung für die Fehlerdokumente.
+# Dies verhindert Endlosschleifen (Loops) bei der Fehlerbehandlung,
+# die auf manchen Live-Servern (anders als bei XAMPP) auftreten,
+# wenn der interne Sub-Request für die Fehlerseite erneut umgeschrieben wird.
+RewriteCond %{REQUEST_URI} ^/(403|404)\.php$
+RewriteRule ^ - [L]
+
 # 4a: Kanonische URL erzwingen (HTTPS & non-www)
 # Leitet alle Anfragen auf https://meine-domain.de um,
 # um doppelten Inhalt (Duplicate Content) bei Suchmaschinen zu vermeiden.

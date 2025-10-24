@@ -3,6 +3,7 @@
  * Angepasst, um optisch identisch mit der gerenderten lesezeichen.php zu sein.
  */
 
+$base_url: 'https://twokinds.4lima.de';
 .charaktere-overview {
     .character-overview-intro {
         text-align   : center;
@@ -58,7 +59,7 @@
             height         : 36px;
             width          : 27px;
             flex           : 0 0 auto;
-            background     : url(https://twokinds.4lima.de/assets/lesezeichen/bookmark.png) 0 0 no-repeat;
+            background : url($base_url + "/assets/layout/ui/bookmark.png") 0 0 no-repeat;
             background-size: contain;
         }
     }
