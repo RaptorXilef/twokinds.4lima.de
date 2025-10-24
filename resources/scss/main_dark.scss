@@ -11,7 +11,7 @@ $link-visited-color: #08c;
 
 body.theme-night #banner,
 #banner-lights-off {
-	background-image: url($base_url + "/assets/img/banner.webp?c=20251024");
+	background-image: url($base_url + "/assets/images/layout/banner.webp?c=20251024");
 }
 
 .banner-lights-off {
@@ -151,24 +151,24 @@ body.theme-night {
 			}
 
 			.navbegin .nav-wrapper {
-				background-image: url($base_url + "/assets/layout/navigation/comic-nav-begin-dark.png?c=20250916");
+				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916");
 			}
 
 			.navprev .nav-wrapper {
-				background-image: url($base_url + "/assets/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916");
+				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916");
 			}
 
 			.navnext .nav-wrapper {
-				background-image: url($base_url + "/assets/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916");
+				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916");
 			}
 
 			.navend .nav-wrapper {
-				background-image: url($base_url + "/assets/layout/navigation/comic-nav-end-dark.png?c=20250916");
+				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916");
 			}
 
 			&.bottomnav {
 				.nav-lang-toggle .nav-wrapper {
-					background-image: url($base_url + "/assets/layout/navigation/comic-nav-de-en-dark.png?c=20250916");
+					background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916");
 				}
 			}
 		}

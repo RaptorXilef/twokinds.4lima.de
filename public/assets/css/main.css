@@ -1,4 +1,3 @@
-@import 'https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700';
 * {
   margin: 0;
   padding: 0;
@@ -35,6 +34,7 @@ body.transitioning:not(.preload) * {
 
 body.transitioning:not(.preload) {
   -webkit-transition: background-color 0.25s, color 0.25s;
+  transition: background-color 0.25s, color 0.25s;
 }
 
 .jsdep {
@@ -171,7 +171,7 @@ hr {
   display: inline-block;
   width: 1em;
   height: 0.6em;
-  background: transparent url("https://twokinds.4lima.de/assets/svg/dropdown.svg") 50% 50% no-repeat;
+  background: transparent url("https://twokinds.4lima.de/assets/images/layout/ui/dropdown.svg?c=20251024") 50% 50% no-repeat;
   background-size: contain;
 }
 .main-container .arrow-down.animate,
@@ -190,7 +190,7 @@ hr {
   position: relative;
   z-index: 99;
   margin-left: -10px;
-  background: transparent url("https://twokinds.4lima.de/assets/img/spring2025banner.webp") 0 10px no-repeat;
+  background: transparent url("https://twokinds.4lima.de/assets/images/layout/banner.webp?c=20251024") 0 10px no-repeat;
   text-indent: 105%;
   white-space: nowrap;
   overflow: hidden;
@@ -453,7 +453,7 @@ footer {
 .footer-img {
   width: 100%;
   height: 89px;
-  background: transparent url("https://twokinds.4lima.de/assets/img/footer.webp") 50% 0 no-repeat;
+  background: transparent url("https://twokinds.4lima.de/assets/images/layout/footer.webp?c=20251024") 50% 0 no-repeat;
   margin-top: 5px;
 }
 
@@ -622,7 +622,7 @@ footer {
   transform: translateY(-36px);
   width: 27px;
   flex: 0 0 auto;
-  background: url("https://twokinds.4lima.de/assets/lesezeichen/bookmark.png") 0 0 no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/ui/bookmark.png?c=20251024") 0 0 no-repeat;
   background-size: contain;
   overflow: hidden;
   text-indent: -100em;
@@ -634,7 +634,7 @@ footer {
   border-radius: 0;
 }
 .comic .comicnav button.bookmark.bookmarked {
-  background: url("https://twokinds.4lima.de/assets/lesezeichen/bookmark_active.png") 0 0 no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/ui/bookmark_active.png?c=20251024") 0 0 no-repeat;
   background-size: contain;
 }
 .comic .comicnav img {
@@ -665,19 +665,19 @@ footer {
   background-color: #aac8aa;
 }
 .comic .comicnav .navbegin .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-begin.png?c=20250916") 0 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-begin.png?c=20250916") 0 50% no-repeat;
   padding-left: 35px;
 }
 .comic .comicnav .navprev .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-arrow-left.png?c=20250916") 0 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916") 0 50% no-repeat;
   padding-left: 26px;
 }
 .comic .comicnav .navnext .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-arrow-right.png?c=20250916") 100% 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916") 100% 50% no-repeat;
   padding-right: 26px;
 }
 .comic .comicnav .navend .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-end.png?c=20250916") 100% 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-end.png?c=20250916") 100% 50% no-repeat;
   padding-right: 35px;
 }
 .comic .comicnav .navarchive {
@@ -703,7 +703,7 @@ footer {
   width: auto;
 }
 .comic .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
   padding-left: 55px;
 }
 
@@ -1098,7 +1098,7 @@ div.page-chat .chat-button a:hover {
 			height         : 36px;
 			width          : 27px;
 			flex           : 0 0 auto;
-			background     : url($base_url + "/assets/lesezeichen/bookmark.png") 0 0 no-repeat;
+			background : url($base_url + "/assets/layout/ui/bookmark.png") 0 0 no-repeat;
 			background-size: contain;
 		}
 	}
