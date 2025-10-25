@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://twokinds.4lima.de"><img src="https://github.com/RaptorXilef/twokinds.4lima.de/blob/resources/github-images/twokinds.4lima.de.png" alt="Projekt Logo"></a>
+  <a href="https://twokinds.4lima.de"><img src="https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/resources/github-images/twokinds.4lima.de.png" alt="Projekt Logo"></a>
 </p>
 
 <h1 align="center">Twokinds Deutsch – Comic-Webseite</h1>
