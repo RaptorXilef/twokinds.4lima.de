@@ -1,3 +1,4 @@
+@charset "UTF-8";
 * {
   margin: 0;
   padding: 0;
@@ -947,15 +948,15 @@ footer {
     zoom: 1.5;
   }
   /*
-  	.bookmarks-page {
-  		.bookmark-example {
-  			font-size: 1.4em;
-  		}
+      .bookmarks-page {
+          .bookmark-example {
+              font-size: 1.4em;
+          }
 
-  		button:not(.delete) {
-  			font-size: 1.4em;
-  		}
-  	}
+          button:not(.delete) {
+              font-size: 1.4em;
+          }
+      }
   */
   .comic .transcript-content {
     font-size: 1.3em;
@@ -1083,37 +1084,430 @@ div.page-chat .chat-button a:hover {
 /* BOOKMARKS PAGE */
 /*
 .bookmarks-page {
-	.bookmark-example {
-		font-style     : italic;
-		text-align     : center;
-		font-size      : 0.9em;
-		margin-right   : 1rem;
-		display        : flex;
-		flex-flow      : row nowrap;
-		justify-content: flex-end;
-		align-items    : center;
-		gap            : 0.5rem;
+    .bookmark-example {
+        font-style     : italic;
+        text-align     : center;
+        font-size      : 0.9em;
+        margin-right   : 1rem;
+        display        : flex;
+        flex-flow      : row nowrap;
+        justify-content: flex-end;
+        align-items    : center;
+        gap            : 0.5rem;
 
-		.ribbon {
-			height         : 36px;
-			width          : 27px;
-			flex           : 0 0 auto;
-			background : url($base_url + "/assets/layout/ui/bookmark.png") 0 0 no-repeat;
-			background-size: contain;
-		}
-	}
+        .ribbon {
+            height         : 36px;
+            width          : 27px;
+            flex           : 0 0 auto;
+            background : url($base_url + "/assets/layout/ui/bookmark.png") 0 0 no-repeat;
+            background-size: contain;
+        }
+    }
 
-	.no-bookmarks {
-		text-align: center;
-	}
+    .no-bookmarks {
+        text-align: center;
+    }
 
-	input[type=file] {
-		display: none;
-	}
+    input[type=file] {
+        display: none;
+    }
 
-	button {
-		margin-right: 0.3rem;
-		font-size   : 0.9em;
-	}
+    button {
+        margin-right: 0.3rem;
+        font-size   : 0.9em;
+    }
 }
-	*/
+    */
+/* ################################################################## */
+/* ### NEUE STILE FÜR REPORTING-SYSTEM (v3.7.0.0) ### */
+/* ################################################################## */
+/* --- Allgemeines Modal-Styling (Basis) --- */
+.modal {
+  /*display: none; // Wird von JS gesteuert */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* Scrollen, falls Modal größer als Viewport */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Schwarz mit 50% Transparenz */
+  /* Flexbox zum Zentrieren des Inhalts */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1001;
+  /* Liegt unter dem Inhalt, aber über dem Rest */
+  cursor: pointer;
+}
+
+.modal-content {
+  position: relative;
+  /* Wichtig für den Schließen-Button */
+  z-index: 1002;
+  /* Liegt über dem Overlay */
+  background-color: #fefefe;
+  margin: auto;
+  /* Fallback für alte Browser */
+  padding: 25px;
+  border: 1px solid #888;
+  width: 90%;
+  max-width: 800px;
+  /* Maximale Breite */
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  /* Maximale Höhe */
+  overflow-y: auto;
+  /* Scrollen, wenn Inhalt zu groß */
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+  color: #000;
+  text-decoration: none;
+}
+
+/* --- Spezifisches Styling für das Report-Modal --- */
+.report-modal-content {
+  /* (Vererbt die meisten Stile von .modal-content) */
+}
+.report-modal-content h2 {
+  text-align: left;
+  margin-top: 0;
+}
+.report-modal-content p {
+  text-align: left;
+}
+.report-modal-content {
+  /* Das Formular im Modal */
+}
+.report-modal-content .admin-form {
+  margin-top: 20px;
+  text-align: left;
+  /* Stellt sicher, dass Formularinhalte linksbündig sind */
+}
+.report-modal-content {
+  /* Standard-Formular-Styling (kann globaler definiert werden, wenn es im Admin-Bereich schon existiert) */
+}
+.report-modal-content .admin-form div {
+  margin-bottom: 15px;
+}
+.report-modal-content .admin-form label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.report-modal-content .admin-form input[type=text],
+.report-modal-content .admin-form select,
+.report-modal-content .admin-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  /* Wichtig für 100% Breite inkl. Padding */
+}
+.report-modal-content .admin-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.report-modal-content .admin-form select[required]:invalid {
+  color: #777;
+  /* Platzhalter-Farbe */
+}
+.report-modal-content {
+  /* Container für die Referenzbilder */
+}
+.report-modal-content .report-images-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 20px;
+}
+.report-modal-content .report-images-container div {
+  flex: 1;
+  /* Beide nehmen gleich viel Platz ein */
+  min-width: 0;
+  /* Verhindert Überlaufen in Flexbox */
+}
+.report-modal-content .report-images-container img {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.report-modal-content .report-images-container label {
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.report-modal-content {
+  /* Responsive Anpassung für Bilder (mobil) */
+}
+@media (max-width: 700px) {
+  .report-modal-content .report-images-container {
+    flex-direction: column;
+  }
+}
+.report-modal-content {
+  /* Buttons am Ende des Modals */
+}
+.report-modal-content .modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  /* Buttons linksbündig */
+}
+.report-modal-content {
+  /* Status Meldungen im Modal */
+}
+.report-modal-content .status-message {
+  padding: 10px;
+  margin-top: 15px;
+  border-radius: 4px;
+  text-align: center;
+}
+.report-modal-content .status-message.status-green {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+.report-modal-content .status-message.status-red {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* --- Styling für den "Fehler melden"-Button auf der Comic-Seite --- */
+/* (Wird in renderer_comic_page.php platziert) */
+.report-button-container {
+  text-align: right;
+  margin-top: 10px;
+  margin-right: 5px;
+  /* Kleiner Abstand vom Rand */
+}
+
+#open-report-modal {
+  background-color: #f8f4e8;
+  border: 1px solid #E0DBCF;
+  color: #555;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+#open-report-modal:hover {
+  background-color: #E0DBCF;
+  color: #000;
+  border-color: #ccc;
+}
+#open-report-modal i {
+  /* Falls FontAwesome verwendet wird */
+  margin-right: 5px;
+}
+
+/* --- Styling für Admin Report Management (management_reports.php) --- */
+/* Filter-Formular */
+.filter-form {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+.filter-form legend {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+.filter-form .filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  /* Mobil umbrechen */
+  gap: 15px;
+  align-items: flex-end;
+  /* Buttons unten ausrichten */
+}
+.filter-form .filter-controls div {
+  display: flex;
+  flex-direction: column;
+}
+.filter-form .filter-controls label {
+  margin-bottom: 5px;
+  font-weight: normal;
+  font-size: 0.9em;
+}
+.filter-form {
+  /* Button Styling (kann von .main-container geerbt werden, aber zur Sicherheit hier) */
+}
+.filter-form .filter-controls button {
+  background-color: #d1e5d4;
+  border-radius: 3px;
+  padding: 5px 10px;
+  /* Etwas mehr Padding */
+  cursor: pointer;
+  border: 1px solid #ccc;
+}
+.filter-form .filter-controls button:hover {
+  background-color: #aac8aa;
+}
+
+/* Tabelle */
+.data-table {
+  /* Annahme: Admin-Tabellen haben diese Klasse */
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.data-table th,
+.data-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+.data-table th {
+  background-color: #DDEAD7;
+}
+.data-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+.data-table td.actions-cell {
+  min-width: 250px;
+  /* Genug Platz für alle Buttons */
+  white-space: nowrap;
+  /* Verhindert Umbruch der Buttons */
+}
+.data-table {
+  /* Buttons in der Tabelle stylen */
+}
+.data-table .button {
+  /* Allgemeine Button-Klasse */
+  padding: 5px 10px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  /* Abstand bei Umbruch */
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  font-size: 0.9em;
+  display: inline-block;
+  /* Wichtig für korrekten Abstand */
+}
+.data-table .button-green {
+  background-color: #28a745;
+  color: white;
+}
+.data-table .button-green:hover {
+  background-color: #218838;
+}
+.data-table .button-orange {
+  background-color: #fd7e14;
+  color: white;
+}
+.data-table .button-orange:hover {
+  background-color: #e66a00;
+}
+.data-table .button-blue {
+  background-color: #007bff;
+  color: white;
+}
+.data-table .button-blue:hover {
+  background-color: #0056b3;
+}
+.data-table .button.detail-button {
+  /* Spezifischer für den Detail-Button */
+  background-color: #6c757d;
+  color: white;
+}
+.data-table .button.detail-button:hover {
+  background-color: #5a6268;
+}
+
+/* Admin Detail Modal */
+.report-detail-modal-content {
+  max-width: 900px;
+  /* Breiter für Diffs */
+}
+.report-detail-modal-content .report-text-box {
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+  max-height: 250px;
+  /* Scrollbar bei Bedarf */
+  overflow-y: auto;
+}
+.report-detail-modal-content #detail-description {
+  white-space: pre-wrap;
+  /* Zeilenumbrüche aus Textarea beibehalten */
+}
+.report-detail-modal-content #detail-suggestion {
+  font-family: monospace;
+  background-color: #eee;
+  /* Leicht abheben */
+  width: 100%;
+  /* Volle Breite */
+  box-sizing: border-box;
+}
+.report-detail-modal-content {
+  /* Diff-Viewer Stile */
+}
+.report-detail-modal-content .diff-box {
+  font-family: monospace;
+  white-space: pre-wrap;
+  /* Wichtig für Zeilenumbrüche */
+  line-height: 1.4;
+}
+.report-detail-modal-content .diff-box .loading-text {
+  color: #777;
+  font-style: italic;
+}
+.report-detail-modal-content .diff-box {
+  /* Hinzugefügter Text */
+}
+.report-detail-modal-content .diff-box ins {
+  background-color: #d4ffd4;
+  /* Hellgrün */
+  color: #006400;
+  /* Dunkelgrün */
+  text-decoration: none;
+}
+.report-detail-modal-content .diff-box {
+  /* Entfernter Text */
+}
+.report-detail-modal-content .diff-box del {
+  background-color: #ffeaea;
+  /* Hellrot */
+  color: #a90000;
+  /* Dunkelrot */
+  text-decoration: line-through;
+  /* Durchgestrichen */
+}
