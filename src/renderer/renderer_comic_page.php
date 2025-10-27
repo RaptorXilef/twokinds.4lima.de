@@ -99,26 +99,6 @@ $canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . $dateiendun
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* Passt die Größe des Comic-Bildes an die Containerbreite an */
-    #comic-image {
-        width: 100%;
-        height: auto;
-    }
-
-    /* Ersetzt die Inline-Stile für CSP-Konformität */
-    .comic-header {
-        position: relative;
-    }
-
-    .transcript-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 5px;
-    }
-</style>
-
 <article class="comic">
     <header class="comic-header">
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:
