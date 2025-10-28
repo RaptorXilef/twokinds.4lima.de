@@ -1,3 +1,16 @@
+/**
+ * Main CSS Design
+ *
+ * @file      ROOT/resources/scss/main.scss
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.2
+ * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
+ */
+
 @use 'sass:color'; // Importieren zur Konsistenz
 
 $base_url: 'https://twokinds.4lima.de';
@@ -593,7 +606,7 @@ footer {
 			border            : 1px solid $border-color-medium;
 			max-height        : 550px;
 			overflow          : auto;
-			padding           : 3px;
+			padding           : 15px;
 			margin-top        : 5px;
 			border-radius     : 8px;
 			-webkit-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, .35);
