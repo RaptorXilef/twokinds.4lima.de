@@ -9,8 +9,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.1.0
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und URL-Konstanten.
+ * @since     4.1.0 Fügt den Link zur Report-Verwaltung hinzu.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -51,6 +52,9 @@ $nonce = $nonce ?? '';
       Editor</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Comic-Seiten-Generator</a>
+    </br>
+    <!-- NEU: Link zur Report-Verwaltung -->
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports' . $dateiendungPHP; ?>">Fehlermeldungen</a>
     </br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS-Generator</a>
     </br>
