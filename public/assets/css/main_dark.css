@@ -21,6 +21,7 @@ body.theme-night hr {
 }
 body.theme-night .main-container {
   background-color: #00425c;
+  box-shadow: 0px 0px 3px 1px rgba(255, 255, 255, 0.2);
 }
 body.theme-night .main-container button,
 body.theme-night .main-container a.button {
@@ -35,17 +36,24 @@ body.theme-night .main-container button:disabled {
   background-color: rgba(28.6956521739, 66.2732919255, 81.3043478261, 0.6);
   cursor: not-allowed;
   opacity: 0.7;
+  color: rgba(255, 255, 255, 0.5);
 }
 body.theme-night .main-container .arrow-down,
 body.theme-night .main-container .arrow-left {
   background-image: url("https://twokinds.4lima.de/assets/images/layout/ui/dropdown_dark.svg?c=20251024");
   filter: none;
 }
+body.theme-night .maintbanner {
+  color: #000;
+}
 body.theme-night .maintbanner a,
 body.theme-night .maintbanner a:link,
 body.theme-night .maintbanner a:visited,
 body.theme-night .maintbanner a:active {
   color: #000;
+}
+body.theme-night .instructions {
+  color: rgb(216.75, 216.75, 216.75);
 }
 body.theme-night .sidebar .sidebar-content {
   background-color: #00334C;
@@ -61,6 +69,9 @@ body.theme-night .sidebar .sidebar-content .menu a.theme span.themelabel {
   background-color: #628492;
   color: #fff;
 }
+body.theme-night .sidebar .sidebar-content .menu a.theme span.themename {
+  color: #fff;
+}
 body.theme-night .sidebar .sidebar-content .menu a.menu-new:after {
   background-color: #628492;
   color: #fff;
@@ -68,17 +79,23 @@ body.theme-night .sidebar .sidebar-content .menu a.menu-new:after {
 body.theme-night a {
   color: #81dbfe;
 }
-body.theme-night a a:visited {
+body.theme-night a:visited {
   color: #81dbfe;
 }
 body.theme-night .content {
   border-color: #002B3C;
+  background-color: #003f58;
+  color: #fff;
 }
 body.theme-night .content table {
   border-color: #002B3C;
 }
 body.theme-night .content table th {
   background-color: #48778a;
+  color: #fff;
+}
+body.theme-night .content table td {
+  color: #fff;
 }
 body.theme-night .content table td,
 body.theme-night .content table th {
@@ -92,6 +109,13 @@ body.theme-night .content h5.page-header,
 body.theme-night .content h6.page-header {
   background-color: #002B3C;
   border-bottom: 1px solid #2a6177;
+  color: #fff;
+}
+body.theme-night .content a {
+  color: #81dbfe;
+}
+body.theme-night .content a:visited {
+  color: #81dbfe;
 }
 body.theme-night {
   /* COMIC SECTION - Stile aus Original übernehmen */
@@ -99,6 +123,7 @@ body.theme-night {
 body.theme-night .comic .transcript .transcript-content {
   background-color: #00334C;
   border-color: #002B3C;
+  color: #fff;
 }
 body.theme-night .comic .comicnav {
   color: #fff;
@@ -112,10 +137,11 @@ body.theme-night .comic .comicnav a:visited {
   color: #fff;
 }
 body.theme-night .comic .comicnav .navarrow:not(.disabled):hover {
-  background-color: #00425c;
+  background-color: #003f58;
 }
 body.theme-night .comic .comicnav .navarchive {
   background-color: #2a6177;
+  color: #fff;
 }
 body.theme-night .comic .comicnav .navarchive:hover {
   background-color: #48778a;
@@ -154,6 +180,12 @@ body.theme-night {
 body.theme-night .chapter h2 {
   color: #fff;
 }
+body.theme-night .chapter p {
+  color: #fff;
+}
+body.theme-night .chapter p a {
+  color: #81dbfe;
+}
 body.theme-night .chapter .chapter-links a {
   background-color: #2a6177;
   color: #fff;
@@ -167,6 +199,7 @@ body.theme-night .chapter .chapter-links a:visited {
 body.theme-night .chapter .chapter-links a.loaded span,
 body.theme-night .chapter .chapter-links a.noscript span, body.theme-night .chapter .chapter-links.tag-page-links a span {
   background-color: rgba(0, 0, 0, 0.65);
+  color: #fff;
 }
 body.theme-night {
   /* CHAT PAGE - Stile aus Original */
@@ -183,6 +216,7 @@ body.theme-night {
 }
 body.theme-night .fanart-list .fanart-item {
   border-color: #002B3C;
+  color: #fff;
 }
 body.theme-night .fanart-list .fanart-item .thumbnail a {
   background-color: #2a6177;
@@ -196,6 +230,7 @@ body.theme-night {
 }
 body.theme-night .char-detail {
   border-bottom-color: #2a6177;
+  color: #fff;
 }
 body.theme-night .char-detail h3 img {
   filter: brightness(1.1);
@@ -204,14 +239,16 @@ body.theme-night {
   /* POPUP DIALOG - Stile aus Original */
 }
 body.theme-night .dialog {
-  background-color: #00425c;
+  background-color: #003f58;
   box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.25);
+  color: #fff;
 }
 body.theme-night .dialog a {
   color: #81dbfe;
 }
 body.theme-night .dialog .dialog-title {
   background-color: #00334C;
+  color: #fff;
 }
 body.theme-night .dialog .dialog-x {
   color: #fff;
@@ -220,10 +257,19 @@ body.theme-night .dialog .dialog-x {
 body.theme-night .dialog .dialog-x:hover {
   background-color: #48778a;
 }
+body.theme-night .dialog .dialog-input-header {
+  color: #fff;
+}
 body.theme-night .dialog input.embed {
   color: #fff;
   border: 1px solid #2a6177;
   background-color: #002B3C;
+}
+body.theme-night footer {
+  color: #fff;
+}
+body.theme-night footer a {
+  color: #81dbfe;
 }
 body.theme-night {
   /* ################################################################## */
@@ -232,16 +278,16 @@ body.theme-night {
   /* ################################################################## */
   /* --- Modal Basis Dark --- */
 }
-body.theme-night .modal-content {
-  background-color: #00425c;
+body.theme-night .modal .modal-content {
+  background-color: #003f58;
   border: 1px solid #48778a;
   color: #fff;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
-body.theme-night .modal-content .modal-close {
+body.theme-night .modal .modal-content .modal-close {
   color: rgba(255, 255, 255, 0.6);
 }
-body.theme-night .modal-content .modal-close:hover, body.theme-night .modal-content .modal-close:focus {
+body.theme-night .modal .modal-content .modal-close:hover, body.theme-night .modal .modal-content .modal-close:focus {
   color: #fff;
   background-color: #2a6177;
 }
@@ -333,6 +379,7 @@ body.theme-night .filter-form .filter-controls select:focus {
 body.theme-night .data-table th,
 body.theme-night .data-table td {
   border-color: #002B3C;
+  color: #fff;
 }
 body.theme-night .data-table th {
   background-color: #48778a;
@@ -367,23 +414,34 @@ body.theme-night .data-table .button-blue:hover {
 }
 body.theme-night .data-table .button.detail-button {
   background-color: #48778a;
+  color: #fff;
 }
 body.theme-night .data-table .button.detail-button:hover {
   background-color: rgb(91.3714285714, 147.1, 169.6285714286);
 }
 body.theme-night {
-  /* Admin Detail Modal Dark (erbt von .modal-content) */
+  /* Admin Detail Modal Dark (erbt von .modal .modal-content) */
+}
+body.theme-night .report-detail-modal-content h3 {
+  color: #fff;
+  border-bottom-color: #2a6177;
+}
+body.theme-night .report-detail-modal-content p strong {
+  color: #fff;
 }
 body.theme-night .report-detail-modal-content .report-text-box {
   background-color: #002B3C;
   border-color: #2a6177;
   padding: 8px;
   border-radius: 4px;
+  color: #fff;
 }
 body.theme-night .report-detail-modal-content #detail-suggestion {
   background-color: rgb(0, 61.275, 85.5);
   color: #fff;
   border: none;
+  padding: 8px;
+  border-radius: 4px;
 }
 body.theme-night .report-detail-modal-content {
   /* Diff-Viewer Dark (Kontrastreicher) */
@@ -400,4 +458,96 @@ body.theme-night .report-detail-modal-content .diff-box del {
   background-color: #7f0000;
   color: #ffcdd2;
   text-decoration: none;
+}
+
+@media only screen and (min-device-width: 320px) and (max-device-width: 640px) and (-webkit-min-device-pixel-ratio: 2) {
+  body.theme-night .maintbanner {
+    font-size: 1.2em;
+  }
+  body.theme-night .tinytext {
+    font-size: 16px;
+  }
+  body.theme-night .tinyheader {
+    font-size: 16px;
+  }
+  body.theme-night .chapter h2 {
+    font-size: 2em;
+  }
+  body.theme-night .chapter-links a {
+    zoom: 1.8;
+  }
+  body.theme-night .chapter-links a .delete {
+    top: 3px;
+  }
+  body.theme-night .chapter-links a .delete svg {
+    width: 16px;
+    height: 16px;
+  }
+  body.theme-night .chapter-links a.loaded span, body.theme-night .chapter-links.tag-page-links a span {
+    display: inline-block;
+    height: auto;
+    bottom: 0;
+    top: inherit;
+    padding-top: 0;
+  }
+  body.theme-night .chapter-links.tag-page-links a {
+    zoom: 1.5;
+  }
+  body.theme-night .comic .transcript-content {
+    font-size: 1.3em;
+  }
+  body.theme-night .comic .comicnav {
+    font-size: 1.1em;
+  }
+  body.theme-night .comic .comicnav .navarchive,
+  body.theme-night .comic .comicnav .navarrow {
+    height: 50px;
+  }
+  body.theme-night .comic .comicnav .navarchive {
+    border-radius: 7px;
+  }
+  body.theme-night .comic .comicnav button.bookmark {
+    height: 45px;
+    width: 34px;
+    transform: translateY(-34px);
+    background-size: cover;
+    top: -11px;
+  }
+  body.theme-night .comic .comicnav button.bookmark.bookmarked {
+    background-size: cover;
+  }
+  body.theme-night .comic .below-nav {
+    font-size: 1.2em;
+    margin-top: 0.5rem;
+  }
+  body.theme-night .comic .below-nav .nav-instruction-content {
+    display: none;
+  }
+  body.theme-night .comic .below-nav .bookmark-control .button {
+    font-size: 1.1em;
+  }
+  body.theme-night .comic .tag-wrapper .comic-tags {
+    font-size: 1.2em;
+  }
+  body.theme-night .comic .tag-wrapper .permalink {
+    font-size: 1.2em;
+  }
+  body.theme-night .menu {
+    font-size: 1.1em;
+  }
+  body.theme-night .menu a {
+    padding: 8px 0;
+    margin: 8px auto;
+  }
+  body.theme-night .menu a.menu-new {
+    padding-top: calc(0.7em + 5px);
+    padding-bottom: calc(8px - 0.7em + 5px);
+  }
+  body.theme-night .menu a.menu-new:after {
+    width: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+  }
 }

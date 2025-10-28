@@ -53,7 +53,7 @@
   height: 36px;
   width: 27px;
   flex: 0 0 auto;
-  background: url("https://twokinds.4lima.de/assets/layout/ui/bookmark.png") 0 0 no-repeat;
+  background: url("https://twokinds.4lima.de/assets/images/layout/ui/bookmark.png") 0 0 no-repeat;
   background-size: contain;
 }
 .bookmarks-page .tag-page-links {
