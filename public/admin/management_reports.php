@@ -1,17 +1,21 @@
 <?php
 /**
+ * @description Administrationsseite zur Verwaltung der Fehlermeldungen (Reports).
+ * Zeigt Meldungen an, filtert sie und erlaubt Aktionen (Schließen, Spam, Öffnen).
+ * Verwendet flock() für alle Dateioperationen.
+ * 
  * @file      ROOT/public/admin/management_reports.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.0.1
  * @since     1.0.0 Initiale Erstellung
- *
- * @description Administrationsseite zur Verwaltung der Fehlermeldungen (Reports).
- * Zeigt Meldungen an, filtert sie und erlaubt Aktionen (Schließen, Spam, Öffnen).
- * Verwendet flock() für alle Dateioperationen.
+ * @since     1.0.1 Die Verweise auf die JavaScript-Bibliotheken in der Report-Verwaltung waren fehlerhaft und verhinderten, dass das Detail-Modal ordnungsgemäß funktionierte.
+ * @description Der Pfad zur jsDiff-Bibliothek wurde von `diff.min.js` auf den korrekten Dateinamen `jsdiff.min.js` und den richtigen Admin-Pfad (`Url::getAdminJsUrl`) aktualisiert.
+ * @description Der Verweis auf das Report-Skript wurde von `admin_reports.js` auf die minifizierte Version `reports.min.js` geändert.
+ * 
  */
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -465,8 +469,8 @@ require_once Path::getPartialTemplatePath('header.php');
 // JS-Bibliotheken und unser neues Skript laden
 // Pfad zur jsDiff-Bibliothek (Annahme, dass sie im assets-Ordner liegt, wie im DOCX erwähnt)
 // Ich gehe davon aus, dass du 'diff.min.js' in 'public/assets/js/' ablegen wirst.
-$jsDiffUrl = Url::getJsUrl('diff.min.js');
-$adminReportsJsUrl = Url::getAdminJsUrl('admin_reports.js'); // true für admin-Ordner
+$jsDiffUrl = Url::getAdminJsUrl('jsdiff.min.js'); // https://cdnjs.com/libraries/jsdiff/8.0.2
+$adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js'); // true für admin-Ordner
 ?>
 <script src="<?php echo htmlspecialchars($jsDiffUrl); ?>" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
 <script src="<?php echo htmlspecialchars($adminReportsJsUrl); ?>"
