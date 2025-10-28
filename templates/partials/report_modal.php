@@ -78,7 +78,7 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
 
             <!-- Dein Name (Optional) -->
             <div>
-                <label for="report-name">Dein Name/Pseudonym (Optional)</label>
+                <label for="report-name">Dein Name/Pseudonym (Optional, falls du erwähnt werden möchtest)</label>
                 <input type="text" id="report-name" name="report_name" autocomplete="name">
             </div>
 

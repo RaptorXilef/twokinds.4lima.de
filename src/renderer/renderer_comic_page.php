@@ -20,7 +20,6 @@
  */
 
 // TODO Fehlerbutton besser integrieren
-// TODO Lesezeichen auf der Comicseite selbst ohne Meldung setzen (nur deaktivieren, nicht löschen) [comic.js]
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -118,9 +117,6 @@ require_once Path::getPartialTemplatePath('header.php');
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:
             <?php echo htmlspecialchars($comicName); ?>
         </h1>
-        <!-- NEU: Button zum Melden von Fehlern -->
-        <button type="button" id="open-report-modal" class="button" title="Fehler auf dieser Seite melden">Fehler
-            melden</button>
     </header>
 
     <div class='comicnav'> <?php // Obere Navigation ?>
@@ -181,6 +177,11 @@ require_once Path::getPartialTemplatePath('header.php');
     <aside class="transcript"> <?php // Transkript ?>
         <div class="transcript-header">
             <h2>Transkript</h2>
+
+            <!-- NEU: Button zum Melden von Fehlern -->
+            <button type="button" id="open-report-modal" class="button" title="Fehler auf dieser Seite melden">Fehler
+                melden</button>
+
             <!-- Sketch-Button (optional) -->
             <?php if (!empty($urlOriginalsketchFromCache)): ?>
                 <a href="<?php echo htmlspecialchars($urlOriginalsketchFromCache); ?>" target="_blank"

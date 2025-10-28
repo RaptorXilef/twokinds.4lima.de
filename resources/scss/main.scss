@@ -1331,17 +1331,20 @@ div.page-chat {
 }
 
 .modal-content {
+	//Anpassungen an Bildschirm zugunsten der Lesbarkeit
 	position        : relative;
 	background-color: $content-bg; // Weiß
 	margin          : auto;
 	padding         : 25px;
 	border          : 1px solid $border-color-dark; // Dunklerer Rand
+	font-size       : 1.2em;
 	width           : 90%;
-	max-width       : 700px;
+	max-width       : 70vw;
+	height          : 90%;
+	max-height      : 90vh;
 	border-radius   : 8px;
 	box-shadow      : 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 	z-index         : 1002;
-	max-height      : 90vh;
 	overflow-y      : auto;
 }
 
@@ -1472,7 +1475,7 @@ div.page-chat {
 /* --- "Fehler melden"-Button auf Comic-Seite --- */
 #open-report-modal {
 	padding         : 3px 8px;
-	font-size       : 0.9em;
+	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift
 	background-color: $menu-bg; // Wie Menüpunkte
 	border          : 1px solid $theme-label-bg; // Passender Rand
 	border-radius   : 4px;
@@ -1618,27 +1621,30 @@ div.page-chat {
 	}
 
 	.report-text-box {
-		background-color: $table-row-even-bg; // Hellgrau
-		border          : 1px solid $border-color-light; // Heller Rand
-		padding         : 10px;
-		border-radius   : 4px;
-		margin-bottom   : 15px;
-		font-size       : 0.95em;
-		white-space     : pre-wrap;
-		word-wrap       : break-word;
-		max-height      : 200px;
-		overflow-y      : auto;
+		background-color    : $table-row-even-bg; // Hellgrau
+		border              : 1px solid $border-color-light; // Heller Rand
+		padding             : 10px;
+		border-radius       : 4px;
+		margin-bottom       : 15px;
+		//font-size       : 0.95em;
+		//white-space       : pre-wrap;
+		word-wrap           : break-word;
+		max-height          : 30vh; // angepasst
+		overflow-y          : auto;
 	}
 
 	#detail-suggestion {
-		width           : 100%;
-		box-sizing      : border-box;
-		font-family     : inherit;
-		background-color: #f1f1f1; // Leicht dunkleres Grau für readonly
-		border          : none;
-		resize          : none;
-		padding         : 10px; // Padding hinzufügen
-		border-radius   : 4px; // Abrundung
+		width             : 100%;
+		height            : 30vh;
+		max-height        : 30vh;
+		box-sizing        : border-box;
+		//font-family     : inherit;
+		background-color  : #f1f1f1; // Leicht dunkleres Grau für readonly
+		border            : none;
+		resize            : none;
+		padding           : 10px; // Padding hinzufügen
+		border-radius     : 4px; // Abrundung
+		font-size         : 1.1em;
 	}
 
 	/* Diff-Viewer */
