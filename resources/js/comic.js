@@ -9,8 +9,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.5.0
+ * @version   2.5.1
  * @since     2.5.0 Umstellung auf globale Pfad-Konstanten.
+ * @since     2.5.1 Lesezeichen auf der Comicseite selbst ohne Meldung setzen und entfernen (nur deaktivieren, nicht löschen) [comic.js]
  */
 
 (() => {
@@ -441,7 +442,8 @@
       // KORRIGIERT V5: Verwende nativen Confirm als Fallback
       if (
         confirm(
-          `Möchten Sie das Lesezeichen für Seite "${
+          `Das Lesezeichen für Seite "${
+            // Möchten Sie das Lesezeichen für Seite
             safePage || id
           }" wirklich entfernen?`
         )
@@ -452,7 +454,7 @@
         if (document.getElementById("bookmarksPage"))
           populateBookmarksPage(bookmarks);
         // KORRIGIERT V5: Verwende nativen Alert als Fallback
-        alert(`Lesezeichen für Seite "${safePage || id}" entfernt.`);
+        // alert(`Lesezeichen für Seite "${safePage || id}" entfernt.`); // Meldung deaktiviert
       }
     } else {
       if (bookmarks.size >= bookmarkMaxEntries) {
@@ -486,7 +488,7 @@
           if (document.getElementById("bookmarksPage"))
             populateBookmarksPage(bookmarks);
           // KORRIGIERT V5: Verwende nativen Alert als Fallback
-          alert(`Lesezeichen für Seite "${safePage || id}" hinzugefügt.`);
+          alert(`Lesezeichen für Seite "${safePage || id}" hinzugefügt.`); // Meldung ggf. deaktivieren
         }
       } else {
         // Normales Hinzufügen mit Zeitstempel
@@ -502,7 +504,7 @@
         if (document.getElementById("bookmarksPage"))
           populateBookmarksPage(bookmarks);
         // KORRIGIERT V5: Verwende nativen Alert als Fallback
-        alert(`Lesezeichen für Seite "${safePage || id}" hinzugefügt.`);
+        // alert(`Lesezeichen für Seite "${safePage || id}" hinzugefügt.`); // Meldung deaktiviert
       }
     }
   }
