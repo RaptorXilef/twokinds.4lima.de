@@ -1,4 +1,17 @@
 /**
+ * Dies is der JS Code zum umschalten zwischen den Themen Dark/Normal
+ *
+ * @file      ROOT/ressources/js/common.js / Minificed: ROOT/public/assets/js/common.min.js
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   1.1.0
+ * @since     1.1.0 Der Button zum Umschalten des Webseiten-Themas (Light- / Dark-Mode) in der Seitenleiste wurde deaktiviert. Damit soll die Benutzererfahrung beim Umgang mit dem Fehler-Modal verbessert und ein ungewolltes umschalten verhindert werden.
+ */
+
+/**
  * Enables common features throughout the website
  */
 (() => {
@@ -36,13 +49,13 @@
 
     // Theme also toggles on 'i' keypress, but only if not an admin page.
     // window.isAdminPage is set in header.php
-    if (typeof window.isAdminPage === "undefined" || !window.isAdminPage) {
+    /*    if (typeof window.isAdminPage === "undefined" || !window.isAdminPage) {
       body.addEventListener("keyup", (e) => {
         if (e.which == 73) {
           toggleTheme(e);
         }
       });
-    }
+    }*/
 
     // Watch the system theme change event and automatically change with it.
     if (window.matchMedia) {
