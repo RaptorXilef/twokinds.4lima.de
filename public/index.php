@@ -10,11 +10,12 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.1
+ * @version   4.0.2
  * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
  * @since     3.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  * @since     4.0.1 Umstellung von BASE_URL auf DIRECTORY_PUBLIC_URL für interne Konsistenz.
+ * @since     4.0.2 Fehler-Button eingebunden und unnötige CSS Elemente entfernt, welche bereits in main.css stehen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -98,24 +99,6 @@ $canonicalUrl = DIRECTORY_PUBLIC_URL;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    #comic-image {
-        width: 100%;
-        height: auto;
-    }
-
-    .comic-header {
-        position: relative;
-    }
-
-    .transcript-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 5px;
-    }
-</style>
-
 <article class="comic">
     <header class="comic-header">
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:
@@ -136,6 +119,14 @@ require_once Path::getPartialTemplatePath('header.php');
             data-permalink="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL . '/comic/' . $currentComicId . $dateiendungPHP); ?>"
             data-thumb="<?php echo htmlspecialchars(str_starts_with($bookmarkThumbnailUrl, 'http') ? $bookmarkThumbnailUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($bookmarkThumbnailUrl, './')); ?>">
             Seite merken
+        </button>
+
+        <!-- NEUER FEHLER MELDEN BUTTON -->
+        <button type="button" id="open-report-modal" class="navarrow nav-report-issue"
+            title="Fehler auf dieser Seite melden">
+            <span class="nav-wrapper">
+                <span class="nav-text" id="report-issue-text">Fehler</span>
+            </span>
         </button>
     </div>
 
@@ -195,6 +186,11 @@ require_once Path::getPartialTemplatePath('header.php');
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
 </article>
+
+<?php
+// NEU: Modal einbinden
+include_once Path::getPartialTemplatePath('report_modal.php');
+?>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {

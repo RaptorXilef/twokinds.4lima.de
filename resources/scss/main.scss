@@ -1,7 +1,86 @@
+/**
+ * Main CSS Design
+ *
+ * @file      ROOT/resources/scss/main.scss
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.3
+ * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
+ * @since     2.1.3 Verschieben des "Fehler melden" Button in die obere Navigationsleiste
+ */
+
+@use 'sass:color'; // Importieren zur Konsistenz
+
 $base_url: 'https://twokinds.4lima.de';
 
-// @import 'https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700';
+// --- Farbvariablen (Light Mode) ---
+$page-bg         : #81DBFE; // Heller blauer Hintergrund
+$content-area-bg : #fff; // Weißer Hintergrund für den Hauptcontainer
+$content-bg      : #fafafa; // Weißer Hintergrund für den Inhaltsbereich
+$content-box     : #ffffff; // Weißer Hintergrund für den Inhaltsbereich
 
+$sidebar-bg    : #d1e5d4; // Helles Grün für Sidebar
+$header-bg     : #DDEAD7; // Blassgrün für Seitenheader
+$menu-bg       : #effff2; // Sehr helles Grün für Menüpunkte
+$menu-hover-bg : #fff; // Weißer Hover für Menüpunkte
+
+$button-bg         : #d1e5d4; // Helles Grün für Buttons (wie Sidebar)
+$button-hover-bg   : #b1cab5; // Dunkleres Grün für Button-Hover
+$button-disabled-bg: #e0e0e0; // Grau für deaktivierte Buttons
+
+$comic-nav-bg               : #c8e0c8; // Grün für Comic-Navigation
+$comic-nav-hover-bg         : #aac8aa; // Helleres Grün für Hover
+$comic-nav-archive-bg       : #5d7b5d; // Dunkles Grün für Archiv-Button
+$comic-nav-archive-hover-bg : #789e78; // Helleres dunkles Grün für Hover
+
+$theme-label-bg : #7BA181; // Grün für Theme-Label
+$new-tag-bg     : #7BA181; // Grün für "New"-Tag
+
+$text-color        : #333; // Dunkelgrau für Haupttext (statt reinem Schwarz)
+$text-color-light  : #555; // Helleres Grau für sekundären Text/Labels
+$text-color-medium : #666; // Mittelgrau (z.B. für Bild-Labels im Modal)
+$text-color-faded  : #999; // Sehr helles Grau (z.B. für Placeholder)
+$text-on-dark-bg   : #fff; // Weißer Text auf dunklen Hintergründen (z.B. Archiv-Button)
+$text-on-medium-bg : #000; // Schwarzer Text auf mittleren Hintergründen (z.B. Buttons, Banner)
+
+$link-color        : #08c; // Standard-Blau für Links
+$link-visited-color: #08c; // Gleiches Blau für besuchte Links
+
+$border-color-light : #ddd; // Helle Ränder
+$border-color-medium: #ccc; // Mittlere Ränder
+$border-color-dark  : #888; // Dunklere Ränder (z.B. Modal)
+$border-color-black : #000; // Schwarze Ränder (z.B. Tabelle)
+
+// Statusfarben
+$status-green-bg     : #d4edda;
+$status-green-text   : #155724;
+$status-green-border : #c3e6cb;
+$status-red-bg       : #f8d7da;
+$status-red-text     : #721c24;
+$status-red-border   : #f5c6cb;
+$status-orange-bg    : #fff3cd;
+$status-orange-text  : #856404;
+$status-orange-border: #ffeeba;
+
+// Admin Tabellenfarben
+$table-header-bg    : #e9ecef; // Hellgrauer Header
+$table-row-even-bg  : #f8f9fa; // Sehr hellgraue Zeile
+$table-row-hover-bg : #e2e6ea; // Etwas dunklerer Hover
+
+// Admin Button Farben
+$button-green        : #28a745;
+$button-green-hover  : #218838;
+$button-orange       : #fd7e14;
+$button-orange-hover : #e66a00;
+$button-blue         : #007bff;
+$button-blue-hover   : #0056b3;
+$button-grey         : #6c757d;
+$button-grey-hover   : #5a6268;
+
+// --- Globale Stile ---
 * {
 	margin : 0;
 	padding: 0;
@@ -16,10 +95,11 @@ html {
 }
 
 body {
-	background-color: #81DBFE;
-	font-family     : "Open Sans", "Lucida Grande", Arial, sans-serif;
+	background-color: $page-bg;
+	font-family     : "Lucida Grande", Arial, "Open Sans", sans-serif;
 	font-size       : 15px;
 	min-width       : 1099px;
+	color           : $text-color; // Standard-Textfarbe gesetzt
 }
 
 .mono {
@@ -38,8 +118,8 @@ body.transitioning:not(.preload) * {
 
 body.transitioning:not(.preload) {
 	-webkit-transition: background-color 0.25s, color 0.25s;
-	transition : background-color 0.25s,
-	color 0.25s;
+	transition        : background-color 0.25s,
+		color 0.25s;
 }
 
 .jsdep {
@@ -71,18 +151,19 @@ h3.page-header,
 h4.page-header,
 h5.page-header,
 h6.page-header {
-	background-color: #DDEAD7;
+	background-color: $header-bg;
 	padding         : 2px 10px;
 	margin-bottom   : 10px;
 	font-size       : 22.5px;
+	color           : $text-color; // Standard-Textfarbe auch hier
 }
 
 .maintbanner {
 	font-size       : 0.9em;
 	padding         : 1em 8em;
 	text-align      : center;
-	background-color: #F5D568;
-	color           : #000;
+	background-color: #F5D568; // Gelb beibehalten für Hervorhebung
+	color           : $text-on-medium-bg; // Schwarz
 	position        : relative;
 	z-index         : 200;
 
@@ -90,7 +171,7 @@ h6.page-header {
 	a:link,
 	a:visited,
 	a:active {
-		color: #000;
+		color: $text-on-medium-bg; // Schwarz
 	}
 }
 
@@ -98,6 +179,7 @@ h6.page-header {
 	text-align: center;
 	margin    : 15px 0;
 	font-style: italic;
+	color     : $text-color-light; // Hellerer Text
 }
 
 .smalltext {
@@ -131,7 +213,7 @@ h6.page-header {
 }
 
 hr {
-	border-color : #ddead7;
+	border-color : $header-bg; // Gleiche Farbe wie Header-BG
 	border-bottom: none;
 	margin-block : 1rem;
 	border       : none;
@@ -146,7 +228,7 @@ hr {
 .main-container {
 	width             : 1079px;
 	margin            : auto;
-	background-color  : #fff;
+	background-color  : $content-area-bg;
 	-webkit-box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.5);
 	box-shadow        : 0px 0px 3px 1px rgba(0, 0, 0, 0.5);
 	overflow          : visible;
@@ -154,7 +236,7 @@ hr {
 	button,
 	a.button {
 		background      : none;
-		color           : inherit;
+		color           : $text-on-medium-bg; // Schwarzer Text auf hellem Grün
 		border          : none;
 		padding         : 0;
 		font            : inherit;
@@ -162,16 +244,20 @@ hr {
 		outline         : inherit;
 		font-style      : initial;
 		font-size       : initial;
-		padding         : 2px;
-		background-color: #d1e5d4;
+		background-color: $button-bg;
 		border-radius   : 3px;
 		padding         : 3px 5px;
 		text-decoration : none;
+
+		&:hover {
+			background-color: $button-hover-bg;
+		}
 	}
 
 	button:disabled {
-		cursor : not-allowed;
-		opacity: 0.5;
+		cursor          : not-allowed;
+		opacity         : 0.5;
+		background-color: $button-disabled-bg;
 	}
 
 	.arrow-down,
@@ -179,7 +265,7 @@ hr {
 		display        : inline-block;
 		width          : 1em;
 		height         : 0.6em;
-		background : transparent url($base_url + "/assets/images/layout/ui/dropdown.svg?c=20251024") 50% 50% no-repeat;
+		background     : transparent url($base_url + "/assets/images/layout/ui/dropdown.svg?c=20251024") 50% 50% no-repeat;
 		background-size: contain;
 
 		&.animate {
@@ -198,7 +284,7 @@ hr {
 	height     : 314px;
 	padding-top: 10px;
 	position   : relative;
-	z-index : 99;
+	z-index    : 99;
 	margin-left: -10px;
 	background : transparent url($base_url + "/assets/images/layout/banner.webp?c=20251024") 0 10px no-repeat;
 	text-indent: 105%;
@@ -225,11 +311,11 @@ hr {
 	margin-bottom: 10px;
 
 	a {
-		color           : #000;
+		color           : $text-on-medium-bg; // Schwarz auf sehr hellem Grün
 		display         : block;
 		list-style-type : none;
 		width           : 160px;
-		background-color: #effff2;
+		background-color: $menu-bg;
 		border-radius   : 4px;
 		text-transform  : uppercase;
 		margin          : 3px auto;
@@ -238,6 +324,10 @@ hr {
 		text-decoration : none;
 		cursor          : pointer;
 		position        : relative;
+
+		&:hover {
+			background-color: $menu-hover-bg;
+		}
 	}
 
 	a.theme {
@@ -251,8 +341,8 @@ hr {
 		span.themelabel {
 			flex            : 0 0 0;
 			padding         : 1px;
-			background-color: #7BA181;
-			color           : #FFF;
+			background-color: $theme-label-bg;
+			color           : $text-on-dark-bg; // Weiß auf Grün
 			font-size       : 0.7em;
 		}
 
@@ -260,19 +350,18 @@ hr {
 			text-align: center;
 			flex      : 1 1 auto;
 			padding   : 3px;
+			color     : $text-on-medium-bg; // Textfarbe für den Namen
 		}
 	}
 
-	a:hover {
-		background-color: #fff;
-	}
+	// a:hover already defined above
 
 	a.menu-new:after {
 		content         : "New";
 		display         : inline-block;
 		width           : 26px;
-		background-color: #7BA181;
-		color           : #FFF;
+		background-color: $new-tag-bg;
+		color           : $text-on-dark-bg; // Weiß auf Grün
 		font-size       : 0.7em;
 		position        : absolute;
 		top             : 6px;
@@ -294,7 +383,7 @@ hr {
 	text-align      : center;
 	border-radius   : 0 0 5px 5px;
 	margin-left     : 12px;
-	background-color: #d1e5d4;
+	background-color: $sidebar-bg;
 
 	.full-width-img {
 		margin-left: -5px;
@@ -312,16 +401,17 @@ hr {
 }
 
 .content {
-	flex         : 1 1 auto;
-	position     : relative;
-	z-index      : 102;
-	display      : inline-block;
-	padding      : 10px 15px;
-	padding-top  : 11px;
-	margin-right : 11px;
-	overflow     : visible;
-	border       : 1px solid #ccc;
-	border-radius: 0 0 5px 5px;
+	flex            : 1 1 auto;
+	position        : relative;
+	z-index         : 102;
+	display         : inline-block;
+	padding         : 10px 15px;
+	padding-top     : 11px;
+	margin-right    : 11px;
+	overflow        : visible;
+	border          : 1px solid $border-color-medium;
+	border-radius   : 0 0 5px 5px;
+	background-color: $content-bg;
 
 	li {
 		margin-bottom      : 5px;
@@ -335,19 +425,27 @@ hr {
 	}
 
 	table {
-		border         : 1px solid #000;
+		border         : 1px solid $border-color-black;
 		border-collapse: collapse;
 		margin-bottom  : 10px;
 	}
 
 	th {
-		background-color: #DDEAD7;
+		background-color: $header-bg; // Wie Seitenheader
 	}
 
 	th,
 	td {
 		padding: 2px 7px;
-		border : 1px solid #000;
+		border : 1px solid $border-color-black;
+	}
+
+	a {
+		color: $link-color;
+
+		&:visited {
+			color: $link-visited-color;
+		}
 	}
 }
 
@@ -389,7 +487,7 @@ hr {
 		top             : 0;
 		left            : 0;
 		z-index         : 1000;
-		background-color: #fff;
+		background-color: $content-bg; // Anpassen
 	}
 }
 
@@ -403,22 +501,8 @@ hr {
 	overflow      : hidden;
 }
 
-/* Bottom portion */
-.ks-container {
-	display       : flex;
-	flex-direction: column;
-	margin        : auto;
-	width         : 160px;
-	flex          : 0 1 auto;
-
-	.keenspot {
-		flex      : 0 1 auto;
-		text-align: left;
-	}
-}
-
 .bottom {
-	border       : 1px solid #ccc;
+	border       : 1px solid $border-color-medium;
 	border-radius: 5px;
 	width        : 1039px;
 	margin       : auto;
@@ -471,7 +555,7 @@ hr {
 		flex            : 0 0 88px;
 		height          : 31px;
 		margin          : 4px 2px 0px 2px;
-		background-color: #ccc;
+		background-color: $border-color-medium; // Angepasst
 	}
 }
 
@@ -479,6 +563,7 @@ hr {
 footer {
 	text-align: center;
 	font-size : 12px;
+	color     : $text-color; // Standardtextfarbe
 }
 
 .footer-img {
@@ -488,59 +573,6 @@ footer {
 	margin-top: 5px;
 }
 
-/* FANART PAGE */
-.fanart-list {
-	display        : flex;
-	flex-flow      : row wrap;
-	justify-content: center;
-
-	.fanart-item {
-		display       : flex;
-		flex-direction: column;
-		font-size     : 12px;
-		padding       : 6px;
-		border        : 1px solid #cccccc;
-		width         : 108px;
-		height        : 135px;
-		margin        : 0 4px 6px 4px;
-		align-items   : stretch;
-		text-align    : center;
-
-		.fanart-author {
-			width        : 100%;
-			overflow     : hidden;
-			text-overflow: ellipsis;
-			white-space  : wrap;
-		}
-
-		.thumbnail {
-			flex         : 0 0 auto;
-			margin-bottom: 5px;
-
-			img {
-				width : 75px;
-				height: 75px;
-			}
-
-			a {
-				display         : inline-block;
-				width           : 75px;
-				height          : 75px;
-				background-color: #eee;
-				color           : #000;
-				text-decoration : none;
-				overflow        : hidden;
-			}
-		}
-
-		.detail {
-			flex           : 1 0 auto;
-			display        : flex;
-			justify-content: center;
-			flex-direction : column;
-		}
-	}
-}
 
 /* COMIC SECTION */
 .comic {
@@ -562,12 +594,24 @@ footer {
 		margin-top: 15px;
 		font-size : 0.8em;
 
+		.transcript-header {
+			display        : flex;
+			justify-content: space-between;
+			align-items    : center;
+			margin-bottom  : 5px;
+			/* Hinzugefügt */
+		}
+
 		.transcript-content {
-			border    : 1px solid #ccc;
-			max-height: 550px;
-			overflow  : auto;
-			padding   : 3px;
-			margin-top: 5px;
+			background-color  : $content-box;
+			border            : 1px solid $border-color-medium;
+			max-height        : 550px;
+			overflow          : auto;
+			padding           : 15px;
+			margin-top        : 5px;
+			border-radius     : 8px;
+			-webkit-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, .35);
+			box-shadow        : inset 0 1px 1px 0 rgba(0, 0, 0, .35);
 
 			p {
 				margin-bottom: 7px;
@@ -648,14 +692,17 @@ footer {
 
 	.comic-header {
 		margin-bottom: 7px;
+		position     : relative;
+		/* HINZUGEFÜGT */
 	}
+
 
 	.comicnav {
 		width             : 825px;
 		text-align        : center;
 		margin            : 0 auto 15px auto;
-		color             : #000;
-		background-color  : #c8e0c8;
+		color             : $text-on-medium-bg; // Schwarz
+		background-color  : $comic-nav-bg;
 		border-radius     : 3px;
 		padding           : 7px 0;
 		-webkit-box-shadow: inset 0px 2px 2px 0px rgba(0, 0, 0, 0.35);
@@ -677,7 +724,7 @@ footer {
 			transform      : translateY(-36px);
 			width          : 27px;
 			flex           : 0 0 auto;
-			background : url($base_url + "/assets/images/layout/ui/bookmark.png?c=20251024") 0 0 no-repeat;
+			background     : url($base_url + "/assets/images/layout/ui/bookmark.png?c=20251024") 0 0 no-repeat;
 			background-size: contain;
 			overflow       : hidden;
 			text-indent    : -100em;
@@ -689,7 +736,7 @@ footer {
 			border-radius  : 0;
 
 			&.bookmarked {
-				background : url($base_url + "/assets/images/layout/ui/bookmark_active.png?c=20251024") 0 0 no-repeat;
+				background     : url($base_url + "/assets/images/layout/ui/bookmark_active.png?c=20251024") 0 0 no-repeat;
 				background-size: contain;
 			}
 		}
@@ -700,7 +747,7 @@ footer {
 
 		a,
 		button {
-			color          : #000;
+			color          : $text-on-medium-bg; // Schwarz
 			text-decoration: none;
 		}
 
@@ -723,26 +770,26 @@ footer {
 		}
 
 		.navarrow:not(.disabled):hover {
-			background-color: #aac8aa;
+			background-color: $comic-nav-hover-bg;
 		}
 
 		.navbegin .nav-wrapper {
-			background : url($base_url + "/assets/images/layout/navigation/comic-nav-begin.png?c=20250916") 0 50% no-repeat;
+			background  : url($base_url + "/assets/images/layout/navigation/comic-nav-begin.png?c=20250916") 0 50% no-repeat;
 			padding-left: 35px;
 		}
 
 		.navprev .nav-wrapper {
-			background : url($base_url + "/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916") 0 50% no-repeat;
+			background  : url($base_url + "/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916") 0 50% no-repeat;
 			padding-left: 26px;
 		}
 
 		.navnext .nav-wrapper {
-			background : url($base_url + "/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916") 100% 50% no-repeat;
+			background   : url($base_url + "/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916") 100% 50% no-repeat;
 			padding-right: 26px;
 		}
 
 		.navend .nav-wrapper {
-			background : url($base_url + "/assets/images/layout/navigation/comic-nav-end.png?c=20250916") 100% 50% no-repeat;
+			background   : url($base_url + "/assets/images/layout/navigation/comic-nav-end.png?c=20250916") 100% 50% no-repeat;
 			padding-right: 35px;
 		}
 
@@ -755,17 +802,34 @@ footer {
 			text-align      : center;
 			padding         : 2px 20px;
 			margin          : 0 6px;
-			color           : #fff;
-			background-color: #5d7b5d;
+			color           : $text-on-dark-bg; // Weiß
+			background-color: $comic-nav-archive-bg;
+
+			&:hover {
+				background-color: $comic-nav-archive-hover-bg;
+			}
 		}
 
-		.navarchive:hover {
-			background-color: #789e78;
-		}
+		// .navarchive:hover removed because nested now
 
 		.disabled {
 			opacity: 0.4;
 			cursor : default;
+		}
+
+		/* NEU: Fehler melden Button (Oben Rechts) */
+		.nav-report-issue {
+			width: auto;
+			/* Breite an Inhalt anpassen */
+
+			.nav-wrapper {
+				background     : url($base_url + "/assets/images/layout/navigation/comic-nav-issue.png?c=20251029") 0 50% no-repeat;
+				padding-left   : 28px;
+				background-size: 20px;
+				/* Icon-Größe anpassen */
+			}
+
+			// Hover-Effekt wird von .navarrow:not(.disabled):hover geerbt
 		}
 
 		&.bottomnav {
@@ -773,11 +837,18 @@ footer {
 				width: auto;
 
 				.nav-wrapper {
-					background : url($base_url + "/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
+					background  : url($base_url + "/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
 					padding-left: 55px;
 				}
 			}
 		}
+	}
+
+	#comic-image {
+		width        : 100%;
+		height       : auto;
+		border-radius: 7px;
+		/* HINZUGEFÜGT */
 	}
 }
 
@@ -827,7 +898,7 @@ footer {
 
 .dialog {
 	border-radius: 5px;
-	background   : #FFF;
+	background   : $content-bg; // Weiß
 	width        : 490px;
 	position     : fixed;
 	margin       : auto;
@@ -841,7 +912,7 @@ footer {
 	}
 
 	a {
-		color          : #000;
+		color          : $text-on-medium-bg; // Schwarz
 		text-decoration: none;
 	}
 
@@ -851,12 +922,13 @@ footer {
 	}
 
 	.dialog-title {
-		background-color: #B1CAB5;
+		background-color: $button-hover-bg; // Dunkleres Grün
 		border-radius   : 3px 3px 0 0;
 		padding         : 5px 10px;
 		margin-bottom   : 10px;
 		margin-left     : -10px;
 		width           : 470px;
+		color           : $text-on-medium-bg; // Schwarz
 	}
 
 	.dialog-center {
@@ -866,8 +938,8 @@ footer {
 
 	.dialog-x {
 		display      : inline-block;
-		background   : #FFF;
-		color        : #555;
+		background   : $content-bg; // Weiß
+		color        : $text-color-light; // Grau
 		font-size    : 12px;
 		text-align   : center;
 		font-weight  : bold;
@@ -879,6 +951,12 @@ footer {
 		margin-top   : 1px;
 		margin-right : -5px;
 		border-radius: 2px;
+
+		&:hover {
+			// Hover für X
+			background-color: $button-disabled-bg; // Grau
+			color           : $text-on-medium-bg; // Schwarz
+		}
 	}
 
 	.dialog-title .dialog-x {
@@ -895,6 +973,7 @@ footer {
 		margin-top   : 2px;
 		margin-bottom: 5px;
 		width        : 465px;
+		border       : 1px solid $border-color-medium; // Standard-Rand
 	}
 }
 
@@ -909,7 +988,7 @@ footer {
 		text-align   : justify;
 
 		a {
-			color: #000;
+			color: $text-on-medium-bg; // Schwarz
 		}
 	}
 
@@ -917,7 +996,7 @@ footer {
 		display  : inline-block;
 		margin   : 0;
 		cursor   : pointer;
-		color    : #000;
+		color    : $text-on-medium-bg; // Schwarz
 		font-size: 1.2em;
 	}
 
@@ -944,12 +1023,17 @@ footer {
 		display         : inline-block;
 		width           : 80px;
 		height          : 104px;
-		background-color: #eee;
+		background-color: #eee; // Helles Grau
 		text-decoration : none;
-		color           : #000;
+		color           : $text-on-medium-bg; // Schwarz
 		font-size       : 1.2em;
 		position        : relative;
 		overflow        : hidden;
+
+		&:hover {
+			// Hover für Thumbnails
+			box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+		}
 
 		span {
 			display        : flex;
@@ -976,9 +1060,14 @@ footer {
 			svg {
 				width       : 24px;
 				height      : 24px;
-				color       : #f00;
-				stroke      : #fff;
+				color       : #f00; // Rot
+				stroke      : $text-on-dark-bg; // Weißer Rand
 				stroke-width: 2px;
+				filter      : drop-shadow(0 0 1px rgba(0, 0, 0, 0.5)); // Kleiner Schatten
+			}
+
+			&:hover svg {
+				color: #c00; // Dunkleres Rot bei Hover
 			}
 		}
 	}
@@ -1004,8 +1093,8 @@ footer {
 	a.loaded span,
 	a.noscript span,
 	&.tag-page-links a span {
-		background-color: rgba(0, 0, 0, 0.5);
-		color           : #fff;
+		background-color: rgba(0, 0, 0, 0.5); // Halbtransparent Schwarz
+		color           : $text-on-dark-bg; // Weiß
 		display         : none;
 		z-index         : 100;
 	}
@@ -1017,6 +1106,7 @@ footer {
 	}
 }
 
+// Media Query bleibt unverändert, da es Größenanpassungen sind
 @media only screen and (min-device-width: 320px) and (max-device-width: 640px) and (-webkit-min-device-pixel-ratio: 2) {
 	.maintbanner {
 		font-size: 1.2em;
@@ -1030,10 +1120,8 @@ footer {
 		font-size: 16px;
 	}
 
-	.chapter {
-		h2 {
-			font-size: 2em;
-		}
+	.chapter h2 {
+		font-size: 2em;
 	}
 
 	.chapter-links {
@@ -1058,23 +1146,12 @@ footer {
 			top        : inherit;
 			padding-top: 0;
 		}
-	}
 
-	.chapter-links.tag-page-links a {
-		zoom: 1.5;
-	}
-
-	/*
-	.bookmarks-page {
-		.bookmark-example {
-			font-size: 1.4em;
-		}
-
-		button:not(.delete) {
-			font-size: 1.4em;
+		&.tag-page-links a {
+			zoom: 1.5;
 		}
 	}
-*/
+
 	.comic {
 		.transcript-content {
 			font-size: 1.3em;
@@ -1113,10 +1190,8 @@ footer {
 				display: none;
 			}
 
-			.bookmark-control {
-				.button {
-					font-size: 1.1em;
-				}
+			.bookmark-control .button {
+				font-size: 1.1em;
 			}
 		}
 
@@ -1142,24 +1217,26 @@ footer {
 		a.menu-new {
 			padding-top   : calc(0.7em + 5px);
 			padding-bottom: calc(8px - 0.7em + 5px);
-		}
 
-		a.menu-new:after {
-			width    : auto;
-			top      : 0;
-			left     : 0;
-			right    : 0;
-			transform: none;
+			&:after {
+				// Korrekte Verschachtelung
+				width    : auto;
+				top      : 0;
+				left     : 0;
+				right    : 0;
+				transform: none;
+			}
 		}
 	}
 }
+
 
 /* FAQ */
 div.page-faq {
 	section {
 		padding-top: 10px;
 		margin-top : 10px;
-		border-top : 1px solid #ccc;
+		border-top : 1px solid $border-color-medium;
 
 		h2 {
 			font-size    : 15px;
@@ -1184,20 +1261,22 @@ div.page-chat {
 			font-size       : 20px;
 			text-decoration : none;
 			border-radius   : 5px;
-			background-color: #6c8f6c;
-			color           : #FFF;
+			background-color: $comic-nav-archive-bg; // Gleiche Farbe wie Archiv-Button
+			color           : $text-on-dark-bg; // Weiß
+
+			&:hover {
+				background-color: $comic-nav-archive-hover-bg;
+			}
 		}
 
-		a:hover {
-			background-color: #85aa85;
-		}
+		// a:hover removed because nested
 	}
 }
 
 /* CHARACTER PAGE */
 .char-detail {
 	padding      : 10px;
-	border-bottom: 1px solid #ccc;
+	border-bottom: 1px solid $border-color-medium;
 	margin-bottom: 10px;
 
 	h3 img {
@@ -1232,40 +1311,380 @@ div.page-chat {
 	border       : none;
 }
 
-/* BOOKMARKS PAGE */
-/*
-.bookmarks-page {
-	.bookmark-example {
-		font-style     : italic;
-		text-align     : center;
-		font-size      : 0.9em;
-		margin-right   : 1rem;
-		display        : flex;
-		flex-flow      : row nowrap;
-		justify-content: flex-end;
-		align-items    : center;
-		gap            : 0.5rem;
 
-		.ribbon {
-			height         : 36px;
-			width          : 27px;
-			flex           : 0 0 auto;
-			background : url($base_url + "/assets/layout/ui/bookmark.png") 0 0 no-repeat;
-			background-size: contain;
+/* CHARAKTERS */
+.comic-characters {
+	background-color: $content-box;
+}
+
+/* ################################################################## */
+/* ### NEUE STILE FÜR REPORTING-SYSTEM (v3.7.0.0) - LIGHT MODE ### */
+/* ################################################################## */
+
+/* --- Allgemeine Modal-Stile (Basis) --- */
+.modal {
+	display         : none;
+	position        : fixed;
+	z-index         : 1000;
+	left            : 0;
+	top             : 0;
+	width           : 100%;
+	height          : 100%;
+	overflow        : auto;
+	background-color: rgba(0, 0, 0, 0.6);
+	align-items     : center;
+	justify-content : center;
+}
+
+.modal-overlay {
+	position: fixed;
+	top     : 0;
+	left    : 0;
+	width   : 100%;
+	height  : 100%;
+	cursor  : pointer;
+	z-index : 1001;
+}
+
+.modal-content {
+	//Anpassungen an Bildschirm zugunsten der Lesbarkeit
+	position        : relative;
+	background-color: $content-bg; // Weiß
+	margin          : auto;
+	padding         : 25px;
+	border          : 1px solid $border-color-dark; // Dunklerer Rand
+	font-size       : 1.2em;
+	width           : 90%;
+	max-width       : 70vw;
+	height          : 90%;
+	max-height      : 90vh;
+	border-radius   : 8px;
+	box-shadow      : 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	z-index         : 1002;
+	overflow-y      : auto;
+}
+
+.modal-close {
+	color      : #aaa; // Helles Grau
+	position   : absolute;
+	top        : 10px;
+	right      : 15px;
+	font-size  : 28px;
+	font-weight: bold;
+	background : none;
+	border     : none;
+	cursor     : pointer;
+	padding    : 0 5px;
+
+	&:hover,
+	&:focus {
+		color          : $text-on-medium-bg; // Schwarz
+		text-decoration: none;
+	}
+}
+
+.modal-buttons {
+	margin-top     : 20px;
+	text-align     : right;
+	display        : flex;
+	gap            : 10px;
+	justify-content: flex-end;
+}
+
+/* --- Report Modal Spezifisch --- */
+.report-modal-content {
+	.admin-form {
+		// Wiederverwendung von Admin-Formular-Stilen
+		display       : flex;
+		flex-direction: column;
+		gap           : 15px;
+
+		label {
+			font-weight  : bold;
+			display      : block;
+			margin-bottom: 5px;
+			color        : $text-color-light; // Dunkelgrau
+		}
+
+		input[type="text"],
+		select,
+		textarea {
+			width        : 100%;
+			padding      : 8px 10px;
+			border       : 1px solid $border-color-medium;
+			border-radius: 4px;
+			font-size    : 1em;
+			box-sizing   : border-box;
+
+			&:focus {
+				border-color: $comic-nav-archive-bg; // Dunkelgrün
+				box-shadow  : 0 0 0 2px rgba(93, 123, 93, 0.2); // Passender Schatten
+				outline     : none;
+			}
+		}
+
+		textarea {
+			resize    : vertical;
+			min-height: 80px;
+		}
+
+		select[required]:invalid {
+			color: $text-color-faded; // Hellgrau
 		}
 	}
 
-	.no-bookmarks {
-		text-align: center;
+	.report-images-container {
+		display        : flex;
+		gap            : 15px;
+		margin-top     : 10px;
+		justify-content: space-around;
+		flex-wrap      : wrap;
+
+		div {
+			text-align: center;
+			flex      : 1;
+			min-width : 200px;
+		}
+
+		img {
+			max-width    : 100%;
+			height       : auto;
+			border       : 1px solid $border-color-light;
+			border-radius: 4px;
+			margin-top   : 5px;
+		}
+
+		label {
+			font-size: 0.9em;
+			color    : $text-color-medium; // Mittelgrau
+		}
 	}
 
-	input[type=file] {
-		display: none;
-	}
+	/* Status Meldungen */
+	.status-message {
+		padding      : 10px 15px;
+		border-radius: 4px;
+		margin       : 10px 0;
+		border       : 1px solid transparent;
+		font-size    : 0.95em;
 
-	button {
-		margin-right: 0.3rem;
-		font-size   : 0.9em;
+		&.status-green {
+			color           : $status-green-text;
+			background-color: $status-green-bg;
+			border-color    : $status-green-border;
+		}
+
+		&.status-red {
+			color           : $status-red-text;
+			background-color: $status-red-bg;
+			border-color    : $status-red-border;
+		}
+
+		&.status-orange {
+			color           : $status-orange-text;
+			background-color: $status-orange-bg;
+			border-color    : $status-orange-border;
+		}
 	}
 }
-	*/
+
+/* --- "Fehler melden"-Button auf Comic-Seite --- */
+/*#open-report-modal {
+	padding         : 3px 8px;
+	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift
+	background-color: $menu-bg; // Wie Menüpunkte
+	border          : 1px solid $theme-label-bg; // Passender Rand
+	border-radius   : 4px;
+	color           : $text-color; // Standardtext
+	cursor          : pointer;
+	margin-left     : 10px;
+
+	&:hover {
+		background-color: $menu-hover-bg; // Weiß
+		border-color    : $comic-nav-archive-bg; // Dunkelgrün
+	}
+}*/
+
+/* --- Admin Report Management --- */
+.filter-form {
+	background-color: $table-row-even-bg; // Hellgrau
+	border          : 1px solid $border-color-light; // Heller Rand
+	padding         : 15px;
+	margin-bottom   : 20px;
+	border-radius   : 5px;
+
+	legend {
+		font-weight  : bold;
+		margin-bottom: 10px;
+		font-size    : 1.1em;
+	}
+
+	.filter-controls {
+		display    : flex;
+		flex-wrap  : wrap;
+		gap        : 15px;
+		align-items: flex-end;
+
+		label {
+			margin-bottom: 5px;
+			font-size    : 0.9em;
+			color        : $text-color-light;
+		}
+
+		input[type="text"],
+		select {
+			padding      : 6px 8px;
+			border       : 1px solid $border-color-medium;
+			border-radius: 4px;
+		}
+
+		// button erbt globalen Stil
+	}
+}
+
+.data-table {
+	width          : 100%;
+	border-collapse: collapse;
+	margin-bottom  : 20px;
+
+	th,
+	td {
+		border        : 1px solid $border-color-light; // Heller Rand
+		padding       : 10px;
+		text-align    : left;
+		vertical-align: top;
+	}
+
+	th {
+		background-color: $table-header-bg;
+		font-weight     : bold;
+	}
+
+	tbody tr:nth-child(even) {
+		background-color: $table-row-even-bg;
+	}
+
+	tbody tr:hover {
+		background-color: $table-row-hover-bg;
+	}
+
+	.actions-cell {
+		white-space: nowrap;
+		text-align : right;
+
+		form {
+			display  : inline-flex;
+			flex-wrap: wrap;
+			gap      : 5px;
+			margin   : 0;
+		}
+
+		button {
+			padding  : 4px 8px;
+			font-size: 0.9em;
+			color    : $text-on-dark-bg; // Weiß
+		}
+
+		.button-green {
+			background-color: $button-green;
+
+			&:hover {
+				background-color: $button-green-hover;
+			}
+		}
+
+		.button-orange {
+			background-color: $button-orange;
+
+			&:hover {
+				background-color: $button-orange-hover;
+			}
+		}
+
+		.button-blue {
+			background-color: $button-blue;
+
+			&:hover {
+				background-color: $button-blue-hover;
+			}
+		}
+
+		.detail-button {
+			background-color: $button-grey;
+
+			&:hover {
+				background-color: $button-grey-hover;
+			}
+
+			color: $text-on-dark-bg;
+		}
+	}
+}
+
+/* Admin Detail Modal */
+.report-detail-modal-content {
+	h3 {
+		margin-top    : 15px;
+		margin-bottom : 8px;
+		font-size     : 1.1em;
+		border-bottom : 1px solid #eee; // Sehr heller Rand
+		padding-bottom: 4px;
+	}
+
+	p strong {
+		display  : inline-block;
+		min-width: 90px;
+	}
+
+	.report-text-box {
+		background-color    : $table-row-even-bg; // Hellgrau
+		border              : 1px solid $border-color-light; // Heller Rand
+		padding             : 10px;
+		border-radius       : 4px;
+		margin-bottom       : 15px;
+		//font-size       : 0.95em;
+		//white-space       : pre-wrap;
+		word-wrap           : break-word;
+		max-height          : 30vh; // angepasst
+		overflow-y          : auto;
+	}
+
+	#detail-suggestion {
+		width             : 100%;
+		height            : 30vh;
+		max-height        : 30vh;
+		box-sizing        : border-box;
+		//font-family     : inherit;
+		background-color  : #f1f1f1; // Leicht dunkleres Grau für readonly
+		border            : none;
+		resize            : none;
+		padding           : 10px; // Padding hinzufügen
+		border-radius     : 4px; // Abrundung
+		font-size         : 1.1em;
+	}
+
+	/* Diff-Viewer */
+	.diff-box {
+		.loading-text {
+			color     : $border-color-dark; // Dunkelgrau
+			font-style: italic;
+		}
+
+		ins {
+			background-color: $status-green-bg;
+			color           : $status-green-text;
+			text-decoration : none;
+		}
+
+		del {
+			background-color: $status-red-bg;
+			color           : $status-red-text;
+			text-decoration : none;
+		}
+	}
+}
+
+/* Honeypot Feld */
+.honeypot-field {
+	display: none !important;
+}

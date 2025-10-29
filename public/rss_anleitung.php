@@ -9,9 +9,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.1
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     4.0.1 FIX falschen RSS-Icon Pfad
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -81,7 +82,7 @@ require_once Path::getPartialTemplatePath('header.php');
     <p>Die URL meines RSS-Feeds findest du meist als kleines Icon
         (<a href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/rss.xml" target="_blank" title="Mein RSS-Feed"
             id="rssFeedLink">
-            <img src="<?php echo Url::getImgIconUrl('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
+            <img src="<?php echo Url::getImgUiUrl('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
                 class="rss-icon-inline">
         </a>)
         auf meiner Webseite oder du kannst sie direkt hier abrufen: <code><?php echo $rssFeedUrl; ?></code></p>

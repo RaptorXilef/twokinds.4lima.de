@@ -1,16 +1,34 @@
+/**
+ * Main CSS Design
+ *
+ * @file      ROOT/resources/scss/main_dark.scss
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.3
+ * @since     2.1.3 Verschieben des "Fehler melden"Button in die obere Navigationsleiste
+ */
+@use 'sass:color'; // sass:color Modul importieren
+
 $base_url: 'https://twokinds.4lima.de';
 
+// Original Farbvariablen beibehalten
 $page-bg           : #002B3C;
-$content-bg        : #00425c;
+$content-bg        : #003f58; // Wird im Dark Mode für .content verwendet #003d55
+$content-area-bg   : #00425c; // Wird im Dark Mode für .main-container verwendet (kann gleich sein wie content-bg)
 $accent-dark       : #00334C;
-$accent-light      : #48778a;
+$accent-light      : #48778a; // Leicht heller als button-color für Hover etc.
 $button-color      : #2a6177;
 $text-color        : #fff;
-$link-color        : #08c;
-$link-visited-color: #08c;
+$link-color        : #81dbfe; // Helleres Blau beibehalten, da #08c auf dunklem Grund schlecht lesbar ist
+$link-visited-color: #81dbfe; // Gleich wie link-color
+
 
 body.theme-night #banner,
 #banner-lights-off {
+	// Original Dark Banner verwenden (Pfad ggf. anpassen, falls es ein separates Dark-Banner gibt)
 	background-image: url($base_url + "/assets/images/layout/banner.webp?c=20251024");
 }
 
@@ -24,36 +42,61 @@ body.theme-night #banner,
 
 body.theme-night {
 	background-color: $page-bg;
-	color           : $text-color;
+	color           : $text-color; // Basis-Textfarbe für Dark Mode
 
 	hr {
 		border-color: $button-color;
 	}
 
 	.main-container {
-		background-color: $content-bg;
+		background-color: $content-area-bg;
+		box-shadow      : 0px 0px 3px 1px rgba(255, 255, 255, 0.2); // Hellerer Schatten kann bleiben
 
 		button,
 		a.button {
 			background-color: $button-color;
-			color           : $text-color;
+			color           : $text-color; // Textfarbe für Buttons explizit setzen
+
+			&:hover {
+				// Hover-Effekt definieren
+				background-color: $accent-light;
+			}
+		}
+
+		button:disabled {
+			// Angepasster Disabled-Stil
+			background-color: color.adjust($button-color, $lightness: -10%, $alpha: -0.4); // Etwas dunkler und transparenter
+			cursor          : not-allowed;
+			opacity         : 0.7; // Leicht reduziert
+			color           : color.adjust($text-color, $alpha: -0.5); // Leicht ausgegrauter Text
 		}
 
 		.arrow-down,
 		.arrow-left {
+			// Separates Dark-SVG verwenden
 			background-image: url($base_url + "/assets/images/layout/ui/dropdown_dark.svg?c=20251024");
+			filter          : none; // Filter entfernen, wenn separates SVG existiert
 		}
 	}
 
+	// .maintbanner Stile (aus Original übernommen, falls vorhanden)
 	.maintbanner {
+		// Hintergrund ist hellgelb, daher bleibt Text schwarz
+		color: #000;
 
 		a,
 		a:link,
 		a:visited,
 		a:active {
-			color: #000;
+			color: #000; // Original beibehalten
 		}
 	}
+
+	// Explizite Textfarbe für Instructions überschreiben
+	.instructions {
+		color: color.adjust($text-color, $lightness: -15%); // Etwas dunkler als Haupttext
+	}
+
 
 	.sidebar {
 		.sidebar-content {
@@ -61,95 +104,135 @@ body.theme-night {
 
 			.menu {
 				a {
-					background-color: $button-color;
-					color           : $text-color;
+					background-color: $button-color; // Original Button Farbe
+					color           : $text-color; // Textfarbe explizit setzen
+
+					&:hover {
+						// Hover wie Original
+						background-color: $accent-light;
+					}
 				}
 
 				a.theme {
 					span.themelabel {
-						background-color: #628492;
-						color           : $text-color;
+						background-color: #628492; // Etwas heller für Kontrast
+						color           : $text-color; // Textfarbe explizit setzen
+					}
+
+					span.themename {
+						color: $text-color; // Textfarbe explizit setzen
 					}
 				}
 
-				a:hover {
-					background-color: $accent-light;
-				}
-
 				a.menu-new:after {
+					// Farbe aus Original
 					background-color: #628492;
-					color           : $text-color;
+					color           : $text-color; // Textfarbe explizit setzen
 				}
 			}
 		}
 	}
 
 	a {
+		// Globale Link-Farbe aus Variablen
 		color: $link-color;
+
+		&:visited {
+			// Korrigiert von a:visited zu &:visited
+			color: $link-visited-color;
+		}
 	}
 
-	a:visited {
-		color: $link-visited-color;
-	}
 
 	.content {
-		border-color: $page-bg;
+		border-color    : $page-bg; // Randfarbe aus Original
+		background-color: $content-bg; // Hintergrundfarbe für den Inhaltsbereich hinzugefügt
+		color           : $text-color; // Stellt sicher, dass auch Content die Basis-Textfarbe hat
 
 		table {
+			// Tabellenstile aus Original
 			border-color: $page-bg;
+
+			th {
+				// Header aus Original
+				background-color: $accent-light; // Hellerer Header
+				color           : $text-color; // Textfarbe explizit setzen
+			}
+
+			td {
+				color: $text-color; // Textfarbe explizit setzen
+			}
+
+			td,
+			th {
+				// Zellenränder aus Original
+				border-color: $page-bg;
+			}
 		}
 
-		th {
-			background-color: $accent-light;
-		}
-
-		td,
-		th {
-			border-color: $page-bg;
-		}
-
+		// Seitenheader aus Original
 		h1.page-header,
 		h2.page-header,
 		h3.page-header,
 		h4.page-header,
 		h5.page-header,
 		h6.page-header {
-			background-color: $page-bg;
+			background-color: $page-bg; // Dunklerer Header
+			border-bottom   : 1px solid $button-color; // Leichter Rand unten
+			color           : $text-color; // Textfarbe explizit setzen
+		}
+
+		// Links im Content überschreiben die globalen Links (falls nötig)
+		a {
+			color: $link-color;
+
+			&:visited {
+				color: $link-visited-color;
+			}
 		}
 	}
 
-	/* COMIC SECTION */
+	/* COMIC SECTION - Stile aus Original übernehmen */
 	.comic {
+
+		// h1 erbt Farbe von body.theme-night
 		.transcript .transcript-content {
 			background-color: $accent-dark;
 			border-color    : $page-bg;
+			color           : $text-color; // Textfarbe explizit setzen
 		}
 
 		.comicnav {
-			color           : $text-color;
-			background-color: $accent-dark;
+			color           : $text-color; // Basis-Textfarbe für nav
+			background-color: $accent-dark; // Navigationsleiste wie Sidebar-Menü
 
 			a,
 			button {
-				color: $text-color;
+				color: $text-color; // Textfarbe explizit setzen
 			}
 
-			a.visited {
+			a:visited {
+				// Sicherstellen, dass besuchte Links gleich aussehen
 				color: $text-color;
 			}
 
 			.navarrow:not(.disabled):hover {
-				background-color: $content-bg;
+				// Hover aus Original
+				background-color: $content-bg; // Hover-Farbe wie Hauptinhalt
 			}
 
 			.navarchive {
+				// Archiv-Button aus Original
 				background-color: $button-color;
+				color           : $text-color; // Textfarbe explizit setzen
+
+				&:hover {
+					// Hover aus Original
+					background-color: $accent-light;
+				}
 			}
 
-			.navarchive:hover {
-				background-color: $accent-light;
-			}
-
+			// Dark Mode Icons (Pfade wie im Original)
 			.navbegin .nav-wrapper {
 				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916");
 			}
@@ -166,79 +249,600 @@ body.theme-night {
 				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916");
 			}
 
-			&.bottomnav {
-				.nav-lang-toggle .nav-wrapper {
-					background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916");
+			/* NEU: Dark Mode Icon für Fehler melden Button */
+			.nav-report-issue .nav-wrapper {
+				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029");
+			}
+
+			&.bottomnav .nav-lang-toggle .nav-wrapper {
+				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916");
+			}
+
+			// Lesezeichen-Button ggf. anpassen
+			button.bookmark {
+				filter: brightness(1.1); // Leicht aufhellen
+
+				&.bookmarked {
+					filter: brightness(1.3); // Aktives Lesezeichen noch heller
 				}
 			}
 		}
+
+		// .below-nav, .permalink Stile (aus meiner vorherigen Version, angepasst)
+		.below-nav,
+		.permalink {
+			color: color.adjust($text-color, $lightness: -15%); // Etwas dunklerer Info-Text
+		}
+
+		// #open-report-modal wird weiter unten explizit gestyled
 	}
 
 	.bottom {
+		// Rand aus Original
 		border-color: $page-bg;
 	}
 
-	/* ARCHIVE */
+	/* ARCHIVE - Stile aus Original */
 	.chapter {
 		h2 {
 			color: $text-color;
 		}
 
+		// Textfarbe explizit setzen
+		p {
+			color: $text-color; // Textfarbe explizit setzen
+
+			a {
+				color: $link-color;
+			}
+
+			// Linkfarbe überschreiben
+		}
+
 		.chapter-links {
 			a {
 				background-color: $button-color;
-				color           : $text-color;
+				color           : $text-color; // Textfarbe explizit setzen
+
+				&:hover {
+					// Hover-Effekt hinzufügen
+					background-color: $accent-light;
+				}
 			}
 
 			a:visited {
 				color: $text-color;
 			}
+
+			// Besuchte Links
+			// Text-Overlay (aus meiner vorherigen Version, leicht angepasst)
+			a.loaded span,
+			a.noscript span,
+			&.tag-page-links a span {
+				background-color: rgba(0, 0, 0, 0.65); // Etwas dunkler für besseren Kontrast
+				color           : $text-color; // Textfarbe explizit setzen
+			}
 		}
 	}
 
-	/* CHAT PAGE */
+	/* CHAT PAGE - Stile aus Original */
 	div.page-chat .chat-button {
 		a {
 			background-color: $button-color;
-			color           : $text-color;
-		}
+			color           : $text-color; // Textfarbe explizit setzen
 
-		a:hover {
-			background-color: $accent-light;
+			&:hover {
+				background-color: $accent-light;
+			}
 		}
 	}
 
-	/* FANART */
+	/* FANART - Stile aus Original */
 	.fanart-list .fanart-item {
 		border-color: $page-bg;
+		color       : $text-color; // Textfarbe für Autor etc. setzen
 
 		.thumbnail a {
 			background-color: $button-color;
-			color           : $text-color;
+			color           : $text-color; // Textfarbe explizit setzen
+
+			&:hover {
+				// Hover-Effekt hinzufügen
+				background-color: $accent-light;
+			}
 		}
 	}
 
-	/* POPUP DIALOG */
-	.dialog {
-		background-color: $content-bg;
+	/* CHARACTER PAGE - Stile (aus meiner vorherigen Version, ggf. anpassen) */
+	.char-detail {
+		border-bottom-color: $button-color; // Trennlinie
+		color              : $text-color; // Textfarbe für Beschreibung setzen
 
-		a {
-			color: $text-color;
+		h3 img {
+			filter: brightness(1.1); // Icons leicht aufhellen
 		}
 
+		// h3, p erben Farbe
+	}
+
+	/* POPUP DIALOG - Stile aus Original */
+	.dialog {
+		background-color: $content-bg;
+		box-shadow      : 0 0 5px 1px rgba(255, 255, 255, 0.25); // Hellerer Schatten
+		color           : $text-color; // Basis-Textfarbe für Dialog
+
+		a {
+			color: $link-color;
+		}
+
+		// Link-Farbe anpassen
 		.dialog-title {
 			background-color: $accent-dark;
+			color           : $text-color; // Textfarbe explizit setzen
 		}
 
 		.dialog-x {
-			color           : $text-color;
+			color           : $text-color; // Textfarbe explizit setzen
 			background-color: $button-color;
+
+			&:hover {
+				background-color: $accent-light;
+			}
+
+			// Hover hinzufügen
+		}
+
+		.dialog-input-header {
+			color: $text-color; // Textfarbe explizit setzen
 		}
 
 		input.embed {
-			color           : $text-color;
-			border          : 1px solid $page-bg;
-			background-color: $accent-light;
+			// Input-Feld anpassen
+			color           : $text-color; // Textfarbe explizit setzen
+			border          : 1px solid $button-color; // Randfarbe anpassen
+			background-color: $page-bg; // Dunklerer Hintergrund
 		}
 	}
+
+	// Explizite Textfarbe für Footer überschreiben
+	footer {
+		color: $text-color;
+
+		a {
+			color: $link-color;
+		}
+
+		// Links im Footer auch anpassen
+	}
+
+
+	/* ################################################################## */
+	/* ### NEUE STILE FÜR REPORTING-SYSTEM (v3.7.0.0) - DARK MODE ### */
+	/* Angepasst an das Original-Theme                             */
+	/* ################################################################## */
+
+	/* --- Modal Basis Dark --- */
+	.modal {
+
+		// Generell für alle Modals
+		.modal-content {
+			background-color: $content-bg; // Haupt-Inhaltsfarbe
+			border          : 1px solid $accent-light; // Hellerer Rand
+			color           : $text-color; // Basis-Textfarbe für Modal-Inhalt
+			box-shadow      : 0 4px 15px rgba(0, 0, 0, 0.5); // Stärkerer Schatten
+
+			.modal-close {
+				color: color.adjust($text-color, $alpha: -0.4); // Etwas transparenter
+
+				&:hover,
+				&:focus {
+					color           : $text-color;
+					background-color: $button-color; // Hintergrund bei Hover
+				}
+			}
+
+			// h2, p, etc. erben $text-color
+		}
+	}
+
+
+	/* --- Report Modal Dark --- */
+	.report-modal-content {
+		// Spezifisch für Report Modal (kann von .modal .modal-content erben)
+
+		// Verwendet .admin-form Stile für Konsistenz
+		.admin-form {
+			label {
+				color: color.adjust($text-color, $lightness: -10%); // Leicht dunklere Labels
+			}
+
+			input[type="text"],
+			select,
+			textarea {
+				background-color: $page-bg; // Sehr dunkler Hintergrund für Felder
+				border-color    : $button-color;
+				color           : $text-color; // Textfarbe explizit
+
+				&:focus {
+					// Fokus-Stil hinzufügen
+					border-color: $accent-light;
+					box-shadow  : 0 0 0 2px rgba($accent-light, 0.5);
+				}
+			}
+
+			select[required]:invalid {
+				// Platzhalter für Select
+				color: color.adjust($text-color, $alpha: -0.5); // Transparenter
+			}
+		}
+
+		// Ende .admin-form
+
+		.report-images-container {
+			img {
+				border-color: $button-color;
+			}
+
+			label {
+				color: color.adjust($text-color, $lightness: -10%);
+			}
+
+			// Wie Formular-Labels
+		}
+
+		// .modal-buttons .button erbt von .main-container .button
+
+		/* Status Meldungen Dark (angepasst für besseren Kontrast) */
+		.status-message {
+			border-radius: 4px; // Abrundung hinzufügen
+
+			&.status-green {
+				background-color: color.adjust(#28a745, $lightness: -30%); // Dunkleres Grün
+				color           : #e8f5e9; // Sehr heller Text
+				border          : 1px solid color.adjust(#28a745, $lightness: -20%);
+			}
+
+			&.status-red {
+				background-color: color.adjust(#dc3545, $lightness: -30%); // Dunkleres Rot
+				color           : #fce4e4; // Sehr heller Text
+				border          : 1px solid color.adjust(#dc3545, $lightness: -20%);
+			}
+
+			&.status-orange {
+				// Info/Warnung
+				background-color: color.adjust(#ffc107, $lightness: -30%); // Dunkleres Orange
+				color           : #fff8e1; // Sehr heller Text
+				border          : 1px solid color.adjust(#ffc107, $lightness: -20%);
+			}
+		}
+	}
+
+	// Ende .report-modal-content
+
+	/* --- "Fehler melden"-Button Dark --- */
+	/*#open-report-modal {
+		// Soll aussehen wie andere Buttons
+		background-color: $button-color;
+		border          : 1px solid $button-color; // Passender Rand
+		color           : $text-color; // Textfarbe explizit
+
+		&:hover {
+			background-color: $accent-light;
+			border-color    : $accent-light;
+		}
+	}
+
+	*/
+	/* --- Admin Report Management Dark --- */
+	.filter-form {
+		// An Sidebar angepasst
+		background-color: $accent-dark;
+		border-color    : $button-color;
+
+		legend {
+			color: $text-color;
+		}
+
+		// Textfarbe explizit
+
+		.filter-controls {
+			label {
+				color: color.adjust($text-color, $lightness: -10%);
+			}
+
+			// Wie Modal-Labels
+			input[type="text"],
+			select {
+				background-color: $page-bg;
+				border-color    : $button-color;
+				color           : $text-color; // Textfarbe explizit
+
+				&:focus {
+					// Fokus wie Modal
+					border-color: $accent-light;
+					box-shadow  : 0 0 0 2px rgba($accent-light, 0.5);
+				}
+			}
+		}
+
+		// Ende .filter-controls
+		// .filter-controls button erbt von .main-container .button
+	}
+
+	// Ende .filter-form
+
+	.data-table {
+
+		// Angepasst an Original-Tabelle
+		th,
+		td {
+			border-color: $page-bg;
+			color       : $text-color;
+		}
+
+		// Textfarbe explizit
+		th {
+			background-color: $accent-light;
+			color           : $text-color;
+		}
+
+		// Wie Original, Textfarbe explizit
+		tbody tr:nth-child(even) {
+			background-color: $accent-dark;
+		}
+
+		// Zebra-Streifen
+		tbody tr:hover {
+			background-color: $button-color;
+		}
+
+		// Hover-Effekt für Zeilen
+
+		/* Buttons Dark (Standard-Button-Stil + Farbklassen) */
+		// Buttons erben Textfarbe von .main-container button
+		.button-green {
+			background-color: #28a745;
+
+			&:hover {
+				background-color: #218838;
+			}
+		}
+
+		.button-orange {
+			background-color: #fd7e14;
+
+			&:hover {
+				background-color: #e66a00;
+			}
+		}
+
+		.button-blue {
+			background-color: #007bff;
+
+			&:hover {
+				background-color: #0056b3;
+			}
+		}
+
+		.button.detail-button {
+			// Detail-Button hervorheben
+			background-color: $accent-light; // Heller als Standard-Button
+			color           : $text-color; // Textfarbe explizit
+
+			&:hover {
+				background-color: color.adjust($accent-light, $lightness: 10%);
+			}
+		}
+	}
+
+	// Ende .data-table
+
+	/* Admin Detail Modal Dark (erbt von .modal .modal-content) */
+	.report-detail-modal-content {
+		// Spezifische Overrides für das Detail-Modal
+		// h2, p erben Farbe vom Parent .modal-content
+
+		h3 {
+			// Explizite Farbe für h3 im Modal
+			color              : $text-color;
+			border-bottom-color: $button-color; // Anpassung an Theme
+		}
+
+		p strong {
+			color: $text-color; // Sicherstellen, dass strong die richtige Farbe hat
+		}
+
+		.report-text-box {
+			// Textboxen wie Input-Felder
+			background-color: $page-bg;
+			border-color    : $button-color;
+			padding         : 8px;
+			border-radius   : 4px;
+			color           : $text-color; // Textfarbe für Box-Inhalt
+		}
+
+		#detail-suggestion {
+			// Readonly Textarea
+			background-color: color.adjust($page-bg, $lightness: 5%); // Etwas heller als Textbox
+			color           : $text-color; // Textfarbe explizit
+			border          : none; // Kein extra Rand
+			padding         : 8px; // Padding hinzufügen
+			border-radius   : 4px; // Abrundung
+		}
+
+		/* Diff-Viewer Dark (Kontrastreicher) */
+		.diff-box {
+			.loading-text {
+				color: color.adjust($text-color, $alpha: -0.5);
+			}
+
+			// Transparenter
+			ins {
+				background-color: #005000; // Dunkleres Grün
+				color           : #c8e6c9; // Heller Text
+				text-decoration : none;
+			}
+
+			del {
+				background-color: #7f0000; // Dunkleres Rot
+				color           : #ffcdd2; // Heller Text
+				text-decoration : none;
+			}
+		}
+	}
+
+	// Ende .report-detail-modal-content
+
 }
+
+// Ende body.theme-night
+
+// --- Media Query Korrektur ---
+@media only screen and (min-device-width: 320px) and (max-device-width: 640px) and (-webkit-min-device-pixel-ratio: 2) {
+	body.theme-night {
+
+		// Verschachtelung unter body.theme-night
+		.maintbanner {
+			font-size: 1.2em;
+		}
+
+		.tinytext {
+			font-size: 16px;
+		}
+
+		.tinyheader {
+			font-size: 16px;
+		}
+
+		.chapter {
+			h2 {
+				font-size: 2em;
+			}
+
+			// p und a erben Farben
+		}
+
+		.chapter-links {
+			a {
+				zoom: 1.8;
+
+				.delete {
+					top: 3px;
+
+					svg {
+						width : 16px;
+						height: 16px;
+					}
+				}
+			}
+
+			a.loaded span,
+			&.tag-page-links a span {
+				// Korrekte Verschachtelung mit '&'
+				display    : inline-block;
+				height     : auto;
+				bottom     : 0;
+				top        : inherit;
+				padding-top: 0;
+				// Farbe wird geerbt
+			}
+
+			&.tag-page-links a {
+				zoom: 1.5;
+			}
+
+			// Korrekte Verschachtelung mit '&'
+		}
+
+		.comic {
+			.transcript-content {
+				font-size: 1.3em;
+				// Farbe wird geerbt
+			}
+
+			.comicnav {
+				font-size: 1.1em;
+				// Farben werden geerbt
+
+				.navarchive,
+				.navarrow {
+					height: 50px;
+				}
+
+				.navarchive {
+					border-radius: 7px;
+				}
+
+				button.bookmark {
+					height         : 45px;
+					width          : 34px;
+					transform      : translateY(-34px);
+					background-size: cover;
+					top            : -11px;
+
+					&.bookmarked {
+						background-size: cover;
+					}
+				}
+			}
+
+			.below-nav {
+				font-size : 1.2em;
+				margin-top: 0.5rem;
+				// Farbe wird geerbt
+
+				.nav-instruction-content {
+					display: none;
+				}
+
+				.bookmark-control .button {
+					font-size: 1.1em;
+					// Farbe wird geerbt
+				}
+			}
+
+			.tag-wrapper {
+				.comic-tags {
+					font-size: 1.2em;
+					// Farbe wird geerbt
+				}
+
+				.permalink {
+					font-size: 1.2em;
+					// Farbe wird geerbt
+				}
+			}
+		}
+
+		.menu {
+			font-size: 1.1em;
+			// Farben werden geerbt
+
+			a {
+				padding: 8px 0;
+				margin : 8px auto;
+			}
+
+			a.menu-new {
+				padding-top   : calc(0.7em + 5px);
+				padding-bottom: calc(8px - 0.7em + 5px);
+
+				&:after {
+					// Korrekte Verschachtelung
+					width    : auto;
+					top      : 0;
+					left     : 0;
+					right    : 0;
+					transform: none;
+					// Farben werden geerbt
+				}
+			}
+		}
+
+		// Footer Farbe wird geerbt
+	}
+
+	// Ende body.theme-night im Media Query
+}
+
+// Ende Media Query

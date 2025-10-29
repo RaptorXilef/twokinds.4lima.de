@@ -2,7 +2,6 @@ User-agent: *
 Sitemap: https://twokinds.4lima.de/sitemap.xml
 Disallow: /admin/
 Disallow: /assets/
-Disallow: /scr/
 Disallow: /comic/index.php
 Disallow: /impressum.php
 Disallow: /datenschutzerklaerung.php

@@ -1,3 +1,17 @@
+@charset "UTF-8";
+/**
+ * Main CSS Design
+ *
+ * @file      ROOT/resources/scss/main.scss
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.3
+ * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
+ * @since     2.1.3 Verschieben des "Fehler melden" Button in die obere Navigationsleiste
+ */
 * {
   margin: 0;
   padding: 0;
@@ -13,9 +27,10 @@ html {
 
 body {
   background-color: #81DBFE;
-  font-family: "Open Sans", "Lucida Grande", Arial, sans-serif;
+  font-family: "Lucida Grande", Arial, "Open Sans", sans-serif;
   font-size: 15px;
   min-width: 1099px;
+  color: #333;
 }
 
 .mono {
@@ -70,6 +85,7 @@ h6.page-header {
   padding: 2px 10px;
   margin-bottom: 10px;
   font-size: 22.5px;
+  color: #333;
 }
 
 .maintbanner {
@@ -92,6 +108,7 @@ h6.page-header {
   text-align: center;
   margin: 15px 0;
   font-style: italic;
+  color: #555;
 }
 
 .smalltext {
@@ -125,7 +142,7 @@ h6.page-header {
 }
 
 hr {
-  border-color: #ddead7;
+  border-color: #DDEAD7;
   border-bottom: none;
   margin-block: 1rem;
   border: none;
@@ -148,7 +165,7 @@ hr {
 .main-container button,
 .main-container a.button {
   background: none;
-  color: inherit;
+  color: #000;
   border: none;
   padding: 0;
   font: inherit;
@@ -156,15 +173,19 @@ hr {
   outline: inherit;
   font-style: initial;
   font-size: initial;
-  padding: 2px;
   background-color: #d1e5d4;
   border-radius: 3px;
   padding: 3px 5px;
   text-decoration: none;
 }
+.main-container button:hover,
+.main-container a.button:hover {
+  background-color: #b1cab5;
+}
 .main-container button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+  background-color: #e0e0e0;
 }
 .main-container .arrow-down,
 .main-container .arrow-left {
@@ -229,6 +250,9 @@ hr {
   cursor: pointer;
   position: relative;
 }
+.menu a:hover {
+  background-color: #fff;
+}
 .menu a.theme {
   display: flex;
   flex-flow: column nowrap;
@@ -241,23 +265,21 @@ hr {
   flex: 0 0 0;
   padding: 1px;
   background-color: #7BA181;
-  color: #FFF;
+  color: #fff;
   font-size: 0.7em;
 }
 .menu a.theme span.themename {
   text-align: center;
   flex: 1 1 auto;
   padding: 3px;
-}
-.menu a:hover {
-  background-color: #fff;
+  color: #000;
 }
 .menu a.menu-new:after {
   content: "New";
   display: inline-block;
   width: 26px;
   background-color: #7BA181;
-  color: #FFF;
+  color: #fff;
   font-size: 0.7em;
   position: absolute;
   top: 6px;
@@ -304,6 +326,7 @@ hr {
   overflow: visible;
   border: 1px solid #ccc;
   border-radius: 0 0 5px 5px;
+  background-color: #fafafa;
 }
 .content li {
   margin-bottom: 5px;
@@ -326,6 +349,12 @@ hr {
 .content td {
   padding: 2px 7px;
   border: 1px solid #000;
+}
+.content a {
+  color: #08c;
+}
+.content a:visited {
+  color: #08c;
 }
 
 .content-bottom {
@@ -365,7 +394,7 @@ hr {
   top: 0;
   left: 0;
   z-index: 1000;
-  background-color: #fff;
+  background-color: #fafafa;
 }
 
 .ad-top {
@@ -376,19 +405,6 @@ hr {
   padding-top: 20px;
   padding-bottom: 9px;
   overflow: hidden;
-}
-
-/* Bottom portion */
-.ks-container {
-  display: flex;
-  flex-direction: column;
-  margin: auto;
-  width: 160px;
-  flex: 0 1 auto;
-}
-.ks-container .keenspot {
-  flex: 0 1 auto;
-  text-align: left;
 }
 
 .bottom {
@@ -448,6 +464,7 @@ hr {
 footer {
   text-align: center;
   font-size: 12px;
+  color: #333;
 }
 
 .footer-img {
@@ -455,54 +472,6 @@ footer {
   height: 89px;
   background: transparent url("https://twokinds.4lima.de/assets/images/layout/footer.webp?c=20251024") 50% 0 no-repeat;
   margin-top: 5px;
-}
-
-/* FANART PAGE */
-.fanart-list {
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: center;
-}
-.fanart-list .fanart-item {
-  display: flex;
-  flex-direction: column;
-  font-size: 12px;
-  padding: 6px;
-  border: 1px solid #cccccc;
-  width: 108px;
-  height: 135px;
-  margin: 0 4px 6px 4px;
-  align-items: stretch;
-  text-align: center;
-}
-.fanart-list .fanart-item .fanart-author {
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: wrap;
-}
-.fanart-list .fanart-item .thumbnail {
-  flex: 0 0 auto;
-  margin-bottom: 5px;
-}
-.fanart-list .fanart-item .thumbnail img {
-  width: 75px;
-  height: 75px;
-}
-.fanart-list .fanart-item .thumbnail a {
-  display: inline-block;
-  width: 75px;
-  height: 75px;
-  background-color: #eee;
-  color: #000;
-  text-decoration: none;
-  overflow: hidden;
-}
-.fanart-list .fanart-item .detail {
-  flex: 1 0 auto;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
 }
 
 /* COMIC SECTION */
@@ -523,12 +492,23 @@ footer {
   margin-top: 15px;
   font-size: 0.8em;
 }
+.comic .transcript .transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  /* Hinzugefügt */
+}
 .comic .transcript .transcript-content {
+  background-color: #ffffff;
   border: 1px solid #ccc;
   max-height: 550px;
   overflow: auto;
-  padding: 3px;
+  padding: 15px;
   margin-top: 5px;
+  border-radius: 8px;
+  -webkit-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.35);
 }
 .comic .transcript .transcript-content p {
   margin-bottom: 7px;
@@ -595,6 +575,8 @@ footer {
 }
 .comic .comic-header {
   margin-bottom: 7px;
+  position: relative;
+  /* HINZUGEFÜGT */
 }
 .comic .comicnav {
   width: 825px;
@@ -699,12 +681,31 @@ footer {
   opacity: 0.4;
   cursor: default;
 }
+.comic .comicnav {
+  /* NEU: Fehler melden Button (Oben Rechts) */
+}
+.comic .comicnav .nav-report-issue {
+  width: auto;
+  /* Breite an Inhalt anpassen */
+}
+.comic .comicnav .nav-report-issue .nav-wrapper {
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-issue.png?c=20251029") 0 50% no-repeat;
+  padding-left: 28px;
+  background-size: 20px;
+  /* Icon-Größe anpassen */
+}
 .comic .comicnav.bottomnav .nav-lang-toggle {
   width: auto;
 }
 .comic .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
   background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
   padding-left: 55px;
+}
+.comic #comic-image {
+  width: 100%;
+  height: auto;
+  border-radius: 7px;
+  /* HINZUGEFÜGT */
 }
 
 /* BEGIN ALTERNATE PAGES */
@@ -749,7 +750,7 @@ footer {
 
 .dialog {
   border-radius: 5px;
-  background: #FFF;
+  background: #fafafa;
   width: 490px;
   position: fixed;
   margin: auto;
@@ -770,12 +771,13 @@ footer {
   padding-top: 0;
 }
 .dialog .dialog-title {
-  background-color: #B1CAB5;
+  background-color: #b1cab5;
   border-radius: 3px 3px 0 0;
   padding: 5px 10px;
   margin-bottom: 10px;
   margin-left: -10px;
   width: 470px;
+  color: #000;
 }
 .dialog .dialog-center {
   text-align: center;
@@ -783,7 +785,7 @@ footer {
 }
 .dialog .dialog-x {
   display: inline-block;
-  background: #FFF;
+  background: #fafafa;
   color: #555;
   font-size: 12px;
   text-align: center;
@@ -797,6 +799,10 @@ footer {
   margin-right: -5px;
   border-radius: 2px;
 }
+.dialog .dialog-x:hover {
+  background-color: #e0e0e0;
+  color: #000;
+}
 .dialog .dialog-title .dialog-x {
   float: right;
 }
@@ -809,6 +815,7 @@ footer {
   margin-top: 2px;
   margin-bottom: 5px;
   width: 465px;
+  border: 1px solid #ccc;
 }
 
 /* ARCHIVE PAGE */
@@ -858,6 +865,9 @@ footer {
   position: relative;
   overflow: hidden;
 }
+.chapter-links a:hover {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
 .chapter-links a span {
   display: flex;
   justify-content: center;
@@ -885,6 +895,10 @@ footer {
   color: #f00;
   stroke: #fff;
   stroke-width: 2px;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
+}
+.chapter-links a .delete:hover svg {
+  color: #c00;
 }
 .chapter-links a.loaded img,
 .chapter-links a noscript img, .chapter-links.tag-page-links a img {
@@ -946,17 +960,6 @@ footer {
   .chapter-links.tag-page-links a {
     zoom: 1.5;
   }
-  /*
-  	.bookmarks-page {
-  		.bookmark-example {
-  			font-size: 1.4em;
-  		}
-
-  		button:not(.delete) {
-  			font-size: 1.4em;
-  		}
-  	}
-  */
   .comic .transcript-content {
     font-size: 1.3em;
   }
@@ -1040,11 +1043,11 @@ div.page-chat .chat-button a {
   font-size: 20px;
   text-decoration: none;
   border-radius: 5px;
-  background-color: #6c8f6c;
-  color: #FFF;
+  background-color: #5d7b5d;
+  color: #fff;
 }
 div.page-chat .chat-button a:hover {
-  background-color: #85aa85;
+  background-color: #789e78;
 }
 
 /* CHARACTER PAGE */
@@ -1080,40 +1083,331 @@ div.page-chat .chat-button a:hover {
   border: none;
 }
 
-/* BOOKMARKS PAGE */
-/*
-.bookmarks-page {
-	.bookmark-example {
-		font-style     : italic;
-		text-align     : center;
-		font-size      : 0.9em;
-		margin-right   : 1rem;
-		display        : flex;
-		flex-flow      : row nowrap;
-		justify-content: flex-end;
-		align-items    : center;
-		gap            : 0.5rem;
-
-		.ribbon {
-			height         : 36px;
-			width          : 27px;
-			flex           : 0 0 auto;
-			background : url($base_url + "/assets/layout/ui/bookmark.png") 0 0 no-repeat;
-			background-size: contain;
-		}
-	}
-
-	.no-bookmarks {
-		text-align: center;
-	}
-
-	input[type=file] {
-		display: none;
-	}
-
-	button {
-		margin-right: 0.3rem;
-		font-size   : 0.9em;
-	}
+/* CHARAKTERS */
+.comic-characters {
+  background-color: #ffffff;
 }
-	*/
+
+/* ################################################################## */
+/* ### NEUE STILE FÜR REPORTING-SYSTEM (v3.7.0.0) - LIGHT MODE ### */
+/* ################################################################## */
+/* --- Allgemeine Modal-Stile (Basis) --- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.modal-content {
+  position: relative;
+  background-color: #fafafa;
+  margin: auto;
+  padding: 25px;
+  border: 1px solid #888;
+  font-size: 1.2em;
+  width: 90%;
+  max-width: 70vw;
+  height: 90%;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  z-index: 1002;
+  overflow-y: auto;
+}
+
+.modal-close {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  font-weight: bold;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 5px;
+}
+.modal-close:hover, .modal-close:focus {
+  color: #000;
+  text-decoration: none;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  text-align: right;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* --- Report Modal Spezifisch --- */
+.report-modal-content .admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.report-modal-content .admin-form label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+.report-modal-content .admin-form input[type=text],
+.report-modal-content .admin-form select,
+.report-modal-content .admin-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+.report-modal-content .admin-form input[type=text]:focus,
+.report-modal-content .admin-form select:focus,
+.report-modal-content .admin-form textarea:focus {
+  border-color: #5d7b5d;
+  box-shadow: 0 0 0 2px rgba(93, 123, 93, 0.2);
+  outline: none;
+}
+.report-modal-content .admin-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.report-modal-content .admin-form select[required]:invalid {
+  color: #999;
+}
+.report-modal-content .report-images-container {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+.report-modal-content .report-images-container div {
+  text-align: center;
+  flex: 1;
+  min-width: 200px;
+}
+.report-modal-content .report-images-container img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+.report-modal-content .report-images-container label {
+  font-size: 0.9em;
+  color: #666;
+}
+.report-modal-content {
+  /* Status Meldungen */
+}
+.report-modal-content .status-message {
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin: 10px 0;
+  border: 1px solid transparent;
+  font-size: 0.95em;
+}
+.report-modal-content .status-message.status-green {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+.report-modal-content .status-message.status-red {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+.report-modal-content .status-message.status-orange {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+/* --- "Fehler melden"-Button auf Comic-Seite --- */
+/*#open-report-modal {
+	padding         : 3px 8px;
+	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift
+	background-color: $menu-bg; // Wie Menüpunkte
+	border          : 1px solid $theme-label-bg; // Passender Rand
+	border-radius   : 4px;
+	color           : $text-color; // Standardtext
+	cursor          : pointer;
+	margin-left     : 10px;
+
+	&:hover {
+		background-color: $menu-hover-bg; // Weiß
+		border-color    : $comic-nav-archive-bg; // Dunkelgrün
+	}
+}*/
+/* --- Admin Report Management --- */
+.filter-form {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+.filter-form legend {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+.filter-form .filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+}
+.filter-form .filter-controls label {
+  margin-bottom: 5px;
+  font-size: 0.9em;
+  color: #555;
+}
+.filter-form .filter-controls input[type=text],
+.filter-form .filter-controls select {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.data-table th,
+.data-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.data-table th {
+  background-color: #e9ecef;
+  font-weight: bold;
+}
+.data-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+.data-table tbody tr:hover {
+  background-color: #e2e6ea;
+}
+.data-table .actions-cell {
+  white-space: nowrap;
+  text-align: right;
+}
+.data-table .actions-cell form {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+}
+.data-table .actions-cell button {
+  padding: 4px 8px;
+  font-size: 0.9em;
+  color: #fff;
+}
+.data-table .actions-cell .button-green {
+  background-color: #28a745;
+}
+.data-table .actions-cell .button-green:hover {
+  background-color: #218838;
+}
+.data-table .actions-cell .button-orange {
+  background-color: #fd7e14;
+}
+.data-table .actions-cell .button-orange:hover {
+  background-color: #e66a00;
+}
+.data-table .actions-cell .button-blue {
+  background-color: #007bff;
+}
+.data-table .actions-cell .button-blue:hover {
+  background-color: #0056b3;
+}
+.data-table .actions-cell .detail-button {
+  background-color: #6c757d;
+}
+.data-table .actions-cell .detail-button:hover {
+  background-color: #5a6268;
+}
+.data-table .actions-cell .detail-button {
+  color: #fff;
+}
+
+/* Admin Detail Modal */
+.report-detail-modal-content h3 {
+  margin-top: 15px;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+.report-detail-modal-content p strong {
+  display: inline-block;
+  min-width: 90px;
+}
+.report-detail-modal-content .report-text-box {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  word-wrap: break-word;
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.report-detail-modal-content #detail-suggestion {
+  width: 100%;
+  height: 30vh;
+  max-height: 30vh;
+  box-sizing: border-box;
+  background-color: #f1f1f1;
+  border: none;
+  resize: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 1.1em;
+}
+.report-detail-modal-content {
+  /* Diff-Viewer */
+}
+.report-detail-modal-content .diff-box .loading-text {
+  color: #888;
+  font-style: italic;
+}
+.report-detail-modal-content .diff-box ins {
+  background-color: #d4edda;
+  color: #155724;
+  text-decoration: none;
+}
+.report-detail-modal-content .diff-box del {
+  background-color: #f8d7da;
+  color: #721c24;
+  text-decoration: none;
+}
+
+/* Honeypot Feld */
+.honeypot-field {
+  display: none !important;
+}
