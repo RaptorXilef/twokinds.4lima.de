@@ -294,6 +294,12 @@
               "green"
             );
             // reportForm.reset(); // Optional zurücksetzen
+            reportForm.reset(); // Formular zurücksetzen
+
+            // NEU: Modal nach 1.5 Sekunden schließen, damit die Meldung gelesen werden kann
+            setTimeout(() => {
+              closeReportModal();
+            }, 1500);
           } else {
             showReportStatus(
               result.message ||
