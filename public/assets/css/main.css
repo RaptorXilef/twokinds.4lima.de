@@ -8,8 +8,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.2
+ * @version   2.1.3
  * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
+ * @since     2.1.3 Verschieben des "Fehler melden" Button in die obere Navigationsleiste
  */
 * {
   margin: 0;
@@ -680,6 +681,19 @@ footer {
   opacity: 0.4;
   cursor: default;
 }
+.comic .comicnav {
+  /* NEU: Fehler melden Button (Oben Rechts) */
+}
+.comic .comicnav .nav-report-issue {
+  width: auto;
+  /* Breite an Inhalt anpassen */
+}
+.comic .comicnav .nav-report-issue .nav-wrapper {
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-issue.png?c=20251029") 0 50% no-repeat;
+  padding-left: 28px;
+  background-size: 20px;
+  /* Icon-Größe anpassen */
+}
 .comic .comicnav.bottomnav .nav-lang-toggle {
   width: auto;
 }
@@ -1230,21 +1244,21 @@ div.page-chat .chat-button a:hover {
 }
 
 /* --- "Fehler melden"-Button auf Comic-Seite --- */
-#open-report-modal {
-  padding: 3px 8px;
-  font-size: 1.2em;
-  background-color: #effff2;
-  border: 1px solid #7BA181;
-  border-radius: 4px;
-  color: #333;
-  cursor: pointer;
-  margin-left: 10px;
-}
-#open-report-modal:hover {
-  background-color: #fff;
-  border-color: #5d7b5d;
-}
+/*#open-report-modal {
+	padding         : 3px 8px;
+	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift
+	background-color: $menu-bg; // Wie Menüpunkte
+	border          : 1px solid $theme-label-bg; // Passender Rand
+	border-radius   : 4px;
+	color           : $text-color; // Standardtext
+	cursor          : pointer;
+	margin-left     : 10px;
 
+	&:hover {
+		background-color: $menu-hover-bg; // Weiß
+		border-color    : $comic-nav-archive-bg; // Dunkelgrün
+	}
+}*/
 /* --- Admin Report Management --- */
 .filter-form {
   background-color: #f8f9fa;

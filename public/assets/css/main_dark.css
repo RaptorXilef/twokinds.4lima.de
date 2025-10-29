@@ -1,4 +1,17 @@
 @charset "UTF-8";
+/**
+ * Main CSS Design
+ *
+ * @file      ROOT/resources/scss/main_dark.scss
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.3
+ * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
+ * @since     2.1.3 Verschieben des "Fehler melden"Button in die obere Navigationsleiste
+ */
 body.theme-night #banner,
 #banner-lights-off {
   background-image: url("https://twokinds.4lima.de/assets/images/layout/banner.webp?c=20251024");
@@ -157,6 +170,12 @@ body.theme-night .comic .comicnav .navnext .nav-wrapper {
 }
 body.theme-night .comic .comicnav .navend .nav-wrapper {
   background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916");
+}
+body.theme-night .comic .comicnav {
+  /* NEU: Dark Mode Icon für Fehler melden Button */
+}
+body.theme-night .comic .comicnav .nav-report-issue .nav-wrapper {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029");
 }
 body.theme-night .comic .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
   background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916");
@@ -342,17 +361,19 @@ body.theme-night .report-modal-content .status-message.status-orange {
 }
 body.theme-night {
   /* --- "Fehler melden"-Button Dark --- */
-}
-body.theme-night #open-report-modal {
-  background-color: #2a6177;
-  border: 1px solid #2a6177;
-  color: #fff;
-}
-body.theme-night #open-report-modal:hover {
-  background-color: #48778a;
-  border-color: #48778a;
-}
-body.theme-night {
+  /*#open-report-modal {
+  	// Soll aussehen wie andere Buttons
+  	background-color: $button-color;
+  	border          : 1px solid $button-color; // Passender Rand
+  	color           : $text-color; // Textfarbe explizit
+
+  	&:hover {
+  		background-color: $accent-light;
+  		border-color    : $accent-light;
+  	}
+  }
+
+  */
   /* --- Admin Report Management Dark --- */
 }
 body.theme-night .filter-form {

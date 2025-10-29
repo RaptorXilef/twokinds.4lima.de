@@ -1,3 +1,15 @@
+/**
+ * Main CSS Design
+ *
+ * @file      ROOT/resources/scss/main_dark.scss
+ * @package   twokinds.4lima.de
+ * @author    Felix M. (@RaptorXilef)
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   2.1.3
+ * @since     2.1.3 Verschieben des "Fehler melden"Button in die obere Navigationsleiste
+ */
 @use 'sass:color'; // sass:color Modul importieren
 
 $base_url: 'https://twokinds.4lima.de';
@@ -235,6 +247,11 @@ body.theme-night {
 
 			.navend .nav-wrapper {
 				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916");
+			}
+
+			/* NEU: Dark Mode Icon für Fehler melden Button */
+			.nav-report-issue .nav-wrapper {
+				background-image: url($base_url + "/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029");
 			}
 
 			&.bottomnav .nav-lang-toggle .nav-wrapper {
@@ -503,7 +520,7 @@ body.theme-night {
 	// Ende .report-modal-content
 
 	/* --- "Fehler melden"-Button Dark --- */
-	#open-report-modal {
+	/*#open-report-modal {
 		// Soll aussehen wie andere Buttons
 		background-color: $button-color;
 		border          : 1px solid $button-color; // Passender Rand
@@ -515,6 +532,7 @@ body.theme-night {
 		}
 	}
 
+	*/
 	/* --- Admin Report Management Dark --- */
 	.filter-form {
 		// An Sidebar angepasst
