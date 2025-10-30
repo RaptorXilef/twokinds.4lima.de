@@ -29,6 +29,9 @@
  * @since     7.1.0 Umstellung des AJAX-Handlers auf FormData zur Behebung des CSRF-Fehlers.
  * @since     7.1.1 Kleine Korrekturen im JS Teil
  * @since     7.2.0 Korrektur der Charakterbild-Anzeige
+ * @since     7.2.1 Um die Benutzerfreundlichkeit im Comic-Daten-Editor zu verbessern, wurden die Haupt-Aktionsbuttons ("Neuer Eintrag" und "Änderungen speichern") dupliziert.
+ *                  Sie befinden sich nun sowohl oben (direkt über den Tabellen-Steuerelementen) als auch am bisherigen Platz am Ende der Seite. Dies reduziert den Scroll-Aufwand 
+ *                  auf der Seite erheblich, da die Aktionen immer schnell erreichbar sind, unabhängig davon, wo man sich gerade befindet.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -345,6 +348,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <div class="pagination"></div>
 
+        <div id="top-buttons-container"
+            style="justify-content: flex-start; margin-top: 0; margin-bottom: 20px; display: flex; gap: 10px;">
+            <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
+            <button id="save-all-btn-top" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
+        </div>
         <div class="table-controls">
             <div class="search-container">
                 <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
@@ -395,10 +403,12 @@ require_once Path::getPartialTemplatePath('header.php');
         <div class="pagination"></div>
 
         <div id="save-confirmation-box" class="hidden-by-default"></div>
+
         <div id="fixed-buttons-container">
             <button id="add-row-btn" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
             <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
         </div>
+
         <br>
         <div id="message-box" class="hidden-by-default"></div>
     </div>
@@ -446,7 +456,6 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
 
         <div id="modal-charaktere-section">
-            <!-- Charakterauswahl wird hier per JS eingefügt -->
         </div>
 
         <div class="modal-buttons">
@@ -1044,8 +1053,14 @@ require_once Path::getPartialTemplatePath('header.php');
 
 
         const tableBody = document.querySelector('#comic-table tbody');
-        const saveAllBtn = document.getElementById('save-all-btn');
-        const addRowBtn = document.getElementById('add-row-btn');
+
+        // ##### JS ÄNDERUNG: BEIDE BUTTON-PAARE AUSWÄHLEN #####
+        const saveAllBtn = document.getElementById('save-all-btn'); // Unten
+        const addRowBtn = document.getElementById('add-row-btn'); // Unten
+        const saveAllBtnTop = document.getElementById('save-all-btn-top'); // Oben
+        const addRowBtnTop = document.getElementById('add-row-btn-top'); // Oben
+        // ##### ENDE JS ÄNDERUNG #####
+
         const messageBox = document.getElementById('message-box');
         const lastRunContainer = document.getElementById('last-run-container');
         const paginationContainers = document.querySelectorAll('.pagination');
@@ -1439,7 +1454,10 @@ require_once Path::getPartialTemplatePath('header.php');
             }
         });
 
-        saveAllBtn.addEventListener('click', async () => {
+        // ##### JS ÄNDERUNG: AKTIONEN IN FUNKTIONEN AUSLAGERN #####
+
+        // Logik für "Speichern" in eine eigene Funktion ausgelagert
+        const handleSaveAll = async () => {
             try {
                 const formData = new FormData();
                 formData.append('action', 'save_comic_data');
@@ -1463,9 +1481,10 @@ require_once Path::getPartialTemplatePath('header.php');
                     throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
                 }
             } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red'); }
-        });
+        };
 
-        addRowBtn.addEventListener('click', () => {
+        // Logik für "Neuer Eintrag" in eine eigene Funktion ausgelagert
+        const handleAddRow = () => {
             activeEditId = 'new_entry';
             comicData['new_entry'] = {
                 type: 'Comicseite',
@@ -1495,7 +1514,18 @@ require_once Path::getPartialTemplatePath('header.php');
             setImageView('de');
 
             editModal.style.display = 'flex';
-        });
+        };
+
+        // Listener für BEIDE "Speichern"-Buttons
+        saveAllBtn.addEventListener('click', handleSaveAll);
+        saveAllBtnTop.addEventListener('click', handleSaveAll);
+
+        // Listener für BEIDE "Neuer Eintrag"-Buttons
+        addRowBtn.addEventListener('click', handleAddRow);
+        addRowBtnTop.addEventListener('click', handleAddRow);
+
+        // ##### ENDE JS ÄNDERUNG #####
+
 
         tableBody.addEventListener('click', e => {
             const editBtn = e.target.closest('.edit-row-btn');
