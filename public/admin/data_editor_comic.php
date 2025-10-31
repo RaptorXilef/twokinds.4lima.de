@@ -20,7 +20,9 @@
  * @since     5.5.4 Korrigiert den Inhalt neu erstellter PHP-Dateien auf die korrekte einzelne require_once-Anweisung.
  * @since     5.5.5 Behebt Fehler beim Löschen von Einträgen, Erstellen von PHP-Dateien und der Anzeige im "Neu"-Dialog.
  * @since     5.6.0 Passt die Charakter-Auswahl im Modal an die neue, dynamische Gruppenstruktur der charaktere.json an.
- * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten. Stellt sicher, dass mehrfach zugeordnete Charaktere synchron ausgewählt werden.
+ * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs 
+ *                   statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten. 
+ *                   Stellt sicher, dass mehrfach zugeordnete Charaktere synchron ausgewählt werden.
  * @since     5.8.0 Anpassung an versionierte comic_var.json (Schema v2).
  * @since     5.9.0 Umstellung auf zentrale Pfad-Konstanten, direkte Verwendung und Bugfixes.
  * @since     6.0.0 Implementierung einer dynamischen relativen Pfadberechnung für generierte PHP-Dateien.
@@ -29,6 +31,12 @@
  * @since     7.1.0 Umstellung des AJAX-Handlers auf FormData zur Behebung des CSRF-Fehlers.
  * @since     7.1.1 Kleine Korrekturen im JS Teil
  * @since     7.2.0 Korrektur der Charakterbild-Anzeige
+ * @since     7.2.1 Um die Benutzerfreundlichkeit im Comic-Daten-Editor zu verbessern, wurden die Haupt-Aktionsbuttons ("Neuer Eintrag" 
+ *                   und "Änderungen speichern") dupliziert. Sie befinden sich nun sowohl oben (direkt über den Tabellen-Steuerelementen) 
+ *                   als auch am bisherigen Platz am Ende der Seite. Dies reduziert den Scroll-Aufwand auf der Seite erheblich, da die 
+ *                   Aktionen immer schnell erreichbar sind, unabhängig davon, wo man sich gerade befindet.
+ * @since     7.2.2 Aufbauend auf der Duplizierung der Aktionsbuttons wird nun auch die Status-Feedbackbox (`#message-box`) dupliziert. 
+ *                  Sie erscheint jetzt sowohl an ihrer ursprünglichen Position am Seitenende als auch neu direkt unter den oberen Aktionsbuttons.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -345,6 +353,17 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <div class="pagination"></div>
 
+        <!-- ##### HIER SIND DIE ZUSÄTZLICHEN BUTTONS (OBEN) ##### -->
+        <div id="top-buttons-container"
+            style="justify-content: flex-start; margin-top: 0; margin-bottom: 20px; display: flex; gap: 10px;">
+            <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
+            <button id="save-all-btn-top" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
+        </div>
+
+        <!-- ##### HIER IST DIE ZUSÄTZLICHE MESSAGE-BOX (OBEN) ##### -->
+        <div id="message-box-top" class="hidden-by-default"></div>
+        <!-- ##### ENDE DER ÄNDERUNG ##### -->
+
         <div class="table-controls">
             <div class="search-container">
                 <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
@@ -395,11 +414,16 @@ require_once Path::getPartialTemplatePath('header.php');
         <div class="pagination"></div>
 
         <div id="save-confirmation-box" class="hidden-by-default"></div>
+
+        <!-- ##### HIER SIND DIE ORIGINAL-BUTTONS (UNTEN) ##### -->
         <div id="fixed-buttons-container">
             <button id="add-row-btn" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
             <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
         </div>
+
         <br>
+
+        <!-- ##### HIER IST DIE ORIGINALE MESSAGE-BOX (UNTEN) ##### -->
         <div id="message-box" class="hidden-by-default"></div>
     </div>
 </article>
@@ -1044,9 +1068,20 @@ require_once Path::getPartialTemplatePath('header.php');
 
 
         const tableBody = document.querySelector('#comic-table tbody');
-        const saveAllBtn = document.getElementById('save-all-btn');
-        const addRowBtn = document.getElementById('add-row-btn');
-        const messageBox = document.getElementById('message-box');
+
+        // ##### JS ÄNDERUNG: BEIDE BUTTON-PAARE AUSWÄHLEN #####
+        const saveAllBtn = document.getElementById('save-all-btn'); // Unten
+        const addRowBtn = document.getElementById('add-row-btn'); // Unten
+        const saveAllBtnTop = document.getElementById('save-all-btn-top'); // Oben
+        const addRowBtnTop = document.getElementById('add-row-btn-top'); // Oben
+        // ##### ENDE JS ÄNDERUNG #####
+
+        const messageBox = document.getElementById('message-box'); // Unten
+
+        // ##### JS ÄNDERUNG: OBERE MESSAGE-BOX AUSWÄHLEN #####
+        const messageBoxTop = document.getElementById('message-box-top'); // Oben
+        // ##### ENDE JS ÄNDERUNG #####
+
         const lastRunContainer = document.getElementById('last-run-container');
         const paginationContainers = document.querySelectorAll('.pagination');
         const searchInput = document.getElementById('search-input');
@@ -1146,14 +1181,26 @@ require_once Path::getPartialTemplatePath('header.php');
             renderPagination();
         };
 
+        // ##### JS ÄNDERUNG: showMessage aktualisiert BEIDE Boxen #####
         function showMessage(message, type, duration = 5000) {
-            messageBox.textContent = message;
-            messageBox.className = `status-message status-${type}`;
-            messageBox.style.display = 'block';
+            const boxes = [messageBox, messageBoxTop]; // Array mit beiden Boxen
+
+            boxes.forEach(box => {
+                if (!box) return; // Sicherheitscheck
+                box.textContent = message;
+                box.className = `status-message status-${type}`;
+                box.style.display = 'block';
+            });
+
             if (duration > 0) {
-                setTimeout(() => { messageBox.style.display = 'none'; }, duration);
+                setTimeout(() => {
+                    boxes.forEach(box => {
+                        if (box) box.style.display = 'none';
+                    });
+                }, duration);
             }
         }
+        // ##### ENDE JS ÄNDERUNG #####
 
         function updateTimestamp() {
             const now = new Date();
@@ -1218,14 +1265,7 @@ require_once Path::getPartialTemplatePath('header.php');
             });
         };
 
-        function showMessage(message, type, duration = 5000) {
-            messageBox.textContent = message;
-            messageBox.className = `status-message status-${type}`;
-            messageBox.style.display = 'block';
-            if (duration > 0) {
-                setTimeout(() => { messageBox.style.display = 'none'; }, duration);
-            }
-        }
+        // Alte showMessage-Funktion entfernt (war doppelt)
 
         function updateTimestamp() {
             const now = new Date();
@@ -1439,7 +1479,10 @@ require_once Path::getPartialTemplatePath('header.php');
             }
         });
 
-        saveAllBtn.addEventListener('click', async () => {
+        // ##### JS ÄNDERUNG: AKTIONEN IN FUNKTIONEN AUSLAGERN #####
+
+        // Logik für "Speichern" in eine eigene Funktion ausgelagert
+        const handleSaveAll = async () => {
             try {
                 const formData = new FormData();
                 formData.append('action', 'save_comic_data');
@@ -1463,9 +1506,10 @@ require_once Path::getPartialTemplatePath('header.php');
                     throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
                 }
             } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red'); }
-        });
+        };
 
-        addRowBtn.addEventListener('click', () => {
+        // Logik für "Neuer Eintrag" in eine eigene Funktion ausgelagert
+        const handleAddRow = () => {
             activeEditId = 'new_entry';
             comicData['new_entry'] = {
                 type: 'Comicseite',
@@ -1495,7 +1539,18 @@ require_once Path::getPartialTemplatePath('header.php');
             setImageView('de');
 
             editModal.style.display = 'flex';
-        });
+        };
+
+        // Listener für BEIDE "Speichern"-Buttons
+        saveAllBtn.addEventListener('click', handleSaveAll);
+        saveAllBtnTop.addEventListener('click', handleSaveAll);
+
+        // Listener für BEIDE "Neuer Eintrag"-Buttons
+        addRowBtn.addEventListener('click', handleAddRow);
+        addRowBtnTop.addEventListener('click', handleAddRow);
+
+        // ##### ENDE JS ÄNDERUNG #####
+
 
         tableBody.addEventListener('click', e => {
             const editBtn = e.target.closest('.edit-row-btn');
