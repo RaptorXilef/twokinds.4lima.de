@@ -12,6 +12,7 @@
  * @version   2.5.1
  * @since     2.5.0 Umstellung auf globale Pfad-Konstanten.
  * @since     2.5.1 Lesezeichen auf der Comicseite selbst ohne Meldung setzen und entfernen (nur deaktivieren, nicht löschen) [comic.js]
+ * @since     2.5.2 J und K für den Wechsel der Comicseite deaktiviert
  */
 
 (() => {
@@ -41,10 +42,11 @@
     var navprev = document.querySelector("a.navprev");
     var navnext = document.querySelector("a.navnext");
     body.addEventListener("keyup", (e) => {
-      if ((e.key == "ArrowLeft" || e.key == "j" || e.key == "J") && navprev) {
+      if (e.key == "ArrowLeft" /*|| e.key == "j" || e.key == "J"*/ && navprev) {
+        // J deaktiviert
         parent.location = navprev.getAttribute("href");
       } else if (
-        (e.key == "ArrowRight" || e.key == "k" || e.key == "K") && // K korrigiert
+        e.key == "ArrowRight" /*|| e.key == "k" || e.key == "K"*/ && // K korrigiert // K deaktiviert
         navnext
       ) {
         parent.location = navnext.getAttribute("href");
