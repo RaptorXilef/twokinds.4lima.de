@@ -9,10 +9,11 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.5.1
+ * @version   2.6.0
  * @since     2.5.0 Umstellung auf globale Pfad-Konstanten.
  * @since     2.5.1 Lesezeichen auf der Comicseite selbst ohne Meldung setzen und entfernen (nur deaktivieren, nicht löschen) [comic.js]
  * @since     2.5.2 J und K für den Wechsel der Comicseite deaktiviert
+ * @since     2.6.0 JS-Logik angepasst, um HTML-Quellcode statt reinem Text in Transkript-Vorschlag zu laden.
  */
 
 (() => {
@@ -141,35 +142,46 @@
         reportForm.reset();
         showReportStatus("", "info", false); // Status leeren
         reportSubmitButton.disabled = false;
-        transcriptSuggestionContainer.style.display = "none";
+
+        // WICHTIG: reportForm.reset() setzt den select zurück.
+        // Wir müssen den Display-Status *nach* dem Reset setzen,
+        // basierend auf dem zurückgesetzten Wert (der "" sein sollte).
+        transcriptSuggestionContainer.style.display =
+          reportTypeSelect.value === "transcript" ? "block" : "none";
 
         try {
           const currentTranscriptElement = document.querySelector(
             comicTranscriptSelector
           );
+          const originalTextarea = document.getElementById(
+            "report-transcript-original"
+          );
+
           if (currentTranscriptElement) {
+            // --- NEUE LOGIK: HTML-Inhalt holen und dekodieren ---
+            const rawHtml = currentTranscriptElement.innerHTML.trim();
+
+            // HTML-Entities (z.B. &amp;) in Text (z.B. &) umwandeln,
+            // damit der Benutzer den Quelltext korrekt sieht.
+            // (z.B. <p> statt &lt;p&gt;)
             const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = currentTranscriptElement.innerHTML;
-            const plainText = (
-              tempDiv.textContent ||
-              tempDiv.innerText ||
-              ""
-            ).trim();
-            transcriptSuggestionTextarea.value = plainText;
-            const originalTextarea = document.getElementById(
-              "report-transcript-original"
-            );
-            if (originalTextarea) originalTextarea.value = plainText;
+            tempDiv.innerHTML = rawHtml;
+            const decodedTextForTextarea =
+              tempDiv.textContent || tempDiv.innerText || "";
+
+            transcriptSuggestionTextarea.value = decodedTextForTextarea;
+            if (originalTextarea)
+              originalTextarea.value = decodedTextForTextarea;
+            // --- ENDE NEUE LOGIK ---
           } else {
+            // --- FALLBACK ---
             transcriptSuggestionTextarea.value = "";
-            const originalTextarea = document.getElementById(
-              "report-transcript-original"
-            );
             if (originalTextarea) originalTextarea.value = "";
             if (debugModeJsComic)
               console.warn(
                 "[Report Modal] Konnte Transkript-Element nicht finden zum Vorbefüllen."
               );
+            // --- ENDE FALLBACK ---
           }
         } catch (e) {
           transcriptSuggestionTextarea.value = "";

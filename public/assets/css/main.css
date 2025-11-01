@@ -1242,8 +1242,46 @@ div.page-chat .chat-button a:hover {
   background-color: #fff3cd;
   border-color: #ffeeba;
 }
+.report-modal-content {
+  /* --- NEUE/ANGEPASSTE STILE (CSP-Fix & Feature) --- */
+}
+.report-modal-content #transcript-suggestion-container {
+  display: none;
+}
+.report-modal-content #report-status-message {
+  display: none;
+  margin-top: 15px;
+}
+.report-modal-content #report-suggestion-info {
+  font-size: 0.9em;
+  margin-bottom: 5px;
+  color: #555;
+}
+.report-modal-content .original-transcript-box {
+  margin-top: 15px;
+}
+.report-modal-content .original-transcript-box label {
+  font-size: 0.9em;
+  color: #666;
+}
+.report-modal-content .original-transcript-box textarea#report-transcript-original {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #f1f1f1;
+  border-color: #ccc;
+  color: #555;
+  padding: 8px 10px;
+  font-size: 0.95em;
+  border-radius: 4px;
+  resize: none;
+  margin-top: 5px;
+}
+.report-modal-content {
+  /* --- ENDE NEUE STILE --- */
+}
 
 /* --- "Fehler melden"-Button auf Comic-Seite --- */
+/* (Auskommentiert, da er jetzt in .comicnav ist und von dort Stile erbt) */
 /*#open-report-modal {
 	padding         : 3px 8px;
 	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift

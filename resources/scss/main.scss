@@ -1486,9 +1486,56 @@ div.page-chat {
 			border-color    : $status-orange-border;
 		}
 	}
+
+	/* --- NEUE/ANGEPASSTE STILE (CSP-Fix & Feature) --- */
+
+	// Initialer Status für Container (wird von JS getoggled)
+	#transcript-suggestion-container {
+		display: none;
+	}
+
+	// Initialer Status für Statusmeldung (wird von JS getoggled)
+	#report-status-message {
+		display   : none;
+		margin-top: 15px;
+	}
+
+	// Stil für den Info-Text über der Textarea
+	#report-suggestion-info {
+		font-size    : 0.9em;
+		margin-bottom: 5px;
+		color        : $text-color-light;
+	}
+
+	// NEU: Container für die Original-Transkript-Referenzbox
+	.original-transcript-box {
+		margin-top: 15px;
+
+		label {
+			font-size: 0.9em; // Kleinere Schrift
+			color    : $text-color-medium;
+		}
+
+		textarea#report-transcript-original {
+			width           : 100%;
+			box-sizing      : border-box;
+			background-color: #f1f1f1; // Leicht grau (readonly)
+			border-color    : $border-color-medium;
+			color           : $text-color-light; // Hellgrauer Text
+			padding         : 8px 10px;
+			font-size       : 0.95em; // Etwas kleiner
+			border-radius   : 4px;
+			resize          : none;
+			margin-top      : 5px;
+		}
+	}
+
+	/* --- ENDE NEUE STILE --- */
+
 }
 
 /* --- "Fehler melden"-Button auf Comic-Seite --- */
+/* (Auskommentiert, da er jetzt in .comicnav ist und von dort Stile erbt) */
 /*#open-report-modal {
 	padding         : 3px 8px;
 	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift

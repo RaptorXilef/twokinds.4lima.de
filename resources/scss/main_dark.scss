@@ -515,6 +515,51 @@ body.theme-night {
 				border          : 1px solid color.adjust(#ffc107, $lightness: -20%);
 			}
 		}
+
+		/* --- NEUE/ANGEPASSTE STILE (CSP-Fix & Feature) --- */
+
+		// Initialer Status für Container (wird von JS getoggled)
+		#transcript-suggestion-container {
+			display: none;
+		}
+
+		// Initialer Status für Statusmeldung (wird von JS getoggled)
+		#report-status-message {
+			display   : none;
+			margin-top: 15px;
+		}
+
+		// Stil für den Info-Text über der Textarea
+		#report-suggestion-info {
+			font-size    : 0.9em;
+			margin-bottom: 5px;
+			color        : color.adjust($text-color, $lightness: -10%); // Passend zu Labels
+		}
+
+		// NEU: Container für die Original-Transkript-Referenzbox
+		.original-transcript-box {
+			margin-top: 15px;
+
+			label {
+				font-size: 0.9em; // Kleinere Schrift
+				color    : color.adjust($text-color, $lightness: -15%);
+			}
+
+			textarea#report-transcript-original {
+				width           : 100%;
+				box-sizing      : border-box;
+				background-color: color.adjust($page-bg, $lightness: 5%); // Leicht heller (readonly)
+				border-color    : $button-color;
+				color           : color.adjust($text-color, $alpha: -0.3); // Ausgegrauter Text
+				padding         : 8px 10px;
+				font-size       : 0.95em; // Etwas kleiner
+				border-radius   : 4px;
+				resize          : none;
+				margin-top      : 5px;
+			}
+		}
+
+		/* --- ENDE NEUE STILE --- */
 	}
 
 	// Ende .report-modal-content

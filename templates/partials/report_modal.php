@@ -6,8 +6,13 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.2.1
  * @since     1.0.0 Initiale Erstellung
+ * @since     1.1.0 CSP-Fix: Alle Inline-Styles entfernt und in CSS ausgelagert.
+ * @since     1.1.0 Feature: Transkript-Vorschlag zeigt nun HTML-Tags als Text an (statt sie zu entfernen).
+ * @since     1.1.0 Feature: "Original-Transkript"-Textarea als sichtbare Referenz hinzugefügt.
+ * @since     1.2.0 Fix: Zeilenumbrüche und Whitespace *innerhalb* von <p>-Tags werden normalisiert (zu einer Zeile).
+ * @since     1.2.1 Fix: Entfernt *alle* verbleibenden Zeilenumbrüche (zwischen Tags), um Text in eine Zeile zu zwingen.
  *
  * @description Dieses Template enthält das HTML-Struktur für das Fehlermelde-Modal auf den Comic-Seiten.
  * Es wird von src/renderer/renderer_comic_page.php eingebunden.
@@ -41,16 +46,51 @@ if (!$imageEnUrl) {
     $imageEnUrl = 'https://placehold.co/600x400/cccccc/333333?text=Original+fehlt';
 }
 
-// Transkript bereinigen (HTML-Tags entfernen) für die Textarea
-$plainTranscript = $comicData['transcript'] ?? '';
-$plainTranscript = strip_tags($plainTranscript);
-$plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
+// === TRANSKRIPT-LOGIK (GEÄNDERT V1.2.1) ===
+$rawTranscript = $comicTranscript ?? 'Kein Transkript verfügbar.';
+// Zuerst Entities dekodieren (z.B. &amp; -> &)
+$rawTranscript = html_entity_decode($rawTranscript, ENT_QUOTES, 'UTF-8');
+
+// LOGIK (V1.2.0): Zeilenumbrüche und Whitespace *innerhalb* von <p>-Tags normalisieren
+// 's' Modifikator, damit '.' auch Zeilenumbrüche matcht
+$rawTranscriptForTextarea = preg_replace_callback(
+    '/(<p[^>]*>)(.*?)(<\/p>)/is',
+    function ($matches) {
+        $tagOpen = $matches[1]; // <p> oder <p class="...">
+        $content = $matches[2]; // Inhalt (kann andere Tags und \n enthalten)
+        $tagClose = $matches[3]; // </p>
+    
+        // Ersetze alle Whitespace-Sequenzen (inkl. \n, \r, \t) durch ein einzelnes Leerzeichen
+        $contentNormalized = preg_replace('/\s+/s', ' ', $content);
+        // trim(), um führende/nachfolgende Leerzeichen zu entfernen
+        $contentNormalized = trim($contentNormalized);
+
+        // Baue den Tag wieder zusammen
+        return $tagOpen . $contentNormalized . $tagClose;
+    },
+    $rawTranscript
+);
+
+// Fallback: Wenn preg_replace_callback fehlschlägt (null zurückgibt)
+if ($rawTranscriptForTextarea === null) {
+    $rawTranscriptForTextarea = $rawTranscript;
+    if ($debugMode) {
+        error_log("FEHLER [report_modal.php]: preg_replace_callback für Transkript-Normalisierung fehlgeschlagen.");
+    }
+}
+
+// NEUE LOGIK (V1.2.1): Ersetze *alle* verbleibenden Zeilenumbrüche (die z.B. ZWISCHEN </p> und <p> stehen)
+// durch ein einzelnes Leerzeichen.
+$rawTranscriptForTextarea = preg_replace('/[\r\n]+/', ' ', $rawTranscriptForTextarea);
+// Entferne abschließend führende/nachfolgende Leerzeichen aus dem gesamten Block.
+$rawTranscriptForTextarea = trim($rawTranscriptForTextarea);
+// === ENDE LOGIK ===
 
 ?>
 
 <!-- Das Modal-Overlay -->
-<div id="report-modal" class="modal report-modal" style="display: none;" role="dialog"
-    aria-labelledby="report-modal-title" aria-modal="true"
+<!-- HINWEIS: style="display: none;" ENTFERNT (CSP-Fix) -->
+<div id="report-modal" class="modal report-modal" role="dialog" aria-labelledby="report-modal-title" aria-modal="true"
     data-comic-id="<?php echo htmlspecialchars($currentComicId); ?>">
 
     <!-- Der Overlay-Hintergrund (zum Schließen) -->
@@ -71,7 +111,8 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
             <input type="hidden" name="csrf_token" value="">
 
             <!-- Honeypot-Feld (Bot-Abwehr) -->
-            <div class="honeypot-field" style="display:none;" aria-hidden="true">
+            <!-- HINWEIS: style="display:none;" ENTFERNT (CSP-Fix) -->
+            <div class="honeypot-field" aria-hidden="true">
                 <label for="report-honeypot">Bitte nicht ausfüllen</label>
                 <input type="text" id="report-honeypot" name="report_honeypot" tabindex="-1">
             </div>
@@ -101,15 +142,22 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
             </div>
 
             <!-- Transkript-Vorschlag (Optional) -->
-            <div id="transcript-suggestion-container" style="display: none;">
+            <!-- HINWEIS: style="display: none;" ENTFERNT (CSP-Fix) -->
+            <div id="transcript-suggestion-container">
                 <label for="report-transcript-suggestion">Transkript-Vorschlag (Optional)</label>
-                <p style="font-size: 0.9em; margin-bottom: 5px;">Bearbeite das Transkript direkt, um eine Korrektur
-                    vorzuschlagen.</p>
+                <!-- HINWEIS: style="..." ENTFERNT, ID HINZUGEFÜGT (CSP-Fix) -->
+                <p id="report-suggestion-info">Bearbeite das Transkript direkt, um eine Korrektur
+                    vorzuschlagen. HTML-Tags (z.B. &lt;p&gt;) werden als Text angezeigt.</p>
                 <textarea id="report-transcript-suggestion" name="report_transcript_suggestion"
-                    rows="8"><?php echo htmlspecialchars($plainTranscript); ?></textarea>
-                <!-- Verstecktes Feld, um das Original-Transkript mitzusenden (für Diff-Vergleich im Admin-Bereich) -->
-                <textarea id="report-transcript-original" name="report_transcript_original" style="display: none;"
-                    readonly><?php echo htmlspecialchars($plainTranscript); ?></textarea>
+                    rows="8"><?php echo htmlspecialchars($rawTranscriptForTextarea); // Verwendet V1.2.1 Variable ?></textarea>
+
+                <!-- NEU: Sichtbares Original-Transkript als Referenz -->
+                <div class="original-transcript-box">
+                    <label for="report-transcript-original">Original-Transkript (als Referenz)</label>
+                    <!-- HINWEIS: style="display: none;" ENTFERNT, rows="5" HINZUGEFÜGT (CSP-Fix & Feature) -->
+                    <textarea id="report-transcript-original" name="report_transcript_original" rows="5"
+                        readonly><?php echo htmlspecialchars($rawTranscriptForTextarea); // Verwendet V1.2.1 Variable ?></textarea>
+                </div>
             </div>
 
             <!-- Referenzbilder -->
@@ -133,7 +181,8 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
             </div>
 
             <!-- Statusmeldungen (für Erfolg/Fehler) -->
-            <div id="report-status-message" class="status-message" style="display: none; margin-top: 15px;"></div>
+            <!-- HINWEIS: style="..." ENTFERNT (CSP-Fix) -->
+            <div id="report-status-message" class="status-message"></div>
         </form>
     </div>
 </div>

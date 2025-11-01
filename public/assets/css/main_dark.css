@@ -9,7 +9,6 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   2.1.3
- * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
  * @since     2.1.3 Verschieben des "Fehler melden"Button in die obere Navigationsleiste
  */
 body.theme-night #banner,
@@ -358,6 +357,43 @@ body.theme-night .report-modal-content .status-message.status-orange {
   background-color: rgb(109, 81.75, 0);
   color: #fff8e1;
   border: 1px solid #a07800;
+}
+body.theme-night .report-modal-content {
+  /* --- NEUE/ANGEPASSTE STILE (CSP-Fix & Feature) --- */
+}
+body.theme-night .report-modal-content #transcript-suggestion-container {
+  display: none;
+}
+body.theme-night .report-modal-content #report-status-message {
+  display: none;
+  margin-top: 15px;
+}
+body.theme-night .report-modal-content #report-suggestion-info {
+  font-size: 0.9em;
+  margin-bottom: 5px;
+  color: rgb(229.5, 229.5, 229.5);
+}
+body.theme-night .report-modal-content .original-transcript-box {
+  margin-top: 15px;
+}
+body.theme-night .report-modal-content .original-transcript-box label {
+  font-size: 0.9em;
+  color: rgb(216.75, 216.75, 216.75);
+}
+body.theme-night .report-modal-content .original-transcript-box textarea#report-transcript-original {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: rgb(0, 61.275, 85.5);
+  border-color: #2a6177;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 10px;
+  font-size: 0.95em;
+  border-radius: 4px;
+  resize: none;
+  margin-top: 5px;
+}
+body.theme-night .report-modal-content {
+  /* --- ENDE NEUE STILE --- */
 }
 body.theme-night {
   /* --- "Fehler melden"-Button Dark --- */
