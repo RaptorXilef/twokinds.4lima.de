@@ -3,20 +3,17 @@
  * @description Administrationsseite zur Verwaltung der Fehlermeldungen (Reports).
  * Zeigt Meldungen an, filtert sie und erlaubt Aktionen (Schließen, Spam, Öffnen).
  * Verwendet flock() für alle Dateioperationen.
- * 
- * @file      ROOT/public/admin/management_reports.php
+ * * @file      ROOT/public/admin/management_reports.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.1
+ * @version   1.1.0
  * @since     1.0.0 Initiale Erstellung
- * @since     1.0.1 Die Verweise auf die JavaScript-Bibliotheken in der Report-Verwaltung waren fehlerhaft und verhinderten, dass das Detail-Modal ordnungsgemäß funktionierte.
- * @description Der Pfad zur jsDiff-Bibliothek wurde von `diff.min.js` auf den korrekten Dateinamen `jsdiff.min.js` und den richtigen Admin-Pfad (`Url::getAdminJsUrl`) aktualisiert.
- * @description Der Verweis auf das Report-Skript wurde von `admin_reports.js` auf die minifizierte Version `reports.min.js` geändert.
- * 
- */
+ * @since     1.0.1 Korrektur der JS-Pfade.
+ * @since     1.1.0 Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
+ * */
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
@@ -447,14 +444,23 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
 
             <div id="detail-transcript-section">
-                <h3>Transkript-Vorschlag (Diff-Ansicht)</h3>
+                <!-- 1. Diff-Ansicht (Text-basiert) -->
+                <h3>Transkript-Vorschlag (Text-Diff)</h3>
                 <div id="detail-diff-viewer" class="report-text-box diff-box">
-                    <p class="loading-text">Original-Transkript wird geladen...</p>
+                    <p class="loading-text">Diff wird generiert...</p>
                 </div>
 
-                <h3>Vollständiger Vorschlag (Text)</h3>
-                <div id="detail-suggestion-container" class="report-text-box">
-                    <textarea id="detail-suggestion" rows="8" readonly style="width: 100%;"></textarea>
+                <!-- 2. Gerenderte HTML-Ansicht (NEU) -->
+                <h3>Vorschlag (Gerenderte HTML-Ansicht)</h3>
+                <div id="detail-suggestion-html" class="report-text-box transcript-display-box">
+                    <!-- Wird von JS befüllt -->
+                </div>
+
+                <!-- 3. Quellcode-Ansicht (NEU) -->
+                <h3>Vorschlag (HTML-Quellcode)</h3>
+                <div id="detail-suggestion-code-container" class="report-text-box">
+                    <textarea id="detail-suggestion-code" rows="8" readonly
+                        style="width: 100%; box-sizing: border-box;"></textarea>
                 </div>
             </div>
 
@@ -475,5 +481,197 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js'); // true für admin-Or
 <script src="<?php echo htmlspecialchars($jsDiffUrl); ?>" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
 <script src="<?php echo htmlspecialchars($adminReportsJsUrl); ?>"
     nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
+
+<!-- NEU: Angepasste Stile und JS-Logik für das Admin-Modal -->
+<style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    /* Stile für Admin Report-Modal (HTML-Anzeige) */
+    .transcript-display-box {
+        background-color: #f8f9fa;
+        border: 1px solid #e2e6ea;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        max-height: 200px;
+        /* Höhe anpassen */
+        overflow-y: auto;
+        font-size: 0.9em;
+        word-wrap: break-word;
+    }
+
+    .transcript-display-box p {
+        margin-bottom: 7px;
+    }
+
+    .transcript-display-box p:last-of-type {
+        margin-bottom: 0;
+    }
+
+    #detail-suggestion-code {
+        width: 100%;
+        box-sizing: border-box;
+        font-family: monospace;
+        font-size: 0.9em;
+        background-color: #f1f1f1;
+        border: none;
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    /* Diff-Ansicht Stile (aus main.scss) */
+    .diff-box ins {
+        background-color: #d4edda;
+        color: #155724;
+        text-decoration: none;
+    }
+
+    .diff-box del {
+        background-color: #f8d7da;
+        color: #721c24;
+        text-decoration: none;
+    }
+
+    /* Dark Mode */
+    body.theme-night .transcript-display-box {
+        background-color: #00334C;
+        /* $accent-dark */
+        border-color: #2a6177;
+        /* $button-color */
+        color: #fff;
+    }
+
+    body.theme-night #detail-suggestion-code {
+        background-color: #002B3C;
+        /* $page-bg */
+        color: #81dbfe;
+        /* $link-color */
+        border-color: #2a6177;
+        /* $button-color */
+    }
+
+    /* Diff-Ansicht Dark Mode (aus main_dark.scss) */
+    body.theme-night .diff-box ins {
+        background-color: #005000;
+        color: #c8e6c9;
+    }
+
+    body.theme-night .diff-box del {
+        background-color: #7f0000;
+        color: #ffcdd2;
+    }
+</style>
+
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.getElementById('reports-table');
+        if (table) {
+            // Wir verwenden Event-Delegation auf der Tabelle
+            table.addEventListener('click', function (e) {
+                const detailButton = e.target.closest('.detail-button');
+
+                // Nur fortfahren, wenn der Detail-Button geklickt wurde
+                if (!detailButton) {
+                    return;
+                }
+
+                // Warten, bis das Modal (von reports.min.js) geöffnet wurde
+                // Wir nutzen einen kleinen Timeout, um sicherzustellen, dass das andere Skript fertig ist.
+                setTimeout(() => {
+                    const row = detailButton.closest('tr');
+                    if (!row) return;
+
+                    // === 1. DATEN AUS DER TR AUSLESEN ===
+                    // htmlspecialchars_decode wird implizit vom Browser beim Lesen von dataset durchgeführt
+                    const data = row.dataset;
+                    const suggestion = data.suggestion || '';
+                    const original = data.original || '';
+                    const description = data.fullDescription || 'Keine Beschreibung.';
+                    const comicId = data.comicId || 'Unbekannt';
+                    const comicLink = document.getElementById('detail-comic-link');
+
+                    // === 2. STANDARD-MODALFELDER BEFÜLLEN ===
+                    // (Dies ist ein Fallback/Überschreiben, falls reports.min.js dies nicht tut)
+                    document.getElementById('detail-comic-id').textContent = comicId;
+                    if (comicLink) {
+                        const linkInCell = row.querySelector('td:nth-child(2) a');
+                        if (linkInCell) {
+                            comicLink.href = linkInCell.href;
+                        } else {
+                            comicLink.href = '#';
+                        }
+                    }
+                    document.getElementById('detail-date').textContent = data.date || 'k.A.';
+                    document.getElementById('detail-submitter').textContent = data.submitter || 'k.A.';
+                    document.getElementById('detail-type').textContent = data.type || 'k.A.';
+                    document.getElementById('detail-description').textContent = description;
+
+                    // === 3. NEUE HTML/CODE-FELDER BEFÜLLEN ===
+                    const htmlDisplay = document.getElementById('detail-suggestion-html');
+                    const codeDisplay = document.getElementById('detail-suggestion-code');
+
+                    if (htmlDisplay) {
+                        htmlDisplay.innerHTML = suggestion || '<em>Kein Vorschlag (HTML).</em>';
+                    }
+                    if (codeDisplay) {
+                        codeDisplay.value = suggestion || 'Kein Vorschlag (Code).';
+                    }
+
+                    // === 4. JSDIFF-LOGIK (mit Text-Konvertierung) ===
+                    const diffViewer = document.getElementById('detail-diff-viewer');
+                    if (diffViewer) {
+                        try {
+                            // Hilfsfunktion, um HTML in Text umzuwandeln
+                            const convertHtmlToText = (html) => {
+                                // Prüfen, ob es überhaupt HTML ist
+                                if (html && html.trim().startsWith('<')) {
+                                    const tempDiv = document.createElement('div');
+                                    tempDiv.innerHTML = html;
+                                    // Ersetze <p> durch Zeilenumbrüche für Lesbarkeit
+                                    tempDiv.querySelectorAll('p').forEach(p => {
+                                        p.after(document.createTextNode('\n'));
+                                    });
+                                    // Entferne <br> aber behalte Zeilenumbruch bei
+                                    tempDiv.querySelectorAll('br').forEach(br => {
+                                        br.after(document.createTextNode('\n'));
+                                    });
+                                    return (tempDiv.textContent || tempDiv.innerText || '').trim();
+                                }
+                                // Es ist bereits Plain Text (alte Reports)
+                                return (html || '').trim();
+                            };
+
+                            const originalText = convertHtmlToText(original);
+                            const suggestionText = convertHtmlToText(suggestion);
+
+                            // 'jsdiff' wird global von jsdiff.min.js geladen
+                            if (typeof Diff !== 'undefined') {
+                                const diff = Diff.diffLines(originalText, suggestionText, { newlineIsToken: true });
+                                diffViewer.innerHTML = ''; // Vorherigen Inhalt leeren
+
+                                if (!diff || diff.length === 0 || (diff.length === 1 && !diff[0].added && !diff[0].removed)) {
+                                    diffViewer.innerHTML = '<p style="font-style: italic;">Keine Änderungen am Textinhalt gefunden.</p>';
+                                } else {
+                                    const fragment = document.createDocumentFragment();
+                                    diff.forEach(function (part) {
+                                        const tag = part.added ? 'ins' : (part.removed ? 'del' : 'span');
+                                        const el = document.createElement(tag);
+                                        el.appendChild(document.createTextNode(part.value));
+                                        fragment.appendChild(el);
+                                    });
+                                    diffViewer.appendChild(fragment);
+                                }
+                            } else {
+                                diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler: jsDiff-Bibliothek (Diff) nicht gefunden.</p>';
+                            }
+
+                        } catch (err) {
+                            console.error('Fehler beim Erstellen des Diffs:', err);
+                            diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler beim Erstellen des Diffs.</p>';
+                        }
+                    }
+                }, 10); // Kleiner Timeout (10ms)
+            });
+        }
+    });
+</script>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
