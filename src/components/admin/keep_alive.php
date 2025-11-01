@@ -13,13 +13,16 @@
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   3.0.0
  * @since     3.0.0 Umstellung auf die zentrale init_admin.php im übergeordneten Komponenten-Verzeichnis.
- */
+ * @since     3.0.1 Behebe BUG PHP Warning:  Constant IS_API_CALL already defined in src\\components\\admin\\keep_alive.php on line 22, referer: /admin/data_editor_comic
+*/
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // Definiere eine Konstante, damit init_admin.php weiß, dass dies ein API-Aufruf ist.
-define('IS_API_CALL', true);
+if (!defined('IS_API_CALL')) {
+    define('IS_API_CALL', true);
+}
 
 // Binde die zentrale Initialisierungs- und Sicherheitsdatei ein.
 // Diese Datei kümmert sich um alles: Session-Start, CSRF-Prüfung, Login-Status etc.
