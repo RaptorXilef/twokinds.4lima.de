@@ -3,19 +3,20 @@
  * Dies ist die Startseite des Comic-Bereichs.
  * Sie lädt dynamisch den neuesten Comic und zeigt ihn an und verweist
  * mittels Canonical-Tag auf die Haupt-Startseite, um Duplicate Content zu vermeiden.
- * 
+ *
  * @file      ROOT/public/comic/index.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.1.0
+ * @version   4.1.1
  * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.0.1 Korrektur des URL-Kopierens auf der neuesten Comicseite im JS-Teil des Codes.
  * @since     4.0.2 Fehler-Button eingebunden und unnötige CSS Elemente entfernt, welche bereits in main.css stehen.
  * @since     4.1.0 Lädt jQuery und Summernote-Bibliotheken für das Report-Modal (WYSIWYG-Editor).
+ * @since     4.1.1 Logik für Bildsuche (checkUrlExists, etc.) nach comic.js verschoben.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -89,15 +90,15 @@ $comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.min.js
 $comicJsWebUrl = Url::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 
-// --- KORREKTUR V4.1.0: jQuery und Summernote für Report-Modal hinzugefügt ---
+// --- KORREKTUR V4.1.1: jQuery und Summernote für Report-Modal hinzugefügt ---
 $jsDebug = $debugMode ? 'true' : 'false';
 $additionalScripts = "<script nonce=\"{$nonce}\" src=\"https://code.jquery.com/jquery-3.7.1.min.js\"></script>"; // jQuery ZUERST
 $additionalScripts .= "<link href=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css\" rel=\"stylesheet\" nonce=\"{$nonce}\">";
 $additionalScripts .= "<script nonce=\"{$nonce}\" src=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js\"></script>";
 $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "'>window.phpDebugMode = {$jsDebug};</script>"; // DEBUG
-// --- ENDE KORREKTUR ---
-
+// WICHTIG: comic.js MUSS NACH jQuery/Summernote geladen werden
 $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
+
 $viewportContent = 'width=1099';
 $robotsContent = 'noindex, follow';
 $canonicalUrl = DIRECTORY_PUBLIC_URL;
@@ -196,7 +197,14 @@ include_once Path::getPartialTemplatePath('report_modal.php');
 ?>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    // === GEÄNDERT V4.1.1: Alle Funktionsdefinitionen (checkUrlExists, etc.)
+    // wurden nach comic.js verschoben. Dieses Skript ruft nur noch
+    // die globalen Funktionen auf (window.findExistingUrl). ===
+
     document.addEventListener('DOMContentLoaded', function () {
+        const debugJs = window.phpDebugMode || false; // Verwende die PHP Debug-Variable
+
+        // --- URL-Kopieren Logik ---
         const copyLink = document.getElementById('copy-comic-url');
         if (copyLink) {
             copyLink.addEventListener('click', function (event) {
@@ -214,122 +222,66 @@ include_once Path::getPartialTemplatePath('report_modal.php');
             });
         }
 
-        // --- ANGEPASSTE LOGIK FÜR SPRACHUMSCHALTUNG ---
+        // --- Logik für Sprachumschaltung (Nutzt jetzt globale Funktionen) ---
         const toggleBtn = document.getElementById('toggle-language-btn');
         if (toggleBtn) {
             const comicLink = document.getElementById('comic-image-link');
             const comicImage = document.getElementById('comic-image');
-            const langToggleText = document.getElementById('lang-toggle-text'); // NEU
+            const langToggleText = document.getElementById('lang-toggle-text');
             let isGerman = true;
-            let englishSrc = '', englishHref = '';
-            const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
-            const sketchImageUrlBase = 'https://twokindscomic.com/images/';
-            const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+            let englishSrc = '', englishHref = ''; // Lokaler Cache
 
-            function checkUrl(url) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => resolve(url);
-                    img.onerror = () => reject(`Bild unter ${url} nicht gefunden.`);
-                    img.src = url;
-                });
+            // Prüfen, ob die globalen Funktionen von comic.js geladen wurden
+            if (typeof window.checkUrlExists !== 'function' || typeof window.runOriginalProbingLogic !== 'function') {
+                console.error("Fehler: Globale Bild-Suchfunktionen (von comic.js) nicht gefunden!");
+                if (langToggleText) langToggleText.textContent = "Skript-Fehler";
+                return;
             }
 
-            function findEnglishUrl(filename) {
-                return new Promise((resolve, reject) => {
-                    let found = false, attempts = 0;
-                    imageExtensions.forEach(ext => {
-                        const url = originalImageUrlBase + filename + '.' + ext;
-                        const img = new Image();
-                        img.onload = () => { if (!found) { found = true; resolve(url); } };
-                        img.onerror = () => {
-                            attempts++;
-                            if (attempts === imageExtensions.length && !found) reject('Kein englisches Bild gefunden');
-                        };
-                        img.src = url;
-                    });
-                });
-            }
-
-            function findEnglishSketchUrl(baseFilename) {
-                return new Promise((resolve, reject) => {
-                    const sketchFilename = baseFilename.substring(0, 8) + '_sketch';
-                    let found = false, attempts = 0;
-                    imageExtensions.forEach(ext => {
-                        const url = sketchImageUrlBase + sketchFilename + '.' + ext;
-                        const img = new Image();
-                        img.onload = () => { if (!found) { found = true; resolve(url); } };
-                        img.onerror = () => {
-                            attempts++;
-                            if (attempts === imageExtensions.length && !found) reject('Kein englisches Sketch-Bild gefunden');
-                        };
-                        img.src = url;
-                    });
-                });
-            }
-
-            function setEnglishImage(mainUrl) {
-                englishSrc = mainUrl;
-                comicImage.src = englishSrc;
-                const sketchUrlFromCache = toggleBtn.dataset.englishSketchUrlFromCache;
-                const setHref = (url) => {
-                    englishHref = url;
-                    comicLink.href = englishHref;
-                    if (langToggleText) langToggleText.textContent = 'DE'; // Geändert
-                    isGerman = false;
-                };
-                const runSketchProbingLogic = () => {
-                    findEnglishSketchUrl(toggleBtn.dataset.englishFilename)
-                        .then(setHref)
-                        .catch(err => { console.warn(err); setHref(mainUrl); });
-                };
-
-                if (sketchUrlFromCache) {
-                    checkUrl(sketchUrlFromCache).then(setHref).catch(err => {
-                        console.warn(err);
-                        runSketchProbingLogic();
-                    });
-                } else {
-                    runSketchProbingLogic();
-                }
-            }
-
-            function runOriginalProbingLogic() {
-                const originalText = langToggleText ? langToggleText.textContent : 'EN';
-                if (langToggleText) langToggleText.textContent = 'Lade...';
-                findEnglishUrl(toggleBtn.dataset.englishFilename)
-                    .then(setEnglishImage)
-                    .catch(err => {
-                        console.error(err);
-                        if (langToggleText) langToggleText.textContent = 'Original nicht gefunden';
-                        setTimeout(() => { if (langToggleText) langToggleText.textContent = originalText; }, 2000);
-                    });
-            }
-
-            toggleBtn.addEventListener('click', function (event) {
+            toggleBtn.addEventListener('click', async function (event) {
                 event.preventDefault();
                 if (isGerman) {
                     if (englishSrc && englishHref) {
                         comicImage.src = englishSrc;
                         comicLink.href = englishHref;
-                        if (langToggleText) langToggleText.textContent = 'DE'; // Geändert
+                        if (langToggleText) langToggleText.textContent = 'DE';
                         isGerman = false;
                         return;
                     }
+
                     const urlFromCache = toggleBtn.dataset.englishUrlFromCache;
+                    let foundInCache = false;
+                    let mainUrl = null;
+
                     if (urlFromCache) {
-                        if (langToggleText) langToggleText.textContent = 'Lade...'; // Geändert
-                        checkUrl(urlFromCache).then(setEnglishImage).catch(err => {
-                            console.warn(err);
-                            runOriginalProbingLogic();
-                        });
-                    } else {
-                        runOriginalProbingLogic();
+                        if (langToggleText) langToggleText.textContent = 'Lade...';
+                        try {
+                            // Ruft die globale Funktion auf
+                            if (await window.checkUrlExists(urlFromCache)) {
+                                mainUrl = urlFromCache;
+                                foundInCache = true;
+                                if (debugJs) console.log("DEBUG: Originalbild aus Cache verwendet:", urlFromCache);
+                            } else if (debugJs) console.warn("DEBUG: Gespeicherter Original-Link nicht erreichbar:", urlFromCache);
+                        } catch (err) { console.warn("DEBUG: Fehler bei Prüfung des Original-Cache-Links:", err); }
+                    }
+
+                    if (!foundInCache) {
+                        if (debugJs) console.log("DEBUG: Originalbild nicht im Cache gefunden/gültig, starte Online-Suche.");
+                        // Ruft die globale Funktion auf
+                        mainUrl = await window.runOriginalProbingLogic(toggleBtn, langToggleText);
+                    }
+
+                    if (mainUrl) {
+                        // Ruft die globale Funktion auf
+                        const urls = await window.setEnglishImage(mainUrl, toggleBtn, comicImage, comicLink, langToggleText);
+                        englishSrc = urls.englishSrc;
+                        englishHref = urls.englishHref;
+                        isGerman = false;
                     }
                 } else {
                     comicImage.src = toggleBtn.dataset.germanSrc;
                     comicLink.href = toggleBtn.dataset.germanHref;
-                    if (langToggleText) langToggleText.textContent = 'EN'; // Geändert
+                    if (langToggleText) langToggleText.textContent = 'EN';
                     isGerman = true;
                 }
             });

@@ -9,13 +9,13 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
+ * @version   3.1.0
  * @since     2.5.0 Umstellung auf globale Pfad-Konstanten.
  * @since     2.5.1 Lesezeichen auf der Comicseite selbst ohne Meldung setzen und entfernen (nur deaktivieren, nicht löschen) [comic.js]
  * @since     2.5.2 J und K für den Wechsel der Comicseite deaktiviert
  * @since     3.0.0 Implementiert Summernote WYSIWYG-Editor im Report-Modal.
- *                  Passt die Logik zum Laden und Senden von HTML-Transkripten an.
- *                  Benötigt jetzt jQuery und Summernote-Bibliotheken.
+ * @since     3.1.0 Zentralisiert die Bild-Suchlogik (findExistingUrl) und wendet sie auf das Report-Modal an.
+ * @since     3.2.0 Logik zur Bildsuche wird jetzt global (am window-Objekt) bereitgestellt, um Redundanz in Inline-Skripten zu entfernen.
  */
 
 // IIFE bleibt
@@ -38,9 +38,194 @@
   const reportStatusMessageId = "report-status-message";
   const reportSubmitButtonId = "report-submit-button";
   const comicTranscriptSelector = ".transcript-content";
+
+  // === NEU: V3.1.0 Konstanten für die Bild-Suche ===
+  const reportModalImageEnId = "report-modal-image-en";
+  const placeholderImageLoading =
+    "https://placehold.co/600x400/cccccc/333333?text=Original+wird+geladen...";
+  const placeholderImageNotFound =
+    "https://placehold.co/600x400/dc3545/ffffff?text=Original+nicht+gefunden";
+  const originalImageUrlBase = "https://cdn.twokinds.keenspot.com/comics/";
+  const sketchImageUrlBase = "https://twokindscomic.com/images/"; // Hinzugefügt für EN-Button
+  const imageExtensions = ["png", "jpg", "jpeg", "gif", "webp"];
+  // === ENDE NEU ===
+
   // Debug-Modus
   const debugModeJsComic =
     typeof window.phpDebugMode !== "undefined" ? window.phpDebugMode : false;
+
+  // === NEU V3.2.0: Bild-Suchlogik hier zentralisiert ===
+  /**
+   * Prüft asynchron, ob eine URL erreichbar ist (Bild existiert).
+   * Verwendet fetch(HEAD) als Primärversuch, fällt auf new Image() zurück.
+   * (Kopiert von renderer_comic_page.php)
+   */
+  async function checkUrlExists(url) {
+    try {
+      // Versuche zuerst fetch mit HEAD, da effizienter
+      const response = await fetch(url, { method: "HEAD", mode: "cors" });
+      // OK (2xx) oder opake Antworten (Typ 0 bei no-cors, falls cors fehlschlägt) deuten auf Existenz hin
+      if (response.ok || response.type === "opaque") return true;
+      // Wenn response nicht ok, aber nicht opaque, existiert die URL wahrscheinlich nicht (z.B. 404)
+      if (!response.ok && response.type !== "opaque" && debugModeJsComic)
+        console.log(
+          `DEBUG: checkUrlExists (fetch !ok): ${url} Status: ${response.status}`
+        );
+      // Fallback auf Image, falls fetch fehlschlägt (z.B. CORS-Problem trotz cors mode)
+      throw new Error(
+        `Fetch failed or returned non-ok status: ${response.status}`
+      );
+    } catch (e) {
+      if (debugModeJsComic)
+        console.log(
+          `DEBUG: checkUrlExists (fetch error, trying Image fallback): ${url}`,
+          e
+        );
+      // Fallback: Versuche, das Bild zu laden
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    }
+  }
+
+  /**
+   * Sucht nach der korrekten Bild-URL, indem es Erweiterungen durchprobiert.
+   * (Kopiert von renderer_comic_page.php)
+   */
+  async function findExistingUrl(baseUrl, filename, extensions) {
+    for (const ext of extensions) {
+      const url = baseUrl + filename + "." + ext;
+      try {
+        if (await checkUrlExists(url)) {
+          // Nutzt die lokale Funktion
+          if (debugModeJsComic)
+            console.log(`DEBUG: findExistingUrl SUCCESS for ${url}`);
+          return url;
+        }
+      } catch (error) {
+        if (debugModeJsComic)
+          console.log(`DEBUG: findExistingUrl Check failed for ${url}:`, error);
+      }
+    }
+    if (debugModeJsComic)
+      console.log(`DEBUG: findExistingUrl FAILED for ${baseUrl}${filename}`);
+    return null; // Explizit null zurückgeben, wenn nichts gefunden wurde
+  }
+  // === ENDE NEU V3.1.0 ===
+  /**
+   * Sucht nach der Sketch-URL.
+   */
+  async function findEnglishSketchUrl(baseFilename, sketchUrlBase, extensions) {
+    try {
+      const sketchFilename = baseFilename.substring(0, 8) + "_sketch";
+      const sketchFoundUrl = await findExistingUrl(
+        sketchUrlBase,
+        sketchFilename,
+        extensions
+      ); // Nutzt die lokale Funktion
+      if (sketchFoundUrl && debugModeJsComic)
+        console.log("DEBUG: Sketch online gefunden:", sketchFoundUrl);
+      else if (debugModeJsComic)
+        console.log("DEBUG: Kein Sketch online gefunden.");
+      return sketchFoundUrl;
+    } catch (err) {
+      console.warn("Fehler bei Sketch-Suche:", err);
+      return null;
+    }
+  }
+
+  /**
+   * Setzt das Haupt-Comicbild und den Link auf die englische Version/Sketch.
+   * (Wird vom EN-Button-Listener aufgerufen)
+   */
+  async function setEnglishImage(
+    mainUrl,
+    toggleBtn,
+    comicImage,
+    comicLink,
+    langToggleText
+  ) {
+    if (!comicImage || !comicLink) return;
+    let englishSrc = mainUrl;
+    comicImage.src = englishSrc;
+    const sketchUrlFromCache = toggleBtn.dataset.englishSketchUrlFromCache;
+    let sketchFoundUrl = null;
+
+    const setHref = (url) => {
+      let englishHref = url;
+      comicLink.href = englishHref;
+      if (langToggleText) langToggleText.textContent = "DE";
+      // isGerman wird im Listener selbst verwaltet
+    };
+
+    if (sketchUrlFromCache) {
+      try {
+        if (await checkUrlExists(sketchUrlFromCache)) {
+          sketchFoundUrl = sketchUrlFromCache;
+          if (debugModeJsComic)
+            console.log("DEBUG: Sketch aus Cache verwendet:", sketchFoundUrl);
+        } else if (debugModeJsComic)
+          console.warn(
+            "DEBUG: Gespeicherter Sketch-Link nicht erreichbar:",
+            sketchUrlFromCache
+          );
+      } catch (e) {
+        console.warn("DEBUG: Fehler bei Prüfung des Sketch-Cache-Links:", e);
+      }
+    }
+
+    if (!sketchFoundUrl) {
+      sketchFoundUrl = await findEnglishSketchUrl(
+        toggleBtn.dataset.englishFilename,
+        sketchImageUrlBase,
+        imageExtensions
+      );
+    }
+    setHref(sketchFoundUrl || mainUrl);
+    return { englishSrc, englishHref: sketchFoundUrl || mainUrl };
+  }
+
+  /**
+   * Startet die Suche nach dem Originalbild (EN).
+   * (Wird vom EN-Button-Listener aufgerufen)
+   */
+  async function runOriginalProbingLogic(toggleBtn, langToggleText) {
+    const originalText = langToggleText ? langToggleText.textContent : "EN";
+    if (langToggleText) langToggleText.textContent = "Lade...";
+    try {
+      const foundUrl = await findExistingUrl(
+        originalImageUrlBase,
+        toggleBtn.dataset.englishFilename,
+        imageExtensions
+      );
+      if (foundUrl) {
+        return foundUrl;
+      } else {
+        throw new Error("Kein englisches Bild gefunden");
+      }
+    } catch (err) {
+      console.error("Fehler beim Finden des Originalbilds:", err);
+      if (langToggleText)
+        langToggleText.textContent = "Original nicht gefunden";
+      setTimeout(() => {
+        if (langToggleText) langToggleText.textContent = originalText;
+      }, 2000);
+      return null;
+    }
+  }
+
+  // === NEU V3.2.0: Funktionen global verfügbar machen ===
+  // (comic.js wird VOR dem Inline-Skript geladen,
+  // also sind diese beim DOMContentLoaded des Inline-Skripts verfügbar)
+  window.checkUrlExists = checkUrlExists;
+  window.findExistingUrl = findExistingUrl;
+  window.findEnglishSketchUrl = findEnglishSketchUrl;
+  window.setEnglishImage = setEnglishImage;
+  window.runOriginalProbingLogic = runOriginalProbingLogic;
+  // === ENDE NEU V3.2.0 ===
 
   document.addEventListener("DOMContentLoaded", async () => {
     // === NEU: Summernote initialisieren ===
@@ -73,17 +258,28 @@
     var navnext = document.querySelector("a.navnext");
 
     body.addEventListener("keyup", (e) => {
-      if (e.key == "ArrowLeft" /*|| e.key == "j" || e.key == "J"*/ && navprev) {
-        // J deaktiviert
+      if (e.key == "ArrowLeft" && navprev) {
         parent.location = navprev.getAttribute("href");
-      } else if (
-        e.key == "ArrowRight" /*|| e.key == "k" || e.key == "K"*/ && // K korrigiert // K deaktiviert
-        navnext
-      ) {
+      } else if (e.key == "ArrowRight" && navnext) {
         parent.location = navnext.getAttribute("href");
       }
     });
 
+    /*
+        body.addEventListener("keyup", (e) => {
+      if (e.key == "ArrowLeft" || e.key == "j" || e.key == "J" && navprev) {
+        // J deaktiviert
+        parent.location = navprev.getAttribute("href");
+      } else if (
+        e.key == "ArrowRight" || e.key == "k" || e.key == "K" && // K korrigiert // K deaktiviert
+        navnext
+      ) {
+        parent.location = navnext.getAttribute("href");
+      }
+});
+*/
+
+    // Bookmark Init Logic
     const bookmarkButton = document.getElementById(bookmarkButtonId);
     const bookmarks = await getStoredBookmarks();
 
@@ -150,6 +346,7 @@
     const closeReportModalButtons = document.querySelectorAll(
       closeReportModalSelector
     );
+    const imageEn = document.getElementById(reportModalImageEnId); // NEU V3.1.0
 
     if (openReportModalButton && reportModal && reportForm) {
       // --- Event Listeners ---
@@ -181,7 +378,57 @@
         transcriptSuggestionContainer.style.display =
           reportTypeSelect.value === "transcript" ? "block" : "none";
 
-        // === GEÄNDERT: Summernote und Display-Div befüllen ===
+        // === GEÄNDERT V3.2.0: Englisches Bild dynamisch laden (nutzt jetzt die lokale/globale Funktion) ===
+        if (imageEn) {
+          const filename = reportModal.dataset.originalFilename;
+          imageEn.src = placeholderImageLoading; // Setze auf "Laden..."
+          imageEn.onerror = null;
+
+          if (filename) {
+            if (debugModeJsComic)
+              console.log(
+                `[Report Modal] Suche Originalbild mit Dateiname: ${filename}`
+              );
+            // Rufe die Suchfunktion auf (jetzt im Scope verfügbar)
+            findExistingUrl(originalImageUrlBase, filename, imageExtensions)
+              .then((url) => {
+                if (url) {
+                  imageEn.src = url;
+                  // Setze einen onerror-Fallback für den Fall, dass das gefundene Bild doch fehlschlägt
+                  imageEn.onerror = () => {
+                    imageEn.src = placeholderImageNotFound;
+                  };
+                } else {
+                  // findExistingUrl hat null zurückgegeben (nichts gefunden)
+                  if (debugModeJsComic)
+                    console.warn(
+                      "[Report Modal] findExistingUrl hat null zurückgegeben."
+                    );
+                  imageEn.src = placeholderImageNotFound;
+                }
+              })
+              .catch((err) => {
+                // Schwerer Fehler während der Suche
+                if (debugModeJsComic)
+                  console.error(
+                    "[Report Modal] Fehler bei findExistingUrl:",
+                    err
+                  );
+                imageEn.src = placeholderImageNotFound;
+              });
+          } else {
+            // Fallback, falls kein Dateiname im data-Attribut ist
+            if (debugModeJsComic)
+              console.warn(
+                "[Report Modal] Kein 'data-original-filename' am Modal gefunden."
+              );
+            imageEn.src =
+              "https://placehold.co/600x400/cccccc/333333?text=Original+fehlt+(kein+Dateiname)";
+          }
+        }
+        // === ENDE GEÄNDERT V3.2.0 ===
+
+        // === Summernote und Display-Div befüllen ===
         try {
           const currentTranscriptElement = document.querySelector(
             comicTranscriptSelector
@@ -206,12 +453,12 @@
                 "Editor konnte nicht geladen werden. Bitte beschreibe den Fehler stattdessen.";
           }
 
-          // 2. Fülle das sichtbare "Original" Display (HTML wird gerendert)
+          // 2. Fülle das sichtbare "Original" Display
           if (originalTranscriptDisplay) {
             originalTranscriptDisplay.innerHTML = rawHtml;
           }
 
-          // 3. Fülle das *versteckte* Textarea für den Formularversand
+          // 3. Fülle das *versteckte* Textarea
           if (originalTranscriptHidden) {
             originalTranscriptHidden.value = rawHtml;
           }
@@ -246,6 +493,13 @@
         ) {
           $("#" + transcriptSuggestionTextareaId).summernote("code", "");
         }
+
+        // === NEU V3.1.0: Bild zurücksetzen ===
+        if (imageEn) {
+          imageEn.src = placeholderImageLoading;
+          imageEn.onerror = null;
+        }
+        // === ENDE NEU V3.1.0 ===
       }
 
       async function handleReportSubmit(event) {
