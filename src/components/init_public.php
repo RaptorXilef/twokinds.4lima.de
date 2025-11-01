@@ -45,11 +45,11 @@ $nonce = bin2hex(random_bytes(16));
 // Content-Security-Policy (CSP)
 $csp = [
     'default-src' => ["'self'"],
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com"],
-    'style-src' => ["'self'", "'nonce-{$nonce}'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com"],
+    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co", "https://cdn.twokinds.keenspot.com"],
+    'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
+    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com", "https://cdn.jsdelivr.net"],
     'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://www.2kinds.com", "https://i.creativecommons.org", "https://licensebuttons.net"],
-    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com", "https://twokindscomic.com"],
+    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com", "https://twokindscomic.com", "https://cdn.jsdelivr.net"],
     'object-src' => ["'none'"],
     'frame-ancestors' => ["'self'"],
     'base-uri' => ["'self'"],
