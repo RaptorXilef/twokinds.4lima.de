@@ -33,6 +33,9 @@ test*.php
 
 
 # --- CONFIG ---
+config/config_generator_settings.json
+config/config_rss.json
+
 # - SECRETS -
 config/secrets/*
 
@@ -229,5 +232,4 @@ package.json
 # wieder aktivieren:
 # git update-index --no-assume-unchanged src/config/comic_var.json
 # git update-index --no-assume-unchanged src/config/archive_chapters.json
-
 
