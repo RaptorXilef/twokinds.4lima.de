@@ -16,6 +16,7 @@
  * @since     3.0.0 Implementiert Summernote WYSIWYG-Editor im Report-Modal.
  * @since     3.1.0 Zentralisiert die Bild-Suchlogik (findExistingUrl) und wendet sie auf das Report-Modal an.
  * @since     3.2.0 Logik zur Bildsuche wird jetzt global (am window-Objekt) bereitgestellt, um Redundanz in Inline-Skripten zu entfernen.
+ * @since     3.2.1 Fetch beim Laden des englischen Originalbildes wieder entfernt, da dies aus Sicherheitsgründen auf Toms Server gesperrt ist.
  */
 
 // IIFE bleibt
@@ -39,7 +40,7 @@
   const reportSubmitButtonId = "report-submit-button";
   const comicTranscriptSelector = ".transcript-content";
 
-  // === NEU: V3.1.0 Konstanten für die Bild-Suche ===
+  // === NEU: Konstanten für die Bild-Suche ===
   const reportModalImageEnId = "report-modal-image-en";
   const placeholderImageLoading =
     "https://placehold.co/600x400/cccccc/333333?text=Original+wird+geladen...";
@@ -54,46 +55,32 @@
   const debugModeJsComic =
     typeof window.phpDebugMode !== "undefined" ? window.phpDebugMode : false;
 
-  // === NEU V3.2.0: Bild-Suchlogik hier zentralisiert ===
+  // === Bild-Suchlogik hier zentralisiert ===
   /**
    * Prüft asynchron, ob eine URL erreichbar ist (Bild existiert).
    * Verwendet fetch(HEAD) als Primärversuch, fällt auf new Image() zurück.
    * (Kopiert von renderer_comic_page.php)
    */
   async function checkUrlExists(url) {
-    try {
-      // Versuche zuerst fetch mit HEAD, da effizienter
-      const response = await fetch(url, { method: "HEAD", mode: "cors" });
-      // OK (2xx) oder opake Antworten (Typ 0 bei no-cors, falls cors fehlschlägt) deuten auf Existenz hin
-      if (response.ok || response.type === "opaque") return true;
-      // Wenn response nicht ok, aber nicht opaque, existiert die URL wahrscheinlich nicht (z.B. 404)
-      if (!response.ok && response.type !== "opaque" && debugModeJsComic)
-        console.log(
-          `DEBUG: checkUrlExists (fetch !ok): ${url} Status: ${response.status}`
-        );
-      // Fallback auf Image, falls fetch fehlschlägt (z.B. CORS-Problem trotz cors mode)
-      throw new Error(
-        `Fetch failed or returned non-ok status: ${response.status}`
+    // KORRIGIERT: Wir verwenden NUR noch new Image().
+    // Der fetch()-Versuch wird durch CORS (auf cdn.twokinds.keenspot.com)
+    // und CSP (auf twokindscomic.com, da nicht in 'connect-src') blockiert.
+    // new Image() respektiert 'img-src', was korrekt konfiguriert ist.
+    if (debugModeJsComic) {
+      console.log(
+        `DEBUG: checkUrlExists (using Image() fallback only): ${url}`
       );
-    } catch (e) {
-      if (debugModeJsComic)
-        console.log(
-          `DEBUG: checkUrlExists (fetch error, trying Image fallback): ${url}`,
-          e
-        );
-      // Fallback: Versuche, das Bild zu laden
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
-        img.src = url;
-      });
     }
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
   }
 
   /**
    * Sucht nach der korrekten Bild-URL, indem es Erweiterungen durchprobiert.
-   * (Kopiert von renderer_comic_page.php)
    */
   async function findExistingUrl(baseUrl, filename, extensions) {
     for (const ext of extensions) {
@@ -114,7 +101,6 @@
       console.log(`DEBUG: findExistingUrl FAILED for ${baseUrl}${filename}`);
     return null; // Explizit null zurückgeben, wenn nichts gefunden wurde
   }
-  // === ENDE NEU V3.1.0 ===
   /**
    * Sucht nach der Sketch-URL.
    */
@@ -325,6 +311,7 @@
   // === Funktion zum Initialisieren des Report Modals ===
   // ===========================================
   function initializeReportModal() {
+    // (Konstanten für Modal-Elemente)
     const openReportModalButton = document.getElementById(
       openReportModalButtonId
     );
@@ -499,7 +486,6 @@
           imageEn.src = placeholderImageLoading;
           imageEn.onerror = null;
         }
-        // === ENDE NEU V3.1.0 ===
       }
 
       async function handleReportSubmit(event) {
