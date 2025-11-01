@@ -10,11 +10,12 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.2
+ * @version   4.1.0
  * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.0.1 Korrektur des URL-Kopierens auf der neuesten Comicseite im JS-Teil des Codes.
  * @since     4.0.2 Fehler-Button eingebunden und unnötige CSS Elemente entfernt, welche bereits in main.css stehen.
+ * @since     4.1.0 Lädt jQuery und Summernote-Bibliotheken für das Report-Modal (WYSIWYG-Editor).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -87,7 +88,16 @@ $ogImage = str_starts_with($socialMediaPreviewUrl, 'http') ? $socialMediaPreview
 $comicJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'comic.min.js';
 $comicJsWebUrl = Url::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
-$additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
+
+// --- KORREKTUR V4.1.0: jQuery und Summernote für Report-Modal hinzugefügt ---
+$jsDebug = $debugMode ? 'true' : 'false';
+$additionalScripts = "<script nonce=\"{$nonce}\" src=\"https://code.jquery.com/jquery-3.7.1.min.js\"></script>"; // jQuery ZUERST
+$additionalScripts .= "<link href=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css\" rel=\"stylesheet\" nonce=\"{$nonce}\">";
+$additionalScripts .= "<script nonce=\"{$nonce}\" src=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js\"></script>";
+$additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "'>window.phpDebugMode = {$jsDebug};</script>"; // DEBUG
+// --- ENDE KORREKTUR ---
+
+$additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 $viewportContent = 'width=1099';
 $robotsContent = 'noindex, follow';
 $canonicalUrl = DIRECTORY_PUBLIC_URL;
@@ -117,7 +127,7 @@ require_once Path::getPartialTemplatePath('header.php');
             Seite merken
         </button>
 
-        <!-- NEUER FEHLER MELDEN BUTTON -->
+        <!-- FEHLER MELDEN BUTTON -->
         <button type="button" id="open-report-modal" class="navarrow nav-report-issue"
             title="Fehler auf dieser Seite melden">
             <span class="nav-wrapper">
@@ -140,7 +150,7 @@ require_once Path::getPartialTemplatePath('header.php');
         include DIRECTORY_PRIVATE_PARTIAL_TEMPLATES . DIRECTORY_SEPARATOR . 'navigation_comic.php';
         unset($isCurrentPageLatest);
         ?>
-        <!-- NEUER SPRACHUMSCHALTER-BUTTON -->
+        <!-- SPRACHUMSCHALTER-BUTTON -->
         <?php if (!empty($urlOriginalbildFilename)): ?>
             <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
                 data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, './')); ?>"
