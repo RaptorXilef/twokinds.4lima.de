@@ -163,6 +163,11 @@ class Path
     {
         return DIRECTORY_PUBLIC_IMG_LAYOUT_LOWRES . DIRECTORY_SEPARATOR . $filename;
     }
+
+    public static function getImgLayoutThumbnailsPath(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_THUMBNAILS . DIRECTORY_SEPARATOR . $filename;
+    }
 }
 
 

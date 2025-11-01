@@ -65,8 +65,10 @@ $urlOriginalsketchFromCache = get_cached_image_path($currentComicId, 'url_origin
 
 // --- FALLBACK-LOGIK ---
 if (empty($comicImagePath)) {
-    $comicImagePath = get_cached_image_path('in_translation', 'lowres');
-    $comicHiresPath = get_cached_image_path('in_translation', 'hires');
+    //$comicImagePath = get_cached_image_path('in_translation', 'lowres');
+    //$comicHiresPath = get_cached_image_path('in_translation', 'hires');
+    $comicImagePath = URL::getImgLayoutLowresUrl('in_translation.webp?c=20251101');
+    $comicHiresPath = URL::getImgLayoutHiresUrl('in_translation.webp?c=20251101');
 }
 if (empty($comicImagePath)) {
     $comicImagePath = 'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';

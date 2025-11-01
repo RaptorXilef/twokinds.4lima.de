@@ -118,6 +118,11 @@ class Url
         return DIRECTORY_PUBLIC_IMG_LAYOUT_LOWRES_URL . '/' . $filename;
     }
 
+    public static function getImgLayoutThumbnailsUrl(string $filename): string
+    {
+        return DIRECTORY_PUBLIC_IMG_LAYOUT_THUMBNAILS_URL . '/' . $filename;
+    }
+
     // --- Images: General & Icons ---
     public static function getImgUiUrl(string $filename): string
     {

@@ -320,7 +320,7 @@ foreach ($allIds as $id) {
 
 $cachedImagesForJs = get_image_cache_local(Path::getCachePath('comic_image_cache.json'));
 
-$placeholderUrl = Url::getImgComicThumbnailsUrl('placeholder.jpg');
+$placeholderUrl = Url::getImgLayoutThumbnailsUrl('placeholder.jpg');
 $loadingIconUrl = Url::getImgAdminUiUrl('loading.webp');
 $charProfileUrlBase = Url::getImgCharactersProfilesUrl(''); // NEU: Basispfad für Charakter-Profilbilder
 

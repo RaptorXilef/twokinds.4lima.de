@@ -67,9 +67,11 @@ $urlOriginalsketchFromCache = get_cached_image_path($currentComicId, 'url_origin
 
 // --- FALLBACK-LOGIK ---
 if (empty($comicImagePath)) {
-    $comicImagePath = get_cached_image_path('in_translation', 'lowres');
+    //$comicImagePath = get_cached_image_path('in_translation', 'lowres');
+    $comicImagePath = URL::getImgLayoutLowresUrl('in_translation.webp?c=20251101');
     if (empty($comicHiresPath)) { // Nur wenn Hires auch fehlt
-        $comicHiresPath = get_cached_image_path('in_translation', 'hires');
+        //$comicHiresPath = get_cached_image_path('in_translation', 'hires');
+        $comicHiresPath = URL::getImgLayoutHiresUrl('in_translation.webp?c=20251101');
     }
 }
 if (empty($comicImagePath)) {

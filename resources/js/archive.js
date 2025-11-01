@@ -209,7 +209,7 @@ const debugModeJsArchiv = false; // Kann auf false gesetzt werden, um Debug-Meld
                 `DEBUG [showThumbnails]: Fehler beim Laden des Thumbnails (Index: ${index}) für Kapitel '${chapterId}'. data-src: ${img.dataset.src}`
               );
             // Fallback-Bild bei Fehler
-            img.src = "https://placehold.co/150x150/cccccc/000000?text=Fehler";
+            img.src = "assets/images/layout/thumbnails/placeholder.jpg";
             img.closest("a").classList.add("loaded"); // Trotz Fehler einblenden
           });
 

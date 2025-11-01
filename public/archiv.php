@@ -17,6 +17,7 @@
  * @since     1.1.0 Anpassung an versionalisierte comic_var.json (Schema v2).
  * @since     1.2.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     4.0.1 placeholder.jpg neu gesetzt
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -27,7 +28,7 @@ $debugMode = $debugMode ?? false;
 require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. LADE-SKRIPTE & DATEN ===
-$placeholderImagePathUrl = DIRECTORY_PUBLIC_URL . '/assets/comic_thumbnails/placeholder.jpg';
+$placeholderImagePathUrl = Url::getImgLayoutThumbnailsUrl('placeholder.jpg');
 
 // Funktion zum Laden von JSON-Dateien
 function loadJsonFile(string $path, bool $debugMode, string $fileName): ?array
