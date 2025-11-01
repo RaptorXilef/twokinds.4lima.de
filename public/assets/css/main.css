@@ -8,9 +8,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.3
+ * @version   2.1.4
  * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
  * @since     2.1.3 Verschieben des "Fehler melden" Button in die obere Navigationsleiste
+ * @since     2.1.4 Stile für Summernote WYSIWYG-Editor im Report-Modal hinzugefügt.
  */
 * {
   margin: 0;
@@ -1226,6 +1227,7 @@ div.page-chat .chat-button a:hover {
   margin: 10px 0;
   border: 1px solid transparent;
   font-size: 0.95em;
+  display: none;
 }
 .report-modal-content .status-message.status-green {
   color: #155724;
@@ -1243,45 +1245,18 @@ div.page-chat .chat-button a:hover {
   border-color: #ffeeba;
 }
 .report-modal-content {
-  /* --- NEUE/ANGEPASSTE STILE (CSP-Fix & Feature) --- */
+  /* --- Stile für Report-Modal-spezifische Elemente (CSP-Fix) --- */
 }
 .report-modal-content #transcript-suggestion-container {
   display: none;
-}
-.report-modal-content #report-status-message {
-  display: none;
-  margin-top: 15px;
 }
 .report-modal-content #report-suggestion-info {
   font-size: 0.9em;
   margin-bottom: 5px;
   color: #555;
 }
-.report-modal-content .original-transcript-box {
-  margin-top: 15px;
-}
-.report-modal-content .original-transcript-box label {
-  font-size: 0.9em;
-  color: #666;
-}
-.report-modal-content .original-transcript-box textarea#report-transcript-original {
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #f1f1f1;
-  border-color: #ccc;
-  color: #555;
-  padding: 8px 10px;
-  font-size: 0.95em;
-  border-radius: 4px;
-  resize: none;
-  margin-top: 5px;
-}
-.report-modal-content {
-  /* --- ENDE NEUE STILE --- */
-}
 
 /* --- "Fehler melden"-Button auf Comic-Seite --- */
-/* (Auskommentiert, da er jetzt in .comicnav ist und von dort Stile erbt) */
 /*#open-report-modal {
 	padding         : 3px 8px;
 	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift
@@ -1448,4 +1423,33 @@ div.page-chat .chat-button a:hover {
 /* Honeypot Feld */
 .honeypot-field {
   display: none !important;
+}
+
+/* NEU: Stile für Summernote-Implementierung */
+.original-transcript-box {
+  margin-top: 15px;
+}
+.original-transcript-box label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.transcript-display-box {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9em;
+  word-wrap: break-word;
+}
+.transcript-display-box p {
+  margin-bottom: 7px;
+}
+.transcript-display-box p:last-of-type {
+  margin-bottom: 0;
 }

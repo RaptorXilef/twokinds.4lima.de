@@ -7,8 +7,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.3
+ * @version   2.1.4
  * @since     2.1.3 Verschieben des "Fehler melden"Button in die obere Navigationsleiste
+ * @since     2.1.4 Stile für Summernote WYSIWYG-Editor im Report-Modal hinzugefügt.
  */
 @use 'sass:color'; // sass:color Modul importieren
 
@@ -495,6 +496,7 @@ body.theme-night {
 		/* Status Meldungen Dark (angepasst für besseren Kontrast) */
 		.status-message {
 			border-radius: 4px; // Abrundung hinzufügen
+			display      : none; // Standardmäßig ausgeblendet
 
 			&.status-green {
 				background-color: color.adjust(#28a745, $lightness: -30%); // Dunkleres Grün
@@ -516,50 +518,16 @@ body.theme-night {
 			}
 		}
 
-		/* --- NEUE/ANGEPASSTE STILE (CSP-Fix & Feature) --- */
-
-		// Initialer Status für Container (wird von JS getoggled)
+		/* --- Stile für Report-Modal-spezifische Elemente (CSP-Fix) --- */
 		#transcript-suggestion-container {
-			display: none;
+			display: none; // Standardmäßig ausgeblendet
 		}
 
-		// Initialer Status für Statusmeldung (wird von JS getoggled)
-		#report-status-message {
-			display   : none;
-			margin-top: 15px;
-		}
-
-		// Stil für den Info-Text über der Textarea
 		#report-suggestion-info {
 			font-size    : 0.9em;
 			margin-bottom: 5px;
-			color        : color.adjust($text-color, $lightness: -10%); // Passend zu Labels
+			color        : color.adjust($text-color, $lightness: -10%);
 		}
-
-		// NEU: Container für die Original-Transkript-Referenzbox
-		.original-transcript-box {
-			margin-top: 15px;
-
-			label {
-				font-size: 0.9em; // Kleinere Schrift
-				color    : color.adjust($text-color, $lightness: -15%);
-			}
-
-			textarea#report-transcript-original {
-				width           : 100%;
-				box-sizing      : border-box;
-				background-color: color.adjust($page-bg, $lightness: 5%); // Leicht heller (readonly)
-				border-color    : $button-color;
-				color           : color.adjust($text-color, $alpha: -0.3); // Ausgegrauter Text
-				padding         : 8px 10px;
-				font-size       : 0.95em; // Etwas kleiner
-				border-radius   : 4px;
-				resize          : none;
-				margin-top      : 5px;
-			}
-		}
-
-		/* --- ENDE NEUE STILE --- */
 	}
 
 	// Ende .report-modal-content
@@ -738,6 +706,145 @@ body.theme-night {
 
 	// Ende .report-detail-modal-content
 
+	/* NEU: Stile für Summernote-Implementierung */
+	.original-transcript-box {
+		margin-top: 15px;
+		// Label erbt Farbe von .admin-form label
+	}
+
+	.transcript-display-box {
+		background-color: $page-bg; // Sehr dunkler Hintergrund (wie Inputs)
+		border          : 1px solid $button-color; // Randfarbe
+		padding         : 10px;
+		border-radius   : 4px;
+		margin-bottom   : 15px;
+		max-height      : 150px;
+		overflow-y      : auto;
+		font-size       : 0.9em;
+		word-wrap       : break-word;
+		color           : $text-color; // Textfarbe explizit
+
+		p {
+			margin-bottom: 7px;
+		}
+
+		p:last-of-type {
+			margin-bottom: 0;
+		}
+	}
+
+	/* --- Dark Mode Stile für Summernote Editor --- */
+	/* (Kopiert von data_editor_comic.php Stilen) */
+	.note-editor.note-frame {
+		border-color: $button-color; // Rahmen
+
+		.note-toolbar {
+			background-color: $accent-dark !important; // Toolbar-Hintergrund
+			border-bottom   : 1px solid $button-color;
+		}
+
+		.note-btn {
+			background-color: $button-color; // Button-Hintergrund
+			color           : $text-color; // Button-Text/Icon
+
+			&:hover,
+			&:focus,
+			&:active {
+				background-color: $accent-light;
+				color           : $text-color;
+			}
+		}
+
+		.note-btn.disabled {
+			background-color: $accent-dark;
+			color           : color.adjust($text-color, $alpha: -0.6);
+			opacity         : 0.5;
+		}
+
+		// Dropdown-Menü
+		.dropdown-menu {
+			background-color: $page-bg;
+			border-color    : $accent-light;
+
+			.dropdown-item {
+				color: $text-color;
+
+				&:hover {
+					background-color: $button-color;
+				}
+			}
+		}
+
+		.note-dropdown-item a {
+			color: $text-color;
+		}
+
+		.note-dropdown-item:hover {
+			background-color: $button-color;
+		}
+
+
+		// Popover (z.B. Link-Editor)
+		.note-popover .popover-content,
+		.note-modal-content {
+			background-color: $content-bg;
+			color           : $text-color;
+			border-color    : $accent-light;
+		}
+
+		.note-popover .popover-header,
+		.note-modal-header {
+			background-color: $accent-dark;
+			border-bottom   : 1px solid $accent-light;
+		}
+
+		.note-modal-footer {
+			border-top: 1px solid $accent-light;
+		}
+
+		.note-form-label {
+			color: $text-color;
+		}
+
+		.note-input {
+			background-color: $page-bg;
+			border-color    : $button-color;
+			color           : $text-color;
+		}
+
+
+		// Editor-Bereich (Text)
+		.note-editable {
+			background-color: $page-bg !important; // Hintergrund des Textfelds
+			color           : $text-color !important; // Textfarbe im Editor
+
+			&:focus {
+				border-color: $accent-light !important;
+			}
+
+			p {
+				color: $text-color !important; // Stellt sicher, dass <p> Tags die richtige Farbe haben
+			}
+		}
+
+		// Code-Ansicht
+		.note-codable {
+			background-color: $page-bg;
+			color           : $link-color; // Code-Textfarbe (z.B. hellblau)
+		}
+
+		// Statusleiste/Resizer
+		.note-statusbar {
+			background-color: $accent-dark;
+			border-top      : 1px solid $button-color;
+
+			.note-resizebar {
+				border-top: 1px solid $accent-light;
+			}
+		}
+	}
+
+	// Ende .note-editor
 }
 
 // Ende body.theme-night

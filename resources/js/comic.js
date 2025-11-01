@@ -9,13 +9,16 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.6.0
+ * @version   3.0.0
  * @since     2.5.0 Umstellung auf globale Pfad-Konstanten.
  * @since     2.5.1 Lesezeichen auf der Comicseite selbst ohne Meldung setzen und entfernen (nur deaktivieren, nicht löschen) [comic.js]
  * @since     2.5.2 J und K für den Wechsel der Comicseite deaktiviert
- * @since     2.6.0 JS-Logik angepasst, um HTML-Quellcode statt reinem Text in Transkript-Vorschlag zu laden.
+ * @since     3.0.0 Implementiert Summernote WYSIWYG-Editor im Report-Modal.
+ *                  Passt die Logik zum Laden und Senden von HTML-Transkripten an.
+ *                  Benötigt jetzt jQuery und Summernote-Bibliotheken.
  */
 
+// IIFE bleibt
 (() => {
   // === Bookmark Logic Konstanten ===
   const bookmarkButtonId = "add-bookmark";
@@ -26,22 +29,49 @@
   const openReportModalButtonId = "open-report-modal";
   const reportModalId = "report-modal";
   const reportFormId = "report-form";
-  const closeReportModalSelector = '[data-action="close-report-modal"]'; // Selektor für alle Schließen-Buttons/Overlay
+  const closeReportModalSelector = '[data-action="close-report-modal"]';
   const reportTypeSelectId = "report-type";
   const transcriptSuggestionContainerId = "transcript-suggestion-container";
-  const transcriptSuggestionTextareaId = "report-transcript-suggestion";
+  const transcriptSuggestionTextareaId = "report-transcript-suggestion"; // ID des <textarea> für Summernote
+  const originalTranscriptDisplayId = "report-transcript-original-display"; // ID des <div> für Original
+  const originalTranscriptHiddenId = "report-transcript-original"; // ID des versteckten <textarea>
   const reportStatusMessageId = "report-status-message";
   const reportSubmitButtonId = "report-submit-button";
   const comicTranscriptSelector = ".transcript-content";
-  // Debug-Modus aus PHP übernehmen (wird in renderer_comic_page.php gesetzt)
+  // Debug-Modus
   const debugModeJsComic =
     typeof window.phpDebugMode !== "undefined" ? window.phpDebugMode : false;
 
   document.addEventListener("DOMContentLoaded", async () => {
-    // === Key Navigation (Original) (j/k & links/rechts Pfeil) ===
+    // === NEU: Summernote initialisieren ===
+    // Wir prüfen, ob jQuery und Summernote geladen wurden
+    if (typeof $ !== "undefined" && typeof $.fn.summernote !== "undefined") {
+      $("#" + transcriptSuggestionTextareaId).summernote({
+        placeholder: "Transkript-Vorschlag hier eingeben...",
+        tabsize: 2,
+        height: 200, // Höhe des Editors
+        toolbar: [
+          // Minimales Toolbar-Set für Benutzer
+          ["style", ["style"]],
+          ["font", ["bold", "italic", "underline", "clear"]],
+          ["para", ["ul", "ol", "paragraph"]],
+          ["view", ["codeview"]], // Erlaube Umschalten zur Code-Ansicht
+        ],
+      });
+      // Initial leer lassen, wird beim Öffnen des Modals gefüllt
+      $("#" + transcriptSuggestionTextareaId).summernote("code", "");
+    } else {
+      if (debugModeJsComic)
+        console.error(
+          "[Report Modal] jQuery oder Summernote ist nicht geladen!"
+        );
+    }
+
+    // Key Navigation Logic
     var body = document.getElementsByTagName("body")[0];
     var navprev = document.querySelector("a.navprev");
     var navnext = document.querySelector("a.navnext");
+
     body.addEventListener("keyup", (e) => {
       if (e.key == "ArrowLeft" /*|| e.key == "j" || e.key == "J"*/ && navprev) {
         // J deaktiviert
@@ -108,8 +138,12 @@
     const transcriptSuggestionContainer = document.getElementById(
       transcriptSuggestionContainerId
     );
-    const transcriptSuggestionTextarea = document.getElementById(
-      transcriptSuggestionTextareaId
+    // === GEÄNDERT: Referenzen auf neue Elemente ===
+    const originalTranscriptDisplay = document.getElementById(
+      originalTranscriptDisplayId
+    );
+    const originalTranscriptHidden = document.getElementById(
+      originalTranscriptHiddenId
     );
     const reportStatusMessage = document.getElementById(reportStatusMessageId);
     const reportSubmitButton = document.getElementById(reportSubmitButtonId);
@@ -143,56 +177,60 @@
         showReportStatus("", "info", false); // Status leeren
         reportSubmitButton.disabled = false;
 
-        // WICHTIG: reportForm.reset() setzt den select zurück.
-        // Wir müssen den Display-Status *nach* dem Reset setzen,
-        // basierend auf dem zurückgesetzten Wert (der "" sein sollte).
+        // WICHTIG: Display-Status *nach* dem Reset setzen
         transcriptSuggestionContainer.style.display =
           reportTypeSelect.value === "transcript" ? "block" : "none";
 
+        // === GEÄNDERT: Summernote und Display-Div befüllen ===
         try {
           const currentTranscriptElement = document.querySelector(
             comicTranscriptSelector
           );
-          const originalTextarea = document.getElementById(
-            "report-transcript-original"
-          );
+          const rawHtml = currentTranscriptElement
+            ? currentTranscriptElement.innerHTML.trim()
+            : "";
 
-          if (currentTranscriptElement) {
-            // --- NEUE LOGIK: HTML-Inhalt holen und dekodieren ---
-            const rawHtml = currentTranscriptElement.innerHTML.trim();
-
-            // HTML-Entities (z.B. &amp;) in Text (z.B. &) umwandeln,
-            // damit der Benutzer den Quelltext korrekt sieht.
-            // (z.B. <p> statt &lt;p&gt;)
-            const tempDiv = document.createElement("div");
-            tempDiv.innerHTML = rawHtml;
-            const decodedTextForTextarea =
-              tempDiv.textContent || tempDiv.innerText || "";
-
-            transcriptSuggestionTextarea.value = decodedTextForTextarea;
-            if (originalTextarea)
-              originalTextarea.value = decodedTextForTextarea;
-            // --- ENDE NEUE LOGIK ---
+          // 1. Fülle den Summernote Editor
+          if (
+            typeof $ !== "undefined" &&
+            typeof $.fn.summernote !== "undefined"
+          ) {
+            $("#" + transcriptSuggestionTextareaId).summernote("code", rawHtml);
           } else {
-            // --- FALLBACK ---
-            transcriptSuggestionTextarea.value = "";
-            if (originalTextarea) originalTextarea.value = "";
-            if (debugModeJsComic)
-              console.warn(
-                "[Report Modal] Konnte Transkript-Element nicht finden zum Vorbefüllen."
-              );
-            // --- ENDE FALLBACK ---
+            // Fallback, falls Summernote nicht geladen ist (sollte nicht passieren)
+            const fallbackTextarea = document.getElementById(
+              transcriptSuggestionTextareaId
+            );
+            if (fallbackTextarea)
+              fallbackTextarea.value =
+                "Editor konnte nicht geladen werden. Bitte beschreibe den Fehler stattdessen.";
+          }
+
+          // 2. Fülle das sichtbare "Original" Display (HTML wird gerendert)
+          if (originalTranscriptDisplay) {
+            originalTranscriptDisplay.innerHTML = rawHtml;
+          }
+
+          // 3. Fülle das *versteckte* Textarea für den Formularversand
+          if (originalTranscriptHidden) {
+            originalTranscriptHidden.value = rawHtml;
           }
         } catch (e) {
-          transcriptSuggestionTextarea.value = "";
-          const originalTextarea = document.getElementById(
-            "report-transcript-original"
-          );
-          if (originalTextarea) originalTextarea.value = "";
           console.error(
-            "[Report Modal] Fehler beim Vorbefüllen des Transkripts:",
+            "[Report Modal] Fehler beim Befüllen des Transkripts:",
             e
           );
+          // Fehler-Fallback
+          if (
+            typeof $ !== "undefined" &&
+            typeof $.fn.summernote !== "undefined"
+          ) {
+            $("#" + transcriptSuggestionTextareaId).summernote("code", "");
+          }
+          if (originalTranscriptDisplay)
+            originalTranscriptDisplay.innerHTML =
+              "<p>Fehler beim Laden des Original-Transkripts.</p>";
+          if (originalTranscriptHidden) originalTranscriptHidden.value = "";
         }
 
         reportModal.style.display = "flex";
@@ -201,6 +239,13 @@
 
       function closeReportModal() {
         reportModal.style.display = "none";
+        // Leere den Summernote-Editor beim Schließen, damit kein alter Inhalt verbleibt
+        if (
+          typeof $ !== "undefined" &&
+          typeof $.fn.summernote !== "undefined"
+        ) {
+          $("#" + transcriptSuggestionTextareaId).summernote("code", "");
+        }
       }
 
       async function handleReportSubmit(event) {
@@ -223,10 +268,26 @@
         const formData = new FormData(reportForm);
         const data = Object.fromEntries(formData.entries());
         data.comic_id = comicId;
+
+        // === GEÄNDERT: HTML-Inhalt aus Summernote holen ===
+        if (
+          typeof $ !== "undefined" &&
+          typeof $.fn.summernote !== "undefined"
+        ) {
+          const suggestionHtml = $(
+            "#" + transcriptSuggestionTextareaId
+          ).summernote("code");
+          data.report_transcript_suggestion = suggestionHtml;
+        } else {
+          // Fallback, falls Summernote fehlgeschlagen ist
+          data.report_transcript_suggestion =
+            document.getElementById(transcriptSuggestionTextareaId).value || "";
+        }
+        // === ENDE ÄNDERUNG ===
+
+        // Der Rest (Name, Description, Original) kommt korrekt aus dem FormData
         data.report_name = data.report_name || "Anonym";
         data.report_description = data.report_description || "";
-        data.report_transcript_suggestion =
-          data.report_transcript_suggestion || "";
         data.report_transcript_original = data.report_transcript_original || "";
         delete data.report_honeypot;
 
@@ -307,8 +368,17 @@
               result.message || "Meldung erfolgreich gesendet!",
               "green"
             );
-            // reportForm.reset(); // Optional zurücksetzen
             reportForm.reset(); // Formular zurücksetzen
+
+            // NEU: Auch Summernote und Display-Box leeren
+            if (
+              typeof $ !== "undefined" &&
+              typeof $.fn.summernote !== "undefined"
+            ) {
+              $("#" + transcriptSuggestionTextareaId).summernote("code", "");
+            }
+            if (originalTranscriptDisplay)
+              originalTranscriptDisplay.innerHTML = "";
 
             // NEU: Modal nach 1.5 Sekunden schließen, damit die Meldung gelesen werden kann
             setTimeout(() => {
@@ -359,7 +429,7 @@
   } // Ende initializeReportModal
 
   // ===========================================
-  // === Bookmark Functions (Kombiniert/Korrigiert V5) ===
+  // === Bookmark Functions (Rest des Skripts) ===
   // ===========================================
   async function getStoredBookmarks() {
     // Wie Original

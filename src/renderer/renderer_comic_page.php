@@ -12,12 +12,13 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.3.2
+ * @version   4.4.0
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.2.0 Fügt den "Fehler melden"-Button und das Modal-Include hinzu. Korrigiert Lesezeichen-Daten und Charakter-Anzeige.
  * @since     4.3.1 Korrigiert die Einbindung von display_character.php und fügt JS-Debug-Variable hinzu.
  * @since     4.3.2 Fehler melden Button in obere Navigantionsleiste verschoben und design angepasst.
+ * @since     4.4.0 Lädt jQuery und Summernote-Bibliotheken für das Report-Modal (WYSIWYG-Editor).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -100,7 +101,14 @@ $comicJsWebUrl = Url::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 // Füge Debug-Modus als JS-Variable hinzu
 $jsDebug = $debugMode ? 'true' : 'false';
-$additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "'>window.phpDebugMode = {$jsDebug};</script>"; // DEBUG
+
+// --- GEÄNDERT V4.4.0: jQuery und Summernote für Report-Modal hinzugefügt ---
+$additionalScripts = "<script nonce=\"{$nonce}\" src=\"https://code.jquery.com/jquery-3.7.1.min.js\"></script>"; // jQuery ZUERST
+$additionalScripts .= "<link href=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css\" rel=\"stylesheet\" nonce=\"{$nonce}\">";
+$additionalScripts .= "<script nonce=\"{$nonce}\" src=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js\"></script>";
+// --- ENDE ÄNDERUNG ---
+
+$additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "'>window.phpDebugMode = {$jsDebug};</script>"; // DEBUG
 $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 
 $viewportContent = 'width=1099';

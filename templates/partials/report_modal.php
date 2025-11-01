@@ -6,13 +6,14 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.2.1
+ * @version   2.0.0
  * @since     1.0.0 Initiale Erstellung
  * @since     1.1.0 CSP-Fix: Alle Inline-Styles entfernt und in CSS ausgelagert.
  * @since     1.1.0 Feature: Transkript-Vorschlag zeigt nun HTML-Tags als Text an (statt sie zu entfernen).
  * @since     1.1.0 Feature: "Original-Transkript"-Textarea als sichtbare Referenz hinzugefügt.
  * @since     1.2.0 Fix: Zeilenumbrüche und Whitespace *innerhalb* von <p>-Tags werden normalisiert (zu einer Zeile).
  * @since     1.2.1 Fix: Entfernt *alle* verbleibenden Zeilenumbrüche (zwischen Tags), um Text in eine Zeile zu zwingen.
+ * @since     2.0.0 Umstellung auf Summernote-Editor für Vorschläge und HTML-Display für Original.
  *
  * @description Dieses Template enthält das HTML-Struktur für das Fehlermelde-Modal auf den Comic-Seiten.
  * Es wird von src/renderer/renderer_comic_page.php eingebunden.
@@ -46,50 +47,11 @@ if (!$imageEnUrl) {
     $imageEnUrl = 'https://placehold.co/600x400/cccccc/333333?text=Original+fehlt';
 }
 
-// === TRANSKRIPT-LOGIK (GEÄNDERT V1.2.1) ===
-$rawTranscript = $comicTranscript ?? 'Kein Transkript verfügbar.';
-// Zuerst Entities dekodieren (z.B. &amp; -> &)
-$rawTranscript = html_entity_decode($rawTranscript, ENT_QUOTES, 'UTF-8');
-
-// LOGIK (V1.2.0): Zeilenumbrüche und Whitespace *innerhalb* von <p>-Tags normalisieren
-// 's' Modifikator, damit '.' auch Zeilenumbrüche matcht
-$rawTranscriptForTextarea = preg_replace_callback(
-    '/(<p[^>]*>)(.*?)(<\/p>)/is',
-    function ($matches) {
-        $tagOpen = $matches[1]; // <p> oder <p class="...">
-        $content = $matches[2]; // Inhalt (kann andere Tags und \n enthalten)
-        $tagClose = $matches[3]; // </p>
-    
-        // Ersetze alle Whitespace-Sequenzen (inkl. \n, \r, \t) durch ein einzelnes Leerzeichen
-        $contentNormalized = preg_replace('/\s+/s', ' ', $content);
-        // trim(), um führende/nachfolgende Leerzeichen zu entfernen
-        $contentNormalized = trim($contentNormalized);
-
-        // Baue den Tag wieder zusammen
-        return $tagOpen . $contentNormalized . $tagClose;
-    },
-    $rawTranscript
-);
-
-// Fallback: Wenn preg_replace_callback fehlschlägt (null zurückgibt)
-if ($rawTranscriptForTextarea === null) {
-    $rawTranscriptForTextarea = $rawTranscript;
-    if ($debugMode) {
-        error_log("FEHLER [report_modal.php]: preg_replace_callback für Transkript-Normalisierung fehlgeschlagen.");
-    }
-}
-
-// NEUE LOGIK (V1.2.1): Ersetze *alle* verbleibenden Zeilenumbrüche (die z.B. ZWISCHEN </p> und <p> stehen)
-// durch ein einzelnes Leerzeichen.
-$rawTranscriptForTextarea = preg_replace('/[\r\n]+/', ' ', $rawTranscriptForTextarea);
-// Entferne abschließend führende/nachfolgende Leerzeichen aus dem gesamten Block.
-$rawTranscriptForTextarea = trim($rawTranscriptForTextarea);
-// === ENDE LOGIK ===
+// === HINWEIS: PHP-Logik zum Vorbefüllen der Textarea entfernt. Wird jetzt von comic.js beim Öffnen erledigt. ===
 
 ?>
 
 <!-- Das Modal-Overlay -->
-<!-- HINWEIS: style="display: none;" ENTFERNT (CSP-Fix) -->
 <div id="report-modal" class="modal report-modal" role="dialog" aria-labelledby="report-modal-title" aria-modal="true"
     data-comic-id="<?php echo htmlspecialchars($currentComicId); ?>">
 
@@ -111,7 +73,6 @@ $rawTranscriptForTextarea = trim($rawTranscriptForTextarea);
             <input type="hidden" name="csrf_token" value="">
 
             <!-- Honeypot-Feld (Bot-Abwehr) -->
-            <!-- HINWEIS: style="display:none;" ENTFERNT (CSP-Fix) -->
             <div class="honeypot-field" aria-hidden="true">
                 <label for="report-honeypot">Bitte nicht ausfüllen</label>
                 <input type="text" id="report-honeypot" name="report_honeypot" tabindex="-1">
@@ -142,22 +103,24 @@ $rawTranscriptForTextarea = trim($rawTranscriptForTextarea);
             </div>
 
             <!-- Transkript-Vorschlag (Optional) -->
-            <!-- HINWEIS: style="display: none;" ENTFERNT (CSP-Fix) -->
             <div id="transcript-suggestion-container">
                 <label for="report-transcript-suggestion">Transkript-Vorschlag (Optional)</label>
-                <!-- HINWEIS: style="..." ENTFERNT, ID HINZUGEFÜGT (CSP-Fix) -->
-                <p id="report-suggestion-info">Bearbeite das Transkript direkt, um eine Korrektur
-                    vorzuschlagen. HTML-Tags (z.B. &lt;p&gt;) werden als Text angezeigt.</p>
-                <textarea id="report-transcript-suggestion" name="report_transcript_suggestion"
-                    rows="8"><?php echo htmlspecialchars($rawTranscriptForTextarea); // Verwendet V1.2.1 Variable ?></textarea>
+                <p id="report-suggestion-info">Bearbeite das Transkript direkt im Editor (WYSIWYG oder Code-Ansicht).
+                </p>
 
-                <!-- NEU: Sichtbares Original-Transkript als Referenz -->
+                <!-- GEÄNDERT: Diese Textarea wird von Summernote übernommen -->
+                <textarea id="report-transcript-suggestion" name="report_transcript_suggestion" rows="8"></textarea>
+
+                <!-- GEÄNDERT: Sichtbares Original-Transkript als gerendertes HTML -->
                 <div class="original-transcript-box">
-                    <label for="report-transcript-original">Original-Transkript (als Referenz)</label>
-                    <!-- HINWEIS: style="display: none;" ENTFERNT, rows="5" HINZUGEFÜGT (CSP-Fix & Feature) -->
-                    <textarea id="report-transcript-original" name="report_transcript_original" rows="5"
-                        readonly><?php echo htmlspecialchars($rawTranscriptForTextarea); // Verwendet V1.2.1 Variable ?></textarea>
+                    <label>Original-Transkript (als Referenz)</label>
+                    <!-- Dieses Div zeigt das formatierte HTML an -->
+                    <div id="report-transcript-original-display" class="transcript-display-box"></div>
                 </div>
+
+                <!-- Verstecktes Feld, um das Original-Transkript mitzusenden (wird von JS befüllt) -->
+                <textarea id="report-transcript-original" name="report_transcript_original" style="display: none;"
+                    readonly></textarea>
             </div>
 
             <!-- Referenzbilder -->
@@ -181,7 +144,6 @@ $rawTranscriptForTextarea = trim($rawTranscriptForTextarea);
             </div>
 
             <!-- Statusmeldungen (für Erfolg/Fehler) -->
-            <!-- HINWEIS: style="..." ENTFERNT (CSP-Fix) -->
             <div id="report-status-message" class="status-message"></div>
         </form>
     </div>
