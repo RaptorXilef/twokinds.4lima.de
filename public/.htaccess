@@ -186,7 +186,7 @@ FileETag None
     style-src 'self' 'unsafe-inline' https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://www.2kinds.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net; \
     img-src 'self' data: https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://twokindscomic.com https://www.2kinds.com https://placehold.co https://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png https://licensebuttons.net https://twokinds.4lima.de; \
     font-src 'self' https://cdnjs.cloudflare.com https://cdn.twokinds.keenspot.com https://fonts.gstatic.com https://cdn.jsdelivr.net; \
-    connect-src 'self' https://*.google-analytics.com https://cdn.twokinds.keenspot.com https://cdn.jsdelivr.net;"
+    connect-src 'self' https://*.google-analytics.com https://cdn.twokinds.keenspot.com https://twokindscomic.com https://cdn.jsdelivr.net;"
  
     # HTTP Strict Transport Security (HSTS): Weist den Browser an, die Seite nur über HTTPS aufzurufen.
     # WICHTIGER HINWEIS: Aktiviere diese Zeile erst, wenn du sicher bist, dass deine HTTPS-Konfiguration

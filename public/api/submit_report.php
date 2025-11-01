@@ -6,8 +6,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
  * @since     1.0.0 Initiale Erstellung
+ * @since     1.1.0 Implementiert HTML Purifier zur sicheren Annahme von HTML aus dem Summernote-Editor.
  *
  * @description Öffentlicher API-Endpunkt zum Empfangen von Fehlermeldungen (Reports) von der Comic-Seite.
  * Nimmt JSON-POST-Daten entgegen, validiert sie, prüft auf Rate-Limiting/Honeypot
@@ -18,7 +19,12 @@
 // Lädt die Pfad-Konstanten und die Path-Klasse.
 require_once __DIR__ . '/../../src/components/load_config.php';
 
-// === 2. KONSTANTEN & VARIABLEN ===
+// === 2. HTML PURIFIER LADEN ===
+// Setzt voraus, dass HTML Purifier via Composer installiert wurde.
+// Passe den Pfad an, falls du es manuell installiert hast.
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+// === 3. KONSTANTEN & VARIABLEN ===
 $debugMode = $debugMode ?? false;
 define('RATE_LIMIT_COUNT', 5); // Max 5 Meldungen...
 define('RATE_LIMIT_WINDOW', 600); // ...innerhalb von 10 Minuten (600 Sekunden).
@@ -26,7 +32,7 @@ $reportsFilePath = Path::getDataPath('comic_reports.json');
 $clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 $clientIpHash = hash('sha256', $clientIp); // IP-Adresse hashen
 
-// === 3. HELFERFUNKTIONEN ===
+// === 4. HELFERFUNKTIONEN ===
 
 /**
  * Sendet eine JSON-Antwort und beendet das Skript.
@@ -88,7 +94,7 @@ function saveJsonWithLock(string $path, array $data): bool
     return true;
 }
 
-// === 4. SKRIPT-LOGIK ===
+// === 5. SKRIPT-LOGIK ===
 
 // --- A. Nur POST-Requests erlauben ---
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -152,11 +158,26 @@ if ($userReportCount >= RATE_LIMIT_COUNT) {
 }
 
 // --- F. Datenbereinigung & Erstellung ---
-// Bereinige alle Benutzereingaben
+
+// HTML Purifier-Konfiguration
+$config = HTMLPurifier_Config::createDefault();
+// Definiere exakt, welche HTML-Tags und Attribute erlaubt sind.
+// <p>, <strong>, <b> (fett), <em>, <i> (kursiv), <br>
+$config->set('HTML.Allowed', 'p,b,strong,i,em,br');
+$config->set('HTML.Doctype', 'HTML 4.01 Transitional');
+// Deaktiviere den Cache, um Berechtigungsprobleme auf Live-Servern zu vermeiden
+// Alternativ: $config->set('Cache.SerializerPath', '/pfad/zu/schreibbarem/cache-ordner');
+$config->set('Cache.DefinitionImpl', null);
+$purifier = new HTMLPurifier($config);
+
+// Bereinige Standard-Text-Eingaben (kein HTML erlaubt)
 $cleanSubmitterName = htmlspecialchars(strip_tags($submitterName), ENT_QUOTES, 'UTF-8');
 $cleanDescription = htmlspecialchars(strip_tags($description), ENT_QUOTES, 'UTF-8');
-$cleanSuggestion = htmlspecialchars(strip_tags($suggestion), ENT_QUOTES, 'UTF-8');
-$cleanOriginal = htmlspecialchars(strip_tags($original), ENT_QUOTES, 'UTF-8'); // Auch Original bereinigen
+
+// Bereinige die HTML-Eingaben (Suggestion & Original) mit HTML Purifier
+// Dies entfernt alle gefährlichen Tags (<script>, onerror etc.), behält aber die erlaubten Tags.
+$cleanSuggestion = $purifier->purify($suggestion);
+$cleanOriginal = $purifier->purify($original); // Auch Original bereinigen, nur zur Sicherheit.
 
 $newReport = [
     'id' => uniqid('report_', true),
@@ -168,7 +189,7 @@ $newReport = [
     'report_type' => $reportType,
     'description' => $cleanDescription,
     'transcript_suggestion' => $cleanSuggestion,
-    'transcript_original' => $cleanOriginal // Speichere das Original für den Diff
+    'transcript_original' => $cleanOriginal // Speichere das bereinigte Original für den Diff
 ];
 
 // --- G. Speichern ---

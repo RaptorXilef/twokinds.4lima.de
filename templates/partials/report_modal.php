@@ -6,8 +6,15 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   2.1.0
  * @since     1.0.0 Initiale Erstellung
+ * @since     1.1.0 CSP-Fix: Alle Inline-Styles entfernt und in CSS ausgelagert.
+ * @since     1.1.0 Feature: Transkript-Vorschlag zeigt nun HTML-Tags als Text an (statt sie zu entfernen).
+ * @since     1.1.0 Feature: "Original-Transkript"-Textarea als sichtbare Referenz hinzugefügt.
+ * @since     1.2.0 Fix: Zeilenumbrüche und Whitespace *innerhalb* von <p>-Tags werden normalisiert (zu einer Zeile).
+ * @since     1.2.1 Fix: Entfernt *alle* verbleibenden Zeilenumbrüche (zwischen Tags), um Text in eine Zeile zu zwingen.
+ * @since     2.0.0 Umstellung auf Summernote-Editor für Vorschläge und HTML-Display für Original.
+ * @since     2.1.0 Fügt data-Attribut für Original-Dateinamen hinzu, um dynamisches Laden von EN-Bildern zu ermöglichen.
  *
  * @description Dieses Template enthält das HTML-Struktur für das Fehlermelde-Modal auf den Comic-Seiten.
  * Es wird von src/renderer/renderer_comic_page.php eingebunden.
@@ -34,24 +41,22 @@ if (!$imageDeUrl) {
 }
 $fullImageDeUrl = str_starts_with($imageDeUrl, 'http') ? $imageDeUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($imageDeUrl, '/');
 
-// Englische Bild-URL (Original) holen
-$imageEnUrl = get_cached_image_path($currentComicId, 'url_originalbild');
-if (!$imageEnUrl) {
-    // Da dies eine externe URL ist, verwenden wir einen Standard-Platzhalter, wenn sie fehlt.
-    $imageEnUrl = 'https://placehold.co/600x400/cccccc/333333?text=Original+fehlt';
-}
+// === GEÄNDERT V2.1.0 ===
+// $imageEnUrl wird nicht mehr direkt verwendet, wir übergeben stattdessen den Dateinamen an das JS.
+// $urlOriginalbildFilename wird von renderer_comic_page.php / index.php bereitgestellt.
+$originalFilename = $urlOriginalbildFilename ?? '';
 
-// Transkript bereinigen (HTML-Tags entfernen) für die Textarea
-$plainTranscript = $comicData['transcript'] ?? '';
-$plainTranscript = strip_tags($plainTranscript);
-$plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
+// Platzhalter-Bild, das angezeigt wird, während JS das Originalbild sucht.
+$imageEnPlaceholder = 'https://placehold.co/600x400/cccccc/333333?text=Original+wird+geladen...';
+// === ENDE ÄNDERUNG ===
 
 ?>
 
 <!-- Das Modal-Overlay -->
-<div id="report-modal" class="modal report-modal" style="display: none;" role="dialog"
-    aria-labelledby="report-modal-title" aria-modal="true"
-    data-comic-id="<?php echo htmlspecialchars($currentComicId); ?>">
+<!-- GEÄNDERT V2.1.0: data-original-filename hinzugefügt -->
+<div id="report-modal" class="modal report-modal" role="dialog" aria-labelledby="report-modal-title" aria-modal="true"
+    data-comic-id="<?php echo htmlspecialchars($currentComicId); ?>"
+    data-original-filename="<?php echo htmlspecialchars($originalFilename); ?>">
 
     <!-- Der Overlay-Hintergrund (zum Schließen) -->
     <div class="modal-overlay" tabindex="-1" data-action="close-report-modal"></div>
@@ -71,7 +76,7 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
             <input type="hidden" name="csrf_token" value="">
 
             <!-- Honeypot-Feld (Bot-Abwehr) -->
-            <div class="honeypot-field" style="display:none;" aria-hidden="true">
+            <div class="honeypot-field" aria-hidden="true">
                 <label for="report-honeypot">Bitte nicht ausfüllen</label>
                 <input type="text" id="report-honeypot" name="report_honeypot" tabindex="-1">
             </div>
@@ -101,15 +106,24 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
             </div>
 
             <!-- Transkript-Vorschlag (Optional) -->
-            <div id="transcript-suggestion-container" style="display: none;">
+            <div id="transcript-suggestion-container">
                 <label for="report-transcript-suggestion">Transkript-Vorschlag (Optional)</label>
-                <p style="font-size: 0.9em; margin-bottom: 5px;">Bearbeite das Transkript direkt, um eine Korrektur
-                    vorzuschlagen.</p>
-                <textarea id="report-transcript-suggestion" name="report_transcript_suggestion"
-                    rows="8"><?php echo htmlspecialchars($plainTranscript); ?></textarea>
-                <!-- Verstecktes Feld, um das Original-Transkript mitzusenden (für Diff-Vergleich im Admin-Bereich) -->
+                <p id="report-suggestion-info">Bearbeite das Transkript direkt im Editor (WYSIWYG oder Code-Ansicht).
+                </p>
+
+                <!-- Diese Textarea wird von Summernote übernommen -->
+                <textarea id="report-transcript-suggestion" name="report_transcript_suggestion" rows="8"></textarea>
+
+                <!-- Sichtbares Original-Transkript als gerendertes HTML -->
+                <div class="original-transcript-box">
+                    <label>Original-Transkript (als Referenz)</label>
+                    <!-- Dieses Div zeigt das formatierte HTML an -->
+                    <div id="report-transcript-original-display" class="transcript-display-box"></div>
+                </div>
+
+                <!-- Verstecktes Feld, um das Original-Transkript mitzusenden (wird von JS befüllt) -->
                 <textarea id="report-transcript-original" name="report_transcript_original" style="display: none;"
-                    readonly><?php echo htmlspecialchars($plainTranscript); ?></textarea>
+                    readonly></textarea>
             </div>
 
             <!-- Referenzbilder -->
@@ -121,8 +135,9 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
                 </div>
                 <div>
                     <label>Original (EN)</label>
-                    <img src="<?php echo htmlspecialchars($imageEnUrl); ?>" alt="Referenzbild Englisch" loading="lazy"
-                        onerror="this.onerror=null; this.src='https://placehold.co/600x400/cccccc/333333?text=Original+nicht+ladbar';">
+                    <!-- GEÄNDERT V2.1.0: ID hinzugefügt und src auf Platzhalter gesetzt -->
+                    <img id="report-modal-image-en" src="<?php echo htmlspecialchars($imageEnPlaceholder); ?>"
+                        alt="Referenzbild Englisch" loading="lazy">
                 </div>
             </div>
 
@@ -133,7 +148,7 @@ $plainTranscript = html_entity_decode($plainTranscript, ENT_QUOTES, 'UTF-8');
             </div>
 
             <!-- Statusmeldungen (für Erfolg/Fehler) -->
-            <div id="report-status-message" class="status-message" style="display: none; margin-top: 15px;"></div>
+            <div id="report-status-message" class="status-message"></div>
         </form>
     </div>
 </div>

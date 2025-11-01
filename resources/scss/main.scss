@@ -7,9 +7,10 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.3
+ * @version   2.1.4
  * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
  * @since     2.1.3 Verschieben des "Fehler melden" Button in die obere Navigationsleiste
+ * @since     2.1.4 Stile für Summernote WYSIWYG-Editor im Report-Modal hinzugefügt.
  */
 
 @use 'sass:color'; // Importieren zur Konsistenz
@@ -1467,6 +1468,7 @@ div.page-chat {
 		margin       : 10px 0;
 		border       : 1px solid transparent;
 		font-size    : 0.95em;
+		display      : none; // Standardmäßig ausgeblendet
 
 		&.status-green {
 			color           : $status-green-text;
@@ -1486,7 +1488,19 @@ div.page-chat {
 			border-color    : $status-orange-border;
 		}
 	}
+
+	/* --- Stile für Report-Modal-spezifische Elemente (CSP-Fix) --- */
+	#transcript-suggestion-container {
+		display: none; // Standardmäßig ausgeblendet
+	}
+
+	#report-suggestion-info {
+		font-size    : 0.9em;
+		margin-bottom: 5px;
+		color        : $text-color-light;
+	}
 }
+
 
 /* --- "Fehler melden"-Button auf Comic-Seite --- */
 /*#open-report-modal {
@@ -1687,4 +1701,36 @@ div.page-chat {
 /* Honeypot Feld */
 .honeypot-field {
 	display: none !important;
+}
+
+/* NEU: Stile für Summernote-Implementierung */
+.original-transcript-box {
+	margin-top: 15px;
+
+	label {
+		font-weight  : bold;
+		display      : block;
+		margin-bottom: 5px;
+		color        : $text-color-light; // Dunkelgrau
+	}
+}
+
+.transcript-display-box {
+	background-color: $table-row-even-bg; // Hellgrau
+	border          : 1px solid $border-color-light; // Heller Rand
+	padding         : 10px;
+	border-radius   : 4px;
+	margin-bottom   : 15px;
+	max-height      : 150px; // Begrenzte Höhe
+	overflow-y      : auto;
+	font-size       : 0.9em; // Etwas kleiner als der Editor
+	word-wrap       : break-word;
+
+	p {
+		margin-bottom: 7px;
+	}
+
+	p:last-of-type {
+		margin-bottom: 0;
+	}
 }

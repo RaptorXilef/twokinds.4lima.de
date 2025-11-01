@@ -12,12 +12,15 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.3.2
+ * @version   4.4.2
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.2.0 Fügt den "Fehler melden"-Button und das Modal-Include hinzu. Korrigiert Lesezeichen-Daten und Charakter-Anzeige.
  * @since     4.3.1 Korrigiert die Einbindung von display_character.php und fügt JS-Debug-Variable hinzu.
  * @since     4.3.2 Fehler melden Button in obere Navigantionsleiste verschoben und design angepasst.
+ * @since     4.4.0 Lädt jQuery und Summernote-Bibliotheken für das Report-Modal (WYSIWYG-Editor).
+ * @since     4.4.1 Machte Bild-Suchfunktionen global verfügbar.
+ * @since     4.4.2 Logik für Bildsuche (checkUrlExists, findExistingUrl etc.) vollständig nach comic.js verschoben. Dieses Skript ruft nur noch die globalen Funktionen (window.findExistingUrl) auf. 
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -100,7 +103,14 @@ $comicJsWebUrl = Url::getJsUrl('comic.min.js');
 $cacheBuster = file_exists($comicJsPathOnServer) ? '?c=' . filemtime($comicJsPathOnServer) : '';
 // Füge Debug-Modus als JS-Variable hinzu
 $jsDebug = $debugMode ? 'true' : 'false';
-$additionalScripts = "<script nonce='" . htmlspecialchars($nonce) . "'>window.phpDebugMode = {$jsDebug};</script>"; // DEBUG
+
+// --- jQuery und Summernote für Report-Modal ---
+$additionalScripts = "<script nonce=\"{$nonce}\" src=\"https://code.jquery.com/jquery-3.7.1.min.js\"></script>"; // jQuery ZUERST
+$additionalScripts .= "<link href=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css\" rel=\"stylesheet\" nonce=\"{$nonce}\">";
+$additionalScripts .= "<script nonce=\"{$nonce}\" src=\"https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js\"></script>";
+
+$additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "'>window.phpDebugMode = {$jsDebug};</script>"; // DEBUG
+// WICHTIG: comic.js MUSS NACH jQuery/Summernote geladen werden
 $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 
 $viewportContent = 'width=1099';
@@ -133,7 +143,7 @@ require_once Path::getPartialTemplatePath('header.php');
             Seite merken
         </button>
 
-        <!-- NEUER FEHLER MELDEN BUTTON -->
+        <!-- FEHLER MELDEN BUTTON -->
         <button type="button" id="open-report-modal" class="navarrow nav-report-issue"
             title="Fehler auf dieser Seite melden">
             <span class="nav-wrapper">
@@ -155,7 +165,7 @@ require_once Path::getPartialTemplatePath('header.php');
         <?php
         include DIRECTORY_PRIVATE_PARTIAL_TEMPLATES . DIRECTORY_SEPARATOR . 'navigation_comic.php';
         ?>
-        <!-- SPRACHUMSCHALTER-BUTTON (Wie im Original) -->
+        <!-- SPRACHUMSCHALTER-BUTTON -->
         <?php if (!empty($urlOriginalbildFilename)): ?>
             <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
                 data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, '/')); ?>"
@@ -206,12 +216,20 @@ require_once Path::getPartialTemplatePath('header.php');
 
 <?php
 // NEU: Modal einbinden
+// WICHTIG: Stell sicher, dass $urlOriginalbildFilename hier verfügbar ist (ist es, oben definiert)
 include_once Path::getPartialTemplatePath('report_modal.php');
 ?>
 
 <?php // Original JavaScript Block für URL-Kopieren und Sprachumschaltung ?>
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    // === GEÄNDERT V4.4.2: Alle Funktionsdefinitionen (checkUrlExists, etc.)
+    // wurden nach comic.js verschoben. Dieses Skript ruft nur noch
+    // die globalen Funktionen auf (window.findExistingUrl). ===
+
     document.addEventListener('DOMContentLoaded', function () {
+        const debugJs = window.phpDebugMode || false; // Verwende die PHP Debug-Variable
+
+        // --- URL-Kopieren Logik ---
         const copyLink = document.getElementById('copy-comic-url');
         if (copyLink) {
             copyLink.addEventListener('click', function (event) {
@@ -243,110 +261,20 @@ include_once Path::getPartialTemplatePath('report_modal.php');
             });
         }
 
-        // --- ANGEPASSTE LOGIK FÜR SPRACHUMSCHALTUNG (Wie im Original, leicht verbessert) ---
+        // --- ANGEPASSTE LOGIK FÜR SPRACHUMSCHALTUNG (Nutzt jetzt globale Funktionen) ---
         const toggleBtn = document.getElementById('toggle-language-btn');
         if (toggleBtn) {
             const comicLink = document.getElementById('comic-image-link');
             const comicImage = document.getElementById('comic-image');
             const langToggleText = document.getElementById('lang-toggle-text');
             let isGerman = true;
-            let englishSrc = '', englishHref = '';
-            const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
-            const sketchImageUrlBase = 'https://twokindscomic.com/images/';
-            const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
-            const debugJs = window.phpDebugMode || false; // Verwende die PHP Debug-Variable
+            let englishSrc = '', englishHref = ''; // Lokaler Cache für den Button-Klick
 
-            async function checkUrlExists(url) {
-                try {
-                    // Versuche zuerst fetch mit HEAD, da effizienter
-                    const response = await fetch(url, { method: 'HEAD', mode: 'cors' });
-                    // OK (2xx) oder opake Antworten (Typ 0 bei no-cors, falls cors fehlschlägt) deuten auf Existenz hin
-                    if (response.ok || response.type === 'opaque') return true;
-                    // Wenn response nicht ok, aber nicht opaque, existiert die URL wahrscheinlich nicht (z.B. 404)
-                    if (!response.ok && response.type !== 'opaque' && debugJs) console.log(`DEBUG: checkUrlExists (fetch !ok): ${url} Status: ${response.status}`);
-                    // Fallback auf Image, falls fetch fehlschlägt (z.B. CORS-Problem trotz cors mode)
-                    throw new Error(`Fetch failed or returned non-ok status: ${response.status}`);
-                } catch (e) {
-                    if (debugJs) console.log(`DEBUG: checkUrlExists (fetch error, trying Image fallback): ${url}`, e);
-                    // Fallback: Versuche, das Bild zu laden
-                    return new Promise((resolve) => {
-                        const img = new Image();
-                        img.onload = () => resolve(true);
-                        img.onerror = () => resolve(false);
-                        img.src = url;
-                    });
-                }
-            }
-
-
-            async function findExistingUrl(baseUrl, filename, extensions) {
-                for (const ext of extensions) {
-                    const url = baseUrl + filename + '.' + ext;
-                    try {
-                        if (await checkUrlExists(url)) {
-                            if (debugJs) console.log(`DEBUG: findExistingUrl SUCCESS for ${url}`);
-                            return url;
-                        }
-                    } catch (error) {
-                        if (debugJs) console.log(`DEBUG: findExistingUrl Check failed for ${url}:`, error);
-                    }
-                }
-                if (debugJs) console.log(`DEBUG: findExistingUrl FAILED for ${baseUrl}${filename}`);
-                return null;
-            }
-
-            async function setEnglishImage(mainUrl) {
-                if (!comicImage || !comicLink) return; // Schutz
-                englishSrc = mainUrl;
-                comicImage.src = englishSrc;
-                const sketchUrlFromCache = toggleBtn.dataset.englishSketchUrlFromCache;
-                let sketchFoundUrl = null;
-
-                const setHref = (url) => {
-                    englishHref = url;
-                    comicLink.href = englishHref;
-                    if (langToggleText) langToggleText.textContent = 'DE';
-                    isGerman = false;
-                };
-
-                // Versuche zuerst den Sketch aus dem Cache
-                if (sketchUrlFromCache) {
-                    try {
-                        if (await checkUrlExists(sketchUrlFromCache)) {
-                            sketchFoundUrl = sketchUrlFromCache;
-                            if (debugJs) console.log("DEBUG: Sketch aus Cache verwendet:", sketchFoundUrl);
-                        } else if (debugJs) console.warn("DEBUG: Gespeicherter Sketch-Link nicht erreichbar:", sketchUrlFromCache);
-                    } catch (e) { console.warn("DEBUG: Fehler bei Prüfung des Sketch-Cache-Links:", e); }
-                }
-
-                // Wenn kein gültiger Cache-Link, suche online nach dem Sketch
-                if (!sketchFoundUrl) {
-                    try {
-                        const baseFilename = toggleBtn.dataset.englishFilename;
-                        const sketchFilename = baseFilename.substring(0, 8) + '_sketch';
-                        sketchFoundUrl = await findExistingUrl(sketchImageUrlBase, sketchFilename, imageExtensions);
-                        if (sketchFoundUrl && debugJs) console.log("DEBUG: Sketch online gefunden:", sketchFoundUrl);
-                        else if (debugJs) console.log("DEBUG: Kein Sketch online gefunden.");
-                    } catch (err) { console.warn("Fehler bei Sketch-Suche:", err); }
-                }
-                setHref(sketchFoundUrl || mainUrl); // Verwende Sketch wenn gefunden, sonst Hauptbild
-            }
-
-            async function runOriginalProbingLogic() {
-                const originalText = langToggleText ? langToggleText.textContent : 'EN';
-                if (langToggleText) langToggleText.textContent = 'Lade...';
-                try {
-                    const foundUrl = await findExistingUrl(originalImageUrlBase, toggleBtn.dataset.englishFilename, imageExtensions);
-                    if (foundUrl) {
-                        await setEnglishImage(foundUrl);
-                    } else {
-                        throw new Error('Kein englisches Bild gefunden');
-                    }
-                } catch (err) {
-                    console.error("Fehler beim Finden des Originalbilds:", err);
-                    if (langToggleText) langToggleText.textContent = 'Original nicht gefunden';
-                    setTimeout(() => { if (langToggleText) langToggleText.textContent = originalText; }, 2000);
-                }
+            // Prüfen, ob die globalen Funktionen von comic.js geladen wurden
+            if (typeof window.checkUrlExists !== 'function' || typeof window.runOriginalProbingLogic !== 'function') {
+                console.error("Fehler: Globale Bild-Suchfunktionen (von comic.js) nicht gefunden!");
+                if (langToggleText) langToggleText.textContent = "Skript-Fehler";
+                return;
             }
 
             toggleBtn.addEventListener('click', async function (event) {
@@ -354,6 +282,7 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                 if (!comicImage || !comicLink) return; // Schutz
 
                 if (isGerman) {
+                    // Wenn wir die URLs schon haben, verwende sie
                     if (englishSrc && englishHref) {
                         comicImage.src = englishSrc;
                         comicLink.href = englishHref;
@@ -361,23 +290,42 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                         isGerman = false;
                         return;
                     }
+
+                    // URLs suchen (zuerst Cache, dann Probing)
                     const urlFromCache = toggleBtn.dataset.englishUrlFromCache;
                     let foundInCache = false;
+                    let mainUrl = null;
+
                     if (urlFromCache) {
                         if (langToggleText) langToggleText.textContent = 'Lade...';
                         try {
-                            if (await checkUrlExists(urlFromCache)) {
-                                await setEnglishImage(urlFromCache);
+                            // Ruft die globale Funktion auf
+                            if (await window.checkUrlExists(urlFromCache)) {
+                                mainUrl = urlFromCache;
                                 foundInCache = true;
                                 if (debugJs) console.log("DEBUG: Originalbild aus Cache verwendet:", urlFromCache);
                             } else if (debugJs) console.warn("DEBUG: Gespeicherter Original-Link nicht erreichbar:", urlFromCache);
                         } catch (err) { console.warn("DEBUG: Fehler bei Prüfung des Original-Cache-Links:", err); }
                     }
+
                     if (!foundInCache) {
                         if (debugJs) console.log("DEBUG: Originalbild nicht im Cache gefunden/gültig, starte Online-Suche.");
-                        await runOriginalProbingLogic();
+                        // Ruft die globale Funktion auf
+                        mainUrl = await window.runOriginalProbingLogic(toggleBtn, langToggleText);
                     }
+
+                    if (mainUrl) {
+                        // setEnglishImage kümmert sich um den Sketch und setzt das Bild
+                        // Ruft die globale Funktion auf
+                        const urls = await window.setEnglishImage(mainUrl, toggleBtn, comicImage, comicLink, langToggleText);
+                        englishSrc = urls.englishSrc;
+                        englishHref = urls.englishHref;
+                        isGerman = false;
+                    }
+                    // Wenn mainUrl null ist (Fehler), hat runOriginalProbingLogic bereits die Fehlermeldung angezeigt.
+
                 } else {
+                    // Zurück zu Deutsch
                     comicImage.src = toggleBtn.dataset.germanSrc;
                     comicLink.href = toggleBtn.dataset.germanHref;
                     if (langToggleText) langToggleText.textContent = 'EN';

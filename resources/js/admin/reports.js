@@ -5,12 +5,13 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.0
+ * @version   1.1.0
  * @since     1.0.0 Initiale Erstellung
+ * @since     1.1.0 Anpassung an HTML-Transkripte und neue Modal-Struktur in management_reports.php
  *
  * @description Dieses Skript steuert das Detail-Modal auf der Seite management_reports.php.
- * Es befüllt das Modal mit Daten, ruft das Original-Transkript per Fetch-API
- * und generiert eine visuelle Diff-Ansicht mit jsDiff.
+ * Es befüllt das Modal mit Daten (HTML gerendert, HTML-Code) und
+ * generiert eine visuelle Text-Diff-Ansicht mit jsDiff.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -44,13 +45,16 @@ document.addEventListener("DOMContentLoaded", () => {
     "detail-transcript-section"
   );
   const diffViewer = document.getElementById("detail-diff-viewer");
-  const suggestionContainer = document.getElementById(
-    "detail-suggestion-container"
-  );
-  const suggestionTextarea = document.getElementById("detail-suggestion");
 
-  // API-Endpunkt (aus window.adminApiEndpoints, das von init_admin.php gesetzt werden sollte,
-  // hier als Fallback hartcodiert, falls es fehlt)
+  // NEU: Angepasste Elemente für HTML-Anzeige
+  const suggestionHtmlDisplay = document.getElementById(
+    "detail-suggestion-html"
+  );
+  const suggestionCodeTextarea = document.getElementById(
+    "detail-suggestion-code"
+  );
+
+  // API-Endpunkt (aus window.adminApiEndpoints, das von init_admin.php gesetzt werden sollte)
   const apiBaseUrl =
     window.adminApiEndpoints?.getComicData || "./api/get_comic_data.php";
   // CSRF-Token (von init_admin.php)
@@ -65,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const openModal = (row) => {
     const dataset = row.dataset;
 
-    // Daten aus data-Attributen lesen
+    // Daten aus data-Attributen lesen (Browser dekodiert HTML-Entitäten automatisch)
     const comicId = dataset.comicId || "k.A.";
     const reportType = dataset.type || "k.A.";
     const description = dataset.fullDescription || "";
@@ -90,43 +94,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // Beschreibung anzeigen
     if (description) {
       descriptionP.textContent = description;
-      descriptionContainer.style.display = "block";
     } else {
       descriptionP.textContent = "Keine Beschreibung vorhanden.";
-      descriptionContainer.style.display = "block"; // Sicherstellen, dass "Keine..." angezeigt wird
     }
+    descriptionContainer.style.display = "block";
 
     // Transkript-Sektion nur für "transcript"-Typ anzeigen
     if (reportType === "transcript") {
       transcriptSection.style.display = "block";
 
-      // Vorschlag anzeigen
+      // NEU: Vorschlag in HTML-Ansicht und Code-Ansicht füllen
       if (suggestion) {
-        suggestionTextarea.value = suggestion;
-        suggestionContainer.style.display = "block";
+        if (suggestionHtmlDisplay) suggestionHtmlDisplay.innerHTML = suggestion;
+        if (suggestionCodeTextarea) suggestionCodeTextarea.value = suggestion;
       } else {
-        suggestionTextarea.value = "";
-        suggestionContainer.style.display = "none";
+        if (suggestionHtmlDisplay)
+          suggestionHtmlDisplay.innerHTML = "<em>Kein Vorschlag (HTML).</em>";
+        if (suggestionCodeTextarea)
+          suggestionCodeTextarea.value = "Kein Vorschlag (Code).";
       }
 
-      // Diff-Ansicht vorbereiten und Fetch starten
+      // Diff-Ansicht vorbereiten und Text-Diff generieren
       diffViewer.innerHTML =
-        '<p class="loading-text">Original-Transkript wird geladen...</p>';
-      // Wir verwenden das 'original' aus dem Report, falls vorhanden.
-      // Falls nicht, holen wir das *aktuelle* Transkript vom Server.
-      if (original) {
-        if (debugMode)
-          console.log(
-            'DEBUG [admin_reports.js]: Verwende "Original" aus dem Report für Diff.'
-          );
-        generateDiff(original, suggestion);
-      } else {
-        if (debugMode)
-          console.log(
-            "DEBUG [admin_reports.js]: Hole aktuelles Transkript vom Server für Diff."
-          );
-        fetchOriginalTranscript(comicId, suggestion);
-      }
+        '<p class="loading-text">Text-Diff wird generiert...</p>';
+
+      // Wir verwenden das 'original' aus dem Report.
+      // Hinweis: fetchOriginalTranscript wird nicht mehr benötigt, da das Original-HTML
+      // jetzt immer mit dem Report gespeichert wird (seit submit_report v1.1.0).
+      if (debugMode)
+        console.log(
+          'DEBUG [admin_reports.js]: Verwende "Original" aus dem Report für Diff.'
+        );
+      generateTextDiff(original, suggestion);
     } else {
       // Für "image" oder "other" die Transkript-Sektion ausblenden
       transcriptSection.style.display = "none";
@@ -142,6 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display = "none";
     // Diff-Viewer leeren, um alte Daten zu entfernen
     diffViewer.innerHTML = "";
+    if (suggestionHtmlDisplay) suggestionHtmlDisplay.innerHTML = "";
+    if (suggestionCodeTextarea) suggestionCodeTextarea.value = "";
   };
 
   // Event-Listener für Klicks im Modal (Schließen-Buttons)
@@ -169,98 +170,80 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- 3. Fetch- & Diff-Logik ---
+  // --- 3. Diff-Logik ---
 
   /**
-   * Holt das Original-Transkript vom Admin-API-Endpunkt.
-   * @param {string} comicId - Die ID des Comics.
-   * @param {string} suggestion - Der Vorschlag des Benutzers (für Diff).
+   * Hilfsfunktion, um einen HTML-String in reinen Text umzuwandeln,
+   * wobei <p> und <br> als Zeilenumbrüche für einen sauberen Diff interpretiert werden.
+   * @param {string} html
+   * @returns {string}
    */
-  const fetchOriginalTranscript = async (comicId, suggestion) => {
-    if (!comicId) {
-      diffViewer.innerHTML =
-        '<p class="status-message status-red">Fehler: Keine Comic-ID zum Abrufen des Transkripts vorhanden.</p>';
-      return;
-    }
-
-    try {
-      // Wir müssen den CSRF-Token per Header senden (oder als URL-Parameter, wenn API es unterstützt)
-      // Für init_admin.php API-Aufrufe ist oft ein GET mit Token einfacher.
-      const apiUrl = `${apiBaseUrl}?id=${encodeURIComponent(
-        comicId
-      )}&csrf_token=${encodeURIComponent(csrfToken)}`;
-
-      const response = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
+  const convertHtmlToText = (html) => {
+    // Prüfen, ob es überhaupt HTML ist (alte Reports könnten Plain Text sein)
+    if (html && html.trim().startsWith("<")) {
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = html;
+      // Ersetze <p> durch Zeilenumbrüche für Lesbarkeit
+      tempDiv.querySelectorAll("p").forEach((p) => {
+        p.after(document.createTextNode("\n"));
       });
-
-      if (!response.ok) {
-        throw new Error(
-          `Server-Antwort: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-
-      if (data.success && data.transcript) {
-        if (debugMode)
-          console.log(
-            "DEBUG [admin_reports.js]: Original-Transkript erfolgreich geladen."
-          );
-        // Transkript bereinigen (HTML-Tags entfernen), da der Vorschlag auch Plain Text ist
-        const plainTranscript = decodeHtmlEntities(
-          stripHtmlTags(data.transcript)
-        );
-        generateDiff(plainTranscript, suggestion);
-      } else {
-        throw new Error(
-          data.message ||
-            "Transkript konnte nicht geladen werden (ungültige Antwort)."
-        );
-      }
-    } catch (error) {
-      if (debugMode)
-        console.error("DEBUG [admin_reports.js]: Fetch-Fehler:", error);
-      diffViewer.innerHTML = `<p class="status-message status-red">Fehler beim Laden des Original-Transkripts: ${error.message}</p>`;
+      // Entferne <br> aber behalte Zeilenumbruch bei
+      tempDiv.querySelectorAll("br").forEach((br) => {
+        br.after(document.createTextNode("\n"));
+      });
+      return (tempDiv.textContent || tempDiv.innerText || "").trim();
     }
+    // Es ist bereits Plain Text (alte Reports)
+    return (html || "").trim();
   };
 
   /**
-   * Generiert die Diff-Ansicht mit jsDiff.
-   * @param {string} original - Der Originaltext.
-   * @param {string} suggestion - Der vorgeschlagene Text.
+   * Generiert die Diff-Ansicht mit jsDiff basierend auf dem Textinhalt.
+   * @param {string} originalHtml - Der Original-HTML-Text.
+   * @param {string} suggestionHtml - Der vorgeschlagene HTML-Text.
    */
-  const generateDiff = (original, suggestion) => {
+  const generateTextDiff = (originalHtml, suggestionHtml) => {
     // Sicherstellen, dass jsDiff geladen ist
-    if (typeof Diff === "undefined" || typeof Diff.diffChars === "undefined") {
+    if (typeof Diff === "undefined" || typeof Diff.diffLines === "undefined") {
       diffViewer.innerHTML =
         '<p class="status-message status-red">Fehler: jsDiff-Bibliothek nicht geladen.</p>';
       return;
     }
 
-    if (!suggestion) {
+    if (!suggestionHtml) {
       diffViewer.innerHTML =
         '<p class="status-message status-info">Kein Transkript-Vorschlag vorhanden.</p>';
       return;
     }
 
-    if (original === suggestion) {
+    // Konvertiere HTML zu Text für den Diff
+    const originalText = convertHtmlToText(originalHtml);
+    const suggestionText = convertHtmlToText(suggestionHtml);
+
+    if (originalText === suggestionText) {
       diffViewer.innerHTML =
-        '<p class="status-message status-info">Vorschlag ist identisch mit dem Original.</p>';
+        '<p class="status-message status-info">Keine Änderungen am reinen Textinhalt gefunden.</p>';
       return;
     }
 
-    const diff = Diff.diffChars(original, suggestion);
+    // Wir verwenden diffLines für eine bessere Lesbarkeit
+    const diff = Diff.diffLines(originalText, suggestionText, {
+      newlineIsToken: true,
+    });
     const fragment = document.createDocumentFragment();
 
     diff.forEach((part) => {
       const node = document.createElement(
         part.added ? "ins" : part.removed ? "del" : "span"
       );
-      node.appendChild(document.createTextNode(part.value));
+      // Füge ein Leerzeichen-Symbol für Zeilen hinzu, die nur aus Whitespace bestehen,
+      // damit sie im Diff sichtbar sind.
+      if (part.value.match(/^\s+$/)) {
+        node.style.opacity = "0.6";
+        node.appendChild(document.createTextNode("[Whitespace-Änderung]"));
+      } else {
+        node.appendChild(document.createTextNode(part.value));
+      }
       fragment.appendChild(node);
     });
 
@@ -268,19 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
     diffViewer.appendChild(fragment);
   };
 
-  // --- 4. Hilfsfunktionen ---
-
-  function stripHtmlTags(str) {
-    if (!str) return "";
-    const div = document.createElement("div");
-    div.innerHTML = str;
-    return div.textContent || div.innerText || "";
-  }
-
-  function decodeHtmlEntities(str) {
-    if (!str) return "";
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = str;
-    return textarea.value;
-  }
+  // Alte Hilfsfunktionen (stripHtmlTags, decodeHtmlEntities) sind
+  // in convertHtmlToText aufgegangen und werden nicht mehr benötigt.
 });

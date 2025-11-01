@@ -8,9 +8,9 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.3
- * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
+ * @version   2.1.4
  * @since     2.1.3 Verschieben des "Fehler melden"Button in die obere Navigationsleiste
+ * @since     2.1.4 Stile für Summernote WYSIWYG-Editor im Report-Modal hinzugefügt.
  */
 body.theme-night #banner,
 #banner-lights-off {
@@ -343,6 +343,7 @@ body.theme-night .report-modal-content {
 }
 body.theme-night .report-modal-content .status-message {
   border-radius: 4px;
+  display: none;
 }
 body.theme-night .report-modal-content .status-message.status-green {
   background-color: rgb(10.4347826087, 43.5652173913, 18);
@@ -358,6 +359,17 @@ body.theme-night .report-modal-content .status-message.status-orange {
   background-color: rgb(109, 81.75, 0);
   color: #fff8e1;
   border: 1px solid #a07800;
+}
+body.theme-night .report-modal-content {
+  /* --- Stile für Report-Modal-spezifische Elemente (CSP-Fix) --- */
+}
+body.theme-night .report-modal-content #transcript-suggestion-container {
+  display: none;
+}
+body.theme-night .report-modal-content #report-suggestion-info {
+  font-size: 0.9em;
+  margin-bottom: 5px;
+  color: rgb(229.5, 229.5, 229.5);
 }
 body.theme-night {
   /* --- "Fehler melden"-Button Dark --- */
@@ -479,6 +491,113 @@ body.theme-night .report-detail-modal-content .diff-box del {
   background-color: #7f0000;
   color: #ffcdd2;
   text-decoration: none;
+}
+body.theme-night {
+  /* NEU: Stile für Summernote-Implementierung */
+}
+body.theme-night .original-transcript-box {
+  margin-top: 15px;
+}
+body.theme-night .transcript-display-box {
+  background-color: #002B3C;
+  border: 1px solid #2a6177;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9em;
+  word-wrap: break-word;
+  color: #fff;
+}
+body.theme-night .transcript-display-box p {
+  margin-bottom: 7px;
+}
+body.theme-night .transcript-display-box p:last-of-type {
+  margin-bottom: 0;
+}
+body.theme-night {
+  /* --- Dark Mode Stile für Summernote Editor --- */
+  /* (Kopiert von data_editor_comic.php Stilen) */
+}
+body.theme-night .note-editor.note-frame {
+  border-color: #2a6177;
+}
+body.theme-night .note-editor.note-frame .note-toolbar {
+  background-color: #00334C !important;
+  border-bottom: 1px solid #2a6177;
+}
+body.theme-night .note-editor.note-frame .note-btn {
+  background-color: #2a6177;
+  color: #fff;
+}
+body.theme-night .note-editor.note-frame .note-btn:hover, body.theme-night .note-editor.note-frame .note-btn:focus, body.theme-night .note-editor.note-frame .note-btn:active {
+  background-color: #48778a;
+  color: #fff;
+}
+body.theme-night .note-editor.note-frame .note-btn.disabled {
+  background-color: #00334C;
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 0.5;
+}
+body.theme-night .note-editor.note-frame .dropdown-menu {
+  background-color: #002B3C;
+  border-color: #48778a;
+}
+body.theme-night .note-editor.note-frame .dropdown-menu .dropdown-item {
+  color: #fff;
+}
+body.theme-night .note-editor.note-frame .dropdown-menu .dropdown-item:hover {
+  background-color: #2a6177;
+}
+body.theme-night .note-editor.note-frame .note-dropdown-item a {
+  color: #fff;
+}
+body.theme-night .note-editor.note-frame .note-dropdown-item:hover {
+  background-color: #2a6177;
+}
+body.theme-night .note-editor.note-frame .note-popover .popover-content,
+body.theme-night .note-editor.note-frame .note-modal-content {
+  background-color: #003f58;
+  color: #fff;
+  border-color: #48778a;
+}
+body.theme-night .note-editor.note-frame .note-popover .popover-header,
+body.theme-night .note-editor.note-frame .note-modal-header {
+  background-color: #00334C;
+  border-bottom: 1px solid #48778a;
+}
+body.theme-night .note-editor.note-frame .note-modal-footer {
+  border-top: 1px solid #48778a;
+}
+body.theme-night .note-editor.note-frame .note-form-label {
+  color: #fff;
+}
+body.theme-night .note-editor.note-frame .note-input {
+  background-color: #002B3C;
+  border-color: #2a6177;
+  color: #fff;
+}
+body.theme-night .note-editor.note-frame .note-editable {
+  background-color: #002B3C !important;
+  color: #fff !important;
+}
+body.theme-night .note-editor.note-frame .note-editable:focus {
+  border-color: #48778a !important;
+}
+body.theme-night .note-editor.note-frame .note-editable p {
+  color: #fff !important;
+}
+body.theme-night .note-editor.note-frame .note-codable {
+  background-color: #002B3C;
+  color: #81dbfe;
+}
+body.theme-night .note-editor.note-frame .note-statusbar {
+  background-color: #00334C;
+  border-top: 1px solid #2a6177;
+}
+body.theme-night .note-editor.note-frame .note-statusbar .note-resizebar {
+  border-top: 1px solid #48778a;
 }
 
 @media only screen and (min-device-width: 320px) and (max-device-width: 640px) and (-webkit-min-device-pixel-ratio: 2) {
