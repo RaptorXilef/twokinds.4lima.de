@@ -1,22 +1,22 @@
 <?php
 /**
  * Administrationsseite zum Erstellen des Bild-Caches inkl. Cache-Busting.
- * * @file      ROOT/public/admin/build_image_cache_and_busting.php
+ * 
+ * @file      ROOT/public/admin/build_image_cache_and_busting.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
+ * @version   3.0.1
  * @since     2.0.0 Überarbeitet mit modernem UI, CSP-Konformität und Speicherung der letzten Ausführung in der zentralen Einstellungs-JSON.
  * @since     2.1.0 Pfadanpassungen und Einführung von Konstanten
  * @since     2.1.1 Umstellung auf Template-Pfad-Konstanten
  * @since     2.2.0 Direkte Verwendung von Konstanten anstelle von temporären Variablen.
  * @since     2.3.0 Umstellung auf neue, granulare Asset-Pfad-Konstanten.
  * @since     3.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     3.0.1 Auto-Reload nach Prozess deaktiviert
  */
-
-// TODO: Autoreload entfernen
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -382,7 +382,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 if (data.success) {
                     await saveLastRun(type);
                     // Lade die Seite neu, um die "Letzte Ausführung"-Nachricht zu aktualisieren
-                    setTimeout(() => window.location.reload(), 2000);
+                    //setTimeout(() => window.location.href = window.location.pathname, 2000); // Soll nicht neu geladen werden, um die Ergebnismeldung dauerhaft anzuzeigen
                 }
 
             } catch (error) {

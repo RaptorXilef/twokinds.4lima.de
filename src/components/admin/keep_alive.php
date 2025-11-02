@@ -14,7 +14,7 @@
  * @version   3.0.0
  * @since     3.0.0 Umstellung auf die zentrale init_admin.php im übergeordneten Komponenten-Verzeichnis.
  * @since     3.0.1 Behebe BUG PHP Warning:  Constant IS_API_CALL already defined in src\\components\\admin\\keep_alive.php on line 22, referer: /admin/data_editor_comic
-*/
+ */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;

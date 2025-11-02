@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   7.2.0
+ * @version   7.2.2
  * @since     ... (ältere Versionen)
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
@@ -252,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
 
-        case 'update_original_url_cache':
+        case 'update_original_url_cache': // url_originalbild in cache schreiben/aktualisieren
             $comicIdToUpdate = $_POST['comic_id'] ?? null;
             $imageUrlToCache = $_POST['image_url'] ?? null;
             $cacheKey = $_POST['cache_key'] ?? 'url_originalbild';
