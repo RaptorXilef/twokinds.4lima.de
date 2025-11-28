@@ -8,12 +8,13 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.1.0
  * @since     2.2.0 Design vollständig an den Admin-Standard angepasst.
  * @since     2.3.0 Anpassung an versionierte comic_var.json (Schema v2).
  * @since     2.4.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
  * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur und Entfernung redundanter Logik.
  * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
+ * @since     4.1.0 Datum des RSS-Eintrags basiert nun auf dem Änderungsdatum der Bilddatei (filemtime).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -118,19 +119,27 @@ if (isset($_POST['action'])) {
                                 $imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
                                 foreach ($imageExtensions as $ext) {
                                     $imageFileName = $comicId . $ext;
-                                    if (file_exists(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR . $imageFileName)) {
+                                    $fullImagePath = DIRECTORY_PUBLIC_IMG_COMIC_LOWRES . DIRECTORY_SEPARATOR . $imageFileName;
+                                    
+                                    if (file_exists($fullImagePath)) {
+                                        // DATE LOGIC: Use file modification time of the image
+                                        $fileModTime = filemtime($fullImagePath);
+                                        // Fallback to comicId date if filemtime fails
+                                        $pubDateTimestamp = ($fileModTime !== false) ? $fileModTime : strtotime($comicId);
+                                        
                                         $comicLink = htmlspecialchars(Url::getComicPageUrl(basename($filePath)));
                                         $imageUrl = htmlspecialchars(Url::getImgComicLowresUrl($imageFileName));
                                         $imageHtml = '<p><img src="' . $imageUrl . '" alt="' . htmlspecialchars($comicInfo['name']) . '" style="max-width: 100%; height: auto;" /></p>';
+                                        
                                         $rssItems[] = [
                                             'title' => htmlspecialchars($comicInfo['name']),
                                             'link' => $comicLink,
                                             'guid' => $comicLink,
                                             'description' => $imageHtml . '<p>' . htmlspecialchars($comicInfo['transcript']) . '</p>',
-                                            'pubDate' => date(DATE_RSS, strtotime($comicId))
+                                            'pubDate' => date(DATE_RSS, $pubDateTimestamp)
                                         ];
                                         $processedCount++;
-                                        break;
+                                        break; // Image found, break extension loop
                                     }
                                 }
                             }
