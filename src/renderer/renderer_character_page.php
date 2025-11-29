@@ -12,11 +12,12 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ * @version   4.0.1
  * @since     2.0.0 Umstellung auf GET-Parameter und ID-basiertes Filtern.
  * @since     2.1.0 Liest Charakternamen aus Dateinamen, filtert aber nach ID.
  * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     4.0.1 BUG-FIX Rückumwandlung von Unterstrichen in Leerzeichen beim Dateinamen-Parsing.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -31,7 +32,11 @@ require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'load_comic_da
 require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
 
 // === 3. CHARAKTER-NAMEN & ID ERMITTELN ===
-$characterName = basename($_SERVER['SCRIPT_FILENAME'], '.php');
+// FIX 4.0.1: Unterstriche aus dem Dateinamen (z.B. Trace_Legacy) wieder in Leerzeichen (Trace Legacy) umwandeln
+// damit der Abgleich mit der JSON-Datenbank funktioniert.
+$filenameRaw = basename($_SERVER['SCRIPT_FILENAME'], '.php');
+$characterName = str_replace('_', ' ', $filenameRaw);
+
 $characterId = null;
 
 $charaktereJsonPath = Path::getDataPath('charaktere.json');
@@ -41,6 +46,7 @@ if (file_exists($charaktereJsonPath)) {
     $allCharacters = $charData['characters'] ?? [];
 
     foreach ($allCharacters as $id => $char) {
+        // Vergleich ist nun sicher, da $characterName Leerzeichen enthält
         if (strcasecmp($char['name'], $characterName) === 0) {
             $characterId = $id;
             break;

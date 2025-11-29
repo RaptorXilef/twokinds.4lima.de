@@ -10,7 +10,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
+ * @version   3.0.2
  * @since     1.3.2 Entfernt das feste Mapping und liest Gruppennamen dynamisch aus.
  * @since     1.4.0 Fügt eine Variable hinzu, um die Hauptüberschrift optional auszublenden.
  * @since     1.4.1 Korrigiert den Link, sodass er auf die individuelle Charakter-PHP-Seite verweist.
@@ -19,6 +19,7 @@
  * @since     2.1.1 Code-Bereinigung und Korrektur des Dateipfads im Doc-Block.
  * @since     3.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  * @since     3.0.1 BUG-FIX Charakter-Profilbild-URL angepasst an die neue Konfiguration.
+ * @since     3.0.2 BUG-FIX Leerzeichen in URLs werden nun korrekt durch Unterstriche ersetzt statt durch Plus-Zeichen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -70,8 +71,13 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
 
                                     if ($characterDetails):
                                         $characterName = $characterDetails['name'];
+                                        
+                                        // FIX 3.0.2: Ersetze Leerzeichen durch Unterstriche für den Dateinamen
+                                        // urlencode() würde ein + erzeugen, wir brauchen aber _
+                                        $filename = str_replace(' ', '_', $characterName);
+                                        
                                         // Link mit DIRECTORY_PUBLIC_URL erstellen
-                                        $characterLink = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . urlencode($characterName) . $dateiendungPHP;
+                                        $characterLink = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
 
                                         $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
                                         if (!empty($characterDetails['pic_url'])) {
