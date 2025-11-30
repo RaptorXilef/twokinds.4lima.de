@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   7.2.2
+ * @version   7.3.0
  * @since     ... (ältere Versionen)
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
@@ -36,7 +36,8 @@
  *                   als auch am bisherigen Platz am Ende der Seite. Dies reduziert den Scroll-Aufwand auf der Seite erheblich, da die 
  *                   Aktionen immer schnell erreichbar sind, unabhängig davon, wo man sich gerade befindet.
  * @since     7.2.2 Aufbauend auf der Duplizierung der Aktionsbuttons wird nun auch die Status-Feedbackbox (`#message-box`) dupliziert. 
- *                  Sie erscheint jetzt sowohl an ihrer ursprünglichen Position am Seitenende als auch neu direkt unter den oberen Aktionsbuttons.
+ *                   Sie erscheint jetzt sowohl an ihrer ursprünglichen Position am Seitenende als auch neu direkt unter den oberen Aktionsbuttons.
+ * @since     7.3.0 style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -430,52 +431,62 @@ require_once Path::getPartialTemplatePath('header.php');
 
 <div id="edit-modal" class="modal hidden-by-default">
     <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2 id="modal-title-header">Eintrag bearbeiten</h2>
-        <div class="form-group"><label>Comic ID:</label><input type="text" id="modal-comic-id"></div>
-        <div class="form-group"><label for="modal-type">Typ:</label><select id="modal-type">
-                <option>Comicseite</option>
-                <option>Lückenfüller</option>
-            </select></div>
-        <div class="form-group"><label for="modal-name">Name:</label><input type="text" id="modal-name"></div>
-        <div class="form-group"><label for="modal-transcript">Transkript:</label><textarea
-                id="modal-transcript"></textarea></div>
-        <div class="form-group"><label for="modal-chapter">Kapitel:</label><input type="text" id="modal-chapter"></div>
-        <div class="form-group"><label for="modal-url">Originalbild Dateiname:</label><input type="text" id="modal-url">
+        <!-- HEADER Bereich -->
+        <div class="modal-header-wrapper">
+            <span class="close-button">&times;</span>
+            <h2 id="modal-title-header">Eintrag bearbeiten</h2>
         </div>
-        <div class="form-group"><label for="modal-url-sketch">Originalskizze Dateiname:</label><input type="text"
-                id="modal-url-sketch"></div>
 
-        <div id="modal-image-preview-section">
-            <div id="modal-image-controls" class="button-toggle-group">
-                <button class="button-toggle active" data-view="de">Deutsch</button>
-                <button class="button-toggle" data-view="en">Englisch</button>
-                <button class="button-toggle" data-view="sketch">Skizze</button>
-                <button class="button-toggle" data-view="both">Beide</button>
+        <!-- SCROLLBARER INHALT -->
+        <div class="modal-scroll-content">
+            <div class="form-group"><label>Comic ID:</label><input type="text" id="modal-comic-id"></div>
+            <div class="form-group"><label for="modal-type">Typ:</label><select id="modal-type">
+                    <option>Comicseite</option>
+                    <option>Lückenfüller</option>
+                </select></div>
+            <div class="form-group"><label for="modal-name">Name:</label><input type="text" id="modal-name"></div>
+            <div class="form-group"><label for="modal-transcript">Transkript:</label><textarea
+                    id="modal-transcript"></textarea></div>
+            <div class="form-group"><label for="modal-chapter">Kapitel:</label><input type="text" id="modal-chapter"></div>
+            <div class="form-group"><label for="modal-url">Originalbild Dateiname:</label><input type="text" id="modal-url">
             </div>
-            <div id="modal-image-previews">
-                <div class="image-preview-box" id="modal-preview-de">
-                    <p>Deutsche Version (Low-Res)</p>
-                    <img src="" alt="Deutsche Vorschau">
+            <div class="form-group"><label for="modal-url-sketch">Originalskizze Dateiname:</label><input type="text"
+                    id="modal-url-sketch"></div>
+
+            <div id="modal-image-preview-section">
+                <div id="modal-image-controls" class="button-toggle-group">
+                    <button class="button-toggle active" data-view="de">Deutsch</button>
+                    <button class="button-toggle" data-view="en">Englisch</button>
+                    <button class="button-toggle" data-view="sketch">Skizze</button>
+                    <button class="button-toggle" data-view="both">Beide</button>
                 </div>
-                <div class="image-preview-box" id="modal-preview-en">
-                    <p>Englisches Original</p>
-                    <img src="" alt="Englische Vorschau">
+                <div id="modal-image-previews">
+                    <div class="image-preview-box" id="modal-preview-de">
+                        <p>Deutsche Version (Low-Res)</p>
+                        <img src="" alt="Deutsche Vorschau">
+                    </div>
+                    <div class="image-preview-box" id="modal-preview-en">
+                        <p>Englisches Original</p>
+                        <img src="" alt="Englische Vorschau">
+                    </div>
+                    <div class="image-preview-box" id="modal-preview-sketch">
+                        <p>Original Skizze</p>
+                        <img src="" alt="Original Skizze Vorschau">
+                    </div>
                 </div>
-                <div class="image-preview-box" id="modal-preview-sketch">
-                    <p>Original Skizze</p>
-                    <img src="" alt="Original Skizze Vorschau">
-                </div>
+            </div>
+
+            <div id="modal-charaktere-section">
+                <!-- Charakterauswahl wird hier per JS eingefügt -->
             </div>
         </div>
 
-        <div id="modal-charaktere-section">
-            <!-- Charakterauswahl wird hier per JS eingefügt -->
-        </div>
-
-        <div class="modal-buttons">
-            <button id="modal-save-btn" class="button">Übernehmen</button>
-            <button id="modal-cancel-btn" class="button delete">Abbrechen</button>
+        <!-- FOOTER Bereich (Buttons) -->
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button id="modal-save-btn" class="button">Übernehmen</button>
+                <button id="modal-cancel-btn" class="button delete">Abbrechen</button>
+            </div>
         </div>
     </div>
 </div>
@@ -483,10 +494,18 @@ require_once Path::getPartialTemplatePath('header.php');
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
     :root {
         --missing-grid-border-color: #e0e0e0;
+        /* Helle Theme Variablen für Modal */
+        --modal-bg-color: #fefefe;
+        --modal-border-color: #888;
+        --modal-text-color: #333;
     }
 
     body.theme-night {
         --missing-grid-border-color: #045d81;
+        /* Dunkle Theme Variablen für Modal */
+        --modal-bg-color: #00425c;
+        --modal-border-color: #007bb5;
+        --modal-text-color: #f0f0f0;
     }
 
     .status-message {
@@ -735,20 +754,56 @@ require_once Path::getPartialTemplatePath('header.php');
         top: 0;
         width: 100%;
         height: 100%;
-        overflow: auto;
         background-color: rgba(0, 0, 0, 0.6);
+        /* Flexbox für Zentrierung des gesamten Modals */
+        display: none; /* Initial versteckt, wird per JS auf flex gesetzt */
         justify-content: center;
         align-items: center;
+        padding: 20px; /* Abstand zum Bildschirmrand */
+        box-sizing: border-box;
     }
 
     .modal-content {
-        background-color: #fefefe;
+        background-color: var(--modal-bg-color);
+        color: var(--modal-text-color);
         margin: auto;
-        padding: 20px;
+        /* Padding wurde entfernt zugunsten der Flex-Kinder */
+        padding: 0; 
         border-radius: 8px;
         width: 100%;
         max-width: 1045px;
         position: relative;
+        /* WICHTIG für Sticky Footer: Flexbox Column und max-height */
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh; /* Maximale Höhe des Modals (90% des Viewports) */
+        overflow: hidden; /* Verhindert doppelte Scrollbalken am Hauptcontainer */
+        border: 1px solid var(--modal-border-color);
+    }
+
+    /* NEU: Header Bereich (Titel + Close) */
+    .modal-header-wrapper {
+        padding: 20px 20px 10px 20px;
+        flex-shrink: 0; /* Darf nicht schrumpfen */
+        background-color: var(--modal-bg-color); /* Überdeckt Inhalt beim Scrollen */
+        border-bottom: 1px solid var(--missing-grid-border-color);
+        position: relative; /* Für Close-Button Positionierung */
+    }
+
+    /* NEU: Scrollbarer Inhaltsbereich */
+    .modal-scroll-content {
+        padding: 20px;
+        overflow-y: auto; /* Hier findet das Scrollen statt */
+        flex-grow: 1; /* Nimmt den verfügbaren Platz ein */
+    }
+
+    /* NEU: Footer Bereich (Buttons) */
+    .modal-footer-actions {
+        padding: 15px 20px;
+        flex-shrink: 0; /* Darf nicht schrumpfen */
+        background-color: var(--modal-bg-color); /* Wichtig für "schwebenden" Effekt */
+        border-top: 1px solid var(--missing-grid-border-color);
+        z-index: 10;
     }
 
     @keyframes highlight-row {
@@ -779,10 +834,8 @@ require_once Path::getPartialTemplatePath('header.php');
         }
     }
 
-    body.theme-night .modal-content {
-        background-color: #00425c;
-        border: 1px solid #007bb5;
-    }
+    /* Alte modal-content Anpassung für Night Theme ist nun über Variablen gelöst, 
+       aber Ränder definieren wir sicherheitshalber global oben in Root/Body */
 
     .close-button {
         color: #aaa;
@@ -795,7 +848,8 @@ require_once Path::getPartialTemplatePath('header.php');
     }
 
     .modal-buttons {
-        margin-top: 20px;
+        /* Margin top entfernt, da Padding im Container */
+        margin-top: 0; 
         display: flex;
         justify-content: flex-end;
         gap: 10px;
@@ -1538,6 +1592,7 @@ require_once Path::getPartialTemplatePath('header.php');
             renderCharakterSelection('new_entry');
             setImageView('de');
 
+            // Modal Anzeige auf Flex setzen für korrekte Zentrierung und Layout
             editModal.style.display = 'flex';
         };
 
@@ -1573,6 +1628,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 renderCharakterSelection(activeEditId);
                 setImageView('de');
 
+                // Modal Anzeige auf Flex setzen
                 editModal.style.display = 'flex';
             }
 
