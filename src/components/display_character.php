@@ -10,7 +10,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.2
+ * @version   3.0.3
  * @since     1.3.2 Entfernt das feste Mapping und liest Gruppennamen dynamisch aus.
  * @since     1.4.0 Fügt eine Variable hinzu, um die Hauptüberschrift optional auszublenden.
  * @since     1.4.1 Korrigiert den Link, sodass er auf die individuelle Charakter-PHP-Seite verweist.
@@ -20,6 +20,7 @@
  * @since     3.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  * @since     3.0.1 BUG-FIX Charakter-Profilbild-URL angepasst an die neue Konfiguration.
  * @since     3.0.2 BUG-FIX Leerzeichen in URLs werden nun korrekt durch Unterstriche ersetzt statt durch Plus-Zeichen.
+ * @since     3.0.3 Layout-Änderung: Name wird nun unter dem Bild angezeigt (DOM-Reihenfolge getauscht).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -73,7 +74,6 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
                                         $characterName = $characterDetails['name'];
                                         
                                         // FIX 3.0.2: Ersetze Leerzeichen durch Unterstriche für den Dateinamen
-                                        // urlencode() würde ein + erzeugen, wir brauchen aber _
                                         $filename = str_replace(' ', '_', $characterName);
                                         
                                         // Link mit DIRECTORY_PUBLIC_URL erstellen
@@ -88,10 +88,11 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
                                         <div class="character-item">
                                             <a href="<?php echo htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
                                                 title="Mehr über <?php echo htmlspecialchars($characterName); ?> erfahren">
-                                                <span class="character-name"><?php echo htmlspecialchars($characterName); ?></span>
+                                                <!-- FIX 3.0.3: Bild zuerst, dann Name -->
                                                 <img src="<?php echo htmlspecialchars($imageSrc); ?>"
                                                     alt="Bild von <?php echo htmlspecialchars($characterName); ?>" loading="lazy" width="80"
                                                     height="80" class="character-image-fallback">
+                                                <span class="character-name"><?php echo htmlspecialchars($characterName); ?></span>
                                             </a>
                                         </div>
                                         <?php
