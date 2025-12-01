@@ -8,7 +8,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.2
+ * @version   4.2.0
  * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
  * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
  * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
@@ -34,6 +34,8 @@
  * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und Vereinfachung der Bildpfade.
  * @since     4.0.1 Behebt einen fatalen Fehler durch Hinzufügen der fehlenden getRelativePath()-Hilfsfunktion.
  * @since     4.0.2 Behebt einen JavaScript ReferenceError (result vs. data), der fälschlicherweise als JSON-Fehler gemeldet wurde.
+ * @since     4.1.0 feat(UI): Umstellung des "Zur Gruppe hinzufügen"-Modals auf ein visuelles Multi-Select-Grid mit Bildern.
+ * @since     4.2.0 style(UI): Modernes "Sticky Footer" Layout für Modals implementiert (konsistent mit Comic-Editor).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -202,65 +204,104 @@ require_once Path::getPartialTemplatePath('header.php');
     </div>
 </div>
 
-<!-- Modals -->
+<!-- Modal 1: Charakter Bearbeiten -->
 <div id="edit-char-modal" class="modal">
     <div class="modal-content wide">
-        <span class="close-button">&times;</span>
-        <h2 id="modal-title">Charakter bearbeiten</h2>
+        <!-- HEADER (FIXIERT) -->
+        <div class="modal-header-wrapper">
+            <span class="close-button">&times;</span>
+            <h2 id="modal-title">Charakter bearbeiten</h2>
+        </div>
+
+        <!-- FORMULAR (FLEX CONTAINER) -->
         <form id="edit-form">
-            <input type="hidden" id="modal-char-id">
-            <div class="form-group">
-                <label for="modal-id-display">Charakter-ID:</label>
-                <input type="text" id="modal-id-display" disabled>
+            <!-- SCROLLBARER INHALT -->
+            <div class="modal-scroll-content">
+                <input type="hidden" id="modal-char-id">
+                <div class="form-group">
+                    <label for="modal-id-display">Charakter-ID:</label>
+                    <input type="text" id="modal-id-display" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="modal-name">Charakter-Name:</label>
+                    <input type="text" id="modal-name" required>
+                    <small>Wird für die URL und Anzeige verwendet. Muss eindeutig sein.</small>
+                </div>
+                <div class="form-group">
+                    <label for="modal-pic-url">Bild-Dateiname:</label>
+                    <input type="text" id="modal-pic-url">
+                    <small>Dateiname der Bilddatei aus dem Ordner <?php echo DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES; ?>,
+                        z.B. "Trace.webp"</small>
+                </div>
+                <div class="form-group preview-container">
+                    <label>Bild-Vorschau:</label>
+                    <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?"
+                        alt="Charakter Vorschau">
+                </div>
+                <div class="form-group">
+                    <label for="modal-description">Beschreibung:</label>
+                    <textarea id="modal-description" rows="5"></textarea>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="modal-name">Charakter-Name:</label>
-                <input type="text" id="modal-name" required>
-                <small>Wird für die URL und Anzeige verwendet. Muss eindeutig sein.</small>
-            </div>
-            <div class="form-group">
-                <label for="modal-pic-url">Bild-Dateiname:</label>
-                <input type="text" id="modal-pic-url">
-                <small>Dateiname der Bilddatei aus dem Ordner <?php echo DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES; ?>,
-                    z.B. "Trace.webp"</small>
-                <!-- <small>Relativer Pfad vom /public/ Ordner aus, z.B. "assets/img/charaktere/faces/icon_trace.gif"</small> -->
-            </div>
-            <div class="form-group preview-container">
-                <label>Bild-Vorschau:</label>
-                <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?"
-                    alt="Charakter Vorschau">
-            </div>
-            <div class="form-group">
-                <label for="modal-description">Beschreibung:</label>
-                <textarea id="modal-description" rows="5"></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button type="submit" class="button save-button">Speichern</button>
-                <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
+
+            <!-- FOOTER (FIXIERT) -->
+            <div class="modal-footer-actions">
+                <div class="modal-buttons">
+                    <button type="submit" class="button save-button">Speichern</button>
+                    <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
+<!-- Modal 2: Zur Gruppe Hinzufügen -->
 <div id="add-to-group-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2>Charakter zu Gruppe hinzufügen</h2>
+    <div class="modal-content wide">
+        <!-- HEADER (FIXIERT) -->
+        <div class="modal-header-wrapper">
+            <span class="close-button">&times;</span>
+            <h2>Charaktere zu Gruppe hinzufügen</h2>
+        </div>
+
+        <!-- FORMULAR (FLEX CONTAINER) -->
         <form id="add-to-group-form">
-            <input type="hidden" id="add-group-name">
-            <div class="form-group">
-                <label for="char-select">Charakter auswählen:</label>
-                <select id="char-select" required></select>
+            <!-- SCROLLBARER INHALT -->
+            <div class="modal-scroll-content">
+                <input type="hidden" id="add-group-name">
+                <p>Wähle einen oder mehrere Charaktere aus, um sie hinzuzufügen:</p>
+                <div id="char-selection-grid" class="char-selection-grid">
+                    <!-- JS generiert hier die Items -->
+                </div>
             </div>
-            <div class="modal-buttons">
-                <button type="submit" class="button save-button">Hinzufügen</button>
-                <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
+
+            <!-- FOOTER (FIXIERT) -->
+            <div class="modal-footer-actions">
+                <div class="modal-buttons">
+                    <button type="submit" class="button save-button">Hinzufügen</button>
+                    <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
 <style nonce="<?php echo htmlspecialchars($nonce); ?>">
+    /* --- CSS Variablen für Themes --- */
+    :root {
+        --modal-bg-color: #fefefe;
+        --modal-border-color: #888;
+        --modal-text-color: #333;
+        --modal-divider-color: #ddd;
+    }
+
+    body.theme-night {
+        --modal-bg-color: #00425c;
+        --modal-border-color: #007bb5;
+        --modal-text-color: #f0f0f0;
+        --modal-divider-color: #2a6177;
+    }
+
     .admin-container {
         max-width: 1200px;
         margin: 20px auto;
@@ -268,6 +309,96 @@ require_once Path::getPartialTemplatePath('header.php');
         background-color: #f9f9f9;
         border-radius: 8px;
     }
+
+    /* Modal Styling Updates (Sticky Header/Footer) */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Flexbox für Zentrierung */
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .modal-content {
+        background-color: var(--modal-bg-color);
+        color: var(--modal-text-color);
+        margin: auto;
+        padding: 0; /* Padding wird von den inneren Containern übernommen */
+        border-radius: 8px;
+        width: 100%;
+        max-width: 600px;
+        position: relative;
+        border: 1px solid var(--modal-border-color);
+        /* Flexbox Layout für Sticky Footer */
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh; /* Maximal 90% der Bildschirmhöhe */
+        overflow: hidden; /* Verhindert Scrollen am Hauptcontainer */
+    }
+
+    .modal-content.wide {
+        max-width: 800px;
+    }
+
+    /* Damit das Formular den Platz ausfüllt */
+    #edit-form, #add-to-group-form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0; /* Wichtig für Firefox Flex-Scrolling */
+    }
+
+    .modal-header-wrapper {
+        padding: 20px 20px 10px 20px;
+        flex-shrink: 0;
+        background-color: var(--modal-bg-color);
+        border-bottom: 1px solid var(--modal-divider-color);
+        position: relative;
+    }
+
+    .modal-header-wrapper h2 {
+        margin-top: 0;
+    }
+
+    .modal-scroll-content {
+        padding: 20px;
+        overflow-y: auto; /* Hier findet das Scrollen statt */
+        flex-grow: 1;
+    }
+
+    .modal-footer-actions {
+        padding: 15px 20px;
+        flex-shrink: 0;
+        background-color: var(--modal-bg-color);
+        border-top: 1px solid var(--modal-divider-color);
+        z-index: 10;
+    }
+
+    .close-button {
+        color: #aaa;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        font-size: 28px;
+        font-weight: 700;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .modal-buttons {
+        text-align: right;
+        margin-top: 0;
+    }
+
+    /* --- Restliche Styles --- */
 
     .section-container {
         margin-bottom: 2rem;
@@ -341,10 +472,6 @@ require_once Path::getPartialTemplatePath('header.php');
         color: #999
     }
 
-    .modal-content.wide {
-        max-width: 800px;
-    }
-
     .character-info {
         display: flex;
         align-items: center;
@@ -357,6 +484,65 @@ require_once Path::getPartialTemplatePath('header.php');
         color: #888;
         padding: 2px 6px;
         border-radius: 4px;
+    }
+
+    /* --- Styles für das Auswahl-Grid --- */
+    .char-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        /* max-height entfernt, da der Container jetzt selbst scrollt */
+        padding: 5px;
+    }
+
+    .char-selection-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 5px;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+        background-color: #fff;
+    }
+
+    .char-selection-item img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 5px;
+        filter: grayscale(100%);
+        opacity: 0.6;
+        transition: all 0.2s;
+    }
+
+    .char-selection-item span {
+        font-size: 0.85em;
+        line-height: 1.2;
+        color: #666;
+    }
+
+    .char-selection-item.selected {
+        border-color: #007bff;
+        background-color: #e6f2ff;
+    }
+
+    .char-selection-item.selected img {
+        filter: grayscale(0%);
+        opacity: 1;
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+
+    .char-selection-item.selected span {
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .char-selection-item:hover img {
+        opacity: 1;
     }
 
     body.theme-night .admin-container {
@@ -386,7 +572,21 @@ require_once Path::getPartialTemplatePath('header.php');
         border-top-color: #2a6177;
     }
 
-    /* Inherited styles from v2.8.3 */
+    body.theme-night .char-selection-item {
+        background-color: #00425c;
+    }
+    body.theme-night .char-selection-item span {
+        color: #ccc;
+    }
+    body.theme-night .char-selection-item.selected {
+        background-color: #005a7e;
+        border-color: #4da3ff;
+    }
+    body.theme-night .char-selection-item.selected span {
+        color: #fff;
+    }
+
+    /* Inherited styles */
     .status-message {
         padding: 10px;
         margin-bottom: 15px;
@@ -511,35 +711,6 @@ require_once Path::getPartialTemplatePath('header.php');
         cursor: grab;
     }
 
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 20px;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 600px;
-    }
-
-    .close-button {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
     .form-group {
         margin-bottom: 15px;
     }
@@ -577,11 +748,6 @@ require_once Path::getPartialTemplatePath('header.php');
         object-fit: cover;
     }
 
-    .modal-buttons {
-        text-align: right;
-        margin-top: 20px;
-    }
-
     .status-indicator {
         font-size: 0.8em;
         padding: 2px 8px;
@@ -605,11 +771,6 @@ require_once Path::getPartialTemplatePath('header.php');
 
     body.theme-night .character-entry {
         border-bottom-color: #2a6177;
-    }
-
-    body.theme-night .modal-content {
-        background-color: #00425c;
-        color: #fff;
     }
 
     body.theme-night .form-group input,
@@ -667,9 +828,13 @@ require_once Path::getPartialTemplatePath('header.php');
         const editForm = document.getElementById('edit-form');
         const addToGroupModal = document.getElementById('add-to-group-modal');
         const addToGroupForm = document.getElementById('add-to-group-form');
+        const charSelectionGrid = document.getElementById('char-selection-grid');
 
         const placeholderUrl = 'https://placehold.co/80x80/cccccc/333333?text=Datei?';
         const errorUrl = 'https://placehold.co/80x80/dc3545/ffffff?text=Fehlt';
+
+        // Set für Multi-Select
+        let selectedCharsForGroup = new Set();
 
         const getSortedCharacters = () => Object.entries(characterData.characters).sort(([, a], [, b]) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
 
@@ -708,7 +873,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     <h3>${groupName}</h3>
                     <div>
                         <button class="button edit-group-btn" title="Gruppe umbenennen">&#9998;</button>
-                        <button class="button add-char-to-group-btn" title="Charakter zu dieser Gruppe hinzufügen">+</button>
+                        <button class="button add-char-to-group-btn" title="Charaktere zu dieser Gruppe hinzufügen">+</button>
                         <button class="button delete-button delete-group-btn" title="Gruppe löschen">X</button>
                     </div>
                 </div>
@@ -751,6 +916,8 @@ require_once Path::getPartialTemplatePath('header.php');
 
         masterListContainer.addEventListener('error', handleImageError, true);
         groupsContainer.addEventListener('error', handleImageError, true);
+        // Error Handler auch für das neue Grid hinzufügen
+        charSelectionGrid.addEventListener('error', handleImageError, true);
 
 
         const openEditModal = (charId = null) => {
@@ -771,7 +938,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 idDisplay.value = newId;
             }
             updateImagePreview();
-            editModal.style.display = 'block';
+            editModal.style.display = 'flex'; // Changed from block to flex for new layout
         };
 
         const updateImagePreview = () => {
@@ -785,15 +952,49 @@ require_once Path::getPartialTemplatePath('header.php');
             const form = addToGroupModal.querySelector('form');
             form.reset();
             form.querySelector('#add-group-name').value = groupName;
-            const select = form.querySelector('#char-select');
-            select.innerHTML = '<option value="">-- Charakter wählen --</option>';
+            
+            // Grid leeren und neu befüllen
+            charSelectionGrid.innerHTML = '';
+            selectedCharsForGroup.clear(); // Reset Selection
+
             const charsInGroup = new Set(characterData.groups[groupName] || []);
+            let countAvailable = 0;
+
             getSortedCharacters().forEach(([id, char]) => {
+                // Nur anzeigen, wenn noch nicht in der Gruppe
                 if (!charsInGroup.has(id)) {
-                    select.innerHTML += `<option value="${id}">${char.name}</option>`;
+                    countAvailable++;
+                    const item = document.createElement('div');
+                    item.className = 'char-selection-item';
+                    item.dataset.charId = id;
+                    
+                    const imgSrc = char.pic_url ? `${charProfileUrlBase}${char.pic_url}` : placeholderUrl;
+                    
+                    item.innerHTML = `
+                        <img src="${imgSrc}" alt="${char.name}">
+                        <span>${char.name}</span>
+                    `;
+
+                    // Click Event für Auswahl
+                    item.addEventListener('click', () => {
+                        if (selectedCharsForGroup.has(id)) {
+                            selectedCharsForGroup.delete(id);
+                            item.classList.remove('selected');
+                        } else {
+                            selectedCharsForGroup.add(id);
+                            item.classList.add('selected');
+                        }
+                    });
+
+                    charSelectionGrid.appendChild(item);
                 }
             });
-            addToGroupModal.style.display = 'block';
+
+            if (countAvailable === 0) {
+                charSelectionGrid.innerHTML = '<p style="text-align:center; width:100%; color:#888;">Alle verfügbaren Charaktere sind bereits in dieser Gruppe.</p>';
+            }
+
+            addToGroupModal.style.display = 'flex'; // Changed from block to flex
         };
 
         document.querySelector('.admin-container').addEventListener('click', e => {
@@ -875,13 +1076,18 @@ require_once Path::getPartialTemplatePath('header.php');
 
         addToGroupForm.addEventListener('submit', e => {
             e.preventDefault();
-            const charId = addToGroupModal.querySelector('#char-select').value;
             const groupName = addToGroupModal.querySelector('#add-group-name').value;
-            if (charId && groupName && characterData.groups[groupName]) {
-                if (!characterData.groups[groupName].includes(charId)) {
-                    characterData.groups[groupName].push(charId);
+            
+            if (groupName && characterData.groups[groupName]) {
+                if (selectedCharsForGroup.size > 0) {
+                    selectedCharsForGroup.forEach(charId => {
+                        if (!characterData.groups[groupName].includes(charId)) {
+                            characterData.groups[groupName].push(charId);
+                        }
+                    });
+                    renderGroups();
+                    showMessage(`${selectedCharsForGroup.size} Charakter(e) hinzugefügt. Speichern nicht vergessen!`, 'status-info');
                 }
-                renderGroups();
             }
             addToGroupModal.style.display = 'none';
         });
