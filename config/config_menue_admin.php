@@ -37,6 +37,19 @@ $nonce = $nonce ?? '';
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_login' . $dateiendungPHP; ?>">Eigene Anmeldedaten
       ändern</a>
     </br>
+    <!-- NEU: Link zur Report-Verwaltung -->
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports' . $dateiendungPHP; ?>">Fehlermeldungen</a>
+    </br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter Daten
+      Editor</a>
+    </br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Daten
+      Editor</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Daten
+      Editor</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Comic-Seiten-Generator</a>
+    </br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image' . $dateiendungPHP; ?>">Bild-Upload</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail' . $dateiendungPHP; ?>">Thumbnail-Generator</a>
@@ -45,21 +58,8 @@ $nonce = $nonce ?? '';
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . $dateiendungPHP; ?>">Bild-Cache-Generator</a>
     </br>
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter Daten
-      Editor</a>
-    </br>
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Daten
-      Editor</a>
-    <a
-      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Comic-Seiten-Generator</a>
-    </br>
-    <!-- NEU: Link zur Report-Verwaltung -->
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports' . $dateiendungPHP; ?>">Fehlermeldungen</a>
-    </br>
+
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS-Generator</a>
-    </br>
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Daten
-      Editor</a>
     </br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_sitemap' . $dateiendungPHP; ?>">Sitemap
       Editor</a>
