@@ -1,0 +1,140 @@
+/**
+ * Summernote Editor Overrides
+ * Passt das Design des WYSIWYG-Editors an das Theme an (Light/Dark).
+ *
+ * @file      scss/vendors/_summernote.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Extrahiert aus main_dark.scss für bessere Kapselung.
+ */
+
+@use '../abstracts/variables' as *;
+
+.note-editor.note-frame {
+    border-color: var(--border-medium);
+
+    body.theme-night & {
+        border-color: var(--button-bg);
+    }
+
+    // Toolbar
+    .note-toolbar {
+        background-color: var(--table-header-bg) !important;
+        border-bottom: 1px solid var(--border-medium);
+        color: var(--text-color);
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg) !important; // Accent Dark
+            border-bottom-color: var(--button-bg);
+        }
+    }
+
+    // Buttons
+    .note-btn {
+        background-color: var(--button-bg);
+        color: var(--text-on-medium);
+        border: 1px solid transparent;
+
+        body.theme-night & {
+            color: var(--text-color);
+        }
+
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: var(--button-hover-bg);
+        }
+    }
+
+    .note-btn.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    // Dropdowns
+    .dropdown-menu {
+        background-color: var(--content-bg);
+        border-color: var(--border-medium);
+        color: var(--text-color);
+
+        body.theme-night & {
+            background-color: var(--page-bg);
+            border-color: var(--button-bg);
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+
+            &:hover {
+                background-color: var(--menu-bg);
+
+                body.theme-night & {
+                    background-color: var(--button-bg);
+                }
+            }
+        }
+    }
+
+    // Editor Area (Editable)
+    .note-editable {
+        background-color: var(--content-bg) !important;
+        color: var(--text-color) !important;
+
+        body.theme-night & {
+            background-color: var(--page-bg) !important;
+        }
+
+        p {
+            color: var(--text-color) !important;
+        }
+    }
+
+    // Code View
+    .note-codable {
+        background-color: #222;
+        color: #ccc;
+
+        body.theme-night & {
+            background-color: var(--page-bg);
+            color: var(--link-color);
+        }
+    }
+
+    // Statusbar / Resize
+    .note-statusbar {
+        background-color: var(--table-header-bg);
+        border-top: 1px solid var(--border-medium);
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+            border-top-color: var(--button-bg);
+        }
+
+        .note-resizebar {
+            border-top: 1px solid var(--border-light);
+        }
+    }
+
+    // Dialogs / Modals within Summernote
+    .note-modal-content {
+        background-color: var(--content-bg);
+        color: var(--text-color);
+        border: 1px solid var(--border-medium);
+    }
+
+    .note-modal-header {
+        background-color: var(--header-bg);
+        border-bottom: 1px solid var(--border-medium);
+    }
+
+    .note-input {
+        background-color: var(--content-bg);
+        color: var(--text-color);
+        border: 1px solid var(--border-medium);
+
+        body.theme-night & {
+            background-color: var(--page-bg);
+            border-color: var(--button-bg);
+        }
+    }
+}

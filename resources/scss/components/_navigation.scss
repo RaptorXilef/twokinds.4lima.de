@@ -1,0 +1,211 @@
+/**
+ * Navigation Components (Comic Nav, etc.)
+ *
+ * @file      scss/components/_navigation.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Zusammenführung von Comic-Nav Styles.
+ */
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.comicnav {
+    width: 825px;
+    text-align: center;
+    margin: 0 auto 15px auto;
+    color: var(--text-on-medium);
+    background-color: var(--comic-nav-bg);
+    border-radius: 3px;
+    padding: 7px 0;
+    box-shadow: inset 0px 2px 2px 0px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+
+    @include media-retina-mobile {
+        font-size: 1.1em;
+    }
+
+    &.bottomnav {
+        margin-top: 15px;
+        margin-bottom: 0;
+    }
+
+    button.bookmark {
+        height: 36px;
+        transform: translateY(-36px);
+        width: 27px;
+        flex: 0 0 auto;
+        background: url('#{$base-url}/assets/images/layout/ui/bookmark.png?c=20251024')
+            0 0 no-repeat;
+        background-size: contain;
+        overflow: hidden;
+        text-indent: -100em;
+        white-space: nowrap;
+        position: absolute;
+        top: 0;
+        right: 1rem;
+        z-index: 1000;
+        border-radius: 0;
+
+        body.theme-night & {
+            filter: brightness(1.1);
+        }
+
+        &.bookmarked {
+            background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024')
+                0 0 no-repeat;
+            background-size: contain;
+
+            body.theme-night & {
+                filter: brightness(1.3);
+            }
+        }
+
+        @include media-retina-mobile {
+            height: 45px;
+            width: 34px;
+            transform: translateY(-34px);
+            top: -11px;
+        }
+    }
+
+    img {
+        margin: 0 4px;
+    }
+
+    a,
+    button {
+        color: var(--text-on-medium);
+        text-decoration: none;
+
+        body.theme-night & {
+            color: var(--text-color);
+        }
+    }
+
+    .navarrow {
+        display: inline-flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        justify-content: center;
+        margin: 0 3px;
+        border-radius: 4px;
+        width: 138px;
+        padding: 2px 5px;
+        background-color: transparent;
+        text-align: center;
+
+        @include media-retina-mobile {
+            height: 50px;
+        }
+    }
+
+    .nav-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .navarrow:not(.disabled):hover {
+        background-color: var(--comic-nav-hover-bg);
+    }
+
+    // --- Navigation Icons (Image Switches for Dark Mode) ---
+    // Da CSS Vars für URLs komplex sind, nutzen wir hier Nesting für den Theme-Switch
+    .navbegin .nav-wrapper {
+        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin.png?c=20250916')
+            0 50% no-repeat;
+        padding-left: 35px;
+        body.theme-night & {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
+        }
+    }
+
+    .navprev .nav-wrapper {
+        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916')
+            0 50% no-repeat;
+        padding-left: 26px;
+        body.theme-night & {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
+        }
+    }
+
+    .navnext .nav-wrapper {
+        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916')
+            100% 50% no-repeat;
+        padding-right: 26px;
+        body.theme-night & {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
+        }
+    }
+
+    .navend .nav-wrapper {
+        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end.png?c=20250916')
+            100% 50% no-repeat;
+        padding-right: 35px;
+        body.theme-night & {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
+        }
+    }
+
+    .nav-report-issue {
+        width: auto;
+        .nav-wrapper {
+            background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue.png?c=20251029')
+                0 50% no-repeat;
+            padding-left: 28px;
+            background-size: 20px;
+            body.theme-night & {
+                background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
+            }
+        }
+    }
+
+    // --- Archive Button ---
+    .navarchive {
+        display: inline-flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        justify-content: center;
+        border-radius: 14px;
+        text-align: center;
+        padding: 2px 20px;
+        margin: 0 6px;
+        color: #fff;
+        background-color: var(--comic-nav-archive-bg);
+
+        @include media-retina-mobile {
+            height: 50px;
+            border-radius: 7px;
+        }
+
+        &:hover {
+            background-color: var(--comic-nav-archive-hover-bg);
+        }
+
+        body.theme-night & {
+            color: var(--text-color);
+        }
+    }
+
+    .disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+
+    &.bottomnav .nav-lang-toggle {
+        width: auto;
+        .nav-wrapper {
+            background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916')
+                0 50% no-repeat;
+            padding-left: 55px;
+            body.theme-night & {
+                background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
+            }
+        }
+    }
+}

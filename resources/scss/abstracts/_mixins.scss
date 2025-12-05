@@ -1,0 +1,30 @@
+/**
+ * Global Mixins
+ *
+ * @file      scss/abstracts/_mixins.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Initiale Erstellung für 7-1 Pattern.
+ */
+
+// Media Query für High-Res Mobile Devices (aus Original übernommen)
+@mixin media-retina-mobile {
+    @media only screen and (min-device-width: 320px) and (max-device-width: 640px) and (-webkit-min-device-pixel-ratio: 2) {
+        @content;
+    }
+}
+
+@mixin media-tablet {
+    @media (max-width: 768px) {
+        @content;
+    }
+}
+
+// Clearfix helper
+@mixin clearfix {
+    &::after {
+        content: '';
+        display: table;
+        clear: both;
+    }
+}

@@ -1,0 +1,186 @@
+/**
+ * Cookie Banner Component
+ *
+ * @file      scss/components/_cookie-banner.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Zusammenführung von Light/Dark Mode via CSS Vars.
+ */
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+#cookieConsentBanner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+
+    // Theming via CSS Vars aus _variables.scss
+    background-color: var(--cookie-bg);
+    color: var(--cookie-text);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+    body.theme-night & {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 9999;
+    display: none;
+    font-family: $font-stack;
+    line-height: 1.5;
+    font-size: 14px;
+
+    h3 {
+        font-size: 1.4em;
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: var(--cookie-heading);
+        text-align: center;
+    }
+
+    p {
+        margin-bottom: 15px;
+    }
+
+    .cookie-category {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: var(--cookie-cat-bg);
+        border-radius: 5px;
+
+        label {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        input[type='checkbox'] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            cursor: pointer;
+
+            &:disabled {
+                cursor: not-allowed;
+                opacity: 0.7;
+            }
+        }
+
+        .description {
+            font-size: 0.9em;
+            color: var(--cookie-desc);
+            margin-top: 5px;
+            margin-left: 30px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 10px;
+            margin-bottom: 0;
+
+            li {
+                margin-bottom: 10px;
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
+
+    .cookie-buttons {
+        display: flex;
+        justify-content: space-around;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+
+        button {
+            flex: 1 1 auto;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+            min-width: 120px;
+        }
+    }
+
+    #acceptAllCookies {
+        background-color: var(--cookie-btn-accept-bg);
+        color: #fff;
+        body.theme-night & {
+            color: var(--cookie-text);
+        }
+        &:hover {
+            background-color: var(--cookie-btn-accept-hover);
+        }
+    }
+
+    #rejectAllCookies {
+        background-color: var(--cookie-btn-reject-bg);
+        color: var(--cookie-text);
+        &:hover {
+            background-color: var(--cookie-btn-reject-hover);
+        }
+    }
+
+    #saveCookiePreferences {
+        background-color: var(--cookie-btn-save-bg);
+        color: var(--cookie-text);
+        &:hover {
+            background-color: var(--cookie-btn-save-hover);
+        }
+    }
+
+    @include media-tablet {
+        width: 95%;
+        bottom: 10px;
+        padding: 15px;
+
+        h3 {
+            font-size: 1.2em;
+        }
+        .cookie-buttons {
+            flex-direction: column;
+        }
+    }
+}
+
+.collapsible-content {
+    display: none;
+    margin-top: 5px;
+    padding-left: 15px;
+    font-size: 0.9em;
+    border-left: 2px solid var(--border-medium); // Maps to $light-border / $dark-border in logic
+    padding-bottom: 5px;
+
+    body.theme-night & {
+        border-left-color: var(--border-medium);
+    }
+}
+
+.toggle-details {
+    cursor: pointer;
+    font-size: 0.9em;
+    color: var(--cookie-link);
+    text-decoration: underline;
+    margin-left: 10px;
+    white-space: nowrap;
+
+    &:hover {
+        color: var(--cookie-link-hover);
+    }
+}
+
+.toggle-icon {
+    margin-left: 5px;
+    transition: transform 0.2s ease;
+}

@@ -1,0 +1,82 @@
+/**
+ * Footer & Bottom Area
+ *
+ * @file      scss/layout/_footer.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Initiale Erstellung.
+ */
+
+@use '../abstracts/variables' as *;
+
+.bottom {
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    width: 1039px;
+    margin: auto;
+    min-height: 350px;
+    padding: 8px 8px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 10px;
+
+    body.theme-night & {
+        border-color: var(--page-bg);
+    }
+
+    .bottom-left {
+        flex: 0 0 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .bottom-ctr {
+        flex: 1 1 100%;
+        overflow: hidden;
+
+        .twitter-box {
+            height: 377px;
+            overflow: auto;
+        }
+    }
+
+    .bottom-right {
+        flex: 0 0 300px;
+    }
+}
+
+.rec-comic {
+    width: 100%;
+    margin: -4px auto 0 auto;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+
+    .rec-comic-btn {
+        flex: 0 0 88px;
+        height: 31px;
+        margin: 4px 2px 0px 2px;
+        background-color: var(--border-medium);
+    }
+}
+
+footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-color);
+
+    a {
+        color: var(--link-color);
+    }
+}
+
+.footer-img {
+    width: 100%;
+    height: 89px;
+    background: transparent
+        url('#{$base-url}/assets/images/layout/footer.webp?c=20251024') 50% 0
+        no-repeat;
+    margin-top: 5px;
+}

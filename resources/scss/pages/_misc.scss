@@ -1,0 +1,94 @@
+/**
+ * Miscellaneous Pages (FAQ, Chat, Links)
+ *
+ * @file      scss/pages/_misc.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Zusammenfassung kleinerer Seiten.
+ */
+
+@use '../abstracts/variables' as *;
+
+/* --- FAQ Page --- */
+div.page-faq {
+    section {
+        padding-top: 10px;
+        margin-top: 10px;
+        border-top: 1px solid var(--border-medium);
+
+        h2 {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+    }
+}
+
+/* --- Chat Page --- */
+/*div.page-chat {
+    section {
+        margin-bottom: 15px;
+    }
+
+    .chat-button {
+        text-align: center;
+        padding: 5px 0 15px 0;
+        margin: 1.5rem 0 0 0;
+
+        a {
+            padding: 5px 40px;
+            font-size: 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            background-color: var(--comic-nav-archive-bg);
+            color: #fff;
+
+            // Dark Mode override
+            body.theme-night & {
+                background-color: var(--button-bg);
+                color: var(--text-color);
+            }
+
+            &:hover {
+                background-color: var(--comic-nav-archive-hover-bg);
+                body.theme-night & {
+                    background-color: var(--border-light);
+                }
+            }
+        }
+    }
+}*/
+
+/* --- Links Page --- */
+/*.link-segment {
+    margin: 6px 0;
+    margin-bottom: 10px;
+
+    .link-img {
+        margin-top: 2px;
+    }
+    p {
+        margin: 0;
+    }
+}
+
+.imggroup {
+    margin: auto;
+    text-align: center;
+    img {
+        cursor: pointer;
+    }
+}
+
+.dual-img img,
+.many-img img {
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+.link-img {
+    height: 100%;
+    width: 200px;
+    float: left;
+    margin-left: 10px;
+    margin-right: 20px;
+}*/

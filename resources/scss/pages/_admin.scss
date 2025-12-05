@@ -1,0 +1,285 @@
+/**
+ * Admin & Report Pages
+ * Styles für Admin-Tabellen, Filter und Report-Details
+ *
+ * @file      scss/pages/_admin.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Zusammenführung von Filter-Forms und Data-Tables.
+ */
+
+@use '../abstracts/variables' as *;
+
+.filter-form {
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg); // Accent Dark
+        border-color: var(--button-bg);
+    }
+
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+
+    legend {
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        color: var(--text-color);
+    }
+
+    .filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: flex-end;
+
+        label {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: var(--text-color-light);
+            body.theme-night & {
+                color: var(--text-color-light);
+            }
+        }
+
+        input[type='text'],
+        select {
+            padding: 6px 8px;
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+            background-color: var(--content-bg);
+            color: var(--text-color);
+
+            body.theme-night & {
+                background-color: var(--page-bg);
+                border-color: var(--button-bg);
+
+                &:focus {
+                    border-color: var(--border-light);
+                    box-shadow: 0 0 0 2px rgba(72, 119, 138, 0.5);
+                }
+            }
+        }
+    }
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+
+    th,
+    td {
+        border: 1px solid var(--border-light);
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+        color: var(--text-color);
+
+        body.theme-night & {
+            border-color: var(--page-bg);
+        }
+    }
+
+    th {
+        background-color: var(--table-header-bg);
+        font-weight: bold;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: var(--table-row-even);
+    }
+
+    tbody tr:hover {
+        background-color: var(--table-row-hover);
+        body.theme-night & {
+            background-color: var(--button-bg);
+        }
+    }
+
+    .actions-cell {
+        white-space: nowrap;
+        text-align: right;
+
+        form {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 0;
+        }
+
+        button {
+            padding: 4px 8px;
+            font-size: 0.9em;
+            color: #fff;
+        }
+
+        .button-green {
+            background-color: #28a745;
+            &:hover {
+                background-color: #218838;
+            }
+        }
+
+        .button-orange {
+            background-color: #fd7e14;
+            &:hover {
+                background-color: #e66a00;
+            }
+        }
+
+        .button-blue {
+            background-color: #007bff;
+            &:hover {
+                background-color: #0056b3;
+            }
+        }
+
+        .detail-button {
+            background-color: #6c757d; // Grey
+            &:hover {
+                background-color: #5a6268;
+            }
+            color: #fff;
+
+            body.theme-night & {
+                background-color: var(--border-light); // Accent light
+                &:hover {
+                    filter: brightness(1.1);
+                }
+            }
+        }
+    }
+}
+
+// Report Detail Modal Specifics
+.report-detail-modal-content {
+    h3 {
+        margin-top: 15px;
+        margin-bottom: 8px;
+        font-size: 1.1em;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 4px;
+        color: var(--text-color);
+
+        body.theme-night & {
+            border-bottom-color: var(--button-bg);
+        }
+    }
+
+    p strong {
+        display: inline-block;
+        min-width: 90px;
+        color: var(--text-color);
+    }
+
+    .report-text-box {
+        background-color: var(--table-row-even);
+        border: 1px solid var(--border-light);
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        word-wrap: break-word;
+        max-height: 30vh;
+        overflow-y: auto;
+        color: var(--text-color);
+
+        body.theme-night & {
+            background-color: var(--page-bg);
+            border-color: var(--button-bg);
+        }
+    }
+
+    #detail-suggestion {
+        width: 100%;
+        height: 30vh;
+        max-height: 30vh;
+        box-sizing: border-box;
+        background-color: #f1f1f1;
+        border: none;
+        resize: none;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 1.1em;
+        color: var(--text-color);
+
+        body.theme-night & {
+            background-color: color-mix(in srgb, var(--page-bg), white 5%);
+        }
+    }
+
+    .diff-box {
+        .loading-text {
+            color: var(--border-dark);
+            font-style: italic;
+            body.theme-night & {
+                color: var(--text-color-faded);
+            }
+        }
+
+        ins {
+            background-color: var(--status-green-bg);
+            color: var(--status-green-text);
+            text-decoration: none;
+
+            body.theme-night & {
+                background-color: #005000;
+                color: #c8e6c9;
+            }
+        }
+
+        del {
+            background-color: var(--status-red-bg);
+            color: var(--status-red-text);
+            text-decoration: none;
+
+            body.theme-night & {
+                background-color: #7f0000;
+                color: #ffcdd2;
+            }
+        }
+    }
+}
+
+.honeypot-field {
+    display: none !important;
+}
+
+// Transcript Display in Admin
+.original-transcript-box {
+    margin-top: 15px;
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: var(--text-color-light);
+    }
+}
+
+.transcript-display-box {
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 0.9em;
+    word-wrap: break-word;
+    color: var(--text-color);
+
+    body.theme-night & {
+        background-color: var(--page-bg);
+        border-color: var(--button-bg);
+    }
+
+    p {
+        margin-bottom: 7px;
+    }
+    p:last-of-type {
+        margin-bottom: 0;
+    }
+}

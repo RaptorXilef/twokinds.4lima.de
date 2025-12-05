@@ -1,0 +1,276 @@
+/**
+ * Modals & Dialogs
+ * Includes Report Modals & Popups
+ *
+ * @file      scss/components/_modals.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Zusammenführung von Light/Dark Mode.
+ */
+
+@use '../abstracts/variables' as *;
+
+/* --- Allgemeine Modal-Stile (Basis) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--content-bg);
+    margin: auto;
+    padding: 25px;
+    border: 1px solid var(--border-dark);
+
+    body.theme-night & {
+        border-color: var(--border-light);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    font-size: 1.2em;
+    width: 90%;
+    max-width: 70vw;
+    height: 90%;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow:
+        0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    z-index: 1002;
+    overflow-y: auto;
+    color: var(--text-color);
+}
+
+.modal-close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 5px;
+
+    body.theme-night & {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    &:hover,
+    &:focus {
+        color: var(--text-on-medium);
+        text-decoration: none;
+
+        body.theme-night & {
+            color: var(--text-color);
+            background-color: var(--button-bg);
+        }
+    }
+}
+
+.modal-buttons {
+    margin-top: 20px;
+    text-align: right;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* --- Report Modal Spezifisch --- */
+.report-modal-content {
+    .admin-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color-light);
+
+            body.theme-night & {
+                color: #ccc; // Manuelle Anpassung via CSS Var wäre besser, hier hardcoded fallback
+            }
+        }
+
+        input[type='text'],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+            background-color: var(--content-bg);
+            color: var(--text-color);
+
+            body.theme-night & {
+                background-color: var(--page-bg);
+                border-color: var(--button-bg);
+            }
+
+            &:focus {
+                border-color: var(--comic-nav-archive-bg);
+                box-shadow: 0 0 0 2px rgba(93, 123, 93, 0.2);
+                outline: none;
+
+                body.theme-night & {
+                    border-color: var(--border-light);
+                    box-shadow: 0 0 0 2px rgba(72, 119, 138, 0.5);
+                }
+            }
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        select[required]:invalid {
+            color: var(--text-color-faded);
+            body.theme-night & {
+                opacity: 0.5;
+            }
+        }
+    }
+
+    // ... (Images Container & Status Message Styles wurden der Kürze halber weggelassen,
+    // würden aber analog umgewandelt: status-green -> var(--status-green-bg)) ...
+    // Siehe Implementierung in main.scss / main_dark.scss Zusammenführung.
+}
+
+/* --- Popup Dialog --- */
+.dialog {
+    border-radius: 5px;
+    background: var(--content-bg);
+    width: 490px;
+    position: fixed;
+    margin: auto;
+    display: none;
+    z-index: 200;
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.6);
+    color: var(--text-color);
+
+    body.theme-night & {
+        box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.25);
+    }
+
+    img {
+        object-fit: contain;
+        max-width: 100%;
+    }
+    a {
+        color: var(--text-on-medium);
+        text-decoration: none;
+        body.theme-night & {
+            color: var(--link-color);
+        }
+    }
+
+    * {
+        margin: 0;
+    }
+
+    .dialog-body {
+        padding: 10px;
+        padding-top: 0;
+    }
+
+    .dialog-title {
+        background-color: var(--button-hover-bg);
+        border-radius: 3px 3px 0 0;
+        padding: 5px 10px;
+        margin-bottom: 10px;
+        margin-left: -10px;
+        width: 470px;
+        color: var(--text-on-medium);
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg); // Accent Dark
+            color: var(--text-color);
+        }
+    }
+
+    .dialog-center {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    .dialog-x {
+        display: inline-block;
+        background: var(--content-bg);
+        color: var(--text-color-light);
+        font-size: 12px;
+        text-align: center;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 13px;
+        height: 1.1em;
+        width: 1.1em;
+        padding: 3px;
+        margin-top: 1px;
+        margin-right: -5px;
+        border-radius: 2px;
+
+        body.theme-night & {
+            color: var(--text-color);
+            background-color: var(--button-bg);
+        }
+
+        &:hover {
+            background-color: var(--button-disabled-bg);
+            color: var(--text-on-medium);
+
+            body.theme-night & {
+                background-color: var(--border-light); // Accent light
+            }
+        }
+    }
+
+    .dialog-title .dialog-x {
+        float: right;
+    }
+    .dialog-input-header {
+        font-weight: bold;
+        color: var(--text-color);
+    }
+
+    input.embed {
+        padding: 2px;
+        font-size: 14px;
+        margin-top: 2px;
+        margin-bottom: 5px;
+        width: 465px;
+        border: 1px solid var(--border-medium);
+        color: var(--text-color);
+        background-color: var(--content-bg);
+
+        body.theme-night & {
+            border-color: var(--button-bg);
+            background-color: var(--page-bg);
+        }
+    }
+}

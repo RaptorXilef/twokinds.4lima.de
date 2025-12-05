@@ -1,0 +1,44 @@
+/**
+ * Reset & Normalization
+ *
+ * @file      scss/base/_reset.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Extrahiert aus main.scss
+ */
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    border: none;
+}
+
+html {
+    width: 100%;
+}
+
+[hidden] {
+    display: none;
+}
+
+.clear {
+    clear: left;
+}
+
+.float-left {
+    float: left;
+    margin-right: 10px;
+}
+
+.center {
+    text-align: center;
+    margin: auto;
+}
+
+// Hilfsklasse für JS-Abhängigkeiten
+.jsdep {
+    display: none !important;
+}

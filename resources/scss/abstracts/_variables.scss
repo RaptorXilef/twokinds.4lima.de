@@ -1,0 +1,174 @@
+/**
+ * CSS Custom Properties & Sass Variables
+ * Definiert die Farbpaletten für Light und Dark Mode.
+ *
+ * @file      scss/abstracts/_variables.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Refactoring auf 7-1 Pattern und Einführung von CSS Custom Properties für Theming.
+ */
+
+// --- SASS Variablen (für statische Werte wie Fonts, Breakpoints) ---
+$font-stack: 'Lucida Grande', Arial, 'Open Sans', sans-serif;
+$font-mono: 'Lucida Console', Courier, monospace;
+$base-url: 'https://twokinds.4lima.de'; // Wichtig für Bildpfade
+
+// Breakpoints
+$breakpoint-mobile: 768px;
+
+// --- CSS Custom Properties (Theming) ---
+:root {
+    // Backgrounds
+    --page-bg: #81dbfe;
+    --content-area-bg: #fff;
+    --content-bg: #fafafa;
+    --content-box-bg: #ffffff;
+    --sidebar-bg: #d1e5d4;
+    --header-bg: #ddead7;
+
+    // Text
+    --text-color: #333;
+    --text-color-light: #555;
+    --text-color-medium: #666;
+    --text-color-faded: #999;
+    --text-on-dark: #fff;
+    --text-on-medium: #000;
+
+    // Links
+    --link-color: #08c;
+    --link-visited: #08c;
+
+    // Borders
+    --border-light: #ddd;
+    --border-medium: #ccc;
+    --border-dark: #888;
+    --border-black: #000;
+
+    // Characters
+    --characters-area-bg: #e0ffe485;
+
+    // Navigation & Buttons
+    --menu-bg: #effff2;
+    --menu-hover-bg: #fff;
+    --button-bg: #d1e5d4;
+    --button-hover-bg: #b1cab5;
+    --button-disabled-bg: #e0e0e0;
+    --comic-nav-bg: #c8e0c8;
+    --comic-nav-hover-bg: #aac8aa;
+    --comic-nav-archive-bg: #5d7b5d;
+    --comic-nav-archive-hover-bg: #789e78;
+
+    // Theme Specifics
+    --theme-label-bg: #7ba181;
+    --new-tag-bg: #7ba181;
+    --maintbanner-bg: #f5d568;
+    --maintbanner-text: #000;
+
+    // Status Colors
+    --status-green-bg: #d4edda;
+    --status-green-text: #155724;
+    --status-green-border: #c3e6cb;
+    --status-red-bg: #f8d7da;
+    --status-red-text: #721c24;
+    --status-red-border: #f5c6cb;
+    --status-orange-bg: #fff3cd;
+    --status-orange-text: #856404;
+    --status-orange-border: #ffeeba;
+
+    // Admin Tables
+    --table-header-bg: #e9ecef;
+    --table-row-even: #f8f9fa;
+    --table-row-hover: #e2e6ea;
+
+    // Cookie Banner (Light)
+    --cookie-bg: #f5f5f5;
+    --cookie-text: #333;
+    --cookie-heading: #000;
+    --cookie-cat-bg: #e0e0e0;
+    --cookie-desc: #555;
+    --cookie-link: #007bff;
+    --cookie-link-hover: #0056b3;
+    --cookie-btn-accept-bg: #6c8f6c;
+    --cookie-btn-accept-hover: #85aa85;
+    --cookie-btn-reject-bg: #d1e5d4;
+    --cookie-btn-reject-hover: #b1cab5;
+    --cookie-btn-save-bg: #b1cab5;
+    --cookie-btn-save-hover: #9cb59c;
+}
+
+// --- Dark Mode Overrides ---
+body.theme-night {
+    // Backgrounds
+    --page-bg: #002b3c;
+    --content-area-bg: #00425c; // #393322
+    --content-bg: #003f58; // Inhaltsbereich
+    --content-box-bg: #00334c; // Transcript etc.
+    --sidebar-bg: #00334c; // Accent Dark
+    --header-bg: #002b3c;
+
+    // Text
+    --text-color: #fff;
+    --text-color-light: #ccc; // Helleres Grau für Dark Mode
+    --text-color-medium: #aaa;
+    --text-color-faded: #777;
+    --text-on-medium: #fff; // Text auf Buttons wird weiß
+
+    // Links
+    --link-color: #81dbfe;
+    --link-visited: #81dbfe;
+
+    // Borders
+    --border-light: #48778a;
+    --border-medium: #2a6177;
+    --border-dark: #00334c;
+    --border-black: #002b3c;
+
+    // Characters
+    --characters-area-bg: #393322;
+
+    // Navigation & Buttons
+    --menu-bg: #2a6177; // Button Color
+    --menu-hover-bg: #48778a; // Accent Light
+    --button-bg: #2a6177;
+    --button-hover-bg: #48778a;
+    --button-disabled-bg: rgba(42, 97, 119, 0.6); // Transparentes Button-Blau
+    --comic-nav-bg: #00334c; // Accent Dark
+    --comic-nav-hover-bg: #003f58; // Content BG
+    --comic-nav-archive-bg: #2a6177;
+    --comic-nav-archive-hover-bg: #48778a;
+
+    // Theme Specifics
+    --theme-label-bg: #628492;
+    --maintbanner-text: #000; // Banner bleibt gelb, Text schwarz
+
+    // Status Colors (Darkened for contrast)
+    --status-green-bg: #1e4620;
+    --status-green-text: #e8f5e9;
+    --status-green-border: #1e4620;
+    --status-red-bg: #5a1e1e;
+    --status-red-text: #fce4e4;
+    --status-red-border: #5a1e1e;
+    --status-orange-bg: #5a4e1e;
+    --status-orange-text: #fff8e1;
+    --status-orange-border: #5a4e1e;
+
+    // Admin Tables
+    --table-header-bg: #48778a;
+    --table-row-even: #00334c;
+    --table-row-hover: #2a6177;
+
+    // Cookie Banner (Dark)
+    --cookie-bg: #00334c;
+    --cookie-text: #fff;
+    --cookie-heading: #fff;
+    --cookie-cat-bg: #00425c;
+    --cookie-desc: #ccc;
+    --cookie-link: #81dbfe;
+    --cookie-link-hover: #a0eaff;
+    --cookie-btn-accept-bg: #2a6177;
+    --cookie-btn-accept-hover: #48778a;
+    --cookie-btn-reject-bg: #002b3c;
+    --cookie-btn-reject-hover: #00425c;
+    --cookie-btn-save-bg: #002b3c;
+    --cookie-btn-save-hover: #00425c;
+}

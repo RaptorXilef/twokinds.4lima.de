@@ -1,0 +1,175 @@
+/**
+ * Sidebar & Navigation
+ *
+ * @file      scss/layout/_sidebar.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 CSS Vars Integration.
+ */
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.sidebar {
+    display: flex;
+    flex: 0 0 200px;
+}
+
+.sidebar-content {
+    width: 167px;
+    padding: 11px 4px 7px 4px;
+    text-align: center;
+    border-radius: 0 0 5px 5px;
+    margin-left: 12px;
+    background-color: var(--sidebar-bg);
+
+    .full-width-img {
+        margin-left: -5px;
+    }
+}
+
+.incentive {
+    width: 160px;
+    margin: auto;
+    margin-bottom: 10px;
+
+    .tinytext {
+        margin-bottom: 2px;
+    }
+}
+
+/* Navigation Menu */
+.menu {
+    font-size: 14px;
+    margin-bottom: 10px;
+
+    @include media-retina-mobile {
+        font-size: 1.1em;
+    }
+
+    a {
+        color: var(--text-on-medium);
+        display: block;
+        list-style-type: none;
+        width: 160px;
+        background-color: var(--menu-bg);
+        border-radius: 4px;
+        text-transform: uppercase;
+        margin: 3px auto;
+        overflow: hidden;
+        padding: 3px 0;
+        text-decoration: none;
+        cursor: pointer;
+        position: relative;
+
+        @include media-retina-mobile {
+            padding: 8px 0;
+            margin: 8px auto;
+        }
+
+        &:hover {
+            background-color: var(--menu-hover-bg);
+        }
+    }
+
+    a.theme {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 0;
+        margin-top: 10px;
+
+        span.themelabel {
+            flex: 0 0 0;
+            padding: 1px;
+            background-color: var(--theme-label-bg);
+            color: #fff;
+            font-size: 0.7em;
+        }
+
+        span.themename {
+            text-align: center;
+            flex: 1 1 auto;
+            padding: 3px;
+            color: var(--text-on-medium);
+
+            body.theme-night & {
+                color: var(--text-color);
+            }
+        }
+    }
+
+    a.menu-new {
+        @include media-retina-mobile {
+            padding-top: calc(0.7em + 5px);
+            padding-bottom: calc(8px - 0.7em + 5px);
+        }
+
+        &:after {
+            content: 'New';
+            display: inline-block;
+            width: 26px;
+            background-color: var(--new-tag-bg);
+            color: #fff;
+            font-size: 0.7em;
+            position: absolute;
+            top: 6px;
+            left: -6px;
+            transform: rotate(-90deg);
+
+            @include media-retina-mobile {
+                width: auto;
+                top: 0;
+                left: 0;
+                right: 0;
+                transform: none;
+            }
+        }
+    }
+}
+
+// Ads & Donation Styling (Sidebar components)
+.abg-sidebar {
+    max-height: 630px;
+    width: 160px;
+    margin: auto;
+    overflow: hidden;
+
+    .advertisement {
+        margin: 10px 0 20px 0;
+        height: 600px;
+    }
+}
+
+.av2 {
+    margin: auto;
+    width: 300px;
+    height: 268px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.av2-child {
+    position: relative;
+    width: 300px;
+    height: 250px;
+    overflow: hidden;
+
+    .advertisement {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        background-color: var(--content-bg);
+    }
+}
+
+.donate-box {
+    width: 300px;
+    height: 250px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+}

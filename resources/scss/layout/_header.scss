@@ -1,0 +1,68 @@
+/**
+ * Header & Banner
+ *
+ * @file      scss/layout/_header.scss
+ * @package   twokinds.4lima.de
+ * @version   4.2.0
+ * @since     4.2.0 Dark Mode Bilder per Parent Selector.
+ */
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *; // <-- WICHTIG: Dieser Import hat gefehlt
+
+.banner {
+    width: 1099px;
+    height: 314px;
+    padding-top: 10px;
+    position: relative;
+    z-index: 99;
+    margin-left: -10px;
+    background: transparent
+        url('#{$base-url}/assets/images/layout/banner.webp?c=20251024') 0 10px
+        no-repeat;
+    text-indent: 105%;
+    white-space: nowrap;
+    overflow: hidden;
+
+    // Dark Mode Banner Override
+    body.theme-night & {
+        background-image: url('#{$base-url}/assets/images/layout/banner.webp?c=20251024');
+    }
+}
+
+// Spezieller Banner Mode
+.banner-lights-off {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 0;
+    width: 0;
+}
+
+#banner-lights-off {
+    body.theme-night & {
+        background-image: url('#{$base-url}/assets/images/layout/banner.webp?c=20251024');
+    }
+}
+
+.maintbanner {
+    font-size: 0.9em;
+    padding: 1em 8em;
+    text-align: center;
+    background-color: var(--maintbanner-bg);
+    color: var(--maintbanner-text);
+    position: relative;
+    z-index: 200;
+
+    a,
+    a:link,
+    a:visited,
+    a:active {
+        color: var(--maintbanner-text);
+    }
+
+    // Hier wurde das Mixin verwendet, ohne dass es bekannt war
+    @include media-retina-mobile {
+        font-size: 1.2em;
+    }
+}
