@@ -1,11 +1,28 @@
-/**
- * Buttons
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Buttons
+///
+/// Zentralisierte Button-Styles und Dropdowns.
+///
+
+/*!
+ * @file      resources/scss/components/_buttons.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/components/_buttons.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Zentralisierte Button-Styles.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Zentralisierte Button-Styles.
+/// @since    4.2.1
+/// - style(Linter): Selektor-Reihenfolge für Dark Mode Overrides korrigiert.
+///
 
 @use '../abstracts/variables' as *;
 
@@ -16,7 +33,6 @@
         background: none;
         color: var(--text-on-medium);
         border: none;
-        padding: 0;
         font: inherit;
         cursor: pointer;
         outline: inherit;
@@ -39,7 +55,6 @@
 
         body.theme-night & {
             opacity: 0.7;
-            // Farbanpassung via CSS Vars erledigt
         }
     }
 
@@ -54,10 +69,6 @@
             50% 50% no-repeat;
         background-size: contain;
 
-        body.theme-night & {
-            background-image: url('#{$base-url}/assets/images/layout/ui/dropdown_dark.svg?c=20251024');
-        }
-
         &.animate {
             transition: rotate 0.1s;
         }
@@ -66,17 +77,22 @@
     .arrow-left {
         rotate: -90deg;
     }
+
+    // Theme Overrides am Ende des Blocks
+    body.theme-night & {
+        .arrow-down,
+        .arrow-left {
+            background-image: url('#{$base-url}/assets/images/layout/ui/dropdown_dark.svg?c=20251024');
+        }
+    }
 }
 
 // Spezifische Button-Klassen (Admin / Reports)
 .button-green {
-    background-color: var(
-        --status-green-text
-    ) !important; // Fallback oder Var Check
+    background-color: var(--status-green-text) !important;
     color: white !important;
+
     &:hover {
         background-color: var(--button-green-hover) !important;
     }
 }
-// ... weitere Farb-Buttons können hier generiert werden wenn nötig,
-// aber die werden meist im data-table Kontext genutzt.

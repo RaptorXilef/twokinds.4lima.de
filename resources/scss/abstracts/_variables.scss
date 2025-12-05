@@ -1,16 +1,30 @@
-/**
- * CSS Custom Properties & Sass Variables
- * Definiert die Farbpaletten für Light und Dark Mode.
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// CSS Custom Properties & Sass Variables
+///
+/// Definiert die Farbpaletten für Light und Dark Mode sowie globale Einstellungen.
+///
+
+/*!
+ * @file      resources/scss/abstracts/_variables.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/abstracts/_variables.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Refactoring auf 7-1 Pattern und Einführung von CSS Custom Properties für Theming.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
 
+///
+/// @since    4.2.0
+/// - Refactoring auf 7-1 Pattern und Einführung von CSS Custom Properties für Theming.
+///
+
 // --- SASS Variablen (für statische Werte wie Fonts, Breakpoints) ---
-$font-stack: 'Lucida Grande', Arial, 'Open Sans', sans-serif;
-$font-mono: 'Lucida Console', Courier, monospace;
+$font-stack: 'Lucida Grande', arial, 'Open Sans', sans-serif;
+$font-mono: 'Lucida Console', courier, monospace;
 $base-url: 'https://twokinds.4lima.de'; // Wichtig für Bildpfade
 
 // Breakpoints
@@ -22,7 +36,7 @@ $breakpoint-mobile: 768px;
     --page-bg: #81dbfe;
     --content-area-bg: #fff;
     --content-bg: #fafafa;
-    --content-box-bg: #ffffff;
+    --content-box-bg: #fff;
     --sidebar-bg: #d1e5d4;
     --header-bg: #ddead7;
 
@@ -100,18 +114,18 @@ $breakpoint-mobile: 768px;
 body.theme-night {
     // Backgrounds
     --page-bg: #002b3c;
-    --content-area-bg: #00425c; // #393322
-    --content-bg: #003f58; // Inhaltsbereich
-    --content-box-bg: #00334c; // Transcript etc.
-    --sidebar-bg: #00334c; // Accent Dark
+    --content-area-bg: #00425c;
+    --content-bg: #003f58;
+    --content-box-bg: #00334c;
+    --sidebar-bg: #00334c;
     --header-bg: #002b3c;
 
     // Text
     --text-color: #fff;
-    --text-color-light: #ccc; // Helleres Grau für Dark Mode
+    --text-color-light: #ccc;
     --text-color-medium: #aaa;
     --text-color-faded: #777;
-    --text-on-medium: #fff; // Text auf Buttons wird weiß
+    --text-on-medium: #fff;
 
     // Links
     --link-color: #81dbfe;
@@ -127,19 +141,19 @@ body.theme-night {
     --characters-area-bg: #393322;
 
     // Navigation & Buttons
-    --menu-bg: #2a6177; // Button Color
-    --menu-hover-bg: #48778a; // Accent Light
+    --menu-bg: #2a6177;
+    --menu-hover-bg: #48778a;
     --button-bg: #2a6177;
     --button-hover-bg: #48778a;
-    --button-disabled-bg: rgba(42, 97, 119, 0.6); // Transparentes Button-Blau
-    --comic-nav-bg: #00334c; // Accent Dark
-    --comic-nav-hover-bg: #003f58; // Content BG
+    --button-disabled-bg: rgb(42 97 119 / 60%);
+    --comic-nav-bg: #00334c;
+    --comic-nav-hover-bg: #003f58;
     --comic-nav-archive-bg: #2a6177;
     --comic-nav-archive-hover-bg: #48778a;
 
     // Theme Specifics
     --theme-label-bg: #628492;
-    --maintbanner-text: #000; // Banner bleibt gelb, Text schwarz
+    --maintbanner-text: #000;
 
     // Status Colors (Darkened for contrast)
     --status-green-bg: #1e4620;

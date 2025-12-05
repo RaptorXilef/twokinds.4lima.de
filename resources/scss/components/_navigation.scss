@@ -1,11 +1,28 @@
-/**
- * Navigation Components (Comic Nav, etc.)
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Navigation Components
+///
+/// Comic Navigationsleiste und Buttons.
+///
+
+/*!
+ * @file      resources/scss/components/_navigation.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/components/_navigation.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Zusammenführung von Comic-Nav Styles.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Zusammenführung von Comic-Nav Styles.
+/// @since    4.2.1
+/// - style(Linter): Nesting optimiert, um Specificity-Fehler zu beheben.
+///
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -13,12 +30,12 @@
 .comicnav {
     width: 825px;
     text-align: center;
-    margin: 0 auto 15px auto;
+    margin: 0 auto 15px;
     color: var(--text-on-medium);
     background-color: var(--comic-nav-bg);
     border-radius: 3px;
     padding: 7px 0;
-    box-shadow: inset 0px 2px 2px 0px rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 2px 2px 0 rgb(0 0 0 / 35%);
     display: flex;
     flex-flow: row nowrap;
     gap: 0.5rem;
@@ -115,54 +132,60 @@
     }
 
     // --- Navigation Icons (Image Switches for Dark Mode) ---
-    // Da CSS Vars für URLs komplex sind, nutzen wir hier Nesting für den Theme-Switch
+
     .navbegin .nav-wrapper {
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin.png?c=20250916')
             0 50% no-repeat;
         padding-left: 35px;
-        body.theme-night & {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
-        }
+    }
+
+    body.theme-night & .navbegin .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
     }
 
     .navprev .nav-wrapper {
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916')
             0 50% no-repeat;
         padding-left: 26px;
-        body.theme-night & {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
-        }
+    }
+
+    body.theme-night & .navprev .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
     }
 
     .navnext .nav-wrapper {
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916')
             100% 50% no-repeat;
         padding-right: 26px;
-        body.theme-night & {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
-        }
+    }
+
+    body.theme-night & .navnext .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
     }
 
     .navend .nav-wrapper {
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end.png?c=20250916')
             100% 50% no-repeat;
         padding-right: 35px;
-        body.theme-night & {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
-        }
+    }
+
+    body.theme-night & .navend .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
     }
 
     .nav-report-issue {
         width: auto;
+
         .nav-wrapper {
             background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue.png?c=20251029')
                 0 50% no-repeat;
             padding-left: 28px;
             background-size: 20px;
-            body.theme-night & {
-                background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
-            }
         }
+    }
+
+    body.theme-night & .nav-report-issue .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
     }
 
     // --- Archive Button ---
@@ -199,13 +222,15 @@
 
     &.bottomnav .nav-lang-toggle {
         width: auto;
+
         .nav-wrapper {
             background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916')
                 0 50% no-repeat;
             padding-left: 55px;
-            body.theme-night & {
-                background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
-            }
         }
+    }
+
+    body.theme-night &.bottomnav .nav-lang-toggle .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
     }
 }

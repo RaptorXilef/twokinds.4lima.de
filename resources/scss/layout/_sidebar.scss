@@ -1,11 +1,26 @@
-/**
- * Sidebar & Navigation
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Sidebar & Navigation
+///
+/// Styles für die Seitenleiste und deren Menü.
+///
+
+/*!
+ * @file      resources/scss/layout/_sidebar.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/layout/_sidebar.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 CSS Vars Integration.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - CSS Vars Integration.
+///
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -17,7 +32,7 @@
 
 .sidebar-content {
     width: 167px;
-    padding: 11px 4px 7px 4px;
+    padding: 11px 4px 7px;
     text-align: center;
     border-radius: 0 0 5px 5px;
     margin-left: 12px;
@@ -106,7 +121,7 @@
             padding-bottom: calc(8px - 0.7em + 5px);
         }
 
-        &:after {
+        &::after {
             content: 'New';
             display: inline-block;
             width: 26px;
@@ -127,49 +142,4 @@
             }
         }
     }
-}
-
-// Ads & Donation Styling (Sidebar components)
-.abg-sidebar {
-    max-height: 630px;
-    width: 160px;
-    margin: auto;
-    overflow: hidden;
-
-    .advertisement {
-        margin: 10px 0 20px 0;
-        height: 600px;
-    }
-}
-
-.av2 {
-    margin: auto;
-    width: 300px;
-    height: 268px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.av2-child {
-    position: relative;
-    width: 300px;
-    height: 250px;
-    overflow: hidden;
-
-    .advertisement {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1000;
-        background-color: var(--content-bg);
-    }
-}
-
-.donate-box {
-    width: 300px;
-    height: 250px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 999;
 }

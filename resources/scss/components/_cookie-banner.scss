@@ -1,16 +1,34 @@
-/**
- * Cookie Banner Component
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Cookie Banner Component
+///
+/// DSGVO-konformer Cookie-Consent Banner.
+///
+
+/*!
+ * @file      resources/scss/components/_cookie-banner.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/components/_cookie-banner.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Zusammenführung von Light/Dark Mode via CSS Vars.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Zusammenführung von Light/Dark Mode via CSS Vars.
+/// @since    4.2.1
+/// - refactor(HTML): IDs auf kebab-case umgestellt.
+/// - style(Linter): Hover-Specificity gefixt.
+///
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-#cookieConsentBanner {
+#cookie-consent-banner {
     position: fixed;
     bottom: 20px;
     left: 50%;
@@ -18,14 +36,10 @@
     width: 90%;
     max-width: 600px;
 
-    // Theming via CSS Vars aus _variables.scss
+    // Theming via CSS Vars
     background-color: var(--cookie-bg);
     color: var(--cookie-text);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-
-    body.theme-night & {
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    }
+    box-shadow: 0 4px 15px rgb(0 0 0 / 20%);
 
     padding: 20px;
     border-radius: 10px;
@@ -34,6 +48,10 @@
     font-family: $font-stack;
     line-height: 1.5;
     font-size: 14px;
+
+    body.theme-night & {
+        box-shadow: 0 4px 15px rgb(0 0 0 / 40%);
+    }
 
     h3 {
         font-size: 1.4em;
@@ -86,6 +104,7 @@
 
             li {
                 margin-bottom: 10px;
+
                 &:last-child {
                     margin-bottom: 0;
                 }
@@ -113,28 +132,32 @@
         }
     }
 
-    #acceptAllCookies {
+    #accept-all-cookies {
         background-color: var(--cookie-btn-accept-bg);
         color: #fff;
-        body.theme-night & {
-            color: var(--cookie-text);
-        }
+
         &:hover {
             background-color: var(--cookie-btn-accept-hover);
         }
+
+        body.theme-night & {
+            color: var(--cookie-text);
+        }
     }
 
-    #rejectAllCookies {
+    #reject-all-cookies {
         background-color: var(--cookie-btn-reject-bg);
         color: var(--cookie-text);
+
         &:hover {
             background-color: var(--cookie-btn-reject-hover);
         }
     }
 
-    #saveCookiePreferences {
+    #save-cookie-preferences {
         background-color: var(--cookie-btn-save-bg);
         color: var(--cookie-text);
+
         &:hover {
             background-color: var(--cookie-btn-save-hover);
         }
@@ -148,6 +171,7 @@
         h3 {
             font-size: 1.2em;
         }
+
         .cookie-buttons {
             flex-direction: column;
         }
@@ -159,7 +183,7 @@
     margin-top: 5px;
     padding-left: 15px;
     font-size: 0.9em;
-    border-left: 2px solid var(--border-medium); // Maps to $light-border / $dark-border in logic
+    border-left: 2px solid var(--border-medium);
     padding-bottom: 5px;
 
     body.theme-night & {

@@ -1,11 +1,26 @@
-/**
- * Footer & Bottom Area
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Footer & Bottom Area
+///
+/// Styles für den Fußbereich.
+///
+
+/*!
+ * @file      resources/scss/layout/_footer.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/layout/_footer.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Initiale Erstellung.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Initiale Erstellung.
+///
 
 @use '../abstracts/variables' as *;
 
@@ -15,7 +30,7 @@
     width: 1039px;
     margin: auto;
     min-height: 350px;
-    padding: 8px 8px;
+    padding: 8px;
     margin-bottom: 10px;
     display: flex;
     flex-flow: row nowrap;
@@ -49,7 +64,7 @@
 
 .rec-comic {
     width: 100%;
-    margin: -4px auto 0 auto;
+    margin: -4px auto 0;
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
@@ -57,7 +72,7 @@
     .rec-comic-btn {
         flex: 0 0 88px;
         height: 31px;
-        margin: 4px 2px 0px 2px;
+        margin: 4px 2px 0;
         background-color: var(--border-medium);
     }
 }

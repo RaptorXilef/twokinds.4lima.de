@@ -7,8 +7,8 @@
     - `base/` (Reset, Typography, globale HTML-Elemente)
     - `layout/` (Header, Footer, Grid, Sidebar, Main-Container)
     - `components/` (Buttons, Modals, Comic-Nav, Cookie-Banner, Character-Cards)
-    - `pages/` (Spezifische Styles für Archiv, Chat, FAQ)
-    - `themes/` (Hier entscheidet sich die Variante: Definition von Light/Dark)
+    - `pages/` (Spezifische Styles für Archiv, FAQ, ...)
+    - `themes/` (Weggelassen, da über CSS-Variablen gelöst)
 
 ## Zusammenfassung der Dateistruktur
 

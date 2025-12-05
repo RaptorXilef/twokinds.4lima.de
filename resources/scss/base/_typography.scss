@@ -1,11 +1,26 @@
-/**
- * Typography Basics
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Typography Basics
+///
+/// Definition von Schriftarten, Überschriften und Textfluss.
+///
+
+/*!
+ * @file      resources/scss/base/_typography.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/base/_typography.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Einführung von CSS Vars für Farben.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Einführung von CSS Vars für Farben.
+///
 
 @use '../abstracts/variables' as *;
 

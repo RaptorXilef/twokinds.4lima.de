@@ -1,11 +1,26 @@
-/**
- * Miscellaneous Pages (FAQ, Chat, Links)
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Miscellaneous Pages (FAQ, Chat, Links)
+///
+/// Zusammenfassung kleinerer Seiten.
+///
+
+/*!
+ * @file      resources/scss/pages/_misc.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/pages/_misc.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Zusammenfassung kleinerer Seiten.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Zusammenfassung kleinerer Seiten.
+///
 
 @use '../abstracts/variables' as *;
 
@@ -24,7 +39,9 @@ div.page-faq {
 }
 
 /* --- Chat Page --- */
-/*div.page-chat {
+
+/*
+div.page-chat {
     section {
         margin-bottom: 15px;
     }
@@ -56,10 +73,13 @@ div.page-faq {
             }
         }
     }
-}*/
+}
+*/
 
 /* --- Links Page --- */
-/*.link-segment {
+
+/*
+.link-segment {
     margin: 6px 0;
     margin-bottom: 10px;
 
@@ -91,4 +111,5 @@ div.page-faq {
     float: left;
     margin-left: 10px;
     margin-right: 20px;
-}*/
+}
+*/

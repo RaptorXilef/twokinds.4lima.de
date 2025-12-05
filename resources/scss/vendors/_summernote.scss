@@ -1,12 +1,28 @@
-/**
- * Summernote Editor Overrides
- * Passt das Design des WYSIWYG-Editors an das Theme an (Light/Dark).
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Summernote Editor Overrides
+///
+/// Passt das Design des WYSIWYG-Editors an das Theme an (Light/Dark).
+///
+
+/*!
+ * @file      resources/scss/vendors/_summernote.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/vendors/_summernote.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Extrahiert aus main_dark.scss für bessere Kapselung.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Extrahiert aus main_dark.scss für bessere Kapselung.
+/// @since    4.2.1
+/// - style(Linter): Button-Status Selektoren priorisiert.
+///
 
 @use '../abstracts/variables' as *;
 

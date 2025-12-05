@@ -1,14 +1,31 @@
-/**
- * Header & Banner
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Header & Banner
+///
+/// Styles für den Kopfbereich und Banner-Logik.
+///
+
+/*!
+ * @file      resources/scss/layout/_header.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/layout/_header.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Dark Mode Bilder per Parent Selector.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
 
+///
+/// @since    4.2.0
+/// - Dark Mode Bilder per Parent Selector.
+/// @since    4.2.1
+/// - fix(CSS): Fehlender Mixin-Import ergänzt.
+///
+
 @use '../abstracts/variables' as *;
-@use '../abstracts/mixins' as *; // <-- WICHTIG: Dieser Import hat gefehlt
+@use '../abstracts/mixins' as *;
 
 .banner {
     width: 1099px;
@@ -61,7 +78,6 @@
         color: var(--maintbanner-text);
     }
 
-    // Hier wurde das Mixin verwendet, ohne dass es bekannt war
     @include media-retina-mobile {
         font-size: 1.2em;
     }

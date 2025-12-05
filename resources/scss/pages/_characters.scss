@@ -1,11 +1,29 @@
-/**
- * Character & Bookmarks Page
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Character & Bookmarks Page
+///
+/// Styles für Charakter-Übersichten und Lesezeichen.
+///
+
+/*!
+ * @file      resources/scss/pages/_characters.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/pages/_characters.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Refactoring.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Refactoring.
+/// @since    4.2.1
+/// - fix(CSS): word-break deprecated property ersetzt.
+/// - style(Linter): Selector Order korrigiert.
+///
 
 @use '../abstracts/variables' as *;
 
@@ -23,13 +41,14 @@
     margin-bottom: 10px;
     color: var(--text-color);
 
-    body.theme-night & {
-        border-bottom-color: var(--button-bg);
-    }
-
     h3 img {
         vertical-align: middle;
-        body.theme-night & {
+    }
+
+    body.theme-night & {
+        border-bottom-color: var(--button-bg);
+
+        h3 img {
             filter: brightness(1.1);
         }
     }
@@ -78,6 +97,7 @@
         strong {
             font-weight: 700;
             color: #333;
+
             body.theme-night & {
                 color: #ddd;
             }
@@ -112,7 +132,7 @@
         justify-content: flex-end;
         align-items: center;
         gap: 0.5rem;
-        margin-bottom: 0px;
+        margin-bottom: 0;
 
         body.theme-night & {
             color: #ccc;
@@ -161,12 +181,12 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                background: rgba(0, 0, 0, 0.65);
+                background: rgb(0 0 0 / 65%);
                 padding: 5px;
                 font-size: 12px;
                 text-align: center;
                 line-height: 1.2;
-                word-break: break-word;
+                overflow-wrap: anywhere; // Replacement for word-break: break-word
                 width: 100%;
                 box-sizing: border-box;
                 transition: background-color 0.2s;
@@ -177,7 +197,7 @@
                     right: 2px;
                     width: 18px;
                     height: 18px;
-                    background: rgba(255, 255, 255, 0.2);
+                    background: rgb(255 255 255 / 20%);
                     border: none;
                     border-radius: 50%;
                     color: white;
@@ -194,12 +214,15 @@
                 img {
                     transform: scale(1.05);
                 }
+
                 span {
-                    background: rgba(0, 0, 0, 0.8);
+                    background: rgb(0 0 0 / 80%);
+
                     .delete {
                         opacity: 1;
+
                         &:hover {
-                            background: rgba(255, 80, 80, 0.8);
+                            background: rgb(255 80 80 / 80%);
                         }
                     }
                 }
@@ -260,6 +283,7 @@
 
             body.theme-night & {
                 background-color: var(--button-bg);
+
                 &:hover {
                     background-color: var(--border-light);
                 }

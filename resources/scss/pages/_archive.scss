@@ -1,11 +1,28 @@
-/**
- * Archive Page
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Archive Page
+///
+/// Styles für die Comic-Archiv Übersicht.
+///
+
+/*!
+ * @file      resources/scss/pages/_archive.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/pages/_archive.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Refactoring auf CSS Vars.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Refactoring auf CSS Vars.
+/// @since    4.2.1
+/// - style(Linter): Spezifitätsprobleme bei Link-Hover behoben.
+///
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -52,7 +69,7 @@
 .chapter-links {
     display: flex;
     flex-flow: row wrap;
-    gap: 6px 6px;
+    gap: 6px;
 
     noscript {
         display: block;
@@ -61,6 +78,7 @@
     &.tag-page-links a {
         width: 100px;
         height: 130px;
+
         @include media-retina-mobile {
             zoom: 1.5;
         }
@@ -74,6 +92,7 @@
         background-color: var(
             --button-bg
         ); // Nutzt Button-BG für Konsistenz (hell/dunkel)
+
         text-decoration: none;
         color: var(--text-on-medium);
         font-size: 1.2em;
@@ -89,7 +108,7 @@
         }
 
         &:hover {
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 5px rgb(0 0 0 / 30%);
             background-color: var(--button-hover-bg); // Dark mode hover support
         }
 
@@ -125,7 +144,7 @@
                 color: #f00;
                 stroke: #fff;
                 stroke-width: 2px;
-                filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
+                filter: drop-shadow(0 0 1px rgb(0 0 0 / 50%));
 
                 @include media-retina-mobile {
                     width: 16px;
@@ -162,15 +181,10 @@
     a.loaded span,
     a.noscript span,
     &.tag-page-links a span {
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgb(0 0 0 / 50%);
         color: #fff;
         display: none;
         z-index: 100;
-
-        body.theme-night & {
-            background-color: rgba(0, 0, 0, 0.65);
-            color: var(--text-color);
-        }
 
         @include media-retina-mobile {
             display: inline-block;
@@ -178,6 +192,15 @@
             bottom: 0;
             top: inherit;
             padding-top: 0;
+        }
+    }
+
+    body.theme-night & {
+        a.loaded span,
+        a.noscript span,
+        &.tag-page-links a span {
+            background-color: rgb(0 0 0 / 65%);
+            color: var(--text-color);
         }
     }
 

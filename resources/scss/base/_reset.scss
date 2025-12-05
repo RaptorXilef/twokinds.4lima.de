@@ -1,11 +1,26 @@
-/**
- * Reset & Normalization
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Reset & Normalization
+///
+/// Grundlegender CSS-Reset und Hilfsklassen.
+///
+
+/*!
+ * @file      resources/scss/base/_reset.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/base/_reset.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Extrahiert aus main.scss
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Extrahiert aus main.scss.
+///
 
 * {
     margin: 0;

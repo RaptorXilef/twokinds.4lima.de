@@ -1,14 +1,32 @@
-/**
- * Normalize.css (Moderne Minimal-Version)
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Normalize.css (Moderne Minimal-Version)
+///
+/// Reset auf einen konsistenten Browser-Standard.
+///
+
+/*!
+ * @file      resources/scss/vendors/_normalize.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/vendors/_normalize.scss
- * @package   twokinds.4lima.de
- * @version   2.1.5
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    2.1.5
+/// - Original Version.
+/// @since    4.2.1
+/// - style(Linter): Doppelte Font-Family Deklarationen entfernt.
+///
 
 html {
     line-height: 1.15;
-    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 body {
@@ -31,7 +49,7 @@ hr {
 }
 
 pre {
-    font-family: monospace, monospace;
+    font-family: monospace;
     font-size: 1em;
 }
 
@@ -53,7 +71,7 @@ strong {
 code,
 kbd,
 samp {
-    font-family: monospace, monospace;
+    font-family: monospace;
     font-size: 1em;
 }
 
@@ -106,8 +124,7 @@ button,
 [type='button'],
 [type='reset'],
 [type='submit'] {
-    appearance: button;
-    -webkit-appearance: button;
+    appearance: auto;
 }
 
 button::-moz-focus-inner,
@@ -159,16 +176,15 @@ textarea {
 
 [type='search'] {
     appearance: textfield;
-    -webkit-appearance: textfield;
     outline-offset: -2px;
 }
 
 [type='search']::-webkit-search-decoration {
-    -webkit-appearance: none;
+    appearance: none;
 }
 
 ::-webkit-file-upload-button {
-    -webkit-appearance: button;
+    appearance: auto;
     font: inherit;
 }
 

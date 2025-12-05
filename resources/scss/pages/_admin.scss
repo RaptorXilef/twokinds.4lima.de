@@ -1,12 +1,28 @@
-/**
- * Admin & Report Pages
- * Styles für Admin-Tabellen, Filter und Report-Details
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin & Report Pages
+///
+/// Styles für Admin-Tabellen, Filter und Report-Details.
+///
+
+/*!
+ * @file      resources/scss/pages/_admin.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/pages/_admin.scss
- * @package   twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Zusammenführung von Filter-Forms und Data-Tables.
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+
+///
+/// @since    4.2.0
+/// - Zusammenführung von Filter-Forms und Data-Tables.
+/// @since    4.2.1
+/// - style(Linter): Descending specificity bei Labels und Tabellen behoben.
+///
 
 @use '../abstracts/variables' as *;
 
@@ -15,7 +31,7 @@
     border: 1px solid var(--border-light);
 
     body.theme-night & {
-        background-color: var(--sidebar-bg); // Accent Dark
+        background-color: var(--sidebar-bg);
         border-color: var(--button-bg);
     }
 
@@ -40,9 +56,10 @@
             margin-bottom: 5px;
             font-size: 0.9em;
             color: var(--text-color-light);
-            body.theme-night & {
-                color: var(--text-color-light);
-            }
+        }
+
+        body.theme-night & label {
+            color: var(--text-color-light);
         }
 
         input[type='text'],
@@ -59,7 +76,7 @@
 
                 &:focus {
                     border-color: var(--border-light);
-                    box-shadow: 0 0 0 2px rgba(72, 119, 138, 0.5);
+                    box-shadow: 0 0 0 2px rgb(72 119 138 / 50%);
                 }
             }
         }
@@ -78,15 +95,18 @@
         text-align: left;
         vertical-align: top;
         color: var(--text-color);
-
-        body.theme-night & {
-            border-color: var(--page-bg);
-        }
     }
 
     th {
         background-color: var(--table-header-bg);
         font-weight: bold;
+    }
+
+    body.theme-night & {
+        th,
+        td {
+            border-color: var(--page-bg);
+        }
     }
 
     tbody tr:nth-child(even) {
@@ -95,6 +115,7 @@
 
     tbody tr:hover {
         background-color: var(--table-row-hover);
+
         body.theme-night & {
             background-color: var(--button-bg);
         }
@@ -119,6 +140,7 @@
 
         .button-green {
             background-color: #28a745;
+
             &:hover {
                 background-color: #218838;
             }
@@ -126,6 +148,7 @@
 
         .button-orange {
             background-color: #fd7e14;
+
             &:hover {
                 background-color: #e66a00;
             }
@@ -133,6 +156,7 @@
 
         .button-blue {
             background-color: #007bff;
+
             &:hover {
                 background-color: #0056b3;
             }
@@ -143,6 +167,7 @@
             &:hover {
                 background-color: #5a6268;
             }
+
             color: #fff;
 
             body.theme-night & {
@@ -182,7 +207,7 @@
         padding: 10px;
         border-radius: 4px;
         margin-bottom: 15px;
-        word-wrap: break-word;
+        overflow-wrap: break-word;
         max-height: 30vh;
         overflow-y: auto;
         color: var(--text-color);
@@ -215,6 +240,7 @@
         .loading-text {
             color: var(--border-dark);
             font-style: italic;
+
             body.theme-night & {
                 color: var(--text-color-faded);
             }
@@ -251,6 +277,7 @@
 // Transcript Display in Admin
 .original-transcript-box {
     margin-top: 15px;
+
     label {
         font-weight: bold;
         display: block;
@@ -268,7 +295,7 @@
     max-height: 150px;
     overflow-y: auto;
     font-size: 0.9em;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     color: var(--text-color);
 
     body.theme-night & {
@@ -279,6 +306,7 @@
     p {
         margin-bottom: 7px;
     }
+
     p:last-of-type {
         margin-bottom: 0;
     }

@@ -1,15 +1,26 @@
-/**
- * Main Stylesheet
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Main Stylesheet
+///
+/// Hauptdatei für die Kompilierung. Importiert alle Module.
+///
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
  *
- * @file      scss/main.scss
- * @package   twokinds.4lima.de
- * @author    Felix M. (@RaptorXilef)
- * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.2.0
- * @since     4.2.0 Komplettes Refactoring auf 7-1 Architecture mit CSS Custom Properties für Theming.
  */
+
+///
+/// @since    4.2.0
+/// - Komplettes Refactoring auf 7-1 Architecture mit CSS Custom Properties für Theming.
+///
 
 // 1. Abstracts (Variables, Mixins)
 @use 'abstracts/variables';
@@ -42,6 +53,7 @@
 @use 'pages/archive';
 @use 'pages/admin';
 @use 'pages/characters';
+
 // @use 'pages/fanart';
 @use 'pages/misc';
 
