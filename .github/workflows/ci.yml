@@ -142,13 +142,13 @@ jobs:
       - name: NPM Abhängigkeiten installieren
         run: npm ci
 
-      # Schritt 11: JavaScript prüfen (ESLint)
-      - name: JS Linting
-        run: npm run lint:js
-
-      # Schritt 12: SCSS prüfen (Stylelint)
+      # Schritt 11: SCSS prüfen (Stylelint)
       - name: SCSS Linting
         run: npm run lint:css
+
+      # Schritt 12: JavaScript prüfen (ESLint)
+      - name: JS Linting
+        run: npm run lint:js
 
       # Schritt 13: Sicherheitslücken in NPM-Paketen finden
       - name: JS Sicherheits-Audit

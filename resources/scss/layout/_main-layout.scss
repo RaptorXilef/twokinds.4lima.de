@@ -22,6 +22,7 @@
 /// - Umstellung auf CSS Vars.
 /// - style(Linter): Reihenfolge der Tabellen-Selektoren korrigiert (Specificity).
 /// - style(Linter): Doppelte Selektoren für Dark Mode zusammengeführt.
+/// - refactor(SCSS): Datei von _grid.scss zu _main-layout.scss umbenannt (semantisch korrekter).
 ///
 
 @use '../abstracts/variables' as *;

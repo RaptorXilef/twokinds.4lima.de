@@ -18,86 +18,91 @@
  */
 
 ///
-/// @since    5.0.0-alpha.2
-/// - refactor(SCSS): Aus pages/_archive.scss extrahiert (Komponenten-Basierte Architektur).
+/// @since    5.0.0
+/// - refactor(SCSS): Aus pages/_archive.scss extrahiert.
+/// - feat(Design): Modernes CSS Grid (Responsive) statt altem Flexbox-Layout implementiert (wie bei Charaktere).
 ///
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
 .chapter-links {
-    display: flex;
-    flex-flow: row wrap;
-    gap: 6px;
+    // Modern CSS Grid statt Flexbox
+    display: grid;
+    // Responsive Spalten: Mindestens 96px breit, füllen den Platz aus
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: center;
 
     noscript {
-        display: block;
+        display: contents; // Damit Grid auch bei Noscript greift, falls Wrapper stören
     }
 
-    // 1. Generic Link (Low Specificity)
+    // 1. Link Item Styling
     a {
-        display: inline-block;
-        width: 80px;
-        height: 104px;
-        background-color: #eee; // Fallback
-        background-color: var(
-            --button-bg
-        ); // Nutzt Button-BG für Konsistenz (hell/dunkel)
-
+        position: relative;
+        display: block;
+        // width/height nicht mehr fix, sondern durch Grid gesteuert
+        aspect-ratio: 1 / 1.3; // Hochformat für Comic-Seiten (anpassbar, z.B. 1/1 für Quadrat)
+        background-color: var(--button-bg);
         text-decoration: none;
         color: var(--text-on-medium);
         font-size: 1.2em;
-        position: relative;
         overflow: hidden;
+        border-radius: 5px; // Abrundung wie bei Characters
+        transition: transform 0.2s ease-in-out;
 
-        // Hover
+        // Hover Effect: Scale Up
         &:hover {
-            box-shadow: 0 0 5px rgb(0 0 0 / 30%);
-            background-color: var(--button-hover-bg);
+            box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
+            transform: scale(1.05);
+            z-index: 10;
         }
 
         @include media-retina-mobile {
-            zoom: 1.8;
+            // Mobile Anpassungen falls nötig
         }
 
+        // Overlay Span (Nummer/Text)
         span {
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
-            height: 100%;
-            text-align: center;
             position: absolute;
-            top: 0;
+            bottom: 0; // Text unten statt mittig überdeckend
             left: 0;
+            background: rgb(0 0 0 / 65%); // Halbtransparent Schwarz
+            color: #fff;
+            padding: 5px 0;
+            font-size: 14px;
             z-index: 80;
+            transition: background-color 0.2s;
         }
 
+        // Delete Button (Admin)
         .delete {
             position: absolute;
             z-index: 91;
             top: 4px;
             right: 2px;
-            background: none;
-            margin: 0;
-            padding: 0;
-
-            @include media-retina-mobile {
-                top: 3px;
-            }
+            background: rgb(255 255 255 / 20%);
+            border-radius: 50%;
+            padding: 2px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
             svg {
-                width: 24px;
-                height: 24px;
+                width: 18px;
+                height: 18px;
                 color: #f00;
                 stroke: #fff;
                 stroke-width: 2px;
                 filter: drop-shadow(0 0 1px rgb(0 0 0 / 50%));
-
-                @include media-retina-mobile {
-                    width: 16px;
-                    height: 16px;
-                }
             }
 
             &:hover svg {
@@ -106,79 +111,38 @@
         }
     }
 
-    // 2. Specific Link Context (Higher Specificity)
-    &.tag-page-links a {
-        width: 100px;
-        height: 130px;
-
-        @include media-retina-mobile {
-            zoom: 1.5;
-        }
+    // 2. Image Logic
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; // Füllt die Box aus, beschneidet ggf. Ränder
+        border-radius: 3px;
+        transition: opacity 0.5s;
     }
 
-    // 3. Image Logic (Low Spec -> High Spec)
-
-    // a) noscript (0-0-3)
-    a noscript img {
-        opacity: 1;
-    }
-
-    // b) img:not (0-1-1)
+    // Lazy Loading Logic
     img:not(.delicon) {
         opacity: 0;
-        transition: opacity 0.5s;
-        object-fit: contain;
-        max-width: 100%;
-        position: absolute;
-        top: 50%;
-        left: 0;
-        transform: translateY(-50%);
-        z-index: 90;
     }
 
-    // c) a.loaded img (0-1-2)
-    a.loaded img,
-    &.tag-page-links a img {
+    // Wenn geladen oder Noscript -> Sichtbar
+    a noscript img,
+    a.loaded img {
         opacity: 1;
     }
 
-    // 4. Overlay Logic
-    a.loaded span,
-    a.noscript span,
-    &.tag-page-links a span {
-        background-color: rgb(0 0 0 / 50%);
-        color: #fff;
-        display: none;
-        z-index: 100;
-
-        @include media-retina-mobile {
-            display: inline-block;
-            height: auto;
-            bottom: 0;
-            top: inherit;
-            padding-top: 0;
-        }
-    }
-
-    a.loaded:hover span,
-    a.noscript:hover span,
-    &.tag-page-links a:hover span {
-        display: flex;
-    }
-
-    // 5. Theme Overrides (Highest Specificity - Grouped at End)
-    /* stylelint-disable no-descending-specificity */
+    // 3. Theme Overrides
     body.theme-night & {
         a {
             color: var(--text-color);
+            background-color: var(
+                --content-area-bg
+            ); // Dunklerer Hintergrund für Platzhalter
         }
 
-        a.loaded span,
-        a.noscript span,
-        &.tag-page-links a span {
-            background-color: rgb(0 0 0 / 65%);
-            color: var(--text-color);
+        a span {
+            background-color: rgb(0 0 0 / 80%);
         }
     }
-    /* stylelint-enable no-descending-specificity */
 }
