@@ -1,160 +1,144 @@
-###################
-# --- GITIGNORE ---
-###################
+################################################################################
+# SYSTEM & OS DATEIEN
+################################################################################
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
 
-# --- BACKUP & ARCHIVE ---
+# Windows
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+
+# Linux / Allgemein Temporär
+*~
+*.swp
+*.swo
+.fuse_hidden*
+
+################################################################################
+# IDEs & EDITOREN
+################################################################################
+# JetBrains (PhpStorm, IntelliJ)
+.idea/
+*.iml
+*.iws
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Andere (Sublime, Eclipse, NetBeans)
+*.sublime-project
+*.sublime-workspace
+.nbproject/
+.settings/
+.buildpath
+.project
+
+################################################################################
+# GENERELLE BACKUPS & TEMPORÄRE DATEIEN
+################################################################################
 *.bak
 *.backup
 *.old
 *.orig
-*~
-# Archive
-*.zip
-*.7z
-*.rar
-# Backup-Ordner
-*backup*
-# Photoshop Backup-Dateien
-*.psd
-*.c2paws
-# andere temporäre Dateien
-*.log
 *.tmp
+*.temp
+*.log
 *.url
 * - Kopie*
-test*.php
 
+# Backup-Ordner-Muster
+*backup*
+*Backup*
 
-
-# --- BUILD ---
-# - Temporäre Build-Artefakte ignorieren -
-/build/
-
-
-
-# --- CONFIG ---
-config/config_generator_settings.json
-config/config_rss.json
-
-# - SECRETS -
-config/secrets/*
-
-# --- DATA ---
-data/*
-!data/version.json
-
-# --- Modules ---
-node_modules/*
-vendor/*
-
-# --- PUBLIC ---
-
-# Comic-Ordner
-public/comic/*
-!public/comic/20170728.php
-!public/comic/20250312.php
-!public/comic/20250604.php
-!public/comic/index.php
-
-
-
-
-
-# --- RESOURCES ---
-# favicon
-!resources/favicon/*.psd
-
-
-
-
-# --- SRC ---
-
-
-
-# Googles
-public/google5c760f191f071105.html
-public/src/layout/js_backup/gtag.js
-
-#Notizen
-public/_links/*
-public/_debug/*
-_Notizen/*
-*Notizen*
+# Spezifische Dateitypen zum Ignorieren
+*.psd
+*.c2paws
+*.ink
 *.docx
 *.xlsx
 
+################################################################################
+# SICHERHEIT & GEHEIMNISSE
+################################################################################
+# WICHTIG: Niemals Zugangsdaten committen!
+.env
+.env.local
+.env.*.local
+!/.env.example
 
+# SSL Zertifikate
+*.pem
+*.key
+*.crt
 
+# Projekt-spezifische Secrets
+config/secrets/*
 
+################################################################################
+# ABHÄNGIGKEITEN (DEPENDENCIES)
+################################################################################
+# PHP / Composer
+/vendor/
+/composer.phar
+# composer.lock in Anwendungen committen, in Libraries ignorieren.
+# /composer.lock
 
-###########################
-# --- Temporäre Dateien ---
-###########################
+# Node / NPM / Yarn
+/node_modules/
+npm-debug.log*
+yarn-error.log
+yarn.lock
+# package-lock.json sollte meistens committed werden
+# package-lock.json
 
+################################################################################
+# BUILDS, LOGS & TESTING
+################################################################################
+/build/
+/log/
+/logs/
+sync.ffs_db
 
+# PHPUnit / Coverage
+.phpunit.result.cache
+.phpunit.cache/
+/phpunit.xml
+/coverage/
+/html-coverage/
+.testfiles/
+test*.php
 
+# Sass Cache & Maps
+.sass-cache/
+*.css.map
 
+# Minifizierte Dateien (falls Build-Prozess vorhanden)
+*.min.css
+*.min.js
 
-########################
-# --- ALTE GITIGNORE ---
-########################
+################################################################################
+# DATENBANKEN (Lokal)
+################################################################################
+*.sql
+*.sqlite
+*.sqlite3
 
-# assets und Bilder
-public/assets/images/comic/hires/*.jpg
-public/assets/images/comic/hires/*.png
-public/assets/images/comic/hires/*gif
-public/assets/images/comic/hires/*.webp
-!public/assets/images/comic/hires/in_translation.*
-!public/assets/images/comic/hires/index.php
-!public/assets/images/comic/hires/.htaccess
+################################################################################
+# PROJEKT SPEZIFISCH: CONFIG & DATA
+################################################################################
+# Generierte Konfigurationen ignorieren
+config/config_generator_settings.json
+config/config_rss.json
 
-public/assets/images/comic/lowres/*.jpg
-public/assets/images/comic/lowres/*.png
-public/assets/images/comic/lowres/*gif
-public/assets/images/comic/lowres/*.webp
-!public/assets/images/comic/lowres/in_translation.*
-!public/assets/images/comic/lowres/index.php
-!public/assets/images/comic/lowres/.htaccess
-
-public/assets/images/comic/lowres_png/*
-
-public/assets/images/comic/socialmedia/*.jpg
-public/assets/images/comic/socialmedia/*.png
-public/assets/images/comic/socialmedia/*gif
-public/assets/images/comic/socialmedia/*.webp
-!public/assets/images/comic/socialmedia/index.php
-!public/assets/images/comic/socialmedia/.htaccess
-
-public/assets/images/comic/thumbnails/*.jpg
-public/assets/images/comic/thumbnails/*.png
-public/assets/images/comic/thumbnails/*gif
-public/assets/images/comic/thumbnails/*.webp
-!public/assets/images/comic/thumbnails/placeholder.*
-!public/assets/images/comic/thumbnails/in_translation.*
-!public/assets/images/comic/thumbnails/index.php
-!public/assets/images/comic/thumbnails/.htaccess
-
-public/assets/img/github/twokinds.4lima.de.psd
-public/assets/img/about/*
-
-# Fehlerseiten
-!public/assets/images/comic/lowres/404.*
-!public/assets/images/comic/hires/404.*
-!public/assets/images/comic/lowres/403.*
-!public/assets/images/comic/hires/403.*
-
-# Nicht verwendete Icons
-public/assets/icons/nicht verwendet/*
-
-
-
-# Charaktere-Ordner
-public/charaktere/*
-!public/charaktere/index.php
-!public/charaktere/Trace.php
-!public/charaktere/Flora.php
-
-# temp Config
+# Temporäre Configs im Public Ordner
 public/src/config/*
 public/sitemap.xml
 public/rss.xml
@@ -162,74 +146,103 @@ public/assets/Ordnerstruktur.txt
 public/admin/json-vorlagen/*
 public/admin/consolenanwendung/*
 
+# Data Ordner (Inhalt ignorieren, aber version.json behalten)
+data/*
+!data/version.json
+/data/tmp/*
 
+################################################################################
+# PROJEKT SPEZIFISCH: CONTENT & ASSETS
+################################################################################
 
+# --- COMIC VERWALTUNG ---
+# Inhalt ignorieren, aber spezifische PHP-Dateien behalten
+public/comic/*
+!public/comic/index.php
+!public/comic/20170728.php
+!public/comic/20250312.php
+!public/comic/20250604.php
 
+# --- BILDER & MEDIEN (COMIC) ---
+# High-Res Bilder ignorieren, Systemdateien behalten
+public/assets/images/comic/hires/*.jpg
+public/assets/images/comic/hires/*.png
+public/assets/images/comic/hires/*.gif
+public/assets/images/comic/hires/*.webp
+!public/assets/images/comic/hires/in_translation.*
+!public/assets/images/comic/hires/index.php
+!public/assets/images/comic/hires/.htaccess
+# Fehlerseiten Bilder behalten
+!public/assets/images/comic/hires/404.*
+!public/assets/images/comic/hires/403.*
 
+# Low-Res Bilder ignorieren
+public/assets/images/comic/lowres/*.jpg
+public/assets/images/comic/lowres/*.png
+public/assets/images/comic/lowres/*.gif
+public/assets/images/comic/lowres/*.webp
+!public/assets/images/comic/lowres/in_translation.*
+!public/assets/images/comic/lowres/index.php
+!public/assets/images/comic/lowres/.htaccess
+!public/assets/images/comic/lowres/404.*
+!public/assets/images/comic/lowres/403.*
 
+# Andere Auflösungen
+public/assets/images/comic/lowres_png/*
 
-# FTP Verzeichnisse
-sync.ffs_db
-# Charaktere Bilder
+# Social Media Bilder
+public/assets/images/comic/socialmedia/*.jpg
+public/assets/images/comic/socialmedia/*.png
+public/assets/images/comic/socialmedia/*.gif
+public/assets/images/comic/socialmedia/*.webp
+!public/assets/images/comic/socialmedia/index.php
+!public/assets/images/comic/socialmedia/.htaccess
+
+# Thumbnails
+public/assets/images/comic/thumbnails/*.jpg
+public/assets/images/comic/thumbnails/*.png
+public/assets/images/comic/thumbnails/*.gif
+public/assets/images/comic/thumbnails/*.webp
+!public/assets/images/comic/thumbnails/placeholder.*
+!public/assets/images/comic/thumbnails/in_translation.*
+!public/assets/images/comic/thumbnails/index.php
+!public/assets/images/comic/thumbnails/.htaccess
+
+# --- CHARAKTERE ---
+# Ordner ignorieren, aber Basis-Dateien behalten
+public/charaktere/*
+!public/charaktere/index.php
+!public/charaktere/Trace.php
+!public/charaktere/Flora.php
+
+# Spezifische Charakter-Bilder ignorieren
 public/assets/img/charaktere/characters/themaskedgods.png
 public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
 public/assets/img/charaktere/characters/TheMaskedGods2025.png
 public/assets/img/charaktere/characters_webp/templarchart-Original.png
 public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
 
-# CSS minified Tool
-#package-lock.json
-#package.json
+# --- SONSTIGE ASSETS ---
+public/assets/img/github/twokinds.4lima.de.psd
+public/assets/img/about/*
+public/assets/icons/nicht verwendet/*
 
-# JavaScript minified Tool und SASS
-# Install: npm install -g sass
-# Install: npm install clean-css
+# --- GOOGLE & LINKS ---
+public/google*.html
+public/src/layout/js_backup/gtag.js
+public/_links/*
+public/_debug/*
 
-
-# SASS Compiler für CSS (Wird verwenden um die CSS Dateien aus SCSS zu erstellen)
-# Befehl: cd src\layout\css
-# Befehl: sass --no-source-map main.scss main.css && npx clean-css-cli --source-map -o main.min.css main.css
-# Befehl: sass --no-source-map main_dark.scss main_dark.css && npx clean-css-cli --source-map -o main_dark.min.css main_dark.css
-# Befehl: sass --no-source-map cookie_banner.scss cookie_banner.css && npx clean-css-cli --source-map -o cookie_banner.min.css cookie_banner.css
-# Befehl: sass --no-source-map cookie_banner_dark.scss cookie_banner_dark.css && npx clean-css-cli --source-map -o cookie_banner_dark.min.css cookie_banner_dark.css
-# Befehl: cd ../
-# Befehl: cd js
-# Befehl: npx terser archive.js --source-map "filename=archive.min.js.map" --output archive.min.js
-# Befehl: npx terser charaktere.js --source-map "filename=charaktere.min.js.map" --output charaktere.min.js
-# Befehl: npx terser comic.js --source-map "filename=comic.min.js.map" --output comic.min.js
-# Befehl: npx terser common.js --source-map "filename=common.min.js.map" --output common.min.js
-# Befehl: npx terser cookie_consent.js --source-map "filename=cookie_consent.min.js.map" --output cookie_consent.min.js
-# Befehl: cd ../../../
-
-
-# Alternative Befehle (einzeln ausgeführten Befehle, falls Probleme auftreten)
-# SASS Compiler für CSS (Wird verwenden um die CSS Dateien aus SCSS zu erstellen)
-# Befehl: cd src\layout\css
-# Befehl: sass --no-source-map main.scss main.css
-# Befehl: sass --no-source-map main_dark.scss main_dark.css
-# Befehl: sass --no-source-map cookie_banner.scss cookie_banner.css
-# Befehl: sass --no-source-map cookie_banner_dark.scss cookie_banner_dark.css
-
-# CSS Minifier (Erstellt die minified CSS Dateien mit Source Maps)
-# Befehl: cd src\layout\css
-# Befehl: npx clean-css-cli --source-map -o main.min.css main.css
-# Befehl: npx clean-css-cli --source-map -o main_dark.min.css main_dark.css
-# Befehl: npx clean-css-cli --source-map -o cookie_banner.min.css cookie_banner.css
-# Befehl: npx clean-css-cli --source-map -o cookie_banner_dark.min.css cookie_banner_dark.css
-# Befehl: cd ../
-# Befehl: cd js
-# Befehl: npx terser archive.js --source-map "filename=archive.min.js.map" --output archive.min.js
-# Befehl: npx terser charaktere.js --source-map "filename=charaktere.min.js.map" --output charaktere.min.js
-# Befehl: npx terser comic.js --source-map "filename=comic.min.js.map" --output comic.min.js
-# Befehl: npx terser common.js --source-map "filename=common.min.js.map" --output common.min.js
-# Befehl: npx terser cookie_consent.js --source-map "filename=cookie_consent.min.js.map" --output cookie_consent.min.js
-# Befehl: cd ../../../
-
-# Dateien die lokal geändert werden, aber nicht ins Repo sollen
-# ignorieren:
-# git update-index --assume-unchanged src/config/comic_var.json
-# git update-index --assume-unchanged src/config/archive_chapters.json
-# wieder aktivieren:
-# git update-index --no-assume-unchanged src/config/comic_var.json
-# git update-index --no-assume-unchanged src/config/archive_chapters.json
-
+################################################################################
+# NOTIZEN & PRIVATES (NIEMALS COMMITTEN)
+################################################################################
+_Notizen/*
+*Notizen*
+.*todo*
+*Commite*
+Combine-*.ps1
+Mein*Code*.*
+# Archive
+*.zip
+*.7z
+*.rar
