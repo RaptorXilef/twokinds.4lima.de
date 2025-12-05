@@ -26,6 +26,11 @@
             "App\\": "src"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "config": {
         "allow-plugins": {
             "php-http/discovery": true
@@ -40,4 +45,3 @@
         "analyse": "phpstan analyse src/ tests/ --level max"
     }
 }
-
