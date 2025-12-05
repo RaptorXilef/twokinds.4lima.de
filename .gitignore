@@ -178,8 +178,8 @@ public/assets/img/charaktere/characters_webp/templarchart-Original.png
 public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
 
 # CSS minified Tool
-package-lock.json
-package.json
+#package-lock.json
+#package.json
 
 # JavaScript minified Tool und SASS
 # Install: npm install -g sass
