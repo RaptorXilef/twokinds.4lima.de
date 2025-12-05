@@ -43,12 +43,13 @@ $nonce = $nonce ?? '';
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter Daten
       Editor</a>
     </br>
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Daten
-      Editor</a>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Daten
       Editor</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Comic-Seiten-Generator</a>
+    </br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Daten
+      Editor</a>
     </br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image' . $dateiendungPHP; ?>">Bild-Upload</a>
     <a
