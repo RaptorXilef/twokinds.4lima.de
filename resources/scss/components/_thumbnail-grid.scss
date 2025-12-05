@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Chapter Grid Component
+/// Thumbnail Grid Component
 ///
-/// Grid-Layout für Comic-Thumbnails (Archive, Suche, etc.).
+/// Universelles Grid-Layout für Comics, Charaktere und Lesezeichen.
+/// Ersetzt spezifische Grids in Archive und Characters.
 ///
 
 /*!
- * @file      resources/scss/components/_chapter-grid.scss
+ * @file      resources/scss/components/_thumbnail-grid.scss
  * @link      twokinds.4lima.de
  *
  * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
@@ -18,62 +19,64 @@
  */
 
 ///
-/// @since    5.0.0
-/// - refactor(SCSS): Aus pages/_archive.scss extrahiert.
-/// - feat(Design): Modernes CSS Grid (Responsive) statt altem Flexbox-Layout implementiert (wie bei Charaktere).
+/// @since    5.0.0-alpha.3
+/// - refactor(SCSS): Zusammenführung von .chapter-links und .tag-page-links in eine wiederverwendbare Komponente.
+/// - feat(Design): Modernes CSS Grid für alle Galerien.
 ///
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
-.chapter-links {
-    // Modern CSS Grid statt Flexbox
+// Gemeinsame Selektoren für alle Grids
+.chapter-links,
+.tag-page-links,
+.thumbnail-grid {
     display: grid;
-    // Responsive Spalten: Mindestens 96px breit, füllen den Platz aus
+    // Responsive: Min 96px, Max Space-filling
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 10px;
     margin-top: 10px;
     justify-content: center;
 
     noscript {
-        display: contents; // Damit Grid auch bei Noscript greift, falls Wrapper stören
+        display: contents;
     }
 
-    // 1. Link Item Styling
+    // 1. Item Card Styling
     a {
         position: relative;
         display: block;
-        // width/height nicht mehr fix, sondern durch Grid gesteuert
-        aspect-ratio: 1 / 1.3; // Hochformat für Comic-Seiten (anpassbar, z.B. 1/1 für Quadrat)
-        background-color: var(--button-bg);
+        aspect-ratio: 1 / 1.3; // Standard Hochformat (Comic)
+        background-color: var(--button-bg); // Fallback / Loading BG
         text-decoration: none;
         color: var(--text-on-medium);
         font-size: 1.2em;
         overflow: hidden;
-        border-radius: 5px; // Abrundung wie bei Characters
+        border-radius: 5px;
         transition: transform 0.2s ease-in-out;
 
-        // Hover Effect: Scale Up
+        // Hover Effect
         &:hover {
             box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
             transform: scale(1.05);
             z-index: 10;
+            background-color: var(--button-hover-bg);
         }
 
         @include media-retina-mobile {
-            // Mobile Anpassungen falls nötig
+            zoom: 1.5; // Ggf. anpassen oder entfernen für reines CSS Grid
         }
 
-        // Overlay Span (Nummer/Text)
+        // Overlay (Text/Nummer)
         span {
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
             position: absolute;
-            bottom: 0; // Text unten statt mittig überdeckend
+            bottom: 0;
             left: 0;
-            background: rgb(0 0 0 / 65%); // Halbtransparent Schwarz
+            background: rgb(0 0 0 / 65%);
             color: #fff;
             padding: 5px 0;
             font-size: 14px;
@@ -81,7 +84,7 @@
             transition: background-color 0.2s;
         }
 
-        // Delete Button (Admin)
+        // Delete Button (Admin/Bookmarks)
         .delete {
             position: absolute;
             z-index: 91;
@@ -95,6 +98,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            border: none;
+            cursor: pointer;
+            opacity: 0; // Standardmäßig unsichtbar bis Hover (Desktop)
+            transition:
+                opacity 0.2s,
+                background-color 0.2s;
+
+            @include media-retina-mobile {
+                opacity: 1; // Auf Mobile immer sichtbar
+                top: 3px;
+            }
 
             svg {
                 width: 18px;
@@ -105,10 +119,24 @@
                 filter: drop-shadow(0 0 1px rgb(0 0 0 / 50%));
             }
 
-            &:hover svg {
-                color: #c00;
+            &:hover {
+                background: rgb(255 80 80 / 80%);
+
+                svg {
+                    color: #c00;
+                }
             }
         }
+
+        // Hover auf Karte zeigt Delete-Button
+        &:hover .delete {
+            opacity: 1;
+        }
+    }
+
+    // Spezifisches Aspect-Ratio für Tag-Links (oft quadratisch)
+    &.tag-page-links a {
+        aspect-ratio: 1 / 1;
     }
 
     // 2. Image Logic
@@ -116,7 +144,7 @@
         display: block;
         width: 100%;
         height: 100%;
-        object-fit: cover; // Füllt die Box aus, beschneidet ggf. Ränder
+        object-fit: cover;
         border-radius: 3px;
         transition: opacity 0.5s;
     }
@@ -132,17 +160,36 @@
         opacity: 1;
     }
 
-    // 3. Theme Overrides
+    // 3. Overlay Visibility Logic
+    // Standardmäßig versteckt (außer auf Mobile)
+    a span {
+        display: none;
+
+        @include media-retina-mobile {
+            display: flex;
+        }
+    }
+
+    // Hover zeigt Overlay
+    a:hover span {
+        display: flex;
+    }
+
+    // 4. Theme Overrides
+    /* stylelint-disable no-descending-specificity */
     body.theme-night & {
         a {
             color: var(--text-color);
-            background-color: var(
-                --content-area-bg
-            ); // Dunklerer Hintergrund für Platzhalter
+            background-color: var(--content-area-bg); // Platzhalter dunkel
         }
 
         a span {
             background-color: rgb(0 0 0 / 80%);
         }
+
+        .delete {
+            // Dark Mode Anpassung für Delete Button falls nötig
+        }
     }
+    /* stylelint-enable no-descending-specificity */
 }

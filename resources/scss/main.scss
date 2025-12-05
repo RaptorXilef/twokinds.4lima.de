@@ -8,7 +8,7 @@
 
 /*!
  * @file      resources/scss/main.scss
- * @link      ftk.jus-or.de
+ * @link      twokinds.4lima.de
  *
  * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
  * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
@@ -22,6 +22,7 @@
 /// - Komplettes Refactoring auf 7-1 Architecture mit CSS Custom Properties für Theming.
 /// - feat(SCSS): Neue Komponente chapter-grid registriert.
 /// - refactor(SCSS): Import von layout/grid zu layout/main-layout geändert.
+/// - refactor(SCSS): Komponente chapter-grid durch generisches thumbnail-grid ersetzt.
 ///
 
 // 1. Abstracts (Variables, Mixins)
@@ -38,7 +39,7 @@
 @use 'base/reset';
 @use 'base/typography';
 
-// 4. Layout (Grid, Header, Footer, Sidebar)
+// 4. Layout (Main Layout, Header, Footer, Sidebar)
 @use 'layout/main-layout';
 @use 'layout/header';
 @use 'layout/sidebar';
@@ -49,7 +50,7 @@
 @use 'components/navigation';
 @use 'components/modals';
 @use 'components/cookie-banner';
-@use 'components/chapter-grid';
+@use 'components/thumbnail-grid'; // UMBENANNT & VERALLGEMEINERT
 
 // 6. Pages (Comic, Archive, Characters, Admin)
 @use 'pages/comic';
