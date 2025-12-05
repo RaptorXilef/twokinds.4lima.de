@@ -22,6 +22,12 @@
 /// - Extrahiert aus main_dark.scss für bessere Kapselung.
 /// @since    4.2.1
 /// - style(Linter): Button-Status Selektoren priorisiert.
+/// @since    4.2.2
+/// - style(Linter): Button-Status Spezifität korrigiert.
+/// @since    4.2.5
+/// - feat(CSS): Fehlende Styles für Popovers aus main_dark.scss integriert.
+/// @since    4.2.6
+/// - style(Linter): Reihenfolge von Hover und Theme-Override in .note-btn getauscht (Fix no-descending-specificity).
 ///
 
 @use '../abstracts/variables' as *;
@@ -51,14 +57,16 @@
         color: var(--text-on-medium);
         border: 1px solid transparent;
 
-        body.theme-night & {
-            color: var(--text-color);
-        }
-
+        // Hover ZUERST (Niedrigere Spezifität)
         &:hover,
         &:focus,
         &:active {
             background-color: var(--button-hover-bg);
+        }
+
+        // Theme Override DANACH (Höhere Spezifität)
+        body.theme-night & {
+            color: var(--text-color);
         }
     }
 
@@ -89,6 +97,42 @@
                 }
             }
         }
+    }
+
+    // Popovers (z.B. Link-Editor)
+    .note-popover .popover-content,
+    .note-modal-content {
+        background-color: var(--content-bg);
+        color: var(--text-color);
+        border: 1px solid var(--border-medium);
+
+        body.theme-night & {
+            background-color: var(--content-bg);
+            border-color: var(--button-hover-bg);
+        }
+    }
+
+    .note-popover .popover-header,
+    .note-modal-header {
+        background-color: var(--header-bg);
+        border-bottom: 1px solid var(--border-medium);
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+            border-bottom-color: var(--button-hover-bg);
+        }
+    }
+
+    .note-modal-footer {
+        border-top: 1px solid var(--border-light);
+
+        body.theme-night & {
+            border-top-color: var(--button-hover-bg);
+        }
+    }
+
+    .note-form-label {
+        color: var(--text-color);
     }
 
     // Editor Area (Editable)
@@ -131,18 +175,7 @@
         }
     }
 
-    // Dialogs / Modals within Summernote
-    .note-modal-content {
-        background-color: var(--content-bg);
-        color: var(--text-color);
-        border: 1px solid var(--border-medium);
-    }
-
-    .note-modal-header {
-        background-color: var(--header-bg);
-        border-bottom: 1px solid var(--border-medium);
-    }
-
+    // Inputs within Summernote
     .note-input {
         background-color: var(--content-bg);
         color: var(--text-color);

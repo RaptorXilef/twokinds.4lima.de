@@ -20,8 +20,8 @@
 ///
 /// @since    4.2.0
 /// - Umstellung auf CSS Vars.
-/// @since    4.2.1
 /// - style(Linter): Reihenfolge der Tabellen-Selektoren korrigiert (Specificity).
+/// - style(Linter): Doppelte Selektoren für Dark Mode zusammengeführt.
 ///
 
 @use '../abstracts/variables' as *;
@@ -69,10 +69,6 @@ article {
     background-color: var(--content-bg);
     color: var(--text-color);
 
-    body.theme-night & {
-        border-color: var(--page-bg);
-    }
-
     li {
         margin-bottom: 5px;
         list-style-position: inside;
@@ -105,7 +101,10 @@ article {
         background-color: var(--header-bg);
     }
 
+    // Merged Dark Mode Styles
     body.theme-night & {
+        border-color: var(--page-bg); // Hierhin verschoben
+
         th {
             background-color: var(--button-hover-bg);
         }

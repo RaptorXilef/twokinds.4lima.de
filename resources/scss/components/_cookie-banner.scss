@@ -19,10 +19,11 @@
 
 ///
 /// @since    4.2.0
+/// - Refactoring.
 /// - Zusammenführung von Light/Dark Mode via CSS Vars.
-/// @since    4.2.1
-/// - refactor(HTML): IDs auf kebab-case umgestellt.
 /// - style(Linter): Hover-Specificity gefixt.
+/// - refactor(HTML): IDs auf Kebab-Case umgestellt (erfordert HTML/JS-Anpassung).
+/// - style(Linter): Unerwartete Leerzeile entfernt.
 ///
 
 @use '../abstracts/variables' as *;
@@ -40,7 +41,6 @@
     background-color: var(--cookie-bg);
     color: var(--cookie-text);
     box-shadow: 0 4px 15px rgb(0 0 0 / 20%);
-
     padding: 20px;
     border-radius: 10px;
     z-index: 9999;

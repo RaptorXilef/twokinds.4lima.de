@@ -143,3 +143,55 @@
         }
     }
 }
+
+/* Banner Ads & Donation Styling */
+
+/*
+.abg-sidebar {
+    max-height: 630px;
+    width: 160px;
+    margin: auto;
+    overflow: hidden;
+
+    .advertisement {
+        margin: 10px 0 20px;
+        height: 600px;
+    }
+}
+
+.av2 {
+    margin: auto;
+    width: 300px;
+    height: 268px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.av2-child {
+    position: relative;
+    width: 300px;
+    height: 250px;
+    overflow: hidden;
+
+    .advertisement {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        background-color: var(--content-bg);
+
+        body.theme-night & {
+            background-color: var(--page-bg);
+        }
+    }
+}
+
+.donate-box {
+    width: 300px;
+    height: 250px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+}
+*/

@@ -1,6 +1,6 @@
 /**
  * Enables lazy loading for character images on the characters page.
- * 
+ *
  * @file      ROOT/public/assets/js/charaktere.js
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -10,7 +10,6 @@
  * @version   1.0.0
  * @since     1.0.0 Initiale Erstellung
  */
-
 
 // Die debugMode Variable wird von der PHP-Seite gesetzt.
 // Standardwert ist false, falls die PHP-Variable nicht injiziert wird.

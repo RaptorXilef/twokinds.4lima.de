@@ -20,9 +20,13 @@
 ///
 /// @since    4.2.0
 /// - Refactoring.
-/// @since    4.2.1
 /// - fix(CSS): word-break deprecated property ersetzt.
 /// - style(Linter): Selector Order korrigiert.
+/// - style(Linter): Spezifität für Dark Mode Overrides durch Nesting korrigiert.
+/// - style(Linter): Theme-Overrides in .char-detail ans Ende verschoben.
+/// - style(Linter): Dateistruktur umgestellt (.bookmarks-page vor .char-detail), um absteigende Spezifität zu verhindern.
+/// - refactor(CSS): Vollständige Trennung von Basis-Styles und Theme-Overrides.
+/// - chore(Linter): False-Positive bei Dark-Mode Spezifität global für den Theme-Block ignoriert.
 ///
 
 @use '../abstracts/variables' as *;
@@ -34,7 +38,7 @@
     }
 }
 
-// Einzelne Charakter-Ansicht (aus main.scss)
+// 1. Character Detail (Base Styles)
 .char-detail {
     padding: 10px;
     border-bottom: 1px solid var(--border-medium);
@@ -43,14 +47,6 @@
 
     h3 img {
         vertical-align: middle;
-    }
-
-    body.theme-night & {
-        border-bottom-color: var(--button-bg);
-
-        h3 img {
-            filter: brightness(1.1);
-        }
     }
 
     h3,
@@ -74,14 +70,14 @@
         margin-right: 20px;
         text-align: center;
     }
+
+    &:last-of-type {
+        margin-bottom: 0;
+        border: none;
+    }
 }
 
-.char-detail:last-of-type {
-    margin-bottom: 0;
-    border: none;
-}
-
-/* --- Bookmarks Page --- */
+/* 2. Bookmarks Page (Base Styles) */
 .bookmarks-page {
     .page-header {
         display: flex;
@@ -97,10 +93,6 @@
         strong {
             font-weight: 700;
             color: #333;
-
-            body.theme-night & {
-                color: #ddd;
-            }
         }
     }
 
@@ -116,10 +108,6 @@
         text-align: center;
         white-space: nowrap;
         vertical-align: baseline;
-
-        body.theme-night & {
-            background-color: var(--button-bg);
-        }
     }
 
     .bookmark-example {
@@ -133,10 +121,6 @@
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 0;
-
-        body.theme-night & {
-            color: #ccc;
-        }
 
         .ribbon {
             height: 36px;
@@ -186,7 +170,7 @@
                 font-size: 12px;
                 text-align: center;
                 line-height: 1.2;
-                overflow-wrap: anywhere; // Replacement for word-break: break-word
+                overflow-wrap: anywhere;
                 width: 100%;
                 box-sizing: border-box;
                 transition: background-color 0.2s;
@@ -239,11 +223,6 @@
         border-radius: 5px;
         margin: 1rem;
 
-        body.theme-night & {
-            color: #ccc;
-            border-color: var(--button-bg);
-        }
-
         p {
             margin: 0;
             line-height: 1.5;
@@ -260,10 +239,6 @@
             height: 1px;
             background-color: var(--border-light);
             margin-bottom: 20px;
-
-            body.theme-night & {
-                background-color: var(--button-bg);
-            }
         }
 
         button {
@@ -280,14 +255,6 @@
             &:hover {
                 background-color: var(--cookie-btn-accept-hover);
             }
-
-            body.theme-night & {
-                background-color: var(--button-bg);
-
-                &:hover {
-                    background-color: var(--border-light);
-                }
-            }
         }
 
         .hidden-file-input {
@@ -295,3 +262,49 @@
         }
     }
 }
+
+// 3. Theme Overrides (High Specificity - Grouped at End)
+/* stylelint-disable no-descending-specificity */
+body.theme-night {
+    .char-detail {
+        border-bottom-color: var(--button-bg);
+
+        h3 img {
+            filter: brightness(1.1);
+        }
+    }
+
+    .bookmarks-page {
+        .page-header strong {
+            color: #ddd;
+        }
+
+        .comic-count-badge {
+            background-color: var(--button-bg);
+        }
+
+        .bookmark-example {
+            color: #ccc;
+        }
+
+        .no-bookmarks {
+            color: #ccc;
+            border-color: var(--button-bg);
+        }
+
+        .bookmarks-controls {
+            hr {
+                background-color: var(--button-bg);
+            }
+
+            button {
+                background-color: var(--button-bg);
+
+                &:hover {
+                    background-color: var(--border-light);
+                }
+            }
+        }
+    }
+}
+/* stylelint-enable no-descending-specificity */

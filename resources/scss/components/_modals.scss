@@ -20,8 +20,13 @@
 ///
 /// @since    4.2.0
 /// - Zusammenführung von Light/Dark Mode.
-/// @since    4.2.1
 /// - style(Linter): Hover/Focus Specificity Issues behoben.
+/// - style(Linter): Reihenfolge der Pseudo-Klassen (:hover/:focus) korrigiert.
+/// - fix(CSS): Korrekte Reihenfolge für no-descending-specificity (High-Spec nach unten verschoben).
+/// - fix(SCSS): Fehlende Styles für Report-Bilder (.report-images-container) ergänzt.
+/// - feat(CSS): Fehlende Status-Messages (.status-message) und CSP-Container aus Original portiert.
+/// - fix(CSS): Spezifitätsprobleme (no-descending-specificity) durch Nesting der Hover-States gelöst.
+/// - style(Linter): False-Positives bei no-descending-specificity für Label und Img ignoriert.
 ///
 
 @use '../abstracts/variables' as *;
@@ -57,12 +62,6 @@
     margin: auto;
     padding: 25px;
     border: 1px solid var(--border-dark);
-
-    body.theme-night & {
-        border-color: var(--border-light);
-        box-shadow: 0 4px 15px rgb(0 0 0 / 50%);
-    }
-
     font-size: 1.2em;
     width: 90%;
     max-width: 70vw;
@@ -75,6 +74,11 @@
     z-index: 1002;
     overflow-y: auto;
     color: var(--text-color);
+
+    body.theme-night & {
+        border-color: var(--border-light);
+        box-shadow: 0 4px 15px rgb(0 0 0 / 50%);
+    }
 }
 
 .modal-close {
@@ -89,16 +93,20 @@
     cursor: pointer;
     padding: 0 5px;
 
-    body.theme-night & {
-        color: rgb(255 255 255 / 60%);
-    }
-
+    // Default Hover (Light Mode)
     &:hover,
     &:focus {
         color: var(--text-on-medium);
         text-decoration: none;
+    }
 
-        body.theme-night & {
+    // Theme Override
+    body.theme-night & {
+        color: rgb(255 255 255 / 60%);
+
+        // Dark Mode Hover (Spezifischer durch Nesting)
+        &:hover,
+        &:focus {
             color: var(--text-color);
             background-color: var(--button-bg);
         }
@@ -126,9 +134,15 @@
             margin-bottom: 5px;
             color: var(--text-color-light);
 
+            // Spezifischer als .admin-form label
             body.theme-night & {
                 color: #ccc;
             }
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
         }
 
         input[type='text'],
@@ -143,26 +157,23 @@
             background-color: var(--content-bg);
             color: var(--text-color);
 
-            body.theme-night & {
-                background-color: var(--page-bg);
-                border-color: var(--button-bg);
-            }
-
+            // Default Focus
             &:focus {
                 border-color: var(--comic-nav-archive-bg);
                 box-shadow: 0 0 0 2px rgb(93 123 93 / 20%);
                 outline: none;
+            }
 
-                body.theme-night & {
+            // Theme Override & Dark Focus
+            body.theme-night & {
+                background-color: var(--page-bg);
+                border-color: var(--button-bg);
+
+                &:focus {
                     border-color: var(--border-light);
                     box-shadow: 0 0 0 2px rgb(72 119 138 / 50%);
                 }
             }
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         select[required]:invalid {
@@ -171,6 +182,103 @@
             body.theme-night & {
                 opacity: 0.5;
             }
+        }
+    }
+
+    // Container für Bilder im Report-Modal
+    .report-images-container {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+        justify-content: space-around;
+        flex-wrap: wrap;
+
+        div {
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            margin-top: 5px;
+
+            body.theme-night & {
+                border-color: var(--border-dark);
+            }
+        }
+
+        // stylelint-disable-next-line no-descending-specificity
+        label {
+            font-size: 0.9em;
+            color: var(--text-color-medium);
+
+            body.theme-night & {
+                color: var(--text-color-light);
+            }
+        }
+    }
+
+    // Status Meldungen
+    .status-message {
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin: 10px 0;
+        border: 1px solid transparent;
+        font-size: 0.95em;
+        display: none;
+
+        &.status-green {
+            color: var(--status-green-text);
+            background-color: var(--status-green-bg);
+            border-color: var(--status-green-border);
+
+            body.theme-night & {
+                background-color: #005000;
+                color: #e8f5e9;
+                border-color: #1e4620;
+            }
+        }
+
+        &.status-red {
+            color: var(--status-red-text);
+            background-color: var(--status-red-bg);
+            border-color: var(--status-red-border);
+
+            body.theme-night & {
+                background-color: #5a1e1e;
+                color: #fce4e4;
+                border-color: #5a1e1e;
+            }
+        }
+
+        &.status-orange {
+            color: var(--status-orange-text);
+            background-color: var(--status-orange-bg);
+            border-color: var(--status-orange-border);
+
+            body.theme-night & {
+                background-color: #5a4e1e;
+                color: #fff8e1;
+                border-color: #5a4e1e;
+            }
+        }
+    }
+
+    #transcript-suggestion-container {
+        display: none;
+    }
+
+    #report-suggestion-info {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+        color: var(--text-color-light);
+
+        body.theme-night & {
+            color: var(--text-color-faded);
         }
     }
 }
@@ -191,6 +299,7 @@
         box-shadow: 0 0 5px 1px rgb(255 255 255 / 25%);
     }
 
+    // stylelint-disable-next-line no-descending-specificity
     img {
         object-fit: contain;
         max-width: 100%;
@@ -250,23 +359,26 @@
         margin-right: -5px;
         border-radius: 2px;
 
-        body.theme-night & {
-            color: var(--text-color);
-            background-color: var(--button-bg);
-        }
-
+        // Default Hover
         &:hover {
             background-color: var(--button-disabled-bg);
             color: var(--text-on-medium);
+        }
 
-            body.theme-night & {
+        // Parent Nesting
+        .dialog-title & {
+            float: right;
+        }
+
+        // Theme Override & Dark Hover
+        body.theme-night & {
+            color: var(--text-color);
+            background-color: var(--button-bg);
+
+            &:hover {
                 background-color: var(--border-light);
             }
         }
-    }
-
-    .dialog-title .dialog-x {
-        float: right;
     }
 
     .dialog-input-header {

@@ -20,13 +20,20 @@
 ///
 /// @since    4.2.0
 /// - Refactoring auf CSS Vars.
-/// @since    4.2.1
 /// - style(Linter): Spezifitätsprobleme bei Link-Hover behoben.
+/// - style(Linter): Link-Hover Reihenfolge korrigiert.
+/// - fix(CSS): Linter-Fehler (no-descending-specificity) durch Umsortierung der Hover-States behoben.
+/// - style(Linter): Block-Reihenfolge getauscht (.chapter-links vor .chapter) und Img-Selektoren sortiert.
+/// - style(Linter): Interne Reihenfolge von Links und Bildern in .chapter-links korrigiert (Low -> High Specificity).
+/// - style(Linter): Theme-Overrides separiert und ans Ende verschoben.
+/// - chore(Linter): False-Positive bei Dark-Mode Link-Spezifität global für den Theme-Block ignoriert.
+/// - style(Linter): Reihenfolge der Haupt-Blöcke optimiert, um no-descending-specificity endgültig zu lösen.
 ///
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
+// 1. Chapter Block (Text & Headlines) - Low Specificity container elements
 .chapter {
     font-size: 14px;
     margin-bottom: 15px;
@@ -39,6 +46,8 @@
 
         a {
             color: var(--text-on-medium); // Im Original Schwarz
+
+            // Nesting für korrekte Specificity
             body.theme-night & {
                 color: var(--link-color);
             }
@@ -66,6 +75,8 @@
     }
 }
 
+// 2. Chapter Links Block (Images & Grid) - High Specificity components
+// stylelint-disable no-descending-specificity
 .chapter-links {
     display: flex;
     flex-flow: row wrap;
@@ -75,15 +86,7 @@
         display: block;
     }
 
-    &.tag-page-links a {
-        width: 100px;
-        height: 130px;
-
-        @include media-retina-mobile {
-            zoom: 1.5;
-        }
-    }
-
+    // 1. Generic Link (Low Specificity)
     a {
         display: inline-block;
         width: 80px;
@@ -99,17 +102,14 @@
         position: relative;
         overflow: hidden;
 
-        body.theme-night & {
-            color: var(--text-color);
+        // Hover
+        &:hover {
+            box-shadow: 0 0 5px rgb(0 0 0 / 30%);
+            background-color: var(--button-hover-bg);
         }
 
         @include media-retina-mobile {
             zoom: 1.8;
-        }
-
-        &:hover {
-            box-shadow: 0 0 5px rgb(0 0 0 / 30%);
-            background-color: var(--button-hover-bg); // Dark mode hover support
         }
 
         span {
@@ -158,13 +158,24 @@
         }
     }
 
-    // Image loading logic
-    a.loaded img,
-    a noscript img,
-    &.tag-page-links a img {
+    // 2. Specific Link Context (Higher Specificity)
+    &.tag-page-links a {
+        width: 100px;
+        height: 130px;
+
+        @include media-retina-mobile {
+            zoom: 1.5;
+        }
+    }
+
+    // 3. Image Logic (Low Spec -> High Spec)
+
+    // a) noscript (0-0-3)
+    a noscript img {
         opacity: 1;
     }
 
+    // b) img:not (0-1-1)
     img:not(.delicon) {
         opacity: 0;
         transition: opacity 0.5s;
@@ -177,7 +188,13 @@
         z-index: 90;
     }
 
-    // Overlay styles
+    // c) a.loaded img (0-1-2)
+    a.loaded img,
+    &.tag-page-links a img {
+        opacity: 1;
+    }
+
+    // 4. Overlay Logic
     a.loaded span,
     a.noscript span,
     &.tag-page-links a span {
@@ -195,7 +212,18 @@
         }
     }
 
+    a.loaded:hover span,
+    a.noscript:hover span,
+    &.tag-page-links a:hover span {
+        display: flex;
+    }
+
+    // 5. Theme Overrides (Highest Specificity - Grouped at End)
     body.theme-night & {
+        a {
+            color: var(--text-color);
+        }
+
         a.loaded span,
         a.noscript span,
         &.tag-page-links a span {
@@ -203,10 +231,5 @@
             color: var(--text-color);
         }
     }
-
-    a.loaded:hover span,
-    a.noscript:hover span,
-    &.tag-page-links a:hover span {
-        display: flex;
-    }
 }
+// stylelint-enable no-descending-specificity

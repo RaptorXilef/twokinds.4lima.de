@@ -65,8 +65,10 @@ div.page-chat {
                 color: var(--text-color);
             }
 
+            // Hover nach Theme Override
             &:hover {
                 background-color: var(--comic-nav-archive-hover-bg);
+
                 body.theme-night & {
                     background-color: var(--border-light);
                 }
@@ -86,6 +88,7 @@ div.page-chat {
     .link-img {
         margin-top: 2px;
     }
+
     p {
         margin: 0;
     }
@@ -94,6 +97,7 @@ div.page-chat {
 .imggroup {
     margin: auto;
     text-align: center;
+
     img {
         cursor: pointer;
     }

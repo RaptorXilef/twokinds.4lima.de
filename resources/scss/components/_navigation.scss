@@ -20,8 +20,9 @@
 ///
 /// @since    4.2.0
 /// - Zusammenführung von Comic-Nav Styles.
-/// @since    4.2.1
 /// - style(Linter): Nesting optimiert, um Specificity-Fehler zu beheben.
+/// - style(Linter): Spezifität der Navigations-Icons durch Nesting korrigiert.
+/// - fix(CSS): Linter-Fehler (no-descending-specificity) durch Gruppierung der Dark-Mode-Overrides am Ende behoben.
 ///
 
 @use '../abstracts/variables' as *;
@@ -69,18 +70,10 @@
         z-index: 1000;
         border-radius: 0;
 
-        body.theme-night & {
-            filter: brightness(1.1);
-        }
-
         &.bookmarked {
             background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024')
                 0 0 no-repeat;
             background-size: contain;
-
-            body.theme-night & {
-                filter: brightness(1.3);
-            }
         }
 
         @include media-retina-mobile {
@@ -99,10 +92,6 @@
     button {
         color: var(--text-on-medium);
         text-decoration: none;
-
-        body.theme-night & {
-            color: var(--text-color);
-        }
     }
 
     .navarrow {
@@ -131,16 +120,12 @@
         background-color: var(--comic-nav-hover-bg);
     }
 
-    // --- Navigation Icons (Image Switches for Dark Mode) ---
+    // --- Standard Icons (Light Mode) ---
 
     .navbegin .nav-wrapper {
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin.png?c=20250916')
             0 50% no-repeat;
         padding-left: 35px;
-    }
-
-    body.theme-night & .navbegin .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
     }
 
     .navprev .nav-wrapper {
@@ -149,28 +134,16 @@
         padding-left: 26px;
     }
 
-    body.theme-night & .navprev .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
-    }
-
     .navnext .nav-wrapper {
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916')
             100% 50% no-repeat;
         padding-right: 26px;
     }
 
-    body.theme-night & .navnext .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
-    }
-
     .navend .nav-wrapper {
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end.png?c=20250916')
             100% 50% no-repeat;
         padding-right: 35px;
-    }
-
-    body.theme-night & .navend .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
     }
 
     .nav-report-issue {
@@ -182,10 +155,6 @@
             padding-left: 28px;
             background-size: 20px;
         }
-    }
-
-    body.theme-night & .nav-report-issue .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
     }
 
     // --- Archive Button ---
@@ -209,10 +178,6 @@
         &:hover {
             background-color: var(--comic-nav-archive-hover-bg);
         }
-
-        body.theme-night & {
-            color: var(--text-color);
-        }
     }
 
     .disabled {
@@ -230,7 +195,47 @@
         }
     }
 
-    body.theme-night &.bottomnav .nav-lang-toggle .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
+    // --- Dark Mode Overrides (All grouped at the end to satisfy specificity rules) ---
+    body.theme-night & {
+        a,
+        button {
+            color: var(--text-color);
+        }
+
+        button.bookmark {
+            filter: brightness(1.1);
+
+            &.bookmarked {
+                filter: brightness(1.3);
+            }
+        }
+
+        .navbegin .nav-wrapper {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
+        }
+
+        .navprev .nav-wrapper {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
+        }
+
+        .navnext .nav-wrapper {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
+        }
+
+        .navend .nav-wrapper {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
+        }
+
+        .nav-report-issue .nav-wrapper {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
+        }
+
+        .navarchive {
+            color: var(--text-color);
+        }
+
+        &.bottomnav .nav-lang-toggle .nav-wrapper {
+            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
+        }
     }
 }

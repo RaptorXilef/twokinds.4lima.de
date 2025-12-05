@@ -20,12 +20,52 @@
 ///
 /// @since    4.2.0
 /// - Zusammenführung von Filter-Forms und Data-Tables.
-/// @since    4.2.1
 /// - style(Linter): Descending specificity bei Labels und Tabellen behoben.
+/// - style(Linter): Spezifität für Labels und Table-Header korrigiert (Nesting).
+/// - style(Linter): Transcript-Boxen nach oben verschoben (Fix no-descending-specificity).
 ///
 
 @use '../abstracts/variables' as *;
 
+// Transcript Display in Admin (Moved to top for specificity order)
+.original-transcript-box {
+    margin-top: 15px;
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: var(--text-color-light);
+    }
+}
+
+.transcript-display-box {
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 0.9em;
+    overflow-wrap: break-word;
+    color: var(--text-color);
+
+    body.theme-night & {
+        background-color: var(--page-bg);
+        border-color: var(--button-bg);
+    }
+
+    p {
+        margin-bottom: 7px;
+    }
+
+    p:last-of-type {
+        margin-bottom: 0;
+    }
+}
+
+// Filter Form
 .filter-form {
     background-color: var(--table-row-even);
     border: 1px solid var(--border-light);
@@ -56,10 +96,11 @@
             margin-bottom: 5px;
             font-size: 0.9em;
             color: var(--text-color-light);
-        }
 
-        body.theme-night & label {
-            color: var(--text-color-light);
+            // Nesting für korrekte Specificity
+            body.theme-night & {
+                color: var(--text-color-light);
+            }
         }
 
         input[type='text'],
@@ -83,6 +124,7 @@
     }
 }
 
+// Data Table
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -272,42 +314,4 @@
 
 .honeypot-field {
     display: none !important;
-}
-
-// Transcript Display in Admin
-.original-transcript-box {
-    margin-top: 15px;
-
-    label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 5px;
-        color: var(--text-color-light);
-    }
-}
-
-.transcript-display-box {
-    background-color: var(--table-row-even);
-    border: 1px solid var(--border-light);
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    max-height: 150px;
-    overflow-y: auto;
-    font-size: 0.9em;
-    overflow-wrap: break-word;
-    color: var(--text-color);
-
-    body.theme-night & {
-        background-color: var(--page-bg);
-        border-color: var(--button-bg);
-    }
-
-    p {
-        margin-bottom: 7px;
-    }
-
-    p:last-of-type {
-        margin-bottom: 0;
-    }
 }
