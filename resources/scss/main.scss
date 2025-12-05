@@ -20,6 +20,7 @@
 ///
 /// @since    5.0.0
 /// - Komplettes Refactoring auf 7-1 Architecture mit CSS Custom Properties für Theming.
+/// - feat(SCSS): Neue Komponente chapter-grid registriert.
 ///
 
 // 1. Abstracts (Variables, Mixins)
@@ -42,11 +43,12 @@
 @use 'layout/sidebar';
 @use 'layout/footer';
 
-// 5. Components (Buttons, Navigation, Modals, Cookie Banner)
+// 5. Components (Buttons, Navigation, Modals, Cookie Banner, Grids)
 @use 'components/buttons';
 @use 'components/navigation';
 @use 'components/modals';
 @use 'components/cookie-banner';
+@use 'components/chapter-grid'; // NEU
 
 // 6. Pages (Comic, Archive, Characters, Admin)
 @use 'pages/comic';

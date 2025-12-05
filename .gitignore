@@ -212,8 +212,8 @@ public/assets/images/comic/thumbnails/*.webp
 # Ordner ignorieren, aber Basis-Dateien behalten
 public/charaktere/*
 !public/charaktere/index.php
-!public/charaktere/Trace.php
-!public/charaktere/Flora.php
+!public/charaktere/Trace_Legacy.php
+!public/charaktere/Flora_-_Regenwald-Tigerstamm.php
 
 # Spezifische Charakter-Bilder ignorieren
 public/assets/img/charaktere/characters/themaskedgods.png
