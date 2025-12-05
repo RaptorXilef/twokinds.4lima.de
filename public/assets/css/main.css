@@ -1,17 +1,506 @@
-@charset "UTF-8";
-/**
- * Main CSS Design
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
  *
- * @file      ROOT/resources/scss/main.scss
- * @package   twokinds.4lima.de
- * @author    Felix M. (@RaptorXilef)
- * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.4
- * @since     2.1.2 Der Innenabstand (padding) der `.transcript-content` Box wurde von 3px auf 15px erhöht.
- * @since     2.1.3 Verschieben des "Fehler melden" Button in die obere Navigationsleiste
- * @since     2.1.4 Stile für Summernote WYSIWYG-Editor im Report-Modal hinzugefügt.
+ */
+/*!
+ * @file      resources/scss/abstracts/_variables.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+:root {
+  --page-bg: #81dbfe;
+  --content-area-bg: #fff;
+  --content-bg: #fafafa;
+  --content-box-bg: #fff;
+  --sidebar-bg: #d1e5d4;
+  --header-bg: #ddead7;
+  --text-color: #333;
+  --text-color-light: #555;
+  --text-color-medium: #666;
+  --text-color-faded: #999;
+  --text-on-dark: #fff;
+  --text-on-medium: #000;
+  --link-color: #08c;
+  --link-visited: #08c;
+  --border-light: #ddd;
+  --border-medium: #ccc;
+  --border-dark: #888;
+  --border-black: #000;
+  --characters-area-bg: #e0ffe485;
+  --menu-bg: #effff2;
+  --menu-hover-bg: #fff;
+  --button-bg: #d1e5d4;
+  --button-hover-bg: #b1cab5;
+  --button-disabled-bg: #e0e0e0;
+  --comic-nav-bg: #c8e0c8;
+  --comic-nav-hover-bg: #aac8aa;
+  --comic-nav-archive-bg: #5d7b5d;
+  --comic-nav-archive-hover-bg: #789e78;
+  --theme-label-bg: #7ba181;
+  --new-tag-bg: #7ba181;
+  --maintbanner-bg: #f5d568;
+  --maintbanner-text: #000;
+  --status-green-bg: #d4edda;
+  --status-green-text: #155724;
+  --status-green-border: #c3e6cb;
+  --status-red-bg: #f8d7da;
+  --status-red-text: #721c24;
+  --status-red-border: #f5c6cb;
+  --status-orange-bg: #fff3cd;
+  --status-orange-text: #856404;
+  --status-orange-border: #ffeeba;
+  --table-header-bg: #e9ecef;
+  --table-row-even: #f8f9fa;
+  --table-row-hover: #e2e6ea;
+  --cookie-bg: #f5f5f5;
+  --cookie-text: #333;
+  --cookie-heading: #000;
+  --cookie-cat-bg: #e0e0e0;
+  --cookie-desc: #555;
+  --cookie-link: #007bff;
+  --cookie-link-hover: #0056b3;
+  --cookie-btn-accept-bg: #6c8f6c;
+  --cookie-btn-accept-hover: #85aa85;
+  --cookie-btn-reject-bg: #d1e5d4;
+  --cookie-btn-reject-hover: #b1cab5;
+  --cookie-btn-save-bg: #b1cab5;
+  --cookie-btn-save-hover: #9cb59c;
+}
+
+body.theme-night {
+  --page-bg: #002b3c;
+  --content-area-bg: #00425c;
+  --content-bg: #003f58;
+  --content-box-bg: #00334c;
+  --sidebar-bg: #00334c;
+  --header-bg: #002b3c;
+  --text-color: #fff;
+  --text-color-light: #ccc;
+  --text-color-medium: #aaa;
+  --text-color-faded: #777;
+  --text-on-medium: #fff;
+  --link-color: #81dbfe;
+  --link-visited: #81dbfe;
+  --border-light: #48778a;
+  --border-medium: #2a6177;
+  --border-dark: #00334c;
+  --border-black: #002b3c;
+  --characters-area-bg: #393322;
+  --menu-bg: #2a6177;
+  --menu-hover-bg: #48778a;
+  --button-bg: #2a6177;
+  --button-hover-bg: #48778a;
+  --button-disabled-bg: rgb(42 97 119 / 60%);
+  --comic-nav-bg: #00334c;
+  --comic-nav-hover-bg: #003f58;
+  --comic-nav-archive-bg: #2a6177;
+  --comic-nav-archive-hover-bg: #48778a;
+  --theme-label-bg: #628492;
+  --maintbanner-text: #000;
+  --status-green-bg: #1e4620;
+  --status-green-text: #e8f5e9;
+  --status-green-border: #1e4620;
+  --status-red-bg: #5a1e1e;
+  --status-red-text: #fce4e4;
+  --status-red-border: #5a1e1e;
+  --status-orange-bg: #5a4e1e;
+  --status-orange-text: #fff8e1;
+  --status-orange-border: #5a4e1e;
+  --table-header-bg: #48778a;
+  --table-row-even: #00334c;
+  --table-row-hover: #2a6177;
+  --cookie-bg: #00334c;
+  --cookie-text: #fff;
+  --cookie-heading: #fff;
+  --cookie-cat-bg: #00425c;
+  --cookie-desc: #ccc;
+  --cookie-link: #81dbfe;
+  --cookie-link-hover: #a0eaff;
+  --cookie-btn-accept-bg: #2a6177;
+  --cookie-btn-accept-hover: #48778a;
+  --cookie-btn-reject-bg: #002b3c;
+  --cookie-btn-reject-hover: #00425c;
+  --cookie-btn-save-bg: #002b3c;
+  --cookie-btn-save-hover: #00425c;
+}
+
+/*!
+ * @file      resources/scss/abstracts/_functions.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/abstracts/_mixins.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/abstracts/_placeholders.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/vendors/_normalize.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+html {
+  line-height: 1.15;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  display: block;
+}
+
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+hr {
+  box-sizing: content-box;
+  height: 0;
+  overflow: visible;
+}
+
+pre {
+  font-family: monospace;
+  font-size: 1em;
+}
+
+a {
+  background-color: transparent;
+}
+
+abbr[title] {
+  border-bottom: none;
+  text-decoration: underline;
+  text-decoration: underline dotted;
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+code,
+kbd,
+samp {
+  font-family: monospace;
+  font-size: 1em;
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+img {
+  border-style: none;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+}
+
+button,
+input {
+  overflow: visible;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+button,
+[type=button],
+[type=reset],
+[type=submit] {
+  appearance: auto;
+}
+
+button::-moz-focus-inner,
+[type=button]::-moz-focus-inner,
+[type=reset]::-moz-focus-inner,
+[type=submit]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+button:-moz-focusring,
+[type=button]:-moz-focusring,
+[type=reset]:-moz-focusring,
+[type=submit]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+legend {
+  box-sizing: border-box;
+  color: inherit;
+  display: table;
+  max-width: 100%;
+  padding: 0;
+  white-space: normal;
+}
+
+progress {
+  vertical-align: baseline;
+}
+
+textarea {
+  overflow: auto;
+}
+
+[type=checkbox],
+[type=radio] {
+  box-sizing: border-box;
+  padding: 0;
+}
+
+[type=number]::-webkit-inner-spin-button,
+[type=number]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+[type=search] {
+  appearance: textfield;
+  outline-offset: -2px;
+}
+
+[type=search]::-webkit-search-decoration {
+  appearance: none;
+}
+
+::-webkit-file-upload-button {
+  appearance: auto;
+  font: inherit;
+}
+
+details {
+  display: block;
+}
+
+summary {
+  display: list-item;
+}
+
+template {
+  display: none;
+}
+
+[hidden] {
+  display: none;
+}
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/vendors/_summernote.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.note-editor.note-frame {
+  border-color: var(--border-medium);
+}
+body.theme-night .note-editor.note-frame {
+  border-color: var(--button-bg);
+}
+.note-editor.note-frame .note-toolbar {
+  background-color: var(--table-header-bg) !important;
+  border-bottom: 1px solid var(--border-medium);
+  color: var(--text-color);
+}
+body.theme-night .note-editor.note-frame .note-toolbar {
+  background-color: var(--sidebar-bg) !important;
+  border-bottom-color: var(--button-bg);
+}
+.note-editor.note-frame .note-btn {
+  background-color: var(--button-bg);
+  color: var(--text-on-medium);
+  border: 1px solid transparent;
+}
+body.theme-night .note-editor.note-frame .note-btn {
+  color: var(--text-color);
+}
+.note-editor.note-frame .note-btn:hover, .note-editor.note-frame .note-btn:focus, .note-editor.note-frame .note-btn:active {
+  background-color: var(--button-hover-bg);
+}
+.note-editor.note-frame .note-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.note-editor.note-frame .dropdown-menu {
+  background-color: var(--content-bg);
+  border-color: var(--border-medium);
+  color: var(--text-color);
+}
+body.theme-night .note-editor.note-frame .dropdown-menu {
+  background-color: var(--page-bg);
+  border-color: var(--button-bg);
+}
+.note-editor.note-frame .dropdown-menu .dropdown-item {
+  color: var(--text-color);
+}
+.note-editor.note-frame .dropdown-menu .dropdown-item:hover {
+  background-color: var(--menu-bg);
+}
+body.theme-night .note-editor.note-frame .dropdown-menu .dropdown-item:hover {
+  background-color: var(--button-bg);
+}
+.note-editor.note-frame .note-popover .popover-content,
+.note-editor.note-frame .note-modal-content {
+  background-color: var(--content-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-medium);
+}
+body.theme-night .note-editor.note-frame .note-popover .popover-content,
+body.theme-night .note-editor.note-frame .note-modal-content {
+  background-color: var(--content-bg);
+  border-color: var(--button-hover-bg);
+}
+.note-editor.note-frame .note-popover .popover-header,
+.note-editor.note-frame .note-modal-header {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-medium);
+}
+body.theme-night .note-editor.note-frame .note-popover .popover-header,
+body.theme-night .note-editor.note-frame .note-modal-header {
+  background-color: var(--sidebar-bg);
+  border-bottom-color: var(--button-hover-bg);
+}
+.note-editor.note-frame .note-modal-footer {
+  border-top: 1px solid var(--border-light);
+}
+body.theme-night .note-editor.note-frame .note-modal-footer {
+  border-top-color: var(--button-hover-bg);
+}
+.note-editor.note-frame .note-form-label {
+  color: var(--text-color);
+}
+.note-editor.note-frame .note-editable {
+  background-color: var(--content-bg) !important;
+  color: var(--text-color) !important;
+}
+body.theme-night .note-editor.note-frame .note-editable {
+  background-color: var(--page-bg) !important;
+}
+.note-editor.note-frame .note-editable p {
+  color: var(--text-color) !important;
+}
+.note-editor.note-frame .note-codable {
+  background-color: #222;
+  color: #ccc;
+}
+body.theme-night .note-editor.note-frame .note-codable {
+  background-color: var(--page-bg);
+  color: var(--link-color);
+}
+.note-editor.note-frame .note-statusbar {
+  background-color: var(--table-header-bg);
+  border-top: 1px solid var(--border-medium);
+}
+body.theme-night .note-editor.note-frame .note-statusbar {
+  background-color: var(--sidebar-bg);
+  border-top-color: var(--button-bg);
+}
+.note-editor.note-frame .note-statusbar .note-resizebar {
+  border-top: 1px solid var(--border-light);
+}
+.note-editor.note-frame .note-input {
+  background-color: var(--content-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-medium);
+}
+body.theme-night .note-editor.note-frame .note-input {
+  background-color: var(--page-bg);
+  border-color: var(--button-bg);
+}
+
+/*!
+ * @file      resources/scss/base/_reset.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
 * {
   margin: 0;
@@ -26,41 +515,61 @@ html {
   width: 100%;
 }
 
-body {
-  background-color: #81DBFE;
-  font-family: "Lucida Grande", Arial, "Open Sans", sans-serif;
-  font-size: 15px;
-  min-width: 1099px;
-  color: #333;
+[hidden] {
+  display: none;
 }
 
-.mono {
-  font-family: "Lucida Console", Courier, monospace;
+.clear {
+  clear: left;
 }
 
-h3 {
-  margin-bottom: 0.7rem;
+.float-left {
+  float: left;
+  margin-right: 10px;
 }
 
-body.transitioning:not(.preload),
-body.transitioning:not(.preload) * {
-  -webkit-transition: background-color 0.25s, border-color 0.25s, background-image 0.25s;
-  transition: background-color 0.25s, border-color 0.25s, background-image 0.25s;
-}
-
-body.transitioning:not(.preload) {
-  -webkit-transition: background-color 0.25s, color 0.25s;
-  transition: background-color 0.25s, color 0.25s;
+.center {
+  text-align: center;
+  margin: auto;
 }
 
 .jsdep {
   display: none !important;
 }
 
-/* GLOBAL STYLES */
-article {
-  width: 825px;
-  margin: auto;
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/base/_typography.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+body {
+  background-color: var(--page-bg);
+  color: var(--text-color);
+  font-family: "Lucida Grande", arial, "Open Sans", sans-serif;
+  font-size: 15px;
+  min-width: 1099px;
+}
+body.transitioning:not(.preload), body.transitioning:not(.preload) * {
+  transition: background-color 0.25s, border-color 0.25s, background-image 0.25s, color 0.25s;
+}
+
+.mono {
+  font-family: "Lucida Console", courier, monospace;
 }
 
 h1,
@@ -70,6 +579,10 @@ h4,
 h5,
 h6 {
   font-weight: bold;
+}
+
+h3 {
+  margin-bottom: 0.7rem;
 }
 
 p {
@@ -82,34 +595,48 @@ h3.page-header,
 h4.page-header,
 h5.page-header,
 h6.page-header {
-  background-color: #DDEAD7;
+  background-color: var(--header-bg);
   padding: 2px 10px;
   margin-bottom: 10px;
   font-size: 22.5px;
-  color: #333;
+  color: var(--text-color);
+  border-bottom: 1px solid transparent;
+}
+body.theme-night h1.page-header,
+body.theme-night h2.page-header,
+body.theme-night h3.page-header,
+body.theme-night h4.page-header,
+body.theme-night h5.page-header,
+body.theme-night h6.page-header {
+  border-bottom-color: var(--button-bg);
 }
 
-.maintbanner {
-  font-size: 0.9em;
-  padding: 1em 8em;
-  text-align: center;
-  background-color: #F5D568;
-  color: #000;
-  position: relative;
-  z-index: 200;
+a {
+  color: var(--link-color);
+  text-decoration: none;
 }
-.maintbanner a,
-.maintbanner a:link,
-.maintbanner a:visited,
-.maintbanner a:active {
-  color: #000;
+a:visited {
+  color: var(--link-visited);
+}
+a:hover {
+  text-decoration: underline;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid;
+  border-color: var(--header-bg);
+  margin-block: 1rem;
+}
+body.theme-night hr {
+  border-color: var(--button-bg);
 }
 
 .instructions {
   text-align: center;
   margin: 15px 0;
   font-style: italic;
-  color: #555;
+  color: var(--text-color-light);
 }
 
 .smalltext {
@@ -128,97 +655,42 @@ h6.page-header {
   text-transform: uppercase;
 }
 
-.clear {
-  clear: left;
-}
-
-.float-left {
-  float: left;
-  margin-right: 10px;
-}
-
-.center {
-  text-align: center;
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/layout/_grid.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+article {
+  width: 825px;
   margin: auto;
 }
 
-hr {
-  border-color: #DDEAD7;
-  border-bottom: none;
-  margin-block: 1rem;
-  border: none;
-  border-top: 1px solid;
-}
-
-[hidden] {
-  display: none;
-}
-
-/* MAIN PAGE CONTAINER */
 .main-container {
   width: 1079px;
   margin: auto;
-  background-color: #fff;
-  -webkit-box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.5);
-  box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.5);
+  background-color: var(--content-area-bg);
+  box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.5);
   overflow: visible;
 }
-.main-container button,
-.main-container a.button {
-  background: none;
-  color: #000;
-  border: none;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-  outline: inherit;
-  font-style: initial;
-  font-size: initial;
-  background-color: #d1e5d4;
-  border-radius: 3px;
-  padding: 3px 5px;
-  text-decoration: none;
-}
-.main-container button:hover,
-.main-container a.button:hover {
-  background-color: #b1cab5;
-}
-.main-container button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-  background-color: #e0e0e0;
-}
-.main-container .arrow-down,
-.main-container .arrow-left {
-  display: inline-block;
-  width: 1em;
-  height: 0.6em;
-  background: transparent url("https://twokinds.4lima.de/assets/images/layout/ui/dropdown.svg?c=20251024") 50% 50% no-repeat;
-  background-size: contain;
-}
-.main-container .arrow-down.animate,
-.main-container .arrow-left.animate {
-  transition: rotate 0.1s;
-}
-.main-container .arrow-left {
-  rotate: -90deg;
+body.theme-night .main-container {
+  box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.2);
 }
 
-/* BANNER */
-.banner {
-  width: 1099px;
-  height: 314px;
-  padding-top: 10px;
-  position: relative;
-  z-index: 99;
-  margin-left: -10px;
-  background: transparent url("https://twokinds.4lima.de/assets/images/layout/banner.webp?c=20251024") 0 10px no-repeat;
-  text-indent: 105%;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-/* MAIN CONTENT AREA */
 .content-area {
   display: flex;
   flex-flow: nowrap;
@@ -231,77 +703,164 @@ hr {
   margin-bottom: 15px;
 }
 
-/* NAVIGATION MENU */
-.menu {
-  font-size: 14px;
+.content {
+  flex: 1 1 auto;
+  position: relative;
+  z-index: 102;
+  display: inline-block;
+  padding: 10px 15px;
+  padding-top: 11px;
+  margin-right: 11px;
+  overflow: visible;
+  border: 1px solid var(--border-medium);
+  border-radius: 0 0 5px 5px;
+  background-color: var(--content-bg);
+  color: var(--text-color);
+}
+.content li {
+  margin-bottom: 5px;
+  list-style-position: inside;
+  margin-left: 30px;
+  margin-right: 30px;
+}
+.content ul {
   margin-bottom: 10px;
 }
-.menu a {
-  color: #000;
-  display: block;
-  list-style-type: none;
-  width: 160px;
-  background-color: #effff2;
-  border-radius: 4px;
-  text-transform: uppercase;
-  margin: 3px auto;
-  overflow: hidden;
-  padding: 3px 0;
-  text-decoration: none;
-  cursor: pointer;
-  position: relative;
+.content table {
+  border: 1px solid var(--border-black);
+  border-collapse: collapse;
+  margin-bottom: 10px;
 }
-.menu a:hover {
-  background-color: #fff;
+body.theme-night .content table {
+  border-color: var(--page-bg);
 }
-.menu a.theme {
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 0;
-  margin-top: 10px;
+.content th,
+.content td {
+  padding: 2px 7px;
+  border: 1px solid var(--border-black);
+  color: var(--text-color);
 }
-.menu a.theme span.themelabel {
-  flex: 0 0 0;
-  padding: 1px;
-  background-color: #7BA181;
-  color: #fff;
-  font-size: 0.7em;
+.content th {
+  background-color: var(--header-bg);
 }
-.menu a.theme span.themename {
-  text-align: center;
-  flex: 1 1 auto;
-  padding: 3px;
-  color: #000;
+body.theme-night .content {
+  border-color: var(--page-bg);
 }
-.menu a.menu-new:after {
-  content: "New";
-  display: inline-block;
-  width: 26px;
-  background-color: #7BA181;
-  color: #fff;
-  font-size: 0.7em;
-  position: absolute;
-  top: 6px;
-  left: -6px;
-  transform: rotate(-90deg);
+body.theme-night .content th {
+  background-color: var(--button-hover-bg);
+}
+body.theme-night .content th,
+body.theme-night .content td {
+  border-color: var(--page-bg);
 }
 
-/* SIDEBAR */
+.content-bottom {
+  width: 1079px;
+  height: 4px;
+  margin-bottom: 15px;
+}
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/layout/_header.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.banner {
+  width: 1099px;
+  height: 314px;
+  padding-top: 10px;
+  position: relative;
+  z-index: 99;
+  margin-left: -10px;
+  background: transparent url("https://twokinds.4lima.de/assets/images/layout/banner.webp?c=20251024") 0 10px no-repeat;
+  text-indent: 105%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+body.theme-night .banner {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/banner.webp?c=20251024");
+}
+
+.banner-lights-off {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
+}
+
+body.theme-night #banner-lights-off {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/banner.webp?c=20251024");
+}
+
+.maintbanner {
+  font-size: 0.9em;
+  padding: 1em 8em;
+  text-align: center;
+  background-color: var(--maintbanner-bg);
+  color: var(--maintbanner-text);
+  position: relative;
+  z-index: 200;
+}
+.maintbanner a,
+.maintbanner a:link,
+.maintbanner a:visited,
+.maintbanner a:active {
+  color: var(--maintbanner-text);
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .maintbanner {
+    font-size: 1.2em;
+  }
+}
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/layout/_sidebar.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
 .sidebar {
-  display: inline-block;
-  flex: 0 0 200px;
   display: flex;
+  flex: 0 0 200px;
 }
 
 .sidebar-content {
   width: 167px;
-  padding: 11px 4px 7px 4px;
+  padding: 11px 4px 7px;
   text-align: center;
   border-radius: 0 0 5px 5px;
   margin-left: 12px;
-  background-color: #d1e5d4;
+  background-color: var(--sidebar-bg);
 }
 .sidebar-content .full-width-img {
   margin-left: -5px;
@@ -316,109 +875,176 @@ hr {
   margin-bottom: 2px;
 }
 
-.content {
-  flex: 1 1 auto;
-  position: relative;
-  z-index: 102;
-  display: inline-block;
-  padding: 10px 15px;
-  padding-top: 11px;
-  margin-right: 11px;
-  overflow: visible;
-  border: 1px solid #ccc;
-  border-radius: 0 0 5px 5px;
-  background-color: #fafafa;
-}
-.content li {
-  margin-bottom: 5px;
-  list-style-position: inside;
-  margin-left: 30px;
-  margin-right: 30px;
-}
-.content ul {
+/* Navigation Menu */
+.menu {
+  font-size: 14px;
   margin-bottom: 10px;
 }
-.content table {
-  border: 1px solid #000;
-  border-collapse: collapse;
-  margin-bottom: 10px;
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .menu {
+    font-size: 1.1em;
+  }
 }
-.content th {
-  background-color: #DDEAD7;
-}
-.content th,
-.content td {
-  padding: 2px 7px;
-  border: 1px solid #000;
-}
-.content a {
-  color: #08c;
-}
-.content a:visited {
-  color: #08c;
-}
-
-.content-bottom {
-  width: 1079px;
-  height: 4px;
-  margin-bottom: 15px;
-}
-
-/* BANNER ADS */
-.abg-sidebar {
-  max-height: 630px;
+.menu a {
+  color: var(--text-on-medium);
+  display: block;
+  list-style-type: none;
   width: 160px;
-  margin: auto;
+  background-color: var(--menu-bg);
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin: 3px auto;
   overflow: hidden;
+  padding: 3px 0;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
 }
-.abg-sidebar .advertisement {
-  margin: 10px 0 20px 0;
-  height: 600px;
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .menu a {
+    padding: 8px 0;
+    margin: 8px auto;
+  }
+}
+.menu a:hover {
+  background-color: var(--menu-hover-bg);
+}
+.menu a.theme {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  margin-top: 10px;
+}
+.menu a.theme span.themelabel {
+  flex: 0 0 0;
+  padding: 1px;
+  background-color: var(--theme-label-bg);
+  color: #fff;
+  font-size: 0.7em;
+}
+.menu a.theme span.themename {
+  text-align: center;
+  flex: 1 1 auto;
+  padding: 3px;
+  color: var(--text-on-medium);
+}
+body.theme-night .menu a.theme span.themename {
+  color: var(--text-color);
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .menu a.menu-new {
+    padding-top: calc(0.7em + 5px);
+    padding-bottom: calc(8px - 0.7em + 5px);
+  }
+}
+.menu a.menu-new::after {
+  content: "New";
+  display: inline-block;
+  width: 26px;
+  background-color: var(--new-tag-bg);
+  color: #fff;
+  font-size: 0.7em;
+  position: absolute;
+  top: 6px;
+  left: -6px;
+  transform: rotate(-90deg);
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .menu a.menu-new::after {
+    width: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+  }
+}
+
+/* Banner Ads & Donation Styling */
+/*
+.abg-sidebar {
+    max-height: 630px;
+    width: 160px;
+    margin: auto;
+    overflow: hidden;
+
+    .advertisement {
+        margin: 10px 0 20px;
+        height: 600px;
+    }
 }
 
 .av2 {
-  margin: auto;
-  width: 300px;
-  height: 268px;
-  overflow: hidden;
-  margin-bottom: 8px;
+    margin: auto;
+    width: 300px;
+    height: 268px;
+    overflow: hidden;
+    margin-bottom: 8px;
 }
 
 .av2-child {
-  position: relative;
-  width: 300px;
-  height: 250px;
-  overflow: hidden;
-}
-.av2-child .advertisement {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-  background-color: #fafafa;
+    position: relative;
+    width: 300px;
+    height: 250px;
+    overflow: hidden;
+
+    .advertisement {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        background-color: var(--content-bg);
+
+        body.theme-night & {
+            background-color: var(--page-bg);
+        }
+    }
 }
 
-.ad-top {
-  margin: auto;
-  height: 90px;
-  min-width: 728px;
-  max-width: 970px;
-  padding-top: 20px;
-  padding-bottom: 9px;
-  overflow: hidden;
+.donate-box {
+    width: 300px;
+    height: 250px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
 }
-
+*/
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/layout/_footer.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
 .bottom {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-medium);
   border-radius: 5px;
   width: 1039px;
   margin: auto;
   min-height: 350px;
-  padding: 8px 8px;
+  padding: 8px;
   margin-bottom: 10px;
   display: flex;
   flex-flow: row nowrap;
   gap: 10px;
+}
+body.theme-night .bottom {
+  border-color: var(--page-bg);
 }
 .bottom .bottom-left {
   flex: 0 0 160px;
@@ -438,18 +1064,9 @@ hr {
   flex: 0 0 300px;
 }
 
-.donate-box {
-  width: 300px;
-  height: 250px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 999;
-}
-
 .rec-comic {
   width: 100%;
-  margin: -4px auto 0 auto;
+  margin: -4px auto 0;
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
@@ -457,15 +1074,17 @@ hr {
 .rec-comic .rec-comic-btn {
   flex: 0 0 88px;
   height: 31px;
-  margin: 4px 2px 0px 2px;
-  background-color: #ccc;
+  margin: 4px 2px 0;
+  background-color: var(--border-medium);
 }
 
-/* FOOTER */
 footer {
   text-align: center;
   font-size: 12px;
-  color: #333;
+  color: var(--text-color);
+}
+footer a {
+  color: var(--link-color);
 }
 
 .footer-img {
@@ -475,120 +1094,110 @@ footer {
   margin-top: 5px;
 }
 
-/* COMIC SECTION */
-.comic {
-  text-align: center;
-  margin: auto;
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/components/_buttons.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.main-container button,
+.main-container a.button {
+  background: none;
+  color: var(--text-on-medium);
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  font-style: initial;
+  font-size: initial;
+  background-color: var(--button-bg);
+  border-radius: 3px;
+  padding: 3px 5px;
+  text-decoration: none;
 }
-.comic h1 {
-  font-weight: normal;
-  font-size: 18px;
-  margin-bottom: 5px;
+.main-container button:hover,
+.main-container a.button:hover {
+  background-color: var(--button-hover-bg);
 }
-.comic header {
-  margin-bottom: 15px;
+.main-container button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background-color: var(--button-disabled-bg);
 }
-.comic .transcript {
-  text-align: left;
-  margin-top: 15px;
-  font-size: 0.8em;
+body.theme-night .main-container button:disabled {
+  opacity: 0.7;
 }
-.comic .transcript .transcript-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-  /* Hinzugefügt */
+.main-container .arrow-down,
+.main-container .arrow-left {
+  display: inline-block;
+  width: 1em;
+  height: 0.6em;
+  background: transparent url("https://twokinds.4lima.de/assets/images/layout/ui/dropdown.svg?c=20251024") 50% 50% no-repeat;
+  background-size: contain;
 }
-.comic .transcript .transcript-content {
-  background-color: #ffffff;
-  border: 1px solid #ccc;
-  max-height: 550px;
-  overflow: auto;
-  padding: 15px;
-  margin-top: 5px;
-  border-radius: 8px;
-  -webkit-box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.35);
-  box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.35);
+.main-container .arrow-down.animate,
+.main-container .arrow-left.animate {
+  transition: rotate 0.1s;
 }
-.comic .transcript .transcript-content p {
-  margin-bottom: 7px;
+.main-container .arrow-left {
+  rotate: -90deg;
 }
-.comic .transcript .transcript-content p:last-of-type {
-  margin-bottom: 0;
+body.theme-night .main-container .arrow-down,
+body.theme-night .main-container .arrow-left {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/ui/dropdown_dark.svg?c=20251024");
 }
-.comic .below-nav {
-  font-size: 0.9em;
-  font-style: italic;
-  margin-top: 3px;
-  margin-bottom: 0;
-  text-align: left;
-  display: flex;
-  flex-flow: row nowrap;
-  gap: 1rem;
-  justify-content: space-between;
-  align-items: center;
+
+.button-green {
+  background-color: var(--status-green-text) !important;
+  color: white !important;
 }
-.comic .below-nav .nav-instruction {
-  flex: 1 1 auto;
+.button-green:hover {
+  background-color: var(--button-green-hover) !important;
 }
-.comic .below-nav .bookmark-control {
-  flex: 0 0 auto;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: flex-end;
-  align-items: center;
-}
-.comic .below-nav .bookmark-control .arrow-left {
-  font-size: 1.4em;
-}
-.comic .below-nav .bookmark-control .button {
-  font-size: 1em;
-}
-.comic .tag-wrapper {
-  display: flex;
-  flex-flow: row nowrap;
-  gap: 1rem;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 10px;
-}
-.comic .tag-wrapper .comic-tags {
-  flex: 1 1 auto;
-  text-align: left;
-  font-size: 0.9em;
-  display: flex;
-  flex-flow: row wrap;
-  gap: 0.3rem;
-  row-gap: 0.5rem;
-  align-items: center;
-}
-.comic .tag-wrapper .comic-tags .button {
-  font-size: 1em;
-}
-.comic .tag-wrapper .permalink {
-  flex: 0 0 auto;
-  font-size: 0.9em;
-  padding-top: 3px;
-}
-.comic .comic-footer {
-  margin-top: 7px;
-}
-.comic .comic-header {
-  margin-bottom: 7px;
-  position: relative;
-  /* HINZUGEFÜGT */
-}
-.comic .comicnav {
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/components/_navigation.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.comicnav {
   width: 825px;
   text-align: center;
-  margin: 0 auto 15px auto;
-  color: #000;
-  background-color: #c8e0c8;
+  margin: 0 auto 15px;
+  color: var(--text-on-medium);
+  background-color: var(--comic-nav-bg);
   border-radius: 3px;
   padding: 7px 0;
-  -webkit-box-shadow: inset 0px 2px 2px 0px rgba(0, 0, 0, 0.35);
-  box-shadow: inset 0px 2px 2px 0px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 2px 2px 0 rgba(0, 0, 0, 0.35);
   display: flex;
   flex-flow: row nowrap;
   gap: 0.5rem;
@@ -596,11 +1205,16 @@ footer {
   align-items: center;
   position: relative;
 }
-.comic .comicnav.bottomnav {
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comicnav {
+    font-size: 1.1em;
+  }
+}
+.comicnav.bottomnav {
   margin-top: 15px;
   margin-bottom: 0;
 }
-.comic .comicnav button.bookmark {
+.comicnav button.bookmark {
   height: 36px;
   transform: translateY(-36px);
   width: 27px;
@@ -616,19 +1230,27 @@ footer {
   z-index: 1000;
   border-radius: 0;
 }
-.comic .comicnav button.bookmark.bookmarked {
+.comicnav button.bookmark.bookmarked {
   background: url("https://twokinds.4lima.de/assets/images/layout/ui/bookmark_active.png?c=20251024") 0 0 no-repeat;
   background-size: contain;
 }
-.comic .comicnav img {
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comicnav button.bookmark {
+    height: 45px;
+    width: 34px;
+    transform: translateY(-34px);
+    top: -11px;
+  }
+}
+.comicnav img {
   margin: 0 4px;
 }
-.comic .comicnav a,
-.comic .comicnav button {
-  color: #000;
+.comicnav a,
+.comicnav button {
+  color: var(--text-on-medium);
   text-decoration: none;
 }
-.comic .comicnav .navarrow {
+.comicnav .navarrow {
   display: inline-flex;
   flex-flow: row nowrap;
   align-items: stretch;
@@ -640,30 +1262,43 @@ footer {
   background-color: transparent;
   text-align: center;
 }
-.comic .comicnav .nav-wrapper {
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comicnav .navarrow {
+    height: 50px;
+  }
+}
+.comicnav .nav-wrapper {
   display: flex;
   align-items: center;
 }
-.comic .comicnav .navarrow:not(.disabled):hover {
-  background-color: #aac8aa;
+.comicnav .navarrow:not(.disabled):hover {
+  background-color: var(--comic-nav-hover-bg);
 }
-.comic .comicnav .navbegin .nav-wrapper {
+.comicnav .navbegin .nav-wrapper {
   background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-begin.png?c=20250916") 0 50% no-repeat;
   padding-left: 35px;
 }
-.comic .comicnav .navprev .nav-wrapper {
+.comicnav .navprev .nav-wrapper {
   background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916") 0 50% no-repeat;
   padding-left: 26px;
 }
-.comic .comicnav .navnext .nav-wrapper {
+.comicnav .navnext .nav-wrapper {
   background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916") 100% 50% no-repeat;
   padding-right: 26px;
 }
-.comic .comicnav .navend .nav-wrapper {
+.comicnav .navend .nav-wrapper {
   background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-end.png?c=20250916") 100% 50% no-repeat;
   padding-right: 35px;
 }
-.comic .comicnav .navarchive {
+.comicnav .nav-report-issue {
+  width: auto;
+}
+.comicnav .nav-report-issue .nav-wrapper {
+  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-issue.png?c=20251029") 0 50% no-repeat;
+  padding-left: 28px;
+  background-size: 20px;
+}
+.comicnav .navarchive {
   display: inline-flex;
   flex-flow: row nowrap;
   align-items: stretch;
@@ -673,425 +1308,80 @@ footer {
   padding: 2px 20px;
   margin: 0 6px;
   color: #fff;
-  background-color: #5d7b5d;
+  background-color: var(--comic-nav-archive-bg);
 }
-.comic .comicnav .navarchive:hover {
-  background-color: #789e78;
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comicnav .navarchive {
+    height: 50px;
+    border-radius: 7px;
+  }
 }
-.comic .comicnav .disabled {
+.comicnav .navarchive:hover {
+  background-color: var(--comic-nav-archive-hover-bg);
+}
+.comicnav .disabled {
   opacity: 0.4;
   cursor: default;
 }
-.comic .comicnav {
-  /* NEU: Fehler melden Button (Oben Rechts) */
-}
-.comic .comicnav .nav-report-issue {
-  width: auto;
-  /* Breite an Inhalt anpassen */
-}
-.comic .comicnav .nav-report-issue .nav-wrapper {
-  background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-issue.png?c=20251029") 0 50% no-repeat;
-  padding-left: 28px;
-  background-size: 20px;
-  /* Icon-Größe anpassen */
-}
-.comic .comicnav.bottomnav .nav-lang-toggle {
+.comicnav.bottomnav .nav-lang-toggle {
   width: auto;
 }
-.comic .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
+.comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
   background: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916") 0 50% no-repeat;
   padding-left: 55px;
 }
-.comic #comic-image {
-  width: 100%;
-  height: auto;
-  border-radius: 7px;
-  /* HINZUGEFÜGT */
+body.theme-night .comicnav a,
+body.theme-night .comicnav button {
+  color: var(--text-color);
+}
+body.theme-night .comicnav button.bookmark {
+  filter: brightness(1.1);
+}
+body.theme-night .comicnav button.bookmark.bookmarked {
+  filter: brightness(1.3);
+}
+body.theme-night .comicnav .navbegin .nav-wrapper {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916");
+}
+body.theme-night .comicnav .navprev .nav-wrapper {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916");
+}
+body.theme-night .comicnav .navnext .nav-wrapper {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916");
+}
+body.theme-night .comicnav .navend .nav-wrapper {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916");
+}
+body.theme-night .comicnav .nav-report-issue .nav-wrapper {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029");
+}
+body.theme-night .comicnav .navarchive {
+  color: var(--text-color);
+}
+body.theme-night .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
+  background-image: url("https://twokinds.4lima.de/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916");
 }
 
-/* BEGIN ALTERNATE PAGES */
-/* LINKS PAGE */
-.link-segment {
-  margin: 6px 0;
-  margin-bottom: 10px;
-}
-.link-segment .link-img {
-  margin-top: 2px;
-}
-.link-segment p {
-  margin: 0;
-}
-
-.imggroup {
-  margin: auto;
-  text-align: center;
-}
-.imggroup img {
-  cursor: pointer;
-}
-
-.dual-img img,
-.many-img img {
-  margin-left: 1px;
-  margin-right: 1px;
-}
-
-.link-img {
-  height: 100%;
-  width: 200px;
-  float: left;
-  margin-left: 10px;
-  margin-right: 20px;
-}
-
-/* POPUP DIALOG */
-.dialog * {
-  margin: 0;
-}
-
-.dialog {
-  border-radius: 5px;
-  background: #fafafa;
-  width: 490px;
-  position: fixed;
-  margin: auto;
-  display: none;
-  z-index: 200;
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.6);
-}
-.dialog img {
-  object-fit: contain;
-  max-width: 100%;
-}
-.dialog a {
-  color: #000;
-  text-decoration: none;
-}
-.dialog .dialog-body {
-  padding: 10px;
-  padding-top: 0;
-}
-.dialog .dialog-title {
-  background-color: #b1cab5;
-  border-radius: 3px 3px 0 0;
-  padding: 5px 10px;
-  margin-bottom: 10px;
-  margin-left: -10px;
-  width: 470px;
-  color: #000;
-}
-.dialog .dialog-center {
-  text-align: center;
-  margin-bottom: 5px;
-}
-.dialog .dialog-x {
-  display: inline-block;
-  background: #fafafa;
-  color: #555;
-  font-size: 12px;
-  text-align: center;
-  font-weight: bold;
-  cursor: pointer;
-  line-height: 13px;
-  height: 1.1em;
-  width: 1.1em;
-  padding: 3px;
-  margin-top: 1px;
-  margin-right: -5px;
-  border-radius: 2px;
-}
-.dialog .dialog-x:hover {
-  background-color: #e0e0e0;
-  color: #000;
-}
-.dialog .dialog-title .dialog-x {
-  float: right;
-}
-.dialog .dialog-input-header {
-  font-weight: bold;
-}
-.dialog input.embed {
-  padding: 2px;
-  font-size: 14px;
-  margin-top: 2px;
-  margin-bottom: 5px;
-  width: 465px;
-  border: 1px solid #ccc;
-}
-
-/* ARCHIVE PAGE */
-.chapter {
-  font-size: 14px;
-  margin-bottom: 15px;
-}
-.chapter p {
-  margin-inline: 0.5rem;
-  margin-top: 0.3rem;
-  text-align: justify;
-}
-.chapter p a {
-  color: #000;
-}
-.chapter h2 {
-  display: inline-block;
-  margin: 0;
-  cursor: pointer;
-  color: #000;
-  font-size: 1.2em;
-}
-.chapter h4:hover {
-  text-decoration: underline;
-}
-
-.chapter-links {
-  display: flex;
-  flex-flow: row wrap;
-  gap: 6px 6px;
-}
-.chapter-links noscript {
-  display: block;
-}
-.chapter-links.tag-page-links a {
-  width: 100px;
-  height: 130px;
-}
-.chapter-links a {
-  display: inline-block;
-  width: 80px;
-  height: 104px;
-  background-color: #eee;
-  text-decoration: none;
-  color: #000;
-  font-size: 1.2em;
-  position: relative;
-  overflow: hidden;
-}
-.chapter-links a:hover {
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-}
-.chapter-links a span {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 80;
-}
-.chapter-links a .delete {
-  position: absolute;
-  z-index: 91;
-  top: 4px;
-  right: 2px;
-  background: none;
-  margin: 0;
-  padding: 0;
-}
-.chapter-links a .delete svg {
-  width: 24px;
-  height: 24px;
-  color: #f00;
-  stroke: #fff;
-  stroke-width: 2px;
-  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
-}
-.chapter-links a .delete:hover svg {
-  color: #c00;
-}
-.chapter-links a.loaded img,
-.chapter-links a noscript img, .chapter-links.tag-page-links a img {
-  opacity: 1;
-}
-.chapter-links img:not(.delicon) {
-  opacity: 0;
-  transition: opacity 0.5s;
-  object-fit: contain;
-  max-width: 100%;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  z-index: 90;
-}
-.chapter-links a.loaded span,
-.chapter-links a.noscript span, .chapter-links.tag-page-links a span {
-  background-color: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  display: none;
-  z-index: 100;
-}
-.chapter-links a.loaded:hover span,
-.chapter-links a.noscript:hover span, .chapter-links.tag-page-links a:hover span {
-  display: flex;
-}
-
-@media only screen and (min-device-width: 320px) and (max-device-width: 640px) and (-webkit-min-device-pixel-ratio: 2) {
-  .maintbanner {
-    font-size: 1.2em;
-  }
-  .tinytext {
-    font-size: 16px;
-  }
-  .tinyheader {
-    font-size: 16px;
-  }
-  .chapter h2 {
-    font-size: 2em;
-  }
-  .chapter-links a {
-    zoom: 1.8;
-  }
-  .chapter-links a .delete {
-    top: 3px;
-  }
-  .chapter-links a .delete svg {
-    width: 16px;
-    height: 16px;
-  }
-  .chapter-links a.loaded span, .chapter-links.tag-page-links a span {
-    display: inline-block;
-    height: auto;
-    bottom: 0;
-    top: inherit;
-    padding-top: 0;
-  }
-  .chapter-links.tag-page-links a {
-    zoom: 1.5;
-  }
-  .comic .transcript-content {
-    font-size: 1.3em;
-  }
-  .comic .comicnav {
-    font-size: 1.1em;
-  }
-  .comic .comicnav .navarchive,
-  .comic .comicnav .navarrow {
-    height: 50px;
-  }
-  .comic .comicnav .navarchive {
-    border-radius: 7px;
-  }
-  .comic .comicnav button.bookmark {
-    height: 45px;
-    width: 34px;
-    transform: translateY(-34px);
-    background-size: cover;
-    top: -11px;
-  }
-  .comic .comicnav button.bookmark.bookmarked {
-    background-size: cover;
-  }
-  .comic .below-nav {
-    font-size: 1.2em;
-    margin-top: 0.5rem;
-  }
-  .comic .below-nav .nav-instruction-content {
-    display: none;
-  }
-  .comic .below-nav .bookmark-control .button {
-    font-size: 1.1em;
-  }
-  .comic .tag-wrapper .comic-tags {
-    font-size: 1.2em;
-  }
-  .comic .tag-wrapper .permalink {
-    font-size: 1.2em;
-  }
-  .menu {
-    font-size: 1.1em;
-  }
-  .menu a {
-    padding: 8px 0;
-    margin: 8px auto;
-  }
-  .menu a.menu-new {
-    padding-top: calc(0.7em + 5px);
-    padding-bottom: calc(8px - 0.7em + 5px);
-  }
-  .menu a.menu-new:after {
-    width: auto;
-    top: 0;
-    left: 0;
-    right: 0;
-    transform: none;
-  }
-}
-/* FAQ */
-div.page-faq section {
-  padding-top: 10px;
-  margin-top: 10px;
-  border-top: 1px solid #ccc;
-}
-div.page-faq section h2 {
-  font-size: 15px;
-  margin-bottom: 5px;
-}
-
-/* CHAT PAGE */
-div.page-chat section {
-  margin-bottom: 15px;
-}
-div.page-chat .chat-button {
-  text-align: center;
-  padding: 5px 0 15px 0;
-  margin: 1.5rem 0 0 0;
-}
-div.page-chat .chat-button a {
-  padding: 5px 40px;
-  font-size: 20px;
-  text-decoration: none;
-  border-radius: 5px;
-  background-color: #5d7b5d;
-  color: #fff;
-}
-div.page-chat .chat-button a:hover {
-  background-color: #789e78;
-}
-
-/* CHARACTER PAGE */
-.char-detail {
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
-  margin-bottom: 10px;
-}
-.char-detail h3 img {
-  vertical-align: middle;
-}
-.char-detail h3,
-.char-detail p {
-  margin-bottom: 10px;
-  text-align: justify;
-}
-.char-detail img.portrait {
-  margin-top: 0;
-}
-.char-detail .char-info {
-  float: left;
-  width: 600px;
-}
-.char-detail .char-img {
-  float: left;
-  width: 175px;
-  margin-right: 20px;
-  text-align: center;
-}
-
-.char-detail:last-of-type {
-  margin-bottom: 0;
-  border: none;
-}
-
-/* CHARAKTERS */
-.comic-characters {
-  background-color: #ffffff;
-}
-
-/* ################################################################## */
-/* ### NEUE STILE FÜR REPORTING-SYSTEM (v3.7.0.0) - LIGHT MODE ### */
-/* ################################################################## */
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/components/_modals.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
 /* --- Allgemeine Modal-Stile (Basis) --- */
 .modal {
   display: none;
@@ -1119,10 +1409,10 @@ div.page-chat .chat-button a:hover {
 
 .modal-content {
   position: relative;
-  background-color: #fafafa;
+  background-color: var(--content-bg);
   margin: auto;
   padding: 25px;
-  border: 1px solid #888;
+  border: 1px solid var(--border-dark);
   font-size: 1.2em;
   width: 90%;
   max-width: 70vw;
@@ -1132,6 +1422,11 @@ div.page-chat .chat-button a:hover {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
   z-index: 1002;
   overflow-y: auto;
+  color: var(--text-color);
+}
+body.theme-night .modal-content {
+  border-color: var(--border-light);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .modal-close {
@@ -1147,8 +1442,15 @@ div.page-chat .chat-button a:hover {
   padding: 0 5px;
 }
 .modal-close:hover, .modal-close:focus {
-  color: #000;
+  color: var(--text-on-medium);
   text-decoration: none;
+}
+body.theme-night .modal-close {
+  color: rgba(255, 255, 255, 0.6);
+}
+body.theme-night .modal-close:hover, body.theme-night .modal-close:focus {
+  color: var(--text-color);
+  background-color: var(--button-bg);
 }
 
 .modal-buttons {
@@ -1169,31 +1471,51 @@ div.page-chat .chat-button a:hover {
   font-weight: bold;
   display: block;
   margin-bottom: 5px;
-  color: #555;
+  color: var(--text-color-light);
+}
+body.theme-night .report-modal-content .admin-form label {
+  color: #ccc;
+}
+.report-modal-content .admin-form textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 .report-modal-content .admin-form input[type=text],
 .report-modal-content .admin-form select,
 .report-modal-content .admin-form textarea {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-medium);
   border-radius: 4px;
   font-size: 1em;
   box-sizing: border-box;
+  background-color: var(--content-bg);
+  color: var(--text-color);
 }
 .report-modal-content .admin-form input[type=text]:focus,
 .report-modal-content .admin-form select:focus,
 .report-modal-content .admin-form textarea:focus {
-  border-color: #5d7b5d;
+  border-color: var(--comic-nav-archive-bg);
   box-shadow: 0 0 0 2px rgba(93, 123, 93, 0.2);
   outline: none;
 }
-.report-modal-content .admin-form textarea {
-  resize: vertical;
-  min-height: 80px;
+body.theme-night .report-modal-content .admin-form input[type=text],
+body.theme-night .report-modal-content .admin-form select,
+body.theme-night .report-modal-content .admin-form textarea {
+  background-color: var(--page-bg);
+  border-color: var(--button-bg);
+}
+body.theme-night .report-modal-content .admin-form input[type=text]:focus,
+body.theme-night .report-modal-content .admin-form select:focus,
+body.theme-night .report-modal-content .admin-form textarea:focus {
+  border-color: var(--border-light);
+  box-shadow: 0 0 0 2px rgba(72, 119, 138, 0.5);
 }
 .report-modal-content .admin-form select[required]:invalid {
-  color: #999;
+  color: var(--text-color-faded);
+}
+body.theme-night .report-modal-content .admin-form select[required]:invalid {
+  opacity: 0.5;
 }
 .report-modal-content .report-images-container {
   display: flex;
@@ -1210,16 +1532,19 @@ div.page-chat .chat-button a:hover {
 .report-modal-content .report-images-container img {
   max-width: 100%;
   height: auto;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-light);
   border-radius: 4px;
   margin-top: 5px;
 }
+body.theme-night .report-modal-content .report-images-container img {
+  border-color: var(--border-dark);
+}
 .report-modal-content .report-images-container label {
   font-size: 0.9em;
-  color: #666;
+  color: var(--text-color-medium);
 }
-.report-modal-content {
-  /* Status Meldungen */
+body.theme-night .report-modal-content .report-images-container label {
+  color: var(--text-color-light);
 }
 .report-modal-content .status-message {
   padding: 10px 15px;
@@ -1230,22 +1555,34 @@ div.page-chat .chat-button a:hover {
   display: none;
 }
 .report-modal-content .status-message.status-green {
-  color: #155724;
-  background-color: #d4edda;
-  border-color: #c3e6cb;
+  color: var(--status-green-text);
+  background-color: var(--status-green-bg);
+  border-color: var(--status-green-border);
+}
+body.theme-night .report-modal-content .status-message.status-green {
+  background-color: #005000;
+  color: #e8f5e9;
+  border-color: #1e4620;
 }
 .report-modal-content .status-message.status-red {
-  color: #721c24;
-  background-color: #f8d7da;
-  border-color: #f5c6cb;
+  color: var(--status-red-text);
+  background-color: var(--status-red-bg);
+  border-color: var(--status-red-border);
+}
+body.theme-night .report-modal-content .status-message.status-red {
+  background-color: #5a1e1e;
+  color: #fce4e4;
+  border-color: #5a1e1e;
 }
 .report-modal-content .status-message.status-orange {
-  color: #856404;
-  background-color: #fff3cd;
-  border-color: #ffeeba;
+  color: var(--status-orange-text);
+  background-color: var(--status-orange-bg);
+  border-color: var(--status-orange-border);
 }
-.report-modal-content {
-  /* --- Stile für Report-Modal-spezifische Elemente (CSP-Fix) --- */
+body.theme-night .report-modal-content .status-message.status-orange {
+  background-color: #5a4e1e;
+  color: #fff8e1;
+  border-color: #5a4e1e;
 }
 .report-modal-content #transcript-suggestion-container {
   display: none;
@@ -1253,29 +1590,791 @@ div.page-chat .chat-button a:hover {
 .report-modal-content #report-suggestion-info {
   font-size: 0.9em;
   margin-bottom: 5px;
-  color: #555;
+  color: var(--text-color-light);
+}
+body.theme-night .report-modal-content #report-suggestion-info {
+  color: var(--text-color-faded);
 }
 
-/* --- "Fehler melden"-Button auf Comic-Seite --- */
-/*#open-report-modal {
-	padding         : 3px 8px;
-	font-size       : 1.2em; // Schriftgröße für die neue Position, neben der Transkript Überschrift
-	background-color: $menu-bg; // Wie Menüpunkte
-	border          : 1px solid $theme-label-bg; // Passender Rand
-	border-radius   : 4px;
-	color           : $text-color; // Standardtext
-	cursor          : pointer;
-	margin-left     : 10px;
+/* --- Popup Dialog --- */
+.dialog {
+  border-radius: 5px;
+  background: var(--content-bg);
+  width: 490px;
+  position: fixed;
+  margin: auto;
+  display: none;
+  z-index: 200;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.6);
+  color: var(--text-color);
+}
+body.theme-night .dialog {
+  box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.25);
+}
+.dialog img {
+  object-fit: contain;
+  max-width: 100%;
+}
+.dialog a {
+  color: var(--text-on-medium);
+  text-decoration: none;
+}
+body.theme-night .dialog a {
+  color: var(--link-color);
+}
+.dialog * {
+  margin: 0;
+}
+.dialog .dialog-body {
+  padding: 10px;
+  padding-top: 0;
+}
+.dialog .dialog-title {
+  background-color: var(--button-hover-bg);
+  border-radius: 3px 3px 0 0;
+  padding: 5px 10px;
+  margin-bottom: 10px;
+  margin-left: -10px;
+  width: 470px;
+  color: var(--text-on-medium);
+}
+body.theme-night .dialog .dialog-title {
+  background-color: var(--sidebar-bg);
+  color: var(--text-color);
+}
+.dialog .dialog-center {
+  text-align: center;
+  margin-bottom: 5px;
+}
+.dialog .dialog-x {
+  display: inline-block;
+  background: var(--content-bg);
+  color: var(--text-color-light);
+  font-size: 12px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 13px;
+  height: 1.1em;
+  width: 1.1em;
+  padding: 3px;
+  margin-top: 1px;
+  margin-right: -5px;
+  border-radius: 2px;
+}
+.dialog .dialog-x:hover {
+  background-color: var(--button-disabled-bg);
+  color: var(--text-on-medium);
+}
+.dialog-title .dialog .dialog-x {
+  float: right;
+}
+body.theme-night .dialog .dialog-x {
+  color: var(--text-color);
+  background-color: var(--button-bg);
+}
+body.theme-night .dialog .dialog-x:hover {
+  background-color: var(--border-light);
+}
+.dialog .dialog-input-header {
+  font-weight: bold;
+  color: var(--text-color);
+}
+.dialog input.embed {
+  padding: 2px;
+  font-size: 14px;
+  margin-top: 2px;
+  margin-bottom: 5px;
+  width: 465px;
+  border: 1px solid var(--border-medium);
+  color: var(--text-color);
+  background-color: var(--content-bg);
+}
+body.theme-night .dialog input.embed {
+  border-color: var(--button-bg);
+  background-color: var(--page-bg);
+}
 
-	&:hover {
-		background-color: $menu-hover-bg; // Weiß
-		border-color    : $comic-nav-archive-bg; // Dunkelgrün
-	}
-}*/
-/* --- Admin Report Management --- */
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/components/_cookie-banner.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+#cookie-consent-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 600px;
+  background-color: var(--cookie-bg);
+  color: var(--cookie-text);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 9999;
+  display: none;
+  font-family: "Lucida Grande", arial, "Open Sans", sans-serif;
+  line-height: 1.5;
+  font-size: 14px;
+}
+body.theme-night #cookie-consent-banner {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+#cookie-consent-banner h3 {
+  font-size: 1.4em;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--cookie-heading);
+  text-align: center;
+}
+#cookie-consent-banner p {
+  margin-bottom: 15px;
+}
+#cookie-consent-banner .cookie-category {
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: var(--cookie-cat-bg);
+  border-radius: 5px;
+}
+#cookie-consent-banner .cookie-category label {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+#cookie-consent-banner .cookie-category input[type=checkbox] {
+  margin-right: 10px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+#cookie-consent-banner .cookie-category input[type=checkbox]:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+#cookie-consent-banner .cookie-category .description {
+  font-size: 0.9em;
+  color: var(--cookie-desc);
+  margin-top: 5px;
+  margin-left: 30px;
+}
+#cookie-consent-banner .cookie-category ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+#cookie-consent-banner .cookie-category ul li {
+  margin-bottom: 10px;
+}
+#cookie-consent-banner .cookie-category ul li:last-child {
+  margin-bottom: 0;
+}
+#cookie-consent-banner .cookie-buttons {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+#cookie-consent-banner .cookie-buttons button {
+  flex: 1 1 auto;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+  min-width: 120px;
+}
+#cookie-consent-banner #accept-all-cookies {
+  background-color: var(--cookie-btn-accept-bg);
+  color: #fff;
+}
+#cookie-consent-banner #accept-all-cookies:hover {
+  background-color: var(--cookie-btn-accept-hover);
+}
+body.theme-night #cookie-consent-banner #accept-all-cookies {
+  color: var(--cookie-text);
+}
+#cookie-consent-banner #reject-all-cookies {
+  background-color: var(--cookie-btn-reject-bg);
+  color: var(--cookie-text);
+}
+#cookie-consent-banner #reject-all-cookies:hover {
+  background-color: var(--cookie-btn-reject-hover);
+}
+#cookie-consent-banner #save-cookie-preferences {
+  background-color: var(--cookie-btn-save-bg);
+  color: var(--cookie-text);
+}
+#cookie-consent-banner #save-cookie-preferences:hover {
+  background-color: var(--cookie-btn-save-hover);
+}
+@media (width <= 768px) {
+  #cookie-consent-banner {
+    width: 95%;
+    bottom: 10px;
+    padding: 15px;
+  }
+  #cookie-consent-banner h3 {
+    font-size: 1.2em;
+  }
+  #cookie-consent-banner .cookie-buttons {
+    flex-direction: column;
+  }
+}
+
+.collapsible-content {
+  display: none;
+  margin-top: 5px;
+  padding-left: 15px;
+  font-size: 0.9em;
+  border-left: 2px solid var(--border-medium);
+  padding-bottom: 5px;
+}
+body.theme-night .collapsible-content {
+  border-left-color: var(--border-medium);
+}
+
+.toggle-details {
+  cursor: pointer;
+  font-size: 0.9em;
+  color: var(--cookie-link);
+  text-decoration: underline;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+.toggle-details:hover {
+  color: var(--cookie-link-hover);
+}
+
+.toggle-icon {
+  margin-left: 5px;
+  transition: transform 0.2s ease;
+}
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/pages/_comic.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.comic {
+  text-align: center;
+  margin: auto;
+}
+.comic h1 {
+  font-weight: normal;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+.comic header {
+  margin-bottom: 15px;
+}
+.comic .transcript {
+  text-align: left;
+  margin-top: 15px;
+  font-size: 0.8em;
+}
+.comic .transcript .transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.comic .transcript .transcript-content {
+  background-color: var(--content-box-bg);
+  border: 1px solid var(--border-medium);
+  max-height: 550px;
+  overflow: auto;
+  padding: 15px;
+  margin-top: 5px;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.35);
+}
+body.theme-night .comic .transcript .transcript-content {
+  background-color: var(--sidebar-bg);
+  border-color: var(--page-bg);
+  color: var(--text-color);
+}
+.comic .transcript .transcript-content p {
+  margin-bottom: 7px;
+}
+.comic .transcript .transcript-content p:last-of-type {
+  margin-bottom: 0;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comic .transcript .transcript-content {
+    font-size: 1.3em;
+  }
+}
+.comic .below-nav {
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 3px;
+  margin-bottom: 0;
+  text-align: left;
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+}
+body.theme-night .comic .below-nav {
+  color: #ccc;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comic .below-nav {
+    font-size: 1.2em;
+    margin-top: 0.5rem;
+  }
+  .comic .below-nav .nav-instruction-content {
+    display: none;
+  }
+}
+.comic .below-nav .nav-instruction {
+  flex: 1 1 auto;
+}
+.comic .below-nav .bookmark-control {
+  flex: 0 0 auto;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+.comic .below-nav .bookmark-control .arrow-left {
+  font-size: 1.4em;
+}
+.comic .below-nav .bookmark-control .button {
+  font-size: 1em;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comic .below-nav .bookmark-control .button {
+    font-size: 1.1em;
+  }
+}
+.comic .tag-wrapper {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 10px;
+}
+.comic .tag-wrapper .comic-tags {
+  flex: 1 1 auto;
+  text-align: left;
+  font-size: 0.9em;
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.3rem;
+  row-gap: 0.5rem;
+  align-items: center;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comic .tag-wrapper .comic-tags {
+    font-size: 1.2em;
+  }
+}
+.comic .tag-wrapper .comic-tags .button {
+  font-size: 1em;
+}
+.comic .tag-wrapper .permalink {
+  flex: 0 0 auto;
+  font-size: 0.9em;
+  padding-top: 3px;
+}
+body.theme-night .comic .tag-wrapper .permalink {
+  color: #ccc;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .comic .tag-wrapper .permalink {
+    font-size: 1.2em;
+  }
+}
+.comic .comic-footer {
+  margin-top: 7px;
+}
+.comic .comic-header {
+  margin-bottom: 7px;
+  position: relative;
+}
+.comic #comic-image {
+  width: 100%;
+  height: auto;
+  border-radius: 7px;
+}
+
+.comic-characters {
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--border-medium);
+  box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.35);
+  background-color: var(--content-box-bg);
+}
+body.theme-night .comic-characters {
+  background-color: var(--sidebar-bg);
+  border-color: var(--page-bg);
+}
+.comic-characters h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  color: var(--text-color-light);
+}
+body.theme-night .comic-characters h3 {
+  color: #bbb;
+}
+
+.character-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.character-group {
+  width: 100%;
+}
+.character-group h4 {
+  text-align: center;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 1.1em;
+  color: var(--text-color);
+  font-weight: bold;
+}
+body.theme-night .character-group h4 {
+  color: #ddd;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.character-group-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.character-item {
+  width: 120px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.character-item .character-name {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.9em;
+  font-weight: bold;
+  overflow-wrap: break-word;
+  line-height: 1.3;
+}
+.character-item a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease-in-out;
+  max-width: 100%;
+}
+.character-item a:hover {
+  transform: translateY(-5px);
+}
+.character-item a:hover .character-name {
+  text-decoration: underline;
+}
+.character-item img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-medium);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--characters-area-bg);
+}
+body.theme-night .character-item img {
+  border-color: var(--border-light);
+  background-color: var(--characters-area-bg);
+}
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/pages/_archive.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.chapter {
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+.chapter p {
+  margin-inline: 0.5rem;
+  margin-top: 0.3rem;
+  text-align: justify;
+  color: var(--text-color);
+}
+.chapter p a {
+  color: var(--text-on-medium);
+}
+body.theme-night .chapter p a {
+  color: var(--link-color);
+}
+.chapter h2 {
+  display: inline-block;
+  margin: 0;
+  cursor: pointer;
+  color: var(--text-on-medium);
+  font-size: 1.2em;
+}
+body.theme-night .chapter h2 {
+  color: var(--text-color);
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .chapter h2 {
+    font-size: 2em;
+  }
+}
+.chapter h4:hover {
+  text-decoration: underline;
+}
+
+.chapter-links {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 6px;
+}
+.chapter-links noscript {
+  display: block;
+}
+.chapter-links a {
+  display: inline-block;
+  width: 80px;
+  height: 104px;
+  background-color: #eee;
+  background-color: var(--button-bg);
+  text-decoration: none;
+  color: var(--text-on-medium);
+  font-size: 1.2em;
+  position: relative;
+  overflow: hidden;
+}
+.chapter-links a:hover {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  background-color: var(--button-hover-bg);
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .chapter-links a {
+    zoom: 1.8;
+  }
+}
+.chapter-links a span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 80;
+}
+.chapter-links a .delete {
+  position: absolute;
+  z-index: 91;
+  top: 4px;
+  right: 2px;
+  background: none;
+  margin: 0;
+  padding: 0;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .chapter-links a .delete {
+    top: 3px;
+  }
+}
+.chapter-links a .delete svg {
+  width: 24px;
+  height: 24px;
+  color: #f00;
+  stroke: #fff;
+  stroke-width: 2px;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .chapter-links a .delete svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+.chapter-links a .delete:hover svg {
+  color: #c00;
+}
+.chapter-links.tag-page-links a {
+  width: 100px;
+  height: 130px;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .chapter-links.tag-page-links a {
+    zoom: 1.5;
+  }
+}
+.chapter-links a noscript img {
+  opacity: 1;
+}
+.chapter-links img:not(.delicon) {
+  opacity: 0;
+  transition: opacity 0.5s;
+  object-fit: contain;
+  max-width: 100%;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  z-index: 90;
+}
+.chapter-links a.loaded img, .chapter-links.tag-page-links a img {
+  opacity: 1;
+}
+.chapter-links a.loaded span,
+.chapter-links a.noscript span, .chapter-links.tag-page-links a span {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  display: none;
+  z-index: 100;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .chapter-links a.loaded span,
+  .chapter-links a.noscript span, .chapter-links.tag-page-links a span {
+    display: inline-block;
+    height: auto;
+    bottom: 0;
+    top: inherit;
+    padding-top: 0;
+  }
+}
+.chapter-links a.loaded:hover span,
+.chapter-links a.noscript:hover span, .chapter-links.tag-page-links a:hover span {
+  display: flex;
+}
+body.theme-night .chapter-links a {
+  color: var(--text-color);
+}
+body.theme-night .chapter-links a.loaded span,
+body.theme-night .chapter-links a.noscript span, body.theme-night .chapter-links.tag-page-links a span {
+  background-color: rgba(0, 0, 0, 0.65);
+  color: var(--text-color);
+}
+
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/pages/_admin.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.original-transcript-box {
+  margin-top: 15px;
+}
+.original-transcript-box label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-color-light);
+}
+
+.transcript-display-box {
+  background-color: var(--table-row-even);
+  border: 1px solid var(--border-light);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9em;
+  overflow-wrap: break-word;
+  color: var(--text-color);
+}
+body.theme-night .transcript-display-box {
+  background-color: var(--page-bg);
+  border-color: var(--button-bg);
+}
+.transcript-display-box p {
+  margin-bottom: 7px;
+}
+.transcript-display-box p:last-of-type {
+  margin-bottom: 0;
+}
+
 .filter-form {
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
+  background-color: var(--table-row-even);
+  border: 1px solid var(--border-light);
+}
+body.theme-night .filter-form {
+  background-color: var(--sidebar-bg);
+  border-color: var(--button-bg);
+}
+.filter-form {
   padding: 15px;
   margin-bottom: 20px;
   border-radius: 5px;
@@ -1284,6 +2383,7 @@ div.page-chat .chat-button a:hover {
   font-weight: bold;
   margin-bottom: 10px;
   font-size: 1.1em;
+  color: var(--text-color);
 }
 .filter-form .filter-controls {
   display: flex;
@@ -1294,13 +2394,28 @@ div.page-chat .chat-button a:hover {
 .filter-form .filter-controls label {
   margin-bottom: 5px;
   font-size: 0.9em;
-  color: #555;
+  color: var(--text-color-light);
+}
+body.theme-night .filter-form .filter-controls label {
+  color: var(--text-color-light);
 }
 .filter-form .filter-controls input[type=text],
 .filter-form .filter-controls select {
   padding: 6px 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-medium);
   border-radius: 4px;
+  background-color: var(--content-bg);
+  color: var(--text-color);
+}
+body.theme-night .filter-form .filter-controls input[type=text],
+body.theme-night .filter-form .filter-controls select {
+  background-color: var(--page-bg);
+  border-color: var(--button-bg);
+}
+body.theme-night .filter-form .filter-controls input[type=text]:focus,
+body.theme-night .filter-form .filter-controls select:focus {
+  border-color: var(--border-light);
+  box-shadow: 0 0 0 2px rgba(72, 119, 138, 0.5);
 }
 
 .data-table {
@@ -1310,20 +2425,28 @@ div.page-chat .chat-button a:hover {
 }
 .data-table th,
 .data-table td {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-light);
   padding: 10px;
   text-align: left;
   vertical-align: top;
+  color: var(--text-color);
 }
 .data-table th {
-  background-color: #e9ecef;
+  background-color: var(--table-header-bg);
   font-weight: bold;
 }
+body.theme-night .data-table th,
+body.theme-night .data-table td {
+  border-color: var(--page-bg);
+}
 .data-table tbody tr:nth-child(even) {
-  background-color: #f8f9fa;
+  background-color: var(--table-row-even);
 }
 .data-table tbody tr:hover {
-  background-color: #e2e6ea;
+  background-color: var(--table-row-hover);
+}
+body.theme-night .data-table tbody tr:hover {
+  background-color: var(--button-bg);
 }
 .data-table .actions-cell {
   white-space: nowrap;
@@ -1367,28 +2490,43 @@ div.page-chat .chat-button a:hover {
 .data-table .actions-cell .detail-button {
   color: #fff;
 }
+body.theme-night .data-table .actions-cell .detail-button {
+  background-color: var(--border-light);
+}
+body.theme-night .data-table .actions-cell .detail-button:hover {
+  filter: brightness(1.1);
+}
 
-/* Admin Detail Modal */
 .report-detail-modal-content h3 {
   margin-top: 15px;
   margin-bottom: 8px;
   font-size: 1.1em;
   border-bottom: 1px solid #eee;
   padding-bottom: 4px;
+  color: var(--text-color);
+}
+body.theme-night .report-detail-modal-content h3 {
+  border-bottom-color: var(--button-bg);
 }
 .report-detail-modal-content p strong {
   display: inline-block;
   min-width: 90px;
+  color: var(--text-color);
 }
 .report-detail-modal-content .report-text-box {
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
+  background-color: var(--table-row-even);
+  border: 1px solid var(--border-light);
   padding: 10px;
   border-radius: 4px;
   margin-bottom: 15px;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   max-height: 30vh;
   overflow-y: auto;
+  color: var(--text-color);
+}
+body.theme-night .report-detail-modal-content .report-text-box {
+  background-color: var(--page-bg);
+  border-color: var(--button-bg);
 }
 .report-detail-modal-content #detail-suggestion {
   width: 100%;
@@ -1401,55 +2539,392 @@ div.page-chat .chat-button a:hover {
   padding: 10px;
   border-radius: 4px;
   font-size: 1.1em;
+  color: var(--text-color);
 }
-.report-detail-modal-content {
-  /* Diff-Viewer */
+body.theme-night .report-detail-modal-content #detail-suggestion {
+  background-color: color-mix(in srgb, var(--page-bg), white 5%);
 }
 .report-detail-modal-content .diff-box .loading-text {
-  color: #888;
+  color: var(--border-dark);
   font-style: italic;
 }
+body.theme-night .report-detail-modal-content .diff-box .loading-text {
+  color: var(--text-color-faded);
+}
 .report-detail-modal-content .diff-box ins {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: var(--status-green-bg);
+  color: var(--status-green-text);
   text-decoration: none;
+}
+body.theme-night .report-detail-modal-content .diff-box ins {
+  background-color: #005000;
+  color: #c8e6c9;
 }
 .report-detail-modal-content .diff-box del {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--status-red-bg);
+  color: var(--status-red-text);
   text-decoration: none;
 }
+body.theme-night .report-detail-modal-content .diff-box del {
+  background-color: #7f0000;
+  color: #ffcdd2;
+}
 
-/* Honeypot Feld */
 .honeypot-field {
   display: none !important;
 }
 
-/* NEU: Stile für Summernote-Implementierung */
-.original-transcript-box {
-  margin-top: 15px;
-}
-.original-transcript-box label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-  color: #555;
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/pages/_characters.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+.charaktere-overview .character-overview-intro {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-.transcript-display-box {
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  max-height: 150px;
-  overflow-y: auto;
+/* 1. Bookmarks Page (Base Styles) */
+.bookmarks-page .page-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  margin-bottom: 0;
+  font-size: 1.8em;
+  font-weight: 300;
+  padding-top: 10px;
+}
+.bookmarks-page .page-header strong {
+  font-weight: 700;
+  color: #333;
+}
+.bookmarks-page .comic-count-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.7em;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background-color: var(--cookie-btn-accept-bg);
+  border-radius: 12px;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.bookmarks-page .bookmark-example {
+  font-style: italic;
+  text-align: center;
   font-size: 0.9em;
-  word-wrap: break-word;
-}
-.transcript-display-box p {
-  margin-bottom: 7px;
-}
-.transcript-display-box p:last-of-type {
+  margin-right: 1rem;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0;
 }
+.bookmarks-page .bookmark-example .ribbon {
+  height: 36px;
+  width: 27px;
+  flex: 0 0 auto;
+  background: url("https://twokinds.4lima.de/assets/images/layout/ui/bookmark.png") 0 0 no-repeat;
+  background-size: contain;
+}
+.bookmarks-page .tag-page-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: center;
+}
+.bookmarks-page .tag-page-links a {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: white;
+  border-radius: 5px;
+  overflow: hidden;
+  aspect-ratio: 1/1;
+}
+.bookmarks-page .tag-page-links a img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 3px;
+  transition: transform 0.2s ease-in-out;
+  position: static;
+  opacity: 1;
+  transform: none;
+}
+.bookmarks-page .tag-page-links a span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 5px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.2s;
+}
+.bookmarks-page .tag-page-links a span .delete {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+.bookmarks-page .tag-page-links a:hover img {
+  transform: scale(1.05);
+}
+.bookmarks-page .tag-page-links a:hover span {
+  background: rgba(0, 0, 0, 0.8);
+}
+.bookmarks-page .tag-page-links a:hover span .delete {
+  opacity: 1;
+}
+.bookmarks-page .tag-page-links a:hover span .delete:hover {
+  background: rgba(255, 80, 80, 0.8);
+}
+.bookmarks-page .no-bookmarks {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  margin: 1rem;
+}
+.bookmarks-page .no-bookmarks p {
+  margin: 0;
+  line-height: 1.5;
+}
+.bookmarks-page .bookmarks-controls {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.bookmarks-page .bookmarks-controls hr {
+  border: 0;
+  height: 1px;
+  background-color: var(--border-light);
+  margin-bottom: 20px;
+}
+.bookmarks-page .bookmarks-controls button {
+  background-color: var(--cookie-btn-accept-bg);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.9em;
+}
+.bookmarks-page .bookmarks-controls button:hover {
+  background-color: var(--cookie-btn-accept-hover);
+}
+.bookmarks-page .bookmarks-controls .hidden-file-input {
+  display: none;
+}
+
+.char-detail {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-medium);
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+.char-detail h3 img {
+  vertical-align: middle;
+}
+.char-detail h3,
+.char-detail p {
+  margin-bottom: 10px;
+  text-align: justify;
+}
+.char-detail img.portrait {
+  margin-top: 0;
+}
+.char-detail .char-info {
+  float: left;
+  width: 600px;
+}
+.char-detail .char-img {
+  float: left;
+  width: 175px;
+  margin-right: 20px;
+  text-align: center;
+}
+.char-detail:last-of-type {
+  margin-bottom: 0;
+  border: none;
+}
+
+/* stylelint-disable no-descending-specificity */
+body.theme-night .bookmarks-page .page-header strong {
+  color: #ddd;
+}
+body.theme-night .bookmarks-page .comic-count-badge {
+  background-color: var(--button-bg);
+}
+body.theme-night .bookmarks-page .bookmark-example {
+  color: #ccc;
+}
+body.theme-night .bookmarks-page .no-bookmarks {
+  color: #ccc;
+  border-color: var(--button-bg);
+}
+body.theme-night .bookmarks-page .bookmarks-controls hr {
+  background-color: var(--button-bg);
+}
+body.theme-night .bookmarks-page .bookmarks-controls button {
+  background-color: var(--button-bg);
+}
+body.theme-night .bookmarks-page .bookmarks-controls button:hover {
+  background-color: var(--border-light);
+}
+body.theme-night .char-detail {
+  border-bottom-color: var(--button-bg);
+}
+body.theme-night .char-detail h3 img {
+  filter: brightness(1.1);
+}
+
+/* stylelint-enable no-descending-specificity */
+/*!
+ * @file      resources/scss/main.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/*!
+ * @file      resources/scss/pages/_misc.scss
+ * @link      ftk.jus-or.de
+ *
+ * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+ *
+ * @author    Felix Maywald (@RaptorXilef)
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ */
+/* --- FAQ Page --- */
+div.page-faq section {
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border-medium);
+}
+div.page-faq section h2 {
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+/* --- Chat Page --- */
+/*
+div.page-chat {
+    section {
+        margin-bottom: 15px;
+    }
+
+    .chat-button {
+        text-align: center;
+        padding: 5px 0 15px 0;
+        margin: 1.5rem 0 0 0;
+
+        a {
+            padding: 5px 40px;
+            font-size: 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            background-color: var(--comic-nav-archive-bg);
+            color: #fff;
+
+            // Dark Mode override
+            body.theme-night & {
+                background-color: var(--button-bg);
+                color: var(--text-color);
+            }
+
+            // Hover nach Theme Override
+            &:hover {
+                background-color: var(--comic-nav-archive-hover-bg);
+
+                body.theme-night & {
+                    background-color: var(--border-light);
+                }
+            }
+        }
+    }
+}
+*/
+/* --- Links Page --- */
+/*
+.link-segment {
+    margin: 6px 0;
+    margin-bottom: 10px;
+
+    .link-img {
+        margin-top: 2px;
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+.imggroup {
+    margin: auto;
+    text-align: center;
+
+    img {
+        cursor: pointer;
+    }
+}
+
+.dual-img img,
+.many-img img {
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+.link-img {
+    height: 100%;
+    width: 200px;
+    float: left;
+    margin-left: 10px;
+    margin-right: 20px;
+}
+*/
