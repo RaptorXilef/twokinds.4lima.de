@@ -144,7 +144,7 @@ jobs:
 
       # Schritt 11: SCSS prüfen (Stylelint)
       - name: SCSS Linting
-        run: npm run lint:css
+        run: npm run lint:scss
 
       # Schritt 12: JavaScript prüfen (ESLint)
       - name: JS Linting
