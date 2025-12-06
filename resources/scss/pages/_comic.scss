@@ -183,10 +183,15 @@
         position: relative;
     }
 
-    #comic-image {
+    #comic-image,
+    .comic-image {
         width: 100%;
         height: auto;
         border-radius: 7px;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 20%); // Optional: Schatten wie bei Comic-Bildern oft üblich
+        max-width: 100%; // Sicherheitsnetz für kleinere Container
+        display: block; // Verhindert Abstände unten bei Inline-Images
+        margin: 0 auto; // Zentrierung sicherstellen
     }
 }
 
