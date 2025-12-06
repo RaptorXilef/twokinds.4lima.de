@@ -1,18 +1,20 @@
 <?php
+
 /**
  * Dies ist eine Informationsseite über die Nutzung von RSS-Feeds.
  * Sie erklärt, was RSS-Feeds sind, ihre Vorteile und wie man sie mit verschiedenen Readern nutzt.
- * 
+ *
  * @file      ROOT/public/rss_anleitung.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.1
+ *
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.0.1 FIX falschen RSS-Icon Pfad
+ * @since     5.0.0 refactor(CSS): Inline-Styles entfernt (jetzt in pages/_misc.scss).
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -34,14 +36,6 @@ $rssFeedUrl = htmlspecialchars(DIRECTORY_PUBLIC_URL) . '/rss.xml';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* Ersetzt den Inline-Stil für das RSS-Icon (CSP-Konformität) */
-    .rss-icon-inline {
-        border-radius: 5px;
-        cursor: pointer;
-    }
-</style>
-
 <article>
     <header>
         <h1 class="page-header">So nutzt du RSS-Feeds: Immer auf dem neuesten Stand bleiben</h1>
@@ -51,7 +45,7 @@ require_once Path::getPartialTemplatePath('header.php');
         Nachrichtenquellen oder TwoKinds-Übersetzungen :D auf dem Laufenden zu bleiben, ohne diese ständig manuell
         überprüfen zu müssen. Erfahre hier, wie du RSS-Feeds optimal nutzen und welche Software du dafür benötigst.</p>
 
-    ---
+    <hr>
 
     <h2>Was ist ein RSS-Feed und welche Vorteile bietet er?</h2>
     <p>Ein RSS-Feed (Really Simple Syndication) ist ein spezielles Dateiformat, das die neuesten Inhalte einer Webseite
@@ -72,7 +66,7 @@ require_once Path::getPartialTemplatePath('header.php');
             wie deine E-Mail-Adresse angeben.</li>
     </ul>
 
-    ---
+    <hr>
 
     <h2>Wie nutze ich einen RSS-Feed?</h2>
     <p>Um einen RSS-Feed zu nutzen, benötigst du einen sogenannten <strong>RSS-Reader</strong> (oder RSS-Aggregator).
@@ -83,11 +77,11 @@ require_once Path::getPartialTemplatePath('header.php');
         (<a href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/rss.xml" target="_blank" title="Mein RSS-Feed"
             id="rssFeedLink">
             <img src="<?php echo Url::getImgUiUrl('rss-feed.png'); ?>" alt="RSS" width="16" height="16"
-                class="rss-icon-inline">
+                class="rss-icon-text">
         </a>)
         auf meiner Webseite oder du kannst sie direkt hier abrufen: <code><?php echo $rssFeedUrl; ?></code></p>
 
-    ---
+    <hr>
 
     <h2>Empfohlene RSS-Reader für verschiedene Plattformen</h2>
 
@@ -187,7 +181,7 @@ require_once Path::getPartialTemplatePath('header.php');
         <li>Füge meinen RSS-Feed über die bereitgestellte URL (<code><?php echo $rssFeedUrl; ?></code>) hinzu.</li>
     </ol>
 
-    ---
+    <hr>
 
     <p>Ich hoffe, diese Anleitung hilft dir dabei, meine Inhalte noch einfacher und effizienter zu verfolgen. Bei
         Fragen stehe ich dir gerne zur Verfügung!</p>
