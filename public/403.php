@@ -63,6 +63,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </a>
     </div>
 
+    <hr>
+
     <aside class="transcript">
         <div class="transcript-header">
             <h3>Was ist passiert?</h3>
