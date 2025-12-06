@@ -45,6 +45,83 @@ div.page-faq {
     vertical-align: middle; // Optional: Sieht im Textfluss aber meist besser aus
 }
 
+/* --- Impressum (Imprint) Page --- */
+.imprint-container {
+    // Kein eigener Container-Hintergrund mehr, fügt sich in .content ein
+    margin-top: 15px;
+
+    h3 {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-top: 25px;
+        margin-bottom: 10px;
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-light); // Optional: feine Trennlinie
+        padding-bottom: 5px;
+
+        body.theme-night & {
+            color: var(--text-color);
+            border-bottom-color: var(--button-bg);
+        }
+    }
+
+    p,
+    ul {
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    ul {
+        list-style-type: disc;
+        list-style-position: inside;
+        margin-left: 15px;
+    }
+
+    a {
+        color: var(--link-color);
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    // Button Design angepasst an Standard-Buttons
+    #email-button {
+        display: inline-block;
+        margin-top: 5px;
+        padding: 5px 15px; // Kompaktere Größe
+        font-size: 0.9em;
+        width: auto; // Nicht volle Breite
+        background-color: var(--button-bg);
+        color: var(--text-on-medium);
+        border: 1px solid var(--border-medium);
+        border-radius: 3px;
+        cursor: pointer;
+        box-shadow: none;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        body.theme-night & {
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            border-color: var(--button-bg);
+
+            &:hover {
+                background-color: var(--button-hover-bg);
+            }
+        }
+    }
+
+    .license-image {
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 5px;
+    }
+}
+
 /* --- Chat Page --- */
 
 /*
