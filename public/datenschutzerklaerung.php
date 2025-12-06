@@ -1,17 +1,19 @@
 <?php
+
 /**
  * Dies ist die Datenschutzerklärung der TwoKinds-Webseite.
  * Sie informiert über die Datenerfassung und -verarbeitung.
- * 
+ *
  * @file      ROOT/public/datenschutzerklaerung.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
- * @since     1.1.0 Umstellung auf globale Pfad-Konstanten. 
+ *
+ * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since 5.0.0 refactor(Page): Inline-CSS (.cookie-settings-container) in SCSS-Komponente verschoben.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -29,14 +31,6 @@ $robotsContent = 'noindex, follow'; // Diese Seite sollte nicht von Suchmaschine
 // === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
-
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* Stile für den Container des Cookie-Einstellungs-Buttons (CSP-Konformität) */
-    .cookie-settings-container {
-        text-align: center;
-        margin-top: 20px;
-    }
-</style>
 
 <article>
     <header>
