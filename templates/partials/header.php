@@ -9,7 +9,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.1.0
+ * @version   5.0.0
  * @since     2.6.0 Diese Datei wurde verschlankt und konzentriert sich auf die HTML-Struktur und das Asset-Management.
  * Die sicherheitsrelevanten Initialisierungen wurden in separate `init.php`-Dateien ausgelagert.
  * @since     2.7.0 Entfernung redundanter URL-Berechnung und Ersetzung von Pfaden durch globale Konstanten.
@@ -20,6 +20,7 @@
  * @since     4.0.1 Aktualisiere den Pfad zur Sitemap-XML im Header
  * @since     4.0.2 Füge Font aus main.css direkt hinzu fonts.googleapis.com/css?family=Open+Sans:400,400i,700
  * @since     4.1.0 (CSS-Refactoring) Konsolidierung aller separaten Stylesheets (main, main_dark, cookie_banner, etc.) in eine einzige 'main.min.css'.
+ * @since     5.0.0-alpha.1 refactor(HTML): IDs auf Kebab-Case umgestellt für SCSS-Kompatibilität.
  *
  * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
  * @param string $pageHeader Der sichtbare H1-Header für die aktuelle Seite im Hauptinhaltsbereich.
@@ -84,12 +85,8 @@ $faviconUrl = DIRECTORY_PUBLIC_URL . '/favicon.ico?v=' . filemtime(DIRECTORY_PUB
 $appleIconUrl = DIRECTORY_PUBLIC_URL . '/appleicon.png?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'appleicon.png');
 
 // Generiere versionierte URLs für CSS und JS mit der Path-Klasse
-
-// *** START ÄNDERUNG (CSS Refactoring) ***
-// Nur noch die EINE kompilierte CSS-Datei laden.
-// Load only the ONE compiled CSS file.
+// Nur noch main.min.css laden
 $mainCssUrl = getVersionedUrl(Url::getCssUrl('main.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main.min.css');
-// *** ENDE ÄNDERUNG ***
 
 $commonJsUrl = getVersionedUrl(Url::getJsUrl('common.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'common.min.js');
 $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
@@ -97,7 +94,6 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
 ?>
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
     <meta charset="utf-8">

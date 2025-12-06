@@ -1936,19 +1936,38 @@ body.theme-night .collapsible-content {
 .chapter-links a span,
 .tag-page-links a span,
 .thumbnail-grid a span {
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   width: 100%;
+  height: 100%;
+  text-align: center;
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   background: rgba(0, 0, 0, 0.65);
   color: #fff;
-  padding: 5px 0;
+  padding: 5px;
   font-size: 14px;
   z-index: 80;
   transition: background-color 0.2s;
+  box-sizing: border-box;
+}
+@media only screen and (resolution >= 2dppx) and (width <= 640px) {
+  .chapter-links a span,
+  .tag-page-links a span,
+  .thumbnail-grid a span {
+    display: flex;
+    height: auto;
+    top: auto;
+    bottom: 0;
+    padding: 2px 0;
+  }
+}
+.chapter-links a:hover span,
+.tag-page-links a:hover span,
+.thumbnail-grid a:hover span {
+  display: flex;
 }
 .chapter-links a .delete,
 .tag-page-links a .delete,
@@ -2003,11 +2022,6 @@ body.theme-night .collapsible-content {
 .thumbnail-grid a:hover .delete {
   opacity: 1;
 }
-.chapter-links.tag-page-links a,
-.tag-page-links.tag-page-links a,
-.thumbnail-grid.tag-page-links a {
-  aspect-ratio: 1/1;
-}
 .chapter-links img,
 .tag-page-links img,
 .thumbnail-grid img {
@@ -2030,23 +2044,6 @@ body.theme-night .collapsible-content {
 .thumbnail-grid a noscript img,
 .thumbnail-grid a.loaded img {
   opacity: 1;
-}
-.chapter-links a span,
-.tag-page-links a span,
-.thumbnail-grid a span {
-  display: none;
-}
-@media only screen and (resolution >= 2dppx) and (width <= 640px) {
-  .chapter-links a span,
-  .tag-page-links a span,
-  .thumbnail-grid a span {
-    display: flex;
-  }
-}
-.chapter-links a:hover span,
-.tag-page-links a:hover span,
-.thumbnail-grid a:hover span {
-  display: flex;
 }
 .chapter-links,
 .tag-page-links,

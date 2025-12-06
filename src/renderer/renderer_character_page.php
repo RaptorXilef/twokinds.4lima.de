@@ -1,23 +1,29 @@
 <?php
+
 /**
  * Charakter-Seiten-Renderer
  *
  * Dieses Skript wird von den einzelnen Charakter-Seiten im /charaktere/ Verzeichnis aufgerufen.
  * Es extrahiert den Namen des Charakters aus dem Dateinamen, filtert die comic_var.json
  * nach allen Auftritten dieses Charakters und rendert eine Übersichtsseite im Lesezeichen-Design.
- * 
- * @file      ROOT/src/renderer/charcter_page_renderer.php
+ *
+ * @file      ROOT/src/renderer/renderer_character_page.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.1
- * @since     2.0.0 Umstellung auf GET-Parameter und ID-basiertes Filtern.
- * @since     2.1.0 Liest Charakternamen aus Dateinamen, filtert aber nach ID.
- * @since     2.2.0 Umstellung auf globale Pfad-Konstanten.
- * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
- * @since     4.0.1 BUG-FIX Rückumwandlung von Unterstrichen in Leerzeichen beim Dateinamen-Parsing.
+ *
+ * @since     2.0.0
+ *  - Umstellung auf GET-Parameter und ID-basiertes Filtern.
+ *  - Liest Charakternamen aus Dateinamen, filtert aber nach ID.
+ *  - Umstellung auf globale Pfad-Konstanten.
+ *  - Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     4.0.1
+ *  - BUG-FIX Rückumwandlung von Unterstrichen in Leerzeichen beim Dateinamen-Parsing.
+ * @since     5.0.0
+ *  - refactor(CSS): Separates Stylesheet entfernt (jetzt in main.css integriert).
+ *  -  fix(HTML): Klasse 'loaded' hinzugefügt, um Bilder im neuen Grid sofort sichtbar zu machen.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -27,13 +33,11 @@ $debugMode = $debugMode ?? false;
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../components/init_public.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+// === 2. LADE-SKRIPTE & DATEN ===
 require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'load_comic_data.php';
 require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
 
 // === 3. CHARAKTER-NAMEN & ID ERMITTELN ===
-// FIX 4.0.1: Unterstriche aus dem Dateinamen (z.B. Trace_Legacy) wieder in Leerzeichen (Trace Legacy) umwandeln
-// damit der Abgleich mit der JSON-Datenbank funktioniert.
 $filenameRaw = basename($_SERVER['SCRIPT_FILENAME'], '.php');
 $characterName = str_replace('_', ' ', $filenameRaw);
 
@@ -72,12 +76,6 @@ $siteDescription = 'Eine Übersicht aller Comic-Seiten, auf denen der Charakter 
 $viewportContent = 'width=1099';
 $robotsContent = 'index, follow';
 
-// Spezifisches Stylesheet nur für diese Seite laden
-$cssServerPath = DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_page.min.css';
-$cssWebUrl = Url::getCssUrl(filename: 'character_page.min.css');
-$cacheBuster = file_exists($cssServerPath) ? '?c=' . filemtime($cssServerPath) : '';
-$additionalHeadContent = '<link nonce="' . htmlspecialchars($nonce) . '" rel="stylesheet" type="text/css" href="' . htmlspecialchars($cssWebUrl . $cacheBuster) . '">';
-
 // === 6. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
@@ -85,20 +83,20 @@ require_once Path::getPartialTemplatePath('header.php');
 <div id="characterPage" class="bookmarks-page">
     <h2 class="page-header">
         <span>Alle Auftritte von <strong><?php echo htmlspecialchars($characterName); ?></strong></span>
-        <?php if ($comicCount > 0): ?>
+        <?php if ($comicCount > 0) : ?>
             <span class="comic-count-badge"><?php echo $comicCount; ?></span>
         <?php endif; ?>
     </h2>
 
-    <?php if (empty($characterComics) || $characterId === null): ?>
+    <?php if (empty($characterComics) || $characterId === null) : ?>
         <div class="no-bookmarks">
             <p>Für den Charakter "<?php echo htmlspecialchars($characterName); ?>" wurden leider keine Comic-Auftritte in
                 der Datenbank gefunden.</p>
         </div>
-    <?php else: ?>
+    <?php else : ?>
         <div class="bookmarks">
             <div class="chapter-links tag-page-links">
-                <?php foreach ($characterComics as $comicId => $comicDetails): ?>
+                <?php foreach ($characterComics as $comicId => $comicDetails) : ?>
                     <?php
                     $thumbnailUrl = get_cached_image_path($comicId, 'thumbnails');
                     if (empty($thumbnailUrl)) {
@@ -114,7 +112,7 @@ require_once Path::getPartialTemplatePath('header.php');
 
                     $pageLink = DIRECTORY_PUBLIC_COMIC_URL . '/' . $comicId . $dateiendungPHP;
                     ?>
-                    <a href="<?php echo htmlspecialchars($pageLink); ?>" title="<?php echo htmlspecialchars($pageName); ?>">
+                    <a href="<?php echo htmlspecialchars($pageLink); ?>" title="<?php echo htmlspecialchars($pageName); ?>" class="loaded">
                         <span><?php echo htmlspecialchars($pageName); ?></span>
                         <img src="<?php echo htmlspecialchars($fullThumbnailUrl); ?>"
                             alt="Thumbnail für '<?php echo htmlspecialchars($pageName); ?>'" loading="lazy">

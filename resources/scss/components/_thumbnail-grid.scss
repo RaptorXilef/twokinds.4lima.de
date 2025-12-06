@@ -22,6 +22,8 @@
 /// @since    5.0.0-alpha.3
 /// - refactor(SCSS): Zusammenführung von .chapter-links und .tag-page-links in eine wiederverwendbare Komponente.
 /// - feat(Design): Modernes CSS Grid für alle Galerien.
+/// - fix(Design): Overlay auf Desktop wieder vollflächig, auf Mobile als Leiste unten.
+/// - fix(Design): Aspect Ratio für alle Grids einheitlich auf 1/1.3 gesetzt.
 ///
 
 @use '../abstracts/variables' as *;
@@ -32,6 +34,7 @@
 .tag-page-links,
 .thumbnail-grid {
     display: grid;
+
     // Responsive: Min 96px, Max Space-filling
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 10px;
@@ -46,7 +49,7 @@
     a {
         position: relative;
         display: block;
-        aspect-ratio: 1 / 1.3; // Standard Hochformat (Comic)
+        aspect-ratio: 1 / 1.3; // Standard Hochformat für ALLE Grids
         background-color: var(--button-bg); // Fallback / Loading BG
         text-decoration: none;
         color: var(--text-on-medium);
@@ -64,24 +67,41 @@
         }
 
         @include media-retina-mobile {
-            zoom: 1.5; // Ggf. anpassen oder entfernen für reines CSS Grid
+            zoom: 1.5;
         }
 
-        // Overlay (Text/Nummer)
+        // Overlay (Text/Nummer) - Desktop Standard (Vollflächig)
         span {
-            display: flex;
+            display: none; // Standardmäßig versteckt auf Desktop
             justify-content: center;
             align-items: center;
             width: 100%;
+            height: 100%; // Vollflächig auf Desktop
+            text-align: center;
             position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
             background: rgb(0 0 0 / 65%);
             color: #fff;
-            padding: 5px 0;
+            padding: 5px; // Etwas Padding für Textumbruch
             font-size: 14px;
             z-index: 80;
             transition: background-color 0.2s;
+            box-sizing: border-box;
+
+            // Mobile Anpassung: Leiste unten, immer sichtbar
+            @include media-retina-mobile {
+                display: flex;
+                height: auto; // Nur so hoch wie der Text
+                top: auto; // Reset top
+                bottom: 0; // Unten fixieren
+                padding: 2px 0;
+            }
+        }
+
+        // Hover zeigt Overlay auf Desktop (Flex damit justify-content greift)
+        &:hover span {
+            display: flex;
         }
 
         // Delete Button (Admin/Bookmarks)
@@ -134,11 +154,6 @@
         }
     }
 
-    // Spezifisches Aspect-Ratio für Tag-Links (oft quadratisch)
-    &.tag-page-links a {
-        aspect-ratio: 1 / 1;
-    }
-
     // 2. Image Logic
     img {
         display: block;
@@ -155,28 +170,13 @@
     }
 
     // Wenn geladen oder Noscript -> Sichtbar
+    /* stylelint-disable no-descending-specificity */
     a noscript img,
     a.loaded img {
         opacity: 1;
     }
 
-    // 3. Overlay Visibility Logic
-    // Standardmäßig versteckt (außer auf Mobile)
-    a span {
-        display: none;
-
-        @include media-retina-mobile {
-            display: flex;
-        }
-    }
-
-    // Hover zeigt Overlay
-    a:hover span {
-        display: flex;
-    }
-
-    // 4. Theme Overrides
-    /* stylelint-disable no-descending-specificity */
+    // 3. Theme Overrides
     body.theme-night & {
         a {
             color: var(--text-color);
