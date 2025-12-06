@@ -1,16 +1,18 @@
 <?php
+
 /**
  * FAQ-Seite (Häufig gestellte Fragen).
- * 
+ *
  * @file      ROOT/public/faq.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ *
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     5.0.0 refactor(Page): Inline-CSS in SCSS-Komponente (.faq-item) ausgelagert.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -25,60 +27,9 @@ $pageTitle = 'FAQ - Häufig gestellte Fragen';
 $siteDescription = 'Antworten auf häufig gestellte Fragen zum TwoKinds-Comic, der deutschen Übersetzung und der Webseite.';
 $robotsContent = 'index, follow';
 
-// === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+// === 3. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
-
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    .faq-container {
-        max-width: 800px;
-        margin: 20px auto;
-    }
-
-    .faq-item {
-        border-bottom: 1px solid #ddd;
-        margin-bottom: 15px;
-    }
-
-    body.theme-night .faq-item {
-        border-bottom-color: #555;
-    }
-
-    .faq-question {
-        padding: 15px;
-        cursor: pointer;
-        font-weight: bold;
-        position: relative;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .faq-question::after {
-        content: '\25B6';
-        /* Right-pointing triangle */
-        font-size: 0.8em;
-        transition: transform 0.3s ease;
-    }
-
-    .faq-item.active .faq-question::after {
-        transform: rotate(90deg);
-    }
-
-    .faq-answer {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease-out;
-        padding: 0 15px;
-    }
-
-    .faq-item.active .faq-answer {
-        max-height: 500px;
-        /* Adjust as needed */
-        padding: 15px;
-        transition: max-height 0.5s ease-in;
-    }
-</style>
 
 <article>
     <header>
@@ -227,6 +178,7 @@ require_once Path::getPartialTemplatePath('header.php');
             question.addEventListener('click', () => {
                 const isActive = item.classList.contains('active');
 
+                // Optional: Andere Items schließen (Accordion-Verhalten)
                 faqItems.forEach(i => i.classList.remove('active'));
 
                 if (!isActive) {

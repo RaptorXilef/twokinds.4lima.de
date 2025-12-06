@@ -38,11 +38,85 @@ div.page-faq {
     }
 }
 
-/* --- RSS Anleitung Page --- */
-.rss-icon-text {
-    border-radius: 5px;
+/* --- FAQ Page (Accordion) --- */
+.faq-container {
+    max-width: 800px;
+    margin: 20px auto;
+
+    p {
+        margin-bottom: 20px;
+    }
+}
+
+.faq-item {
+    border-bottom: 1px solid var(--border-medium);
+    margin-bottom: 15px;
+
+    body.theme-night & {
+        border-bottom-color: var(--border-light);
+    }
+
+    &.active {
+        .faq-question::after {
+            transform: rotate(90deg);
+        }
+
+        .faq-answer {
+            max-height: 500px; // Ausreichend hoch für Text
+            padding: 15px;
+            transition: max-height 0.5s ease-in;
+        }
+    }
+}
+
+.faq-question {
+    padding: 15px;
     cursor: pointer;
-    vertical-align: middle; // Optional: Sieht im Textfluss aber meist besser aus
+    font-weight: bold;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-color);
+    background-color: var(
+        --content-bg
+    ); // Optional: Leichter Hintergrund für Klickbarkeit
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: var(--table-row-hover);
+    }
+
+    body.theme-night & {
+        background-color: transparent;
+
+        &:hover {
+            background-color: var(--button-bg);
+        }
+    }
+
+    &::after {
+        content: '\25B6'; // Right-pointing triangle
+        font-size: 0.8em;
+        transition: transform 0.3s ease;
+        color: var(--text-color-light);
+    }
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding: 0 15px;
+    color: var(--text-color);
+
+    p {
+        margin-bottom: 10px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
 }
 
 /* --- Impressum (Imprint) Page --- */
@@ -120,6 +194,13 @@ div.page-faq {
         vertical-align: middle;
         margin-left: 5px;
     }
+}
+
+/* --- RSS Anleitung Page --- */
+.rss-icon-text {
+    border-radius: 5px;
+    cursor: pointer;
+    vertical-align: middle; // Optional: Sieht im Textfluss aber meist besser aus
 }
 
 /* --- Chat Page --- */
