@@ -72,6 +72,26 @@
         text-align: center;
     }
 
+    // Villain Section Overrides
+    .villain-image-container {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    &.villain-section {
+        .char-info {
+            width: 800px; // Überschreibt die standardmäßigen 600px
+            float: none; // Da das Bild oben zentriert ist, muss Text nicht fließen (optional, je nach Layout-Wunsch)
+            margin: auto; // Zentriert den Textblock unter dem Bild
+        }
+    }
+
+    .villain-group-image {
+        width: 800px;
+        max-width: 100%;
+        height: auto;
+    }
+
     &:last-of-type {
         margin-bottom: 0;
         border: none;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Stellt eine zentrale Helferfunktion zur Verfügung, um Pfade zu Charakterbildern
  * mit Cache-Busting zu generieren.
@@ -9,7 +10,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
+ *
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten für Robustheit.
  * @since     1.1.1 Umstellung auf Konstanten und Suche nach mehreren Dateitypen.
  * @since     1.2.0 Vereinfachung der Pfadlogik zur Fehlerbehebung.
@@ -17,6 +18,7 @@
  * @since     1.3.0 Anpassung an die finale Benennung der Pfad-Konstanten (DIRECTORY_PUBLIC).
  * @since     2.0.0 Komplette Überarbeitung für die neue Konfigurationsstruktur mit `Path`-Klasse.
  * @since     2.1.0 Entfernung der letzten hartcodierten Pfade durch Nutzung der URL-Konstanten.
+ * @since     5.0.0 Erweiterung der Funktion get_char_image_path um swatches und faces
  */
 
 /**
@@ -45,6 +47,12 @@ if (!function_exists('get_char_image_path')) {
         } elseif ($type === 'ref_sheet') {
             $serverBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_REFSHEETS_THUMBNAILS;
             $urlBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_REFSHEETS_THUMBNAILS_URL;
+        } elseif ($type === 'swatches') {
+            $serverBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_SWATCHES;
+            $urlBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_SWATCHES_URL;
+        } elseif ($type === 'faces') {
+            $serverBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_FACES;
+            $urlBasePath = DIRECTORY_PUBLIC_IMG_CHARAKTERS_FACES_URL;
         } else {
             if ($debugMode) {
                 error_log("FEHLER in get_char_image_path: Unbekannter Bildtyp '{$type}'.");
@@ -71,4 +79,3 @@ if (!function_exists('get_char_image_path')) {
         return Url::getImgCharactersUrl('placeholder.webp');
     }
 }
-?>

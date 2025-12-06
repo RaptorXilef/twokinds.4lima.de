@@ -1,18 +1,20 @@
 <?php
+
 /**
  * Diese Datei zeigt Details zu den Charakteren des Comics an.
  * Version 2.0: Vollständig an die neue, sichere Architektur mit
  * init_public.php und einem zentralen Bild-Helfer angepasst.
- * 
+ *
  * @file      ROOT/public/charaktere.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ *
  * @since     2.0.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     5.0.0 refactor(Page): Inline-CSS entfernt, auf natives Lazy-Loading (loading="lazy") umgestellt und JS-Abhängigkeit entfernt.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -22,7 +24,7 @@ $debugMode = $debugMode ?? false;
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/init_public.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+// === 2. LADE-SKRIPTE & DATEN ===
 require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_character_image.php';
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -30,42 +32,9 @@ $pageTitle = 'Charaktere';
 $siteDescription = 'Lerne die Hauptcharaktere von TwoKinds kennen. Detaillierte Biografien und Referenzbilder von Trace, Flora, Keith, Natani und vielen mehr.';
 $robotsContent = 'index, follow';
 
-// Füge die charaktere.min.js mit Cache-Busting und Nonce hinzu
-$charaktereJsFileName = 'charaktere.min.js';
-$charaktereJsPathOnServer = DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . $charaktereJsFileName;
-$charaktereJsWebUrl = Url::getJsUrl($charaktereJsFileName);
-$cacheBuster = file_exists($charaktereJsPathOnServer) ? '?c=' . filemtime($charaktereJsPathOnServer) : '';
+// JS für Charaktere nicht mehr benötigt (Natives Lazy Loading)
 
-$additionalScripts = '
-    <script nonce="' . htmlspecialchars($nonce) . '">
-        window.phpDebugMode = ' . ($debugMode ? 'true' : 'false') . ';
-    </script>
-    <script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript" src="' . htmlspecialchars($charaktereJsWebUrl . $cacheBuster) . '"></script>
-';
-
-// CSS für das initiale Ausblenden der Lazy-Load-Bilder und die Korrekturen für die Bösewichte-Sektion
-$additionalHeadContent = '
-    <style nonce="' . htmlspecialchars($nonce) . '">
-        img.lazy-char-img {
-            opacity: 0;
-            transition: opacity 0.5s ease-in;
-        }
-        img.lazy-char-img.loaded {
-            opacity: 1;
-        }
-        .villain-image-container {
-            margin-bottom: 10px;
-        }
-        .villain-info {
-            width: 800px;
-        }
-        .villain-group-image {
-            width: 800px;
-        }
-    </style>
-';
-
-// === 4. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+// === 4. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 <header hidden>
@@ -73,33 +42,30 @@ require_once Path::getPartialTemplatePath('header.php');
 </header>
 <section>
     <div class="char-head">
-        <!-- Diese kleinen Icons werden direkt von der Originalseite geladen -->
-        <a href="#trace"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_trace.gif" alt="Trace"></a>
-        <a href="#flora"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_flora.gif" alt="Flora"></a>
-        <a href="#keith"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_keith.gif" alt="Keith"></a>
-        <a href="#natani"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_natani.gif" alt="Natani"></a>
-        <a href="#zen"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_zen.gif" alt="Zen"></a>
-        <a href="#sythe"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_sythe.gif" alt="Sythe"></a>
-        <a href="#mrsnibbly"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_nibbly.gif"
-                alt="Nibbly the Great and Powerful"></a>
-        <a href="#raine"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_raine.gif" alt="Raine"></a>
-        <a href="#laura"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_laura.gif" alt="Laura"></a>
-        <a href="#saria"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_saria.gif" alt="Saria"></a>
-        <a href="#eric"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_eric.gif" alt="Eric"></a>
-        <a href="#kathrin"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_kathrin.gif" alt="Kathrin"></a>
-        <a href="#mike"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_mike.gif" alt="Mike"></a>
-        <a href="#evals"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_evals.gif" alt="Evals"></a>
-        <a href="#maddie"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maddie.gif"
-                alt="Madelyn Adelaide"></a>
-        <a href="#maren"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maren.gif" alt="Maren"></a>
-        <a href="#karen"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_karen.gif" alt="Karen"></a>
-        <a href="#red"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_red.gif" alt="Red"></a>
-        <a href="#alaric"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_alaric.gif" alt="Alaric"></a>
-        <a href="#nora"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_nora.gif" alt="Nora"></a>
-        <a href="#reni"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_reni.gif" alt="Reni"></a>
-        <a href="#adira"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_adira.gif" alt="Adira"></a>
-        <a href="#maeve"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_maeve.gif" alt="Maeve"></a>
-        <a href="#mask"><img src="https://cdn.twokinds.keenspot.com/img/faces/icon_mask.gif" alt="Maske"></a>
+        <a href="#trace"><img src="<?php echo get_char_image_path('icon_trace', 'faces'); ?>" alt="Trace" loading="lazy"></a>
+        <a href="#flora"><img src="<?php echo get_char_image_path('icon_flora', 'faces'); ?>" alt="Flora" loading="lazy"></a>
+        <a href="#keith"><img src="<?php echo get_char_image_path('icon_keith', 'faces'); ?>" alt="Keith" loading="lazy"></a>
+        <a href="#natani"><img src="<?php echo get_char_image_path('icon_natani', 'faces'); ?>" alt="Natani" loading="lazy"></a>
+        <a href="#zen"><img src="<?php echo get_char_image_path('icon_zen', 'faces'); ?>" alt="Zen" loading="lazy"></a>
+        <a href="#sythe"><img src="<?php echo get_char_image_path('icon_sythe', 'faces'); ?>" alt="Sythe" loading="lazy"></a>
+        <a href="#mrsnibbly"><img src="<?php echo get_char_image_path('icon_nibbly', 'faces'); ?>" alt="Nibbly the Great and Powerful" loading="lazy"></a>
+        <a href="#raine"><img src="<?php echo get_char_image_path('icon_raine', 'faces'); ?>" alt="Raine" loading="lazy"></a>
+        <a href="#laura"><img src="<?php echo get_char_image_path('icon_laura', 'faces'); ?>" alt="Laura" loading="lazy"></a>
+        <a href="#saria"><img src="<?php echo get_char_image_path('icon_saria', 'faces'); ?>" alt="Saria" loading="lazy"></a>
+        <a href="#eric"><img src="<?php echo get_char_image_path('icon_eric', 'faces'); ?>" alt="Eric" loading="lazy"></a>
+        <a href="#kathrin"><img src="<?php echo get_char_image_path('icon_kathrin', 'faces'); ?>" alt="Kathrin" loading="lazy"></a>
+        <a href="#mike"><img src="<?php echo get_char_image_path('icon_mike', 'faces'); ?>" alt="Mike" loading="lazy"></a>
+        <a href="#evals"><img src="<?php echo get_char_image_path('icon_evals', 'faces'); ?>" alt="Evals" loading="lazy"></a>
+        <a href="#maddie"><img src="<?php echo get_char_image_path('icon_maddie', 'faces'); ?>" alt="Madelyn Adelaide" loading="lazy"></a>
+        <a href="#maren"><img src="<?php echo get_char_image_path('icon_maren', 'faces'); ?>" alt="Maren" loading="lazy"></a>
+        <a href="#karen"><img src="<?php echo get_char_image_path('icon_karen', 'faces'); ?>" alt="Karen" loading="lazy"></a>
+        <a href="#red"><img src="<?php echo get_char_image_path('icon_red', 'faces'); ?>" alt="Red" loading="lazy"></a>
+        <a href="#alaric"><img src="<?php echo get_char_image_path('icon_alaric', 'faces'); ?>" alt="Alaric" loading="lazy"></a>
+        <a href="#nora"><img src="<?php echo get_char_image_path('icon_nora', 'faces'); ?>" alt="Nora" loading="lazy"></a>
+        <a href="#reni"><img src="<?php echo get_char_image_path('icon_reni', 'faces'); ?>" alt="Reni" loading="lazy"></a>
+        <a href="#adira"><img src="<?php echo get_char_image_path('icon_adira', 'faces'); ?>" alt="Adira" loading="lazy"></a>
+        <a href="#maeve"><img src="<?php echo get_char_image_path('icon_maeve', 'faces'); ?>" alt="Maeve" loading="lazy"></a>
+        <a href="#mask"><img src="<?php echo get_char_image_path('icon_mask', 'faces'); ?>" alt="Maske" loading="lazy"></a>
     </div>
     <header>
         <h2 class="page-header">Hauptcharaktere</h2>
@@ -107,22 +73,14 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="trace">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Trace2025', 'portrait'); ?>" alt="Trace"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('traceref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
-            <a href="https://www.patreon.com/posts/tiger-trace-22635887" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('tigertraceref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Trace2025', 'portrait'); ?>" alt="Trace" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('TraceSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('traceref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
+            <a href="https://www.patreon.com/posts/tiger-trace-22635887" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('tigertraceref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Trace Legacy</h3>
@@ -150,22 +108,14 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="flora">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Flora2025', 'portrait'); ?>" alt="Flora"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/FloraSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/flora-character-127534701" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('floraref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
-            <a href="https://www.patreon.com/posts/flora-ref-sheet-26619874" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('flora-oldref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Flora2025', 'portrait'); ?>" alt="Flora" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('FloraSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/flora-character-127534701" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('floraref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
+            <a href="https://www.patreon.com/posts/flora-ref-sheet-26619874" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('flora-oldref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Flora des Regenwald-Tigerstammes</h3>
@@ -194,17 +144,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="keith">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Keith2025', 'portrait'); ?>" alt="Keith"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KeithSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/keith-ref-sheet-26845156" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('keithref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Keith2025', 'portrait'); ?>" alt="Keith" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('KeithSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/keith-ref-sheet-26845156" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('keithref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Keith Keiser</h3>
@@ -229,18 +173,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="natani">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Natani2025', 'portrait'); ?>" alt="Natani"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/NataniSwatch.gif"
-                alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/natani-ref-sheet-25812950" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('nataniref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Natani2025', 'portrait'); ?>" alt="Natani" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('NataniSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/natani-ref-sheet-25812950" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('nataniref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Natani</h3>
@@ -270,16 +207,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="zen">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Zen2025', 'portrait'); ?>" alt="Zen"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/ZenSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/zen-ref-sheet-82651895" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('zenref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Zen2025', 'portrait'); ?>" alt="Zen" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('ZenSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/zen-ref-sheet-82651895" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('zenref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Zen</h3>
@@ -305,17 +237,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="sythe">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Sythe2025', 'portrait'); ?>" alt="Sythe"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SytheSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('sytheref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Sythe2025', 'portrait'); ?>" alt="Sythe" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('SytheSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/sythe-reference-34204330" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('sytheref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Sythe</h3>
@@ -341,13 +267,8 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="mrsnibbly">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Nibbly2025', 'portrait'); ?>" alt="Mrs Nibbly"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MrsNibblySwatch.gif"
-                alt="Color Swatch">
+            <img class="portrait" src="<?php echo get_char_image_path('Nibbly2025', 'portrait'); ?>" alt="Mrs Nibbly" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('MrsNibblySwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
         </div>
         <div class="char-info">
             <h3>Mrs. Nibbly</h3>
@@ -378,17 +299,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="raine">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Raine2025', 'portrait'); ?>" alt="Raine"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RaineSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/raine-reference-25826733" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('raineref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Raine2025', 'portrait'); ?>" alt="Raine" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('RaineSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/raine-reference-25826733" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('raineref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Raine</h3>
@@ -415,17 +330,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="laura">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Laura2025', 'portrait'); ?>" alt="Laura"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LauraSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/laura-reference-30562240" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('lauraref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Laura2025', 'portrait'); ?>" alt="Laura" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('LauraSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/laura-reference-30562240" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('lauraref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Laura vom Stamm der Küstenfuchse</h3>
@@ -449,17 +358,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="saria">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Saria.jpg" alt="Saria"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/SariaSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/saria-ref-sheet-60925868" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('sariaref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Saria', 'portrait'); ?>" alt="Saria" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('SariaSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/saria-ref-sheet-60925868" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('sariaref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Saria au Gruhen</h3>
@@ -483,13 +386,8 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="eric">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Eric.jpg" alt="Eric"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EricSwatch.gif" alt="Color Swatch">
-            <!-- Kein Ref Sheet Link in der alten Datei vorhanden -->
+            <img class="portrait" src="<?php echo get_char_image_path('Eric', 'portrait'); ?>" alt="Eric" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('EricSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
         </div>
         <div class="char-info">
             <h3>Eric Vaughan</h3>
@@ -512,18 +410,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="kathrin">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Kathrin.jpg" alt="Kathrin"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KathrinSwatch.gif"
-                alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/kathrin-ref-26592787" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('kathrinref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Kathrin', 'portrait'); ?>" alt="Kathrin" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('KathrinSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/kathrin-ref-26592787" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('kathrinref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Kathrin "Spots" Vaughan</h3>
@@ -546,17 +437,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="mike">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Mike.jpg" alt="Mike"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MikeSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('mikeandevalsref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Mike', 'portrait'); ?>" alt="Mike" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('MikeSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('mikeandevalsref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Mike</h3>
@@ -578,17 +463,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="evals">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Evals.jpg" alt="Evals"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/EvalsSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('mikeandevalsref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Evals', 'portrait'); ?>" alt="Evals" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('EvalsSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/mike-and-evals-37671238" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('mikeandevalsref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Evals</h3>
@@ -609,17 +488,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="maddie">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Maddie.png" alt="Madelyn Adelaide"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MaddySwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/madelyn-ref-34828699" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('madelynref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Maddie', 'portrait'); ?>" alt="Madelyn Adelaide" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('MaddySwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/madelyn-ref-34828699" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('madelynref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Madelyn Adelaide</h3>
@@ -645,17 +518,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="maren">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Maren.jpg" alt="Maren"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/MarenSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('marenkarenref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Maren', 'portrait'); ?>" alt="Maren" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('MarenSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('marenkarenref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Maren Taverndatter</h3>
@@ -678,17 +545,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="karen">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Karen.jpg" alt="Karen"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/KarenSwatch.gif" alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('marenkarenref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Karen', 'portrait'); ?>" alt="Karen" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('KarenSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/maren-and-karen-36114522" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('marenkarenref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Karen Taverndatter</h3>
@@ -712,17 +573,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="red">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/RedHairedGuy.jpg" alt="Red Haired Guy"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/RedHairedGuySwatch.gif"
-                alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/red-ref-sheet-90801686" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('redref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('RedHairedGuy', 'portrait'); ?>" alt="Red Haired Guy" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('RedHairedGuySwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/red-ref-sheet-90801686" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('redref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Red</h3>
@@ -744,14 +599,8 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="alaric">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/Alaric.jpg" alt="Alaric"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/AlaricSwatch.gif"
-                alt="Color Swatch">
-            <!-- Kein Ref Sheet Link in der alten Datei vorhanden -->
+            <img class="portrait" src="<?php echo get_char_image_path('Alaric', 'portrait'); ?>" alt="Alaric" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('AlaricSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
         </div>
         <div class="char-info">
             <h3>Nickolai Alaric</h3>
@@ -774,17 +623,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="nora">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/LadyNora.jpg" alt="Nora"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/LadyNoraSwatch.gif"
-                alt="Color Swatch">
-            <a href="https://www.patreon.com/posts/lady-nora-ref-26898478" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('noraref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('LadyNora', 'portrait'); ?>" alt="Nora" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('LadyNoraSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy">
+            <a href="https://www.patreon.com/posts/lady-nora-ref-26898478" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('noraref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Lady Nora</h3>
@@ -808,13 +651,10 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="reni">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Reni2025', 'portrait'); ?>" alt="Reni"><br>
-            <a href="https://www.patreon.com/posts/reni-ref-sheet-50534633" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('reniref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Reni2025', 'portrait'); ?>" alt="Reni" loading="lazy"><br>
+            <a href="https://www.patreon.com/posts/reni-ref-sheet-50534633" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('reniref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Prinzessin Reni</h3>
@@ -846,14 +686,10 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="adira">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Adira2025', 'portrait'); ?>" alt="Adira"><br>
-            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('adiramaeveref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Adira2025', 'portrait'); ?>" alt="Adira" loading="lazy"><br>
+            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('adiramaeveref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Adira von der Riftwall</h3>
@@ -880,14 +716,10 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="maeve">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('Maeve2025', 'portrait'); ?>" alt="Maeve"><br>
-            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('adiramaeveref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="<?php echo get_char_image_path('Maeve2025', 'portrait'); ?>" alt="Maeve" loading="lazy"><br>
+            <a href="https://www.patreon.com/posts/adira-reference-27882970" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('adiramaeveref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Maeve von der Riftwall</h3>
@@ -908,13 +740,11 @@ require_once Path::getPartialTemplatePath('header.php');
         <h2 class="page-header">Bösewichte</h2>
     </header>
 
-    <section class="char-detail" id="mask">
-        <div class="center villain-image-container">
-            <img class="lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('TheMaskedGods2025', 'portrait'); ?>" alt="Die Masken">
+    <section class="char-detail villain-section" id="mask">
+        <div class="villain-image-container">
+            <img src="<?php echo get_char_image_path('TheMaskedGods2025', 'portrait'); ?>" alt="Die Masken" loading="lazy">
         </div>
-        <div class="char-info villain-info">
+        <div class="char-info">
             <h3>Die Masken</h3>
             <p>
                 <b>Klasse:</b> Korrumpierte planetare Wächter<br>
@@ -928,14 +758,11 @@ require_once Path::getPartialTemplatePath('header.php');
         <div class="clear"></div>
     </section>
 
-    <section class="char-detail">
-        <div class="center villain-image-container">
-            <img class="lazy-char-img villain-group-image"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="<?php echo get_char_image_path('TemplarChart2025', 'portrait'); ?>" alt="Bösewichte">
-            <?php /* data-src="https://cdn.twokinds.keenspot.com/img/characters/Villians.jpg" */ ?>
+    <section class="char-detail villain-section">
+        <div class="villain-image-container">
+            <img class="villain-group-image" src="<?php echo get_char_image_path('TemplarChart2025', 'portrait'); ?>" alt="Bösewichte" loading="lazy">
         </div>
-        <div class="char-info villain-info">
+        <div class="char-info">
             <h3>Die Meistertempler: Meisterspion, Architekt, Stratege, Seher und Magier.</h3>
             <p>
                 <b>Klasse:</b> Meistertempler<br>
@@ -956,18 +783,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <section class="char-detail" id="evil-trace">
         <div class="char-img">
-            <img class="portrait lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/EvilTrace.jpg" alt="Böser Trace"><br>
-            <img class="char-swatch lazy-char-img"
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                data-src="https://cdn.twokinds.keenspot.com/img/characters/swatches/TraceSwatch.gif"
-                alt="Color Swatch"><br>
-            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank"><img
-                    class="char-swatch lazy-char-img"
-                    src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                    data-src="<?php echo get_char_image_path('traceref_thumbnail', 'ref_sheet'); ?>"
-                    alt="Ref Sheet"></a>
+            <img class="portrait" src="https://cdn.twokinds.keenspot.com/img/characters/EvilTrace.jpg" alt="Böser Trace" loading="lazy"><br>
+            <img class="char-swatch" src="<?php echo get_char_image_path('TraceSwatch', 'swatches'); ?>" alt="Color Swatch" loading="lazy"><br>
+            <a href="https://www.patreon.com/posts/trace-reference-28691421" target="_blank">
+                <img class="char-swatch" src="<?php echo get_char_image_path('traceref_thumbnail', 'ref_sheet'); ?>" alt="Ref Sheet" loading="lazy">
+            </a>
         </div>
         <div class="char-info">
             <h3>Trace Legacy (Böse)</h3>
