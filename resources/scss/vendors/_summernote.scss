@@ -147,6 +147,9 @@
 
     // Code View
     .note-codable {
+        font-family: $font-mono !important;
+        font-size: 14px; // Optional: Code ist oft besser lesbar, wenn er etwas kleiner ist
+        line-height: 1.4; // Optional: Mehr Zeilenabstand für bessere Lesbarkeit
         background-color: #222;
         color: #ccc;
 

@@ -38,10 +38,6 @@ article {
     background-color: var(--content-area-bg);
     box-shadow: 0 0 3px 1px rgb(0 0 0 / 50%);
     overflow: visible;
-
-    body.theme-night & {
-        box-shadow: 0 0 3px 1px rgb(255 255 255 / 20%);
-    }
 }
 
 .content-area {
