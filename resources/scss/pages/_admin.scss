@@ -3,7 +3,7 @@
 ///
 /// Admin & Report Pages
 ///
-/// Styles für Admin-Tabellen, Filter und Report-Details.
+/// Styles für Admin-Tabellen, Filter, Report-Details und den Comic-Editor.
 ///
 
 /*!
@@ -20,14 +20,18 @@
 ///
 /// @since    5.0.0
 /// - Zusammenführung von Filter-Forms und Data-Tables.
-/// - style(Linter): Descending specificity bei Labels und Tabellen behoben.
-/// - style(Linter): Spezifität für Labels und Table-Header korrigiert (Nesting).
-/// - style(Linter): Transcript-Boxen nach oben verschoben (Fix no-descending-specificity).
+/// - Integration der Styles aus dem Comic-Daten-Editor (Tabellen, Status-Icons, Suche).
+/// - fix(Design): Original-Styles (Transcript, Reports) wiederhergestellt.
+/// - fix(Design): Pagination im Dark Mode transparent gesetzt.
+/// - fix(Design): Status-Legende immer bunt angezeigt.
+/// - fix(Design): Last-Run Status Message immer sichtbar.
 ///
 
 @use '../abstracts/variables' as *;
 
-// Transcript Display in Admin (Moved to top for specificity order)
+/* --- 1. Original Admin Styles (Wiederhergestellt) --- */
+
+// Transcript Display
 .original-transcript-box {
     margin-top: 15px;
 
@@ -69,15 +73,14 @@
 .filter-form {
     background-color: var(--table-row-even);
     border: 1px solid var(--border-light);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
 
     body.theme-night & {
         background-color: var(--sidebar-bg);
         border-color: var(--button-bg);
     }
-
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
 
     legend {
         font-weight: bold;
@@ -97,126 +100,8 @@
             font-size: 0.9em;
             color: var(--text-color-light);
 
-            // Nesting für korrekte Specificity
             body.theme-night & {
                 color: var(--text-color-light);
-            }
-        }
-
-        input[type='text'],
-        select {
-            padding: 6px 8px;
-            border: 1px solid var(--border-medium);
-            border-radius: 4px;
-            background-color: var(--content-bg);
-            color: var(--text-color);
-
-            body.theme-night & {
-                background-color: var(--page-bg);
-                border-color: var(--button-bg);
-
-                &:focus {
-                    border-color: var(--border-light);
-                    box-shadow: 0 0 0 2px rgb(72 119 138 / 50%);
-                }
-            }
-        }
-    }
-}
-
-// Data Table
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-
-    th,
-    td {
-        border: 1px solid var(--border-light);
-        padding: 10px;
-        text-align: left;
-        vertical-align: top;
-        color: var(--text-color);
-    }
-
-    th {
-        background-color: var(--table-header-bg);
-        font-weight: bold;
-    }
-
-    body.theme-night & {
-        th,
-        td {
-            border-color: var(--page-bg);
-        }
-    }
-
-    tbody tr:nth-child(even) {
-        background-color: var(--table-row-even);
-    }
-
-    tbody tr:hover {
-        background-color: var(--table-row-hover);
-
-        body.theme-night & {
-            background-color: var(--button-bg);
-        }
-    }
-
-    .actions-cell {
-        white-space: nowrap;
-        text-align: right;
-
-        form {
-            display: inline-flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin: 0;
-        }
-
-        button {
-            padding: 4px 8px;
-            font-size: 0.9em;
-            color: #fff;
-        }
-
-        .button-green {
-            background-color: #28a745;
-
-            &:hover {
-                background-color: #218838;
-            }
-        }
-
-        .button-orange {
-            background-color: #fd7e14;
-
-            &:hover {
-                background-color: #e66a00;
-            }
-        }
-
-        .button-blue {
-            background-color: #007bff;
-
-            &:hover {
-                background-color: #0056b3;
-            }
-        }
-
-        .detail-button {
-            background-color: #6c757d; // Grey
-            &:hover {
-                background-color: #5a6268;
-            }
-
-            color: #fff;
-
-            body.theme-night & {
-                background-color: var(--border-light); // Accent light
-                &:hover {
-                    filter: brightness(1.1);
-                }
             }
         }
     }
@@ -314,4 +199,404 @@
 
 .honeypot-field {
     display: none !important;
+}
+
+/* --- 2. New Admin Controls (Search, Pagination, Legends) --- */
+
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.search-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+
+    input[type='text'] {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid var(--border-medium);
+        background-color: var(--content-bg);
+        color: var(--text-color);
+        min-width: 250px;
+
+        // Besserer Kontrast im Dark Mode
+        body.theme-night & {
+            background-color: color-mix(in srgb, var(--page-bg), black 20%);
+            border-color: var(--border-light);
+
+            &:focus {
+                border-color: var(--link-color);
+                box-shadow: 0 0 0 2px rgb(129 219 254 / 20%);
+            }
+        }
+    }
+
+    #clear-search-btn {
+        padding: 5px 10px;
+    }
+}
+
+.marker-legend-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 0.9em;
+}
+
+/* --- Status & Source Markers --- */
+/* --- Status & Source Markers (Binary System) --- */
+.source-marker,
+.status-icon {
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1.5;
+    display: inline-block;
+    margin-right: 2px;
+    text-transform: uppercase;
+    cursor: help;
+
+    // --- GRUNDZUSTAND (FEHLT / NICHT VORHANDEN) ---
+    // Standardmäßig sind alle Icons "Missing" (Rot, transparent, grau)
+    background-color: #dc3545;
+    opacity: 0.3;
+    filter: grayscale(1);
+
+    // --- AKTIVZUSTAND (VORHANDEN) ---
+    // Gilt wenn:
+    // 1. Es ein .source-marker ist (Quellen in der linken Spalte existieren per Definition)
+    // 2. Es ein .status-icon mit der Klasse .present ist
+    &.source-marker,
+    &.present {
+        background-color: #07710c !important; // Grün
+        opacity: 1;
+        filter: grayscale(0);
+    }
+
+    // --- LEGENDE ---
+    // In der Legende oben immer voll sichtbar anzeigen
+    .marker-legend & {
+        opacity: 1 !important;
+        filter: none !important;
+        // Wir zeigen sie in der Legende als "Mustergültig" (Grün) an
+        background-color: #07710c !important;
+    }
+
+    /*
+    // Farben
+    &.source-json,
+    &.status-json {
+        background-color: #6c757d;
+    }
+    &.source-image,
+    &.status-lowres {
+        background-color: #007bff;
+    }
+    &.status-hires {
+        background-color: #0056b3;
+    }
+    &.source-php,
+    &.status-php {
+        background-color: #28a745;
+    }
+    &.source-url,
+    &.status-url {
+        background-color: #9f58d1;
+    }
+    &.status-socialmedia {
+        background-color: #fd7e14;
+    }
+    &.status-thumbnails {
+        background-color: #ffc107;
+        color: #333;
+    }
+    &.status-charaktere {
+        background-color: #6f42c1;
+    }
+*/
+}
+
+/* --- Status Messages (Alerts) --- */
+.status-message {
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: none; // Per JS eingeblendet
+
+    &.status-green {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+
+        body.theme-night & {
+            background-color: #1e4620;
+            color: #e8f5e9;
+            border-color: #1e4620;
+        }
+    }
+
+    &.status-red {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+
+        body.theme-night & {
+            background-color: #5a1e1e;
+            color: #fce4e4;
+            border-color: #5a1e1e;
+        }
+    }
+
+    &.status-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+
+        body.theme-night & {
+            background-color: #00425c;
+            color: #d1ecf1;
+            border-color: #005a7e;
+        }
+    }
+
+    &.status-orange {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+
+        body.theme-night & {
+            background-color: #5a4e1e;
+            color: #fff8e1;
+            border-color: #5a4e1e;
+        }
+    }
+}
+
+// FIX: Last Run Container Status immer anzeigen
+#last-run-container .status-message {
+    display: block;
+}
+
+/* --- Admin Data Tables --- */
+.sitemap-table-container {
+    overflow-x: auto;
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    th,
+    td {
+        padding: 8px;
+        border-bottom: 1px solid var(--border-medium);
+        text-align: left;
+        vertical-align: middle;
+        word-wrap: break-word;
+        color: var(--text-color);
+    }
+
+    th {
+        background-color: var(--table-header-bg);
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 2px solid var(--border-medium);
+    }
+
+    // Zebra-Striping
+    tbody tr:nth-child(even) {
+        background-color: var(--table-row-even);
+    }
+
+    // Hover Effect
+    tbody tr:hover {
+        background-color: var(--table-row-hover);
+
+        body.theme-night & {
+            background-color: var(--button-bg);
+        }
+    }
+
+    body.theme-night & {
+        border-color: var(--border-dark);
+
+        th,
+        td {
+            border-color: var(--border-dark);
+        }
+    }
+
+    // Spezifische Spaltenbreiten für den Comic Editor
+    &.comic-editor-table {
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 10%;
+        } // ID
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 120px;
+        } // Vorschau
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 25%;
+        } // Name
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 30%;
+        } // Transkript
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 15%;
+        } // Status
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 100px;
+            text-align: right;
+        } // Aktionen
+
+        td:last-child {
+            text-align: right;
+        }
+    }
+
+    // Helper classes inside table
+    .comic-thumbnail {
+        max-width: 100px;
+        height: auto;
+        border-radius: 4px;
+        display: block;
+        margin-top: 5px;
+        border: 1px solid var(--border-medium);
+    }
+
+    .comic-type-display {
+        font-size: 0.8em;
+        font-style: italic;
+        display: block;
+        color: var(--text-color-medium);
+    }
+
+    .description-preview {
+        max-height: 5em;
+        overflow: auto;
+        border: 1px solid var(--border-light);
+        padding: 5px;
+        border-radius: 3px;
+        font-size: 0.9em;
+        scrollbar-width: thin;
+
+        body.theme-night & {
+            border-color: var(--border-dark);
+        }
+    }
+
+    .missing-info {
+        border: 2px solid #dc3545 !important;
+        background-color: rgb(248 215 218 / 20%) !important;
+    }
+
+    .actions-cell {
+        white-space: nowrap;
+        text-align: right;
+
+        button {
+            margin-left: 5px;
+        }
+    }
+}
+
+/* --- Pagination --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 5px;
+    flex-wrap: wrap;
+
+    a,
+    span {
+        padding: 8px 12px;
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--link-color);
+        cursor: pointer;
+        background-color: var(--content-bg);
+
+        // FIX: Transparentes Design im Dark Mode (wie gewünscht)
+        body.theme-night & {
+            background-color: transparent;
+            border-color: var(--border-light);
+            color: var(--text-color);
+        }
+
+        &:hover:not(.current-page) {
+            background-color: var(--button-hover-bg);
+
+            body.theme-night & {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+    }
+
+    span.current-page {
+        background-color: var(--link-color);
+        color: #fff;
+        border-color: var(--link-color);
+        cursor: default;
+    }
+}
+
+/* --- Animations --- */
+@keyframes highlight-row {
+    from {
+        background-color: #d4edda;
+    }
+    to {
+        background-color: transparent;
+    }
+}
+
+@keyframes highlight-row-dark {
+    from {
+        background-color: #1a4d2e;
+    }
+    to {
+        background-color: transparent;
+    }
+}
+
+.row-highlight {
+    animation: highlight-row 8s ease-out;
+
+    body.theme-night & {
+        animation: highlight-row-dark 8s ease-out;
+    }
+}
+
+.hidden-by-default {
+    display: none;
+}
+
+// Container für Buttons am Ende der Seite
+#fixed-buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
 }

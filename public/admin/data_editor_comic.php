@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Administrationsseite zum Bearbeiten der comic_var.json Konfigurationsdatei.
  *
@@ -13,15 +14,15 @@
  * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
  * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
  * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
- * @since     5.5.1 Fügt die fehlenden Schaltflächen für "Vorherige" (‹) und "Nächste" (›) -Seite hinzu. 
+ * @since     5.5.1 Fügt die fehlenden Schaltflächen für "Vorherige" (‹) und "Nächste" (›) -Seite hinzu.
  * Die Schaltfläche für die aktuell ausgewählte Seite wird jetzt in beiden Themes (Hell und Dunkel) korrekt hervorgehoben.
  * @since     5.5.2 Nach Bearbeitung scrollt die Ansicht zur bearbeiteten Zeile, die zur Hervorhebung kurz aufleuchtet.
  * @since     5.5.3 Erstellt/Löscht automatisch die zugehörigen PHP-Dateien im /comic/-Ordner beim Speichern von Änderungen.
  * @since     5.5.4 Korrigiert den Inhalt neu erstellter PHP-Dateien auf die korrekte einzelne require_once-Anweisung.
  * @since     5.5.5 Behebt Fehler beim Löschen von Einträgen, Erstellen von PHP-Dateien und der Anzeige im "Neu"-Dialog.
  * @since     5.6.0 Passt die Charakter-Auswahl im Modal an die neue, dynamische Gruppenstruktur der charaktere.json an.
- * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs 
- *                   statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten. 
+ * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs
+ *                   statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten.
  *                   Stellt sicher, dass mehrfach zugeordnete Charaktere synchron ausgewählt werden.
  * @since     5.8.0 Anpassung an versionierte comic_var.json (Schema v2).
  * @since     5.9.0 Umstellung auf zentrale Pfad-Konstanten, direkte Verwendung und Bugfixes.
@@ -31,11 +32,11 @@
  * @since     7.1.0 Umstellung des AJAX-Handlers auf FormData zur Behebung des CSRF-Fehlers.
  * @since     7.1.1 Kleine Korrekturen im JS Teil
  * @since     7.2.0 Korrektur der Charakterbild-Anzeige
- * @since     7.2.1 Um die Benutzerfreundlichkeit im Comic-Daten-Editor zu verbessern, wurden die Haupt-Aktionsbuttons ("Neuer Eintrag" 
- *                   und "Änderungen speichern") dupliziert. Sie befinden sich nun sowohl oben (direkt über den Tabellen-Steuerelementen) 
- *                   als auch am bisherigen Platz am Ende der Seite. Dies reduziert den Scroll-Aufwand auf der Seite erheblich, da die 
+ * @since     7.2.1 Um die Benutzerfreundlichkeit im Comic-Daten-Editor zu verbessern, wurden die Haupt-Aktionsbuttons ("Neuer Eintrag"
+ *                   und "Änderungen speichern") dupliziert. Sie befinden sich nun sowohl oben (direkt über den Tabellen-Steuerelementen)
+ *                   als auch am bisherigen Platz am Ende der Seite. Dies reduziert den Scroll-Aufwand auf der Seite erheblich, da die
  *                   Aktionen immer schnell erreichbar sind, unabhängig davon, wo man sich gerade befindet.
- * @since     7.2.2 Aufbauend auf der Duplizierung der Aktionsbuttons wird nun auch die Status-Feedbackbox (`#message-box`) dupliziert. 
+ * @since     7.2.2 Aufbauend auf der Duplizierung der Aktionsbuttons wird nun auch die Status-Feedbackbox (`#message-box`) dupliziert.
  *                   Sie erscheint jetzt sowohl an ihrer ursprünglichen Position am Seitenende als auch neu direkt unter den oberen Aktionsbuttons.
  * @since     7.3.0 style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
  */
@@ -66,102 +67,73 @@ function getRelativePath(string $from, string $to): string
     $to = str_replace('\\', '/', $to);
     $from = explode('/', rtrim($from, '/'));
     $to = explode('/', rtrim($to, '/'));
-    $toFilename = array_pop($to); // Dateinamen für später aufheben
+    $toFilename = array_pop($to);
     while (count($from) && count($to) && ($from[0] == $to[0])) {
         array_shift($from);
         array_shift($to);
     }
-    $relativePath = str_repeat('../', count($from));
-    $relativePath .= implode('/', $to);
-    $relativePath .= '/' . $toFilename;
-    return $relativePath;
+    return str_repeat('../', count($from)) . implode('/', $to) . '/' . $toFilename;
 }
-
 function loadGeneratorSettings(string $filePath, bool $debugMode): array
 {
     $defaults = ['data_editor_comic' => ['last_run_timestamp' => null]];
     if (!file_exists($filePath)) {
-        $dir = dirname($filePath);
-        if (!is_dir($dir))
-            mkdir($dir, 0755, true);
+        if (!is_dir(dirname($filePath))) {
+            mkdir(dirname($filePath), 0755, true);
+        }
         file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
         return $defaults;
     }
     $content = file_get_contents($filePath);
     $settings = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE)
-        return $defaults;
-    if (!isset($settings['data_editor_comic']))
-        $settings['data_editor_comic'] = $defaults['data_editor_comic'];
-    return $settings;
+    return (json_last_error() !== JSON_ERROR_NONE || !isset($settings['data_editor_comic'])) ? $defaults : $settings;
 }
-
 function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
 {
-    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
-    return file_put_contents($filePath, $jsonContent) !== false;
+    return file_put_contents($filePath, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
 }
-
 function loadJsonData(string $path, bool $debugMode): array
 {
-    if (!file_exists($path) || filesize($path) === 0)
+    if (!file_exists($path) || filesize($path) === 0) {
         return [];
-    $content = file_get_contents($path);
-    if ($content === false)
-        return [];
-    $data = json_decode($content, true);
+    }
+    $data = json_decode(file_get_contents($path), true);
     return is_array($data) ? $data : [];
 }
-
 function loadCharacterDataWithSchema(string $path): array
 {
     $charData = loadJsonData($path, false);
     if (!isset($charData['schema_version']) || $charData['schema_version'] < 2) {
         return ['charactersById' => [], 'groupsWithChars' => [], 'schema_version' => 1];
     }
-    return [
-        'charactersById' => $charData['characters'] ?? [],
-        'groupsWithChars' => $charData['groups'] ?? [],
-        'schema_version' => $charData['schema_version']
-    ];
+    return ['charactersById' => $charData['characters'] ?? [], 'groupsWithChars' => $charData['groups'] ?? [], 'schema_version' => $charData['schema_version']];
 }
-
 function saveComicData(string $path, array $comics, bool $debugMode): bool
 {
-    // Sortiere die Comic-Daten selbst nach ID (Schlüssel)
     ksort($comics);
-    // Erstelle die finale Datenstruktur für Schema v2
-    $dataToSave = ['schema_version' => 2, 'comics' => $comics];
-    $jsonContent = json_encode($dataToSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-    if ($jsonContent === false)
-        return false;
-    return file_put_contents($path, $jsonContent) !== false;
+    return file_put_contents($path, json_encode(['schema_version' => 2, 'comics' => $comics], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) !== false;
 }
-
 function getComicIdsFromImages(array $dirs, bool $debugMode): array
 {
     $imageIds = [];
-    $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     foreach ($dirs as $dir) {
         if (is_dir($dir)) {
-            $files = scandir($dir);
-            foreach ($files as $file) {
-                $fileInfo = pathinfo($file);
-                if (isset($fileInfo['filename']) && preg_match('/^\d{8}$/', $fileInfo['filename']) && isset($fileInfo['extension']) && in_array(strtolower($fileInfo['extension']), $imageExtensions)) {
-                    $imageIds[$fileInfo['filename']] = true;
+            foreach (scandir($dir) as $file) {
+                $info = pathinfo($file);
+                if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), $exts)) {
+                    $imageIds[$info['filename']] = true;
                 }
             }
         }
     }
     return array_keys($imageIds);
 }
-
 function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
 {
     $phpIds = [];
     if (is_dir($pagesDir)) {
-        $files = scandir($pagesDir);
-        foreach ($files as $file) {
+        foreach (scandir($pagesDir) as $file) {
             if (pathinfo($file, PATHINFO_EXTENSION) === 'php' && preg_match('/^\d{8}$/', pathinfo($file, PATHINFO_FILENAME))) {
                 $phpIds[pathinfo($file, PATHINFO_FILENAME)] = true;
             }
@@ -169,109 +141,92 @@ function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
     }
     return array_keys($phpIds);
 }
-
 function get_image_cache_local(string $cachePath): array
 {
-    if (!file_exists($cachePath))
+    if (!file_exists($cachePath)) {
         return [];
-    $content = file_get_contents($cachePath);
-    if ($content === false)
-        return [];
-    $data = json_decode($content, true);
+    }
+    $data = json_decode(file_get_contents($cachePath), true);
     return is_array($data) ? $data : [];
 }
 
-
-// --- AJAX-Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verify_csrf_token(); // Zentralisierte CSRF-Prüfung
+    verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
-
     $action = $_POST['action'] ?? '';
-    $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
-
+    $response = ['success' => false, 'message' => 'Unbekannte Aktion.'];
     $comicVarJsonPath = Path::getDataPath('comic_var.json');
     $comicImageCacheJsonPath = Path::getCachePath('comic_image_cache.json');
     $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
 
     switch ($action) {
         case 'save_comic_data':
-            $comicDataToSaveStr = $_POST['comics'] ?? '[]';
-            $comicDataToSave = json_decode($comicDataToSaveStr, true);
-
+            $data = json_decode($_POST['comics'] ?? '[]', true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                $response['message'] = 'Fehler: Die übermittelten Comic-Daten sind kein gültiges JSON.';
+                $response['message'] = 'Ungültiges JSON.';
                 http_response_code(400);
                 break;
             }
+            $decodedCurrent = loadJsonData($comicVarJsonPath, $debugMode);
+            $currentData = (isset($decodedCurrent['schema_version']) && $decodedCurrent['schema_version'] >= 2) ? ($decodedCurrent['comics'] ?? []) : $decodedCurrent;
 
-            $decodedCurrentData = loadJsonData($comicVarJsonPath, $debugMode);
-            $currentData = (isset($decodedCurrentData['schema_version']) && $decodedCurrentData['schema_version'] >= 2) ? ($decodedCurrentData['comics'] ?? []) : $decodedCurrentData;
+            $newIds = array_keys(array_diff_key($data, $currentData));
+            $delIds = array_keys(array_diff_key($currentData, $data));
+            $created = 0;
+            $deleted = 0;
 
-            $newIds = array_keys(array_diff_key($comicDataToSave, $currentData));
-            $deletedIds = array_keys(array_diff_key($currentData, $comicDataToSave));
-
-            $createdCount = 0;
             foreach ($newIds as $id) {
-                $filePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
-                if (!file_exists($filePath)) {
-                    $relativePath = getRelativePath(DIRECTORY_PUBLIC_COMIC, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_comic_page.php');
-                    $phpContent = "<?php require_once __DIR__ . '/" . $relativePath . "'; ?>";
-                    if (file_put_contents($filePath, $phpContent) !== false) {
-                        $createdCount++;
+                $f = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
+                if (!file_exists($f)) {
+                    $rel = getRelativePath(DIRECTORY_PUBLIC_COMIC, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_comic_page.php');
+                    if (file_put_contents($f, "<?php require_once __DIR__ . '/" . $rel . "'; ?>") !== false) {
+                        $created++;
                     }
                 }
             }
-
-            $deletedCount = 0;
-            foreach ($deletedIds as $id) {
-                $filePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
-                if (file_exists($filePath) && unlink($filePath)) {
-                    $deletedCount++;
+            foreach ($delIds as $id) {
+                $f = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
+                if (file_exists($f) && unlink($f)) {
+                    $deleted++;
                 }
             }
 
-            if (saveComicData($comicVarJsonPath, $comicDataToSave, $debugMode)) {
-                $message = "Comic-Daten erfolgreich gespeichert!";
-                if ($createdCount > 0)
-                    $message .= " $createdCount PHP-Datei(en) erstellt.";
-                if ($deletedCount > 0)
-                    $message .= " $deletedCount PHP-Datei(en) gelöscht.";
-                $response = ['success' => true, 'message' => $message];
+            if (saveComicData($comicVarJsonPath, $data, $debugMode)) {
+                $response = [
+                    'success' => true,
+                    'message' => "Comic-Daten Gespeichert! $created PHP-Datei(en) erstellt, $deleted PHP-Datei(en) gelöscht."
+                ];
             } else {
-                $response['message'] = 'Fehler beim Speichern der Comic-Daten.';
+                $response['message'] = 'Fehler beim Speichern.';
                 http_response_code(500);
             }
             break;
-
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
-            $currentSettings['data_editor_comic']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
+            $s = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
+            $s['data_editor_comic']['last_run_timestamp'] = time();
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $s, $debugMode)) {
                 $response['success'] = true;
             }
             break;
-
-        case 'update_original_url_cache': // url_originalbild in cache schreiben/aktualisieren
-            $comicIdToUpdate = $_POST['comic_id'] ?? null;
-            $imageUrlToCache = $_POST['image_url'] ?? null;
-            $cacheKey = $_POST['cache_key'] ?? 'url_originalbild';
-
-            if ($comicIdToUpdate && $imageUrlToCache && in_array($cacheKey, ['url_originalbild', 'url_originalsketch'])) {
-                $currentCache = get_image_cache_local($comicImageCacheJsonPath);
-                if (!isset($currentCache[$comicIdToUpdate]))
-                    $currentCache[$comicIdToUpdate] = [];
-                $currentCache[$comicIdToUpdate][$cacheKey] = $imageUrlToCache;
-
-                if (file_put_contents($comicImageCacheJsonPath, json_encode($currentCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
-                    $response = ['success' => true, 'message' => "Cache für '$cacheKey' von $comicIdToUpdate aktualisiert."];
+        case 'update_original_url_cache':
+            $id = $_POST['comic_id'] ?? null;
+            $url = $_POST['image_url'] ?? null;
+            $key = $_POST['cache_key'] ?? 'url_originalbild';
+            if ($id && $url && in_array($key, ['url_originalbild', 'url_originalsketch'])) {
+                $cache = get_image_cache_local($comicImageCacheJsonPath);
+                if (!isset($cache[$id])) {
+                    $cache[$id] = [];
+                }
+                $cache[$id][$key] = $url;
+                if (file_put_contents($comicImageCacheJsonPath, json_encode($cache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+                    $response = ['success' => true, 'message' => 'Cache aktualisiert.'];
                 } else {
-                    $response['message'] = "Fehler beim Speichern der Cache-Datei.";
+                    $response['message'] = 'Fehler beim Cache-Speichern.';
                     http_response_code(500);
                 }
             } else {
-                $response['message'] = "Fehlende oder ungültige Daten zum Cachen der URL.";
+                $response['message'] = 'Ungültige Daten.';
                 http_response_code(400);
             }
             break;
@@ -282,15 +237,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
 $comicEditorSettings = $settings['data_editor_comic'];
-
 $decodedData = loadJsonData(Path::getDataPath('comic_var.json'), $debugMode);
 $jsonData = (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : $decodedData;
-
 $charaktereData = loadCharacterDataWithSchema(Path::getDataPath('charaktere.json'));
 $imageDirs = [DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, DIRECTORY_PUBLIC_IMG_COMIC_HIRES];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
 $phpIds = getComicIdsFromPhpFiles(DIRECTORY_PUBLIC_COMIC, $debugMode);
-
 $allIds = array_unique(array_merge(array_keys($jsonData), $imageIds, $phpIds));
 rsort($allIds);
 
@@ -308,22 +260,24 @@ foreach ($allIds as $id) {
     ];
     $fullComicData[$id] = array_merge($defaults, $jsonData[$id] ?? []);
     $sources = [];
-    if (isset($jsonData[$id]))
+    if (isset($jsonData[$id])) {
         $sources[] = 'json';
-    if (in_array($id, $imageIds))
+    }
+    if (in_array($id, $imageIds)) {
         $sources[] = 'image';
-    if (in_array($id, $phpIds))
+    }
+    if (in_array($id, $phpIds)) {
         $sources[] = 'php';
-    if (!empty($fullComicData[$id]['url_originalbild']))
+    }
+    if (!empty($fullComicData[$id]['url_originalbild'])) {
         $sources[] = 'url';
+    }
     $fullComicData[$id]['sources'] = $sources;
 }
-
 $cachedImagesForJs = get_image_cache_local(Path::getCachePath('comic_image_cache.json'));
-
 $placeholderUrl = Url::getImgLayoutThumbnailsUrl('placeholder.jpg');
 $loadingIconUrl = Url::getImgAdminUiUrl('loading.webp');
-$charProfileUrlBase = Url::getImgCharactersProfilesUrl(''); // NEU: Basispfad für Charakter-Profilbilder
+$charProfileUrlBase = Url::getImgCharactersProfilesUrl('');
 
 $pageTitle = 'Adminbereich - Comic Daten Editor';
 $pageHeader = 'Comic Daten Editor';
@@ -341,7 +295,7 @@ require_once Path::getPartialTemplatePath('header.php');
     <div class="content-section">
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if ($comicEditorSettings['last_run_timestamp']): ?>
+                <?php if ($comicEditorSettings['last_run_timestamp']) : ?>
                     <p class="status-message status-info">Letzte Speicherung am
                         <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
                     </p>
@@ -354,16 +308,13 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <div class="pagination"></div>
 
-        <!-- ##### HIER SIND DIE ZUSÄTZLICHEN BUTTONS (OBEN) ##### -->
         <div id="top-buttons-container"
             style="justify-content: flex-start; margin-top: 0; margin-bottom: 20px; display: flex; gap: 10px;">
             <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
             <button id="save-all-btn-top" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
         </div>
 
-        <!-- ##### HIER IST DIE ZUSÄTZLICHE MESSAGE-BOX (OBEN) ##### -->
         <div id="message-box-top" class="hidden-by-default"></div>
-        <!-- ##### ENDE DER ÄNDERUNG ##### -->
 
         <div class="table-controls">
             <div class="search-container">
@@ -373,31 +324,27 @@ require_once Path::getPartialTemplatePath('header.php');
             <div class="marker-legend-group">
                 <div class="marker-legend">
                     <strong>Quellen:</strong>
-                    <span class="source-marker source-json"
-                        title="Eintrag existiert in <?php echo 'comic_var.json' ?>">JSON</span>
-                    <span class="source-marker source-image"
-                        title="Mindestens eine Bilddatei existiert lokal">Bild</span>
-                    <span class="source-marker source-php"
-                        title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
+                    <span class="source-marker source-json" title="Eintrag existiert in <?php echo 'comic_var.json' ?>">JSON</span>
+                    <span class="source-marker source-image" title="Mindestens eine Bilddatei existiert lokal">Bild</span>
+                    <span class="source-marker source-php" title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
                     <span class="source-marker source-url" title="Ein Originalbild ist via URL verknüpft">URL</span>
                 </div>
                 <div class="marker-legend">
                     <strong>Status:</strong>
-                    <span class="source-marker status-json present"
-                        title="JSON-Daten vollständig (Name, Transkript, etc.)">J</span>
-                    <span class="source-marker status-lowres present" title="Low-Res Bild">L</span>
-                    <span class="source-marker status-hires present" title="High-Res Bild">H</span>
-                    <span class="source-marker status-php present" title="PHP-Datei">P</span>
-                    <span class="source-marker status-socialmedia present" title="Social Media Bild">S</span>
-                    <span class="source-marker status-thumbnails present" title="Thumbnail">T</span>
-                    <span class="source-marker source-url present" title="URL zum Originalbild">U</span>
-                    <span class="source-marker status-charaktere present" title="Charaktere zugewiesen">C</span>
+                    <span class="status-icon status-json present" title="JSON-Daten vollständig (Name, Transkript, etc.)">J</span>
+                    <span class="status-icon status-lowres present" title="Low-Res Bild">L</span>
+                    <span class="status-icon status-hires present" title="High-Res Bild">H</span>
+                    <span class="status-icon status-php present" title="PHP-Datei">P</span>
+                    <span class="status-icon status-socialmedia present" title="Social Media Bild">S</span>
+                    <span class="status-icon status-thumbnails present" title="Thumbnail">T</span>
+                    <span class="status-icon status-url present" title="URL zum Originalbild">U</span>
+                    <span class="status-icon status-charaktere present" title="Charaktere zugewiesen">C</span>
                 </div>
             </div>
         </div>
 
         <div class="sitemap-table-container">
-            <table class="sitemap-table" id="comic-table">
+            <table class="admin-table comic-editor-table" id="comic-table">
                 <thead>
                     <tr>
                         <th>ID & Quellen</th>
@@ -416,7 +363,6 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <div id="save-confirmation-box" class="hidden-by-default"></div>
 
-        <!-- ##### HIER SIND DIE ORIGINAL-BUTTONS (UNTEN) ##### -->
         <div id="fixed-buttons-container">
             <button id="add-row-btn" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
             <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
@@ -424,20 +370,16 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <br>
 
-        <!-- ##### HIER IST DIE ORIGINALE MESSAGE-BOX (UNTEN) ##### -->
         <div id="message-box" class="hidden-by-default"></div>
     </div>
 </article>
 
 <div id="edit-modal" class="modal hidden-by-default">
-    <div class="modal-content">
-        <!-- HEADER Bereich -->
+    <div class="modal-content modal-advanced-layout">
         <div class="modal-header-wrapper">
-            <span class="close-button">&times;</span>
             <h2 id="modal-title-header">Eintrag bearbeiten</h2>
+            <span class="close-button modal-close">&times;</span>
         </div>
-
-        <!-- SCROLLBARER INHALT -->
         <div class="modal-scroll-content">
             <div class="form-group"><label>Comic ID:</label><input type="text" id="modal-comic-id"></div>
             <div class="form-group"><label for="modal-type">Typ:</label><select id="modal-type">
@@ -453,7 +395,7 @@ require_once Path::getPartialTemplatePath('header.php');
             <div class="form-group"><label for="modal-url-sketch">Originalskizze Dateiname:</label><input type="text"
                     id="modal-url-sketch"></div>
 
-            <div id="modal-image-preview-section">
+            <div id="modal-image-preview-section" class="image-preview-section">
                 <div id="modal-image-controls" class="button-toggle-group">
                     <button class="button-toggle active" data-view="de">Deutsch</button>
                     <button class="button-toggle" data-view="en">Englisch</button>
@@ -477,636 +419,19 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
 
             <div id="modal-charaktere-section">
-                <!-- Charakterauswahl wird hier per JS eingefügt -->
             </div>
         </div>
-
-        <!-- FOOTER Bereich (Buttons) -->
         <div class="modal-footer-actions">
             <div class="modal-buttons">
-                <button id="modal-save-btn" class="button">Übernehmen</button>
+                <button id="modal-save-btn" class="button button-green">Übernehmen</button>
                 <button id="modal-cancel-btn" class="button delete">Abbrechen</button>
             </div>
         </div>
     </div>
 </div>
 
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    :root {
-        --missing-grid-border-color: #e0e0e0;
-        /* Helle Theme Variablen für Modal */
-        --modal-bg-color: #fefefe;
-        --modal-border-color: #888;
-        --modal-text-color: #333;
-    }
-
-    body.theme-night {
-        --missing-grid-border-color: #045d81;
-        /* Dunkle Theme Variablen für Modal */
-        --modal-bg-color: #00425c;
-        --modal-border-color: #007bb5;
-        --modal-text-color: #f0f0f0;
-    }
-
-    .status-message {
-        padding: 10px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-
-    .status-green {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
-    .status-red {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    .status-info {
-        background-color: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
-    }
-
-    .status-orange {
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
-    }
-
-    .sitemap-table-container {
-        overflow-x: auto;
-    }
-
-    .sitemap-table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-    }
-
-    .sitemap-table th,
-    .sitemap-table td {
-        padding: 8px;
-        border-bottom: 1px solid var(--missing-grid-border-color);
-        text-align: left;
-        vertical-align: middle;
-        word-wrap: break-word;
-    }
-
-    .sitemap-table th:nth-child(1),
-    .sitemap-table td:nth-child(1) {
-        width: 10%;
-    }
-
-    /* ID */
-    .sitemap-table th:nth-child(2),
-    .sitemap-table td:nth-child(2) {
-        width: 120px;
-    }
-
-    /* Vorschau */
-    .sitemap-table th:nth-child(3),
-    .sitemap-table td:nth-child(3) {
-        width: 25%;
-    }
-
-    /* Name */
-    .sitemap-table th:nth-child(4),
-    .sitemap-table td:nth-child(4) {
-        width: 35%;
-    }
-
-    /* Transkript */
-    .sitemap-table th:nth-child(5),
-    .sitemap-table td:nth-child(5) {
-        width: 15%;
-    }
-
-    /* Status */
-    .sitemap-table th:nth-child(6),
-    .sitemap-table td:nth-child(6) {
-        width: 100px;
-    }
-
-    /* Aktionen */
-
-    body.theme-night .sitemap-table {
-        color: #f0f0f0;
-    }
-
-    .description-preview {
-        max-height: 5em;
-        overflow: auto;
-        border: 1px solid #eee;
-        padding: 5px;
-        border-radius: 3px;
-    }
-
-    body.theme-night .description-preview {
-        border-color: #045d81;
-    }
-
-    .missing-info {
-        border: 2px solid #dc3545 !important;
-        background-color: #f8d7da33 !important;
-    }
-
-    .comic-thumbnail {
-        max-width: 100px;
-        height: auto;
-        border-radius: 4px;
-        display: block;
-        margin-top: 5px;
-    }
-
-    .comic-type-display {
-        font-size: 0.8em;
-        font-style: italic;
-        display: block;
-    }
-
-    #fixed-buttons-container {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 20px;
-        gap: 10px;
-    }
-
-    .hidden-by-default {
-        display: none;
-    }
-
-    .source-markers,
-    .status-icons {
-        display: flex;
-        gap: 4px;
-        flex-wrap: wrap;
-        margin-top: 5px;
-    }
-
-    .source-marker,
-    .status-icon {
-        font-size: 0.7em;
-        padding: 2px 6px;
-        border-radius: 10px;
-        font-weight: bold;
-        color: white;
-        line-height: 1.5;
-    }
-
-    .source-json,
-    .status-json {
-        background-color: #6c757d;
-    }
-
-    .source-image {
-        background-color: #007bff;
-    }
-
-    .status-lowres {
-        background-color: #007bff;
-    }
-
-    .status-hires {
-        background-color: #0056b3;
-    }
-
-    .source-php,
-    .status-php {
-        background-color: #28a745;
-    }
-
-    .source-url,
-    .status-url {
-        background-color: #9f58d1;
-    }
-
-    .status-socialmedia {
-        background-color: #fd7e14;
-    }
-
-    .status-thumbnails {
-        background-color: #ffc107;
-        color: #333;
-    }
-
-    .status-charaktere {
-        background-color: #6f42c1;
-    }
-
-    .status-icon.present {
-        background-color: #28a745;
-    }
-
-    .status-icon.missing {
-        background-color: #dc3545;
-    }
-
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 20px 0;
-        gap: 5px;
-        flex-wrap: wrap;
-    }
-
-    .pagination a,
-    .pagination span {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        text-decoration: none;
-        color: #007bff;
-        cursor: pointer;
-    }
-
-    .pagination span.current-page {
-        background-color: #007bff;
-        color: white;
-        border-color: #007bff;
-        cursor: default;
-    }
-
-    body.theme-night .pagination a,
-    body.theme-night .pagination span {
-        border-color: #005a7e;
-        color: #7bbdff;
-        background-color: #00425c;
-    }
-
-    body.theme-night .pagination span.current-page {
-        background-color: #007bff;
-        color: white;
-        border-color: #007bff;
-    }
-
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 101;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        /* Flexbox für Zentrierung des gesamten Modals */
-        display: none; /* Initial versteckt, wird per JS auf flex gesetzt */
-        justify-content: center;
-        align-items: center;
-        padding: 20px; /* Abstand zum Bildschirmrand */
-        box-sizing: border-box;
-    }
-
-    .modal-content {
-        background-color: var(--modal-bg-color);
-        color: var(--modal-text-color);
-        margin: auto;
-        /* Padding wurde entfernt zugunsten der Flex-Kinder */
-        padding: 0; 
-        border-radius: 8px;
-        width: 100%;
-        max-width: 1045px;
-        position: relative;
-        /* WICHTIG für Sticky Footer: Flexbox Column und max-height */
-        display: flex;
-        flex-direction: column;
-        max-height: 90vh; /* Maximale Höhe des Modals (90% des Viewports) */
-        overflow: hidden; /* Verhindert doppelte Scrollbalken am Hauptcontainer */
-        border: 1px solid var(--modal-border-color);
-    }
-
-    /* NEU: Header Bereich (Titel + Close) */
-    .modal-header-wrapper {
-        padding: 20px 20px 10px 20px;
-        flex-shrink: 0; /* Darf nicht schrumpfen */
-        background-color: var(--modal-bg-color); /* Überdeckt Inhalt beim Scrollen */
-        border-bottom: 1px solid var(--missing-grid-border-color);
-        position: relative; /* Für Close-Button Positionierung */
-    }
-
-    /* NEU: Scrollbarer Inhaltsbereich */
-    .modal-scroll-content {
-        padding: 20px;
-        overflow-y: auto; /* Hier findet das Scrollen statt */
-        flex-grow: 1; /* Nimmt den verfügbaren Platz ein */
-    }
-
-    /* NEU: Footer Bereich (Buttons) */
-    .modal-footer-actions {
-        padding: 15px 20px;
-        flex-shrink: 0; /* Darf nicht schrumpfen */
-        background-color: var(--modal-bg-color); /* Wichtig für "schwebenden" Effekt */
-        border-top: 1px solid var(--missing-grid-border-color);
-        z-index: 10;
-    }
-
-    @keyframes highlight-row {
-        from {
-            background-color: #d4edda;
-        }
-
-        to {
-            background-color: transparent;
-        }
-    }
-
-    .row-highlight {
-        animation: highlight-row 8s ease-out;
-    }
-
-    body.theme-night .row-highlight {
-        animation: highlight-row-dark 8s ease-out;
-    }
-
-    @keyframes highlight-row-dark {
-        from {
-            background-color: #1a4d2e;
-        }
-
-        to {
-            background-color: transparent;
-        }
-    }
-
-    /* Alte modal-content Anpassung für Night Theme ist nun über Variablen gelöst, 
-       aber Ränder definieren wir sicherheitshalber global oben in Root/Body */
-
-    .close-button {
-        color: #aaa;
-        position: absolute;
-        right: 15px;
-        top: 10px;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .modal-buttons {
-        /* Margin top entfernt, da Padding im Container */
-        margin-top: 0; 
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-        width: 100%;
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-    }
-
-    body.theme-night .form-group input,
-    body.theme-night .form-group textarea,
-    body.theme-night .form-group select {
-        background-color: #03425b;
-        border-color: #045d81;
-        color: #f0f0f0;
-    }
-
-    body.theme-night .note-editor.note-frame {
-        background-color: #00425c;
-    }
-
-    body.theme-night .note-toolbar {
-        background-color: #005a7e;
-        border-bottom: 1px solid #007bb5;
-    }
-
-    body.theme-night .note-btn {
-        background-color: #006690;
-        color: #fff;
-        border-color: #007bb5;
-    }
-
-    body.theme-night .note-editable {
-        background-color: #00425c;
-        color: #f0f0f0;
-    }
-
-    body.theme-night .note-statusbar {
-        border-top: 1px solid #007bb5;
-    }
-
-    .note-tooltip {
-        width: auto !important;
-        height: auto !important;
-        min-height: 0 !important;
-        left: auto !important;
-        right: auto !important;
-        line-height: 1.2 !important;
-        padding: 5px;
-        white-space: nowrap;
-    }
-
-    .banner,
-    body.theme-night #banner,
-    #banner-lights-off {
-        z-index: 99 !important;
-    }
-
-    .note-modal-backdrop {
-        z-index: 100;
-    }
-
-    .table-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-        flex-wrap: wrap;
-        gap: 20px;
-        /* Erhöhter Abstand */
-    }
-
-    .search-container {
-        display: flex;
-        gap: 5px;
-        align-items: center;
-    }
-
-    #search-input {
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-    }
-
-    body.theme-night #search-input {
-        background-color: #03425b;
-        border-color: #045d81;
-        color: #f0f0f0;
-    }
-
-    #clear-search-btn {
-        padding: 5px 10px;
-    }
-
-    .marker-legend-group {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    #modal-image-preview-section {
-        margin-top: 20px;
-        text-align: center;
-    }
-
-    .button-toggle-group {
-        display: inline-flex;
-        justify-content: center;
-        gap: 0;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        overflow: hidden;
-        margin-bottom: 15px;
-    }
-
-    .button-toggle {
-        padding: 8px 15px;
-        border: none;
-        background-color: #f0f0f0;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        color: #333;
-        margin: 0;
-        border-radius: 0;
-    }
-
-    .button-toggle:not(:last-child) {
-        border-right: 1px solid #ccc;
-    }
-
-    .button-toggle:hover {
-        background-color: #e0e0e0;
-    }
-
-    .button-toggle.active {
-        background-color: #007bff;
-        color: white;
-    }
-
-    body.theme-night .button-toggle-group {
-        border-color: #007bb5;
-    }
-
-    body.theme-night .button-toggle {
-        background-color: #005a7e;
-        color: #fff;
-        border-right-color: #007bb5;
-    }
-
-    body.theme-night .button-toggle:hover {
-        background-color: #006690;
-    }
-
-    body.theme-night .button-toggle.active {
-        background-color: #007bff;
-    }
-
-    #modal-image-previews {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-    }
-
-    .image-preview-box {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .image-preview-box img {
-        max-width: 500px;
-        height: auto;
-        max-height: 100%;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-    }
-
-    body.theme-night .image-preview-box img {
-        border-color: #045d81;
-    }
-
-    #modal-charaktere-section {
-        margin-top: 20px;
-        border-top: 1px solid var(--missing-grid-border-color);
-        padding-top: 15px;
-    }
-
-    .charakter-kategorie {
-        margin-bottom: 15px;
-    }
-
-    .charakter-kategorie h3 {
-        margin-bottom: 10px;
-        font-size: 1.1em;
-        border-bottom: 1px solid var(--missing-grid-border-color);
-        padding-bottom: 5px;
-    }
-
-    .charaktere-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .charakter-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        cursor: pointer;
-        width: 80px;
-        /* Breite für konsistentes Layout */
-        text-align: center;
-    }
-
-    .charakter-item img {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid transparent;
-        transition: border-color 0.3s, filter 0.3s;
-    }
-
-    .charakter-item:not(.active) img {
-        filter: grayscale(100%);
-    }
-
-    .charakter-item.active img {
-        border-color: #007bff;
-        filter: grayscale(0%);
-    }
-
-    .charakter-item span {
-        margin-top: 5px;
-        font-size: 0.8em;
-        word-break: break-word;
-    }
-</style>
-
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         let comicData = <?php echo json_encode($fullComicData, JSON_UNESCAPED_SLASHES); ?>;
         let allComicIds = Object.keys(comicData);
@@ -1162,8 +487,29 @@ require_once Path::getPartialTemplatePath('header.php');
         }
 
         $('#modal-transcript').summernote({
-            placeholder: "Transkript hier eingeben...", tabsize: 2, height: 200,
-            toolbar: [['style', ['style']], ['font', ['bold', 'italic', 'underline', 'clear']], ['para', ['ul', 'ol', 'paragraph']], ['insert', ['link']], ['view', ['codeview']]],
+            placeholder: "Transkript hier eingeben...",
+            tabsize: 2,
+            height: 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link']],
+                ['view', ['codeview']]
+            ],
+        });
+
+        $('#modal-transcript').summernote({
+            placeholder: "Transkript hier eingeben...",
+            tabsize: 2,
+            height: 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['insert', ['link']],
+                ['view', ['codeview']]
+            ],
         });
 
         const renderTable = () => {
@@ -1225,7 +571,7 @@ require_once Path::getPartialTemplatePath('header.php');
                         <span class="status-icon ${hasCharacters ? 'present' : 'missing'}" title="Charaktere zugewiesen">C</span>
                     </div>
                 </td>
-                <td class="action-buttons">
+                <td class="actions-cell">
                     <button class="button edit-row-btn"><i class="fas fa-edit"></i></button>
                     <button class="button delete-row-btn"><i class="fas fa-trash-alt"></i></button>
                 </td>
@@ -1235,17 +581,14 @@ require_once Path::getPartialTemplatePath('header.php');
             renderPagination();
         };
 
-        // ##### JS ÄNDERUNG: showMessage aktualisiert BEIDE Boxen #####
         function showMessage(message, type, duration = 5000) {
-            const boxes = [messageBox, messageBoxTop]; // Array mit beiden Boxen
-
+            const boxes = [messageBox, messageBoxTop];
             boxes.forEach(box => {
-                if (!box) return; // Sicherheitscheck
+                if (!box) return;
                 box.textContent = message;
                 box.className = `status-message status-${type}`;
                 box.style.display = 'block';
             });
-
             if (duration > 0) {
                 setTimeout(() => {
                     boxes.forEach(box => {
@@ -1254,11 +597,14 @@ require_once Path::getPartialTemplatePath('header.php');
                 }, duration);
             }
         }
-        // ##### ENDE JS ÄNDERUNG #####
 
         function updateTimestamp() {
             const now = new Date();
-            const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const date = now.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
             const time = now.toLocaleTimeString('de-DE');
             const newStatusText = `Letzte Speicherung am ${date} um ${time} Uhr.`;
             let pElement = lastRunContainer.querySelector('.status-message');
@@ -1294,21 +640,14 @@ require_once Path::getPartialTemplatePath('header.php');
                 let endPage = Math.min(totalPages, currentPage + 4);
                 if (startPage > 1) {
                     htmlParts.push(`<a data-page="1">1</a>`);
-                    if (startPage > 2) {
-                        htmlParts.push(`<span>...</span>`);
-                    }
+                    if (startPage > 2) htmlParts.push(`<span>...</span>`);
                 }
                 for (let i = startPage; i <= endPage; i++) {
-                    if (i === currentPage) {
-                        htmlParts.push(`<span class="current-page">${i}</span>`);
-                    } else {
-                        htmlParts.push(`<a data-page="${i}">${i}</a>`);
-                    }
+                    if (i === currentPage) htmlParts.push(`<span class="current-page">${i}</span>`);
+                    else htmlParts.push(`<a data-page="${i}">${i}</a>`);
                 }
                 if (endPage < totalPages) {
-                    if (endPage < totalPages - 1) {
-                        htmlParts.push(`<span>...</span>`);
-                    }
+                    if (endPage < totalPages - 1) htmlParts.push(`<span>...</span>`);
                     htmlParts.push(`<a data-page="${totalPages}">${totalPages}</a>`);
                 }
                 if (currentPage < totalPages) {
@@ -1319,7 +658,89 @@ require_once Path::getPartialTemplatePath('header.php');
             });
         };
 
-        // Alte showMessage-Funktion entfernt (war doppelt)
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            clearSearchBtn.style.display = searchTerm ? 'inline-block' : 'none';
+            if (!searchTerm) {
+                filteredComicIds = [...allComicIds];
+            } else {
+                filteredComicIds = allComicIds.filter(id => {
+                    const comic = comicData[id];
+                    const name = comic.name ? comic.name.toLowerCase() : '';
+                    return id.includes(searchTerm) || name.includes(searchTerm);
+                });
+            }
+            currentPage = 1;
+            renderTable();
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+        });
+
+        document.getElementById('modal-url').addEventListener('input', updateImagePreviewsWithDebounce);
+        document.getElementById('modal-url-sketch').addEventListener('input', updateImagePreviewsWithDebounce);
+
+        modalSaveBtn.addEventListener('click', () => {
+            let idToUpdate;
+            let isNewEntry = false;
+            if (activeEditId && activeEditId !== 'new_entry') {
+                idToUpdate = activeEditId;
+            } else {
+                isNewEntry = true;
+                const newId = document.getElementById('modal-comic-id').value;
+                if (!/^\d{8}$/.test(newId)) {
+                    alert('Bitte geben Sie eine gültige ID im Format JJJJMMTT ein.');
+                    return;
+                }
+                if (comicData[newId]) {
+                    alert('Diese ID existiert bereits.');
+                    return;
+                }
+                idToUpdate = newId;
+                comicData[idToUpdate] = {
+                    ...comicData['new_entry']
+                };
+                delete comicData['new_entry'];
+                if (!allComicIds.includes(idToUpdate)) {
+                    allComicIds.push(idToUpdate);
+                    const searchTerm = searchInput.value.toLowerCase().trim();
+                    if (!searchTerm || idToUpdate.includes(searchTerm)) filteredComicIds.push(idToUpdate);
+                }
+            }
+            comicData[idToUpdate].type = document.getElementById('modal-type').value;
+            comicData[idToUpdate].name = document.getElementById('modal-name').value;
+            comicData[idToUpdate].transcript = $('#modal-transcript').summernote('code');
+            comicData[idToUpdate].chapter = document.getElementById('modal-chapter').value;
+            comicData[idToUpdate].url_originalbild = document.getElementById('modal-url').value;
+            comicData[idToUpdate].url_originalsketch = document.getElementById('modal-url-sketch').value;
+            comicData[idToUpdate].datum = idToUpdate;
+            if (isNewEntry) comicData[idToUpdate].sources = ['json'];
+            renderTable();
+            editModal.style.display = 'none';
+            const updatedRow = tableBody.querySelector(`tr[data-id="${idToUpdate}"]`);
+            if (updatedRow) {
+                updatedRow.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                updatedRow.classList.add('row-highlight');
+                setTimeout(() => {
+                    updatedRow.classList.remove('row-highlight');
+                }, 8000);
+            }
+            activeEditId = null;
+            showMessage('Änderung zwischengespeichert. Klicken Sie auf "Änderungen speichern", um sie permanent zu machen.', 'orange', 10000);
+        });
+
+        const cancelAction = () => {
+            if (activeEditId === 'new_entry') delete comicData['new_entry'];
+            editModal.style.display = 'none';
+            activeEditId = null;
+        };
+        modalCancelBtn.addEventListener('click', cancelAction);
+        modalCloseBtn.addEventListener('click', cancelAction);
 
         function updateTimestamp() {
             const now = new Date();
@@ -1655,100 +1076,6 @@ require_once Path::getPartialTemplatePath('header.php');
                 }
             });
         });
-
-        searchInput.addEventListener('input', () => {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            clearSearchBtn.style.display = searchTerm ? 'inline-block' : 'none';
-
-            if (!searchTerm) {
-                filteredComicIds = [...allComicIds];
-            } else {
-                filteredComicIds = allComicIds.filter(id => {
-                    const comic = comicData[id];
-                    const name = comic.name ? comic.name.toLowerCase() : '';
-                    return id.includes(searchTerm) || name.includes(searchTerm);
-                });
-            }
-            currentPage = 1;
-            renderTable();
-        });
-
-        clearSearchBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input'));
-        });
-
-        document.getElementById('modal-url').addEventListener('input', updateImagePreviewsWithDebounce);
-        document.getElementById('modal-url-sketch').addEventListener('input', updateImagePreviewsWithDebounce);
-
-        modalSaveBtn.addEventListener('click', () => {
-            let idToUpdate;
-            let isNewEntry = false;
-
-            if (activeEditId && activeEditId !== 'new_entry') {
-                idToUpdate = activeEditId;
-            } else {
-                isNewEntry = true;
-                const newId = document.getElementById('modal-comic-id').value;
-                if (!/^\d{8}$/.test(newId)) {
-                    alert('Bitte geben Sie eine gültige ID im Format JJJJMMTT ein.');
-                    return;
-                }
-                if (comicData[newId]) {
-                    alert('Diese ID existiert bereits.');
-                    return;
-                }
-                idToUpdate = newId;
-
-                comicData[idToUpdate] = { ...comicData['new_entry'] };
-                delete comicData['new_entry'];
-
-                if (!allComicIds.includes(idToUpdate)) {
-                    allComicIds.push(idToUpdate);
-                    const searchTerm = searchInput.value.toLowerCase().trim();
-                    if (!searchTerm || idToUpdate.includes(searchTerm)) {
-                        filteredComicIds.push(idToUpdate);
-                    }
-                }
-            }
-
-            comicData[idToUpdate].type = document.getElementById('modal-type').value;
-            comicData[idToUpdate].name = document.getElementById('modal-name').value;
-            comicData[idToUpdate].transcript = $('#modal-transcript').summernote('code');
-            comicData[idToUpdate].chapter = document.getElementById('modal-chapter').value;
-            comicData[idToUpdate].url_originalbild = document.getElementById('modal-url').value;
-            comicData[idToUpdate].url_originalsketch = document.getElementById('modal-url-sketch').value;
-            comicData[idToUpdate].datum = idToUpdate;
-
-            if (isNewEntry) {
-                comicData[idToUpdate].sources = ['json'];
-            }
-
-            renderTable();
-            editModal.style.display = 'none';
-
-            const updatedRow = tableBody.querySelector(`tr[data-id="${idToUpdate}"]`);
-            if (updatedRow) {
-                updatedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                updatedRow.classList.add('row-highlight');
-                setTimeout(() => {
-                    updatedRow.classList.remove('row-highlight');
-                }, 8000);
-            }
-
-            activeEditId = null;
-            showMessage('Änderung zwischengespeichert. Klicken Sie auf "Änderungen speichern", um sie permanent zu machen.', 'orange', 10000);
-        });
-
-        const cancelAction = () => {
-            if (activeEditId === 'new_entry') {
-                delete comicData['new_entry'];
-            }
-            editModal.style.display = 'none';
-            activeEditId = null;
-        };
-        modalCancelBtn.addEventListener('click', cancelAction);
-        modalCloseBtn.addEventListener('click', cancelAction);
 
         renderTable();
     });
