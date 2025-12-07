@@ -254,7 +254,7 @@
         gap: 5px;
 
         img {
-            max-width: 500px;
+            max-width: 100vh;
             height: auto;
             max-height: 100%;
             border-radius: 4px;
@@ -355,46 +355,58 @@
     }
 }
 
-/* --- Report Modal Images (Side-by-Side) --- */
-.report-images-container {
+/* --- Unified Image Preview Layout (Admin & Report) --- */
+.report-images-container,
+#modal-image-previews {
     display: flex;
     flex-flow: row nowrap; // Zwingt Elemente nebeneinander (kein Umbruch)
     gap: 15px; // Abstand zwischen den Bildern
     margin-top: 15px;
     width: 100%; // Nutzt die volle Breite des Modals
+    justify-content: center; // Falls mal nichts da ist, zentrieren
 
-    div {
-        flex: 1 1 0; // Beide Container wachsen gleichmäßig (50% Breite)
-        width: 0; // Fix für Flexbox in manchen Browsern, um Overflow zu verhindern
+    // Die Kinder-Elemente (Wrapper um Bild & Label)
+    // .image-preview-box ist für Admin, div für Report
+    > div,
+    .image-preview-box {
+        // "Die Magie":
+        // 1 = Wachsen (Nimm Platz), 1 = Schrumpfen, 0 = Basis
+        // Wenn 1 Element sichtbar ist -> 100% Breite
+        // Wenn 2 Elemente sichtbar sind -> 50% Breite (exakt gleich)
+        flex: 1; // Beide Container wachsen gleichmäßig (50% Breite)
+        width: 0; // Fix für manche Browser, damit Flex-Basis 0 greift
+
+        min-width: 0;
+
+        // Eigenes Layout (Label oben, Bild unten)
         display: flex;
         flex-direction: column;
     }
 
-    label {
+    // Beschriftungen (Report nutzt label, Admin nutzt p)
+    label,
+    p {
         text-align: center;
         margin-bottom: 5px;
         font-weight: bold;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: var(--text-color);
     }
 
     img {
-        width: 100%; // Füllt den Container komplett aus
-        height: auto; // Behält das Seitenverhältnis bei
-        object-fit: contain;
+        width: 100%; // Füllt den Wrapper aus
+        height: auto; // Verhältnis beibehalten
+        object-fit: contain; // Bild immer ganz zeigen
         border: 1px solid var(--border-medium);
         border-radius: 4px;
         align-self: flex-start; // Richtet Bilder oben bündig aus
+        background-color: var(--content-area-bg); // Neutraler Hintergrund
 
         body.theme-night & {
             border-color: var(--border-light);
-            background-color: rgba(
-                0,
-                0,
-                0,
-                0.2
-            ); // Leichter Hintergrund für transparente Bilder
+            background-color: rgba(0, 0, 0, 0.2);
         }
     }
 }
