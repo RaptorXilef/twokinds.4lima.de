@@ -25,6 +25,7 @@
  *  - Diverse Fehlerbehebungen (Löschen, "Neu"-Dialog, JS-Optimierungen, Bildanzeige).
  * @since     5.0.0
  *  - style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
+ *  - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_COMIC_DESCRIPTION) hinzugefügt.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -34,9 +35,16 @@ $debugMode = $debugMode ?? false;
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // === VARIABLEN ===
-if (!defined('COMIC_PAGES_PER_PAGE')) {
-    define('COMIC_PAGES_PER_PAGE', 50);
+if (!defined('ENTRIES_PER_PAGE_COMIC')) {
+    define('ENTRIES_PER_PAGE_COMIC', 50);
 }
+
+// Konfiguration für Textkürzung (Standard: False = Alles anzeigen)
+if (!defined('TRUNCATE_COMIC_DESCRIPTION')) {
+    define('TRUNCATE_COMIC_DESCRIPTION', false);
+}
+// Übergabe an JS
+$truncateTextJs = TRUNCATE_COMIC_DESCRIPTION ? 'true' : 'false';
 
 
 // --- HILFSFUNKTIONEN ---
@@ -306,6 +314,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <div class="pagination" style="margin-bottom: 20px;"></div>
 
+        <!-- Paginierung Info -->
+        <div class="marker-legend" style="flex-basis: 100%; margin-top: 5px; text-align: right;">
+            <small>Zeigt <?php echo ENTRIES_PER_PAGE_COMIC; ?> Einträge pro Seite.</small>
+        </div>
+
         <div class="table-controls actions-bar">
             <div class="top-actions">
                 <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
@@ -426,11 +439,15 @@ require_once Path::getPartialTemplatePath('header.php');
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
+        // Daten
         let comicData = <?php echo json_encode($fullComicData, JSON_UNESCAPED_SLASHES); ?>;
         let allComicIds = Object.keys(comicData);
         let filteredComicIds = [...allComicIds];
         let cachedImages = <?php echo json_encode($cachedImagesForJs, JSON_UNESCAPED_SLASHES); ?>;
         const charaktereInfo = <?php echo json_encode($charaktereData, JSON_UNESCAPED_SLASHES); ?>;
+
+        // Konstanten
+        const TRUNCATE_TEXT = <?php echo $truncateTextJs; ?>;
         const allCharactersData = charaktereInfo.charactersById;
         const characterGroups = charaktereInfo.groupsWithChars;
         const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
@@ -449,10 +466,7 @@ require_once Path::getPartialTemplatePath('header.php');
         // ##### ENDE JS ÄNDERUNG #####
 
         const messageBox = document.getElementById('message-box'); // Unten
-
-        // ##### JS ÄNDERUNG: OBERE MESSAGE-BOX AUSWÄHLEN #####
         const messageBoxTop = document.getElementById('message-box-top'); // Oben
-        // ##### ENDE JS ÄNDERUNG #####
 
         const lastRunContainer = document.getElementById('last-run-container');
         const paginationContainers = document.querySelectorAll('.pagination');
@@ -471,26 +485,13 @@ require_once Path::getPartialTemplatePath('header.php');
         let activeEditId = null;
         let debounceTimer;
 
-        const ITEMS_PER_PAGE = <?php echo COMIC_PAGES_PER_PAGE; ?>;
+        const ITEMS_PER_PAGE = <?php echo ENTRIES_PER_PAGE_COMIC; ?>;
         let currentPage = 1;
 
         if (charaktereInfo.schema_version < 2) {
             showMessage("Fehler: Veraltetes `charaktere.json`-Format. Bitte migrieren.", 'red', 0);
             return;
         }
-
-        $('#modal-transcript').summernote({
-            placeholder: "Transkript hier eingeben...",
-            tabsize: 2,
-            height: 200,
-            toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'italic', 'underline', 'clear']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['insert', ['link']],
-                ['view', ['codeview']]
-            ],
-        });
 
         $('#modal-transcript').summernote({
             placeholder: "Transkript hier eingeben...",
@@ -518,8 +519,35 @@ require_once Path::getPartialTemplatePath('header.php');
                 const row = document.createElement('tr');
                 row.dataset.id = id;
 
-                const descPreview = new DOMParser().parseFromString(chapter.transcript || '', 'text/html').body;
-                descPreview.querySelectorAll('script, style').forEach(el => el.remove());
+                // --- TRANSCRIPT RENDERING LOGIC ---
+                // Original Logik: Volltext
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = chapter.transcript || '';
+                // Sicherheit: Scripts/Styles entfernen
+                tempDiv.querySelectorAll('script, style').forEach(el => el.remove());
+
+                let displayContent = '';
+
+                if (TRUNCATE_TEXT) {
+                    // Falls Kürzung aktiv: Nur Text extrahieren und abschneiden
+                    let text = tempDiv.textContent || tempDiv.innerText || '';
+                    if (text.length > 100) {
+                        text = text.substring(0, 100) + '...';
+                    }
+                    displayContent = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                } else {
+                    // Falls Volltext: Links sicher machen (target blank)
+                    tempDiv.querySelectorAll('a').forEach(a => {
+                        a.setAttribute('target', '_blank');
+                        a.setAttribute('rel', 'noopener noreferrer');
+                    });
+                    displayContent = tempDiv.innerHTML;
+                }
+
+                if (!displayContent || displayContent.trim() === '') {
+                    displayContent = '<em>Kein Transkript</em>';
+                }
+                // ----------------------------------
 
                 const isNameMissing = !chapter.name || chapter.name.trim() === '';
                 const isTranscriptMissing = !chapter.transcript || chapter.transcript.trim() === '';
@@ -551,7 +579,9 @@ require_once Path::getPartialTemplatePath('header.php');
                     ${(isChapterMissing || chapter.chapter === null) ? '' : `<strong>Kap. ${chapter.chapter}:</strong><br>`}
                     ${chapter.name || '<em>Kein Name</em>'}
                 </td>
-                <td class="${isTranscriptMissing ? 'missing-info' : ''}"><div class="description-preview">${descPreview.innerHTML || '<em>Kein Transkript</em>'}</div></td>
+                <td class="${isTranscriptMissing ? 'missing-info' : ''}">
+                    <div class="description-preview">${displayContent}</div>
+                </td>
                 <td>
                     <div class="status-icons">
                         <span class="status-icon ${hasJson && !isNameMissing && !isTranscriptMissing && !isChapterMissing && !isUrlMissing ? 'present' : 'missing'}" title="JSON-Daten vollständig">J</span>
@@ -959,8 +989,6 @@ require_once Path::getPartialTemplatePath('header.php');
             }
         });
 
-        // ##### JS ÄNDERUNG: AKTIONEN IN FUNKTIONEN AUSLAGERN #####
-
         // Logik für "Speichern" in eine eigene Funktion ausgelagert
         const handleSaveAll = async () => {
             try {
@@ -1033,9 +1061,6 @@ require_once Path::getPartialTemplatePath('header.php');
         // Listener für BEIDE "Neuer Eintrag"-Buttons
         addRowBtn.addEventListener('click', handleAddRow);
         addRowBtnTop.addEventListener('click', handleAddRow);
-
-        // ##### ENDE JS ÄNDERUNG #####
-
 
         tableBody.addEventListener('click', e => {
             const editBtn = e.target.closest('.edit-row-btn');

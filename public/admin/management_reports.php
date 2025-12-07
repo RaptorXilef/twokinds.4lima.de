@@ -12,11 +12,16 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
- * @since     1.0.0 Initiale Erstellung
- * @since     1.0.1 Korrektur der JS-Pfade.
- * @since     1.1.0 Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
- * @since     5.0.0 refactor(Page): Inline-CSS entfernt, Layout auf Admin-Tabellen-Standards (SCSS) umgestellt, PHP-Paginierung hinzugefügt.
- * */
+ * @since 4.0.0
+ *  - Initiale Erstellung
+ *  - Korrektur der JS-Pfade.
+ *  - Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
+ *
+ * @since 5.0.0
+ *  - refactor(Page): Inline-CSS entfernt, Layout auf Admin-Tabellen-Standards (SCSS) umgestellt, PHP-Paginierung
+ *     hinzugefügt.
+ *  - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_REPORT_DESCRIPTION) hinzugefügt.
+ */
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
@@ -29,7 +34,12 @@ $message = ''; // Für Statusmeldungen
 $messageType = 'info';
 
 // Paginierung Konstante nutzen (falls nicht definiert, Fallback)
-$itemsPerPage = defined('COMIC_PAGES_PER_PAGE') ? COMIC_PAGES_PER_PAGE : 50;
+$itemsPerPage = defined('ENTRIES_PER_PAGE_REPORT') ? ENTRIES_PER_PAGE_REPORT : 50;
+
+// Konfiguration für Textkürzung (Standard: False = Alles anzeigen, wenn nicht definiert)
+if (!defined('TRUNCATE_REPORT_DESCRIPTION')) {
+    define('TRUNCATE_REPORT_DESCRIPTION', false);
+}
 
 // === 3. HELFERFUNKTIONEN (mit flock) ===
 
@@ -318,6 +328,11 @@ require_once Path::getPartialTemplatePath('header.php');
         </fieldset>
     </form>
 
+    <!-- Info-Leiste für Paginierung -->
+    <div class="table-controls" style="justify-content: flex-end; display: flex; margin-bottom: 5px;">
+        <small>Zeigt <?php echo $itemsPerPage; ?> Einträge pro Seite.</small>
+    </div>
+
     <div class="sitemap-table-container">
         <table class="admin-table data-table reports-table" id="reports-table">
             <thead>
@@ -326,7 +341,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     <th>Comic-ID</th>
                     <th>Typ</th>
                     <th>Einsender</th>
-                    <th>Beschreibung (gekürzt)</th>
+                    <th>Beschreibung</th>
                     <th>Aktionen</th>
                 </tr>
             </thead>
@@ -350,7 +365,14 @@ require_once Path::getPartialTemplatePath('header.php');
                         $original = htmlspecialchars($report['transcript_original'] ?? '');
                         $status = $report['status'] ?? 'open';
 
-                        $shortDesc = mb_strlen($description) > 75 ? mb_substr($description, 0, 75) . '...' : $description;
+                        // --- TEXT-KÜRZUNG LOGIK ---
+                        if (TRUNCATE_REPORT_DESCRIPTION) {
+                            $shortDesc = mb_strlen($description) > 75 ? mb_substr($description, 0, 75) . '...' : $description;
+                        } else {
+                            // Volltext anzeigen
+                            $shortDesc = $description;
+                        }
+
                         if (empty($shortDesc) && !empty($suggestion)) {
                             $shortDesc = '<i>(Nur Transkript-Vorschlag)</i>';
                         }

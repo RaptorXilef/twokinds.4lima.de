@@ -186,7 +186,7 @@ $pageTitle = 'Adminbereich - Archiv Editor';
 $pageHeader = 'Archiv Editor';
 $robotsContent = 'noindex, nofollow';
 
-$itemsPerPage = defined('COMIC_PAGES_PER_PAGE') ? COMIC_PAGES_PER_PAGE : 50;
+$itemsPerPage = defined('ENTRIES_PER_PAGE_ARCHIVE') ? ENTRIES_PER_PAGE_ARCHIVE : 50;
 // Übergabe der Konstante an JS (Bool -> String 'true'/'false')
 $truncateDesc = TRUNCATE_ARCHIVE_DESCRIPTION ? 'true' : 'false';
 

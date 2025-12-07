@@ -7,10 +7,11 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.0.2
+ *
  * @since     1.0.0 Initiale Erstellung
  * @since     1.0.1 Fügt zwei include_once Anweisungen hinzu, um wichtige Pfad-Konstanten zu laden.
  * @since     1.0.2 Entfernt includes wieder.
+ * @since     5.0.0 Füge KONSTANTEN TRUNCATE_DESCRIPTION und ENTRIES_PER_PAGE hinzu
  */
 
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
@@ -27,12 +28,21 @@ $phpBoolen = false;
 // Stellt ein, ob Cache-Busting aktiviert ist.
 // Standard: true
 define('ENABLE_CACHE_BUSTING', true);
-// Legt fest, ob die Beschreibungen beim Archiv-Editor gekürzt oder voll angezeigt werden. Standart ist: false (nicht kürzen)
-define('TRUNCATE_ARCHIVE_DESCRIPTION', false);
 
 
 // ###################################################################
 // Admin-Bereich:
 
 // Anzahl der Comic-Seiten pro Seite in der Übersicht des Comicseiten Editors.
-define('COMIC_PAGES_PER_PAGE', 50); // 50 ist ein guter Wert, der weder zu viele Seiten lädt, noch zu oft umblättern muss.
+define('ENTRIES_PER_PAGE', 50); // 50 ist ein guter Wert, der weder zu viele Seiten lädt, noch zu oft umblättern muss.
+
+define('ENTRIES_PER_PAGE_ARCHIVE', ENTRIES_PER_PAGE);
+define('ENTRIES_PER_PAGE_COMIC', ENTRIES_PER_PAGE);
+define('ENTRIES_PER_PAGE_REPORT', ENTRIES_PER_PAGE);
+
+// Legt fest, ob die Beschreibungen beim Archiv-Editor gekürzt oder voll angezeigt werden. Standart ist: false (nicht kürzen)
+define('TRUNCATE_DESCRIPTION', true);
+
+define('TRUNCATE_ARCHIVE_DESCRIPTION', TRUNCATE_DESCRIPTION);
+define('TRUNCATE_COMIC_DESCRIPTION', TRUNCATE_DESCRIPTION);
+define('TRUNCATE_REPORT_DESCRIPTION', TRUNCATE_DESCRIPTION);
