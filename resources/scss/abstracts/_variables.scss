@@ -91,7 +91,8 @@ $breakpoint-mobile: 768px;
 
     // Admin Tables
     --table-header-bg: #e9ecef;
-    --table-row-even: #f8f9fa;
+    // FIX: Farbe abgedunkelt, damit Zebra-Striping im Light Mode sichtbar ist (#f8f9fa war zu hell)
+    --table-row-even: #e9ecef;
     --table-row-hover: #e2e6ea;
 
     // Cookie Banner (Light)
