@@ -292,42 +292,49 @@ require_once Path::getPartialTemplatePath('header.php');
                 automatisch hinzugefügt.</p>
         </div>
 
-        <div class="pagination"></div>
-
-        <div id="top-buttons-container"
-            style="justify-content: flex-start; margin-top: 0; margin-bottom: 20px; display: flex; gap: 10px;">
-            <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
-            <button id="save-all-btn-top" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
+        <div class="filter-form">
+            <fieldset>
+                <legend>Filter</legend>
+                <div class="filter-controls center-filter">
+                    <div class="search-wrapper">
+                        <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
+                        <button id="clear-search-btn" type="button" title="Suche leeren" style="display: none;">&times;</button>
+                    </div>
+                </div>
+            </fieldset>
         </div>
 
-        <div id="message-box-top" class="hidden-by-default"></div>
+        <div class="pagination" style="margin-bottom: 20px;"></div>
 
-        <div class="table-controls">
-            <div class="search-container">
-                <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
-                <button id="clear-search-btn" class="button" style="display: none;">&times;</button>
+        <div class="table-controls actions-bar">
+            <div class="top-actions">
+                <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
+                <button id="save-all-btn-top" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
             </div>
+
             <div class="marker-legend-group">
                 <div class="marker-legend">
                     <strong>Quellen:</strong>
-                    <span class="source-marker source-json" title="Eintrag existiert in <?php echo 'comic_var.json' ?>">JSON</span>
-                    <span class="source-marker source-image" title="Mindestens eine Bilddatei existiert lokal">Bild</span>
-                    <span class="source-marker source-php" title="Eine PHP-Datei existiert für diese Seite in /comic/">PHP</span>
+                    <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
+                    <span class="source-marker source-image" title="Mindestens eine Bilddatei existiert lokal">BILD</span>
+                    <span class="source-marker source-php" title="Eine PHP-Datei existiert">PHP</span>
                     <span class="source-marker source-url" title="Ein Originalbild ist via URL verknüpft">URL</span>
                 </div>
                 <div class="marker-legend">
                     <strong>Status:</strong>
-                    <span class="status-icon status-json present" title="JSON-Daten vollständig (Name, Transkript, etc.)">J</span>
+                    <span class="status-icon status-json present" title="JSON vollständig">J</span>
                     <span class="status-icon status-lowres present" title="Low-Res Bild">L</span>
                     <span class="status-icon status-hires present" title="High-Res Bild">H</span>
                     <span class="status-icon status-php present" title="PHP-Datei">P</span>
-                    <span class="status-icon status-socialmedia present" title="Social Media Bild">S</span>
+                    <span class="status-icon status-socialmedia present" title="Social Media">S</span>
                     <span class="status-icon status-thumbnails present" title="Thumbnail">T</span>
-                    <span class="status-icon status-url present" title="URL zum Originalbild">U</span>
-                    <span class="status-icon status-charaktere present" title="Charaktere zugewiesen">C</span>
+                    <span class="status-icon status-url present" title="URL">U</span>
+                    <span class="status-icon status-charaktere present" title="Charaktere">C</span>
                 </div>
             </div>
         </div>
+
+        <div id="message-box-top" class="hidden-by-default"></div>
 
         <div class="sitemap-table-container">
             <table class="admin-table comic-editor-table" id="comic-table">

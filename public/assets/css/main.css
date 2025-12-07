@@ -2535,6 +2535,30 @@ body.theme-night .chapter h2 {
  * @author    Felix Maywald (@RaptorXilef)
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+/* --- 1. General Admin Forms & Filters --- */
+.transcript-display-box {
+  background-color: var(--table-row-even);
+  border: 1px solid var(--border-light);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.9em;
+  overflow-wrap: break-word;
+  color: var(--text-color);
+}
+body.theme-night .transcript-display-box {
+  background-color: var(--page-bg);
+  border-color: var(--button-bg);
+}
+.transcript-display-box p {
+  margin-bottom: 7px;
+}
+.transcript-display-box p:last-of-type {
+  margin-bottom: 0;
+}
+
 .filter-form {
   background-color: var(--table-row-even);
   border: 1px solid var(--border-light);
@@ -2566,12 +2590,58 @@ body.theme-night .filter-form {
 body.theme-night .filter-form .filter-controls label {
   color: var(--text-color-light);
 }
+.filter-form .filter-controls.center-filter {
+  justify-content: center;
+  width: 100%;
+}
+.filter-form .filter-controls.center-filter .search-wrapper {
+  position: relative;
+  flex-grow: 1;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.filter-form .filter-controls.center-filter .search-wrapper input {
+  width: 100%;
+  border: 1px solid var(--border-medium);
+  padding: 8px 35px 8px 8px;
+  border-radius: 4px;
+  background-color: var(--content-bg);
+  color: var(--text-color);
+  margin: 0;
+}
+body.theme-night .filter-form .filter-controls.center-filter .search-wrapper input {
+  background-color: color-mix(in srgb, var(--page-bg), black 20%);
+  border-color: var(--border-light);
+}
+.filter-form .filter-controls.center-filter .search-wrapper button#clear-search-btn {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-color-medium);
+  font-size: 1.5em;
+  line-height: 1;
+  padding: 0 5px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: auto;
+  height: auto;
+  min-width: 0;
+}
+.filter-form .filter-controls.center-filter .search-wrapper button#clear-search-btn:hover {
+  color: var(--status-red-text);
+  background-color: rgba(0, 0, 0, 0.05);
+}
 
 .honeypot-field {
   display: none !important;
 }
 
-/* --- Admin Controls (Search, Pagination, Legends) --- */
+/* --- 2. Admin Controls (Search, Pagination, Legends) --- */
 .table-controls {
   display: flex;
   justify-content: space-between;
@@ -2579,6 +2649,23 @@ body.theme-night .filter-form .filter-controls label {
   margin-bottom: 15px;
   flex-wrap: wrap;
   gap: 20px;
+}
+
+.table-controls.actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+.table-controls.actions-bar .top-actions {
+  display: flex;
+  gap: 10px;
+}
+.table-controls.actions-bar .marker-legend-group {
+  justify-content: flex-end;
+  flex-grow: 1;
 }
 
 .search-container {
@@ -2642,41 +2729,6 @@ body.theme-night .search-container input[type=text]:focus {
   opacity: 1 !important;
   filter: none !important;
   background-color: #07710c !important;
-}
-.source-marker,
-.status-icon {
-  /*
-      // Farben
-      &.source-json,
-      &.status-json {
-          background-color: #6c757d;
-      }
-      &.source-image,
-      &.status-lowres {
-          background-color: #007bff;
-      }
-      &.status-hires {
-          background-color: #0056b3;
-      }
-      &.source-php,
-      &.status-php {
-          background-color: #28a745;
-      }
-      &.source-url,
-      &.status-url {
-          background-color: #9f58d1;
-      }
-      &.status-socialmedia {
-          background-color: #fd7e14;
-      }
-      &.status-thumbnails {
-          background-color: #ffc107;
-          color: #333;
-      }
-      &.status-charaktere {
-          background-color: #6f42c1;
-      }
-  */
 }
 
 /* --- Status Messages (Alerts) --- */
@@ -2865,7 +2917,7 @@ body.theme-night .admin-table .description-preview {
 .admin-table .actions-cell {
   white-space: normal;
   text-align: right;
-  vertical-align: center;
+  vertical-align: middle;
 }
 .admin-table .actions-cell form {
   display: flex;
