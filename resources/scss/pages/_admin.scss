@@ -449,6 +449,29 @@
         } // Aktionen
     }
 
+    // --- 3. SPALTENBREITEN: ARCHIV EDITOR ---
+    &.archive-editor-table {
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 30px; // ID
+            text-align: center;
+        }
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 170px; // Titel
+            font-weight: bold;
+        }
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: auto; // Beschreibung (Flex)
+        }
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 70px; // Aktionen
+            text-align: right;
+        }
+    }
+
     // Helper classes inside table
     .comic-thumbnail {
         max-width: 100px;
