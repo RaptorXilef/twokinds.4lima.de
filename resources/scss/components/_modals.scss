@@ -354,3 +354,47 @@
         padding: 10px;
     }
 }
+
+/* --- Report Modal Images (Side-by-Side) --- */
+.report-images-container {
+    display: flex;
+    flex-flow: row nowrap; // Zwingt Elemente nebeneinander (kein Umbruch)
+    gap: 15px; // Abstand zwischen den Bildern
+    margin-top: 15px;
+    width: 100%; // Nutzt die volle Breite des Modals
+
+    div {
+        flex: 1 1 0; // Beide Container wachsen gleichmäßig (50% Breite)
+        width: 0; // Fix für Flexbox in manchen Browsern, um Overflow zu verhindern
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        text-align: center;
+        margin-bottom: 5px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    img {
+        width: 100%; // Füllt den Container komplett aus
+        height: auto; // Behält das Seitenverhältnis bei
+        object-fit: contain;
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+        align-self: flex-start; // Richtet Bilder oben bündig aus
+
+        body.theme-night & {
+            border-color: var(--border-light);
+            background-color: rgba(
+                0,
+                0,
+                0,
+                0.2
+            ); // Leichter Hintergrund für transparente Bilder
+        }
+    }
+}
