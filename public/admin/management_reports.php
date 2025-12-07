@@ -459,80 +459,88 @@ require_once Path::getPartialTemplatePath('header.php');
     </div>
 
     <?php if ($totalPages > 1) : ?>
-    <div class="pagination">
-        <?php if ($currentPage > 1) : ?>
-            <a href="<?php echo getPageLink(1); ?>">&laquo;</a>
-            <a href="<?php echo getPageLink($currentPage - 1); ?>">&lsaquo;</a>
-        <?php endif; ?>
-
-        <?php
-        $startPage = max(1, $currentPage - 4);
-        $endPage = min($totalPages, $currentPage + 4);
-
-        if ($startPage > 1) : ?>
-            <a href="<?php echo getPageLink(1); ?>">1</a>
-            <?php if ($startPage > 2) :
-                ?><span>...</span><?php
-            endif; ?>
-        <?php endif; ?>
-
-        <?php for ($i = $startPage; $i <= $endPage; $i++) : ?>
-            <?php if ($i === $currentPage) : ?>
-                <span class="current-page"><?php echo $i; ?></span>
-            <?php else : ?>
-                <a href="<?php echo getPageLink($i); ?>"><?php echo $i; ?></a>
+        <div class="pagination">
+            <?php if ($currentPage > 1) : ?>
+                <a href="<?php echo getPageLink(1); ?>">&laquo;</a>
+                <a href="<?php echo getPageLink($currentPage - 1); ?>">&lsaquo;</a>
             <?php endif; ?>
-        <?php endfor; ?>
 
-        <?php if ($endPage < $totalPages) : ?>
-            <?php if ($endPage < $totalPages - 1) :
-                ?><span>...</span><?php
-            endif; ?>
-            <a href="<?php echo getPageLink($totalPages); ?>"><?php echo $totalPages; ?></a>
-        <?php endif; ?>
+            <?php
+            $startPage = max(1, $currentPage - 4);
+            $endPage = min($totalPages, $currentPage + 4);
 
-        <?php if ($currentPage < $totalPages) : ?>
-            <a href="<?php echo getPageLink($currentPage + 1); ?>">&rsaquo;</a>
-            <a href="<?php echo getPageLink($totalPages); ?>">&raquo;</a>
-        <?php endif; ?>
-    </div>
+            if ($startPage > 1) : ?>
+                <a href="<?php echo getPageLink(1); ?>">1</a>
+                <?php if ($startPage > 2) :
+                    ?><span>...</span><?php
+                endif; ?>
+            <?php endif; ?>
+
+            <?php for ($i = $startPage; $i <= $endPage; $i++) : ?>
+                <?php if ($i === $currentPage) : ?>
+                    <span class="current-page"><?php echo $i; ?></span>
+                <?php else : ?>
+                    <a href="<?php echo getPageLink($i); ?>"><?php echo $i; ?></a>
+                <?php endif; ?>
+            <?php endfor; ?>
+
+            <?php if ($endPage < $totalPages) : ?>
+                <?php if ($endPage < $totalPages - 1) :
+                    ?><span>...</span><?php
+                endif; ?>
+                <a href="<?php echo getPageLink($totalPages); ?>"><?php echo $totalPages; ?></a>
+            <?php endif; ?>
+
+            <?php if ($currentPage < $totalPages) : ?>
+                <a href="<?php echo getPageLink($currentPage + 1); ?>">&rsaquo;</a>
+                <a href="<?php echo getPageLink($totalPages); ?>">&raquo;</a>
+            <?php endif; ?>
+        </div>
     <?php endif; ?>
 
 </div>
 
 <div id="report-detail-modal" class="modal admin-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
     <div class="modal-overlay" data-action="close-detail-modal"></div>
-    <div class="modal-content report-detail-modal-content">
-        <button class="modal-close" data-action="close-detail-modal" aria-label="Schließen">&times;</button>
-        <h2 id="detail-modal-title">Ticket-Details</h2>
-        <div id="report-detail-content" class="admin-form">
-            <p><strong>Comic-ID:</strong> <a id="detail-comic-link" href="#" target="_blank"><span id="detail-comic-id"></span></a></p>
-            <p><strong>Datum:</strong> <span id="detail-date"></span></p>
-            <p><strong>Einsender:</strong> <span id="detail-submitter"></span></p>
-            <p><strong>Typ:</strong> <span id="detail-type"></span></p>
-
-            <h3>Beschreibung</h3>
-            <div id="detail-description-container" class="report-text-box">
-                <p id="detail-description"></p>
-            </div>
-
-            <div id="detail-transcript-section">
-                <h3>Transkript-Vorschlag (Text-Diff)</h3>
-                <div id="detail-diff-viewer" class="report-text-box diff-box">
-                    <p class="loading-text">Diff wird generiert...</p>
+    <div class="modal-content report-detail-modal-content modal-advanced-layout">
+        <div class="modal-header-wrapper">
+            <h2 id="detail-modal-title">Ticket-Details</h2>
+            <button class="modal-close" data-action="close-detail-modal" aria-label="Schließen">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <div id="report-detail-content" class="admin-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <div><strong>Comic-ID:</strong> <a id="detail-comic-link" href="#" target="_blank"><span id="detail-comic-id"></span></a></div>
+                    <div><strong>Datum:</strong> <span id="detail-date"></span></div>
+                    <div><strong>Einsender:</strong> <span id="detail-submitter"></span></div>
+                    <div><strong>Typ:</strong> <span id="detail-type"></span></div>
                 </div>
-                <h3>Vorschlag (Gerenderte HTML-Ansicht)</h3>
-                <div id="detail-suggestion-html" class="report-text-box transcript-display-box"></div>
-                <h3>Vorschlag (HTML-Quellcode)</h3>
-                <div id="detail-suggestion-code-container" class="report-text-box">
-                    <textarea id="detail-suggestion-code" rows="8" readonly style="width: 100%; box-sizing: border-box;"></textarea>
+                <h3>Beschreibung</h3>
+                <div id="detail-description-container" class="report-text-box">
+                    <p id="detail-description"></p>
+                </div>
+
+                <div id="detail-transcript-section">
+                    <h3>Transkript-Vorschlag (Text-Diff)</h3>
+                    <div id="detail-diff-viewer" class="report-text-box diff-box">
+                        <p class="loading-text">Diff wird generiert...</p>
+                    </div>
+                    <h3>Vorschlag (Gerenderte HTML-Ansicht)</h3>
+                    <div id="detail-suggestion-html" class="report-text-box transcript-display-box"></div>
+                    <h3>Vorschlag (HTML-Quellcode)</h3>
+                    <div id="detail-suggestion-code-container" class="report-text-box">
+                        <textarea id="detail-suggestion-code" rows="8" readonly></textarea>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="modal-buttons" style="margin-top: 20px;">
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
                 <button type="button" class="button" data-action="close-detail-modal">Schließen</button>
             </div>
         </div>
+
     </div>
 </div>
 
