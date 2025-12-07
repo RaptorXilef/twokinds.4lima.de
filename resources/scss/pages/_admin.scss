@@ -396,7 +396,7 @@
 .admin-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: fixed; // Zwingend für feste Spaltenbreiten
 
     th,
     td {
@@ -425,7 +425,6 @@
     // Hover Effect
     tbody tr:hover {
         background-color: var(--table-row-hover);
-
         body.theme-night & {
             background-color: var(--button-bg);
         }
@@ -464,13 +463,44 @@
         } // Status
         th:nth-child(6),
         td:nth-child(6) {
-            width: 80px; // 100px
+            width: 70px; // 100px
             text-align: right;
         } // Aktionen
 
         td:last-child {
             text-align: right;
         }
+    }
+
+    // --- 2. SPALTENBREITEN: REPORTS (NEU) ---
+    &.reports-table {
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 80px;
+            word-break: break-word;
+        } // Datum (fest)
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 80px;
+            word-break: break-word;
+        } // Comic-ID (kurz)
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 80px;
+            word-break: break-word;
+        } // Typ
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 80px;
+        } // Einsender
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: auto;
+        } // Beschreibung (Restlicher Platz)
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 80px;
+        } // Aktionen (Breiter für Buttons)
     }
 
     // Helper classes inside table
@@ -510,11 +540,25 @@
     }
 
     .actions-cell {
-        white-space: nowrap;
+        //white-space: nowrap;
         text-align: right;
+        vertical-align: top; // Buttons oben ausrichten bei mehrzeiligem Text
+
+        form {
+            display: flex;
+            flex-wrap: wrap; // Umbruch erlauben
+            gap: 5px; // Abstand zwischen Buttons
+            justify-content: flex-end; // Rechtsbündig starten
+        }
 
         button {
-            margin-left: 5px;
+            // "Alle gleich breit": flex: 1 sorgt dafür, dass sie den Platz gleichmäßig füllen.
+            // min-width verhindert, dass sie zu klein gequetscht werden.
+            flex: 1 0 auto;
+            //min-width: 70px;
+            text-align: center;
+            justify-content: center;
+            margin: 5;
         }
     }
 }

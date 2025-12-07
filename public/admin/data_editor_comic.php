@@ -9,36 +9,22 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   7.3.0
- * @since     ... (ältere Versionen)
- * @since     5.4.0 Implementiert robustes, CSP-konformes Fallback für Charakterbilder im Modal.
- * Zeigt '?' bei fehlendem Pfad und 'Fehlt' bei Ladefehler, korrigiert 'undefined' Fehler.
- * @since     5.5.0 Hinzufügen eines 'C'-Status-Tags zur Anzeige, ob Charaktere zugewiesen sind.
- * @since     5.5.1 Fügt die fehlenden Schaltflächen für "Vorherige" (‹) und "Nächste" (›) -Seite hinzu.
- * Die Schaltfläche für die aktuell ausgewählte Seite wird jetzt in beiden Themes (Hell und Dunkel) korrekt hervorgehoben.
- * @since     5.5.2 Nach Bearbeitung scrollt die Ansicht zur bearbeiteten Zeile, die zur Hervorhebung kurz aufleuchtet.
- * @since     5.5.3 Erstellt/Löscht automatisch die zugehörigen PHP-Dateien im /comic/-Ordner beim Speichern von Änderungen.
- * @since     5.5.4 Korrigiert den Inhalt neu erstellter PHP-Dateien auf die korrekte einzelne require_once-Anweisung.
- * @since     5.5.5 Behebt Fehler beim Löschen von Einträgen, Erstellen von PHP-Dateien und der Anzeige im "Neu"-Dialog.
- * @since     5.6.0 Passt die Charakter-Auswahl im Modal an die neue, dynamische Gruppenstruktur der charaktere.json an.
- * @since     5.7.0 Umstellung auf das neue Charakter-ID-System. Liest die neue `charaktere.json`-Struktur, speichert Charakter-IDs
- *                   statt Namen in `comic_var.json` und aktualisiert die UI, um Namen und Bilder anzuzeigen, aber IDs zu verwalten.
- *                   Stellt sicher, dass mehrfach zugeordnete Charaktere synchron ausgewählt werden.
- * @since     5.8.0 Anpassung an versionierte comic_var.json (Schema v2).
- * @since     5.9.0 Umstellung auf zentrale Pfad-Konstanten, direkte Verwendung und Bugfixes.
- * @since     6.0.0 Implementierung einer dynamischen relativen Pfadberechnung für generierte PHP-Dateien.
- * @since     6.1.0 Korrigiert den Zeilenumbruch für Charakternamen im Editor-Modal.
- * @since     7.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und Behebung des CSRF-Fehlers.
- * @since     7.1.0 Umstellung des AJAX-Handlers auf FormData zur Behebung des CSRF-Fehlers.
- * @since     7.1.1 Kleine Korrekturen im JS Teil
- * @since     7.2.0 Korrektur der Charakterbild-Anzeige
- * @since     7.2.1 Um die Benutzerfreundlichkeit im Comic-Daten-Editor zu verbessern, wurden die Haupt-Aktionsbuttons ("Neuer Eintrag"
- *                   und "Änderungen speichern") dupliziert. Sie befinden sich nun sowohl oben (direkt über den Tabellen-Steuerelementen)
- *                   als auch am bisherigen Platz am Ende der Seite. Dies reduziert den Scroll-Aufwand auf der Seite erheblich, da die
- *                   Aktionen immer schnell erreichbar sind, unabhängig davon, wo man sich gerade befindet.
- * @since     7.2.2 Aufbauend auf der Duplizierung der Aktionsbuttons wird nun auch die Status-Feedbackbox (`#message-box`) dupliziert.
- *                   Sie erscheint jetzt sowohl an ihrer ursprünglichen Position am Seitenende als auch neu direkt unter den oberen Aktionsbuttons.
- * @since     7.3.0 style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
+ *
+ * @since 3.0.0 - 4.0.0
+ * - Core & Datenstruktur:
+ *  - Umstellung auf Charakter-ID-System (comic_var.json Schema v2) und neue Gruppenstruktur.
+ *  - Zentrale Pfad-Konstanten, dynamischer Path-Helper und CSRF-Fixes (FormData).
+ * - Dateiverwaltung:
+ *  - Automatische Erstellung/Löschung und Inhalt-Korrektur (require_once) von PHP-Dateien im /comic/-Ordner.
+ * - UI & UX:
+ *  - Aktionsbuttons und Feedback-Box nun doppelt (oben/unten) für bessere Erreichbarkeit.
+ *  - Pagination erweitert (Vor/Zurück) und Theme-Styling (Hell/Dunkel) korrigiert.
+ *  - Auto-Scroll und Highlight der Zeile nach Bearbeitung; 'C'-Tag für Zuweisungsstatus.
+ *  - Robustes, CSP-konformes Fallback für Charakterbilder und Text-Korrekturen (Zeilenumbruch).
+ * - Fixes:
+ *  - Diverse Fehlerbehebungen (Löschen, "Neu"-Dialog, JS-Optimierungen, Bildanzeige).
+ * @since     5.0.0
+ *  - style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
  */
 
 // === DEBUG-MODUS STEUERUNG ===

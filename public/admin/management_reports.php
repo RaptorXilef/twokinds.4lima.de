@@ -1,18 +1,24 @@
 <?php
+
 /**
  * @description Administrationsseite zur Verwaltung der Fehlermeldungen (Reports).
  * Zeigt Meldungen an, filtert sie und erlaubt Aktionen (Schließen, Spam, Öffnen).
  * Verwendet flock() für alle Dateioperationen.
- * * @file      ROOT/public/admin/management_reports.php
+ *
+ * @file      ROOT/public/admin/management_reports.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
- * @since     1.0.0 Initiale Erstellung
- * @since     1.0.1 Korrektur der JS-Pfade.
- * @since     1.1.0 Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
+ *
+ * @since 4.0.0
+ *  - Initiale Erstellung
+ *  - Korrektur der JS-Pfade.
+ *  - Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
+ *
+ * @since 5.0.0
+ *  - refactor(Page): Inline-CSS entfernt, Layout auf SCSS-Komponenten umgestellt, Icon-Buttons und Paginierung integriert.
  * */
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -25,26 +31,55 @@ $archiveFilePath = Path::getDataPath('comic_reports_archive.json');
 $message = ''; // Für Statusmeldungen
 $messageType = 'info';
 
+// Paginierung: Konstante nutzen (falls nicht definiert, Fallback auf 50)
+$itemsPerPage = defined('COMIC_PAGES_PER_PAGE') ? COMIC_PAGES_PER_PAGE : 50;
+
 // === 3. HELFERFUNKTIONEN (mit flock) ===
 
 /**
  * Liest eine JSON-Datei sicher (mit Sperre).
+ * Enthält Fallback-Mechanismen, falls flock fehlschlägt.
  */
 function loadJsonWithLock(string $path, bool $debugMode): array
 {
-    if (!file_exists($path))
+    if (!file_exists($path)) {
+        if ($debugMode) {
+            error_log("loadJsonWithLock: Datei nicht gefunden: $path");
+        }
         return [];
+    }
+
     $handle = fopen($path, 'r');
-    if (!$handle)
+    if (!$handle) {
+        if ($debugMode) {
+            error_log("loadJsonWithLock: Konnte Datei nicht öffnen: $path");
+        }
         return [];
-    flock($handle, LOCK_SH); // Shared lock
-    $content = stream_get_contents($handle);
-    flock($handle, LOCK_UN);
+    }
+
+    $content = '';
+    // Versuche Shared Lock
+    if (flock($handle, LOCK_SH)) {
+        $content = stream_get_contents($handle);
+        flock($handle, LOCK_UN);
+    } else {
+        // Fallback: Dirty Read, falls Lock nicht möglich (besser als leere Seite)
+        if ($debugMode) {
+            error_log("loadJsonWithLock: Konnte keinen Lock erhalten, lese trotzdem: $path");
+        }
+        $content = stream_get_contents($handle);
+    }
     fclose($handle);
+
+    if (empty($content)) {
+        return [];
+    }
+
     $data = json_decode($content, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        if ($debugMode)
+        if ($debugMode) {
             error_log("JSON Decode Error in $path: " . json_last_error_msg());
+        }
         return [];
     }
     return is_array($data) ? $data : [];
@@ -55,21 +90,24 @@ function loadJsonWithLock(string $path, bool $debugMode): array
  */
 function saveJsonWithLock(string $path, array $data, bool $debugMode): bool
 {
-    $handle = fopen($path, 'c+'); // 'c+' -> atomarer
+    $handle = fopen($path, 'c+'); // 'c+' zum Lesen/Schreiben, Zeiger am Anfang
     if (!$handle) {
-        if ($debugMode)
+        if ($debugMode) {
             error_log("Failed to open $path for writing.");
+        }
         return false;
     }
+
     if (flock($handle, LOCK_EX)) {
-        ftruncate($handle, 0);
-        rewind($handle);
+        ftruncate($handle, 0); // Datei leeren
+        rewind($handle);       // Zeiger zurücksetzen
         fwrite($handle, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         fflush($handle);
         flock($handle, LOCK_UN);
     } else {
-        if ($debugMode)
+        if ($debugMode) {
             error_log("Failed to get exclusive lock for $path.");
+        }
         fclose($handle);
         return false;
     }
@@ -79,28 +117,31 @@ function saveJsonWithLock(string $path, array $data, bool $debugMode): bool
 
 /**
  * Verschiebt/Ändert einen Report-Status.
- * Diese Funktion sperrt BEIDE Dateien, um Integrität zu gewährleisten.
+ * Sperrt beide Dateien (Reports & Archiv) gleichzeitig, um Datenintegrität zu sichern.
  */
 function moveReport(string $reportId, string $action, string $reportsPath, string $archivePath, bool $debugMode): bool
 {
-    // Beide Dateien öffnen und sperren, um Deadlocks zu vermeiden (immer in derselben Reihenfolge)
     $handleReports = fopen($reportsPath, 'c+');
     $handleArchive = fopen($archivePath, 'c+');
 
     if (!$handleReports || !$handleArchive) {
-        if ($debugMode)
+        if ($debugMode) {
             error_log("Konnte nicht beide Report-Dateien öffnen.");
-        if ($handleReports)
+        }
+        if ($handleReports) {
             fclose($handleReports);
-        if ($handleArchive)
+        }
+        if ($handleArchive) {
             fclose($handleArchive);
+        }
         return false;
     }
 
-    // Exklusive Sperren holen
+    // Versuche beide zu sperren
     if (!flock($handleReports, LOCK_EX) || !flock($handleArchive, LOCK_EX)) {
-        if ($debugMode)
+        if ($debugMode) {
             error_log("Konnte nicht beide Report-Dateien sperren (LOCK_EX).");
+        }
         if ($handleReports) {
             flock($handleReports, LOCK_UN);
             fclose($handleReports);
@@ -112,56 +153,54 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
         return false;
     }
 
-    // --- Sicherer Bereich (beide Dateien gesperrt) ---
+    // --- Kritischer Bereich ---
 
-    // 1. Daten einlesen (aus den bereits geöffneten Handles)
+    // Daten einlesen
     rewind($handleReports);
-    $reportsContent = stream_get_contents($handleReports);
-    $reports = json_decode($reportsContent, true);
-    if (!is_array($reports))
+    $contentR = stream_get_contents($handleReports);
+    $reports = !empty($contentR) ? json_decode($contentR, true) : [];
+    if (!is_array($reports)) {
         $reports = [];
+    }
 
     rewind($handleArchive);
-    $archiveContent = stream_get_contents($handleArchive);
-    $archive = json_decode($archiveContent, true);
-    if (!is_array($archive))
+    $contentA = stream_get_contents($handleArchive);
+    $archive = !empty($contentA) ? json_decode($contentA, true) : [];
+    if (!is_array($archive)) {
         $archive = [];
+    }
 
-    // 2. Report finden und Aktion ausführen
     $reportFound = false;
     $reportData = null;
-    $sourceList = null; // 'reports' oder 'archive'
-    $targetList = null; // 'reports' oder 'archive'
+    $targetList = null;
     $newStatus = '';
 
-    // In $reports suchen
+    // Suche in Reports
     foreach ($reports as $key => $report) {
-        if ($report['id'] === $reportId) {
+        if (isset($report['id']) && strval($report['id']) === strval($reportId)) {
             $reportData = $report;
-            $sourceList = 'reports';
             if ($action === 'close') {
                 $newStatus = 'closed';
                 $targetList = 'archive';
             } elseif ($action === 'spam') {
                 $newStatus = 'spam';
                 $targetList = 'reports';
-            } elseif ($action === 'reopen') { // von spam -> open
+            } elseif ($action === 'reopen') {
                 $newStatus = 'open';
                 $targetList = 'reports';
             }
-            unset($reports[$key]); // Aus Quell-Liste entfernen (oder Status aktualisieren)
+            unset($reports[$key]);
             $reportFound = true;
             break;
         }
     }
 
-    // Wenn nicht in $reports gefunden, in $archive suchen
+    // Suche in Archiv (falls nicht gefunden)
     if (!$reportFound) {
         foreach ($archive as $key => $report) {
-            if ($report['id'] === $reportId) {
+            if (isset($report['id']) && strval($report['id']) === strval($reportId)) {
                 $reportData = $report;
-                $sourceList = 'archive';
-                if ($action === 'reopen') { // von closed -> open
+                if ($action === 'reopen') {
                     $newStatus = 'open';
                     $targetList = 'reports';
                 }
@@ -173,131 +212,127 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
     }
 
     $success = false;
-    if ($reportFound && $reportData && $targetList && $newStatus) {
+    if ($reportFound && $newStatus) {
         $reportData['status'] = $newStatus;
 
-        // In Zielliste einfügen
-        if ($targetList === 'reports') {
-            $reports[] = $reportData;
-        } else {
+        // Hinzufügen zur Zielliste
+        if (($targetList === 'archive') || ($targetList === null && $action === 'close')) {
             $archive[] = $reportData;
+        } else {
+            $reports[] = $reportData;
         }
 
-        // 3. Beide Dateien zurückschreiben (in die gesperrten Handles)
-        // Indizes neu anordnen, um JSON-Array statt Objekt sicherzustellen
+        // Indizes neu ordnen und speichern
         $reports = array_values($reports);
         $archive = array_values($archive);
 
         ftruncate($handleReports, 0);
         rewind($handleReports);
         fwrite($handleReports, json_encode($reports, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        fflush($handleReports);
 
         ftruncate($handleArchive, 0);
         rewind($handleArchive);
         fwrite($handleArchive, json_encode($archive, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        fflush($handleArchive);
 
-        $success = true;
-    } elseif ($reportFound && $newStatus) { // Für Aktionen ohne Verschieben (z.B. spam, reopen von spam)
-        $reportData['status'] = $newStatus;
-        $reports[] = $reportData; // Wieder hinzufügen (da oben entfernt)
-        $reports = array_values($reports);
-
-        ftruncate($handleReports, 0);
-        rewind($handleReports);
-        fwrite($handleReports, json_encode($reports, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        fflush($handleReports);
         $success = true;
     }
 
-
-    // --- Ende Sicherer Bereich ---
-
-    // 4. Sperren freigeben und Handles schließen
+    // Sperren aufheben
     flock($handleReports, LOCK_UN);
     fclose($handleReports);
     flock($handleArchive, LOCK_UN);
     fclose($handleArchive);
-
     return $success;
 }
 
-
 // === 4. POST-AKTIONEN VERARBEITEN ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['report_id'])) {
-    // CSRF-Token-Prüfung (aus init_admin.php)
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        $message = 'CSRF-Token-Fehler. Aktion abgebrochen.';
+        $message = 'CSRF-Token-Fehler.';
         $messageType = 'red';
     } else {
         $action = $_POST['action'];
-        $reportId = $_POST['report_id'];
-        $success = false;
+        $success = moveReport($_POST['report_id'], $action, $reportsFilePath, $archiveFilePath, $debugMode);
 
-        if ($action === 'close' || $action === 'spam' || $action === 'reopen') {
-            $success = moveReport($reportId, $action, $reportsFilePath, $archiveFilePath, $debugMode);
-        }
-
-        if ($success) {
-            $message = "Report erfolgreich ($action).";
-            $messageType = 'green';
-        } else {
-            $message = "Aktion ($action) fehlgeschlagen.";
-            $messageType = 'red';
-        }
-
-        // Redirect-nach-POST, um Resubmission zu verhindern.
-        // Hänge aktuelle GET-Filter und die Statusmeldung an die URL an.
         $queryParams = $_GET;
-        $queryParams['message'] = urlencode($message);
-        $queryParams['messageType'] = $messageType;
+        $queryParams['message'] = $success ? "Report erfolgreich ($action)." : "Aktion ($action) fehlgeschlagen.";
+        $queryParams['messageType'] = $success ? 'green' : 'red';
         header('Location: ' . basename($_SERVER['PHP_SELF']) . '?' . http_build_query($queryParams));
         exit;
     }
 }
 
-// === 5. GET-PARAMETER (FILTER & STATUSMELDUNGEN) VERARBEITEN ===
+// === 5. GET-PARAMETER VERARBEITEN ===
 $filterStatus = $_GET['status'] ?? 'open';
 $filterComicId = $_GET['comic_id'] ?? '';
 $filterSubmitter = $_GET['submitter'] ?? '';
+$currentPage = max(1, intval($_GET['page'] ?? 1));
 
-// Statusmeldungen vom Redirect abfangen
 if (isset($_GET['message'])) {
     $message = htmlspecialchars(urldecode($_GET['message']));
     $messageType = htmlspecialchars($_GET['messageType'] ?? 'info');
 }
 
 // === 6. DATEN LADEN & FILTERN ===
-$reports = [];
 $isArchive = ($filterStatus === 'closed');
+$sourcePath = $isArchive ? $archiveFilePath : $reportsFilePath;
 
-if ($isArchive) {
-    $reports = loadJsonWithLock($archiveFilePath, $debugMode);
-    // Sortierung: Neueste zuerst (Archiv)
-    usort($reports, fn($a, $b) => strtotime($b['date'] ?? 0) <=> strtotime($a['date'] ?? 0));
-} else {
-    $allReports = loadJsonWithLock($reportsFilePath, $debugMode);
+// Laden mit robustem Fallback
+$allReports = loadJsonWithLock($sourcePath, $debugMode);
 
-    // Nach Status filtern (open oder spam)
-    if ($filterStatus === 'open' || $filterStatus === 'spam') {
-        $reports = array_filter($allReports, fn($r) => ($r['status'] ?? 'open') === $filterStatus);
-    } else { // Fallback, falls 'all' oder ungültig -> 'open'
-        $reports = array_filter($allReports, fn($r) => ($r['status'] ?? 'open') === 'open');
-        if ($filterStatus !== 'open')
-            $filterStatus = 'open'; // Korrigiere für <select>
+// Filtern
+$reports = array_filter($allReports, function ($r) use ($filterStatus, $filterComicId, $filterSubmitter) {
+    // Status Filter
+    $rStatus = $r['status'] ?? 'open';
+    if ($filterStatus === 'closed' && $rStatus !== 'closed') {
+        return false;
+    }
+    if ($filterStatus === 'open' && $rStatus !== 'open') {
+        return false;
+    }
+    if ($filterStatus === 'spam' && $rStatus !== 'spam') {
+        return false;
     }
 
-    // Sortierung: Älteste zuerst (Offen/Spam)
-    usort($reports, fn($a, $b) => strtotime($a['date'] ?? 0) <=> strtotime($b['date'] ?? 0));
+    // Text Filter
+    if (!empty($filterComicId) && !str_contains(strval($r['comic_id'] ?? ''), $filterComicId)) {
+        return false;
+    }
+    if (!empty($filterSubmitter) && stripos($r['submitter_name'] ?? '', $filterSubmitter) === false) {
+        return false;
+    }
+
+    return true;
+});
+
+// Sortieren
+if ($isArchive) {
+    usort($reports, fn($a, $b) => strtotime($b['date'] ?? 0) <=> strtotime($a['date'] ?? 0)); // Neueste zuerst
+} else {
+    usort($reports, fn($a, $b) => strtotime($a['date'] ?? 0) <=> strtotime($b['date'] ?? 0)); // Älteste zuerst
 }
 
-// Text-Filter anwenden
-if (!empty($filterComicId)) {
-    $reports = array_filter($reports, fn($r) => str_contains($r['comic_id'] ?? '', $filterComicId));
+// Paginierung Berechnen
+$totalItems = count($reports);
+$totalPages = ceil($totalItems / $itemsPerPage);
+
+// Korrektur falls Seite out of bounds ist
+if ($currentPage > $totalPages && $totalPages > 0) {
+    $currentPage = $totalPages;
 }
-if (!empty($filterSubmitter)) {
-    $reports = array_filter($reports, fn($r) => stripos($r['submitter_name'] ?? '', $filterSubmitter) !== false);
+if ($totalPages == 0) {
+    $currentPage = 1;
+}
+
+// Slice für die aktuelle Ansicht
+$displayedReports = array_slice($reports, ($currentPage - 1) * $itemsPerPage, $itemsPerPage);
+
+// Helper für Pagination-Links
+function getPageLink($page)
+{
+    $params = $_GET;
+    $params['page'] = $page;
+    return '?' . http_build_query($params);
 }
 
 // === 7. SEITE RENDERN ===
@@ -306,13 +341,12 @@ require_once Path::getPartialTemplatePath('header.php');
 
 <div class="admin-content">
 
-    <?php if ($message): ?>
-        <div class="status-message status-<?php echo $messageType; ?>">
+    <?php if ($message) : ?>
+        <div class="status-message status-<?php echo $messageType; ?>" style="display:block;">
             <p><?php echo $message; ?></p>
         </div>
     <?php endif; ?>
 
-    <!-- Filter-Formular -->
     <form action="<?php echo basename($_SERVER['PHP_SELF']); ?>" method="GET" class="admin-form filter-form">
         <fieldset>
             <legend>Filter</legend>
@@ -320,120 +354,159 @@ require_once Path::getPartialTemplatePath('header.php');
                 <div>
                     <label for="filter-status">Status</label>
                     <select id="filter-status" name="status">
-                        <option value="open" <?php echo $filterStatus === 'open' ? 'selected' : ''; ?>>Offen (Älteste
-                            zuerst)</option>
-                        <option value="spam" <?php echo $filterStatus === 'spam' ? 'selected' : ''; ?>>Spam (Älteste
-                            zuerst)</option>
-                        <option value="closed" <?php echo $filterStatus === 'closed' ? 'selected' : ''; ?>>
-                            Archiv/Geschlossen (Neueste zuerst)</option>
+                        <option value="open" <?php echo $filterStatus === 'open' ? 'selected' : ''; ?>>Offen (Älteste zuerst)</option>
+                        <option value="spam" <?php echo $filterStatus === 'spam' ? 'selected' : ''; ?>>Spam (Älteste zuerst)</option>
+                        <option value="closed" <?php echo $filterStatus === 'closed' ? 'selected' : ''; ?>>Archiv (Neueste zuerst)</option>
                     </select>
                 </div>
                 <div>
                     <label for="filter-comic-id">Comic-ID</label>
-                    <input type="text" id="filter-comic-id" name="comic_id"
-                        value="<?php echo htmlspecialchars($filterComicId); ?>">
+                    <input type="text" id="filter-comic-id" name="comic_id" value="<?php echo htmlspecialchars($filterComicId); ?>">
                 </div>
                 <div>
                     <label for="filter-submitter">Einsender</label>
-                    <input type="text" id="filter-submitter" name="submitter"
-                        value="<?php echo htmlspecialchars($filterSubmitter); ?>">
+                    <input type="text" id="filter-submitter" name="submitter" value="<?php echo htmlspecialchars($filterSubmitter); ?>">
                 </div>
                 <button type="submit" class="button">Filtern</button>
             </div>
         </fieldset>
     </form>
 
-    <!-- Report-Tabelle -->
-    <table class="admin-table data-table" id="reports-table">
-        <thead>
-            <tr>
-                <th>Datum</th>
-                <th>Comic-ID</th>
-                <th>Typ</th>
-                <th>Einsender</th>
-                <th>Beschreibung (gekürzt)</th>
-                <th>Aktionen</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($reports)): ?>
+    <div class="sitemap-table-container">
+        <table class="admin-table data-table reports-table" id="reports-table">
+            <thead>
                 <tr>
-                    <td colspan="6" style="text-align: center;">Keine Meldungen für die aktuellen Filter gefunden.</td>
+                    <th>Datum</th>
+                    <th>Comic-ID</th>
+                    <th>Typ</th>
+                    <th>Einsender</th>
+                    <th>Beschreibung (gekürzt)</th>
+                    <th>Aktionen</th>
                 </tr>
-            <?php else: ?>
-                <?php foreach ($reports as $report): ?>
-                    <?php
-                    // Daten für die Tabelle und das Modal vorbereiten
-                    $reportId = htmlspecialchars($report['id'] ?? '');
-                    $comicId = htmlspecialchars($report['comic_id'] ?? 'Unbekannt');
-                    $comicLink = Url::getComicPageUrl($comicId . $dateiendungPHP);
-                    $date = htmlspecialchars(date('d.m.Y H:i', strtotime($report['date'] ?? 'now')));
-                    $type = htmlspecialchars($report['report_type'] ?? 'k.A.');
-                    $submitter = htmlspecialchars($report['submitter_name'] ?? 'k.A.');
-                    $description = htmlspecialchars($report['description'] ?? '');
-                    $suggestion = htmlspecialchars($report['transcript_suggestion'] ?? '');
-                    $original = htmlspecialchars($report['transcript_original'] ?? ''); // Für Diff
-                    $status = $report['status'] ?? 'open';
-
-                    // Beschreibung kürzen
-                    $shortDesc = mb_strlen($description) > 75 ? mb_substr($description, 0, 75) . '...' : $description;
-                    if (empty($shortDesc) && !empty($suggestion)) {
-                        $shortDesc = '<i>(Nur Transkript-Vorschlag)</i>';
-                    }
-                    ?>
-                    <tr data-report-id="<?php echo $reportId; ?>" data-comic-id="<?php echo $comicId; ?>"
-                        data-date="<?php echo $date; ?>" data-type="<?php echo $type; ?>"
-                        data-submitter="<?php echo $submitter; ?>" data-status="<?php echo htmlspecialchars($status); ?>"
-                        data-full-description="<?php echo $description; // Ungekürzt für Modal ?>"
-                        data-suggestion="<?php echo $suggestion; // Für Modal ?>"
-                        data-original="<?php echo $original; // Für Modal ?>">
-
-                        <td style="white-space: nowrap;"><?php echo $date; ?></td>
-                        <td><a href="<?php echo $comicLink; ?>" target="_blank"><?php echo $comicId; ?></a></td>
-                        <td><?php echo $type; ?></td>
-                        <td><?php echo $submitter; ?></td>
-                        <td><?php echo $shortDesc; ?></td>
-                        <td class="actions-cell">
-                            <form action="<?php echo basename($_SERVER['PHP_SELF']); ?>?<?php echo http_build_query($_GET); ?>"
-                                method="POST" style="display: inline-block; margin-bottom: 5px;">
-                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-                                <input type="hidden" name="report_id" value="<?php echo $reportId; ?>">
-
-                                <button type="button" class="button detail-button">Details</button>
-
-                                <?php if ($status === 'open'): ?>
-                                    <button type="submit" name="action" value="close" class="button button-green">Schließen</button>
-                                    <button type="submit" name="action" value="spam" class="button button-orange">Spam</button>
-                                <?php elseif ($status === 'spam'): ?>
-                                    <button type="submit" name="action" value="close" class="button button-green">Schließen</button>
-                                    <button type="submit" name="action" value="reopen" class="button button-blue">Wieder
-                                        öffnen</button>
-                                <?php elseif ($status === 'closed'): ?>
-                                    <button type="submit" name="action" value="reopen" class="button button-blue">Wieder
-                                        öffnen</button>
-                                <?php endif; ?>
-                            </form>
-                        </td>
+            </thead>
+            <tbody>
+                <?php if (empty($displayedReports)) : ?>
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Keine Meldungen für die aktuellen Filter gefunden.</td>
                     </tr>
-                <?php endforeach; ?>
+                <?php else : ?>
+                    <?php foreach ($displayedReports as $report) : ?>
+                        <?php
+                        $reportId = htmlspecialchars($report['id'] ?? '');
+                        $comicId = htmlspecialchars($report['comic_id'] ?? 'Unbekannt');
+                        $comicLink = Url::getComicPageUrl($comicId . $dateiendungPHP);
+                        $dateRaw = $report['date'] ?? 'now';
+                        $date = htmlspecialchars(date('d.m.Y H:i', strtotime($dateRaw)));
+                        $type = htmlspecialchars($report['report_type'] ?? 'k.A.');
+                        $submitter = htmlspecialchars($report['submitter_name'] ?? 'k.A.');
+                        $description = htmlspecialchars($report['description'] ?? '');
+                        $suggestion = htmlspecialchars($report['transcript_suggestion'] ?? '');
+                        $original = htmlspecialchars($report['transcript_original'] ?? '');
+                        $status = $report['status'] ?? 'open';
+
+                        $shortDesc = mb_strlen($description) > 75 ? mb_substr($description, 0, 75) . '...' : $description;
+                        if (empty($shortDesc) && !empty($suggestion)) {
+                            $shortDesc = '<i>(Nur Transkript-Vorschlag)</i>';
+                        }
+                        ?>
+                        <tr data-report-id="<?php echo $reportId; ?>" data-comic-id="<?php echo $comicId; ?>"
+                            data-date="<?php echo $date; ?>" data-type="<?php echo $type; ?>"
+                            data-submitter="<?php echo $submitter; ?>" data-status="<?php echo htmlspecialchars($status); ?>"
+                            data-full-description="<?php echo $description; ?>" data-suggestion="<?php echo $suggestion; ?>"
+                            data-original="<?php echo $original; ?>">
+
+                            <td><?php echo $date; ?></td>
+                            <td><a href="<?php echo $comicLink; ?>" target="_blank"><?php echo $comicId; ?></a></td>
+                            <td><?php echo $type; ?></td>
+                            <td><?php echo $submitter; ?></td>
+                            <td><?php echo $shortDesc; ?></td>
+
+                            <td class="actions-cell">
+                                <form action="<?php echo basename($_SERVER['PHP_SELF']); ?>?<?php echo http_build_query($_GET); ?>" method="POST">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+                                    <input type="hidden" name="report_id" value="<?php echo $reportId; ?>">
+
+                                    <button type="button" class="button detail-button" title="Details anzeigen">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+
+                                    <?php if ($status === 'open') : ?>
+                                        <button type="submit" name="action" value="close" class="button button-green" title="Als erledigt markieren">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="submit" name="action" value="spam" class="button button-orange" title="Als Spam markieren">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    <?php elseif ($status === 'spam') : ?>
+                                        <button type="submit" name="action" value="close" class="button button-green" title="Als erledigt markieren">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="submit" name="action" value="reopen" class="button button-blue" title="Wieder öffnen">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    <?php elseif ($status === 'closed') : ?>
+                                        <button type="submit" name="action" value="reopen" class="button button-blue" title="Wieder öffnen">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php if ($totalPages > 1) : ?>
+    <div class="pagination">
+        <?php if ($currentPage > 1) : ?>
+            <a href="<?php echo getPageLink(1); ?>">&laquo;</a>
+            <a href="<?php echo getPageLink($currentPage - 1); ?>">&lsaquo;</a>
+        <?php endif; ?>
+
+        <?php
+        $startPage = max(1, $currentPage - 4);
+        $endPage = min($totalPages, $currentPage + 4);
+
+        if ($startPage > 1) : ?>
+            <a href="<?php echo getPageLink(1); ?>">1</a>
+            <?php if ($startPage > 2) :
+                ?><span>...</span><?php
+            endif; ?>
+        <?php endif; ?>
+
+        <?php for ($i = $startPage; $i <= $endPage; $i++) : ?>
+            <?php if ($i === $currentPage) : ?>
+                <span class="current-page"><?php echo $i; ?></span>
+            <?php else : ?>
+                <a href="<?php echo getPageLink($i); ?>"><?php echo $i; ?></a>
             <?php endif; ?>
-        </tbody>
-    </table>
+        <?php endfor; ?>
+
+        <?php if ($endPage < $totalPages) : ?>
+            <?php if ($endPage < $totalPages - 1) :
+                ?><span>...</span><?php
+            endif; ?>
+            <a href="<?php echo getPageLink($totalPages); ?>"><?php echo $totalPages; ?></a>
+        <?php endif; ?>
+
+        <?php if ($currentPage < $totalPages) : ?>
+            <a href="<?php echo getPageLink($currentPage + 1); ?>">&rsaquo;</a>
+            <a href="<?php echo getPageLink($totalPages); ?>">&raquo;</a>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
 </div>
 
-<!-- Modal für Detailansicht (wird von JS befüllt) -->
-<div id="report-detail-modal" class="modal admin-modal" style="display: none;" role="dialog" aria-modal="true"
-    aria-labelledby="detail-modal-title">
-
+<div id="report-detail-modal" class="modal admin-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
     <div class="modal-overlay" data-action="close-detail-modal"></div>
-
     <div class="modal-content report-detail-modal-content">
         <button class="modal-close" data-action="close-detail-modal" aria-label="Schließen">&times;</button>
         <h2 id="detail-modal-title">Ticket-Details</h2>
-
         <div id="report-detail-content" class="admin-form">
-            <p><strong>Comic-ID:</strong> <a id="detail-comic-link" href="#" target="_blank"><span
-                        id="detail-comic-id"></span></a></p>
+            <p><strong>Comic-ID:</strong> <a id="detail-comic-link" href="#" target="_blank"><span id="detail-comic-id"></span></a></p>
             <p><strong>Datum:</strong> <span id="detail-date"></span></p>
             <p><strong>Einsender:</strong> <span id="detail-submitter"></span></p>
             <p><strong>Typ:</strong> <span id="detail-type"></span></p>
@@ -444,23 +517,15 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
 
             <div id="detail-transcript-section">
-                <!-- 1. Diff-Ansicht (Text-basiert) -->
                 <h3>Transkript-Vorschlag (Text-Diff)</h3>
                 <div id="detail-diff-viewer" class="report-text-box diff-box">
                     <p class="loading-text">Diff wird generiert...</p>
                 </div>
-
-                <!-- 2. Gerenderte HTML-Ansicht (NEU) -->
                 <h3>Vorschlag (Gerenderte HTML-Ansicht)</h3>
-                <div id="detail-suggestion-html" class="report-text-box transcript-display-box">
-                    <!-- Wird von JS befüllt -->
-                </div>
-
-                <!-- 3. Quellcode-Ansicht (NEU) -->
+                <div id="detail-suggestion-html" class="report-text-box transcript-display-box"></div>
                 <h3>Vorschlag (HTML-Quellcode)</h3>
                 <div id="detail-suggestion-code-container" class="report-text-box">
-                    <textarea id="detail-suggestion-code" rows="8" readonly
-                        style="width: 100%; box-sizing: border-box;"></textarea>
+                    <textarea id="detail-suggestion-code" rows="8" readonly style="width: 100%; box-sizing: border-box;"></textarea>
                 </div>
             </div>
 
@@ -472,206 +537,10 @@ require_once Path::getPartialTemplatePath('header.php');
 </div>
 
 <?php
-// JS-Bibliotheken und unser neues Skript laden
-// Pfad zur jsDiff-Bibliothek (Annahme, dass sie im assets-Ordner liegt, wie im DOCX erwähnt)
-// Ich gehe davon aus, dass du 'diff.min.js' in 'public/assets/js/' ablegen wirst.
-$jsDiffUrl = Url::getAdminJsUrl('jsdiff.min.js'); // https://cdnjs.com/libraries/jsdiff/8.0.2
-$adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js'); // true für admin-Ordner
+$jsDiffUrl = Url::getAdminJsUrl('jsdiff.min.js');
+$adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
 ?>
 <script src="<?php echo htmlspecialchars($jsDiffUrl); ?>" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
-<script src="<?php echo htmlspecialchars($adminReportsJsUrl); ?>"
-    nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
-
-<!-- NEU: Angepasste Stile und JS-Logik für das Admin-Modal -->
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* Stile für Admin Report-Modal (HTML-Anzeige) */
-    .transcript-display-box {
-        background-color: #f8f9fa;
-        border: 1px solid #e2e6ea;
-        padding: 10px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-        max-height: 200px;
-        /* Höhe anpassen */
-        overflow-y: auto;
-        font-size: 0.9em;
-        word-wrap: break-word;
-    }
-
-    .transcript-display-box p {
-        margin-bottom: 7px;
-    }
-
-    .transcript-display-box p:last-of-type {
-        margin-bottom: 0;
-    }
-
-    #detail-suggestion-code {
-        width: 100%;
-        box-sizing: border-box;
-        font-family: monospace;
-        font-size: 0.9em;
-        background-color: #f1f1f1;
-        border: none;
-        resize: vertical;
-        min-height: 120px;
-    }
-
-    /* Diff-Ansicht Stile (aus main.scss) */
-    .diff-box ins {
-        background-color: #d4edda;
-        color: #155724;
-        text-decoration: none;
-    }
-
-    .diff-box del {
-        background-color: #f8d7da;
-        color: #721c24;
-        text-decoration: none;
-    }
-
-    /* Dark Mode */
-    body.theme-night .transcript-display-box {
-        background-color: #00334C;
-        /* $accent-dark */
-        border-color: #2a6177;
-        /* $button-color */
-        color: #fff;
-    }
-
-    body.theme-night #detail-suggestion-code {
-        background-color: #002B3C;
-        /* $page-bg */
-        color: #81dbfe;
-        /* $link-color */
-        border-color: #2a6177;
-        /* $button-color */
-    }
-
-    /* Diff-Ansicht Dark Mode (aus main_dark.scss) */
-    body.theme-night .diff-box ins {
-        background-color: #005000;
-        color: #c8e6c9;
-    }
-
-    body.theme-night .diff-box del {
-        background-color: #7f0000;
-        color: #ffcdd2;
-    }
-</style>
-
-<script nonce="<?php echo htmlspecialchars($nonce); ?>">
-    document.addEventListener('DOMContentLoaded', function () {
-        const table = document.getElementById('reports-table');
-        if (table) {
-            // Wir verwenden Event-Delegation auf der Tabelle
-            table.addEventListener('click', function (e) {
-                const detailButton = e.target.closest('.detail-button');
-
-                // Nur fortfahren, wenn der Detail-Button geklickt wurde
-                if (!detailButton) {
-                    return;
-                }
-
-                // Warten, bis das Modal (von reports.min.js) geöffnet wurde
-                // Wir nutzen einen kleinen Timeout, um sicherzustellen, dass das andere Skript fertig ist.
-                setTimeout(() => {
-                    const row = detailButton.closest('tr');
-                    if (!row) return;
-
-                    // === 1. DATEN AUS DER TR AUSLESEN ===
-                    // htmlspecialchars_decode wird implizit vom Browser beim Lesen von dataset durchgeführt
-                    const data = row.dataset;
-                    const suggestion = data.suggestion || '';
-                    const original = data.original || '';
-                    const description = data.fullDescription || 'Keine Beschreibung.';
-                    const comicId = data.comicId || 'Unbekannt';
-                    const comicLink = document.getElementById('detail-comic-link');
-
-                    // === 2. STANDARD-MODALFELDER BEFÜLLEN ===
-                    // (Dies ist ein Fallback/Überschreiben, falls reports.min.js dies nicht tut)
-                    document.getElementById('detail-comic-id').textContent = comicId;
-                    if (comicLink) {
-                        const linkInCell = row.querySelector('td:nth-child(2) a');
-                        if (linkInCell) {
-                            comicLink.href = linkInCell.href;
-                        } else {
-                            comicLink.href = '#';
-                        }
-                    }
-                    document.getElementById('detail-date').textContent = data.date || 'k.A.';
-                    document.getElementById('detail-submitter').textContent = data.submitter || 'k.A.';
-                    document.getElementById('detail-type').textContent = data.type || 'k.A.';
-                    document.getElementById('detail-description').textContent = description;
-
-                    // === 3. NEUE HTML/CODE-FELDER BEFÜLLEN ===
-                    const htmlDisplay = document.getElementById('detail-suggestion-html');
-                    const codeDisplay = document.getElementById('detail-suggestion-code');
-
-                    if (htmlDisplay) {
-                        htmlDisplay.innerHTML = suggestion || '<em>Kein Vorschlag (HTML).</em>';
-                    }
-                    if (codeDisplay) {
-                        codeDisplay.value = suggestion || 'Kein Vorschlag (Code).';
-                    }
-
-                    // === 4. JSDIFF-LOGIK (mit Text-Konvertierung) ===
-                    const diffViewer = document.getElementById('detail-diff-viewer');
-                    if (diffViewer) {
-                        try {
-                            // Hilfsfunktion, um HTML in Text umzuwandeln
-                            const convertHtmlToText = (html) => {
-                                // Prüfen, ob es überhaupt HTML ist
-                                if (html && html.trim().startsWith('<')) {
-                                    const tempDiv = document.createElement('div');
-                                    tempDiv.innerHTML = html;
-                                    // Ersetze <p> durch Zeilenumbrüche für Lesbarkeit
-                                    tempDiv.querySelectorAll('p').forEach(p => {
-                                        p.after(document.createTextNode('\n'));
-                                    });
-                                    // Entferne <br> aber behalte Zeilenumbruch bei
-                                    tempDiv.querySelectorAll('br').forEach(br => {
-                                        br.after(document.createTextNode('\n'));
-                                    });
-                                    return (tempDiv.textContent || tempDiv.innerText || '').trim();
-                                }
-                                // Es ist bereits Plain Text (alte Reports)
-                                return (html || '').trim();
-                            };
-
-                            const originalText = convertHtmlToText(original);
-                            const suggestionText = convertHtmlToText(suggestion);
-
-                            // 'jsdiff' wird global von jsdiff.min.js geladen
-                            if (typeof Diff !== 'undefined') {
-                                const diff = Diff.diffLines(originalText, suggestionText, { newlineIsToken: true });
-                                diffViewer.innerHTML = ''; // Vorherigen Inhalt leeren
-
-                                if (!diff || diff.length === 0 || (diff.length === 1 && !diff[0].added && !diff[0].removed)) {
-                                    diffViewer.innerHTML = '<p style="font-style: italic;">Keine Änderungen am Textinhalt gefunden.</p>';
-                                } else {
-                                    const fragment = document.createDocumentFragment();
-                                    diff.forEach(function (part) {
-                                        const tag = part.added ? 'ins' : (part.removed ? 'del' : 'span');
-                                        const el = document.createElement(tag);
-                                        el.appendChild(document.createTextNode(part.value));
-                                        fragment.appendChild(el);
-                                    });
-                                    diffViewer.appendChild(fragment);
-                                }
-                            } else {
-                                diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler: jsDiff-Bibliothek (Diff) nicht gefunden.</p>';
-                            }
-
-                        } catch (err) {
-                            console.error('Fehler beim Erstellen des Diffs:', err);
-                            diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler beim Erstellen des Diffs.</p>';
-                        }
-                    }
-                }, 10); // Kleiner Timeout (10ms)
-            });
-        }
-    });
-</script>
+<script src="<?php echo htmlspecialchars($adminReportsJsUrl); ?>" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
