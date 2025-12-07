@@ -546,15 +546,15 @@ require_once Path::getPartialTemplatePath('header.php');
                 row.innerHTML = `
                 <td>
                     ${id}
-                    <div class="source-markers">
+                    <div class="source-markers"><br>
                         ${(chapter.sources || []).map(s => `<span class="source-marker source-${s.toLowerCase()}" title="Quelle: ${s}">${s.toUpperCase()}</span>`).join('')}
                     </div>
                 </td>
                 <td>
-                    <span class="comic-type-display">${chapter.type || ''}</span>
                     <img src="${thumbnailPath}" class="comic-thumbnail" alt="Vorschau" onerror="this.src='${placeholderUrl}'; this.onerror=null;">
                 </td>
                 <td class="${isNameMissing ? 'missing-info' : ''}">
+                    <span class="comic-type-display">${chapter.type || ''}</span><br>
                     ${(isChapterMissing || chapter.chapter === null) ? '' : `<strong>Kap. ${chapter.chapter}:</strong><br>`}
                     ${chapter.name || '<em>Kein Name</em>'}
                 </td>
@@ -744,7 +744,11 @@ require_once Path::getPartialTemplatePath('header.php');
 
         function updateTimestamp() {
             const now = new Date();
-            const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const date = now.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
             const time = now.toLocaleTimeString('de-DE');
             const newStatusText = `Letzte Speicherung am ${date} um ${time} Uhr.`;
             let pElement = lastRunContainer.querySelector('.status-message');
@@ -759,8 +763,13 @@ require_once Path::getPartialTemplatePath('header.php');
         async function saveSettings() {
             await fetch(window.location.href, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'save_settings', csrf_token: csrfToken })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'save_settings',
+                    csrf_token: csrfToken
+                })
             });
         }
 
@@ -814,6 +823,7 @@ require_once Path::getPartialTemplatePath('header.php');
             }
             const imageExtensions = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
             let currentExtIndex = 0;
+
             function tryNextExtension() {
                 if (currentExtIndex >= imageExtensions.length) {
                     imgElement.src = placeholderSrc;
@@ -890,10 +900,12 @@ require_once Path::getPartialTemplatePath('header.php');
 
                     if (imageUrl) {
                         img.src = `${charProfileUrlBase}/${imageUrl}`; // KORRIGIERT
-                        img.addEventListener('error', function () {
+                        img.addEventListener('error', function() {
                             this.onerror = null;
                             this.src = placeholderUrlMissing;
-                        }, { once: true });
+                        }, {
+                            once: true
+                        });
                     } else {
                         img.src = placeholderUrlUnknown;
                     }
@@ -976,11 +988,15 @@ require_once Path::getPartialTemplatePath('header.php');
                         showMessage(data.message, 'green');
                         await saveSettings();
                         updateTimestamp();
-                    } else { showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red'); }
+                    } else {
+                        showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red');
+                    }
                 } catch (e) {
                     throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
                 }
-            } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red'); }
+            } catch (error) {
+                showMessage(`Netzwerkfehler: ${error.message}`, 'red');
+            }
         };
 
         // Logik für "Neuer Eintrag" in eine eigene Funktion ausgelagert

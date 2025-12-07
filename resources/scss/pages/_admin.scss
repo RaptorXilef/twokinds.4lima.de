@@ -444,27 +444,27 @@
     &.comic-editor-table {
         th:nth-child(1),
         td:nth-child(1) {
-            width: 10%;
+            width: 65px; // 10%
         } // ID
         th:nth-child(2),
         td:nth-child(2) {
-            width: 120px;
+            width: 100px; // 120%
         } // Vorschau
         th:nth-child(3),
         td:nth-child(3) {
-            width: 25%;
+            width: 100px; // 25%
         } // Name
         th:nth-child(4),
         td:nth-child(4) {
-            width: 30%;
+            width: 300px; // 30%
         } // Transkript
         th:nth-child(5),
         td:nth-child(5) {
-            width: 15%;
+            width: 50px; // 15%
         } // Status
         th:nth-child(6),
         td:nth-child(6) {
-            width: 100px;
+            width: 80px; // 100px
             text-align: right;
         } // Aktionen
 
