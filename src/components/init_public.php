@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zentrales Initialisierungsskript für alle öffentlichen Seiten.
  *
@@ -7,7 +8,7 @@
  * - Starten und sicheres Konfigurieren der PHP-Session.
  * - Setzen von strikten HTTP-Sicherheits-Headern.
  * - Generierung einer einmaligen Nonce für die Content-Security-Policy (CSP) zum Schutz vor XSS.
- * 
+ *
  * @file      ROOT/src/components/public_init.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -47,7 +48,7 @@ $csp = [
     'default-src' => ["'self'"],
     'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co", "https://cdn.twokinds.keenspot.com"],
     'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com", "https://cdn.jsdelivr.net"],
+    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com", "https://cdn.jsdelivr.net", "https://twokinds.4lima.de"],
     'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://www.2kinds.com", "https://i.creativecommons.org", "https://licensebuttons.net"],
     'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com", "https://twokindscomic.com", "https://cdn.jsdelivr.net"],
     'object-src' => ["'none'"],
@@ -66,5 +67,3 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
-
-?>

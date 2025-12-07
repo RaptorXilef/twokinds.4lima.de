@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Zentrales Initialisierungsskript für alle Admin-Seiten (Final gehärtete Version).
  *
@@ -9,7 +10,7 @@
  * - Schutz vor Session Hijacking durch User-Agent- und IP-Adressen-Bindung.
  * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
  * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
- * 
+ *
  * @file      ROOT/src/components/init_admin.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -47,21 +48,23 @@ try {
 
     // Sicherstellen, dass das Verzeichnis existiert
     if (!is_dir($sessionSavePath)) {
-        // Versuche, es rekursiv zu erstellen. 
+        // Versuche, es rekursiv zu erstellen.
         // 0700 = Nur der Eigentümer (PHP-Prozess) darf lesen/schreiben/ausführen.
         if (!mkdir($sessionSavePath, 0755, true)) { // Vorzugsweise 0700, bei Shared-Hosting ist 0755 aber die zuverlässigere Wahl.
             error_log("FEHLER: Konnte das benutzerdefinierte Session-Verzeichnis nicht erstellen: " . $sessionSavePath);
         } else {
             // Verzeichnis erfolgreich erstellt, setze den Pfad
             session_save_path($sessionSavePath);
-            if ($debugMode)
+            if ($debugMode) {
                 error_log("DEBUG: Eigenes Session-Verzeichnis erstellt und Pfad gesetzt auf: " . $sessionSavePath);
+            }
         }
     } else {
         // Verzeichnis existiert bereits, setze den Pfad
         session_save_path($sessionSavePath);
-        if ($debugMode)
+        if ($debugMode) {
             error_log("DEBUG: Eigenen Session-Pfad gesetzt auf: " . $sessionSavePath);
+        }
     }
 } catch (Exception $e) {
     error_log("FEHLER beim Setzen des Session-Pfads: " . $e->getMessage());
@@ -76,7 +79,7 @@ $csp = [
     'default-src' => ["'self'"],
     'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co"],
     'style-src' => ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://code.jquery.com/", "https://cdnjs.cloudflare.com"], // 'unsafe-inline' für Summernote
-    'font-src' => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"], // 'data:' für Summernote
+    'font-src' => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://twokinds.4lima.de"], // 'data:' für Summernote
     'img-src' => ["'self'", "data:", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://placehold.co"],
     'connect-src' => ["'self'", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://*.google-analytics.com"],
     'object-src' => ["'none'"],
@@ -151,12 +154,14 @@ if (!function_exists('verify_csrf_token')) {
             }
         }
 
-        if ($debugMode)
+        if ($debugMode) {
             error_log("DEBUG ({$callingScript}): CSRF-Prüfung. Erhaltener Token: " . ($token ?? 'KEINER') . ". Session-Token: " . $_SESSION['csrf_token']);
+        }
 
         if (!isset($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
-            if ($debugMode)
+            if ($debugMode) {
                 error_log("FEHLER ({$callingScript}): CSRF-Token-Validierung fehlgeschlagen.");
+            }
 
             $isApiCall = (defined('IS_API_CALL') && IS_API_CALL === true);
 
@@ -177,8 +182,9 @@ if (!function_exists('load_settings')) {
     {
         $defaults = ['last_run_timestamp' => null];
         if (!file_exists($filePath)) {
-            if ($debugMode)
+            if ($debugMode) {
                 error_log("DEBUG: Einstellungsdatei $filePath nicht gefunden, verwende Standardwerte.");
+            }
             return $defaults;
         }
         $allSettings = json_decode(file_get_contents($filePath), true);
@@ -190,20 +196,23 @@ if (!function_exists('save_settings')) {
     function save_settings(string $filePath, string $key, array $data, bool $debugMode): void
     {
         $allSettings = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
-        if (!is_array($allSettings))
+        if (!is_array($allSettings)) {
             $allSettings = [];
+        }
         $allSettings[$key] = $data;
         file_put_contents($filePath, json_encode($allSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        if ($debugMode)
+        if ($debugMode) {
             error_log("DEBUG: Einstellungen für Schlüssel '$key' in $filePath gespeichert.");
+        }
     }
 }
 
 // --- 6. LOGOUT-LOGIK ---
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     verify_csrf_token();
-    if ($debugMode)
+    if ($debugMode) {
         error_log("DEBUG: Logout-Aktion mit gültigem CSRF-Token erkannt.");
+    }
 
     $_SESSION = array();
 
@@ -229,8 +238,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 // --- 7. FINALER LOGIN-CHECK ---
 if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-        if ($debugMode)
+        if ($debugMode) {
             error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von init_admin.php (aufgerufen von {$callingScript}).");
+        }
 
         header('Location: index.php');
         exit;
@@ -240,8 +250,9 @@ if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
 // --- 8. SESSION-TIMEOUT-LOGIK ---
 define('SESSION_TIMEOUT_SECONDS', 600); // 10 Minuten
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT_SECONDS)) {
-    if ($debugMode)
+    if ($debugMode) {
         error_log("DEBUG: Session abgelaufen. Letzte Aktivität vor " . (time() - $_SESSION['last_activity']) . " Sekunden.");
+    }
 
     session_unset();
     session_destroy();
@@ -249,5 +260,3 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 
     exit;
 }
 $_SESSION['last_activity'] = time();
-
-?>
