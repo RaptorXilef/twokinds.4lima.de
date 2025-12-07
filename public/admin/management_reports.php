@@ -12,13 +12,10 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
- * @since 4.0.0
- *  - Initiale Erstellung
- *  - Korrektur der JS-Pfade.
- *  - Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
- *
- * @since 5.0.0
- *  - refactor(Page): Inline-CSS entfernt, Layout auf SCSS-Komponenten umgestellt, Icon-Buttons und Paginierung integriert.
+ * @since     1.0.0 Initiale Erstellung
+ * @since     1.0.1 Korrektur der JS-Pfade.
+ * @since     1.1.0 Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
+ * @since     5.0.0 refactor(Page): Inline-CSS entfernt, Layout auf Admin-Tabellen-Standards (SCSS) umgestellt, PHP-Paginierung hinzugefügt.
  * */
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -31,39 +28,30 @@ $archiveFilePath = Path::getDataPath('comic_reports_archive.json');
 $message = ''; // Für Statusmeldungen
 $messageType = 'info';
 
-// Paginierung: Konstante nutzen (falls nicht definiert, Fallback auf 50)
+// Paginierung Konstante nutzen (falls nicht definiert, Fallback)
 $itemsPerPage = defined('COMIC_PAGES_PER_PAGE') ? COMIC_PAGES_PER_PAGE : 50;
 
 // === 3. HELFERFUNKTIONEN (mit flock) ===
 
 /**
  * Liest eine JSON-Datei sicher (mit Sperre).
- * Enthält Fallback-Mechanismen, falls flock fehlschlägt.
  */
 function loadJsonWithLock(string $path, bool $debugMode): array
 {
     if (!file_exists($path)) {
-        if ($debugMode) {
-            error_log("loadJsonWithLock: Datei nicht gefunden: $path");
-        }
         return [];
     }
-
     $handle = fopen($path, 'r');
     if (!$handle) {
-        if ($debugMode) {
-            error_log("loadJsonWithLock: Konnte Datei nicht öffnen: $path");
-        }
         return [];
     }
 
-    $content = '';
-    // Versuche Shared Lock
+    // Shared Lock versuchen
     if (flock($handle, LOCK_SH)) {
         $content = stream_get_contents($handle);
         flock($handle, LOCK_UN);
     } else {
-        // Fallback: Dirty Read, falls Lock nicht möglich (besser als leere Seite)
+        // Fallback
         if ($debugMode) {
             error_log("loadJsonWithLock: Konnte keinen Lock erhalten, lese trotzdem: $path");
         }
@@ -76,13 +64,7 @@ function loadJsonWithLock(string $path, bool $debugMode): array
     }
 
     $data = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        if ($debugMode) {
-            error_log("JSON Decode Error in $path: " . json_last_error_msg());
-        }
-        return [];
-    }
-    return is_array($data) ? $data : [];
+    return (json_last_error() === JSON_ERROR_NONE && is_array($data)) ? $data : [];
 }
 
 /**
@@ -90,24 +72,18 @@ function loadJsonWithLock(string $path, bool $debugMode): array
  */
 function saveJsonWithLock(string $path, array $data, bool $debugMode): bool
 {
-    $handle = fopen($path, 'c+'); // 'c+' zum Lesen/Schreiben, Zeiger am Anfang
+    $handle = fopen($path, 'c+');
     if (!$handle) {
-        if ($debugMode) {
-            error_log("Failed to open $path for writing.");
-        }
         return false;
     }
 
     if (flock($handle, LOCK_EX)) {
-        ftruncate($handle, 0); // Datei leeren
-        rewind($handle);       // Zeiger zurücksetzen
+        ftruncate($handle, 0);
+        rewind($handle);
         fwrite($handle, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         fflush($handle);
         flock($handle, LOCK_UN);
     } else {
-        if ($debugMode) {
-            error_log("Failed to get exclusive lock for $path.");
-        }
         fclose($handle);
         return false;
     }
@@ -117,7 +93,6 @@ function saveJsonWithLock(string $path, array $data, bool $debugMode): bool
 
 /**
  * Verschiebt/Ändert einen Report-Status.
- * Sperrt beide Dateien (Reports & Archiv) gleichzeitig, um Datenintegrität zu sichern.
  */
 function moveReport(string $reportId, string $action, string $reportsPath, string $archivePath, bool $debugMode): bool
 {
@@ -125,9 +100,6 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
     $handleArchive = fopen($archivePath, 'c+');
 
     if (!$handleReports || !$handleArchive) {
-        if ($debugMode) {
-            error_log("Konnte nicht beide Report-Dateien öffnen.");
-        }
         if ($handleReports) {
             fclose($handleReports);
         }
@@ -137,11 +109,7 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
         return false;
     }
 
-    // Versuche beide zu sperren
     if (!flock($handleReports, LOCK_EX) || !flock($handleArchive, LOCK_EX)) {
-        if ($debugMode) {
-            error_log("Konnte nicht beide Report-Dateien sperren (LOCK_EX).");
-        }
         if ($handleReports) {
             flock($handleReports, LOCK_UN);
             fclose($handleReports);
@@ -153,29 +121,18 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
         return false;
     }
 
-    // --- Kritischer Bereich ---
-
     // Daten einlesen
     rewind($handleReports);
-    $contentR = stream_get_contents($handleReports);
-    $reports = !empty($contentR) ? json_decode($contentR, true) : [];
-    if (!is_array($reports)) {
-        $reports = [];
-    }
-
+    $reports = json_decode(stream_get_contents($handleReports), true) ?? [];
     rewind($handleArchive);
-    $contentA = stream_get_contents($handleArchive);
-    $archive = !empty($contentA) ? json_decode($contentA, true) : [];
-    if (!is_array($archive)) {
-        $archive = [];
-    }
+    $archive = json_decode(stream_get_contents($handleArchive), true) ?? [];
 
     $reportFound = false;
     $reportData = null;
     $targetList = null;
     $newStatus = '';
 
-    // Suche in Reports
+    // Suchen in Reports
     foreach ($reports as $key => $report) {
         if (isset($report['id']) && strval($report['id']) === strval($reportId)) {
             $reportData = $report;
@@ -195,7 +152,7 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
         }
     }
 
-    // Suche in Archiv (falls nicht gefunden)
+    // Suchen in Archiv (falls nicht gefunden)
     if (!$reportFound) {
         foreach ($archive as $key => $report) {
             if (isset($report['id']) && strval($report['id']) === strval($reportId)) {
@@ -215,14 +172,12 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
     if ($reportFound && $newStatus) {
         $reportData['status'] = $newStatus;
 
-        // Hinzufügen zur Zielliste
         if (($targetList === 'archive') || ($targetList === null && $action === 'close')) {
             $archive[] = $reportData;
         } else {
             $reports[] = $reportData;
         }
 
-        // Indizes neu ordnen und speichern
         $reports = array_values($reports);
         $archive = array_values($archive);
 
@@ -237,7 +192,6 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
         $success = true;
     }
 
-    // Sperren aufheben
     flock($handleReports, LOCK_UN);
     fclose($handleReports);
     flock($handleArchive, LOCK_UN);
@@ -276,13 +230,10 @@ if (isset($_GET['message'])) {
 // === 6. DATEN LADEN & FILTERN ===
 $isArchive = ($filterStatus === 'closed');
 $sourcePath = $isArchive ? $archiveFilePath : $reportsFilePath;
-
-// Laden mit robustem Fallback
 $allReports = loadJsonWithLock($sourcePath, $debugMode);
 
 // Filtern
 $reports = array_filter($allReports, function ($r) use ($filterStatus, $filterComicId, $filterSubmitter) {
-    // Status Filter
     $rStatus = $r['status'] ?? 'open';
     if ($filterStatus === 'closed' && $rStatus !== 'closed') {
         return false;
@@ -294,7 +245,6 @@ $reports = array_filter($allReports, function ($r) use ($filterStatus, $filterCo
         return false;
     }
 
-    // Text Filter
     if (!empty($filterComicId) && !str_contains(strval($r['comic_id'] ?? ''), $filterComicId)) {
         return false;
     }
@@ -307,16 +257,14 @@ $reports = array_filter($allReports, function ($r) use ($filterStatus, $filterCo
 
 // Sortieren
 if ($isArchive) {
-    usort($reports, fn($a, $b) => strtotime($b['date'] ?? 0) <=> strtotime($a['date'] ?? 0)); // Neueste zuerst
+    usort($reports, fn($a, $b) => strtotime($b['date'] ?? 0) <=> strtotime($a['date'] ?? 0));
 } else {
-    usort($reports, fn($a, $b) => strtotime($a['date'] ?? 0) <=> strtotime($b['date'] ?? 0)); // Älteste zuerst
+    usort($reports, fn($a, $b) => strtotime($a['date'] ?? 0) <=> strtotime($b['date'] ?? 0));
 }
 
-// Paginierung Berechnen
+// Paginierung
 $totalItems = count($reports);
 $totalPages = ceil($totalItems / $itemsPerPage);
-
-// Korrektur falls Seite out of bounds ist
 if ($currentPage > $totalPages && $totalPages > 0) {
     $currentPage = $totalPages;
 }
@@ -324,10 +272,8 @@ if ($totalPages == 0) {
     $currentPage = 1;
 }
 
-// Slice für die aktuelle Ansicht
 $displayedReports = array_slice($reports, ($currentPage - 1) * $itemsPerPage, $itemsPerPage);
 
-// Helper für Pagination-Links
 function getPageLink($page)
 {
     $params = $_GET;
@@ -420,7 +366,6 @@ require_once Path::getPartialTemplatePath('header.php');
                             <td><?php echo $type; ?></td>
                             <td><?php echo $submitter; ?></td>
                             <td><?php echo $shortDesc; ?></td>
-
                             <td class="actions-cell">
                                 <form action="<?php echo basename($_SERVER['PHP_SELF']); ?>?<?php echo http_build_query($_GET); ?>" method="POST">
                                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
@@ -459,43 +404,43 @@ require_once Path::getPartialTemplatePath('header.php');
     </div>
 
     <?php if ($totalPages > 1) : ?>
-        <div class="pagination">
-            <?php if ($currentPage > 1) : ?>
-                <a href="<?php echo getPageLink(1); ?>">&laquo;</a>
-                <a href="<?php echo getPageLink($currentPage - 1); ?>">&lsaquo;</a>
+    <div class="pagination">
+        <?php if ($currentPage > 1) : ?>
+            <a href="<?php echo getPageLink(1); ?>">&laquo;</a>
+            <a href="<?php echo getPageLink($currentPage - 1); ?>">&lsaquo;</a>
+        <?php endif; ?>
+
+        <?php
+        $startPage = max(1, $currentPage - 4);
+        $endPage = min($totalPages, $currentPage + 4);
+
+        if ($startPage > 1) : ?>
+            <a href="<?php echo getPageLink(1); ?>">1</a>
+            <?php if ($startPage > 2) :
+                ?><span>...</span><?php
+            endif; ?>
+        <?php endif; ?>
+
+        <?php for ($i = $startPage; $i <= $endPage; $i++) : ?>
+            <?php if ($i === $currentPage) : ?>
+                <span class="current-page"><?php echo $i; ?></span>
+            <?php else : ?>
+                <a href="<?php echo getPageLink($i); ?>"><?php echo $i; ?></a>
             <?php endif; ?>
+        <?php endfor; ?>
 
-            <?php
-            $startPage = max(1, $currentPage - 4);
-            $endPage = min($totalPages, $currentPage + 4);
+        <?php if ($endPage < $totalPages) : ?>
+            <?php if ($endPage < $totalPages - 1) :
+                ?><span>...</span><?php
+            endif; ?>
+            <a href="<?php echo getPageLink($totalPages); ?>"><?php echo $totalPages; ?></a>
+        <?php endif; ?>
 
-            if ($startPage > 1) : ?>
-                <a href="<?php echo getPageLink(1); ?>">1</a>
-                <?php if ($startPage > 2) :
-                    ?><span>...</span><?php
-                endif; ?>
-            <?php endif; ?>
-
-            <?php for ($i = $startPage; $i <= $endPage; $i++) : ?>
-                <?php if ($i === $currentPage) : ?>
-                    <span class="current-page"><?php echo $i; ?></span>
-                <?php else : ?>
-                    <a href="<?php echo getPageLink($i); ?>"><?php echo $i; ?></a>
-                <?php endif; ?>
-            <?php endfor; ?>
-
-            <?php if ($endPage < $totalPages) : ?>
-                <?php if ($endPage < $totalPages - 1) :
-                    ?><span>...</span><?php
-                endif; ?>
-                <a href="<?php echo getPageLink($totalPages); ?>"><?php echo $totalPages; ?></a>
-            <?php endif; ?>
-
-            <?php if ($currentPage < $totalPages) : ?>
-                <a href="<?php echo getPageLink($currentPage + 1); ?>">&rsaquo;</a>
-                <a href="<?php echo getPageLink($totalPages); ?>">&raquo;</a>
-            <?php endif; ?>
-        </div>
+        <?php if ($currentPage < $totalPages) : ?>
+            <a href="<?php echo getPageLink($currentPage + 1); ?>">&rsaquo;</a>
+            <a href="<?php echo getPageLink($totalPages); ?>">&raquo;</a>
+        <?php endif; ?>
+    </div>
     <?php endif; ?>
 
 </div>
@@ -509,12 +454,13 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
         <div class="modal-scroll-content">
             <div id="report-detail-content" class="admin-form">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-medium); padding-bottom: 15px;">
                     <div><strong>Comic-ID:</strong> <a id="detail-comic-link" href="#" target="_blank"><span id="detail-comic-id"></span></a></div>
                     <div><strong>Datum:</strong> <span id="detail-date"></span></div>
                     <div><strong>Einsender:</strong> <span id="detail-submitter"></span></div>
                     <div><strong>Typ:</strong> <span id="detail-type"></span></div>
                 </div>
+
                 <h3>Beschreibung</h3>
                 <div id="detail-description-container" class="report-text-box">
                     <p id="detail-description"></p>
@@ -526,21 +472,19 @@ require_once Path::getPartialTemplatePath('header.php');
                         <p class="loading-text">Diff wird generiert...</p>
                     </div>
                     <h3>Vorschlag (Gerenderte HTML-Ansicht)</h3>
-                    <div id="detail-suggestion-html" class="report-text-box transcript-display-box"></div>
+                    <div id="detail-suggestion-html" class="report-text-box" style="margin-bottom: 15px;"></div>
                     <h3>Vorschlag (HTML-Quellcode)</h3>
-                    <div id="detail-suggestion-code-container" class="report-text-box">
-                        <textarea id="detail-suggestion-code" rows="8" readonly></textarea>
+                    <div id="detail-suggestion-code-container">
+                        <textarea id="detail-suggestion-code" class="summernote-code-look" readonly></textarea>
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="modal-footer-actions">
             <div class="modal-buttons">
                 <button type="button" class="button" data-action="close-detail-modal">Schließen</button>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -550,5 +494,88 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
 ?>
 <script src="<?php echo htmlspecialchars($jsDiffUrl); ?>" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
 <script src="<?php echo htmlspecialchars($adminReportsJsUrl); ?>" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
+
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.getElementById('reports-table');
+        if (table) {
+            table.addEventListener('click', function (e) {
+                const detailButton = e.target.closest('.detail-button');
+                if (!detailButton) return;
+
+                setTimeout(() => {
+                    const row = detailButton.closest('tr');
+                    if (!row) return;
+
+                    const data = row.dataset;
+                    const suggestion = data.suggestion || '';
+                    const original = data.original || '';
+                    const description = data.fullDescription || 'Keine Beschreibung.';
+                    const comicId = data.comicId || 'Unbekannt';
+                    const comicLink = document.getElementById('detail-comic-link');
+
+                    document.getElementById('detail-comic-id').textContent = comicId;
+                    if (comicLink) {
+                        const linkInCell = row.querySelector('td:nth-child(2) a');
+                        if (linkInCell) comicLink.href = linkInCell.href;
+                        else comicLink.href = '#';
+                    }
+                    document.getElementById('detail-date').textContent = data.date || 'k.A.';
+                    document.getElementById('detail-submitter').textContent = data.submitter || 'k.A.';
+                    document.getElementById('detail-type').textContent = data.type || 'k.A.';
+                    document.getElementById('detail-description').textContent = description;
+
+                    const htmlDisplay = document.getElementById('detail-suggestion-html');
+                    const codeDisplay = document.getElementById('detail-suggestion-code');
+
+                    if (htmlDisplay) htmlDisplay.innerHTML = suggestion || '<em>Kein Vorschlag (HTML).</em>';
+                    if (codeDisplay) codeDisplay.value = suggestion || 'Kein Vorschlag (Code).';
+
+                    const diffViewer = document.getElementById('detail-diff-viewer');
+                    if (diffViewer) {
+                        try {
+                            const convertHtmlToText = (html) => {
+                                if (html && html.trim().startsWith('<')) {
+                                    const tempDiv = document.createElement('div');
+                                    tempDiv.innerHTML = html;
+                                    tempDiv.querySelectorAll('p').forEach(p => p.after(document.createTextNode('\n')));
+                                    tempDiv.querySelectorAll('br').forEach(br => br.after(document.createTextNode('\n')));
+                                    return (tempDiv.textContent || tempDiv.innerText || '').trim();
+                                }
+                                return (html || '').trim();
+                            };
+
+                            const originalText = convertHtmlToText(original);
+                            const suggestionText = convertHtmlToText(suggestion);
+
+                            if (typeof Diff !== 'undefined') {
+                                const diff = Diff.diffWords(originalText, suggestionText);
+                                diffViewer.innerHTML = '';
+
+                                if (!diff || diff.length === 0 || (diff.length === 1 && !diff[0].added && !diff[0].removed)) {
+                                    diffViewer.innerHTML = '<p style="font-style: italic;">Keine Änderungen am Textinhalt gefunden.</p>';
+                                } else {
+                                    const fragment = document.createDocumentFragment();
+                                    diff.forEach(function (part) {
+                                        const tag = part.added ? 'ins' : (part.removed ? 'del' : 'span');
+                                        const el = document.createElement(tag);
+                                        el.appendChild(document.createTextNode(part.value));
+                                        fragment.appendChild(el);
+                                    });
+                                    diffViewer.appendChild(fragment);
+                                }
+                            } else {
+                                diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler: jsDiff-Bibliothek (Diff) nicht gefunden.</p>';
+                            }
+                        } catch (err) {
+                            console.error('Fehler beim Erstellen des Diffs:', err);
+                            diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler beim Erstellen des Diffs.</p>';
+                        }
+                    }
+                }, 10);
+            });
+        }
+    });
+</script>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

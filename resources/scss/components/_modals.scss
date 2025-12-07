@@ -23,6 +23,7 @@
 /// - Erweiterung um .modal-advanced-layout (Sticky Header/Footer).
 /// - Integration von Image Preview und Character Grid Styles.
 /// - fix(Design): Original-Styles für Dialoge und Close-Buttons wiederhergestellt.
+/// - style(Report): Styles für Diff-Box und Code-Ansicht hinzugefügt.
 ///
 
 @use '../abstracts/variables' as *;
@@ -188,11 +189,6 @@
     }
 }
 
-/* --- Report Modal Spezifisch (Original) --- */
-.report-modal-content {
-    // Falls hier noch spezifische Styles für Report benötigt werden
-}
-
 /* --- Image Preview Section (Toggle Buttons & Images) --- */
 #modal-image-preview-section {
     margin-top: 20px;
@@ -242,24 +238,58 @@
     }
 }
 
+/* --- Unified Image Preview Layout (Admin & Report) --- */
+.report-images-container,
 #modal-image-previews {
     display: flex;
-    gap: 15px;
-    justify-content: center;
+    flex-flow: row nowrap; // Zwingt Elemente nebeneinander (kein Umbruch)
+    gap: 15px; // Abstand zwischen den Bildern
+    margin-top: 15px;
+    width: 100%; // Nutzt die volle Breite des Modals
+    justify-content: center; // Falls mal nichts da ist, zentrieren
 
+    // Die Kinder-Elemente (Wrapper um Bild & Label)
+    // .image-preview-box ist für Admin, div für Report
+    > div,
     .image-preview-box {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
+        // "Die Magie":
+        // 1 = Wachsen (Nimm Platz), 1 = Schrumpfen, 0 = Basis
+        // Wenn 1 Element sichtbar ist -> 100% Breite
+        // Wenn 2 Elemente sichtbar sind -> 50% Breite (exakt gleich)
+        flex: 1; // Beide Container wachsen gleichmäßig (50% Breite)
+        width: 0; // Fix für manche Browser, damit Flex-Basis 0 greift
+        min-width: 0;
 
-        img {
-            max-width: 100vh;
-            height: auto;
-            max-height: 100%;
-            border-radius: 4px;
-            border: 1px solid var(--border-medium);
-            background-color: var(--content-area-bg); // Schachbrett-Ersatz
+        // Eigenes Layout (Label oben, Bild unten)
+        display: flex;
+        flex-direction: column;
+    }
+
+    // Beschriftungen (Report nutzt label, Admin nutzt p)
+    label,
+    p {
+        text-align: center;
+        margin-bottom: 5px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text-color);
+    }
+
+    img {
+        width: 100%; // Füllt den Wrapper aus
+        height: auto; // Verhältnis beibehalten
+        object-fit: contain; // Bild immer ganz zeigen
+        max-height: 60vh;
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+        align-self: flex-start; // Richtet Bilder oben bündig aus
+        background-color: var(--content-area-bg); // Neutraler Hintergrund
+
+        body.theme-night & {
+            border-color: var(--border-light);
+            background-color: rgba(0, 0, 0, 0.2);
         }
     }
 }
@@ -321,6 +351,95 @@
     }
 }
 
+/* --- Report Detail & Diff View --- */
+
+// Container für Textblöcke im Modal
+.report-text-box {
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    overflow-wrap: break-word;
+    max-height: 30vh;
+    overflow-y: auto;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: var(--text-color);
+
+    body.theme-night & {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-color: var(--border-light);
+    }
+}
+
+// Diff-Ansicht (Text-Vergleich)
+.diff-box {
+    font-family: $font-mono;
+    white-space: pre-wrap; // Zeilenumbrüche erhalten
+
+    .loading-text {
+        color: var(--text-color-light);
+        font-style: italic;
+    }
+
+    // Hinzugefügt (Grün)
+    ins {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #155724;
+        text-decoration: none;
+        border-bottom: 2px solid #28a745;
+        padding: 0 2px;
+
+        body.theme-night & {
+            background-color: rgba(40, 167, 69, 0.3);
+            color: #a5d6a7;
+            border-color: #2e7d32;
+        }
+    }
+
+    // Entfernt (Rot)
+    del {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #721c24;
+        text-decoration: line-through;
+        padding: 0 2px;
+
+        body.theme-night & {
+            background-color: rgba(220, 53, 69, 0.3);
+            color: #ef9a9a;
+        }
+    }
+}
+
+// Code-Ansicht im Summernote-Style (Dunkel)
+.summernote-code-look {
+    font-family: $font-mono !important;
+    font-size: 14px !important;
+    line-height: 1.4;
+    background-color: #1e1e1e !important; // Richtig dunkel (VS Code style)
+    color: #d4d4d4 !important; // Helles Grau
+    border: 1px solid #333;
+    border-radius: 4px;
+    resize: vertical;
+    padding: 10px;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 150px;
+    display: block;
+
+    &:focus {
+        outline: none;
+        border-color: var(--link-color);
+    }
+
+    // Im Light Mode auch dunkel lassen (Code-View Konvention)
+    body.theme-night & {
+        background-color: var(--page-bg);
+        color: var(--link-color);
+    }
+}
+
 /* --- Popup Dialog (Original) --- */
 .dialog {
     border-radius: 5px;
@@ -337,9 +456,6 @@
         box-shadow: 0 0 5px 1px rgb(255 255 255 / 25%);
     }
 
-    // ... (restliche Dialog styles hier einfügen falls nötig, oder wurden sie oben gelöscht?)
-    // Ich füge die wichtigen Teile hier sicherheitshalber an, basierend auf MeinScssCode
-
     .dialog-title {
         background-color: var(--button-hover-bg);
         padding: 5px 10px;
@@ -352,140 +468,5 @@
 
     .dialog-body {
         padding: 10px;
-    }
-}
-
-/* --- Unified Image Preview Layout (Admin & Report) --- */
-.report-images-container,
-#modal-image-previews {
-    display: flex;
-    flex-flow: row nowrap; // Zwingt Elemente nebeneinander (kein Umbruch)
-    gap: 15px; // Abstand zwischen den Bildern
-    margin-top: 15px;
-    width: 100%; // Nutzt die volle Breite des Modals
-    justify-content: center; // Falls mal nichts da ist, zentrieren
-
-    // Die Kinder-Elemente (Wrapper um Bild & Label)
-    // .image-preview-box ist für Admin, div für Report
-    > div,
-    .image-preview-box {
-        // "Die Magie":
-        // 1 = Wachsen (Nimm Platz), 1 = Schrumpfen, 0 = Basis
-        // Wenn 1 Element sichtbar ist -> 100% Breite
-        // Wenn 2 Elemente sichtbar sind -> 50% Breite (exakt gleich)
-        flex: 1; // Beide Container wachsen gleichmäßig (50% Breite)
-        width: 0; // Fix für manche Browser, damit Flex-Basis 0 greift
-
-        min-width: 0;
-
-        // Eigenes Layout (Label oben, Bild unten)
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* --- Report Detail & Diff View --- */
-
-    // Container für Textblöcke im Modal
-    .report-text-box {
-        background-color: var(
-            --content-area-bg
-        ); // Heller/Dunkler Hintergrund je nach Theme
-        border: 1px solid var(--border-medium);
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-        overflow-wrap: break-word;
-        max-height: 30vh;
-        overflow-y: auto;
-        font-size: 0.95em;
-        line-height: 1.5;
-
-        body.theme-night & {
-            background-color: rgba(0, 0, 0, 0.2); // Etwas dunkler im Dark Mode
-            border-color: var(--border-light);
-        }
-    }
-
-    // Spezifisches Design für die Unterschieds-Anzeige (Diff)
-    .diff-box {
-        font-family: $font-mono; // Monospace für Code-Feeling
-        white-space: pre-wrap; // Zeilenumbrüche erhalten
-
-        .loading-text {
-            color: var(--text-color-light);
-            font-style: italic;
-        }
-
-        // Hinzugefügter Text (Grün)
-        ins {
-            background-color: var(--status-green-bg);
-            color: var(--status-green-text);
-            text-decoration: none;
-            border-bottom: 1px solid var(--status-green-border);
-            padding: 0 2px;
-            border-radius: 2px;
-
-            body.theme-night & {
-                background-color: rgba(40, 167, 69, 0.3);
-                color: #a5d6a7;
-                border-color: #2e7d32;
-            }
-        }
-
-        // Entfernter Text (Rot)
-        del {
-            background-color: var(--status-red-bg);
-            color: var(--status-red-text);
-            text-decoration: line-through;
-            opacity: 0.8;
-            padding: 0 2px;
-            border-radius: 2px;
-
-            body.theme-night & {
-                background-color: rgba(220, 53, 69, 0.3);
-                color: #ef9a9a;
-            }
-        }
-    }
-
-    // Code-Ansicht TextArea
-    #detail-suggestion-code {
-        font-family: $font-mono;
-        background-color: var(--content-bg);
-        color: var(--text-color);
-        border: none;
-        resize: none;
-        width: 100%;
-
-        &:focus {
-            outline: none;
-        }
-    }
-
-    // Beschriftungen (Report nutzt label, Admin nutzt p)
-    label,
-    p {
-        text-align: center;
-        margin-bottom: 5px;
-        font-weight: bold;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: var(--text-color);
-    }
-
-    img {
-        width: 100%; // Füllt den Wrapper aus
-        height: auto; // Verhältnis beibehalten
-        object-fit: contain; // Bild immer ganz zeigen
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
-        align-self: flex-start; // Richtet Bilder oben bündig aus
-        background-color: var(--content-area-bg); // Neutraler Hintergrund
-
-        body.theme-night & {
-            border-color: var(--border-light);
-            background-color: rgba(0, 0, 0, 0.2);
-        }
     }
 }

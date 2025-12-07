@@ -3,7 +3,7 @@
 ///
 /// Admin & Report Pages
 ///
-/// Styles für Admin-Tabellen, Filter, Report-Details und den Comic-Editor.
+/// Styles für Admin-Tabellen, Filter und den Comic-Editor.
 ///
 
 /*!
@@ -21,53 +21,12 @@
 /// @since    5.0.0
 /// - Zusammenführung von Filter-Forms und Data-Tables.
 /// - Integration der Styles aus dem Comic-Daten-Editor (Tabellen, Status-Icons, Suche).
-/// - fix(Design): Original-Styles (Transcript, Reports) wiederhergestellt.
 /// - fix(Design): Pagination im Dark Mode transparent gesetzt.
 /// - fix(Design): Status-Legende immer bunt angezeigt.
 /// - fix(Design): Last-Run Status Message immer sichtbar.
 ///
 
 @use '../abstracts/variables' as *;
-
-/* --- 1. Original Admin Styles (Wiederhergestellt) --- */
-
-// Transcript Display
-.original-transcript-box {
-    margin-top: 15px;
-
-    label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 5px;
-        color: var(--text-color-light);
-    }
-}
-
-.transcript-display-box {
-    background-color: var(--table-row-even);
-    border: 1px solid var(--border-light);
-    padding: 10px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    max-height: 150px;
-    overflow-y: auto;
-    font-size: 0.9em;
-    overflow-wrap: break-word;
-    color: var(--text-color);
-
-    body.theme-night & {
-        background-color: var(--page-bg);
-        border-color: var(--button-bg);
-    }
-
-    p {
-        margin-bottom: 7px;
-    }
-
-    p:last-of-type {
-        margin-bottom: 0;
-    }
-}
 
 // Filter Form
 .filter-form {
@@ -106,11 +65,12 @@
         }
     }
 }
+
 .honeypot-field {
     display: none !important;
 }
 
-/* --- 2. New Admin Controls (Search, Pagination, Legends) --- */
+/* --- Admin Controls (Search, Pagination, Legends) --- */
 
 .table-controls {
     display: flex;
@@ -158,7 +118,6 @@
     font-size: 0.9em;
 }
 
-/* --- Status & Source Markers --- */
 /* --- Status & Source Markers (Binary System) --- */
 .source-marker,
 .status-icon {
@@ -381,18 +340,18 @@
         }
     }
 
-    // --- 2. SPALTENBREITEN: REPORTS (NEU) ---
+    // --- 2. SPALTENBREITEN: REPORTS ---
     &.reports-table {
         th:nth-child(1),
         td:nth-child(1) {
             width: 80px;
             word-break: break-word;
-        } // Datum (fest)
+        } // Datum
         th:nth-child(2),
         td:nth-child(2) {
             width: 80px;
-            word-break: break-word;
-        } // Comic-ID (kurz)
+            word-break: break-all;
+        } // Comic-ID
         th:nth-child(3),
         td:nth-child(3) {
             width: 80px;
@@ -405,11 +364,11 @@
         th:nth-child(5),
         td:nth-child(5) {
             width: auto;
-        } // Beschreibung (Restlicher Platz)
+        } // Beschreibung (Flex)
         th:nth-child(6),
         td:nth-child(6) {
             width: 80px;
-        } // Aktionen (Breiter für Buttons)
+        } // Aktionen
     }
 
     // Helper classes inside table
@@ -449,25 +408,24 @@
     }
 
     .actions-cell {
-        //white-space: nowrap;
+        white-space: normal;
         text-align: right;
-        vertical-align: top; // Buttons oben ausrichten bei mehrzeiligem Text
+        vertical-align: center; // Buttons oben ausrichten bei mehrzeiligem Text
 
         form {
             display: flex;
             flex-wrap: wrap; // Umbruch erlauben
             gap: 5px; // Abstand zwischen Buttons
             justify-content: flex-end; // Rechtsbündig starten
+            width: 100%;
         }
 
         button {
-            // "Alle gleich breit": flex: 1 sorgt dafür, dass sie den Platz gleichmäßig füllen.
-            // min-width verhindert, dass sie zu klein gequetscht werden.
-            flex: 1 0 auto;
-            //min-width: 70px;
+            flex: 1 1 auto;
             text-align: center;
             justify-content: center;
-            margin: 5;
+            margin: 0 !important; // Reset
+            min-width: 25px; // Damit sie nicht zu klein werden
         }
     }
 }
@@ -491,7 +449,7 @@
         cursor: pointer;
         background-color: var(--content-bg);
 
-        // FIX: Transparentes Design im Dark Mode (wie gewünscht)
+        // FIX: Transparentes Design im Dark Mode
         body.theme-night & {
             background-color: transparent;
             border-color: var(--border-light);
