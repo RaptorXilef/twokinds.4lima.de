@@ -3513,6 +3513,18 @@ body.theme-night .char-selection-grid .char-selection-item.selected {
   background-color: rgba(129, 219, 254, 0.15);
 }
 
+.char-list-empty {
+  padding: 10px;
+  text-align: center;
+  color: var(--text-color-light);
+  font-style: italic;
+}
+
+.char-id-invalid {
+  color: var(--status-red-text);
+  font-weight: bold;
+}
+
 .preview-container {
   text-align: center;
   margin-top: 10px;

@@ -233,6 +233,8 @@ require_once Path::getPartialTemplatePath('header.php');
         <button id="save-all-btn" class="button button-green"><i class="fas fa-save"></i> Alle Änderungen speichern</button>
     </div>
 
+    <br>
+
     <div class="editor-footer-info">
         <p><small><strong>Info:</strong> Die URL eines Charakters wird automatisch aus dem Namen generiert. Leerzeichen werden durch Unterstriche (`_`) ersetzt. Bei Namensänderung wird die zugehörige PHP-Datei automatisch umbenannt.</small></p>
     </div>
@@ -432,13 +434,15 @@ require_once Path::getPartialTemplatePath('header.php');
                 const groupChars = characterData.groups[groupName] || [];
 
                 if (groupChars.length === 0) {
-                    listContainer.innerHTML = '<div style="padding:10px; text-align:center; color:var(--text-color-light); font-style:italic;">(Leer)</div>';
+                    // ÄNDERUNG: Nutzung der neuen CSS-Klasse statt Inline-Styles
+                    listContainer.innerHTML = '<div class="char-list-empty">(Leer)</div>';
                 }
 
                 groupChars.forEach(charId => {
                     const char = characterData.characters[charId];
                     // Fallback für gelöschte IDs in Gruppen
-                    const displayName = char ? char.name : `<span style="color:var(--status-red-text)">[ID ungültig: ${charId}]</span>`;
+                    // ÄNDERUNG: Nutzung der neuen CSS-Klasse für ungültige IDs
+                    const displayName = char ? char.name : `<span class="char-id-invalid">[ID ungültig: ${charId}]</span>`;
                     const picUrl = char ? char.pic_url : '';
                     const imgSrc = picUrl ? `${charProfileUrlBase}/${picUrl}` : placeholderUrl;
 
