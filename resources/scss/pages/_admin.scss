@@ -25,6 +25,7 @@
 /// - fix(Design): Status-Legende immer bunt angezeigt (Binäres System).
 /// - fix(Design): Last-Run Status Message immer sichtbar.
 /// - feat(Layout): Neue Klassen für zentrierte Filter und Action-Bars (Comic Editor Redesign).
+/// - refactor(SCSS): Sitemap-Editor Styles (Collapsibles, Table-Modifier) integriert und Datei-Struktur bereinigt.
 ///
 
 @use '../abstracts/variables' as *;
@@ -146,12 +147,7 @@
 
                 &:hover {
                     color: var(--status-red-text); // Rot beim Hover
-                    background-color: rgba(
-                        0,
-                        0,
-                        0,
-                        0.05
-                    ); // Leichter Hover-Effekt
+                    background-color: rgb(0 0 0 / 5%); // Leichter Hover-Effekt
                 }
             }
         }
@@ -332,7 +328,7 @@
     display: block;
 }
 
-/* --- Admin Data Tables --- */
+/* --- 3. Admin Data Tables --- */
 .sitemap-table-container {
     overflow-x: auto;
     border: 1px solid var(--border-medium);
@@ -382,93 +378,6 @@
         th,
         td {
             border-color: var(--border-dark);
-        }
-    }
-
-    // Spezifische Spaltenbreiten für den Comic Editor
-    &.comic-editor-table {
-        th:nth-child(1),
-        td:nth-child(1) {
-            width: 65px; // 10%
-        } // ID
-        th:nth-child(2),
-        td:nth-child(2) {
-            width: 100px; // 120%
-        } // Vorschau
-        th:nth-child(3),
-        td:nth-child(3) {
-            width: 100px; // 25%
-        } // Name
-        th:nth-child(4),
-        td:nth-child(4) {
-            width: 300px; // 30%
-        } // Transkript
-        th:nth-child(5),
-        td:nth-child(5) {
-            width: 50px; // 15%
-        } // Status
-        th:nth-child(6),
-        td:nth-child(6) {
-            width: 70px; // 100px
-            text-align: right;
-        } // Aktionen
-
-        td:last-child {
-            text-align: right;
-        }
-    }
-
-    // --- 2. SPALTENBREITEN: REPORTS ---
-    &.reports-table {
-        th:nth-child(1),
-        td:nth-child(1) {
-            width: 80px;
-            word-break: break-word;
-        } // Datum
-        th:nth-child(2),
-        td:nth-child(2) {
-            width: 80px;
-            word-break: break-all;
-        } // Comic-ID
-        th:nth-child(3),
-        td:nth-child(3) {
-            width: 80px;
-            word-break: break-word;
-        } // Typ
-        th:nth-child(4),
-        td:nth-child(4) {
-            width: 80px;
-        } // Einsender
-        th:nth-child(5),
-        td:nth-child(5) {
-            width: auto;
-        } // Beschreibung (Flex)
-        th:nth-child(6),
-        td:nth-child(6) {
-            width: 80px;
-        } // Aktionen
-    }
-
-    // --- 3. SPALTENBREITEN: ARCHIV EDITOR ---
-    &.archive-editor-table {
-        th:nth-child(1),
-        td:nth-child(1) {
-            width: 30px; // ID
-            text-align: center;
-        }
-        th:nth-child(2),
-        td:nth-child(2) {
-            width: 170px; // Titel
-            font-weight: bold;
-        }
-        th:nth-child(3),
-        td:nth-child(3) {
-            width: auto; // Beschreibung (Flex)
-        }
-        th:nth-child(4),
-        td:nth-child(4) {
-            width: 70px; // Aktionen
-            text-align: right;
         }
     }
 
@@ -529,9 +438,149 @@
             min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
         }
     }
+
+    /* --- Sub-Classes for specific Tables --- */
+
+    // 3.1 Comic Editor
+    &.comic-editor-table {
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 65px; // 10% - ID
+        }
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 100px; // 120px - Vorschau
+        }
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 100px; // 25% - Name
+        }
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 300px; // 30% - Transkript
+        }
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 50px; // 15% - Status
+        }
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 70px; // 100px - Aktionen
+            text-align: right;
+        }
+
+        td:last-child {
+            text-align: right;
+        }
+    }
+
+    // 3.2 Reports
+    &.reports-table {
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 80px;
+            word-break: break-word;
+        } // Datum
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 80px;
+            word-break: break-all;
+        } // Comic-ID
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 80px;
+            word-break: break-word;
+        } // Typ
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 80px;
+        } // Einsender
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: auto;
+        } // Beschreibung (Flex)
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 80px;
+        } // Aktionen
+    }
+
+    // 3.3 Sitemap & Archiv Editor
+    &.sitemap-editor-table {
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 65%; // Pfad/Name/ID (Viel Platz)
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 10%; // Priorität/Titel
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 15%; // Frequenz/Beschreibung
+        }
+
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 10%;
+            text-align: right;
+        } // Aktionen
+
+        // Archiv-Spezifisch (Überschreibt obige Defaults)
+        &.archive-editor-table {
+            th:nth-child(1),
+            td:nth-child(1) {
+                width: 30px; // ID kurz
+                text-align: center;
+            }
+            th:nth-child(2),
+            td:nth-child(2) {
+                width: 170px; // Titel
+                font-weight: bold;
+            }
+            th:nth-child(3),
+            td:nth-child(3) {
+                width: auto; // Beschreibung Flex
+            }
+            th:nth-child(4),
+            td:nth-child(4) {
+                width: 70px; // Aktionen
+            }
+        }
+
+        // Inputs in der Tabelle anpassen
+        input[type='text'],
+        input[type='number'],
+        select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid var(--border-medium);
+            border-radius: 3px;
+            background-color: var(--content-bg);
+            color: var(--text-color);
+            box-sizing: border-box; // Wichtig für width 100%
+
+            &:disabled {
+                opacity: 0.7;
+                background-color: var(--table-header-bg);
+                cursor: not-allowed;
+            }
+
+            body.theme-night & {
+                border-color: var(--border-light);
+                background-color: color-mix(in srgb, var(--page-bg), black 20%);
+
+                &:disabled {
+                    background-color: rgba(255, 255, 255, 0.05);
+                }
+            }
+        }
+    }
 }
 
-/* --- Pagination --- */
+/* --- 4. Pagination --- */
 .pagination {
     display: flex;
     justify-content: center;
@@ -574,7 +623,7 @@
     }
 }
 
-/* --- Animations --- */
+/* --- 5. Animations & Helpers --- */
 @keyframes highlight-row {
     from {
         background-color: #d4edda;
@@ -611,4 +660,74 @@
     justify-content: flex-end;
     margin-top: 20px;
     gap: 10px;
+}
+
+/* --- 6. Collapsibles (für Sitemap Editor) --- */
+.collapsible-section {
+    margin-bottom: 20px;
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    background-color: var(--content-bg);
+    overflow: hidden;
+
+    body.theme-night & {
+        border-color: var(--border-light);
+        background-color: var(--sidebar-bg);
+    }
+
+    .collapsible-header {
+        padding: 12px 15px;
+        background-color: var(--table-header-bg);
+        border-bottom: 1px solid var(--border-medium);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s;
+
+        h3 {
+            margin: 0;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+
+        i {
+            transition: transform 0.3s ease;
+            color: var(--text-color-medium);
+        }
+
+        &:hover {
+            background-color: var(--table-row-hover);
+        }
+
+        body.theme-night & {
+            border-bottom-color: var(--border-light);
+        }
+    }
+
+    .collapsible-content {
+        padding: 15px;
+        display: none; // Standardmäßig zu (wird per JS/Klasse gesteuert)
+
+        // Hinweis-Text
+        .path-hint {
+            font-size: 0.9em;
+            color: var(--text-color-light);
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+    }
+
+    // Status: Ausgeklappt
+    &.expanded {
+        .collapsible-header {
+            // Pfeil drehen
+            i {
+                transform: rotate(180deg);
+            }
+        }
+        .collapsible-content {
+            display: block;
+        }
+    }
 }

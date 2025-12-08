@@ -12,6 +12,7 @@
  * @since     1.0.1 Fügt zwei include_once Anweisungen hinzu, um wichtige Pfad-Konstanten zu laden.
  * @since     1.0.2 Entfernt includes wieder.
  * @since     5.0.0 Füge KONSTANTEN TRUNCATE_DESCRIPTION und ENTRIES_PER_PAGE hinzu
+ *  - Füge seitenspezifische Konstanten hinzu.
  */
 
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
@@ -39,6 +40,7 @@ define('ENTRIES_PER_PAGE', 50); // 50 ist ein guter Wert, der weder zu viele Sei
 define('ENTRIES_PER_PAGE_ARCHIVE', ENTRIES_PER_PAGE);
 define('ENTRIES_PER_PAGE_COMIC', ENTRIES_PER_PAGE);
 define('ENTRIES_PER_PAGE_REPORT', ENTRIES_PER_PAGE);
+define('ENTRIES_PER_PAGE_SITEMAP', ENTRIES_PER_PAGE);
 
 // Legt fest, ob die Beschreibungen beim Archiv-Editor gekürzt oder voll angezeigt werden. Standart ist: false (nicht kürzen)
 define('TRUNCATE_DESCRIPTION', true);
