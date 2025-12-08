@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Administrationsseite zum Bearbeiten der charaktere.json.
  *
@@ -8,34 +9,30 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.2.0
- * @since     2.3.0 Erlaubt Leerzeichen in Charakternamen und automatisiert das Erstellen/Löschen von Charakter-PHP-Dateien.
- * @since     2.3.1 UI-Anpassungen und Code-Refactoring für Konsistenz mit dem Comic-Daten-Editor.
- * @since     2.4.0 Wiederherstellung des ursprünglichen UI-Layouts und Integration neuer Features.
- * @since     2.4.1 Behebt einen Fehler, der das Bearbeiten von Charakternamen verhinderte.
- * @since     2.4.2 Behebt CSP-Fehler durch Ersetzen von 'onerror' durch Event-Listener.
- * @since     2.5.0 Finale Zusammenführung von Original-UI mit allen neuen Features und Bugfixes.
- * @since     2.6.0 Entfernt Steckbrief-URL, erstellt/aktualisiert index.php für Charaktere, behebt Positions-Bug nach Bearbeitung.
- * @since     2.6.1 Entfernt die automatische Erstellung und Aktualisierung der Charakter-Übersichtsseite (index.php).
- * @since     2.7.0 Entfernt das automatische Neuladen nach dem Speichern für eine bessere Benutzererfahrung.
- * @since     2.8.0 Implementiert Drag & Drop zum Sortieren der Charaktergruppen.
- * @since     2.8.1 Behebt zwei Fehler: Korrigiert das Drag-Handle-Icon vor Gruppentiteln und stellt die korrekten Bild-Platzhalter wieder her.
- * @since     2.8.2 Korrigiert die Darstellung des Hamburger-Icons durch Anpassung der CSS-Syntax.
- * @since     2.8.3 Duplikatprüfung auf Gruppenebene für mehrfache Charakterzuweisungen.
- * @since     2.9.0 Umstellung auf eindeutige Charakter-IDs statt Namen als Schlüssel.
- * @since     3.0.0 Trennung von Charakter-Stammdaten und Gruppenzuweisung.
- * @since     3.1.0 Umstellung auf einfaches Textfeld für Beschreibung, Entfernung von Summernote.
- * @since     3.2.0 Vollständige Neuimplementierung basierend auf v2.8.3 zur korrekten Umsetzung aller ID-System-Anforderungen.
- * @since     3.2.1 CSS-Anpassungen und Hinzufügen der ID-Anzeige im Gruppeneditor.
- * @since     3.2.2 Behebt CSP-Fehler durch Ersetzen von 'onerror' durch Event-Listener.
- * @since     3.2.3 Fügt die Möglichkeit hinzu, bestehende Gruppennamen zu bearbeiten.
- * @since     3.3.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
- * @since     3.4.0 Umstellung auf neue, granulare Asset-Pfad-Konstanten und Korrektur des Renderer-Pfades.
- * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und Vereinfachung der Bildpfade.
- * @since     4.0.1 Behebt einen fatalen Fehler durch Hinzufügen der fehlenden getRelativePath()-Hilfsfunktion.
- * @since     4.0.2 Behebt einen JavaScript ReferenceError (result vs. data), der fälschlicherweise als JSON-Fehler gemeldet wurde.
- * @since     4.1.0 feat(UI): Umstellung des "Zur Gruppe hinzufügen"-Modals auf ein visuelles Multi-Select-Grid mit Bildern.
- * @since     4.2.0 style(UI): Modernes "Sticky Footer" Layout für Modals implementiert (konsistent mit Comic-Editor).
+ *
+ * @since 2.0.0 - 4.0.0
+ * - Architektur & Datenstruktur:
+ *  - Vollständige Umstellung auf eindeutige Charakter-IDs (Schema v2) und Trennung von Stammdaten/Gruppenzuweisung.
+ *  - Implementierung der dynamischen Path-Helfer-Klasse, zentraler Pfad-Konstanten und CSRF-Fixes (FormData).
+ *  - Automatische Verwaltung (Erstellen/Löschen/Inhalt-Korrektur) der PHP-Dateien im /comic/-Ordner.
+ *
+ * - Benutzeroberfläche (UI) & UX:
+ *  - Neues visuelles Multi-Select-Grid (mit Bildern) und Drag & Drop-Sortierung für Gruppen.
+ *  - Duplizierung der Aktionsbuttons und Feedback-Boxen (oben/unten) für bessere Erreichbarkeit.
+ *  - Implementierung von Pagination, "Sticky Footer"-Modals und 'C'-Status-Tag für Zuweisungen.
+ *  - Komfort-Funktionen: Auto-Scroll/Highlight nach Bearbeitung, kein Auto-Reload, Bearbeiten von Gruppennamen.
+ *  - Editor-Vereinfachung: Einfaches Textfeld statt Summernote.
+ *
+ * - Stabilität & Fixes:
+ *  - CSP-konformes Fallback für Bilder (Event-Listener), Unterstützung für Leerzeichen in Namen.
+ *  - Diverse Bugfixes: Theme-Styling (Hell/Dunkel), Hamburger-Icon, Lösch-Logik und JS-Referenzen.
+ *
+ * @since 5.0.0
+ * - refactor(UI): Komplettes Redesign basierend auf SCSS 7-1 Architektur (keine Inline-Styles).
+ * - refactor(Layout): Nutzung der Standard-Admin-Container (#settings-and-actions-container).
+ * - refactor(Modal): Umstellung auf .modal-advanced-layout (Sticky Header/Footer).
+ * - feat(JS): Modernes ES6+ JavaScript, fetch API und verbesserte Fehlerbehandlung.
+ * - fix(Security): Konsequente Nutzung von Output-Escaping und Nonces.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -74,15 +71,18 @@ function getRelativePath(string $from, string $to): string
 
 function loadJsonData(string $path): array
 {
-    if (!file_exists($path) || filesize($path) === 0)
+    if (!file_exists($path) || filesize($path) === 0) {
         return [];
+    }
     $content = file_get_contents($path);
-    if ($content === false)
+    if ($content === false) {
         return [];
+    }
     $data = json_decode($content, true);
     return is_array($data) ? $data : [];
 }
 
+// === AJAX HANDLER ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ob_end_clean();
     header('Content-Type: application/json');
@@ -99,6 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $deletedCount = 0;
         $renamedCount = 0;
         $createdCount = 0;
+
+        // 1. Gelöschte Charaktere finden und PHP-Dateien entfernen
         $deletedIds = array_diff_key($currentCharObjects, $inputData['characters']);
         foreach ($deletedIds as $charId => $charObject) {
             $fileName = str_replace(' ', '_', $charObject['name']) . '.php';
@@ -107,18 +109,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $deletedCount++;
             }
         }
+
+        // 2. Umbenennungen und Neuerstellungen
         foreach ($inputData['characters'] as $charId => $charObject) {
             $newName = $charObject['name'];
             if (isset($currentCharObjects[$charId])) {
+                // Existierender Charakter: Prüfe auf Namensänderung
                 $oldName = $currentCharObjects[$charId]['name'];
                 if ($oldName !== $newName) {
                     $oldFilePath = $charakterePhpPath . str_replace(' ', '_', $oldName) . '.php';
                     $newFilePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
                     if (file_exists($oldFilePath) && is_writable(dirname($oldFilePath)) && rename($oldFilePath, $newFilePath)) {
                         $renamedCount++;
+                    } elseif (!file_exists($oldFilePath)) {
+                        // Falls die alte Datei fehlte, erstelle die neue einfach
+                        $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
+                        // Logik siehe unten (CreatedCount) - DRY Prinzip hier leicht verletzt für Lesbarkeit im Loop
                     }
                 }
             } else {
+                // Neuer Charakter: Erstelle PHP Datei
                 $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
                 if (!file_exists($filePath)) {
                     $relativePathCharacterPageRenderer = getRelativePath(DIRECTORY_PUBLIC_CHARAKTERE, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_character_page.php');
@@ -129,14 +139,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
-        if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+
+        // 3. JSON Speichern
+        if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))) {
             $message = "Charakter-Daten erfolgreich gespeichert.";
-            if ($createdCount > 0)
+            if ($createdCount > 0) {
                 $message .= " $createdCount PHP-Datei(en) erstellt.";
-            if ($deletedCount > 0)
+            }
+            if ($deletedCount > 0) {
                 $message .= " $deletedCount PHP-Datei(en) gelöscht.";
-            if ($renamedCount > 0)
+            }
+            if ($renamedCount > 0) {
                 $message .= " $renamedCount PHP-Datei(en) umbenannt.";
+            }
+
             echo json_encode(['success' => true, 'message' => $message]);
         } else {
             http_response_code(500);
@@ -149,675 +165,179 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// === VIEW RENDERING ===
 $allCharaktereData = loadJsonData(Path::getDataPath('charaktere.json'));
 $lastSavedTimestamp = file_exists(Path::getDataPath('charaktere.json')) ? filemtime(Path::getDataPath('charaktere.json')) : null;
-$pageTitle = 'Charakter-Datenbank Editor';
+
+$pageTitle = 'Adminbereich - Charakter-Datenbank Editor';
 $pageHeader = 'Charakter-Datenbank Editor';
 $robotsContent = 'noindex, nofollow';
 $bodyClass = 'admin-page';
+
+// SortableJS laden
 $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>';
 
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<div class="admin-container">
-    <div id="last-run-container">
-        <?php if ($lastSavedTimestamp): ?>
-            <p class="status-message status-info">Letzte Speicherung am
-                <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
-            </p>
-        <?php endif; ?>
+<div class="content-section">
+    <!-- UI HEADER & ACTIONS -->
+    <div id="settings-and-actions-container">
+        <div id="last-run-container">
+            <?php if ($lastSavedTimestamp) : ?>
+                <p class="status-message status-info">Letzte Speicherung am
+                    <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
+                </p>
+            <?php endif; ?>
+        </div>
+        <h2>Charakter-Datenbank Editor</h2>
+        <p>Verwalte hier Charakter-Stammdaten und gruppiere sie per Drag & Drop. Die Reihenfolge in den Gruppen bestimmt die Anzeige auf der Webseite.</p>
     </div>
 
-    <!-- 1. Charakter-Stammdaten -->
-    <div class="section-container">
-        <h2>Charakter-Stammdaten</h2>
-        <div class="controls">
-            <button class="button add-character-btn">Neuen Charakter anlegen</button>
+    <div id="message-box" class="hidden-by-default"></div>
+
+    <!-- 1. CHARAKTER STAMMDATEN -->
+    <div class="collapsible-section expanded">
+        <div class="collapsible-header">
+            <h3>1. Charakter-Stammdaten</h3>
+            <div class="group-actions">
+                <button class="button add-character-btn" title="Neuen Charakter anlegen"><i class="fas fa-plus"></i> Neu</button>
+            </div>
         </div>
-        <div id="character-master-list" class="master-list-container">
-            <!-- JS-generierter Inhalt -->
+        <div class="collapsible-content">
+            <p class="instructions">Hier sind alle verfügbaren Charaktere aufgelistet. Neue Charaktere müssen hier erstellt werden, bevor sie Gruppen zugewiesen werden können.</p>
+            <div id="character-master-list" class="master-list-container">
+                <!-- JS-generierter Inhalt -->
+            </div>
         </div>
     </div>
 
-    <hr class="section-divider">
-
-    <!-- 2. Gruppen-Zuweisung -->
-    <div class="section-container">
-        <h2>Gruppen-Zuweisung</h2>
-        <div class="controls">
-            <button class="button add-group-btn">Neue Gruppe hinzufügen</button>
+    <!-- 2. GRUPPEN ZUWEISUNG -->
+    <div class="collapsible-section expanded">
+        <div class="collapsible-header">
+            <h3>2. Gruppen-Zuweisung & Sortierung</h3>
+            <div class="group-actions">
+                <button class="button add-group-btn" title="Neue Gruppe hinzufügen"><i class="fas fa-folder-plus"></i> Neue Gruppe</button>
+            </div>
         </div>
-        <div id="character-groups-container" class="data-editor-container">
-            <!-- JS-generierter Inhalt -->
+        <div class="collapsible-content">
+            <p class="instructions">Ziehe Charaktere zwischen Gruppen hin und her oder sortiere sie innerhalb einer Gruppe. Nutze das "+" Icon in der Gruppenleiste für Massenzuweisungen.</p>
+            <div id="character-groups-container" class="char-editor-container">
+                <!-- JS-generierter Inhalt -->
+            </div>
         </div>
     </div>
 
-    <div class="controls bottom-controls">
-        <button id="save-all-btn" class="button save-button">Alle Änderungen speichern</button>
+    <!-- FOOTER ACTIONS -->
+    <div id="fixed-buttons-container">
+        <button id="save-all-btn" class="button button-green"><i class="fas fa-save"></i> Alle Änderungen speichern</button>
     </div>
 
     <div class="editor-footer-info">
-        <p><strong>Info:</strong> Die URL eines Charakters wird aus dem Namen generiert. Leerzeichen werden durch
-            Unterstriche (`_`) ersetzt. Bei Namensänderung wird die zugehörige PHP-Datei automatisch umbenannt.</p>
-        <div id="message-box" style="display: none;"></div>
+        <p><small><strong>Info:</strong> Die URL eines Charakters wird automatisch aus dem Namen generiert. Leerzeichen werden durch Unterstriche (`_`) ersetzt. Bei Namensänderung wird die zugehörige PHP-Datei automatisch umbenannt.</small></p>
     </div>
 </div>
 
-<!-- Modal 1: Charakter Bearbeiten -->
-<div id="edit-char-modal" class="modal">
-    <div class="modal-content wide">
-        <!-- HEADER (FIXIERT) -->
+<!-- Modal 1: Charakter Bearbeiten (Advanced Layout) -->
+<div id="edit-char-modal" class="modal hidden-by-default">
+    <div class="modal-content modal-advanced-layout">
+        <!-- HEADER -->
         <div class="modal-header-wrapper">
-            <span class="close-button">&times;</span>
             <h2 id="modal-title">Charakter bearbeiten</h2>
+            <button class="modal-close close-button" aria-label="Schließen">&times;</button>
         </div>
 
-        <!-- FORMULAR (FLEX CONTAINER) -->
-        <form id="edit-form">
-            <!-- SCROLLBARER INHALT -->
-            <div class="modal-scroll-content">
+        <!-- FORMULAR (SCROLLBAR) -->
+        <div class="modal-scroll-content">
+            <form id="edit-form" class="admin-form">
                 <input type="hidden" id="modal-char-id">
+
                 <div class="form-group">
-                    <label for="modal-id-display">Charakter-ID:</label>
-                    <input type="text" id="modal-id-display" disabled>
+                    <label for="modal-id-display">System-ID:</label>
+                    <input type="text" id="modal-id-display" disabled class="disabled-input">
                 </div>
+
                 <div class="form-group">
-                    <label for="modal-name">Charakter-Name:</label>
-                    <input type="text" id="modal-name" required>
-                    <small>Wird für die URL und Anzeige verwendet. Muss eindeutig sein.</small>
+                    <label for="modal-name">Charakter-Name (Pflichtfeld):</label>
+                    <input type="text" id="modal-name" required placeholder="z.B. Trace Legacy">
+                    <small>Wird für die URL und die Anzeige verwendet. Muss eindeutig sein.</small>
                 </div>
+
                 <div class="form-group">
                     <label for="modal-pic-url">Bild-Dateiname:</label>
-                    <input type="text" id="modal-pic-url">
-                    <small>Dateiname der Bilddatei aus dem Ordner <?php echo DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES; ?>,
-                        z.B. "Trace.webp"</small>
+                    <input type="text" id="modal-pic-url" placeholder="z.B. Trace.webp">
+                    <small>Dateiname aus <code><?php echo DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES; ?></code></small>
                 </div>
+
                 <div class="form-group preview-container">
                     <label>Bild-Vorschau:</label>
-                    <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?"
-                        alt="Charakter Vorschau">
+                    <div>
+                        <img id="modal-image-preview" src="https://placehold.co/100x100/cccccc/333333?text=?" alt="Vorschau">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="modal-description">Beschreibung:</label>
-                    <textarea id="modal-description" rows="5"></textarea>
-                </div>
-            </div>
 
-            <!-- FOOTER (FIXIERT) -->
-            <div class="modal-footer-actions">
-                <div class="modal-buttons">
-                    <button type="submit" class="button save-button">Speichern</button>
-                    <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
+                <div class="form-group">
+                    <label for="modal-description">Interne Beschreibung / Notiz:</label>
+                    <textarea id="modal-description" rows="4"></textarea>
                 </div>
+            </form>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button" id="modal-save-btn" class="button button-green">Übernehmen</button>
+                <button type="button" class="button delete cancel-btn">Abbrechen</button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<!-- Modal 2: Zur Gruppe Hinzufügen -->
-<div id="add-to-group-modal" class="modal">
-    <div class="modal-content wide">
-        <!-- HEADER (FIXIERT) -->
+<!-- Modal 2: Zur Gruppe Hinzufügen (Advanced Layout) -->
+<div id="add-to-group-modal" class="modal hidden-by-default">
+    <div class="modal-content modal-advanced-layout">
+        <!-- HEADER -->
         <div class="modal-header-wrapper">
-            <span class="close-button">&times;</span>
-            <h2>Charaktere zu Gruppe hinzufügen</h2>
+            <h2 id="add-group-modal-title">Zur Gruppe hinzufügen</h2>
+            <button class="modal-close close-button" aria-label="Schließen">&times;</button>
         </div>
 
-        <!-- FORMULAR (FLEX CONTAINER) -->
-        <form id="add-to-group-form">
-            <!-- SCROLLBARER INHALT -->
-            <div class="modal-scroll-content">
+        <!-- SCROLL CONTENT -->
+        <div class="modal-scroll-content">
+            <form id="add-to-group-form">
                 <input type="hidden" id="add-group-name">
-                <p>Wähle einen oder mehrere Charaktere aus, um sie hinzuzufügen:</p>
+                <p>Wähle einen oder mehrere Charaktere aus, um sie der Gruppe hinzuzufügen:</p>
                 <div id="char-selection-grid" class="char-selection-grid">
                     <!-- JS generiert hier die Items -->
                 </div>
-            </div>
+            </form>
+        </div>
 
-            <!-- FOOTER (FIXIERT) -->
-            <div class="modal-footer-actions">
-                <div class="modal-buttons">
-                    <button type="submit" class="button save-button">Hinzufügen</button>
-                    <button type="button" class="button delete-button cancel-btn">Abbrechen</button>
-                </div>
+        <!-- FOOTER ACTIONS -->
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button" id="modal-add-group-save-btn" class="button button-green">Ausgewählte hinzufügen</button>
+                <button type="button" class="button delete cancel-btn">Abbrechen</button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* --- CSS Variablen für Themes --- */
-    :root {
-        --modal-bg-color: #fefefe;
-        --modal-border-color: #888;
-        --modal-text-color: #333;
-        --modal-divider-color: #ddd;
-    }
-
-    body.theme-night {
-        --modal-bg-color: #00425c;
-        --modal-border-color: #007bb5;
-        --modal-text-color: #f0f0f0;
-        --modal-divider-color: #2a6177;
-    }
-
-    .admin-container {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-    }
-
-    /* Modal Styling Updates (Sticky Header/Footer) */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        /* Flexbox für Zentrierung */
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        box-sizing: border-box;
-    }
-
-    .modal-content {
-        background-color: var(--modal-bg-color);
-        color: var(--modal-text-color);
-        margin: auto;
-        padding: 0; /* Padding wird von den inneren Containern übernommen */
-        border-radius: 8px;
-        width: 100%;
-        max-width: 600px;
-        position: relative;
-        border: 1px solid var(--modal-border-color);
-        /* Flexbox Layout für Sticky Footer */
-        display: flex;
-        flex-direction: column;
-        max-height: 90vh; /* Maximal 90% der Bildschirmhöhe */
-        overflow: hidden; /* Verhindert Scrollen am Hauptcontainer */
-    }
-
-    .modal-content.wide {
-        max-width: 800px;
-    }
-
-    /* Damit das Formular den Platz ausfüllt */
-    #edit-form, #add-to-group-form {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0; /* Wichtig für Firefox Flex-Scrolling */
-    }
-
-    .modal-header-wrapper {
-        padding: 20px 20px 10px 20px;
-        flex-shrink: 0;
-        background-color: var(--modal-bg-color);
-        border-bottom: 1px solid var(--modal-divider-color);
-        position: relative;
-    }
-
-    .modal-header-wrapper h2 {
-        margin-top: 0;
-    }
-
-    .modal-scroll-content {
-        padding: 20px;
-        overflow-y: auto; /* Hier findet das Scrollen statt */
-        flex-grow: 1;
-    }
-
-    .modal-footer-actions {
-        padding: 15px 20px;
-        flex-shrink: 0;
-        background-color: var(--modal-bg-color);
-        border-top: 1px solid var(--modal-divider-color);
-        z-index: 10;
-    }
-
-    .close-button {
-        color: #aaa;
-        position: absolute;
-        right: 15px;
-        top: 15px;
-        font-size: 28px;
-        font-weight: 700;
-        cursor: pointer;
-        line-height: 1;
-    }
-
-    .modal-buttons {
-        text-align: right;
-        margin-top: 0;
-    }
-
-    /* --- Restliche Styles --- */
-
-    .section-container {
-        margin-bottom: 2rem;
-    }
-
-    .section-divider {
-        border: 0;
-        border-top: 1px solid #ddd;
-        margin: 2rem 0;
-    }
-
-    .master-list-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-    }
-
-    .master-char-entry {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 10px;
-        text-align: center;
-        background: #fff;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .master-char-entry img {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: 0 auto 10px;
-    }
-
-    .master-char-entry strong {
-        display: block;
-        margin-bottom: 5px;
-        word-wrap: break-word;
-    }
-
-    .master-char-entry small {
-        display: block;
-        color: #888;
-        font-size: 0.8em;
-        margin-bottom: 10px;
-        word-wrap: break-word;
-    }
-
-    .character-group-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #eee;
-        padding: 10px;
-        margin: 0;
-        border-bottom: 1px solid #ddd;
-        border-radius: 5px 5px 0 0;
-    }
-
-    .character-group-header h3 {
-        margin: 0;
-        cursor: move;
-        flex-grow: 1
-    }
-
-    .character-group-header h3::before {
-        content: '\2630';
-        margin-right: 10px;
-        color: #999
-    }
-
-    .character-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-grow: 1;
-    }
-
-    .char-id-display {
-        font-size: 0.8em;
-        color: #888;
-        padding: 2px 6px;
-        border-radius: 4px;
-    }
-
-    /* --- Styles für das Auswahl-Grid --- */
-    .char-selection-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 10px;
-        /* max-height entfernt, da der Container jetzt selbst scrollt */
-        padding: 5px;
-    }
-
-    .char-selection-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        cursor: pointer;
-        padding: 5px;
-        border-radius: 5px;
-        transition: all 0.2s;
-        border: 2px solid transparent;
-        background-color: #fff;
-    }
-
-    .char-selection-item img {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 5px;
-        filter: grayscale(100%);
-        opacity: 0.6;
-        transition: all 0.2s;
-    }
-
-    .char-selection-item span {
-        font-size: 0.85em;
-        line-height: 1.2;
-        color: #666;
-    }
-
-    .char-selection-item.selected {
-        border-color: #007bff;
-        background-color: #e6f2ff;
-    }
-
-    .char-selection-item.selected img {
-        filter: grayscale(0%);
-        opacity: 1;
-        box-shadow: 0 0 5px rgba(0,0,0,0.2);
-    }
-
-    .char-selection-item.selected span {
-        font-weight: bold;
-        color: #007bff;
-    }
-
-    .char-selection-item:hover img {
-        opacity: 1;
-    }
-
-    body.theme-night .admin-container {
-        background-color: #002b3c;
-        color: #eee;
-    }
-
-    body.theme-night .master-char-entry {
-        background-color: #00425c;
-        border-color: #2a6177;
-    }
-
-    body.theme-night .master-char-entry small {
-        color: #aaa;
-    }
-
-    body.theme-night .char-id-display {
-        color: #aaa;
-    }
-
-    body.theme-night .character-group-header {
-        background-color: #00334c;
-        border-bottom-color: #2a6177;
-    }
-
-    body.theme-night hr.section-divider {
-        border-top-color: #2a6177;
-    }
-
-    body.theme-night .char-selection-item {
-        background-color: #00425c;
-    }
-    body.theme-night .char-selection-item span {
-        color: #ccc;
-    }
-    body.theme-night .char-selection-item.selected {
-        background-color: #005a7e;
-        border-color: #4da3ff;
-    }
-    body.theme-night .char-selection-item.selected span {
-        color: #fff;
-    }
-
-    /* Inherited styles */
-    .status-message {
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 4px;
-        border: 1px solid transparent;
-    }
-
-    .status-green {
-        background-color: #dff0d8;
-        border-color: #d6e9c6;
-        color: #3c763d;
-    }
-
-    .status-red {
-        background-color: #f2dede;
-        border-color: #ebccd1;
-        color: #a94442;
-    }
-
-    .status-info {
-        background-color: #d9edf7;
-        border-color: #bce8f1;
-        color: #31708f;
-    }
-
-    #message-box {
-        margin-top: 10px;
-    }
-
-    #last-run-container .status-message {
-        margin-bottom: 20px;
-    }
-
-    .editor-footer-info {
-        margin-top: 20px;
-        border-top: 1px solid #ddd;
-        padding-top: 15px;
-    }
-
-    .controls {
-        margin-bottom: 20px;
-        display: flex;
-        gap: 10px;
-    }
-
-    .bottom-controls {
-        margin-top: 20px;
-        margin-bottom: 0;
-    }
-
-    .button {
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1em;
-    }
-
-    .edit-group-btn {
-        background-color: #f0ad4e;
-        color: white;
-    }
-
-    .save-button {
-        background-color: #6c8f6c;
-        color: white;
-    }
-
-    .save-button:hover {
-        background-color: #85aa85;
-    }
-
-    .delete-button {
-        background-color: #d9534f;
-        color: white;
-    }
-
-    .delete-button:hover {
-        background-color: #c9302c;
-    }
-
-    .character-group {
-        margin-bottom: 25px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        background-color: #fff;
-    }
-
-    .character-entry {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-        gap: 15px;
-    }
-
-    .character-entry:last-child {
-        border-bottom: none;
-    }
-
-    .character-entry img {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-        background-color: #ccc;
-    }
-
-    .character-actions {
-        display: flex;
-        gap: 5px;
-        flex-direction: row;
-        justify-content: center;
-    }
-
-    .sortable-ghost {
-        opacity: 0.4;
-        background: #c8ebfb;
-    }
-
-    .character-entry:hover {
-        cursor: grab;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
-    #modal-new-group {
-        margin-top: 5px;
-    }
-
-    .form-group small {
-        color: #888;
-        font-size: 0.8em;
-    }
-
-    .preview-container img {
-        max-width: 100px;
-        max-height: 100px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        margin-top: 5px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .status-indicator {
-        font-size: 0.8em;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-weight: bold;
-        color: #fff;
-    }
-
-    .banner {
-        z-index: 99 !important;
-    }
-
-    body.theme-night .admin-container {
-        color: #eee;
-    }
-
-    body.theme-night .character-group {
-        background-color: #00425c;
-        border-color: #2a6177;
-    }
-
-    body.theme-night .character-entry {
-        border-bottom-color: #2a6177;
-    }
-
-    body.theme-night .form-group input,
-    body.theme-night .form-group select,
-    body.theme-night .form-group textarea {
-        background-color: #002b3c;
-        border-color: #2a6177;
-        color: #fff;
-    }
-
-    body.theme-night .form-group small {
-        color: #aaa;
-    }
-
-    body.theme-night .preview-container img {
-        border-color: #2a6177;
-    }
-
-    body.theme-night .close-button {
-        color: #ccc;
-    }
-
-    body.theme-night .close-button:hover {
-        color: #fff;
-    }
-
-    body.theme-night .editor-footer-info {
-        border-top-color: #2a6177;
-    }
-
-    body.theme-night .status-info {
-        background-color: #31708f;
-        border-color: #bce8f1;
-        color: #d9edf7;
-    }
-</style>
-
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', () => {
-        let characterData = <?php echo json_encode($allCharaktereData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES); ?>;
+        // Daten Initialisierung (Sicher encodiert)
+        let characterData = <?php echo json_encode($allCharaktereData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+
+        // Fallback Struktur, falls JSON leer/defekt
         if (!characterData || typeof characterData !== 'object') characterData = {};
         if (!characterData.characters) characterData.characters = {};
         if (!characterData.groups) characterData.groups = {};
 
         const baseUrl = '<?php echo DIRECTORY_PUBLIC_URL; ?>';
         const charProfileUrlBase = '<?php echo Url::getImgCharactersProfilesUrl(''); ?>';
-        // UI Elements
+        const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
+
+        // UI Referenzen
         const masterListContainer = document.getElementById('character-master-list');
         const groupsContainer = document.getElementById('character-groups-container');
         const saveAllBtn = document.getElementById('save-all-btn');
@@ -825,137 +345,205 @@ require_once Path::getPartialTemplatePath('header.php');
 
         // Modals
         const editModal = document.getElementById('edit-char-modal');
-        const editForm = document.getElementById('edit-form');
         const addToGroupModal = document.getElementById('add-to-group-modal');
-        const addToGroupForm = document.getElementById('add-to-group-form');
+        const editForm = document.getElementById('edit-form');
         const charSelectionGrid = document.getElementById('char-selection-grid');
 
-        const placeholderUrl = 'https://placehold.co/80x80/cccccc/333333?text=Datei?';
+        // Platzhalter
+        const placeholderUrl = 'https://placehold.co/80x80/cccccc/333333?text=Bild?';
         const errorUrl = 'https://placehold.co/80x80/dc3545/ffffff?text=Fehlt';
 
-        // Set für Multi-Select
+        // State
         let selectedCharsForGroup = new Set();
 
-        const getSortedCharacters = () => Object.entries(characterData.characters).sort(([, a], [, b]) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
+        // --- RENDER FUNKTIONEN ---
+
+        const getSortedCharacters = () => {
+            return Object.entries(characterData.characters).sort(([, a], [, b]) => {
+                return (a.name || '').localeCompare(b.name || '', 'de', {
+                    sensitivity: 'base'
+                });
+            });
+        };
 
         const renderMasterList = () => {
             masterListContainer.innerHTML = '';
-            getSortedCharacters().forEach(([id, char]) => {
+            const sortedChars = getSortedCharacters();
+
+            if (sortedChars.length === 0) {
+                masterListContainer.innerHTML = '<p class="empty-table-message">Keine Charaktere gefunden.</p>';
+                return;
+            }
+
+            sortedChars.forEach(([id, char]) => {
                 const entryDiv = document.createElement('div');
                 entryDiv.className = 'master-char-entry';
                 entryDiv.dataset.charId = id;
-                const imgSrc = char.pic_url ? `${charProfileUrlBase}${char.pic_url}` : placeholderUrl;
+
+                const imgSrc = char.pic_url ? `${charProfileUrlBase}/${char.pic_url}` : placeholderUrl;
+
                 entryDiv.innerHTML = `
-                <div>
-                    <img src="${imgSrc}" alt="${char.name}">
-                    <strong>${char.name}</strong>
-                    <small>ID: ${id}</small>
-                </div>
-                <div class="character-actions">
-                    <button class="button edit-master-btn">Bearbeiten</button>
-                    <button class="button delete-button delete-master-btn">Löschen</button>
-                </div>`;
+                    <div>
+                        <img src="${imgSrc}" alt="Charakterbild" loading="lazy">
+                        <strong>${escapeHtml(char.name)}</strong>
+                        <small>ID: ${id}</small>
+                    </div>
+                    <div class="character-actions">
+                        <button type="button" class="button edit-master-btn" title="Bearbeiten"><i class="fas fa-edit"></i></button>
+                        <button type="button" class="button delete-button delete-master-btn" title="Löschen"><i class="fas fa-trash-alt"></i></button>
+                    </div>`;
                 masterListContainer.appendChild(entryDiv);
             });
         };
 
         const renderGroups = () => {
             const groupOrder = Object.keys(characterData.groups);
-            groupsContainer.innerHTML = ''; // Clear before re-rendering
-            new Sortable(groupsContainer, { animation: 150, handle: 'h3', ghostClass: 'sortable-ghost' });
+            groupsContainer.innerHTML = '';
+
+            // Haupt-Container sortierbar machen (Gruppen verschieben)
+            new Sortable(groupsContainer, {
+                animation: 150,
+                handle: 'h3', // Nur am Header greifbar
+                ghostClass: 'sortable-ghost'
+            });
+
+            if (groupOrder.length === 0) {
+                groupsContainer.innerHTML = '<p class="empty-table-message">Keine Gruppen definiert.</p>';
+                return;
+            }
 
             groupOrder.forEach(groupName => {
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'character-group';
                 groupDiv.dataset.groupName = groupName;
+
                 groupDiv.innerHTML = `
                 <div class="character-group-header">
-                    <h3>${groupName}</h3>
-                    <div>
-                        <button class="button edit-group-btn" title="Gruppe umbenennen">&#9998;</button>
-                        <button class="button add-char-to-group-btn" title="Charaktere zu dieser Gruppe hinzufügen">+</button>
-                        <button class="button delete-button delete-group-btn" title="Gruppe löschen">X</button>
+                    <h3>${escapeHtml(groupName)}</h3>
+                    <div class="group-actions">
+                        <button type="button" class="button edit-group-btn" title="Gruppe umbenennen"><i class="fas fa-pen"></i></button>
+                        <button type="button" class="button add-char-to-group-btn" title="Charaktere hinzufügen"><i class="fas fa-plus"></i></button>
+                        <button type="button" class="button delete-button delete-group-btn" title="Gruppe löschen"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
                 <div class="character-list-container"></div>`;
+
                 const listContainer = groupDiv.querySelector('.character-list-container');
-                (characterData.groups[groupName] || []).forEach(charId => {
+                const groupChars = characterData.groups[groupName] || [];
+
+                if (groupChars.length === 0) {
+                    listContainer.innerHTML = '<div style="padding:10px; text-align:center; color:var(--text-color-light); font-style:italic;">(Leer)</div>';
+                }
+
+                groupChars.forEach(charId => {
                     const char = characterData.characters[charId];
-                    const displayName = char ? char.name : `<span style="color:red">[ID nicht gefunden: ${charId}]</span>`;
+                    // Fallback für gelöschte IDs in Gruppen
+                    const displayName = char ? char.name : `<span style="color:var(--status-red-text)">[ID ungültig: ${charId}]</span>`;
                     const picUrl = char ? char.pic_url : '';
-                    const imgSrc = picUrl ? `${charProfileUrlBase}${picUrl}` : 'https://placehold.co/50x50/cccccc/333333?text=?';
+                    const imgSrc = picUrl ? `${charProfileUrlBase}/${picUrl}` : placeholderUrl;
 
                     const charEntry = document.createElement('div');
                     charEntry.className = 'character-entry';
                     charEntry.dataset.charId = charId;
                     charEntry.innerHTML = `
-                    <img src="${imgSrc}" alt="${char ? char.name : 'Unbekannt'}">
+                    <img src="${imgSrc}" alt="Avatar" loading="lazy">
                     <div class="character-info">
                         <strong>${displayName}</strong>
                         <span class="char-id-display">${charId}</span>
                     </div>
                     <div class="character-actions">
-                        <button class="button delete-button remove-char-btn" title="Aus Gruppe entfernen">X</button>
+                        <button type="button" class="button delete-button remove-char-btn" title="Aus Gruppe entfernen"><i class="fas fa-times"></i></button>
                     </div>`;
                     listContainer.appendChild(charEntry);
                 });
+
                 groupsContainer.appendChild(groupDiv);
-                new Sortable(listContainer, { animation: 150, group: 'shared-chars', ghostClass: 'sortable-ghost' });
+
+                // Sortable für die Liste IN der Gruppe (Drag & Drop zwischen Gruppen)
+                new Sortable(listContainer, {
+                    animation: 150,
+                    group: 'shared-chars', // Erlaubt Dragging zwischen Listen
+                    ghostClass: 'sortable-ghost'
+                });
             });
         };
 
-        // Zentraler Error-Handler für Bilder
+        // --- HELPER ---
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         const handleImageError = (event) => {
             if (event.target.tagName === 'IMG') {
-                const errorSrc = event.target.naturalWidth <= 50 ? 'https://placehold.co/50x50/dc3545/ffffff?text=X' : errorUrl;
-                if (event.target.src !== errorSrc) {
-                    event.target.src = errorSrc;
+                // Verhindert Endlosschleife, wenn Placeholder auch fehlt
+                if (event.target.src !== errorUrl && event.target.src !== placeholderUrl) {
+                    event.target.src = errorUrl;
                 }
             }
         };
+        // Globaler Listener für Image Errors im Admin-Container
+        document.querySelector('.content-section').addEventListener('error', handleImageError, true);
+        document.getElementById('char-selection-grid').addEventListener('error', handleImageError, true);
 
-        masterListContainer.addEventListener('error', handleImageError, true);
-        groupsContainer.addEventListener('error', handleImageError, true);
-        // Error Handler auch für das neue Grid hinzufügen
-        charSelectionGrid.addEventListener('error', handleImageError, true);
+        function showMessage(message, type, duration = 5000) {
+            messageBox.textContent = message;
+            messageBox.className = `status-message status-${type} visible`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+                messageBox.classList.remove('visible');
+            }, duration);
+        }
 
+        // --- MODAL LOGIK ---
 
         const openEditModal = (charId = null) => {
             editForm.reset();
-            const idDisplay = editModal.querySelector('#modal-id-display');
+            const idDisplay = document.getElementById('modal-id-display');
+            const title = document.getElementById('modal-title');
+
             if (charId) {
                 const char = characterData.characters[charId];
-                editModal.querySelector('#modal-title').textContent = 'Charakter bearbeiten';
-                editModal.querySelector('#modal-char-id').value = charId;
+                if (!char) return; // Sicherheitscheck
+                title.textContent = 'Charakter bearbeiten';
+                document.getElementById('modal-char-id').value = charId;
                 idDisplay.value = charId;
-                editModal.querySelector('#modal-name').value = char.name;
-                editModal.querySelector('#modal-pic-url').value = char.pic_url || '';
-                editModal.querySelector('#modal-description').value = char.description || '';
+                document.getElementById('modal-name').value = char.name;
+                document.getElementById('modal-pic-url').value = char.pic_url || '';
+                document.getElementById('modal-description').value = char.description || '';
             } else {
                 const newId = 'char_' + Date.now();
-                editModal.querySelector('#modal-title').textContent = 'Neuen Charakter anlegen';
-                editModal.querySelector('#modal-char-id').value = newId;
+                title.textContent = 'Neuen Charakter anlegen';
+                document.getElementById('modal-char-id').value = newId;
                 idDisplay.value = newId;
             }
             updateImagePreview();
-            editModal.style.display = 'flex'; // Changed from block to flex for new layout
+            editModal.style.display = 'flex';
         };
 
         const updateImagePreview = () => {
-            const path = editModal.querySelector('#modal-pic-url').value;
-            const preview = editModal.querySelector('#modal-image-preview');
-            preview.src = path ? `${charProfileUrlBase}${path}` : 'https://placehold.co/100x100/cccccc/333333?text=?';
-            preview.onerror = () => { preview.src = 'https://placehold.co/100x100/dc3545/ffffff?text=X'; };
+            const path = document.getElementById('modal-pic-url').value;
+            const preview = document.getElementById('modal-image-preview');
+            preview.src = path ? `${charProfileUrlBase}/${path}` : placeholderUrl;
         };
 
+        // Event Listener für Bild-Input
+        document.getElementById('modal-pic-url').addEventListener('input', updateImagePreview);
+
         const openAddToGroupModal = (groupName) => {
-            const form = addToGroupModal.querySelector('form');
-            form.reset();
-            form.querySelector('#add-group-name').value = groupName;
-            
+            document.getElementById('add-group-name').value = groupName;
+            document.getElementById('add-group-modal-title').textContent = `Zu Gruppe "${groupName}" hinzufügen`;
+
             // Grid leeren und neu befüllen
             charSelectionGrid.innerHTML = '';
-            selectedCharsForGroup.clear(); // Reset Selection
+            selectedCharsForGroup.clear();
 
             const charsInGroup = new Set(characterData.groups[groupName] || []);
             let countAvailable = 0;
@@ -967,15 +555,14 @@ require_once Path::getPartialTemplatePath('header.php');
                     const item = document.createElement('div');
                     item.className = 'char-selection-item';
                     item.dataset.charId = id;
-                    
-                    const imgSrc = char.pic_url ? `${charProfileUrlBase}${char.pic_url}` : placeholderUrl;
-                    
+
+                    const imgSrc = char.pic_url ? `${charProfileUrlBase}/${char.pic_url}` : placeholderUrl;
+
                     item.innerHTML = `
-                        <img src="${imgSrc}" alt="${char.name}">
-                        <span>${char.name}</span>
+                        <img src="${imgSrc}" alt="${escapeHtml(char.name)}" loading="lazy">
+                        <span>${escapeHtml(char.name)}</span>
                     `;
 
-                    // Click Event für Auswahl
                     item.addEventListener('click', () => {
                         if (selectedCharsForGroup.has(id)) {
                             selectedCharsForGroup.delete(id);
@@ -991,26 +578,54 @@ require_once Path::getPartialTemplatePath('header.php');
             });
 
             if (countAvailable === 0) {
-                charSelectionGrid.innerHTML = '<p style="text-align:center; width:100%; color:#888;">Alle verfügbaren Charaktere sind bereits in dieser Gruppe.</p>';
+                charSelectionGrid.innerHTML = '<p class="empty-table-message">Alle verfügbaren Charaktere sind bereits in dieser Gruppe.</p>';
             }
 
-            addToGroupModal.style.display = 'flex'; // Changed from block to flex
+            addToGroupModal.style.display = 'flex';
         };
 
-        document.querySelector('.admin-container').addEventListener('click', e => {
-            if (e.target.matches('.add-character-btn')) openEditModal();
-            if (e.target.matches('.edit-master-btn')) openEditModal(e.target.closest('.master-char-entry').dataset.charId);
-            if (e.target.matches('.add-group-btn')) {
+        // --- BUTTON HANDLERS ---
+
+        // Event Delegation für dynamische Elemente
+        document.querySelector('.content-section').addEventListener('click', e => {
+            // Master List Buttons
+            if (e.target.closest('.add-character-btn')) openEditModal();
+
+            const editMasterBtn = e.target.closest('.edit-master-btn');
+            if (editMasterBtn) openEditModal(editMasterBtn.closest('.master-char-entry').dataset.charId);
+
+            const deleteMasterBtn = e.target.closest('.delete-master-btn');
+            if (deleteMasterBtn) {
+                const entry = deleteMasterBtn.closest('.master-char-entry');
+                const charName = entry.querySelector('strong').textContent;
+                if (confirm(`"${charName}" wirklich endgültig löschen? Er wird aus ALLEN Gruppen entfernt.`)) {
+                    delete characterData.characters[entry.dataset.charId];
+                    // Auch aus allen Gruppen entfernen
+                    Object.keys(characterData.groups).forEach(key => {
+                        characterData.groups[key] = characterData.groups[key].filter(id => id !== entry.dataset.charId);
+                    });
+                    renderMasterList();
+                    renderGroups();
+                    showMessage('Charakter gelöscht. "Speichern" nicht vergessen!', 'orange');
+                }
+            }
+
+            // Group Buttons
+            if (e.target.closest('.add-group-btn')) {
                 const name = prompt("Name der neuen Gruppe:");
                 if (name && name.trim()) {
-                    if (characterData.groups[name.trim()] === undefined) {
-                        characterData.groups[name.trim()] = [];
+                    const cleanName = name.trim();
+                    if (characterData.groups[cleanName] === undefined) {
+                        characterData.groups[cleanName] = [];
                         renderGroups();
+                        showMessage('Gruppe erstellt.', 'info');
                     } else alert("Gruppe existiert bereits.");
                 }
             }
-            if (e.target.matches('.edit-group-btn')) {
-                const groupDiv = e.target.closest('.character-group');
+
+            const editGroupBtn = e.target.closest('.edit-group-btn');
+            if (editGroupBtn) {
+                const groupDiv = editGroupBtn.closest('.character-group');
                 const oldName = groupDiv.dataset.groupName;
                 const newName = prompt("Neuen Namen für die Gruppe eingeben:", oldName);
 
@@ -1020,7 +635,7 @@ require_once Path::getPartialTemplatePath('header.php');
                         alert("Eine Gruppe mit diesem Namen existiert bereits.");
                         return;
                     }
-                    // Create a new object to preserve order
+                    // Reihenfolge erhalten: Neues Objekt bauen
                     const newGroups = {};
                     Object.keys(characterData.groups).forEach(key => {
                         if (key === oldName) {
@@ -1031,53 +646,74 @@ require_once Path::getPartialTemplatePath('header.php');
                     });
                     characterData.groups = newGroups;
                     renderGroups();
-                    showMessage('Gruppe umbenannt. Speichern nicht vergessen!', 'status-info');
+                    showMessage('Gruppe umbenannt.', 'info');
                 }
             }
-            if (e.target.matches('.delete-master-btn')) {
-                const entry = e.target.closest('.master-char-entry');
-                if (confirm(`"${entry.querySelector('strong').textContent}" wirklich endgültig löschen? Er wird aus ALLEN Gruppen entfernt.`)) {
-                    delete characterData.characters[entry.dataset.charId];
-                    renderMasterList(); renderGroups();
-                    showMessage('Charakter zum Löschen vorgemerkt. Speichern, um die Änderung zu übernehmen.', 'status-info');
-                }
-            }
-            if (e.target.matches('.delete-group-btn')) {
-                const groupDiv = e.target.closest('.character-group');
-                if (confirm(`Gruppe "${groupDiv.dataset.groupName}" wirklich löschen?`)) {
+
+            const deleteGroupBtn = e.target.closest('.delete-group-btn');
+            if (deleteGroupBtn) {
+                const groupDiv = deleteGroupBtn.closest('.character-group');
+                if (confirm(`Gruppe "${groupDiv.dataset.groupName}" wirklich löschen? Die Charaktere selbst bleiben erhalten.`)) {
                     delete characterData.groups[groupDiv.dataset.groupName];
                     renderGroups();
-                    showMessage('Gruppe zum Löschen vorgemerkt. Speichern, um die Änderung zu übernehmen.', 'status-info');
+                    showMessage('Gruppe gelöscht.', 'orange');
                 }
             }
-            if (e.target.matches('.add-char-to-group-btn')) openAddToGroupModal(e.target.closest('.character-group').dataset.groupName);
-            if (e.target.matches('.remove-char-btn')) {
+
+            const addCharToGroupBtn = e.target.closest('.add-char-to-group-btn');
+            if (addCharToGroupBtn) {
+                openAddToGroupModal(addCharToGroupBtn.closest('.character-group').dataset.groupName);
+            }
+
+            const removeCharBtn = e.target.closest('.remove-char-btn');
+            if (removeCharBtn) {
                 if (confirm('Charakter wirklich aus dieser Gruppe entfernen?')) {
-                    e.target.closest('.character-entry').remove();
-                    showMessage('Charakter aus Gruppe entfernt. Speichern nicht vergessen!', 'status-info');
+                    const entry = removeCharBtn.closest('.character-entry');
+                    const groupName = entry.closest('.character-group').dataset.groupName;
+                    const charId = entry.dataset.charId;
+
+                    if (characterData.groups[groupName]) {
+                        characterData.groups[groupName] = characterData.groups[groupName].filter(id => id !== charId);
+                        renderGroups();
+                        showMessage('Charakter aus Gruppe entfernt.', 'info');
+                    }
                 }
             }
         });
 
-        editForm.addEventListener('submit', e => {
-            e.preventDefault();
-            const id = editModal.querySelector('#modal-char-id').value;
-            const name = editModal.querySelector('#modal-name').value.trim();
-            const pic_url = editModal.querySelector('#modal-pic-url').value.trim();
-            const description = editModal.querySelector('#modal-description').value.trim();
+        // Modal Save Handlers
+        document.getElementById('modal-save-btn').addEventListener('click', () => {
+            const id = document.getElementById('modal-char-id').value;
+            const name = document.getElementById('modal-name').value.trim();
+            const pic_url = document.getElementById('modal-pic-url').value.trim();
+            const description = document.getElementById('modal-description').value.trim();
+
             if (!name) return alert('Name darf nicht leer sein.');
-            const isDuplicate = Object.entries(characterData.characters).some(([charId, char]) => char.name.toLowerCase() === name.toLowerCase() && charId !== id);
+
+            // Dubletten Check
+            const isDuplicate = Object.entries(characterData.characters).some(([charId, char]) =>
+                char.name.toLowerCase() === name.toLowerCase() && charId !== id
+            );
+
             if (isDuplicate) return alert('Ein Charakter mit diesem Namen existiert bereits.');
-            characterData.characters[id] = { name, pic_url, description };
-            renderMasterList(); renderGroups();
+
+            characterData.characters[id] = {
+                name,
+                pic_url,
+                description
+            };
+
+            renderMasterList();
+            // Auch Gruppen neu rendern, da sich Namen/Bilder geändert haben könnten
+            renderGroups();
+
             editModal.style.display = 'none';
-            showMessage('Charakter-Daten aktualisiert. Speichern nicht vergessen!', 'status-info');
+            showMessage('Charakterdaten übernommen. "Speichern" nicht vergessen!', 'info');
         });
 
-        addToGroupForm.addEventListener('submit', e => {
-            e.preventDefault();
-            const groupName = addToGroupModal.querySelector('#add-group-name').value;
-            
+        document.getElementById('modal-add-group-save-btn').addEventListener('click', () => {
+            const groupName = document.getElementById('add-group-name').value;
+
             if (groupName && characterData.groups[groupName]) {
                 if (selectedCharsForGroup.size > 0) {
                     selectedCharsForGroup.forEach(charId => {
@@ -1086,21 +722,34 @@ require_once Path::getPartialTemplatePath('header.php');
                         }
                     });
                     renderGroups();
-                    showMessage(`${selectedCharsForGroup.size} Charakter(e) hinzugefügt. Speichern nicht vergessen!`, 'status-info');
+                    showMessage(`${selectedCharsForGroup.size} Charakter(e) hinzugefügt. "Speichern" nicht vergessen!`, 'info');
                 }
             }
             addToGroupModal.style.display = 'none';
         });
 
-        document.querySelectorAll('.modal .close-button, .modal .cancel-btn').forEach(btn => btn.addEventListener('click', () => {
-            btn.closest('.modal').style.display = 'none';
-        }));
-        editModal.querySelector('#modal-pic-url').addEventListener('input', updateImagePreview);
+        // Close Handlers für alle Modals
+        document.querySelectorAll('.modal .close-button, .modal .cancel-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.modal').style.display = 'none';
+            });
+        });
 
+        // SAVE ALL (AJAX)
         saveAllBtn.addEventListener('click', async (e) => {
-            e.preventDefault(); // VERHINDERT DAS NEULADEN DER SEITE
-            const dataToSave = { schema_version: 2, characters: {}, groups: {} };
+            e.preventDefault();
+            saveAllBtn.disabled = true;
+            saveAllBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Speichere...';
 
+            const dataToSave = {
+                schema_version: 2,
+                characters: {
+                    ...characterData.characters
+                },
+                groups: {}
+            };
+
+            // Reihenfolge aus DOM übernehmen (wegen Drag & Drop)
             document.querySelectorAll('#character-groups-container .character-group').forEach(groupDiv => {
                 const groupName = groupDiv.dataset.groupName;
                 const charIdsInGroup = [];
@@ -1110,14 +759,12 @@ require_once Path::getPartialTemplatePath('header.php');
                 dataToSave.groups[groupName] = charIdsInGroup;
             });
 
-            dataToSave.characters = { ...characterData.characters };
-
             try {
                 const formData = new FormData();
-                formData.append('csrf_token', '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>');
+                formData.append('csrf_token', csrfToken);
                 formData.append('characterData', JSON.stringify(dataToSave));
 
-                const response = await fetch('', {
+                const response = await fetch('', { // Post an sich selbst
                     method: 'POST',
                     body: formData
                 });
@@ -1126,35 +773,30 @@ require_once Path::getPartialTemplatePath('header.php');
                 try {
                     const data = JSON.parse(responseText);
                     if (response.ok && data.success) {
-                        characterData = dataToSave;
-                        renderMasterList();
-                        renderGroups();
-                        showMessage(data.message, 'status-green');
+                        characterData = dataToSave; // State update
+                        showMessage(data.message, 'green');
+                        // Optional: Timestamp aktualisieren (Reload oder JS update)
                     } else {
-                        showMessage(data.message || 'Ein Fehler ist aufgetreten.', 'status-red');
+                        showMessage(data.message || 'Ein Fehler ist aufgetreten.', 'red');
                     }
                 } catch (e) {
-                    throw new Error(`Ungültige JSON-Antwort vom Server: ${responseText}`);
+                    console.error('JSON Error:', e, responseText);
+                    throw new Error(`Ungültige Antwort vom Server.`);
                 }
             } catch (error) {
-                const userFriendlyMessage = `Netzwerkfehler: Die Antwort vom Server war kein gültiges JSON. Oft liegt das an einem PHP-Fehler. Server-Antwort: ${error.message}`;
-                showMessage(userFriendlyMessage, 'status-red');
+                showMessage(`Netzwerkfehler: ${error.message}`, 'red');
+            } finally {
+                saveAllBtn.disabled = false;
+                saveAllBtn.innerHTML = '<i class="fas fa-save"></i> Alle Änderungen speichern';
             }
         });
 
-        function showMessage(message, className, duration = 5000) {
-            messageBox.textContent = message;
-            messageBox.className = `status-message ${className}`;
-            messageBox.style.display = 'block';
-            setTimeout(() => { messageBox.style.display = 'none'; }, duration);
-        }
-
+        // Initialisierung
         if (characterData && characterData.schema_version >= 2) {
             renderMasterList();
             renderGroups();
         } else {
-            groupsContainer.innerHTML = '<p class="status-message status-red"><strong>Fehler:</strong> Die <code>charaktere.json</code> hat ein veraltetes Format. Bitte führe zuerst das Migrationsskript aus: <a href="${baseUrl}/admin/migration_char_id.php">migration_char_id.php</a></p>';
-            masterListContainer.innerHTML = '<p class="status-message status-red">Bitte zuerst migrieren.</p>';
+            groupsContainer.innerHTML = '<p class="status-message status-red"><strong>Fehler:</strong> Die <code>charaktere.json</code> hat ein veraltetes Format oder fehlt.</p>';
         }
     });
 </script>

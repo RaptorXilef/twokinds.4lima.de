@@ -28,6 +28,7 @@
 /// - refactor(SCSS): Sitemap-Editor Styles (Collapsibles, Table-Modifier) integriert und Datei-Struktur bereinigt.
 /// - feat(SCSS): Utilities .text-right und Styles für disabled buttons hinzugefügt.
 /// - feat(SCSS): Styles für Comic-Editor (Charakter-Grid, Image-Preview) hinzugefügt.
+/// - feat(SCSS): Styles für data_editor_charaktere.php hinzugefügt
 ///
 
 @use '../abstracts/variables' as *;
@@ -892,4 +893,285 @@
 }
 .mb-15 {
     margin-bottom: 15px;
+}
+
+/* --- CHARAKTER EDITOR SPECIFICS --- */
+// @since 5.0.0 - Extrahiert aus data_editor_charaktere.php
+
+.char-editor-container {
+    // Container für die zwei Hauptspalten (falls nebeneinander gewünscht, sonst untereinander)
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.master-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.master-char-entry {
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition:
+        box-shadow 0.2s,
+        transform 0.2s;
+
+    &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 10px;
+        border: 3px solid var(--border-light);
+        background-color: var(--characters-area-bg);
+    }
+
+    strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1.1em;
+        word-wrap: break-word;
+        color: var(--text-color);
+    }
+
+    small {
+        display: block;
+        color: var(--text-color-light);
+        font-size: 0.85em;
+        margin-bottom: 15px;
+        font-family: monospace;
+    }
+
+    body.theme-night & {
+        border-color: var(--border-light);
+        background-color: var(
+            --sidebar-bg
+        ); // Etwas dunklerer Hintergrund für Karten
+    }
+}
+
+.character-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-top: auto; // Drückt Buttons nach unten
+}
+
+.character-group {
+    margin-bottom: 25px;
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    background-color: var(--content-bg);
+    overflow: hidden;
+
+    body.theme-night & {
+        border-color: var(--border-light);
+        background-color: var(--sidebar-bg);
+    }
+}
+
+.character-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--table-header-bg);
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-medium);
+    cursor: move; // Zeigt an, dass die ganze Gruppe sortierbar ist
+
+    h3 {
+        margin: 0;
+        font-size: 1.1em;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+
+        &::before {
+            content: '\2630'; // Hamburger Icon
+            margin-right: 10px;
+            color: var(--text-color-light);
+            font-size: 0.9em;
+        }
+    }
+
+    .group-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    body.theme-night & {
+        border-bottom-color: var(--border-light);
+    }
+}
+
+.character-list-container {
+    padding: 0;
+    min-height: 50px; // Damit man auch in leere Gruppen droppen kann
+}
+
+.character-entry {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-medium);
+    gap: 15px;
+    background-color: var(--content-bg);
+    transition: background-color 0.2s;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background-color: var(--table-row-hover);
+        cursor: grab;
+    }
+
+    img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--border-medium);
+    }
+
+    .character-info {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+
+        strong {
+            color: var(--text-color);
+        }
+    }
+
+    .char-id-display {
+        font-size: 0.8em;
+        color: var(--text-color-light);
+        background-color: var(--table-header-bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid var(--border-light);
+    }
+
+    body.theme-night & {
+        border-bottom-color: var(--border-light);
+        background-color: var(--sidebar-bg);
+
+        &:hover {
+            background-color: var(--button-bg);
+        }
+    }
+}
+
+// SortableJS Ghost State (das Element, das gerade gezogen wird)
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: var(--button-hover-bg);
+    border: 2px dashed var(--link-color);
+}
+
+// Grid im "Zur Gruppe hinzufügen" Modal
+.char-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 5px;
+
+    .char-selection-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        cursor: pointer;
+        padding: 10px 5px;
+        border-radius: 5px;
+        border: 2px solid transparent;
+        background-color: var(--content-bg);
+        transition: all 0.2s;
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 5px;
+            filter: grayscale(100%);
+            opacity: 0.6;
+            transition: all 0.2s;
+            border: 2px solid var(--border-light);
+        }
+
+        span {
+            font-size: 0.85em;
+            line-height: 1.2;
+            color: var(--text-color-medium);
+        }
+
+        &:hover {
+            background-color: var(--table-row-hover);
+            img {
+                opacity: 1;
+                filter: grayscale(0%);
+            }
+        }
+
+        &.selected {
+            background-color: rgba(0, 123, 255, 0.1); // Leichtes Blau
+            border-color: var(--link-color);
+
+            img {
+                filter: grayscale(0%);
+                opacity: 1;
+                border-color: var(--link-color);
+            }
+
+            span {
+                color: var(--link-color);
+                font-weight: bold;
+            }
+        }
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+
+            &.selected {
+                background-color: rgba(
+                    129,
+                    219,
+                    254,
+                    0.15
+                ); // Leichtes Cyan für Dark Mode
+            }
+        }
+    }
+}
+
+.preview-container {
+    text-align: center;
+    margin-top: 10px;
+
+    img {
+        max-width: 120px;
+        max-height: 120px;
+        border-radius: 50%;
+        border: 3px solid var(--border-medium);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
 }
