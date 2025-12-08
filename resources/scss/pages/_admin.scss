@@ -29,6 +29,7 @@
 /// - feat(SCSS): Utilities .text-right und Styles für disabled buttons hinzugefügt.
 /// - feat(SCSS): Styles für Comic-Editor (Charakter-Grid, Image-Preview) hinzugefügt.
 /// - feat(SCSS): Styles für data_editor_charaktere.php hinzugefügt
+/// - feat(SCSS): Styles für index.php hinzugefügt (Login-Bereich)
 ///
 
 @use '../abstracts/variables' as *;
@@ -1186,5 +1187,104 @@
         border-radius: 50%;
         border: 3px solid var(--border-medium);
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* --- ADMIN LOGIN PAGE --- */
+// @since 5.0.0
+
+.admin-login-container {
+    max-width: 450px;
+    margin: 60px auto;
+    padding: 30px;
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    background-color: var(--content-bg);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-light);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-light);
+        padding-bottom: 15px;
+    }
+
+    // NEU: Für den Willkommenstext
+    .intro-text {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--text-color);
+    }
+
+    .admin-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        input[type='text'],
+        input[type='password'] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+            background-color: var(
+                --content-area-bg
+            ); // Weiß/Dunkelblau je nach Theme
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s;
+
+            &:focus {
+                border-color: var(--link-color);
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            }
+
+            body.theme-night & {
+                background-color: var(--content-bg);
+                border-color: var(--border-light);
+            }
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 10px;
+            background-color: var(--link-color);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+
+            &:hover {
+                filter: brightness(1.1);
+            }
+        }
+    }
+
+    // Status Meldungen im Login-Kontext
+    .status-message {
+        margin-bottom: 20px;
+        text-align: center;
     }
 }
