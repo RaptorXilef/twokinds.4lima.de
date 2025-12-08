@@ -24,6 +24,8 @@
  *  - refactor(Config): Nutzung spezifischer Konstanten (ENTRIES_PER_PAGE_REPORT, TRUNCATE_REPORT_DESCRIPTION).
  *  - feat(UI): Info-Feld (Zeitstempel & Beschreibung) und Paginierung-Info hinzugefügt.
  *  - feat(UX): Erfolgsmeldungen blenden sich nun automatisch nach 5 Sekunden aus.
+ *  - refactor(CSS): Alle verbleibenden Inline-Styles durch SCSS-Klassen ersetzt.
+ *  - refactor(CSS): Bereinigung verbliebener Inline-Styles im JavaScript.
  */
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -277,7 +279,7 @@ if (isset($_GET['message'])) {
 $isArchive = ($filterStatus === 'closed');
 $sourcePath = $isArchive ? $archiveFilePath : $reportsFilePath;
 $allReports = loadJsonWithLock($sourcePath, $debugMode);
-$reportSettings = loadReportSettings($settingsFilePath); // NEU: Settings laden
+$reportSettings = loadReportSettings($settingsFilePath);
 
 // Filtern
 $reports = array_filter($allReports, function ($r) use ($filterStatus, $filterComicId, $filterSubmitter) {
@@ -348,8 +350,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
 
         <?php if ($message) : ?>
-            <!-- ID für JS-Zugriff hinzugefügt -->
-            <div id="main-status-message" class="status-message status-<?php echo $messageType; ?>" style="display:block;">
+            <!-- FIX: Klasse "visible" statt inline style="display:block" -->
+            <div id="main-status-message" class="status-message status-<?php echo $messageType; ?> visible">
                 <p><?php echo $message; ?></p>
             </div>
         <?php endif; ?>
@@ -379,8 +381,8 @@ require_once Path::getPartialTemplatePath('header.php');
             </fieldset>
         </form>
 
-        <!-- NEU: Info-Leiste für Paginierung -->
-        <div class="table-controls" style="justify-content: flex-end; display: flex; margin-bottom: 5px;">
+        <!-- FIX: Pagination Info Container statt inline styles -->
+        <div class="pagination-info-container">
             <small>Zeigt <?php echo $itemsPerPage; ?> Einträge pro Seite.</small>
         </div>
 
@@ -399,7 +401,8 @@ require_once Path::getPartialTemplatePath('header.php');
                 <tbody>
                     <?php if (empty($displayedReports)) : ?>
                         <tr>
-                            <td colspan="6" style="text-align: center;">Keine Meldungen für die aktuellen Filter gefunden.</td>
+                            <!-- FIX: Klasse "text-center" statt inline style -->
+                            <td colspan="6" class="text-center">Keine Meldungen für die aktuellen Filter gefunden.</td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($displayedReports as $report) : ?>
@@ -518,7 +521,8 @@ require_once Path::getPartialTemplatePath('header.php');
     </div>
 </article>
 
-<div id="report-detail-modal" class="modal admin-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+<!-- FIX: .hidden-by-default statt style="display:none" -->
+<div id="report-detail-modal" class="modal admin-modal hidden-by-default" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
     <div class="modal-overlay" data-action="close-detail-modal"></div>
     <div class="modal-content report-detail-modal-content modal-advanced-layout">
         <div class="modal-header-wrapper">
@@ -527,7 +531,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
         <div class="modal-scroll-content">
             <div id="report-detail-content" class="admin-form">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; border-bottom: 1px solid var(--border-medium); padding-bottom: 15px;">
+                <!-- FIX: .report-meta-grid statt inline style -->
+                <div class="report-meta-grid">
                     <div><strong>Comic-ID:</strong> <a id="detail-comic-link" href="#" target="_blank"><span id="detail-comic-id"></span></a></div>
                     <div><strong>Datum:</strong> <span id="detail-date"></span></div>
                     <div><strong>Einsender:</strong> <span id="detail-submitter"></span></div>
@@ -545,7 +550,8 @@ require_once Path::getPartialTemplatePath('header.php');
                         <p class="loading-text">Diff wird generiert...</p>
                     </div>
                     <h3>Vorschlag (Gerenderte HTML-Ansicht)</h3>
-                    <div id="detail-suggestion-html" class="report-text-box" style="margin-bottom: 15px;"></div>
+                    <!-- FIX: .mb-15 statt inline style -->
+                    <div id="detail-suggestion-html" class="report-text-box mb-15"></div>
                     <h3>Vorschlag (HTML-Quellcode)</h3>
                     <div id="detail-suggestion-code-container">
                         <textarea id="detail-suggestion-code" class="summernote-code-look" readonly></textarea>
@@ -569,7 +575,7 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
 <script src="<?php echo htmlspecialchars($adminReportsJsUrl); ?>" nonce="<?php echo htmlspecialchars($nonce); ?>"></script>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // --- 1. Auto-Hide für PHP-Statusmeldungen ---
         const mainStatusMsg = document.getElementById('main-status-message');
         if (mainStatusMsg) {
@@ -585,7 +591,7 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
         // --- 2. Bestehende Tabellen-Logik ---
         const table = document.getElementById('reports-table');
         if (table) {
-            table.addEventListener('click', function(e) {
+            table.addEventListener('click', function (e) {
                 const detailButton = e.target.closest('.detail-button');
                 if (!detailButton) return;
 
@@ -639,10 +645,11 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
                                 diffViewer.innerHTML = '';
 
                                 if (!diff || diff.length === 0 || (diff.length === 1 && !diff[0].added && !diff[0].removed)) {
-                                    diffViewer.innerHTML = '<p style="font-style: italic;">Keine Änderungen am Textinhalt gefunden.</p>';
+                                    // FIX: Klasse statt style
+                                    diffViewer.innerHTML = '<p class="diff-msg-empty">Keine Änderungen am Textinhalt gefunden.</p>';
                                 } else {
                                     const fragment = document.createDocumentFragment();
-                                    diff.forEach(function(part) {
+                                    diff.forEach(function (part) {
                                         const tag = part.added ? 'ins' : (part.removed ? 'del' : 'span');
                                         const el = document.createElement(tag);
                                         el.appendChild(document.createTextNode(part.value));
@@ -651,11 +658,13 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
                                     diffViewer.appendChild(fragment);
                                 }
                             } else {
-                                diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler: jsDiff-Bibliothek (Diff) nicht gefunden.</p>';
+                                // FIX: Klasse statt style
+                                diffViewer.innerHTML = '<p class="loading-text diff-msg-error">Fehler: jsDiff-Bibliothek (Diff) nicht gefunden.</p>';
                             }
                         } catch (err) {
                             console.error('Fehler beim Erstellen des Diffs:', err);
-                            diffViewer.innerHTML = '<p class="loading-text" style="color: red;">Fehler beim Erstellen des Diffs.</p>';
+                            // FIX: Klasse statt style
+                            diffViewer.innerHTML = '<p class="loading-text diff-msg-error">Fehler beim Erstellen des Diffs.</p>';
                         }
                     }
                 }, 10);

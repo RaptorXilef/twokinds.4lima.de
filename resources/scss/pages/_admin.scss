@@ -26,13 +26,15 @@
 /// - fix(Design): Last-Run Status Message immer sichtbar.
 /// - feat(Layout): Neue Klassen für zentrierte Filter und Action-Bars (Comic Editor Redesign).
 /// - refactor(SCSS): Sitemap-Editor Styles (Collapsibles, Table-Modifier) integriert und Datei-Struktur bereinigt.
+/// - feat(SCSS): Utilities .text-right und Styles für disabled buttons hinzugefügt.
+/// - feat(SCSS): Styles für Comic-Editor (Charakter-Grid, Image-Preview) hinzugefügt.
 ///
 
 @use '../abstracts/variables' as *;
 
 /* --- 1. General Admin Forms & Filters --- */
 
-// Transcript Display (Original restored)
+// Transcript Display
 .transcript-display-box {
     background-color: var(--table-row-even);
     border: 1px solid var(--border-light);
@@ -169,12 +171,8 @@
     gap: 20px;
 }
 
-// Neue Actions Bar für Comic Editor (Buttons links, Legende rechts)
+// Actions Bar
 .table-controls.actions-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
     gap: 15px;
     margin-bottom: 10px;
 
@@ -186,36 +184,6 @@
     .marker-legend-group {
         justify-content: flex-end;
         flex-grow: 1;
-    }
-}
-
-.search-container {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-
-    input[type='text'] {
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid var(--border-medium);
-        background-color: var(--content-bg);
-        color: var(--text-color);
-        min-width: 250px;
-
-        // Besserer Kontrast im Dark Mode
-        body.theme-night & {
-            background-color: color-mix(in srgb, var(--page-bg), black 20%);
-            border-color: var(--border-light);
-
-            &:focus {
-                border-color: var(--link-color);
-                box-shadow: 0 0 0 2px rgb(129 219 254 / 20%);
-            }
-        }
-    }
-
-    #clear-search-btn {
-        padding: 5px 10px;
     }
 }
 
@@ -252,7 +220,7 @@
     // 2. Es ein .status-icon mit der Klasse .present ist
     &.source-marker,
     &.present {
-        background-color: #07710c !important; // Grün
+        background-color: #07710c !important;
         opacity: 1;
         filter: grayscale(0);
     }
@@ -321,9 +289,12 @@
             border-color: #5a4e1e;
         }
     }
+
+    &.visible {
+        display: block;
+    }
 }
 
-// FIX: Last Run Container Status immer anzeigen
 #last-run-container .status-message {
     display: block;
 }
@@ -436,36 +407,48 @@
             justify-content: center;
             margin: 0 !important; // Reset
             min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
+
+            &:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
         }
+    }
+
+    .empty-table-message {
+        padding: 20px !important;
+        text-align: center;
+        color: var(--text-color-medium);
+        font-style: italic;
     }
 
     /* --- Sub-Classes for specific Tables --- */
 
-    // 3.1 Comic Editor
+    // Comic Editor
     &.comic-editor-table {
         th:nth-child(1),
         td:nth-child(1) {
-            width: 65px; // 10% - ID
+            width: 65px; // ID
         }
         th:nth-child(2),
         td:nth-child(2) {
-            width: 100px; // 120px - Vorschau
+            width: 100px; // Vorschau
         }
         th:nth-child(3),
         td:nth-child(3) {
-            width: 100px; // 25% - Name
+            width: 100px; // Name
         }
         th:nth-child(4),
         td:nth-child(4) {
-            width: 300px; // 30% - Transkript
+            width: 300px; // Transkript
         }
         th:nth-child(5),
         td:nth-child(5) {
-            width: 50px; // 15% - Status
+            width: 50px; // Status
         }
         th:nth-child(6),
         td:nth-child(6) {
-            width: 70px; // 100px - Aktionen
+            width: 70px; // Aktionen
             text-align: right;
         }
 
@@ -474,7 +457,7 @@
         }
     }
 
-    // 3.2 Reports
+    // Reports
     &.reports-table {
         th:nth-child(1),
         td:nth-child(1) {
@@ -505,22 +488,22 @@
         } // Aktionen
     }
 
-    // 3.3 Sitemap & Archiv Editor
+    // Sitemap & Archiv Editor
     &.sitemap-editor-table {
         th:nth-child(1),
         td:nth-child(1) {
-            width: 65%; // Pfad/Name/ID (Viel Platz)
-        }
+            width: 65%;
+        } // Pfad/Name/ID
 
         th:nth-child(2),
         td:nth-child(2) {
-            width: 10%; // Priorität/Titel
-        }
+            width: 10%;
+        } // Priorität
 
         th:nth-child(3),
         td:nth-child(3) {
-            width: 15%; // Frequenz/Beschreibung
-        }
+            width: 15%;
+        } // Frequenz
 
         th:nth-child(4),
         td:nth-child(4) {
@@ -528,7 +511,7 @@
             text-align: right;
         } // Aktionen
 
-        // Archiv-Spezifisch (Überschreibt obige Defaults)
+        // Archiv-Spezifisch
         &.archive-editor-table {
             th:nth-child(1),
             td:nth-child(1) {
@@ -599,7 +582,7 @@
         cursor: pointer;
         background-color: var(--content-bg);
 
-        // FIX: Transparentes Design im Dark Mode
+        // Transparentes Design im Dark Mode
         body.theme-night & {
             background-color: transparent;
             border-color: var(--border-light);
@@ -654,7 +637,7 @@
     display: none;
 }
 
-// Container für Buttons am Ende der Seite (altes Layout, optional)
+// Container für Buttons am Ende der Seite
 #fixed-buttons-container {
     display: flex;
     justify-content: flex-end;
@@ -662,7 +645,7 @@
     gap: 10px;
 }
 
-/* --- 6. Collapsibles (für Sitemap Editor) --- */
+/* --- 6. Collapsibles --- */
 .collapsible-section {
     margin-bottom: 20px;
     border: 1px solid var(--border-medium);
@@ -720,14 +703,193 @@
 
     // Status: Ausgeklappt
     &.expanded {
-        .collapsible-header {
-            // Pfeil drehen
-            i {
-                transform: rotate(180deg);
-            }
-        }
+        .collapsible-header i {
+            transform: rotate(180deg);
+        } // Pfeil drehen
         .collapsible-content {
             display: block;
         }
     }
+}
+
+// --- COMIC EDITOR SPECIFICS ---
+.legend-pagination-info {
+    flex-basis: 100%;
+    margin-top: 5px;
+    text-align: right;
+    small {
+        color: var(--text-color-light);
+    }
+}
+
+.image-preview-section {
+    margin-top: 15px;
+    border-top: 1px solid var(--border-medium);
+    padding-top: 15px;
+}
+
+.button-toggle-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+
+    .button-toggle {
+        padding: 6px 12px;
+        background-color: var(--content-bg);
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--text-color);
+        transition: all 0.2s;
+
+        &:hover {
+            background-color: var(--table-row-hover);
+        }
+        &.active {
+            background-color: var(--link-color);
+            color: #fff;
+            border-color: var(--link-color);
+        }
+        body.theme-night & {
+            border-color: var(--border-light);
+        }
+    }
+}
+
+#modal-image-previews {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    .image-preview-box {
+        flex: 1;
+        min-width: 200px;
+        max-width: 45%;
+        border: 1px solid var(--border-medium);
+        padding: 10px;
+        border-radius: 4px;
+        text-align: center;
+        background-color: var(--table-row-even);
+
+        p {
+            margin: 0 0 8px 0;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+            border-color: var(--border-light);
+        }
+    }
+}
+
+#modal-charaktere-section {
+    margin-top: 20px;
+    border-top: 1px solid var(--border-medium);
+    padding-top: 15px;
+
+    .charakter-kategorie {
+        margin-bottom: 20px;
+        h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 5px;
+        }
+    }
+
+    .charaktere-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+
+        .charakter-item {
+            cursor: pointer;
+            text-align: center;
+            padding: 5px;
+            border-radius: 4px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+
+            img {
+                width: 60px;
+                height: 60px;
+                object-fit: cover;
+                border-radius: 50%;
+                margin-bottom: 5px;
+                border: 2px solid var(--border-medium);
+            }
+
+            span {
+                display: block;
+                font-size: 0.8em;
+                line-height: 1.2;
+                word-wrap: break-word;
+            }
+            &:hover {
+                background-color: var(--table-row-hover);
+            }
+            &.active {
+                background-color: rgba(40, 167, 69, 0.1);
+                border-color: #28a745;
+                img {
+                    border-color: #28a745;
+                }
+            }
+        }
+    }
+}
+
+// --- SITEMAP EDITOR SPECIFICS ---
+.add-row-container {
+    margin-top: 15px;
+}
+.pagination-info-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    small {
+        color: var(--text-color-light);
+    }
+}
+
+// --- REPORT MANAGEMENT SPECIFICS ---
+.report-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-medium);
+    padding-bottom: 15px;
+}
+
+.diff-msg-empty {
+    font-style: italic;
+}
+.diff-msg-error {
+    color: #dc3545;
+    body.theme-night & {
+        color: #ff6b6b;
+    }
+}
+
+// Utilities
+.text-center {
+    text-align: center;
+}
+.text-right {
+    text-align: right;
+}
+.mb-15 {
+    margin-bottom: 15px;
 }

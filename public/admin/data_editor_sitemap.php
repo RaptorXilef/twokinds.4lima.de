@@ -18,12 +18,16 @@
  *  - refactor(UI): Design an Admin-Standard angepasst (7-1 SCSS), Inline-Styles entfernt, Info-Header hinzugefügt.
  *  - fix(Sort): Comic-Seiten werden nun absteigend sortiert (Neueste zuerst).
  *  - refactor(Config): Nutzung der spezifischen Konstante ENTRIES_PER_PAGE_SITEMAP.
+ *  - refactor(CSS): Inline-Styles durch SCSS-Klassen ersetzt.
+ *  - refactor(CSS): Bereinigung verbliebener Inline-Styles im JavaScript.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
+
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
+
 // === KONFIGURATION ===
 if (!defined('ENTRIES_PER_PAGE_SITEMAP')) {
     define('ENTRIES_PER_PAGE_SITEMAP', 50);
@@ -123,8 +127,7 @@ function scanComicDirectory(string $dirPath, bool $debugMode): array
             $comicFiles[] = $file;
         }
     }
-    rsort($comicFiles);
-// Sortiert absteigend, neueste zuerst
+    rsort($comicFiles); // Sortiert absteigend, neueste zuerst
     return $comicFiles;
 }
 
@@ -133,14 +136,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token(); // Zentralisierte CSRF-Prüfung
     ob_end_clean();
     header('Content-Type: application/json');
+
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
+
     $sitemapJsonPath = Path::getDataPath('sitemap.json');
     $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
+
+
     switch ($action) {
         case 'save_sitemap':
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               $pagesToSaveStr = $_POST['pages'] ?? '[]';
+            $pagesToSaveStr = $_POST['pages'] ?? '[]';
             $allPagesToSave = json_decode($pagesToSaveStr, true);
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $response['message'] = 'Fehler: Die übermittelten Seitendaten sind kein gültiges JSON.';
                 http_response_code(400);
@@ -150,10 +158,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $response['message'] = 'Fehler beim Speichern der Sitemap-Daten.';
                 http_response_code(500);
             }
-
             break;
         case 'save_settings':
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
             $currentSettings['data_editor_sitemap']['last_run_timestamp'] = time();
             if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
                 $response['success'] = true;
@@ -162,7 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $response['message'] = 'Fehler beim Speichern des Zeitstempels.';
                 http_response_code(500);
             }
-
             break;
     }
     echo json_encode($response);
@@ -175,7 +181,10 @@ $sitemapData = loadSitemapData(Path::getDataPath('sitemap.json'), $debugMode);
 $existingPages = $sitemapData['pages'];
 $generalPages = [];
 $comicPages = [];
+
 $comicPathPrefix = str_replace(DIRECTORY_PUBLIC_URL, '.', DIRECTORY_PUBLIC_COMIC_URL) . '/';
+
+
 foreach ($existingPages as $page) {
     if (($page['path'] ?? './') === $comicPathPrefix) {
         $comicPages[$page['loc']] = $page;
@@ -185,7 +194,7 @@ foreach ($existingPages as $page) {
 }
 $foundComicFiles = scanComicDirectory(DIRECTORY_PUBLIC_COMIC, $debugMode);
 foreach ($foundComicFiles as $filename) {
-// FIX: Konsistente Pfad-Erstellung ohne trim(), damit Keys zu sitemap.json passen (./comic/...)
+    // FIX: Konsistente Pfad-Erstellung ohne trim(), damit Keys zu sitemap.json passen (./comic/...)
     $loc = $comicPathPrefix . $filename;
     if (!isset($comicPages[$loc])) {
         $comicPages[$loc] = ['loc' => $loc, 'name' => $filename, 'path' => $comicPathPrefix, 'priority' => 0.8, 'changefreq' => 'never'];
@@ -194,15 +203,18 @@ foreach ($foundComicFiles as $filename) {
 
 // FIX: Explizite Sortierung nach Dateiname (Name) absteigend (Z bis A, Neueste zuerst)
 uasort($comicPages, function ($a, $b) {
-
     return strnatcmp($b['name'], $a['name']);
 });
+
 $pageTitle = 'Adminbereich - Sitemap Editor';
 $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow';
+
 // Konstante an JS übergeben (Paginierung für Comics)
 $itemsPerPage = ENTRIES_PER_PAGE_SITEMAP;
-$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>';
+
+$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="[https://code.jquery.com/jquery-3.7.1.min.js](https://code.jquery.com/jquery-3.7.1.min.js)"></script>';
+
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
@@ -211,13 +223,11 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- INFO HEADER -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if (!empty($sitemapSettings['last_run_timestamp'])) :
-                    ?>
+                <?php if (!empty($sitemapSettings['last_run_timestamp'])) : ?>
                     <p class="status-message status-info">Letzte Speicherung am
                         <?php echo date('d.m.Y \u\m H:i:s', $sitemapSettings['last_run_timestamp']); ?> Uhr.
                     </p>
-                    <?php
-                endif; ?>
+                <?php endif; ?>
             </div>
             <h2>Sitemap Editor</h2>
             <p>Verwalte hier die Einträge für deine Sitemap. Comic-Seiten werden automatisch erkannt und hinzugefügt.</p>
@@ -250,7 +260,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     </table>
                 </div>
 
-                <div style="margin-top: 15px;">
+                <div class="add-row-container">
                     <button class="button add-row-btn"><i class="fas fa-plus-circle"></i> Zeile hinzufügen</button>
                 </div>
             </div>
@@ -263,8 +273,8 @@ require_once Path::getPartialTemplatePath('header.php');
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="collapsible-content">
-                <div class="table-controls" style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                     <small>Zeigt <?php echo $itemsPerPage; ?> Einträge pro Seite.</small>
+                <div class="pagination-info-container">
+                    <small>Zeigt <?php echo $itemsPerPage; ?> Einträge pro Seite.</small>
                 </div>
 
                 <div class="sitemap-table-container">
@@ -294,7 +304,7 @@ require_once Path::getPartialTemplatePath('header.php');
 </article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
         // Daten aus PHP
         const fullComicPagesData = <?php echo json_encode(array_values($comicPages), JSON_UNESCAPED_SLASHES); ?>;
@@ -321,9 +331,10 @@ require_once Path::getPartialTemplatePath('header.php');
                 .map(f => `<option value="${f}" ${page.changefreq === f ? 'selected' : ''}>${f}</option>`).join('');
 
             // Icon-Button für Löschen (nur bei General erlaubt, aber Comic-Buttons müssen wg. Layout da sein)
-            const deleteBtn = isComic
-                ? `<button class="button delete-row-btn" disabled style="opacity: 0.3; cursor: not-allowed;"><i class="fas fa-lock"></i></button>`
-                : `<button class="button delete-row-btn" title="Eintrag entfernen"><i class="fas fa-trash-alt"></i></button>`;
+            // FIX: Inline CSS entfernt, 'disabled' Attribut reicht dank SCSS
+            const deleteBtn = isComic ?
+                `<button class="button delete-row-btn" disabled><i class="fas fa-lock"></i></button>` :
+                `<button class="button delete-row-btn" title="Eintrag entfernen"><i class="fas fa-trash-alt"></i></button>`;
 
             row.innerHTML = `
                 <td>
@@ -335,7 +346,8 @@ require_once Path::getPartialTemplatePath('header.php');
                 <td>
                     <select class="changefreq-select">${freqOptions}</select>
                 </td>
-                <td style="text-align: right;">
+                <!-- FIX: Inline Style durch Klasse ersetzt -->
+                <td class="text-right">
                     ${deleteBtn}
                 </td>
             `;
@@ -399,12 +411,18 @@ require_once Path::getPartialTemplatePath('header.php');
             messageBox.className = `status-message status-${type}`;
             messageBox.style.display = 'block';
             // Auto-Hide nach 5 Sekunden
-            setTimeout(() => { messageBox.style.display = 'none'; }, 5000);
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
         }
 
         function updateTimestamp() {
             const now = new Date();
-            const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const date = now.toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
             const time = now.toLocaleTimeString('de-DE');
             const newStatusText = `Letzte Speicherung am ${date} um ${time} Uhr.`;
 
@@ -434,7 +452,7 @@ require_once Path::getPartialTemplatePath('header.php');
             const updatedGeneralPages = [];
             generalTableBody.querySelectorAll('tr').forEach(row => {
                 const loc = row.querySelector('.loc-input').value;
-                if(loc) { // Nur speichern wenn Loc nicht leer ist
+                if (loc) { // Nur speichern wenn Loc nicht leer ist
                     updatedGeneralPages.push({
                         loc: loc,
                         name: loc.includes('/') ? loc.substring(loc.lastIndexOf('/') + 1) : loc,
@@ -465,12 +483,22 @@ require_once Path::getPartialTemplatePath('header.php');
                     showMessage('Sitemap erfolgreich gespeichert!', 'green');
                     await saveSettings();
                     updateTimestamp();
-                } else { showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red'); }
-            } catch (error) { showMessage(`Netzwerkfehler: ${error.message}`, 'red'); }
+                } else {
+                    showMessage(`Fehler: ${data.message || 'Unbekannter Fehler'}`, 'red');
+                }
+            } catch (error) {
+                showMessage(`Netzwerkfehler: ${error.message}`, 'red');
+            }
         });
 
         addRowBtn.addEventListener('click', () => {
-            const newPage = { loc: './neue-seite.php', name: 'neue-seite.php', path: './', priority: 0.5, changefreq: 'weekly' };
+            const newPage = {
+                loc: './neue-seite.php',
+                name: 'neue-seite.php',
+                path: './',
+                priority: 0.5,
+                changefreq: 'weekly'
+            };
             generalPagesData.push(newPage);
             renderGeneralTable();
         });
@@ -485,7 +513,7 @@ require_once Path::getPartialTemplatePath('header.php');
 
             // Re-Sync über Array-Index (da Reihenfolge gleich bleibt beim Rendern)
             const rowIndex = Array.from(generalTableBody.children).indexOf(row);
-            if(rowIndex === -1 || !generalPagesData[rowIndex]) return;
+            if (rowIndex === -1 || !generalPagesData[rowIndex]) return;
 
             const newLoc = row.querySelector('.loc-input').value;
             generalPagesData[rowIndex].loc = newLoc;
@@ -506,7 +534,7 @@ require_once Path::getPartialTemplatePath('header.php');
             const rowIndexInPage = Array.from(comicTableBody.children).indexOf(row);
             const globalIndex = (comicCurrentPage - 1) * COMIC_PER_PAGE + rowIndexInPage;
 
-            if(fullComicPagesData[globalIndex]) {
+            if (fullComicPagesData[globalIndex]) {
                 fullComicPagesData[globalIndex].priority = row.querySelector('.priority-input').value;
                 fullComicPagesData[globalIndex].changefreq = row.querySelector('.changefreq-select').value;
             }
@@ -519,12 +547,12 @@ require_once Path::getPartialTemplatePath('header.php');
                 const tableId = row.closest('table').id;
 
                 if (tableId === 'sitemap-table') {
-                    if(confirm('Möchtest du diesen Eintrag wirklich entfernen?')) {
-                         const rowIndex = Array.from(generalTableBody.children).indexOf(row);
-                         if (rowIndex > -1) {
-                             generalPagesData.splice(rowIndex, 1);
-                             row.remove();
-                         }
+                    if (confirm('Möchtest du diesen Eintrag wirklich entfernen?')) {
+                        const rowIndex = Array.from(generalTableBody.children).indexOf(row);
+                        if (rowIndex > -1) {
+                            generalPagesData.splice(rowIndex, 1);
+                            row.remove();
+                        }
                     }
                 } else {
                     // Comic Buttons sind disabled, aber sicher ist sicher

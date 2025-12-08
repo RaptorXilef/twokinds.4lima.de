@@ -27,6 +27,7 @@
  * - fix(JS/PHP): Robustere JSON-Datenübergabe (UTF-8) und JS-Syntax-Fixes (.slice statt Spread).
  * - fix(UI): Zeilenumbruch vor Klammern im Titel und konfigurierbare Textkürzung.
  * - fix(UI): HTML-Rendering in Tabellenvorschau aktiviert (Links anklickbar), wenn Kürzung inaktiv.
+ * - refactor(CSS): Bereinigung verbliebener Inline-Styles.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -35,8 +36,10 @@ $debugMode = $debugMode ?? false;
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
-// === KONFIGURATION ===
-// Falls noch nicht definiert, setze Standardwert (False = Volle Beschreibung anzeigen & HTML erlauben)
+// === KONFIGURATION (Fallback, falls Config fehlt) ===
+if (!defined('ENTRIES_PER_PAGE_ARCHIVE')) {
+    define('ENTRIES_PER_PAGE_ARCHIVE', 50);
+}
 if (!defined('TRUNCATE_ARCHIVE_DESCRIPTION')) {
     define('TRUNCATE_ARCHIVE_DESCRIPTION', false);
 }
@@ -186,7 +189,7 @@ $pageTitle = 'Adminbereich - Archiv Editor';
 $pageHeader = 'Archiv Editor';
 $robotsContent = 'noindex, nofollow';
 
-$itemsPerPage = defined('ENTRIES_PER_PAGE_ARCHIVE') ? ENTRIES_PER_PAGE_ARCHIVE : 50;
+$itemsPerPage = ENTRIES_PER_PAGE_ARCHIVE;
 // Übergabe der Konstante an JS (Bool -> String 'true'/'false')
 $truncateDesc = TRUNCATE_ARCHIVE_DESCRIPTION ? 'true' : 'false';
 
@@ -220,7 +223,8 @@ require_once Path::getPartialTemplatePath('header.php');
                 <div class="filter-controls center-filter">
                     <div class="search-wrapper">
                         <input type="text" id="search-input" placeholder="Suchen nach ID, Titel oder Inhalt...">
-                        <button id="clear-search-btn" type="button" title="Suche leeren" style="display: none;">&times;</button>
+                        <!-- FIX: Klasse .hidden-by-default statt inline style="display:none" -->
+                        <button id="clear-search-btn" type="button" title="Suche leeren" class="hidden-by-default">&times;</button>
                     </div>
                 </div>
             </fieldset>
@@ -312,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Konstante aus PHP
     const TRUNCATE_DESC = <?php echo $truncateDesc; ?>;
 
-    // FIX: JSON-Initialisierung gehärtet und sicher gemacht
     let rawData;
     try {
         rawData = <?php echo $chaptersJson ?: '[]'; ?>;
@@ -322,8 +325,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let chaptersData = Array.isArray(rawData) ? rawData : [];
-
-    // FIX: .slice() statt Spread Operator [...x]
     let filteredChapters = chaptersData.slice();
 
     // UI Referenzen
@@ -397,7 +398,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const pageItems = filteredChapters.slice(start, end);
 
         if (pageItems.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px;">Keine Kapitel gefunden.</td></tr>';
+            // FIX: Verwendung der neuen CSS-Klasse statt inline styles
+            tableBody.innerHTML = '<tr><td colspan="4" class="empty-table-message">Keine Kapitel gefunden.</td></tr>';
             paginationContainer.innerHTML = '';
             return;
         }
@@ -407,28 +409,21 @@ document.addEventListener('DOMContentLoaded', function () {
             const row = document.createElement('tr');
             row.dataset.index = realIndex;
 
-            // --- HTML PREVIEW LOGIK ---
-            // Wir erstellen ein temporäres Element, um das HTML zu parsen und zu bereinigen
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = chapter.description || '';
-
-            // Sicherheit: Entferne Skripte, Styles, iFrames (alles was Layout/Sicherheit gefährdet)
             tempDiv.querySelectorAll('script, style, iframe, object, embed, meta').forEach(el => el.remove());
 
             let displayContent = '';
 
             if (TRUNCATE_DESC) {
-                // FALL: KÜRZUNG AKTIV
-                // Wir nutzen nur reinen Text, da abgeschnittenes HTML kaputt gehen kann.
+                // KÜRZUNG AKTIV
                 let text = tempDiv.textContent || tempDiv.innerText || '';
                 if (text.length > 100) {
                     text = text.substring(0, 100) + '...';
                 }
-                // Text sicher für HTML ausgeben
                 displayContent = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             } else {
-                // FALL: VOLLE ANSICHT (HTML ERLAUBT)
-                // Wir stellen sicher, dass alle Links in neuem Tab öffnen, damit man nicht aus dem Admin fliegt
+                // VOLLE ANSICHT
                 tempDiv.querySelectorAll('a').forEach(a => {
                     a.setAttribute('target', '_blank');
                     a.setAttribute('rel', 'noopener noreferrer');
@@ -440,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 displayContent = '<em>Keine Beschreibung</em>';
             }
 
-            // FEAT 1: Titel formatieren (Umbruch vor Klammer)
+            // Titel formatieren
             let displayTitle = chapter.title || '';
             displayTitle = displayTitle.replace('(', '<br>(');
 
@@ -492,10 +487,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- EVENT LISTENER: FILTER ---
     searchInput.addEventListener('input', () => {
         const term = searchInput.value.toLowerCase().trim();
-        clearSearchBtn.style.display = term ? 'inline-block' : 'none';
+        // Nutzung der display Eigenschaft ist hier ok, aber wir entfernen initial die hidden class
+        if (term) {
+            clearSearchBtn.classList.remove('hidden-by-default');
+            clearSearchBtn.style.display = 'inline-block';
+        } else {
+            clearSearchBtn.style.display = 'none';
+        }
 
         if (!term) {
-            filteredChapters = chaptersData.slice(); // Safe copy
+            filteredChapters = chaptersData.slice();
         } else {
             filteredChapters = chaptersData.filter(ch => {
                 const id = (ch.chapterId || '').toLowerCase();
@@ -532,7 +533,6 @@ document.addEventListener('DOMContentLoaded', function () {
             descTextarea.summernote('code', ch.description || '');
             document.getElementById('modal-title-header').textContent = `Kapitel bearbeiten (${ch.chapterId})`;
         } else {
-            // Neu
             modalInputs.id.value = '';
             modalInputs.title.value = '';
             descTextarea.summernote('code', '');

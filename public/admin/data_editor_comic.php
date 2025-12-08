@@ -26,6 +26,8 @@
  * @since     5.0.0
  *  - style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
  *  - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_COMIC_DESCRIPTION) hinzugefügt.
+ *  - refactor(Config): Nutzung spezifischer Konstanten (ENTRIES_PER_PAGE_COMIC, TRUNCATE_COMIC_DESCRIPTION).
+ *  - refactor(CSS): Bereinigung verbliebener Inline-Styles.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -306,16 +308,18 @@ require_once Path::getPartialTemplatePath('header.php');
                 <div class="filter-controls center-filter">
                     <div class="search-wrapper">
                         <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
-                        <button id="clear-search-btn" type="button" title="Suche leeren" style="display: none;">&times;</button>
+                        <!-- FIX: Klasse .hidden-by-default statt inline style -->
+                        <button id="clear-search-btn" type="button" title="Suche leeren" class="hidden-by-default">&times;</button>
                     </div>
                 </div>
             </fieldset>
         </div>
 
-        <div class="pagination" style="margin-bottom: 20px;"></div>
+        <!-- FIX: Inline Styles entfernt (wird durch SCSS geregelt) -->
+        <div class="pagination"></div>
 
-        <!-- Paginierung Info -->
-        <div class="marker-legend" style="flex-basis: 100%; margin-top: 5px; text-align: right;">
+        <!-- FIX: Paginierung Info mit neuer Klasse -->
+        <div class="marker-legend legend-pagination-info">
             <small>Zeigt <?php echo ENTRIES_PER_PAGE_COMIC; ?> Einträge pro Seite.</small>
         </div>
 
@@ -458,12 +462,10 @@ require_once Path::getPartialTemplatePath('header.php');
 
         const tableBody = document.querySelector('#comic-table tbody');
 
-        // ##### JS ÄNDERUNG: BEIDE BUTTON-PAARE AUSWÄHLEN #####
         const saveAllBtn = document.getElementById('save-all-btn'); // Unten
         const addRowBtn = document.getElementById('add-row-btn'); // Unten
         const saveAllBtnTop = document.getElementById('save-all-btn-top'); // Oben
         const addRowBtnTop = document.getElementById('add-row-btn-top'); // Oben
-        // ##### ENDE JS ÄNDERUNG #####
 
         const messageBox = document.getElementById('message-box'); // Unten
         const messageBoxTop = document.getElementById('message-box-top'); // Oben
@@ -640,12 +642,15 @@ require_once Path::getPartialTemplatePath('header.php');
         }
 
         async function saveSettings() {
-            const formData = new FormData();
-            formData.append('action', 'save_settings');
-            formData.append('csrf_token', csrfToken);
             await fetch(window.location.href, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'save_settings',
+                    csrf_token: csrfToken
+                })
             });
         }
 
@@ -683,7 +688,14 @@ require_once Path::getPartialTemplatePath('header.php');
 
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
-            clearSearchBtn.style.display = searchTerm ? 'inline-block' : 'none';
+            // FIX: Inline style durch Klassen-Toggle ersetzen
+            if (searchTerm) {
+                clearSearchBtn.classList.remove('hidden-by-default');
+                clearSearchBtn.style.display = 'inline-block'; // Temporärer override für inline-block, da hidden-by-default display:none hat
+            } else {
+                clearSearchBtn.style.display = 'none';
+            }
+
             if (!searchTerm) {
                 filteredComicIds = [...allComicIds];
             } else {
