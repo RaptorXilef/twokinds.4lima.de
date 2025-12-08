@@ -23,6 +23,7 @@
  *  - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_REPORT_DESCRIPTION) hinzugefügt.
  *  - refactor(Config): Nutzung spezifischer Konstanten (ENTRIES_PER_PAGE_REPORT, TRUNCATE_REPORT_DESCRIPTION).
  *  - feat(UI): Info-Feld (Zeitstempel & Beschreibung) und Paginierung-Info hinzugefügt.
+ *  - feat(UX): Erfolgsmeldungen blenden sich nun automatisch nach 5 Sekunden aus.
  */
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
@@ -336,8 +337,7 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- NEU: Info-Box oben (ähnlich Comic Editor) -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if (!empty($reportSettings['reports_manager']['last_run_timestamp'])) :
-                    ; ?>
+                <?php if (!empty($reportSettings['reports_manager']['last_run_timestamp'])) : ?>
                     <p class="status-message status-info">Letzte Änderung am
                         <?php echo date('d.m.Y \u\m H:i:s', $reportSettings['reports_manager']['last_run_timestamp']); ?> Uhr.
                     </p>
@@ -348,7 +348,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
 
         <?php if ($message) : ?>
-            <div class="status-message status-<?php echo $messageType; ?>" style="display:block;">
+            <!-- ID für JS-Zugriff hinzugefügt -->
+            <div id="main-status-message" class="status-message status-<?php echo $messageType; ?>" style="display:block;">
                 <p><?php echo $message; ?></p>
             </div>
         <?php endif; ?>
@@ -569,6 +570,19 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function() {
+        // --- 1. Auto-Hide für PHP-Statusmeldungen ---
+        const mainStatusMsg = document.getElementById('main-status-message');
+        if (mainStatusMsg) {
+            setTimeout(() => {
+                mainStatusMsg.style.transition = "opacity 0.5s ease";
+                mainStatusMsg.style.opacity = "0";
+                setTimeout(() => {
+                    mainStatusMsg.style.display = "none";
+                }, 500); // Warten bis Fade-Out fertig ist
+            }, 5000); // 5 Sekunden anzeigen
+        }
+
+        // --- 2. Bestehende Tabellen-Logik ---
         const table = document.getElementById('reports-table');
         if (table) {
             table.addEventListener('click', function(e) {
