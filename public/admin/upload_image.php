@@ -245,13 +245,13 @@ require_once Path::getPartialTemplatePath('header.php');
 
             <div class="next-steps-actions">
                 <!-- Option 1: Thumbnails -->
-                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail.php'; ?>"
-                   class="button button-orange" target="_blank">
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail'  . $dateiendungPHP; ?>"
+                   class="button button-orange"> <!--  target="_blank" -->
                    <i class="fas fa-images"></i> 1. Thumbnails generieren
                 </a>
 
                 <!-- Option 2: Cache -->
-                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting.php?autostart=lowres,hires'; ?>"
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting'  . $dateiendungPHP . '?autostart=lowres,hires'; ?>"
                    class="button button-blue">
                    <i class="fas fa-sync"></i> 2. Cache aktualisieren
                 </a>

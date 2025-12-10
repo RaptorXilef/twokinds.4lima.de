@@ -1667,12 +1667,11 @@
 // @since 5.0.0
 
 .drag-drop-zone {
-    border: 3px dashed var(--border-medium);
+    border: 2px dashed var(--border-medium); // Etwas dezenterer Rahmen
     border-radius: 8px;
     padding: 60px 20px;
     text-align: center;
-    cursor: pointer;
-    background-color: var(--content-bg);
+    background-color: var(--content-bg); // Neutraler Hintergrund für die Zone
     transition: all 0.3s ease;
     margin-bottom: 20px;
     position: relative;
@@ -1680,14 +1679,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    gap: 20px; // Mehr Abstand zwischen Text und Button
 
+    // Hover-Effekt für die Zone selbst dezenter gestalten, damit sie nicht wie ein Button wirkt
     &:hover,
     &.drag-over {
         background-color: var(--table-row-hover);
         border-color: var(--link-color);
-        transform: scale(1.005);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .instructions {
@@ -1700,17 +1698,39 @@
 
         i {
             display: block;
-            font-size: 3em;
-            margin: 0 auto 10px auto; // FIX: Zentrierung der Wolke via Auto-Margin
-            color: var(--border-dark);
+            font-size: 4em;
+            margin: 0 auto 15px auto;
+            color: var(--border-dark); // Alternative Farbe --link-color
+            opacity: 0.8;
         }
     }
 
-    // Button im Dropzone-Bereich (optisch abgesetzt)
+    // Button deutlich als interaktives Element hervorheben
     label.button {
         display: inline-block;
         pointer-events: auto;
         cursor: pointer;
+        background-color: var(--button-bg);
+        border: 1px solid var(--border-dark); // Kontur für Button-Look
+        padding: 12px 30px;
+        border-radius: 5px;
+        font-weight: bold;
+        color: var(--text-on-medium);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); // Schatten für Tiefe
+        transition:
+            transform 0.1s,
+            background-color 0.2s;
+
+        &:hover {
+            background-color: var(--button-hover-bg);
+            transform: translateY(-2px); // Kleiner Hebe-Effekt
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        &:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
     }
 }
 
@@ -1730,9 +1750,9 @@
 }
 
 .notification-box {
-    border: 1px solid var(--status-info-border); // #bee5eb -> var
-    background-color: var(--status-info-bg); // #d1ecf1 -> var
-    color: #0c5460; // Hardcoded in variables usually, but keeping readable here
+    border: 1px solid var(--status-info-border);
+    background-color: var(--status-info-bg);
+    color: #0c5460;
     padding: 20px;
     border-radius: 8px;
     margin-top: 30px;
@@ -1746,7 +1766,23 @@
         margin-bottom: 10px;
     }
 
-    // Theme Anpassung (manuell, da status-info var evtl. nicht reicht)
+    .next-steps-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+
+        a.button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            font-size: 1em;
+            text-decoration: none;
+        }
+    }
+
     body.theme-night & {
         background-color: rgba(23, 162, 184, 0.15);
         border-color: rgba(23, 162, 184, 0.4);
@@ -1754,24 +1790,26 @@
     }
 }
 
-// Comparison Modal Specifics
+// Comparison Modal Specifics Fix
 .image-comparison {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; // Wichtig für Responsiveness
     justify-content: center;
     gap: 20px;
     margin: 20px 0;
+    width: 100%; // Container nimmt volle Breite des Modals
 
     .image-box {
-        flex: 1;
-        min-width: 250px;
-        max-width: 48%;
+        flex: 1 1 300px; // Basisbreite, darf wachsen und schrumpfen
+        min-width: 0; // CRITICAL FIX: Verhindert, dass Flex-Items überlaufen
+        max-width: 100%; // Sicherheitshalber
         text-align: center;
         border: 1px solid var(--border-medium);
         padding: 15px;
         border-radius: 5px;
         background-color: var(--content-area-bg);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box; // Padding inkludieren
 
         h3 {
             margin-top: 0;
@@ -1782,22 +1820,15 @@
             margin-bottom: 10px;
         }
 
-        // NEU: Container für die Aktions-Buttons nebeneinander
-        .next-steps-actions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-
-            a.button {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                padding: 10px 20px;
-                font-size: 1em;
-                text-decoration: none;
-            }
+        img {
+            width: 100%; // Bild passt sich der Box-Breite an
+            height: auto; // Höhe proportional skalieren
+            max-height: 100%;
+            object-fit: contain; // Bildinhalt vollständig sichtbar halten
+            border: 1px solid var(--border-light);
+            background-color: var(--page-bg);
+            display: block;
+            margin: 0 auto;
         }
 
         body.theme-night & {
