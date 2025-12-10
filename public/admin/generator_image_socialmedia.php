@@ -23,6 +23,7 @@
  * - Komplettes Refactoring auf Basis des Thumbnail - Generators(SCSS, JS - Logik) .
  * - Einstellung für Ausschnitt-Position (Top, Center, Bottom...) hinzugefügt.
  * - Stability Fix: Robustes Loop-Handling mit Timeout und 'finally'-Block.
+ * - Feature: Option für erzwungenen weißen Hintergrund.
  */
 
 declare(strict_types=1);
@@ -43,7 +44,8 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
             'quality' => 85,
             'lossless' => false,
             'resize_mode' => 'cover',
-            'crop_position' => 'center' // Default: Mitte
+            'crop_position' => 'center', // Default: Mitte
+            'force_white_bg' => false // Default: Transparent (wenn möglich)
         ]
     ];
     if (!file_exists($filePath)) {
@@ -89,7 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             'quality' => (int)($input['quality'] ?? 85),
             'lossless' => filter_var($input['lossless'] ?? false, FILTER_VALIDATE_BOOLEAN),
             'resize_mode' => $input['resize_mode'] ?? 'cover',
-            'crop_position' => $input['crop_position'] ?? 'center'
+            'crop_position' => $input['crop_position'] ?? 'center',
+            'force_white_bg' => filter_var($input['force_white_bg'] ?? false, FILTER_VALIDATE_BOOLEAN)
         ];
 
         if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
@@ -185,7 +188,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 </select>
             </div>
 
-            <!-- NEU: Crop Position -->
+            <!-- Crop Position -->
             <div class="form-group">
                 <label for="crop_position" title="Welcher Teil des Bildes soll sichtbar sein?">Fokus / Ausschnitt:</label>
                 <select id="crop_position">
@@ -200,6 +203,13 @@ require_once Path::getPartialTemplatePath('header.php');
             <div class="form-group">
                 <label for="quality">Qualität (1-100):</label>
                 <input type="number" id="quality" min="1" max="100" value="<?php echo htmlspecialchars((string)$generatorSettings['quality']); ?>">
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label for="force_white_bg" title="Falls aktiviert, wird der Hintergrund immer weiß statt transparent (Standard bei WebP/PNG)">
+                    <input type="checkbox" id="force_white_bg" <?php echo ($generatorSettings['force_white_bg']) ? 'checked' : ''; ?>>
+                    Hintergrund: Weiß
+                </label>
             </div>
 
             <div class="form-group checkbox-group">
@@ -304,7 +314,8 @@ require_once Path::getPartialTemplatePath('header.php');
                     quality: parseInt(document.getElementById('quality').value, 10),
                     lossless: document.getElementById('lossless').checked,
                     resize_mode: document.getElementById('resize_mode').value,
-                    crop_position: document.getElementById('crop_position').value
+                    crop_position: document.getElementById('crop_position').value,
+                    force_white_bg: document.getElementById('force_white_bg').checked
                 };
             }
 
@@ -318,6 +329,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     lossless: lastSuccessfulSettings.lossless ? '1' : '0',
                     resize_mode: lastSuccessfulSettings.resize_mode,
                     crop_position: lastSuccessfulSettings.crop_position,
+                    force_white_bg: lastSuccessfulSettings.force_white_bg ? '1' : '0',
                     csrf_token: csrfToken
                 });
 
@@ -350,7 +362,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     if (data.imageUrl) {
                         const imgDiv = document.createElement('div');
                         imgDiv.className = 'image-item';
-                        imgDiv.style.aspectRatio = "1.91 / 1"; // Social Media Format
+                        imgDiv.style.aspectRatio = "1.91 / 1";
                         imgDiv.innerHTML = `
                             <img src="${data.imageUrl}" alt="${data.message}" loading="lazy">
                             <div class="image-overlay">

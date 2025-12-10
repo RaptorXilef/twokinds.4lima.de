@@ -14,6 +14,7 @@
  * - Initiale Erstellung.
  * - Feature: Variable Ausschnitt-Position (Top, Center, Bottom etc.) hinzugefügt.
  * - Fix: Speicher- und Zeitlimits erhöht für stabilen Batch-Prozess.
+ * -Feature: Transparenter Hintergrund (Standard) vs. Weiß erzwingen.
  */
 
 // Fehlerunterdrückung für sauberes JSON, aber Logging aktiv lassen
@@ -49,6 +50,8 @@ try {
     $lossless = isset($_GET['lossless']) && $_GET['lossless'] === '1';
     $resizeMode = $_GET['resize_mode'] ?? 'cover'; // 'cover' oder 'contain'
     $cropPosition = $_GET['crop_position'] ?? 'center'; // 'top', 'top_center', 'center', 'bottom_center', 'bottom'
+    // NEU: Weißer Hintergrund erzwingen?
+    $forceWhiteBg = isset($_GET['force_white_bg']) && $_GET['force_white_bg'] === '1';
 
     if (empty($imageName)) {
         sendJson(['status' => 'error', 'message' => 'Kein Bildname.']);
@@ -119,11 +122,26 @@ try {
     $targetH = 630;
     $finalImage = imagecreatetruecolor($targetW, $targetH);
 
-    // Hintergrund füllen (Weiß für 'contain', oder generell als Basis)
-    $bgColor = imagecolorallocate($finalImage, 255, 255, 255);
-    imagefilledrectangle($finalImage, 0, 0, $targetW, $targetH, $bgColor);
+    // HINTERGRUND LOGIK
+    // Weiß erzwingen WENN:
+    // 1. User es explizit will ($forceWhiteBg)
+    // 2. ODER Ausgabeformat kein Alpha unterstützt (JPG)
+    $useWhiteBackground = $forceWhiteBg || ($format === 'jpg' || $format === 'jpeg');
 
-    // Berechnung
+    if ($useWhiteBackground) {
+        // Weiß füllen (Weiß für 'contain', oder generell als Basis)
+        $bgColor = imagecolorallocate($finalImage, 255, 255, 255);
+        imagefilledrectangle($finalImage, 0, 0, $targetW, $targetH, $bgColor);
+    } else {
+        // Transparent füllen (für PNG/WebP)
+        imagealphablending($finalImage, false);
+        imagesavealpha($finalImage, true);
+        // Vollständig transparenter Kanal (127 = 100% transparent in GD)
+        $transparentColor = imagecolorallocatealpha($finalImage, 0, 0, 0, 127);
+        imagefilledrectangle($finalImage, 0, 0, $targetW, $targetH, $transparentColor);
+    }
+
+    // Berechnung (Crop/Contain)
     $srcRatio = $srcWidth / $srcHeight;
     $targetRatio = $targetW / $targetH;
 
@@ -228,7 +246,7 @@ try {
         sendJson([
             'status' => 'success',
             'message' => $targetFilename,
-            'details' => "{$resizeMode}/{$cropPosition}",
+            'details' => "{$resizeMode}/{$cropPosition}" . ($useWhiteBackground ? "/white" : "/trans"),
             'imageUrl' => $webUrl
         ]);
     } else {
