@@ -1662,3 +1662,139 @@
         }
     }
 }
+
+/* --- IMAGE UPLOAD PAGE --- */
+// @since 5.0.0
+
+.drag-drop-zone {
+    border: 3px dashed var(--border-medium);
+    border-radius: 8px;
+    padding: 60px 20px;
+    text-align: center;
+    cursor: pointer;
+    background-color: var(--content-bg);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+
+    &:hover,
+    &.drag-over {
+        background-color: var(--table-row-hover);
+        border-color: var(--link-color);
+        transform: scale(1.005);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .instructions {
+        font-size: 1.2em;
+        color: var(--text-color-medium);
+        pointer-events: none; // Klicks gehen durch zum Container (wichtig für File-Dialog)
+        margin: 0;
+
+        i {
+            display: block;
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: var(--border-dark);
+        }
+    }
+
+    // Button im Dropzone-Bereich (optisch abgesetzt)
+    label.button {
+        display: inline-block;
+        pointer-events: auto;
+        cursor: pointer;
+    }
+}
+
+.upload-file-list {
+    margin-bottom: 20px;
+    font-style: italic;
+    color: var(--text-color);
+    min-height: 1.5em;
+    padding: 10px;
+    background-color: var(--table-row-even);
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+
+    &:empty {
+        display: none;
+    }
+}
+
+.notification-box {
+    border: 1px solid var(--status-info-border); // #bee5eb -> var
+    background-color: var(--status-info-bg); // #d1ecf1 -> var
+    color: #0c5460; // Hardcoded in variables usually, but keeping readable here
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+    h4 {
+        margin-top: 0;
+        color: inherit;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    // Theme Anpassung (manuell, da status-info var evtl. nicht reicht)
+    body.theme-night & {
+        background-color: rgba(23, 162, 184, 0.15);
+        border-color: rgba(23, 162, 184, 0.4);
+        color: #d1ecf1;
+    }
+}
+
+// Comparison Modal Specifics
+.image-comparison {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+
+    .image-box {
+        flex: 1;
+        min-width: 250px;
+        max-width: 48%;
+        text-align: center;
+        border: 1px solid var(--border-medium);
+        padding: 15px;
+        border-radius: 5px;
+        background-color: var(--content-area-bg);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        h3 {
+            margin-top: 0;
+            font-size: 1em;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            max-height: 350px;
+            object-fit: contain;
+            border: 1px solid var(--border-light);
+            background-color: var(
+                --page-bg
+            ); // Checkerboard wäre besser, aber Page-BG reicht
+            display: block;
+            margin: 0 auto;
+        }
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+        }
+    }
+}
