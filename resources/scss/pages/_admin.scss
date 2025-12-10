@@ -2034,7 +2034,9 @@
 }
 
 /* --- GENERATOR IMAGE GRID --- */
-// @since 5.0.0 - Optimiertes Card-Design mit Hover-Overlay
+// @since 5.0.0
+// - Optimiertes Card-Design mit Hover-Overlay
+// - Delete Button Styles hinzugefügt
 
 .image-grid {
     display: grid;
@@ -2077,6 +2079,12 @@
         .image-overlay {
             opacity: 1;
         }
+
+        // Lösch-Button einblenden
+        .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
     img {
@@ -2093,12 +2101,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(
-            0,
-            0,
-            0,
-            0.75
-        ); // Dunkles Overlay für gute Lesbarkeit
+        background-color: rgba(0, 0, 0, 0.75); // Dunkles Overlay
         display: flex;
         align-items: center;
         justify-content: center;
@@ -2106,6 +2109,7 @@
         transition: opacity 0.2s ease;
         padding: 10px;
         box-sizing: border-box;
+        pointer-events: none; // Klicks durchlassen (wichtig für Delete-Button Interaktion, falls nötig)
     }
 
     span.filename {
@@ -2115,6 +2119,39 @@
         text-align: center;
         word-break: break-all;
         line-height: 1.4;
+    }
+
+    // Lösch-Button (Oben Rechts)
+    .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 28px;
+        height: 28px;
+        background-color: #dc3545; // Rot
+        color: white;
+        border: 1px solid #bd2130;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0; // Versteckt bis Hover
+        transform: scale(0.8);
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 20; // Über dem Overlay liegen
+        font-size: 0.9em;
+        pointer-events: auto; // Klickbar machen
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+
+        &:hover {
+            background-color: #c82333; // Dunkleres Rot beim Hover
+            transform: scale(1.15) !important;
+        }
+
+        i {
+            pointer-events: none; // Klick geht auf Button
+        }
     }
 
     body.theme-night & {

@@ -13,10 +13,17 @@
  * @since 5.0.0
  * - Initiale Erstellung.
  * - Feature: Variable Ausschnitt-Position (Top, Center, Bottom etc.) hinzugefügt.
+ * - Fix: Speicher- und Zeitlimits erhöht für stabilen Batch-Prozess.
  */
 
+// Fehlerunterdrückung für sauberes JSON, aber Logging aktiv lassen
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
+
+// WICHTIG: Limits erhöhen für High-Res Bildbearbeitung
+ini_set('memory_limit', '1024M'); // 1GB RAM für GD-Operationen
+set_time_limit(120); // 2 Minuten pro Bild max
+
 define('IS_API_CALL', true);
 
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';

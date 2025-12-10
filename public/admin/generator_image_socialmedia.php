@@ -22,6 +22,7 @@
  * @since 5.0.0
  * - Komplettes Refactoring auf Basis des Thumbnail - Generators(SCSS, JS - Logik) .
  * - Einstellung für Ausschnitt-Position (Top, Center, Bottom...) hinzugefügt.
+ * - Stability Fix: Robustes Loop-Handling mit Timeout und 'finally'-Block.
  */
 
 declare(strict_types=1);
@@ -73,26 +74,43 @@ $currentSettings = loadGeneratorSettings($settingsFile, $debugMode);
 $generatorSettings = $currentSettings['socialmedia_generator'];
 
 // AJAX Handler
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_settings') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
 
-    $input = json_decode($_POST['settings'] ?? '{}', true);
+    $action = $_POST['action'];
 
-    $currentSettings['socialmedia_generator'] = [
-        'last_run_timestamp' => time(),
-        'format' => $input['format'] ?? 'webp',
-        'quality' => (int)($input['quality'] ?? 85),
-        'lossless' => filter_var($input['lossless'] ?? false, FILTER_VALIDATE_BOOLEAN),
-        'resize_mode' => $input['resize_mode'] ?? 'cover',
-        'crop_position' => $input['crop_position'] ?? 'center'
-    ];
+    if ($action === 'save_settings') {
+        $input = json_decode($_POST['settings'] ?? '{}', true);
+        $currentSettings['socialmedia_generator'] = [
+            'last_run_timestamp' => time(),
+            'format' => $input['format'] ?? 'webp',
+            'quality' => (int)($input['quality'] ?? 85),
+            'lossless' => filter_var($input['lossless'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'resize_mode' => $input['resize_mode'] ?? 'cover',
+            'crop_position' => $input['crop_position'] ?? 'center'
+        ];
 
-    if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
-        echo json_encode(['success' => true]);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern der Einstellungen.']);
+        if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern der Einstellungen.']);
+        }
+    } elseif ($action === 'delete_image') {
+        $filename = basename($_POST['filename'] ?? '');
+        $targetDir = DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA;
+        $targetFile = $targetDir . DIRECTORY_SEPARATOR . $filename;
+
+        if (empty($filename) || !file_exists($targetFile)) {
+            echo json_encode(['success' => false, 'message' => 'Datei nicht gefunden.']);
+        } else {
+            if (unlink($targetFile)) {
+                echo json_encode(['success' => true, 'message' => 'Datei gelöscht.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Konnte Datei nicht löschen.']);
+            }
+        }
     }
     exit;
 }
@@ -303,7 +321,15 @@ require_once Path::getPartialTemplatePath('header.php');
                     csrf_token: csrfToken
                 });
 
-                const response = await fetch(`check_and_generate_socialmedia.php?${params.toString()}`);
+                // FETCH MIT TIMEOUT (30 Sekunden)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                const response = await fetch(`check_and_generate_socialmedia.php?${params.toString()}`, {
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
 
                 if (!response.ok) throw new Error(`HTTP Fehler ${response.status}`);
 
@@ -330,6 +356,9 @@ require_once Path::getPartialTemplatePath('header.php');
                             <div class="image-overlay">
                                 <span class="filename">${data.message}</span>
                             </div>
+                            <button class="delete-btn" title="Bild löschen" onclick="deleteGeneratedImage('${data.message}', this)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         `;
                         createdImagesContainer.prepend(imgDiv);
                     }
@@ -341,11 +370,17 @@ require_once Path::getPartialTemplatePath('header.php');
                 }
 
             } catch (error) {
-                addLogMessage(`Fehler bei ${currentFile}: ${error.message}`, 'error');
+                // AbortError ist der Timeout
+                if (error.name === 'AbortError') {
+                    addLogMessage(`Timeout bei ${currentFile}: Server antwortet nicht (Bild zu groß?). Überspringe...`, 'error');
+                } else {
+                    addLogMessage(`Fehler bei ${currentFile}: ${error.message}`, 'error');
+                }
+            } finally {
+                // WICHTIG: finally garantiert, dass der Loop weitergeht, auch wenn es knallt.
+                processedFiles++;
+                setTimeout(processGenerationQueue, 100);
             }
-
-            processedFiles++;
-            setTimeout(processGenerationQueue, 100);
         }
 
         async function finishGeneration() {
@@ -386,6 +421,36 @@ require_once Path::getPartialTemplatePath('header.php');
                 }
             }
         }
+
+        window.deleteGeneratedImage = async function(filename, btnElement) {
+            if (!confirm(`Soll das Bild "${filename}" wirklich unwiderruflich gelöscht werden?`)) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'delete_image');
+            formData.append('filename', filename);
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                const result = await response.json();
+
+                if (result.success) {
+                    const item = btnElement.closest('.image-item');
+                    item.style.transition = 'all 0.3s';
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.8)';
+                    setTimeout(() => item.remove(), 300);
+                    addLogMessage(`Bild gelöscht: ${filename}`, 'warning');
+                } else {
+                    alert('Fehler beim Löschen: ' + result.message);
+                }
+            } catch (e) {
+                alert('Netzwerkfehler beim Löschen.');
+                console.error(e);
+            }
+        };
 
         generateButton.addEventListener('click', processGenerationQueue);
         togglePauseResumeButton.addEventListener('click', () => {
