@@ -1856,22 +1856,21 @@
     }
 }
 
-// FIX: Besseres Layout für die Settings
 .generator-settings {
     display: flex;
-    flex-wrap: wrap; // Umbruch erlauben
+    flex-wrap: wrap;
     gap: 20px;
     margin-bottom: 25px;
     padding-bottom: 25px;
     border-bottom: 1px dashed var(--border-medium);
-    align-items: flex-end; // Labels unten bündig, falls mehrzeilig
+    align-items: flex-end;
 
     .form-group {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        flex: 1; // Alle nehmen gleich viel Platz
-        min-width: 200px; // Aber nicht zu schmal werden
+        flex: 1;
+        min-width: 200px;
 
         label {
             font-weight: bold;
@@ -1887,10 +1886,10 @@
             border-radius: 4px;
             background-color: var(--content-area-bg);
             color: var(--text-color);
-            width: 100%; // Füllt den Flex-Container
-            box-sizing: border-box; // Wichtig für Padding
+            width: 100%;
+            box-sizing: border-box;
             font-size: 1em;
-            height: 42px; // Einheitliche Höhe erzwingen
+            height: 42px;
 
             &:focus {
                 border-color: var(--link-color);
@@ -1903,18 +1902,20 @@
             }
         }
 
-        // Spezifisch für Checkbox-Container (damit er nicht riesig wird)
+        // Spezifisch für Checkbox-Container
         &.checkbox-group {
-            flex: 0 0 auto; // Nimmt nur so viel Platz wie nötig
-            justify-content: center; // Vertikal mittig
-            height: 42px; // Gleiche Höhe wie Inputs
-            margin-bottom: 2px; // Kleiner Ausgleich
+            flex: 0 0 auto;
+            justify-content: center;
+            height: 42px;
+            margin-bottom: 2px;
 
             label {
+                display: flex;
                 flex-direction: row;
                 align-items: center;
                 cursor: pointer;
                 font-weight: normal;
+                white-space: nowrap;
 
                 input {
                     width: auto;
@@ -1943,7 +1944,7 @@
 
     .progress-bar {
         height: 100%;
-        background-color: var(--link-color); // Primärfarbe nutzen
+        background-color: var(--link-color);
         width: 0%;
         transition: width 0.3s ease;
         background-image: linear-gradient(
@@ -1968,10 +1969,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-color); // Automatisch dunkel/hell je nach Theme
+        color: var(--text-color);
         font-size: 0.9em;
         font-weight: bold;
-        text-shadow: 0 0 2px rgba(255, 255, 255, 0.5); // Lesbarkeit erhöhen
+        text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
 
         body.theme-night & {
             text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
@@ -1980,16 +1981,17 @@
 }
 
 .log-console {
-    background-color: #1e1e1e; // Immer dunkel für Code-Look (VS Code Style)
+    background-color: #1e1e1e;
     color: #d4d4d4;
     font-family: var(--font-mono, monospace);
     font-size: 0.9em;
     padding: 15px;
     border-radius: 5px;
-    height: 350px;
+    height: 200px;
     overflow-y: auto;
     border: 1px solid var(--border-medium);
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
 
     p {
         margin: 2px 0;
@@ -2003,7 +2005,6 @@
         margin-right: 10px;
         font-size: 0.85em;
     }
-
     .log-info {
         color: #9cdcfe;
     }
@@ -2027,4 +2028,108 @@
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* --- GENERATOR IMAGE GRID --- */
+// @since 5.0.2 - Optimiertes Card-Design mit Hover-Overlay
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+
+    &:empty {
+        display: none;
+    }
+
+    body.theme-night & {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+}
+
+.image-item {
+    position: relative;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    overflow: hidden;
+    aspect-ratio: 2 / 3; // Festes Seitenverhältnis für Uniformität
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+    cursor: default;
+
+    // Hover-Effekt
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+
+        // Overlay einblenden
+        .image-overlay {
+            opacity: 1;
+        }
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    // Overlay für den Dateinamen
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(
+            0,
+            0,
+            0,
+            0.75
+        ); // Dunkles Overlay für gute Lesbarkeit
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0; // Unsichtbar bis Hover
+        transition: opacity 0.2s ease;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    span.filename {
+        color: #fff;
+        font-weight: bold;
+        font-size: 0.85em;
+        text-align: center;
+        word-break: break-all;
+        line-height: 1.4;
+    }
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-medium);
+    }
+
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }

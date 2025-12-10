@@ -2,7 +2,6 @@
 
 /**
  * Worker-Skript für den Thumbnail-Generator.
- * Wird per AJAX (fetch) vom generator_thumbnail.php aufgerufen.
  *
  * @file      ROOT/public/admin/check_and_generate_thumbnail.php
  * @package   twokinds.4lima.de
@@ -11,7 +10,8 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  *
  * @since 5.0.0
- *  - Refactoring auf neue Architektur (Path-Klasse, JSON-Response).
+ * - Refactoring auf neue Architektur (Path-Klasse, JSON-Response).
+ * - Rückgabe der ImageURL für Frontend-Vorschau hinzugefügt.
  */
 
 // Deaktiviere Fehleranzeige im HTML-Output (zerstört JSON), logge sie stattdessen
@@ -47,7 +47,7 @@ try {
     $lossless = isset($_GET['lossless']) && $_GET['lossless'] === '1';
 
     if (empty($imageName)) {
-        sendJson(['status' => 'error', 'message' => 'Kein Bildname angegeben.']);
+        sendJson(['status' => 'error', 'message' => 'Kein Bildname.']);
     }
 
     // Pfade definieren
@@ -156,11 +156,7 @@ try {
             $saved = imagepng($thumbImage, $targetFile, $pngQuality);
             break;
         case 'webp':
-            if ($lossless && defined('IMG_WEBP_LOSSLESS')) {
-                $saved = imagewebp($thumbImage, $targetFile, IMG_WEBP_LOSSLESS);
-            } else {
-                $saved = imagewebp($thumbImage, $targetFile, $quality);
-            }
+            $saved = imagewebp($thumbImage, $targetFile, ($lossless && defined('IMG_WEBP_LOSSLESS')) ? IMG_WEBP_LOSSLESS : $quality);
             break;
     }
 
@@ -168,13 +164,17 @@ try {
     imagedestroy($thumbImage);
 
     if ($saved) {
+        // NEU: Image URL generieren für Frontend-Vorschau
+        $webUrl = Url::getImgComicThumbnailsUrl($targetFilename) . '?' . time();
+
         sendJson([
             'status' => 'success',
             'message' => $targetFilename,
-            'details' => "{$newWidth}x{$newHeight}"
+            'details' => "{$newWidth}x{$newHeight}",
+            'imageUrl' => $webUrl // URL mitsenden
         ]);
     } else {
-        throw new Exception("Konnte Datei nicht speichern (Rechte prüfen?).");
+        throw new Exception("Konnte Datei nicht speichern (Rechte?).");
     }
 } catch (Exception $e) {
     sendJson(['status' => 'error', 'message' => $e->getMessage()]);

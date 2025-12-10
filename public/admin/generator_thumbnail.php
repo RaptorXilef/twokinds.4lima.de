@@ -7,7 +7,7 @@
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
 * @since 4.0.0
@@ -23,6 +23,8 @@
  * - refactor(Code): HTML-Struktur an Admin-Layout angepasst.
  * - fix(JS): Modernisierung auf fetch/async-await und verbessertes State-Management.
  * - Verbesserte Fehlerdiagnose bei nicht-JSON Antworten (HTML/404/500).
+ * - Layout-Optimierung: Log oben, Bilder unten. Auto-Scroll Option hinzugefügt.
+ * - Entfernung der Auto-Scroll Funktion, da neue Bilder oben angefügt werden.
  */
 
 declare(strict_types=1);
@@ -54,7 +56,10 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
     }
     $content = file_get_contents($filePath);
     $settings = json_decode($content, true);
-    return (json_last_error() === JSON_ERROR_NONE && isset($settings['thumbnail_generator'])) ? $settings : $defaults;
+    if (json_last_error() === JSON_ERROR_NONE && isset($settings['thumbnail_generator'])) {
+        return $settings;
+    }
+    return $defaults;
 }
 
 function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
@@ -176,11 +181,6 @@ require_once Path::getPartialTemplatePath('header.php');
             <div id="progress-text" class="progress-text">0% (0/0)</div>
         </div>
 
-        <!-- LOG CONSOLE -->
-        <div id="log-container" class="log-console">
-            <p class="log-info"><span class="log-time">[System]</span> Bereit. <?php echo count($missingThumbnails); ?> Bilder in der Warteschlange.</p>
-        </div>
-
         <!-- ACTIONS -->
         <div class="generator-actions">
             <button id="toggle-pause-resume-btn" class="button button-orange" style="display: none;">Pause</button>
@@ -188,6 +188,15 @@ require_once Path::getPartialTemplatePath('header.php');
                 <i class="fas fa-play"></i> Generierung starten
             </button>
         </div>
+
+        <!-- LOG CONSOLE (Log oben) -->
+        <div id="log-container" class="log-console">
+            <p class="log-info"><span class="log-time">[System]</span> Bereit. <?php echo count($missingThumbnails); ?> Bilder in der Warteschlange.</p>
+        </div>
+
+        <!-- IMAGE GRID CONTAINER (Bilder unten) -->
+        <div id="created-images-container" class="image-grid"></div>
+
     </div>
 </article>
 
@@ -204,6 +213,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const progressText = document.getElementById('progress-text');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
         const settingsContainer = document.querySelector('.generator-settings');
+        const createdImagesContainer = document.getElementById('created-images-container');
 
         // State
         let queue = [...initialMissingIds];
@@ -220,7 +230,7 @@ require_once Path::getPartialTemplatePath('header.php');
             p.className = `log-${type}`;
             p.innerHTML = `<span class="log-time">[${now}]</span> ${message}`;
             logContainer.appendChild(p);
-            logContainer.scrollTop = logContainer.scrollHeight;
+            logContainer.scrollTop = logContainer.scrollHeight; // Log scrollt weiterhin, aber Seite nicht
         }
 
         async function saveSettings(settings) {
@@ -247,6 +257,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 updateButtonState();
                 settingsContainer.style.opacity = '0.5';
                 settingsContainer.style.pointerEvents = 'none';
+                createdImagesContainer.innerHTML = '';
 
                 lastSuccessfulSettings = {
                     format: document.getElementById('format').value,
@@ -266,42 +277,38 @@ require_once Path::getPartialTemplatePath('header.php');
                     csrf_token: csrfToken
                 });
 
-                // Ruft das Backend-Skript auf
                 const response = await fetch(`check_and_generate_thumbnail.php?${params.toString()}`);
 
-                // 1. HTTP Fehler prüfen (z.B. 404 Datei nicht gefunden, 500 Server Fehler)
-                if (!response.ok) {
-                    throw new Error(`HTTP Fehler ${response.status}: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`HTTP Fehler ${response.status}`);
 
-                // 2. Antwort als Text lesen (um HTML-Fehler abzufangen)
                 const responseText = await response.text();
                 let data;
 
                 try {
                     data = JSON.parse(responseText);
                 } catch (e) {
-                    // JSON Parsing fehlgeschlagen -> Wahrscheinlich HTML (Fehlermeldung)
-                    console.error("Server Error Raw:", responseText);
-
-                    // Versuche, den Fehler aus dem HTML zu extrahieren (z.B. <title>Error</title> oder body text)
-                    let errorMsg = "Unbekannter Fehler (HTML)";
-
-                    // Regex für Title-Tag
-                    const titleMatch = responseText.match(/<title>(.*?)<\/title>/i);
-                    if (titleMatch && titleMatch[1]) {
-                        errorMsg = titleMatch[1];
-                    } else {
-                        // Tags entfernen und kürzen
-                        errorMsg = responseText.replace(/<[^>]*>/g, '').substring(0, 150).replace(/\s+/g, ' ').trim();
-                    }
-
-                    throw new Error(`Server lieferte kein JSON. Meldung: "${errorMsg}"`);
+                    const errorMsg = responseText.replace(/<[^>]*>/g, '').substring(0, 150).replace(/\s+/g, ' ').trim();
+                    throw new Error(`Server Error (kein JSON): "${errorMsg}"`);
                 }
 
                 if (data.status === 'success') {
                     addLogMessage(`Erstellt: ${data.message} (${data.details || ''})`, 'success');
                     createdCount++;
+
+                    if (data.imageUrl) {
+                        const imgDiv = document.createElement('div');
+                        imgDiv.className = 'image-item';
+                        // Dateiname ist jetzt im Overlay versteckt und nur bei Hover sichtbar
+                        imgDiv.innerHTML = `
+                            <img src="${data.imageUrl}" alt="${data.message}" loading="lazy">
+                            <div class="image-overlay">
+                                <span class="filename">${data.message}</span>
+                            </div>
+                        `;
+                        // Neue Bilder werden OBEN eingefügt
+                        createdImagesContainer.prepend(imgDiv);
+                    }
+
                 } else if (data.status === 'exists') {
                     addLogMessage(`Übersprungen: ${data.message}`, 'warning');
                 } else {
@@ -309,7 +316,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 }
 
             } catch (error) {
-                addLogMessage(`Kritischer Fehler bei ${currentFile}: ${error.message}`, 'error');
+                addLogMessage(`Fehler bei ${currentFile}: ${error.message}`, 'error');
             }
 
             processedFiles++;
@@ -338,7 +345,6 @@ require_once Path::getPartialTemplatePath('header.php');
             if (isGenerationActive) {
                 generateButton.style.display = 'none';
                 togglePauseResumeButton.style.display = 'inline-block';
-
                 if (isPaused) {
                     togglePauseResumeButton.textContent = 'Fortsetzen';
                     togglePauseResumeButton.className = 'button button-green';
