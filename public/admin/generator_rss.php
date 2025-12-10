@@ -27,6 +27,7 @@
  * - Fix: XML-Struktur an Original-Format angepasst (Links auf /comic/, exakte Description).
  * - Fix: Daten (Titel, Transkript) werden nun korrekt aus der comic_var.json bezogen.
  * - Fix: HTML-Nesting-Fehler in Description behoben (doppelte P-Tags entfernt).
+ * - Workflow: Link zum Sitemap-Editor in Erfolgsmeldung hinzugefügt.
  */
 
 declare(strict_types=1);
@@ -184,13 +185,11 @@ function generateRssFeed(): array
             // Teil 1: Bild im P-Tag
             $descContent = "<p><img src=\"$imgSrc\" alt=\"$titleText\" style=\"max-width: 100%; height: auto;\" /></p>";
 
-            // Teil 2: Text
+            // Teil 2: Text (Transkript oder Titel)
             if (!empty($comic['transcript'])) {
-                // FIX: Transkript wird DIREKT angehängt, da es bereits HTML (<p>...) enthält.
-                // Kein zusätzlicher <p> Wrapper drumherum!
+                // Transkript direkt anhängen (enthält bereits HTML)
                 $descContent .= $comic['transcript'];
             } else {
-                // Fallback (Titel) ist Plaintext, daher Wrapper nötig
                 $descContent .= "<p>$titleText</p>";
             }
 
@@ -300,9 +299,17 @@ require_once Path::getPartialTemplatePath('header.php');
             <h4><i class="fas fa-check-circle"></i> Feed erstellt</h4>
             <p>Die Datei <code>rss.xml</code> wurde erfolgreich aktualisiert.</p>
             <div class="next-steps-actions">
+                <!-- Option 1: Sitemap Editor (Neu) -->
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_sitemap.php'; ?>" class="button button-green">
+                    <i class="fas fa-sitemap"></i> Zum Sitemap-Editor
+                </a>
+
+                <!-- Option 2: Feed ansehen -->
                 <a href="<?php echo DIRECTORY_PUBLIC_URL . '/rss.xml'; ?>" target="_blank" class="button button-orange">
                     <i class="fas fa-rss-square"></i> Feed ansehen
                 </a>
+
+                <!-- Option 3: Dashboard -->
                 <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" class="button button-blue">
                     <i class="fas fa-home"></i> Zum Dashboard
                 </a>
