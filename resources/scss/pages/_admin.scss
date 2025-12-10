@@ -1856,21 +1856,22 @@
     }
 }
 
+// Layout für die Settings
 .generator-settings {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; // Umbruch erlauben
     gap: 20px;
     margin-bottom: 25px;
     padding-bottom: 25px;
     border-bottom: 1px dashed var(--border-medium);
-    align-items: flex-end;
+    align-items: flex-end; // Labels unten bündig, falls mehrzeilig
 
     .form-group {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        flex: 1;
-        min-width: 200px;
+        flex: 1; // Alle nehmen gleich viel Platz
+        min-width: 200px; // Aber nicht zu schmal werden
 
         label {
             font-weight: bold;
@@ -1886,10 +1887,10 @@
             border-radius: 4px;
             background-color: var(--content-area-bg);
             color: var(--text-color);
-            width: 100%;
-            box-sizing: border-box;
+            width: 100%; // Füllt den Flex-Container
+            box-sizing: border-box; // Wichtig für Padding
             font-size: 1em;
-            height: 42px;
+            height: 42px; // Einheitliche Höhe erzwingen
 
             &:focus {
                 border-color: var(--link-color);
@@ -1902,12 +1903,12 @@
             }
         }
 
-        // Spezifisch für Checkbox-Container
+        // Spezifisch für Checkbox-Container (damit er nicht riesig wird)
         &.checkbox-group {
-            flex: 0 0 auto;
-            justify-content: center;
-            height: 42px;
-            margin-bottom: 2px;
+            flex: 0 0 auto; // Nimmt nur so viel Platz wie nötig
+            justify-content: center; // Vertikal mittig
+            height: 42px; // Gleiche Höhe wie Inputs
+            margin-bottom: 2px; // Kleiner Ausgleich
 
             label {
                 display: flex;
@@ -1944,7 +1945,7 @@
 
     .progress-bar {
         height: 100%;
-        background-color: var(--link-color);
+        background-color: var(--link-color); // Primärfarbe nutzen
         width: 0%;
         transition: width 0.3s ease;
         background-image: linear-gradient(
@@ -1969,10 +1970,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--text-color);
+        color: var(--text-color); // Automatisch dunkel/hell je nach Theme
         font-size: 0.9em;
         font-weight: bold;
-        text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+        text-shadow: 0 0 2px rgba(255, 255, 255, 0.5); // Lesbarkeit erhöhen
 
         body.theme-night & {
             text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
@@ -1981,7 +1982,7 @@
 }
 
 .log-console {
-    background-color: #1e1e1e;
+    background-color: #1e1e1e; // Immer dunkel für Code-Look (VS Code Style)
     color: #d4d4d4;
     font-family: var(--font-mono, monospace);
     font-size: 0.9em;
@@ -2005,6 +2006,7 @@
         margin-right: 10px;
         font-size: 0.85em;
     }
+
     .log-info {
         color: #9cdcfe;
     }
@@ -2032,7 +2034,7 @@
 }
 
 /* --- GENERATOR IMAGE GRID --- */
-// @since 5.0.2 - Optimiertes Card-Design mit Hover-Overlay
+// @since 5.0.0 - Optimiertes Card-Design mit Hover-Overlay
 
 .image-grid {
     display: grid;

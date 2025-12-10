@@ -25,6 +25,7 @@
  * - Verbesserte Fehlerdiagnose bei nicht-JSON Antworten (HTML/404/500).
  * - Layout-Optimierung: Log oben, Bilder unten. Auto-Scroll Option hinzugefügt.
  * - Entfernung der Auto-Scroll Funktion, da neue Bilder oben angefügt werden.
+ * - Workflow-Optimierung: "Generierung abgeschlossen"-Box zwischen Log und Bildern platziert, mit Links zu Social-Media-Generator und Cache-Update.
  */
 
 declare(strict_types=1);
@@ -141,18 +142,6 @@ require_once Path::getPartialTemplatePath('header.php');
             </p>
         </div>
 
-        <!-- NOTIFICATIONS -->
-        <div id="cache-update-notification" class="notification-box hidden-by-default">
-            <h4><i class="fas fa-check-circle"></i> Generierung abgeschlossen</h4>
-            <p>Die Thumbnails wurden erstellt. Vergiss nicht, den Bild-Cache zu aktualisieren.</p>
-            <div class="next-steps-actions">
-                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting.php?autostart=thumbnails'; ?>"
-                   class="button button-blue">
-                   <i class="fas fa-sync"></i> Cache aktualisieren
-                </a>
-            </div>
-        </div>
-
         <!-- SETTINGS FORM -->
         <div class="generator-settings">
             <div class="form-group">
@@ -192,6 +181,25 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- LOG CONSOLE (Log oben) -->
         <div id="log-container" class="log-console">
             <p class="log-info"><span class="log-time">[System]</span> Bereit. <?php echo count($missingThumbnails); ?> Bilder in der Warteschlange.</p>
+        </div>
+
+        <!-- NOTIFICATIONS (Zwischen Console und Bildern) -->
+        <div id="cache-update-notification" class="notification-box hidden-by-default">
+            <h4><i class="fas fa-check-circle"></i> Generierung abgeschlossen</h4>
+            <p>Die Thumbnails wurden erfolgreich erstellt. Bitte wähle den nächsten Schritt:</p>
+            <div class="next-steps-actions">
+                <!-- Option 1: Social Media Bilder -->
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . ($dateiendungPHP ?? '.php'); ?>"
+                   class="button button-orange">
+                   <i class="fas fa-share-alt"></i> 1. Social-Media-Bilder generieren
+                </a>
+
+                <!-- Option 2: Cache -->
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . ($dateiendungPHP ?? '.php'); ?>?autostart=thumbnails"
+                   class="button button-blue">
+                   <i class="fas fa-sync"></i> 2. Cache aktualisieren
+                </a>
+            </div>
         </div>
 
         <!-- IMAGE GRID CONTAINER (Bilder unten) -->
@@ -258,6 +266,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 settingsContainer.style.opacity = '0.5';
                 settingsContainer.style.pointerEvents = 'none';
                 createdImagesContainer.innerHTML = '';
+                cacheUpdateNotification.style.display = 'none'; // Verstecken beim Start
 
                 lastSuccessfulSettings = {
                     format: document.getElementById('format').value,
@@ -338,6 +347,8 @@ require_once Path::getPartialTemplatePath('header.php');
                 await saveSettings(lastSuccessfulSettings);
                 cacheUpdateNotification.classList.remove('hidden-by-default');
                 cacheUpdateNotification.style.display = 'block';
+                // Optional: Zu den Buttons scrollen
+                cacheUpdateNotification.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
