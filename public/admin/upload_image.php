@@ -10,7 +10,7 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
-* @since 5.0.0
+* @since 2.0.0 - 4.0.0
  *    ARCHITEKTUR & CORE
  *    - Umstellung auf die dynamische Path-Helfer-Klasse und zentrale Pfad-Konstanten.
  *     - Vollständige Code-Bereinigung und Nutzung der neuesten Konstanten-Struktur.
