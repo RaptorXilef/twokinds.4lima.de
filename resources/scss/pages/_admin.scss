@@ -1402,3 +1402,159 @@
     margin-top: 10px;
     display: inline-block;
 }
+
+/* --- USER MANAGEMENT PAGE --- */
+// @since 5.0.0
+
+.user-management-container {
+    max-width: 800px; // Verbreitert von 600px auf 800px
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-light);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-color);
+    }
+
+    .section-divider {
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 1px dashed var(--border-medium);
+
+        &:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        h3 {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: var(--text-color);
+            border-left: 4px solid var(--link-color);
+            padding-left: 10px;
+        }
+    }
+
+    // NEU: Formular Styling (das fehlte und verursachte das verschobene Layout)
+    .admin-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 20px;
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            label {
+                font-weight: bold;
+                color: var(--text-color);
+            }
+
+            input[type='text'],
+            input[type='password'] {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid var(--border-medium);
+                border-radius: 4px;
+                background-color: var(--content-area-bg);
+                color: var(--text-color);
+                box-sizing: border-box; // Wichtig damit Padding nicht die Breite sprengt
+                font-size: 1em;
+                transition: border-color 0.2s;
+
+                &:focus {
+                    border-color: var(--link-color);
+                    outline: none;
+                    box-shadow: 0 0 0 2px rgba(var(--link-color-rgb), 0.1);
+                }
+
+                body.theme-night & {
+                    background-color: var(--content-bg);
+                    border-color: var(--border-light);
+                }
+            }
+        }
+
+        // Button auf volle Breite ziehen oder rechtsbündig
+        button {
+            align-self: flex-start;
+            padding: 10px 20px;
+            font-size: 1em;
+        }
+    }
+
+    // User Liste
+    .user-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background-color: var(--table-row-even);
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+            transition:
+                background-color 0.2s,
+                border-color 0.2s;
+
+            &:hover {
+                background-color: var(--table-row-hover);
+                border-color: var(--link-color);
+            }
+
+            body.theme-night & {
+                background-color: rgba(0, 0, 0, 0.2);
+            }
+
+            .user-name {
+                font-weight: bold;
+                color: var(--text-color);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+
+                &::before {
+                    content: '\f007'; // FontAwesome User Icon
+                    font-family: 'Font Awesome 5 Free';
+                    font-weight: 900;
+                    color: var(--text-color-light);
+                }
+            }
+
+            .current-user-tag {
+                font-style: italic;
+                color: var(--text-color-light);
+                font-size: 0.9em;
+                background-color: var(--table-header-bg);
+                padding: 2px 8px;
+                border-radius: 10px;
+            }
+
+            form {
+                margin: 0;
+            }
+        }
+    }
+}
