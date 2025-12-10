@@ -15,6 +15,7 @@
  * - Feature: Variable Ausschnitt-Position (Top, Center, Bottom etc.) hinzugefügt.
  * - Fix: Speicher- und Zeitlimits erhöht für stabilen Batch-Prozess.
  * -Feature: Transparenter Hintergrund (Standard) vs. Weiß erzwingen.
+ * - Anpassung: Standard-Fallback für crop_position ist nun 'top'.
  */
 
 // Fehlerunterdrückung für sauberes JSON, aber Logging aktiv lassen
@@ -48,9 +49,8 @@ try {
     $format = $_GET['format'] ?? 'webp';
     $quality = (int)($_GET['quality'] ?? 85);
     $lossless = isset($_GET['lossless']) && $_GET['lossless'] === '1';
-    $resizeMode = $_GET['resize_mode'] ?? 'cover'; // 'cover' oder 'contain'
-    $cropPosition = $_GET['crop_position'] ?? 'center'; // 'top', 'top_center', 'center', 'bottom_center', 'bottom'
-    // NEU: Weißer Hintergrund erzwingen?
+    $resizeMode = $_GET['resize_mode'] ?? 'cover';
+    $cropPosition = $_GET['crop_position'] ?? 'top'; // ÄNDERUNG: Default 'top'
     $forceWhiteBg = isset($_GET['force_white_bg']) && $_GET['force_white_bg'] === '1';
 
     if (empty($imageName)) {
