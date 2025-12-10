@@ -2,6 +2,7 @@
 
 /**
  * Administrationsseite zum Erstellen des Bild-Caches inkl. Cache-Busting.
+ * Scannt die Bildverzeichnisse und erstellt eine JSON-Datenbank für schnellen Zugriff.
  *
  * @file      ROOT/public/admin/build_image_cache_and_busting.php
  * @package   twokinds.4lima.de
@@ -20,6 +21,7 @@
  *    - Deaktivierung des Auto-Reloads nach Prozessende für bessere Kontrolle.
  * @since 5.0.0
  * - Komplettes Refactoring auf Admin-Standard (SCSS, Fetch-API, Path-Klasse).
+ * - Workflow-Optimierung: Link zum RSS-Generator als nächsten Schritt hinzugefügt.
  */
 
 declare(strict_types=1);
@@ -156,7 +158,7 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
 
         <!-- ACTION BUTTONS -->
-        <div class="generator-actions" style="justify-content: center; flex-wrap: wrap;">
+        <div class="generator-actions actions-center">
             <button class="button button-blue cache-btn" data-mode="thumbnails">
                 <i class="fas fa-images"></i> Nur Thumbnails
             </button>
@@ -179,11 +181,19 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- SUCCESS NOTIFICATION -->
         <div id="success-notification" class="notification-box hidden-by-default">
             <h4><i class="fas fa-check-circle"></i> Cache erfolgreich aktualisiert</h4>
-            <p>Die Änderungen sind nun auf der Webseite wirksam.</p>
+            <p>Die Änderungen sind nun auf der Webseite wirksam. Was möchtest du als nächstes tun?</p>
             <div class="next-steps-actions">
+                <!-- Option 1: RSS Generator (Neu & Erste Position) -->
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . ($dateiendungPHP ?? '.php'); ?>" class="button button-orange">
+                    <i class="fas fa-rss"></i> Zum RSS Generator
+                </a>
+
+                <!-- Option 2: Dashboard -->
                 <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" class="button button-blue">
                     <i class="fas fa-home"></i> Zum Dashboard
                 </a>
+
+                <!-- Option 3: Webseite prüfen -->
                 <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>" target="_blank" class="button button-green">
                     <i class="fas fa-external-link-alt"></i> Webseite prüfen
                 </a>

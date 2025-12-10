@@ -2172,3 +2172,20 @@
         transform: scale(1);
     }
 }
+
+/* --- GENERATOR RSS --- */
+// @since 5.0.0
+
+.generator-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    // NEU: Modifier für zentrierte Buttons (Cache Builder)
+    &.actions-center {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
