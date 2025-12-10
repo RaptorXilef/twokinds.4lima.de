@@ -7,7 +7,7 @@
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
  * @since 4.0.0
@@ -21,6 +21,7 @@
  *
  * @since 5.0.0
  * - Komplettes Refactoring auf Basis des Thumbnail - Generators(SCSS, JS - Logik) .
+ * - Einstellung für Ausschnitt-Position (Top, Center, Bottom...) hinzugefügt.
  */
 
 declare(strict_types=1);
@@ -40,7 +41,8 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
             'format' => 'webp',
             'quality' => 85,
             'lossless' => false,
-            'resize_mode' => 'cover' // 'cover' (Crop) oder 'contain' (Bars)
+            'resize_mode' => 'cover',
+            'crop_position' => 'center' // Default: Mitte
         ]
     ];
     if (!file_exists($filePath)) {
@@ -54,7 +56,8 @@ function loadGeneratorSettings(string $filePath, bool $debugMode): array
     $content = file_get_contents($filePath);
     $settings = json_decode($content, true);
     if (json_last_error() === JSON_ERROR_NONE && isset($settings['socialmedia_generator'])) {
-        return $settings;
+        // Merge mit Defaults für neue Keys
+        return array_replace_recursive($defaults, $settings);
     }
     return $defaults;
 }
@@ -68,19 +71,24 @@ function saveGeneratorSettings(string $filePath, array $settings, bool $debugMod
 $settingsFile = Path::getConfigPath('config_generator_settings.json');
 $currentSettings = loadGeneratorSettings($settingsFile, $debugMode);
 $generatorSettings = $currentSettings['socialmedia_generator'];
+
 // AJAX Handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_settings') {
     verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
+
     $input = json_decode($_POST['settings'] ?? '{}', true);
+
     $currentSettings['socialmedia_generator'] = [
         'last_run_timestamp' => time(),
         'format' => $input['format'] ?? 'webp',
         'quality' => (int)($input['quality'] ?? 85),
         'lossless' => filter_var($input['lossless'] ?? false, FILTER_VALIDATE_BOOLEAN),
-        'resize_mode' => $input['resize_mode'] ?? 'cover'
+        'resize_mode' => $input['resize_mode'] ?? 'cover',
+        'crop_position' => $input['crop_position'] ?? 'center'
     ];
+
     if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
         echo json_encode(['success' => true]);
     } else {
@@ -92,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Dateien scannen (Quelle: HIRES!)
 $sourceDir = DIRECTORY_PUBLIC_IMG_COMIC_HIRES;
 $targetDir = DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA;
+
 // Prüfe ob Zielverzeichnis existiert
 if (!is_dir($targetDir)) {
     mkdir($targetDir, 0755, true);
@@ -99,21 +108,23 @@ if (!is_dir($targetDir)) {
 
 $sourceFiles = glob($sourceDir . '/*.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: [];
 $existingImages = glob($targetDir . '/*.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: [];
+
 $missingImages = [];
 $existingMap = [];
+
 foreach ($existingImages as $file) {
     $existingMap[pathinfo($file, PATHINFO_FILENAME)] = true;
 }
 
 foreach ($sourceFiles as $file) {
     $filename = pathinfo($file, PATHINFO_FILENAME);
-// Hier vereinfacht: Prüft auf Existenz, nicht auf Format-Übereinstimmung
     if (!isset($existingMap[$filename])) {
         $missingImages[] = basename($file);
     }
 }
 
 $missingIdsJson = json_encode(array_values($missingImages));
+
 $pageTitle = 'Adminbereich - Social Media Generator';
 $pageHeader = 'Social Media Bilder Generator';
 require_once Path::getPartialTemplatePath('header.php');
@@ -149,10 +160,22 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
 
             <div class="form-group">
-                <label for="resize_mode" title="Wie soll das Bild in 1200x630 eingepasst werden?">Zuschnitt:</label>
+                <label for="resize_mode" title="Wie soll das Bild in 1200x630 eingepasst werden?">Modus:</label>
                 <select id="resize_mode">
                     <option value="cover" <?php echo ($generatorSettings['resize_mode'] === 'cover') ? 'selected' : ''; ?>>Ausfüllen (Zuschneiden)</option>
-                    <option value="contain" <?php echo ($generatorSettings['resize_mode'] === 'contain') ? 'selected' : ''; ?>>Einpassen (Weiße Ränder)</option>
+                    <option value="contain" <?php echo ($generatorSettings['resize_mode'] === 'contain') ? 'selected' : ''; ?>>Einpassen (Ränder)</option>
+                </select>
+            </div>
+
+            <!-- NEU: Crop Position -->
+            <div class="form-group">
+                <label for="crop_position" title="Welcher Teil des Bildes soll sichtbar sein?">Fokus / Ausschnitt:</label>
+                <select id="crop_position">
+                    <option value="top" <?php echo ($generatorSettings['crop_position'] === 'top') ? 'selected' : ''; ?>>Oben (0%)</option>
+                    <option value="top_center" <?php echo ($generatorSettings['crop_position'] === 'top_center') ? 'selected' : ''; ?>>Oben-Mitte (25%)</option>
+                    <option value="center" <?php echo ($generatorSettings['crop_position'] === 'center') ? 'selected' : ''; ?>>Mitte (50%)</option>
+                    <option value="bottom_center" <?php echo ($generatorSettings['crop_position'] === 'bottom_center') ? 'selected' : ''; ?>>Mitte-Unten (75%)</option>
+                    <option value="bottom" <?php echo ($generatorSettings['crop_position'] === 'bottom') ? 'selected' : ''; ?>>Unten (100%)</option>
                 </select>
             </div>
 
@@ -169,10 +192,9 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
         </div>
 
-        <!-- PROGRESS BAR -->
-        <div class="progress-wrapper">
-            <div id="progress-bar" class="progress-bar"></div>
-            <div id="progress-text" class="progress-text">0% (0/0)</div>
+        <!-- LOG CONSOLE -->
+        <div id="log-container" class="log-console">
+            <p class="log-info"><span class="log-time">[System]</span> Bereit. <?php echo count($missingImages); ?> Bilder in der Warteschlange.</p>
         </div>
 
         <!-- ACTIONS -->
@@ -181,11 +203,6 @@ require_once Path::getPartialTemplatePath('header.php');
             <button id="generate-btn" class="button button-green" <?php echo empty($missingImages) ? 'disabled' : ''; ?>>
                 <i class="fas fa-play"></i> Generierung starten
             </button>
-        </div>
-
-        <!-- LOG CONSOLE -->
-        <div id="log-container" class="log-console">
-            <p class="log-info"><span class="log-time">[System]</span> Bereit. <?php echo count($missingImages); ?> Bilder in der Warteschlange.</p>
         </div>
 
         <!-- NOTIFICATION BOX -->
@@ -215,8 +232,6 @@ require_once Path::getPartialTemplatePath('header.php');
         const generateButton = document.getElementById('generate-btn');
         const togglePauseResumeButton = document.getElementById('toggle-pause-resume-btn');
         const logContainer = document.getElementById('log-container');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
         const settingsContainer = document.querySelector('.generator-settings');
         const createdImagesContainer = document.getElementById('created-images-container');
@@ -270,7 +285,8 @@ require_once Path::getPartialTemplatePath('header.php');
                     format: document.getElementById('format').value,
                     quality: parseInt(document.getElementById('quality').value, 10),
                     lossless: document.getElementById('lossless').checked,
-                    resize_mode: document.getElementById('resize_mode').value
+                    resize_mode: document.getElementById('resize_mode').value,
+                    crop_position: document.getElementById('crop_position').value
                 };
             }
 
@@ -283,6 +299,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     quality: lastSuccessfulSettings.quality,
                     lossless: lastSuccessfulSettings.lossless ? '1' : '0',
                     resize_mode: lastSuccessfulSettings.resize_mode,
+                    crop_position: lastSuccessfulSettings.crop_position,
                     csrf_token: csrfToken
                 });
 
@@ -307,9 +324,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     if (data.imageUrl) {
                         const imgDiv = document.createElement('div');
                         imgDiv.className = 'image-item';
-                        // Style-Override für Social Media (breiteres Bild)
-                        // Da .image-item aspect-ratio 2/3 hat (Hochkant), überschreiben wir das hier inline für Landscape
-                        imgDiv.style.aspectRatio = "1.91 / 1";
+                        imgDiv.style.aspectRatio = "1.91 / 1"; // Social Media Format
                         imgDiv.innerHTML = `
                             <img src="${data.imageUrl}" alt="${data.message}" loading="lazy">
                             <div class="image-overlay">
@@ -330,10 +345,6 @@ require_once Path::getPartialTemplatePath('header.php');
             }
 
             processedFiles++;
-            const percent = Math.round((processedFiles / totalFiles) * 100);
-            progressBar.style.width = `${percent}%`;
-            progressText.textContent = `${percent}% (${processedFiles}/${totalFiles})`;
-
             setTimeout(processGenerationQueue, 100);
         }
 

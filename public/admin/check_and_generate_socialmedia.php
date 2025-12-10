@@ -11,7 +11,8 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  *
  * @since 5.0.0
- * - Initiale Erstellung (basierend auf Thumbnail-Worker).
+ * - Initiale Erstellung.
+ * - Feature: Variable Ausschnitt-Position (Top, Center, Bottom etc.) hinzugefügt.
  */
 
 ini_set('display_errors', '0');
@@ -39,7 +40,8 @@ try {
     $format = $_GET['format'] ?? 'webp';
     $quality = (int)($_GET['quality'] ?? 85);
     $lossless = isset($_GET['lossless']) && $_GET['lossless'] === '1';
-    $resizeMode = $_GET['resize_mode'] ?? 'cover'; // 'cover' (zuschneiden) oder 'contain' (einpassen)
+    $resizeMode = $_GET['resize_mode'] ?? 'cover'; // 'cover' oder 'contain'
+    $cropPosition = $_GET['crop_position'] ?? 'center'; // 'top', 'top_center', 'center', 'bottom_center', 'bottom'
 
     if (empty($imageName)) {
         sendJson(['status' => 'error', 'message' => 'Kein Bildname.']);
@@ -130,24 +132,64 @@ try {
     if ($resizeMode === 'cover') {
         // ZUSCHNEIDEN (Füllt das Bild komplett aus)
         if ($srcRatio > $targetRatio) {
-            // Bild ist breiter als Ziel -> Links/Rechts abschneiden
+            // Bild ist breiter als Ziel -> Links/Rechts abschneiden (Horizontal immer zentriert)
             $srcW = (int)($srcHeight * $targetRatio);
             $srcX = (int)(($srcWidth - $srcW) / 2);
         } else {
-            // Bild ist höher als Ziel -> Oben/Unten abschneiden (Fokus eher oben für Comics?)
-            // Hier: Mittig zuschneiden
+            // Bild ist höher als Ziel -> Oben/Unten abschneiden
             $srcH = (int)($srcWidth / $targetRatio);
-            $srcY = (int)(($srcHeight - $srcH) / 2);
-            // Alternative: $srcY = 0; // Um oben abzuschneiden (oft besser bei Comics wegen Sprechblasen)
+
+            // Maximale Verschiebung möglich (Differenz zwischen Originalhöhe und Zielhöhe im Quellbild)
+            $maxOffsetY = $srcHeight - $srcH;
+
+            // Vertikale Position berechnen
+            switch ($cropPosition) {
+                case 'top':
+                    $srcY = 0;
+                    break;
+                case 'top_center': // Zwischen Oben und Mitte (25%)
+                    $srcY = (int)($maxOffsetY * 0.25);
+                    break;
+                case 'bottom_center': // Zwischen Mitte und Unten (75%)
+                    $srcY = (int)($maxOffsetY * 0.75);
+                    break;
+                case 'bottom':
+                    $srcY = $maxOffsetY;
+                    break;
+                case 'center':
+                default:
+                    $srcY = (int)($maxOffsetY / 2);
+                    break;
+            }
         }
     } else {
-        // EINPASSEN (Balken hinzufügen, 'contain')
+        // EINPASSEN ('contain') - Positionierung wirkt hier auf das eingefügte Bild im Zielrahmen
         if ($srcRatio > $targetRatio) {
             // Bild ist breiter -> Balken oben/unten
             $dstH = (int)($targetW / $srcRatio);
-            $dstY = (int)(($targetH - $dstH) / 2);
+            // Hier auch Positionierung anwenden? Meistens will man es zentriert.
+            // Der Einfachheit halber wenden wir die Logik auch hier an, falls gewünscht.
+            $maxDstOffsetY = $targetH - $dstH;
+
+            switch ($cropPosition) {
+                case 'top':
+                    $dstY = 0;
+                    break;
+                case 'top_center':
+                    $dstY = (int)($maxDstOffsetY * 0.25);
+                    break;
+                case 'bottom_center':
+                    $dstY = (int)($maxDstOffsetY * 0.75);
+                    break;
+                case 'bottom':
+                    $dstY = $maxDstOffsetY;
+                    break;
+                default:
+                    $dstY = (int)($maxDstOffsetY / 2);
+                    break;
+            }
         } else {
-            // Bild ist höher -> Balken links/rechts
+            // Bild ist höher -> Balken links/rechts (Horizontal bleibt zentriert)
             $dstW = (int)($targetH * $srcRatio);
             $dstX = (int)(($targetW - $dstW) / 2);
         }
@@ -179,7 +221,7 @@ try {
         sendJson([
             'status' => 'success',
             'message' => $targetFilename,
-            'details' => "{$resizeMode}",
+            'details' => "{$resizeMode}/{$cropPosition}",
             'imageUrl' => $webUrl
         ]);
     } else {
