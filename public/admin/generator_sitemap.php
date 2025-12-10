@@ -1,6 +1,8 @@
 <?php
+
 /**
- * Administrationsseite zum Generieren der Sitemap.xml.
+ * Adminseite zum Generieren der sitemap.xml für Suchmaschinen.
+ * Kombiniert statische Seiten (aus sitemap.json) und Comic-Seiten (aus comic_var.json).
  *
  * @file      ROOT/public/admin/generate_sitemap.php
  * @package   twokinds.4lima.de
@@ -8,13 +10,26 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
- * @since     2.0.0 Vollständig überarbeitet mit modernem UI, Speicherung der letzten Ausführung und AJAX-basierter Generierung.
- * @since     2.1.0 Anpassung an v2-Schema der comic_var.json und dynamisches Hinzufügen aller Comic-Seiten.
- * @since     2.2.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
- * @since     3.0.0 Vollständige Umstellung auf neueste Konstanten-Struktur und Entfernung redundanter Logik.
- * @since     3.0.1 Die KONSTANTE PUBLIC_COMIC_PATH wird jetzt verwendet, um den Web-Pfad zu den Comic-Seiten dynamisch zu bestimmen. * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
+ *
+ * @since 2.0.0 - 4.0.0
+ *    ARCHITEKTUR & DATEN
+ *    - Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und zentrale Pfad-Konstanten.
+ *    - Anpassung an das v2-Schema der `comic_var.json` und Entfernung redundanter Logik.
+ *    - Dynamische Bestimmung von Web-Pfaden (`PUBLIC_COMIC_PATH`).
+ *
+ *    LOGIK & FEATURES
+ *    - AJAX-basierte Generierung und dynamisches Hinzufügen aller Comic-Seiten.
+ *    - Speicherung der letzten Ausführung.
+ *
+ *    UI & DESIGN
+ *    - Vollständige Überarbeitung mit modernem UI.
+ *
+ * @since 5.0.0
+ * - Komplettes Refactoring auf Admin-Standard (SCSS, User-Config, Layout).
+ * - Fix: URL-Pfadbereinigung (kein /./ mehr) und ISO-8601 Datumsformat (mit Uhrzeit).
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -22,306 +37,340 @@ $debugMode = $debugMode ?? false;
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
-// --- HILFSFUNKTIONEN ---
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+// === KONFIGURATION ===
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
+
+// --- Einstellungsverwaltung ---
+function loadGeneratorSettings(string $filePath, string $username): array
 {
     $defaults = [
-        'generator_sitemap' => ['last_run_timestamp' => null]
+        'sitemap_generator' => [
+            'last_run_timestamp' => null,
+            'entries_count' => 0
+        ]
     ];
+
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
-        if (!is_dir($dir))
+        if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
-        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        }
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE)
-        return $defaults;
-    if (!isset($settings['generator_sitemap']))
-        $settings['generator_sitemap'] = $defaults['generator_sitemap'];
-    return $settings;
-}
-
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
-{
-    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
-    return file_put_contents($filePath, $jsonContent) !== false;
-}
-
-/**
- * Generiert die Sitemap.xml.
- */
-function generateSitemap(bool $debugMode): array
-{
-    $sitemapJsonPath = Path::getDataPath('sitemap.json');
-    $comicVarJsonPath = Path::getDataPath('comic_var.json');
-    $sitemapJsonFile = basename($sitemapJsonPath);
-
-    if (!file_exists($sitemapJsonPath)) {
-        return ['success' => false, 'message' => 'Fehler: Konfigurationsdatei ' . $sitemapJsonFile . ' nicht gefunden.'];
-    }
-
-    $configContent = file_get_contents($sitemapJsonPath);
-    $sitemapConfig = json_decode($configContent, true);
+    $data = json_decode($content, true);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-        return ['success' => false, 'message' => 'Fehler beim Dekodieren von ' . $sitemapJsonFile . ': ' . json_last_error_msg()];
-    }
-    if (!isset($sitemapConfig['pages']) || !is_array($sitemapConfig['pages'])) {
-        return ['success' => false, 'message' => 'Fehler: Ungültiges Format in ' . $sitemapJsonFile . '.'];
+        return $defaults;
     }
 
-    $xml = new DOMDocument('1.0', 'UTF-8');
-    $xml->formatOutput = true;
-    $urlset = $xml->createElement('urlset');
-    $urlset->setAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-    $xml->appendChild($urlset);
+    $userSettings = $data['users'][$username]['sitemap_generator'] ?? [];
+    return array_replace_recursive($defaults, $userSettings);
+}
 
-    // Statische Seiten aus sitemap.json hinzufügen
-    foreach ($sitemapConfig['pages'] as $page) {
-        if (!isset($page['loc']))
-            continue;
-        $filePath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($page['loc'], './');
-        if (!is_file($filePath))
-            continue;
-
-        $url = $xml->createElement('url');
-        $locValue = DIRECTORY_PUBLIC_URL . '/' . ltrim($page['loc'], './');
-        $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
-        $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($filePath))));
-        if (isset($page['changefreq']))
-            $url->appendChild($xml->createElement('changefreq', htmlspecialchars($page['changefreq'])));
-        if (isset($page['priority']))
-            $url->appendChild($xml->createElement('priority', htmlspecialchars(sprintf('%.1f', $page['priority']))));
-        $urlset->appendChild($url);
-    }
-
-    // Dynamisch Comic-Seiten hinzufügen
-    if (file_exists($comicVarJsonPath)) {
-        $comicJsonContent = file_get_contents($comicVarJsonPath);
-        $decodedData = json_decode($comicJsonContent, true);
-        $comicData = (is_array($decodedData) && isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : ($decodedData ?? []);
-
-        foreach (array_keys($comicData) as $comicId) {
-            $comicFileName = $comicId . '.php';
-            $comicFilePath = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $comicFileName;
-            if (file_exists($comicFilePath)) {
-                $url = $xml->createElement('url');
-                $locValue = Url::getComicPageUrl($comicFileName);
-                $url->appendChild($xml->createElement('loc', htmlspecialchars($locValue)));
-                $url->appendChild($xml->createElement('lastmod', date('Y-m-d\TH:i:sP', filemtime($comicFilePath))));
-                $url->appendChild($xml->createElement('changefreq', 'weekly'));
-                $url->appendChild($xml->createElement('priority', '0.7'));
-                $urlset->appendChild($url);
-            }
+function saveGeneratorSettings(string $filePath, string $username, array $newSettings): bool
+{
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $data = $decoded;
         }
     }
 
-    $sitemapOutputPath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'sitemap.xml';
-    if ($xml->save($sitemapOutputPath) !== false) {
-        return ['success' => true, 'message' => 'Sitemap.xml erfolgreich generiert.', 'sitemapUrl' => DIRECTORY_PUBLIC_URL . '/sitemap.xml'];
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    $currentData = $data['users'][$username]['sitemap_generator'] ?? [];
+    $data['users'][$username]['sitemap_generator'] = array_replace_recursive($currentData, $newSettings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
+}
+
+// --- SITEMAP GENERIERUNG ---
+function generateSitemap(): array
+{
+    $sitemapJsonPath = Path::getDataPath('sitemap.json');
+    $comicVarPath = Path::getDataPath('comic_var.json');
+    $publicDir = defined('DIRECTORY_PUBLIC') ? DIRECTORY_PUBLIC : dirname(dirname(__DIR__));
+    $sitemapFilePath = $publicDir . DIRECTORY_SEPARATOR . 'sitemap.xml';
+
+    $baseUrl = defined('DIRECTORY_PUBLIC_URL') ? DIRECTORY_PUBLIC_URL : 'https://twokinds.4lima.de';
+    $baseUrl = rtrim($baseUrl, '/');
+
+    // Daten laden
+    if (!file_exists($sitemapJsonPath)) {
+        throw new Exception('sitemap.json nicht gefunden.');
+    }
+    if (!file_exists($comicVarPath)) {
+        throw new Exception('comic_var.json nicht gefunden.');
+    }
+
+    $staticData = json_decode(file_get_contents($sitemapJsonPath), true);
+    $comicData = json_decode(file_get_contents($comicVarPath), true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('JSON Fehler beim Laden der Daten.');
+    }
+
+    // XML Aufbau
+    $dom = new DOMDocument('1.0', 'UTF-8');
+    $dom->formatOutput = true;
+
+    $urlset = $dom->createElementNS('http://www.sitemaps.org/schemas/sitemap/0.9', 'urlset');
+    $urlset->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+    $urlset->setAttributeNS('http://www.w3.org/2001/XMLSchema-instance', 'xsi:schemaLocation', 'http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd');
+    $dom->appendChild($urlset);
+
+    $count = 0;
+
+    // 1. Statische Seiten verarbeiten
+    if (isset($staticData['pages']) && is_array($staticData['pages'])) {
+        foreach ($staticData['pages'] as $page) {
+            $loc = $page['loc'] ?? '';
+            if (empty($loc)) {
+                continue;
+            }
+
+            // FIX: Entfernt "./" oder "/" am Anfang, um "domain.de/./seite.php" zu verhindern
+            $loc = ltrim($loc, './');
+
+            $urlNode = $dom->createElement('url');
+            $urlNode->appendChild($dom->createElement('loc', $baseUrl . '/' . $loc));
+
+            if (isset($page['lastmod']) && !empty($page['lastmod'])) {
+                // Wenn Datum manuell in JSON steht, übernehmen wir es (sollte idealerweise schon ISO 8601 sein)
+                $urlNode->appendChild($dom->createElement('lastmod', $page['lastmod']));
+            } else {
+                // FIX: Fallback auf ISO 8601 (mit Uhrzeit und Zeitzone)
+                $urlNode->appendChild($dom->createElement('lastmod', date('c')));
+            }
+
+            if (isset($page['changefreq'])) {
+                $urlNode->appendChild($dom->createElement('changefreq', $page['changefreq']));
+            }
+
+            if (isset($page['priority'])) {
+                $urlNode->appendChild($dom->createElement('priority', (string)$page['priority']));
+            }
+
+            $urlset->appendChild($urlNode);
+            $count++;
+        }
+    }
+
+    // 2. Comic Seiten verarbeiten
+    $comics = $comicData['comics'] ?? $comicData;
+
+    ksort($comics);
+
+    $comicChangefreq = 'monthly';
+    $comicPriority = '0.5';
+
+    $comicPhpDir = defined('DIRECTORY_PUBLIC_COMIC') ? DIRECTORY_PUBLIC_COMIC : $publicDir . '/comic';
+
+    foreach ($comics as $id => $data) {
+        $urlNode = $dom->createElement('url');
+        $urlNode->appendChild($dom->createElement('loc', $baseUrl . "/comic/$id.php"));
+
+        $phpFile = $comicPhpDir . DIRECTORY_SEPARATOR . $id . '.php';
+        if (file_exists($phpFile)) {
+            // FIX: ISO 8601 Format 'c' verwenden (YYYY-MM-DDThh:mm:ss+ZO)
+            $lastmod = date('c', filemtime($phpFile));
+        } else {
+            $lastmod = date('c');
+        }
+
+        $urlNode->appendChild($dom->createElement('lastmod', $lastmod));
+        $urlNode->appendChild($dom->createElement('changefreq', $comicChangefreq));
+        $urlNode->appendChild($dom->createElement('priority', $comicPriority));
+
+        $urlset->appendChild($urlNode);
+        $count++;
+    }
+
+    // Speichern
+    if (!is_writable(dirname($sitemapFilePath))) {
+        throw new Exception("Keine Schreibrechte im Verzeichnis: " . dirname($sitemapFilePath));
+    }
+
+    if ($dom->save($sitemapFilePath)) {
+        return [
+            'success' => true,
+            'message' => "Sitemap erfolgreich generiert ($count URLs).",
+            'count' => $count,
+            'sitemapUrl' => $baseUrl . '/sitemap.xml'
+        ];
     } else {
-        return ['success' => false, 'message' => 'Fehler beim Speichern der sitemap.xml.'];
+        throw new Exception('Fehler beim Schreiben der sitemap.xml.');
     }
 }
 
-// --- AJAX-Handler ---
-if (isset($_POST['action'])) {
+// --- LOGIK ---
+$settings = loadGeneratorSettings($configPath, $currentUser);
+$sitemapSettings = $settings['sitemap_generator'];
+
+// AJAX Handler
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_sitemap') {
+    ini_set('display_errors', '0');
+
     verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
-    $action = $_POST['action'];
-    $response = ['success' => false, 'message' => ''];
 
-    switch ($action) {
-        case 'generate_sitemap':
-            $response = generateSitemap($debugMode);
-            break;
-        case 'save_settings':
-            $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
-            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
-            $currentSettings['generator_sitemap']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
-                $response['success'] = true;
-            }
-            break;
+    try {
+        $result = generateSitemap();
+
+        if ($result['success']) {
+            $newSettings = [
+                'last_run_timestamp' => time(),
+                'entries_count' => $result['count']
+            ];
+            saveGeneratorSettings($configPath, $currentUser, $newSettings);
+            $result['timestamp'] = $newSettings['last_run_timestamp'];
+        }
+
+        echo json_encode($result);
+    } catch (Throwable $e) {
+        echo json_encode(['success' => false, 'message' => 'Server-Fehler: ' . $e->getMessage()]);
     }
-    echo json_encode($response);
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
-$sitemapSettings = $settings['generator_sitemap'];
 $pageTitle = 'Adminbereich - Sitemap Generator';
 $pageHeader = 'Sitemap Generator';
-$robotsContent = 'noindex, nofollow';
-
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
-    <div class="content-section">
+    <div class="generator-container">
+        <!-- HEADER -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if ($sitemapSettings['last_run_timestamp']): ?>
-                    <p class="status-message status-info">Letzte Generierung am
-                        <?php echo date('d.m.Y \u\m H:i:s', $sitemapSettings['last_run_timestamp']); ?> Uhr.
+                <?php if ($sitemapSettings['last_run_timestamp']) : ?>
+                    <p class="status-message status-info">Letzter Lauf am
+                        <?php echo date('d.m.Y \u\m H:i:s', $sitemapSettings['last_run_timestamp']); ?> Uhr
+                        (<?php echo $sitemapSettings['entries_count']; ?> URLs).
                     </p>
                 <?php endif; ?>
             </div>
             <h2>Sitemap Generator</h2>
-            <p>Dieses Tool erstellt die <code>sitemap.xml</code>-Datei basierend auf der Konfiguration in
-                <code><?php echo basename(Path::getDataPath('sitemap.json')); ?></code> und fügt automatisch alle
-                Comic-Seiten aus
-                <code><?php echo basename(Path::getDataPath('comic_var.json')); ?></code> hinzu.
-                Die Sitemap wird im Hauptverzeichnis der Webseite abgelegt.
+            <p>
+                Erstellt die <code>sitemap.xml</code> für Suchmaschinen (Google, Bing).
+                Sie enthält alle statischen Seiten (konfiguriert in <code>sitemap.json</code>) und alle verfügbaren Comic-Seiten.
             </p>
+        </div>
 
-            <div id="fixed-buttons-container">
-                <button type="button" id="generate-sitemap-button" class="button">Sitemap generieren /
-                    aktualisieren</button>
+        <!-- ACTIONS -->
+        <div class="generator-actions">
+            <button id="generate-btn" class="button button-green">
+                <i class="fas fa-sitemap"></i> Sitemap erstellen
+            </button>
+        </div>
+
+        <!-- LOG CONSOLE -->
+        <div id="log-container" class="log-console">
+            <p class="log-info"><span class="log-time">[System]</span> Bereit zum Generieren.</p>
+        </div>
+
+        <!-- SUCCESS NOTIFICATION -->
+        <div id="success-notification" class="notification-box hidden-by-default">
+            <h4><i class="fas fa-check-circle"></i> Sitemap erstellt</h4>
+            <p>Die Datei <code>sitemap.xml</code> wurde erfolgreich aktualisiert.</p>
+            <div class="next-steps-actions">
+                <a href="<?php echo DIRECTORY_PUBLIC_URL . '/sitemap.xml'; ?>" target="_blank" class="button button-orange">
+                    <i class="fas fa-external-link-alt"></i> Sitemap ansehen
+                </a>
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" class="button button-blue">
+                    <i class="fas fa-home"></i> Zum Dashboard
+                </a>
             </div>
         </div>
 
-        <div id="loading-spinner" class="hidden-by-default">
-            <div class="spinner"></div>
-            <p id="progress-text">Generiere Sitemap...</p>
-        </div>
-
-        <div id="generation-results-section" class="hidden-by-default">
-            <h2>Ergebnis</h2>
-            <p id="overall-status-message" class="status-message"></p>
-        </div>
     </div>
 </article>
 
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    .status-message {
-        padding: 10px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        font-weight: bold;
-    }
-
-    .status-green {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
-    .status-red {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    .status-info {
-        background-color: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
-    }
-
-    #fixed-buttons-container {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 20px;
-    }
-
-    .spinner {
-        border: 4px solid rgba(0, 0, 0, 0.1);
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border-left-color: #09f;
-        animation: spin 1s ease infinite;
-        margin: 20px auto 10px;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-    .hidden-by-default {
-        display: none;
-    }
-</style>
-
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', () => {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
-        const generateButton = document.getElementById('generate-sitemap-button');
-        const spinner = document.getElementById('loading-spinner');
-        const resultsSection = document.getElementById('generation-results-section');
-        const statusMessage = document.getElementById('overall-status-message');
+
+        const generateButton = document.getElementById('generate-btn');
+        const logContainer = document.getElementById('log-container');
+        const successNotification = document.getElementById('success-notification');
         const lastRunContainer = document.getElementById('last-run-container');
 
-        async function saveSettings() {
-            await fetch(window.location.href, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ action: 'save_settings', csrf_token: csrfToken })
-            });
+        function addLogMessage(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const p = document.createElement('p');
+            p.className = `log-${type}`;
+            p.innerHTML = `<span class="log-time">[${now}]</span> ${message}`;
+            logContainer.appendChild(p);
+            logContainer.scrollTop = logContainer.scrollHeight;
         }
 
-        function updateTimestamp() {
-            const now = new Date();
-            const date = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const time = now.toLocaleTimeString('de-DE');
-            const newStatusText = `Letzte Generierung am ${date} um ${time} Uhr.`;
+        async function generateSitemap() {
+            generateButton.disabled = true;
+            successNotification.style.display = 'none';
+            logContainer.innerHTML = '';
 
-            let pElement = lastRunContainer.querySelector('.status-message');
-            if (!pElement) {
-                pElement = document.createElement('p');
-                pElement.className = 'status-message status-info';
-                lastRunContainer.prepend(pElement);
-            }
-            pElement.innerHTML = newStatusText;
-        }
+            addLogMessage('Starte Generierung...', 'info');
 
-        generateButton.addEventListener('click', async function () {
-            this.disabled = true;
-            spinner.style.display = 'block';
-            resultsSection.style.display = 'none';
+            const formData = new FormData();
+            formData.append('action', 'generate_sitemap');
+            formData.append('csrf_token', csrfToken);
 
             try {
                 const response = await fetch(window.location.href, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({ action: 'generate_sitemap', csrf_token: csrfToken })
+                    body: formData
                 });
 
-                const data = await response.json();
-                resultsSection.style.display = 'block';
-                statusMessage.className = data.success ? 'status-message status-green' : 'status-message status-red';
+                const responseText = await response.text();
+                let data;
 
-                let message = data.message;
-                if (data.success && data.sitemapUrl) {
-                    message += ` <a href="${data.sitemapUrl}" target="_blank">Sitemap ansehen</a>`;
+                if (!response.ok) {
+                    throw new Error(`HTTP Fehler ${response.status}: ${response.statusText}`);
                 }
-                statusMessage.innerHTML = message;
+
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error("Raw Response:", responseText);
+                    const errorMsg = responseText.replace(/<[^>]*>/g, '').substring(0, 200).trim();
+                    throw new Error(`Ungültige Antwort: "${errorMsg}"`);
+                }
 
                 if (data.success) {
-                    await saveSettings();
-                    updateTimestamp();
+                    addLogMessage('Datenbanken geladen (sitemap.json + comic_var.json).', 'success');
+                    addLogMessage(`Verarbeite ${data.count} URLs...`, 'info');
+                    addLogMessage(data.message, 'success');
+
+                    const now = new Date();
+                    lastRunContainer.innerHTML = `<p class="status-message status-info">Letzter Lauf am ${now.toLocaleDateString()} um ${now.toLocaleTimeString()} Uhr (${data.count} URLs).</p>`;
+
+                    successNotification.style.display = 'block';
+                    successNotification.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    addLogMessage(`Fehler: ${data.message}`, 'error');
                 }
 
             } catch (error) {
-                resultsSection.style.display = 'block';
-                statusMessage.className = 'status-message status-red';
-                statusMessage.innerHTML = `Ein unerwarteter Fehler ist aufgetreten: ${error.message}.`;
+                console.error(error);
+                addLogMessage(`Kritischer Fehler: ${error.message}`, 'error');
             } finally {
-                spinner.style.display = 'none';
-                this.disabled = false;
+                generateButton.disabled = false;
             }
-        });
+        }
+
+        generateButton.addEventListener('click', generateSitemap);
     });
 </script>
 
