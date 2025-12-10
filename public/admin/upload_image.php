@@ -238,14 +238,24 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <!-- Notification Box für Cache Update -->
         <div id="cache-update-notification" class="notification-box hidden-by-default">
-            <h4><i class="fas fa-info-circle"></i> Nächster Schritt: Cache aktualisieren</h4>
+            <h4><i class="fas fa-check-circle"></i> Upload abgeschlossen</h4>
             <p>
-                Da neue Bilder hinzugefügt wurden, muss die Cache-JSON-Datei aktualisiert werden.
-                <br>
-                <strong>Hinweis:</strong> Führe diesen Schritt erst aus, wenn alle Bilder hochgeladen sind.
+                Die Bilder wurden erfolgreich hochgeladen. Bitte wähle den nächsten Schritt:
             </p>
-            <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting.php?autostart=lowres,hires'; ?>"
-                class="button button-blue">Cache jetzt aktualisieren</a>
+
+            <div class="next-steps-actions">
+                <!-- Option 1: Thumbnails -->
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail.php'; ?>"
+                   class="button button-orange" target="_blank">
+                   <i class="fas fa-images"></i> 1. Thumbnails generieren
+                </a>
+
+                <!-- Option 2: Cache -->
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting.php?autostart=lowres,hires'; ?>"
+                   class="button button-blue">
+                   <i class="fas fa-sync"></i> 2. Cache aktualisieren
+                </a>
+            </div>
         </div>
 
         <!-- Confirm Modal (Advanced Layout) -->

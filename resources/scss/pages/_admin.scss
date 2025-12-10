@@ -1693,13 +1693,15 @@
     .instructions {
         font-size: 1.2em;
         color: var(--text-color-medium);
-        pointer-events: none; // Klicks gehen durch zum Container (wichtig für File-Dialog)
+        pointer-events: none;
         margin: 0;
+        text-align: center; // Sicherstellen, dass Text zentriert ist
+        width: 100%; // Volle Breite für korrekte Ausrichtung
 
         i {
             display: block;
             font-size: 3em;
-            margin-bottom: 10px;
+            margin: 0 auto 10px auto; // FIX: Zentrierung der Wolke via Auto-Margin
             color: var(--border-dark);
         }
     }
@@ -1780,17 +1782,22 @@
             margin-bottom: 10px;
         }
 
-        img {
-            max-width: 100%;
-            height: auto;
-            max-height: 350px;
-            object-fit: contain;
-            border: 1px solid var(--border-light);
-            background-color: var(
-                --page-bg
-            ); // Checkerboard wäre besser, aber Page-BG reicht
-            display: block;
-            margin: 0 auto;
+        // NEU: Container für die Aktions-Buttons nebeneinander
+        .next-steps-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+
+            a.button {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 20px;
+                font-size: 1em;
+                text-decoration: none;
+            }
         }
 
         body.theme-night & {
