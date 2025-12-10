@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Comic-Seiten-Renderer
  *
@@ -20,7 +21,7 @@
  * @since     4.3.2 Fehler melden Button in obere Navigantionsleiste verschoben und design angepasst.
  * @since     4.4.0 Lädt jQuery und Summernote-Bibliotheken für das Report-Modal (WYSIWYG-Editor).
  * @since     4.4.1 Machte Bild-Suchfunktionen global verfügbar.
- * @since     4.4.2 Logik für Bildsuche (checkUrlExists, findExistingUrl etc.) vollständig nach comic.js verschoben. Dieses Skript ruft nur noch die globalen Funktionen (window.findExistingUrl) auf. 
+ * @since     4.4.2 Logik für Bildsuche (checkUrlExists, findExistingUrl etc.) vollständig nach comic.js verschoben. Dieses Skript ruft nur noch die globalen Funktionen (window.findExistingUrl) auf.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -67,7 +68,7 @@ $urlOriginalsketchFromCache = get_cached_image_path($currentComicId, 'url_origin
 
 // --- FALLBACK-LOGIK ---
 if (empty($comicImagePath)) {
-    //$comicImagePath = get_cached_image_path('in_translation', 'lowres');
+//$comicImagePath = get_cached_image_path('in_translation', 'lowres');
     $comicImagePath = URL::getImgLayoutLowresUrl('in_translation.webp?c=20251101');
     if (empty($comicHiresPath)) { // Nur wenn Hires auch fehlt
         //$comicHiresPath = get_cached_image_path('in_translation', 'hires');
@@ -117,7 +118,7 @@ $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "' type='te
 
 $viewportContent = 'width=1099';
 $robotsContent = 'index, follow';
-$canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . $dateiendungPHP;
+$canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . '.php'; // $dateiendungPHP
 
 // === 8. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
@@ -168,7 +169,7 @@ require_once Path::getPartialTemplatePath('header.php');
         include DIRECTORY_PRIVATE_PARTIAL_TEMPLATES . DIRECTORY_SEPARATOR . 'navigation_comic.php';
         ?>
         <!-- SPRACHUMSCHALTER-BUTTON -->
-        <?php if (!empty($urlOriginalbildFilename)): ?>
+        <?php if (!empty($urlOriginalbildFilename)) : ?>
             <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
                 data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, '/')); ?>"
                 data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, '/')); ?>"
@@ -198,7 +199,7 @@ require_once Path::getPartialTemplatePath('header.php');
             <h2>Transkript</h2>
 
             <!-- Sketch-Button (optional) -->
-            <?php if (!empty($urlOriginalsketchFromCache)): ?>
+            <?php if (!empty($urlOriginalsketchFromCache)) : ?>
                 <a href="<?php echo htmlspecialchars($urlOriginalsketchFromCache); ?>" target="_blank"
                     rel="noopener noreferrer" class="button">Sketch ansehen</a>
             <?php endif; ?>

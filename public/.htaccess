@@ -29,9 +29,13 @@
     # was eine Sicherheitslücke sein kann. Der Browser muss dem vom Server deklarierten Content-Type vertrauen.
     Header set X-Content-Type-Options "nosniff"
 
-    # Referrer-Policy: Kontrolliert, welche Informationen über die Herkunftsseite (Referrer)
-    # bei Klicks auf externe Links gesendet werden. Dies verbessert den Datenschutz.
-    Header set Referrer-Policy "no-referrer-when-downgrade"
+    # Referrer Policy: Steuert, welche Referrer-Informationen gesendet werden.
+    # strict-origin-when-cross-origin: Sendet vollen Referrer bei gleicher Domain, nur Origin bei HTTPS->HTTPS Cross-Origin.
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Permissions Policy: Erlaubt oder verbietet Browser-Features.
+    # Hier: Deaktiviert Geolocation, Mikrofon und Kamera für mehr Privatsphäre.
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 
 </IfModule>
 
@@ -187,10 +191,10 @@ FileETag None
     img-src 'self' data: https://cdn.twokinds.keenspot.com https://twokinds.keenspot.com https://twokindscomic.com https://www.2kinds.com https://placehold.co https://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png https://licensebuttons.net https://twokinds.4lima.de; \
     font-src 'self' https://cdnjs.cloudflare.com https://cdn.twokinds.keenspot.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://twokinds.4lima.de; \
     connect-src 'self' https://*.google-analytics.com https://cdn.twokinds.keenspot.com https://twokindscomic.com https://cdn.jsdelivr.net;"
- 
+
     # HTTP Strict Transport Security (HSTS): Weist den Browser an, die Seite nur über HTTPS aufzurufen.
     # WICHTIGER HINWEIS: Aktiviere diese Zeile erst, wenn du sicher bist, dass deine HTTPS-Konfiguration
     # dauerhaft und fehlerfrei funktioniert. Einmal gesetzt, wird der Browser für die angegebene
     # Zeit (max-age) keine HTTP-Verbindungen mehr zulassen.
-    # Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 </IfModule>

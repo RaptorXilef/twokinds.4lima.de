@@ -197,7 +197,7 @@ foreach ($foundComicFiles as $filename) {
     // FIX: Konsistente Pfad-Erstellung ohne trim(), damit Keys zu sitemap.json passen (./comic/...)
     $loc = $comicPathPrefix . $filename;
     if (!isset($comicPages[$loc])) {
-        $comicPages[$loc] = ['loc' => $loc, 'name' => $filename, 'path' => $comicPathPrefix, 'priority' => 0.8, 'changefreq' => 'never'];
+        $comicPages[$loc] = ['loc' => $loc, 'name' => $filename, 'path' => $comicPathPrefix, 'priority' => 0.8, 'changefreq' => 'monthly'];
     }
 }
 
