@@ -24,6 +24,8 @@
  * - Einstellung für Ausschnitt-Position (Top, Center, Bottom...) hinzugefügt.
  * - Stability Fix: Robustes Loop-Handling mit Timeout und 'finally'-Block.
  * - Feature: Option für erzwungenen weißen Hintergrund.
+ * - Feature: User-spezifische Config, neuer Speicherpfad (config/admin/), manueller Speicher-Button.
+ * - Anpassung: Standard-Ausschnitt ist nun "Oben" (top) statt "Mitte".
  */
 
 declare(strict_types=1);
@@ -34,46 +36,82 @@ $debugMode = $debugMode ?? false;
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
+// === KONFIGURATION ===
+// Neuer Pfad im Unterordner 'admin'
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
+
 // --- Einstellungsverwaltung ---
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+function loadGeneratorSettings(string $filePath, string $username): array
 {
     $defaults = [
-        'socialmedia_generator' => [
-            'last_run_timestamp' => null,
             'format' => 'webp',
             'quality' => 85,
             'lossless' => false,
             'resize_mode' => 'cover',
-            'crop_position' => 'center', // Default: Mitte
-            'force_white_bg' => false // Default: Transparent (wenn möglich)
-        ]
+            'crop_position' => 'top', // Default: Oben
+            'force_white_bg' => false, // Default: Transparent (wenn möglich)
+            'last_run_timestamp' => null
     ];
+
     if (!file_exists($filePath)) {
+        // Verzeichnisstruktur erstellen, falls nötig
         $dir = dirname($filePath);
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+
+        // Leere Basis-Struktur anlegen
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
-    if (json_last_error() === JSON_ERROR_NONE && isset($settings['socialmedia_generator'])) {
-        // Merge mit Defaults für neue Keys
-        return array_replace_recursive($defaults, $settings);
+    $data = json_decode($content, true);
+
+    // Prüfen ob JSON valide ist
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        return $defaults;
     }
-    return $defaults;
+
+    // User-spezifische Einstellungen laden
+    $userSettings = $data['users'][$username]['socialmedia_generator'] ?? [];
+
+    // Merge mit Defaults für neue Keys
+    return array_replace_recursive($defaults, $userSettings);
 }
 
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+function saveGeneratorSettings(string $filePath, string $username, array $newSettings): bool
 {
-    return file_put_contents($filePath, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
+    // 1. Existierende Daten laden (um andere User/Generatoren nicht zu überschreiben)
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $data = $decoded;
+        }
+    }
+
+    // 2. Struktur sicherstellen
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    // 3. Nur den relevanten Teil aktualisieren
+    // Wir mergen mit bestehenden Daten des Users, falls dort noch andere Generator-Daten liegen
+    $currentGeneratorData = $data['users'][$username]['socialmedia_generator'] ?? [];
+    $data['users'][$username]['socialmedia_generator'] = array_replace_recursive($currentGeneratorData, $newSettings);
+
+    // 4. Speichern (mit Lock, um Race Conditions zu minimieren)
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
 // --- LOGIK ---
-$settingsFile = Path::getConfigPath('config_generator_settings.json');
-$currentSettings = loadGeneratorSettings($settingsFile, $debugMode);
-$generatorSettings = $currentSettings['socialmedia_generator'];
+$generatorSettings = loadGeneratorSettings($configPath, $currentUser);
 
 // AJAX Handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -85,8 +123,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
     if ($action === 'save_settings') {
         $input = json_decode($_POST['settings'] ?? '{}', true);
-        $currentSettings['socialmedia_generator'] = [
-            'last_run_timestamp' => time(),
+
+        // Validierung und Sanitizing
+        $settingsToSave = [
             'format' => $input['format'] ?? 'webp',
             'quality' => (int)($input['quality'] ?? 85),
             'lossless' => filter_var($input['lossless'] ?? false, FILTER_VALIDATE_BOOLEAN),
@@ -95,7 +134,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             'force_white_bg' => filter_var($input['force_white_bg'] ?? false, FILTER_VALIDATE_BOOLEAN)
         ];
 
-        if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
+        // Timestamp nur aktualisieren, wenn explizit gewünscht (z.B. beim Generieren), sonst beibehalten
+        if (isset($input['update_timestamp']) && $input['update_timestamp'] === true) {
+            $settingsToSave['last_run_timestamp'] = time();
+        } else {
+            // Alten Timestamp beibehalten
+            $currentData = loadGeneratorSettings($configPath, $currentUser);
+            $settingsToSave['last_run_timestamp'] = $currentData['last_run_timestamp'];
+        }
+
+        if (saveGeneratorSettings($configPath, $currentUser, $settingsToSave)) {
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern der Einstellungen.']);
@@ -218,6 +266,13 @@ require_once Path::getPartialTemplatePath('header.php');
                     Verlustfrei
                 </label>
             </div>
+
+            <!-- NEU: Manueller Speicher-Button -->
+            <div class="form-group" style="flex: 0 0 100%; display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" id="save-settings-btn" class="button button-blue" style="display: none;">
+                    <i class="fas fa-save"></i> Einstellungen speichern
+                </button>
+            </div>
         </div>
 
         <!-- LOG CONSOLE -->
@@ -263,6 +318,10 @@ require_once Path::getPartialTemplatePath('header.php');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
         const settingsContainer = document.querySelector('.generator-settings');
         const createdImagesContainer = document.getElementById('created-images-container');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+
+        // Inputs für Change-Detection
+        const inputs = settingsContainer.querySelectorAll('input, select');
 
         // State
         let queue = [...initialMissingIds];
@@ -282,13 +341,68 @@ require_once Path::getPartialTemplatePath('header.php');
             logContainer.scrollTop = logContainer.scrollHeight;
         }
 
-        async function saveSettings(settings) {
+        function getCurrentSettings() {
+            return {
+                format: document.getElementById('format').value,
+                quality: parseInt(document.getElementById('quality').value, 10),
+                lossless: document.getElementById('lossless').checked,
+                resize_mode: document.getElementById('resize_mode').value,
+                crop_position: document.getElementById('crop_position').value,
+                force_white_bg: document.getElementById('force_white_bg').checked
+            };
+        }
+
+        // Settings speichern (via Button oder automatisch)
+        async function saveSettings(settings, updateTimestamp = false) {
             const formData = new FormData();
             formData.append('action', 'save_settings');
+            settings.update_timestamp = updateTimestamp; // Flag senden
             formData.append('settings', JSON.stringify(settings));
             formData.append('csrf_token', csrfToken);
-            try { await fetch(window.location.href, { method: 'POST', body: formData }); } catch (e) { console.error("Settings save failed", e); }
+
+            try {
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success) {
+                    return true;
+                } else {
+                    console.error("Save failed:", result.message);
+                    return false;
+                }
+            } catch (e) {
+                console.error("Settings save failed", e);
+                return false;
+            }
         }
+
+        // Change Detection für "Speichern" Button
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                if (!isGenerationActive) {
+                    saveSettingsBtn.style.display = 'inline-block';
+                }
+            });
+            // Für Range/Text Inputs auch auf 'input' hören für bessere UX
+            if (input.type === 'number' || input.type === 'range' || input.type === 'text') {
+                input.addEventListener('input', () => {
+                    if (!isGenerationActive) {
+                        saveSettingsBtn.style.display = 'inline-block';
+                    }
+                });
+            }
+        });
+
+        // Manueller Speicher-Klick
+        saveSettingsBtn.addEventListener('click', async () => {
+            const currentSettings = getCurrentSettings();
+            // Speichern OHNE Timestamp-Update
+            if (await saveSettings(currentSettings, false)) {
+                saveSettingsBtn.style.display = 'none'; // Button wieder ausblenden
+                addLogMessage('Einstellungen erfolgreich gespeichert.', 'success');
+            } else {
+                addLogMessage('Fehler beim Speichern der Einstellungen.', 'error');
+            }
+        });
 
         async function processGenerationQueue() {
             if (isPaused) {
@@ -306,17 +420,12 @@ require_once Path::getPartialTemplatePath('header.php');
                 updateButtonState();
                 settingsContainer.style.opacity = '0.5';
                 settingsContainer.style.pointerEvents = 'none';
+                saveSettingsBtn.style.display = 'none'; // Speichern während Lauf ausblenden
                 createdImagesContainer.innerHTML = '';
                 cacheUpdateNotification.style.display = 'none';
 
-                lastSuccessfulSettings = {
-                    format: document.getElementById('format').value,
-                    quality: parseInt(document.getElementById('quality').value, 10),
-                    lossless: document.getElementById('lossless').checked,
-                    resize_mode: document.getElementById('resize_mode').value,
-                    crop_position: document.getElementById('crop_position').value,
-                    force_white_bg: document.getElementById('force_white_bg').checked
-                };
+                // Settings für diesen Lauf einfrieren
+                lastSuccessfulSettings = getCurrentSettings();
             }
 
             const currentFile = queue.shift();
@@ -384,7 +493,7 @@ require_once Path::getPartialTemplatePath('header.php');
             } catch (error) {
                 // AbortError ist der Timeout
                 if (error.name === 'AbortError') {
-                    addLogMessage(`Timeout bei ${currentFile}: Server antwortet nicht (Bild zu groß?). Überspringe...`, 'error');
+                    addLogMessage(`Timeout bei ${currentFile}: Server antwortet nicht. Überspringe...`, 'error');
                 } else {
                     addLogMessage(`Fehler bei ${currentFile}: ${error.message}`, 'error');
                 }
@@ -403,7 +512,8 @@ require_once Path::getPartialTemplatePath('header.php');
             addLogMessage('Generierung abgeschlossen!', 'info');
 
             if (createdCount > 0 && lastSuccessfulSettings) {
-                await saveSettings(lastSuccessfulSettings);
+                // Hier MIT Timestamp Update speichern
+                await saveSettings(lastSuccessfulSettings, true);
                 cacheUpdateNotification.classList.remove('hidden-by-default');
                 cacheUpdateNotification.style.display = 'block';
                 cacheUpdateNotification.scrollIntoView({ behavior: 'smooth', block: 'center' });
