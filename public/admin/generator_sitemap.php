@@ -4,11 +4,11 @@
  * Adminseite zum Generieren der sitemap.xml für Suchmaschinen.
  * Kombiniert statische Seiten (aus sitemap.json) und Comic-Seiten (aus comic_var.json).
  *
- * @file      ROOT/public/admin/generate_sitemap.php
+ * @file      ROOT/public/admin/generator_sitemap.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
  * @since 2.0.0 - 4.0.0
@@ -27,6 +27,7 @@
  * @since 5.0.0
  * - Komplettes Refactoring auf Admin-Standard (SCSS, User-Config, Layout).
  * - Fix: URL-Pfadbereinigung (kein /./ mehr) und ISO-8601 Datumsformat (mit Uhrzeit).
+ * - Fix: Aggressive Pfad-Bereinigung (Regex) gegen "/./" Fehler.
  */
 
 declare(strict_types=1);
@@ -100,6 +101,8 @@ function generateSitemap(): array
 {
     $sitemapJsonPath = Path::getDataPath('sitemap.json');
     $comicVarPath = Path::getDataPath('comic_var.json');
+
+    // Fallback falls Methode fehlt
     $publicDir = defined('DIRECTORY_PUBLIC') ? DIRECTORY_PUBLIC : dirname(dirname(__DIR__));
     $sitemapFilePath = $publicDir . DIRECTORY_SEPARATOR . 'sitemap.xml';
 
@@ -140,8 +143,8 @@ function generateSitemap(): array
                 continue;
             }
 
-            // FIX: Entfernt "./" oder "/" am Anfang, um "domain.de/./seite.php" zu verhindern
-            $loc = ltrim($loc, './');
+            // FIX v5.0.2: Aggressive Bereinigung von "./" oder "/" am Anfang mit Regex
+            $loc = preg_replace('/^(\.\/|\/)+/', '', $loc);
 
             $urlNode = $dom->createElement('url');
             $urlNode->appendChild($dom->createElement('loc', $baseUrl . '/' . $loc));
@@ -150,7 +153,7 @@ function generateSitemap(): array
                 // Wenn Datum manuell in JSON steht, übernehmen wir es (sollte idealerweise schon ISO 8601 sein)
                 $urlNode->appendChild($dom->createElement('lastmod', $page['lastmod']));
             } else {
-                // FIX: Fallback auf ISO 8601 (mit Uhrzeit und Zeitzone)
+                // FIX: ISO 8601 (mit Uhrzeit)
                 $urlNode->appendChild($dom->createElement('lastmod', date('c')));
             }
 
@@ -173,12 +176,13 @@ function generateSitemap(): array
     ksort($comics);
 
     $comicChangefreq = 'monthly';
-    $comicPriority = '0.5';
+    $comicPriority = '0.8'; // Auf 0.8 angepasst wie gewünscht
 
     $comicPhpDir = defined('DIRECTORY_PUBLIC_COMIC') ? DIRECTORY_PUBLIC_COMIC : $publicDir . '/comic';
 
     foreach ($comics as $id => $data) {
         $urlNode = $dom->createElement('url');
+        // URL Struktur: /comic/ID.php
         $urlNode->appendChild($dom->createElement('loc', $baseUrl . "/comic/$id.php"));
 
         $phpFile = $comicPhpDir . DIRECTORY_SEPARATOR . $id . '.php';
