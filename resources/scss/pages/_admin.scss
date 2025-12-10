@@ -1288,3 +1288,117 @@
         text-align: center;
     }
 }
+
+/* --- INITIAL SETUP PAGE --- */
+// @since 5.0.0
+
+.setup-container {
+    max-width: 850px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-light);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    header {
+        border-bottom: 1px solid var(--border-light);
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+
+        h1 {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1.8em;
+        }
+    }
+}
+
+.setup-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--border-medium);
+
+    &:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: var(--text-color);
+        font-size: 1.2em;
+        border-left: 4px solid var(--link-color);
+        padding-left: 10px;
+    }
+}
+
+.status-list {
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    padding: 5px 15px;
+    margin-bottom: 15px;
+
+    body.theme-night & {
+        background-color: rgba(
+            0,
+            0,
+            0,
+            0.2
+        ); // Leicht abgedunkelter Hintergrund im Dark Mode
+    }
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border-light);
+    color: var(--text-color);
+    font-size: 0.95em;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    .status-label {
+        font-weight: 500;
+    }
+
+    .status-indicator {
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.85em;
+        text-transform: uppercase;
+
+        &.success {
+            color: var(--status-green-text);
+            background-color: var(--status-green-bg);
+            border: 1px solid var(--status-green-border);
+        }
+
+        &.error {
+            color: var(--status-red-text);
+            background-color: var(--status-red-bg);
+            border: 1px solid var(--status-red-border);
+        }
+    }
+}
+
+// Spezifische Button-Anpassungen für Setup
+.setup-action-btn {
+    width: auto;
+    margin-top: 10px;
+    display: inline-block;
+}
