@@ -12,11 +12,14 @@
  * @since 5.0.0
  * - Refactoring auf neue Architektur (Path-Klasse, JSON-Response).
  * - Rückgabe der ImageURL für Frontend-Vorschau hinzugefügt.
+ * - Angleichung an Social-Media-Generator (Limits, White-BG Option).
  */
 
-// Deaktiviere Fehleranzeige im HTML-Output (zerstört JSON), logge sie stattdessen
+// Limits erhöhen für stabile Verarbeitung
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
+ini_set('memory_limit', '1024M');
+set_time_limit(120);
 
 // Definiere Konstante für init_admin.php, damit kein HTML-Header geladen wird
 define('IS_API_CALL', true);
@@ -45,6 +48,8 @@ try {
     $format = $_GET['format'] ?? 'webp';
     $quality = (int)($_GET['quality'] ?? 80);
     $lossless = isset($_GET['lossless']) && $_GET['lossless'] === '1';
+    // NEU: Option für Hintergrund
+    $forceWhiteBg = isset($_GET['force_white_bg']) && $_GET['force_white_bg'] === '1';
 
     if (empty($imageName)) {
         sendJson(['status' => 'error', 'message' => 'Kein Bildname.']);
@@ -133,8 +138,13 @@ try {
 
     $thumbImage = imagecreatetruecolor($newWidth, $newHeight);
 
-    // Transparenz erhalten
-    if ($format == 'png' || $format == 'webp') {
+    // HINTERGRUND LOGIK
+    $useWhiteBackground = $forceWhiteBg || ($format === 'jpg' || $format === 'jpeg');
+
+    if ($useWhiteBackground) {
+        $bgColor = imagecolorallocate($thumbImage, 255, 255, 255);
+        imagefilledrectangle($thumbImage, 0, 0, $newWidth, $newHeight, $bgColor);
+    } else {
         imagealphablending($thumbImage, false);
         imagesavealpha($thumbImage, true);
         $transparent = imagecolorallocatealpha($thumbImage, 255, 255, 255, 127);
@@ -164,7 +174,7 @@ try {
     imagedestroy($thumbImage);
 
     if ($saved) {
-        // NEU: Image URL generieren für Frontend-Vorschau
+        // Image URL generieren für Frontend-Vorschau
         $webUrl = Url::getImgComicThumbnailsUrl($targetFilename) . '?' . time();
 
         sendJson([

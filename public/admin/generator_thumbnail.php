@@ -26,6 +26,7 @@
  * - Layout-Optimierung: Log oben, Bilder unten. Auto-Scroll Option hinzugefügt.
  * - Entfernung der Auto-Scroll Funktion, da neue Bilder oben angefügt werden.
  * - Workflow-Optimierung: "Generierung abgeschlossen"-Box zwischen Log und Bildern platziert, mit Links zu Social-Media-Generator und Cache-Update.
+ * - Angleichung an Social-Media-Generator (User-Config, manueller Save-Button, Delete-Funktion, White-BG Option).
  */
 
 declare(strict_types=1);
@@ -36,62 +37,112 @@ $debugMode = $debugMode ?? false;
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
+// === KONFIGURATION ===
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
+
 // --- Einstellungsverwaltung ---
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+function loadGeneratorSettings(string $filePath, string $username): array
 {
     $defaults = [
-        'thumbnail_generator' => [
-            'last_run_timestamp' => null,
-            'format' => 'webp',
-            'quality' => 80,
-            'lossless' => false
-        ]
+        'format' => 'webp',
+        'quality' => 80,
+        'lossless' => false,
+        'force_white_bg' => false,
+        'last_run_timestamp' => null
     ];
+
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
-    if (json_last_error() === JSON_ERROR_NONE && isset($settings['thumbnail_generator'])) {
-        return $settings;
+    $data = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        return $defaults;
     }
-    return $defaults;
+
+    $userSettings = $data['users'][$username]['thumbnail_generator'] ?? [];
+    return array_replace_recursive($defaults, $userSettings);
 }
 
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+function saveGeneratorSettings(string $filePath, string $username, array $newSettings): bool
 {
-    return file_put_contents($filePath, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $data = $decoded;
+        }
+    }
+
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    $currentGeneratorData = $data['users'][$username]['thumbnail_generator'] ?? [];
+    $data['users'][$username]['thumbnail_generator'] = array_replace_recursive($currentGeneratorData, $newSettings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
 // --- LOGIK ---
-$settingsFile = Path::getConfigPath('config_generator_settings.json');
-$currentSettings = loadGeneratorSettings($settingsFile, $debugMode);
-$generatorSettings = $currentSettings['thumbnail_generator'];
+$generatorSettings = loadGeneratorSettings($configPath, $currentUser);
 
-// AJAX Handler für Settings-Speicherung
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_settings') {
+// AJAX Handler
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
 
-    $input = json_decode($_POST['settings'] ?? '{}', true);
+    $action = $_POST['action'];
 
-    $currentSettings['thumbnail_generator'] = [
-        'last_run_timestamp' => time(),
-        'format' => $input['format'] ?? 'webp',
-        'quality' => (int)($input['quality'] ?? 80),
-        'lossless' => filter_var($input['lossless'] ?? false, FILTER_VALIDATE_BOOLEAN)
-    ];
+    if ($action === 'save_settings') {
+        $input = json_decode($_POST['settings'] ?? '{}', true);
 
-    if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
-        echo json_encode(['success' => true]);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern der Einstellungen.']);
+        $settingsToSave = [
+            'format' => $input['format'] ?? 'webp',
+            'quality' => (int)($input['quality'] ?? 80),
+            'lossless' => filter_var($input['lossless'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'force_white_bg' => filter_var($input['force_white_bg'] ?? false, FILTER_VALIDATE_BOOLEAN)
+        ];
+
+        if (isset($input['update_timestamp']) && $input['update_timestamp'] === true) {
+            $settingsToSave['last_run_timestamp'] = time();
+        } else {
+            $currentData = loadGeneratorSettings($configPath, $currentUser);
+            $settingsToSave['last_run_timestamp'] = $currentData['last_run_timestamp'];
+        }
+
+        if (saveGeneratorSettings($configPath, $currentUser, $settingsToSave)) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Fehler beim Speichern der Einstellungen.']);
+        }
+    } elseif ($action === 'delete_image') {
+        $filename = basename($_POST['filename'] ?? '');
+        $targetDir = DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS;
+        $targetFile = $targetDir . DIRECTORY_SEPARATOR . $filename;
+
+        if (empty($filename) || !file_exists($targetFile)) {
+            echo json_encode(['success' => false, 'message' => 'Datei nicht gefunden.']);
+        } else {
+            if (unlink($targetFile)) {
+                echo json_encode(['success' => true, 'message' => 'Datei gelöscht.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Konnte Datei nicht löschen.']);
+            }
+        }
     }
     exit;
 }
@@ -99,6 +150,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Dateien scannen
 $sourceDir = DIRECTORY_PUBLIC_IMG_COMIC_LOWRES;
 $targetDir = DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS;
+
+if (!is_dir($targetDir)) {
+    mkdir($targetDir, 0755, true);
+}
 
 $sourceFiles = glob($sourceDir . '/*.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: [];
 $existingThumbnails = glob($targetDir . '/*.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: [];
@@ -156,26 +211,27 @@ require_once Path::getPartialTemplatePath('header.php');
                 <label for="quality">Qualität (1-100):</label>
                 <input type="number" id="quality" min="1" max="100" value="<?php echo htmlspecialchars((string)$generatorSettings['quality']); ?>">
             </div>
+
             <div class="form-group checkbox-group">
-                <label for="lossless" title="Nur für WebP und PNG relevant">
+                <label for="force_white_bg" title="Falls aktiviert, wird der Hintergrund immer weiß statt transparent">
+                    <input type="checkbox" id="force_white_bg" <?php echo ($generatorSettings['force_white_bg']) ? 'checked' : ''; ?>>
+                    Hintergrund: Weiß
+                </label>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label for="lossless">
                     <input type="checkbox" id="lossless" <?php echo ($generatorSettings['lossless']) ? 'checked' : ''; ?>>
                     Verlustfrei
                 </label>
             </div>
-        </div>
 
-        <!-- PROGRESS BAR -->
-        <div class="progress-wrapper">
-            <div id="progress-bar" class="progress-bar"></div>
-            <div id="progress-text" class="progress-text">0% (0/0)</div>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="generator-actions">
-            <button id="toggle-pause-resume-btn" class="button button-orange" style="display: none;">Pause</button>
-            <button id="generate-btn" class="button button-green" <?php echo empty($missingThumbnails) ? 'disabled' : ''; ?>>
-                <i class="fas fa-play"></i> Generierung starten
-            </button>
+            <!-- Manueller Speicher-Button -->
+            <div class="form-group" style="flex: 0 0 100%; display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" id="save-settings-btn" class="button button-blue" style="display: none;">
+                    <i class="fas fa-save"></i> Einstellungen speichern
+                </button>
+            </div>
         </div>
 
         <!-- LOG CONSOLE (Log oben) -->
@@ -186,7 +242,7 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- NOTIFICATIONS (Zwischen Console und Bildern) -->
         <div id="cache-update-notification" class="notification-box hidden-by-default">
             <h4><i class="fas fa-check-circle"></i> Generierung abgeschlossen</h4>
-            <p>Die Thumbnails wurden erfolgreich erstellt. Bitte wähle den nächsten Schritt:</p>
+            <p>Die Thumbnails wurden erstellt. Bitte wähle den nächsten Schritt:</p>
             <div class="next-steps-actions">
                 <!-- Option 1: Social Media Bilder -->
                 <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . ($dateiendungPHP ?? '.php'); ?>"
@@ -202,7 +258,15 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
         </div>
 
-        <!-- IMAGE GRID CONTAINER (Bilder unten) -->
+        <!-- ACTIONS -->
+        <div class="generator-actions">
+            <button id="toggle-pause-resume-btn" class="button button-orange" style="display: none;">Pause</button>
+            <button id="generate-btn" class="button button-green" <?php echo empty($missingThumbnails) ? 'disabled' : ''; ?>>
+                <i class="fas fa-play"></i> Generierung starten
+            </button>
+        </div>
+
+        <!-- IMAGE GRID -->
         <div id="created-images-container" class="image-grid"></div>
 
     </div>
@@ -217,11 +281,11 @@ require_once Path::getPartialTemplatePath('header.php');
         const generateButton = document.getElementById('generate-btn');
         const togglePauseResumeButton = document.getElementById('toggle-pause-resume-btn');
         const logContainer = document.getElementById('log-container');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
         const settingsContainer = document.querySelector('.generator-settings');
         const createdImagesContainer = document.getElementById('created-images-container');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const inputs = settingsContainer.querySelectorAll('input, select');
 
         // State
         let queue = [...initialMissingIds];
@@ -241,13 +305,51 @@ require_once Path::getPartialTemplatePath('header.php');
             logContainer.scrollTop = logContainer.scrollHeight; // Log scrollt weiterhin, aber Seite nicht
         }
 
-        async function saveSettings(settings) {
+        function getCurrentSettings() {
+            return {
+                format: document.getElementById('format').value,
+                quality: parseInt(document.getElementById('quality').value, 10),
+                lossless: document.getElementById('lossless').checked,
+                force_white_bg: document.getElementById('force_white_bg').checked
+            };
+        }
+
+        async function saveSettings(settings, updateTimestamp = false) {
             const formData = new FormData();
             formData.append('action', 'save_settings');
+            settings.update_timestamp = updateTimestamp;
             formData.append('settings', JSON.stringify(settings));
             formData.append('csrf_token', csrfToken);
-            try { await fetch(window.location.href, { method: 'POST', body: formData }); } catch (e) { console.error("Settings save failed", e); }
+            try {
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                const result = await response.json();
+                return result.success;
+            } catch (e) {
+                console.error("Settings save failed", e);
+                return false;
+            }
         }
+
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                if (!isGenerationActive) saveSettingsBtn.style.display = 'inline-block';
+            });
+            if (input.type === 'number' || input.type === 'range' || input.type === 'text') {
+                input.addEventListener('input', () => {
+                    if (!isGenerationActive) saveSettingsBtn.style.display = 'inline-block';
+                });
+            }
+        });
+
+        saveSettingsBtn.addEventListener('click', async () => {
+            const currentSettings = getCurrentSettings();
+            if (await saveSettings(currentSettings, false)) {
+                saveSettingsBtn.style.display = 'none';
+                addLogMessage('Einstellungen erfolgreich gespeichert.', 'success');
+            } else {
+                addLogMessage('Fehler beim Speichern der Einstellungen.', 'error');
+            }
+        });
 
         async function processGenerationQueue() {
             if (isPaused) {
@@ -265,14 +367,11 @@ require_once Path::getPartialTemplatePath('header.php');
                 updateButtonState();
                 settingsContainer.style.opacity = '0.5';
                 settingsContainer.style.pointerEvents = 'none';
+                saveSettingsBtn.style.display = 'none';
                 createdImagesContainer.innerHTML = '';
-                cacheUpdateNotification.style.display = 'none'; // Verstecken beim Start
+                cacheUpdateNotification.style.display = 'none';
 
-                lastSuccessfulSettings = {
-                    format: document.getElementById('format').value,
-                    quality: parseInt(document.getElementById('quality').value, 10),
-                    lossless: document.getElementById('lossless').checked
-                };
+                lastSuccessfulSettings = getCurrentSettings();
             }
 
             const currentFile = queue.shift();
@@ -283,10 +382,18 @@ require_once Path::getPartialTemplatePath('header.php');
                     format: lastSuccessfulSettings.format,
                     quality: lastSuccessfulSettings.quality,
                     lossless: lastSuccessfulSettings.lossless ? '1' : '0',
+                    force_white_bg: lastSuccessfulSettings.force_white_bg ? '1' : '0',
                     csrf_token: csrfToken
                 });
 
-                const response = await fetch(`check_and_generate_thumbnail.php?${params.toString()}`);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                const response = await fetch(`check_and_generate_thumbnail.php?${params.toString()}`, {
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
 
                 if (!response.ok) throw new Error(`HTTP Fehler ${response.status}`);
 
@@ -313,6 +420,9 @@ require_once Path::getPartialTemplatePath('header.php');
                             <div class="image-overlay">
                                 <span class="filename">${data.message}</span>
                             </div>
+                            <button class="delete-btn" title="Bild löschen" onclick="deleteGeneratedImage('${data.message}', this)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         `;
                         // Neue Bilder werden OBEN eingefügt
                         createdImagesContainer.prepend(imgDiv);
@@ -325,15 +435,15 @@ require_once Path::getPartialTemplatePath('header.php');
                 }
 
             } catch (error) {
-                addLogMessage(`Fehler bei ${currentFile}: ${error.message}`, 'error');
+                if (error.name === 'AbortError') {
+                    addLogMessage(`Timeout bei ${currentFile}: Server antwortet nicht. Überspringe...`, 'error');
+                } else {
+                    addLogMessage(`Fehler bei ${currentFile}: ${error.message}`, 'error');
+                }
+            } finally {
+                processedFiles++;
+                setTimeout(processGenerationQueue, 100);
             }
-
-            processedFiles++;
-            const percent = Math.round((processedFiles / totalFiles) * 100);
-            progressBar.style.width = `${percent}%`;
-            progressText.textContent = `${percent}% (${processedFiles}/${totalFiles})`;
-
-            setTimeout(processGenerationQueue, 100);
         }
 
         async function finishGeneration() {
@@ -344,7 +454,7 @@ require_once Path::getPartialTemplatePath('header.php');
             addLogMessage('Generierung abgeschlossen!', 'info');
 
             if (createdCount > 0 && lastSuccessfulSettings) {
-                await saveSettings(lastSuccessfulSettings);
+                await saveSettings(lastSuccessfulSettings, true);
                 cacheUpdateNotification.classList.remove('hidden-by-default');
                 cacheUpdateNotification.style.display = 'block';
                 // Optional: Zu den Buttons scrollen
@@ -375,6 +485,36 @@ require_once Path::getPartialTemplatePath('header.php');
                 }
             }
         }
+
+        window.deleteGeneratedImage = async function(filename, btnElement) {
+            if (!confirm(`Soll das Bild "${filename}" wirklich unwiderruflich gelöscht werden?`)) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'delete_image');
+            formData.append('filename', filename);
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                const result = await response.json();
+
+                if (result.success) {
+                    const item = btnElement.closest('.image-item');
+                    item.style.transition = 'all 0.3s';
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.8)';
+                    setTimeout(() => item.remove(), 300);
+                    addLogMessage(`Bild gelöscht: ${filename}`, 'warning');
+                } else {
+                    alert('Fehler beim Löschen: ' + result.message);
+                }
+            } catch (e) {
+                alert('Netzwerkfehler beim Löschen.');
+                console.error(e);
+            }
+        };
 
         generateButton.addEventListener('click', processGenerationQueue);
         togglePauseResumeButton.addEventListener('click', () => {
