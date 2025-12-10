@@ -1339,6 +1339,12 @@
         border-left: 4px solid var(--link-color);
         padding-left: 10px;
     }
+
+    // Überschreibt die globale .instructions Klasse (die zentriert ist) für diesen Kontext
+    .instructions {
+        text-align: left;
+        margin-bottom: 15px;
+    }
 }
 
 .status-list {

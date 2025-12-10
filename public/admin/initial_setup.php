@@ -70,6 +70,7 @@ $requiredFiles = [
 
 $message = '';
 $messageType = 'info';
+
 // --- FUNKTIONEN ---
 function getFolderStatuses(array $folders): array
 {
@@ -143,8 +144,7 @@ function getComicData(string $filePath): ?array
         return null;
     }
     if (is_array($data)) {
-        return $data['comics'] ?? $data;
-        // Handles both v2 and v1
+        return $data['comics'] ?? $data; // Handles both v2 and v1
     }
     return [];
 }
@@ -236,9 +236,11 @@ $folderStatuses = getFolderStatuses($requiredFolders);
 $fileStatuses = getFileStatuses($requiredFiles);
 $allFoldersExist = !in_array(false, array_column($folderStatuses, 'exists'), true);
 $allFilesExist = !in_array(false, array_column($fileStatuses, 'exists'), true);
+
 $comicVarJsonPathForCheck = Path::getDataPath('comic_var.json');
 $currentComicData = getComicData($comicVarJsonPathForCheck);
 $jsonFileSorted = $currentComicData === null ? false : isAlphabeticallySorted($currentComicData);
+
 $pageTitle = 'Adminbereich - Ersteinrichtung';
 $pageHeader = 'Ersteinrichtung';
 require_once Path::getPartialTemplatePath('header.php');
@@ -254,91 +256,72 @@ require_once Path::getPartialTemplatePath('header.php');
             <div class="status-message status-<?php echo $messageType; ?> visible">
                 <?php echo htmlspecialchars($message); ?>
             </div>
-            <?php
-        endif; ?>
+        <?php endif; ?>
 
         <!-- 1. Ordner -->
         <section class="setup-section">
             <h3>1. Verzeichnisstruktur prüfen</h3>
             <div class="status-list">
-                <?php foreach ($folderStatuses as $folder) :
-                    ?>
+                <?php foreach ($folderStatuses as $folder) : ?>
                     <div class="status-item">
                         <span class="status-label"><?php echo htmlspecialchars($folder['name']); ?></span>
                         <span class="status-indicator <?php echo $folder['exists'] ? 'success' : 'error'; ?>">
                             <?php echo $folder['exists'] ? 'Existiert' : 'Fehlt'; ?>
                         </span>
                     </div>
-                    <?php
-                endforeach; ?>
+                <?php endforeach; ?>
             </div>
-            <?php if (!$allFoldersExist) :
-                ?>
+            <?php if (!$allFoldersExist) : ?>
                 <form action="" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                     <button type="submit" name="action" value="create_folders" class="button button-green setup-action-btn">
                         <i class="fas fa-folder-plus"></i> Fehlende Ordner erstellen
                     </button>
                 </form>
-                <?php
-            else :
-                ?>
+            <?php else : ?>
                 <p class="status-message status-green visible"><i class="fas fa-check"></i> Alle Ordner vorhanden.</p>
-                <?php
-            endif; ?>
+            <?php endif; ?>
         </section>
 
         <!-- 2. Dateien -->
         <section class="setup-section">
             <h3>2. Konfigurations- & Datendateien prüfen</h3>
             <div class="status-list">
-                <?php foreach ($fileStatuses as $file) :
-                    ?>
+                <?php foreach ($fileStatuses as $file) : ?>
                     <div class="status-item">
                         <span class="status-label"><?php echo htmlspecialchars($file['name']); ?></span>
                         <span class="status-indicator <?php echo $file['exists'] ? 'success' : 'error'; ?>">
                             <?php echo $file['exists'] ? 'Existiert' : 'Fehlt'; ?>
                         </span>
                     </div>
-                    <?php
-                endforeach; ?>
+                <?php endforeach; ?>
             </div>
-            <?php if (!$allFilesExist) :
-                ?>
+            <?php if (!$allFilesExist) : ?>
                 <form action="" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                     <button type="submit" name="action" value="create_files" class="button button-green setup-action-btn">
                         <i class="fas fa-file-download"></i> Fehlende Dateien laden (GitHub)
                     </button>
                 </form>
-                <?php
-            else :
-                ?>
+            <?php else : ?>
                 <p class="status-message status-green visible"><i class="fas fa-check"></i> Alle Dateien vorhanden.</p>
-                <?php
-            endif; ?>
+            <?php endif; ?>
         </section>
 
         <!-- 3. Sortierung -->
         <section class="setup-section">
             <h3>3. `comic_var.json` Wartung</h3>
-            <p class="instructions" style="text-align:left; margin: 0 0 15px 0;">
+            <!-- FIX: Inline-Style entfernt, Styling nun via SCSS (.setup-section .instructions) -->
+            <p class="instructions">
                 Hier wird geprüft, ob die Comic-Datenbank korrekt sortiert ist (nach ID). Dies ist wichtig für die Navigation.
             </p>
-            <?php if ($currentComicData === null) :
-                ?>
+            <?php if ($currentComicData === null) : ?>
                 <p class="status-message status-orange visible">Datei `comic_var.json` existiert nicht.</p>
-                <?php
-            elseif (empty($currentComicData)) :
-                ?>
+            <?php elseif (empty($currentComicData)) : ?>
                 <p class="status-message status-info visible">Datei `comic_var.json` ist leer.</p>
-                <?php
-            elseif ($jsonFileSorted) :
-                ?>
+            <?php elseif ($jsonFileSorted) : ?>
                 <p class="status-message status-green visible"><i class="fas fa-check"></i> Datei ist korrekt sortiert.</p>
-                <?php
-            else :
-                ?>
+            <?php else : ?>
                 <p class="status-message status-red visible"><i class="fas fa-exclamation-triangle"></i> Datei ist nicht sortiert.</p>
                 <form action="" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
@@ -346,8 +329,7 @@ require_once Path::getPartialTemplatePath('header.php');
                         <i class="fas fa-sort-numeric-down"></i> Jetzt sortieren
                     </button>
                 </form>
-                <?php
-            endif; ?>
+            <?php endif; ?>
         </section>
     </div>
 </article>
