@@ -33,13 +33,22 @@
  * - refactor(Modal): Umstellung auf .modal-advanced-layout (Sticky Header/Footer).
  * - feat(JS): Modernes ES6+ JavaScript, fetch API und verbesserte Fehlerbehandlung.
  * - fix(Security): Konsequente Nutzung von Output-Escaping und Nonces.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json' für Timestamps.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> data_editor_charaktere).
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
+
+// === KONFIGURATION ===
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
 
 // HINWEIS: Der Pfad zu den Charakter-PHP-Seiten wird direkt aus der DIRECTORY_PUBLIC_CHARAKTERE-Konstante abgeleitet.
 $charakterePhpPath = DIRECTORY_PUBLIC_CHARAKTERE . DIRECTORY_SEPARATOR;
@@ -55,19 +64,77 @@ function getRelativePath(string $from, string $to): string
 {
     $from = str_replace('\\', '/', $from);
     $to = str_replace('\\', '/', $to);
-    $from = explode('/', rtrim($from, '/'));
-    $to = explode('/', rtrim($to, '/'));
-    $toFilename = array_pop($to); // Dateinamen für später aufheben
-    while (count($from) && count($to) && ($from[0] == $to[0])) {
-        array_shift($from);
-        array_shift($to);
+    $fromArr = explode('/', rtrim($from, '/'));
+    $toArr = explode('/', rtrim($to, '/'));
+    $toFilename = array_pop($toArr); // Dateinamen für später aufheben
+
+    while (count($fromArr) && count($toArr) && ($fromArr[0] == $toArr[0])) {
+        array_shift($fromArr);
+        array_shift($toArr);
     }
-    $relativePath = str_repeat('../', count($from));
-    $relativePath .= implode('/', $to);
-    $relativePath .= '/' . $toFilename;
+    $relativePath = str_repeat('../', count($fromArr));
+    $relativePath .= implode('/', $toArr);
+    $relativePath .= ($relativePath ? '/' : '') . $toFilename;
     return $relativePath;
 }
 
+// --- Einstellungsverwaltung (Standardisiert) ---
+function loadGeneratorSettings(string $filePath, string $username, bool $debugMode): array
+{
+    $defaults = [
+        'last_run_timestamp' => null
+    ];
+
+    if (!file_exists($filePath)) {
+        if (!is_dir(dirname($filePath))) {
+            mkdir(dirname($filePath), 0755, true);
+        }
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
+        return $defaults;
+    }
+
+    $content = file_get_contents($filePath);
+    $data = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        if ($debugMode) {
+            error_log("[Charakter Editor] Config JSON korrupt oder leer. Lade Defaults.");
+        }
+        return $defaults;
+    }
+
+    $userSettings = $data['users'][$username]['data_editor_charaktere'] ?? [];
+    return array_replace_recursive($defaults, $userSettings);
+}
+
+function saveGeneratorSettings(string $filePath, string $username, array $settings, bool $debugMode): bool
+{
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $data = $decoded;
+        }
+    }
+
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    $currentGeneratorSettings = $data['users'][$username]['data_editor_charaktere'] ?? [];
+    $data['users'][$username]['data_editor_charaktere'] = array_replace_recursive($currentGeneratorSettings, $settings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
+}
 
 function loadJsonData(string $path): array
 {
@@ -124,7 +191,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } elseif (!file_exists($oldFilePath)) {
                         // Falls die alte Datei fehlte, erstelle die neue einfach
                         $filePath = $charakterePhpPath . str_replace(' ', '_', $newName) . '.php';
-                        // Logik siehe unten (CreatedCount) - DRY Prinzip hier leicht verletzt für Lesbarkeit im Loop
+                        $createdCount++; // Zählen wir hier dazu
+                        // Logik siehe unten
                     }
                 }
             } else {
@@ -142,6 +210,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 3. JSON Speichern
         if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))) {
+            // 4. Einstellungen (Zeitstempel) aktualisieren
+            $settingsData = [
+                'last_run_timestamp' => time()
+            ];
+            saveGeneratorSettings($configPath, $currentUser, $settingsData, $debugMode);
+
             $message = "Charakter-Daten erfolgreich gespeichert.";
             if ($createdCount > 0) {
                 $message .= " $createdCount PHP-Datei(en) erstellt.";
@@ -167,7 +241,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // === VIEW RENDERING ===
 $allCharaktereData = loadJsonData(Path::getDataPath('charaktere.json'));
-$lastSavedTimestamp = file_exists(Path::getDataPath('charaktere.json')) ? filemtime(Path::getDataPath('charaktere.json')) : null;
+
+// Zeitstempel aus den zentralen Settings laden
+$charSettings = loadGeneratorSettings($configPath, $currentUser, $debugMode);
+$lastSavedTimestamp = $charSettings['last_run_timestamp'];
 
 $pageTitle = 'Adminbereich - Charakter-Datenbank Editor';
 $pageHeader = 'Charakter-Datenbank Editor';
@@ -188,6 +265,8 @@ require_once Path::getPartialTemplatePath('header.php');
                 <p class="status-message status-info">Letzte Speicherung am
                     <?php echo date('d.m.Y \u\m H:i:s', $lastSavedTimestamp); ?> Uhr.
                 </p>
+            <?php else : ?>
+                <p class="status-message status-orange">Noch keine Speicherung erfasst.</p>
             <?php endif; ?>
         </div>
         <h2>Charakter-Datenbank Editor</h2>
@@ -344,6 +423,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const groupsContainer = document.getElementById('character-groups-container');
         const saveAllBtn = document.getElementById('save-all-btn');
         const messageBox = document.getElementById('message-box');
+        const lastRunContainer = document.getElementById('last-run-container');
 
         // Modals
         const editModal = document.getElementById('edit-char-modal');
@@ -434,14 +514,12 @@ require_once Path::getPartialTemplatePath('header.php');
                 const groupChars = characterData.groups[groupName] || [];
 
                 if (groupChars.length === 0) {
-                    // ÄNDERUNG: Nutzung der neuen CSS-Klasse statt Inline-Styles
                     listContainer.innerHTML = '<div class="char-list-empty">(Leer)</div>';
                 }
 
                 groupChars.forEach(charId => {
                     const char = characterData.characters[charId];
                     // Fallback für gelöschte IDs in Gruppen
-                    // ÄNDERUNG: Nutzung der neuen CSS-Klasse für ungültige IDs
                     const displayName = char ? char.name : `<span class="char-id-invalid">[ID ungültig: ${charId}]</span>`;
                     const picUrl = char ? char.pic_url : '';
                     const imgSrc = picUrl ? `${charProfileUrlBase}/${picUrl}` : placeholderUrl;
@@ -504,6 +582,20 @@ require_once Path::getPartialTemplatePath('header.php');
                 messageBox.style.display = 'none';
                 messageBox.classList.remove('visible');
             }, duration);
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            const str = `Letzte Speicherung am ${now.toLocaleDateString()} um ${now.toLocaleTimeString()} Uhr.`;
+            if (lastRunContainer) {
+                let p = lastRunContainer.querySelector('p');
+                if(!p) {
+                    p = document.createElement('p');
+                    p.className = 'status-message status-info';
+                    lastRunContainer.appendChild(p);
+                }
+                p.textContent = str;
+            }
         }
 
         // --- MODAL LOGIK ---
@@ -779,7 +871,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     if (response.ok && data.success) {
                         characterData = dataToSave; // State update
                         showMessage(data.message, 'green');
-                        // Optional: Timestamp aktualisieren (Reload oder JS update)
+                        updateTimestamp(); // UI Update
                     } else {
                         showMessage(data.message || 'Ein Fehler ist aufgetreten.', 'red');
                     }
