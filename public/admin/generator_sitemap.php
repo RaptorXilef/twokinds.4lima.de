@@ -28,6 +28,9 @@
  * - Komplettes Refactoring auf Admin-Standard (SCSS, User-Config, Layout).
  * - Fix: URL-Pfadbereinigung (kein /./ mehr) und ISO-8601 Datumsformat (mit Uhrzeit).
  * - Fix: Aggressive Pfad-Bereinigung (Regex) gegen "/./" Fehler.
+ * - refactor(Config): Harmonisierung der Settings-Struktur (Flaches Array statt Verschachtelung).
+ * - refactor(Config): Nutzung von 'admin/config_generator_settings.json'.
+ * - fix(Logic): Korrekter Zugriff auf Benutzereinstellungen.
  */
 
 declare(strict_types=1);
@@ -45,11 +48,10 @@ $currentUser = $_SESSION['admin_username'] ?? 'default';
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, string $username): array
 {
+    // FIX: Flache Struktur für Defaults, konsistent mit anderen Editoren
     $defaults = [
-        'sitemap_generator' => [
-            'last_run_timestamp' => null,
-            'entries_count' => 0
-        ]
+        'last_run_timestamp' => null,
+        'entries_count' => 0
     ];
 
     if (!file_exists($filePath)) {
@@ -68,7 +70,10 @@ function loadGeneratorSettings(string $filePath, string $username): array
         return $defaults;
     }
 
-    $userSettings = $data['users'][$username]['sitemap_generator'] ?? [];
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['generator_sitemap'] ?? [];
+
+    // Merge mit Defaults
     return array_replace_recursive($defaults, $userSettings);
 }
 
@@ -90,8 +95,8 @@ function saveGeneratorSettings(string $filePath, string $username, array $newSet
         $data['users'][$username] = [];
     }
 
-    $currentData = $data['users'][$username]['sitemap_generator'] ?? [];
-    $data['users'][$username]['sitemap_generator'] = array_replace_recursive($currentData, $newSettings);
+    $currentData = $data['users'][$username]['generator_sitemap'] ?? [];
+    $data['users'][$username]['generator_sitemap'] = array_replace_recursive($currentData, $newSettings);
 
     return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
@@ -150,7 +155,7 @@ function generateSitemap(): array
             $urlNode->appendChild($dom->createElement('loc', $baseUrl . '/' . $loc));
 
             if (isset($page['lastmod']) && !empty($page['lastmod'])) {
-                // Wenn Datum manuell in JSON steht, übernehmen wir es (sollte idealerweise schon ISO 8601 sein)
+                // Wenn Datum manuell in JSON steht, übernehmen wir es
                 $urlNode->appendChild($dom->createElement('lastmod', $page['lastmod']));
             } else {
                 // FIX: ISO 8601 (mit Uhrzeit)
@@ -171,12 +176,13 @@ function generateSitemap(): array
     }
 
     // 2. Comic Seiten verarbeiten
-    $comics = $comicData['comics'] ?? $comicData;
+    // Support für v1 (direktes Array) und v2 (unter 'comics' Key)
+    $comics = (isset($comicData['schema_version']) && $comicData['schema_version'] >= 2) ? ($comicData['comics'] ?? []) : $comicData;
 
     ksort($comics);
 
     $comicChangefreq = 'monthly';
-    $comicPriority = '0.8'; // Auf 0.8 angepasst wie gewünscht
+    $comicPriority = '0.8';
 
     $comicPhpDir = defined('DIRECTORY_PUBLIC_COMIC') ? DIRECTORY_PUBLIC_COMIC : $publicDir . '/comic';
 
@@ -219,8 +225,8 @@ function generateSitemap(): array
 }
 
 // --- LOGIK ---
-$settings = loadGeneratorSettings($configPath, $currentUser);
-$sitemapSettings = $settings['sitemap_generator'];
+// FIX: Variable direkt nutzen, da loadGeneratorSettings nun flach zurückgibt
+$sitemapSettings = loadGeneratorSettings($configPath, $currentUser);
 
 // AJAX Handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_sitemap') {
@@ -264,6 +270,8 @@ require_once Path::getPartialTemplatePath('header.php');
                         <?php echo date('d.m.Y \u\m H:i:s', $sitemapSettings['last_run_timestamp']); ?> Uhr
                         (<?php echo $sitemapSettings['entries_count']; ?> URLs).
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch keine Generierung durchgeführt.</p>
                 <?php endif; ?>
             </div>
             <h2>Sitemap Generator</h2>
