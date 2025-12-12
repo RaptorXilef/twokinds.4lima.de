@@ -10,7 +10,9 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
- * @since 2.0.0 Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token. Die ursprüngliche UI und PHP-Logik bleiben vollständig erhalten.
+ * @since 2.0.0 - 4.0.0
+ * - Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token. Die ursprüngliche UI und PHP-
+ *    Logik bleiben vollständig erhalten.
  *  - Umstellung auf zentrale Pfad-Konstanten.
  *  - Direkte Verwendung von Konstanten anstelle von temporären Variablen.
  *  - Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
@@ -28,7 +30,12 @@
  * - fix(UI): Zeilenumbruch vor Klammern im Titel und konfigurierbare Textkürzung.
  * - fix(UI): HTML-Rendering in Tabellenvorschau aktiviert (Links anklickbar), wenn Kürzung inaktiv.
  * - refactor(CSS): Bereinigung verbliebener Inline-Styles.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
+ * - refactor(Logic): Optimierte Settings-Lade-Logik (Merge mit Defaults).
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -44,26 +51,77 @@ if (!defined('TRUNCATE_ARCHIVE_DESCRIPTION')) {
     define('TRUNCATE_ARCHIVE_DESCRIPTION', false);
 }
 
+// Pfad zur zentralen Admin-Konfiguration
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+// Aktuellen Benutzer aus der Session holen (Fallback 'default')
+$currentUser = $_SESSION['admin_username'] ?? 'default';
+
 // === BACKEND LOGIK ===
 
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+function loadGeneratorSettings(string $filePath, string $username, bool $debugMode): array
 {
-    $defaults = ['data_editor_archiv' => ['last_run_timestamp' => null]];
+    // Standardwerte (flache Struktur, da wir spezifisch für den Key laden)
+    $defaults = [
+        'last_run_timestamp' => null
+    ];
+
     if (!file_exists($filePath)) {
         if (!is_dir(dirname($filePath))) {
             mkdir(dirname($filePath), 0755, true);
         }
-        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        // Datei initial erstellen (mit leerem users Array)
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
-    return (json_last_error() !== JSON_ERROR_NONE || !isset($settings['data_editor_archiv'])) ? $defaults : $settings;
+    $data = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        if ($debugMode) {
+            error_log("[Archiv Editor] Config JSON korrupt oder leer. Lade Defaults.");
+        }
+        return $defaults;
+    }
+
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['data_editor_archiv'] ?? [];
+
+    // Merge mit Defaults
+    return array_replace_recursive($defaults, $userSettings);
 }
 
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+function saveGeneratorSettings(string $filePath, string $username, array $settings, bool $debugMode): bool
 {
-    return file_put_contents($filePath, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
+    // Sicherstellen, dass das Verzeichnis existiert
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
+    // Existierende Daten laden, um andere User nicht zu überschreiben
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $data = $decoded;
+        }
+    }
+
+    // Struktur sicherstellen
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    // Einstellungen für data_editor_archiv aktualisieren (Merge mit bestehenden User-Daten dieses Generators)
+    $currentGeneratorSettings = $data['users'][$username]['data_editor_archiv'] ?? [];
+    $data['users'][$username]['data_editor_archiv'] = array_replace_recursive($currentGeneratorSettings, $settings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
 }
 
 function getChapterSortValue(array $chapter): array
@@ -102,7 +160,7 @@ function loadArchiveChapters(string $path, bool $debugMode): array
             return $sortA[0] <=> $sortB[0];
         }
         if ($sortA[0] === 1) {
-            return strnatcmp($sortA[1], $sortB[1]);
+            return strnatcmp((string)$sortA[1], (string)$sortB[1]);
         }
         return $sortA[1] <=> $sortB[1];
     });
@@ -118,7 +176,7 @@ function saveArchiveChapters(string $path, array $data, bool $debugMode): bool
             return $sortA[0] <=> $sortB[0];
         }
         if ($sortA[0] === 1) {
-            return strnatcmp($sortA[1], $sortB[1]);
+            return strnatcmp((string)$sortA[1], (string)$sortB[1]);
         }
         return $sortA[1] <=> $sortB[1];
     });
@@ -138,7 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = ['success' => false, 'message' => 'Unbekannte Aktion.'];
 
     $archiveChaptersJsonPath = Path::getDataPath('archive_chapters.json');
-    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
+    // Nutze globale $configPath Variable (definiert oben)
+    $generatorSettingsJsonPath = $configPath;
 
     switch ($action) {
         case 'save_archive':
@@ -156,9 +215,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
-            $currentSettings['data_editor_archiv']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $currentUser, $debugMode);
+            // Timestamp aktualisieren
+            $currentSettings['last_run_timestamp'] = time();
+
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentUser, $currentSettings, $debugMode)) {
                 $response['success'] = true;
             } else {
                 $response['message'] = 'Fehler beim Speichern der Einstellungen.';
@@ -170,8 +231,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // === DATEN LADEN ===
-$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
-$archiveSettings = $settings['data_editor_archiv'];
+// Einstellungen für den aktuellen Benutzer laden
+$archiveSettings = loadGeneratorSettings($configPath, $currentUser, $debugMode);
 $chapters = loadArchiveChapters(Path::getDataPath('archive_chapters.json'), $debugMode);
 
 // WICHTIG: Sicheres Encoding für JS-Übergabe
@@ -189,7 +250,7 @@ $pageTitle = 'Adminbereich - Archiv Editor';
 $pageHeader = 'Archiv Editor';
 $robotsContent = 'noindex, nofollow';
 
-$itemsPerPage = ENTRIES_PER_PAGE_ARCHIVE;
+$itemsPerPage = (int)ENTRIES_PER_PAGE_ARCHIVE;
 // Übergabe der Konstante an JS (Bool -> String 'true'/'false')
 $truncateDesc = TRUNCATE_ARCHIVE_DESCRIPTION ? 'true' : 'false';
 
