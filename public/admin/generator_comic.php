@@ -25,26 +25,32 @@
  *
  * @since 5.0.0
  * - Komplettes Refactoring auf Admin-Standard (Worker-Pattern, SCSS Layout).
+ * - refactor(Config): Harmonisierung der Settings-Struktur (Flaches Array).
+ * - refactor(Config): Nutzung von 'admin/config_generator_settings.json'.
+ * - fix(Logic): Korrekter Zugriff auf Benutzereinstellungen und Fallback-Anzeige.
  */
 
 declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
+
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
+
 // === KONFIGURATION ===
 $configPath = Path::getConfigPath('admin/config_generator_settings.json');
 $currentUser = $_SESSION['admin_username'] ?? 'default';
+
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, string $username): array
 {
+    // FIX: Flache Struktur für Defaults
     $defaults = [
-        'comic_generator' => [
-            'last_run_timestamp' => null,
-            'pages_created' => 0
-        ]
+        'last_run_timestamp' => null,
+        'pages_created' => 0
     ];
+
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
         if (!is_dir($dir)) {
@@ -56,11 +62,15 @@ function loadGeneratorSettings(string $filePath, string $username): array
 
     $content = file_get_contents($filePath);
     $data = json_decode($content, true);
+
     if (json_last_error() !== JSON_ERROR_NONE) {
         return $defaults;
     }
 
-    $userSettings = $data['users'][$username]['comic_generator'] ?? [];
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['generator_comic'] ?? [];
+
+    // Merge mit Defaults
     return array_replace_recursive($defaults, $userSettings);
 }
 
@@ -82,18 +92,20 @@ function saveGeneratorSettings(string $filePath, string $username, array $newSet
         $data['users'][$username] = [];
     }
 
-    $currentData = $data['users'][$username]['comic_generator'] ?? [];
-    $data['users'][$username]['comic_generator'] = array_replace_recursive($currentData, $newSettings);
+    $currentData = $data['users'][$username]['generator_comic'] ?? [];
+    $data['users'][$username]['generator_comic'] = array_replace_recursive($currentData, $newSettings);
+
     return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
 // --- LOGIK: Fehlende Seiten finden ---
 $comicVarPath = Path::getDataPath('comic_var.json');
 $missingPages = [];
+
 if (file_exists($comicVarPath)) {
     $comicData = json_decode(file_get_contents($comicVarPath), true);
-    $comics = $comicData['comics'] ?? $comicData;
-// Support v1/v2
+    // Support v1/v2
+    $comics = (isset($comicData['schema_version']) && $comicData['schema_version'] >= 2) ? ($comicData['comics'] ?? []) : $comicData;
 
     foreach ($comics as $id => $data) {
         $targetFile = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
@@ -104,19 +116,22 @@ if (file_exists($comicVarPath)) {
 }
 
 $missingIdsJson = json_encode(array_values($missingPages));
-// Settings laden
-$settings = loadGeneratorSettings($configPath, $currentUser);
-$comicSettings = $settings['comic_generator'];
+
+// Settings laden (flaches Array)
+$comicSettings = loadGeneratorSettings($configPath, $currentUser);
+
 // AJAX Handler (nur Settings speichern, Generierung läuft über Worker)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_settings') {
     verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
+
     $count = (int)($_POST['count'] ?? 0);
     $newSettings = [
         'last_run_timestamp' => time(),
         'pages_created' => $count
     ];
+
     if (saveGeneratorSettings($configPath, $currentUser, $newSettings)) {
         echo json_encode(['success' => true, 'timestamp' => $newSettings['last_run_timestamp']]);
     } else {
@@ -135,11 +150,13 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- HEADER -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if ($comicSettings['last_run_timestamp']) : ?>
+                <?php if (!empty($comicSettings['last_run_timestamp'])) : ?>
                     <p class="status-message status-info">Letzter Lauf am
                         <?php echo date('d.m.Y \u\m H:i:s', $comicSettings['last_run_timestamp']); ?> Uhr
                         (<?php echo $comicSettings['pages_created']; ?> Seiten erstellt).
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch keine Generierung durchgeführt.</p>
                 <?php endif; ?>
             </div>
             <h2>Comic-Seiten Generator</h2>
