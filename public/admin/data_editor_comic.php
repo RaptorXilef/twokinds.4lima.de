@@ -23,18 +23,31 @@
  *  - Robustes, CSP-konformes Fallback für Charakterbilder und Text-Korrekturen (Zeilenumbruch).
  * - Fixes:
  *  - Diverse Fehlerbehebungen (Löschen, "Neu"-Dialog, JS-Optimierungen, Bildanzeige).
+ *
  * @since     5.0.0
- *  - style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
- *  - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_COMIC_DESCRIPTION) hinzugefügt.
- *  - refactor(Config): Nutzung spezifischer Konstanten (ENTRIES_PER_PAGE_COMIC, TRUNCATE_COMIC_DESCRIPTION).
- *  - refactor(CSS): Bereinigung verbliebener Inline-Styles.
+ * - style(UI): Modal-Layout überarbeitet; Buttons sind nun am unteren Rand fixiert ("schwebend"), Inhalt scrollbar.
+ * - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_COMIC_DESCRIPTION) hinzugefügt.
+ * - refactor(Config): Nutzung spezifischer Konstanten (ENTRIES_PER_PAGE_COMIC, TRUNCATE_COMIC_DESCRIPTION).
+ * - refactor(CSS): Bereinigung verbliebener Inline-Styles.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json' für Timestamps.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> data_editor_comic).
+ * - fix(JS): saveSettings nutzt nun FormData statt JSON, damit PHP $_POST korrekt lesen kann.
+ * - fix(UI): Anzeige für "Noch keine Speicherung" hinzugefügt.
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
+
+// === KONFIGURATION ===
+// Neuer Pfad im Unterordner 'admin'
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
 
 // === VARIABLEN ===
 if (!defined('ENTRIES_PER_PAGE_COMIC')) {
@@ -61,33 +74,73 @@ function getRelativePath(string $from, string $to): string
 {
     $from = str_replace('\\', '/', $from);
     $to = str_replace('\\', '/', $to);
-    $from = explode('/', rtrim($from, '/'));
-    $to = explode('/', rtrim($to, '/'));
-    $toFilename = array_pop($to);
-    while (count($from) && count($to) && ($from[0] == $to[0])) {
-        array_shift($from);
-        array_shift($to);
+    $fromArr = explode('/', rtrim($from, '/'));
+    $toArr = explode('/', rtrim($to, '/'));
+    $toFilename = array_pop($toArr);
+    while (count($fromArr) && count($toArr) && ($fromArr[0] == $toArr[0])) {
+        array_shift($fromArr);
+        array_shift($toArr);
     }
-    return str_repeat('../', count($from)) . implode('/', $to) . '/' . $toFilename;
+    return str_repeat('../', count($fromArr)) . implode('/', $toArr) . '/' . $toFilename;
 }
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+
+function loadGeneratorSettings(string $filePath, string $username, bool $debugMode): array
 {
-    $defaults = ['data_editor_comic' => ['last_run_timestamp' => null]];
+    $defaults = [
+        'last_run_timestamp' => null
+    ];
+
     if (!file_exists($filePath)) {
         if (!is_dir(dirname($filePath))) {
             mkdir(dirname($filePath), 0755, true);
         }
-        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
-    return (json_last_error() !== JSON_ERROR_NONE || !isset($settings['data_editor_comic'])) ? $defaults : $settings;
+    $data = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        if ($debugMode) {
+            error_log("[Comic Editor] Config JSON korrupt oder leer. Lade Defaults.");
+        }
+        return $defaults;
+    }
+
+    $userSettings = $data['users'][$username]['data_editor_comic'] ?? [];
+    return array_replace_recursive($defaults, $userSettings);
 }
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+
+function saveGeneratorSettings(string $filePath, string $username, array $settings, bool $debugMode): bool
 {
-    return file_put_contents($filePath, json_encode($settings, JSON_PRETTY_PRINT)) !== false;
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $data = $decoded;
+        }
+    }
+
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    $currentGeneratorSettings = $data['users'][$username]['data_editor_comic'] ?? [];
+    $data['users'][$username]['data_editor_comic'] = array_replace_recursive($currentGeneratorSettings, $settings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
 }
+
 function loadJsonData(string $path, bool $debugMode): array
 {
     if (!file_exists($path) || filesize($path) === 0) {
@@ -96,6 +149,7 @@ function loadJsonData(string $path, bool $debugMode): array
     $data = json_decode(file_get_contents($path), true);
     return is_array($data) ? $data : [];
 }
+
 function loadCharacterDataWithSchema(string $path): array
 {
     $charData = loadJsonData($path, false);
@@ -104,11 +158,13 @@ function loadCharacterDataWithSchema(string $path): array
     }
     return ['charactersById' => $charData['characters'] ?? [], 'groupsWithChars' => $charData['groups'] ?? [], 'schema_version' => $charData['schema_version']];
 }
+
 function saveComicData(string $path, array $comics, bool $debugMode): bool
 {
     ksort($comics);
     return file_put_contents($path, json_encode(['schema_version' => 2, 'comics' => $comics], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) !== false;
 }
+
 function getComicIdsFromImages(array $dirs, bool $debugMode): array
 {
     $imageIds = [];
@@ -125,6 +181,7 @@ function getComicIdsFromImages(array $dirs, bool $debugMode): array
     }
     return array_keys($imageIds);
 }
+
 function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
 {
     $phpIds = [];
@@ -137,6 +194,7 @@ function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
     }
     return array_keys($phpIds);
 }
+
 function get_image_cache_local(string $cachePath): array
 {
     if (!file_exists($cachePath)) {
@@ -146,6 +204,7 @@ function get_image_cache_local(string $cachePath): array
     return is_array($data) ? $data : [];
 }
 
+// --- AJAX Handler ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
     ob_end_clean();
@@ -154,7 +213,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = ['success' => false, 'message' => 'Unbekannte Aktion.'];
     $comicVarJsonPath = Path::getDataPath('comic_var.json');
     $comicImageCacheJsonPath = Path::getCachePath('comic_image_cache.json');
-    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
+    // Nutze globale Variable $configPath
+    $generatorSettingsJsonPath = $configPath;
 
     switch ($action) {
         case 'save_comic_data':
@@ -199,10 +259,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $s = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
-            $s['data_editor_comic']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($generatorSettingsJsonPath, $s, $debugMode)) {
+            $s = loadGeneratorSettings($generatorSettingsJsonPath, $currentUser, $debugMode);
+            $s['last_run_timestamp'] = time();
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentUser, $s, $debugMode)) {
                 $response['success'] = true;
+            } else {
+                $response['message'] = 'Fehler beim Speichern der Einstellungen.';
             }
             break;
         case 'update_original_url_cache':
@@ -231,8 +293,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
-$comicEditorSettings = $settings['data_editor_comic'];
+// === VIEW DATEN LADEN ===
+$comicEditorSettings = loadGeneratorSettings($configPath, $currentUser, $debugMode);
 $decodedData = loadJsonData(Path::getDataPath('comic_var.json'), $debugMode);
 $jsonData = (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : $decodedData;
 $charaktereData = loadCharacterDataWithSchema(Path::getDataPath('charaktere.json'));
@@ -291,10 +353,12 @@ require_once Path::getPartialTemplatePath('header.php');
     <div class="content-section">
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if ($comicEditorSettings['last_run_timestamp']) : ?>
+                <?php if (!empty($comicEditorSettings['last_run_timestamp'])) : ?>
                     <p class="status-message status-info">Letzte Speicherung am
                         <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch keine Speicherung erfasst.</p>
                 <?php endif; ?>
             </div>
             <h2>Comic Daten Editor</h2>
@@ -636,21 +700,20 @@ require_once Path::getPartialTemplatePath('header.php');
             if (!pElement) {
                 pElement = document.createElement('p');
                 pElement.className = 'status-message status-info';
-                lastRunContainer.prepend(pElement);
+                lastRunContainer.innerHTML = ''; // Container leeren
+                lastRunContainer.appendChild(pElement);
             }
             pElement.innerHTML = newStatusText;
         }
 
         async function saveSettings() {
+            const formData = new FormData();
+            formData.append('action', 'save_settings');
+            formData.append('csrf_token', csrfToken);
+
             await fetch(window.location.href, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'save_settings',
-                    csrf_token: csrfToken
-                })
+                body: formData
             });
         }
 
@@ -776,37 +839,6 @@ require_once Path::getPartialTemplatePath('header.php');
         };
         modalCancelBtn.addEventListener('click', cancelAction);
         modalCloseBtn.addEventListener('click', cancelAction);
-
-        function updateTimestamp() {
-            const now = new Date();
-            const date = now.toLocaleDateString('de-DE', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-            const time = now.toLocaleTimeString('de-DE');
-            const newStatusText = `Letzte Speicherung am ${date} um ${time} Uhr.`;
-            let pElement = lastRunContainer.querySelector('.status-message');
-            if (!pElement) {
-                pElement = document.createElement('p');
-                pElement.className = 'status-message status-info';
-                lastRunContainer.prepend(pElement);
-            }
-            pElement.innerHTML = newStatusText;
-        }
-
-        async function saveSettings() {
-            await fetch(window.location.href, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'save_settings',
-                    csrf_token: csrfToken
-                })
-            });
-        }
 
         function updateImagePreviewsWithDebounce() {
             clearTimeout(debounceTimer);
