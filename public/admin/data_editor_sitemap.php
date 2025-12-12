@@ -10,17 +10,26 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
- * @since     2.3.0 Korrektur des AJAX-Handlers zur korrekten Verarbeitung von FormData und CSRF-Token.
- * @since     2.4.0 Umstellung auf zentrale Pfad-Konstanten und direkte Verwendung.
- * @since     3.0.0 Implementierung einer fortschrittlichen Paginierung und Code-Modernisierung.
- * @since     4.0.0 Vollständige Umstellung auf die dynamische Path-Helfer-Klasse.
+* @since 2.0.0 - 4.0.0
+ *    ARCHITEKTUR & CORE
+ *    - Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und zentrale Pfad-Konstanten.
+ *    - Code-Modernisierung sowie Korrektur des AJAX-Handlers (FormData, CSRF-Token).
+ *
+ *    UI & FUNKTIONALITÄT
+ *    - Implementierung einer fortschrittlichen Paginierung.
+ *
  * @since     5.0.0
- *  - refactor(UI): Design an Admin-Standard angepasst (7-1 SCSS), Inline-Styles entfernt, Info-Header hinzugefügt.
- *  - fix(Sort): Comic-Seiten werden nun absteigend sortiert (Neueste zuerst).
- *  - refactor(Config): Nutzung der spezifischen Konstante ENTRIES_PER_PAGE_SITEMAP.
- *  - refactor(CSS): Inline-Styles durch SCSS-Klassen ersetzt.
- *  - refactor(CSS): Bereinigung verbliebener Inline-Styles im JavaScript.
+ * - refactor(UI): Design an Admin-Standard angepasst (7-1 SCSS), Inline-Styles entfernt, Info-Header hinzugefügt.
+ * - fix(Sort): Comic-Seiten werden nun absteigend sortiert (Neueste zuerst).
+ * - refactor(Config): Nutzung der spezifischen Konstante ENTRIES_PER_PAGE_SITEMAP.
+ * - refactor(CSS): Inline-Styles durch SCSS-Klassen ersetzt.
+ * - refactor(CSS): Bereinigung verbliebener Inline-Styles im JavaScript.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> data_editor_sitemap).
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -33,35 +42,66 @@ if (!defined('ENTRIES_PER_PAGE_SITEMAP')) {
     define('ENTRIES_PER_PAGE_SITEMAP', 50);
 }
 
+// Pfad zur zentralen Admin-Konfiguration
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
+
 // --- HILFSFUNKTIONEN ---
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+function loadGeneratorSettings(string $filePath, string $username, bool $debugMode): array
 {
     $defaults = [
-        'data_editor_sitemap' => ['last_run_timestamp' => null]
+        'last_run_timestamp' => null
     ];
+
     if (!file_exists($filePath)) {
-        $dir = dirname($filePath);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
+        if (!is_dir(dirname($filePath))) {
+            mkdir(dirname($filePath), 0755, true);
         }
-        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
+    $data = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        if ($debugMode) {
+            error_log("[Sitemap Editor] Config JSON korrupt oder leer. Lade Defaults.");
+        }
         return $defaults;
     }
-    if (!isset($settings['data_editor_sitemap'])) {
-        $settings['data_editor_sitemap'] = $defaults['data_editor_sitemap'];
-    }
-    return $settings;
+
+    $userSettings = $data['users'][$username]['data_editor_sitemap'] ?? [];
+    return array_replace_recursive($defaults, $userSettings);
 }
 
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+function saveGeneratorSettings(string $filePath, string $username, array $settings, bool $debugMode): bool
 {
-    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
-    return file_put_contents($filePath, $jsonContent) !== false;
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $data = $decoded;
+        }
+    }
+
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    $currentGeneratorSettings = $data['users'][$username]['data_editor_sitemap'] ?? [];
+    $data['users'][$username]['data_editor_sitemap'] = array_replace_recursive($currentGeneratorSettings, $settings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
 }
 
 function loadSitemapData(string $path, bool $debugMode): array
@@ -141,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = ['success' => false, 'message' => 'Unbekannte Aktion oder fehlende Daten.'];
 
     $sitemapJsonPath = Path::getDataPath('sitemap.json');
-    $generatorSettingsJsonPath = Path::getConfigPath('config_generator_settings.json');
+    $generatorSettingsJsonPath = $configPath;
 
 
     switch ($action) {
@@ -160,9 +200,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             break;
         case 'save_settings':
-            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $debugMode);
-            $currentSettings['data_editor_sitemap']['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentSettings, $debugMode)) {
+            $currentSettings = loadGeneratorSettings($generatorSettingsJsonPath, $currentUser, $debugMode);
+            $currentSettings['last_run_timestamp'] = time();
+
+            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentUser, $currentSettings, $debugMode)) {
                 $response['success'] = true;
                 $response['message'] = 'Zeitstempel gespeichert.';
             } else {
@@ -175,8 +216,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
-$sitemapSettings = $settings['data_editor_sitemap'];
+// === DATEN LADEN ===
+$sitemapSettings = loadGeneratorSettings($configPath, $currentUser, $debugMode);
 $sitemapData = loadSitemapData(Path::getDataPath('sitemap.json'), $debugMode);
 $existingPages = $sitemapData['pages'];
 $generalPages = [];
@@ -211,9 +252,9 @@ $pageHeader = 'Sitemap Editor';
 $robotsContent = 'noindex, nofollow';
 
 // Konstante an JS übergeben (Paginierung für Comics)
-$itemsPerPage = ENTRIES_PER_PAGE_SITEMAP;
+$itemsPerPage = (int)ENTRIES_PER_PAGE_SITEMAP;
 
-$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="[https://code.jquery.com/jquery-3.7.1.min.js](https://code.jquery.com/jquery-3.7.1.min.js)"></script>';
+$additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>';
 
 require_once Path::getPartialTemplatePath('header.php');
 ?>
@@ -227,6 +268,8 @@ require_once Path::getPartialTemplatePath('header.php');
                     <p class="status-message status-info">Letzte Speicherung am
                         <?php echo date('d.m.Y \u\m H:i:s', $sitemapSettings['last_run_timestamp']); ?> Uhr.
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch keine Speicherung erfasst.</p>
                 <?php endif; ?>
             </div>
             <h2>Sitemap Editor</h2>
@@ -430,7 +473,8 @@ require_once Path::getPartialTemplatePath('header.php');
             if (!pElement) {
                 pElement = document.createElement('p');
                 pElement.className = 'status-message status-info';
-                lastRunContainer.prepend(pElement);
+                lastRunContainer.innerHTML = ''; // Container leeren
+                lastRunContainer.appendChild(pElement);
             }
             pElement.innerHTML = newStatusText;
         }
