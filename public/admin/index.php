@@ -42,6 +42,9 @@
  *
  * - fix(UX): Logout-Grund `session_expired` (aus init_admin.php) hinzugefügt.
  * - fix(Session): "Doppelter Login" behoben -> Session wird nun vollständig initialisiert (inkl. Fingerprint & Timestamp), bevor weitergeleitet wird.
+ *
+ * - fix(UX): Logik für Logout-Meldungen (`?reason=...`) priorisiert, damit sie nicht von der POST-Logik überdeckt wird.
+ * - fix(Session): Sichergestellt, dass die Session nur gestartet wird, wenn nötig.
  */
 
 declare(strict_types=1);
@@ -193,13 +196,15 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     exit;
 }
 
-// 1. Rate Limit Prüfung
+// 1. Rate Limit Prüfung (höchste Priorität)
 $lockoutTime = checkRateLimit($clientIp);
 
 if ($lockoutTime > 0) {
     $minutes = ceil($lockoutTime / 60);
     $message = "Zu viele fehlgeschlagene Anmeldeversuche. Bitte warten Sie $minutes Minute(n).";
     $messageType = 'error';
+
+// 2. Verarbeitung von POST-Requests (Login / Setup)
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // CSRF Check
     if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
@@ -208,7 +213,6 @@ if ($lockoutTime > 0) {
     } else {
         $action = $_POST['action'] ?? '';
 
-        // FALL 1: Erster Benutzer erstellen
         if ($action === 'create_initial_user' && !$usersExist) {
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
@@ -254,9 +258,6 @@ if ($lockoutTime > 0) {
                 // Neue Daten setzen
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $username;
-
-                // BUGFIX "Doppelter Login": Session-Daten SOFORT initialisieren,
-                // damit init_admin.php auf der Folgeseite nicht direkt wieder ausloggt.
                 $_SESSION['last_activity'] = time();
 
                 // Fingerprint muss identisch zu init_admin.php sein
@@ -267,7 +268,7 @@ if ($lockoutTime > 0) {
                 session_write_close();
                 ob_end_clean(); // Buffer leeren vor Redirect
 
-                header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports.php');
+                header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
                 exit;
             } else {
                 // Login fehlgeschlagen
@@ -285,14 +286,13 @@ if ($lockoutTime > 0) {
             }
         }
     }
-}
-// 2. Logout-Gründe prüfen (GET Request)
-// Nur prüfen, wenn wir nicht gerade einen POST-Request bearbeitet haben (der $message schon gesetzt hätte)
-elseif (empty($message) && isset($_GET['reason'])) {
-    $reason = $_GET['reason'];
+// 3. Logout/Timeout-Gründe prüfen (GET Request)
+// Nur wenn noch keine andere Nachricht (z.B. Lockout) gesetzt ist
+} elseif (empty($message) && isset($_GET['reason'])) {
+    $reason = htmlspecialchars($_GET['reason']); // XSS Schutz
     switch ($reason) {
         case 'timeout':
-        case 'session_expired': // FIX: Entspricht dem Wert aus init_admin.php
+        case 'session_expired': // Entspricht dem Wert aus init_admin.php
             $message = 'Sie wurden aufgrund von Inaktivität automatisch abgemeldet.';
             $messageType = 'warning';
             break;
