@@ -12,11 +12,12 @@
  * @since     1.0.1 Fügt zwei include_once Anweisungen hinzu, um wichtige Pfad-Konstanten zu laden.
  * @since     1.0.2 Entfernt includes wieder.
  * @since     5.0.0 Füge KONSTANTEN TRUNCATE_DESCRIPTION und ENTRIES_PER_PAGE hinzu
- *  - Füge seitenspezifische Konstanten hinzu.
+ * - Füge seitenspezifische Konstanten hinzu.
+ * - Hinzufügen von SESSION_TIMEOUT_SECONDS und SESSION_WARNING_SECONDS.
  */
 
 // Setze auf true, um DEBUG-Meldungen zu aktivieren, auf false, um sie zu deaktivieren.
-$debugMode = false;
+$debugMode = true;
 // true = AN, false = AUS
 
 // Stellt ein, ob interne Links die Dateiendung .php bekommen oder nicht.
@@ -44,7 +45,26 @@ define('ENTRIES_PER_PAGE_SITEMAP', ENTRIES_PER_PAGE);
 
 // Legt fest, ob die Beschreibungen beim Archiv-Editor gekürzt oder voll angezeigt werden. Standart ist: false (nicht kürzen)
 define('TRUNCATE_DESCRIPTION', true);
-
+// Legt fest, ob die Beschreibungen beim Archiv-Editor gekürzt oder voll angezeigt werden. Standart ist: false (nicht kürzen)
 define('TRUNCATE_ARCHIVE_DESCRIPTION', TRUNCATE_DESCRIPTION);
+// Legt fest, ob die Beschreibungen beim Comic-Editor gekürzt oder voll angezeigt werden. Standart ist: false (nicht kürzen)
 define('TRUNCATE_COMIC_DESCRIPTION', TRUNCATE_DESCRIPTION);
+// Legt fest, ob die Beschreibungen beim Report-Editor gekürzt oder voll angezeigt werden. Standart ist: false (nicht kürzen)
 define('TRUNCATE_REPORT_DESCRIPTION', TRUNCATE_DESCRIPTION);
+
+
+// ###################################################################
+// Session & Sicherheit:
+
+// Zeit in Sekunden bis zum automatischen Logout bei Inaktivität.
+// Standard: 600 (10 Minuten)
+define('SESSION_TIMEOUT_SECONDS', 600);
+
+// Zeit in Sekunden, BEVOR der Timeout eintritt, wann die Warnung angezeigt werden soll.
+// Standard: 60 (1 Minute vor Ablauf)
+define('SESSION_WARNING_SECONDS', 60);
+
+// Zeit in Sekunden, BEVOR der Session-Key werden soll.
+// Ich empfehle diesen Wert nicht niedriger als 300 und höher als 3600 zu setzen (5 Min bis 1 Stunde)
+// Standard: 900 (alle 15 Minuten)
+define('SESSION_REGENERATION', 900);

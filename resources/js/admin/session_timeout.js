@@ -16,14 +16,15 @@
  * - Wiederherstellung des visuellen Countdowns und der Activity-Handler.
  * - Konfiguration auf "Zeit vor Ablauf" umgestellt (statt "Zeit nach Start").
  * - Übergabe des Timeout-Grundes an den Logout-Prozess (forceLogout Parameter).
+ * - Dynamische Werte aus window.sessionConfig (PHP) nutzen.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Zeit in Sekunden (Muss mit PHP SESSION_TIMEOUT_SECONDS übereinstimmen)
-    const sessionTimeoutInSeconds = 600; // 10 Minuten
+    // Werte aus PHP-Konfiguration laden (via window.sessionConfig) oder Defaults nutzen
+    const config = window.sessionConfig || {};
 
-    // NEU: Warnung X Sekunden BEVOR die Session abläuft (z.B. 60 Sekunden Restzeit)
-    const warningBeforeTimeoutInSeconds = 60;
+    const sessionTimeoutInSeconds = config.timeoutSeconds || 600; // Default: 10 Min
+    const warningBeforeTimeoutInSeconds = config.warningSeconds || 60; // Default: 60 Sek
 
     let warningTimer;
     let logoutTimer;

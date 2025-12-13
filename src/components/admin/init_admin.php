@@ -34,6 +34,7 @@
  * - fix(Session): Session-Rotation (ID-Erneuerung) von Timeout entkoppelt (eigener Timestamp).
  * - fix(UX): Fehlender Logout-Grund bei abgelaufener Session in Block 7 ergänzt (Cookie-Check).
  * - feat(API): Korrekte JSON-Antworten (401) für AJAX-Calls bei Session-Ende statt HTML-Redirects.
+ * - feat(JS): Übergabe der Timeout-Konstanten an JavaScript via globalem window-Objekt.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -49,6 +50,18 @@ if ($debugMode) {
     error_log("DEBUG: init_admin.php wird von {$callingScript} eingebunden.");
     error_log("DEBUG (config_loader): Basis-URL bestimmt: " . (defined('DIRECTORY_PUBLIC_URL') ? DIRECTORY_PUBLIC_URL : 'NICHT DEFINIERT'));
 }
+
+// Fallback für Konstanten, falls config_main.php älter ist
+if (!defined('SESSION_TIMEOUT_SECONDS')) {
+    define('SESSION_TIMEOUT_SECONDS', 600);
+}
+if (!defined('SESSION_WARNING_SECONDS')) {
+    define('SESSION_WARNING_SECONDS', 60);
+}
+if (!defined('SESSION_REGENERATION')) {
+    define('SESSION_REGENERATION', 900);
+}
+
 
 // --- Eigener Session-Speicherpfad ---
 // Wir nutzen die Path-Klasse, um einen Pfad im 'secret' (nicht-öffentlichen) Verzeichnis zu definieren.
@@ -120,11 +133,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // --- 3. SCHUTZ VOR SESSION FIXATION UND HIJACKING ---
-// Fix: Eigenen Timestamp für Regeneration nutzen, damit es unabhängig vom Logout-Timeout ist.
+// Eigenen Timestamp für Regeneration nutzen, damit es unabhängig vom Logout-Timeout ist.
 if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
-if (time() - $_SESSION['last_regeneration'] > 900) { // Alle 15 Minuten ID erneuern
+if (time() - $_SESSION['last_regeneration'] > SESSION_REGENERATION) { // Alle 15 Minuten ID erneuern
     session_regenerate_id(true);
     $_SESSION['last_regeneration'] = time();
 }
@@ -133,15 +146,15 @@ if (time() - $_SESSION['last_regeneration'] > 900) { // Alle 15 Minuten ID erneu
 $sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
 if (isset($_SESSION['session_fingerprint'])) {
     if ($_SESSION['session_fingerprint'] !== $sessionIdentifier) {
-        // Fingerabdruck hat sich geändert -> Möglicher Angriff! Session zerstören.
         error_log("SECURITY ALERT: Session-Fingerabdruck hat sich geändert. Möglicher Hijacking-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
         session_unset();
         session_destroy();
 
         // API Check
         if (defined('IS_API_CALL') && IS_API_CALL === true) {
+            header('Content-Type: application/json');
             http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Session ungültig.']);
+            echo json_encode(['success' => false, 'error' => 'session_hijacked', 'redirect' => 'index.php?reason=session_hijacked']);
             exit;
         }
 
@@ -251,7 +264,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     }
 
     session_destroy();
-    header('Location: index.php?reason=logout');
+
+    $reason = (isset($_GET['timeout']) && $_GET['timeout'] === 'true') ? 'timeout' : 'logout';
+
+    header('Location: index.php?reason=' . $reason);
     exit;
 }
 
@@ -264,12 +280,16 @@ if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
 
         // API-Calls sollen JSON zurückgeben, kein HTML-Redirect
         if (defined('IS_API_CALL') && IS_API_CALL === true) {
+            header('Content-Type: application/json');
             http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Nicht angemeldet oder Session abgelaufen.', 'redirect' => 'index.php?reason=session_expired']);
+            echo json_encode(['success' => false, 'error' => 'auth_required', 'redirect' => 'index.php?reason=session_expired']);
             exit;
         }
 
-        // Heuristik: Wenn ein Session-Cookie existiert, aber die Session leer ist, war es wahrscheinlich ein Timeout
+        if ($debugMode) {
+            error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite.");
+        }
+
         $redirectUrl = 'index.php';
         if (isset($_COOKIE[session_name()])) {
             $redirectUrl .= '?reason=session_expired';
@@ -278,10 +298,24 @@ if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
         header('Location: ' . $redirectUrl);
         exit;
     }
+
+    // --- JS-ÜBERGABE ---
+    // Wenn wir eingeloggt sind (und nicht auf index.php), geben wir die Config an JS weiter.
+    // Dies wird im <head> ausgegeben, wenn init_admin.php vor dem HTML eingebunden wird,
+    // oder muss im Layout-Header stehen.
+    // Da wir hier direkt Code ausführen, geben wir ein <script> Tag aus, wenn es kein API Call ist.
+    if (!defined('IS_API_CALL') || IS_API_CALL !== true) {
+        echo '<script nonce="' . htmlspecialchars($nonce) . '">';
+        echo 'window.sessionConfig = {';
+        echo ' timeoutSeconds: ' . (int)SESSION_TIMEOUT_SECONDS . ',';
+        echo ' warningSeconds: ' . (int)SESSION_WARNING_SECONDS;
+        echo '};';
+        echo '</script>';
+    }
 }
 
 // --- 8. SESSION-TIMEOUT-LOGIK ---
-define('SESSION_TIMEOUT_SECONDS', 600); // 10 Minuten
+// Nutzung der Konstante aus config_main.php
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT_SECONDS)) {
     if ($debugMode) {
         error_log("DEBUG: Session abgelaufen.");
@@ -292,8 +326,9 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 
 
     // API-Check auch hier
     if (defined('IS_API_CALL') && IS_API_CALL === true) {
+        header('Content-Type: application/json');
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Session abgelaufen.', 'redirect' => 'index.php?reason=session_expired']);
+        echo json_encode(['success' => false, 'error' => 'session_timeout', 'redirect' => 'index.php?reason=session_expired']);
         exit;
     }
 
