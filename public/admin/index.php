@@ -35,9 +35,16 @@
  *
  * - feat(UX): Anzeige von Logout-Gründen (Timeout, Sicherheit, manueller Logout) wiederhergestellt.
  * - fix(Session): Explizite Bereinigung des `$_SESSION`-Arrays nach ID-Regeneration, um Altlasten zu entfernen.
+ *
+ * - fix(Session): Output Buffering (ob_start) hinzugefügt, um "Doppelter Login"-Probleme durch Header-Fehler zu verhindern.
+ * - fix(Session): `ob_end_clean()` vor Redirects, um sauberen Header-Versand zu garantieren.
+ * - fix(UX): Logik für Logout-Gründe (`?reason=...`) optimiert, damit diese zuverlässiger angezeigt werden.
  */
 
 declare(strict_types=1);
+
+// START OUTPUT BUFFERING (Verhindert "Headers already sent" Probleme und Cookie-Fehler)
+ob_start();
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -178,12 +185,14 @@ $usersExist = hasUsers();
 
 // Wenn bereits eingeloggt, direkt weiterleiten
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    ob_end_clean(); // Buffer leeren vor Redirect
     header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
     exit;
 }
 
 // 1. Rate Limit Prüfung VOR allem anderen
 $lockoutTime = checkRateLimit($clientIp);
+
 if ($lockoutTime > 0) {
     $minutes = ceil($lockoutTime / 60);
     $message = "Zu viele fehlgeschlagene Anmeldeversuche. Bitte warten Sie $minutes Minute(n).";
@@ -245,6 +254,7 @@ if ($lockoutTime > 0) {
 
                 // Explizit schreiben, um Race Conditions bei Redirect zu vermeiden
                 session_write_close();
+                ob_end_clean(); // Buffer leeren vor Redirect
 
                 header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports.php');
                 exit;
@@ -265,24 +275,23 @@ if ($lockoutTime > 0) {
         }
     }
 }
-// NEU: 2. Prüfen auf Logout-Gründe (nur wenn nicht gesperrt und kein POST)
-else {
-    if (isset($_GET['reason'])) {
-        $reason = $_GET['reason'];
-        switch ($reason) {
-            case 'timeout':
-                $message = 'Sie wurden aufgrund von Inaktivität automatisch abgemeldet.';
-                $messageType = 'warning';
-                break;
-            case 'security':
-                $message = 'Sitzung aus Sicherheitsgründen beendet (z.B. IP-Wechsel).';
-                $messageType = 'error';
-                break;
-            case 'logout':
-                $message = 'Erfolgreich abgemeldet.';
-                $messageType = 'success';
-                break;
-        }
+// 2. Logout-Gründe prüfen (GET Request)
+// Nur prüfen, wenn wir nicht gerade einen POST-Request bearbeitet haben (der $message schon gesetzt hätte)
+elseif (empty($message) && isset($_GET['reason'])) {
+    $reason = $_GET['reason'];
+    switch ($reason) {
+        case 'timeout':
+            $message = 'Sie wurden aufgrund von Inaktivität automatisch abgemeldet.';
+            $messageType = 'warning';
+            break;
+        case 'security':
+            $message = 'Sitzung aus Sicherheitsgründen beendet.';
+            $messageType = 'error';
+            break;
+        case 'logout':
+            $message = 'Erfolgreich abgemeldet.';
+            $messageType = 'success';
+            break;
     }
 }
 
@@ -300,6 +309,8 @@ $pageHeader = 'Adminbereich';
 $robotsContent = 'noindex, nofollow';
 
 require_once Path::getPartialTemplatePath('header.php');
+// Flush Buffer (Inhalt ausgeben)
+ob_end_flush();
 ?>
 
 <article>
