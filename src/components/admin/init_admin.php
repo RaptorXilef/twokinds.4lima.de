@@ -35,6 +35,9 @@
  * - fix(UX): Fehlender Logout-Grund bei abgelaufener Session in Block 7 ergänzt (Cookie-Check).
  * - feat(API): Korrekte JSON-Antworten (401) für AJAX-Calls bei Session-Ende statt HTML-Redirects.
  * - feat(JS): Übergabe der Timeout-Konstanten an JavaScript via globalem window-Objekt.
+ * - fix(Stability): PHP-Timeout um 30 Sekunden verlängert ("Grace Period"), damit JS-Logout-Requests nicht in eine abgelaufene Session laufen.
+ * - fix(Stability): Explizites Setzen von `session.gc_maxlifetime` passend zum Timeout.
+ * - fix(Security): `verify_csrf_token` erkennt Logout-Aktionen nun automatisch als "fehlertolerant", um White-Screen-Errors bei abgelaufener Session zu verhindern.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -58,10 +61,6 @@ if (!defined('SESSION_TIMEOUT_SECONDS')) {
 if (!defined('SESSION_WARNING_SECONDS')) {
     define('SESSION_WARNING_SECONDS', 60);
 }
-if (!defined('SESSION_REGENERATION')) {
-    define('SESSION_REGENERATION', 900);
-}
-
 
 // --- Eigener Session-Speicherpfad ---
 // Wir nutzen die Path-Klasse, um einen Pfad im 'secret' (nicht-öffentlichen) Verzeichnis zu definieren.
@@ -120,7 +119,11 @@ header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
 
-// --- 2. STRIKTE SESSION-KONFIGURATION ---
+// --- 2. SESSION-KONFIGURATION ---
+// TIMING FIX: Wir stellen sicher, dass PHP die Session nicht vor unserem Timeout löscht.
+// Wir addieren 10 Sekunden Puffer zur Garbage Collection Zeit.
+ini_set('session.gc_maxlifetime', (string)(SESSION_TIMEOUT_SECONDS + 10));
+
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
@@ -132,12 +135,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- 3. SCHUTZ VOR SESSION FIXATION UND HIJACKING ---
+// --- 3. SESSION PROTECTION ---
+// SCHUTZ VOR SESSION FIXATION UND HIJACKING
 // Eigenen Timestamp für Regeneration nutzen, damit es unabhängig vom Logout-Timeout ist.
 if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
-if (time() - $_SESSION['last_regeneration'] > SESSION_REGENERATION) { // Alle 15 Minuten ID erneuern
+$regenTime = defined('SESSION_REGENERATION_SECOUNDS') ? SESSION_REGENERATION_SECOUNDS : 900; // Alle 15 Minuten ID erneuern
+if (time() - $_SESSION['last_regeneration'] > $regenTime) {
     session_regenerate_id(true);
     $_SESSION['last_regeneration'] = time();
 }
@@ -165,14 +170,14 @@ if (isset($_SESSION['session_fingerprint'])) {
     $_SESSION['session_fingerprint'] = $sessionIdentifier;
 }
 
-// --- 4. UMFASSENDER CSRF-SCHUTZ ---
+// --- 4. CSRF-SCHUTZ ---
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrfToken = $_SESSION['csrf_token'];
 
 if (!function_exists('verify_csrf_token')) {
-    function verify_csrf_token()
+    function verify_csrf_token($isLogoutContext = false)
     {
         global $debugMode, $callingScript;
         $token = null;
@@ -192,9 +197,20 @@ if (!function_exists('verify_csrf_token')) {
             error_log("DEBUG ({$callingScript}): CSRF-Prüfung. Erhaltener Token: " . ($token ?? 'KEINER') . ". Session-Token: " . $_SESSION['csrf_token']);
         }
 
+        // SAFETY NET: Wenn es ein Logout-Request ist, erzwingen wir den "Fehlertoleranz"-Modus,
+        // auch wenn die Funktion versehentlich ohne `true` aufgerufen wurde.
+        if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+            $isLogoutContext = true;
+        }
+
         if (!isset($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
             if ($debugMode) {
                 error_log("FEHLER ({$callingScript}): CSRF-Token-Validierung fehlgeschlagen.");
+            }
+
+            // FIX: Im Logout-Kontext erlauben wir das Scheitern (Session wahrscheinlich eh weg)
+            if ($isLogoutContext) {
+                return false;
             }
 
             $isApiCall = (defined('IS_API_CALL') && IS_API_CALL === true);
@@ -207,6 +223,7 @@ if (!function_exists('verify_csrf_token')) {
             }
             exit;
         }
+        return true;
     }
 }
 
@@ -243,7 +260,7 @@ if (!function_exists('save_settings')) {
 
 // --- 6. LOGOUT-LOGIK ---
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    verify_csrf_token();
+    $csrfValid = verify_csrf_token(true);
     if ($debugMode) {
         error_log("DEBUG: Logout-Aktion mit gültigem CSRF-Token erkannt.");
     }
@@ -262,10 +279,14 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
             $params["httponly"]
         );
     }
-
     session_destroy();
 
-    $reason = (isset($_GET['timeout']) && $_GET['timeout'] === 'true') ? 'timeout' : 'logout';
+    // Grund ermitteln: Expliziter Timeout vom JS oder CSRF-Fehler (Session schon weg)
+    if ((isset($_GET['timeout']) && $_GET['timeout'] === 'true') || !$csrfValid) {
+        $reason = 'session_expired';
+    } else {
+        $reason = 'logout';
+    }
 
     header('Location: index.php?reason=' . $reason);
     exit;
@@ -315,10 +336,13 @@ if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
 }
 
 // --- 8. SESSION-TIMEOUT-LOGIK ---
-// Nutzung der Konstante aus config_main.php
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT_SECONDS)) {
+// TIMING FIX: PHP bekommt 30 Sekunden Puffer.
+// Das JS (Timeout aus Config) loggt den User also aus, BEVOR PHP diesen Block erreicht.
+$phpTimeout = SESSION_TIMEOUT_SECONDS + 30;
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $phpTimeout)) {
     if ($debugMode) {
-        error_log("DEBUG: Session abgelaufen.");
+        error_log("DEBUG: Session abgelaufen (PHP-seitig).");
     }
 
     session_unset();
