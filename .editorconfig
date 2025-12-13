@@ -1,9 +1,16 @@
 # Dies ist die oberste Konfigurationsdatei
 root = true
 
-# Regeln für alle Dateien
+# Standard-Regeln für alle Dateien (PHP, JS, SCSS etc. -> 4 Spaces)
 [*]
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 charset = utf-8
+indent_style = space
+indent_size = 4
+
+# Spezifische Regeln für JSON und Markdown (2 Spaces)
+# Das verhindert, dass tief verschachtelte Dateien zu breit werden
+[*.{json,md}]
+indent_size = 2

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Project Standards">
+    <description>Der Coding-Standard für dieses Projekt (PSR-12).</description>
+
+    <rule ref="PSR12"/>
+
+    <file>src</file>
+    <file>tests</file>
+
+    <arg value="p"/>
+    <arg name="colors"/>
+    <arg name="parallel" value="80"/>
+
+    <arg name="cache" value=".phpcs.cache"/>
+
+</ruleset>

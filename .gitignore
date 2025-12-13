@@ -107,6 +107,10 @@ yarn.lock
 /logs/
 sync.ffs_db
 
+# Cache & Logs
+/.phpstan.cache/
+.phpcs.cache
+
 # PHPUnit / Coverage
 .phpunit.result.cache
 .phpunit.cache/

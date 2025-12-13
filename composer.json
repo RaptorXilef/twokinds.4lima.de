@@ -40,8 +40,9 @@
         "post-install-cmd": [
             "echo 'Die Installation ist abgeschlossen. CodeSniffer und PHPStan sind bereit.'"
         ],
-        "check-standards": "phpcs --standard=PSR12 src/ tests/",
-        "fix-standards": "phpcbf --standard=PSR12 src/ tests/",
-        "analyse": "phpstan analyse src/ tests/ --level max"
+        "check-standards": "phpcs",
+        "fix-standards": "phpcbf",
+        "analyse": "phpstan analyse",
+        "test": "phpunit"
     }
 }
