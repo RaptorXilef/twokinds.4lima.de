@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Stellt das Modal für den Session-Timeout und die zugehörige Logik bereit.
  * Dieses Skript wird nur für angemeldete Administratoren geladen.
@@ -82,7 +83,7 @@ $csrfToken = $_SESSION['csrf_token'] ?? '';
 
 <?php
 // Pfad und Cache-Buster für das JavaScript (NEUE METHODE)
-$sessionTimeoutJsFile = 'session_timeout.js';
+$sessionTimeoutJsFile = 'session_timeout.min.js';
 $sessionTimeoutJsPathOnServer = DIRECTORY_PUBLIC_ADMIN_JS . DIRECTORY_SEPARATOR . $sessionTimeoutJsFile;
 $sessionTimeoutJsWebUrl = Url::getAdminJsUrl($sessionTimeoutJsFile);
 $cacheBuster = file_exists($sessionTimeoutJsPathOnServer) ? '?c=' . filemtime($sessionTimeoutJsPathOnServer) : '';

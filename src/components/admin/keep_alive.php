@@ -1,43 +1,51 @@
 <?php
+
 /**
  * Dieses Skript wird per AJAX aufgerufen, um die PHP-Session am Leben zu erhalten.
  * Es bindet die zentrale init_admin.php ein, um alle Sicherheitsprüfungen
  * (Login, Session-Fingerprint, CSRF-Token) zu durchlaufen.
- * Bei Erfolg wird der 'last_activity'-Zeitstempel aktualisiert.
+ * Bei Erfolg wird der 'last_activity'-Zeitstempel in der Session durch init_admin.php automatisch aktualisiert.
  *
  * @file      ROOT/src/components/admin/keep_alive.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   3.0.0
- * @since     3.0.0 Umstellung auf die zentrale init_admin.php im übergeordneten Komponenten-Verzeichnis.
- * @since     3.0.1 Behebe BUG PHP Warning:  Constant IS_API_CALL already defined in src\\components\\admin\\keep_alive.php on line 22, referer: /admin/data_editor_comic
+ *
+* @since 3.0.0 - 4.0.0
+ *    ARCHITEKTUR & CORE
+ *    - Umstellung auf die zentrale `init_admin.php` im übergeordneten Komponenten-Verzeichnis.
+ *
+ *    BUGFIXES
+ *    - Behebung einer PHP-Warnung bezüglich doppelter Konstantendefinition (`IS_API_CALL`).
+ *
+ * @since 5.0.0
+ * - fix(Path): Pfad zur init_admin.php korrigiert (../../src/...).
+ * - feat(API): IS_API_CALL Konstante definiert, um JSON-Antworten bei Fehlern zu erzwingen.
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Definiere eine Konstante, damit init_admin.php weiß, dass dies ein API-Aufruf ist.
+// 1. Konstante definieren: Das sagt der init_admin.php, dass wir hier nur JSON wollen
+// und keinen HTML-Redirect, falls die Session abgelaufen ist.
 if (!defined('IS_API_CALL')) {
     define('IS_API_CALL', true);
 }
 
-// Binde die zentrale Initialisierungs- und Sicherheitsdatei ein.
-// Diese Datei kümmert sich um alles: Session-Start, CSRF-Prüfung, Login-Status etc.
-// Der Pfad wurde an die neue, zentrale Struktur angepasst.
-require_once 'init_admin.php';
+// 2. Zentrale Initialisierung laden
+// Dies prüft Login, Timeout, Fingerprint und CSRF.
+// Wenn etwas nicht stimmt, sendet init_admin.php einen 401/403 JSON-Fehler und beendet das Skript.
+require_once __DIR__ . '/init_admin.php';
 
-// Wenn das Skript bis hierhin ohne Fehler durchläuft (d.h., init_admin.php hat
-// keinen exit() wegen eines Fehlers ausgelöst), ist der Benutzer authentifiziert
-// und der CSRF-Token war gültig.
-
-// Jetzt aktualisieren wir einfach die letzte Aktivität.
-$_SESSION['last_activity'] = time();
-
-// Sende eine Erfolgsmeldung zurück.
+// 3. Wenn wir hier ankommen, ist die Session gültig und wurde verlängert.
+// Wir senden eine Erfolgsmeldung zurück.
 header('Content-Type: application/json');
-echo json_encode(['status' => 'success', 'message' => 'Session extended.']);
-exit;
-?>
+echo json_encode([
+    'success' => true,
+    'message' => 'Session extended',
+    'timestamp' => time()
+]);
