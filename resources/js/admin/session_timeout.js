@@ -15,6 +15,7 @@
  * - Integration der 401-Redirect-Logik für abgelaufene Sessions.
  * - Wiederherstellung des visuellen Countdowns und der Activity-Handler.
  * - Konfiguration auf "Zeit vor Ablauf" umgestellt (statt "Zeit nach Start").
+ * - Übergabe des Timeout-Grundes an den Logout-Prozess (forceLogout Parameter).
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -62,8 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Timer für das Warn-Modal
         warningTimer = setTimeout(showWarningModal, timeUntilWarning);
 
-        // Harter Logout Timer (Client-seitig als Fallback)
-        logoutTimer = setTimeout(forceLogout, sessionTimeoutInSeconds * 1000);
+        // Harter Logout Timer (Client-seitig als Fallback) - ruft forceLogout mit true auf
+        logoutTimer = setTimeout(
+            () => forceLogout(true),
+            sessionTimeoutInSeconds * 1000
+        );
 
         // Sichtbaren Countdown starten (falls Element vorhanden)
         if (timerDisplayCountdown) {
@@ -107,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (secondsLeft <= 0) {
                 clearInterval(countdownInterval);
-                forceLogout();
+                forceLogout(true); // TRUE = Es ist ein Timeout
             }
         }, 1000);
     }
@@ -176,9 +180,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function forceLogout() {
+    // NEU: Parameter isTimeout
+    function forceLogout(isTimeout = false) {
         let url = '?action=logout';
         if (csrfToken) url += `&token=${csrfToken}`;
+        // Wenn es ein Timeout ist, hängen wir das an die URL an
+        if (isTimeout) url += '&timeout=true';
         window.location.href = url;
     }
 
@@ -190,7 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', forceLogout);
+        // Manueller Klick -> isTimeout = false
+        logoutBtn.addEventListener('click', () => forceLogout(false));
     }
 
     // Activity Listener (Debounced)
