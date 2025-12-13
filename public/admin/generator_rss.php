@@ -10,7 +10,7 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
-* @since 2.0.0 - 4.0.0
+ * @since 2.0.0 - 4.0.0
  *    ARCHITEKTUR & DATEN
  *    - Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und zentrale Pfad-Konstanten.
  *    - Anpassung an versionierte `comic_var.json` (Schema v2) und Bereinigung redundanter Logik.
@@ -28,6 +28,11 @@
  * - Fix: Daten (Titel, Transkript) werden nun korrekt aus der comic_var.json bezogen.
  * - Fix: HTML-Nesting-Fehler in Description behoben (doppelte P-Tags entfernt).
  * - Workflow: Link zum Sitemap-Editor in Erfolgsmeldung hinzugefügt.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> generator_rss).
+ * - fix(UI): Fallback-Anzeige für fehlenden Zeitstempel.
+ * - fix(XML): Wiederherstellung der ursprünglichen XML-Generierungslogik (SimpleXML) mit Bild-Einbettung in Description.
  */
 
 declare(strict_types=1);
@@ -45,11 +50,10 @@ $currentUser = $_SESSION['admin_username'] ?? 'default';
 // --- Einstellungsverwaltung ---
 function loadGeneratorSettings(string $filePath, string $username): array
 {
+    // Flache Struktur für den Rückgabewert (Konsistent mit anderen Editoren)
     $defaults = [
-        'rss_generator' => [
-            'last_run_timestamp' => null,
-            'entries_count' => 0
-        ]
+        'last_run_timestamp' => null,
+        'entries_count' => 0
     ];
 
     if (!file_exists($filePath)) {
@@ -68,7 +72,10 @@ function loadGeneratorSettings(string $filePath, string $username): array
         return $defaults;
     }
 
-    $userSettings = $data['users'][$username]['rss_generator'] ?? [];
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['generator_rss'] ?? [];
+
+    // Merge mit Defaults
     return array_replace_recursive($defaults, $userSettings);
 }
 
@@ -90,13 +97,13 @@ function saveGeneratorSettings(string $filePath, string $username, array $newSet
         $data['users'][$username] = [];
     }
 
-    $currentData = $data['users'][$username]['rss_generator'] ?? [];
-    $data['users'][$username]['rss_generator'] = array_replace_recursive($currentData, $newSettings);
+    $currentData = $data['users'][$username]['generator_rss'] ?? [];
+    $data['users'][$username]['generator_rss'] = array_replace_recursive($currentData, $newSettings);
 
     return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
-// --- RSS GENERIERUNG ---
+// --- RSS GENERIERUNG (Logik wiederhergestellt) ---
 function generateRssFeed(): array
 {
     $comicVarPath = Path::getDataPath('comic_var.json');
@@ -118,7 +125,7 @@ function generateRssFeed(): array
     }
 
     // Support für v1 und v2 Schema
-    $comics = $comicData['comics'] ?? $comicData;
+    $comics = (isset($comicData['schema_version']) && $comicData['schema_version'] >= 2) ? ($comicData['comics'] ?? []) : $comicData;
 
     if (empty($comics)) {
         return ['success' => false, 'message' => 'Keine Comics in der Datenbank gefunden.'];
@@ -127,18 +134,19 @@ function generateRssFeed(): array
     // Sortieren (neueste zuerst)
     krsort($comics);
 
-    // XML Aufbau
+    // XML Aufbau mit SimpleXML
     $xmlString = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"></rss>';
     $xml = new SimpleXMLElement($xmlString);
 
     $channel = $xml->addChild('channel');
-    $channel->addChild('title', 'Twokinds in deutsch - Comic-Feed');
+    $channel->addChild('title', 'Twokinds auf Deutsch');
     $channel->addChild('link', $baseUrl);
-    $channel->addChild('description', 'Der offizielle RSS-Feed für die neuesten deutschen Übersetzungen von Twokinds.');
+    $channel->addChild('description', 'Die deutsche Übersetzung des Webcomics Twokinds.');
     $channel->addChild('language', 'de-de');
-    $channel->addChild('lastBuildDate', date('r'));
+    $channel->addChild('lastBuildDate', date(DATE_RSS));
+    $channel->addChild('generator', 'Twokinds Admin Panel Generator');
 
-    // Atom Self Link (Wichtig für Validatoren)
+    // Atom Self Link
     $atomLink = $channel->addChild('atom:link', '', 'http://www.w3.org/2005/Atom');
     $atomLink->addAttribute('href', $baseUrl . '/rss.xml');
     $atomLink->addAttribute('rel', 'self');
@@ -150,10 +158,13 @@ function generateRssFeed(): array
     $lowResPath = defined('DIRECTORY_PUBLIC_IMG_COMIC_LOWRES') ? DIRECTORY_PUBLIC_IMG_COMIC_LOWRES : $publicDir . '/assets/images/comic/lowres';
     $lowResUrl = defined('DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL') ? DIRECTORY_PUBLIC_IMG_COMIC_LOWRES_URL : $baseUrl . '/assets/images/comic/lowres';
 
-    foreach ($comics as $id => $comic) {
+    foreach ($comics as $id => $comicDataRaw) {
         if ($count >= $limit) {
             break;
         }
+
+        // Sicherheits-Wrapper für v1/v2 Datenstruktur
+        $comic = is_array($comicDataRaw) ? $comicDataRaw : ['name' => $comicDataRaw, 'transcript' => ''];
 
         // Bild finden
         $imageExtensions = ['webp', 'jpg', 'jpeg', 'png'];
@@ -179,7 +190,7 @@ function generateRssFeed(): array
             $item->addChild('link', $link);
             $item->addChild('guid', $link);
 
-            // BESCHREIBUNG
+            // BESCHREIBUNG (HTML mit Bild)
             $imgSrc = "$lowResUrl/$id.$extFound";
 
             // Teil 1: Bild im P-Tag
@@ -187,7 +198,6 @@ function generateRssFeed(): array
 
             // Teil 2: Text (Transkript oder Titel)
             if (!empty($comic['transcript'])) {
-                // Transkript direkt anhängen (enthält bereits HTML)
                 $descContent .= $comic['transcript'];
             } else {
                 $descContent .= "<p>$titleText</p>";
@@ -206,6 +216,7 @@ function generateRssFeed(): array
         }
     }
 
+    // Speichern via DOMDocument für Pretty Print
     $dom = new DOMDocument("1.0");
     $dom->preserveWhiteSpace = false;
     $dom->formatOutput = true;
@@ -228,8 +239,8 @@ function generateRssFeed(): array
 }
 
 // --- LOGIK ---
-$settings = loadGeneratorSettings($configPath, $currentUser);
-$rssSettings = $settings['rss_generator'];
+// Einstellungen laden (Flaches Array)
+$rssSettings = loadGeneratorSettings($configPath, $currentUser);
 
 // AJAX Handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate_rss') {
@@ -259,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 $pageTitle = 'Adminbereich - RSS Generator';
-$pageHeader = 'RSS Feed Generator';
+$pageHeader = 'RSS Generator';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
@@ -273,12 +284,14 @@ require_once Path::getPartialTemplatePath('header.php');
                         <?php echo date('d.m.Y \u\m H:i:s', $rssSettings['last_run_timestamp']); ?> Uhr
                         (<?php echo $rssSettings['entries_count']; ?> Einträge).
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch keine Generierung durchgeführt.</p>
                 <?php endif; ?>
             </div>
-            <h2>RSS Feed Generator</h2>
+            <h2>RSS Generator</h2>
             <p>
                 Generiert die <code>rss.xml</code> für News-Reader und Bots.
-                Der Feed enthält die letzten 50 Comics und verlinkt direkt auf die entsprechenden Seiten.
+                Der Feed enthält die letzten 50 Comics inkl. Vorschaubild und verlinkt direkt auf die entsprechenden Seiten.
             </p>
         </div>
 
@@ -299,9 +312,9 @@ require_once Path::getPartialTemplatePath('header.php');
             <h4><i class="fas fa-check-circle"></i> Feed erstellt</h4>
             <p>Die Datei <code>rss.xml</code> wurde erfolgreich aktualisiert.</p>
             <div class="next-steps-actions">
-                <!-- Option 1: Sitemap Editor (Neu) -->
-                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_sitemap.php'; ?>" class="button button-green">
-                    <i class="fas fa-sitemap"></i> Zum Sitemap-Editor
+                <!-- Option 1: Sitemap Editor -->
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_sitemap' . ($dateiendungPHP ?? '.php'); ?>" class="button button-green">
+                    <i class="fas fa-sitemap"></i> Zur Sitemap
                 </a>
 
                 <!-- Option 2: Feed ansehen -->
