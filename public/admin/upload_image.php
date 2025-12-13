@@ -32,6 +32,7 @@
  * - feat(UI): Neues Modal zur manuellen Auswahl der Auflösungskategorie mit Bild-Details (Maße, Typ).
  * - refactor(UI): Inline-Styles entfernt und in SCSS ausgelagert (.resolution-selection-content, .align-left, .full-width).
  * - style(UI): Bildgröße im Auswahl-Modal an andere Modals angeglichen.
+ * - fix(Config): Bug behoben, bei dem Einstellungen nach einem Upload auf Standardwerte zurückgesetzt wurden (Partielle Updates gefixt).
  */
 
 declare(strict_types=1);
@@ -289,14 +290,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'save_settings':
                 $input = json_decode($_POST['settings'] ?? '{}', true);
 
-                // Aktuelle Settings laden um Timestamp ggf. zu behalten
+                // Aktuelle Settings laden um bestehende Werte zu erhalten
                 $currentData = loadGeneratorSettings($configPath, $currentUser);
 
+                // BUGFIX: Werte aus Input nehmen ODER bestehende beibehalten (Partial Update Support)
                 $newSettings = [
-                    'last_run_timestamp' => $input['update_timestamp'] ? time() : $currentData['last_run_timestamp'],
-                    'auto_detect_hires' => filter_var($input['auto_detect_hires'] ?? true, FILTER_VALIDATE_BOOLEAN),
-                    'hires_threshold_width' => (int)($input['hires_threshold_width'] ?? 1800),
-                    'hires_threshold_height' => (int)($input['hires_threshold_height'] ?? 1000)
+                    'last_run_timestamp' => ($input['update_timestamp'] ?? false) ? time() : $currentData['last_run_timestamp'],
+                    'auto_detect_hires' => isset($input['auto_detect_hires']) ? filter_var($input['auto_detect_hires'], FILTER_VALIDATE_BOOLEAN) : $currentData['auto_detect_hires'],
+                    'hires_threshold_width' => isset($input['hires_threshold_width']) ? (int)$input['hires_threshold_width'] : $currentData['hires_threshold_width'],
+                    'hires_threshold_height' => isset($input['hires_threshold_height']) ? (int)$input['hires_threshold_height'] : $currentData['hires_threshold_height']
                 ];
 
                 if (saveGeneratorSettings($configPath, $currentUser, $newSettings)) {
@@ -343,7 +345,6 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <!-- SETTINGS FORM (Neu) -->
         <div class="generator-settings">
-            <!-- FIX: Inline-Styles entfernt, SCSS Klassen genutzt -->
             <div class="form-group checkbox-group align-left full-width">
                 <label for="auto_detect_hires" title="Wenn aktiviert, entscheidet die Bildgröße über High-Res/Low-Res">
                     <input type="checkbox" id="auto_detect_hires" <?php echo ($uploadSettings['auto_detect_hires']) ? 'checked' : ''; ?>>
@@ -351,7 +352,6 @@ require_once Path::getPartialTemplatePath('header.php');
                 </label>
             </div>
 
-            <!-- FIX: Inline Styles für display:none werden vom JS gesteuert, sind hier initial aber okay als State -->
             <div class="form-group threshold-input" style="<?php echo (!$uploadSettings['auto_detect_hires']) ? 'display:none;' : ''; ?>">
                 <label for="hires_threshold_width">Min. Breite für High-Res (px):</label>
                 <input type="number" id="hires_threshold_width" value="<?php echo $uploadSettings['hires_threshold_width']; ?>">
@@ -362,7 +362,6 @@ require_once Path::getPartialTemplatePath('header.php');
                 <input type="number" id="hires_threshold_height" value="<?php echo $uploadSettings['hires_threshold_height']; ?>">
             </div>
 
-            <!-- FIX: Modifier class .actions-right -->
             <div class="form-group full-width actions-right">
                 <button type="button" id="save-settings-btn" class="button button-blue" style="display: none;">
                     <i class="fas fa-save"></i> Einstellungen speichern
