@@ -27,6 +27,9 @@
  * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
  * - fix(Config): Speicherstruktur korrigiert (users -> username -> upload_image).
  * - fix(UI): Fallback-Anzeige für fehlenden Zeitstempel.
+ * - feat(Settings): Konfigurierbare Schwellenwerte für High-Res/Low-Res Erkennung.
+ * - feat(Logic): Optionale manuelle Zuweisung (High/Low) statt Automatik implementiert.
+ * - feat(UI): Neues Modal zur manuellen Auswahl der Auflösungskategorie.
  */
 
 declare(strict_types=1);
@@ -46,7 +49,10 @@ $currentUser = $_SESSION['admin_username'] ?? 'default';
 function loadGeneratorSettings(string $filePath, string $username): array
 {
     $defaults = [
-        'last_run_timestamp' => null
+        'last_run_timestamp' => null,
+        'auto_detect_hires' => true,
+        'hires_threshold_width' => 1800,
+        'hires_threshold_height' => 1000
     ];
 
     if (!file_exists($filePath)) {
@@ -119,12 +125,55 @@ function findExistingFileInDir(string $shortName, string $dir): ?string
     return $files ? $files[0] : null;
 }
 
+// Hilfsfunktion zur Verarbeitung des Upload-Ziels
+function processFileTarget(string $tempFilePath, string $shortName, string $targetDir, string $imageFileType): array
+{
+    $existingFile = findExistingFileInDir($shortName, $targetDir);
+
+    if ($existingFile !== null) {
+        // Status speichern für Overwrite-Entscheidung
+        $_SESSION['pending_upload'][$shortName] = [
+            'temp_file' => $tempFilePath,
+            'existing_file' => $existingFile,
+            'target_dir' => $targetDir
+        ];
+
+        // URL für Vorschau generieren
+        $relativeExistingPath = str_replace(DIRECTORY_PUBLIC, '', $existingFile);
+        $existingFileUrl = DIRECTORY_PUBLIC_URL . str_replace(DIRECTORY_SEPARATOR, '/', $relativeExistingPath);
+
+        // Daten URI für das neue Bild
+        $imageData = file_get_contents($tempFilePath);
+        $base64 = base64_encode($imageData);
+        $newDataUri = 'data:image/' . $imageFileType . ';base64,' . $base64;
+
+        return [
+            'status' => 'confirmation_needed',
+            'short_name' => $shortName,
+            'existing_image_url' => $existingFileUrl,
+            'new_image_data_uri' => $newDataUri
+        ];
+    } else {
+        // Direkt verschieben
+        $targetPath = $targetDir . DIRECTORY_SEPARATOR . $shortName;
+        if (rename($tempFilePath, $targetPath)) {
+            return ['status' => 'success', 'message' => "Datei '{$shortName}' erfolgreich hochgeladen."];
+        } else {
+            if (file_exists($tempFilePath)) {
+                unlink($tempFilePath);
+            }
+            return ['status' => 'error', 'message' => "Fehler beim Speichern von '{$shortName}'."];
+        }
+    }
+}
+
 // --- AJAX HANDLER ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
 
+    // 1. UPLOAD INITIIEREN
     if (isset($_FILES['file'])) {
         $file = $_FILES['file'];
         if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -141,38 +190,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tempFilePath = $tempDir . DIRECTORY_SEPARATOR . uniqid() . '_' . $shortName;
 
         if (move_uploaded_file($file['tmp_name'], $tempFilePath)) {
-            list($width, $height) = getimagesize($tempFilePath);
-            $targetDir = ($width >= 1800 && $height >= 1000) ? DIRECTORY_PUBLIC_IMG_COMIC_HIRES : DIRECTORY_PUBLIC_IMG_COMIC_LOWRES;
-            $existingFile = findExistingFileInDir($shortName, $targetDir);
+            // Einstellungen laden für Entscheidung
+            $settings = loadGeneratorSettings($configPath, $currentUser);
 
-            if ($existingFile !== null) {
-                $_SESSION['pending_upload'][$shortName] = ['temp_file' => $tempFilePath, 'existing_file' => $existingFile, 'target_dir' => $targetDir];
+            if ($settings['auto_detect_hires']) {
+                // AUTOMATIK
+                list($width, $height) = getimagesize($tempFilePath);
+                $minW = (int)$settings['hires_threshold_width'];
+                $minH = (int)$settings['hires_threshold_height'];
 
-                // Erzeuge eine korrekte, absolute URL für das existierende Bild
-                $relativeExistingPath = str_replace(DIRECTORY_PUBLIC, '', $existingFile);
-                $existingFileUrl = DIRECTORY_PUBLIC_URL . str_replace(DIRECTORY_SEPARATOR, '/', $relativeExistingPath);
+                $targetDir = ($width >= $minW && $height >= $minH) ? DIRECTORY_PUBLIC_IMG_COMIC_HIRES : DIRECTORY_PUBLIC_IMG_COMIC_LOWRES;
 
-                // Daten URI für das neue Bild
+                echo json_encode(processFileTarget($tempFilePath, $shortName, $targetDir, $imageFileType));
+            } else {
+                // MANUELL: User muss entscheiden
+                // Wir speichern temporär in Session und fragen den Client
+                $_SESSION['pending_resolution_selection'][$shortName] = [
+                    'temp_file' => $tempFilePath,
+                    'file_type' => $imageFileType
+                ];
+
+                // Vorschau generieren
                 $imageData = file_get_contents($tempFilePath);
                 $base64 = base64_encode($imageData);
                 $newDataUri = 'data:image/' . $imageFileType . ';base64,' . $base64;
 
                 echo json_encode([
-                    'status' => 'confirmation_needed',
+                    'status' => 'resolution_selection_needed',
                     'short_name' => $shortName,
-                    'existing_image_url' => $existingFileUrl,
-                    'new_image_data_uri' => $newDataUri
+                    'image_data_uri' => $newDataUri
                 ]);
-            } else {
-                $targetPath = $targetDir . DIRECTORY_SEPARATOR . $shortName;
-                if (rename($tempFilePath, $targetPath)) {
-                    echo json_encode(['status' => 'success', 'message' => "Datei '{$shortName}' erfolgreich hochgeladen."]);
-                } else {
-                    if (file_exists($tempFilePath)) {
-                        unlink($tempFilePath);
-                    }
-                    echo json_encode(['status' => 'error', 'message' => "Fehler beim Speichern von '{$shortName}'."]);
-                }
             }
         } else {
             echo json_encode(['status' => 'error', 'message' => "Fehler beim Verschieben von '{$file['name']}'."]);
@@ -185,6 +232,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response = ['success' => false, 'message' => ''];
 
         switch ($action) {
+            // 2. MANUELLE AUSWAHL VERARBEITEN
+            case 'select_resolution':
+                $shortName = $_POST['short_name'] ?? null;
+                $resolution = $_POST['resolution'] ?? null; // 'hires' oder 'lowres'
+
+                if (!$shortName || !isset($_SESSION['pending_resolution_selection'][$shortName])) {
+                    echo json_encode(['status' => 'error', 'message' => 'Ungültige Sitzung für Auflösungswahl.']);
+                    exit;
+                }
+
+                $pendingData = $_SESSION['pending_resolution_selection'][$shortName];
+                unset($_SESSION['pending_resolution_selection'][$shortName]);
+
+                $targetDir = ($resolution === 'hires') ? DIRECTORY_PUBLIC_IMG_COMIC_HIRES : DIRECTORY_PUBLIC_IMG_COMIC_LOWRES;
+
+                echo json_encode(processFileTarget($pendingData['temp_file'], $shortName, $targetDir, $pendingData['file_type']));
+                exit;
+
+            // 3. ÜBERSCHREIBEN BESTÄTIGEN
             case 'confirm_overwrite':
                 $shortName = $_POST['short_name'] ?? null;
                 $decision = $_POST['decision'] ?? null;
@@ -194,6 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $uploadData = $_SESSION['pending_upload'][$shortName];
                 unset($_SESSION['pending_upload'][$shortName]);
+
                 if ($decision === 'yes') {
                     if (file_exists($uploadData['existing_file'])) {
                         unlink($uploadData['existing_file']);
@@ -214,10 +281,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 exit;
 
+            // 4. EINSTELLUNGEN SPEICHERN
             case 'save_settings':
-                $newSettings = ['last_run_timestamp' => time()];
+                $input = json_decode($_POST['settings'] ?? '{}', true);
+
+                // Aktuelle Settings laden um Timestamp ggf. zu behalten
+                $currentData = loadGeneratorSettings($configPath, $currentUser);
+
+                $newSettings = [
+                    'last_run_timestamp' => $input['update_timestamp'] ? time() : $currentData['last_run_timestamp'],
+                    'auto_detect_hires' => filter_var($input['auto_detect_hires'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                    'hires_threshold_width' => (int)($input['hires_threshold_width'] ?? 1800),
+                    'hires_threshold_height' => (int)($input['hires_threshold_height'] ?? 1000)
+                ];
+
                 if (saveGeneratorSettings($configPath, $currentUser, $newSettings)) {
                     $response['success'] = true;
+                } else {
+                    $response['message'] = 'Fehler beim Speichern.';
                 }
                 break;
         }
@@ -251,10 +332,36 @@ require_once Path::getPartialTemplatePath('header.php');
                 <?php endif; ?>
             </div>
             <h2>Bild-Upload</h2>
-            <p>Ziehe Bilder per Drag & Drop in den Kasten oder wähle sie über den Button aus. Das Skript erkennt automatisch, ob es sich um eine High-Res- oder Low-Res-Version handelt.</p>
+            <p>Ziehe Bilder per Drag & Drop in den Kasten oder wähle sie über den Button aus.</p>
         </div>
 
         <div id="statusMessages"></div>
+
+        <!-- SETTINGS FORM (Neu) -->
+        <div class="generator-settings">
+            <div class="form-group checkbox-group" style="flex: 0 0 100%; justify-content: flex-start;">
+                <label for="auto_detect_hires" title="Wenn aktiviert, entscheidet die Bildgröße über High-Res/Low-Res">
+                    <input type="checkbox" id="auto_detect_hires" <?php echo ($uploadSettings['auto_detect_hires']) ? 'checked' : ''; ?>>
+                    <strong>Automatische Erkennung (High-Res / Low-Res)</strong>
+                </label>
+            </div>
+
+            <div class="form-group threshold-input" style="<?php echo (!$uploadSettings['auto_detect_hires']) ? 'display:none;' : ''; ?>">
+                <label for="hires_threshold_width">Min. Breite für High-Res (px):</label>
+                <input type="number" id="hires_threshold_width" value="<?php echo $uploadSettings['hires_threshold_width']; ?>">
+            </div>
+
+            <div class="form-group threshold-input" style="<?php echo (!$uploadSettings['auto_detect_hires']) ? 'display:none;' : ''; ?>">
+                <label for="hires_threshold_height">Min. Höhe für High-Res (px):</label>
+                <input type="number" id="hires_threshold_height" value="<?php echo $uploadSettings['hires_threshold_height']; ?>">
+            </div>
+
+            <div class="form-group" style="flex: 0 0 100%; display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" id="save-settings-btn" class="button button-blue" style="display: none;">
+                    <i class="fas fa-save"></i> Einstellungen speichern
+                </button>
+            </div>
+        </div>
 
         <div id="uploadContainer">
             <form id="uploadForm">
@@ -301,11 +408,11 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
         </div>
 
-        <!-- Confirm Modal (Advanced Layout) -->
+        <!-- Confirm Overwrite Modal -->
         <div id="confirmationModal" class="modal hidden-by-default">
             <div class="modal-content modal-advanced-layout">
                 <div class="modal-header-wrapper">
-                    <h2 id="confirmationHeader">Bestätigung erforderlich</h2>
+                    <h2 id="confirmationHeader">Überschreiben bestätigen</h2>
                     <span class="close-button">&times;</span>
                 </div>
 
@@ -331,6 +438,35 @@ require_once Path::getPartialTemplatePath('header.php');
                 </div>
             </div>
         </div>
+
+        <!-- NEW: Resolution Selection Modal -->
+        <div id="resolutionModal" class="modal hidden-by-default">
+            <div class="modal-content modal-advanced-layout">
+                <div class="modal-header-wrapper">
+                    <h2>Auflösung wählen</h2>
+                    <!-- Kein Schließen-X, Entscheidung zwingend -->
+                </div>
+
+                <div class="modal-scroll-content" style="text-align: center;">
+                    <p>Wohin soll das Bild <strong><span id="resShortName"></span></strong> hochgeladen werden?</p>
+                    <div class="preview-container" style="margin: 20px auto; max-width: 400px;">
+                        <img id="resPreviewImage" src="" alt="Vorschau" style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div class="modal-footer-actions">
+                    <div class="modal-buttons" style="justify-content: center;">
+                        <button id="btnSelectHires" class="button button-blue">
+                            <i class="fas fa-star"></i> High-Res (Original)
+                        </button>
+                        <button id="btnSelectLowres" class="button button-orange">
+                            <i class="fas fa-compress"></i> Low-Res (Web)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </article>
 
@@ -345,52 +481,79 @@ require_once Path::getPartialTemplatePath('header.php');
         const uploadForm = document.getElementById('uploadForm');
         const uploadButton = document.getElementById('uploadButton');
         const statusMessages = document.getElementById('statusMessages');
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const settingsContainer = document.querySelector('.generator-settings');
 
+        // Settings Inputs
+        const autoDetectCheckbox = document.getElementById('auto_detect_hires');
+        const thresholdInputs = document.querySelectorAll('.threshold-input');
+        const widthInput = document.getElementById('hires_threshold_width');
+        const heightInput = document.getElementById('hires_threshold_height');
+
+        // Modals
         const confirmationModal = document.getElementById('confirmationModal');
-        const closeModalBtn = confirmationModal.querySelector('.close-button');
-        const confirmOverwriteButton = document.getElementById('confirmOverwrite');
-        const cancelOverwriteButton = document.getElementById('cancelOverwrite');
-        const existingImage = document.getElementById('existingImage');
-        const newImage = document.getElementById('newImage');
-        const confirmationMessage = document.getElementById('confirmationMessage');
+        const resolutionModal = document.getElementById('resolutionModal');
         const cacheUpdateNotification = document.getElementById('cache-update-notification');
         const lastRunContainer = document.getElementById('last-run-container');
 
         let filesToUpload = [];
+        let isUploading = false;
 
-        // --- Drag & Drop Logic ---
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
+        // --- Settings Logic ---
+        function toggleThresholdInputs() {
+            const isAuto = autoDetectCheckbox.checked;
+            thresholdInputs.forEach(el => el.style.display = isAuto ? 'flex' : 'none');
+            showSaveButton();
+        }
+
+        function showSaveButton() {
+            if (!isUploading) saveSettingsBtn.style.display = 'inline-block';
+        }
+
+        autoDetectCheckbox.addEventListener('change', toggleThresholdInputs);
+        widthInput.addEventListener('input', showSaveButton);
+        heightInput.addEventListener('input', showSaveButton);
+
+        saveSettingsBtn.addEventListener('click', async () => {
+            const settings = {
+                auto_detect_hires: autoDetectCheckbox.checked,
+                hires_threshold_width: widthInput.value,
+                hires_threshold_height: heightInput.value,
+                update_timestamp: false // Settings save doesn't update "Last Upload"
+            };
+
+            const formData = new FormData();
+            formData.append('action', 'save_settings');
+            formData.append('settings', JSON.stringify(settings));
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                const res = await fetch('', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.success) {
+                    saveSettingsBtn.style.display = 'none';
+                    addStatusMessage('Einstellungen gespeichert.', 'success', 2000);
+                } else {
+                    addStatusMessage('Fehler beim Speichern: ' + data.message, 'error');
+                }
+            } catch(e) { console.error(e); }
         });
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-
+        // --- Drag & Drop ---
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-over');
-            if (e.dataTransfer.files.length > 0) {
-                handleFiles(e.dataTransfer.files);
-            }
+            if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
         });
-
-        // Klick auf Dropzone (außer auf den Button) öffnet FileDialog
         dropZone.addEventListener('click', (e) => {
-            if (e.target !== fileInput && !e.target.closest('label')) {
-                fileInput.click();
-            }
+            if (e.target !== fileInput && !e.target.closest('label')) fileInput.click();
         });
-
         fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
         function handleFiles(files) {
-            // Files zu Array konvertieren für einfachere Handhabung
-            const newFiles = Array.from(files);
-
-            // Duplikate vermeiden (optional, hier einfach anhängen)
-            filesToUpload = [...filesToUpload, ...newFiles];
+            filesToUpload = [...filesToUpload, ...Array.from(files)];
             updateFileList();
         }
 
@@ -412,25 +575,30 @@ require_once Path::getPartialTemplatePath('header.php');
             e.preventDefault();
             if (filesToUpload.length === 0) return;
 
+            isUploading = true;
             uploadButton.disabled = true;
+            saveSettingsBtn.style.display = 'none';
+            settingsContainer.style.opacity = '0.5';
+            settingsContainer.style.pointerEvents = 'none';
+
             uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Lade hoch...';
             cacheUpdateNotification.style.display = 'none';
-            statusMessages.innerHTML = ''; // Alte Nachrichten löschen
+            statusMessages.innerHTML = '';
 
             let uploadSuccessCount = 0;
             let fileCounter = 0;
 
-            // Sequentieller Upload, um Serverlast und Modal-Konflikte zu vermeiden
             for (const file of filesToUpload) {
                 try {
                     const result = await uploadFile(file);
-                    if (result && result.status === 'success') {
+
+                    if (result.status === 'success') {
                         uploadSuccessCount++;
-                        // Kleine Erfolgsmeldung für jede Datei
                         addStatusMessage(result.message, 'success', 2000);
-                    } else if (result && result.status === 'info') {
-                        // Übersprungen
+                    } else if (result.status === 'info') {
                         addStatusMessage(result.message, 'info', 3000);
+                    } else if (result.status === 'error') {
+                        addStatusMessage(result.message, 'error');
                     }
                     fileCounter++;
                 } catch (err) {
@@ -443,15 +611,24 @@ require_once Path::getPartialTemplatePath('header.php');
                 addStatusMessage(`Upload-Prozess abgeschlossen. ${uploadSuccessCount} von ${filesToUpload.length} Dateien erfolgreich.`, "info");
             }
 
-            // Reset
+            // Reset UI
+            isUploading = false;
+            settingsContainer.style.opacity = '1';
+            settingsContainer.style.pointerEvents = 'auto';
             filesToUpload = [];
             updateFileList();
             uploadButton.disabled = true;
             uploadButton.innerHTML = '<i class="fas fa-upload"></i> Upload starten';
-            fileInput.value = ''; // Reset Input
+            fileInput.value = '';
 
             if (uploadSuccessCount > 0) {
-                await saveSettings();
+                // Update Timestamp only on success
+                const formData = new FormData();
+                formData.append('action', 'save_settings');
+                formData.append('settings', JSON.stringify({update_timestamp: true})); // Only update time
+                formData.append('csrf_token', csrfToken);
+                await fetch('', { method: 'POST', body: formData });
+
                 updateTimestamp();
                 cacheUpdateNotification.classList.remove('hidden-by-default');
                 cacheUpdateNotification.style.display = 'block';
@@ -463,126 +640,138 @@ require_once Path::getPartialTemplatePath('header.php');
             formData.append('file', file);
             formData.append('csrf_token', csrfToken);
 
-            const response = await fetch(window.location.href, { // Post an sich selbst
-                method: 'POST',
-                body: formData
-            });
-
+            const response = await fetch('', { method: 'POST', body: formData });
             if (!response.ok) throw new Error(`HTTP Fehler: ${response.status}`);
-
             const result = await response.json();
 
-            if (result.status === 'confirmation_needed') {
-                return await handleConfirmation(result);
-            } else {
-                if (result.status === 'error') {
-                    addStatusMessage(result.message, 'error');
+            // Entscheidungsbaum
+            if (result.status === 'resolution_selection_needed') {
+                // Manuelle Auswahl nötig -> dann weiter prüfen
+                const selectionResult = await handleResolutionSelection(result);
+                // Das Ergebnis der Auswahl könnte "confirmation_needed" oder "success/error" sein
+                if (selectionResult.status === 'confirmation_needed') {
+                    return await handleConfirmation(selectionResult);
                 }
-                return result;
+                return selectionResult;
             }
+            else if (result.status === 'confirmation_needed') {
+                return await handleConfirmation(result);
+            }
+
+            return result;
         }
 
-        // --- Confirmation Modal ---
-        async function handleConfirmation(data) {
+        // --- Modals ---
+
+        // 1. Manuelle Auswahl (Neu)
+        async function handleResolutionSelection(data) {
             return new Promise(resolve => {
-                confirmationModal.style.display = 'flex';
-                confirmationMessage.innerHTML = `Ein Bild mit dem Namen <strong>${escapeHtml(data.short_name)}</strong> existiert bereits. Soll es überschrieben werden?`;
+                resolutionModal.style.display = 'flex';
+                document.getElementById('resShortName').textContent = data.short_name;
+                document.getElementById('resPreviewImage').src = data.image_data_uri;
 
-                // Bilder setzen
-                existingImage.src = data.existing_image_url;
-                newImage.src = data.new_image_data_uri;
+                const cleanup = () => { resolutionModal.style.display = 'none'; };
 
-                const cleanup = () => {
-                    confirmationModal.style.display = 'none';
-                    // Event Listener entfernen
-                    confirmOverwriteButton.onclick = null;
-                    cancelOverwriteButton.onclick = null;
-                    closeModalBtn.onclick = null;
-                };
-
-                const handleDecision = async (decision) => {
+                const sendSelection = async (resType) => {
                     cleanup();
-
-                    const formData = new FormData();
-                    formData.append('action', 'confirm_overwrite');
-                    formData.append('short_name', data.short_name);
-                    formData.append('decision', decision);
-                    formData.append('csrf_token', csrfToken);
+                    const fd = new FormData();
+                    fd.append('action', 'select_resolution');
+                    fd.append('short_name', data.short_name);
+                    fd.append('resolution', resType);
+                    fd.append('csrf_token', csrfToken);
 
                     try {
-                        const response = await fetch(window.location.href, { method: 'POST', body: formData });
-                        const result = await response.json();
-
-                        if (result.status === 'error') {
-                            addStatusMessage(result.message, 'error');
-                        } else {
-                            addStatusMessage(result.message, result.status === 'success' ? 'success' : 'info');
-                        }
-                        resolve(result);
+                        const r = await fetch('', {method: 'POST', body: fd});
+                        resolve(await r.json());
                     } catch (e) {
                         resolve({status: 'error', message: e.message});
                     }
                 };
 
-                confirmOverwriteButton.onclick = () => handleDecision('yes');
-                cancelOverwriteButton.onclick = () => handleDecision('no');
-                closeModalBtn.onclick = () => handleDecision('no');
+                // Event Listener (Einmalig binden wäre sauberer, aber hier praktisch)
+                document.getElementById('btnSelectHires').onclick = () => sendSelection('hires');
+                document.getElementById('btnSelectLowres').onclick = () => sendSelection('lowres');
+            });
+        }
+
+        // 2. Overwrite Confirmation
+        async function handleConfirmation(data) {
+            return new Promise(resolve => {
+                const modal = document.getElementById('confirmationModal');
+                const confirmBtn = document.getElementById('confirmOverwrite');
+                const cancelBtn = document.getElementById('cancelOverwrite');
+                const closeBtn = modal.querySelector('.close-button');
+
+                modal.style.display = 'flex';
+                document.getElementById('confirmationMessage').innerHTML = `Ein Bild mit dem Namen <strong>${escapeHtml(data.short_name)}</strong> existiert bereits. Überschreiben?`;
+                document.getElementById('existingImage').src = data.existing_image_url;
+                document.getElementById('newImage').src = data.new_image_data_uri;
+
+                const cleanup = () => {
+                    modal.style.display = 'none';
+                    confirmBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    closeBtn.onclick = null;
+                };
+
+                const sendDecision = async (decision) => {
+                    cleanup();
+                    const fd = new FormData();
+                    fd.append('action', 'confirm_overwrite');
+                    fd.append('short_name', data.short_name);
+                    fd.append('decision', decision);
+                    fd.append('csrf_token', csrfToken);
+
+                    try {
+                        const r = await fetch('', { method: 'POST', body: fd });
+                        resolve(await r.json());
+                    } catch (e) {
+                        resolve({status: 'error', message: e.message});
+                    }
+                };
+
+                confirmBtn.onclick = () => sendDecision('yes');
+                cancelBtn.onclick = () => sendDecision('no');
+                closeBtn.onclick = () => sendDecision('no');
             });
         }
 
         // --- Helper ---
-        async function saveSettings() {
-            try {
-                const fd = new FormData();
-                fd.append('action', 'save_settings');
-                fd.append('csrf_token', csrfToken);
-                await fetch(window.location.href, { method: 'POST', body: fd });
-            } catch(e) { console.error(e); }
-        }
-
         function updateTimestamp() {
             const now = new Date();
             const formattedDate = now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE');
-            let pElement = lastRunContainer.querySelector('.status-message');
-            if (!pElement) {
-                pElement = document.createElement('p');
-                pElement.className = 'status-message status-info';
+            let p = lastRunContainer.querySelector('.status-message');
+            if (!p) {
+                p = document.createElement('p');
+                p.className = 'status-message status-info';
                 lastRunContainer.innerHTML = '';
-                lastRunContainer.appendChild(pElement);
+                lastRunContainer.appendChild(p);
             }
-            pElement.innerHTML = `Letzter Upload am ${formattedDate} Uhr.`;
+            p.innerHTML = `Letzter Upload am ${formattedDate} Uhr.`;
         }
 
         function addStatusMessage(message, type, autoHideDuration = 0) {
-            const messageDiv = document.createElement('div');
-            // Mapping CSS classes
+            const div = document.createElement('div');
             let cssClass = 'status-info';
             if (type === 'success' || type === 'green') cssClass = 'status-green';
             if (type === 'error' || type === 'red') cssClass = 'status-red';
             if (type === 'orange') cssClass = 'status-orange';
 
-            messageDiv.className = `status-message ${cssClass}`;
-            messageDiv.innerHTML = `<p>${message}</p>`;
-
-            // Oben einfügen
-            statusMessages.prepend(messageDiv);
+            div.className = `status-message ${cssClass}`;
+            div.innerHTML = `<p>${message}</p>`;
+            statusMessages.prepend(div);
 
             if (autoHideDuration > 0) {
                 setTimeout(() => {
-                    messageDiv.style.opacity = '0';
-                    setTimeout(() => messageDiv.remove(), 500);
+                    div.style.opacity = '0';
+                    setTimeout(() => div.remove(), 500);
                 }, autoHideDuration);
             }
         }
 
         function escapeHtml(text) {
             if (!text) return '';
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         updateFileList();
