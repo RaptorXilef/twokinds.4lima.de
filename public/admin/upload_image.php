@@ -29,7 +29,7 @@
  * - fix(UI): Fallback-Anzeige für fehlenden Zeitstempel.
  * - feat(Settings): Konfigurierbare Schwellenwerte für High-Res/Low-Res Erkennung.
  * - feat(Logic): Optionale manuelle Zuweisung (High/Low) statt Automatik implementiert.
- * - feat(UI): Neues Modal zur manuellen Auswahl der Auflösungskategorie.
+ * - feat(UI): Neues Modal zur manuellen Auswahl der Auflösungskategorie mit Bild-Details (Maße, Typ).
  */
 
 declare(strict_types=1);
@@ -192,10 +192,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (move_uploaded_file($file['tmp_name'], $tempFilePath)) {
             // Einstellungen laden für Entscheidung
             $settings = loadGeneratorSettings($configPath, $currentUser);
+            list($width, $height) = getimagesize($tempFilePath);
 
             if ($settings['auto_detect_hires']) {
                 // AUTOMATIK
-                list($width, $height) = getimagesize($tempFilePath);
                 $minW = (int)$settings['hires_threshold_width'];
                 $minH = (int)$settings['hires_threshold_height'];
 
@@ -218,7 +218,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode([
                     'status' => 'resolution_selection_needed',
                     'short_name' => $shortName,
-                    'image_data_uri' => $newDataUri
+                    'image_data_uri' => $newDataUri,
+                    'width' => $width,
+                    'height' => $height,
+                    'extension' => $imageFileType
                 ]);
             }
         } else {
@@ -449,6 +452,12 @@ require_once Path::getPartialTemplatePath('header.php');
 
                 <div class="modal-scroll-content" style="text-align: center;">
                     <p>Wohin soll das Bild <strong><span id="resShortName"></span></strong> hochgeladen werden?</p>
+
+                    <!-- NEW: Image Details -->
+                    <div class="file-info" style="margin-bottom: 15px; font-size: 0.9em; color: var(--text-color-light);">
+                        <span id="resDimensions"></span> &bull; <span id="resExtension"></span>
+                    </div>
+
                     <div class="preview-container" style="margin: 20px auto; max-width: 400px;">
                         <img id="resPreviewImage" src="" alt="Vorschau" style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
                     </div>
@@ -669,6 +678,10 @@ require_once Path::getPartialTemplatePath('header.php');
                 resolutionModal.style.display = 'flex';
                 document.getElementById('resShortName').textContent = data.short_name;
                 document.getElementById('resPreviewImage').src = data.image_data_uri;
+
+                // Details anzeigen
+                document.getElementById('resDimensions').textContent = `${data.width} x ${data.height} px`;
+                document.getElementById('resExtension').textContent = (data.extension || '').toUpperCase();
 
                 const cleanup = () => { resolutionModal.style.display = 'none'; };
 
