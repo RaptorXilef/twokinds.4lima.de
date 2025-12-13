@@ -12,7 +12,7 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
-@since 4.0.0
+ * @since 4.0.0
  * - Architektur & Core:
  *  - Umstellung auf die dynamische Path-Helfer-Klasse und zentrale Pfad-Konstanten.
  *  - Vollständige Integration der `init_admin.php` sowie Entfernung redundanter Sicherheits-Header und Funktionen.
@@ -39,6 +39,9 @@
  * - fix(Session): Output Buffering (ob_start) hinzugefügt, um "Doppelter Login"-Probleme durch Header-Fehler zu verhindern.
  * - fix(Session): `ob_end_clean()` vor Redirects, um sauberen Header-Versand zu garantieren.
  * - fix(UX): Logik für Logout-Gründe (`?reason=...`) optimiert, damit diese zuverlässiger angezeigt werden.
+ *
+ * - fix(UX): Logout-Grund `session_expired` (aus init_admin.php) hinzugefügt.
+ * - fix(Session): "Doppelter Login" behoben -> Session wird nun vollständig initialisiert (inkl. Fingerprint & Timestamp), bevor weitergeleitet wird.
  */
 
 declare(strict_types=1);
@@ -190,7 +193,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     exit;
 }
 
-// 1. Rate Limit Prüfung VOR allem anderen
+// 1. Rate Limit Prüfung
 $lockoutTime = checkRateLimit($clientIp);
 
 if ($lockoutTime > 0) {
@@ -252,7 +255,15 @@ if ($lockoutTime > 0) {
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $username;
 
-                // Explizit schreiben, um Race Conditions bei Redirect zu vermeiden
+                // BUGFIX "Doppelter Login": Session-Daten SOFORT initialisieren,
+                // damit init_admin.php auf der Folgeseite nicht direkt wieder ausloggt.
+                $_SESSION['last_activity'] = time();
+
+                // Fingerprint muss identisch zu init_admin.php sein
+                $fingerprint = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
+                $_SESSION['session_fingerprint'] = $fingerprint;
+
+                // Wichtig: Daten schreiben BEVOR wir weiterleiten
                 session_write_close();
                 ob_end_clean(); // Buffer leeren vor Redirect
 
@@ -281,10 +292,12 @@ elseif (empty($message) && isset($_GET['reason'])) {
     $reason = $_GET['reason'];
     switch ($reason) {
         case 'timeout':
+        case 'session_expired': // FIX: Entspricht dem Wert aus init_admin.php
             $message = 'Sie wurden aufgrund von Inaktivität automatisch abgemeldet.';
             $messageType = 'warning';
             break;
         case 'security':
+        case 'session_hijacked':
             $message = 'Sitzung aus Sicherheitsgründen beendet.';
             $messageType = 'error';
             break;
