@@ -1903,6 +1903,7 @@
             max-width: 100%;
             height: auto;
             max-height: 100%; // Konsistente Höhe
+            object-fit: contain;
             border: 1px solid var(--border-medium);
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1954,6 +1955,21 @@
         flex: 1; // Alle nehmen gleich viel Platz
         min-width: 200px; // Aber nicht zu schmal werden
 
+        // Modifier für volle Breite (z.B. Checkboxen oben)
+        &.full-width {
+            flex: 0 0 100%;
+            min-width: 100%;
+        }
+
+        // Modifier für Button-Container (rechtsbündig)
+        &.actions-right {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end; // Button unten ausrichten
+            margin-top: 10px;
+            flex-direction: row; // Reset auf Row für Button
+        }
+
         label {
             font-weight: bold;
             color: var(--text-color);
@@ -1984,12 +2000,13 @@
             }
         }
 
-        // Spezifisch für Checkbox-Container (damit er nicht riesig wird)
+        // Spezifisch für Checkbox-Container
         &.checkbox-group {
             flex: 0 0 auto; // Nimmt nur so viel Platz wie nötig
             justify-content: center; // Vertikal mittig
-            height: 42px; // Gleiche Höhe wie Inputs
-            margin-bottom: 2px; // Kleiner Ausgleich
+            // height: 42px; // Entfernt, da bei full-width hinderlich
+            min-height: 42px; // Mindesthöhe für Klickbarkeit
+            margin-bottom: 2px;
 
             label {
                 display: flex;
@@ -2005,7 +2022,23 @@
                     margin-right: 8px;
                     transform: scale(1.2);
                 }
+
+                strong {
+                    font-weight: bold;
+                }
             }
+
+            // Spezieller Modifier für linksbündige Checkboxen (z.B. im Uploader)
+            &.align-left {
+                justify-content: flex-start;
+            }
+        }
+
+        // Versteckte Inputs (werden per JS ein/ausgeblendet)
+        &.threshold-input {
+            // Display wird per JS gesteuert (style="display: none"), daher hier keine display-Regel
+            // Aber wir können sicherstellen, dass sie sich gut einfügen
+            transition: opacity 0.3s ease;
         }
     }
 }

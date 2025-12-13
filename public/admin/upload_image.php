@@ -30,7 +30,7 @@
  * - feat(Settings): Konfigurierbare Schwellenwerte für High-Res/Low-Res Erkennung.
  * - feat(Logic): Optionale manuelle Zuweisung (High/Low) statt Automatik implementiert.
  * - feat(UI): Neues Modal zur manuellen Auswahl der Auflösungskategorie mit Bild-Details (Maße, Typ).
- * - refactor(UI): Inline-Styles entfernt und in SCSS ausgelagert (.resolution-selection-content).
+ * - refactor(UI): Inline-Styles entfernt und in SCSS ausgelagert (.resolution-selection-content, .align-left, .full-width).
  * - style(UI): Bildgröße im Auswahl-Modal an andere Modals angeglichen.
  */
 
@@ -343,13 +343,15 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <!-- SETTINGS FORM (Neu) -->
         <div class="generator-settings">
-            <div class="form-group checkbox-group" style="flex: 0 0 100%; justify-content: flex-start;">
+            <!-- FIX: Inline-Styles entfernt, SCSS Klassen genutzt -->
+            <div class="form-group checkbox-group align-left full-width">
                 <label for="auto_detect_hires" title="Wenn aktiviert, entscheidet die Bildgröße über High-Res/Low-Res">
                     <input type="checkbox" id="auto_detect_hires" <?php echo ($uploadSettings['auto_detect_hires']) ? 'checked' : ''; ?>>
                     <strong>Automatische Erkennung (High-Res / Low-Res)</strong>
                 </label>
             </div>
 
+            <!-- FIX: Inline Styles für display:none werden vom JS gesteuert, sind hier initial aber okay als State -->
             <div class="form-group threshold-input" style="<?php echo (!$uploadSettings['auto_detect_hires']) ? 'display:none;' : ''; ?>">
                 <label for="hires_threshold_width">Min. Breite für High-Res (px):</label>
                 <input type="number" id="hires_threshold_width" value="<?php echo $uploadSettings['hires_threshold_width']; ?>">
@@ -360,7 +362,8 @@ require_once Path::getPartialTemplatePath('header.php');
                 <input type="number" id="hires_threshold_height" value="<?php echo $uploadSettings['hires_threshold_height']; ?>">
             </div>
 
-            <div class="form-group" style="flex: 0 0 100%; display: flex; justify-content: flex-end; margin-top: 10px;">
+            <!-- FIX: Modifier class .actions-right -->
+            <div class="form-group full-width actions-right">
                 <button type="button" id="save-settings-btn" class="button button-blue" style="display: none;">
                     <i class="fas fa-save"></i> Einstellungen speichern
                 </button>
@@ -451,7 +454,6 @@ require_once Path::getPartialTemplatePath('header.php');
                     <!-- Kein Schließen-X, Entscheidung zwingend -->
                 </div>
 
-                <!-- FIX: Inline Styles removed, now using SCSS classes -->
                 <div class="modal-scroll-content resolution-selection-content">
                     <p>Wohin soll das Bild <strong><span id="resShortName"></span></strong> hochgeladen werden?</p>
 
@@ -464,7 +466,6 @@ require_once Path::getPartialTemplatePath('header.php');
                     </div>
                 </div>
 
-                <!-- FIX: Modifier class for center alignment -->
                 <div class="modal-footer-actions actions-center">
                     <div class="modal-buttons">
                         <button id="btnSelectHires" class="button button-blue">
