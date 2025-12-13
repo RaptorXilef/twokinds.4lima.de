@@ -10,7 +10,7 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
-* @since 2.0.0 - 4.0.0
+ * @since 2.0.0 - 4.0.0
  *    ARCHITEKTUR & CORE
  *    - Umstellung auf die dynamische Path-Helfer-Klasse und zentrale Pfad-Konstanten.
  *     - Vollständige Code-Bereinigung und Nutzung der neuesten Konstanten-Struktur.
@@ -23,7 +23,13 @@
  * - refactor(Code): HTML-Struktur an Admin-Standard angepasst (#settings-and-actions-container).
  * - fix(JS): Modernisiertes JavaScript (async/await, fetch) und verbessertes Error-Handling.
  * - style(UX): Visuelles Feedback bei Drag & Drop und Upload-Fortschritt verbessert.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> upload_image).
+ * - fix(UI): Fallback-Anzeige für fehlenden Zeitstempel.
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -33,34 +39,61 @@ require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // --- VARIABLEN & KONFIGURATION ---
 $tempDir = sys_get_temp_dir();
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
 
 // --- Einstellungsverwaltung ---
-function loadGeneratorSettings(string $filePath, bool $debugMode): array
+function loadGeneratorSettings(string $filePath, string $username): array
 {
-    $defaults = ['upload_image' => ['last_run_timestamp' => null]];
+    $defaults = [
+        'last_run_timestamp' => null
+    ];
+
     if (!file_exists($filePath)) {
         $dir = dirname($filePath);
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        file_put_contents($filePath, json_encode($defaults, JSON_PRETTY_PRINT));
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
+    $data = json_decode($content, true);
+
     if (json_last_error() !== JSON_ERROR_NONE) {
         return $defaults;
     }
-    if (!isset($settings['upload_image'])) {
-        $settings['upload_image'] = $defaults['upload_image'];
-    }
-    return $settings;
+
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['upload_image'] ?? [];
+
+    // Merge mit Defaults
+    return array_replace_recursive($defaults, $userSettings);
 }
 
-function saveGeneratorSettings(string $filePath, array $settings, bool $debugMode): bool
+function saveGeneratorSettings(string $filePath, string $username, array $newSettings): bool
 {
-    $jsonContent = json_encode($settings, JSON_PRETTY_PRINT);
-    return file_put_contents($filePath, $jsonContent) !== false;
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $data = $decoded;
+        }
+    }
+
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    $currentData = $data['users'][$username]['upload_image'] ?? [];
+    $data['users'][$username]['upload_image'] = array_replace_recursive($currentData, $newSettings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
 // Sicherstellen, dass die Upload-Verzeichnisse existieren
@@ -71,20 +104,19 @@ if (!is_dir(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES)) {
     mkdir(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, 0777, true);
 }
 
-function shortenFilename($filename)
+function shortenFilename(string $filename): string
 {
     $extension = pathinfo($filename, PATHINFO_EXTENSION);
     preg_match('/(\d{8})/', $filename, $matches);
     return (!empty($matches) ? $matches[0] : pathinfo($filename, PATHINFO_FILENAME)) . '.' . $extension;
 }
 
-function findExistingFileInDir($shortName, $dir)
+function findExistingFileInDir(string $shortName, string $dir): ?string
 {
     $baseName = pathinfo($shortName, PATHINFO_FILENAME);
-    foreach (glob($dir . DIRECTORY_SEPARATOR . $baseName . '.*') as $file) {
-        return $file;
-    }
-    return null;
+    $pattern = $dir . DIRECTORY_SEPARATOR . $baseName . '.*';
+    $files = glob($pattern);
+    return $files ? $files[0] : null;
 }
 
 // --- AJAX HANDLER ---
@@ -120,7 +152,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $relativeExistingPath = str_replace(DIRECTORY_PUBLIC, '', $existingFile);
                 $existingFileUrl = DIRECTORY_PUBLIC_URL . str_replace(DIRECTORY_SEPARATOR, '/', $relativeExistingPath);
 
-                echo json_encode(['status' => 'confirmation_needed', 'short_name' => $shortName, 'existing_image_url' => $existingFileUrl, 'new_image_data_uri' => 'data:image/' . $imageFileType . ';base64,' . base64_encode(file_get_contents($tempFilePath))]);
+                // Daten URI für das neue Bild
+                $imageData = file_get_contents($tempFilePath);
+                $base64 = base64_encode($imageData);
+                $newDataUri = 'data:image/' . $imageFileType . ';base64,' . $base64;
+
+                echo json_encode([
+                    'status' => 'confirmation_needed',
+                    'short_name' => $shortName,
+                    'existing_image_url' => $existingFileUrl,
+                    'new_image_data_uri' => $newDataUri
+                ]);
             } else {
                 $targetPath = $targetDir . DIRECTORY_SEPARATOR . $shortName;
                 if (rename($tempFilePath, $targetPath)) {
@@ -141,7 +183,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         $action = $_POST['action'];
         $response = ['success' => false, 'message' => ''];
-        $settingsFile = Path::getConfigPath('config_generator_settings.json');
 
         switch ($action) {
             case 'confirm_overwrite':
@@ -174,9 +215,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
 
             case 'save_settings':
-                $currentSettings = loadGeneratorSettings($settingsFile, $debugMode);
-                $currentSettings['upload_image']['last_run_timestamp'] = time();
-                if (saveGeneratorSettings($settingsFile, $currentSettings, $debugMode)) {
+                $newSettings = ['last_run_timestamp' => time()];
+                if (saveGeneratorSettings($configPath, $currentUser, $newSettings)) {
                     $response['success'] = true;
                 }
                 break;
@@ -186,8 +226,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$settings = loadGeneratorSettings(Path::getConfigPath('config_generator_settings.json'), $debugMode);
-$uploadSettings = $settings['upload_image'];
+// LOGIK VIEW
+$uploadSettings = loadGeneratorSettings($configPath, $currentUser);
+
 $pageTitle = 'Adminbereich - Bild-Upload';
 $pageHeader = 'Bild-Upload';
 $siteDescription = 'Seite zum hochladen der Comicseiten auf den Server (ohne FTP).';
@@ -205,6 +246,8 @@ require_once Path::getPartialTemplatePath('header.php');
                     <p class="status-message status-info">Letzter Upload am
                         <?php echo date('d.m.Y \u\m H:i:s', $uploadSettings['last_run_timestamp']); ?> Uhr.
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch kein Upload durchgeführt.</p>
                 <?php endif; ?>
             </div>
             <h2>Bild-Upload</h2>
@@ -245,13 +288,13 @@ require_once Path::getPartialTemplatePath('header.php');
 
             <div class="next-steps-actions">
                 <!-- Option 1: Thumbnails -->
-                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail'  . $dateiendungPHP; ?>"
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail'  . ($dateiendungPHP ?? '.php'); ?>"
                    class="button button-orange"> <!--  target="_blank" -->
                    <i class="fas fa-images"></i> 1. Thumbnails generieren
                 </a>
 
                 <!-- Option 2: Cache -->
-                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting'  . $dateiendungPHP . '?autostart=lowres,hires'; ?>"
+                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting'  . ($dateiendungPHP ?? '.php'); ?>?autostart=lowres,hires"
                    class="button button-blue">
                    <i class="fas fa-sync"></i> 2. Cache aktualisieren
                 </a>
@@ -420,7 +463,7 @@ require_once Path::getPartialTemplatePath('header.php');
             formData.append('file', file);
             formData.append('csrf_token', csrfToken);
 
-            const response = await fetch('', { // Post an sich selbst
+            const response = await fetch(window.location.href, { // Post an sich selbst
                 method: 'POST',
                 body: formData
             });
@@ -451,7 +494,7 @@ require_once Path::getPartialTemplatePath('header.php');
 
                 const cleanup = () => {
                     confirmationModal.style.display = 'none';
-                    // Event Listener entfernen (clean way would be named functions, but simple overwrite works here because promises are sequential)
+                    // Event Listener entfernen
                     confirmOverwriteButton.onclick = null;
                     cancelOverwriteButton.onclick = null;
                     closeModalBtn.onclick = null;
@@ -467,7 +510,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     formData.append('csrf_token', csrfToken);
 
                     try {
-                        const response = await fetch('', { method: 'POST', body: formData });
+                        const response = await fetch(window.location.href, { method: 'POST', body: formData });
                         const result = await response.json();
 
                         if (result.status === 'error') {
@@ -484,9 +527,6 @@ require_once Path::getPartialTemplatePath('header.php');
                 confirmOverwriteButton.onclick = () => handleDecision('yes');
                 cancelOverwriteButton.onclick = () => handleDecision('no');
                 closeModalBtn.onclick = () => handleDecision('no');
-
-                // Klick außerhalb schließt Modal (optional)
-                // window.onclick logic interfere with other modals potentially, keeping it scoped strictly here
             });
         }
 
@@ -496,7 +536,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 const fd = new FormData();
                 fd.append('action', 'save_settings');
                 fd.append('csrf_token', csrfToken);
-                await fetch('', { method: 'POST', body: fd });
+                await fetch(window.location.href, { method: 'POST', body: fd });
             } catch(e) { console.error(e); }
         }
 
@@ -507,6 +547,7 @@ require_once Path::getPartialTemplatePath('header.php');
             if (!pElement) {
                 pElement = document.createElement('p');
                 pElement.className = 'status-message status-info';
+                lastRunContainer.innerHTML = '';
                 lastRunContainer.appendChild(pElement);
             }
             pElement.innerHTML = `Letzter Upload am ${formattedDate} Uhr.`;
@@ -521,7 +562,7 @@ require_once Path::getPartialTemplatePath('header.php');
             if (type === 'orange') cssClass = 'status-orange';
 
             messageDiv.className = `status-message ${cssClass}`;
-            messageDiv.innerHTML = `<p>${message}</p>`; // p wrapper for style consistency
+            messageDiv.innerHTML = `<p>${message}</p>`;
 
             // Oben einfügen
             statusMessages.prepend(messageDiv);
