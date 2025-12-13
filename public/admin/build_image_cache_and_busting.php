@@ -11,7 +11,7 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
-* @since 3.0.0 -- 4.0.0
+ * @since 3.0.0 -- 4.0.0
  *    ARCHITEKTUR & CORE
  *    - Vollständige Umstellung auf die dynamische Path-Helfer-Klasse und granulare Pfad-Konstanten.
  *    - Speicherung der letzten Ausführung in der zentralen Einstellungs-JSON.
@@ -22,6 +22,10 @@
  * @since 5.0.0
  * - Komplettes Refactoring auf Admin-Standard (SCSS, Fetch-API, Path-Klasse).
  * - Workflow-Optimierung: Link zum RSS-Generator als nächsten Schritt hinzugefügt.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> build_image_cache).
+ * - fix(UI): Fallback-Anzeige für fehlenden Zeitstempel.
  */
 
 declare(strict_types=1);
@@ -31,6 +35,66 @@ $debugMode = $debugMode ?? false;
 
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
+
+// === KONFIGURATION ===
+$configPath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
+
+// --- Einstellungsverwaltung ---
+function loadGeneratorSettings(string $filePath, string $username): array
+{
+    // Flache Defaults
+    $defaults = [
+        'last_run_timestamp' => null,
+        'total_files' => 0
+    ];
+
+    if (!file_exists($filePath)) {
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
+        return $defaults;
+    }
+
+    $content = file_get_contents($filePath);
+    $data = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        return $defaults;
+    }
+
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['build_image_cache'] ?? [];
+
+    // Merge mit Defaults
+    return array_replace_recursive($defaults, $userSettings);
+}
+
+function saveGeneratorSettings(string $filePath, string $username, array $newSettings): bool
+{
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $data = $decoded;
+        }
+    }
+
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    $currentData = $data['users'][$username]['build_image_cache'] ?? [];
+    $data['users'][$username]['build_image_cache'] = array_replace_recursive($currentData, $newSettings);
+
+    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
+}
 
 // --- LOGIK ---
 
@@ -105,13 +169,29 @@ function buildImageCache(string $mode): array
         $log[] = "Social Media Bilder gescannt: " . count($social) . " Dateien.";
     }
 
+    // Gesamtzahl berechnen
+    $totalCount = 0;
+    foreach ($cacheData as $key => $val) {
+        if (is_array($val)) {
+            $totalCount += count($val);
+        }
+    }
+
     // Speichern
     if (file_put_contents($cacheFile, json_encode($cacheData, JSON_PRETTY_PRINT))) {
-        return ['success' => true, 'log' => $log, 'timestamp' => $cacheData['last_updated']];
+        return [
+            'success' => true,
+            'log' => $log,
+            'timestamp' => $cacheData['last_updated'],
+            'total_files' => $totalCount
+        ];
     } else {
         return ['success' => false, 'log' => array_merge($log, ["Fehler beim Schreiben der Cache-Datei!"])];
     }
 }
+
+// === LOGIK VIEW ===
+$cacheSettings = loadGeneratorSettings($configPath, $currentUser);
 
 // === AJAX HANDLER ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'build_cache') {
@@ -122,13 +202,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $mode = $_POST['mode'] ?? 'all';
     $result = buildImageCache($mode);
 
+    if ($result['success']) {
+        $newSettings = [
+            'last_run_timestamp' => $result['timestamp'],
+            'total_files' => $result['total_files'] ?? 0
+        ];
+        saveGeneratorSettings($configPath, $currentUser, $newSettings);
+        $result['last_run_formatted'] = date('d.m.Y \u\m H:i:s', $result['timestamp']);
+    }
+
     echo json_encode($result);
     exit;
 }
-
-// === VIEW ===
-$cacheFilePath = Path::getCachePath('comic_image_cache.json');
-$lastRunTimestamp = file_exists($cacheFilePath) ? filemtime($cacheFilePath) : null;
 
 $pageTitle = 'Adminbereich - Cache Builder';
 $pageHeader = 'Bild-Cache aktualisieren';
@@ -140,62 +225,54 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- HEADER & INFO -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if ($lastRunTimestamp) : ?>
+                <?php if ($cacheSettings['last_run_timestamp']) : ?>
                     <p class="status-message status-info">
-                        Cache zuletzt aktualisiert am <?php echo date('d.m.Y \u\m H:i:s', $lastRunTimestamp); ?> Uhr.
+                        Cache zuletzt aktualisiert am <?php echo date('d.m.Y \u\m H:i:s', $cacheSettings['last_run_timestamp']); ?> Uhr
+                        (<?php echo $cacheSettings['total_files']; ?> Dateien im Index).
                     </p>
                 <?php else : ?>
-                    <p class="status-message status-orange">Cache-Datei existiert noch nicht.</p>
+                    <p class="status-message status-orange">Noch keine Generierung durchgeführt.</p>
                 <?php endif; ?>
             </div>
-
             <h2>Bild-Cache Management</h2>
             <p>
                 Dieses Tool scannt die Bildverzeichnisse und erstellt eine Index-Datei (JSON).
                 Dies beschleunigt das Laden der Seite erheblich und ermöglicht das "Cache-Busting" (Browser zwingen, neue Bilder zu laden).
-                <br><strong>Wann ausführen?</strong> Immer nachdem Bilder hochgeladen, gelöscht oder umbenannt wurden.
+                <br><strong>Wann ausführen?</strong> Nach jedem Upload neuer Comic-Seiten oder Thumbnails.
             </p>
         </div>
 
-        <!-- ACTION BUTTONS -->
+        <!-- ACTIONS CENTERED -->
         <div class="generator-actions actions-center">
-            <button class="button button-blue cache-btn" data-mode="thumbnails">
+            <button class="button button-blue" data-mode="all">
+                <i class="fas fa-sync"></i> Alles aktualisieren
+            </button>
+            <button class="button" data-mode="thumbnails">
                 <i class="fas fa-images"></i> Nur Thumbnails
             </button>
-            <button class="button button-blue cache-btn" data-mode="lowres,hires">
-                <i class="fas fa-book-open"></i> Comic Seiten (Low/Hi)
+            <button class="button" data-mode="lowres,hires">
+                <i class="fas fa-file-image"></i> Comic-Seiten (Low/Hi)
             </button>
-            <button class="button button-orange cache-btn" data-mode="socialmedia">
+            <button class="button" data-mode="socialmedia">
                 <i class="fas fa-share-alt"></i> Social Media
-            </button>
-            <button class="button button-green cache-btn" data-mode="all">
-                <i class="fas fa-sync"></i> Alles aktualisieren
             </button>
         </div>
 
         <!-- LOG CONSOLE -->
         <div id="log-container" class="log-console">
-            <p class="log-info"><span class="log-time">[System]</span> Bereit. Wähle eine Aktion.</p>
+            <p class="log-info"><span class="log-time">[System]</span> Bereit.</p>
         </div>
 
         <!-- SUCCESS NOTIFICATION -->
         <div id="success-notification" class="notification-box hidden-by-default">
-            <h4><i class="fas fa-check-circle"></i> Cache erfolgreich aktualisiert</h4>
-            <p>Die Änderungen sind nun auf der Webseite wirksam. Was möchtest du als nächstes tun?</p>
+            <h4><i class="fas fa-check-circle"></i> Cache aktualisiert</h4>
+            <p>Die Datenbank ist auf dem neuesten Stand.</p>
             <div class="next-steps-actions">
-                <!-- Option 1: RSS Generator (Neu & Erste Position) -->
                 <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . ($dateiendungPHP ?? '.php'); ?>" class="button button-orange">
-                    <i class="fas fa-rss"></i> Zum RSS Generator
+                    <i class="fas fa-rss"></i> RSS-Feed aktualisieren
                 </a>
-
-                <!-- Option 2: Dashboard -->
-                <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" class="button button-blue">
-                    <i class="fas fa-home"></i> Zum Dashboard
-                </a>
-
-                <!-- Option 3: Webseite prüfen -->
-                <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>" target="_blank" class="button button-green">
-                    <i class="fas fa-external-link-alt"></i> Webseite prüfen
+                <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>" target="_blank" class="button button-blue">
+                    <i class="fas fa-external-link-alt"></i> Zur Webseite
                 </a>
             </div>
         </div>
@@ -206,8 +283,8 @@ require_once Path::getPartialTemplatePath('header.php');
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', () => {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
+        const buttons = document.querySelectorAll('.generator-actions button');
         const logContainer = document.getElementById('log-container');
-        const buttons = document.querySelectorAll('.cache-btn');
         const successNotification = document.getElementById('success-notification');
         const lastRunContainer = document.getElementById('last-run-container');
 
@@ -224,7 +301,8 @@ require_once Path::getPartialTemplatePath('header.php');
             // UI sperren
             buttons.forEach(b => b.disabled = true);
             successNotification.style.display = 'none';
-            addLogMessage(`Starte Cache-Update (Modus: ${mode})...`, 'info');
+            logContainer.innerHTML = '';
+            addLogMessage(`Starte Cache-Build (Modus: ${mode})...`, 'info');
 
             const formData = new FormData();
             formData.append('action', 'build_cache');
@@ -237,21 +315,30 @@ require_once Path::getPartialTemplatePath('header.php');
                     body: formData
                 });
 
-                if (!response.ok) throw new Error(`HTTP Fehler ${response.status}`);
+                const responseText = await response.text();
+                let data;
 
-                const data = await response.json();
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error("Raw Response:", responseText);
+                    throw new Error("Ungültige Server-Antwort.");
+                }
 
                 if (data.success) {
-                    // Logs anzeigen
                     data.log.forEach(line => addLogMessage(line, 'success'));
-                    addLogMessage('Cache erfolgreich gespeichert.', 'success');
+                    addLogMessage('Fertig!', 'success');
 
-                    // Timestamp aktualisieren
-                    const now = new Date();
-                    lastRunContainer.innerHTML = `<p class="status-message status-info">Cache zuletzt aktualisiert am ${now.toLocaleDateString()} um ${now.toLocaleTimeString()} Uhr (gerade eben).</p>`;
+                    // Timestamp Update
+                    if (data.last_run_formatted) {
+                        lastRunContainer.innerHTML = `<p class="status-message status-info">Cache zuletzt aktualisiert am ${data.last_run_formatted} Uhr (${data.total_files} Dateien im Index).</p>`;
+                    }
 
                     successNotification.style.display = 'block';
-                    successNotification.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    successNotification.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
                 } else {
                     data.log.forEach(line => addLogMessage(line, 'error'));
                     addLogMessage('Fehler beim Aktualisieren des Caches.', 'error');
