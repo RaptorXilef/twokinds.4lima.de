@@ -1,0 +1,200 @@
+{
+    // =========================================================================
+    // SPRACH-SPEZIFISCHE FORMATIERER
+    // Erzwingt, dass das gesamte Team dieselben Tools verwendet.
+    // =========================================================================
+    "[php]": {
+        // Setzt "valeryanm.vscode-phpsab" als Standard-Formatierer FÜR DIESES PROJEKT
+        "editor.defaultFormatter": "valeryanm.vscode-phpsab",
+        // Erzwingt das Formatieren beim Speichern für PHP-Dateien
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.renderWhitespace": "all", // alternativ "boundary"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.renderWhitespace": "all",
+    },
+    "[scss]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
+        "editor.codeActionsOnSave": {
+            "source.fixAll.stylelint": "explicit"
+        },
+        "editor.renderWhitespace": "all",
+    },
+    "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
+        "editor.codeActionsOnSave": {
+            "source.fixAll.stylelint": "explicit"
+        },
+        "editor.renderWhitespace": "all",
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.renderWhitespace": "all",
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "editor.renderWhitespace": "all",
+    },
+    "[xml]": {
+        "editor.defaultFormatter": "redhat.vscode-xml",
+        "editor.renderWhitespace": "all",
+    },
+    // =========================================================================
+    // PHP FORMATIERUNG & LINTING (valeryanm.vscode-phpsab)
+    // Das Herzstück unserer PHP-PSR-12-Regeln.
+    // =========================================================================
+    // Zeigt versteckte und unsichtbare Zeichen
+    "gremlins.showInProblemPane": true,
+    // Deaktiviert die Intelephense-Formatierung, um Konflikte zu vermeiden. (Wenn false)
+    // Aktuelll aktiviert um die Einrückungen von Kommentareen formatieren zu können
+    // (Rechtsklick->Dokument formatieren mit ...->PHP Intelephense)
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "intelephense.format.enable": true,
+    // LINTING (Fehler FINDEN mit phpcs)
+    "phpsab.snifferEnable": true,
+    "phpsab.standard": "PSR12",
+    // Absoluter Pfad, da dieser bei dir nachweislich funktioniert
+    "phpsab.executablePathCS": "C:\\xampp\\htdocs\\twokinds.4lima.de\\vendor\\bin\\phpcs.bat",
+    // FORMATTING (Fehler BEHEBEN mit phpcbf)
+    "phpsab.fixerEnable": true,
+    "phpsab.fixer": "phpcbf",
+    "phpsab.fixerStandard": "PSR12",
+    // Absoluter Pfad, da dieser bei dir nachweislich funktioniert
+    "phpsab.executablePathCBF": "C:\\xampp\\htdocs\\twokinds.4lima.de\\vendor\\bin\\phpcbf.bat",
+    "phpsab.debug": false, // Auf 'false' gesetzt, da es jetzt funktioniert
+    // Für phpsab ausgeschlossenee Ordner und Dateien
+    "phpsab.snifferArguments": [
+        "--ignore=vendor/*,node_modules/*,.Notizen/*,_Commites/*,.secrets/*,**/.vscode/**"
+    ],
+    // =========================================================================
+    // PROJEKT-SPEZIFISCHE EINSTELLUNGEN
+    // Regeln, die für alle Teammitglieder gelten sollen.
+    // =========================================================================
+    // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
+    "files.eol": "\n",
+    // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
+    "diffEditor.ignoreTrimWhitespace": true,
+    "diffEditor.codeLens": true,
+    "diffEditor.experimental.showMoves": true,
+    "diffEditor.maxComputationTime": 30000,
+    // Definiert die Rechtschreibsprachen für dieses Projekt
+    "cSpell.language": "en,de",
+    "cSpell.diagnosticLevel": "Hint",
+    "cSpell.words": [
+        "famly",
+        "Famly"
+    ],
+    // Definiert Projekt-spezifische TODO-Tags
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "todo-tree.general.tags": [
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "XXX",
+        "[ ]",
+        "[x]",
+        "VOR_RELEASE"
+    ],
+    // Definiert die Farben für diese Tags
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "todo-tree.highlights.useColourScheme": true,
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "todo-tree.highlights.backgroundColourScheme": [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "indigo",
+        "violet",
+        "purple"
+    ],
+    // Stellt sicher, dass 'vendor' und 'node_modules' ignoriert werden
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "todo-tree.filtering.excludeGlobs": [
+        "**/node_modules/*/**",
+        "**/vendor/*/**",
+        "**/*.pdf"
+    ],
+    // Alles beginnend mit todo-tree, muss möglicherweise in die Globale settings.json übertragen werden
+    "todo-tree.general.automaticGitRefreshInterval": 30,
+    "todo-tree.general.periodicRefreshInterval": 30,
+    "todo-tree.general.revealBehaviour": "leave focus in tree",
+    "todo-tree.general.rootFolder": "C:\\xampp\\htdocs\\twokinds.4lima.de\\",
+    "todo-tree.general.showActivityBarBadge": true,
+    "todo-tree.general.statusBar": "total",
+    "todo-tree.general.showIconsInsteadOfTagsInStatusBar": true,
+    "todo-tree.filtering.ignoreGitSubmodules": true,
+    "todo-tree.tree.showCountsInTree": true,
+    "todo-tree.tree.buttons.export": true,
+    // Schließt Ordner aus der VS-Code-Suche aus
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/vendor/": true,
+        "**/node_modules/": true,
+        "**/_Commites/": true,
+        "**/.Notizen/": true
+    },
+    // Schließt Ordner aus dem Datei-Watcher aus (spart Leistung)
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/vendor/*/**": true,
+        "**/_Commites/*/**": true,
+        "**/.Notizen/*/**": true
+    },
+    // Optional
+    // Konsolen
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "terminal.integrated.profiles.windows": {
+        "PowerShell 7 (pwsh)": {
+            "path": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
+            "icon": "terminal-powershell"
+        },
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        },
+        "Command Prompt": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash"
+        }
+    },
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "terminal.integrated.defaultProfile.windows": "PowerShell 7 (pwsh)",
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "workbench.colorTheme": "Monokai Pirokai - Beach Sunset",
+}

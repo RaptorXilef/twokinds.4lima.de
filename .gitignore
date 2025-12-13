@@ -29,8 +29,8 @@ ehthumbs_vista.db
 *.iws
 
 # VS Code
-.vscode/
-*.code-workspace
+# .vscode/
+# *.code-workspace
 .history/
 
 # Andere (Sublime, Eclipse, NetBeans)
