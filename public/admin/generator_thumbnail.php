@@ -10,7 +10,7 @@
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
-* @since 4.0.0
+ * @since 4.0.0
  *    ARCHITEKTUR & CORE
  *    - Umstellung auf die dynamische Path-Helfer-Klasse und zentrale Pfad-Konstanten.
  *    - Vollständige Umstellung auf die neueste Konstanten-Struktur.
@@ -18,15 +18,23 @@
  *    BUGFIXES
  *    - Behebung eines JavaScript ReferenceErrors (Scope-Problem).
  *
- * @since     5.0.0
+ * @since 5.0.0
  * - refactor(UI): Inline-Styles durch SCSS-Komponenten (.generator-container, .log-console) ersetzt.
  * - refactor(Code): HTML-Struktur an Admin-Layout angepasst.
  * - fix(JS): Modernisierung auf fetch/async-await und verbessertes State-Management.
  * - Verbesserte Fehlerdiagnose bei nicht-JSON Antworten (HTML/404/500).
  * - Layout-Optimierung: Log oben, Bilder unten. Auto-Scroll Option hinzugefügt.
  * - Entfernung der Auto-Scroll Funktion, da neue Bilder oben angefügt werden.
- * - Workflow-Optimierung: "Generierung abgeschlossen"-Box zwischen Log und Bildern platziert, mit Links zu Social-Media-Generator und Cache-Update.
+ * - Workflow-Optimierung: "Generierung abgeschlossen"-Box zwischen Log und Bildern platziert, mit Links zu
+ *    Social-Media-Generator und Cache-Update.
  * - Angleichung an Social-Media-Generator (User-Config, manueller Save-Button, Delete-Funktion, White-BG Option).
+ * - Feature: Einstellungen (Format, Qualität, Lossless) sind nun konfigurierbar und werden gespeichert.
+ * - Feature: "Zwingend weißer Hintergrund" Option hinzugefügt.
+ * - Feature: Bilder können nun direkt aus der Übersicht gelöscht werden.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> generator_thumbnail).
+ * - fix(UI): Fallback-Anzeige für fehlenden Zeitstempel.
  */
 
 declare(strict_types=1);
@@ -38,6 +46,7 @@ $debugMode = $debugMode ?? false;
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
 // === KONFIGURATION ===
+// Neuer Pfad im Unterordner 'admin'
 $configPath = Path::getConfigPath('admin/config_generator_settings.json');
 $currentUser = $_SESSION['admin_username'] ?? 'default';
 
@@ -68,7 +77,10 @@ function loadGeneratorSettings(string $filePath, string $username): array
         return $defaults;
     }
 
-    $userSettings = $data['users'][$username]['thumbnail_generator'] ?? [];
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['generator_thumbnail'] ?? [];
+
+    // Merge mit Defaults
     return array_replace_recursive($defaults, $userSettings);
 }
 
@@ -90,14 +102,14 @@ function saveGeneratorSettings(string $filePath, string $username, array $newSet
         $data['users'][$username] = [];
     }
 
-    $currentGeneratorData = $data['users'][$username]['thumbnail_generator'] ?? [];
-    $data['users'][$username]['thumbnail_generator'] = array_replace_recursive($currentGeneratorData, $newSettings);
+    $currentData = $data['users'][$username]['generator_thumbnail'] ?? [];
+    $data['users'][$username]['generator_thumbnail'] = array_replace_recursive($currentData, $newSettings);
 
     return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
 // --- LOGIK ---
-$generatorSettings = loadGeneratorSettings($configPath, $currentUser);
+$thumbSettings = loadGeneratorSettings($configPath, $currentUser);
 
 // AJAX Handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -184,15 +196,17 @@ require_once Path::getPartialTemplatePath('header.php');
         <!-- HEADER -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if ($generatorSettings['last_run_timestamp']) : ?>
+                <?php if ($thumbSettings['last_run_timestamp']) : ?>
                     <p class="status-message status-info">Letzter Lauf am
-                        <?php echo date('d.m.Y \u\m H:i:s', $generatorSettings['last_run_timestamp']); ?> Uhr.
+                        <?php echo date('d.m.Y \u\m H:i:s', $thumbSettings['last_run_timestamp']); ?> Uhr.
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch keine Generierung durchgeführt.</p>
                 <?php endif; ?>
             </div>
             <h2>Thumbnail Generator</h2>
             <p>
-                Dieses Tool generiert fehlende Vorschaubilder (Thumbnails) für die Comic-Übersichten.
+                Generiert Vorschaubilder (96px Breite) für die Comic-Navigation und Lesezeichen.
                 <br>Gefundene fehlende Bilder: <strong><?php echo count($missingThumbnails); ?></strong>
             </p>
         </div>
@@ -202,26 +216,27 @@ require_once Path::getPartialTemplatePath('header.php');
             <div class="form-group">
                 <label for="format">Format:</label>
                 <select id="format">
-                    <option value="webp" <?php echo ($generatorSettings['format'] === 'webp') ? 'selected' : ''; ?>>WebP (Empfohlen)</option>
-                    <option value="jpeg" <?php echo ($generatorSettings['format'] === 'jpeg') ? 'selected' : ''; ?>>JPEG</option>
-                    <option value="png" <?php echo ($generatorSettings['format'] === 'png') ? 'selected' : ''; ?>>PNG</option>
+                    <option value="webp" <?php echo ($thumbSettings['format'] === 'webp') ? 'selected' : ''; ?>>WebP (Empfohlen)</option>
+                    <option value="jpeg" <?php echo ($thumbSettings['format'] === 'jpeg') ? 'selected' : ''; ?>>JPEG</option>
+                    <option value="png" <?php echo ($thumbSettings['format'] === 'png') ? 'selected' : ''; ?>>PNG</option>
                 </select>
             </div>
+
             <div class="form-group">
                 <label for="quality">Qualität (1-100):</label>
-                <input type="number" id="quality" min="1" max="100" value="<?php echo htmlspecialchars((string)$generatorSettings['quality']); ?>">
+                <input type="number" id="quality" min="1" max="100" value="<?php echo htmlspecialchars((string)$thumbSettings['quality']); ?>">
             </div>
 
             <div class="form-group checkbox-group">
-                <label for="force_white_bg" title="Falls aktiviert, wird der Hintergrund immer weiß statt transparent">
-                    <input type="checkbox" id="force_white_bg" <?php echo ($generatorSettings['force_white_bg']) ? 'checked' : ''; ?>>
+                <label for="force_white_bg" title="Falls aktiviert, wird der Hintergrund immer weiß statt transparent (Standard bei WebP/PNG)">
+                    <input type="checkbox" id="force_white_bg" <?php echo ($thumbSettings['force_white_bg']) ? 'checked' : ''; ?>>
                     Hintergrund: Weiß
                 </label>
             </div>
 
             <div class="form-group checkbox-group">
                 <label for="lossless">
-                    <input type="checkbox" id="lossless" <?php echo ($generatorSettings['lossless']) ? 'checked' : ''; ?>>
+                    <input type="checkbox" id="lossless" <?php echo ($thumbSettings['lossless']) ? 'checked' : ''; ?>>
                     Verlustfrei
                 </label>
             </div>
@@ -239,10 +254,18 @@ require_once Path::getPartialTemplatePath('header.php');
             <p class="log-info"><span class="log-time">[System]</span> Bereit. <?php echo count($missingThumbnails); ?> Bilder in der Warteschlange.</p>
         </div>
 
-        <!-- NOTIFICATIONS (Zwischen Console und Bildern) -->
+        <!-- ACTIONS -->
+        <div class="generator-actions">
+            <button id="toggle-pause-resume-btn" class="button button-orange" style="display: none;">Pause</button>
+            <button id="generate-btn" class="button button-green" <?php echo empty($missingThumbnails) ? 'disabled' : ''; ?>>
+                <i class="fas fa-play"></i> Generierung starten
+            </button>
+        </div>
+
+        <!-- NOTIFICATION BOX -->
         <div id="cache-update-notification" class="notification-box hidden-by-default">
             <h4><i class="fas fa-check-circle"></i> Generierung abgeschlossen</h4>
-            <p>Die Thumbnails wurden erstellt. Bitte wähle den nächsten Schritt:</p>
+            <p>Die Thumbnails wurden erstellt. Als letzter Schritt sollte der Cache aktualisiert werden.</p>
             <div class="next-steps-actions">
                 <!-- Option 1: Social Media Bilder -->
                 <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . ($dateiendungPHP ?? '.php'); ?>"
@@ -256,14 +279,6 @@ require_once Path::getPartialTemplatePath('header.php');
                    <i class="fas fa-sync"></i> 2. Cache aktualisieren
                 </a>
             </div>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="generator-actions">
-            <button id="toggle-pause-resume-btn" class="button button-orange" style="display: none;">Pause</button>
-            <button id="generate-btn" class="button button-green" <?php echo empty($missingThumbnails) ? 'disabled' : ''; ?>>
-                <i class="fas fa-play"></i> Generierung starten
-            </button>
         </div>
 
         <!-- IMAGE GRID -->
@@ -285,6 +300,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const settingsContainer = document.querySelector('.generator-settings');
         const createdImagesContainer = document.getElementById('created-images-container');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
+
         const inputs = settingsContainer.querySelectorAll('input, select');
 
         // State
@@ -320,10 +336,16 @@ require_once Path::getPartialTemplatePath('header.php');
             settings.update_timestamp = updateTimestamp;
             formData.append('settings', JSON.stringify(settings));
             formData.append('csrf_token', csrfToken);
+
             try {
                 const response = await fetch(window.location.href, { method: 'POST', body: formData });
                 const result = await response.json();
-                return result.success;
+                if (result.success) {
+                    return true;
+                } else {
+                    console.error("Save failed:", result.message);
+                    return false;
+                }
             } catch (e) {
                 console.error("Settings save failed", e);
                 return false;
@@ -332,11 +354,15 @@ require_once Path::getPartialTemplatePath('header.php');
 
         inputs.forEach(input => {
             input.addEventListener('change', () => {
-                if (!isGenerationActive) saveSettingsBtn.style.display = 'inline-block';
+                if (!isGenerationActive) {
+                    saveSettingsBtn.style.display = 'inline-block';
+                }
             });
             if (input.type === 'number' || input.type === 'range' || input.type === 'text') {
                 input.addEventListener('input', () => {
-                    if (!isGenerationActive) saveSettingsBtn.style.display = 'inline-block';
+                    if (!isGenerationActive) {
+                        saveSettingsBtn.style.display = 'inline-block';
+                    }
                 });
             }
         });
