@@ -23,6 +23,8 @@
  * - refactor(UI): Inline-CSS entfernt und durch SCSS-Klassen (.user-management-container) ersetzt.
  * - refactor(Code): HTML-Struktur bereinigt und an 7-1 Pattern angepasst.
  * - style(UX): Icons und bessere visuelle Trennung der Sektionen hinzugefügt.
+ * - fix(Security): `LOCK_EX` beim Speichern der Benutzerdatei hinzugefügt.
+ * - style(UI): Layout der Willkommens-Nachricht optimiert.
  */
 
 declare(strict_types=1);
@@ -60,7 +62,8 @@ function saveUsers(array $users): bool
         return false;
     }
     $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents($usersFile, $jsonContent) !== false;
+    // WICHTIG: LOCK_EX verhindert, dass zwei Prozesse gleichzeitig schreiben und die Datei korrumpieren
+    return file_put_contents($usersFile, $jsonContent, LOCK_EX) !== false;
 }
 
 // --- LOGIK ---
@@ -134,9 +137,10 @@ require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
-    <!-- Container nutzt nun die neue SCSS-Klasse -->
+    <!-- Container nutzt die existierende SCSS-Klasse -->
     <div class="user-management-container">
-        <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
+        <h2>Benutzerverwaltung</h2>
+        <p class="text-center mb-15">Angemeldet als: <strong><?php echo htmlspecialchars($currentUser); ?></strong></p>
 
         <?php if (!empty($message)) : ?>
             <div class="status-message status-<?php echo $messageType; ?> visible">
@@ -199,7 +203,6 @@ require_once Path::getPartialTemplatePath('header.php');
         deleteForms.forEach(form => {
             form.addEventListener('submit', function (event) {
                 const userToDelete = form.querySelector('input[name="user_to_delete"]').value;
-                // Standard confirm() ist hier absolut ausreichend und sicher
                 if (!confirm('Sind Sie sicher, dass Sie den Benutzer "' + userToDelete + '" unwiderruflich löschen möchten?')) {
                     event.preventDefault();
                 }
@@ -208,4 +211,4 @@ require_once Path::getPartialTemplatePath('header.php');
     });
 </script>
 
-            <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>
