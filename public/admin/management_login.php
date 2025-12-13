@@ -23,6 +23,8 @@
  * - refactor(UI): Inline-CSS entfernt und durch SCSS-Klasse .login-management-container ersetzt.
  * - refactor(Code): HTML-Struktur bereinigt, JS modernisiert (kein Inline-HTML im JS).
  * - fix(Standard): Nutzung globaler Status-Klassen (.status-message).
+ * - fix(Security): `LOCK_EX` beim Speichern der Benutzerdatei hinzugefügt.
+ * - style(UI): Layout der Willkommens-Nachricht an andere Admin-Seiten angepasst.
  */
 
 declare(strict_types=1);
@@ -60,7 +62,8 @@ function saveUsers(array $users): bool
         return false;
     }
     $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents($usersFile, $jsonContent) !== false;
+    // WICHTIG: LOCK_EX verhindert Datenkorruption bei gleichzeitigem Zugriff
+    return file_put_contents($usersFile, $jsonContent, LOCK_EX) !== false;
 }
 
 // --- LOGIK ---
@@ -132,9 +135,11 @@ require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article>
-    <!-- Container nutzt nun die neue SCSS-Klasse -->
+    <!-- Container nutzt die existierende SCSS-Klasse -->
     <div class="login-management-container">
-        <h2>Willkommen, <?php echo htmlspecialchars($currentUser); ?>!</h2>
+        <h2>Zugangsdaten verwalten</h2>
+        <!-- Konsistente Anzeige des eingeloggten Users -->
+        <p class="text-center mb-15">Angemeldet als: <strong><?php echo htmlspecialchars($currentUser); ?></strong></p>
 
         <!-- Status Message Container (PHP & JS) -->
         <div id="status-message-box" class="status-message status-<?php echo $messageType; ?> <?php echo !empty($message) ? 'visible' : ''; ?>">
@@ -142,7 +147,7 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
 
         <section class="section-divider">
-            <h3>Benutzerdaten ändern</h3>
+            <h3>Daten ändern</h3>
             <form id="change-credentials-form"
                   action="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_login.php' . $dateiendungPHP; ?>"
                   method="POST" class="admin-form">
