@@ -9,14 +9,16 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.2.1
- * @since     5.0.0 Komplettes Refactoring.
- * @since     5.1.0 Feature: Ausschnitt-Position.
- * @since     5.1.1 Feature: Lösch-Funktion.
- * @since     5.1.2 Stability Fix: Robustes Loop-Handling.
- * @since     5.1.3 Feature: Option für erzwungenen weißen Hintergrund.
- * @since     5.2.0 Feature: User-spezifische Config, neuer Speicherpfad (config/admin/), manueller Speicher-Button.
- * @since     5.2.1 Anpassung: Standard-Ausschnitt ist nun "Oben" (top) statt "Mitte".
+ *
+ * @since     5.0.0
+ * - Komplettes Refactoring.
+ * - Feature: Ausschnitt-Position.
+ * - Feature: Lösch-Funktion.
+ * - Stability Fix: Robustes Loop-Handling.
+ * - Feature: Option für erzwungenen weißen Hintergrund.
+ * - Feature: User-spezifische Config, neuer Speicherpfad (config/admin/), manueller Speicher-Button.
+ * - Anpassung: Standard-Ausschnitt ist nun "Oben" (top) statt "Mitte".
+ * - fix(UI): Fallback-Anzeige hinzugefügt, wenn noch kein Zeitstempel vorhanden ist.
  */
 
 declare(strict_types=1);
@@ -66,7 +68,7 @@ function loadGeneratorSettings(string $filePath, string $username): array
     }
 
     // User-spezifische Einstellungen laden
-    $userSettings = $data['users'][$username]['socialmedia_generator'] ?? [];
+    $userSettings = $data['users'][$username]['generator_socialmedia'] ?? [];
 
     // Merge mit Defaults
     return array_replace_recursive($defaults, $userSettings);
@@ -93,8 +95,8 @@ function saveGeneratorSettings(string $filePath, string $username, array $newSet
     }
 
     // 3. Nur den relevanten Teil aktualisieren
-    $currentGeneratorData = $data['users'][$username]['socialmedia_generator'] ?? [];
-    $data['users'][$username]['socialmedia_generator'] = array_replace_recursive($currentGeneratorData, $newSettings);
+    $currentGeneratorData = $data['users'][$username]['generator_socialmedia'] ?? [];
+    $data['users'][$username]['generator_socialmedia'] = array_replace_recursive($currentGeneratorData, $newSettings);
 
     // 4. Speichern
     return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
@@ -194,6 +196,8 @@ require_once Path::getPartialTemplatePath('header.php');
                     <p class="status-message status-info">Letzter Lauf am
                         <?php echo date('d.m.Y \u\m H:i:s', $generatorSettings['last_run_timestamp']); ?> Uhr.
                     </p>
+                <?php else : ?>
+                    <p class="status-message status-orange">Noch keine Generierung durchgeführt.</p>
                 <?php endif; ?>
             </div>
             <h2>Social Media Bilder Generator</h2>
