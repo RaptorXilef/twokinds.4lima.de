@@ -18,15 +18,21 @@
  *  - Anpassung des Detail-Modals zur Anzeige von HTML-Transkripten und Text-Diffs.
  *
  * @since 5.0.0
- *  - refactor(Page): Inline-CSS entfernt, Layout auf Admin-Tabellen-Standards (SCSS) umgestellt, PHP-Paginierung
- *     hinzugefügt.
- *  - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_REPORT_DESCRIPTION) hinzugefügt.
- *  - refactor(Config): Nutzung spezifischer Konstanten (ENTRIES_PER_PAGE_REPORT, TRUNCATE_REPORT_DESCRIPTION).
- *  - feat(UI): Info-Feld (Zeitstempel & Beschreibung) und Paginierung-Info hinzugefügt.
- *  - feat(UX): Erfolgsmeldungen blenden sich nun automatisch nach 5 Sekunden aus.
- *  - refactor(CSS): Alle verbleibenden Inline-Styles durch SCSS-Klassen ersetzt.
- *  - refactor(CSS): Bereinigung verbliebener Inline-Styles im JavaScript.
+ * - refactor(Page): Inline-CSS entfernt, Layout auf Admin-Tabellen-Standards (SCSS) umgestellt, PHP-Paginierung
+ *    hinzugefügt.
+ * - feat(UI): Paginierung-Info und konfigurierbare Textkürzung (TRUNCATE_REPORT_DESCRIPTION) hinzugefügt.
+ * - refactor(Config): Nutzung spezifischer Konstanten (ENTRIES_PER_PAGE_REPORT, TRUNCATE_REPORT_DESCRIPTION).
+ * - feat(UI): Info-Feld (Zeitstempel & Beschreibung) und Paginierung-Info hinzugefügt.
+ * - feat(UX): Erfolgsmeldungen blenden sich nun automatisch nach 5 Sekunden aus.
+ * - refactor(CSS): Alle verbleibenden Inline-Styles durch SCSS-Klassen ersetzt.
+ * - refactor(CSS): Bereinigung verbliebener Inline-Styles im JavaScript.
+ * - refactor(Core): Einführung von strict_types=1.
+ * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
+ * - fix(Config): Speicherstruktur korrigiert (users -> username -> reports_manager).
+ * - fix(Logic): loadReportSettings gibt nun flaches Array zurück (Konsistenz).
  */
+
+declare(strict_types=1);
 
 // === 1. ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
@@ -35,7 +41,9 @@ require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 $pageHeader = 'Fehlermeldungen verwalten';
 $reportsFilePath = Path::getDataPath('comic_reports.json');
 $archiveFilePath = Path::getDataPath('comic_reports_archive.json');
-$settingsFilePath = Path::getConfigPath('config_generator_settings.json'); // NEU: Für Zeitstempel
+// Config Path auf admin/ Ordner aktualisiert
+$settingsFilePath = Path::getConfigPath('admin/config_generator_settings.json');
+$currentUser = $_SESSION['admin_username'] ?? 'default';
 
 $message = ''; // Für Statusmeldungen
 $messageType = 'info';
@@ -51,31 +59,75 @@ if (!defined('TRUNCATE_REPORT_DESCRIPTION')) {
 // === 3. HELFERFUNKTIONEN (mit flock) ===
 
 /**
- * Liest die Generator-Settings für den Zeitstempel.
+ * Liest die Generator-Settings für den Zeitstempel (User-spezifisch).
  */
-function loadReportSettings(string $filePath): array
+function loadReportSettings(string $filePath, string $username): array
 {
-    $defaults = ['reports_manager' => ['last_run_timestamp' => null]];
+    // Flache Defaults
+    $defaults = [
+        'last_run_timestamp' => null
+    ];
+
     if (!file_exists($filePath)) {
+        // Falls Datei noch gar nicht existiert, erstellen wir sie leer
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
         return $defaults;
     }
+
     $content = file_get_contents($filePath);
-    $settings = json_decode($content, true);
-    // Sicherstellen, dass der Key existiert
-    if (!isset($settings['reports_manager'])) {
-        $settings['reports_manager'] = ['last_run_timestamp' => filemtime(Path::getDataPath('comic_reports.json'))];
+    $data = json_decode($content, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        return $defaults;
     }
-    return (json_last_error() === JSON_ERROR_NONE && is_array($settings)) ? $settings : $defaults;
+
+    // Spezifische Einstellungen für den User laden
+    $userSettings = $data['users'][$username]['reports_manager'] ?? [];
+
+    // Fallback Logik: Wenn Zeitstempel leer, versuche filemtime der reports.json
+    if (empty($userSettings['last_run_timestamp'])) {
+        $reportsJsonPath = Path::getDataPath('comic_reports.json');
+        if (file_exists($reportsJsonPath)) {
+            $userSettings['last_run_timestamp'] = filemtime($reportsJsonPath);
+        }
+    }
+
+    // Merge mit Defaults
+    return array_replace_recursive($defaults, $userSettings);
 }
 
 /**
- * Aktualisiert den Zeitstempel (wird beim Verschieben aufgerufen).
+ * Aktualisiert den Zeitstempel für den User (wird beim Verschieben aufgerufen).
  */
-function updateReportTimestamp(string $filePath): void
+function updateReportTimestamp(string $filePath, string $username): void
 {
-    $settings = loadReportSettings($filePath);
-    $settings['reports_manager']['last_run_timestamp'] = time();
-    file_put_contents($filePath, json_encode($settings, JSON_PRETTY_PRINT));
+    // Wir müssen die ganze Datei lesen, um die Struktur zu erhalten
+    $data = [];
+    if (file_exists($filePath)) {
+        $content = file_get_contents($filePath);
+        $decoded = json_decode($content, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $data = $decoded;
+        }
+    }
+
+    if (!isset($data['users'])) {
+        $data['users'] = [];
+    }
+    if (!isset($data['users'][$username])) {
+        $data['users'][$username] = [];
+    }
+
+    // Zeitstempel setzen
+    $currentSettings = $data['users'][$username]['reports_manager'] ?? [];
+    $currentSettings['last_run_timestamp'] = time();
+    $data['users'][$username]['reports_manager'] = $currentSettings;
+
+    file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
 }
 
 /**
@@ -139,7 +191,7 @@ function saveJsonWithLock(string $path, array $data, bool $debugMode): bool
 /**
  * Verschiebt/Ändert einen Report-Status.
  */
-function moveReport(string $reportId, string $action, string $reportsPath, string $archivePath, string $settingsPath, bool $debugMode): bool
+function moveReport(string $reportId, string $action, string $reportsPath, string $archivePath, string $settingsPath, string $username, bool $debugMode): bool
 {
     $handleReports = fopen($reportsPath, 'c+');
     $handleArchive = fopen($archivePath, 'c+');
@@ -236,8 +288,8 @@ function moveReport(string $reportId, string $action, string $reportsPath, strin
 
         $success = true;
 
-        // NEU: Zeitstempel aktualisieren bei Änderung
-        updateReportTimestamp($settingsPath);
+        // NEU: Zeitstempel für User aktualisieren
+        updateReportTimestamp($settingsPath, $username);
     }
 
     flock($handleReports, LOCK_UN);
@@ -254,7 +306,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['rep
         $messageType = 'red';
     } else {
         $action = $_POST['action'];
-        $success = moveReport($_POST['report_id'], $action, $reportsFilePath, $archiveFilePath, $settingsFilePath, $debugMode);
+        // Übergebe $currentUser an moveReport
+        $success = moveReport($_POST['report_id'], $action, $reportsFilePath, $archiveFilePath, $settingsFilePath, $currentUser, $debugMode);
 
         $queryParams = $_GET;
         $queryParams['message'] = $success ? "Report erfolgreich ($action)." : "Aktion ($action) fehlgeschlagen.";
@@ -279,7 +332,8 @@ if (isset($_GET['message'])) {
 $isArchive = ($filterStatus === 'closed');
 $sourcePath = $isArchive ? $archiveFilePath : $reportsFilePath;
 $allReports = loadJsonWithLock($sourcePath, $debugMode);
-$reportSettings = loadReportSettings($settingsFilePath);
+// Settings laden für User
+$reportSettings = loadReportSettings($settingsFilePath, $currentUser);
 
 // Filtern
 $reports = array_filter($allReports, function ($r) use ($filterStatus, $filterComicId, $filterSubmitter) {
@@ -336,12 +390,12 @@ require_once Path::getPartialTemplatePath('header.php');
 
 <article>
     <div class="content-section">
-        <!-- NEU: Info-Box oben (ähnlich Comic Editor) -->
+        <!-- NEU: Info-Box oben -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
-                <?php if (!empty($reportSettings['reports_manager']['last_run_timestamp'])) : ?>
+                <?php if (!empty($reportSettings['last_run_timestamp'])) : ?>
                     <p class="status-message status-info">Letzte Änderung am
-                        <?php echo date('d.m.Y \u\m H:i:s', $reportSettings['reports_manager']['last_run_timestamp']); ?> Uhr.
+                        <?php echo date('d.m.Y \u\m H:i:s', $reportSettings['last_run_timestamp']); ?> Uhr.
                     </p>
                 <?php endif; ?>
             </div>
@@ -350,7 +404,6 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
 
         <?php if ($message) : ?>
-            <!-- FIX: Klasse "visible" statt inline style="display:block" -->
             <div id="main-status-message" class="status-message status-<?php echo $messageType; ?> visible">
                 <p><?php echo $message; ?></p>
             </div>
@@ -381,7 +434,6 @@ require_once Path::getPartialTemplatePath('header.php');
             </fieldset>
         </form>
 
-        <!-- FIX: Pagination Info Container statt inline styles -->
         <div class="pagination-info-container">
             <small>Zeigt <?php echo $itemsPerPage; ?> Einträge pro Seite.</small>
         </div>
@@ -401,7 +453,6 @@ require_once Path::getPartialTemplatePath('header.php');
                 <tbody>
                     <?php if (empty($displayedReports)) : ?>
                         <tr>
-                            <!-- FIX: Klasse "text-center" statt inline style -->
                             <td colspan="6" class="text-center">Keine Meldungen für die aktuellen Filter gefunden.</td>
                         </tr>
                     <?php else : ?>
@@ -419,7 +470,7 @@ require_once Path::getPartialTemplatePath('header.php');
                             $original = htmlspecialchars($report['transcript_original'] ?? '');
                             $status = $report['status'] ?? 'open';
 
-                            // --- NEU: TEXT-KÜRZUNG LOGIK (via Konstante) ---
+                            // --- TEXT-KÜRZUNG LOGIK (via Konstante) ---
                             if (TRUNCATE_REPORT_DESCRIPTION) {
                                 $shortDesc = mb_strlen($description) > 75 ? mb_substr($description, 0, 75) . '...' : $description;
                             } else {
@@ -521,7 +572,7 @@ require_once Path::getPartialTemplatePath('header.php');
     </div>
 </article>
 
-<!-- FIX: .hidden-by-default statt style="display:none" -->
+<!-- Modal remains unchanged in structure, uses classes -->
 <div id="report-detail-modal" class="modal admin-modal hidden-by-default" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
     <div class="modal-overlay" data-action="close-detail-modal"></div>
     <div class="modal-content report-detail-modal-content modal-advanced-layout">
@@ -531,7 +582,6 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
         <div class="modal-scroll-content">
             <div id="report-detail-content" class="admin-form">
-                <!-- FIX: .report-meta-grid statt inline style -->
                 <div class="report-meta-grid">
                     <div><strong>Comic-ID:</strong> <a id="detail-comic-link" href="#" target="_blank"><span id="detail-comic-id"></span></a></div>
                     <div><strong>Datum:</strong> <span id="detail-date"></span></div>
@@ -550,7 +600,6 @@ require_once Path::getPartialTemplatePath('header.php');
                         <p class="loading-text">Diff wird generiert...</p>
                     </div>
                     <h3>Vorschlag (Gerenderte HTML-Ansicht)</h3>
-                    <!-- FIX: .mb-15 statt inline style -->
                     <div id="detail-suggestion-html" class="report-text-box mb-15"></div>
                     <h3>Vorschlag (HTML-Quellcode)</h3>
                     <div id="detail-suggestion-code-container">
@@ -588,7 +637,7 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
             }, 5000); // 5 Sekunden anzeigen
         }
 
-        // --- 2. Bestehende Tabellen-Logik ---
+        // --- 2. Bestehende Tabellen-Logik (unverändert aber im DOMContentLoaded) ---
         const table = document.getElementById('reports-table');
         if (table) {
             table.addEventListener('click', function (e) {
@@ -645,7 +694,6 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
                                 diffViewer.innerHTML = '';
 
                                 if (!diff || diff.length === 0 || (diff.length === 1 && !diff[0].added && !diff[0].removed)) {
-                                    // FIX: Klasse statt style
                                     diffViewer.innerHTML = '<p class="diff-msg-empty">Keine Änderungen am Textinhalt gefunden.</p>';
                                 } else {
                                     const fragment = document.createDocumentFragment();
@@ -658,12 +706,10 @@ $adminReportsJsUrl = Url::getAdminJsUrl('reports.min.js');
                                     diffViewer.appendChild(fragment);
                                 }
                             } else {
-                                // FIX: Klasse statt style
                                 diffViewer.innerHTML = '<p class="loading-text diff-msg-error">Fehler: jsDiff-Bibliothek (Diff) nicht gefunden.</p>';
                             }
                         } catch (err) {
                             console.error('Fehler beim Erstellen des Diffs:', err);
-                            // FIX: Klasse statt style
                             diffViewer.innerHTML = '<p class="loading-text diff-msg-error">Fehler beim Erstellen des Diffs.</p>';
                         }
                     }
