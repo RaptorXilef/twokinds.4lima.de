@@ -11,19 +11,29 @@
  * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
  * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
  *
- * @file      ROOT/src/components/init_admin.php
+ * @file      ROOT/src/components/admin/init_admin.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
- * @since     1.2.3 Session-Fingerprinting zur Erhöhung der Sicherheit wieder hinzugefügt.
- * @since     2.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
- * @since     2.1.0 Kleine Fixes die ein fehlgeschlagenen Login durch beschädigte Cookies verhindert haben. Siehe https://github.com/RaptorXilef/twokinds.4lima.de/issues/76
- * @comment   2.1.0 Der Parameter 'domain' wurde aus `session_set_cookie_params` entfernt, da er bei bestimmten Server-Konfigurationen zu ungültigen Cookies führte.
- * @comment   2.1.0 `ob_end_clean()` wurde aus der Logout-Logik entfernt. Dieser Aufruf verhinderte, dass der `setcookie`-Header zum Löschen des Session-Cookies korrekt an den Browser gesendet wurde.
- * @comment   2.1.0 Der `session_save_path` wird nun dynamisch auf ein Verzeichnis (`secret/sessions`) außerhalb des öffentlichen Web-Roots gesetzt. Dies schützt die Session-Dateien vor direktem Zugriff und erhöht die Sicherheit.
+ *
+ * @since 2.0.0 - 4.0.0
+ *    SICHERHEIT & SESSION-MANAGEMENT
+ *    - Wiedereinführung von Session-Fingerprinting zur Erhöhung der Sicherheit.
+ *    - Verlagerung des `session_save_path` in ein geschütztes Verzeichnis (`secret/sessions`).
+ *
+ *    BUGFIXES & STABILITÄT
+ *    - Behebung von Login-Problemen (GitHub #76) durch Entfernung des problematischen 'domain'-Parameters.
+ *    - Korrektur der Logout-Logik: Entfernung von `ob_end_clean()` garantiert das Senden des Lösch-Headers.
+ *
+ *    ARCHITEKTUR
+ *    - Umstellung auf die dynamische Path-Helfer-Klasse.
+ *
+ * @since 5.0.0
+ * - fix(Session): Session-Rotation (ID-Erneuerung) von Timeout entkoppelt (eigener Timestamp).
+ * - fix(UX): Fehlender Logout-Grund bei abgelaufener Session in Block 7 ergänzt (Cookie-Check).
+ * - feat(API): Korrekte JSON-Antworten (401) für AJAX-Calls bei Session-Ende statt HTML-Redirects.
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -40,7 +50,7 @@ if ($debugMode) {
     error_log("DEBUG (config_loader): Basis-URL bestimmt: " . (defined('DIRECTORY_PUBLIC_URL') ? DIRECTORY_PUBLIC_URL : 'NICHT DEFINIERT'));
 }
 
-// --- NEU: Eigener Session-Speicherpfad ---
+// --- Eigener Session-Speicherpfad ---
 // Wir nutzen die Path-Klasse, um einen Pfad im 'secret' (nicht-öffentlichen) Verzeichnis zu definieren.
 // Dieser Ordner muss für den PHP-Prozess beschreibbar sein.
 try {
@@ -101,7 +111,6 @@ header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    //'domain' => $_SERVER['HTTP_HOST'], // Das war die wahrscheinlichste Ursache für dein "kaputtes" Cookie.
     'secure' => isset($_SERVER['HTTPS']),
     'httponly' => true,
     'samesite' => 'Strict'
@@ -111,10 +120,14 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // --- 3. SCHUTZ VOR SESSION FIXATION UND HIJACKING ---
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 900)) { // 15 Minuten
-    session_regenerate_id(true);
+// Fix: Eigenen Timestamp für Regeneration nutzen, damit es unabhängig vom Logout-Timeout ist.
+if (!isset($_SESSION['last_regeneration'])) {
+    $_SESSION['last_regeneration'] = time();
 }
-// $_SESSION['last_activity'] = time();
+if (time() - $_SESSION['last_regeneration'] > 900) { // Alle 15 Minuten ID erneuern
+    session_regenerate_id(true);
+    $_SESSION['last_regeneration'] = time();
+}
 
 // Robuster Session-Fingerabdruck (User-Agent + IP-Netzwerk)
 $sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
@@ -124,6 +137,14 @@ if (isset($_SESSION['session_fingerprint'])) {
         error_log("SECURITY ALERT: Session-Fingerabdruck hat sich geändert. Möglicher Hijacking-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
         session_unset();
         session_destroy();
+
+        // API Check
+        if (defined('IS_API_CALL') && IS_API_CALL === true) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Session ungültig.']);
+            exit;
+        }
+
         header('Location: index.php?reason=session_hijacked');
         exit;
     }
@@ -230,8 +251,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     }
 
     session_destroy();
-    //ob_end_clean();  // Diese Zeile war ein Fehler im Logout-Code. Sie hat verhindert, dass der Befehl zum Löschen des Cookies an den Browser gesendet wird.
-    header('Location: index.php');
+    header('Location: index.php?reason=logout');
     exit;
 }
 
@@ -239,10 +259,23 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
         if ($debugMode) {
-            error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von init_admin.php (aufgerufen von {$callingScript}).");
+            error_log("DEBUG: Nicht angemeldet. Redirect zur Login-Seite.");
         }
 
-        header('Location: index.php');
+        // API-Calls sollen JSON zurückgeben, kein HTML-Redirect
+        if (defined('IS_API_CALL') && IS_API_CALL === true) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Nicht angemeldet oder Session abgelaufen.', 'redirect' => 'index.php?reason=session_expired']);
+            exit;
+        }
+
+        // Heuristik: Wenn ein Session-Cookie existiert, aber die Session leer ist, war es wahrscheinlich ein Timeout
+        $redirectUrl = 'index.php';
+        if (isset($_COOKIE[session_name()])) {
+            $redirectUrl .= '?reason=session_expired';
+        }
+
+        header('Location: ' . $redirectUrl);
         exit;
     }
 }
@@ -251,11 +284,19 @@ if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
 define('SESSION_TIMEOUT_SECONDS', 600); // 10 Minuten
 if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT_SECONDS)) {
     if ($debugMode) {
-        error_log("DEBUG: Session abgelaufen. Letzte Aktivität vor " . (time() - $_SESSION['last_activity']) . " Sekunden.");
+        error_log("DEBUG: Session abgelaufen.");
     }
 
     session_unset();
     session_destroy();
+
+    // API-Check auch hier
+    if (defined('IS_API_CALL') && IS_API_CALL === true) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Session abgelaufen.', 'redirect' => 'index.php?reason=session_expired']);
+        exit;
+    }
+
     header("Location: index.php?reason=session_expired");
     exit;
 }
