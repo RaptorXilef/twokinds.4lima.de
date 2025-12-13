@@ -1856,7 +1856,9 @@
             margin-bottom: 10px;
         }
 
-        img {
+        // Gemeinsame Bild-Klasse nutzen
+        img,
+        .modal-preview-image {
             width: 100%; // Bild passt sich der Box-Breite an
             height: auto; // Höhe proportional skalieren
             max-height: 100%;
@@ -1870,6 +1872,49 @@
         body.theme-night & {
             background-color: var(--sidebar-bg);
         }
+    }
+}
+
+// Resolution Selection Modal Specifics
+.resolution-selection-content {
+    text-align: center;
+
+    p {
+        margin-bottom: 10px;
+        color: var(--text-color);
+    }
+
+    .file-info {
+        margin-bottom: 20px;
+        font-size: 0.95em;
+        color: var(--text-color-light);
+        font-family: monospace;
+        background-color: var(--table-header-bg);
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .preview-container {
+        margin: 20px auto;
+        max-width: 400px; // Konsistente Breite mit Comparison Modal
+
+        img {
+            max-width: 100%;
+            height: auto;
+            max-height: 100%; // Konsistente Höhe
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: var(--page-bg);
+        }
+    }
+}
+
+// Modal Footer Actions Center Alignment Modifier
+.modal-footer-actions.actions-center {
+    .modal-buttons {
+        justify-content: center;
     }
 }
 

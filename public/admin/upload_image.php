@@ -30,6 +30,8 @@
  * - feat(Settings): Konfigurierbare Schwellenwerte für High-Res/Low-Res Erkennung.
  * - feat(Logic): Optionale manuelle Zuweisung (High/Low) statt Automatik implementiert.
  * - feat(UI): Neues Modal zur manuellen Auswahl der Auflösungskategorie mit Bild-Details (Maße, Typ).
+ * - refactor(UI): Inline-Styles entfernt und in SCSS ausgelagert (.resolution-selection-content).
+ * - style(UI): Bildgröße im Auswahl-Modal an andere Modals angeglichen.
  */
 
 declare(strict_types=1);
@@ -204,7 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(processFileTarget($tempFilePath, $shortName, $targetDir, $imageFileType));
             } else {
                 // MANUELL: User muss entscheiden
-                // Wir speichern temporär in Session und fragen den Client
                 $_SESSION['pending_resolution_selection'][$shortName] = [
                     'temp_file' => $tempFilePath,
                     'file_type' => $imageFileType
@@ -424,11 +425,11 @@ require_once Path::getPartialTemplatePath('header.php');
                     <div class="image-comparison">
                         <div class="image-box">
                             <h3>Bestehendes Bild</h3>
-                            <img id="existingImage" src="" alt="Bestehendes Bild" loading="lazy">
+                            <img id="existingImage" src="" alt="Bestehendes Bild" loading="lazy" class="modal-preview-image">
                         </div>
                         <div class="image-box">
                             <h3>Neues Bild</h3>
-                            <img id="newImage" src="" alt="Neues Bild" loading="lazy">
+                            <img id="newImage" src="" alt="Neues Bild" loading="lazy" class="modal-preview-image">
                         </div>
                     </div>
                 </div>
@@ -450,21 +451,22 @@ require_once Path::getPartialTemplatePath('header.php');
                     <!-- Kein Schließen-X, Entscheidung zwingend -->
                 </div>
 
-                <div class="modal-scroll-content" style="text-align: center;">
+                <!-- FIX: Inline Styles removed, now using SCSS classes -->
+                <div class="modal-scroll-content resolution-selection-content">
                     <p>Wohin soll das Bild <strong><span id="resShortName"></span></strong> hochgeladen werden?</p>
 
-                    <!-- NEW: Image Details -->
-                    <div class="file-info" style="margin-bottom: 15px; font-size: 0.9em; color: var(--text-color-light);">
+                    <div class="file-info">
                         <span id="resDimensions"></span> &bull; <span id="resExtension"></span>
                     </div>
 
-                    <div class="preview-container" style="margin: 20px auto; max-width: 400px;">
-                        <img id="resPreviewImage" src="" alt="Vorschau" style="max-width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                    <div class="preview-container">
+                        <img id="resPreviewImage" src="" alt="Vorschau" class="modal-preview-image">
                     </div>
                 </div>
 
-                <div class="modal-footer-actions">
-                    <div class="modal-buttons" style="justify-content: center;">
+                <!-- FIX: Modifier class for center alignment -->
+                <div class="modal-footer-actions actions-center">
+                    <div class="modal-buttons">
                         <button id="btnSelectHires" class="button button-blue">
                             <i class="fas fa-star"></i> High-Res (Original)
                         </button>
