@@ -15,6 +15,8 @@
 ///
 /// @since    5.0.0
 /// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - style(SCSS): .image-item und .generator-settings entschachtelt.
 ///
 
 @use '../../abstracts/variables' as *;
@@ -115,97 +117,96 @@
     padding-bottom: 25px;
     margin-bottom: 25px;
     border-bottom: 1px dashed var(--border-medium);
+}
 
-    .form-group {
+.generator-settings .form-group {
+    display: flex;
+    flex: 1; // Alle nehmen gleich viel Platz
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px; // Aber nicht zu schmal werden
+
+    // Modifier für volle Breite (z.B. Checkboxen oben)
+    &.full-width {
+        flex: 0 0 100%;
+        min-width: 100%;
+    }
+
+    // Modifier für Button-Container (rechtsbündig)
+    &.actions-right {
         display: flex;
-        flex: 1; // Alle nehmen gleich viel Platz
-        flex-direction: column;
-        gap: 8px;
-        min-width: 200px; // Aber nicht zu schmal werden
+        flex-direction: row; // Reset auf Row für Button
+        align-items: flex-end; // Button unten ausrichten
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
 
-        // Modifier für volle Breite (z.B. Checkboxen oben)
-        &.full-width {
-            flex: 0 0 100%;
-            min-width: 100%;
+    label {
+        font-size: 0.95em;
+        font-weight: bold;
+        color: var(--text-color);
+    }
+
+    select,
+    input[type='number'],
+    input[type='text'] {
+        box-sizing: border-box; // Wichtig für Padding
+        width: 100%; // Füllt den Flex-Container
+        height: 42px; // Einheitliche Höhe erzwingen
+        padding: 10px;
+        font-size: 1em;
+        color: var(--text-color);
+        background-color: var(--content-area-bg);
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+
+        &:focus {
+            outline: none;
+            border-color: var(--link-color);
         }
 
-        // Modifier für Button-Container (rechtsbündig)
-        &.actions-right {
-            display: flex;
-            flex-direction: row; // Reset auf Row für Button
-            align-items: flex-end; // Button unten ausrichten
-            justify-content: flex-end;
-            margin-top: 10px;
+        body.theme-night & {
+            background-color: var(--content-bg);
+            border-color: var(--border-light);
+        }
+    }
+
+    // Versteckte Inputs (werden per JS ein/ausgeblendet)
+    &.threshold-input {
+        transition: opacity 0.3s ease;
+    }
+}
+
+// Spezifisch für Checkbox-Container (Entschachtelt)
+.generator-settings .form-group.checkbox-group {
+    flex: 0 0 auto; // Nimmt nur so viel Platz wie nötig
+    justify-content: center; // Vertikal mittig
+    min-height: 42px; // Mindesthöhe für Klickbarkeit
+    margin-bottom: 2px;
+
+    label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        font-weight: normal;
+        white-space: nowrap;
+        cursor: pointer;
+
+        input {
+            width: auto;
+            height: auto;
+            margin-right: 8px;
+            transform: scale(1.2);
         }
 
-        label {
-            font-size: 0.95em;
+        strong {
             font-weight: bold;
-            color: var(--text-color);
         }
+    }
 
-        select,
-        input[type='number'],
-        input[type='text'] {
-            box-sizing: border-box; // Wichtig für Padding
-            width: 100%; // Füllt den Flex-Container
-            height: 42px; // Einheitliche Höhe erzwingen
-            padding: 10px;
-            font-size: 1em;
-            color: var(--text-color);
-            background-color: var(--content-area-bg);
-            border: 1px solid var(--border-medium);
-            border-radius: 4px;
-
-            &:focus {
-                outline: none;
-                border-color: var(--link-color);
-            }
-
-            body.theme-night & {
-                background-color: var(--content-bg);
-                border-color: var(--border-light);
-            }
-        }
-
-        // Spezifisch für Checkbox-Container
-        &.checkbox-group {
-            flex: 0 0 auto; // Nimmt nur so viel Platz wie nötig
-            justify-content: center; // Vertikal mittig
-            // height: 42px; // Entfernt, da bei full-width hinderlich
-            min-height: 42px; // Mindesthöhe für Klickbarkeit
-            margin-bottom: 2px;
-
-            label {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                font-weight: normal;
-                white-space: nowrap;
-                cursor: pointer;
-
-                input {
-                    width: auto;
-                    height: auto;
-                    margin-right: 8px;
-                    transform: scale(1.2);
-                }
-
-                strong {
-                    font-weight: bold;
-                }
-            }
-
-            // Spezieller Modifier für linksbündige Checkboxen (z.B. im Uploader)
-            &.align-left {
-                justify-content: flex-start;
-            }
-        }
-
-        // Versteckte Inputs (werden per JS ein/ausgeblendet)
-        &.threshold-input {
-            transition: opacity 0.3s ease;
-        }
+    // Spezieller Modifier für linksbündige Checkboxen (z.B. im Uploader)
+    &.align-left {
+        justify-content: flex-start;
     }
 }
 
