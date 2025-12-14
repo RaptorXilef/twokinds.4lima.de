@@ -6,6 +6,17 @@
   "rules": {
     "alpha-value-notation": "number",
     "no-empty-source": null,
-    "scss/at-rule-no-unknown": true
+    "scss/at-rule-no-unknown": true,
+    "max-nesting-depth": [
+      3,
+      {
+        "ignorePseudoClasses": [
+          "hover",
+          "focus",
+          "&.theme-night",
+          "body.theme-night &"
+        ]
+      }
+    ]
   }
 }
