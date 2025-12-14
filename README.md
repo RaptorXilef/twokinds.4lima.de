@@ -10,11 +10,13 @@
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/tags"><img src="https://img.shields.io/github/v/tag/RaptorXilef/twokinds.4lima.de?sort=semver" alt="BetaVersion"></a>
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/commits/main/"><img src="https://img.shields.io/github/commits-since/RaptorXilef/twokinds.4lima.de/latest?label=Commits%20seit%20letztem%20Release" alt="GitHub commits since latest release"> <img src="https://img.shields.io/github/last-commit/RaptorXilef/twokinds.4lima.de/main?label=Letzter%20Commit" alt="Letzter Commit"></a></a>
   </p>
-  <p align="center">  
+  <p align="center">
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/issues"><img src="https://img.shields.io/github/issues/RaptorXilef/twokinds.4lima.de.svg" alt="Issues"></a>
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/milestones"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress/RaptorXilef/twokinds.4lima.de/1"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress-percent/RaptorXilef/twokinds.4lima.de/1"></a>
+</p><p align="center">
+  <a href="https://github.com/RaptorXilef/twokinds.4lima.de/milestones"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress/RaptorXilef/twokinds.4lima.de/3"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress-percent/RaptorXilef/twokinds.4lima.de/3"></a>
   <!--<img src="https://img.shields.io/github/checks-status/RaptorXilef/twokinds.4lima.de/main" alt="Checks Status">-->
-  <br><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"><img src="https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png" alt="CC BY-NC-SA 4.0"></a></br>
+  <br><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"><img src="https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png" alt="CC BY-NC-SA 4.0"></a><br>
   </p>
   <br><br>
 
