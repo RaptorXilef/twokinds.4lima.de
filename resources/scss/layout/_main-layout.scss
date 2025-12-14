@@ -7,7 +7,7 @@
 ///
 
 /*!
- * @file      resources/scss/layout/_grid.scss
+ * @file      resources/scss/layout/_main-layout.scss
  * @link      twokinds.4lima.de
  *
  * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
@@ -23,6 +23,7 @@
 /// - style(Linter): Reihenfolge der Tabellen-Selektoren korrigiert (Specificity).
 /// - style(Linter): Doppelte Selektoren für Dark Mode zusammengeführt.
 /// - refactor(SCSS): Datei von _grid.scss zu _main-layout.scss umbenannt (semantisch korrekter).
+/// - fix: Fixiert den Footer am unteren Bildschirmrand um einen Grafikfehler auf den Adminseiten zu beheben (Überlauf)
 ///
 
 @use '../abstracts/variables' as *;
@@ -33,6 +34,8 @@ article {
 }
 
 .main-container {
+    display: flex;
+    flex-direction: column;
     width: 1079px;
     margin: auto;
     overflow: visible;

@@ -252,9 +252,9 @@
     // .image-preview-box ist für Admin, div für Report
     > div,
     .image-preview-box {
-
         // Eigenes Layout (Label oben, Bild unten)
         display: flex;
+
         // "Die Magie":
         // 1 = Wachsen (Nimm Platz), 1 = Schrumpfen, 0 = Basis
         // Wenn 1 Element sichtbar ist -> 100% Breite

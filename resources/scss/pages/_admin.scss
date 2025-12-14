@@ -151,7 +151,9 @@
 
                 &:hover {
                     color: var(--status-red-text); // Rot beim Hover
-                    background-color: rgb(0 0 0 / 0.05); // Leichter Hover-Effekt
+                    background-color: rgb(
+                        0 0 0 / 0.05
+                    ); // Leichter Hover-Effekt
                 }
             }
         }
@@ -657,6 +659,40 @@
     justify-content: flex-end;
     margin-top: 20px;
 }
+
+/*
+// Main Container
+.content-section {
+    max-width: 850px; // Breite Ansicht für Tabellen
+    padding: 25px;
+}
+
+// Header Section (Titel & Beschreibung)
+#settings-and-actions-container {
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-medium);
+    padding-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    h2 {
+        margin: 0;
+        font-size: 1.8em;
+        color: var(--text-color);
+    }
+
+    p {
+        margin: 0;
+        color: var(--text-color-medium);
+        font-size: 1.1em;
+    }
+
+    body.theme-night & {
+        border-bottom-color: var(--border-light);
+    }
+}
+*/
 
 /* --- 6. Collapsibles --- */
 .collapsible-section {
@@ -1181,10 +1217,7 @@
 
             &.selected {
                 background-color: rgb(
-                    129
-                    219
-                    254 /
-                    0.15
+                    129 219 254 / 0.15
                 ); // Leichtes Cyan für Dark Mode
             }
         }
