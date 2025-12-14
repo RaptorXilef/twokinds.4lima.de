@@ -125,7 +125,7 @@
  * @author    Felix Maywald (@RaptorXilef)
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *//*!
- * @file      resources/scss/layout/_grid.scss
+ * @file      resources/scss/layout/_main-layout.scss
  * @link      twokinds.4lima.de
  *
  * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
@@ -133,7 +133,7 @@
  *
  * @author    Felix Maywald (@RaptorXilef)
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- */article{width:825px;margin:auto}.main-container{width:1079px;margin:auto;overflow:visible;background-color:var(--content-area-bg);box-shadow:0 0 3px 1px rgba(0,0,0,.5)}.content-area{position:relative;z-index:100;display:flex;flex-flow:nowrap;align-items:stretch;height:100%;padding-top:11px;margin-top:-15px;margin-bottom:15px}.content{position:relative;z-index:102;display:inline-block;flex:1 1 auto;padding:10px 15px;padding-top:11px;margin-right:11px;overflow:visible;color:var(--text-color);background-color:var(--content-bg);border:1px solid var(--border-medium);border-radius:0 0 5px 5px}.content li{margin-right:30px;margin-bottom:5px;margin-left:30px;list-style-position:inside}.content ul{margin-bottom:10px}.content table{margin-bottom:10px;border-collapse:collapse;border:1px solid var(--border-black)}body.theme-night .content table{border-color:var(--page-bg)}.content td,.content th{padding:2px 7px;color:var(--text-color);border:1px solid var(--border-black)}.content th{background-color:var(--header-bg)}body.theme-night .content{border-color:var(--page-bg)}body.theme-night .content th{background-color:var(--button-hover-bg)}body.theme-night .content td,body.theme-night .content th{border-color:var(--page-bg)}.content-bottom{width:1079px;height:4px;margin-bottom:15px}/*!
+ */article{width:825px;margin:auto}.main-container{width:1079px;margin:auto;overflow:visible;background-color:var(--content-area-bg);box-shadow:0 0 3px 1px rgba(0,0,0,.5)}.content-area{position:relative;z-index:100;display:flex;flex-flow:nowrap;align-items:stretch;min-height:600px;padding-top:11px;margin-top:-15px;margin-bottom:15px}.content{position:relative;z-index:102;display:inline-block;flex:1 1 auto;padding:10px 15px;padding-top:11px;margin-right:11px;overflow:visible;color:var(--text-color);background-color:var(--content-bg);border:1px solid var(--border-medium);border-radius:0 0 5px 5px}.content li{margin-right:30px;margin-bottom:5px;margin-left:30px;list-style-position:inside}.content ul{margin-bottom:10px}.content table{margin-bottom:10px;border-collapse:collapse;border:1px solid var(--border-black)}body.theme-night .content table{border-color:var(--page-bg)}.content td,.content th{padding:2px 7px;color:var(--text-color);border:1px solid var(--border-black)}.content th{background-color:var(--header-bg)}body.theme-night .content{border-color:var(--page-bg)}body.theme-night .content th{background-color:var(--button-hover-bg)}body.theme-night .content td,body.theme-night .content th{border-color:var(--page-bg)}.content-bottom{width:1079px;height:4px;margin-bottom:15px}/*!
  * @file      resources/scss/main.scss
  * @link      twokinds.4lima.de
  *

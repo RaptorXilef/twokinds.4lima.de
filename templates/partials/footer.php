@@ -1,8 +1,9 @@
 <?php
+
 /**
  * Gemeinsamer Footer für alle Seiten.
  * Enthält Copyright-Informationen und schließt die HTML-Struktur ab.
- * 
+ *
  * @file      ROOT/templates/partials/footer.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -45,25 +46,26 @@ if (file_exists($versionJsonPath)) {
 }
 
 ?>
-</article>
-</main>
-</div>
-<footer>
-    TWOKINDS, sein Logo und alle zugehörigen Zeichen sind urheberrechtlich geschützt; 2023 Thomas J. Fischbach.
-    Website-Design von Thomas J. Fischbach & Brandon J. Dusseau.</br>
-    Website-Design von F. Maywald überarbeitet und angepasst.<br>
-    <?php /*Ab Kapitel 21 ins deutsche übersetzt von Felix Maywald. Kapitel 01 bis 20 ins deutsche übersetzt von <a
-href="https://www.twokinds.de/">Cornelius Lehners</a>.</br>*/ ?>
-    </br> Der Webspace wird für dieses Projekt wird kostenlos von <a
-        href="https://www.lima-city.de/">www.lima-city.de</a> bereitgestellt!
-    <br><br> Homepage und Übersetzungen &copy; 2023-2025 Felix Maywald
-    </br>
-    <span class="website-version">Homepage Version: <?php echo $versionInfo['version']; ?>
-        (<?php echo $versionInfo['type']; ?>) - siehe: <a
-            href="https://github.com/RaptorXilef/twokinds.4lima.de/releases">Github</a> </span>
-</footer>
-<div class="footer-img"></div>
-</div>
+                </article>
+            </main>
+        </div> <!-- Schließt id="content-area" class="content-area" --->
+        <footer>
+            TWOKINDS, sein Logo und alle zugehörigen Zeichen sind urheberrechtlich geschützt; 2023 Thomas J. Fischbach.
+            Website-Design von Thomas J. Fischbach & Brandon J. Dusseau.<br>
+            Website-Design von F. Maywald überarbeitet und angepasst.<br>
+            <?php /*Ab Kapitel 21 ins deutsche übersetzt von Felix Maywald. Kapitel 01 bis 20 ins deutsche übersetzt von <a
+        href="https://www.twokinds.de/">Cornelius Lehners</a>.<br>*/ ?>
+            <br> Der Webspace wird für dieses Projekt wird kostenlos von <a
+                href="https://www.lima-city.de/">www.lima-city.de</a> bereitgestellt!
+            <br><br> Homepage und Übersetzungen &copy; 2023-2025 Felix Maywald
+            <br>
+            <span class="website-version">Homepage Version: <?php echo $versionInfo['version']; ?>
+                (<?php echo $versionInfo['type']; ?>) - siehe: <a
+                    href="https://github.com/RaptorXilef/twokinds.4lima.de/releases">Github</a>
+            </span>
+        </footer>
+        <div class="footer-img"></div>
+    </div> <!-- Schließt id="mainContainer" class="main-container" --->
 </body>
 
 </html>

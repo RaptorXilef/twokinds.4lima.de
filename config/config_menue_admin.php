@@ -32,25 +32,25 @@ $nonce = $nonce ?? '';
   <!-- Menü-Navigation -->
   <nav id="menu" class="menu">
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup' . $dateiendungPHP; ?>">Initial Setup</a>
-    </br>
+    <br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user' . $dateiendungPHP; ?>">Benutzer verwalten</a>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_login' . $dateiendungPHP; ?>">Eigene Anmeldedaten
       ändern</a>
-    </br>
+    <br>
     <!-- NEU: Link zur Report-Verwaltung -->
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports' . $dateiendungPHP; ?>">Fehlermeldungen</a>
-    </br>
+    <br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter Daten
       Editor</a>
-    </br>
+    <br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Daten
       Editor</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Comic-Seiten-Generator</a>
-    </br>
+    <br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Daten
       Editor</a>
-    </br>
+    <br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image' . $dateiendungPHP; ?>">Bild-Upload</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail' . $dateiendungPHP; ?>">Thumbnail-Generator</a>
@@ -58,15 +58,15 @@ $nonce = $nonce ?? '';
       Vorschau Generator</a>
     <a
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . $dateiendungPHP; ?>">Bild-Cache-Generator</a>
-    </br>
+    <br>
 
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS-Generator</a>
-    </br>
+    <br>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_sitemap' . $dateiendungPHP; ?>">Sitemap
       Editor</a>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_sitemap' . $dateiendungPHP; ?>">Sitemap
       Generator</a>
-    </br>
+    <br>
     <!-- CSRF-Token zum Logout-Link hinzugefügt -->
     <a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">Logout</a>
     <br>

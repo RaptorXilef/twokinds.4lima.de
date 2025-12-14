@@ -709,7 +709,7 @@ body.theme-night hr {
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
 /*!
- * @file      resources/scss/layout/_grid.scss
+ * @file      resources/scss/layout/_main-layout.scss
  * @link      twokinds.4lima.de
  *
  * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
@@ -737,7 +737,7 @@ article {
   display: flex;
   flex-flow: nowrap;
   align-items: stretch;
-  height: 100%;
+  min-height: 600px;
   padding-top: 11px;
   margin-top: -15px;
   margin-bottom: 15px;
@@ -3060,6 +3060,39 @@ body.theme-night .row-highlight {
   margin-top: 20px;
 }
 
+/*
+// Main Container
+.content-section {
+    max-width: 850px; // Breite Ansicht für Tabellen
+    padding: 25px;
+}
+
+// Header Section (Titel & Beschreibung)
+#settings-and-actions-container {
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-medium);
+    padding-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    h2 {
+        margin: 0;
+        font-size: 1.8em;
+        color: var(--text-color);
+    }
+
+    p {
+        margin: 0;
+        color: var(--text-color-medium);
+        font-size: 1.1em;
+    }
+
+    body.theme-night & {
+        border-bottom-color: var(--border-light);
+    }
+}
+*/
 /* --- 6. Collapsibles --- */
 .collapsible-section {
   margin-bottom: 20px;

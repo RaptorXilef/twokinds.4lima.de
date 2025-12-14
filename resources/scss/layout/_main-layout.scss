@@ -34,8 +34,8 @@ article {
 }
 
 .main-container {
-    display: flex;
-    flex-direction: column;
+    // display: flex; // Notfalllösung wenn Footer nicht am unteren Rand bleibt
+    // flex-direction: column; // Notfalllösung wenn Footer nicht am unteren Rand bleibt
     width: 1079px;
     margin: auto;
     overflow: visible;
@@ -49,7 +49,7 @@ article {
     display: flex;
     flex-flow: nowrap;
     align-items: stretch;
-    height: 100%;
+    min-height: 600px;
     padding-top: 11px;
     margin-top: -15px;
     margin-bottom: 15px;
