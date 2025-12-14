@@ -53,10 +53,9 @@ $canonicalUrl = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/'; // Verweist auf den Ordne
 $robotsContent = 'index, follow';
 
 // === 4. HEADER EINBINDEN ===
+$isCharakterPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
-
-<article class="charaktere-overview">
 
     <header>
         <h1 class="page-header">Alle Charaktere im Überblick</h1>
@@ -70,6 +69,5 @@ require_once Path::getPartialTemplatePath('header.php');
     $showCharacterSectionTitle = false;
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

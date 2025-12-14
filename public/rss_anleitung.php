@@ -36,7 +36,6 @@ $rssFeedUrl = htmlspecialchars(DIRECTORY_PUBLIC_URL) . '/rss.xml';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <header>
         <h1 class="page-header">So nutzt du RSS-Feeds: Immer auf dem neuesten Stand bleiben</h1>
     </header>
@@ -185,7 +184,5 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <p>Ich hoffe, diese Anleitung hilft dir dabei, meine Inhalte noch einfacher und effizienter zu verfolgen. Bei
         Fragen stehe ich dir gerne zur Verfügung!</p>
-
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

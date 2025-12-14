@@ -136,7 +136,6 @@ $robotsContent = 'noindex, nofollow';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <!-- Container nutzt die existierende SCSS-Klasse -->
     <div class="user-management-container">
         <h2>Benutzerverwaltung</h2>
@@ -195,7 +194,6 @@ require_once Path::getPartialTemplatePath('header.php');
             </ul>
         </section>
     </div>
-</article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {

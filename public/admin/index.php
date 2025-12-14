@@ -295,7 +295,6 @@ require_once Path::getPartialTemplatePath('header.php');
 ob_end_flush();
 ?>
 
-<article>
     <div class="admin-login-container">
 
         <?php if (!empty($message)) : ?>
@@ -351,6 +350,5 @@ ob_end_flush();
         <?php endif; ?>
 
     </div>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

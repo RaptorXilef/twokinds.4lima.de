@@ -42,6 +42,7 @@ if (!isset($comicData[$currentComicId])) {
     http_response_code(404);
     $pageTitle = 'Seite nicht gefunden (404)';
     $siteDescription = 'Der gesuchte Comic konnte leider nicht gefunden werden.';
+    $isComicPage = true;
     require_once Path::getPartialTemplatePath('header.php');
     echo '<h1>404 - Seite nicht gefunden</h1>';
     echo '<p>Leider existiert unter dieser Adresse kein Comic. Möglicherweise haben Sie sich vertippt oder die Seite wurde verschoben.</p>';
@@ -121,6 +122,7 @@ $robotsContent = 'index, follow';
 $canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . '.php'; // $dateiendungPHP
 
 // === 8. HEADER EINBINDEN ===
+$isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 

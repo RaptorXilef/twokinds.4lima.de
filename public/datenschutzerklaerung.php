@@ -32,7 +32,6 @@ $robotsContent = 'noindex, follow'; // Diese Seite sollte nicht von Suchmaschine
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <header>
         <h1 class="page-header">Datenschutzerklärung</h1>
     </header>
@@ -171,8 +170,6 @@ require_once Path::getPartialTemplatePath('header.php');
         <p>Sie können die Erfassung Ihrer Daten durch Google Analytics verhindern, indem Sie Ihre Cookie-Einstellungen
             entsprechend anpassen. Die Einwilligung kann jederzeit für die Zukunft widerrufen werden.</p>
     </section>
-
-</article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {

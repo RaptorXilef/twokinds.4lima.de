@@ -109,10 +109,10 @@ $robotsContent = 'index, follow'; // Die Startseite soll indexiert werden
 $canonicalUrl = DIRECTORY_PUBLIC_URL;
 
 // === 5. HEADER EINBINDEN (mit Path-Klasse) ===
+$isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article class="comic">
     <header class="comic-header">
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:
             <?php echo htmlspecialchars($comicName); ?>
@@ -197,7 +197,6 @@ require_once Path::getPartialTemplatePath('header.php');
     // Binde das Modul zur Anzeige der Charaktere ein (Jetzt mit Path-Klasse)
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
-</article>
 
 <?php
 // NEU: Modal einbinden

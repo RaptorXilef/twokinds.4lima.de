@@ -263,7 +263,6 @@ HTML;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <div class="content-section">
         <div id="settings-and-actions-container">
             <div id="last-run-container">
@@ -336,7 +335,6 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <div id="message-box" class="hidden-by-default"></div>
     </div>
-</article>
 
 <!-- EDIT MODAL (Advanced Layout) -->
 <div id="edit-modal" class="modal hidden-by-default">

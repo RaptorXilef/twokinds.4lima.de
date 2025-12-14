@@ -388,7 +388,6 @@ function getPageLink($page)
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <div class="content-section">
         <!-- NEU: Info-Box oben -->
         <div id="settings-and-actions-container">
@@ -570,7 +569,6 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
         <?php endif; ?>
     </div>
-</article>
 
 <!-- Modal remains unchanged in structure, uses classes -->
 <div id="report-detail-modal" class="modal admin-modal hidden-by-default" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">

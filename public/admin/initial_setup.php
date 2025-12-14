@@ -242,7 +242,6 @@ $pageHeader = 'System-Einrichtung';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <div class="setup-container content-section">
         <div id="settings-and-actions-container">
             <h2>Initial Setup</h2>
@@ -347,6 +346,5 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
         </section>
     </div>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

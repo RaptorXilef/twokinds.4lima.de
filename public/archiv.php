@@ -170,7 +170,6 @@ $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" type="tex
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <header>
         <h1 class="page-header">TwoKinds Archiv</h1>
     </header>
@@ -228,6 +227,5 @@ require_once Path::getPartialTemplatePath('header.php');
             </section>
         <?php endforeach; ?>
     <?php endif; ?>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

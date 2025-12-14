@@ -324,7 +324,6 @@ $robotsContent = 'noindex, nofollow';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <div class="content-section">
         <!-- UI HEADER & ACTIONS -->
         <div id="settings-and-actions-container">
@@ -479,7 +478,6 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
 
     </div>
-</article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {

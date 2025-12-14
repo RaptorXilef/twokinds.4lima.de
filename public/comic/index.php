@@ -106,6 +106,7 @@ $robotsContent = 'noindex, follow';
 $canonicalUrl = DIRECTORY_PUBLIC_URL;
 
 // === 5. HEADER EINBINDEN (mit Path-Klasse) ===
+$isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 

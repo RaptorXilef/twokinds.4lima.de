@@ -31,7 +31,6 @@ $robotsContent = 'index, follow';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <header>
         <h1 class="page-header">Häufig gestellte Fragen (FAQ)</h1>
     </header>
@@ -167,7 +166,6 @@ require_once Path::getPartialTemplatePath('header.php');
             </div>
         </div>
     </div>
-</article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function () {

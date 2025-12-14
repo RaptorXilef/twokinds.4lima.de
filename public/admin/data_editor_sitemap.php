@@ -259,7 +259,6 @@ $additionalScripts = '<script nonce="' . htmlspecialchars($nonce) . '" src="http
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <div class="content-section">
         <!-- INFO HEADER -->
         <div id="settings-and-actions-container">
@@ -344,7 +343,6 @@ require_once Path::getPartialTemplatePath('header.php');
             <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
         </div>
     </div>
-</article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function() {

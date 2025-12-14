@@ -94,6 +94,7 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
 ?>
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
     <meta charset="utf-8">
@@ -157,7 +158,9 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
     <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'
         src='<?php echo htmlspecialchars($cookieConsentJsUrl); ?>'></script>
     <script nonce="<?php echo htmlspecialchars($nonce); ?>"
-        type='text/javascript'>window.isAdminPage = <?php echo ($isAdminPage ? 'true' : 'false'); ?>;</script>
+        type='text/javascript'>
+        window.isAdminPage = <?php echo ($isAdminPage ? 'true' : 'false'); ?>;
+    </script>
 
     <?php
     echo $additionalScripts;
@@ -295,7 +298,17 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
                 ?>
             </div>
             <main id="content" class="content">
-                <article>
+                <?php
+                $dynamicClass = '';
+                if (isset($isComicPage) && $isComicPage) {
+                    $dynamicClass = ' class="comic"'; // Fügt das Attribut komplett hinzu
+                } elseif (isset($isCharakterPage) && $isCharakterPage) {
+                    $dynamicClass = ' class="charaktere-overview"'; // Fügt das Attribut komplett hinzu
+                }
+                ?>
+
+                <article<?php echo $dynamicClass; ?>>
+
                     <?php
                     // Der Seiten-Header wird hier dynamisch eingefügt, wenn er übergeben wurde.
                     if (!empty($pageHeader) && $isAdminPage) {

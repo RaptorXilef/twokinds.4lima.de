@@ -187,7 +187,6 @@ $pageHeader = 'Social Media Bilder Generator';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <div class="generator-container">
         <!-- HEADER -->
         <div id="settings-and-actions-container">
@@ -292,7 +291,6 @@ require_once Path::getPartialTemplatePath('header.php');
         <div id="created-images-container" class="image-grid"></div>
 
     </div>
-</article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', () => {

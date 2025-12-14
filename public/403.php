@@ -48,10 +48,10 @@ $pageHeader = 'Fehler 403: Zugriff verweigert';
 $robotsContent = 'noindex, follow'; // Wichtig für SEO: Seite nicht indexieren
 
 // === 4. HEADER EINBINDEN ===
+$isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article class="comic">
     <header>
         <h1 class="page-header"><?php echo htmlspecialchars($pageHeader); ?></h1>
     </header>
@@ -89,6 +89,5 @@ require_once Path::getPartialTemplatePath('header.php');
             </p>
         </div>
     </aside>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

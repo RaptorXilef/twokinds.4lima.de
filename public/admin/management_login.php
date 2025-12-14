@@ -134,7 +134,6 @@ $robotsContent = 'noindex, nofollow';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <!-- Container nutzt die existierende SCSS-Klasse -->
     <div class="login-management-container">
         <h2>Zugangsdaten verwalten</h2>
@@ -182,7 +181,6 @@ require_once Path::getPartialTemplatePath('header.php');
             </form>
         </section>
     </div>
-</article>
 
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.getElementById('change-credentials-form').addEventListener('submit', function (event) {

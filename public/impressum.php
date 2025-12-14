@@ -50,7 +50,6 @@ $additionalScripts = '
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <header>
         <h1 class="page-header">Impressum</h1>
     </header>
@@ -144,6 +143,5 @@ require_once Path::getPartialTemplatePath('header.php');
         </ul>
         <p>Vielen Dank für Ihre Mithilfe, die Webseite kontinuierlich zu verbessern!</p>
     </div>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

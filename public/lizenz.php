@@ -1,7 +1,7 @@
 <?php
 /**
  * Diese Datei erklärt die Lizenzbedingungen für die Nutzung der Comic-Inhalte.
- * 
+ *
  * @file      ROOT/public/lizenz.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -29,7 +29,6 @@ $robotsContent = 'index, follow';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
     <header>
         <h1 class="page-header">Lizenz</h1>
     </header>
@@ -85,6 +84,5 @@ require_once Path::getPartialTemplatePath('header.php');
     </p>
 
     Quelle: <a href="https://twokinds.keenspot.com/license/"> https://twokinds.keenspot.com/license/ </a>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
