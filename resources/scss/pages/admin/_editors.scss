@@ -1,0 +1,528 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin Data Editors
+///
+/// Styles für Comic-, Charakter-, Sitemap- und Report-Editoren.
+///
+
+/*!
+ * @file      resources/scss/pages/admin/_editors.scss
+ * @link      twokinds.4lima.de
+ * @author    Felix Maywald (@RaptorXilef)
+ */
+
+///
+/// @since    5.0.0
+/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
+///
+
+@use '../../abstracts/variables' as *;
+
+/* --- Comic Editor Image Preview --- */
+.image-preview-section {
+    padding-top: 15px;
+    margin-top: 15px;
+    border-top: 1px solid var(--border-medium);
+}
+
+#modal-image-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+
+    .image-preview-box {
+        flex: 1;
+        min-width: 200px;
+        max-width: 45%;
+        padding: 10px;
+        text-align: center;
+        background-color: var(--table-row-even);
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+
+        p {
+            margin: 0 0 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        }
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+            border-color: var(--border-light);
+        }
+    }
+}
+
+/* --- Modal Character Selection --- */
+#modal-charaktere-section {
+    padding-top: 15px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-medium);
+
+    .charakter-kategorie {
+        margin-bottom: 20px;
+
+        h3 {
+            padding-bottom: 5px;
+            margin: 0 0 10px;
+            font-size: 1.1em;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-light);
+        }
+    }
+
+    .charaktere-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+
+        .charakter-item {
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s;
+
+            img {
+                width: 60px;
+                height: 60px;
+                margin-bottom: 5px;
+                object-fit: cover;
+                border: 2px solid var(--border-medium);
+                border-radius: 50%;
+            }
+
+            span {
+                display: block;
+                font-size: 0.8em;
+                line-height: 1.2;
+                overflow-wrap: break-word;
+            }
+
+            &:hover {
+                background-color: var(--table-row-hover);
+            }
+
+            &.active {
+                background-color: rgb(40 167 69 / 0.1);
+                border-color: #28a745;
+
+                img {
+                    border-color: #28a745;
+                }
+            }
+        }
+    }
+}
+
+/* --- Sitemap Editor --- */
+.add-row-container {
+    margin-top: 15px;
+}
+
+/* --- Report Management --- */
+.report-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.diff-msg-empty {
+    font-style: italic;
+}
+
+.diff-msg-error {
+    color: #dc3545;
+
+    body.theme-night & {
+        color: #ff6b6b;
+    }
+}
+
+/* --- Character Editor (Main Page) --- */
+.char-editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.master-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.master-char-entry {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    text-align: center;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    transition:
+        box-shadow 0.2s,
+        transform 0.2s;
+
+    &:hover {
+        box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+        transform: translateY(-2px);
+    }
+
+    img {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 10px;
+        object-fit: cover;
+        background-color: var(--characters-area-bg);
+        border: 3px solid var(--border-light);
+        border-radius: 50%;
+    }
+
+    strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1.1em;
+        color: var(--text-color);
+        overflow-wrap: break-word;
+    }
+
+    small {
+        display: block;
+        margin-bottom: 15px;
+        font-family: monospace;
+        font-size: 0.85em;
+        color: var(--text-color-light);
+    }
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-light);
+    }
+}
+
+.character-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-top: auto; // Drückt Buttons nach unten
+}
+
+.character-group {
+    margin-bottom: 25px;
+    overflow: hidden;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-light);
+    }
+}
+
+.character-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    cursor: move; // Zeigt an, dass die ganze Gruppe sortierbar ist
+    background-color: var(--table-header-bg);
+    border-bottom: 1px solid var(--border-medium);
+
+    h3 {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        font-size: 1.1em;
+        color: var(--text-color);
+
+        &::before {
+            margin-right: 10px;
+            font-size: 0.9em;
+            color: var(--text-color-light);
+            content: '\2630'; // Hamburger Icon
+        }
+    }
+
+    .group-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    body.theme-night & {
+        border-bottom-color: var(--border-light);
+    }
+}
+
+.character-list-container {
+    min-height: 50px; // Damit man auch in leere Gruppen droppen kann
+    padding: 0;
+}
+
+.character-entry {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--content-bg);
+    border-bottom: 1px solid var(--border-medium);
+    transition: background-color 0.2s;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        cursor: grab;
+        background-color: var(--table-row-hover);
+    }
+
+    img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border: 1px solid var(--border-medium);
+        border-radius: 50%;
+    }
+
+    .character-info {
+        display: flex;
+        flex-grow: 1;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+
+        strong {
+            color: var(--text-color);
+        }
+    }
+
+    .char-id-display {
+        padding: 2px 6px;
+        font-size: 0.8em;
+        color: var(--text-color-light);
+        background-color: var(--table-header-bg);
+        border: 1px solid var(--border-light);
+        border-radius: 4px;
+    }
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-bottom-color: var(--border-light);
+
+        &:hover {
+            background-color: var(--button-bg);
+        }
+    }
+}
+
+// SortableJS Ghost State (das Element, das gerade gezogen wird)
+.sortable-ghost {
+    background-color: var(--button-hover-bg);
+    border: 2px dashed var(--link-color);
+    opacity: 0.4;
+}
+
+.char-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 5px;
+
+    .char-selection-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 5px;
+        text-align: center;
+        cursor: pointer;
+        background-color: var(--content-bg);
+        border: 2px solid transparent;
+        border-radius: 5px;
+        transition: all 0.2s;
+
+        img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 5px;
+            object-fit: cover;
+            border: 2px solid var(--border-light);
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: grayscale(100%);
+            transition: all 0.2s;
+        }
+
+        span {
+            font-size: 0.85em;
+            line-height: 1.2;
+            color: var(--text-color-medium);
+        }
+
+        &:hover {
+            background-color: var(--table-row-hover);
+
+            img {
+                opacity: 1;
+                filter: grayscale(0%);
+            }
+        }
+
+        &.selected {
+            background-color: rgb(0 123 255 / 0.1);
+            border-color: var(--link-color);
+
+            img {
+                border-color: var(--link-color);
+                opacity: 1;
+                filter: grayscale(0%);
+            }
+
+            span {
+                font-weight: bold;
+                color: var(--link-color);
+            }
+        }
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+
+            &.selected {
+                background-color: rgb(129 219 254 / 0.15);
+            }
+        }
+    }
+}
+
+.char-list-empty {
+    padding: 10px;
+    font-style: italic;
+    color: var(--text-color-light);
+    text-align: center;
+}
+
+.char-id-invalid {
+    font-weight: bold;
+    color: var(--status-red-text);
+}
+
+.preview-container {
+    margin-top: 10px;
+    text-align: center;
+
+    img {
+        max-width: 120px;
+        max-height: 120px;
+        border: 3px solid var(--border-medium);
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 0.2);
+    }
+}
+
+/* --- Image Comparison / Upload Editor --- */
+.image-comparison {
+    display: flex;
+    flex-wrap: wrap; // Wichtig für Responsiveness
+    gap: 20px;
+    justify-content: center;
+    width: 100%; // Container nimmt volle Breite des Modals
+    margin: 20px 0;
+
+    .image-box {
+        box-sizing: border-box; // Padding inkludieren
+        flex: 1 1 300px; // Basisbreite, darf wachsen und schrumpfen
+        min-width: 0; // CRITICAL FIX: Verhindert, dass Flex-Items überlaufen
+        max-width: 100%; // Sicherheitshalber
+        padding: 15px;
+        text-align: center;
+        background-color: var(--content-area-bg);
+        border: 1px solid var(--border-medium);
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+
+        h3 {
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1em;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        // Gemeinsame Bild-Klasse nutzen
+        img,
+        .modal-preview-image {
+            display: block;
+            width: 100%; // Bild passt sich der Box-Breite an
+            height: auto; // Höhe proportional skalieren
+            max-height: 100%;
+            margin: 0 auto;
+            object-fit: contain; // Bildinhalt vollständig sichtbar halten
+            background-color: var(--page-bg);
+            border: 1px solid var(--border-light);
+        }
+
+        body.theme-night & {
+            background-color: var(--sidebar-bg);
+        }
+    }
+}
+
+.resolution-selection-content {
+    text-align: center;
+
+    p {
+        margin-bottom: 10px;
+        color: var(--text-color);
+    }
+
+    .file-info {
+        display: inline-block;
+        padding: 5px 10px;
+        margin-bottom: 20px;
+        font-family: monospace;
+        font-size: 0.95em;
+        color: var(--text-color-light);
+        background-color: var(--table-header-bg);
+        border-radius: 4px;
+    }
+
+    .preview-container {
+        max-width: 400px;
+        margin: 20px auto;
+
+        img {
+            max-width: 100%;
+            height: auto;
+            max-height: 100%;
+            object-fit: contain;
+            background-color: var(--page-bg);
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+        }
+    }
+}
+
+.modal-footer-actions.actions-center {
+    .modal-buttons {
+        justify-content: center;
+    }
+}

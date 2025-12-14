@@ -1,0 +1,361 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin Generators
+///
+/// Styles für Setup, Thumbnail-, RSS- und Social-Media-Generatoren.
+///
+
+/*!
+ * @file      resources/scss/pages/admin/_generators.scss
+ * @link      twokinds.4lima.de
+ * @author    Felix Maywald (@RaptorXilef)
+ */
+
+///
+/// @since    5.0.0
+/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
+///
+
+@use '../../abstracts/variables' as *;
+
+/* --- Initial Setup --- */
+.setup-container {
+    max-width: 850px;
+    padding: 30px;
+    margin: 40px auto;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgb(0 0 0 / 0.05);
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-light);
+        box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
+    }
+
+    header {
+        padding-bottom: 10px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid var(--border-light);
+
+        h1 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--text-color);
+        }
+    }
+}
+
+.setup-section {
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    border-bottom: 1px dashed var(--border-medium);
+
+    &:last-child {
+        padding-bottom: 0;
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    h3 {
+        padding-left: 10px;
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        color: var(--text-color);
+        border-left: 4px solid var(--link-color);
+    }
+
+    // Überschreibt die globale .instructions Klasse (die zentriert ist) für diesen Kontext
+    .instructions {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+}
+
+.setup-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
+
+.setup-action-btn {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    width: auto !important;
+}
+
+/* --- Generator Main Container --- */
+.generator-container {
+    max-width: 900px;
+    padding: 30px;
+    margin: 40px auto;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgb(0 0 0 / 0.05);
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-light);
+        box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
+    }
+}
+
+// Layout für die Settings
+.generator-settings {
+    display: flex;
+    flex-wrap: wrap; // Umbruch erlauben
+    gap: 20px;
+    align-items: flex-end; // Labels unten bündig, falls mehrzeilig
+    padding-bottom: 25px;
+    margin-bottom: 25px;
+    border-bottom: 1px dashed var(--border-medium);
+
+    .form-group {
+        display: flex;
+        flex: 1; // Alle nehmen gleich viel Platz
+        flex-direction: column;
+        gap: 8px;
+        min-width: 200px; // Aber nicht zu schmal werden
+
+        // Modifier für volle Breite (z.B. Checkboxen oben)
+        &.full-width {
+            flex: 0 0 100%;
+            min-width: 100%;
+        }
+
+        // Modifier für Button-Container (rechtsbündig)
+        &.actions-right {
+            display: flex;
+            flex-direction: row; // Reset auf Row für Button
+            align-items: flex-end; // Button unten ausrichten
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        label {
+            font-size: 0.95em;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        select,
+        input[type='number'],
+        input[type='text'] {
+            box-sizing: border-box; // Wichtig für Padding
+            width: 100%; // Füllt den Flex-Container
+            height: 42px; // Einheitliche Höhe erzwingen
+            padding: 10px;
+            font-size: 1em;
+            color: var(--text-color);
+            background-color: var(--content-area-bg);
+            border: 1px solid var(--border-medium);
+            border-radius: 4px;
+
+            &:focus {
+                outline: none;
+                border-color: var(--link-color);
+            }
+
+            body.theme-night & {
+                background-color: var(--content-bg);
+                border-color: var(--border-light);
+            }
+        }
+
+        // Spezifisch für Checkbox-Container
+        &.checkbox-group {
+            flex: 0 0 auto; // Nimmt nur so viel Platz wie nötig
+            justify-content: center; // Vertikal mittig
+            // height: 42px; // Entfernt, da bei full-width hinderlich
+            min-height: 42px; // Mindesthöhe für Klickbarkeit
+            margin-bottom: 2px;
+
+            label {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                font-weight: normal;
+                white-space: nowrap;
+                cursor: pointer;
+
+                input {
+                    width: auto;
+                    height: auto;
+                    margin-right: 8px;
+                    transform: scale(1.2);
+                }
+
+                strong {
+                    font-weight: bold;
+                }
+            }
+
+            // Spezieller Modifier für linksbündige Checkboxen (z.B. im Uploader)
+            &.align-left {
+                justify-content: flex-start;
+            }
+        }
+
+        // Versteckte Inputs (werden per JS ein/ausgeblendet)
+        &.threshold-input {
+            transition: opacity 0.3s ease;
+        }
+    }
+}
+
+.generator-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    // NEU: Modifier für zentrierte Buttons (Cache Builder)
+    &.actions-center {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* --- Generator Image Grid --- */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 15px;
+    margin-top: 20px;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+
+    &:empty {
+        display: none;
+    }
+
+    body.theme-night & {
+        background-color: rgb(0 0 0 / 0.2);
+    }
+}
+
+/* --- Cards / Image Items --- */
+.image-item {
+    position: relative;
+    aspect-ratio: 2 / 3; // Festes Seitenverhältnis für Uniformität
+    overflow: hidden;
+    cursor: default;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+    animation: fadeIn 0.5s ease-out;
+
+    // Hover-Effekt
+    &:hover {
+        box-shadow: 0 5px 15px rgb(0 0 0 / 0.2);
+        transform: translateY(-3px);
+
+        // Overlay einblenden
+        .image-overlay {
+            opacity: 1;
+        }
+
+        // Lösch-Button einblenden
+        .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    // Overlay für den Dateinamen
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        pointer-events: none; // Klicks durchlassen
+        background-color: rgb(0 0 0 / 0.75); // Dunkles Overlay
+        opacity: 0; // Unsichtbar bis Hover
+        transition: opacity 0.2s ease;
+    }
+
+    span.filename {
+        font-size: 0.85em;
+        font-weight: bold;
+        line-height: 1.4;
+        color: #fff;
+        text-align: center;
+        word-break: break-all;
+    }
+
+    // Lösch-Button (Oben Rechts)
+    .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        z-index: 20; // Über dem Overlay liegen
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        font-size: 0.9em;
+        color: white;
+        pointer-events: auto; // Klickbar machen
+        cursor: pointer;
+        background-color: #dc3545; // Rot
+        border: 1px solid #bd2130;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 0.3);
+        opacity: 0; // Versteckt bis Hover
+        transform: scale(0.8);
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        &:hover {
+            background-color: #c82333; // Dunkleres Rot beim Hover
+            transform: scale(1.15) !important;
+        }
+
+        i {
+            pointer-events: none; // Klick geht auf Button
+        }
+    }
+
+    body.theme-night & {
+        background-color: var(--sidebar-bg);
+        border-color: var(--border-medium);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

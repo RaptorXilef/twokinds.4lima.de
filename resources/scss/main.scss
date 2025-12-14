@@ -23,6 +23,7 @@
 /// - feat(SCSS): Neue Komponente chapter-grid registriert.
 /// - refactor(SCSS): Import von layout/grid zu layout/main-layout geändert.
 /// - refactor(SCSS): Komponente chapter-grid durch generisches thumbnail-grid ersetzt.
+/// - refactor(Admin): Aufteilung der monolithischen _admin.scss in modulare Admin-Komponenten und Pages.
 ///
 
 // 1. Abstracts (Variables, Mixins)
@@ -51,13 +52,24 @@
 @use 'components/navigation';
 @use 'components/modals';
 @use 'components/cookie-banner';
-@use 'components/thumbnail-grid'; // UMBENANNT & VERALLGEMEINERT
+@use 'components/thumbnail-grid';
+
+// 5a. Admin Components (NEU)
+@use 'components/admin/tables';
+@use 'components/admin/forms';
+@use 'components/admin/ui';
 
 // 6. Pages (Comic, Archive, Characters, Admin)
 @use 'pages/comic';
 @use 'pages/archive';
-@use 'pages/admin';
+
+// @use 'pages/admin'; // DEPRECATED -> Ersetzt durch modulare Admin-Pages
 @use 'pages/characters';
+
+// 6a. Admin Pages (NEU)
+@use 'pages/admin/auth';
+@use 'pages/admin/editors';
+@use 'pages/admin/generators';
 
 // @use 'pages/fanart';
 @use 'pages/misc';
