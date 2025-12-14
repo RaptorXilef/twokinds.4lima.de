@@ -24,6 +24,7 @@
 /// - style(Linter): Hover-Specificity gefixt.
 /// - refactor(HTML): IDs auf Kebab-Case umgestellt (erfordert HTML/JS-Anpassung).
 /// - style(Linter): Unerwartete Leerzeile entfernt.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -49,10 +50,6 @@
     box-shadow: 0 4px 15px rgb(0 0 0 / 0.2);
     transform: translateX(-50%);
 
-    body.theme-night & {
-        box-shadow: 0 4px 15px rgb(0 0 0 / 0.4);
-    }
-
     h3 {
         margin-top: 0;
         margin-bottom: 15px;
@@ -65,104 +62,6 @@
         margin-bottom: 15px;
     }
 
-    .cookie-category {
-        padding: 10px;
-        margin-bottom: 10px;
-        background-color: var(--cookie-cat-bg);
-        border-radius: 5px;
-
-        label {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        input[type='checkbox'] {
-            margin-right: 10px;
-            cursor: pointer;
-            transform: scale(1.2);
-
-            &:disabled {
-                cursor: not-allowed;
-                opacity: 0.7;
-            }
-        }
-
-        .description {
-            margin-top: 5px;
-            margin-left: 30px;
-            font-size: 0.9em;
-            color: var(--cookie-desc);
-        }
-
-        ul {
-            padding-left: 0;
-            margin-top: 10px;
-            margin-bottom: 0;
-            list-style-type: none;
-
-            li {
-                margin-bottom: 10px;
-
-                &:last-child {
-                    margin-bottom: 0;
-                }
-            }
-        }
-    }
-
-    .cookie-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        justify-content: space-around;
-        margin-top: 20px;
-
-        button {
-            flex: 1 1 auto;
-            min-width: 120px;
-            padding: 10px 15px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.2s ease;
-        }
-    }
-
-    #accept-all-cookies {
-        color: #fff;
-        background-color: var(--cookie-btn-accept-bg);
-
-        &:hover {
-            background-color: var(--cookie-btn-accept-hover);
-        }
-
-        body.theme-night & {
-            color: var(--cookie-text);
-        }
-    }
-
-    #reject-all-cookies {
-        color: var(--cookie-text);
-        background-color: var(--cookie-btn-reject-bg);
-
-        &:hover {
-            background-color: var(--cookie-btn-reject-hover);
-        }
-    }
-
-    #save-cookie-preferences {
-        color: var(--cookie-text);
-        background-color: var(--cookie-btn-save-bg);
-
-        &:hover {
-            background-color: var(--cookie-btn-save-hover);
-        }
-    }
-
     @include media-tablet {
         bottom: 10px;
         width: 95%;
@@ -171,10 +70,120 @@
         h3 {
             font-size: 1.2em;
         }
+    }
+}
 
-        .cookie-buttons {
-            flex-direction: column;
+body.theme-night #cookie-consent-banner {
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.4);
+}
+
+.cookie-category {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: var(--cookie-cat-bg);
+    border-radius: 5px;
+
+    #cookie-consent-banner & {
+        // Kontext
+    }
+
+    label {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    input[type='checkbox'] {
+        margin-right: 10px;
+        cursor: pointer;
+        transform: scale(1.2);
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
         }
+    }
+
+    .description {
+        margin-top: 5px;
+        margin-left: 30px;
+        font-size: 0.9em;
+        color: var(--cookie-desc);
+    }
+
+    ul {
+        padding-left: 0;
+        margin-top: 10px;
+        margin-bottom: 0;
+        list-style-type: none;
+
+        li {
+            margin-bottom: 10px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.cookie-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-around;
+    margin-top: 20px;
+
+    #cookie-consent-banner & {
+        // Kontext
+    }
+
+    button {
+        flex: 1 1 auto;
+        min-width: 120px;
+        padding: 10px 15px;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.2s ease;
+    }
+
+    @include media-tablet {
+        flex-direction: column;
+    }
+}
+
+#accept-all-cookies {
+    color: #fff;
+    background-color: var(--cookie-btn-accept-bg);
+
+    &:hover {
+        background-color: var(--cookie-btn-accept-hover);
+    }
+}
+
+body.theme-night #accept-all-cookies {
+    color: var(--cookie-text);
+}
+
+#reject-all-cookies {
+    color: var(--cookie-text);
+    background-color: var(--cookie-btn-reject-bg);
+
+    &:hover {
+        background-color: var(--cookie-btn-reject-hover);
+    }
+}
+
+#save-cookie-preferences {
+    color: var(--cookie-text);
+    background-color: var(--cookie-btn-save-bg);
+
+    &:hover {
+        background-color: var(--cookie-btn-save-hover);
     }
 }
 
@@ -185,10 +194,10 @@
     margin-top: 5px;
     font-size: 0.9em;
     border-left: 2px solid var(--border-medium);
+}
 
-    body.theme-night & {
-        border-left-color: var(--border-medium);
-    }
+body.theme-night .collapsible-content {
+    border-left-color: var(--border-medium);
 }
 
 .toggle-details {

@@ -21,69 +21,66 @@
 /// @since    5.0.0
 /// - Zentralisierte Button-Styles.
 /// - style(Linter): Selektor-Reihenfolge für Dark Mode Overrides korrigiert.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
 
 // Standard Buttons im Main Container
-.main-container {
-    button,
-    a.button {
-        padding: 3px 5px;
-        font: inherit;
-        font-size: initial;
-        font-style: initial;
-        color: var(--text-on-medium);
-        text-decoration: none;
-        cursor: pointer;
-        outline: inherit;
-        background: none;
-        background-color: var(--button-bg);
-        border: none;
-        border-radius: 3px;
+.main-container button,
+.main-container a.button {
+    padding: 3px 5px;
+    font: inherit;
+    font-size: initial;
+    font-style: initial;
+    color: var(--text-on-medium);
+    text-decoration: none;
+    cursor: pointer;
+    outline: inherit;
+    background: none;
+    background-color: var(--button-bg);
+    border: none;
+    border-radius: 3px;
 
-        &:hover {
-            background-color: var(--button-hover-bg);
-        }
+    &:hover {
+        background-color: var(--button-hover-bg);
     }
+}
 
-    button:disabled {
-        cursor: not-allowed;
-        background-color: var(--button-disabled-bg);
-        opacity: 0.5;
+.main-container button:disabled {
+    cursor: not-allowed;
+    background-color: var(--button-disabled-bg);
+    opacity: 0.5;
+}
 
-        body.theme-night & {
-            opacity: 0.7;
-        }
+body.theme-night .main-container button:disabled {
+    opacity: 0.7;
+}
+
+// Dropdown Arrows
+.main-container .arrow-down,
+.main-container .arrow-left {
+    display: inline-block;
+    width: 1em;
+    height: 0.6em;
+    background: transparent
+        url('#{$base-url}/assets/images/layout/ui/dropdown.svg?c=20251024') 50%
+        50% no-repeat;
+    background-size: contain;
+
+    &.animate {
+        transition: rotate 0.1s;
     }
+}
 
-    // Dropdown Arrows
-    .arrow-down,
-    .arrow-left {
-        display: inline-block;
-        width: 1em;
-        height: 0.6em;
-        background: transparent
-            url('#{$base-url}/assets/images/layout/ui/dropdown.svg?c=20251024')
-            50% 50% no-repeat;
-        background-size: contain;
+.main-container .arrow-left {
+    rotate: -90deg;
+}
 
-        &.animate {
-            transition: rotate 0.1s;
-        }
-    }
-
-    .arrow-left {
-        rotate: -90deg;
-    }
-
-    // Theme Overrides am Ende des Blocks
-    body.theme-night & {
-        .arrow-down,
-        .arrow-left {
-            background-image: url('#{$base-url}/assets/images/layout/ui/dropdown_dark.svg?c=20251024');
-        }
-    }
+// Theme Overrides
+body.theme-night .main-container .arrow-down,
+body.theme-night .main-container .arrow-left {
+    background-image: url('#{$base-url}/assets/images/layout/ui/dropdown_dark.svg?c=20251024');
 }
 
 // Spezifische Button-Klassen (Admin / Reports)
@@ -94,15 +91,15 @@
     &:hover {
         background-color: var(--button-green-hover, #218838) !important;
     }
+}
 
-    // FIX: Dark Mode Farbe für grünen Button
-    body.theme-night & {
-        color: #e8f5e9 !important;
-        background-color: #1e4620 !important; // Dunkelgrün
-        border: 1px solid #2e7d32;
+// FIX: Dark Mode Farbe für grünen Button
+body.theme-night .button-green {
+    color: #e8f5e9 !important;
+    background-color: #1e4620 !important; // Dunkelgrün
+    border: 1px solid #2e7d32;
 
-        &:hover {
-            background-color: #2e7d32 !important;
-        }
+    &:hover {
+        background-color: #2e7d32 !important;
     }
 }

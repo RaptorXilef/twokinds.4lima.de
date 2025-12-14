@@ -20,6 +20,7 @@
 ///
 /// @since    5.0.0
 /// - Einführung von CSS Vars für Farben.
+/// - style(Refactor): Nesting für Theme-Overrides reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -30,16 +31,16 @@ body {
     font-size: 15px;
     color: var(--text-color);
     background-color: var(--page-bg);
+}
 
-    // Transition für Theme-Wechsel
-    &.transitioning:not(.preload),
-    &.transitioning:not(.preload) * {
-        transition:
-            background-color 0.25s,
-            border-color 0.25s,
-            background-image 0.25s,
-            color 0.25s;
-    }
+// Transition für Theme-Wechsel (Separat definiert um Nesting zu sparen)
+body.transitioning:not(.preload),
+body.transitioning:not(.preload) * {
+    transition:
+        background-color 0.25s,
+        border-color 0.25s,
+        background-image 0.25s,
+        color 0.25s;
 }
 
 .mono {
@@ -76,10 +77,16 @@ h6.page-header {
     color: var(--text-color);
     background-color: var(--header-bg);
     border-bottom: 1px solid transparent; // Placeholder für Dark Mode Border
+}
 
-    body.theme-night & {
-        border-bottom-color: var(--button-bg);
-    }
+// Theme Override (Flach)
+body.theme-night h1.page-header,
+body.theme-night h2.page-header,
+body.theme-night h3.page-header,
+body.theme-night h4.page-header,
+body.theme-night h5.page-header,
+body.theme-night h6.page-header {
+    border-bottom-color: var(--button-bg);
 }
 
 a {
@@ -100,10 +107,10 @@ hr {
     border: none;
     border-color: var(--header-bg); // Default Light
     border-top: 1px solid;
+}
 
-    body.theme-night & {
-        border-color: var(--button-bg);
-    }
+body.theme-night hr {
+    border-color: var(--button-bg);
 }
 
 .instructions {
