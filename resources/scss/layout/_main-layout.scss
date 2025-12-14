@@ -35,42 +35,42 @@ article {
 .main-container {
     width: 1079px;
     margin: auto;
-    background-color: var(--content-area-bg);
-    box-shadow: 0 0 3px 1px rgb(0 0 0 / 50%);
     overflow: visible;
+    background-color: var(--content-area-bg);
+    box-shadow: 0 0 3px 1px rgb(0 0 0 / 0.5);
 }
 
 .content-area {
+    position: relative;
+    z-index: 100;
     display: flex;
     flex-flow: nowrap;
     align-items: stretch;
-    position: relative;
-    z-index: 100;
-    margin-top: -15px;
-    padding-top: 11px;
     height: 100%;
+    padding-top: 11px;
+    margin-top: -15px;
     margin-bottom: 15px;
 }
 
 .content {
-    flex: 1 1 auto;
     position: relative;
     z-index: 102;
     display: inline-block;
+    flex: 1 1 auto;
     padding: 10px 15px;
     padding-top: 11px;
     margin-right: 11px;
     overflow: visible;
+    color: var(--text-color);
+    background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
     border-radius: 0 0 5px 5px;
-    background-color: var(--content-bg);
-    color: var(--text-color);
 
     li {
-        margin-bottom: 5px;
-        list-style-position: inside;
-        margin-left: 30px;
         margin-right: 30px;
+        margin-bottom: 5px;
+        margin-left: 30px;
+        list-style-position: inside;
     }
 
     ul {
@@ -78,9 +78,9 @@ article {
     }
 
     table {
-        border: 1px solid var(--border-black);
-        border-collapse: collapse;
         margin-bottom: 10px;
+        border-collapse: collapse;
+        border: 1px solid var(--border-black);
 
         body.theme-night & {
             border-color: var(--page-bg);
@@ -90,8 +90,8 @@ article {
     th,
     td {
         padding: 2px 7px;
-        border: 1px solid var(--border-black);
         color: var(--text-color);
+        border: 1px solid var(--border-black);
     }
 
     th {

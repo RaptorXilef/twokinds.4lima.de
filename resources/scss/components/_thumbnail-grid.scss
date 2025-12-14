@@ -38,8 +38,8 @@
     // Responsive: Min 96px, Max Space-filling
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     gap: 10px;
-    margin-top: 10px;
     justify-content: center;
+    margin-top: 10px;
 
     noscript {
         display: contents;
@@ -50,20 +50,20 @@
         position: relative;
         display: block;
         aspect-ratio: 1 / 1.3; // Standard Hochformat für ALLE Grids
-        background-color: var(--button-bg); // Fallback / Loading BG
-        text-decoration: none;
-        color: var(--text-on-medium);
-        font-size: 1.2em;
         overflow: hidden;
+        font-size: 1.2em;
+        color: var(--text-on-medium);
+        text-decoration: none;
+        background-color: var(--button-bg); // Fallback / Loading BG
         border-radius: 5px;
         transition: transform 0.2s ease-in-out;
 
         // Hover Effect
         &:hover {
-            box-shadow: 0 4px 8px rgb(0 0 0 / 30%);
-            transform: scale(1.05);
             z-index: 10;
             background-color: var(--button-hover-bg);
+            box-shadow: 0 4px 8px rgb(0 0 0 / 0.3);
+            transform: scale(1.05);
         }
 
         @include media-retina-mobile {
@@ -72,29 +72,29 @@
 
         // Overlay (Text/Nummer) - Desktop Standard (Vollflächig)
         span {
-            display: none; // Standardmäßig versteckt auf Desktop
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%; // Vollflächig auf Desktop
-            text-align: center;
             position: absolute;
             top: 0;
             left: 0;
-            background: rgb(0 0 0 / 65%);
-            color: #fff;
+            z-index: 80;
+            box-sizing: border-box;
+            display: none; // Standardmäßig versteckt auf Desktop
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%; // Vollflächig auf Desktop
             padding: 5px; // Etwas Padding für Textumbruch
             font-size: 14px;
-            z-index: 80;
+            color: #fff;
+            text-align: center;
+            background: rgb(0 0 0 / 0.65);
             transition: background-color 0.2s;
-            box-sizing: border-box;
 
             // Mobile Anpassung: Leiste unten, immer sichtbar
             @include media-retina-mobile {
-                display: flex;
-                height: auto; // Nur so hoch wie der Text
                 top: auto; // Reset top
                 bottom: 0; // Unten fixieren
+                display: flex;
+                height: auto; // Nur so hoch wie der Text
                 padding: 2px 0;
             }
         }
@@ -107,40 +107,40 @@
         // Delete Button (Admin/Bookmarks)
         .delete {
             position: absolute;
-            z-index: 91;
             top: 4px;
             right: 2px;
-            background: rgb(255 255 255 / 20%);
-            border-radius: 50%;
-            padding: 2px;
-            width: 24px;
-            height: 24px;
+            z-index: 91;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: none;
+            width: 24px;
+            height: 24px;
+            padding: 2px;
             cursor: pointer;
+            background: rgb(255 255 255 / 0.2);
+            border: none;
+            border-radius: 50%;
             opacity: 0; // Standardmäßig unsichtbar bis Hover (Desktop)
             transition:
                 opacity 0.2s,
                 background-color 0.2s;
 
             @include media-retina-mobile {
-                opacity: 1; // Auf Mobile immer sichtbar
                 top: 3px;
+                opacity: 1; // Auf Mobile immer sichtbar
             }
 
             svg {
                 width: 18px;
                 height: 18px;
                 color: #f00;
+                filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.5));
                 stroke: #fff;
                 stroke-width: 2px;
-                filter: drop-shadow(0 0 1px rgb(0 0 0 / 50%));
             }
 
             &:hover {
-                background: rgb(255 80 80 / 80%);
+                background: rgb(255 80 80 / 0.8);
 
                 svg {
                     color: #c00;
@@ -184,7 +184,7 @@
         }
 
         a span {
-            background-color: rgb(0 0 0 / 80%);
+            background-color: rgb(0 0 0 / 0.8);
         }
 
         .delete {

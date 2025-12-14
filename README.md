@@ -18,7 +18,6 @@
   </p>
   <br><br>
 
-
 <br>
 <br>
 
@@ -64,17 +63,17 @@ Um das Projekt lokal einzurichten, folge diesen Schritten:
     ```
 3.  **Dateien platzieren:** Platziere alle Projektdateien im Root-Verzeichnis deines Webservers (z.B. `htdocs` für Apache).
 4.  **Konfigurationsdateien:**
-    -   Stelle sicher, dass die Dateien `src/config/comic_var.json`, `src/config/rss_config.json`, `src/config/archive_chapters.json` und `src/config/sitemap.json` existieren und korrekt formatiert sind. Beispiel-Dateien sollten im Repository vorhanden sein.
-    -   Passe die `<Name>.json` bei Bedarf an deine Daten oder Sprache an.
+    - Stelle sicher, dass die Dateien `src/config/comic_var.json`, `src/config/rss_config.json`, `src/config/archive_chapters.json` und `src/config/sitemap.json` existieren und korrekt formatiert sind. Beispiel-Dateien sollten im Repository vorhanden sein.
+    - Passe die `<Name>.json` bei Bedarf an deine Daten oder Sprache an.
 5.  **Berechtigungen:** Stelle sicher, dass der Webserver Schreibberechtigungen für das Root-Verzeichnis hat, damit die `<Name>.xml` und `<Name>.php` generiert werden können.
 
 ## Nutzung
 
 Nach der Installation kannst du die Webseite über deinen Browser aufrufen (z.B. `http://localhost/`).
 
--   **Comic-Seiten:** Navigiere zu den Comic-Seiten über die URL-Struktur (z.B. `http://localhost/comic/YYYYMMDD.php`).
--   **Lesezeichen:** Besuche `http://localhost/lesezeichen.php`, um deine gespeicherten Lesezeichen zu verwalten.
--   **Adminbereich:** Gehe zu `http://localhost/admin`, um die dortigen Tools zu nutzen. Beim ersten Aufruf des Adminbereichs kannst du ein Nutzernamen und Passwort festlegen.
+- **Comic-Seiten:** Navigiere zu den Comic-Seiten über die URL-Struktur (z.B. `http://localhost/comic/YYYYMMDD.php`).
+- **Lesezeichen:** Besuche `http://localhost/lesezeichen.php`, um deine gespeicherten Lesezeichen zu verwalten.
+- **Adminbereich:** Gehe zu `http://localhost/admin`, um die dortigen Tools zu nutzen. Beim ersten Aufruf des Adminbereichs kannst du ein Nutzernamen und Passwort festlegen.
 
 ## Projektstruktur (Beispiele)
 
@@ -111,13 +110,12 @@ Nach der Installation kannst du die Webseite über deinen Browser aufrufen (z.B.
 └── README.md                  # Diese Datei
 ```
 
-
 ## Anpassung
 
--   **Comic-Daten:** Bearbeite `admin/data_editor_comic.php` oder manuell `src/config/comic_var.json`, um neue Comic-Seiten hinzuzufügen oder bestehende Metadaten zu ändern. Jede Comic-Seite sollte eine entsprechende PHP-Datei im `comic/`-Verzeichnis haben (z.B. `20250604.php`), die den `comic_page_renderer.php` inkludiert.
--   **RSS-Feed:** `admin/generator_rss.php` oder passe `src/config/rss_config.json` manuell an, um den Titel, die Beschreibung, den Autor und die maximale Anzahl der RSS-Einträge zu konfigurieren.
--   **Design:** Modifiziere `src/layout/css/main.css` und `src/layout/css/main_dark.css` für Designänderungen (wenn aktiviert) Standartmäßig laden die Originalen css von https://twokinds.keenspot.com.
--   **JavaScript-Logik:** `src/layout/js/comic.js` enthält die clientseitige Logik für Lesezeichen und Navigation.
+- **Comic-Daten:** Bearbeite `admin/data_editor_comic.php` oder manuell `src/config/comic_var.json`, um neue Comic-Seiten hinzuzufügen oder bestehende Metadaten zu ändern. Jede Comic-Seite sollte eine entsprechende PHP-Datei im `comic/`-Verzeichnis haben (z.B. `20250604.php`), die den `comic_page_renderer.php` inkludiert.
+- **RSS-Feed:** `admin/generator_rss.php` oder passe `src/config/rss_config.json` manuell an, um den Titel, die Beschreibung, den Autor und die maximale Anzahl der RSS-Einträge zu konfigurieren.
+- **Design:** Modifiziere `src/layout/css/main.css` und `src/layout/css/main_dark.css` für Designänderungen (wenn aktiviert) Standartmäßig laden die Originalen css von https://twokinds.keenspot.com.
+- **JavaScript-Logik:** `src/layout/js/comic.js` enthält die clientseitige Logik für Lesezeichen und Navigation.
 
 ## Beitrag leisten
 
@@ -142,17 +140,16 @@ Dieser Code steht unter der [Creative Commons Namensnennung-Nicht kommerziell-Sh
 Dies bedeutet, dass du den Code teilen und adaptieren darfst, solange du die Namensnennung beibehältst und ihn nicht für kommerzielle Zwecke nutzt.
 
 Hinweis: Die meisten Logos, Bilder und zugehörigen Zeichen sind urheberrechtlich geschützt; 2023 Thomas J. Fischbach. Website-Design von Thomas J. Fischbach & Brandon J. Dusseau.
-Die bilder laufen unter der Lizenz CC BY-NC-SA 3.0 US  -  [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States](https://creativecommons.org/licenses/by-nc-sa/3.0/us/)
+Die bilder laufen unter der Lizenz CC BY-NC-SA 3.0 US - [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States](https://creativecommons.org/licenses/by-nc-sa/3.0/us/)
 Siehe: [TwoKinds-Lizenz](https://twokinds.keenspot.com/license/)
 
 ## Kontakt
 
-Bei Fragen oder Anregungen kannst du gern ein Issue öffnen: 
-
+Bei Fragen oder Anregungen kannst du gern ein Issue öffnen:
 
 <a href="https://github.com/RaptorXilef/twokinds.4lima.de/pulls"><img src="https://img.shields.io/github/issues-pr/RaptorXilef/twokinds.4lima.de.svg" alt="Pull Requests"></a>
-  ![GitHub language count](https://img.shields.io/github/languages/count/RaptorXilef/twokinds.4lima.de)
-  ![GitHub top language](https://img.shields.io/github/languages/top/RaptorXilef/twokinds.4lima.de)
-  ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/RaptorXilef/twokinds.4lima.de/total)
-  ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/RaptorXilef/twokinds.4lima.de)
-  ![GitHub Created At](https://img.shields.io/github/created-at/RaptorXilef/twokinds.4lima.de)
+![GitHub language count](https://img.shields.io/github/languages/count/RaptorXilef/twokinds.4lima.de)
+![GitHub top language](https://img.shields.io/github/languages/top/RaptorXilef/twokinds.4lima.de)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/RaptorXilef/twokinds.4lima.de/total)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/RaptorXilef/twokinds.4lima.de)
+![GitHub Created At](https://img.shields.io/github/created-at/RaptorXilef/twokinds.4lima.de)

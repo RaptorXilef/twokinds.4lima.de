@@ -32,8 +32,8 @@ div.page-faq {
         border-top: 1px solid var(--border-medium);
 
         h2 {
-            font-size: 15px;
             margin-bottom: 5px;
+            font-size: 15px;
         }
     }
 }
@@ -49,8 +49,8 @@ div.page-faq {
 }
 
 .faq-item {
-    border-bottom: 1px solid var(--border-medium);
     margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-medium);
 
     body.theme-night & {
         border-bottom-color: var(--border-light);
@@ -70,17 +70,18 @@ div.page-faq {
 }
 
 .faq-question {
-    padding: 15px;
-    cursor: pointer;
-    font-weight: bold;
     position: relative;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    font-weight: bold;
     color: var(--text-color);
+    cursor: pointer;
     background-color: var(
         --content-bg
     ); // Optional: Leichter Hintergrund für Klickbarkeit
+
     transition: background-color 0.2s;
 
     &:hover {
@@ -96,19 +97,19 @@ div.page-faq {
     }
 
     &::after {
-        content: '\25B6'; // Right-pointing triangle
         font-size: 0.8em;
-        transition: transform 0.3s ease;
         color: var(--text-color-light);
+        content: '\25B6'; // Right-pointing triangle
+        transition: transform 0.3s ease;
     }
 }
 
 .faq-answer {
     max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
     padding: 0 15px;
+    overflow: hidden;
     color: var(--text-color);
+    transition: max-height 0.3s ease-out;
 
     p {
         margin-bottom: 10px;
@@ -125,13 +126,13 @@ div.page-faq {
     margin-top: 15px;
 
     h3 {
-        font-size: 1.2em;
-        font-weight: bold;
+        padding-bottom: 5px;
         margin-top: 25px;
         margin-bottom: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
         color: var(--text-color);
         border-bottom: 1px solid var(--border-light); // Optional: feine Trennlinie
-        padding-bottom: 5px;
 
         body.theme-night & {
             color: var(--text-color);
@@ -146,9 +147,9 @@ div.page-faq {
     }
 
     ul {
-        list-style-type: disc;
-        list-style-position: inside;
         margin-left: 15px;
+        list-style-position: inside;
+        list-style-type: disc;
     }
 
     a {
@@ -162,15 +163,15 @@ div.page-faq {
     // Button Design angepasst an Standard-Buttons
     #email-button {
         display: inline-block;
-        margin-top: 5px;
-        padding: 5px 15px; // Kompaktere Größe
-        font-size: 0.9em;
         width: auto; // Nicht volle Breite
-        background-color: var(--button-bg);
+        padding: 5px 15px; // Kompaktere Größe
+        margin-top: 5px;
+        font-size: 0.9em;
         color: var(--text-on-medium);
+        cursor: pointer;
+        background-color: var(--button-bg);
         border: 1px solid var(--border-medium);
         border-radius: 3px;
-        cursor: pointer;
         box-shadow: none;
         transition: background-color 0.2s;
 
@@ -179,8 +180,8 @@ div.page-faq {
         }
 
         body.theme-night & {
-            background-color: var(--button-bg);
             color: var(--text-color);
+            background-color: var(--button-bg);
             border-color: var(--button-bg);
 
             &:hover {
@@ -191,16 +192,16 @@ div.page-faq {
 
     .license-image {
         display: inline-block;
-        vertical-align: middle;
         margin-left: 5px;
+        vertical-align: middle;
     }
 }
 
 /* --- RSS Anleitung Page --- */
 .rss-icon-text {
-    border-radius: 5px;
-    cursor: pointer;
     vertical-align: middle; // Optional: Sieht im Textfluss aber meist besser aus
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 /* --- Chat Page --- */

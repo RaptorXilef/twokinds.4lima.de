@@ -1,5 +1,5 @@
 {
-    "version": "5.0.0.",
-    "type": "alpha.5",
-    "_comment_type": "Mögliche Einträge: development, alpha, beta, release_candidate, release, stable, patch"
+  "version": "5.0.0.",
+  "type": "alpha.5",
+  "_comment_type": "Mögliche Einträge: development, alpha, beta, release_candidate, release, stable, patch"
 }

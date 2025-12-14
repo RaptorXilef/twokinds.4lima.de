@@ -27,18 +27,18 @@
 @use '../abstracts/mixins' as *;
 
 .banner {
+    position: relative;
+    z-index: 99;
     width: 1099px;
     height: 314px;
     padding-top: 10px;
-    position: relative;
-    z-index: 99;
     margin-left: -10px;
+    overflow: hidden;
+    text-indent: 105%;
+    white-space: nowrap;
     background: transparent
         url('#{$base-url}/assets/images/layout/banner.webp?c=20251024') 0 10px
         no-repeat;
-    text-indent: 105%;
-    white-space: nowrap;
-    overflow: hidden;
 
     // Dark Mode Banner Override
     body.theme-night & {
@@ -51,8 +51,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 0;
     width: 0;
+    height: 0;
 }
 
 #banner-lights-off {
@@ -62,13 +62,13 @@
 }
 
 .maintbanner {
-    font-size: 0.9em;
-    padding: 1em 8em;
-    text-align: center;
-    background-color: var(--maintbanner-bg);
-    color: var(--maintbanner-text);
     position: relative;
     z-index: 200;
+    padding: 1em 8em;
+    font-size: 0.9em;
+    color: var(--maintbanner-text);
+    text-align: center;
+    background-color: var(--maintbanner-bg);
 
     a,
     a:link,

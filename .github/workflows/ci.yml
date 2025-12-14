@@ -16,140 +16,139 @@ name: Project CI
 # 1. TRIGGER (Wann läuft das hier?)
 # -----------------------------------------------------------------------------
 on:
-# Führe den Workflow aus, wenn Code auf IRGENDEINEN Branch gepusht wird
-  push:
-  # Führe ihn auch aus, wenn ein Pull Request erstellt wird
-  # (Das prüft den Code, bevor er gemerged wird)
-  pull_request:
+    # Führe den Workflow aus, wenn Code auf IRGENDEINEN Branch gepusht wird
+    push:
+    # Führe ihn auch aus, wenn ein Pull Request erstellt wird
+    # (Das prüft den Code, bevor er gemerged wird)
+    pull_request:
 
 # -----------------------------------------------------------------------------
 # 2. JOBS (Die eigentliche Arbeit)
 # -----------------------------------------------------------------------------
 jobs:
+    # === JOB 1: PHP STATISCHE ANALYSE ===
+    # Dieser Job prüft den Code, OHNE ihn auszuführen. Das geht sehr schnell.
+    # Wenn hier etwas fehlschlägt (z.B. falscher Code-Stil), wissen wir es sofort.
+    php-analysis:
+        name: PHP Static Analysis
+        # Wir nutzen einen virtuellen Ubuntu-Server von GitHub
+        runs-on: ubuntu-latest
 
-  # === JOB 1: PHP STATISCHE ANALYSE ===
-  # Dieser Job prüft den Code, OHNE ihn auszuführen. Das geht sehr schnell.
-  # Wenn hier etwas fehlschlägt (z.B. falscher Code-Stil), wissen wir es sofort.
-  php-analysis:
-    name: PHP Static Analysis
-    # Wir nutzen einen virtuellen Ubuntu-Server von GitHub
-    runs-on: ubuntu-latest
+        steps:
+            # Schritt 1: Hole den aktuellen Code aus dem Repository auf den Server
+            - name: Code auschecken
+              uses: actions/checkout@v4
 
-    steps:
-      # Schritt 1: Hole den aktuellen Code aus dem Repository auf den Server
-      - name: Code auschecken
-        uses: actions/checkout@v4
+            # Schritt 2: Installiere PHP in der Version, die wir brauchen
+            - name: PHP einrichten
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  # 'coverage: none' beschleunigt diesen Schritt massiv, da wir
+                  # für statische Analysen keine Code-Abdeckung berechnen müssen.
+                  coverage: none
 
-      # Schritt 2: Installiere PHP in der Version, die wir brauchen
-      - name: PHP einrichten
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          # 'coverage: none' beschleunigt diesen Schritt massiv, da wir
-          # für statische Analysen keine Code-Abdeckung berechnen müssen.
-          coverage: none
+            # Schritt 3: Caching für Composer (Der Turbo!)
+            # Wir speichern den 'vendor'-Ordner zwischen. Wenn sich die 'composer.lock'
+            # nicht geändert hat, laden wir die Dateien aus dem Cache, statt sie neu
+            # herunterzuladen. Das spart Zeit und Bandbreite.
+            - name: Cache Composer Pakete
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  # Der Cache-Key basiert auf dem Betriebssystem und dem Hash der Lock-Datei
+                  key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: ${{ runner.os }}-php-
 
-      # Schritt 3: Caching für Composer (Der Turbo!)
-      # Wir speichern den 'vendor'-Ordner zwischen. Wenn sich die 'composer.lock'
-      # nicht geändert hat, laden wir die Dateien aus dem Cache, statt sie neu
-      # herunterzuladen. Das spart Zeit und Bandbreite.
-      - name: Cache Composer Pakete
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          # Der Cache-Key basiert auf dem Betriebssystem und dem Hash der Lock-Datei
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-php-
+            # Schritt 4: Abhängigkeiten installieren
+            # --no-progress: Weniger Textausgabe (schneller)
+            # --prefer-dist: Lädt ZIP-Dateien statt git-clones (schneller)
+            - name: Composer installieren
+              run: composer install --no-progress --prefer-dist
 
-      # Schritt 4: Abhängigkeiten installieren
-      # --no-progress: Weniger Textausgabe (schneller)
-      # --prefer-dist: Lädt ZIP-Dateien statt git-clones (schneller)
-      - name: Composer installieren
-        run: composer install --no-progress --prefer-dist
+            # Schritt 5: Code-Style prüfen (PSR-12 via PHP_CodeSniffer)
+            - name: Code Standards (PSR-12)
+              run: composer check-standards
 
-      # Schritt 5: Code-Style prüfen (PSR-12 via PHP_CodeSniffer)
-      - name: Code Standards (PSR-12)
-        run: composer check-standards
+            # Schritt 6: Logik prüfen (PHPStan)
+            # Findet Typfehler und Bugs, die man beim Schreiben leicht übersieht.
+            - name: Statische Logik-Analyse (PHPStan)
+              run: composer analyse
 
-      # Schritt 6: Logik prüfen (PHPStan)
-      # Findet Typfehler und Bugs, die man beim Schreiben leicht übersieht.
-      - name: Statische Logik-Analyse (PHPStan)
-        run: composer analyse
+            # Schritt 7: Sicherheitslücken in Abhängigkeiten finden
+            - name: Sicherheits-Audit
+              run: composer audit
 
-      # Schritt 7: Sicherheitslücken in Abhängigkeiten finden
-      - name: Sicherheits-Audit
-        run: composer audit
+    # === JOB 2: PHP TESTS (PHPUnit) ===
+    # Dieser Job führt den Code tatsächlich aus. Er läuft PARALLEL zu Job 1.
+    # Da Tests oft länger dauern, blockieren sie so nicht die statische Analyse.
+    php-tests:
+        name: PHP Unit Tests
+        runs-on: ubuntu-latest
+        # needs: [] bedeutet: Wir warten auf niemanden, wir starten sofort!
+        needs: []
 
-  # === JOB 2: PHP TESTS (PHPUnit) ===
-  # Dieser Job führt den Code tatsächlich aus. Er läuft PARALLEL zu Job 1.
-  # Da Tests oft länger dauern, blockieren sie so nicht die statische Analyse.
-  php-tests:
-    name: PHP Unit Tests
-    runs-on: ubuntu-latest
-    # needs: [] bedeutet: Wir warten auf niemanden, wir starten sofort!
-    needs: []
+        steps:
+            - name: Code auschecken
+              uses: actions/checkout@v4
 
-    steps:
-      - name: Code auschecken
-        uses: actions/checkout@v4
+            - name: PHP einrichten
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  # Hier 'none', außer du willst Coverage-Reports an Dienste wie Codecov senden.
+                  # Falls ja, ändere dies zu 'xdebug' oder 'pcov'.
+                  coverage: none
 
-      - name: PHP einrichten
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          # Hier 'none', außer du willst Coverage-Reports an Dienste wie Codecov senden.
-          # Falls ja, ändere dies zu 'xdebug' oder 'pcov'.
-          coverage: none
+            # Auch hier nutzen wir den Cache. Da Job 1 und Job 2 oft gleichzeitig starten,
+            # profitiert der zweite Lauf massiv davon, wenn der Cache schon existiert.
+            - name: Cache Composer Pakete
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: ${{ runner.os }}-php-
 
-      # Auch hier nutzen wir den Cache. Da Job 1 und Job 2 oft gleichzeitig starten,
-      # profitiert der zweite Lauf massiv davon, wenn der Cache schon existiert.
-      - name: Cache Composer Pakete
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-php-
+            - name: Composer installieren
+              run: composer install --no-progress --prefer-dist
 
-      - name: Composer installieren
-        run: composer install --no-progress --prefer-dist
+            # Schritt 8: Die eigentlichen Tests
+            - name: PHPUnit Tests
+              run: ./vendor/bin/phpunit
 
-      # Schritt 8: Die eigentlichen Tests
-      - name: PHPUnit Tests
-        run: ./vendor/bin/phpunit
+    # === JOB 3: FRONTEND QUALITÄT (JS & SCSS) ===
+    # Dieser Job kümmert sich um alles, was Node.js benötigt.
+    # Durch die Trennung müssen wir 'npm install' nicht in den PHP-Jobs ausführen.
+    frontend-quality:
+        name: Frontend Quality (JS/SCSS)
+        runs-on: ubuntu-latest
 
-  # === JOB 3: FRONTEND QUALITÄT (JS & SCSS) ===
-  # Dieser Job kümmert sich um alles, was Node.js benötigt.
-  # Durch die Trennung müssen wir 'npm install' nicht in den PHP-Jobs ausführen.
-  frontend-quality:
-    name: Frontend Quality (JS/SCSS)
-    runs-on: ubuntu-latest
+        steps:
+            - name: Code auschecken
+              uses: actions/checkout@v4
 
-    steps:
-      - name: Code auschecken
-        uses: actions/checkout@v4
+            # Schritt 9: Node.js installieren
+            - name: Node.js einrichten
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  # setup-node hat Caching fest eingebaut! Das speichert 'node_modules'.
+                  cache: 'npm'
 
-      # Schritt 9: Node.js installieren
-      - name: Node.js einrichten
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          # setup-node hat Caching fest eingebaut! Das speichert 'node_modules'.
-          cache: 'npm'
+            # Schritt 10: NPM Pakete installieren
+            # WICHTIG: 'npm ci' (Clean Install) ist besser als 'npm install' für CI-Server.
+            # Es löscht den node_modules Ordner vorher und hält sich exakt an die package-lock.json.
+            - name: NPM Abhängigkeiten installieren
+              run: npm ci
 
-      # Schritt 10: NPM Pakete installieren
-      # WICHTIG: 'npm ci' (Clean Install) ist besser als 'npm install' für CI-Server.
-      # Es löscht den node_modules Ordner vorher und hält sich exakt an die package-lock.json.
-      - name: NPM Abhängigkeiten installieren
-        run: npm ci
+            # Schritt 11: SCSS prüfen (Stylelint)
+            - name: SCSS Linting
+              run: npm run lint:scss
 
-      # Schritt 11: SCSS prüfen (Stylelint)
-      - name: SCSS Linting
-        run: npm run lint:scss
+            # Schritt 12: JavaScript prüfen (ESLint)
+            - name: JS Linting
+              run: npm run lint:js
 
-      # Schritt 12: JavaScript prüfen (ESLint)
-      - name: JS Linting
-        run: npm run lint:js
-
-      # Schritt 13: Sicherheitslücken in NPM-Paketen finden
-      - name: JS Sicherheits-Audit
-        run: npm audit
+            # Schritt 13: Sicherheitslücken in NPM-Paketen finden
+            - name: JS Sicherheits-Audit
+              run: npm audit

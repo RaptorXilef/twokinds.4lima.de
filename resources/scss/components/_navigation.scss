@@ -29,20 +29,20 @@
 @use '../abstracts/mixins' as *;
 
 .comicnav {
-    width: 825px;
-    text-align: center;
-    margin: 0 auto 15px;
-    color: var(--text-on-medium);
-    background-color: var(--comic-nav-bg);
-    border-radius: 3px;
-    padding: 7px 0;
-    box-shadow: inset 0 2px 2px 0 rgb(0 0 0 / 35%);
+    position: relative;
     display: flex;
     flex-flow: row nowrap;
     gap: 0.5rem;
-    justify-content: center;
     align-items: center;
-    position: relative;
+    justify-content: center;
+    width: 825px;
+    padding: 7px 0;
+    margin: 0 auto 15px;
+    color: var(--text-on-medium);
+    text-align: center;
+    background-color: var(--comic-nav-bg);
+    border-radius: 3px;
+    box-shadow: inset 0 2px 2px 0 rgb(0 0 0 / 0.35);
 
     @include media-retina-mobile {
         font-size: 1.1em;
@@ -54,21 +54,21 @@
     }
 
     button.bookmark {
-        height: 36px;
-        transform: translateY(-36px);
-        width: 27px;
-        flex: 0 0 auto;
-        background: url('#{$base-url}/assets/images/layout/ui/bookmark.png?c=20251024')
-            0 0 no-repeat;
-        background-size: contain;
-        overflow: hidden;
-        text-indent: -100em;
-        white-space: nowrap;
         position: absolute;
         top: 0;
         right: 1rem;
         z-index: 1000;
+        flex: 0 0 auto;
+        width: 27px;
+        height: 36px;
+        overflow: hidden;
+        text-indent: -100em;
+        white-space: nowrap;
+        background: url('#{$base-url}/assets/images/layout/ui/bookmark.png?c=20251024')
+            0 0 no-repeat;
+        background-size: contain;
         border-radius: 0;
+        transform: translateY(-36px);
 
         &.bookmarked {
             background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024')
@@ -77,10 +77,10 @@
         }
 
         @include media-retina-mobile {
-            height: 45px;
-            width: 34px;
-            transform: translateY(-34px);
             top: -11px;
+            width: 34px;
+            height: 45px;
+            transform: translateY(-34px);
         }
     }
 
@@ -99,12 +99,12 @@
         flex-flow: row nowrap;
         align-items: stretch;
         justify-content: center;
-        margin: 0 3px;
-        border-radius: 4px;
         width: 138px;
         padding: 2px 5px;
-        background-color: transparent;
+        margin: 0 3px;
         text-align: center;
+        background-color: transparent;
+        border-radius: 4px;
 
         @include media-retina-mobile {
             height: 50px;
@@ -123,36 +123,36 @@
     // --- Standard Icons (Light Mode) ---
 
     .navbegin .nav-wrapper {
+        padding-left: 35px;
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin.png?c=20250916')
             0 50% no-repeat;
-        padding-left: 35px;
     }
 
     .navprev .nav-wrapper {
+        padding-left: 26px;
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916')
             0 50% no-repeat;
-        padding-left: 26px;
     }
 
     .navnext .nav-wrapper {
+        padding-right: 26px;
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916')
             100% 50% no-repeat;
-        padding-right: 26px;
     }
 
     .navend .nav-wrapper {
+        padding-right: 35px;
         background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end.png?c=20250916')
             100% 50% no-repeat;
-        padding-right: 35px;
     }
 
     .nav-report-issue {
         width: auto;
 
         .nav-wrapper {
+            padding-left: 28px;
             background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue.png?c=20251029')
                 0 50% no-repeat;
-            padding-left: 28px;
             background-size: 20px;
         }
     }
@@ -163,12 +163,12 @@
         flex-flow: row nowrap;
         align-items: stretch;
         justify-content: center;
-        border-radius: 14px;
-        text-align: center;
         padding: 2px 20px;
         margin: 0 6px;
         color: #fff;
+        text-align: center;
         background-color: var(--comic-nav-archive-bg);
+        border-radius: 14px;
 
         @include media-retina-mobile {
             height: 50px;
@@ -181,17 +181,17 @@
     }
 
     .disabled {
-        opacity: 0.4;
         cursor: default;
+        opacity: 0.4;
     }
 
     &.bottomnav .nav-lang-toggle {
         width: auto;
 
         .nav-wrapper {
+            padding-left: 55px;
             background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916')
                 0 50% no-repeat;
-            padding-left: 55px;
         }
     }
 

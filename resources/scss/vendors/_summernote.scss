@@ -37,9 +37,9 @@
 
     // Toolbar
     .note-toolbar {
+        color: var(--text-color);
         background-color: var(--table-header-bg) !important;
         border-bottom: 1px solid var(--border-medium);
-        color: var(--text-color);
 
         body.theme-night & {
             background-color: var(--sidebar-bg) !important; // Accent Dark
@@ -49,8 +49,8 @@
 
     // Buttons
     .note-btn {
-        background-color: var(--button-bg);
         color: var(--text-on-medium);
+        background-color: var(--button-bg);
         border: 1px solid transparent;
 
         // Hover ZUERST (Niedrigere Spezifität)
@@ -67,15 +67,15 @@
     }
 
     .note-btn.disabled {
-        opacity: 0.6;
         cursor: not-allowed;
+        opacity: 0.6;
     }
 
     // Dropdowns
     .dropdown-menu {
+        color: var(--text-color);
         background-color: var(--content-bg);
         border-color: var(--border-medium);
-        color: var(--text-color);
 
         body.theme-night & {
             background-color: var(--page-bg);
@@ -98,8 +98,8 @@
     // Popovers (z.B. Link-Editor)
     .note-popover .popover-content,
     .note-modal-content {
-        background-color: var(--content-bg);
         color: var(--text-color);
+        background-color: var(--content-bg);
         border: 1px solid var(--border-medium);
 
         body.theme-night & {
@@ -133,8 +133,8 @@
 
     // Editor Area (Editable)
     .note-editable {
-        background-color: var(--content-bg) !important;
         color: var(--text-color) !important;
+        background-color: var(--content-bg) !important;
 
         body.theme-night & {
             background-color: var(--page-bg) !important;
@@ -150,12 +150,12 @@
         font-family: $font-mono !important;
         font-size: 14px; // Optional: Code ist oft besser lesbar, wenn er etwas kleiner ist
         line-height: 1.4; // Optional: Mehr Zeilenabstand für bessere Lesbarkeit
-        background-color: #222;
         color: #ccc;
+        background-color: #222;
 
         body.theme-night & {
-            background-color: var(--page-bg);
             color: var(--link-color);
+            background-color: var(--page-bg);
         }
     }
 
@@ -176,8 +176,8 @@
 
     // Inputs within Summernote
     .note-input {
-        background-color: var(--content-bg);
         color: var(--text-color);
+        background-color: var(--content-bg);
         border: 1px solid var(--border-medium);
 
         body.theme-night & {

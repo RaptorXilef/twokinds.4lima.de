@@ -29,18 +29,18 @@
 .main-container {
     button,
     a.button {
-        background: none;
-        color: var(--text-on-medium);
-        border: none;
+        padding: 3px 5px;
         font: inherit;
+        font-size: initial;
+        font-style: initial;
+        color: var(--text-on-medium);
+        text-decoration: none;
         cursor: pointer;
         outline: inherit;
-        font-style: initial;
-        font-size: initial;
+        background: none;
         background-color: var(--button-bg);
+        border: none;
         border-radius: 3px;
-        padding: 3px 5px;
-        text-decoration: none;
 
         &:hover {
             background-color: var(--button-hover-bg);
@@ -49,8 +49,8 @@
 
     button:disabled {
         cursor: not-allowed;
-        opacity: 0.5;
         background-color: var(--button-disabled-bg);
+        opacity: 0.5;
 
         body.theme-night & {
             opacity: 0.7;
@@ -88,8 +88,8 @@
 
 // Spezifische Button-Klassen (Admin / Reports)
 .button-green {
-    background-color: var(--status-green-text) !important;
     color: white !important;
+    background-color: var(--status-green-text) !important;
 
     &:hover {
         background-color: var(--button-green-hover, #218838) !important;
@@ -97,8 +97,8 @@
 
     // FIX: Dark Mode Farbe für grünen Button
     body.theme-night & {
-        background-color: #1e4620 !important; // Dunkelgrün
         color: #e8f5e9 !important;
+        background-color: #1e4620 !important; // Dunkelgrün
         border: 1px solid #2e7d32;
 
         &:hover {

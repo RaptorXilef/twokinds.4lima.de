@@ -27,13 +27,13 @@
 @use '../abstracts/mixins' as *;
 
 .comic {
-    text-align: center;
     margin: auto;
+    text-align: center;
 
     h1 {
-        font-weight: normal;
-        font-size: 18px;
         margin-bottom: 5px;
+        font-size: 18px;
+        font-weight: normal;
     }
 
     header {
@@ -41,31 +41,31 @@
     }
 
     .transcript {
-        text-align: left;
         margin-top: 15px;
         font-size: 0.8em;
+        text-align: left;
 
         .transcript-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 5px;
         }
 
         .transcript-content {
-            background-color: var(--content-box-bg);
-            border: 1px solid var(--border-medium);
             max-height: 550px;
-            overflow: auto;
             padding: 15px;
             margin-top: 5px;
+            overflow: auto;
+            background-color: var(--content-box-bg);
+            border: 1px solid var(--border-medium);
             border-radius: 8px;
-            box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 35%);
+            box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 0.35);
 
             body.theme-night & {
+                color: var(--text-color);
                 background-color: var(--sidebar-bg); // Accent Dark
                 border-color: var(--page-bg);
-                color: var(--text-color);
             }
 
             p {
@@ -83,24 +83,24 @@
     }
 
     .below-nav {
-        font-size: 0.9em;
-        font-style: italic;
-        margin-top: 3px;
-        margin-bottom: 0;
-        text-align: left;
         display: flex;
         flex-flow: row nowrap;
         gap: 1rem;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
+        margin-top: 3px;
+        margin-bottom: 0;
+        font-size: 0.9em;
+        font-style: italic;
+        text-align: left;
 
         body.theme-night & {
             color: #ccc; // Manually adjusted for contrast
         }
 
         @include media-retina-mobile {
-            font-size: 1.2em;
             margin-top: 0.5rem;
+            font-size: 1.2em;
 
             .nav-instruction-content {
                 display: none;
@@ -112,11 +112,11 @@
         }
 
         .bookmark-control {
-            flex: 0 0 auto;
             display: flex;
+            flex: 0 0 auto;
             flex-flow: row nowrap;
-            justify-content: flex-end;
             align-items: center;
+            justify-content: flex-end;
 
             .arrow-left {
                 font-size: 1.4em;
@@ -136,19 +136,19 @@
         display: flex;
         flex-flow: row nowrap;
         gap: 1rem;
-        justify-content: space-between;
         align-items: flex-start;
+        justify-content: space-between;
         margin-top: 10px;
 
         .comic-tags {
-            flex: 1 1 auto;
-            text-align: left;
-            font-size: 0.9em;
             display: flex;
+            flex: 1 1 auto;
             flex-flow: row wrap;
             gap: 0.3rem;
             row-gap: 0.5rem;
             align-items: center;
+            font-size: 0.9em;
+            text-align: left;
 
             @include media-retina-mobile {
                 font-size: 1.2em;
@@ -161,8 +161,8 @@
 
         .permalink {
             flex: 0 0 auto;
-            font-size: 0.9em;
             padding-top: 3px;
+            font-size: 0.9em;
 
             body.theme-night & {
                 color: #ccc;
@@ -179,30 +179,30 @@
     }
 
     .comic-header {
-        margin-bottom: 15px;
         position: relative;
+        margin-bottom: 15px;
     }
 
     #comic-image,
     .comic-image {
-        width: 100%;
-        height: auto;
-        border-radius: 7px;
-        box-shadow: 0 2px 5px rgb(0 0 0 / 20%); // Optional: Schatten wie bei Comic-Bildern oft üblich
-        max-width: 100%; // Sicherheitsnetz für kleinere Container
         display: block; // Verhindert Abstände unten bei Inline-Images
+        width: 100%;
+        max-width: 100%; // Sicherheitsnetz für kleinere Container
+        height: auto;
         margin: 0 auto; // Zentrierung sicherstellen
+        border-radius: 7px;
+        box-shadow: 0 2px 5px rgb(0 0 0 / 0.2); // Optional: Schatten wie bei Comic-Bildern oft üblich
     }
 }
 
 // Comic Characters Component
 .comic-characters {
-    margin: 20px 0;
     padding: 15px;
-    border-radius: 8px;
-    border: 1px solid var(--border-medium);
-    box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 35%);
+    margin: 20px 0;
     background-color: var(--content-box-bg); // White / Accent Dark
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 0.35);
 
     body.theme-night & {
         background-color: var(--sidebar-bg); // #00334c
@@ -210,10 +210,10 @@
     }
 
     h3 {
-        text-align: center;
         margin-bottom: 20px;
         font-size: 1.2em;
         color: var(--text-color-light);
+        text-align: center;
 
         body.theme-night & {
             color: #bbb;
@@ -231,13 +231,13 @@
     width: 100%;
 
     h4 {
-        text-align: center;
-        margin-bottom: 15px;
         padding-bottom: 5px;
-        border-bottom: 1px solid rgb(0 0 0 / 10%);
+        margin-bottom: 15px;
         font-size: 1.1em;
-        color: var(--text-color);
         font-weight: bold;
+        color: var(--text-color);
+        text-align: center;
+        border-bottom: 1px solid rgb(0 0 0 / 0.1);
 
         body.theme-night & {
             color: #ddd;
@@ -249,32 +249,32 @@
 .character-group-list {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 20px;
+    justify-content: center;
 }
 
 .character-item {
-    width: 120px;
-    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 120px;
+    text-align: center;
 
     .character-name {
         display: block;
         margin-top: 5px;
         font-size: 0.9em;
         font-weight: bold;
-        overflow-wrap: break-word;
         line-height: 1.3;
+        overflow-wrap: break-word;
     }
 
     a {
         display: block;
-        text-decoration: none;
-        color: inherit;
-        transition: transform 0.2s ease-in-out;
         max-width: 100%;
+        color: inherit;
+        text-decoration: none;
+        transition: transform 0.2s ease-in-out;
 
         &:hover {
             transform: translateY(-5px);
@@ -288,15 +288,15 @@
     img {
         width: 80px;
         height: 80px;
-        border-radius: 50%;
         object-fit: cover;
-        border: 2px solid var(--border-medium);
-        box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
         background-color: var(--characters-area-bg);
+        border: 2px solid var(--border-medium);
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
 
         body.theme-night & {
-            border-color: var(--border-light);
             background-color: var(--characters-area-bg);
+            border-color: var(--border-light);
         }
     }
 }

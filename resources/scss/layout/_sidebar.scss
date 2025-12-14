@@ -33,10 +33,10 @@
 .sidebar-content {
     width: 167px;
     padding: 11px 4px 7px;
-    text-align: center;
-    border-radius: 0 0 5px 5px;
     margin-left: 12px;
+    text-align: center;
     background-color: var(--sidebar-bg);
+    border-radius: 0 0 5px 5px;
 
     .full-width-img {
         margin-left: -5px;
@@ -55,27 +55,27 @@
 
 /* Navigation Menu */
 .menu {
-    font-size: 14px;
     margin-bottom: 10px;
+    font-size: 14px;
 
     @include media-retina-mobile {
         font-size: 1.1em;
     }
 
     a {
-        color: var(--text-on-medium);
+        position: relative;
         display: block;
-        list-style-type: none;
         width: 160px;
-        background-color: var(--menu-bg);
-        border-radius: 4px;
-        text-transform: uppercase;
+        padding: 3px 0;
         margin: 3px auto;
         overflow: hidden;
-        padding: 3px 0;
+        color: var(--text-on-medium);
+        text-transform: uppercase;
         text-decoration: none;
         cursor: pointer;
-        position: relative;
+        list-style-type: none;
+        background-color: var(--menu-bg);
+        border-radius: 4px;
 
         @include media-retina-mobile {
             padding: 8px 0;
@@ -98,16 +98,16 @@
         span.themelabel {
             flex: 0 0 0;
             padding: 1px;
-            background-color: var(--theme-label-bg);
-            color: #fff;
             font-size: 0.7em;
+            color: #fff;
+            background-color: var(--theme-label-bg);
         }
 
         span.themename {
-            text-align: center;
             flex: 1 1 auto;
             padding: 3px;
             color: var(--text-on-medium);
+            text-align: center;
 
             body.theme-night & {
                 color: var(--text-color);
@@ -122,22 +122,22 @@
         }
 
         &::after {
-            content: 'New';
-            display: inline-block;
-            width: 26px;
-            background-color: var(--new-tag-bg);
-            color: #fff;
-            font-size: 0.7em;
             position: absolute;
             top: 6px;
             left: -6px;
+            display: inline-block;
+            width: 26px;
+            font-size: 0.7em;
+            color: #fff;
+            content: 'New';
+            background-color: var(--new-tag-bg);
             transform: rotate(-90deg);
 
             @include media-retina-mobile {
-                width: auto;
                 top: 0;
-                left: 0;
                 right: 0;
+                left: 0;
+                width: auto;
                 transform: none;
             }
         }

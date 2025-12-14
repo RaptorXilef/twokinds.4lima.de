@@ -91,6 +91,7 @@ $breakpoint-mobile: 768px;
 
     // Admin Tables
     --table-header-bg: #e9ecef;
+
     // FIX: Farbe abgedunkelt, damit Zebra-Striping im Light Mode sichtbar ist (#f8f9fa war zu hell)
     --table-row-even: #e9ecef;
     --table-row-hover: #e2e6ea;
@@ -146,7 +147,7 @@ body.theme-night {
     --menu-hover-bg: #48778a;
     --button-bg: #2a6177;
     --button-hover-bg: #48778a;
-    --button-disabled-bg: rgb(42 97 119 / 60%);
+    --button-disabled-bg: rgb(42 97 119 / 0.6);
     --comic-nav-bg: #00334c;
     --comic-nav-hover-bg: #003f58;
     --comic-nav-archive-bg: #2a6177;

@@ -34,14 +34,14 @@
 @use '../abstracts/mixins' as *;
 
 .chapter {
-    font-size: 14px;
     margin-bottom: 15px;
+    font-size: 14px;
 
     p {
         margin-inline: 0.5rem;
         margin-top: 0.3rem;
-        text-align: justify;
         color: var(--text-color);
+        text-align: justify;
 
         a {
             color: var(--text-on-medium); // Im Original Schwarz
@@ -56,9 +56,9 @@
     h2 {
         display: inline-block;
         margin: 0;
-        cursor: pointer;
-        color: var(--text-on-medium);
         font-size: 1.2em;
+        color: var(--text-on-medium);
+        cursor: pointer;
 
         body.theme-night & {
             color: var(--text-color);
