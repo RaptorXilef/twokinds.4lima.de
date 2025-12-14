@@ -3,7 +3,7 @@
  * Index-Seite für die Charakter-Übersicht.
  * Diese Seite lädt alle Charaktere aus der charaktere.json und zeigt sie
  * mithilfe der wiederverwendeten display_character.php Komponente an.
- * 
+ *
  * @file      ROOT/public/charaktere/index.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -57,8 +57,9 @@ require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <article class="charaktere-overview">
+
     <header>
-        <h1>Alle Charaktere im Überblick</h1>
+        <h1 class="page-header">Alle Charaktere im Überblick</h1>
         <p class="character-overview-intro">Hier findest du eine Liste aller Charaktere, die im Comic eine Rolle
             spielen, sortiert nach ihren Gruppen.</p>
     </header>
