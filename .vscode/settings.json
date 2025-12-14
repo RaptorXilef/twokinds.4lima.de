@@ -105,7 +105,9 @@
   // Rechtschreibung
   "cSpell.language": "en,de",
   "cSpell.diagnosticLevel": "Hint",
-  "cSpell.words": ["twokinds"],
+  "cSpell.words": [
+    "twokinds"
+  ],
   // Definiert Projekt-spezifische TODO-Tags
   // Muss möglicherweise in die Globale settings.json übertragen werden
   "todo-tree.general.tags": [

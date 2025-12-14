@@ -95,7 +95,7 @@ jobs:
             - name: PHP einrichten
               uses: shivammathur/setup-php@v2
               with:
-                  php-version: '8.4'
+                  php-version: '8.3'
                   # Hier 'none', außer du willst Coverage-Reports an Dienste wie Codecov senden.
                   # Falls ja, ändere dies zu 'xdebug' oder 'pcov'.
                   coverage: none
