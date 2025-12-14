@@ -15,6 +15,8 @@
 ///
 /// @since    5.0.0
 /// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
+/// - style(Refactor): Nesting-Tiefe reduziert (Phase 2 Flattening).
+/// - style(SCSS): .actions-cell und .comic-thumbnail auf Root-Level gehoben.
 ///
 
 @use '../../abstracts/variables' as *;
@@ -31,16 +33,18 @@
     &.actions-bar {
         gap: 15px;
         margin-bottom: 10px;
+    }
+}
 
-        .top-actions {
-            display: flex;
-            gap: 5px;
-        }
+.table-controls.actions-bar {
+    .top-actions {
+        display: flex;
+        gap: 5px;
+    }
 
-        .marker-legend-group {
-            flex-grow: 1;
-            justify-content: flex-end;
-        }
+    .marker-legend-group {
+        flex-grow: 1;
+        justify-content: flex-end;
     }
 }
 
@@ -104,223 +108,227 @@
             border-color: var(--border-dark);
         }
     }
+}
 
-    // Helper classes inside table
-    .comic-thumbnail {
-        display: block;
-        max-width: 100px;
-        height: auto;
-        margin-top: 5px;
+// Helper classes (Auf Root-Level gehoben um Nesting zu vermeiden)
+.comic-thumbnail {
+    display: block;
+    max-width: 100px;
+    height: auto;
+    margin-top: 5px;
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+
+    .admin-table & {
+        // Kontext sicherstellen, falls nötig
+    }
+}
+
+.comic-type-display {
+    display: block;
+    font-size: 0.8em;
+    font-style: italic;
+    color: var(--text-color-medium);
+}
+
+.description-preview {
+    max-height: 5em;
+    padding: 5px;
+    overflow: auto;
+    font-size: 0.9em;
+    scrollbar-width: thin;
+    border: 1px solid var(--border-light);
+    border-radius: 3px;
+
+    body.theme-night & {
+        border-color: var(--border-dark);
+    }
+}
+
+.missing-info {
+    background-color: rgb(248 215 218 / 0.2) !important;
+    border: 2px solid #dc3545 !important;
+}
+
+.actions-cell {
+    vertical-align: middle; // Buttons oben ausrichten bei mehrzeiligem Text
+    text-align: right;
+    white-space: normal;
+
+    form {
+        display: flex;
+        flex-wrap: wrap; // Umbruch erlauben
+        gap: 5px; // Abstand zwischen Buttons
+        justify-content: flex-end; // Rechtsbündig starten
+        width: 100%;
+    }
+
+    button {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
+        margin: 0 !important; // Reset
+        text-align: center;
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+        }
+    }
+}
+
+.empty-table-message {
+    padding: 20px !important;
+    font-style: italic;
+    color: var(--text-color-medium);
+    text-align: center;
+}
+
+/* --- Sub-Classes for specific Tables --- */
+
+// Comic Editor
+.admin-table.comic-editor-table {
+    th:nth-child(1),
+    td:nth-child(1) {
+        width: 65px; // ID
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 100px; // Vorschau
+    }
+
+    th:nth-child(3),
+    td:nth-child(3) {
+        width: 100px; // Name
+    }
+
+    th:nth-child(4),
+    td:nth-child(4) {
+        width: 300px; // Transkript
+    }
+
+    th:nth-child(5),
+    td:nth-child(5) {
+        width: 50px; // Status
+    }
+
+    th:nth-child(6),
+    td:nth-child(6) {
+        width: 70px; // Aktionen
+        text-align: right;
+    }
+
+    td:last-child {
+        text-align: right;
+    }
+}
+
+// Reports
+.admin-table.reports-table {
+    th:nth-child(1),
+    td:nth-child(1) {
+        width: 80px;
+        word-break: break-word;
+    } // Datum
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 80px;
+        word-break: break-all;
+    } // Comic-ID
+    th:nth-child(3),
+    td:nth-child(3) {
+        width: 80px;
+        word-break: break-word;
+    } // Typ
+    th:nth-child(4),
+    td:nth-child(4) {
+        width: 80px;
+    } // Einsender
+    th:nth-child(5),
+    td:nth-child(5) {
+        width: auto;
+    } // Beschreibung (Flex)
+    th:nth-child(6),
+    td:nth-child(6) {
+        width: 80px;
+    } // Aktionen
+}
+
+// Sitemap Editor
+.admin-table.sitemap-editor-table {
+    th:nth-child(1),
+    td:nth-child(1) {
+        width: 65%;
+    } // Pfad/Name/ID
+
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 10%;
+    } // Priorität
+
+    th:nth-child(3),
+    td:nth-child(3) {
+        width: 15%;
+    } // Frequenz
+
+    th:nth-child(4),
+    td:nth-child(4) {
+        width: 10%;
+        text-align: right;
+    } // Aktionen
+
+    // Inputs in der Tabelle anpassen
+    input[type='text'],
+    input[type='number'],
+    select {
+        box-sizing: border-box; // Wichtig für width 100%
+        width: 100%;
+        padding: 6px;
+        color: var(--text-color);
+        background-color: var(--content-bg);
         border: 1px solid var(--border-medium);
-        border-radius: 4px;
-    }
-
-    .comic-type-display {
-        display: block;
-        font-size: 0.8em;
-        font-style: italic;
-        color: var(--text-color-medium);
-    }
-
-    .description-preview {
-        max-height: 5em;
-        padding: 5px;
-        overflow: auto;
-        font-size: 0.9em;
-        scrollbar-width: thin;
-        border: 1px solid var(--border-light);
         border-radius: 3px;
 
+        &:disabled {
+            cursor: not-allowed;
+            background-color: var(--table-header-bg);
+            opacity: 0.7;
+        }
+
         body.theme-night & {
-            border-color: var(--border-dark);
-        }
-    }
-
-    .missing-info {
-        background-color: rgb(248 215 218 / 0.2) !important;
-        border: 2px solid #dc3545 !important;
-    }
-
-    .actions-cell {
-        vertical-align: middle; // Buttons oben ausrichten bei mehrzeiligem Text
-        text-align: right;
-        white-space: normal;
-
-        form {
-            display: flex;
-            flex-wrap: wrap; // Umbruch erlauben
-            gap: 5px; // Abstand zwischen Buttons
-            justify-content: flex-end; // Rechtsbündig starten
-            width: 100%;
-        }
-
-        button {
-            flex: 1 1 auto;
-            justify-content: center;
-            min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
-            margin: 0 !important; // Reset
-            text-align: center;
+            background-color: color-mix(in srgb, var(--page-bg), black 20%);
+            border-color: var(--border-light);
 
             &:disabled {
-                cursor: not-allowed;
-                opacity: 0.3;
+                background-color: rgb(255 255 255 / 0.05);
             }
         }
     }
+}
 
-    .empty-table-message {
-        padding: 20px !important;
-        font-style: italic;
-        color: var(--text-color-medium);
+// Archiv-Spezifisch (Nested class flattened)
+.admin-table.archive-editor-table {
+    th:nth-child(1),
+    td:nth-child(1) {
+        width: 30px; // ID kurz
         text-align: center;
     }
 
-    /* --- Sub-Classes for specific Tables --- */
-
-    // Comic Editor
-    &.comic-editor-table {
-        th:nth-child(1),
-        td:nth-child(1) {
-            width: 65px; // ID
-        }
-
-        th:nth-child(2),
-        td:nth-child(2) {
-            width: 100px; // Vorschau
-        }
-
-        th:nth-child(3),
-        td:nth-child(3) {
-            width: 100px; // Name
-        }
-
-        th:nth-child(4),
-        td:nth-child(4) {
-            width: 300px; // Transkript
-        }
-
-        th:nth-child(5),
-        td:nth-child(5) {
-            width: 50px; // Status
-        }
-
-        th:nth-child(6),
-        td:nth-child(6) {
-            width: 70px; // Aktionen
-            text-align: right;
-        }
-
-        td:last-child {
-            text-align: right;
-        }
+    th:nth-child(2),
+    td:nth-child(2) {
+        width: 170px; // Titel
+        font-weight: bold;
     }
 
-    // Reports
-    &.reports-table {
-        th:nth-child(1),
-        td:nth-child(1) {
-            width: 80px;
-            word-break: break-word;
-        } // Datum
-        th:nth-child(2),
-        td:nth-child(2) {
-            width: 80px;
-            word-break: break-all;
-        } // Comic-ID
-        th:nth-child(3),
-        td:nth-child(3) {
-            width: 80px;
-            word-break: break-word;
-        } // Typ
-        th:nth-child(4),
-        td:nth-child(4) {
-            width: 80px;
-        } // Einsender
-        th:nth-child(5),
-        td:nth-child(5) {
-            width: auto;
-        } // Beschreibung (Flex)
-        th:nth-child(6),
-        td:nth-child(6) {
-            width: 80px;
-        } // Aktionen
+    th:nth-child(3),
+    td:nth-child(3) {
+        width: auto; // Beschreibung Flex
     }
 
-    // Sitemap & Archiv Editor
-    &.sitemap-editor-table {
-        th:nth-child(1),
-        td:nth-child(1) {
-            width: 65%;
-        } // Pfad/Name/ID
-
-        th:nth-child(2),
-        td:nth-child(2) {
-            width: 10%;
-        } // Priorität
-
-        th:nth-child(3),
-        td:nth-child(3) {
-            width: 15%;
-        } // Frequenz
-
-        th:nth-child(4),
-        td:nth-child(4) {
-            width: 10%;
-            text-align: right;
-        } // Aktionen
-
-        // Archiv-Spezifisch
-        &.archive-editor-table {
-            th:nth-child(1),
-            td:nth-child(1) {
-                width: 30px; // ID kurz
-                text-align: center;
-            }
-
-            th:nth-child(2),
-            td:nth-child(2) {
-                width: 170px; // Titel
-                font-weight: bold;
-            }
-
-            th:nth-child(3),
-            td:nth-child(3) {
-                width: auto; // Beschreibung Flex
-            }
-
-            th:nth-child(4),
-            td:nth-child(4) {
-                width: 70px; // Aktionen
-            }
-        }
-
-        // Inputs in der Tabelle anpassen
-        input[type='text'],
-        input[type='number'],
-        select {
-            box-sizing: border-box; // Wichtig für width 100%
-            width: 100%;
-            padding: 6px;
-            color: var(--text-color);
-            background-color: var(--content-bg);
-            border: 1px solid var(--border-medium);
-            border-radius: 3px;
-
-            &:disabled {
-                cursor: not-allowed;
-                background-color: var(--table-header-bg);
-                opacity: 0.7;
-            }
-
-            body.theme-night & {
-                background-color: color-mix(in srgb, var(--page-bg), black 20%);
-                border-color: var(--border-light);
-
-                &:disabled {
-                    background-color: rgb(255 255 255 / 0.05);
-                }
-            }
-        }
+    th:nth-child(4),
+    td:nth-child(4) {
+        width: 70px; // Aktionen
     }
 }
 
