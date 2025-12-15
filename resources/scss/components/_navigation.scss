@@ -23,6 +23,7 @@
 /// - style(Linter): Nesting optimiert, um Specificity-Fehler zu beheben.
 /// - style(Linter): Spezifität der Navigations-Icons durch Nesting korrigiert.
 /// - fix(CSS): Linter-Fehler (no-descending-specificity) durch Gruppierung der Dark-Mode-Overrides am Ende behoben.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -53,37 +54,6 @@
         margin-bottom: 0;
     }
 
-    button.bookmark {
-        position: absolute;
-        top: 0;
-        right: 1rem;
-        z-index: 1000;
-        flex: 0 0 auto;
-        width: 27px;
-        height: 36px;
-        overflow: hidden;
-        text-indent: -100em;
-        white-space: nowrap;
-        background: url('#{$base-url}/assets/images/layout/ui/bookmark.png?c=20251024')
-            0 0 no-repeat;
-        background-size: contain;
-        border-radius: 0;
-        transform: translateY(-36px);
-
-        &.bookmarked {
-            background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024')
-                0 0 no-repeat;
-            background-size: contain;
-        }
-
-        @include media-retina-mobile {
-            top: -11px;
-            width: 34px;
-            height: 45px;
-            transform: translateY(-34px);
-        }
-    }
-
     img {
         margin: 0 4px;
     }
@@ -93,149 +63,181 @@
         color: var(--text-on-medium);
         text-decoration: none;
     }
+}
 
-    .navarrow {
-        display: inline-flex;
-        flex-flow: row nowrap;
-        align-items: stretch;
-        justify-content: center;
-        width: 138px;
-        padding: 2px 5px;
-        margin: 0 3px;
-        text-align: center;
-        background-color: transparent;
-        border-radius: 4px;
+// Bookmark Button (Entschachtelt)
+.comicnav button.bookmark {
+    position: absolute;
+    top: 0;
+    right: 1rem;
+    z-index: 1000;
+    flex: 0 0 auto;
+    width: 27px;
+    height: 36px;
+    overflow: hidden;
+    text-indent: -100em;
+    white-space: nowrap;
+    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png?c=20251024')
+        0 0 no-repeat;
+    background-size: contain;
+    border-radius: 0;
+    transform: translateY(-36px);
 
-        @include media-retina-mobile {
-            height: 50px;
+    &.bookmarked {
+        background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024')
+            0 0 no-repeat;
+        background-size: contain;
+    }
+
+    @include media-retina-mobile {
+        top: -11px;
+        width: 34px;
+        height: 45px;
+        transform: translateY(-34px);
+    }
+}
+
+.comicnav .navarrow {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+    justify-content: center;
+    width: 138px;
+    padding: 2px 5px;
+    margin: 0 3px;
+    text-align: center;
+    background-color: transparent;
+    border-radius: 4px;
+
+    @include media-retina-mobile {
+        height: 50px;
+    }
+}
+
+.comicnav .nav-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.comicnav .navarrow:not(.disabled):hover {
+    background-color: var(--comic-nav-hover-bg);
+}
+
+// --- Standard Icons (Light Mode) ---
+
+.comicnav .navbegin .nav-wrapper {
+    padding-left: 35px;
+    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin.png?c=20250916')
+        0 50% no-repeat;
+}
+
+.comicnav .navprev .nav-wrapper {
+    padding-left: 26px;
+    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916')
+        0 50% no-repeat;
+}
+
+.comicnav .navnext .nav-wrapper {
+    padding-right: 26px;
+    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916')
+        100% 50% no-repeat;
+}
+
+.comicnav .navend .nav-wrapper {
+    padding-right: 35px;
+    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end.png?c=20250916')
+        100% 50% no-repeat;
+}
+
+.comicnav .nav-report-issue {
+    width: auto;
+}
+
+.comicnav .nav-report-issue .nav-wrapper {
+    padding-left: 28px;
+    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue.png?c=20251029')
+        0 50% no-repeat;
+    background-size: 20px;
+}
+
+// --- Archive Button ---
+.comicnav .navarchive {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    align-items: stretch;
+    justify-content: center;
+    padding: 2px 20px;
+    margin: 0 6px;
+    color: #fff;
+    text-align: center;
+    background-color: var(--comic-nav-archive-bg);
+    border-radius: 14px;
+
+    @include media-retina-mobile {
+        height: 50px;
+        border-radius: 7px;
+    }
+
+    &:hover {
+        background-color: var(--comic-nav-archive-hover-bg);
+    }
+}
+
+.comicnav .disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.comicnav.bottomnav .nav-lang-toggle {
+    width: auto;
+}
+
+.comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
+    padding-left: 55px;
+    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916')
+        0 50% no-repeat;
+}
+
+// --- Dark Mode Overrides (Entschachtelt) ---
+body.theme-night .comicnav {
+    a,
+    button {
+        color: var(--text-color);
+    }
+
+    button.bookmark {
+        filter: brightness(1.1);
+
+        &.bookmarked {
+            filter: brightness(1.3);
         }
     }
 
-    .nav-wrapper {
-        display: flex;
-        align-items: center;
-    }
-
-    .navarrow:not(.disabled):hover {
-        background-color: var(--comic-nav-hover-bg);
-    }
-
-    // --- Standard Icons (Light Mode) ---
-
     .navbegin .nav-wrapper {
-        padding-left: 35px;
-        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin.png?c=20250916')
-            0 50% no-repeat;
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
     }
 
     .navprev .nav-wrapper {
-        padding-left: 26px;
-        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916')
-            0 50% no-repeat;
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
     }
 
     .navnext .nav-wrapper {
-        padding-right: 26px;
-        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916')
-            100% 50% no-repeat;
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
     }
 
     .navend .nav-wrapper {
-        padding-right: 35px;
-        background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end.png?c=20250916')
-            100% 50% no-repeat;
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
     }
 
-    .nav-report-issue {
-        width: auto;
-
-        .nav-wrapper {
-            padding-left: 28px;
-            background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue.png?c=20251029')
-                0 50% no-repeat;
-            background-size: 20px;
-        }
+    .nav-report-issue .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
     }
 
-    // --- Archive Button ---
     .navarchive {
-        display: inline-flex;
-        flex-flow: row nowrap;
-        align-items: stretch;
-        justify-content: center;
-        padding: 2px 20px;
-        margin: 0 6px;
-        color: #fff;
-        text-align: center;
-        background-color: var(--comic-nav-archive-bg);
-        border-radius: 14px;
-
-        @include media-retina-mobile {
-            height: 50px;
-            border-radius: 7px;
-        }
-
-        &:hover {
-            background-color: var(--comic-nav-archive-hover-bg);
-        }
+        color: var(--text-color);
     }
 
-    .disabled {
-        cursor: default;
-        opacity: 0.4;
-    }
-
-    &.bottomnav .nav-lang-toggle {
-        width: auto;
-
-        .nav-wrapper {
-            padding-left: 55px;
-            background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916')
-                0 50% no-repeat;
-        }
-    }
-
-    // --- Dark Mode Overrides (All grouped at the end to satisfy specificity rules) ---
-    body.theme-night & {
-        a,
-        button {
-            color: var(--text-color);
-        }
-
-        button.bookmark {
-            filter: brightness(1.1);
-
-            &.bookmarked {
-                filter: brightness(1.3);
-            }
-        }
-
-        .navbegin .nav-wrapper {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
-        }
-
-        .navprev .nav-wrapper {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
-        }
-
-        .navnext .nav-wrapper {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
-        }
-
-        .navend .nav-wrapper {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
-        }
-
-        .nav-report-issue .nav-wrapper {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
-        }
-
-        .navarchive {
-            color: var(--text-color);
-        }
-
-        &.bottomnav .nav-lang-toggle .nav-wrapper {
-            background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
-        }
+    &.bottomnav .nav-lang-toggle .nav-wrapper {
+        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
     }
 }

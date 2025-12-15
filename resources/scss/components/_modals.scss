@@ -24,6 +24,7 @@
 /// - Integration von Image Preview und Character Grid Styles.
 /// - fix(Design): Original-Styles für Dialoge und Close-Buttons wiederhergestellt.
 /// - style(Report): Styles für Diff-Box und Code-Ansicht hinzugefügt.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -72,93 +73,94 @@
     box-shadow:
         0 4px 8px 0 rgb(0 0 0 / 0.2),
         0 6px 20px 0 rgb(0 0 0 / 0.19);
+}
 
-    body.theme-night & {
-        background-color: var(--sidebar-bg); // Dark Modal BG
-        border-color: var(--border-light);
-        box-shadow: 0 4px 15px rgb(0 0 0 / 0.5);
-    }
+body.theme-night .modal-content {
+    background-color: var(--sidebar-bg); // Dark Modal BG
+    border-color: var(--border-light);
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.5);
 }
 
 /* --- Advanced Modal Layout (Sticky Header/Footer) --- */
 .modal-advanced-layout {
     overflow: hidden; // Verhindert doppelte Scrollbalken am Hauptcontainer
+}
 
-    .modal-header-wrapper {
+// Entschachtelte Elemente von .modal-advanced-layout
+.modal-header-wrapper {
+    display: flex;
+    flex-shrink: 0; // Darf nicht schrumpfen
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    background-color: var(--content-bg);
+    border-bottom: 1px solid var(--border-medium);
+
+    h2 {
+        margin: 0;
+        font-size: 1.5em;
+    }
+}
+
+body.theme-night .modal-header-wrapper {
+    background-color: var(--sidebar-bg);
+    border-bottom-color: var(--border-light);
+}
+
+.modal-scroll-content {
+    flex-grow: 1;
+    padding: 25px;
+    overflow-y: auto; // Hier findet das Scrollen statt
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    input,
+    textarea,
+    select {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 8px;
+        color: var(--text-color);
+        background-color: var(--content-bg);
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+    }
+}
+
+body.theme-night .modal-scroll-content {
+    input,
+    textarea,
+    select {
+        background-color: color-mix(in srgb, var(--page-bg), black 20%);
+        border-color: var(--border-light);
+    }
+}
+
+.modal-footer-actions {
+    z-index: 10;
+    flex-shrink: 0; // Darf nicht schrumpfen
+    padding: 15px 25px;
+    background-color: var(--content-bg);
+    border-top: 1px solid var(--border-medium);
+
+    .modal-buttons {
         display: flex;
-        flex-shrink: 0; // Darf nicht schrumpfen
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 25px;
-        background-color: var(--content-bg);
-        border-bottom: 1px solid var(--border-medium);
-
-        h2 {
-            margin: 0;
-            font-size: 1.5em;
-        }
-
-        body.theme-night & {
-            background-color: var(--sidebar-bg);
-            border-bottom-color: var(--border-light);
-        }
+        gap: 10px;
+        justify-content: flex-end;
     }
+}
 
-    .modal-scroll-content {
-        flex-grow: 1;
-        padding: 25px;
-        overflow-y: auto; // Hier findet das Scrollen statt
-
-        .form-group {
-            margin-bottom: 15px;
-
-            label {
-                display: block;
-                margin-bottom: 5px;
-                font-weight: bold;
-            }
-
-            input,
-            textarea,
-            select {
-                box-sizing: border-box;
-                width: 100%;
-                padding: 8px;
-                color: var(--text-color);
-                background-color: var(--content-bg);
-                border: 1px solid var(--border-medium);
-                border-radius: 4px;
-
-                body.theme-night & {
-                    background-color: color-mix(
-                        in srgb,
-                        var(--page-bg),
-                        black 20%
-                    );
-                    border-color: var(--border-light);
-                }
-            }
-        }
-    }
-
-    .modal-footer-actions {
-        z-index: 10;
-        flex-shrink: 0; // Darf nicht schrumpfen
-        padding: 15px 25px;
-        background-color: var(--content-bg);
-        border-top: 1px solid var(--border-medium);
-
-        body.theme-night & {
-            background-color: var(--sidebar-bg);
-            border-top-color: var(--border-light);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-    }
+body.theme-night .modal-footer-actions {
+    background-color: var(--sidebar-bg);
+    border-top-color: var(--border-light);
 }
 
 .modal-close,
@@ -178,14 +180,15 @@
     &:focus {
         color: var(--text-on-medium);
     }
+}
 
-    body.theme-night & {
-        color: rgb(255 255 255 / 0.6);
+body.theme-night .modal-close,
+body.theme-night .close-button {
+    color: rgb(255 255 255 / 0.6);
 
-        &:hover,
-        &:focus {
-            color: var(--text-color);
-        }
+    &:hover,
+    &:focus {
+        color: var(--text-color);
     }
 }
 
@@ -197,77 +200,33 @@
     border-top: 1px dashed var(--border-medium);
 }
 
-.button-toggle-group {
-    display: inline-flex;
-    justify-content: center;
-    margin-bottom: 15px;
-    overflow: hidden;
-    border: 1px solid var(--border-medium);
-    border-radius: 5px;
+// TODO Erinnerung für Phase 3 -Konsolidierung (DRY - Don't Repeat Yourself)
+// .button-toggle-group und .report-images-container sind jetzt in admin/_forms.scss bzw. admin/_editors.scss oder globaler
+// Da diese hier noch benötigt werden für Frontend-Modals (z.B. Report),
+// sollten sie idealerweise importiert oder hier definiert werden.
+// Da sie im ursprünglichen File waren, lasse ich die Struktur für das Frontend hier
+// und referenziere auf die globale Definition (falls vorhanden) oder definiere neu.
 
-    .button-toggle {
-        padding: 8px 15px;
-        margin: 0;
-        color: var(--text-color);
-        cursor: pointer;
-        background-color: var(--content-bg);
-        border: none;
-        border-right: 1px solid var(--border-medium);
-        border-radius: 0;
+// ACHTUNG: Duplizierung vermeiden.
+// .report-images-container war vorher hier definiert.
 
-        &:last-child {
-            border-right: none;
-        }
-
-        &:hover {
-            background-color: var(--button-hover-bg);
-        }
-
-        &.active {
-            color: white;
-            background-color: #007bff;
-        }
-
-        body.theme-night & {
-            background-color: var(--button-bg);
-
-            &.active {
-                background-color: #007bff;
-            }
-        }
-    }
-}
-
-/* --- Unified Image Preview Layout (Admin & Report) --- */
-.report-images-container,
-#modal-image-previews {
+.report-images-container {
     display: flex;
-    flex-flow: row nowrap; // Zwingt Elemente nebeneinander (kein Umbruch)
-    gap: 15px; // Abstand zwischen den Bildern
-    justify-content: center; // Falls mal nichts da ist, zentrieren
-    width: 100%; // Nutzt die volle Breite des Modals
+    flex-flow: row nowrap;
+    gap: 15px;
+    justify-content: center;
+    width: 100%;
     margin-top: 15px;
 
-    // Die Kinder-Elemente (Wrapper um Bild & Label)
-    // .image-preview-box ist für Admin, div für Report
-    > div,
-    .image-preview-box {
-        // Eigenes Layout (Label oben, Bild unten)
+    > div {
         display: flex;
-
-        // "Die Magie":
-        // 1 = Wachsen (Nimm Platz), 1 = Schrumpfen, 0 = Basis
-        // Wenn 1 Element sichtbar ist -> 100% Breite
-        // Wenn 2 Elemente sichtbar sind -> 50% Breite (exakt gleich)
-        flex: 1; // Beide Container wachsen gleichmäßig (50% Breite)
+        flex: 1;
         flex-direction: column;
-        width: 0; // Fix für manche Browser, damit Flex-Basis 0 greift
+        width: 0;
         min-width: 0;
     }
 
-    // Beschriftungen (Report nutzt label, Admin nutzt p)
-    label,
-    p {
+    label {
         margin-bottom: 5px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -278,77 +237,20 @@
     }
 
     img {
-        align-self: flex-start; // Richtet Bilder oben bündig aus
-        width: 100%; // Füllt den Wrapper aus
-        height: auto; // Verhältnis beibehalten
+        align-self: flex-start;
+        width: 100%;
+        height: auto;
         max-height: 60vh;
-        object-fit: contain; // Bild immer ganz zeigen
-        background-color: var(--content-area-bg); // Neutraler Hintergrund
+        object-fit: contain;
+        background-color: var(--content-area-bg);
         border: 1px solid var(--border-medium);
         border-radius: 4px;
-
-        body.theme-night & {
-            background-color: rgb(0 0 0 / 0.2);
-            border-color: var(--border-light);
-        }
     }
 }
 
-/* --- Character Selection Grid --- */
-#modal-charaktere-section {
-    padding-top: 15px;
-    margin-top: 20px;
-    border-top: 1px solid var(--border-medium);
-
-    .charakter-kategorie {
-        margin-bottom: 15px;
-
-        h3 {
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-            border-bottom: 1px solid var(--border-medium);
-        }
-    }
-}
-
-.charaktere-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-
-    .charakter-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 80px;
-        text-align: center;
-        cursor: pointer;
-
-        img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            background-color: var(--characters-area-bg);
-            border: 3px solid transparent;
-            border-radius: 50%;
-            filter: grayscale(100%);
-            transition:
-                border-color 0.3s,
-                filter 0.3s;
-        }
-
-        &.active img {
-            border-color: #007bff;
-            filter: grayscale(0%);
-        }
-
-        span {
-            margin-top: 5px;
-            font-size: 0.8em;
-            word-break: break-word;
-        }
-    }
+body.theme-night .report-images-container img {
+    background-color: rgb(0 0 0 / 0.2);
+    border-color: var(--border-light);
 }
 
 /* --- Report Detail & Diff View --- */
@@ -366,11 +268,11 @@
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
     border-radius: 4px;
+}
 
-    body.theme-night & {
-        background-color: rgb(0 0 0 / 0.2);
-        border-color: var(--border-light);
-    }
+body.theme-night .report-text-box {
+    background-color: rgb(0 0 0 / 0.2);
+    border-color: var(--border-light);
 }
 
 // Diff-Ansicht (Text-Vergleich)
@@ -383,32 +285,32 @@
         color: var(--text-color-light);
     }
 
-    // Hinzugefügt (Grün)
     ins {
         padding: 0 2px;
         color: #155724;
         text-decoration: none;
         background-color: rgb(40 167 69 / 0.2);
         border-bottom: 2px solid #28a745;
-
-        body.theme-night & {
-            color: #a5d6a7;
-            background-color: rgb(40 167 69 / 0.3);
-            border-color: #2e7d32;
-        }
     }
 
-    // Entfernt (Rot)
     del {
         padding: 0 2px;
         color: #721c24;
         text-decoration: line-through;
         background-color: rgb(220 53 69 / 0.2);
+    }
+}
 
-        body.theme-night & {
-            color: #ef9a9a;
-            background-color: rgb(220 53 69 / 0.3);
-        }
+body.theme-night .diff-box {
+    ins {
+        color: #a5d6a7;
+        background-color: rgb(40 167 69 / 0.3);
+        border-color: #2e7d32;
+    }
+
+    del {
+        color: #ef9a9a;
+        background-color: rgb(220 53 69 / 0.3);
     }
 }
 
@@ -422,9 +324,9 @@
     font-family: $font-mono !important;
     font-size: 14px !important;
     line-height: 1.4;
-    color: #d4d4d4 !important; // Helles Grau
+    color: #d4d4d4 !important;
     resize: vertical;
-    background-color: #1e1e1e !important; // Richtig dunkel (VS Code style)
+    background-color: #1e1e1e !important;
     border: 1px solid #333;
     border-radius: 4px;
 
@@ -432,12 +334,11 @@
         outline: none;
         border-color: var(--link-color);
     }
+}
 
-    // Im Light Mode auch dunkel lassen (Code-View Konvention)
-    body.theme-night & {
-        color: var(--link-color);
-        background-color: var(--page-bg);
-    }
+body.theme-night .summernote-code-look {
+    color: var(--link-color);
+    background-color: var(--page-bg);
 }
 
 /* --- Popup Dialog (Original) --- */
@@ -452,22 +353,22 @@
     border-radius: 5px;
     box-shadow: 0 0 4px 0 rgb(0 0 0 / 0.6);
 
-    body.theme-night & {
-        box-shadow: 0 0 5px 1px rgb(255 255 255 / 0.25);
-    }
-
     .dialog-title {
         padding: 5px 10px;
         color: var(--text-on-medium);
         background-color: var(--button-hover-bg);
-
-        body.theme-night & {
-            color: var(--text-color);
-            background-color: var(--sidebar-bg);
-        }
     }
 
     .dialog-body {
         padding: 10px;
+    }
+}
+
+body.theme-night .dialog {
+    box-shadow: 0 0 5px 1px rgb(255 255 255 / 0.25);
+
+    .dialog-title {
+        color: var(--text-color);
+        background-color: var(--sidebar-bg);
     }
 }
