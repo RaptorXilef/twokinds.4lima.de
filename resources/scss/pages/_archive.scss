@@ -28,6 +28,7 @@
 /// - style(Linter): Theme-Overrides separiert und ans Ende verschoben.
 /// - chore(Linter): False-Positive bei Dark-Mode Link-Spezifität global für den Theme-Block ignoriert.
 /// - refactor(SCSS): .chapter-links in eigene Komponente ausgelagert.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -36,40 +37,52 @@
 .chapter {
     margin-bottom: 15px;
     font-size: 14px;
+}
 
-    p {
-        margin-inline: 0.5rem;
-        margin-top: 0.3rem;
-        color: var(--text-color);
-        text-align: justify;
+.chapter p {
+    margin-inline: 0.5rem;
+    margin-top: 0.3rem;
+    color: var(--text-color);
+    text-align: justify;
+}
 
-        a {
-            color: var(--text-on-medium); // Im Original Schwarz
+.chapter p a {
+    color: var(--text-on-medium); // Im Original Schwarz
+}
 
-            // Nesting für korrekte Specificity
-            body.theme-night & {
-                color: var(--link-color);
-            }
-        }
+// Flache Specificity für Dark Mode
+body.theme-night .chapter p a {
+    color: var(--link-color);
+}
+
+.chapter h2 {
+    display: inline-block;
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-color);
+    cursor: pointer;
+    border-bottom: 1px solid transparent; // Unsichtbarer Border um Layout-Shifts zu vermeiden
+
+    &:hover {
+        color: var(--link-color);
+        border-bottom-color: var(--link-color);
     }
+}
 
-    h2 {
-        display: inline-block;
-        margin: 0;
-        font-size: 1.2em;
-        color: var(--text-on-medium);
-        cursor: pointer;
+// Collapsible Arrow
+.chapter h2::before {
+    display: inline-block;
+    margin-right: 5px;
+    content: '►';
+    transform: rotate(90deg);
+    transition: transform 0.2s;
+}
 
-        body.theme-night & {
-            color: var(--text-color);
-        }
+.chapter.collapsed h2::before {
+    transform: rotate(0deg);
+}
 
-        @include media-retina-mobile {
-            font-size: 2em;
-        }
-    }
-
-    h4:hover {
-        text-decoration: underline;
-    }
+// Content visibility
+.chapter.collapsed .chapter-links {
+    display: none;
 }

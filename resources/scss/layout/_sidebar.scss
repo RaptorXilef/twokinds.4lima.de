@@ -20,6 +20,7 @@
 ///
 /// @since    5.0.0
 /// - CSS Vars Integration.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -61,137 +62,85 @@
     @include media-retina-mobile {
         font-size: 1.1em;
     }
-
-    a {
-        position: relative;
-        display: block;
-        width: 160px;
-        padding: 3px 0;
-        margin: 3px auto;
-        overflow: hidden;
-        color: var(--text-on-medium);
-        text-transform: uppercase;
-        text-decoration: none;
-        cursor: pointer;
-        list-style-type: none;
-        background-color: var(--menu-bg);
-        border-radius: 4px;
-
-        @include media-retina-mobile {
-            padding: 8px 0;
-            margin: 8px auto;
-        }
-
-        &:hover {
-            background-color: var(--menu-hover-bg);
-        }
-    }
-
-    a.theme {
-        display: flex;
-        flex-flow: column nowrap;
-        align-items: stretch;
-        justify-content: flex-start;
-        padding: 0;
-        margin-top: 10px;
-
-        span.themelabel {
-            flex: 0 0 0;
-            padding: 1px;
-            font-size: 0.7em;
-            color: #fff;
-            background-color: var(--theme-label-bg);
-        }
-
-        span.themename {
-            flex: 1 1 auto;
-            padding: 3px;
-            color: var(--text-on-medium);
-            text-align: center;
-
-            body.theme-night & {
-                color: var(--text-color);
-            }
-        }
-    }
-
-    a.menu-new {
-        @include media-retina-mobile {
-            padding-top: calc(0.7em + 5px);
-            padding-bottom: calc(8px - 0.7em + 5px);
-        }
-
-        &::after {
-            position: absolute;
-            top: 6px;
-            left: -6px;
-            display: inline-block;
-            width: 26px;
-            font-size: 0.7em;
-            color: #fff;
-            content: 'New';
-            background-color: var(--new-tag-bg);
-            transform: rotate(-90deg);
-
-            @include media-retina-mobile {
-                top: 0;
-                right: 0;
-                left: 0;
-                width: auto;
-                transform: none;
-            }
-        }
-    }
 }
 
-/* Banner Ads & Donation Styling */
-
-/*
-.abg-sidebar {
-    max-height: 630px;
-    width: 160px;
-    margin: auto;
-    overflow: hidden;
-
-    .advertisement {
-        margin: 10px 0 20px;
-        height: 600px;
-    }
-}
-
-.av2 {
-    margin: auto;
-    width: 300px;
-    height: 268px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.av2-child {
+.menu a {
     position: relative;
-    width: 300px;
-    height: 250px;
+    display: block;
+    width: 160px;
+    padding: 3px 0;
+    margin: 3px auto;
     overflow: hidden;
+    color: var(--text-on-medium);
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    list-style-type: none;
+    background-color: var(--menu-bg);
+    border-radius: 4px;
 
-    .advertisement {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 1000;
-        background-color: var(--content-bg);
+    @include media-retina-mobile {
+        padding: 8px 0;
+        margin: 8px auto;
+    }
 
-        body.theme-night & {
-            background-color: var(--page-bg);
-        }
+    &:hover {
+        background-color: var(--menu-hover-bg);
     }
 }
 
-.donate-box {
-    width: 300px;
-    height: 250px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 999;
+.menu a.theme {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+    margin-top: 10px;
 }
-*/
+
+.menu a.theme span.themelabel {
+    flex: 0 0 0;
+    padding: 1px;
+    font-size: 0.7em;
+    color: #fff;
+    background-color: var(--theme-label-bg);
+}
+
+.menu a.theme span.themename {
+    flex: 1 1 auto;
+    padding: 3px;
+    color: var(--text-on-medium);
+    text-align: center;
+}
+
+body.theme-night .menu a.theme span.themename {
+    color: var(--text-color);
+}
+
+.menu a.menu-new {
+    @include media-retina-mobile {
+        padding-top: calc(0.7em + 5px);
+        padding-bottom: calc(8px - 0.7em + 5px);
+    }
+
+    &::after {
+        position: absolute;
+        top: 6px;
+        left: -6px;
+        display: inline-block;
+        width: 26px;
+        font-size: 0.7em;
+        color: #fff;
+        content: 'New';
+        background-color: var(--new-tag-bg);
+        transform: rotate(-90deg);
+
+        @include media-retina-mobile {
+            top: 0;
+            right: 0;
+            left: 0;
+            width: auto;
+            transform: none;
+        }
+    }
+}

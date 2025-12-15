@@ -28,224 +28,130 @@
 /// - refactor(CSS): Vollständige Trennung von Basis-Styles und Theme-Overrides.
 /// - chore(Linter): False-Positive bei Dark-Mode Spezifität global für den Theme-Block ignoriert.
 /// - refactor(SCSS): .tag-page-links entfernt (jetzt in components/_thumbnail-grid.scss).
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
 
-.charaktere-overview {
-    .character-overview-intro {
-        margin-bottom: 20px;
-        text-align: center;
+/* --- Bookmarks Page --- */
+.bookmarks-page .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bookmarks-page .page-header strong {
+    font-size: 0.6em;
+    color: #666;
+}
+
+.bookmarks-page .comic-count-badge {
+    padding: 2px 8px;
+    margin-left: 10px;
+    font-size: 0.6em;
+    color: #fff;
+    vertical-align: middle;
+    background-color: var(--link-color);
+    border-radius: 10px;
+}
+
+.bookmarks-page .bookmark-example {
+    font-style: italic;
+    color: #555;
+}
+
+.no-bookmarks {
+    padding: 20px;
+    margin: 20px 0;
+    font-size: 1.2em;
+    color: #666;
+    text-align: center;
+    border: 2px dashed var(--border-medium);
+    border-radius: 10px;
+}
+
+.bookmarks-controls {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.bookmarks-controls button {
+    padding: 10px 15px;
+    margin: 5px;
+    font-size: 0.9em;
+    color: white;
+    cursor: pointer;
+    background-color: var(--cookie-btn-accept-bg);
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: var(--cookie-btn-accept-hover);
     }
 }
 
-// 1. Character Detail (Base Styles)
+.bookmarks-controls .hidden-file-input {
+    display: none;
+}
+
+/* --- Character Detail Page --- */
 .char-detail {
-    padding: 10px;
-    margin-bottom: 10px;
-    color: var(--text-color);
+    margin-bottom: 20px;
+    overflow: auto;
     border-bottom: 1px solid var(--border-medium);
-
-    h3 img {
-        vertical-align: middle;
-    }
-
-    h3,
-    p {
-        margin-bottom: 10px;
-        text-align: justify;
-    }
-
-    img.portrait {
-        margin-top: 0;
-    }
-
-    .char-info {
-        float: left;
-        width: 600px;
-    }
-
-    .char-img {
-        float: left;
-        width: 175px;
-        margin-right: 20px;
-        text-align: center;
-    }
-
-    // Villain Section Overrides
-    .villain-image-container {
-        margin-bottom: 10px;
-        text-align: center;
-    }
-
-    &.villain-section {
-        .char-info {
-            float: none; // Da das Bild oben zentriert ist, muss Text nicht fließen (optional, je nach Layout-Wunsch)
-            width: 800px; // Überschreibt die standardmäßigen 600px
-            margin: auto; // Zentriert den Textblock unter dem Bild
-        }
-    }
-
-    .villain-group-image {
-        width: 800px;
-        max-width: 100%;
-        height: auto;
-    }
-
-    &:last-of-type {
-        margin-bottom: 0;
-        border: none;
-    }
 }
 
-/* 2. Bookmarks Page (Base Styles) */
-.bookmarks-page {
-    .page-header {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        justify-content: center;
-        padding-top: 10px;
-        margin-bottom: 0;
-        font-size: 1.8em;
-        font-weight: 300;
-        text-align: center;
-
-        strong {
-            font-weight: 700;
-            color: #333;
-        }
-    }
-
-    .comic-count-badge {
-        display: inline-block;
-        padding: 4px 10px;
-        font-size: 0.7em;
-        font-weight: 700;
-        line-height: 1;
-        vertical-align: baseline;
-        color: #fff;
-        text-align: center;
-        white-space: nowrap;
-        background-color: var(--cookie-btn-accept-bg); // Grün
-        border-radius: 12px;
-    }
-
-    .bookmark-example {
-        display: flex;
-        flex-flow: row nowrap;
-        gap: 0.5rem;
-        align-items: center;
-        justify-content: flex-end;
-        margin-right: 1rem;
-        margin-bottom: 0;
-        font-size: 0.9em;
-        font-style: italic;
-        text-align: center;
-
-        .ribbon {
-            flex: 0 0 auto;
-            width: 27px;
-            height: 36px;
-            background: url('#{$base-url}/assets/images/layout/ui/bookmark.png')
-                0 0 no-repeat;
-            background-size: contain;
-        }
-    }
-
-    // .tag-page-links ist jetzt global in components/_thumbnail-grid.scss
-
-    .no-bookmarks {
-        padding: 2rem 1rem;
-        margin: 1rem;
-        font-size: 1.2rem;
-        color: #666;
-        text-align: center;
-        border: 2px dashed #ccc;
-        border-radius: 5px;
-
-        p {
-            margin: 0;
-            line-height: 1.5;
-        }
-    }
-
-    .bookmarks-controls {
-        padding-top: 20px;
-        margin-top: 20px;
-        text-align: center;
-
-        hr {
-            height: 1px;
-            margin-bottom: 20px;
-            background-color: var(--border-light);
-            border: 0;
-        }
-
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            font-size: 0.9em;
-            color: white;
-            cursor: pointer;
-            background-color: var(--cookie-btn-accept-bg);
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-
-            &:hover {
-                background-color: var(--cookie-btn-accept-hover);
-            }
-        }
-
-        .hidden-file-input {
-            display: none;
-        }
-    }
+.char-detail h3 {
+    margin: 0;
+    font-size: 20px;
 }
 
-// 3. Theme Overrides (High Specificity - Grouped at End)
-/* stylelint-disable no-descending-specificity */
-body.theme-night {
-    .char-detail {
-        border-bottom-color: var(--button-bg);
+.char-detail h3 img {
+    float: left;
+    margin: 0 10px 10px 0;
+    border: 1px solid var(--border-black);
+}
 
-        h3 img {
-            filter: brightness(1.1);
-        }
-    }
+.char-detail p {
+    margin: 0 0 10px;
+}
 
-    .bookmarks-page {
-        .page-header strong {
-            color: #ddd;
-        }
+// Theme Overrides (Flattened & Grouped)
+body.theme-night .char-detail {
+    border-bottom-color: var(--button-bg);
+}
 
-        .comic-count-badge {
-            background-color: var(--button-bg);
-        }
+body.theme-night .char-detail h3 img {
+    filter: brightness(1.1);
+}
 
-        .bookmark-example {
-            color: #ccc;
-        }
+body.theme-night .bookmarks-page .page-header strong {
+    color: #ddd;
+}
 
-        .no-bookmarks {
-            color: #ccc;
-            border-color: var(--button-bg);
-        }
+body.theme-night .bookmarks-page .comic-count-badge {
+    background-color: var(--button-bg);
+}
 
-        .bookmarks-controls {
-            hr {
-                background-color: var(--button-bg);
-            }
+body.theme-night .bookmarks-page .bookmark-example {
+    color: #ccc;
+}
 
-            button {
-                background-color: var(--button-bg);
+body.theme-night .no-bookmarks {
+    color: #ccc;
+    border-color: var(--button-bg);
+}
 
-                &:hover {
-                    background-color: var(--border-light);
-                }
-            }
-        }
+body.theme-night .bookmarks-controls hr {
+    background-color: var(--button-bg);
+}
+
+body.theme-night .bookmarks-controls button {
+    background-color: var(--button-bg);
+
+    &:hover {
+        background-color: var(--border-light);
     }
 }
-/* stylelint-enable no-descending-specificity */

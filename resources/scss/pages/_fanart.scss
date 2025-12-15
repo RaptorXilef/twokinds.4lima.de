@@ -20,6 +20,7 @@
 ///
 /// @since    5.0.0
 /// - Extrahiert aus main_dark.scss.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 /*
@@ -30,57 +31,52 @@
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
+}
 
-    .fanart-item {
-        border: 1px solid var(--border-medium);
-        padding: 10px;
-        background-color: var(--content-bg);
-        border-radius: 5px;
-        text-align: center;
-        max-width: 200px;
-        color: var(--text-color);
+.fanart-item {
+    border: 1px solid var(--border-medium);
+    padding: 10px;
+    background-color: var(--content-bg);
+    border-radius: 5px;
+    text-align: center;
+    max-width: 200px;
+    color: var(--text-color);
+}
 
-        body.theme-night & {
-            border-color: var(--page-bg);
-            background-color: var(--content-area-bg);
-        }
+body.theme-night .fanart-item {
+    border-color: var(--page-bg);
+    background-color: var(--content-area-bg);
+}
 
-        .thumbnail {
-            margin-bottom: 10px;
+.fanart-item .thumbnail {
+    margin-bottom: 10px;
+}
 
-            a {
-                display: block;
-                background-color: var(--button-bg);
-                padding: 5px;
-                border-radius: 3px;
-                color: var(--text-color);
+.fanart-item .thumbnail a {
+    display: block;
+    background-color: var(--button-bg);
+    padding: 5px;
+    border-radius: 3px;
+    color: var(--text-color);
 
-                &:hover {
-                    background-color: var(--button-hover-bg);
-                }
-
-                img {
-                    max-width: 100%;
-                    height: auto;
-                    display: block;
-                }
-            }
-        }
-
-        .meta {
-            font-size: 0.9em;
-
-            .author {
-                font-weight: bold;
-                display: block;
-                margin-bottom: 2px;
-            }
-
-            .date {
-                font-size: 0.8em;
-                color: var(--text-color-light);
-            }
-        }
+    &:hover {
+        background-color: var(--button-hover-bg);
     }
 }
-    */
+
+.fanart-item .thumbnail img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.fanart-item .meta {
+    font-size: 0.9em;
+}
+
+.fanart-item .meta .author {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+*/

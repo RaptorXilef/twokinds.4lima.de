@@ -24,6 +24,7 @@
 /// - style(Linter): Doppelte Selektoren für Dark Mode zusammengeführt.
 /// - refactor(SCSS): Datei von _grid.scss zu _main-layout.scss umbenannt (semantisch korrekter).
 /// - fix: Fixiert den Footer am unteren Bildschirmrand um einen Grafikfehler auf den Adminseiten zu beheben (Überlauf)
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -79,41 +80,42 @@ article {
     ul {
         margin-bottom: 10px;
     }
+}
 
-    table {
-        margin-bottom: 10px;
-        border-collapse: collapse;
-        border: 1px solid var(--border-black);
+// Entschachtelte Content-Elemente
+.content table {
+    margin-bottom: 10px;
+    border-collapse: collapse;
+    border: 1px solid var(--border-black);
+}
 
-        body.theme-night & {
-            border-color: var(--page-bg);
-        }
-    }
+body.theme-night .content table {
+    border-color: var(--page-bg);
+}
 
-    th,
-    td {
-        padding: 2px 7px;
-        color: var(--text-color);
-        border: 1px solid var(--border-black);
-    }
+.content th,
+.content td {
+    padding: 2px 7px;
+    color: var(--text-color);
+    border: 1px solid var(--border-black);
+}
 
-    th {
-        background-color: var(--header-bg);
-    }
+.content th {
+    background-color: var(--header-bg);
+}
 
-    // Merged Dark Mode Styles
-    body.theme-night & {
-        border-color: var(--page-bg); // Hierhin verschoben
+// Merged Dark Mode Styles (Flat)
+body.theme-night .content {
+    border-color: var(--page-bg);
+}
 
-        th {
-            background-color: var(--button-hover-bg);
-        }
+body.theme-night .content th {
+    background-color: var(--button-hover-bg);
+}
 
-        th,
-        td {
-            border-color: var(--page-bg);
-        }
-    }
+body.theme-night .content th,
+body.theme-night .content td {
+    border-color: var(--page-bg);
 }
 
 .content-bottom {

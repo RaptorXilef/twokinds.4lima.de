@@ -21,6 +21,7 @@
 /// @since    5.0.0
 /// - Dark Mode Bilder per Parent Selector.
 /// - fix(CSS): Fehlender Mixin-Import ergänzt.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -37,16 +38,18 @@
     text-indent: 105%;
     white-space: nowrap;
     background: transparent
-        url('#{$base-url}/assets/images/layout/banner.webp?c=20251024') 0 10px
-        no-repeat;
-
-    // Dark Mode Banner Override
-    body.theme-night & {
-        background-image: url('#{$base-url}/assets/images/layout/banner.webp?c=20251024');
-    }
+        url('#{$base-url}/assets/images/layout/banner_2025-12-day.webp?c=20251215')
+        0 10px no-repeat;
 }
 
+// Dark Mode Banner Override
+body.theme-night .banner {
+    background-image: url('#{$base-url}/assets/images/layout/banner_by_Felix_2025-12-night.webp?c=20251215');
+}
+
+// TODO Prüfen, kann der hier weg, weil schon durch "body.theme-night .banner" abgedeckt
 // Spezieller Banner Mode
+/*
 .banner-lights-off {
     position: absolute;
     top: 0;
@@ -55,11 +58,11 @@
     height: 0;
 }
 
-#banner-lights-off {
-    body.theme-night & {
-        background-image: url('#{$base-url}/assets/images/layout/banner.webp?c=20251024');
-    }
-}
+// TODO Prüfen, kann der hier weg, weil schon durch "body.theme-night .banner" abgedeckt
+// ID Selector flattened
+body.theme-night #banner-lights-off {
+    background-image: url('#{$base-url}/assets/images/layout/banner.webp?c=20251024');
+}*/
 
 .maintbanner {
     position: relative;

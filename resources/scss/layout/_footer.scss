@@ -20,6 +20,7 @@
 ///
 /// @since    5.0.0
 /// - Initiale Erstellung.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
 @use '../abstracts/variables' as *;
@@ -35,30 +36,46 @@
     margin-bottom: 10px;
     border: 1px solid var(--border-medium);
     border-radius: 5px;
+}
 
-    body.theme-night & {
-        border-color: var(--page-bg);
+body.theme-night .bottom {
+    border-color: var(--page-bg);
+}
+
+.bottom-left {
+    display: flex;
+    flex: 0 0 160px;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    .bottom & {
+        // Kontext
     }
+}
 
-    .bottom-left {
-        display: flex;
-        flex: 0 0 160px;
-        flex-direction: column;
-        justify-content: flex-start;
+.bottom-ctr {
+    flex: 1 1 100%;
+    overflow: hidden;
+
+    .bottom & {
+        // Kontext
     }
+}
 
-    .bottom-ctr {
-        flex: 1 1 100%;
-        overflow: hidden;
+.twitter-box {
+    height: 377px;
+    overflow: auto;
 
-        .twitter-box {
-            height: 377px;
-            overflow: auto;
-        }
+    .bottom-ctr & {
+        // Kontext
     }
+}
 
-    .bottom-right {
-        flex: 0 0 300px;
+.bottom-right {
+    flex: 0 0 300px;
+
+    .bottom & {
+        // Kontext
     }
 }
 
@@ -68,12 +85,16 @@
     justify-content: center;
     width: 100%;
     margin: -4px auto 0;
+}
 
-    .rec-comic-btn {
-        flex: 0 0 88px;
-        height: 31px;
-        margin: 4px 2px 0;
-        background-color: var(--border-medium);
+.rec-comic-btn {
+    flex: 0 0 88px;
+    height: 31px;
+    margin: 4px 2px 0;
+    background-color: var(--border-medium);
+
+    .rec-comic & {
+        // Kontext
     }
 }
 
