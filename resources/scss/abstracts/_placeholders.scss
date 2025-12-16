@@ -5,22 +5,30 @@
 ///
 /// Abstrakte Klassen (%-Selektoren) zum Erweitern.
 ///
+/// Globale Placeholder-Selektoren.
+///  Sammelstelle für wiederverwendbare Stil-Fragmente (Extends), die keinen CSS-Output erzeugen,
+///  solange sie nicht @extended werden.
+///
 
 /*!
- * @file      resources/scss/abstracts/_placeholders.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/abstracts/_placeholders.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
 /// - Initiale Erstellung (Platzhalter für zukünftige Erweiterungen).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine)
 
 // Beispiel:
 // %hidden { display: none; }

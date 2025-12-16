@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Navigation Components
+/// Comic Navigation.
 ///
+/// Styling für die Hauptnavigation (Pfeile), Lesezeichen und Sprachumschalter.
 /// Comic Navigationsleiste und Buttons.
 ///
 
 /*!
- * @file      resources/scss/components/_navigation.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/components/_navigation.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -25,6 +27,17 @@
 /// - fix(CSS): Linter-Fehler (no-descending-specificity) durch Gruppierung der Dark-Mode-Overrides am Ende behoben.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// - $base-url: Basis-URL für Assets
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-on-medium: Textfarbe auf Navigationsleiste
+// - --comic-nav-bg: Hintergrund der Navigationsleiste
+// - --comic-nav-hover-bg: Hintergrund bei Hover über Pfeilen
+// - --comic-nav-archive-bg: Hintergrund Archiv-Button
+// - --comic-nav-archive-hover-bg: Hover Archiv-Button
+// - --text-color: Textfarbe im Dark Mode
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -48,29 +61,35 @@
     @include media-retina-mobile {
         font-size: 1.1em;
     }
-
-    &.bottomnav {
-        margin-top: 15px;
-        margin-bottom: 0;
-    }
-
-    img {
-        margin: 0 4px;
-    }
-
-    a,
-    button {
-        color: var(--text-on-medium);
-        text-decoration: none;
-    }
 }
 
-// Bookmark Button (Entschachtelt)
+.comicnav.bottomnav {
+    margin-top: 15px;
+    margin-bottom: 0;
+}
+
+.comicnav img {
+    margin: 0 4px;
+}
+
+.comicnav a,
+.comicnav button {
+    color: var(--text-on-medium);
+    text-decoration: none;
+}
+
+// Dark Mode Text Reset
+body.theme-night .comicnav a,
+body.theme-night .comicnav button {
+    color: var(--text-color);
+}
+
+// Bookmark Button
 .comicnav button.bookmark {
     position: absolute;
+    z-index: 1000;
     top: 0;
     right: 1rem;
-    z-index: 1000;
     flex: 0 0 auto;
     width: 27px;
     height: 36px;
@@ -83,12 +102,6 @@
     border-radius: 0;
     transform: translateY(-36px);
 
-    &.bookmarked {
-        background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024')
-            0 0 no-repeat;
-        background-size: contain;
-    }
-
     @include media-retina-mobile {
         top: -11px;
         width: 34px;
@@ -97,6 +110,21 @@
     }
 }
 
+.comicnav button.bookmark.bookmarked {
+    background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024')
+        0 0 no-repeat;
+    background-size: contain;
+}
+
+body.theme-night .comicnav button.bookmark {
+    filter: brightness(1.1);
+}
+
+body.theme-night .comicnav button.bookmark.bookmarked {
+    filter: brightness(1.3);
+}
+
+// Navigation Arrows (Wrapper)
 .comicnav .navarrow {
     display: inline-flex;
     flex-flow: row nowrap;
@@ -114,16 +142,16 @@
     }
 }
 
+.comicnav .navarrow:not(.disabled):hover {
+    background-color: var(--comic-nav-hover-bg);
+}
+
 .comicnav .nav-wrapper {
     display: flex;
     align-items: center;
 }
 
-.comicnav .navarrow:not(.disabled):hover {
-    background-color: var(--comic-nav-hover-bg);
-}
-
-// --- Standard Icons (Light Mode) ---
+// --- Icons (Light Mode) ---
 
 .comicnav .navbegin .nav-wrapper {
     padding-left: 35px;
@@ -149,6 +177,26 @@
         100% 50% no-repeat;
 }
 
+// --- Icons (Dark Mode) ---
+
+body.theme-night .comicnav .navbegin .nav-wrapper {
+    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
+}
+
+body.theme-night .comicnav .navprev .nav-wrapper {
+    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
+}
+
+body.theme-night .comicnav .navnext .nav-wrapper {
+    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
+}
+
+body.theme-night .comicnav .navend .nav-wrapper {
+    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
+}
+
+// --- Report Issue Button ---
+
 .comicnav .nav-report-issue {
     width: auto;
 }
@@ -160,7 +208,12 @@
     background-size: 20px;
 }
 
+body.theme-night .comicnav .nav-report-issue .nav-wrapper {
+    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
+}
+
 // --- Archive Button ---
+
 .comicnav .navarchive {
     display: inline-flex;
     flex-flow: row nowrap;
@@ -177,16 +230,17 @@
         height: 50px;
         border-radius: 7px;
     }
-
-    &:hover {
-        background-color: var(--comic-nav-archive-hover-bg);
-    }
 }
 
-.comicnav .disabled {
-    cursor: default;
-    opacity: 0.4;
+.comicnav .navarchive:hover {
+    background-color: var(--comic-nav-archive-hover-bg);
 }
+
+body.theme-night .comicnav .navarchive {
+    color: var(--text-color);
+}
+
+// --- Language Toggle ---
 
 .comicnav.bottomnav .nav-lang-toggle {
     width: auto;
@@ -198,46 +252,12 @@
         0 50% no-repeat;
 }
 
-// --- Dark Mode Overrides (Entschachtelt) ---
-body.theme-night .comicnav {
-    a,
-    button {
-        color: var(--text-color);
-    }
+body.theme-night .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
+    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
+}
 
-    button.bookmark {
-        filter: brightness(1.1);
-
-        &.bookmarked {
-            filter: brightness(1.3);
-        }
-    }
-
-    .navbegin .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
-    }
-
-    .navprev .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
-    }
-
-    .navnext .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
-    }
-
-    .navend .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
-    }
-
-    .nav-report-issue .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
-    }
-
-    .navarchive {
-        color: var(--text-color);
-    }
-
-    &.bottomnav .nav-lang-toggle .nav-wrapper {
-        background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
-    }
+// Helper Class
+.comicnav .disabled {
+    cursor: default;
+    opacity: 0.4;
 }

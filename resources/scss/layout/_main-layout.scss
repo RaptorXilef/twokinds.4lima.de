@@ -2,20 +2,23 @@
 
 ///
 /// Main Layout Grid & Containers
+/// Hauptinhalt und Layout-Struktur.
 ///
 /// Struktur des Hauptinhalts und Container.
+/// Styling für den Hauptcontainer, Artikel und Standard-Inhaltselemente.
 ///
 
 /*!
- * @file      resources/scss/layout/_main-layout.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/layout/_main-layout.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -26,6 +29,19 @@
 /// - fix: Fixiert den Footer am unteren Bildschirmrand um einen Grafikfehler auf den Adminseiten zu beheben (Überlauf)
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --content-area-bg: Hintergrund für den Hauptbereich
+// - --text-color: Standard Textfarbe
+// - --content-bg: Hintergrund für Inhaltsboxen
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-black: Dunkle Rahmenfarbe (Tabellen)
+// - --page-bg: Rahmenfarbe im Dark Mode
+// - --header-bg: Hintergrund für Tabellenköpfe
+// - --button-hover-bg: Hintergrund für Tabellenköpfe im Dark Mode
 
 @use '../abstracts/variables' as *;
 
@@ -61,25 +77,25 @@ article {
     z-index: 102;
     display: inline-block;
     flex: 1 1 auto;
-    padding: 10px 15px;
-    padding-top: 11px;
+    padding: 10px 15px 11px;
     margin-right: 11px;
     overflow: visible;
     color: var(--text-color);
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
     border-radius: 0 0 5px 5px;
+}
 
-    li {
-        margin-right: 30px;
-        margin-bottom: 5px;
-        margin-left: 30px;
-        list-style-position: inside;
-    }
+// Entschachtelte Content-Elemente
+.content li {
+    margin-right: 30px;
+    margin-bottom: 5px;
+    margin-left: 30px;
+    list-style-position: inside;
+}
 
-    ul {
-        margin-bottom: 10px;
-    }
+.content ul {
+    margin-bottom: 10px;
 }
 
 // Entschachtelte Content-Elemente

@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Character & Bookmarks Page
+/// Bookmarks und Charakter-Details.
 ///
+/// Styling für die Lesezeichen-Verwaltung und die detaillierte Charakter-Ansicht.
 /// Styles für Charakter-Übersichten und Lesezeichen.
 ///
 
 /*!
- * @file      resources/scss/pages/_characters.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/pages/_characters.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -31,29 +33,74 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
+// Verwendete SCSS-Variablen:
+// - $base-url: Basis-URL für Assets
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --button-bg: Hintergrund für Buttons / Dark Mode Elemente
+// - --cookie-btn-accept-bg: Primärfarbe (Grün)
+// - --cookie-btn-accept-hover: Hover Primärfarbe
+// - --link-color: Linkfarbe
+
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
 /* --- Bookmarks Page --- */
 .bookmarks-page .page-header {
     display: flex;
+    gap: 12px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    padding-top: 10px;
+    margin-bottom: 0;
+    font-size: 1.8em;
+    font-weight: 300;
+    text-align: center;
 }
 
 .bookmarks-page .page-header strong {
-    font-size: 0.6em;
-    color: #666;
+    font-weight: 700;
+    color: #333;
 }
 
 .bookmarks-page .comic-count-badge {
-    padding: 2px 8px;
-    margin-left: 10px;
-    font-size: 0.6em;
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 0.7em;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: baseline;
     color: #fff;
-    vertical-align: middle;
-    background-color: var(--link-color);
-    border-radius: 10px;
+    text-align: center;
+    white-space: nowrap;
+    background-color: var(--cookie-btn-accept-bg);
+    border-radius: 12px;
+}
+
+.bookmarks-page .bookmark-example {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-end;
+    margin-right: 1rem;
+    margin-bottom: 0;
+    font-size: 0.9em;
+    font-style: italic;
+    text-align: center;
+}
+
+// Ribbon Icon (Wiederhergestellt)
+.bookmarks-page .bookmark-example .ribbon {
+    flex: 0 0 auto;
+    width: 27px;
+    height: 36px;
+    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png') 0 0
+        no-repeat;
+    background-size: contain;
 }
 
 .bookmarks-page .bookmark-example {
@@ -62,18 +109,31 @@
 }
 
 .no-bookmarks {
-    padding: 20px;
-    margin: 20px 0;
-    font-size: 1.2em;
+    padding: 2rem 1rem;
+    margin: 1rem;
+    font-size: 1.2rem;
     color: #666;
     text-align: center;
-    border: 2px dashed var(--border-medium);
-    border-radius: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+}
+
+.no-bookmarks p {
+    margin: 0;
+    line-height: 1.5;
 }
 
 .bookmarks-controls {
-    margin-top: 30px;
+    padding-top: 20px;
+    margin-top: 20px;
     text-align: center;
+}
+
+.bookmarks-controls hr {
+    height: 1px;
+    margin-bottom: 20px;
+    background-color: var(--border-light);
+    border: 0;
 }
 
 .bookmarks-controls button {
@@ -86,39 +146,79 @@
     border: none;
     border-radius: 5px;
     transition: background-color 0.2s;
+}
 
-    &:hover {
-        background-color: var(--cookie-btn-accept-hover);
-    }
+.bookmarks-controls button:hover {
+    background-color: var(--cookie-btn-accept-hover);
 }
 
 .bookmarks-controls .hidden-file-input {
     display: none;
 }
 
-/* --- Character Detail Page --- */
+/* --- Character Detail Page (Wiederhergestellt) --- */
 .char-detail {
-    margin-bottom: 20px;
-    overflow: auto;
+    padding: 10px;
+    margin-bottom: 10px;
+    color: var(--text-color);
     border-bottom: 1px solid var(--border-medium);
 }
 
+.char-detail:last-of-type {
+    margin-bottom: 0;
+    border: none;
+}
+
 .char-detail h3 {
-    margin: 0;
-    font-size: 20px;
+    margin-bottom: 10px;
+    text-align: justify;
 }
 
 .char-detail h3 img {
-    float: left;
-    margin: 0 10px 10px 0;
-    border: 1px solid var(--border-black);
+    vertical-align: middle;
 }
 
 .char-detail p {
-    margin: 0 0 10px;
+    margin-bottom: 10px;
+    text-align: justify;
 }
 
-// Theme Overrides (Flattened & Grouped)
+.char-detail img.portrait {
+    margin-top: 0;
+}
+
+// Layout Logik (Floats)
+.char-detail .char-info {
+    float: left;
+    width: 600px;
+}
+
+.char-detail .char-img {
+    float: left;
+    width: 175px;
+    margin-right: 20px;
+    text-align: center;
+}
+
+// Villain Section Overrides
+.char-detail .villain-image-container {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.char-detail.villain-section .char-info {
+    float: none;
+    width: 800px; // Breiterer Text
+    margin: auto; // Zentriert
+}
+
+.char-detail .villain-group-image {
+    max-width: 100%;
+    height: auto;
+    width: 800px;
+}
+
+/* --- Theme Overrides (Flattened & Grouped) --- */
 body.theme-night .char-detail {
     border-bottom-color: var(--button-bg);
 }
@@ -150,8 +250,8 @@ body.theme-night .bookmarks-controls hr {
 
 body.theme-night .bookmarks-controls button {
     background-color: var(--button-bg);
+}
 
-    &:hover {
-        background-color: var(--border-light);
-    }
+body.theme-night .bookmarks-controls button:hover {
+    background-color: var(--border-light);
 }

@@ -1,24 +1,33 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Schriftarten-Definitionen (@font-face)
+/// Schriftarten und Webfonts.
+///
+/// Definition der lokalen @font-face Regeln für Noto Sans Mono.
 ///
 
 /*!
- * @file      resources/scss/base/_fonts.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/base/_fonts.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
 /// - Initialisiert
 ///
+
+// Verwendete SCSS-Variablen:
+// - $base-url: Basis-URL für Assets (wird für Pfade benötigt)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// (Keine in dieser Datei)
 
 // resources/scss/base/_fonts.scss
 @use '../abstracts/variables' as *;

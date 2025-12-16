@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Cookie Banner Component
+/// Cookie Consent Banner.
 ///
+/// Styling für das Overlay, Kategorien-Auswahl und Action-Buttons.
 /// DSGVO-konformer Cookie-Consent Banner.
 ///
 
 /*!
- * @file      resources/scss/components/_cookie-banner.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/components/_cookie-banner.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -27,14 +29,33 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
+// Verwendete SCSS-Variablen:
+// - $font-stack: Hauptschriftart
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --cookie-text: Textfarbe im Banner
+// - --cookie-bg: Hintergrundfarbe des Banners
+// - --cookie-heading: Farbe der Überschrift
+// - --cookie-cat-bg: Hintergrundfarbe der Kategorie-Boxen
+// - --cookie-desc: Farbe der Beschreibungstexte
+// - --cookie-btn-accept-bg: Hintergrund "Alle akzeptieren"
+// - --cookie-btn-accept-hover: Hover "Alle akzeptieren"
+// - --cookie-btn-reject-bg: Hintergrund "Alle ablehnen"
+// - --cookie-btn-reject-hover: Hover "Alle ablehnen"
+// - --cookie-btn-save-bg: Hintergrund "Speichern"
+// - --cookie-btn-save-hover: Hover "Speichern"
+// - --border-medium: Rahmenfarbe für Collapsibles
+// - --cookie-link: Linkfarbe
+// - --cookie-link-hover: Link Hover-Farbe
+
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
 #cookie-consent-banner {
     position: fixed;
+    z-index: 9999;
     bottom: 20px;
     left: 50%;
-    z-index: 9999;
     display: none;
     width: 90%;
     max-width: 600px;
@@ -43,8 +64,6 @@
     font-size: 14px;
     line-height: 1.5;
     color: var(--cookie-text);
-
-    // Theming via CSS Vars
     background-color: var(--cookie-bg);
     border-radius: 10px;
     box-shadow: 0 4px 15px rgb(0 0 0 / 0.2);
@@ -73,6 +92,7 @@
     }
 }
 
+// Theme Override: Banner Shadow
 body.theme-night #cookie-consent-banner {
     box-shadow: 0 4px 15px rgb(0 0 0 / 0.4);
 }
@@ -82,10 +102,6 @@ body.theme-night #cookie-consent-banner {
     margin-bottom: 10px;
     background-color: var(--cookie-cat-bg);
     border-radius: 5px;
-
-    #cookie-consent-banner & {
-        // Kontext
-    }
 
     label {
         display: flex;
@@ -117,13 +133,13 @@ body.theme-night #cookie-consent-banner {
         margin-top: 10px;
         margin-bottom: 0;
         list-style-type: none;
+    }
 
-        li {
-            margin-bottom: 10px;
+    li {
+        margin-bottom: 10px;
 
-            &:last-child {
-                margin-bottom: 0;
-            }
+        &:last-child {
+            margin-bottom: 0;
         }
     }
 }
@@ -134,10 +150,6 @@ body.theme-night #cookie-consent-banner {
     gap: 10px;
     justify-content: space-around;
     margin-top: 20px;
-
-    #cookie-consent-banner & {
-        // Kontext
-    }
 
     button {
         flex: 1 1 auto;
@@ -165,6 +177,7 @@ body.theme-night #cookie-consent-banner {
     }
 }
 
+// Theme Override: Accept Button Text Color
 body.theme-night #accept-all-cookies {
     color: var(--cookie-text);
 }
@@ -196,6 +209,7 @@ body.theme-night #accept-all-cookies {
     border-left: 2px solid var(--border-medium);
 }
 
+// Theme Override: Border Color (falls abweichend von Default)
 body.theme-night .collapsible-content {
     border-left-color: var(--border-medium);
 }

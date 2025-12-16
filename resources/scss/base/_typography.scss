@@ -1,27 +1,42 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Typography Basics
+/// Globale Basis-Styles und Typografie.
 ///
+/// Definiert das Grundgerüst (Body), Überschriften und globale Textelemente.
 /// Definition von Schriftarten, Überschriften und Textfluss.
 ///
 
 /*!
- * @file      resources/scss/base/_typography.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/base/_typography.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
 /// - Einführung von CSS Vars für Farben.
 /// - style(Refactor): Nesting für Theme-Overrides reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// - $font-stack: Hauptschriftart
+// - $font-mono: Monospace Schriftart
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --page-bg: Hintergrundfarbe der Seite
+// - --header-bg: Hintergrund für Header-Elemente
+// - --button-bg: Farbe für Buttons (hier als Border-Color im Night-Theme genutzt)
+// - --link-color: Farbe für Links
+// - --link-visited: Farbe für besuchte Links
+// - --text-color-light: Hellere Textfarbe für Instruktionen
 
 @use '../abstracts/variables' as *;
 
@@ -79,7 +94,7 @@ h6.page-header {
     border-bottom: 1px solid transparent; // Placeholder für Dark Mode Border
 }
 
-// Theme Override (Flach)
+// Theme Override (Flach) - Night Mode für Page Headers
 body.theme-night h1.page-header,
 body.theme-night h2.page-header,
 body.theme-night h3.page-header,

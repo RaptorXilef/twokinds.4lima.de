@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Archive Page
+/// Archiv-Übersicht.
 ///
+/// Styling für die Kapitel-Liste, inkl. Akkordeon-Funktion und Links.
 /// Styles für die Comic-Archiv Übersicht (Text & Layout).
 ///
 
 /*!
- * @file      resources/scss/pages/_archive.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/pages/_archive.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -30,6 +32,15 @@
 /// - refactor(SCSS): .chapter-links in eigene Komponente ausgelagert.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --text-on-medium: Textfarbe für Links/Header (Standard)
+// - --link-color: Akzentfarbe für Links und Hover
+// - --border-medium: (Indirekt genutzt in globalen Elementen)
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -47,29 +58,46 @@
 }
 
 .chapter p a {
-    color: var(--text-on-medium); // Im Original Schwarz
+    color: var(--text-on-medium); // Im Original Schwarz/Dunkelgrau
 }
 
-// Flache Specificity für Dark Mode
+// Dark Mode Override für Links
 body.theme-night .chapter p a {
     color: var(--link-color);
 }
 
+// Chapter Headline (Akkordeon-Trigger)
 .chapter h2 {
     display: inline-block;
     margin: 0;
     font-size: 1.2em;
-    color: var(--text-color);
+    color: var(--text-on-medium);
     cursor: pointer;
     border-bottom: 1px solid transparent; // Unsichtbarer Border um Layout-Shifts zu vermeiden
 
-    &:hover {
-        color: var(--link-color);
-        border-bottom-color: var(--link-color);
+    @include media-retina-mobile {
+        font-size: 2em;
     }
 }
 
-// Collapsible Arrow
+// Hover State für Headline
+.chapter h2:hover {
+    color: var(--link-color);
+    text-decoration: none;
+    border-bottom-color: var(--link-color);
+}
+
+// Dark Mode Override für Headline
+body.theme-night .chapter h2 {
+    color: var(--text-color);
+}
+
+body.theme-night .chapter h2:hover {
+    color: var(--link-color);
+}
+
+// Collapsible Arrow (Indikator)
+// Standard-Status: Ausgeklappt (Pfeil nach unten)
 .chapter h2::before {
     display: inline-block;
     margin-right: 5px;
@@ -78,11 +106,13 @@ body.theme-night .chapter p a {
     transition: transform 0.2s;
 }
 
+// Status: Eingeklappt (Pfeil nach rechts)
 .chapter.collapsed h2::before {
     transform: rotate(0deg);
 }
 
-// Content visibility
+// Content visibility toggle
+// Versteckt die .chapter-links (Thumbnail Grid), wenn eingeklappt
 .chapter.collapsed .chapter-links {
     display: none;
 }

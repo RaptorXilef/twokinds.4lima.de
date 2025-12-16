@@ -3,19 +3,20 @@
 ///
 /// Header & Banner
 ///
-/// Styles für den Kopfbereich und Banner-Logik.
+/// Styling für den Hauptbanner, Wartungsnachrichten, Preloader-Logik und Banner-Logik.
 ///
 
 /*!
  * @file      resources/scss/layout/_header.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -23,6 +24,13 @@
 /// - fix(CSS): Fehlender Mixin-Import ergänzt.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// - $base-url: Basis-URL für Assets
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --maintbanner-text: Textfarbe Wartungsbanner
+// - --maintbanner-bg: Hintergrund Wartungsbanner
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -47,9 +55,8 @@ body.theme-night .banner {
     background-image: url('#{$base-url}/assets/images/layout/banner_by_Felix_2025-12-night.webp?c=20251215');
 }
 
-// TODO Prüfen, kann der hier weg, weil schon durch "body.theme-night .banner" abgedeckt
-// Spezieller Banner Mode
-/*
+// Spezieller Banner Mode (Preloader für Night-Mode Image)
+// Verhindert Flackern beim Umschalten des Themes
 .banner-lights-off {
     position: absolute;
     top: 0;
@@ -58,12 +65,11 @@ body.theme-night .banner {
     height: 0;
 }
 
-// TODO Prüfen, kann der hier weg, weil schon durch "body.theme-night .banner" abgedeckt
-// ID Selector flattened
 body.theme-night #banner-lights-off {
-    background-image: url('#{$base-url}/assets/images/layout/banner.webp?c=20251024');
-}*/
+    background-image: url('#{$base-url}/assets/images/layout/banner_by_Felix_2025-12-night.webp?c=20251215');
+}
 
+// Maintenance Banner
 .maintbanner {
     position: relative;
     z-index: 200;
@@ -73,14 +79,14 @@ body.theme-night #banner-lights-off {
     text-align: center;
     background-color: var(--maintbanner-bg);
 
-    a,
-    a:link,
-    a:visited,
-    a:active {
-        color: var(--maintbanner-text);
-    }
-
     @include media-retina-mobile {
         font-size: 1.2em;
     }
+}
+
+.maintbanner a,
+.maintbanner a:link,
+.maintbanner a:visited,
+.maintbanner a:active {
+    color: var(--maintbanner-text);
 }

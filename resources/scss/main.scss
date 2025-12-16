@@ -6,16 +6,16 @@
 /// Hauptdatei für die Kompilierung. Importiert alle Module.
 ///
 
-/*!
- * @file      resources/scss/main.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- */
+///
+/// @file      resources/scss/main.scss
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -25,6 +25,8 @@
 /// - refactor(SCSS): Komponente chapter-grid durch generisches thumbnail-grid ersetzt.
 /// - refactor(Admin): Aufteilung der monolithischen _admin.scss in modulare Admin-Komponenten und Pages.
 ///
+
+@use 'abstracts/info';
 
 // 1. Abstracts (Variables, Mixins)
 @use 'abstracts/variables';

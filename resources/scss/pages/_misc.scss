@@ -2,26 +2,44 @@
 
 ///
 /// Miscellaneous Pages (FAQ, Chat, Links)
+/// FAQ und Impressum Styles.
 ///
 /// Zusammenfassung kleinerer Seiten.
+/// Styling für die Akkordeon-Funktion der FAQ und das Layout des Impressums.
 ///
 
 /*!
- * @file      resources/scss/pages/_misc.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/pages/_misc.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
 /// - Zusammenfassung kleinerer Seiten.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --text-color: Standard Textfarbe
+// - --text-color-light: Helle Textfarbe (für Pfeile)
+// - --content-bg: Hintergrund für Frage/Antwort
+// - --table-row-hover: Hintergrund bei Hover
+// - --button-bg: Hintergrund Button / Dark Mode Hover
+// - --button-hover-bg: Hintergrund Button Hover
+// - --link-color: Linkfarbe
+// - --text-on-medium: Textfarbe auf Buttons
 
 @use '../abstracts/variables' as *;
 
@@ -30,112 +48,173 @@ div.page-faq section {
     padding-top: 10px;
     margin-top: 10px;
     border-top: 1px solid var(--border-medium);
+}
 
-    h2 {
-        margin-bottom: 5px;
-        font-size: 15px;
-    }
+div.page-faq h2 {
+    margin-bottom: 5px;
+    font-size: 15px;
 }
 
 /* --- FAQ Page (Accordion) --- */
 .faq-container {
     max-width: 800px;
     margin: 20px auto;
+}
 
-    p {
-        margin-bottom: 20px;
-    }
+.faq-container p {
+    margin-bottom: 20px;
 }
 
 .faq-item {
     margin-bottom: 15px;
     border-bottom: 1px solid var(--border-medium);
+}
 
-    &:last-child {
-        border-bottom: none;
-    }
+body.theme-night .faq-item {
+    border-bottom-color: var(--border-light);
 }
 
 .faq-question {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
     padding: 15px;
-    font-size: 1.1em;
     font-weight: bold;
     color: var(--text-color);
-    text-align: left;
     cursor: pointer;
-    background: none;
-    background-color: var(--table-header-bg); // Leicht abgesetzter Header
-    border: none;
-    border-radius: 5px;
+    background-color: var(
+        --content-bg
+    ); // Optional: Leichter Hintergrund für Klickbarkeit
     transition: background-color 0.2s;
+}
 
-    &:hover {
-        background-color: var(--button-hover-bg);
-    }
+.faq-question:hover {
+    background-color: var(--table-row-hover);
 }
 
 body.theme-night .faq-question {
-    background-color: var(--sidebar-bg);
-
-    &:hover {
-        background-color: var(--button-bg);
-    }
+    background-color: transparent;
 }
 
+body.theme-night .faq-question:hover {
+    background-color: var(--button-bg);
+}
+
+// Pfeil-Icon (Rechtszeigendes Dreieck)
 .faq-question::after {
-    margin-left: 10px;
     font-size: 0.8em;
-    content: '\25B6'; // Right-pointing triangle
+    color: var(--text-color-light);
+    content: '\25B6';
     transition: transform 0.3s ease;
 }
 
+// Active State: Pfeil drehen (90 Grad nach unten)
 .faq-item.active .faq-question::after {
-    transform: rotate(180deg);
+    transform: rotate(90deg);
 }
 
 .faq-answer {
-    display: none;
-    padding: 15px;
-    line-height: 1.6;
+    max-height: 0; // Startet geschlossen
+    padding: 0 15px;
+    overflow: hidden;
     color: var(--text-color);
-    background-color: var(--content-bg);
+    transition: max-height 0.3s ease-out; // Animation beim Öffnen
 }
 
+// Active State: Antwort öffnen
 .faq-item.active .faq-answer {
-    display: block;
+    max-height: 500px; // Ausreichend hoch für Text
+    padding: 15px;
+    transition: max-height 0.5s ease-in;
 }
 
-/* --- Impressum (Imprint) --- */
+.faq-answer p {
+    margin-bottom: 10px;
+}
+
+.faq-answer p:last-child {
+    margin-bottom: 0;
+}
+
+/* --- Impressum (Imprint) Page --- */
 .imprint-container {
-    max-width: 800px;
-    margin: 0 auto;
-    line-height: 1.6;
-
-    h2 {
-        padding-bottom: 10px;
-        margin-top: 30px;
-        border-bottom: 1px solid var(--border-medium);
-    }
-
-    h3 {
-        margin-top: 20px;
-        margin-bottom: 10px;
-        font-size: 1.1em;
-    }
-
-    address {
-        font-style: normal;
-        line-height: 1.5;
-    }
+    margin-top: 15px;
 }
 
-/* --- RSS Anleitung --- */
+.imprint-container h3 {
+    padding-bottom: 5px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-light);
+}
+
+body.theme-night .imprint-container h3 {
+    border-bottom-color: var(--button-bg);
+}
+
+.imprint-container p,
+.imprint-container ul {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.imprint-container ul {
+    margin-left: 15px;
+    list-style-position: inside;
+    list-style-type: disc;
+}
+
+.imprint-container a {
+    color: var(--link-color);
+}
+
+.imprint-container a:hover {
+    text-decoration: underline;
+}
+
+// Email Button (Wiederhergestellt)
+#email-button {
+    display: inline-block;
+    width: auto;
+    padding: 5px 15px;
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: var(--text-on-medium);
+    cursor: pointer;
+    background-color: var(--button-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 3px;
+    box-shadow: none;
+    transition: background-color 0.2s;
+}
+
+#email-button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+body.theme-night #email-button {
+    color: var(--text-color);
+    background-color: var(--button-bg);
+    border-color: var(--button-bg);
+}
+
+body.theme-night #email-button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.license-image {
+    display: inline-block;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+/* --- RSS Anleitung Page --- */
 .rss-icon-text {
-    vertical-align: middle; // Optional: Sieht im Textfluss aber meist besser aus
+    vertical-align: middle;
     cursor: pointer;
     border-radius: 5px;
 }

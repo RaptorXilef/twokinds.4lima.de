@@ -1,16 +1,22 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Admin Forms & Inputs
+/// Admin Formularelemente und Filter.
 ///
-/// Styling für Formulare, Filterleisten und Upload-Zonen.
+/// Styling für Filterformulare, Suchfelder, Drag & Drop Upload Zonen und Toggle-Buttons.
 ///
 
 /*!
- * @file      resources/scss/components/admin/_forms.scss
- * @link      twokinds.4lima.de
- * @author    Felix Maywald (@RaptorXilef)
+ * @file       resources/scss/components/admin/_forms.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -18,6 +24,27 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 /// - style(SCSS): .search-wrapper und .button-toggle-group optimiert.
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --table-row-even: Hintergrund für Filter-Formular
+// - --border-light: Helle Rahmenfarbe
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-dark: Dunkle Rahmenfarbe
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --button-bg: Button Hintergrund / Border im Dark Mode
+// - --button-hover-bg: Button Hover Hintergrund
+// - --text-color: Standard Textfarbe
+// - --text-color-light: Helle Textfarbe (Labels)
+// - --text-color-medium: Mittlere Textfarbe (Icons/Placeholder)
+// - --text-on-medium: Textfarbe auf Buttons
+// - --content-bg: Hintergrund für Inputs/Upload-Zone
+// - --status-red-text: Farbe für Lösch-Button Hover
+// - --table-row-hover: Hintergrund bei Hover (Upload/Toggle)
+// - --link-color: Akzentfarbe
+// - --page-bg: Seitenhintergrund (für Mix)
 
 @use '../../abstracts/variables' as *;
 
@@ -28,18 +55,18 @@
     background-color: var(--table-row-even);
     border: 1px solid var(--border-light);
     border-radius: 5px;
+}
 
-    body.theme-night & {
-        background-color: var(--sidebar-bg);
-        border-color: var(--button-bg);
-    }
+body.theme-night .filter-form {
+    background-color: var(--sidebar-bg);
+    border-color: var(--button-bg);
+}
 
-    legend {
-        margin-bottom: 10px;
-        font-size: 1.1em;
-        font-weight: bold;
-        color: var(--text-color);
-    }
+.filter-form legend {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--text-color);
 }
 
 .filter-controls {
@@ -47,22 +74,22 @@
     flex-wrap: wrap;
     gap: 15px;
     align-items: flex-end;
+}
 
-    label {
-        margin-bottom: 5px;
-        font-size: 0.9em;
-        color: var(--text-color-light);
+.filter-controls label {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: var(--text-color-light);
+}
 
-        body.theme-night & {
-            color: var(--text-color-light);
-        }
-    }
+body.theme-night .filter-controls label {
+    color: var(--text-color-light);
+}
 
-    // Spezifisch für das neue Comic-Editor Layout (Zentriert, Input breit)
-    &.center-filter {
-        justify-content: center;
-        width: 100%;
-    }
+// Spezifisch für das neue Comic-Editor Layout (Zentriert, Input breit)
+.filter-controls.center-filter {
+    justify-content: center;
+    width: 100%;
 }
 
 .search-wrapper {
@@ -72,44 +99,45 @@
     align-items: center;
     max-width: 600px;
     margin-bottom: 12px;
+}
 
-    input {
-        width: 100%;
-        padding: 8px 35px 8px 8px; // Rechts Platz für den Button lassen!
-        margin: 0; // Wichtig für exakte Ausrichtung
-        color: var(--text-color);
-        background-color: var(--content-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
+.search-wrapper input {
+    width: 100%;
+    padding: 8px 35px 8px 8px; // Rechts Platz für den Button lassen!
+    margin: 0; // Wichtig für exakte Ausrichtung
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
 
-        body.theme-night & {
-            background-color: color-mix(in srgb, var(--page-bg), black 20%);
-            border-color: var(--border-light);
-        }
-    }
+body.theme-night .search-wrapper input {
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
+}
 
-    button#clear-search-btn {
-        position: absolute;
-        top: 50%;
-        right: 5px;
-        width: auto;
-        min-width: 0; // Überschreibt globale Button-Regeln
-        height: auto;
-        padding: 0 5px;
-        font-size: 1.5em;
-        line-height: 1;
-        color: var(--text-color-medium);
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        border-radius: 50%;
-        transform: translateY(-50%);
+.search-wrapper button#clear-search-btn {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    display: block; // Explizit setzen
+    width: auto;
+    min-width: 0; // Überschreibt globale Button-Regeln
+    height: auto;
+    padding: 0 5px;
+    font-size: 1.5em;
+    line-height: 1;
+    color: var(--text-color-medium);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    transform: translateY(-50%);
+}
 
-        &:hover {
-            color: var(--status-red-text); // Rot beim Hover
-            background-color: rgb(0 0 0 / 0.05); // Leichter Hover-Effekt
-        }
-    }
+.search-wrapper button#clear-search-btn:hover {
+    color: var(--status-red-text); // Rot beim Hover
+    background-color: rgb(0 0 0 / 0.05); // Leichter Hover-Effekt
 }
 
 .honeypot-field {
@@ -131,58 +159,58 @@
     border: 2px dashed var(--border-medium); // Etwas dezenterer Rahmen
     border-radius: 8px;
     transition: all 0.3s ease;
+}
 
-    // Hover-Effekt für die Zone selbst dezenter gestalten, damit sie nicht wie ein Button wirkt
-    &:hover,
-    &.drag-over {
-        background-color: var(--table-row-hover);
-        border-color: var(--link-color);
-    }
+// Hover-Effekt für die Zone selbst dezenter gestalten
+.drag-drop-zone:hover,
+.drag-drop-zone.drag-over {
+    background-color: var(--table-row-hover);
+    border-color: var(--link-color);
+}
 
-    .instructions {
-        width: 100%; // Volle Breite für korrekte Ausrichtung
-        margin: 0;
-        font-size: 1.2em;
-        color: var(--text-color-medium);
-        text-align: center; // Sicherstellen, dass Text zentriert ist
-        pointer-events: none;
+.drag-drop-zone .instructions {
+    width: 100%; // Volle Breite für korrekte Ausrichtung
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-color-medium);
+    text-align: center; // Sicherstellen, dass Text zentriert ist
+    pointer-events: none;
+}
 
-        i {
-            display: block;
-            margin: 0 auto 15px;
-            font-size: 4em;
-            color: var(--border-dark); // Alternative Farbe --link-color
-            opacity: 0.8;
-        }
-    }
+.drag-drop-zone .instructions i {
+    display: block;
+    margin: 0 auto 15px;
+    font-size: 4em;
+    color: var(--border-dark); // Alternative Farbe --link-color
+    opacity: 0.8;
+}
 
-    // Button deutlich als interaktives Element hervorheben
-    label.button {
-        display: inline-block;
-        padding: 12px 30px;
-        font-weight: bold;
-        color: var(--text-on-medium);
-        pointer-events: auto;
-        cursor: pointer;
-        background-color: var(--button-bg);
-        border: 1px solid var(--border-dark); // Kontur für Button-Look
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgb(0 0 0 / 0.1); // Schatten für Tiefe
-        transition:
-            transform 0.1s,
-            background-color 0.2s;
+// Button deutlich als interaktives Element hervorheben
+.drag-drop-zone label.button {
+    display: inline-block;
+    padding: 12px 30px;
+    font-weight: bold;
+    color: var(--text-on-medium);
+    pointer-events: auto;
+    cursor: pointer;
+    background-color: var(--button-bg);
+    border: 1px solid var(--border-dark); // Kontur für Button-Look
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1); // Schatten für Tiefe
+    transition:
+        transform 0.1s,
+        background-color 0.2s;
+}
 
-        &:hover {
-            background-color: var(--button-hover-bg);
-            box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
-            transform: translateY(-2px); // Kleiner Hebe-Effekt
-        }
+.drag-drop-zone label.button:hover {
+    background-color: var(--button-hover-bg);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
+    transform: translateY(-2px); // Kleiner Hebe-Effekt
+}
 
-        &:active {
-            box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
-            transform: translateY(0);
-        }
-    }
+.drag-drop-zone label.button:active {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+    transform: translateY(0);
 }
 
 .upload-file-list {
@@ -194,38 +222,38 @@
     background-color: var(--table-row-even);
     border: 1px solid var(--border-light);
     border-radius: 4px;
+}
 
-    &:empty {
-        display: none;
-    }
+.upload-file-list:empty {
+    display: none;
 }
 
 .button-toggle-group {
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
+}
 
-    .button-toggle {
-        padding: 6px 12px;
-        color: var(--text-color);
-        cursor: pointer;
-        background-color: var(--content-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
-        transition: all 0.2s;
+.button-toggle-group .button-toggle {
+    padding: 6px 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
 
-        &:hover {
-            background-color: var(--table-row-hover);
-        }
+.button-toggle-group .button-toggle:hover {
+    background-color: var(--table-row-hover);
+}
 
-        &.active {
-            color: #fff;
-            background-color: var(--link-color);
-            border-color: var(--link-color);
-        }
+.button-toggle-group .button-toggle.active {
+    color: #fff;
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+}
 
-        body.theme-night & {
-            border-color: var(--border-light);
-        }
-    }
+body.theme-night .button-toggle-group .button-toggle {
+    border-color: var(--border-light);
 }

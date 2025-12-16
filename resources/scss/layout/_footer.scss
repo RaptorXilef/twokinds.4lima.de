@@ -4,24 +4,35 @@
 /// Footer & Bottom Area
 ///
 /// Styles für den Fußbereich.
+/// Styling für den unteren Bereich der Seite (Twitter-Box, Empfehlungen, Copyright).
 ///
 
 /*!
- * @file      resources/scss/layout/_footer.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/layout/_footer.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
 /// - Initiale Erstellung.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// - $base-url: Basis-URL für Assets
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --border-medium: Mittlere Rahmenfarbe
+// - --page-bg: Rahmenfarbe im Dark Mode
+// - --text-color: Standard Textfarbe
+// - --link-color: Linkfarbe
 
 @use '../abstracts/variables' as *;
 
@@ -47,36 +58,20 @@ body.theme-night .bottom {
     flex: 0 0 160px;
     flex-direction: column;
     justify-content: flex-start;
-
-    .bottom & {
-        // Kontext
-    }
 }
 
 .bottom-ctr {
     flex: 1 1 100%;
     overflow: hidden;
-
-    .bottom & {
-        // Kontext
-    }
 }
 
 .twitter-box {
     height: 377px;
     overflow: auto;
-
-    .bottom-ctr & {
-        // Kontext
-    }
 }
 
 .bottom-right {
     flex: 0 0 300px;
-
-    .bottom & {
-        // Kontext
-    }
 }
 
 .rec-comic {
@@ -92,20 +87,16 @@ body.theme-night .bottom {
     height: 31px;
     margin: 4px 2px 0;
     background-color: var(--border-medium);
-
-    .rec-comic & {
-        // Kontext
-    }
 }
 
 footer {
     font-size: 12px;
     color: var(--text-color);
     text-align: center;
+}
 
-    a {
-        color: var(--link-color);
-    }
+footer a {
+    color: var(--link-color);
 }
 
 .footer-img {

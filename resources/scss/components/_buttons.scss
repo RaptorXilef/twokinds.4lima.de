@@ -1,21 +1,22 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Buttons
+/// Buttons und Interaktionselemente.
 ///
-/// Zentralisierte Button-Styles und Dropdowns.
+/// Stile für Standard-Buttons, Links als Buttons und Dropdown-Pfeile innerhalb des Main-Containers.
 ///
 
 /*!
- * @file      resources/scss/components/_buttons.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/components/_buttons.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -23,6 +24,17 @@
 /// - style(Linter): Selektor-Reihenfolge für Dark Mode Overrides korrigiert.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// - $base-url: Basis-URL für Assets (Bilder/SVGs)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-on-medium: Textfarbe auf mittlerem Hintergrund
+// - --button-bg: Hintergrundfarbe für Standard-Buttons
+// - --button-hover-bg: Hintergrundfarbe bei Hover
+// - --button-disabled-bg: Hintergrundfarbe für deaktivierte Buttons
+// - --status-green-text: Hintergrundfarbe für grüne Buttons (Standard)
+// - --button-green-hover: Hintergrundfarbe für grüne Buttons (Hover)
 
 @use '../abstracts/variables' as *;
 
@@ -77,7 +89,7 @@ body.theme-night .main-container button:disabled {
     rotate: -90deg;
 }
 
-// Theme Overrides
+// Theme Overrides (Arrows)
 body.theme-night .main-container .arrow-down,
 body.theme-night .main-container .arrow-left {
     background-image: url('#{$base-url}/assets/images/layout/ui/dropdown_dark.svg?c=20251024');

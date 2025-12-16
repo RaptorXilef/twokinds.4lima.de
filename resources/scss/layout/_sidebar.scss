@@ -1,27 +1,41 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Sidebar & Navigation
+/// Sidebar & Navigation Styles.
 ///
+/// Styling für die Seitenleiste, Navigation und Incentives.
 /// Styles für die Seitenleiste und deren Menü.
 ///
 
 /*!
- * @file      resources/scss/layout/_sidebar.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/layout/_sidebar.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
 /// - CSS Vars Integration.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --sidebar-bg: Hintergrund der Sidebar
+// - --text-on-medium: Textfarbe in Menüs
+// - --menu-bg: Hintergrund Menü-Items
+// - --menu-hover-bg: Hintergrund Menü-Items bei Hover
+// - --theme-label-bg: Hintergrund für Theme-Label
+// - --text-color: Standard Textfarbe (Dark Mode)
+// - --new-tag-bg: Hintergrund für "New"-Tag
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -38,20 +52,20 @@
     text-align: center;
     background-color: var(--sidebar-bg);
     border-radius: 0 0 5px 5px;
+}
 
-    .full-width-img {
-        margin-left: -5px;
-    }
+.sidebar-content .full-width-img {
+    margin-left: -5px;
 }
 
 .incentive {
     width: 160px;
     margin: auto;
     margin-bottom: 10px;
+}
 
-    .tinytext {
-        margin-bottom: 2px;
-    }
+.incentive .tinytext {
+    margin-bottom: 2px;
 }
 
 /* Navigation Menu */
@@ -83,10 +97,10 @@
         padding: 8px 0;
         margin: 8px auto;
     }
+}
 
-    &:hover {
-        background-color: var(--menu-hover-bg);
-    }
+.menu a:hover {
+    background-color: var(--menu-hover-bg);
 }
 
 .menu a.theme {
@@ -122,25 +136,25 @@ body.theme-night .menu a.theme span.themename {
         padding-top: calc(0.7em + 5px);
         padding-bottom: calc(8px - 0.7em + 5px);
     }
+}
 
-    &::after {
-        position: absolute;
-        top: 6px;
-        left: -6px;
-        display: inline-block;
-        width: 26px;
-        font-size: 0.7em;
-        color: #fff;
-        content: 'New';
-        background-color: var(--new-tag-bg);
-        transform: rotate(-90deg);
+.menu a.menu-new::after {
+    position: absolute;
+    top: 6px;
+    left: -6px;
+    display: inline-block;
+    width: 26px;
+    font-size: 0.7em;
+    color: #fff;
+    content: 'New';
+    background-color: var(--new-tag-bg);
+    transform: rotate(-90deg);
 
-        @include media-retina-mobile {
-            top: 0;
-            right: 0;
-            left: 0;
-            width: auto;
-            transform: none;
-        }
+    @include media-retina-mobile {
+        top: 0;
+        right: 0;
+        left: 0;
+        width: auto;
+        transform: none;
     }
 }

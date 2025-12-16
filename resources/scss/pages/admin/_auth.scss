@@ -1,16 +1,23 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Admin Authentication Pages
+/// Admin Authentifizierung & Benutzerverwaltung.
 ///
+/// Styling für Login, User-Liste und Passwort-Management.
 /// Styles für Login, Benutzermanagement und Passwortänderung.
 ///
 
 /*!
- * @file      resources/scss/pages/admin/_auth.scss
- * @link      twokinds.4lima.de
- * @author    Felix Maywald (@RaptorXilef)
+ * @file       resources/scss/pages/admin/_auth.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -18,6 +25,23 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 /// - style(SCSS): .user-list und .admin-form optimiert.
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --content-bg: Hintergrund für Container
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --text-color: Standard Textfarbe
+// - --content-area-bg: Hintergrund für Inputs
+// - --link-color: Akzentfarbe / Button Hintergrund
+// - --link-color-rgb: RGB-Werte der Akzentfarbe für Schatten
+// - --table-row-even: Hintergrund für Listenelemente
+// - --table-row-hover: Hintergrund bei Hover
+// - --text-color-light: Helle Textfarbe (Icons/Tags)
+// - --table-header-bg: Hintergrund für Tags
 
 @use '../../abstracts/variables' as *;
 
@@ -30,268 +54,241 @@
     border: 1px solid var(--border-medium);
     border-radius: 8px;
     box-shadow: 0 5px 15px rgb(0 0 0 / 0.05);
-
-    body.theme-night & {
-        background-color: var(--sidebar-bg);
-        border-color: var(--border-light);
-        box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
-    }
-
-    h2 {
-        padding-bottom: 15px;
-        margin-bottom: 25px;
-        color: var(--text-color);
-        text-align: center;
-        border-bottom: 1px solid var(--border-light);
-    }
-
-    .intro-text {
-        margin-bottom: 20px;
-        color: var(--text-color);
-        text-align: center;
-    }
-
-    // Status Meldungen im Login-Kontext
-    .status-message {
-        margin-bottom: 20px;
-        text-align: center;
-    }
 }
 
-// Formular Styles (Flat)
+body.theme-night .admin-login-container {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-light);
+    box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
+}
+
+.admin-login-container h2 {
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    font-size: 1.5em;
+    color: var(--text-color);
+    text-align: center;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.admin-login-container .intro-text {
+    margin-bottom: 20px;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.admin-login-container .status-message {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* --- Shared Form Styles (Flat) --- */
 .admin-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
-
-    label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-        color: var(--text-color);
-    }
-
-    input[type='text'],
-    input[type='password'] {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 12px;
-        font-size: 1em;
-        color: var(--text-color);
-        background-color: var(
-            --content-area-bg
-        ); // Weiß/Dunkelblau je nach Theme
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
-        transition:
-            border-color 0.2s,
-            box-shadow 0.2s;
-
-        &:focus {
-            outline: none;
-            border-color: var(--link-color);
-            box-shadow: 0 0 0 3px rgb(0 123 255 / 0.1);
-        }
-
-        body.theme-night & {
-            background-color: var(--content-bg);
-            border-color: var(--border-light);
-        }
-    }
-
-    button {
-        width: 100%;
-        padding: 12px;
-        margin-top: 10px;
-        font-size: 1.1em;
-        font-weight: bold;
-        color: #fff;
-        cursor: pointer;
-        background-color: var(--link-color);
-        border: none;
-        border-radius: 4px;
-        transition: background-color 0.2s;
-
-        &:hover {
-            filter: brightness(1.1);
-        }
-    }
 }
 
-/* --- User Management --- */
-.user-management-container {
-    max-width: 800px; // Verbreitert von 600px auf 800px
+.admin-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.admin-form input[type='text'],
+.admin-form input[type='password'] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    color: var(--text-color);
+    background-color: var(--content-area-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.admin-form input[type='text']:focus,
+.admin-form input[type='password']:focus {
+    outline: none;
+    border-color: var(--link-color);
+    box-shadow: 0 0 0 3px rgb(0 123 255 / 0.1);
+}
+
+body.theme-night .admin-form input[type='text'],
+body.theme-night .admin-form input[type='password'] {
+    background-color: var(--content-bg);
+    border-color: var(--border-light);
+}
+
+.admin-form button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    background-color: var(--link-color);
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.admin-form button:hover {
+    filter: brightness(1.1);
+}
+
+/* --- User Management & Credentials Shared Styles --- */
+.user-management-container,
+.login-management-container {
+    max-width: 800px;
     padding: 30px;
     margin: 40px auto;
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
     border-radius: 8px;
     box-shadow: 0 5px 15px rgb(0 0 0 / 0.05);
-
-    body.theme-night & {
-        background-color: var(--sidebar-bg);
-        border-color: var(--border-light);
-        box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
-    }
-
-    h2 {
-        padding-bottom: 15px;
-        margin-top: 0;
-        margin-bottom: 25px;
-        color: var(--text-color);
-        text-align: center;
-        border-bottom: 1px solid var(--border-light);
-    }
-
-    .section-divider {
-        padding-top: 25px;
-        margin-top: 30px;
-        border-top: 1px dashed var(--border-medium);
-
-        &:first-of-type {
-            padding-top: 0;
-            margin-top: 0;
-            border-top: none;
-        }
-
-        h3 {
-            padding-left: 10px;
-            margin-bottom: 20px;
-            font-size: 1.2em;
-            color: var(--text-color);
-            border-left: 4px solid var(--link-color);
-        }
-    }
-
-    // Spezifische Formularanpassungen für User Management
-    .admin-form {
-        margin-bottom: 20px;
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        button {
-            align-self: flex-start;
-            padding: 10px 20px;
-            font-size: 1em;
-        }
-    }
 }
 
-// User List (Entschachtelt)
+body.theme-night .user-management-container,
+body.theme-night .login-management-container {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-light);
+    box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
+}
+
+.user-management-container h2,
+.login-management-container h2 {
+    padding-bottom: 15px;
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 1.5em;
+    color: var(--text-color);
+    text-align: center;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.section-divider {
+    padding-top: 25px;
+    margin-top: 30px;
+    border-top: 1px dashed var(--border-medium);
+}
+
+.section-divider:first-of-type {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+}
+
+// Spezifisch für Login-Management (kein Padding oben)
+.login-management-container .section-divider {
+    padding-top: 0;
+    margin-top: 0;
+    border: none;
+}
+
+.section-divider h3 {
+    padding-left: 10px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    color: var(--text-color);
+    border-left: 4px solid var(--link-color);
+}
+
+/* --- Specific Form Tweaks --- */
+// User Management Form
+.user-management-container .admin-form {
+    margin-bottom: 20px;
+}
+
+.user-management-container .admin-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.user-management-container .admin-form button {
+    align-self: flex-start;
+    width: auto; // Reset width: 100%
+    padding: 10px 20px;
+    font-size: 1em;
+}
+
+// Login Management Form
+.login-management-container .admin-form {
+    gap: 15px;
+}
+
+.login-management-container .admin-form div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.login-management-container .form-hr {
+    margin: 25px 0;
+    border: 0;
+    border-top: 1px dashed var(--border-medium);
+}
+
+/* --- User List --- */
 .user-list {
     padding: 0;
     margin: 0;
     list-style: none;
-
-    li {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 15px;
-        margin-bottom: 10px;
-        background-color: var(--table-row-even);
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
-        transition:
-            background-color 0.2s,
-            border-color 0.2s;
-
-        &:hover {
-            background-color: var(--table-row-hover);
-            border-color: var(--link-color);
-        }
-
-        body.theme-night & {
-            background-color: rgb(0 0 0 / 0.2);
-        }
-    }
-
-    .user-name {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        font-weight: bold;
-        color: var(--text-color);
-
-        &::before {
-            font-family: 'Font Awesome 5 Free';
-            font-weight: 900;
-            color: var(--text-color-light);
-            content: '\f007'; // FontAwesome User Icon
-        }
-    }
-
-    .current-user-tag {
-        padding: 2px 8px;
-        font-size: 0.9em;
-        font-style: italic;
-        color: var(--text-color-light);
-        background-color: var(--table-header-bg);
-        border-radius: 10px;
-    }
-
-    form {
-        margin: 0;
-    }
 }
 
-/* --- Login Credentials Management --- */
-.login-management-container {
-    max-width: 800px; // Angepasst von 500px auf 800px (Konsistenz mit User-Management)
-    padding: 30px;
-    margin: 40px auto;
-    background-color: var(--content-bg);
+.user-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    background-color: var(--table-row-even);
     border: 1px solid var(--border-medium);
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgb(0 0 0 / 0.05);
+    border-radius: 4px;
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+}
 
-    body.theme-night & {
-        background-color: var(--sidebar-bg);
-        border-color: var(--border-light);
-        box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
-    }
+body.theme-night .user-list li {
+    background-color: rgb(0 0 0 / 0.2);
+}
 
-    h2 {
-        padding-bottom: 15px;
-        margin-top: 0;
-        margin-bottom: 25px;
-        color: var(--text-color);
-        text-align: center;
-        border-bottom: 1px solid var(--border-light);
-    }
+.user-list li:hover {
+    background-color: var(--table-row-hover);
+    border-color: var(--link-color);
+}
 
-    .section-divider {
-        padding-top: 0;
-        margin-top: 0;
-        border: none;
+.user-list .user-name {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-weight: bold;
+    color: var(--text-color);
+}
 
-        h3 {
-            padding-left: 10px;
-            margin-bottom: 20px;
-            font-size: 1.2em;
-            color: var(--text-color);
-            border-left: 4px solid var(--link-color);
-        }
-    }
+.user-list .user-name::before {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    color: var(--text-color-light);
+    content: '\f007'; // FontAwesome User Icon
+}
 
-    .form-hr {
-        margin: 25px 0;
-        border: 0;
-        border-top: 1px dashed var(--border-medium);
-    }
+.user-list .current-user-tag {
+    padding: 2px 8px;
+    font-size: 0.9em;
+    font-style: italic;
+    color: var(--text-color-light);
+    background-color: var(--table-header-bg);
+    border-radius: 10px;
+}
 
-    // Spezifische Anpassungen
-    .admin-form {
-        gap: 15px;
-
-        div {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-    }
+.user-list form {
+    margin: 0;
 }

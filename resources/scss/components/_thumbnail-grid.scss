@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Thumbnail Grid Component
+/// Thumbnail Grids.
+///
+/// Styling für Kapitel-Übersichten, Tag-Seiten und allgemeine Bild-Raster.
 ///
 /// Universelles Grid-Layout für Comics, Charaktere und Lesezeichen.
 /// Ersetzt spezifische Grids in Archive und Characters.
 ///
 
 /*!
- * @file      resources/scss/components/_thumbnail-grid.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/components/_thumbnail-grid.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0-alpha.3
@@ -26,6 +29,16 @@
 /// - fix(Design): Aspect Ratio für alle Grids einheitlich auf 1/1.3 gesetzt.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-on-medium: Textfarbe auf Karten
+// - --button-bg: Hintergrund für Karten (Loading/Fallback)
+// - --button-hover-bg: Hintergrund bei Hover
+// - --text-color: Standard Textfarbe (Dark Mode)
+// - --content-area-bg: Hintergrund im Dark Mode
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -41,13 +54,15 @@
     gap: 10px;
     justify-content: center;
     margin-top: 10px;
-
-    noscript {
-        display: contents;
-    }
 }
 
-// 1. Item Card Styling (Entschachtelt)
+.chapter-links noscript,
+.tag-page-links noscript,
+.thumbnail-grid noscript {
+    display: contents;
+}
+
+// 1. Item Card Styling (Gruppiert für DRY)
 .chapter-links a,
 .tag-page-links a,
 .thumbnail-grid a {
@@ -61,15 +76,21 @@
     background-color: var(--button-bg); // Fallback / Loading BG
     border-radius: 5px;
     transition: transform 0.2s ease-in-out;
+}
 
-    &:hover {
-        z-index: 10;
-        background-color: var(--button-hover-bg);
-        box-shadow: 0 4px 8px rgb(0 0 0 / 0.3);
-        transform: scale(1.05);
-    }
+.chapter-links a:hover,
+.tag-page-links a:hover,
+.thumbnail-grid a:hover {
+    z-index: 10;
+    background-color: var(--button-hover-bg);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.3);
+    transform: scale(1.05);
+}
 
-    @include media-retina-mobile {
+@include media-retina-mobile {
+    .chapter-links a,
+    .tag-page-links a,
+    .thumbnail-grid a {
         zoom: 1.5;
     }
 }
@@ -79,9 +100,9 @@
 .tag-page-links a span,
 .thumbnail-grid a span {
     position: absolute;
+    z-index: 80;
     top: 0;
     left: 0;
-    z-index: 80;
     box-sizing: border-box;
     display: none; // Standardmäßig versteckt auf Desktop
     align-items: center;
@@ -94,9 +115,13 @@
     text-align: center;
     background: rgb(0 0 0 / 0.65);
     transition: background-color 0.2s;
+}
 
-    // Mobile Anpassung: Leiste unten, immer sichtbar
-    @include media-retina-mobile {
+// Mobile Anpassung: Leiste unten, immer sichtbar
+@include media-retina-mobile {
+    .chapter-links a span,
+    .tag-page-links a span,
+    .thumbnail-grid a span {
         top: auto; // Reset top
         bottom: 0; // Unten fixieren
         display: flex;
@@ -117,9 +142,9 @@
 .tag-page-links a .delete,
 .thumbnail-grid a .delete {
     position: absolute;
+    z-index: 91;
     top: 4px;
     right: 2px;
-    z-index: 91;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -134,28 +159,38 @@
     transition:
         opacity 0.2s,
         background-color 0.2s;
+}
 
-    @include media-retina-mobile {
+@include media-retina-mobile {
+    .chapter-links a .delete,
+    .tag-page-links a .delete,
+    .thumbnail-grid a .delete {
         top: 3px;
         opacity: 1; // Auf Mobile immer sichtbar
     }
+}
 
-    svg {
-        width: 18px;
-        height: 18px;
-        color: #f00;
-        filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.5));
-        stroke: #fff;
-        stroke-width: 2px;
-    }
+.chapter-links a .delete svg,
+.tag-page-links a .delete svg,
+.thumbnail-grid a .delete svg {
+    width: 18px;
+    height: 18px;
+    color: #f00;
+    filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.5));
+    stroke: #fff;
+    stroke-width: 2px;
+}
 
-    &:hover {
-        background: rgb(255 80 80 / 0.8);
+.chapter-links a .delete:hover,
+.tag-page-links a .delete:hover,
+.thumbnail-grid a .delete:hover {
+    background: rgb(255 80 80 / 0.8);
+}
 
-        svg {
-            color: #c00;
-        }
-    }
+.chapter-links a .delete:hover svg,
+.tag-page-links a .delete:hover svg,
+.thumbnail-grid a .delete:hover svg {
+    color: #c00;
 }
 
 // Hover auf Karte zeigt Delete-Button

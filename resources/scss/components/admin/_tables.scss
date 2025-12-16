@@ -1,16 +1,22 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Admin Data Tables
+/// Admin Tabellen und Datendarstellung.
 ///
-/// Tabellen-Layouts, Steuerungen und Pagination für den Admin-Bereich.
+/// Styling für Admin-Tabellen, Pagination und Tabellen-Steuerelemente.
 ///
 
 /*!
- * @file      resources/scss/components/admin/_tables.scss
- * @link      twokinds.4lima.de
- * @author    Felix Maywald (@RaptorXilef)
+ * @file       resources/scss/components/admin/_tables.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -18,6 +24,25 @@
 /// - style(Refactor): Nesting-Tiefe reduziert (Phase 2 Flattening).
 /// - style(SCSS): .actions-cell und .comic-thumbnail auf Root-Level gehoben.
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --text-color-medium: Mittlere Textfarbe (z.B. für leere Tabellen)
+// - --text-color-light: Helle Textfarbe (für Infos)
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --border-dark: Dunkle Rahmenfarbe (Dark Mode)
+// - --table-header-bg: Hintergrund für Tabellenköpfe
+// - --table-row-even: Hintergrund für gerade Zeilen (Zebra)
+// - --table-row-hover: Hintergrund bei Hover
+// - --button-bg: Button-Hintergrund (auch für Hover im Dark Mode)
+// - --button-hover-bg: Button-Hover-Hintergrund
+// - --content-bg: Hintergrund für Inputs/Pagination
+// - --link-color: Linkfarbe / Aktive Seite
+// - --page-bg: Seitenhintergrund (für Mix)
 
 @use '../../abstracts/variables' as *;
 
@@ -29,23 +54,21 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 15px;
-
-    &.actions-bar {
-        gap: 15px;
-        margin-bottom: 10px;
-    }
 }
 
 .table-controls.actions-bar {
-    .top-actions {
-        display: flex;
-        gap: 5px;
-    }
+    gap: 15px;
+    margin-bottom: 10px;
+}
 
-    .marker-legend-group {
-        flex-grow: 1;
-        justify-content: flex-end;
-    }
+.table-controls .top-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.table-controls .marker-legend-group {
+    flex-grow: 1;
+    justify-content: flex-end;
 }
 
 .marker-legend-group {
@@ -66,51 +89,51 @@
     width: 100%;
     table-layout: fixed; // Zwingend für feste Spaltenbreiten
     border-collapse: collapse;
-
-    th,
-    td {
-        padding: 8px;
-        vertical-align: middle;
-        color: var(--text-color);
-        text-align: left;
-        overflow-wrap: break-word;
-        border-bottom: 1px solid var(--border-medium);
-    }
-
-    th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        font-weight: bold;
-        background-color: var(--table-header-bg);
-        border-bottom: 2px solid var(--border-medium);
-    }
-
-    // Zebra-Striping
-    tbody tr:nth-child(even) {
-        background-color: var(--table-row-even);
-    }
-
-    // Hover Effect
-    tbody tr:hover {
-        background-color: var(--table-row-hover);
-
-        body.theme-night & {
-            background-color: var(--button-bg);
-        }
-    }
-
-    body.theme-night & {
-        border-color: var(--border-dark);
-
-        th,
-        td {
-            border-color: var(--border-dark);
-        }
-    }
 }
 
-// Helper classes (Auf Root-Level gehoben um Nesting zu vermeiden)
+.admin-table th,
+.admin-table td {
+    padding: 8px;
+    vertical-align: middle;
+    color: var(--text-color);
+    text-align: left;
+    overflow-wrap: break-word;
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.admin-table th {
+    position: sticky;
+    z-index: 10;
+    top: 0;
+    font-weight: bold;
+    background-color: var(--table-header-bg);
+    border-bottom: 2px solid var(--border-medium);
+}
+
+// Zebra-Striping
+.admin-table tbody tr:nth-child(even) {
+    background-color: var(--table-row-even);
+}
+
+// Hover Effect
+.admin-table tbody tr:hover {
+    background-color: var(--table-row-hover);
+}
+
+body.theme-night .admin-table tbody tr:hover {
+    background-color: var(--button-bg);
+}
+
+body.theme-night .admin-table {
+    border-color: var(--border-dark);
+}
+
+body.theme-night .admin-table th,
+body.theme-night .admin-table td {
+    border-color: var(--border-dark);
+}
+
+// Helper classes (Auf Root-Level gehoben)
 .comic-thumbnail {
     display: block;
     max-width: 100px;
@@ -118,10 +141,6 @@
     margin-top: 5px;
     border: 1px solid var(--border-medium);
     border-radius: 4px;
-
-    .admin-table & {
-        // Kontext sicherstellen, falls nötig
-    }
 }
 
 .comic-type-display {
@@ -139,10 +158,10 @@
     scrollbar-width: thin;
     border: 1px solid var(--border-light);
     border-radius: 3px;
+}
 
-    body.theme-night & {
-        border-color: var(--border-dark);
-    }
+body.theme-night .description-preview {
+    border-color: var(--border-dark);
 }
 
 .missing-info {
@@ -154,27 +173,27 @@
     vertical-align: middle; // Buttons oben ausrichten bei mehrzeiligem Text
     text-align: right;
     white-space: normal;
+}
 
-    form {
-        display: flex;
-        flex-wrap: wrap; // Umbruch erlauben
-        gap: 5px; // Abstand zwischen Buttons
-        justify-content: flex-end; // Rechtsbündig starten
-        width: 100%;
-    }
+.actions-cell form {
+    display: flex;
+    flex-wrap: wrap; // Umbruch erlauben
+    gap: 5px; // Abstand zwischen Buttons
+    justify-content: flex-end; // Rechtsbündig starten
+    width: 100%;
+}
 
-    button {
-        flex: 1 1 auto;
-        justify-content: center;
-        min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
-        margin: 0 !important; // Reset
-        text-align: center;
+.actions-cell button {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
+    margin: 0 !important; // Reset
+    text-align: center;
+}
 
-        &:disabled {
-            cursor: not-allowed;
-            opacity: 0.3;
-        }
-    }
+.actions-cell button:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
 }
 
 .empty-table-message {
@@ -187,149 +206,150 @@
 /* --- Sub-Classes for specific Tables --- */
 
 // Comic Editor
-.admin-table.comic-editor-table {
-    th:nth-child(1),
-    td:nth-child(1) {
-        width: 65px; // ID
-    }
+.admin-table.comic-editor-table th:nth-child(1),
+.admin-table.comic-editor-table td:nth-child(1) {
+    width: 65px; // ID
+}
 
-    th:nth-child(2),
-    td:nth-child(2) {
-        width: 100px; // Vorschau
-    }
+.admin-table.comic-editor-table th:nth-child(2),
+.admin-table.comic-editor-table td:nth-child(2) {
+    width: 100px; // Vorschau
+}
 
-    th:nth-child(3),
-    td:nth-child(3) {
-        width: 100px; // Name
-    }
+.admin-table.comic-editor-table th:nth-child(3),
+.admin-table.comic-editor-table td:nth-child(3) {
+    width: 100px; // Name
+}
 
-    th:nth-child(4),
-    td:nth-child(4) {
-        width: 300px; // Transkript
-    }
+.admin-table.comic-editor-table th:nth-child(4),
+.admin-table.comic-editor-table td:nth-child(4) {
+    width: 300px; // Transkript
+}
 
-    th:nth-child(5),
-    td:nth-child(5) {
-        width: 50px; // Status
-    }
+.admin-table.comic-editor-table th:nth-child(5),
+.admin-table.comic-editor-table td:nth-child(5) {
+    width: 50px; // Status
+}
 
-    th:nth-child(6),
-    td:nth-child(6) {
-        width: 70px; // Aktionen
-        text-align: right;
-    }
+.admin-table.comic-editor-table th:nth-child(6),
+.admin-table.comic-editor-table td:nth-child(6) {
+    width: 70px; // Aktionen
+    text-align: right;
+}
 
-    td:last-child {
-        text-align: right;
-    }
+.admin-table.comic-editor-table td:last-child {
+    text-align: right;
 }
 
 // Reports
-.admin-table.reports-table {
-    th:nth-child(1),
-    td:nth-child(1) {
-        width: 80px;
-        word-break: break-word;
-    } // Datum
-    th:nth-child(2),
-    td:nth-child(2) {
-        width: 80px;
-        word-break: break-all;
-    } // Comic-ID
-    th:nth-child(3),
-    td:nth-child(3) {
-        width: 80px;
-        word-break: break-word;
-    } // Typ
-    th:nth-child(4),
-    td:nth-child(4) {
-        width: 80px;
-    } // Einsender
-    th:nth-child(5),
-    td:nth-child(5) {
-        width: auto;
-    } // Beschreibung (Flex)
-    th:nth-child(6),
-    td:nth-child(6) {
-        width: 80px;
-    } // Aktionen
-}
+.admin-table.reports-table th:nth-child(1),
+.admin-table.reports-table td:nth-child(1) {
+    width: 80px;
+    word-break: break-word;
+} // Datum
+
+.admin-table.reports-table th:nth-child(2),
+.admin-table.reports-table td:nth-child(2) {
+    width: 80px;
+    word-break: break-all;
+} // Comic-ID
+
+.admin-table.reports-table th:nth-child(3),
+.admin-table.reports-table td:nth-child(3) {
+    width: 80px;
+    word-break: break-word;
+} // Typ
+
+.admin-table.reports-table th:nth-child(4),
+.admin-table.reports-table td:nth-child(4) {
+    width: 80px;
+} // Einsender
+
+.admin-table.reports-table th:nth-child(5),
+.admin-table.reports-table td:nth-child(5) {
+    width: auto;
+} // Beschreibung (Flex)
+
+.admin-table.reports-table th:nth-child(6),
+.admin-table.reports-table td:nth-child(6) {
+    width: 80px;
+} // Aktionen
 
 // Sitemap Editor
-.admin-table.sitemap-editor-table {
-    th:nth-child(1),
-    td:nth-child(1) {
-        width: 65%;
-    } // Pfad/Name/ID
+.admin-table.sitemap-editor-table th:nth-child(1),
+.admin-table.sitemap-editor-table td:nth-child(1) {
+    width: 65%;
+} // Pfad/Name/ID
 
-    th:nth-child(2),
-    td:nth-child(2) {
-        width: 10%;
-    } // Priorität
+.admin-table.sitemap-editor-table th:nth-child(2),
+.admin-table.sitemap-editor-table td:nth-child(2) {
+    width: 10%;
+} // Priorität
 
-    th:nth-child(3),
-    td:nth-child(3) {
-        width: 15%;
-    } // Frequenz
+.admin-table.sitemap-editor-table th:nth-child(3),
+.admin-table.sitemap-editor-table td:nth-child(3) {
+    width: 15%;
+} // Frequenz
 
-    th:nth-child(4),
-    td:nth-child(4) {
-        width: 10%;
-        text-align: right;
-    } // Aktionen
+.admin-table.sitemap-editor-table th:nth-child(4),
+.admin-table.sitemap-editor-table td:nth-child(4) {
+    width: 10%;
+    text-align: right;
+} // Aktionen
 
-    // Inputs in der Tabelle anpassen
-    input[type='text'],
-    input[type='number'],
-    select {
-        box-sizing: border-box; // Wichtig für width 100%
-        width: 100%;
-        padding: 6px;
-        color: var(--text-color);
-        background-color: var(--content-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 3px;
-
-        &:disabled {
-            cursor: not-allowed;
-            background-color: var(--table-header-bg);
-            opacity: 0.7;
-        }
-
-        body.theme-night & {
-            background-color: color-mix(in srgb, var(--page-bg), black 20%);
-            border-color: var(--border-light);
-
-            &:disabled {
-                background-color: rgb(255 255 255 / 0.05);
-            }
-        }
-    }
+// Inputs in der Tabelle anpassen (Flattened)
+.admin-table.sitemap-editor-table input[type='text'],
+.admin-table.sitemap-editor-table input[type='number'],
+.admin-table.sitemap-editor-table select {
+    box-sizing: border-box; // Wichtig für width 100%
+    width: 100%;
+    padding: 6px;
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 3px;
 }
 
-// Archiv-Spezifisch (Nested class flattened)
-.admin-table.archive-editor-table {
-    th:nth-child(1),
-    td:nth-child(1) {
-        width: 30px; // ID kurz
-        text-align: center;
-    }
+.admin-table.sitemap-editor-table input:disabled,
+.admin-table.sitemap-editor-table select:disabled {
+    cursor: not-allowed;
+    background-color: var(--table-header-bg);
+    opacity: 0.7;
+}
 
-    th:nth-child(2),
-    td:nth-child(2) {
-        width: 170px; // Titel
-        font-weight: bold;
-    }
+body.theme-night .admin-table.sitemap-editor-table input[type='text'],
+body.theme-night .admin-table.sitemap-editor-table input[type='number'],
+body.theme-night .admin-table.sitemap-editor-table select {
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
+}
 
-    th:nth-child(3),
-    td:nth-child(3) {
-        width: auto; // Beschreibung Flex
-    }
+body.theme-night .admin-table.sitemap-editor-table input:disabled,
+body.theme-night .admin-table.sitemap-editor-table select:disabled {
+    background-color: rgb(255 255 255 / 0.05);
+}
 
-    th:nth-child(4),
-    td:nth-child(4) {
-        width: 70px; // Aktionen
-    }
+// Archiv-Spezifisch (Flattened)
+.admin-table.archive-editor-table th:nth-child(1),
+.admin-table.archive-editor-table td:nth-child(1) {
+    width: 30px; // ID kurz
+    text-align: center;
+}
+
+.admin-table.archive-editor-table th:nth-child(2),
+.admin-table.archive-editor-table td:nth-child(2) {
+    width: 170px; // Titel
+    font-weight: bold;
+}
+
+.admin-table.archive-editor-table th:nth-child(3),
+.admin-table.archive-editor-table td:nth-child(3) {
+    width: auto; // Beschreibung Flex
+}
+
+.admin-table.archive-editor-table th:nth-child(4),
+.admin-table.archive-editor-table td:nth-child(4) {
+    width: 70px; // Aktionen
 }
 
 /* --- Pagination --- */
@@ -340,57 +360,60 @@
     align-items: center;
     justify-content: center;
     margin: 20px 0;
+}
 
-    a,
-    span {
-        padding: 8px 12px;
-        color: var(--link-color);
-        text-decoration: none;
-        cursor: pointer;
-        background-color: var(--content-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
+.pagination a,
+.pagination span {
+    padding: 8px 12px;
+    color: var(--link-color);
+    text-decoration: none;
+    cursor: pointer;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
 
-        // Transparentes Design im Dark Mode
-        body.theme-night & {
-            color: var(--text-color);
-            background-color: transparent;
-            border-color: var(--border-light);
-        }
+// Transparentes Design im Dark Mode
+body.theme-night .pagination a,
+body.theme-night .pagination span {
+    color: var(--text-color);
+    background-color: transparent;
+    border-color: var(--border-light);
+}
 
-        &:hover:not(.current-page) {
-            background-color: var(--button-hover-bg);
+.pagination a:hover:not(.current-page),
+.pagination span:hover:not(.current-page) {
+    background-color: var(--button-hover-bg);
+}
 
-            body.theme-night & {
-                background-color: rgb(255 255 255 / 0.1);
-            }
-        }
-    }
+body.theme-night .pagination a:hover:not(.current-page),
+body.theme-night .pagination span:hover:not(.current-page) {
+    background-color: rgb(255 255 255 / 0.1);
+}
 
-    span.current-page {
-        color: #fff;
-        cursor: default;
-        background-color: var(--link-color);
-        border-color: var(--link-color);
-    }
+.pagination span.current-page {
+    color: #fff;
+    cursor: default;
+    background-color: var(--link-color);
+    border-color: var(--link-color);
 }
 
 .legend-pagination-info {
     flex-basis: 100%;
     margin-top: 5px;
     text-align: right;
+}
 
-    small {
-        color: var(--text-color-light);
-    }
+.legend-pagination-info small {
+    color: var(--text-color-light);
 }
 
 .pagination-info-container {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 10px;
+}
 
-    small {
-        color: var(--text-color-light);
-    }
+.pagination-info-container small {
+    color: var(--text-color-light);
 }

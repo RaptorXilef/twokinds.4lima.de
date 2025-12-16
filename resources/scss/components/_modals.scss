@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Modals & Dialogs
+/// Modals und Dialoge.
 ///
+/// Styling für Popups, Advanced-Modals (Sticky Header/Footer) und Report-Details.
 /// Includes Report Modals & Popups.
 ///
 
 /*!
- * @file      resources/scss/components/_modals.scss
- * @link      twokinds.4lima.de
- *
- * @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
- * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
- *
- * @author    Felix Maywald (@RaptorXilef)
- * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @file       resources/scss/components/_modals.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
@@ -27,14 +29,33 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
 
+// Verwendete SCSS-Variablen:
+// - $font-mono: Monospace Schriftart für Code/Diffs
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --content-bg: Hintergrund für Modals/Inputs
+// - --border-dark: Dunkler Rahmen
+// - --border-light: Heller Rahmen
+// - --border-medium: Mittlerer Rahmen
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --page-bg: Seitenhintergrund (für Mix)
+// - --text-on-medium: Text auf Buttons/Headern
+// - --button-hover-bg: Hover-Hintergrund
+// - --button-bg: Button Hintergrund
+// - --content-area-bg: Hintergrund für Bild-Container
+// - --characters-area-bg: Hintergrund für Charaktere
+// - --text-color-light: Helle Textfarbe
+// - --link-color: Akzentfarbe
+
 @use '../abstracts/variables' as *;
 
 /* --- Allgemeine Modal-Stile (Basis) --- */
 .modal {
     position: fixed;
+    z-index: 1000;
     top: 0;
     left: 0;
-    z-index: 1000;
     box-sizing: border-box;
     display: none;
     align-items: center;
@@ -48,9 +69,9 @@
 
 .modal-overlay {
     position: fixed;
+    z-index: 1001;
     top: 0;
     left: 0;
-    z-index: 1001;
     width: 100%;
     height: 100%;
     cursor: pointer;
@@ -95,11 +116,11 @@ body.theme-night .modal-content {
     padding: 20px 25px;
     background-color: var(--content-bg);
     border-bottom: 1px solid var(--border-medium);
+}
 
-    h2 {
-        margin: 0;
-        font-size: 1.5em;
-    }
+.modal-header-wrapper h2 {
+    margin: 0;
+    font-size: 1.5em;
 }
 
 body.theme-night .modal-header-wrapper {
@@ -111,37 +132,35 @@ body.theme-night .modal-header-wrapper {
     flex-grow: 1;
     padding: 25px;
     overflow-y: auto; // Hier findet das Scrollen statt
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-
-    input,
-    textarea,
-    select {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 8px;
-        color: var(--text-color);
-        background-color: var(--content-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
-    }
 }
 
-body.theme-night .modal-scroll-content {
-    input,
-    textarea,
-    select {
-        background-color: color-mix(in srgb, var(--page-bg), black 20%);
-        border-color: var(--border-light);
-    }
+.modal-scroll-content .form-group {
+    margin-bottom: 15px;
+}
+
+.modal-scroll-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.modal-scroll-content input,
+.modal-scroll-content textarea,
+.modal-scroll-content select {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px;
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+body.theme-night .modal-scroll-content input,
+body.theme-night .modal-scroll-content textarea,
+body.theme-night .modal-scroll-content select {
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
 }
 
 .modal-footer-actions {
@@ -150,12 +169,12 @@ body.theme-night .modal-scroll-content {
     padding: 15px 25px;
     background-color: var(--content-bg);
     border-top: 1px solid var(--border-medium);
+}
 
-    .modal-buttons {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-    }
+.modal-footer-actions .modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
 }
 
 body.theme-night .modal-footer-actions {
@@ -175,21 +194,25 @@ body.theme-night .modal-footer-actions {
     cursor: pointer;
     background: none;
     border: none;
+}
 
-    &:hover,
-    &:focus {
-        color: var(--text-on-medium);
-    }
+.modal-close:hover,
+.modal-close:focus,
+.close-button:hover,
+.close-button:focus {
+    color: var(--text-on-medium);
 }
 
 body.theme-night .modal-close,
 body.theme-night .close-button {
     color: rgb(255 255 255 / 0.6);
+}
 
-    &:hover,
-    &:focus {
-        color: var(--text-color);
-    }
+body.theme-night .modal-close:hover,
+body.theme-night .modal-close:focus,
+body.theme-night .close-button:hover,
+body.theme-night .close-button:focus {
+    color: var(--text-color);
 }
 
 /* --- Image Preview Section (Toggle Buttons & Images) --- */
@@ -210,47 +233,152 @@ body.theme-night .close-button {
 // ACHTUNG: Duplizierung vermeiden.
 // .report-images-container war vorher hier definiert.
 
-.report-images-container {
+// Button Toggle Group (Wiederhergestellt und verflacht)
+.button-toggle-group {
+    display: inline-flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    overflow: hidden;
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+}
+
+.button-toggle-group .button-toggle {
+    padding: 8px 15px;
+    margin: 0;
+    color: var(--text-color);
+    cursor: pointer;
+    background-color: var(--content-bg);
+    border: none;
+    border-right: 1px solid var(--border-medium);
+    border-radius: 0;
+}
+
+.button-toggle-group .button-toggle:last-child {
+    border-right: none;
+}
+
+.button-toggle-group .button-toggle:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.button-toggle-group .button-toggle.active {
+    color: white;
+    background-color: #007bff;
+}
+
+body.theme-night .button-toggle-group .button-toggle {
+    background-color: var(--button-bg);
+}
+
+body.theme-night .button-toggle-group .button-toggle.active {
+    background-color: #007bff;
+}
+
+// Unified Image Preview Layout
+.report-images-container,
+#modal-image-previews {
     display: flex;
     flex-flow: row nowrap;
     gap: 15px;
     justify-content: center;
     width: 100%;
     margin-top: 15px;
-
-    > div {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        width: 0;
-        min-width: 0;
-    }
-
-    label {
-        margin-bottom: 5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-weight: bold;
-        color: var(--text-color);
-        text-align: center;
-        white-space: nowrap;
-    }
-
-    img {
-        align-self: flex-start;
-        width: 100%;
-        height: auto;
-        max-height: 60vh;
-        object-fit: contain;
-        background-color: var(--content-area-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 4px;
-    }
 }
 
-body.theme-night .report-images-container img {
+.report-images-container > div,
+.image-preview-box {
+    display: flex;
+    flex: 1; // Beide Container wachsen gleichmäßig
+    flex-direction: column;
+    width: 0;
+    min-width: 0;
+}
+
+.report-images-container label,
+.image-preview-box p {
+    margin-bottom: 5px;
+    overflow: hidden;
+    font-weight: bold;
+    color: var(--text-color);
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.report-images-container img,
+.image-preview-box img {
+    align-self: flex-start;
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+    background-color: var(--content-area-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+body.theme-night .report-images-container img,
+body.theme-night .image-preview-box img {
     background-color: rgb(0 0 0 / 0.2);
     border-color: var(--border-light);
+}
+
+/* --- Character Selection Grid --- */
+#modal-charaktere-section {
+    padding-top: 15px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-medium);
+}
+
+#modal-charaktere-section .charakter-kategorie {
+    margin-bottom: 15px;
+}
+
+#modal-charaktere-section h3 {
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.charaktere-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.charaktere-grid .charakter-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.charaktere-grid .charakter-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    background-color: var(--characters-area-bg);
+    border: 3px solid transparent;
+    border-radius: 50%;
+    filter: grayscale(100%);
+    transition:
+        border-color 0.3s,
+        filter 0.3s;
+}
+
+.charaktere-grid .charakter-item.active img {
+    border-color: #007bff;
+    filter: grayscale(0%);
+}
+
+.charaktere-grid .charakter-item span {
+    margin-top: 5px;
+    font-size: 0.8em;
+    word-break: break-word;
 }
 
 /* --- Report Detail & Diff View --- */
@@ -279,42 +407,40 @@ body.theme-night .report-text-box {
 .diff-box {
     font-family: $font-mono;
     white-space: pre-wrap; // Zeilenumbrüche erhalten
-
-    .loading-text {
-        font-style: italic;
-        color: var(--text-color-light);
-    }
-
-    ins {
-        padding: 0 2px;
-        color: #155724;
-        text-decoration: none;
-        background-color: rgb(40 167 69 / 0.2);
-        border-bottom: 2px solid #28a745;
-    }
-
-    del {
-        padding: 0 2px;
-        color: #721c24;
-        text-decoration: line-through;
-        background-color: rgb(220 53 69 / 0.2);
-    }
 }
 
-body.theme-night .diff-box {
-    ins {
-        color: #a5d6a7;
-        background-color: rgb(40 167 69 / 0.3);
-        border-color: #2e7d32;
-    }
-
-    del {
-        color: #ef9a9a;
-        background-color: rgb(220 53 69 / 0.3);
-    }
+.diff-box .loading-text {
+    font-style: italic;
+    color: var(--text-color-light);
 }
 
-// Code-Ansicht im Summernote-Style (Dunkel)
+.diff-box ins {
+    padding: 0 2px;
+    color: #155724;
+    text-decoration: none;
+    background-color: rgb(40 167 69 / 0.2);
+    border-bottom: 2px solid #28a745;
+}
+
+.diff-box del {
+    padding: 0 2px;
+    color: #721c24;
+    text-decoration: line-through;
+    background-color: rgb(220 53 69 / 0.2);
+}
+
+body.theme-night .diff-box ins {
+    color: #a5d6a7;
+    background-color: rgb(40 167 69 / 0.3);
+    border-color: #2e7d32;
+}
+
+body.theme-night .diff-box del {
+    color: #ef9a9a;
+    background-color: rgb(220 53 69 / 0.3);
+}
+
+// Code-Ansicht im Summernote-Style
 .summernote-code-look {
     box-sizing: border-box;
     display: block;
@@ -329,11 +455,11 @@ body.theme-night .diff-box {
     background-color: #1e1e1e !important;
     border: 1px solid #333;
     border-radius: 4px;
+}
 
-    &:focus {
-        outline: none;
-        border-color: var(--link-color);
-    }
+.summernote-code-look:focus {
+    outline: none;
+    border-color: var(--link-color);
 }
 
 body.theme-night .summernote-code-look {
@@ -341,7 +467,7 @@ body.theme-night .summernote-code-look {
     background-color: var(--page-bg);
 }
 
-/* --- Popup Dialog (Original) --- */
+/* --- Popup Dialog --- */
 .dialog {
     position: fixed;
     z-index: 200;
@@ -352,23 +478,23 @@ body.theme-night .summernote-code-look {
     background: var(--content-bg);
     border-radius: 5px;
     box-shadow: 0 0 4px 0 rgb(0 0 0 / 0.6);
-
-    .dialog-title {
-        padding: 5px 10px;
-        color: var(--text-on-medium);
-        background-color: var(--button-hover-bg);
-    }
-
-    .dialog-body {
-        padding: 10px;
-    }
 }
 
 body.theme-night .dialog {
     box-shadow: 0 0 5px 1px rgb(255 255 255 / 0.25);
+}
 
-    .dialog-title {
-        color: var(--text-color);
-        background-color: var(--sidebar-bg);
-    }
+.dialog .dialog-title {
+    padding: 5px 10px;
+    color: var(--text-on-medium);
+    background-color: var(--button-hover-bg);
+}
+
+body.theme-night .dialog .dialog-title {
+    color: var(--text-color);
+    background-color: var(--sidebar-bg);
+}
+
+.dialog .dialog-body {
+    padding: 10px;
 }

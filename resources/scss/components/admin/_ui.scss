@@ -1,22 +1,51 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Admin UI Elements & Utilities
+/// Admin UI Elemente & Utilities.
 ///
+/// Styling für Status-Indikatoren, Meldungen, Progress-Bars, Logs und Collapsibles.
 /// Statusmeldungen, Logs, Progress-Bars und generische Helfer.
 ///
 
 /*!
- * @file      resources/scss/components/admin/_ui.scss
- * @link      twokinds.4lima.de
- * @author    Felix Maywald (@RaptorXilef)
+ * @file       resources/scss/components/admin/_ui.scss
  */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
 
 ///
 /// @since    5.0.0
 /// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --status-info-bg: Hintergrund für Info-Boxen
+// - --status-info-border: Rahmenfarbe für Info-Boxen
+// - --table-row-even: Hintergrund für Container/Listen
+// - --border-medium: Mittlere Rahmenfarbe
+// - --link-color: Primärfarbe (Progress Bar)
+// - --text-color: Standard Textfarbe
+// - --font-mono: Monospace Schriftart (Logs)
+// - --content-bg: Hintergrund für Collapsibles
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --border-light: Helle Rahmenfarbe
+// - --table-header-bg: Hintergrund für Header
+// - --text-color-medium: Mittlere Textfarbe (Icons)
+// - --table-row-hover: Hintergrund bei Hover
+// - --page-bg: Hintergrund für Transkript-Box
+// - --button-bg: Border-Color im Dark Mode
+// - --status-green-text: Farbe für Erfolg
+// - --status-red-text: Farbe für Fehler
 
 @use '../../abstracts/variables' as *;
 
@@ -38,21 +67,24 @@
     border-radius: 10px;
     opacity: 0.3;
     filter: grayscale(1);
+}
 
-    // --- AKTIVZUSTAND (VORHANDEN) ---
-    &.source-marker,
-    &.present {
-        background-color: #07710c !important;
-        opacity: 1;
-        filter: grayscale(0);
-    }
+// --- AKTIVZUSTAND (VORHANDEN) ---
+.source-marker.source-marker,
+.source-marker.present,
+.status-icon.source-marker,
+.status-icon.present {
+    background-color: #07710c !important;
+    opacity: 1;
+    filter: grayscale(0);
+}
 
-    // --- LEGENDE ---
-    .marker-legend & {
-        background-color: #07710c !important;
-        opacity: 1 !important;
-        filter: none !important;
-    }
+// --- LEGENDE ---
+.marker-legend .source-marker,
+.marker-legend .status-icon {
+    background-color: #07710c !important;
+    opacity: 1 !important;
+    filter: none !important;
 }
 
 /* --- Status Messages (Alerts) --- */
@@ -62,63 +94,63 @@
     margin-bottom: 20px;
     font-weight: bold;
     border-radius: 5px;
+}
 
-    &.status-green {
-        color: #155724;
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-
-        body.theme-night & {
-            color: #e8f5e9;
-            background-color: #1e4620;
-            border-color: #1e4620;
-        }
-    }
-
-    &.status-red {
-        color: #721c24;
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-
-        body.theme-night & {
-            color: #fce4e4;
-            background-color: #5a1e1e;
-            border-color: #5a1e1e;
-        }
-    }
-
-    &.status-info {
-        color: #0c5460;
-        background-color: #d1ecf1;
-        border: 1px solid #bee5eb;
-
-        body.theme-night & {
-            color: #d1ecf1;
-            background-color: #00425c;
-            border-color: #005a7e;
-        }
-    }
-
-    &.status-orange {
-        color: #856404;
-        background-color: #fff3cd;
-        border: 1px solid #ffeeba;
-
-        body.theme-night & {
-            color: #fff8e1;
-            background-color: #5a4e1e;
-            border-color: #5a4e1e;
-        }
-    }
-
-    &.visible {
-        display: block;
-    }
+.status-message.visible {
+    display: block;
 }
 
 // Spezieller Container für Last-Run Messages
 #last-run-container .status-message {
     display: block;
+}
+
+.status-message.status-green {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+body.theme-night .status-message.status-green {
+    color: #e8f5e9;
+    background-color: #1e4620;
+    border-color: #1e4620;
+}
+
+.status-message.status-red {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+body.theme-night .status-message.status-red {
+    color: #fce4e4;
+    background-color: #5a1e1e;
+    border-color: #5a1e1e;
+}
+
+.status-message.status-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+}
+
+body.theme-night .status-message.status-info {
+    color: #d1ecf1;
+    background-color: #00425c;
+    border-color: #005a7e;
+}
+
+.status-message.status-orange {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+}
+
+body.theme-night .status-message.status-orange {
+    color: #fff8e1;
+    background-color: #5a4e1e;
+    border-color: #5a4e1e;
 }
 
 // Notification Box (z.B. nach Upload)
@@ -131,36 +163,36 @@
     border: 1px solid var(--status-info-border);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgb(0 0 0 / 0.05);
+}
 
-    h4 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        font-size: 1.2em;
-        color: inherit;
-    }
+body.theme-night .notification-box {
+    color: #d1ecf1;
+    background-color: rgb(23 162 184 / 0.15);
+    border-color: rgb(23 162 184 / 0.4);
+}
 
-    .next-steps-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        justify-content: center;
-        margin-top: 15px;
+.notification-box h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    color: inherit;
+}
 
-        a.button {
-            display: inline-flex;
-            gap: 8px;
-            align-items: center;
-            padding: 10px 20px;
-            font-size: 1em;
-            text-decoration: none;
-        }
-    }
+.notification-box .next-steps-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+}
 
-    body.theme-night & {
-        color: #d1ecf1;
-        background-color: rgb(23 162 184 / 0.15);
-        border-color: rgb(23 162 184 / 0.4);
-    }
+.notification-box .next-steps-actions a.button {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 20px;
+    font-size: 1em;
+    text-decoration: none;
 }
 
 /* --- Progress Bar --- */
@@ -173,10 +205,10 @@
     border: 1px solid var(--border-medium);
     border-radius: 10px;
     box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1);
+}
 
-    body.theme-night & {
-        background-color: rgb(0 0 0 / 0.3);
-    }
+body.theme-night .progress-wrapper {
+    background-color: rgb(0 0 0 / 0.3);
 }
 
 .progress-bar {
@@ -195,10 +227,6 @@
     );
     background-size: 1rem 1rem;
     transition: width 0.3s ease;
-
-    .progress-wrapper & {
-        // Kontext sicherstellen
-    }
 }
 
 .progress-text {
@@ -214,10 +242,10 @@
     font-weight: bold;
     color: var(--text-color); // Automatisch dunkel/hell je nach Theme
     text-shadow: 0 0 2px rgb(255 255 255 / 0.5); // Lesbarkeit erhöhen
+}
 
-    body.theme-night & {
-        text-shadow: 0 0 2px rgb(0 0 0 / 0.8);
-    }
+body.theme-night .progress-text {
+    text-shadow: 0 0 2px rgb(0 0 0 / 0.8);
 }
 
 /* --- Log Console --- */
@@ -233,40 +261,40 @@
     border: 1px solid var(--border-medium);
     border-radius: 5px;
     box-shadow: inset 0 0 10px rgb(0 0 0 / 0.5);
+}
 
-    p {
-        margin: 2px 0;
-        font-family: inherit;
-        line-height: 1.4;
-        border-bottom: 1px solid rgb(255 255 255 / 0.05);
-    }
+.log-console p {
+    margin: 2px 0;
+    font-family: inherit;
+    line-height: 1.4;
+    border-bottom: 1px solid rgb(255 255 255 / 0.05);
+}
 
-    .log-time {
-        margin-right: 10px;
-        font-size: 0.85em;
-        color: #888;
-    }
+.log-console .log-time {
+    margin-right: 10px;
+    font-size: 0.85em;
+    color: #888;
+}
 
-    .log-info {
-        color: #9cdcfe;
-    }
+.log-console .log-info {
+    color: #9cdcfe;
+}
 
-    .log-success {
-        color: #6a9955;
-    }
+.log-console .log-success {
+    color: #6a9955;
+}
 
-    .log-warning {
-        color: #ce9178;
-    }
+.log-console .log-warning {
+    color: #ce9178;
+}
 
-    .log-error {
-        color: #f44747;
-    }
+.log-console .log-error {
+    color: #f44747;
+}
 
-    .log-detail {
-        font-style: italic;
-        color: #b5cea8;
-    }
+.log-console .log-detail {
+    font-style: italic;
+    color: #b5cea8;
 }
 
 /* --- Collapsibles --- */
@@ -276,22 +304,11 @@
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
     border-radius: 5px;
+}
 
-    body.theme-night & {
-        background-color: var(--sidebar-bg);
-        border-color: var(--border-light);
-    }
-
-    // Status: Ausgeklappt
-    &.expanded {
-        .collapsible-header i {
-            transform: rotate(180deg);
-        }
-
-        .collapsible-content {
-            display: block;
-        }
-    }
+body.theme-night .collapsible-section {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-light);
 }
 
 .collapsible-header {
@@ -303,38 +320,46 @@
     background-color: var(--table-header-bg);
     border-bottom: 1px solid var(--border-medium);
     transition: background-color 0.2s;
+}
 
-    h3 {
-        margin: 0;
-        font-size: 1.1em;
-        color: var(--text-color);
-    }
+body.theme-night .collapsible-header {
+    border-bottom-color: var(--border-light);
+}
 
-    i {
-        color: var(--text-color-medium);
-        transition: transform 0.3s ease;
-    }
+.collapsible-header:hover {
+    background-color: var(--table-row-hover);
+}
 
-    &:hover {
-        background-color: var(--table-row-hover);
-    }
+.collapsible-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
 
-    body.theme-night & {
-        border-bottom-color: var(--border-light);
-    }
+.collapsible-header i {
+    color: var(--text-color-medium);
+    transition: transform 0.3s ease;
+}
+
+// Status: Ausgeklappt
+.collapsible-section.expanded .collapsible-header i {
+    transform: rotate(180deg);
+}
+
+.collapsible-section.expanded .collapsible-content {
+    display: block;
 }
 
 .collapsible-content {
     display: none; // Standardmäßig zu (wird per JS/Klasse gesteuert)
     padding: 15px;
+}
 
-    // Hinweis-Text
-    .path-hint {
-        margin-bottom: 15px;
-        font-size: 0.9em;
-        font-style: italic;
-        color: var(--text-color-light);
-    }
+.collapsible-content .path-hint {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    font-style: italic;
+    color: var(--text-color-light);
 }
 
 /* --- Misc Utilities --- */
@@ -349,19 +374,19 @@
     background-color: var(--table-row-even);
     border: 1px solid var(--border-light);
     border-radius: 4px;
+}
 
-    body.theme-night & {
-        background-color: var(--page-bg);
-        border-color: var(--button-bg);
-    }
+body.theme-night .transcript-display-box {
+    background-color: var(--page-bg);
+    border-color: var(--button-bg);
+}
 
-    p {
-        margin-bottom: 7px;
-    }
+.transcript-display-box p {
+    margin-bottom: 7px;
+}
 
-    p:last-of-type {
-        margin-bottom: 0;
-    }
+.transcript-display-box p:last-of-type {
+    margin-bottom: 0;
 }
 
 .status-list {
@@ -370,10 +395,12 @@
     background-color: var(--table-row-even);
     border: 1px solid var(--border-medium);
     border-radius: 5px;
+}
 
-    body.theme-night & {
-        background-color: rgb(0 0 0 / 0.2);
-    } // Leicht abgedunkelter Hintergrund im Dark Mode
+body.theme-night .status-list {
+    background-color: rgb(
+        0 0 0 / 0.2
+    ); // Leicht abgedunkelter Hintergrund im Dark Mode
 }
 
 .status-item {
@@ -384,53 +411,50 @@
     color: var(--text-color);
     border-bottom: 1px solid var(--border-medium);
     transition: background-color 0.2s ease;
+}
 
-    &:last-child {
-        border-bottom: none;
-    }
+.status-item:last-child {
+    border-bottom: none;
+}
 
-    &:hover {
-        background-color: var(--table-row-hover);
-    }
+.status-item:hover {
+    background-color: var(--table-row-hover);
+}
 
-    .status-label {
-        font-family: monospace;
-        font-size: 1.1em;
-        font-weight: 500;
-    }
+.status-item .status-label {
+    font-family: monospace;
+    font-size: 1.1em;
+    font-weight: 500;
+}
 
-    .status-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        font-size: 1.2rem;
-    }
+.status-item .status-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 1.2rem;
+}
 
-    // Status Modifiers (Flat)
+// Status Modifiers (Flat)
 
-    // OK (Grün)
-    &.status-ok .status-icon {
-        color: var(--status-green-text);
-    }
+// OK (Grün)
+.status-item.status-ok .status-icon {
+    color: var(--status-green-text);
+}
 
-    // Missing (Rot)
-    &.status-missing {
-        background-color: rgb(220 53 69 / 0.1);
+// Missing (Rot)
+.status-item.status-missing {
+    background-color: rgb(220 53 69 / 0.1);
+}
 
-        .status-icon {
-            color: var(--status-red-text);
-        }
+body.theme-night .status-item.status-missing {
+    background-color: rgb(220 53 69 / 0.2);
+}
 
-        .status-label {
-            color: var(--status-red-text);
-        }
-
-        body.theme-night & {
-            background-color: rgb(220 53 69 / 0.2);
-        }
-    }
+.status-item.status-missing .status-icon,
+.status-item.status-missing .status-label {
+    color: var(--status-red-text);
 }
 
 // Animations
@@ -456,10 +480,10 @@
 
 .row-highlight {
     animation: highlight-row 8s ease-out;
+}
 
-    body.theme-night & {
-        animation: highlight-row-dark 8s ease-out;
-    }
+body.theme-night .row-highlight {
+    animation: highlight-row-dark 8s ease-out;
 }
 
 // Helper Classes
