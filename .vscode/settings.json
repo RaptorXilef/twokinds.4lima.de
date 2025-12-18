@@ -77,13 +77,13 @@
   "phpsab.standard": "",
   // WICHTIG: Dynamischer Pfad statt C:\xampp...
   // Alternativ: Absoluter Pfad, da dieser bei dir nachweislich funktioniert
-  "phpsab.executablePathCS": "${workspaceFolder}/vendor/bin/phpcs.bat",
+  //  "phpsab.executablePathCS": "${workspaceFolder}/vendor/bin/phpcs.bat", // Autoerkennung anktiviert
   // FORMATTING (Fehler BEHEBEN mit phpcbf)
   "phpsab.fixerEnable": true,
   "phpsab.fixer": "phpcbf",
   "phpsab.fixerStandard": "", // Nutzt ebenfalls die phpcs.xml.dist
   // WICHTIG: Dynamischer Pfad statt C:\xampp...
-  "phpsab.executablePathCBF": "${workspaceFolder}/vendor/bin/phpcbf.bat",
+  //  "phpsab.executablePathCBF": "${workspaceFolder}/vendor/bin/phpcbf.bat", // Autoerkennung anktiviert
   "phpsab.debug": false,
   // Für phpsab ausgeschlossenee Ordner und Dateien
   "phpsab.snifferArguments": [
@@ -98,14 +98,16 @@
   // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
   "files.eol": "\n",
   // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
-  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.ignoreTrimWhitespace": true,
   "diffEditor.codeLens": true,
   "diffEditor.experimental.showMoves": true,
   "diffEditor.maxComputationTime": 30000,
   // Rechtschreibung
   "cSpell.language": "en,de",
   "cSpell.diagnosticLevel": "Hint",
-  "cSpell.words": ["twokinds"],
+  "cSpell.words": [
+    "twokinds"
+  ],
   // Definiert Projekt-spezifische TODO-Tags
   // Muss möglicherweise in die Globale settings.json übertragen werden
   "todo-tree.general.tags": [
@@ -143,7 +145,7 @@
   "todo-tree.general.automaticGitRefreshInterval": 30,
   "todo-tree.general.periodicRefreshInterval": 30,
   "todo-tree.general.revealBehaviour": "leave focus in tree",
-  "todo-tree.general.rootFolder": "${workspaceFolder}", // Leer lassen = aktueller Workspace (besser als Hardcoded Pfad)
+  //  "todo-tree.general.rootFolder": "${workspaceFolder}", // Leer lassen = aktueller Workspace (besser als Hardcoded Pfad)
   "todo-tree.general.showActivityBarBadge": true,
   "todo-tree.general.statusBar": "total",
   "todo-tree.general.showIconsInsteadOfTagsInStatusBar": true,
