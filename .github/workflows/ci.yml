@@ -82,18 +82,18 @@ jobs:
         # [EN] We make programs ready and build "warehouses" (folders) for reports
         run: |
           chmod -R +x vendor/bin
-          mkdir -p build-reports .cache/phpcs
+          mkdir -p .build/reports .cache/phpcs
 
       - name: Prüfung & Tabelle / Check & Table
         # [DE] Erzeugt die Tabelle für Menschen UND eine Spezial-Datei für GitHub
         # [EN] Generates the table for humans AND a special file for GitHub
-        run: composer ci:lint-${{ matrix.standard }}-${{ matrix.folder }} -- --report-full --report-checkstyle=build-reports/phpcs-src-report.xml
+        run: composer ci:lint-${{ matrix.standard }}-${{ matrix.folder }} -- --report-full --report-checkstyle=.build/reports/phpcs-src-report.xml
 
       - name: Rote Boxen im Code markieren / Create PR annotations
         if: always()
         uses: staabm/annotate-pull-request-from-checkstyle-action@v1
         with:
-          files: build-reports/phpcs-src-report.xml
+          files: .build/reports/phpcs-src-report.xml
           graceful-warnings: true
           colorize: true
 
@@ -120,13 +120,13 @@ jobs:
         with: { name: php-vendor, path: vendor/ }
       - run: |
           chmod -R +x vendor/bin
-          mkdir -p build-reports .cache/phpcs
+          mkdir -p .build/reports .cache/phpcs
       - name: Prüfung & Tabelle (tests)
-        run: composer ci:lint-${{ matrix.standard }}-${{ matrix.folder }} -- --report-full --report-checkstyle=build-reports/phpcs-tests-report.xml
+        run: composer ci:lint-${{ matrix.standard }}-${{ matrix.folder }} -- --report-full --report-checkstyle=.build/reports/phpcs-tests-report.xml
       - name: Annotationen schreiben
         if: always()
         uses: staabm/annotate-pull-request-from-checkstyle-action@v1
-        with: { files: build-reports/phpcs-tests-report.xml }
+        with: { files: .build/reports/phpcs-tests-report.xml }
 
   # =============================================================================
   # [DE] JOB 3: LOGIK-PRÜFUNG & SICHERHEIT
@@ -151,9 +151,9 @@ jobs:
         # [DE] Wir machen zwei Durchläufe: Einer für GitHub, einer für deine Augen (Tabelle)
         # [EN] We do two runs: One for GitHub, one for your eyes (table)
         run: |
-          ./vendor/bin/phpstan analyse --error-format=checkstyle --no-progress > build-reports/phpstan-report.xml || true
+          ./vendor/bin/phpstan analyse --error-format=checkstyle --no-progress > .build/reports/phpstan-report.xml || true
           ./vendor/bin/phpstan analyse --no-progress || true
-          cs2pr build-reports/phpstan-report.xml
+          cs2pr .build/reports/phpstan-report.xml
 
       - name: Sicherheits-Audit / Security Audit
         # [DE] Prüft, ob deine Pakete bekannte Sicherheitslücken haben
@@ -177,19 +177,19 @@ jobs:
         with: { name: php-vendor, path: vendor/ }
       - run: |
           chmod -R +x vendor/bin
-          mkdir -p build-reports .cache/phpunit
+          mkdir -p .build/reports .cache/phpunit
 
       - name: PHPUnit Tests
         # [DE] --testdox erzeugt eine wunderbare Checkliste deiner Tests
         # [EN] --testdox generates a wonderful checklist of your tests
-        run: ./vendor/bin/phpunit --configuration .phpunit.xml.dist --testdox --testdox-html build-reports/phpunit-report.html
+        run: ./vendor/bin/phpunit --configuration .phpunit.xml.dist --testdox --testdox-html .build/reports/phpunit-report.html
 
       - name: Testbericht speichern / Save test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: phpunit-html-report
-          path: build-reports/phpunit-report.html
+          path: .build/reports/phpunit-report.html
 
   # =============================================================================
   # [DE] JOB 5: FRONTEND-QUALITÄT (JS, SCSS, HTML)
