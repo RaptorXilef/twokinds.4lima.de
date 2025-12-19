@@ -201,11 +201,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [lint:js, lint:scss, lint:html]
+        check: [lint:js, lint:scss, lint-ci:html]
     steps:
       - uses: actions/checkout@v4
       - name: PHP Setup (nur für HTML Lint)
-        if: matrix.check == 'lint:html'
+        if: matrix.check == 'lint-ci:html'
         uses: shivammathur/setup-php@v2
         with: { php-version: '8.3' }
 
@@ -217,7 +217,7 @@ jobs:
 
       - name: Frontend Check
         run: |
-          if [ "${{ matrix.check }}" == "lint:html" ]; then
+          if [ "${{ matrix.check }}" == "lint-ci:html" ]; then
             # [DE] Startet kurz einen Webserver für den Barrierefreiheits-Check
             # [EN] Briefly starts a webserver for the accessibility check
             php -S 127.0.0.1:8000 -t public &
