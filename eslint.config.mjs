@@ -18,6 +18,8 @@ export default [
             '.github/', // Ignoriert GitHub-Workflows
             '.git/', // Ignoriert GitHub
             '_Notizen/', // Ignoriert Meine Code-Notizen
+            '.cache/',
+            '.build/',
         ],
     },
 

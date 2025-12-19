@@ -1,154 +1,230 @@
 # -----------------------------------------------------------------------------
-# GitHub Actions Workflow: Project CI
+# [DE] GitHub Actions Konfiguration: Automatische Qualitätsprüfung
+# [EN] GitHub Actions Configuration: Automatic Quality Assurance
 # -----------------------------------------------------------------------------
-# Dieser Workflow automatisiert die Qualitätsprüfung deines Codes.
-# Er wurde in 3 parallele Jobs aufgeteilt, um maximale Geschwindigkeit zu erreichen.
-#
-# Struktur:
-# 1. php-analysis:     Schnelle, statische Prüfungen (Code Style, Typen, Sicherheit)
-# 2. php-tests:        Ausführung des Codes (Unit Tests)
-# 3. frontend-quality: JavaScript & SCSS Prüfungen (benötigt Node.js Umgebung)
+# [DE] Dieser Ablauf prüft bei jedem Code-Upload, ob alles stabil und sauber ist.
+# [EN] This workflow checks on every code upload if everything is stable and clean.
 # -----------------------------------------------------------------------------
 
 name: Project CI
 
-# -----------------------------------------------------------------------------
-# 1. TRIGGER (Wann läuft das hier?)
-# -----------------------------------------------------------------------------
 on:
-    # Führe den Workflow aus, wenn Code auf IRGENDEINEN Branch gepusht wird
-    push:
-    # Führe ihn auch aus, wenn ein Pull Request erstellt wird
-    # (Das prüft den Code, bevor er gemerged wird)
-    pull_request:
+  push:      # [DE] Startet bei jedem Hochladen / [EN] Starts on every push
+  pull_request: # [DE] Startet bei Verbesserungsvorschlägen / [EN] Starts on pull requests
 
-# -----------------------------------------------------------------------------
-# 2. JOBS (Die eigentliche Arbeit)
-# -----------------------------------------------------------------------------
 jobs:
-    # === JOB 1: PHP STATISCHE ANALYSE ===
-    # Dieser Job prüft den Code, OHNE ihn auszuführen. Das geht sehr schnell.
-    # Wenn hier etwas fehlschlägt (z.B. falscher Code-Stil), wissen wir es sofort.
-    php-analysis:
-        name: PHP Static Analysis
-        # Wir nutzen einen virtuellen Ubuntu-Server von GitHub
-        runs-on: ubuntu-latest
+  # =============================================================================
+  # [DE] SCHRITT 0: DIE WERKZEUGKISTE VORBEREITEN
+  # [EN] JOB 0: PREPARE THE TOOLBOX (DEPENDENCIES)
+  # =============================================================================
+  setup-php-deps:
+    name: 📦 Setup PHP Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken / Checkout code
+        uses: actions/checkout@v4
 
-        steps:
-            # Schritt 1: Hole den aktuellen Code aus dem Repository auf den Server
-            - name: Code auschecken
-              uses: actions/checkout@v4
+      - name: PHP einrichten / Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none # [DE] Spart Zeit (keine Statistik) / [EN] Saves time (no coverage)
 
-            # Schritt 2: Installiere PHP in der Version, die wir brauchen
-            - name: PHP einrichten
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.3'
-                  # 'coverage: none' beschleunigt diesen Schritt massiv, da wir
-                  # für statische Analysen keine Code-Abdeckung berechnen müssen.
-                  coverage: none
+      - name: Cache nutzen / Use Cache
+        # [DE] Merkt sich installierte Pakete für das nächste Mal (spart viel Zeit)
+        # [EN] Remembers installed packages for next time (saves a lot of time)
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-php-
 
-            # Schritt 3: Caching für Composer (Der Turbo!)
-            # Wir speichern den 'vendor'-Ordner zwischen. Wenn sich die 'composer.lock'
-            # nicht geändert hat, laden wir die Dateien aus dem Cache, statt sie neu
-            # herunterzuladen. Das spart Zeit und Bandbreite.
-            - name: Cache Composer Pakete
-              uses: actions/cache@v4
-              with:
-                  path: vendor
-                  # Der Cache-Key basiert auf dem Betriebssystem und dem Hash der Lock-Datei
-                  key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-                  restore-keys: ${{ runner.os }}-php-
+      - name: Pakete installieren / Install packages
+        run: composer install --no-progress --prefer-dist
 
-            # Schritt 4: Abhängigkeiten installieren
-            # --no-progress: Weniger Textausgabe (schneller)
-            # --prefer-dist: Lädt ZIP-Dateien statt git-clones (schneller)
-            - name: Composer installieren
-              run: composer install --no-progress --prefer-dist
+      - name: Werkzeuge für andere Jobs speichern / Save tools for other jobs
+        # [DE] Wir packen die "Werkzeugkiste" ein, damit andere Jobs sie nutzen können
+        # [EN] We pack the "toolbox" so other jobs can use it
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-vendor
+          path: vendor/
+          retention-days: 1
 
-            # Schritt 5: Code-Style prüfen (PSR-12 via PHP_CodeSniffer)
-            - name: Code Standards (PSR-12)
-              run: composer check-standards
+  # =============================================================================
+  # [DE] JOB 1: SCHÖNHEITSKONTROLLE DES CODES (PRODUKTION - MUSS PERFEKT SEIN)
+  # [EN] JOB 1: CODE STYLE CHECK - SRC (PRODUCTION - MUST BE PERFECT)
+  # =============================================================================
+  php-phpcs-matrix-src:
+    name: 📑 PHPCS ${{ matrix.standard }} (src)
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # [DE] Erlaubt das Schreiben von PR-Boxen / [EN] Allows writing PR boxes
+      contents: read       # [DE] Erlaubt das Lesen des Codes / [EN] Allows reading code
+    strategy:
+      fail-fast: false # [DE] Nicht abbrechen, wenn einer scheitert / [EN] Don't stop if one fails
+      matrix:
+        # [DE] Wir testen verschiedene Regelwerke gleichzeitig
+        # [EN] We test different rule sets simultaneously
+        standard: [psr12, modern, array, universal, slevomat-coding-standard, drupal7-security-base, drupal7-security-paranoia]
+        folder: [src]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+      - name: Werkzeuge laden / Download tools
+        uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
 
-            # Schritt 6: Logik prüfen (PHPStan)
-            # Findet Typfehler und Bugs, die man beim Schreiben leicht übersieht.
-            - name: Statische Logik-Analyse (PHPStan)
-              run: composer analyse
+      - name: Berechtigungen & Pfade / Permissions & Paths
+        # [DE] Wir machen die Programme startklar und bauen "Lagerhallen" (Ordner) für Berichte
+        # [EN] We make programs ready and build "warehouses" (folders) for reports
+        run: |
+          chmod -R +x vendor/bin
+          mkdir -p build-reports .cache/phpcs
 
-            # Schritt 7: Sicherheitslücken in Abhängigkeiten finden
-            - name: Sicherheits-Audit
-              run: composer audit
+      - name: Prüfung & Tabelle / Check & Table
+        # [DE] Erzeugt die Tabelle für Menschen UND eine Spezial-Datei für GitHub
+        # [EN] Generates the table for humans AND a special file for GitHub
+        run: composer ci:lint-${{ matrix.standard }}-${{ matrix.folder }} -- --report-full --report-checkstyle=build-reports/phpcs-src-report.xml
 
-    # === JOB 2: PHP TESTS (PHPUnit) ===
-    # Dieser Job führt den Code tatsächlich aus. Er läuft PARALLEL zu Job 1.
-    # Da Tests oft länger dauern, blockieren sie so nicht die statische Analyse.
-    php-tests:
-        name: PHP Unit Tests
-        runs-on: ubuntu-latest
-        # needs: [] bedeutet: Wir warten auf niemanden, wir starten sofort!
-        needs: []
+      - name: Rote Boxen im Code markieren / Create PR annotations
+        if: always()
+        uses: staabm/annotate-pull-request-from-checkstyle-action@v1
+        with:
+          files: build-reports/phpcs-src-report.xml
+          graceful-warnings: true
+          colorize: true
 
-        steps:
-            - name: Code auschecken
-              uses: actions/checkout@v4
+  # =============================================================================
+  # [DE] JOB 2: SCHÖNHEITSKONTROLLE DES CODES (TESTS - DARF "GELB" SEIN)
+  # [EN] JOB 2: CODE STYLE CHECK - TESTS (MAY BE "YELLOW")
+  # =============================================================================
+  php-phpcs-matrix-tests:
+    name: 📝 PHPCS ${{ matrix.standard }} (tests)
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    continue-on-error: true # [DE] Fehler hier blockieren den Prozess nicht / [EN] Errors here don't block the process
+    permissions: { pull-requests: write, contents: read }
+    strategy:
+      fail-fast: false
+      matrix:
+        standard: [psr12, modern, array, universal, slevomat-coding-standard, drupal7-security-base, drupal7-security-paranoia]
+        folder: [tests]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+      - uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
+      - run: |
+          chmod -R +x vendor/bin
+          mkdir -p build-reports .cache/phpcs
+      - name: Prüfung & Tabelle (tests)
+        run: composer ci:lint-${{ matrix.standard }}-${{ matrix.folder }} -- --report-full --report-checkstyle=build-reports/phpcs-tests-report.xml
+      - name: Annotationen schreiben
+        if: always()
+        uses: staabm/annotate-pull-request-from-checkstyle-action@v1
+        with: { files: build-reports/phpcs-tests-report.xml }
 
-            - name: PHP einrichten
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.3'
-                  # Hier 'none', außer du willst Coverage-Reports an Dienste wie Codecov senden.
-                  # Falls ja, ändere dies zu 'xdebug' oder 'pcov'.
-                  coverage: none
+  # =============================================================================
+  # [DE] JOB 3: LOGIK-PRÜFUNG & SICHERHEIT
+  # [EN] JOB 3: LOGIC CHECK & SECURITY
+  # =============================================================================
+  phpstan:
+    name: 🔍 PHPStan Analyse
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write, contents: read }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: cs2pr # [DE] Spezial-Übersetzer für GitHub / [EN] Special translator for GitHub
+      - uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
+      - run: chmod -R +x vendor/bin
 
-            # Auch hier nutzen wir den Cache. Da Job 1 und Job 2 oft gleichzeitig starten,
-            # profitiert der zweite Lauf massiv davon, wenn der Cache schon existiert.
-            - name: Cache Composer Pakete
-              uses: actions/cache@v4
-              with:
-                  path: vendor
-                  key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-                  restore-keys: ${{ runner.os }}-php-
+      - name: PHPStan Analyse & PR-Boxen
+        # [DE] Wir machen zwei Durchläufe: Einer für GitHub, einer für deine Augen (Tabelle)
+        # [EN] We do two runs: One for GitHub, one for your eyes (table)
+        run: |
+          ./vendor/bin/phpstan analyse --error-format=checkstyle --no-progress > build-reports/phpstan-report.xml || true
+          ./vendor/bin/phpstan analyse --no-progress || true
+          cs2pr build-reports/phpstan-report.xml
 
-            - name: Composer installieren
-              run: composer install --no-progress --prefer-dist
+      - name: Sicherheits-Audit / Security Audit
+        # [DE] Prüft, ob deine Pakete bekannte Sicherheitslücken haben
+        # [EN] Checks if your packages have known security vulnerabilities
+        if: always()
+        run: composer audit
 
-            # Schritt 8: Die eigentlichen Tests
-            - name: PHPUnit Tests
-              run: ./vendor/bin/phpunit
+  # =============================================================================
+  # [DE] JOB 4: FUNKTIONSTEST (RECHNET ALLES RICHTIG?)
+  # [EN] JOB 4: FUNCTIONAL TESTS (DOES IT CALCULATE CORRECTLY?)
+  # =============================================================================
+  php-tests:
+    name: 🧪 PHPUnit Tests
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+      - uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
+      - run: |
+          chmod -R +x vendor/bin
+          mkdir -p build-reports .cache/phpunit
 
-    # === JOB 3: FRONTEND QUALITÄT (JS & SCSS) ===
-    # Dieser Job kümmert sich um alles, was Node.js benötigt.
-    # Durch die Trennung müssen wir 'npm install' nicht in den PHP-Jobs ausführen.
-    frontend-quality:
-        name: Frontend Quality (JS/SCSS)
-        runs-on: ubuntu-latest
+      - name: PHPUnit Tests
+        # [DE] --testdox erzeugt eine wunderbare Checkliste deiner Tests
+        # [EN] --testdox generates a wonderful checklist of your tests
+        run: ./vendor/bin/phpunit --configuration .phpunit.xml.dist --testdox --testdox-html build-reports/phpunit-report.html
 
-        steps:
-            - name: Code auschecken
-              uses: actions/checkout@v4
+      - name: Testbericht speichern / Save test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-html-report
+          path: build-reports/phpunit-report.html
 
-            # Schritt 9: Node.js installieren
-            - name: Node.js einrichten
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '20'
-                  # setup-node hat Caching fest eingebaut! Das speichert 'node_modules'.
-                  cache: 'npm'
+  # =============================================================================
+  # [DE] JOB 5: FRONTEND-QUALITÄT (JS, SCSS, HTML)
+  # [EN] JOB 5: FRONTEND QUALITY (JS, SCSS, HTML)
+  # =============================================================================
+  frontend-quality:
+    name: 🌐 Frontend Quality ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint:js, lint:scss, lint:html]
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP Setup (nur für HTML Lint)
+        if: matrix.check == 'lint:html'
+        uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3' }
 
-            # Schritt 10: NPM Pakete installieren
-            # WICHTIG: 'npm ci' (Clean Install) ist besser als 'npm install' für CI-Server.
-            # Es löscht den node_modules Ordner vorher und hält sich exakt an die package-lock.json.
-            - name: NPM Abhängigkeiten installieren
-              run: npm ci
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
 
-            # Schritt 11: SCSS prüfen (Stylelint)
-            - name: SCSS Linting
-              run: npm run lint:scss
+      - run: npm ci
 
-            # Schritt 12: JavaScript prüfen (ESLint)
-            - name: JS Linting
-              run: npm run lint:js
+      - name: Frontend Check
+        run: |
+          if [ "${{ matrix.check }}" == "lint:html" ]; then
+            # [DE] Startet kurz einen Webserver für den Barrierefreiheits-Check
+            # [EN] Briefly starts a webserver for the accessibility check
+            php -S 127.0.0.1:8000 -t public &
+            sleep 3
+          fi
+          npm run ${{ matrix.check }}
 
-            # Schritt 13: Sicherheitslücken in NPM-Paketen finden
-            - name: JS Sicherheits-Audit
-              run: npm audit
+      - name: JS Sicherheits-Audit
+        if: matrix.check == 'lint:js'
+        run: npm audit

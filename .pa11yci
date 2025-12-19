@@ -1,0 +1,22 @@
+{
+    "defaults": {
+        "chromeLaunchConfig": {
+            "args": [
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage"
+            ]
+        },
+        "runners": [
+            "htmlcs"
+        ],
+        "standard": "WCAG2AA",
+        "reporters": [
+            "cli"
+        ],
+        "ignore": []
+    },
+    "urls": [
+        "http://127.0.0.1:8000"
+    ]
+}
