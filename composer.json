@@ -33,7 +33,8 @@
     "rector/rector": "^2.2",
     "phpmd/phpmd": "^1.5",
     "phpstan/phpstan-phpunit": "^2.0",
-    "phpstan/extension-installer": "^1.4"
+    "phpstan/extension-installer": "^1.4",
+    "friendsofphp/php-cs-fixer": "^3.92"
   },
   "autoload": {
     "psr-4": {
@@ -56,6 +57,7 @@
     "post-install-cmd": [
       "echo 'Installation fertig. Prüfe Standards...'"
     ],
+    "fix:composer-audit": "composer audit",
     "lint": "phpcs",
     "lint:src": "phpcs src/",
     "lint:tests": "phpcs tests/",
@@ -77,6 +79,8 @@
       "@php -r \"copy('https://phar.phpunit.de/phpcpd.phar', 'tools/phpcpd.phar');\"",
       "@php -r \"echo 'Tools wurden aktualisiert!' . PHP_EOL;\""
     ],
+    "lint:stylist": "php-cs-fixer fix --dry-run --diff",
+    "fix:stylist": "vendor/bin/php-cs-fixer fix",
     "ci:lint-rector": "@lint:rector",
     "ci:fix-rector": "@fix:rector",
     "ci:lint-psr12": "phpcs --standard=.phpcs-psr12.xml",
