@@ -163,11 +163,34 @@ jobs:
         if: always()
         run: composer audit
 
+# =============================================================================
+  # [DE] JOB 4a: AUTOMATISCHES REFACTORING PRÜFUNG (RECTOR)
+  # [EN] JOB 4a: AUTOMATED REFACTORING CHECK (RECTOR)
   # =============================================================================
-  # [DE] JOB 4: FUNKTIONSTEST (RECHNET ALLES RICHTIG?)
-  # [EN] JOB 4: FUNCTIONAL TESTS (DOES IT CALCULATE CORRECTLY?)
+  rector-check:
+    name: ♻️ Rector Check
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+      - uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
+      - run: |
+          chmod -R +x vendor/bin
+          mkdir -p .build/reports .cache/phpunit
+
+      - name: Rector Tests
+        # [DE] --dry-run prüft nur, ändert aber nichts. Wenn Rector meckert, schlägt der Job fehl.
+        # [EN] --dry-run only checks, doesn't change files. If Rector complains, the job fails.
+        run: ./vendor/bin/rector process --dry-run
+
   # =============================================================================
-  php-tests:
+  # [DE] JOB 4b: FUNKTIONSTEST (PHPUNIT)
+  # [EN] JOB 4b: FUNCTIONAL TESTS (PHPUNIT)
+  # =============================================================================
+  phpunit-tests:
     name: 🧪 PHPUnit Tests
     needs: setup-php-deps
     runs-on: ubuntu-latest
