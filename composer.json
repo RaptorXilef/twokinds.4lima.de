@@ -65,6 +65,8 @@
     "test": "phpunit",
     "lint:rector": "rector process --dry-run",
     "fix:rector": "rector process",
+    "lint:duplicates": "phpcpd src/ --min-lines=5 --min-tokens=70",
+    "lint:cleen-code:": "phpmd src/ text phpmd.xmlphpmd src/ text phpmd.xml",
     "ci:lint-rector": "@lint:rector",
     "ci:fix-rector": "@fix:rector",
     "ci:lint-psr12": "phpcs --standard=.phpcs-psr12.xml",

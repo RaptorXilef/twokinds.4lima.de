@@ -210,7 +210,7 @@ jobs:
         run: ./vendor/bin/phpmd src/ text phpmd.xml
 
   # =============================================================================
-  # [DE] JOB: AUTOMATISCHES REFACTORING PRÜFUNG (RECTOR)
+  # [DE] JOB: AUTOMATISCHES REFACTORING / MODERNISIERUNGS PRÜFUNG (RECTOR)
   # [EN] JOB: AUTOMATED REFACTORING CHECK (RECTOR)
   # =============================================================================
   rector-check:
@@ -253,7 +253,7 @@ jobs:
       - name: PHPUnit Tests
         # [DE] --testdox erzeugt eine wunderbare Checkliste deiner Tests
         # [EN] --testdox generates a wonderful checklist of your tests
-        run: ./vendor/bin/phpunit --configuration .phpunit.xml.dist --testdox --testdox-html .build/reports/phpunit-report.html
+        run: ./vendor/bin/phpunit --configuration phpunit.xml.dist --testdox --testdox-html .build/reports/phpunit-report.html
 
       - name: Testbericht speichern / Save test report
         if: always()
