@@ -14,8 +14,8 @@ on:
 
 jobs:
   # =============================================================================
-  # [DE] SCHRITT 0: DIE WERKZEUGKISTE VORBEREITEN
-  # [EN] JOB 0: PREPARE THE TOOLBOX (DEPENDENCIES)
+  # [DE] SCHRITT: DIE WERKZEUGKISTE VORBEREITEN
+  # [EN] JOB: PREPARE THE TOOLBOX (DEPENDENCIES)
   # =============================================================================
   setup-php-deps:
     name: 📦 Setup PHP Dependencies
@@ -52,8 +52,8 @@ jobs:
           retention-days: 1
 
   # =============================================================================
-  # [DE] JOB 1: SCHÖNHEITSKONTROLLE DES CODES (PRODUKTION - MUSS PERFEKT SEIN)
-  # [EN] JOB 1: CODE STYLE CHECK - SRC (PRODUCTION - MUST BE PERFECT)
+  # [DE] JOB: SCHÖNHEITSKONTROLLE DES CODES (PRODUKTION - MUSS PERFEKT SEIN)
+  # [EN] JOB: CODE STYLE CHECK - SRC (PRODUCTION - MUST BE PERFECT)
   # =============================================================================
   php-phpcs-matrix-src:
     name: 📑 PHPCS ${{ matrix.standard }} (src)
@@ -98,8 +98,8 @@ jobs:
           colorize: true
 
   # =============================================================================
-  # [DE] JOB 2: SCHÖNHEITSKONTROLLE DES CODES (TESTS - DARF "GELB" SEIN)
-  # [EN] JOB 2: CODE STYLE CHECK - TESTS (MAY BE "YELLOW")
+  # [DE] JOB: SCHÖNHEITSKONTROLLE DES CODES (TESTS - DARF "GELB" SEIN)
+  # [EN] JOB: CODE STYLE CHECK - TESTS (MAY BE "YELLOW")
   # =============================================================================
   php-phpcs-matrix-tests:
     name: 📝 PHPCS ${{ matrix.standard }} (tests)
@@ -129,8 +129,8 @@ jobs:
         with: { files: .build/reports/phpcs-tests-report.xml }
 
   # =============================================================================
-  # [DE] JOB 3: LOGIK-PRÜFUNG & SICHERHEIT
-  # [EN] JOB 3: LOGIC CHECK & SECURITY
+  # [DE] JOB: LOGIK-PRÜFUNG & SICHERHEIT
+  # [EN] JOB: LOGIC CHECK & SECURITY
   # =============================================================================
   phpstan:
     name: 🔍 PHPStan Analyse
@@ -164,8 +164,54 @@ jobs:
         run: composer audit
 
 # =============================================================================
-  # [DE] JOB 4a: AUTOMATISCHES REFACTORING PRÜFUNG (RECTOR)
-  # [EN] JOB 4a: AUTOMATED REFACTORING CHECK (RECTOR)
+  # [DE] JOB: COPY-PASTE DETEKTOR (CODE-DUPLIKATE)
+  # [EN] JOB: COPY-PASTE DETECTOR (CODE DUPLICATION)
+  # =============================================================================
+  phpcpd-check:
+    name: 👯 PHPCPD Check
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+      - uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
+
+      - name: Vorbereitung / Preparation
+        run: chmod -R +x vendor/bin
+
+      - name: Suche nach Code-Duplikaten / Scan for code duplication
+        # [DE] Sucht nach min. 5 identischen Zeilen oder 70 Tokens
+        # [EN] Scans for min. 5 identical lines or 70 tokens
+        run: ./vendor/bin/phpcpd src/ --min-lines=5 --min-tokens=70
+
+  # =============================================================================
+  # [DE] JOB: MESS DETECTOR (SAUBERER CODE & DESIGN)
+  # [EN] JOB: MESS DETECTOR (CLEAN CODE & DESIGN)
+  # =============================================================================
+  phpmd-check:
+    name: 🧹 PHPMD Check
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+      - uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
+
+      - name: Vorbereitung / Preparation
+        run: chmod -R +x vendor/bin
+
+      - name: Analysiere Code-Struktur / Analyze code structure
+        # [DE] Prüft src/ Ordner mit Regeln aus phpmd.xml. Ausgabeformat: Text (gut lesbar in Logs)
+        # [EN] Checks src/ folder using rules from phpmd.xml. Output format: Text (readable in logs)
+        run: ./vendor/bin/phpmd src/ text phpmd.xml
+
+  # =============================================================================
+  # [DE] JOB: AUTOMATISCHES REFACTORING PRÜFUNG (RECTOR)
+  # [EN] JOB: AUTOMATED REFACTORING CHECK (RECTOR)
   # =============================================================================
   rector-check:
     name: ♻️ Rector Check
@@ -187,8 +233,8 @@ jobs:
         run: ./vendor/bin/rector process --dry-run
 
   # =============================================================================
-  # [DE] JOB 4b: FUNKTIONSTEST (PHPUNIT)
-  # [EN] JOB 4b: FUNCTIONAL TESTS (PHPUNIT)
+  # [DE] JOB: FUNKTIONSTEST (PHPUNIT)
+  # [EN] JOB: FUNCTIONAL TESTS (PHPUNIT)
   # =============================================================================
   phpunit-tests:
     name: 🧪 PHPUnit Tests
@@ -217,8 +263,8 @@ jobs:
           path: .build/reports/phpunit-report.html
 
   # =============================================================================
-  # [DE] JOB 5: FRONTEND-QUALITÄT (JS, SCSS, HTML)
-  # [EN] JOB 5: FRONTEND QUALITY (JS, SCSS, HTML)
+  # [DE] JOB: FRONTEND-QUALITÄT (JS, SCSS, HTML)
+  # [EN] JOB: FRONTEND QUALITY (JS, SCSS, HTML)
   # =============================================================================
   frontend-quality:
     name: 🌐 Frontend Quality ${{ matrix.check }}

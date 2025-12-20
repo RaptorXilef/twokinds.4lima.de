@@ -30,7 +30,9 @@
     "slevomat/coding-standard": "^8.22",
     "php-http/discovery": "^1.20",
     "phpcompatibility/php-compatibility": "^10.0",
-    "rector/rector": "^2.2"
+    "rector/rector": "^2.2",
+    "sebastian/phpcpd": "^2.0",
+    "phpmd/phpmd": "^1.5"
   },
   "autoload": {
     "psr-4": {
