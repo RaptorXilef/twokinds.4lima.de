@@ -8,6 +8,9 @@
     <rule ref="Universal.Arrays.DuplicateArrayKey"/>
     <rule ref="Universal.CodeAnalysis.ConstructorDestructorReturn"/>
 
+    <config name="testVersion" value="8.3-8.5"/>
+    <rule ref="PHPCompatibility"/>
+
     <!--<rule ref="SlevomatCodingStandard"/>
     <rule ref="Security"/>-->
     <rule ref=".phpcs-slevomat-coding-standard-ruleset.xml"/>
