@@ -57,7 +57,14 @@
     "post-install-cmd": [
       "echo 'Installation fertig. Prüfe Standards...'"
     ],
-    "fix:composer-audit": "composer audit",
+    "audit:check": [
+      "@composer audit",
+      "npm audit"
+    ],
+    "audit:fix": [
+      "npm audit fix",
+      "@composer update"
+    ],
     "lint": "phpcs",
     "lint:src": "phpcs src/",
     "lint:tests": "phpcs tests/",

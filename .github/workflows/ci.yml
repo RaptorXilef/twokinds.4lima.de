@@ -287,6 +287,60 @@ jobs:
         # [DE] --min-msi=30 setzt die Hürde niedrig für den Start (später erhöhen!)
         run: php tools/infection.phar --threads=4 --logger-github --min-msi=30 --min-covered-msi=30
 
+# =============================================================================
+  # [DE] JOB: CODE STYLE CHECK
+  # [EN] JOB: CODE STYLE CHECK
+  # =============================================================================
+  codestyle:
+    name: 🎨 Code Style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', tools: composer }
+
+      - name: Abhängigkeiten installieren
+        run: composer install --no-progress --prefer-dist
+
+      - name: PHP-CS-Fixer (Dry Run)
+        # --dry-run: Ändert nichts, zeigt nur Fehler
+        # --diff: Zeigt genau an, was falsch ist
+        run: ./vendor/bin/php-cs-fixer fix --dry-run --diff
+
+# =============================================================================
+  # [DE] JOB: SECURITY AUDIT
+  # [EN] JOB: SECURITY AUDIT
+  # =============================================================================
+  security:
+    name: 🛡️ Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- PHP SECURITY ---
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3' }
+
+      - name: Composer Audit
+        # Prüft installierte PHP-Pakete auf Sicherheitslücken
+        run: |
+          composer install --no-progress --prefer-dist
+          composer audit
+
+      # --- NPM SECURITY ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Oder deine Version (z.B. 18 oder 22)
+
+      - name: NPM Audit
+        # 'npm ci' ist schneller/sauberer als 'npm install' für CI
+        # --audit-level=high: Ignoriert 'low'/'moderate' Warnungen, damit die CI nicht ständig rot ist
+        run: |
+          npm ci
+          npm audit --audit-level=high
+
   # =============================================================================
   # [DE] JOB: FRONTEND-QUALITÄT (JS, SCSS, HTML)
   # [EN] JOB: FRONTEND QUALITY (JS, SCSS, HTML)
