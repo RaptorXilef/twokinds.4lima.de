@@ -21,7 +21,7 @@
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",
-    "phpunit/phpunit": "^12.5",
+    "phpunit/phpunit": "^11.0",
     "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
     "squizlabs/php_codesniffer": "^4.0",
     "phpcsstandards/phpcsextra": "^1.5",
@@ -31,7 +31,6 @@
     "php-http/discovery": "^1.20",
     "phpcompatibility/php-compatibility": "^10.0",
     "rector/rector": "^2.2",
-    "sebastian/phpcpd": "^2.0",
     "phpmd/phpmd": "^1.5",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.4"
@@ -66,10 +65,18 @@
     "analyze": "phpstan analyse --memory-limit=1G",
     "analyse": "phpstan analyse --memory-limit=1G",
     "test": "phpunit",
+    "test:full": "phpunit --display-deprecations --display-warnings --display-notices",
     "lint:rector": "rector process --dry-run",
     "fix:rector": "rector process",
-    "lint:duplicates": "phpcpd src/ --min-lines=5 --min-tokens=70",
+    "lint:duplicates": "php tools/phpcpd.phar src/ --min-lines=5 --min-tokens=70",
+    "lint:duplicates-composer": "phpcpd src/ --min-lines=5 --min-tokens=70",
     "lint:clean-code": "phpmd src/ text phpmd.xml",
+    "infection": "php -d xdebug.mode=coverage -d xdebug.start_with_request=no tools/infection.phar",
+    "tools:update": [
+      "@php -r \"copy('https://github.com/infection/infection/releases/latest/download/infection.phar', 'tools/infection.phar');\"",
+      "@php -r \"copy('https://phar.phpunit.de/phpcpd.phar', 'tools/phpcpd.phar');\"",
+      "@php -r \"echo 'Tools wurden aktualisiert!' . PHP_EOL;\""
+    ],
     "ci:lint-rector": "@lint:rector",
     "ci:fix-rector": "@fix:rector",
     "ci:lint-psr12": "phpcs --standard=.phpcs-psr12.xml",

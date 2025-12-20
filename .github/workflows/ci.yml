@@ -184,14 +184,15 @@ jobs:
       - name: Suche nach Code-Duplikaten / Scan for code duplication
         # [DE] Sucht nach min. 5 identischen Zeilen oder 70 Tokens
         # [EN] Scans for min. 5 identical lines or 70 tokens
-        run: ./vendor/bin/phpcpd src/ --min-lines=5 --min-tokens=70
+        # run: ./vendor/bin/phpcpd src/ --min-lines=5 --min-tokens=70
+        run: php ./tools/phpcpd.phar src/ --min-lines=5 --min-tokens=70
 
   # =============================================================================
   # [DE] JOB: MESS DETECTOR (SAUBERER CODE & DESIGN)
   # [EN] JOB: MESS DETECTOR (CLEAN CODE & DESIGN)
   # =============================================================================
   phpmd-check:
-    name: 🧹 PHPMD Check
+    name: 🧹 CLEAN CODE & DESIGN Check
     needs: setup-php-deps
     runs-on: ubuntu-latest
     steps:
@@ -261,6 +262,30 @@ jobs:
         with:
           name: phpunit-html-report
           path: .build/reports/phpunit-report.html
+
+# =============================================================================
+  # [DE] JOB 6: MUTATION TESTING (INFECTION)
+  # [EN] JOB 6: MUTATION TESTING (INFECTION)
+  # =============================================================================
+  mutation-tests:
+    name: 🧟 Infection Tests
+    needs: setup-php-deps
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # [DE] WICHTIG: coverage: pcov ist viel schneller als xdebug
+      # [EN] IMPORTANT: coverage: pcov is much faster than xdebug
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: pcov }
+
+      - uses: actions/download-artifact@v4
+        with: { name: php-vendor, path: vendor/ }
+
+      - name: Infection ausführen / Run Infection
+        # [DE] --logger-github schreibt Kommentare direkt in deinen Pull Request!
+        # [DE] --min-msi=30 setzt die Hürde niedrig für den Start (später erhöhen!)
+        run: php tools/infection.phar --threads=4 --logger-github --min-msi=30 --min-covered-msi=30
 
   # =============================================================================
   # [DE] JOB: FRONTEND-QUALITÄT (JS, SCSS, HTML)

@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.4/phpunit.xsd"
-    bootstrap="vendor/autoload.php"
-    colors="true"
-    cacheDirectory=".cache/phpunit">
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".cache/phpunit"
+         executionOrder="depends,defects"
+         beStrictAboutOutputDuringTests="true"
+         failOnRisky="true"
+         failOnWarning="true">
 
     <testsuites>
         <testsuite name="App Test Suite">
             <directory>./tests</directory>
-        </testsuite>
+
+            <!--<exclude>./tests/Unit/Legacy/KaputteTestKlasseTest.php</exclude>-->
+
+            </testsuite>
     </testsuites>
 
     <source>

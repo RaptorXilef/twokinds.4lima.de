@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 use Rector\Set\ValueObject\SetList;
 use Rector\Set\ValueObject\LevelSetList;
+use Rector\PHPUnit\Set\PHPUnitSetList; // <--- WICHTIG: Importieren!
 use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromStrictConstructorRector;
 
 return static function (RectorConfig $rectorConfig): void {
@@ -27,6 +28,11 @@ return static function (RectorConfig $rectorConfig): void {
 
         // Fügt Typen hinzu (string, int, void) wo möglich
         SetList::TYPE_DECLARATION,
+
+        // Wandelt /** @test */ in #[Test] um und fixt Deprecations// Wandelt /** @test */ in #[Test] um und fixt Deprecations
+        PHPUnitSetList::PHPUNIT_110,
+
+        PHPUnitSetList::ANNOTATIONS_TO_ATTRIBUTES,
     ]);
 
     // 3. Optional: Cache für Geschwindigkeit
