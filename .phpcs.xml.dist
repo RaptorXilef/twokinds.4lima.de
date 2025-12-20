@@ -8,11 +8,10 @@
     <rule ref="Universal.Arrays.DuplicateArrayKey"/>
     <rule ref="Universal.CodeAnalysis.ConstructorDestructorReturn"/>
 
-    <rule ref="SlevomatCodingStandard">
-        <exclude name="SlevomatCodingStandard.Whitespaces.DuplicateSpaces"/>
-        </rule>
-
-    <rule ref="Security"/>
+    <!--<rule ref="SlevomatCodingStandard"/>
+    <rule ref="Security"/>-->
+    <rule ref=".phpcs-slevomat-coding-standard-ruleset.xml"/>
+    <rule ref=".phpcs-security-base-ruleset.xml"/>
 
     <file>src</file>
     <file>tests</file>

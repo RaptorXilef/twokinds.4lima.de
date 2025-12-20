@@ -1,8 +1,8 @@
 {
-  "name": "raptorxilef/twokinds.4lima.de",
-  "description": "Dieses Projekt ist eine PHP-basierte Webseite zur Anzeige und Verwaltung der deutschen Übersetzungen des Webcomics \"Twokinds\".",
+  "name": "raptorxilef/ftk.jus.de",
+  "description": "Essenszahlen-Integrations-Tool (Famly-und-KAI-CSV zu KAI-CSV).",
   "type": "project",
-  "license": "CC-BY-NC-SA-4.0",
+  "license": "proprietary",
   "authors": [
     {
       "name": "Felix Maywald",
@@ -69,10 +69,8 @@
     "ci:fix-universal": "phpcbf --standard=.phpcs-universal.xml",
     "ci:lint-slevomat-coding-standard": "phpcs --standard=.phpcs-slevomat-coding-standard-ruleset.xml",
     "ci:fix-slevomat-coding-standard": "phpcbf --standard=.phpcs-slevomat-coding-standard-ruleset.xml",
-    "ci:lint-drupal7-security-base": "phpcs --extensions=php,inc,lib,module,info --standard=.phpcs-drupal7-security-base-ruleset.xml",
-    "ci:fix-drupal7-security-base": "phpcbf --extensions=php,inc,lib,module,info --standard=.phpcs-drupal7-security-base-ruleset.xml",
-    "ci:lint-drupal7-security-paranoia": "phpcs --extensions=php,inc,lib,module,info --standard=.phpcs-drupal7-security-paranoia-ruleset.xml",
-    "ci:fix-drupal7-security-paranoia": "phpcbf --extensions=php,inc,lib,module,info --standard=.phpcs-drupal7-security-paranoia-ruleset.xml",
+    "ci:lint-security-base": "phpcs --standard=.phpcs-security-base-ruleset.xml",
+    "ci:fix-security-base": "phpcbf --standard=.phpcs-security-base-ruleset.xml",
     "ci:lint-psr12-src": "@ci:lint-psr12 src/",
     "ci:lint-psr12-tests": "@ci:lint-psr12 tests/",
     "ci:lint-modern-src": "@ci:lint-modern src/",
@@ -83,10 +81,8 @@
     "ci:lint-universal-tests": "@ci:lint-universal tests/",
     "ci:lint-slevomat-coding-standard-src": "@ci:lint-slevomat-coding-standard src/",
     "ci:lint-slevomat-coding-standard-tests": "@ci:lint-slevomat-coding-standard tests/",
-    "ci:lint-drupal7-security-base-src": "@ci:lint-drupal7-security-base src/",
-    "ci:lint-drupal7-security-base-tests": "@ci:lint-drupal7-security-base tests/",
-    "ci:lint-drupal7-security-paranoia-src": "@ci:lint-drupal7-security-paranoia src/",
-    "ci:lint-drupal7-security-paranoia-tests": "@ci:lint-drupal7-security-paranoia tests/",
+    "ci:lint-security-base-src": "@ci:lint-security-base src/",
+    "ci:lint-security-base-tests": "@ci:lint-security-base tests/",
     "ci:fix-psr12-src": "@ci:fix-psr12 src/",
     "ci:fix-psr12-tests": "@ci:fix-psr12 tests/",
     "ci:fix-modern-src": "@ci:fix-modern src/",
@@ -97,9 +93,7 @@
     "ci:fix-universal-tests": "@ci:fix-universal tests/",
     "ci:fix-slevomat-coding-standard-src": "@ci:fix-slevomat-coding-standard src/",
     "ci:fix-slevomat-coding-standard-tests": "@ci:fix-slevomat-coding-standard tests/",
-    "ci:fix-drupal7-security-base-src": "@ci:fix-drupal7-security-base src/",
-    "ci:fix-drupal7-security-base-tests": "@ci:fix-drupal7-security-base tests/",
-    "ci:fix-drupal7-security-paranoia-src": "@ci:fix-drupal7-security-paranoia src/",
-    "ci:fix-drupal7-security-paranoia-tests": "@ci:fix-drupal7-security-paranoia tests/"
+    "ci:fix-security-base-src": "@ci:fix-security-base src/",
+    "ci:fix-security-base-tests": "@ci:fix-security-base tests/"
   }
 }
