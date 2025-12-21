@@ -2,7 +2,7 @@
 
 /**
  * Administrationsseite zum Erstellen des Bild-Caches inkl. Cache-Busting.
- * Scannt die Bildverzeichnisse und erstellt eine JSON-Datenbank für schnellen Zugriff.
+ * Scannt die Bildverzeichnisse und erstellt eine ID-zentrierte JSON-Datenbank.
  *
  * @file      ROOT/public/admin/build_image_cache_and_busting.php
  * @package   twokinds.4lima.de
@@ -19,6 +19,7 @@
  *    UI, SICHERHEIT & UX
  *    - Überarbeitung mit modernem UI und Herstellung der CSP-Konformität.
  *    - Deaktivierung des Auto-Reloads nach Prozessende für bessere Kontrolle.
+ *
  * @since 5.0.0
  * - Komplettes Refactoring auf Admin-Standard (SCSS, Fetch-API, Path-Klasse).
  * - Workflow-Optimierung: Link zum RSS-Generator als nächsten Schritt hinzugefügt.
@@ -26,6 +27,10 @@
  * - refactor(Config): Umstellung auf zentrale 'admin/config_generator_settings.json'.
  * - fix(Config): Speicherstruktur korrigiert (users -> username -> build_image_cache).
  * - fix(UI): Fallback-Anzeige für fehlenden Zeitstempel.
+ * - fix(Cache): Datenstruktur korrigiert (ID-zentriert statt Kategorie-zentriert).
+ * - fix(Cache): Speichert nun wieder relative Pfade inkl. Dateimodifikations-Zeitstempel (?c=).
+ * - feat(Cache): Priorisierung von Dateiendungen (WebP vor PNG/JPG) implementiert.
+ * - refactor(Logic): Bestehende manuelle Einträge (z.B. Original-URLs) werden beim Scan erhalten.
  */
 
 declare(strict_types=1);
@@ -40,13 +45,26 @@ require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 $configPath = Path::getConfigPath('admin/config_generator_settings.json');
 $currentUser = $_SESSION['admin_username'] ?? 'default';
 
-// --- Einstellungsverwaltung ---
+// Definition der Scan-Ziele und deren relativen Pfad-Prefixe
+// Wir berechnen den Pfad relativ zum Root der Webseite
+$dirsToScan = [
+    'thumbnails'  => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS,  'rel' => 'assets/images/comic/thumbnails/'],
+    'lowres'      => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_LOWRES,      'rel' => 'assets/images/comic/lowres/'],
+    'hires'       => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_HIRES,       'rel' => 'assets/images/comic/hires/'],
+    'socialmedia' => ['path' => DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA, 'rel' => 'assets/images/comic/socialmedia/'],
+];
+
+// --- HILFSFUNKTIONEN ---
+
+/**
+ * Lädt die Einstellungen für den aktuellen Benutzer aus der zentralen Config.
+ */
 function loadGeneratorSettings(string $filePath, string $username): array
 {
     // Flache Defaults
     $defaults = [
         'last_run_timestamp' => null,
-        'total_files' => 0
+        'total_files' => 0,
     ];
 
     if (!file_exists($filePath)) {
@@ -58,140 +76,121 @@ function loadGeneratorSettings(string $filePath, string $username): array
         return $defaults;
     }
 
-    $content = file_get_contents($filePath);
-    $data = json_decode($content, true);
-
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        return $defaults;
-    }
-
-    // Spezifische Einstellungen für den User laden
-    $userSettings = $data['users'][$username]['build_image_cache'] ?? [];
-
-    // Merge mit Defaults
-    return array_replace_recursive($defaults, $userSettings);
+    $data = json_decode(file_get_contents($filePath), true);
+    return $data['users'][$username]['build_image_cache'] ?? $defaults;
 }
 
+/**
+ * Speichert die Laufzeit-Metadaten zentral.
+ */
 function saveGeneratorSettings(string $filePath, string $username, array $newSettings): bool
 {
-    $data = [];
-    if (file_exists($filePath)) {
-        $content = file_get_contents($filePath);
-        $decoded = json_decode($content, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            $data = $decoded;
-        }
-    }
-
-    if (!isset($data['users'])) {
-        $data['users'] = [];
-    }
+    $data = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
     if (!isset($data['users'][$username])) {
         $data['users'][$username] = [];
     }
 
-    $currentData = $data['users'][$username]['build_image_cache'] ?? [];
-    $data['users'][$username]['build_image_cache'] = array_replace_recursive($currentData, $newSettings);
+    $current = $data['users'][$username]['build_image_cache'] ?? [];
+    $data['users'][$username]['build_image_cache'] = array_merge($current, $newSettings);
 
     return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
-// --- LOGIK ---
-
 /**
- * Scannt ein Verzeichnis und gibt ein Array der gefundenen Bilddateien zurück.
+ * Scannt ein Verzeichnis nach Bildern und generiert Pfade mit Cache-Busting.
+ * Erkennt die Comic-ID anhand des Dateinamens (8 Ziffern).
  */
-function scanDirectory(string $dir): array
+function scanDirForCache(string $dir, string $relPrefix): array
 {
-    $files = [];
+    $results = [];
     if (!is_dir($dir)) {
-        return [];
+        return $results;
     }
 
-    $iterator = new DirectoryIterator($dir);
-    foreach ($iterator as $fileinfo) {
-        if ($fileinfo->isFile()) {
-            $ext = strtolower($fileinfo->getExtension());
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                $files[$fileinfo->getBasename('.' . $ext)] = $fileinfo->getFilename();
-            }
+    $extensions = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
+    $files = scandir($dir);
+
+    // Temporäre Sammlung um Prioritäten (WebP > JPG) zu handhaben
+    $tempMap = [];
+
+    foreach ($files as $file) {
+        $pathInfo = pathinfo($file);
+        $fileName = $pathInfo['filename'];
+        $ext = strtolower($pathInfo['extension'] ?? '');
+
+        // Nur 8-stellige IDs verarbeiten
+        if (!preg_match('/^\d{8}$/', $fileName) || !in_array($ext, $extensions)) {
+            continue;
         }
+
+        $fullPath = $dir . DIRECTORY_SEPARATOR . $file;
+        $mtime = filemtime($fullPath) ?: time();
+
+        // Falls ID noch nicht vorhanden oder neue Endung eine höhere Prio hat (WebP am Anfang der Liste)
+        if (isset($tempMap[$fileName]) && array_search($ext, $extensions) >= array_search($tempMap[$fileName]['ext'], $extensions)) {
+            continue;
+        }
+
+        $tempMap[$fileName] = [
+            'path' => $relPrefix . $file . '?c=' . $mtime,
+            'ext'  => $ext,
+        ];
     }
-    return $files;
+
+    foreach ($tempMap as $id => $data) {
+        $results[$id] = $data['path'];
+    }
+
+    return $results;
 }
 
 /**
- * Führt den Cache-Build-Prozess durch.
+ * Baut den Image Cache im korrekten ID-zentrierten Format auf.
  */
-function buildImageCache(string $mode): array
+function buildImageCache(string $mode, array $dirsToScan): array
 {
-    $cacheData = [];
-    $log = [];
-
-    // Bestehenden Cache laden, um nicht betroffene Teile zu erhalten (optional)
-    // Hier entscheiden wir uns für einen sauberen Neubau der angeforderten Teile
-    // und Mergen mit dem Rest, falls wir "Teil-Updates" unterstützen wollen.
-    // Für maximale Konsistenz laden wir alles neu, wenn "all" gewählt ist.
-
     $cacheFile = Path::getCachePath('comic_image_cache.json');
-    if (file_exists($cacheFile)) {
-        $cacheData = json_decode(file_get_contents($cacheFile), true) ?? [];
+    $existingCache = file_exists($cacheFile) ? json_decode(file_get_contents($cacheFile), true) : [];
+    if (!is_array($existingCache)) {
+        $existingCache = [];
     }
 
-    // Zeitstempel für Cache-Busting
-    $cacheData['last_updated'] = time();
+    $log = [];
+    $typesToProcess = $mode === 'all' ? array_keys($dirsToScan) : explode(',', $mode);
+    $totalFound = 0;
 
-    // 1. THUMBNAILS
-    if ($mode === 'thumbnails' || $mode === 'all') {
-        $thumbs = scanDirectory(DIRECTORY_PUBLIC_IMG_COMIC_THUMBNAILS);
-        $cacheData['thumbnails'] = $thumbs;
-        $log[] = "Thumbnails gescannt: " . count($thumbs) . " Dateien.";
-    }
+    foreach ($typesToProcess as $type) {
+        if (!isset($dirsToScan[$type])) {
+            continue;
+        }
 
-    // 2. LOWRES (Standard Comic Seiten)
-    if ($mode === 'lowres' || $mode === 'all' || $mode === 'lowres,hires') {
-        $lowres = scanDirectory(DIRECTORY_PUBLIC_IMG_COMIC_LOWRES);
-        $cacheData['lowres'] = $lowres;
-        $log[] = "LowRes (Comic) gescannt: " . count($lowres) . " Dateien.";
-    }
+        $found = scanDirForCache($dirsToScan[$type]['path'], $dirsToScan[$type]['rel']);
+        $count = count($found);
+        $totalFound += $count;
+        $log[] = "Typ '$type': $count Bilder gefunden.";
 
-    // 3. HIRES
-    if ($mode === 'hires' || $mode === 'all' || $mode === 'lowres,hires') {
-        $hires = scanDirectory(DIRECTORY_PUBLIC_IMG_COMIC_HIRES);
-        $cacheData['hires'] = $hires;
-        $log[] = "HiRes gescannt: " . count($hires) . " Dateien.";
-    }
-
-    // 4. SOCIAL MEDIA
-    if ($mode === 'socialmedia' || $mode === 'all') {
-        $social = scanDirectory(DIRECTORY_PUBLIC_IMG_COMIC_SOCIALMEDIA);
-        $cacheData['socialmedia'] = $social;
-        $log[] = "Social Media Bilder gescannt: " . count($social) . " Dateien.";
-    }
-
-    // Gesamtzahl berechnen
-    $totalCount = 0;
-    foreach ($cacheData as $key => $val) {
-        if (is_array($val)) {
-            $totalCount += count($val);
+        foreach ($found as $id => $fullRelPath) {
+            if (!isset($existingCache[$id])) {
+                $existingCache[$id] = [];
+            }
+            $existingCache[$id][$type] = $fullRelPath;
         }
     }
 
-    // Speichern
-    if (file_put_contents($cacheFile, json_encode($cacheData, JSON_PRETTY_PRINT))) {
+    // Sortierung nach ID absteigend (neueste IDs zuerst)
+    krsort($existingCache);
+
+    if (file_put_contents($cacheFile, json_encode($existingCache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
         return [
             'success' => true,
             'log' => $log,
-            'timestamp' => $cacheData['last_updated'],
-            'total_files' => $totalCount
+            'timestamp' => time(),
+            'total_files' => count($existingCache), // Anzahl der Comic-IDs im Index
         ];
-    } else {
-        return ['success' => false, 'log' => array_merge($log, ["Fehler beim Schreiben der Cache-Datei!"])];
     }
-}
 
-// === LOGIK VIEW ===
-$cacheSettings = loadGeneratorSettings($configPath, $currentUser);
+    return ['success' => false, 'log' => ["Fehler: Cache-Datei konnte nicht geschrieben werden."]];
+}
 
 // === AJAX HANDLER ===
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'build_cache') {
@@ -200,12 +199,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     header('Content-Type: application/json');
 
     $mode = $_POST['mode'] ?? 'all';
-    $result = buildImageCache($mode);
+    $result = buildImageCache($mode, $dirsToScan);
 
     if ($result['success']) {
         $newSettings = [
             'last_run_timestamp' => $result['timestamp'],
-            'total_files' => $result['total_files'] ?? 0
+            'total_files' => $result['total_files'],
         ];
         saveGeneratorSettings($configPath, $currentUser, $newSettings);
         $result['last_run_formatted'] = date('d.m.Y \u\m H:i:s', $result['timestamp']);
@@ -215,6 +214,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
+// Daten für die View laden
+$cacheSettings = loadGeneratorSettings($configPath, $currentUser);
+
 $pageTitle = 'Adminbereich - Cache Builder';
 $pageHeader = 'Bild-Cache aktualisieren';
 require_once Path::getPartialTemplatePath('header.php');
@@ -222,23 +224,22 @@ require_once Path::getPartialTemplatePath('header.php');
 
 <article>
     <div class="generator-container">
-        <!-- HEADER & INFO -->
         <div id="settings-and-actions-container">
             <div id="last-run-container">
                 <?php if ($cacheSettings['last_run_timestamp']) : ?>
                     <p class="status-message status-info">
                         Cache zuletzt aktualisiert am <?php echo date('d.m.Y \u\m H:i:s', $cacheSettings['last_run_timestamp']); ?> Uhr
-                        (<?php echo $cacheSettings['total_files']; ?> Dateien im Index).
+                        (<?php echo $cacheSettings['total_files']; ?> Comic-IDs im Index).
                     </p>
                 <?php else : ?>
                     <p class="status-message status-orange">Noch keine Generierung durchgeführt.</p>
                 <?php endif; ?>
             </div>
-            <h2>Bild-Cache Management</h2>
+            <h2>Bild-Cache Management (ID-zentriert)</h2>
             <p>
-                Dieses Tool scannt die Bildverzeichnisse und erstellt eine Index-Datei (JSON).
-                Dies beschleunigt das Laden der Seite erheblich und ermöglicht das "Cache-Busting" (Browser zwingen, neue Bilder zu laden).
-                <br><strong>Wann ausführen?</strong> Nach jedem Upload neuer Comic-Seiten oder Thumbnails.
+                Scannt Verzeichnisse und erstellt die <code>comic_image_cache.json</code>.
+                Das Format stellt sicher, dass alle Assets (Thumbnails, LowRes, etc.) einer Comic-ID zugeordnet sind.
+                Wird zwingend benötigt um die Bilder anzuzeigen!
             </p>
         </div>
 
@@ -260,7 +261,7 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <!-- LOG CONSOLE -->
         <div id="log-container" class="log-console">
-            <p class="log-info"><span class="log-time">[System]</span> Bereit.</p>
+            <p class="log-info"><span class="log-time">[System]</span> Bereit für Scan.</p>
         </div>
 
         <!-- SUCCESS NOTIFICATION -->
@@ -302,7 +303,7 @@ require_once Path::getPartialTemplatePath('header.php');
             buttons.forEach(b => b.disabled = true);
             successNotification.style.display = 'none';
             logContainer.innerHTML = '';
-            addLogMessage(`Starte Cache-Build (Modus: ${mode})...`, 'info');
+            addLogMessage(`Starte ID-basierten Scan (Modus: ${mode})...`, 'info');
 
             const formData = new FormData();
             formData.append('action', 'build_cache');
@@ -310,70 +311,30 @@ require_once Path::getPartialTemplatePath('header.php');
             formData.append('csrf_token', csrfToken);
 
             try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const responseText = await response.text();
-                let data;
-
-                try {
-                    data = JSON.parse(responseText);
-                } catch (e) {
-                    console.error("Raw Response:", responseText);
-                    throw new Error("Ungültige Server-Antwort.");
-                }
+                const response = await fetch(window.location.href, { method: 'POST', body: formData });
+                const data = await response.json();
 
                 if (data.success) {
                     data.log.forEach(line => addLogMessage(line, 'success'));
-                    addLogMessage('Fertig!', 'success');
+                    addLogMessage(`Fertig! Insgesamt ${data.total_files} Comic-IDs indexiert.`, 'success');
 
-                    // Timestamp Update
                     if (data.last_run_formatted) {
-                        lastRunContainer.innerHTML = `<p class="status-message status-info">Cache zuletzt aktualisiert am ${data.last_run_formatted} Uhr (${data.total_files} Dateien im Index).</p>`;
+                        lastRunContainer.innerHTML = `<p class="status-message status-info">Cache zuletzt aktualisiert am ${data.last_run_formatted} Uhr (${data.total_files} IDs im Index).</p>`;
                     }
-
                     successNotification.style.display = 'block';
-                    successNotification.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
                 } else {
-                    data.log.forEach(line => addLogMessage(line, 'error'));
-                    addLogMessage('Fehler beim Aktualisieren des Caches.', 'error');
+                    addLogMessage('Fehler: ' + data.log.join(' '), 'error');
                 }
-
             } catch (error) {
-                console.error(error);
                 addLogMessage(`Kritischer Fehler: ${error.message}`, 'error');
             } finally {
-                // UI freigeben
                 buttons.forEach(b => b.disabled = false);
             }
         }
 
-        // Button Event Listeners
         buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                runCacheBuild(btn.dataset.mode);
-            });
+            btn.addEventListener('click', () => runCacheBuild(btn.dataset.mode));
         });
-
-        // Autostart Logic (z.B. ?autostart=thumbnails)
-        const urlParams = new URLSearchParams(window.location.search);
-        const autostartMode = urlParams.get('autostart');
-
-        if (autostartMode) {
-            // Validierung, um unerwünschte Aktionen zu verhindern
-            const validModes = ['thumbnails', 'lowres', 'hires', 'socialmedia', 'all', 'lowres,hires'];
-            if (validModes.includes(autostartMode)) {
-                // Kurze Verzögerung für bessere UX (Seite erst laden lassen)
-                setTimeout(() => runCacheBuild(autostartMode), 500);
-            } else {
-                addLogMessage(`Ungültiger Autostart-Modus: ${autostartMode}`, 'warning');
-            }
-        }
     });
 </script>
 

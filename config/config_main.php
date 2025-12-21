@@ -24,6 +24,9 @@ $debugMode = true;
 // Wenn die .htaccess .php setzt, sollte der wert auf "false" stehen,
 // wenn .htaccess deaktiviert ist, sollte der Wert auf "true stehen".
 $phpBoolen = false;
+define('PHP_BOOLEN', false);
+define('PHP_EXTENTION', '');
+// define('PHP_EXTENTION', '.php');
 // true = .php anhängen, false = kein .php
 
 

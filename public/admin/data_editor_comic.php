@@ -34,6 +34,7 @@
  * - fix(Config): Speicherstruktur korrigiert (users -> username -> data_editor_comic).
  * - fix(JS): saveSettings nutzt nun FormData statt JSON, damit PHP $_POST korrekt lesen kann.
  * - fix(UI): Anzeige für "Noch keine Speicherung" hinzugefügt.
+ * - fix(UI/UX): Automatische Bilderkennung basierend auf der Comic-ID und Echtzeit-Vorschau im Editor hinzugefügt.
  */
 
 declare(strict_types=1);
@@ -87,7 +88,7 @@ function getRelativePath(string $from, string $to): string
 function loadGeneratorSettings(string $filePath, string $username, bool $debugMode): array
 {
     $defaults = [
-        'last_run_timestamp' => null
+        'last_run_timestamp' => null,
     ];
 
     if (!file_exists($filePath)) {
@@ -170,13 +171,17 @@ function getComicIdsFromImages(array $dirs, bool $debugMode): array
     $imageIds = [];
     $exts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     foreach ($dirs as $dir) {
-        if (is_dir($dir)) {
-            foreach (scandir($dir) as $file) {
-                $info = pathinfo($file);
-                if (isset($info['filename']) && preg_match('/^\d{8}$/', $info['filename']) && isset($info['extension']) && in_array(strtolower($info['extension']), $exts)) {
-                    $imageIds[$info['filename']] = true;
-                }
+        if (!is_dir($dir)) {
+            continue;
+        }
+
+        foreach (scandir($dir) as $file) {
+            $info = pathinfo($file);
+            if (!isset($info['filename']) || !preg_match('/^\d{8}$/', $info['filename']) || !isset($info['extension']) || !in_array(strtolower($info['extension']), $exts)) {
+                continue;
             }
+
+            $imageIds[$info['filename']] = true;
         }
     }
     return array_keys($imageIds);
@@ -187,9 +192,11 @@ function getComicIdsFromPhpFiles(string $pagesDir, bool $debugMode): array
     $phpIds = [];
     if (is_dir($pagesDir)) {
         foreach (scandir($pagesDir) as $file) {
-            if (pathinfo($file, PATHINFO_EXTENSION) === 'php' && preg_match('/^\d{8}$/', pathinfo($file, PATHINFO_FILENAME))) {
-                $phpIds[pathinfo($file, PATHINFO_FILENAME)] = true;
+            if (pathinfo($file, PATHINFO_EXTENSION) !== 'php' || !preg_match('/^\d{8}$/', pathinfo($file, PATHINFO_FILENAME))) {
+                continue;
             }
+
+            $phpIds[pathinfo($file, PATHINFO_FILENAME)] = true;
         }
     }
     return array_keys($phpIds);
@@ -225,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             }
             $decodedCurrent = loadJsonData($comicVarJsonPath, $debugMode);
-            $currentData = (isset($decodedCurrent['schema_version']) && $decodedCurrent['schema_version'] >= 2) ? ($decodedCurrent['comics'] ?? []) : $decodedCurrent;
+            $currentData = isset($decodedCurrent['schema_version']) && $decodedCurrent['schema_version'] >= 2 ? ($decodedCurrent['comics'] ?? []) : $decodedCurrent;
 
             $newIds = array_keys(array_diff_key($data, $currentData));
             $delIds = array_keys(array_diff_key($currentData, $data));
@@ -234,24 +241,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             foreach ($newIds as $id) {
                 $f = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
-                if (!file_exists($f)) {
-                    $rel = getRelativePath(DIRECTORY_PUBLIC_COMIC, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_comic_page.php');
-                    if (file_put_contents($f, "<?php require_once __DIR__ . '/" . $rel . "'; ?>") !== false) {
-                        $created++;
-                    }
+                if (file_exists($f)) {
+                    continue;
                 }
+
+                $rel = getRelativePath(DIRECTORY_PUBLIC_COMIC, DIRECTORY_PRIVATE_RENDERER . DIRECTORY_SEPARATOR . 'renderer_comic_page.php');
+                if (file_put_contents($f, "<?php require_once __DIR__ . '/" . $rel . "'; ?>") === false) {
+                    continue;
+                }
+
+                $created++;
             }
             foreach ($delIds as $id) {
                 $f = DIRECTORY_PUBLIC_COMIC . DIRECTORY_SEPARATOR . $id . '.php';
-                if (file_exists($f) && unlink($f)) {
-                    $deleted++;
+                if (!file_exists($f) || !unlink($f)) {
+                    continue;
                 }
+
+                $deleted++;
             }
 
             if (saveComicData($comicVarJsonPath, $data, $debugMode)) {
                 $response = [
                     'success' => true,
-                    'message' => "Comic-Daten Gespeichert! $created PHP-Datei(en) erstellt, $deleted PHP-Datei(en) gelöscht."
+                    'message' => "Comic-Daten Gespeichert! $created PHP-Datei(en) erstellt, $deleted PHP-Datei(en) gelöscht.",
                 ];
             } else {
                 $response['message'] = 'Fehler beim Speichern.';
@@ -296,7 +309,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // === VIEW DATEN LADEN ===
 $comicEditorSettings = loadGeneratorSettings($configPath, $currentUser, $debugMode);
 $decodedData = loadJsonData(Path::getDataPath('comic_var.json'), $debugMode);
-$jsonData = (isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2) ? ($decodedData['comics'] ?? []) : $decodedData;
+$jsonData = isset($decodedData['schema_version']) && $decodedData['schema_version'] >= 2 ? ($decodedData['comics'] ?? []) : $decodedData;
 $charaktereData = loadCharacterDataWithSchema(Path::getDataPath('charaktere.json'));
 $imageDirs = [DIRECTORY_PUBLIC_IMG_COMIC_LOWRES, DIRECTORY_PUBLIC_IMG_COMIC_HIRES];
 $imageIds = getComicIdsFromImages($imageDirs, $debugMode);
@@ -314,7 +327,7 @@ foreach ($allIds as $id) {
         'datum' => $id,
         'url_originalbild' => '',
         'url_originalsketch' => '',
-        'charaktere' => []
+        'charaktere' => [],
     ];
     $fullComicData[$id] = array_merge($defaults, $jsonData[$id] ?? []);
     $sources = [];
@@ -349,102 +362,102 @@ HTML;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-    <div class="content-section">
-        <div id="settings-and-actions-container">
-            <div id="last-run-container">
-                <?php if (!empty($comicEditorSettings['last_run_timestamp'])) : ?>
-                    <p class="status-message status-info">Letzte Speicherung am
-                        <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
-                    </p>
-                <?php else : ?>
-                    <p class="status-message status-orange">Noch keine Speicherung erfasst.</p>
-                <?php endif; ?>
-            </div>
-            <h2>Comic Daten Editor</h2>
-            <p>Verwalte hier die Metadaten für jede Comic-Seite. Fehlende Einträge für existierende Bilder werden
-                automatisch hinzugefügt.</p>
+<div class="content-section">
+    <div id="settings-and-actions-container">
+        <div id="last-run-container">
+            <?php if (!empty($comicEditorSettings['last_run_timestamp'])) : ?>
+                <p class="status-message status-info">Letzte Speicherung am
+                    <?php echo date('d.m.Y \u\m H:i:s', $comicEditorSettings['last_run_timestamp']); ?> Uhr.
+                </p>
+            <?php else : ?>
+                <p class="status-message status-orange">Noch keine Speicherung erfasst.</p>
+            <?php endif; ?>
         </div>
-
-        <div class="filter-form">
-            <fieldset>
-                <legend>Filter</legend>
-                <div class="filter-controls center-filter">
-                    <div class="search-wrapper">
-                        <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
-                        <!-- FIX: Klasse .hidden-by-default statt inline style -->
-                        <button id="clear-search-btn" type="button" title="Suche leeren" class="hidden-by-default">&times;</button>
-                    </div>
-                </div>
-            </fieldset>
-        </div>
-
-        <!-- FIX: Inline Styles entfernt (wird durch SCSS geregelt) -->
-        <div class="pagination"></div>
-
-        <!-- FIX: Paginierung Info mit neuer Klasse -->
-        <div class="marker-legend legend-pagination-info">
-            <small>Zeigt <?php echo ENTRIES_PER_PAGE_COMIC; ?> Einträge pro Seite.</small>
-        </div>
-
-        <div class="table-controls actions-bar">
-            <div class="top-actions">
-                <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
-                <button id="save-all-btn-top" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
-            </div>
-
-            <div class="marker-legend-group">
-                <div class="marker-legend">
-                    <strong>Quellen:</strong>
-                    <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
-                    <span class="source-marker source-image" title="Mindestens eine Bilddatei existiert lokal">BILD</span>
-                    <span class="source-marker source-php" title="Eine PHP-Datei existiert">PHP</span>
-                    <span class="source-marker source-url" title="Ein Originalbild ist via URL verknüpft">URL</span>
-                </div>
-                <div class="marker-legend">
-                    <strong>Status:</strong>
-                    <span class="status-icon status-json present" title="JSON vollständig">J</span>
-                    <span class="status-icon status-lowres present" title="Low-Res Bild">L</span>
-                    <span class="status-icon status-hires present" title="High-Res Bild">H</span>
-                    <span class="status-icon status-php present" title="PHP-Datei">P</span>
-                    <span class="status-icon status-socialmedia present" title="Social Media">S</span>
-                    <span class="status-icon status-thumbnails present" title="Thumbnail">T</span>
-                    <span class="status-icon status-url present" title="URL">U</span>
-                    <span class="status-icon status-charaktere present" title="Charaktere">C</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="message-box-top" class="hidden-by-default"></div>
-
-        <div class="sitemap-table-container">
-            <table class="admin-table comic-editor-table" id="comic-table">
-                <thead>
-                    <tr>
-                        <th>ID & Quellen</th>
-                        <th>Vorschau</th>
-                        <th>Name & Kapitel</th>
-                        <th>Transkript</th>
-                        <th>Status</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="pagination"></div>
-
-        <div id="save-confirmation-box" class="hidden-by-default"></div>
-
-        <div id="fixed-buttons-container">
-            <button id="add-row-btn" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
-            <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
-        </div>
-
-        <br>
-
-        <div id="message-box" class="hidden-by-default"></div>
+        <h2>Comic Daten Editor</h2>
+        <p>Verwalte hier die Metadaten für jede Comic-Seite. Fehlende Einträge für existierende Bilder werden
+            automatisch hinzugefügt.</p>
     </div>
+
+    <div class="filter-form">
+        <fieldset>
+            <legend>Filter</legend>
+            <div class="filter-controls center-filter">
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Nach ID oder Name suchen...">
+                    <!-- FIX: Klasse .hidden-by-default statt inline style -->
+                    <button id="clear-search-btn" type="button" title="Suche leeren" class="hidden-by-default">&times;</button>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+    <!-- FIX: Inline Styles entfernt (wird durch SCSS geregelt) -->
+    <div class="pagination"></div>
+
+    <!-- FIX: Paginierung Info mit neuer Klasse -->
+    <div class="marker-legend legend-pagination-info">
+        <small>Zeigt <?php echo ENTRIES_PER_PAGE_COMIC; ?> Einträge pro Seite.</small>
+    </div>
+
+    <div class="table-controls actions-bar">
+        <div class="top-actions">
+            <button id="add-row-btn-top" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
+            <button id="save-all-btn-top" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
+        </div>
+
+        <div class="marker-legend-group">
+            <div class="marker-legend">
+                <strong>Quellen:</strong>
+                <span class="source-marker source-json" title="Eintrag existiert in comic_var.json">JSON</span>
+                <span class="source-marker source-image" title="Mindestens eine Bilddatei existiert lokal">BILD</span>
+                <span class="source-marker source-php" title="Eine PHP-Datei existiert">PHP</span>
+                <span class="source-marker source-url" title="Ein Originalbild ist via URL verknüpft">URL</span>
+            </div>
+            <div class="marker-legend">
+                <strong>Status:</strong>
+                <span class="status-icon status-json present" title="JSON vollständig">J</span>
+                <span class="status-icon status-lowres present" title="Low-Res Bild">L</span>
+                <span class="status-icon status-hires present" title="High-Res Bild">H</span>
+                <span class="status-icon status-php present" title="PHP-Datei">P</span>
+                <span class="status-icon status-socialmedia present" title="Social Media">S</span>
+                <span class="status-icon status-thumbnails present" title="Thumbnail">T</span>
+                <span class="status-icon status-url present" title="URL">U</span>
+                <span class="status-icon status-charaktere present" title="Charaktere">C</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-box-top" class="hidden-by-default"></div>
+
+    <div class="sitemap-table-container">
+        <table class="admin-table comic-editor-table" id="comic-table">
+            <thead>
+                <tr>
+                    <th>ID & Quellen</th>
+                    <th>Vorschau</th>
+                    <th>Name & Kapitel</th>
+                    <th>Transkript</th>
+                    <th>Status</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="pagination"></div>
+
+    <div id="save-confirmation-box" class="hidden-by-default"></div>
+
+    <div id="fixed-buttons-container">
+        <button id="add-row-btn" class="button"><i class="fas fa-plus-circle"></i> Neuer Eintrag</button>
+        <button id="save-all-btn" class="button"><i class="fas fa-save"></i> Änderungen speichern</button>
+    </div>
+
+    <br>
+
+    <div id="message-box" class="hidden-by-default"></div>
+</div>
 
 <div id="edit-modal" class="modal hidden-by-default">
     <div class="modal-content modal-advanced-layout">
@@ -505,7 +518,8 @@ require_once Path::getPartialTemplatePath('header.php');
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = '<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>';
-        // Daten
+
+        // Daten aus PHP
         let comicData = <?php echo json_encode($fullComicData, JSON_UNESCAPED_SLASHES); ?>;
         let allComicIds = Object.keys(comicData);
         let filteredComicIds = [...allComicIds];
@@ -521,7 +535,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const loadingIconUrl = '<?php echo $loadingIconUrl; ?>';
         const charProfileUrlBase = '<?php echo $charProfileUrlBase; ?>';
 
-
+        // DOM Elemente
         const tableBody = document.querySelector('#comic-table tbody');
 
         const saveAllBtn = document.getElementById('save-all-btn'); // Unten
@@ -537,6 +551,7 @@ require_once Path::getPartialTemplatePath('header.php');
         const searchInput = document.getElementById('search-input');
         const clearSearchBtn = document.getElementById('clear-search-btn');
 
+        // Modal Elemente
         const editModal = document.getElementById('edit-modal');
         const modalCloseBtn = editModal.querySelector('.close-button');
         const modalSaveBtn = document.getElementById('modal-save-btn');
@@ -546,6 +561,12 @@ require_once Path::getPartialTemplatePath('header.php');
         const modalPreviewEn = document.getElementById('modal-preview-en');
         const modalPreviewSketch = document.getElementById('modal-preview-sketch');
         const modalCharaktereSection = document.getElementById('modal-charaktere-section');
+
+        // Modal Input Felder
+        const modalIdInput = document.getElementById('modal-comic-id');
+        const modalUrlInput = document.getElementById('modal-url');
+        const modalUrlSketchInput = document.getElementById('modal-url-sketch');
+
         let activeEditId = null;
         let debounceTimer;
 
@@ -557,6 +578,7 @@ require_once Path::getPartialTemplatePath('header.php');
             return;
         }
 
+        // Initialisierung Summernote
         $('#modal-transcript').summernote({
             placeholder: "Transkript hier eingeben...",
             tabsize: 2,
@@ -595,9 +617,7 @@ require_once Path::getPartialTemplatePath('header.php');
                 if (TRUNCATE_TEXT) {
                     // Falls Kürzung aktiv: Nur Text extrahieren und abschneiden
                     let text = tempDiv.textContent || tempDiv.innerText || '';
-                    if (text.length > 100) {
-                        text = text.substring(0, 100) + '...';
-                    }
+                    if (text.length > 100) text = text.substring(0, 100) + '...';
                     displayContent = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 } else {
                     // Falls Volltext: Links sicher machen (target blank)
@@ -626,43 +646,48 @@ require_once Path::getPartialTemplatePath('header.php');
                 const hasThumb = cachedImages[id]?.thumbnails;
                 const hasSocial = cachedImages[id]?.socialmedia;
                 const hasCharacters = chapter.charaktere && chapter.charaktere.length > 0;
-                const thumbnailPath = (cachedImages[id] && cachedImages[id].thumbnails) ? `${baseUrl}/${cachedImages[id].thumbnails}` : (cachedImages['placeholder'] && cachedImages['placeholder'].lowres ? `${baseUrl}/${cachedImages['placeholder'].lowres}` : placeholderUrl);
+
+                const thumbnailPath = (cachedImages[id] && cachedImages[id].thumbnails) ?
+                    `${baseUrl}/${cachedImages[id].thumbnails}` :
+                    (cachedImages['placeholder'] && cachedImages['placeholder'].lowres ?
+                        `${baseUrl}/${cachedImages['placeholder'].lowres}` :
+                        placeholderUrl);
 
                 row.innerHTML = `
-                <td>
-                    ${id}
-                    <div class="source-markers"><br>
-                        ${(chapter.sources || []).map(s => `<span class="source-marker source-${s.toLowerCase()}" title="Quelle: ${s}">${s.toUpperCase()}</span>`).join('')}
-                    </div>
-                </td>
-                <td>
-                    <img src="${thumbnailPath}" class="comic-thumbnail" alt="Vorschau" onerror="this.src='${placeholderUrl}'; this.onerror=null;">
-                </td>
-                <td class="${isNameMissing ? 'missing-info' : ''}">
-                    <span class="comic-type-display">${chapter.type || ''}</span><br>
-                    ${(isChapterMissing || chapter.chapter === null) ? '' : `<strong>Kap. ${chapter.chapter}:</strong><br>`}
-                    ${chapter.name || '<em>Kein Name</em>'}
-                </td>
-                <td class="${isTranscriptMissing ? 'missing-info' : ''}">
-                    <div class="description-preview">${displayContent}</div>
-                </td>
-                <td>
-                    <div class="status-icons">
-                        <span class="status-icon ${hasJson && !isNameMissing && !isTranscriptMissing && !isChapterMissing && !isUrlMissing ? 'present' : 'missing'}" title="JSON-Daten vollständig">J</span>
-                        <span class="status-icon ${hasLowres ? 'present' : 'missing'}" title="Low-Res Bild">L</span>
-                        <span class="status-icon ${hasHires ? 'present' : 'missing'}" title="High-Res Bild">H</span>
-                        <span class="status-icon ${hasPhp ? 'present' : 'missing'}" title="PHP-Datei">P</span>
-                        <span class="status-icon ${hasSocial ? 'present' : 'missing'}" title="Social Media Bild">S</span>
-                        <span class="status-icon ${hasThumb ? 'present' : 'missing'}" title="Thumbnail">T</span>
-                        <span class="status-icon ${hasUrl ? 'present' : 'missing'}" title="URL zum Originalbild">U</span>
-                        <span class="status-icon ${hasCharacters ? 'present' : 'missing'}" title="Charaktere zugewiesen">C</span>
-                    </div>
-                </td>
-                <td class="actions-cell">
-                    <button class="button edit-row-btn"><i class="fas fa-edit"></i></button>
-                    <button class="button delete-row-btn"><i class="fas fa-trash-alt"></i></button>
-                </td>
-            `;
+                    <td>
+                        ${id}
+                        <div class="source-markers"><br>
+                            ${(chapter.sources || []).map(s => `<span class="source-marker source-${s.toLowerCase()}" title="Quelle: ${s}">${s.toUpperCase()}</span>`).join('')}
+                        </div>
+                    </td>
+                    <td>
+                        <img src="${thumbnailPath}" class="comic-thumbnail" alt="Vorschau" onerror="this.src='${placeholderUrl}'; this.onerror=null;">
+                    </td>
+                    <td class="${isNameMissing ? 'missing-info' : ''}">
+                        <span class="comic-type-display">${chapter.type || ''}</span><br>
+                        ${(isChapterMissing || chapter.chapter === null) ? '' : `<strong>Kap. ${chapter.chapter}:</strong><br>`}
+                        ${chapter.name || '<em>Kein Name</em>'}
+                    </td>
+                    <td class="${isTranscriptMissing ? 'missing-info' : ''}">
+                        <div class="description-preview">${displayContent}</div>
+                    </td>
+                    <td>
+                        <div class="status-icons">
+                            <span class="status-icon ${hasJson && !isNameMissing && !isTranscriptMissing && !isChapterMissing && !isUrlMissing ? 'present' : 'missing'}" title="JSON-Daten vollständig">J</span>
+                            <span class="status-icon ${hasLowres ? 'present' : 'missing'}" title="Low-Res Bild">L</span>
+                            <span class="status-icon ${hasHires ? 'present' : 'missing'}" title="High-Res Bild">H</span>
+                            <span class="status-icon ${hasPhp ? 'present' : 'missing'}" title="PHP-Datei">P</span>
+                            <span class="status-icon ${hasSocial ? 'present' : 'missing'}" title="Social Media Bild">S</span>
+                            <span class="status-icon ${hasThumb ? 'present' : 'missing'}" title="Thumbnail">T</span>
+                            <span class="status-icon ${hasUrl ? 'present' : 'missing'}" title="URL zum Originalbild">U</span>
+                            <span class="status-icon ${hasCharacters ? 'present' : 'missing'}" title="Charaktere zugewiesen">C</span>
+                        </div>
+                    </td>
+                    <td class="actions-cell">
+                        <button class="button edit-row-btn"><i class="fas fa-edit"></i></button>
+                        <button class="button delete-row-btn"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
                 tableBody.appendChild(row);
             });
             renderPagination();
@@ -747,9 +772,9 @@ require_once Path::getPartialTemplatePath('header.php');
             });
         };
 
+        // --- Event Listeners für Filter ---
         searchInput.addEventListener('input', () => {
             const searchTerm = searchInput.value.toLowerCase().trim();
-            // FIX: Inline style durch Klassen-Toggle ersetzen
             if (searchTerm) {
                 clearSearchBtn.classList.remove('hidden-by-default');
                 clearSearchBtn.style.display = 'inline-block'; // Temporärer override für inline-block, da hidden-by-default display:none hat
@@ -775,117 +800,87 @@ require_once Path::getPartialTemplatePath('header.php');
             searchInput.dispatchEvent(new Event('input'));
         });
 
-        document.getElementById('modal-url').addEventListener('input', updateImagePreviewsWithDebounce);
-        document.getElementById('modal-url-sketch').addEventListener('input', updateImagePreviewsWithDebounce);
-
-        modalSaveBtn.addEventListener('click', () => {
-            let idToUpdate;
-            let isNewEntry = false;
-            if (activeEditId && activeEditId !== 'new_entry') {
-                idToUpdate = activeEditId;
-            } else {
-                isNewEntry = true;
-                const newId = document.getElementById('modal-comic-id').value;
-                if (!/^\d{8}$/.test(newId)) {
-                    alert('Bitte geben Sie eine gültige ID im Format JJJJMMTT ein.');
-                    return;
-                }
-                if (comicData[newId]) {
-                    alert('Diese ID existiert bereits.');
-                    return;
-                }
-                idToUpdate = newId;
-                comicData[idToUpdate] = {
-                    ...comicData['new_entry']
-                };
-                delete comicData['new_entry'];
-                if (!allComicIds.includes(idToUpdate)) {
-                    allComicIds.push(idToUpdate);
-                    const searchTerm = searchInput.value.toLowerCase().trim();
-                    if (!searchTerm || idToUpdate.includes(searchTerm)) filteredComicIds.push(idToUpdate);
-                }
-            }
-            comicData[idToUpdate].type = document.getElementById('modal-type').value;
-            comicData[idToUpdate].name = document.getElementById('modal-name').value;
-            comicData[idToUpdate].transcript = $('#modal-transcript').summernote('code');
-            comicData[idToUpdate].chapter = document.getElementById('modal-chapter').value;
-            comicData[idToUpdate].url_originalbild = document.getElementById('modal-url').value;
-            comicData[idToUpdate].url_originalsketch = document.getElementById('modal-url-sketch').value;
-            comicData[idToUpdate].datum = idToUpdate;
-            if (isNewEntry) comicData[idToUpdate].sources = ['json'];
-            renderTable();
-            editModal.style.display = 'none';
-            const updatedRow = tableBody.querySelector(`tr[data-id="${idToUpdate}"]`);
-            if (updatedRow) {
-                updatedRow.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-                updatedRow.classList.add('row-highlight');
-                setTimeout(() => {
-                    updatedRow.classList.remove('row-highlight');
-                }, 8000);
-            }
-            activeEditId = null;
-            showMessage('Änderung zwischengespeichert. Klicken Sie auf "Änderungen speichern", um sie permanent zu machen.', 'orange', 10000);
-        });
-
-        const cancelAction = () => {
-            if (activeEditId === 'new_entry') delete comicData['new_entry'];
-            editModal.style.display = 'none';
-            activeEditId = null;
-        };
-        modalCancelBtn.addEventListener('click', cancelAction);
-        modalCloseBtn.addEventListener('click', cancelAction);
+        // --- Bild-Vorschau Logik (KORRIGIERT & ERWEITERT) ---
+        modalIdInput.addEventListener('input', updateImagePreviewsWithDebounce);
+        modalUrlInput.addEventListener('input', updateImagePreviewsWithDebounce);
+        modalUrlSketchInput.addEventListener('input', updateImagePreviewsWithDebounce);
 
         function updateImagePreviewsWithDebounce() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(updateImagePreviews, 500);
         }
+
         async function updateImagePreviews() {
-            const originalFilename = document.getElementById('modal-url').value;
-            const sketchFilename = document.getElementById('modal-url-sketch').value;
+            // Aktuelle Werte aus den Inputs
+            const currentInputId = modalIdInput.value.trim();
+            const originalFilename = modalUrlInput.value.trim();
+            const sketchFilename = modalUrlSketchInput.value.trim();
+
             const deImg = modalPreviewDe.querySelector('img');
             const enImg = modalPreviewEn.querySelector('img');
             const sketchImg = modalPreviewSketch.querySelector('img');
-            const placeholderSrc = (cachedImages['placeholder'] && cachedImages['placeholder'].lowres) ? `${baseUrl}/${cachedImages['placeholder'].lowres}` : placeholderUrl;
+            const placeholderSrc = (cachedImages['placeholder'] && cachedImages['placeholder'].lowres) ?
+                `${baseUrl}/${cachedImages['placeholder'].lowres}` :
+                placeholderUrl;
 
-            if (activeEditId === 'new_entry') {
+            // 1. Lokale deutsche Low-Res Vorschau
+            // Wir nutzen die ID aus dem Input (falls gültig) oder die aktive Bearbeitungs-ID
+            const lookupId = (/^\d{8}$/.test(currentInputId)) ? currentInputId : activeEditId;
+
+            if (lookupId && lookupId !== 'new_entry' && cachedImages[lookupId]?.lowres) {
+                deImg.src = `${baseUrl}/${cachedImages[lookupId].lowres}`;
+            } else {
                 deImg.src = placeholderSrc;
-                enImg.src = placeholderSrc;
-                sketchImg.src = placeholderSrc;
-                return;
             }
 
-            deImg.src = (cachedImages[activeEditId] && cachedImages[activeEditId].lowres) ? `${baseUrl}/${cachedImages[activeEditId].lowres}` : placeholderSrc;
+            // 2. Originalbild & Skizze Suche
+            // Falls Felder leer sind, suchen wir proaktiv nach der ID
+            const searchNameEn = originalFilename || currentInputId;
+            const searchNameSketch = sketchFilename || currentInputId;
 
-            findAndCacheUrl(activeEditId, originalFilename, 'https://cdn.twokinds.keenspot.com/comics/', 'url_originalbild', enImg, placeholderSrc);
-            findAndCacheUrl(activeEditId, sketchFilename, 'https://twokindscomic.com/images/', 'url_originalsketch', sketchImg, placeholderSrc);
+            // Suche nur starten, wenn eine 8-stellige ID vorliegt
+            if (/^\d{8}$/.test(currentInputId)) {
+                findAndCacheUrl(lookupId, searchNameEn, 'https://cdn.twokinds.keenspot.com/comics/', 'url_originalbild', enImg, placeholderSrc, (foundName) => {
+                    // Auto-Fill: Wenn das Feld leer war, befüllen wir es mit dem gefundenen Namen
+                    if (!modalUrlInput.value.trim()) modalUrlInput.value = foundName;
+                });
+
+                findAndCacheUrl(lookupId, searchNameSketch, 'https://twokindscomic.com/images/', 'url_originalsketch', sketchImg, placeholderSrc, (foundName) => {
+                    if (!modalUrlSketchInput.value.trim()) modalUrlSketchInput.value = foundName;
+                });
+            } else {
+                enImg.src = placeholderSrc;
+                sketchImg.src = placeholderSrc;
+            }
         }
 
-        function findAndCacheUrl(comicId, filename, baseUrl, cacheKey, imgElement, placeholderSrc) {
-            if (!filename) {
+        function findAndCacheUrl(comicId, filename, baseUrlSearch, cacheKey, imgElement, placeholderSrc, successCallback = null) {
+            if (!filename || comicId === 'new_entry') {
                 imgElement.src = placeholderSrc;
                 return;
             }
+
             let finalFilename = filename;
             if (cacheKey === 'url_originalsketch') {
                 finalFilename += '_sketch';
             }
+
             imgElement.src = loadingIconUrl;
+
+            // Cache Prüfung
             if (cachedImages[comicId] && cachedImages[comicId][cacheKey]) {
                 const cachedUrl = new URL(cachedImages[comicId][cacheKey]);
                 const baseCachedUrl = `${cachedUrl.origin}${cachedUrl.pathname}`;
-                const expectedBaseUrl = baseUrl + finalFilename;
-                if (baseCachedUrl.includes(expectedBaseUrl)) {
+                if (baseCachedUrl.includes(baseUrlSearch + finalFilename)) {
                     imgElement.src = cachedImages[comicId][cacheKey];
                     imgElement.onerror = () => {
                         delete cachedImages[comicId][cacheKey];
-                        findAndCacheUrl(comicId, filename, baseUrl, cacheKey, imgElement, placeholderSrc);
+                        findAndCacheUrl(comicId, filename, baseUrlSearch, cacheKey, imgElement, placeholderSrc, successCallback);
                     };
                     return;
                 }
             }
+
             const imageExtensions = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
             let currentExtIndex = 0;
 
@@ -895,21 +890,24 @@ require_once Path::getPartialTemplatePath('header.php');
                     imgElement.onerror = null;
                     return;
                 }
-                const testUrl = baseUrl + finalFilename + '.' + imageExtensions[currentExtIndex];
+                const testUrl = baseUrlSearch + finalFilename + '.' + imageExtensions[currentExtIndex];
                 imgElement.src = testUrl;
                 currentExtIndex++;
             }
+
             imgElement.onload = async () => {
+                // Erfolg: Falls Callback gesetzt (für Auto-Fill), Namen zurückgeben
+                if (successCallback) successCallback(filename);
+
                 const foundUrl = new URL(imgElement.src);
                 const baseUrlWithoutQuery = `${foundUrl.origin}${foundUrl.pathname}`;
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const cacheBuster = `?c=${year}${month}${day}`;
+                const cacheBuster = `?c=${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}`;
                 const urlWithBuster = baseUrlWithoutQuery + cacheBuster;
+
                 if (!cachedImages[comicId]) cachedImages[comicId] = {};
                 cachedImages[comicId][cacheKey] = urlWithBuster;
+
+                // Cache auf Server aktualisieren
                 try {
                     const formData = new FormData();
                     formData.append('action', 'update_original_url_cache');
@@ -921,17 +919,20 @@ require_once Path::getPartialTemplatePath('header.php');
                         method: 'POST',
                         body: formData
                     });
-                } catch (error) {
-                    console.error(`Fehler beim Cachen der URL für ${cacheKey}:`, error);
+                } catch (e) {
+                    console.error("Cache-Update Fehler:", e);
                 }
             };
+
             imgElement.onerror = tryNextExtension;
             tryNextExtension();
         }
 
+        // --- Modal & Charakter-Logik ---
         function setImageView(view) {
             modalImageControls.querySelectorAll('.button-toggle').forEach(btn => btn.classList.remove('active'));
-            modalImageControls.querySelector(`[data-view="${view}"]`).classList.add('active');
+            const activeBtn = modalImageControls.querySelector(`[data-view="${view}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
 
             modalPreviewDe.style.display = (view === 'de' || view === 'both') ? 'flex' : 'none';
             modalPreviewEn.style.display = (view === 'en' || view === 'both') ? 'flex' : 'none';
@@ -961,10 +962,8 @@ require_once Path::getPartialTemplatePath('header.php');
                     item.dataset.charakterId = charId;
 
                     const img = document.createElement('img');
-                    const imageUrl = charInfo.pic_url;
-
-                    if (imageUrl) {
-                        img.src = `${charProfileUrlBase}/${imageUrl}`; // KORRIGIERT
+                    if (charInfo.pic_url) {
+                        img.src = `${charProfileUrlBase}/${charInfo.pic_url}`;
                         img.addEventListener('error', function() {
                             this.onerror = null;
                             this.src = placeholderUrlMissing;
@@ -976,9 +975,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     }
 
                     img.alt = charInfo.name;
-                    if (selectedCharIds.includes(charId)) {
-                        item.classList.add('active');
-                    }
+                    if (selectedCharIds.includes(charId)) item.classList.add('active');
 
                     const nameSpan = document.createElement('span');
                     nameSpan.textContent = charInfo.name;
@@ -987,12 +984,10 @@ require_once Path::getPartialTemplatePath('header.php');
                     item.appendChild(nameSpan);
                     grid.appendChild(item);
                 });
-
                 kategorieDiv.appendChild(grid);
                 modalCharaktereSection.appendChild(kategorieDiv);
             });
         }
-
 
         modalCharaktereSection.addEventListener('click', (e) => {
             const item = e.target.closest('.charakter-item');
@@ -1005,30 +1000,19 @@ require_once Path::getPartialTemplatePath('header.php');
             const allItemsForId = modalCharaktereSection.querySelectorAll(`.charakter-item[data-charakter-id="${charId}"]`);
             allItemsForId.forEach(el => el.classList.toggle('active', isActiveNow));
 
-            if (!comicData[activeEditId].charaktere) {
-                comicData[activeEditId].charaktere = [];
-            }
-
+            if (!comicData[activeEditId].charaktere) comicData[activeEditId].charaktere = [];
             const charakterArray = comicData[activeEditId].charaktere;
-            const index = charakterArray.indexOf(charId);
 
             if (isActiveNow) {
-                if (index === -1) {
-                    charakterArray.push(charId);
-                }
+                if (!charakterArray.includes(charId)) charakterArray.push(charId);
             } else {
-                if (index > -1) {
-                    // Remove all occurrences just in case of data duplication
-                    comicData[activeEditId].charaktere = charakterArray.filter(id => id !== charId);
-                }
+                // Remove all occurrences just in case of data duplication
+                comicData[activeEditId].charaktere = charakterArray.filter(id => id !== charId);
             }
         });
 
-
         modalImageControls.addEventListener('click', (e) => {
-            if (e.target.matches('.button-toggle')) {
-                setImageView(e.target.dataset.view);
-            }
+            if (e.target.matches('.button-toggle')) setImageView(e.target.dataset.view);
         });
 
         // Logik für "Speichern" in eine eigene Funktion ausgelagert
@@ -1043,10 +1027,10 @@ require_once Path::getPartialTemplatePath('header.php');
                     method: 'POST',
                     body: formData
                 });
-
                 const responseText = await response.text();
                 try {
                     const data = JSON.parse(responseText);
+
                     if (response.ok && data.success) {
                         showMessage(data.message, 'green');
                         await saveSettings();
@@ -1062,7 +1046,6 @@ require_once Path::getPartialTemplatePath('header.php');
             }
         };
 
-        // Logik für "Neuer Eintrag" in eine eigene Funktion ausgelagert
         const handleAddRow = () => {
             activeEditId = 'new_entry';
             comicData['new_entry'] = {
@@ -1077,30 +1060,78 @@ require_once Path::getPartialTemplatePath('header.php');
                 sources: []
             };
 
-            document.getElementById('modal-comic-id').value = '';
-            document.getElementById('modal-comic-id').disabled = false;
+            modalIdInput.value = '';
+            modalIdInput.disabled = false;
             document.getElementById('modal-type').value = 'Comicseite';
             document.getElementById('modal-name').value = '';
             $('#modal-transcript').summernote('code', '');
             document.getElementById('modal-chapter').value = '';
-            document.getElementById('modal-url').value = '';
-            document.getElementById('modal-url-sketch').value = '';
+            modalUrlInput.value = '';
+            modalUrlSketchInput.value = '';
             document.getElementById('modal-title-header').textContent = 'Neuen Eintrag erstellen';
 
-            document.getElementById('modal-image-preview-section').style.display = 'block';
             updateImagePreviews();
             renderCharakterSelection('new_entry');
             setImageView('de');
-
-            // Modal Anzeige auf Flex setzen für korrekte Zentrierung und Layout
             editModal.style.display = 'flex';
         };
 
-        // Listener für BEIDE "Speichern"-Buttons
+        modalSaveBtn.addEventListener('click', () => {
+            let idToUpdate;
+            let isNewEntry = false;
+            if (activeEditId && activeEditId !== 'new_entry') {
+                idToUpdate = activeEditId;
+            } else {
+                isNewEntry = true;
+                const newId = modalIdInput.value.trim();
+                if (!/^\d{8}$/.test(newId)) {
+                    alert('Bitte geben Sie eine gültige ID im Format JJJJMMTT ein.');
+                    return;
+                }
+                if (comicData[newId]) {
+                    alert('Diese ID existiert bereits.');
+                    return;
+                }
+                idToUpdate = newId;
+                comicData[idToUpdate] = {
+                    ...comicData['new_entry']
+                };
+                delete comicData['new_entry'];
+                if (!allComicIds.includes(idToUpdate)) {
+                    allComicIds.push(idToUpdate);
+                    const searchTerm = searchInput.value.toLowerCase().trim();
+                    if (!searchTerm || idToUpdate.includes(searchTerm)) filteredComicIds.push(idToUpdate);
+                }
+            }
+
+            comicData[idToUpdate].type = document.getElementById('modal-type').value;
+            comicData[idToUpdate].name = document.getElementById('modal-name').value;
+            comicData[idToUpdate].transcript = $('#modal-transcript').summernote('code');
+            comicData[idToUpdate].chapter = document.getElementById('modal-chapter').value;
+            comicData[idToUpdate].url_originalbild = modalUrlInput.value;
+            comicData[idToUpdate].url_originalsketch = modalUrlSketchInput.value;
+            comicData[idToUpdate].datum = idToUpdate;
+
+            if (isNewEntry) comicData[idToUpdate].sources = ['json'];
+
+            renderTable();
+            editModal.style.display = 'none';
+            const updatedRow = tableBody.querySelector(`tr[data-id="${idToUpdate}"]`);
+            if (updatedRow) {
+                updatedRow.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                updatedRow.classList.add('row-highlight');
+                setTimeout(() => updatedRow.classList.remove('row-highlight'), 8000);
+            }
+            activeEditId = null;
+            showMessage('Änderung zwischengespeichert. Klicken Sie auf "Änderungen speichern".', 'orange', 10000);
+        });
+
+        // --- Event Delegation & Button Listeners ---
         saveAllBtn.addEventListener('click', handleSaveAll);
         saveAllBtnTop.addEventListener('click', handleSaveAll);
-
-        // Listener für BEIDE "Neuer Eintrag"-Buttons
         addRowBtn.addEventListener('click', handleAddRow);
         addRowBtnTop.addEventListener('click', handleAddRow);
 
@@ -1110,17 +1141,16 @@ require_once Path::getPartialTemplatePath('header.php');
                 const row = editBtn.closest('tr');
                 activeEditId = row.dataset.id;
                 const chapter = comicData[activeEditId];
-                document.getElementById('modal-comic-id').value = activeEditId;
-                document.getElementById('modal-comic-id').disabled = true;
+                modalIdInput.value = activeEditId;
+                modalIdInput.disabled = true;
                 document.getElementById('modal-type').value = chapter.type || 'Comicseite';
                 document.getElementById('modal-name').value = chapter.name || '';
                 $('#modal-transcript').summernote('code', chapter.transcript || '');
                 document.getElementById('modal-chapter').value = chapter.chapter || '';
-                document.getElementById('modal-url').value = chapter.url_originalbild || '';
-                document.getElementById('modal-url-sketch').value = chapter.url_originalsketch || '';
+                modalUrlInput.value = chapter.url_originalbild || '';
+                modalUrlSketchInput.value = chapter.url_originalsketch || '';
                 document.getElementById('modal-title-header').textContent = `Eintrag bearbeiten (${activeEditId})`;
 
-                document.getElementById('modal-image-preview-section').style.display = 'block';
                 updateImagePreviews();
                 renderCharakterSelection(activeEditId);
                 setImageView('de');
@@ -1138,10 +1168,18 @@ require_once Path::getPartialTemplatePath('header.php');
                     allComicIds = allComicIds.filter(id => id !== idToDelete);
                     filteredComicIds = filteredComicIds.filter(id => id !== idToDelete);
                     renderTable();
-                    showMessage('Eintrag zum Löschen vorgemerkt. Klicken Sie auf "Änderungen speichern".', 'orange', 10000);
+                    showMessage('Eintrag zum Löschen vorgemerkt.', 'orange', 10000);
                 }
             }
         });
+
+        const cancelAction = () => {
+            if (activeEditId === 'new_entry') delete comicData['new_entry'];
+            editModal.style.display = 'none';
+            activeEditId = null;
+        };
+        modalCancelBtn.addEventListener('click', cancelAction);
+        modalCloseBtn.addEventListener('click', cancelAction);
 
         paginationContainers.forEach(container => {
             container.addEventListener('click', (e) => {
@@ -1153,6 +1191,7 @@ require_once Path::getPartialTemplatePath('header.php');
             });
         });
 
+        // Initiales Rendern
         renderTable();
     });
 </script>
