@@ -43,7 +43,14 @@
     "bmewburn.vscode-intelephense-client",
     "nhoizey.gremlins",
     "karlito40.fix-irregular-whitespace",
-    "github.vscode-github-actions"
+    "github.vscode-github-actions",
+    "faelv.composer-companion",
+    "muath-ye.composer-intelephense",
+    "kainiklas.composer-intellisense",
+    "mrmlnc.vscode-apache",
+    "neilbrayfield.php-docblocker",
+    "bmewburn.vscode-intelephense-client",
+    "usernamehw.todo-md",
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": []
