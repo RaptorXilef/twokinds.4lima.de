@@ -6,12 +6,14 @@ includes:
     # WICHTIG: Bleeding Edge muss unter 'includes' stehen, nicht bei bootstrapFiles.
     # Aktiviert die neuesten, striktesten Analysen (z.B. Dead Code Detection).
     - vendor/phpstan/phpstan/conf/bleedingEdge.neon
-    - vendor/phpstan/phpstan-phpunit/extension.neon
+    # - vendor/phpstan/phpstan-phpunit/extension.neon # (macht jetzt der installer)
+    # - vendor/phpstan/phpstan-strict-rules/rules.neon # (macht jetzt der installer)
 
 parameters:
     # Level 0-9
     # Level 5 prüft Typen, erlaubt aber noch etwas Flexibilität.
     # Level 9 wäre "Maximaler Schmerz" (nur für neue Projekte empfohlen).
+    # TODO: Auf "max" setzen ohen "
     level: 5
 
     # Welche Ordner sollen analysiert werden?

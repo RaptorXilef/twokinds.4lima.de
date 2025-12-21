@@ -2,7 +2,9 @@
 <ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Project Standards">
     <description>Universal PHP 8.3 Standard</description>
 
+    <rule ref="Universal.Arrays.DuplicateArrayKey"/>
     <rule ref="Universal.CodeAnalysis.ConstructorDestructorReturn"/>
+    <rule ref="Universal.ControlStructures.DisallowLonelyIf"/>
 
     <file>src</file>
     <file>tests</file>

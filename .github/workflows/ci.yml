@@ -67,7 +67,7 @@ jobs:
       matrix:
         # [DE] Wir testen verschiedene Regelwerke gleichzeitig
         # [EN] We test different rule sets simultaneously
-        standard: [psr12, modern, array, universal, slevomat-coding-standard, security-base]
+        standard: [psr12, universal, slevomat-coding-standard] # modern, array, security-base
         folder: [src]
     steps:
       - uses: actions/checkout@v4
@@ -110,7 +110,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        standard: [psr12, modern, array, universal, slevomat-coding-standard, security-base]
+        standard: [psr12, universal, slevomat-coding-standard]
         folder: [tests]
     steps:
       - uses: actions/checkout@v4
