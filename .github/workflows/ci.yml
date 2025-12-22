@@ -34,8 +34,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with: { php-version: '8.3', coverage: none, tools: composer }
 
-      # [DE] Prüft, ob die composer.json korrekt ist / [EN] Validates composer.json
-      - run: composer validate --strict
+      # [DE] Validiert die composer.json / [EN] Validates composer.json
+      - name: Validate Composer
+        run: composer validate --strict
 
       - name: Cache PHP
         # [DE] Merkt sich installierte Pakete für das nächste Mal (spart viel Zeit)
@@ -78,6 +79,12 @@ jobs:
       - name: Node Setup
         uses: actions/setup-node@v4
         with: { node-version: '20', cache: 'npm' }
+
+      # [DE] Validiert die package.json Syntax / [EN] Validates package.json syntax
+      - name: Validate NPM Package
+        run: |
+          node -e "try { JSON.parse(require('fs').readFileSync('./package.json')); console.log('package.json is valid JSON'); } catch (e) { console.error('Invalid package.json'); process.exit(1); }"
+          npm pkg get name # Prüft zusätzlich, ob npm das Paket korrekt einlesen kann
 
       - run: npm ci
 
