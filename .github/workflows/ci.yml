@@ -127,7 +127,10 @@ jobs:
       - name: Annotate PR
         if: always()
         uses: staabm/annotate-pull-request-from-checkstyle-action@v1
-        with: { files: .build/reports/phpcs-${{ matrix.folder }}-report.xml, graceful-warnings: true, colorize: true}
+        with:
+          files: .build/reports/phpcs-${{ matrix.folder }}-report.xml
+          graceful-warnings: true
+          colorize: true}
 
   # =============================================================================
   # [DE] PHP CODE STYLE (TESTS)
