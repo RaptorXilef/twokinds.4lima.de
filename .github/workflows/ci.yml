@@ -324,3 +324,38 @@ jobs:
             # Normaler statischer Check
             npm run ${{ matrix.check }}
           fi
+
+  # =============================================================================
+  # [DE] JS-TESTING: VITEST
+  # [EN] JS-TESTING: VITEST
+  # =============================================================================
+  js-testing:
+    name: 🧪 JS Unit Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/download-artifact@v4
+        with: { name: all-dependencies }
+      - name: Run Vitest
+        # 'run' sorgt dafür, dass Vitest nicht im Watch-Mode hängen bleibt
+        run: npx vitest run
+
+# =============================================================================
+  # [DE] PRODUKTIONS-CHECK: BUILD-PROZESS
+  # [EN] PRODUCTION-CHECK: BUILD PROCESS
+  # =============================================================================
+  frontend-build:
+    name: 🏗️ Build Assets (Production)
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/download-artifact@v4
+        with: { name: all-dependencies }
+      - name: Build Production Assets
+        run: npm run make
