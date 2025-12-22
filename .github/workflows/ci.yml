@@ -295,7 +295,7 @@ jobs:
           - {name: "Spelling (CSpell)", check: "chk:sp", icon: "🔤"}
           - {name: "Markdown", check: "chk:md", icon: "📝"}
           - {name: "Performance (LHCI)", check: "chk:perf", icon: "⚡", needs_server: true}
-          - {{name: "HTML/A11y (Pa11y)", check: "ci:chk:a11y", icon: "♿", needs_server: true}
+          - {name: "HTML/A11y (Pa11y)", check: "ci:chk:a11y", icon: "♿", needs_server: true}
     steps:
       - uses: actions/checkout@v4
 
