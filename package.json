@@ -4,6 +4,7 @@
   "description": "Frontend-Setup mit PostCSS, Sass und striktem Linting.",
 "scripts": {
     "// --- INFRASTRUKTUR & SETUP ---": "",
+    "pkg:ins": "npm install -g npm-check-updates",
     "pkg:up": "ncu -u && npm install",
     "// Aktualisiert alle Abhängigkeiten in der package.json auf die neueste Version und installiert sie.",
     "pkg:chk": "ncu",
@@ -38,9 +39,9 @@
     "// Führt automatisierte Performance-Audits via Lighthouse durch.",
     "chk:sec": "npm audit",
     "// Analysiert installierte Pakete auf bekannte Sicherheitsrisiken.",
-    "chk:a11y": "pa11y-ci",
+    "ci:chk:a11y": "pa11y-ci",
     "// Prüft die Barrierefreiheit (A11y) für automatisierte Umgebungen.",
-    "chk:a11y-local": "pa11y https://twokinds.4lima.local",
+    "chk:a11y": "pa11y https://twokinds.4lima.local",
     "// Führt einen detaillierten Barrierefreiheits-Check auf der lokalen URL aus.",
 
     "// --- TESTING ---": "",
