@@ -52,24 +52,22 @@
       "phpstan/extension-installer": true
     }
   },
-"scripts": {
+  "scripts": {
     "// --- LIFECYCLE HOOKS ---": "",
     "post-install-cmd": [
       "echo 'Installation fertig. Prüfe Standards... | Installation complete. Checking standards...'"
     ],
-
     "// --- PACKAGES & SECURITY (PKG) ---": "",
     "pkg:audit": [
       "@composer audit",
       "npm audit"
     ],
-    "// Checks both Composer and NPM for vulnerabilities. | Prüft Composer und NPM auf Sicherheitslücken.",
+    "// Checks both Composer and NPM for vulnerabilities. | Prüft Composer und NPM auf Sicherheitslücken.": "",
     "pkg:fix": [
       "npm audit fix",
       "@composer update"
     ],
-    "// Fixes security issues and updates dependencies. | Behebt Sicherheitsprobleme und aktualisiert Abhängigkeiten.",
-
+    "// Fixes security issues and updates dependencies. | Behebt Sicherheitsprobleme und aktualisiert Abhängigkeiten.": "",
     "// --- STATIC ANALYSIS & LINTING (CHK) ---": "",
     "chk:cs": "phpcs",
     "// Main check for Coding Standards (PHPCS). | Hauptprüfung der Coding-Standards (PHPCS).": "",
@@ -141,7 +139,6 @@
     "// Checks Slevomat coding standard rules. | Prüft Slevomat Coding-Standard Regeln.": "",
     "ci:fmt:slevomat": "phpcbf --standard=phpcs-slevomat-coding-standard-ruleset.xml",
     "// Fixes Slevomat coding standard violations. | Behebt Slevomat Coding-Standard Verstöße.": "",
-
     "// --- CI/CD DIRECTORY SPECIFIC CHECKS ---": "",
     "ci:chk:psr12:src": "@ci:chk:psr12 src/",
     "// Checks PSR-12 specifically for the src/ directory. | Prüft PSR-12 speziell für das src/ Verzeichnis.": "",
@@ -155,7 +152,6 @@
     "// Checks Slevomat rules for the src/ directory. | Prüft Slevomat Regeln für das src/ Verzeichnis.": "",
     "ci:chk:slevomat:tests": "@ci:chk:slevomat tests/",
     "// Checks Slevomat rules for the tests/ directory. | Prüft Slevomat Regeln für das tests/ Verzeichnis.": "",
-
     "// --- CI/CD DIRECTORY SPECIFIC FIXES ---": "",
     "ci:fmt:psr12:src": "@ci:fmt:psr12 src/",
     "// Fixes PSR-12 violations in the src/ directory. | Behebt PSR-12 Verstöße im src/ Verzeichnis.": "",
