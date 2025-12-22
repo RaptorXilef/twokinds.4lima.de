@@ -66,7 +66,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .cache/phpstan
-          key: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon') }}
+          key: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon.dist') }}
           restore-keys: ${{ runner.os }}-phpstan-
 
       - name: Install packages / Pakete installieren
@@ -265,10 +265,10 @@ jobs:
         run: npm run chk:sec
 
   # =============================================================================
-  # [DE] FRONTEND: JS, SCSS, HTML (A11Y)
-  # [EN] FRONTEND: JS, SCSS, HTML (A11Y)
+  # [DE] FRONTEND-QUALITÄT (EIGENE KACHEL PRO CHECK)
+  # [EN] FRONTEND QUALITY (SEPARATE CARD PER CHECK)
   # =============================================================================
-  frontend-quality:
+  frontend-qa:
     name: 🌐 Frontend ${{ matrix.name }}
     needs: setup
     runs-on: ubuntu-latest
@@ -276,24 +276,51 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: JS/SCSS/MD
-            check: chk
-          - name: HTML/A11y
-            check: lint-ci:html
+          - name: "JS (ESLint)"
+            check: "chk:js"
+            icon: "📜"
+          - name: "SCSS (Stylelint)"
+            check: "chk:css"
+            icon: "🎨"
+          - name: "Spelling (CSpell)"
+            check: "chk:sp"
+            icon: "🔤"
+          - name: "Markdown"
+            check: "chk:md"
+            icon: "📝"
+          - name: "Performance (LHCI)"
+            check: "chk:perf"
+            icon: "⚡"
+            needs_server: true
+          - name: "HTML/A11y (Pa11y)"
+            check: "ci:chk:a11y"
+            icon: "♿"
+            needs_server: true
     steps:
       - uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@v2
-        with: { php-version: '8.3' }
-      - uses: actions/setup-node@v4
+
+      # PHP wird nur für Jobs mit Webserver benötigt
+      - name: Setup PHP (for Server)
+        if: matrix.needs_server
+        uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with: { node-version: '20' }
-      - uses: actions/download-artifact@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - name: Run Frontend Checks
+
+      - name: Run Check
         run: |
-          if [ "${{ matrix.check }}" == "lint-ci:html" ]; then
+          if [ "${{ matrix.needs_server }}" == "true" ]; then
+            # Server starten für Lighthouse oder Pa11y
             php -S 127.0.0.1:8000 -t public &
             sleep 3
-            npm run lint-ci:html
+            npm run ${{ matrix.check }}
           else
-            npm run chk
+            # Normaler statischer Check
+            npm run ${{ matrix.check }}
           fi
