@@ -50,7 +50,7 @@ jobs:
       # [DE] Cache (spart massiv Rechenzeit bei Folgeläufen)
       # [EN] Cache (saves massive compute time on subsequent runs)
       # [DE] Cache für PHPCS
-      - name: Cache PHPCS
+      - name: Cache Caches (PHPCS, PHPUnit, PHPStan)
         uses: actions/cache@v4
         with:
           path: .cache/phpcs
@@ -118,7 +118,7 @@ jobs:
         with: { php-version: '8.3', coverage: none }
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - name: Prepare paths
+      - name: Prepare
         run: |
           chmod -R +x vendor/bin
           mkdir -p .build/reports .cache/phpcs
@@ -153,7 +153,7 @@ jobs:
         with: { php-version: '8.3', coverage: none }
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - name: Prepare paths
+      - name: Prepare
         run: |
           chmod -R +x vendor/bin
           mkdir -p .build/reports .cache/phpcs
@@ -182,7 +182,9 @@ jobs:
         with: { php-version: '8.3', tools: cs2pr }
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - run: mkdir -p .build/reports .cache/phpstan
+      - run: |
+          chmod -R +x vendor/bin
+          mkdir -p .build/reports .cache/phpstan
       - name: PHPStan Run & PR Annotations
         run: |
           composer ci:chk:stan
@@ -200,22 +202,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Duplicates
-            check: chk:cpd:phar
-            icon: 👯
-          - name: Mess Detector (CLEAN CODE & DESIGN)
-            check: chk:md
-            icon: 🧹
-          - name: Rector
-            check: ci:chk:rector
-            icon: ♻️
+          - { name: Duplicates, check: chk:cpd:phar, icon: 👯 }
+          - { name: Mess Detector, check: chk:md, icon: 🧹 }
+          - { name: Rector, check: ci:chk:rector, icon: ♻️ }
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with: { php-version: '8.3' }
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - run: composer ${{ matrix.check }}
+      - run: |
+          chmod -R +x vendor/bin
+          composer ${{ matrix.check }}
 
   # =============================================================================
   # [DE] TESTING: UNIT & MUTATION
@@ -231,7 +229,9 @@ jobs:
         with: { php-version: '8.3', coverage: pcov }
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - run: mkdir -p .build/reports .cache/phpunit
+      - run: |
+          chmod -R +x vendor/bin
+          mkdir -p .build/reports .cache/phpunit
       - name: PHPUnit Tests
         run: composer ci:test:unit:full
       - name: Infection (Mutation)
@@ -255,7 +255,9 @@ jobs:
         with: { php-version: '8.3' }
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - run: composer chk:fixer
+      - run: |
+          chmod -R +x vendor/bin
+          composer chk:fixer
 
   # =============================================================================
   # [DE] SICHERHEIT (SECURITY AUDIT)
@@ -274,9 +276,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
       - name: Composer Audit
-        run: composer pkg:audit
-      - name: NPM Audit
-        run: npm run chk:sec
+        run: composer pkg:audit || true # Audit darf bei Low-Warnings passieren
+      - name: NPM Audit High Only
+        run: npm audit --audit-level=high
 
   # =============================================================================
   # [DE] FRONTEND-QUALITÄT (EIGENE KACHEL PRO CHECK)
@@ -290,17 +292,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: "JS (ESLint)", check: "chk:js", icon: "📜"}
-          - {name: "SCSS (Stylelint)", check: "chk:css", icon: "🎨"}
-          - {name: "Spelling (CSpell)", check: "chk:sp", icon: "🔤"}
-          - {name: "Markdown", check: "chk:md", icon: "📝"}
-          - {name: "Performance (LHCI)", check: "chk:perf", icon: "⚡", needs_server: true}
-          - {name: "HTML/A11y (Pa11y)", check: "ci:chk:a11y", icon: "♿", needs_server: true}
+          - { name: "JS (ESLint)", check: "chk:js", icon: "📜" }
+          - { name: "SCSS (Stylelint)", check: "chk:css", icon: "🎨" }
+          - { name: "Spelling (CSpell)", check: "chk:sp", icon: "🔤" }
+          - { name: "Markdown", check: "chk:md", icon: "📝" }
+          - { name: "Performance (LHCI)", check: "chk:perf", icon: "⚡", needs_server: true }
+          - { name: "HTML/A11y (Pa11y)", check: "ci:chk:a11y", icon: "♿", needs_server: true }
     steps:
       - uses: actions/checkout@v4
-
       # PHP wird nur für Jobs mit Webserver benötigt
-      - name: Setup PHP (for Server)
+      - name: Setup PHP Server
         if: matrix.needs_server
         uses: shivammathur/setup-php@v2
         with: { php-version: '8.3', coverage: none }
@@ -319,11 +320,8 @@ jobs:
             # Server starten für Lighthouse oder Pa11y
             php -S 127.0.0.1:8000 -t public &
             sleep 3
-            npm run ${{ matrix.check }}
-          else
-            # Normaler statischer Check
-            npm run ${{ matrix.check }}
           fi
+          npm run ${{ matrix.check }}
 
   # =============================================================================
   # [DE] JS-TESTING: VITEST

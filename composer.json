@@ -33,7 +33,8 @@
     "phpmd/phpmd": "^1.5",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.4",
-    "phpstan/phpstan-strict-rules": "^2.0"
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "friendsofphp/php-cs-fixer": "^3.92"
   },
   "autoload": {
     "psr-4": {
@@ -78,8 +79,8 @@
     "chk:stan": "phpstan analyse --memory-limit=1G",
     "// Deep static analysis with PHPStan. | Tiefgreifende statische Analyse mit PHPStan.": "",
     "ci:chk:stan": [
-      "@php vendor/bin/phpstan analyse --error-format=checkstyle --no-progress --tmp-dir=.cache/phpstan > .build/reports/phpstan-report.xml || true",
-      "@php vendor/bin/phpstan analyse --no-progress --tmp-dir=.cache/phpstan || true"
+      "@php vendor/bin/phpstan analyse --error-format=checkstyle --no-progress > .build/reports/phpstan-report.xml || true",
+      "@php vendor/bin/phpstan analyse --no-progress || true"
     ],
     "// Runs PHPStan with checkstyle output for CI and a standard output for logs. | Führt PHPStan mit Checkstyle-Ausgabe für CI und Standard-Ausgabe für Logs aus.": "",
     "chk:rector": "rector process --dry-run",
