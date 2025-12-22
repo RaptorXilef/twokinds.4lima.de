@@ -51,6 +51,7 @@
     "neilbrayfield.php-docblocker",
     "bmewburn.vscode-intelephense-client",
     "usernamehw.todo-md",
+    "ldd-vs-code.better-package-json",
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": []

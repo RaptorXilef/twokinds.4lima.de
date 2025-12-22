@@ -1,0 +1,27 @@
+{
+  "version": "0.2",
+  "language": "en,de-de",
+  "useGitignore": true,
+  "words": [
+    "twokinds",
+    "fourlima",
+    "terser",
+    "cssnano",
+    "purgecss"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    "vendor/**",
+    "public/assets/**"
+  ],
+  "files": [
+    "resources/js/**/*.js",
+    "resources/scss/**/*.scss",
+    "config/**/*.php",
+    "public/**/*.php",
+    "src/**/*.php",
+    "templates/**/*.php",
+    "tests/**/*.php",
+    "**/*.md"
+  ]
+}

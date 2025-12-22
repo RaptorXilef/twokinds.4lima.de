@@ -61,7 +61,7 @@ if (isset($debugMode) && $debugMode) {
 // --- 3. SETUP DER SEITEN-VARIABLEN MIT STANDARDWERTEN ---
 $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
 $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
-$pageTitlePrefix = 'Twokinds – Das Webcomic auf Deutsch | ';
+$pageTitlePrefix = 'Twokinds – Deutsch | '; // $pageTitlePrefix = 'Twokinds – Das Webcomic auf Deutsch | ';
 $pageTitle = $pageTitlePrefix . ($pageTitle ?? ucfirst($filenameWithoutExtension));
 $siteDescription = $siteDescription ?? 'Tauche ein in die Welt von Twokinds – dem beliebten Fantasy-Webcomic von Tom Fischbach, jetzt komplett auf Deutsch verfügbar. Erlebe die spannende Geschichte von Trace und Flora und entdecke die Rassenkonflikte zwischen Menschen und Keidran.';
 $ogImage = $ogImage ?? '';
