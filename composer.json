@@ -30,11 +30,12 @@
     "php-http/discovery": "^1.20",
     "phpcompatibility/php-compatibility": "^10.0",
     "rector/rector": "^2.2",
-    "phpmd/phpmd": "^1.5",
+    "phpmd/phpmd": "^2.15",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/extension-installer": "^1.4",
     "phpstan/phpstan-strict-rules": "^2.0",
-    "friendsofphp/php-cs-fixer": "^3.92"
+    "friendsofphp/php-cs-fixer": "^3.92",
+    "pdepend/pdepend": "^2.16"
   },
   "autoload": {
     "psr-4": {
@@ -91,7 +92,7 @@
     "// Checks for duplicate code (PHAR version). | Prüft auf Code-Duplikate (PHAR-Version).": "",
     "chk:md": "phpmd src/ text phpmd.xml",
     "// Finds messy or complex code (Mess Detector). | Findet unsauberen oder komplexen Code.": "",
-    "chk:fixer": "php-cs-fixer fix --dry-run --diff",
+    "chk:fixer": "vendor/bin/php-cs-fixer fix --dry-run --diff --no-interaction",
     "// Shows potential style changes (Dry-run). | Zeigt mögliche Stil-Änderungen (Testlauf).": "",
     "//1": "",
     "// --- AUTOMATIC FIXING (FMT) ---": "",
@@ -110,7 +111,7 @@
     "test:unit": "phpunit",
     "// Runs the PHPUnit test suite. | Führt PHPUnit-Tests aus.": "",
     "test:unit:full": "phpunit --display-deprecations --display-warnings --display-notices",
-    "ci:test:unit:full": "phpunit --configuration phpunit.xml.dist --cache-result --cache-result-file=.cache/phpunit/.phpunit.result.cache --testdox --testdox-html .build/reports/phpunit-report.html",
+    "ci:test:unit:full": "phpunit --configuration phpunit.xml.dist --cache-result --testdox --testdox-html .build/reports/phpunit-report.html",
     "// Runs tests with full debug output. | Führt Tests mit vollständiger Debug-Ausgabe aus.": "",
     "test:mut": "php -d xdebug.mode=coverage -d xdebug.start_with_request=no tools/infection.phar",
     "// Mutation Testing with Infection. | Mutation-Testing mit Infection.": "",

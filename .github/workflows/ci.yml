@@ -73,6 +73,14 @@ jobs:
           key: ${{ runner.os }}-phpstan-${{ hashFiles('phpstan.neon.dist') }}
           restore-keys: ${{ runner.os }}-phpstan-
 
+      # [DE] NEU: Cache für PHP-CS-Fixer (macht die Analyse bei Folgeläufen extrem schnell)
+      - name: Cache PHP-CS-Fixer
+        uses: actions/cache@v4
+        with:
+          path: .cache/php-cs-fixer
+          key: ${{ runner.os }}-php-cs-fixer-${{ hashFiles('.php-cs-fixer.dist.php') }}
+          restore-keys: ${{ runner.os }}-php-cs-fixer-
+
       - name: Install packages / Pakete installieren
         run: composer install --no-progress --prefer-dist
 
@@ -94,7 +102,7 @@ jobs:
           name: all-dependencies
           path: |
             vendor/
-            node_modules/
+            # node_modules/
             .cache/
           retention-days: 1
 
@@ -130,7 +138,7 @@ jobs:
         with:
           files: .build/reports/phpcs-${{ matrix.folder }}-report.xml
           graceful-warnings: true
-          colorize: true}
+          colorize: true
 
   # =============================================================================
   # [DE] PHP CODE STYLE (TESTS)
@@ -165,7 +173,7 @@ jobs:
         with:
           files: .build/reports/phpcs-${{ matrix.folder }}-report.xml
           graceful-warnings: true
-          colorize: true}
+          colorize: true
 
   # =============================================================================
   # [DE] LOGIK-ANALYSE (PHPSTAN)
@@ -255,9 +263,12 @@ jobs:
         with: { php-version: '8.3' }
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
-      - run: |
+      - name: Prepare
+        run: |
           chmod -R +x vendor/bin
-          composer chk:fixer
+          mkdir -p .build/reports .cache/php-cs-fixer
+      - name: Run Check
+        run: composer chk:fixer
 
   # =============================================================================
   # [DE] SICHERHEIT (SECURITY AUDIT)
@@ -308,7 +319,8 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci # Installiert Tools blitzschnell aus dem Cache und setzt Symlinks korrekt
 
       - name: Download Artifacts
         uses: actions/download-artifact@v4
@@ -334,7 +346,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci # Wichtig für vitest-Binary
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
       - name: Run Vitest
@@ -352,7 +365,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci # Wichtig für npm-run-all2 Binary
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
       - name: Build Production Assets
