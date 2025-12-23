@@ -369,6 +369,16 @@ jobs:
           fi
           npm run ${{ matrix.check }}
 
+      - name: Upload Lighthouse Reports
+        # Nur ausführen, wenn der aktuelle Matrix-Lauf Lighthouse war
+        if: matrix.check == 'chk:perf' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          # LHCI speichert Berichte standardmäßig in diesem versteckten Ordner
+          path: .lighthouseci/
+          retention-days: 7
+
   # =============================================================================
   # [DE] JS-TESTING: VITEST
   # [EN] JS-TESTING: VITEST
@@ -404,4 +414,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with: { name: all-dependencies }
       - name: Build Production Assets
-        run: npm run make
+        run: |
+          npm run make:css
+        npm run ci:make:js
