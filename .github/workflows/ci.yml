@@ -141,6 +141,40 @@ jobs:
           colorize: true
 
   # =============================================================================
+  # [DE] PHP CODE STYLE (PUBLIC)
+  # [EN] PHP CODE STYLE (PUBLIC)
+  # =============================================================================
+  phpcs-public:
+    name: 📑 PHPCS ${{ matrix.standard }} (${{ matrix.folder }})
+    needs: setup
+    runs-on: ubuntu-latest
+    permissions: { pull-requests: write, contents: read }
+    strategy:
+      fail-fast: false
+      matrix:
+        standard: [psr12, universal, slevomat]
+        folder: [public]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: '8.3', coverage: none }
+      - uses: actions/download-artifact@v4
+        with: { name: all-dependencies }
+      - name: Prepare
+        run: |
+          chmod -R +x vendor/bin
+          mkdir -p .build/reports .cache/phpcs
+      - name: Run Check
+        run: composer ci:chk:${{ matrix.standard }}:${{ matrix.folder }} -- --report-full --report-checkstyle=.build/reports/phpcs-${{ matrix.folder }}-report.xml --cache=.cache/phpcs/cache.json
+      - name: Annotate PR
+        if: always()
+        uses: staabm/annotate-pull-request-from-checkstyle-action@v1
+        with:
+          files: .build/reports/phpcs-${{ matrix.folder }}-report.xml
+          graceful-warnings: true
+          colorize: true
+
+  # =============================================================================
   # [DE] PHP CODE STYLE (TESTS)
   # [EN] PHP CODE STYLE (TESTS)
   # =============================================================================

@@ -49,6 +49,7 @@
 
     <file>src</file>
     <file>tests</file>
+    <file>public</file>
 
     <arg value="p"/>
     <arg name="colors"/>
