@@ -23,6 +23,8 @@
 /// @since    5.0.0
 /// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - style(Refactor): Selektoren für Character-Editor gruppiert und DRY-Prinzip angewendet.
+/// - feat(Editor): Styles für data_editor_charaktere.php hinzugefügt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -553,4 +555,149 @@ body.theme-night .image-box {
 
 .modal-footer-actions.actions-center .modal-buttons {
     justify-content: center;
+}
+
+// Gemeinsame Basis für Aktions-Leisten und Sektionen
+.action-bar,
+.master-list-section,
+.groups-section {
+    padding: 15px;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+    border-radius: 5px;
+}
+
+body.theme-night .action-bar,
+body.theme-night .master-list-section,
+body.theme-night .groups-section {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-light);
+}
+
+.action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+/* --- Charakter Management Grid --- */
+
+.charakter-management-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 20px;
+    align-items: start;
+    margin-top: 20px;
+
+    @media (width <= 1024px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Card Designs (Character & Groups) --- */
+
+.charakter-card,
+.group-card {
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.05);
+}
+
+body.theme-night .charakter-card,
+body.theme-night .group-card {
+    background-color: rgb(255 255 255 / 0.02);
+    border-color: var(--border-light);
+}
+
+// Charakter Karte in der Stammliste
+.charakter-card {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: grab;
+}
+
+.charakter-card img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* --- Group Management --- */
+
+.group-card {
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.group-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 80px;
+    padding: 10px;
+    background-color: rgb(0 0 0 / 0.02);
+    border: 2px dashed var(--border-light);
+    border-radius: 4px;
+}
+
+// Kompakte Charakter-Kacheln in Gruppen
+.member-item {
+    position: relative;
+    width: 70px;
+    padding: 5px;
+    text-align: center;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+.member-item img {
+    width: 100%;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+/* --- Modal Selection Grid --- */
+
+.charakter-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.charakter-selection-item {
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s;
+
+    &:hover {
+        background-color: var(--table-row-hover);
+    }
+
+    &.selected {
+        background-color: rgb(0 123 255 / 0.1);
+        border-color: var(--link-color);
+    }
 }
