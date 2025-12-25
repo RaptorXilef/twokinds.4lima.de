@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Konfigurationsdatei für das Navigationsmenü.
  * Enthält Links zu den verschiedenen Bereichen der Webseite.
  * CSP-konform gemacht durch Entfernen von Inline-Styles und Hinzufügen von Nonces.
- * 
+ *
  * @file      ROOT/config/config_menue_public.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -62,7 +63,7 @@ $debugMode = $debugMode ?? false;
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/lesezeichen<?php echo $dateiendungPHP; ?>">Lesezeichen</a>
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/ueber_den_comic<?php echo $dateiendungPHP; ?>">Über den
             Comic</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/charaktere.php">Charaktere</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/charakter-vorstellung<?php echo $dateiendungPHP; ?>">Charaktere</a>
         <a href="<?php echo DIRECTORY_PUBLIC_CHARAKTERE_URL; ?>">Charakter-Übersicht</a>
         <br>
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/faq<?php echo $dateiendungPHP; ?>">FAQ</a>
@@ -71,7 +72,8 @@ $debugMode = $debugMode ?? false;
         <br>
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/lizenz<?php echo $dateiendungPHP; ?>">Lizenz</a>
         <a
-            href="<?php echo DIRECTORY_PUBLIC_URL; ?>/datenschutzerklaerung<?php echo $dateiendungPHP; ?>">Datenschutz</a>
+            href="<?php echo DIRECTORY_PUBLIC_URL; ?>/datenschutzerklaerung<?php echo $dateiendungPHP; ?>">
+            Datenschutz</a>
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/impressum<?php echo $dateiendungPHP; ?>">Impressum</a>
         <br>
         <a id="toggle_lights" class="theme jsdep" href=""><span class="themelabel">Theme</span><span
@@ -90,7 +92,7 @@ $debugMode = $debugMode ?? false;
 <a href="<?php echo htmlspecialchars($baseUrl); ?>unterstuetzung.php"><img
 src="https://www.paypalobjects.com/marketing/web/logos/paypal-mark-color_new.svg" alt="PayPal-Logo"
 width="15"> Unterstützung <img src="https://upload.wikimedia.org/wikipedia/commons/9/94/Patreon_logo.svg"
-alt="Patreon-Logo" width="15"></a></p> 
+alt="Patreon-Logo" width="15"></a></p>
 <a href="https://twokinds.keenspot.com/" target="_blank">Zum Original <br>auf Englisch</a>
 */ ?>
 

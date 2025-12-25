@@ -12,7 +12,7 @@
 # Hinweis:  Diese .htaccess-Datei ist speziell für die Webseite twokinds.4lima.de
 #           optimiert und kann als Vorlage für eigene Projekte dienen.
 #           Bitte passe die Domain-Namen und Pfade entsprechend deiner Webseite an.
-# Version:  2.0.1
+# Version:  5.0.0
 
 
 # --- Block 1: Sicherheits- und Kompatibilitäts-Header ---
@@ -66,6 +66,23 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/(403|404)\.php$
 RewriteRule ^ - [L]
 
+# ===========================================================
+# SPEZIAL-FIX: Konfliktlösung Charaktere (HIER IST DER TRICK)
+# ===========================================================
+
+# 1. Wer die alte .php Datei aufruft -> ab zur neuen Seite
+RewriteRule ^charaktere\.php$ /charakter-vorstellung [R=301,L]
+
+# 2. Wer /charaktere (OHNE Slash) aufruft -> ab zur neuen Seite
+# Wir nutzen %{THE_REQUEST}, um dem Server zuvorzukommen, bevor er den Ordner-Slash erzwingt.
+# Dies fängt "GET /charaktere " ab, ignoriert aber "GET /charaktere/ "
+RewriteCond %{THE_REQUEST} \s/charaktere(\s|\?) [NC]
+RewriteRule ^ /charakter-vorstellung [R=301,L]
+
+# (Wer /charaktere/ MIT Slash eingibt, wird von dieser Regel ignoriert
+# und landet ganz normal im Ordner bei der index.php)
+# ===========================================================
+
 # 4a: Kanonische URL erzwingen (HTTPS & non-www)
 # Leitet alle Anfragen auf https://meine-domain.de um,
 # um doppelten Inhalt (Duplicate Content) bei Suchmaschinen zu vermeiden.
@@ -86,7 +103,11 @@ RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.local [NC]
 RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
 RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [NC,F,L]
 
-# 4c: Permanente Weiterleitungen (Redirects) für alte Comic-Pfade
+# -----------------------------------------------------------
+# 4c: SPEZIAL-REGEL (Muss VOR der allgemeinen Regel stehen)
+# Leitet alte Root-Dateien (mit oder ohne .php) direkt in den Comic-Ordner
+# -----------------------------------------------------------
+# Permanente Weiterleitungen (Redirects) für alte Comic-Pfade
 # Leitet Besucher und Suchmaschinen von der alten URL-Struktur (z.B. /20250810.php)
 # permanent (301) auf die neue, saubere URL-Struktur (z.B. /comic/20250810) um.
 # Bedingung: Die Anfrage darf nicht bereits im /comic/ Verzeichnis sein (verhindert Loops/Endlosschleifen).
@@ -94,12 +115,26 @@ RewriteCond %{REQUEST_URI} !^/comic/
 RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
 RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 
-# 4d: Trailing-Slash-Weiterleitung (SEO-Optimierung)
+# -----------------------------------------------------------
+# 4d: Trailing Slash entfernen
+# -----------------------------------------------------------
+# Trailing-Slash-Weiterleitung (SEO-Optimierung)
 # Entfernt den Schrägstrich (/) am Ende von URLs (z.B. /kontakt/ -> /kontakt) (301).
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)/$ /$1 [R=301,L]
 
-# 4e: Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
+# -----------------------------------------------------------
+# NEU: ALLGEMEINE BEREINIGUNG (Das haben wir vorhin hinzugefügt)
+# Entfernt .php von ALLEN anderen Dateien (auch die im /comic/ Ordner)
+# Greift nur, wenn Regel 4c nicht schon zugeschlagen hat.
+# -----------------------------------------------------------
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# -----------------------------------------------------------
+# 4e: INTERNE UMSCHREIBUNG (Damit die Seiten ohne .php funktionieren)
+# -----------------------------------------------------------
+# Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
 # Dies ist die zentrale Regel, die für ALLE Ordner gilt.
 # Sie ermöglicht den Aufruf von PHP-Dateien ohne die .php-Endung.
 # Dies geschieht intern auf dem Server; der Besucher sieht die saubere URL.
