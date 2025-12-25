@@ -124,6 +124,16 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)/$ /$1 [R=301,L]
 
 # -----------------------------------------------------------
+# NEU: INDEX BEREINIGUNG (Muss VOR der allgemeinen .php Regel stehen)
+# Entfernt "index.php" UND "index" aus allen Pfaden
+# /index.php -> /
+# /admin/index.php -> /admin/
+# /charaktere/index.php -> /charaktere/
+# -----------------------------------------------------------
+RewriteCond %{THE_REQUEST} \s/+((.*?)/)?index(\.php)?[\s?] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# -----------------------------------------------------------
 # NEU: ALLGEMEINE BEREINIGUNG (Das haben wir vorhin hinzugefügt)
 # Entfernt .php von ALLEN anderen Dateien (auch die im /comic/ Ordner)
 # Greift nur, wenn Regel 4c nicht schon zugeschlagen hat.
