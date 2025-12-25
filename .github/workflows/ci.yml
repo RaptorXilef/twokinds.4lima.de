@@ -341,7 +341,7 @@ jobs:
           - { name: "SCSS (Stylelint)", check: "chk:css", icon: "🎨" }
           - { name: "Spelling (CSpell)", check: "chk:sp", icon: "🔤" }
           - { name: "Markdown", check: "chk:md", icon: "📝" }
-          - { name: "Performance (LHCI)", check: "chk:perf", icon: "⚡", needs_server: true }
+         # - { name: "Performance (LHCI)", check: "chk:perf", icon: "⚡", needs_server: true } # Frisst zu viel RRechenzeit auf GitHub. Nur bei Bedarf aktivieren!
           - { name: "HTML/A11y (Pa11y)", check: "ci:chk:a11y", icon: "♿", needs_server: true }
     steps:
       - uses: actions/checkout@v4

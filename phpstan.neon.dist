@@ -20,6 +20,7 @@ parameters:
     paths:
         - src
         - tests
+        - public
 
     # Wir simulieren eine PHP 8.4 Umgebung (80400), damit PHPStan
     # neue Features (wie Property Hooks) bereits jetzt versteht.

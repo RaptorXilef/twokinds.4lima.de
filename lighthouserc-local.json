@@ -2,16 +2,16 @@
   "ci": {
     "collect": {
       "url": [
-        "http://127.0.0.1:8000/",
-        "http://127.0.0.1:8000/admin/",
-        "http://127.0.0.1:8000/archiv.php",
-        "http://127.0.0.1:8000/charaktere.php",
-        "http://127.0.0.1:8000/charaktere/",
-        "http://127.0.0.1:8000/charaktere/Trace_Legacy/"
+        "https://twokinds.4lima.local/",
+        "https://twokinds.4lima.local/admin/",
+        "https://twokinds.4lima.local/archiv.php",
+        "https://twokinds.4lima.local/charaktere.php",
+        "https://twokinds.4lima.local/charaktere/",
+        "https://twokinds.4lima.local/charaktere/Trace_Legacy/"
       ],
-      "numberOfRuns": 3,
+      "numberOfRuns": 5,
       "settings": {
-        "chromeFlags": "--no-sandbox --ignore-certificate-errors --disable-dev-shm-usage",
+        "chromeFlags": "--headless=new --no-sandbox --ignore-certificate-errors --disable-dev-shm-usage --user-data-dir=.cache/lighthouse",
         "onlyCategories": [
           "performance",
           "accessibility",
@@ -29,7 +29,8 @@
       }
     },
     "upload": {
-      "target": "temporary-public-storage"
+      "target": "filesystem",
+      "outputDir": ".build/reports/lighthouse"
     }
   }
 }

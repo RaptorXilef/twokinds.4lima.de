@@ -1,14 +1,7 @@
 {
   "ci": {
     "collect": {
-      "url": [
-        "http://127.0.0.1:8000/",
-        "http://127.0.0.1:8000/admin/",
-        "http://127.0.0.1:8000/archiv.php",
-        "http://127.0.0.1:8000/charaktere.php",
-        "http://127.0.0.1:8000/charaktere/",
-        "http://127.0.0.1:8000/charaktere/Trace_Legacy/"
-      ],
+      "url": ["http://127.0.0.1:8000"],
       "numberOfRuns": 3,
       "settings": {
         "chromeFlags": "--no-sandbox --ignore-certificate-errors --disable-dev-shm-usage",
