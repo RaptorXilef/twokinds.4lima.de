@@ -116,10 +116,12 @@ function checkRateLimit(string $ip): int
     $attempts = getLoginAttempts();
     $hasChanges = false;
     foreach ($attempts as $key => $data) {
-        if ($data['last_attempt'] < (time() - LOGIN_LOCKOUT_TIME)) {
-            unset($attempts[$key]);
-            $hasChanges = true;
+        if ($data['last_attempt'] >= time() - LOGIN_LOCKOUT_TIME) {
+            continue;
         }
+
+        unset($attempts[$key]);
+        $hasChanges = true;
     }
     if ($hasChanges) {
         saveLoginAttempts($attempts);
@@ -127,7 +129,7 @@ function checkRateLimit(string $ip): int
 
     if (isset($attempts[$ip])) {
         if ($attempts[$ip]['count'] >= MAX_LOGIN_ATTEMPTS) {
-            $timeLeft = ($attempts[$ip]['last_attempt'] + LOGIN_LOCKOUT_TIME) - time();
+            $timeLeft = $attempts[$ip]['last_attempt'] + LOGIN_LOCKOUT_TIME - time();
             return max(0, $timeLeft);
         }
     }
@@ -140,7 +142,7 @@ function recordFailedAttempt(string $ip): void
     if (!isset($attempts[$ip])) {
         $attempts[$ip] = [
             'count' => 0,
-            'last_attempt' => time()
+            'last_attempt' => time(),
         ];
     }
     $attempts[$ip]['count']++;
@@ -151,10 +153,12 @@ function recordFailedAttempt(string $ip): void
 function resetLoginAttempts(string $ip): void
 {
     $attempts = getLoginAttempts();
-    if (isset($attempts[$ip])) {
-        unset($attempts[$ip]);
-        saveLoginAttempts($attempts);
+    if (!isset($attempts[$ip])) {
+        return;
     }
+
+    unset($attempts[$ip]);
+    saveLoginAttempts($attempts);
 }
 
 // --- LOGIK ---
@@ -247,13 +251,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($lockoutTime ?? 0) === 0) {
                 resetLoginAttempts($clientIp);
 
                 session_regenerate_id(true);
-                $_SESSION = array();
+                $_SESSION = [];
 
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $username;
                 $_SESSION['last_activity'] = time();
 
-                $fingerprint = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
+                $fingerprint = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.')));
                 $_SESSION['session_fingerprint'] = $fingerprint;
 
                 session_write_close();
@@ -261,19 +265,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($lockoutTime ?? 0) === 0) {
 
                 header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
                 exit;
-            } else {
-                recordFailedAttempt($clientIp);
-                sleep(1);
-
-                $attemptsLeft = MAX_LOGIN_ATTEMPTS - (getLoginAttempts()[$clientIp]['count'] ?? 0);
-
-                if ($attemptsLeft <= 0) {
-                    $message = "Zu viele fehlgeschlagene Versuche. Zugang gesperrt.";
-                } else {
-                    $message = "Ungültige Zugangsdaten. Noch $attemptsLeft Versuch(e).";
-                }
-                $messageType = 'error';
             }
+
+            recordFailedAttempt($clientIp);
+            sleep(1);
+
+            $attemptsLeft = MAX_LOGIN_ATTEMPTS - (getLoginAttempts()[$clientIp]['count'] ?? 0);
+
+            if ($attemptsLeft <= 0) {
+                $message = "Zu viele fehlgeschlagene Versuche. Zugang gesperrt.";
+            } else {
+                $message = "Ungültige Zugangsdaten. Noch $attemptsLeft Versuch(e).";
+            }
+            $messageType = 'error';
         }
     }
 }
@@ -283,7 +287,7 @@ $cssClassMap = [
     'info' => 'status-info',
     'success' => 'status-green',
     'error' => 'status-red',
-    'warning' => 'status-orange'
+    'warning' => 'status-orange',
 ];
 $alertClass = $cssClassMap[$messageType] ?? 'status-info';
 
@@ -308,7 +312,7 @@ ob_end_flush();
             <h2>Ersteinrichtung</h2>
             <p class="intro-text">Willkommen! Es existiert noch kein Administrator-Konto.<br>Bitte erstelle jetzt den ersten Zugang.</p>
 
-            <form action="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" method="POST" class="admin-form">
+            <form action="<?php /*echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php';*/ ?>" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
 
                 <div class="form-group">
@@ -332,7 +336,7 @@ ob_end_flush();
             <!-- Formular deaktivieren, wenn gesperrt -->
             <?php $isLocked = ($lockoutTime ?? 0) > 0; ?>
 
-            <form action="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php'; ?>" method="POST" class="admin-form">
+            <form action="<?php /*echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php';*/ ?>" method="POST" class="admin-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
 
                 <div class="form-group">
