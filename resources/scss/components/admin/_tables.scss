@@ -23,6 +23,7 @@
 /// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
 /// - style(Refactor): Nesting-Tiefe reduziert (Phase 2 Flattening).
 /// - style(SCSS): .actions-cell und .comic-thumbnail auf Root-Level gehoben.
+/// - style(Admin): .pagination-wrapper und .pagination-info hinzugefügt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -423,4 +424,70 @@ body.theme-night .pagination span.current-page {
 
 .pagination-info-container small {
     color: var(--text-color-light);
+}
+
+/* --- Pagination --- */
+
+.pagination-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 25px 0;
+}
+
+.pagination-info {
+    margin-bottom: 10px;
+    font-size: 0.85em;
+    font-style: italic;
+    color: var(--text-color-light);
+}
+
+.pagination {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination a,
+.pagination span {
+    padding: 8px 12px;
+    color: var(--link-color);
+    text-decoration: none;
+    cursor: pointer;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+// Transparentes Design im Dark Mode
+body.theme-night .pagination a,
+body.theme-night .pagination span {
+    color: var(--text-color);
+    background-color: transparent;
+    border-color: var(--border-light);
+}
+
+.pagination a:hover:not(.current-page),
+.pagination span:hover:not(.current-page) {
+    background-color: var(--button-hover-bg);
+}
+
+body.theme-night .pagination a:hover:not(.current-page),
+body.theme-night .pagination span:hover:not(.current-page) {
+    background-color: rgb(255 255 255 / 0.1);
+}
+
+.pagination span.current-page {
+    color: #fff;
+    cursor: default;
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+}
+
+body.theme-night .pagination span.current-page {
+    color: #fff;
+    background-color: var(--link-color);
+    border-color: var(--link-color);
 }

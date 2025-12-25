@@ -125,7 +125,8 @@ body.theme-night .filter-controls label {
 
 body.theme-night .filter-controls input,
 body.theme-night .filter-controls select {
-    background-color: var(--content-bg);
+    //background-color: var(--content-bg);
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
     border-color: var(--border-light);
 }
 
@@ -299,4 +300,65 @@ body.theme-night .search-wrapper input {
 
 body.theme-night .button-toggle-group .button-toggle {
     border-color: var(--border-light);
+}
+
+/* --- Shared Form Styles (Flat) --- */
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.admin-form input[type='text'],
+.admin-form input[type='password'] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    color: var(--text-color);
+    background-color: var(--content-area-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.admin-form input[type='text']:focus,
+.admin-form input[type='password']:focus {
+    outline: none;
+    border-color: var(--link-color);
+    box-shadow: 0 0 0 3px rgb(0 123 255 / 0.1);
+}
+
+body.theme-night .admin-form input[type='text'],
+body.theme-night .admin-form input[type='password'] {
+    //background-color: var(--content-bg);
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
+}
+
+.admin-form button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    background-color: var(--link-color);
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.admin-form button:hover {
+    filter: brightness(1.1);
 }

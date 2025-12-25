@@ -27,6 +27,8 @@
 /// - fix(Design): Original-Styles für Dialoge und Close-Buttons wiederhergestellt.
 /// - style(Report): Styles für Diff-Box und Code-Ansicht hinzugefügt.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - style(Report): Report-spezifische Grid-Styles und Diff-Viewer Container hinzugefügt.
+/// - fix(Design): .report-images-container wiederhergestellt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -274,6 +276,87 @@ body.theme-night .button-toggle-group .button-toggle {
 body.theme-night .button-toggle-group .button-toggle.active {
     background-color: #007bff;
 }
+
+/* --- Report Specific Details --- */
+
+.report-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.report-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 15px;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+    border-radius: 5px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-item .label {
+    font-size: 0.75em;
+    font-weight: bold;
+    color: var(--text-color-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-item .value {
+    font-family: $font-mono;
+    font-size: 0.9em;
+    color: var(--text-color);
+}
+
+.report-description-box {
+    padding: 15px;
+    line-height: 1.5;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
+/* --- Diff Viewer & Logic --- */
+
+.diff-container {
+    margin-top: 10px;
+}
+
+.diff-viewer {
+    padding: 12px;
+    font-family: $font-mono;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    background-color: #1e1e1e;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
+.diff-msg-empty {
+    margin: 0;
+    font-style: italic;
+    color: var(--text-color-light);
+    text-align: center;
+}
+
+.diff-msg-error {
+    color: var(--status-red-text);
+    text-align: center;
+}
+
+.loading-text {
+    font-weight: bold;
+    opacity: 0.7;
+}
+
+/* --- Images --- */
 
 // Unified Image Preview Layout
 .report-images-container,
