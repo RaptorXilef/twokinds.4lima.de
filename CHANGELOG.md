@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.14](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.13...v5.0.0-alpha.14) (2025-12-25)
+
+
+### Bug Fixes
+
+* **config:** resolve json syntax error in composer.json ([837097d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/837097de313d89fecea0629e4e7fda0830b9a1d6))
+* **config:** resolve json syntax error in package.json ([2201d16](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2201d166419bc5ecbfaeb981442defe75306511c))
+
 ## 5.0.0-alpha.13 (2025-12-22)
 
 
