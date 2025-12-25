@@ -274,7 +274,7 @@ body.theme-night .user-list li {
 }
 
 .user-list .user-name::before {
-    font-family: 'Font Awesome 5 Free';
+    font-family: $font-icon;
     font-weight: 900;
     color: var(--text-color-light);
     content: '\f007'; // FontAwesome User Icon

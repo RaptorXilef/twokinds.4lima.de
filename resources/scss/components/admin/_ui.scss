@@ -74,7 +74,7 @@
 .source-marker.present,
 .status-icon.source-marker,
 .status-icon.present {
-    background-color: #07710c !important;
+    background-color: #07710c; // !important
     opacity: 1;
     filter: grayscale(0);
 }
@@ -82,9 +82,9 @@
 // --- LEGENDE ---
 .marker-legend .source-marker,
 .marker-legend .status-icon {
-    background-color: #07710c !important;
-    opacity: 1 !important;
-    filter: none !important;
+    background-color: #07710c; // !important
+    opacity: 1; // !important
+    filter: none; // !important
 }
 
 /* --- Status Messages (Alerts) --- */
@@ -330,7 +330,8 @@ body.theme-night .collapsible-header {
     background-color: var(--table-row-hover);
 }
 
-.collapsible-header h3 {
+.collapsible-header h3,
+.setup-section .collapsible-header h3 {
     margin: 0;
     font-size: 1.1em;
     color: var(--text-color);

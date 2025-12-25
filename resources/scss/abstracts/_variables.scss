@@ -31,6 +31,9 @@ $font-stack: 'Open Sans', 'Lucida Grande', arial, sans-serif;
 $font-mono: 'Noto Sans Mono', 'Lucida Console', 'Consolas', courier, monospace;
 $base-url: 'https://twokinds.4lima.de'; // Basis-URL für Assets
 
+// ZENTRALE STELLE FÜR DEN NAMEN:
+$font-icon: 'Font Awesome 7 Free';
+
 // Breakpoints
 $breakpoint-mobile: 768px;
 
@@ -140,9 +143,9 @@ body.theme-night {
     --text-on-medium: #fff;
 
     // Links
-    --link-color: #81dbfe;
+    --link-color: #00add9; // #81dbfe
     --link-color-rgb: 129, 219, 254; // #81dbfe in RGB
-    --link-visited: #81dbfe;
+    --link-visited: #00add9; // #81dbfe
 
     // Borders
     --border-light: #48778a;

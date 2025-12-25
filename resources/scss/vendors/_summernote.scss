@@ -59,12 +59,12 @@ body.theme-night .note-editor.note-frame {
 /* --- Toolbar --- */
 .note-editor.note-frame .note-toolbar {
     color: var(--text-color);
-    background-color: var(--table-header-bg) !important;
+    background-color: var(--table-header-bg); // !important
     border-bottom: 1px solid var(--border-medium);
 }
 
 body.theme-night .note-editor.note-frame .note-toolbar {
-    background-color: var(--sidebar-bg) !important; // Accent Dark
+    background-color: var(--sidebar-bg); // Accent Dark // !important
     border-bottom-color: var(--button-bg);
 }
 
@@ -156,21 +156,21 @@ body.theme-night .note-editor.note-frame .note-modal-footer {
 
 /* --- Editor Area (Editable) --- */
 .note-editor.note-frame .note-editable {
-    color: var(--text-color) !important;
-    background-color: var(--content-bg) !important;
+    color: var(--text-color); // !important
+    background-color: var(--content-bg); // !important
 }
 
 body.theme-night .note-editor.note-frame .note-editable {
-    background-color: var(--page-bg) !important;
+    background-color: var(--page-bg);
 }
 
 .note-editor.note-frame .note-editable p {
-    color: var(--text-color) !important;
+    color: var(--text-color); // !important
 }
 
 /* --- Code View --- */
 .note-editor.note-frame .note-codable {
-    font-family: $font-mono !important;
+    font-family: $font-mono; // !important
     font-size: 14px;
     line-height: 1.4;
     color: #ccc;

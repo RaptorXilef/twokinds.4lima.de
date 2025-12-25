@@ -165,8 +165,8 @@ body.theme-night .description-preview {
 }
 
 .missing-info {
-    background-color: rgb(248 215 218 / 0.2) !important;
-    border: 2px solid #dc3545 !important;
+    background-color: rgb(248 215 218 / 0.2); // !important
+    border: 2px solid #dc3545; // !important
 }
 
 .actions-cell {
@@ -187,7 +187,7 @@ body.theme-night .description-preview {
     flex: 1 1 auto;
     justify-content: center;
     min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
-    margin: 0 !important; // Reset
+    margin: 0; // Reset // !important
     text-align: center;
 }
 
@@ -197,7 +197,7 @@ body.theme-night .description-preview {
 }
 
 .empty-table-message {
-    padding: 20px !important;
+    padding: 20px; // !important
     font-style: italic;
     color: var(--text-color-medium);
     text-align: center;
@@ -392,6 +392,13 @@ body.theme-night .pagination span:hover:not(.current-page) {
 }
 
 .pagination span.current-page {
+    color: #fff;
+    cursor: default;
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+}
+
+body.theme-night .pagination span.current-page {
     color: #fff;
     cursor: default;
     background-color: var(--link-color);

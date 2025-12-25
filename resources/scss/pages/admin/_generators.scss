@@ -108,7 +108,7 @@ body.theme-night .setup-container {
     display: inline-flex;
     gap: 5px;
     align-items: center;
-    width: auto !important;
+    width: auto; // !important
 }
 
 /* --- Generator Main Container --- */
@@ -364,7 +364,7 @@ body.theme-night .image-item {
 
 .image-item .delete-btn:hover {
     background-color: #c82333; // Dunkleres Rot beim Hover
-    transform: scale(1.15) !important;
+    transform: scale(1.15); // !important
 }
 
 .image-item .delete-btn i {
