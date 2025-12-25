@@ -23,6 +23,7 @@
 /// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 /// - style(SCSS): .search-wrapper und .button-toggle-group optimiert.
+/// - fix(Admin): Styling für Inputs und Selects in .filter-controls hinzugefügt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -84,6 +85,30 @@ body.theme-night .filter-form {
 
 body.theme-night .filter-controls label {
     color: var(--text-color-light);
+}
+
+// Konsistentes Design für Inputs und Selects in Filtern
+.filter-controls input[type='text'],
+.filter-controls input[type='number'],
+.filter-controls select {
+    padding: 11px;
+    font-family: inherit;
+    font-size: 0.9em;
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+.filter-controls select {
+    cursor: pointer;
+    appearance: auto;
+}
+
+body.theme-night .filter-controls input,
+body.theme-night .filter-controls select {
+    background-color: var(--content-bg);
+    border-color: var(--border-light);
 }
 
 // Spezifisch für das neue Comic-Editor Layout (Zentriert, Input breit)
