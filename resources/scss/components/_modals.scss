@@ -29,6 +29,8 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 /// - style(Report): Report-spezifische Grid-Styles und Diff-Viewer Container hinzugefügt.
 /// - fix(Design): .report-images-container wiederhergestellt.
+/// - style(Refactor): Selektoren gruppiert, um Redundanzen zu vermeiden (DRY).
+/// - style(Code): Gemeinsame Definition für Monospace-Elemente.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -285,14 +287,20 @@ body.theme-night .button-toggle-group .button-toggle.active {
     gap: 20px;
 }
 
+// Gemeinsame Box-Styles (Container & Viewer)
+.report-info-grid,
+.report-description-box,
+.diff-viewer {
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
 .report-info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 15px;
     padding: 15px;
     background-color: var(--table-row-even);
-    border: 1px solid var(--border-light);
-    border-radius: 5px;
 }
 
 .info-item {
@@ -309,9 +317,15 @@ body.theme-night .button-toggle-group .button-toggle.active {
     letter-spacing: 0.05em;
 }
 
-.info-item .value {
+// Gemeinsame Monospace-Styles
+.info-item .value,
+.diff-viewer,
+.loading-text {
     font-family: $font-mono;
     font-size: 0.9em;
+}
+
+.info-item .value {
     color: var(--text-color);
 }
 
@@ -319,8 +333,6 @@ body.theme-night .button-toggle-group .button-toggle.active {
     padding: 15px;
     line-height: 1.5;
     background-color: var(--content-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 4px;
 }
 
 /* --- Diff Viewer & Logic --- */
@@ -331,24 +343,23 @@ body.theme-night .button-toggle-group .button-toggle.active {
 
 .diff-viewer {
     padding: 12px;
-    font-family: $font-mono;
-    font-size: 0.9em;
     white-space: pre-wrap;
-    background-color: #1e1e1e;
-    border: 1px solid var(--border-light);
-    border-radius: 4px;
+    background-color: #1e1e1e; // Fester dunkler Hintergrund für Code-Kontrast
+}
+
+.diff-msg-empty,
+.diff-msg-error {
+    margin: 0;
+    text-align: center;
 }
 
 .diff-msg-empty {
-    margin: 0;
     font-style: italic;
     color: var(--text-color-light);
-    text-align: center;
 }
 
 .diff-msg-error {
     color: var(--status-red-text);
-    text-align: center;
 }
 
 .loading-text {
@@ -363,10 +374,10 @@ body.theme-night .button-toggle-group .button-toggle.active {
 #modal-image-previews {
     display: flex;
     flex-flow: row nowrap;
-    gap: 15px;
-    justify-content: center;
-    width: 100%;
-    margin-top: 15px;
+    gap: 10px;
+    //justify-content: center;
+    //width: 100%;
+    margin-top: 10px;
 }
 
 .report-images-container > div,

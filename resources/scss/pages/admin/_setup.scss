@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin Initial Setup Styles.
+///
+/// Dediziertes Styling für den Erstkonfigurations-Workflow (initial_setup.php).
+///
+
+/**!
+ * @file       resources/scss/pages/admin/_setup.scss
+ * @since      5.0.0
+ * - feat(Setup): Neues Modul für den Setup-Workflow erstellt.
+ * - style(Refactor): Dark-Mode Overrides gruppiert (DRY).
+ */
+
+@use '../../abstracts/variables' as *;
+
+/* --- Setup Layout Containers --- */
+
+.setup-section {
+    padding: 20px;
+    margin-bottom: 25px;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+}
+
+// Gruppierter Dark Mode Override für Sektionen
+body.theme-night .setup-section {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-light);
+}
+
+.instructions {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+/* --- Action Controls --- */
+
+.setup-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+    margin-top: 15px;
+}
+
+// Button-Modifier für Setup (Wiederverwendung globaler Button-Regeln)
+.setup-action-btn {
+    min-width: 180px;
+}

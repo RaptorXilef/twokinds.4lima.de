@@ -82,6 +82,11 @@ body.theme-night .admin-login-container {
     text-align: center;
 }
 
+// Spezielle Breite für Setup-Seiten (Wiederverwendung der Login-Basis)
+.admin-login-container.setup-page {
+    max-width: 800px;
+}
+
 /* --- Shared Form Styles (Flat) --- */
 // .admin-form Siehe components/admin/_form.scss
 
