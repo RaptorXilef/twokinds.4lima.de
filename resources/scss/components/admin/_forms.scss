@@ -24,6 +24,8 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 /// - style(SCSS): .search-wrapper und .button-toggle-group optimiert.
 /// - fix(Admin): Styling für Inputs und Selects in .filter-controls hinzugefügt.
+/// - refactor(scss): Alle !important entfernt (Grundlage für Kaskaden-Reset).
+/// - style(Admin): Filter-Inputs flexibel gestaltet, um den horizontalen Platz optimal auszunutzen.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -77,6 +79,20 @@ body.theme-night .filter-form {
     align-items: flex-end;
 }
 
+// Wrapper-Divs für Label/Input flexibel machen
+.filter-controls > div {
+    display: flex;
+    flex: 1 1 150px;
+    flex-direction: column;
+}
+
+// Aktions-Buttons kompakt halten
+.filter-controls .filter-actions {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 10px;
+}
+
 .filter-controls label {
     margin-bottom: 5px;
     font-size: 0.9em;
@@ -91,9 +107,11 @@ body.theme-night .filter-controls label {
 .filter-controls input[type='text'],
 .filter-controls input[type='number'],
 .filter-controls select {
+    width: 100%;
     padding: 11px;
     font-family: inherit;
     font-size: 0.9em;
+    box-sizing: border-box; // Wichtig für 100% Breite inkl. Padding
     color: var(--text-color);
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
@@ -166,7 +184,7 @@ body.theme-night .search-wrapper input {
 }
 
 .honeypot-field {
-    display: none !important;
+    display: none;
 }
 
 // Drag & Drop Zone (Upload)
