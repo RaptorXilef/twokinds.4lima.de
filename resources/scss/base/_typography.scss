@@ -128,12 +128,13 @@ body.theme-night hr {
     border-color: var(--button-bg);
 }
 
-.instructions {
+.instructions,
+.editor-footer-info {
     margin-bottom: 15px;
     font-size: 1em;
+    font-style: italic;
     line-height: 1.5;
     color: var(--text-color-medium);
-    font-style: italic;
 }
 
 .smalltext {

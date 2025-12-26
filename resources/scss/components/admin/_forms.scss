@@ -360,3 +360,15 @@ body.theme-night .admin-form input[type='password'] {
 .admin-form button:hover {
     filter: brightness(1.1);
 }
+
+/* --- Ergänzung für deaktivierte Felder --- */
+.admin-form .disabled-input,
+.admin-form input:disabled,
+.admin-form textarea:disabled,
+.modal-content input:disabled,
+.modal-content textarea:disabled {
+    cursor: not-allowed;
+    background-color: var(--table-header-bg);
+    opacity: 0.7;
+    filter: grayscale(1);
+}
