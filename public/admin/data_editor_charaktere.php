@@ -82,7 +82,7 @@ function getRelativePath(string $from, string $to): string
 function loadGeneratorSettings(string $filePath, string $username, bool $debugMode): array
 {
     $defaults = [
-        'last_run_timestamp' => null
+        'last_run_timestamp' => null,
     ];
 
     if (!file_exists($filePath)) {
@@ -172,9 +172,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($deletedIds as $charId => $charObject) {
             $fileName = str_replace(' ', '_', $charObject['name']) . '.php';
             $filePath = $charakterePhpPath . $fileName;
-            if (file_exists($filePath) && unlink($filePath)) {
-                $deletedCount++;
+            if (!file_exists($filePath) || !unlink($filePath)) {
+                continue;
             }
+
+            $deletedCount++;
         }
 
         // 2. Umbenennungen und Neuerstellungen
@@ -212,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (file_put_contents($charaktereJsonPath, json_encode($inputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE))) {
             // 4. Einstellungen (Zeitstempel) aktualisieren
             $settingsData = [
-                'last_run_timestamp' => time()
+                'last_run_timestamp' => time(),
             ];
             saveGeneratorSettings($configPath, $currentUser, $settingsData, $debugMode);
 
@@ -471,8 +473,8 @@ require_once Path::getPartialTemplatePath('header.php');
                         <small>ID: ${id}</small>
                     </div>
                     <div class="character-actions">
-                        <button type="button" class="button edit-master-btn" title="Bearbeiten"><i class="fas fa-edit"></i></button>
-                        <button type="button" class="button delete-button delete-master-btn" title="Löschen"><i class="fas fa-trash-alt"></i></button>
+                        <button type="button" class="button edit edit-master-btn" title="Bearbeiten"><i class="fas fa-edit"></i></button>
+                        <button type="button" class="button delete delete-master-btn" title="Löschen"><i class="fas fa-trash-alt"></i></button>
                     </div>`;
                 masterListContainer.appendChild(entryDiv);
             });
@@ -503,9 +505,9 @@ require_once Path::getPartialTemplatePath('header.php');
                 <div class="character-group-header">
                     <h3>${escapeHtml(groupName)}</h3>
                     <div class="group-actions">
-                        <button type="button" class="button edit-group-btn" title="Gruppe umbenennen"><i class="fas fa-pen"></i></button>
-                        <button type="button" class="button add-char-to-group-btn" title="Charaktere hinzufügen"><i class="fas fa-plus"></i></button>
-                        <button type="button" class="button delete-button delete-group-btn" title="Gruppe löschen"><i class="fas fa-trash-alt"></i></button>
+                        <button type="button" class="button edit edit-group-btn" title="Gruppe umbenennen"><i class="fas fa-pen"></i></button>
+                        <button type="button" class="button add add-char-to-group-btn" title="Charaktere hinzufügen"><i class="fas fa-plus"></i></button>
+                        <button type="button" class="button delete delete-group-btn" title="Gruppe löschen"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
                 <div class="character-list-container"></div>`;
@@ -534,7 +536,7 @@ require_once Path::getPartialTemplatePath('header.php');
                         <span class="char-id-display">${charId}</span>
                     </div>
                     <div class="character-actions">
-                        <button type="button" class="button delete-button remove-char-btn" title="Aus Gruppe entfernen"><i class="fas fa-times"></i></button>
+                        <button type="button" class="button delete remove-char-btn" title="Aus Gruppe entfernen"><i class="fas fa-times"></i></button>
                     </div>`;
                     listContainer.appendChild(charEntry);
                 });

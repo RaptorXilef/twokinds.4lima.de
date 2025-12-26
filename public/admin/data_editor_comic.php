@@ -684,8 +684,8 @@ require_once Path::getPartialTemplatePath('header.php');
                         </div>
                     </td>
                     <td class="actions-cell">
-                        <button class="button edit-row-btn"><i class="fas fa-edit"></i></button>
-                        <button class="button delete-row-btn"><i class="fas fa-trash-alt"></i></button>
+                        <button class="button edit edit-row-btn"><i class="fas fa-edit"></i></button>
+                        <button class="button delete delete-row-btn"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
                 tableBody.appendChild(row);

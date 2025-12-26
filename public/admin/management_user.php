@@ -184,7 +184,7 @@ require_once Path::getPartialTemplatePath('header.php');
                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                 <input type="hidden" name="action" value="delete_user">
                                 <input type="hidden" name="user_to_delete" value="<?php echo htmlspecialchars($user); ?>">
-                                <button type="submit" class="button delete-button" title="Benutzer löschen"><i class="fas fa-trash-alt"></i> Löschen</button>
+                                <button type="submit" class="button delete" title="Benutzer löschen"><i class="fas fa-trash-alt"></i> Löschen</button>
                             </form>
                         <?php else : ?>
                             <span class="current-user-tag">(Aktuell angemeldet)</span>

@@ -374,8 +374,8 @@ require_once Path::getPartialTemplatePath('header.php');
             // Icon-Button für Löschen (nur bei General erlaubt, aber Comic-Buttons müssen wg. Layout da sein)
             // FIX: Inline CSS entfernt, 'disabled' Attribut reicht dank SCSS
             const deleteBtn = isComic ?
-                `<button class="button delete-row-btn" disabled><i class="fas fa-lock"></i></button>` :
-                `<button class="button delete-row-btn" title="Eintrag entfernen"><i class="fas fa-trash-alt"></i></button>`;
+                `<button class="button delete delete-row-btn" disabled><i class="fas fa-lock"></i></button>` :
+                `<button class="button delete delete-row-btn" title="Eintrag entfernen"><i class="fas fa-trash-alt"></i></button>`;
 
             row.innerHTML = `
                 <td>

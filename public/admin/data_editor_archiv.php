@@ -503,8 +503,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td>${displayTitle}</td>
                 <td><div class="description-preview">${displayContent}</div></td>
                 <td class="actions-cell">
-                    <button class="button edit-row-btn" title="Bearbeiten"><i class="fas fa-edit"></i></button>
-                    <button class="button delete-row-btn" title="Löschen"><i class="fas fa-trash-alt"></i></button>
+                    <button class="button edit edit-row-btn" title="Bearbeiten"><i class="fas fa-edit"></i></button>
+                    <button class="button delete delete-row-btn" title="Löschen"><i class="fas fa-trash-alt"></i></button>
                 </td>
             `;
             tableBody.appendChild(row);

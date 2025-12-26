@@ -69,24 +69,47 @@ body.theme-night .main-container button:disabled {
     opacity: 0.7;
 }
 
-// Löschen / Abbrechen Button
+/* --- Globale Aktions-Buttons (Edit/Add/Delete) --- */
+
+// Bearbeiten (Blau)
+.main-container .button.edit,
+.button.edit {
+    color: #fff;
+    background-color: var(--link-color);
+    &:hover {
+        background-color: #0056b3;
+    }
+}
+
+// Hinzufügen (Grün)
+.main-container .button.add,
+.button.add {
+    color: #fff;
+    background-color: var(--status-green-text);
+    &:hover {
+        background-color: #055a09;
+    }
+}
+
+// Löschen (Rot) - Bereits vorhanden, hier zur Vollständigkeit
 .main-container .button.delete,
 .button.delete {
     color: #fff;
     background-color: #dc3545;
-
     &:hover {
         background-color: #c82333;
     }
 }
 
-body.theme-night .button.delete {
-    color: #fce4e4;
-    background-color: #5a1e1e;
-    border: 1px solid #721c24;
-
-    &:hover {
-        background-color: #721c24;
+// Dark Mode Overrides
+body.theme-night {
+    .button.edit {
+        background-color: #004085;
+        border: 1px solid #0056b3;
+    }
+    .button.add {
+        background-color: #1e4620;
+        border: 1px solid #2e7d32;
     }
 }
 
