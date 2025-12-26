@@ -90,9 +90,11 @@ function createFolders(array $folders): array
 {
     $created = [];
     foreach ($folders as $folder) {
-        if (!is_dir($folder['path']) && mkdir($folder['path'], 0777, true)) {
-            $created[] = $folder['name'];
+        if (is_dir($folder['path']) || !mkdir($folder['path'], 0777, true)) {
+            continue;
         }
+
+        $created[] = $folder['name'];
     }
     return $created;
 }
@@ -113,23 +115,25 @@ function createRequiredFiles(array $files): array
 
     foreach ($files as $name => $details) {
         $targetPath = $details['target'];
-        if (!file_exists($targetPath)) {
-            $githubUrl = $githubBaseUrl . $details['github_path'];
-            $templateContent = @file_get_contents($githubUrl);
+        if (file_exists($targetPath)) {
+            continue;
+        }
 
-            if ($templateContent !== false) {
-                $targetDir = dirname($targetPath);
-                if (!is_dir($targetDir)) {
-                    mkdir($targetDir, 0777, true);
-                }
-                if (file_put_contents($targetPath, $templateContent) !== false) {
-                    $results[] = ['name' => $name, 'status' => 'success', 'message' => 'aus GitHub geladen'];
-                } else {
-                    $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Fehler beim Speichern der von GitHub bezogenen Datei'];
-                }
-            } else {
-                $results[] = ['name' => $name, 'status' => 'error', 'message' => 'GitHub-Quelle nicht gefunden'];
+        $githubUrl = $githubBaseUrl . $details['github_path'];
+        $templateContent = @file_get_contents($githubUrl);
+
+        if ($templateContent !== false) {
+            $targetDir = dirname($targetPath);
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
             }
+            if (file_put_contents($targetPath, $templateContent) !== false) {
+                $results[] = ['name' => $name, 'status' => 'success', 'message' => 'aus GitHub geladen'];
+            } else {
+                $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Fehler beim Speichern der von GitHub bezogenen Datei'];
+            }
+        } else {
+            $results[] = ['name' => $name, 'status' => 'error', 'message' => 'GitHub-Quelle nicht gefunden'];
         }
     }
     return $results;
@@ -338,7 +342,7 @@ require_once Path::getPartialTemplatePath('header.php');
                     <p class="status-message status-red visible"><i class="fas fa-exclamation-triangle"></i> Datei ist nicht sortiert.</p>
                     <form action="" method="POST" class="setup-actions">
                         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                        <button type="submit" name="action" value="sort_json" class="button delete-button setup-action-btn">
+                        <button type="submit" name="action" value="sort_json" class="button delete setup-action-btn">
                             <i class="fas fa-sort-numeric-down"></i> Jetzt sortieren
                         </button>
                     </form>
