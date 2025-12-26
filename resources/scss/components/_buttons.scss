@@ -136,3 +136,27 @@ body.theme-night .button-green {
         background-color: #2e7d32; // !important
     }
 }
+
+/* --- Ergänzung für den Pause-Button (Generator) --- */
+.button-orange {
+    color: #000;
+    background-color: var(
+        --status-orange-border
+    ); // Nutzt das kräftigere Orange des Rahmens
+
+    &:hover {
+        color: #fff;
+        background-color: var(--status-orange-text);
+    }
+}
+
+body.theme-night .button-orange {
+    color: var(--status-orange-text);
+    background-color: var(--status-orange-bg);
+    border: 1px solid var(--status-orange-border);
+
+    &:hover {
+        color: #000;
+        background-color: var(--status-orange-border);
+    }
+}
