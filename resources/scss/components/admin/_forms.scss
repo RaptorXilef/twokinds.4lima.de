@@ -107,11 +107,11 @@ body.theme-night .filter-controls label {
 .filter-controls input[type='text'],
 .filter-controls input[type='number'],
 .filter-controls select {
+    box-sizing: border-box; // Wichtig für 100% Breite inkl. Padding
     width: 100%;
     padding: 11px;
     font-family: inherit;
     font-size: 0.9em;
-    box-sizing: border-box; // Wichtig für 100% Breite inkl. Padding
     color: var(--text-color);
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
@@ -119,13 +119,13 @@ body.theme-night .filter-controls label {
 }
 
 .filter-controls select {
-    cursor: pointer;
     appearance: auto;
+    cursor: pointer;
 }
 
 body.theme-night .filter-controls input,
 body.theme-night .filter-controls select {
-    //background-color: var(--content-bg);
+    // background-color: var(--content-bg);
     background-color: color-mix(in srgb, var(--page-bg), black 20%);
     border-color: var(--border-light);
 }
@@ -340,7 +340,7 @@ body.theme-night .button-toggle-group .button-toggle {
 
 body.theme-night .admin-form input[type='text'],
 body.theme-night .admin-form input[type='password'] {
-    //background-color: var(--content-bg);
+    // background-color: var(--content-bg);
     background-color: color-mix(in srgb, var(--page-bg), black 20%);
     border-color: var(--border-light);
 }

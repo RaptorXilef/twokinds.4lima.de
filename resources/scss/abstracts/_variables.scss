@@ -91,14 +91,17 @@ $breakpoint-mobile: 768px;
     --status-green-bg: #d4edda;
     --status-green-text: #155724;
     --status-green-border: #c3e6cb;
+
     // Red (Error)
     --status-red-bg: #f8d7da;
     --status-red-text: #721c24;
     --status-red-border: #f5c6cb;
+
     // Orange (Warning)
     --status-orange-bg: #fff3cd;
     --status-orange-text: #856404;
     --status-orange-border: #ffeeba;
+
     // Blue (Info) - Hinzugefügt
     --status-info-bg: #d1ecf1;
     --status-info-text: #0c5460;
@@ -182,6 +185,7 @@ body.theme-night {
     --status-orange-bg: #5a4e1e;
     --status-orange-text: #fff8e1;
     --status-orange-border: #5a4e1e;
+
     // Blue (Info) - Hinzugefügt
     --status-info-bg: #00425c;
     --status-info-text: #d1ecf1;

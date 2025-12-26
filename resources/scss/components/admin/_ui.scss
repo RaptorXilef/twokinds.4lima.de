@@ -49,6 +49,13 @@
 
 @use '../../abstracts/variables' as *;
 
+.source-markers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+}
+
 /* --- Status & Source Markers (Binary System) --- */
 .source-marker,
 .status-icon {
@@ -458,6 +465,13 @@ body.theme-night .status-item.status-missing {
     color: var(--status-red-text);
 }
 
+.status-icon.missing,
+.source-marker.missing {
+    background-color: #dc3545;
+    opacity: 0.3;
+    filter: grayscale(1);
+}
+
 // Animations
 @keyframes highlight-row {
     from {
@@ -492,12 +506,12 @@ body.theme-night .row-highlight {
     display: none;
 }
 
-/*#fixed-buttons-container {
+/* #fixed-buttons-container {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
     margin-top: 20px;
-}*/
+} */
 
 /* --- Fixed Footer Actions --- */
 
@@ -508,7 +522,7 @@ body.theme-night .row-highlight {
     padding: 15px;
     margin-top: 30px;
     text-align: center;
-    background-color: var(--content-bg); //--table-header-bg
+    background-color: var(--content-bg); // --table-header-bg
     border-top: 1px solid var(--border-medium);
 }
 

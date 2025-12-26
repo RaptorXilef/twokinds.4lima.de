@@ -335,9 +335,9 @@ body.theme-night .image-item {
 // Lösch-Button (Oben Rechts)
 .image-item .delete-btn {
     position: absolute;
-    z-index: 20; // Über dem Overlay liegen
     top: 5px;
     right: 5px;
+    z-index: 20; // Über dem Overlay liegen
     display: flex;
     align-items: center;
     justify-content: center;

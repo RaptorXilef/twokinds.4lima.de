@@ -100,9 +100,9 @@
 .tag-page-links a span,
 .thumbnail-grid a span {
     position: absolute;
-    z-index: 80;
     top: 0;
     left: 0;
+    z-index: 80;
     box-sizing: border-box;
     display: none; // Standardmäßig versteckt auf Desktop
     align-items: center;
@@ -142,9 +142,9 @@
 .tag-page-links a .delete,
 .thumbnail-grid a .delete {
     position: absolute;
-    z-index: 91;
     top: 4px;
     right: 2px;
+    z-index: 91;
     display: flex;
     align-items: center;
     justify-content: center;
