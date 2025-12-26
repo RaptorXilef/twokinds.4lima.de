@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.15](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.14...v5.0.0-alpha.15) (2025-12-26)
+
+
+### Features
+
+* **seo:** restructure character routing and enforce clean URLs ([1da25ff](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1da25ff0c884e2f0587665727f5d80f20251dbc7))
+
+
+### Bug Fixes
+
+* **admin:** finalize admin UI synchronization and update robots.txt ([fbe635a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fbe635a859a97f2c12ac0df80270adbb191462ae))
+* **admin:** prevent login POST data loss by fixing form action and routes ([e0b4839](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e0b4839614b983f4d22a4ce0bc76076fb23ec436))
+* **admin:** style inputs and selects in filter controls ([4fddc86](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4fddc86ad054cc142bb653813b2e773f9a041db1))
+* **setup:** align button class in initial_setup.php with SCSS pattern ([a1ae510](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a1ae51003c97e0065ed994dce16839db32388377))
+
 ## [5.0.0-alpha.14](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.13...v5.0.0-alpha.14) (2025-12-25)
 
 
