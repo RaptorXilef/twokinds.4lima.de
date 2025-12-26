@@ -85,7 +85,17 @@ body.theme-night .main-container button:disabled {
 .main-container .button.add,
 .button.add {
     color: #fff;
-    background-color: var(--status-green-text);
+    background-color: #087c0e;
+    &:hover {
+        background-color: #055a09;
+    }
+}
+
+// Hinzufügen (Grün)
+.main-container .button.add2,
+.button.add2 {
+    color: #fff;
+    background-color: #13a51a;
     &:hover {
         background-color: #055a09;
     }
@@ -108,8 +118,14 @@ body.theme-night {
         border: 1px solid #0056b3;
     }
     .button.add {
-        background-color: #1e4620;
-        border: 1px solid #2e7d32;
+        background-color: #186f1c;
+        border: 1px solid #348d38;
+        /*        background-color: #1e4620;
+        border: 1px solid #2e7d32;*/
+    }
+    .button.add2 {
+        background-color: #244025;
+        border: 1px solid #49844c;
     }
 }
 

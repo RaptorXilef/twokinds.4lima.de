@@ -245,16 +245,16 @@ require_once Path::getPartialTemplatePath('header.php');
 
         <!-- ACTIONS CENTERED -->
         <div class="generator-actions actions-center">
-            <button class="button button-blue" data-mode="all">
+            <button class="button add" data-mode="all">
                 <i class="fas fa-sync"></i> Alles aktualisieren
             </button>
-            <button class="button" data-mode="thumbnails">
+            <button class="button add2" data-mode="thumbnails">
                 <i class="fas fa-images"></i> Nur Thumbnails
             </button>
-            <button class="button" data-mode="lowres,hires">
+            <button class="button add2" data-mode="lowres,hires">
                 <i class="fas fa-file-image"></i> Comic-Seiten (Low/Hi)
             </button>
-            <button class="button" data-mode="socialmedia">
+            <button class="button add2" data-mode="socialmedia">
                 <i class="fas fa-share-alt"></i> Social Media
             </button>
         </div>

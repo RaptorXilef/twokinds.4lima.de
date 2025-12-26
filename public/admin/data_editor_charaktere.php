@@ -282,7 +282,7 @@ require_once Path::getPartialTemplatePath('header.php');
         <div class="collapsible-header">
             <h3>1. Charakter-Stammdaten</h3>
             <div class="group-actions">
-                <button class="button add-character-btn" title="Neuen Charakter anlegen"><i class="fas fa-plus"></i> Neu</button>
+                <button class="button add add-character-btn" title="Neuen Charakter anlegen"><i class="fas fa-plus"></i> Neu</button>
             </div>
         </div>
         <div class="collapsible-content">
