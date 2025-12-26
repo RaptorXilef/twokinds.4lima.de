@@ -129,10 +129,11 @@ body.theme-night hr {
 }
 
 .instructions {
-    margin: 15px 0;
+    margin-bottom: 15px;
+    font-size: 1em;
+    line-height: 1.5;
+    color: var(--text-color-medium);
     font-style: italic;
-    color: var(--text-color-light);
-    text-align: center;
 }
 
 .smalltext {

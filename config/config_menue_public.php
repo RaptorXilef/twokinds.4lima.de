@@ -64,7 +64,7 @@ $debugMode = $debugMode ?? false;
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/ueber_den_comic<?php echo $dateiendungPHP; ?>">Über den
             Comic</a>
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/charakter-vorstellung<?php echo $dateiendungPHP; ?>">Charaktere</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_CHARAKTERE_URL; ?>">Charakter-Übersicht</a>
+        <a href="<?php echo DIRECTORY_PUBLIC_CHARAKTERE_URL . '/'; ?>">Charakter-Übersicht</a>
         <br>
         <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/faq<?php echo $dateiendungPHP; ?>">FAQ</a>
         <br>

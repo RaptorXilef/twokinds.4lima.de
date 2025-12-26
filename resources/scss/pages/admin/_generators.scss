@@ -91,12 +91,6 @@ body.theme-night .setup-container {
     border-left: 4px solid var(--link-color);
 }
 
-// Überschreibt die globale .instructions Klasse für diesen Kontext
-.setup-section .instructions {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
 .setup-actions {
     display: flex;
     gap: 10px;

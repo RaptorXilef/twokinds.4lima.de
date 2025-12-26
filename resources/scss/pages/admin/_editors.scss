@@ -563,7 +563,6 @@ body.theme-night .image-box {
 #settings-and-actions-container,
 .collapsible-section,
 .generator-settings,
-.last-run-container,
 .summary-details {
     padding: 20px;
     margin-bottom: 25px;
@@ -572,11 +571,17 @@ body.theme-night .image-box {
     border-radius: 5px;
 }
 
+.last-run-container,
+#last-run-container {
+    margin-bottom: 25px;
+}
+
 body.theme-night {
     #settings-and-actions-container,
     .collapsible-section,
     .generator-settings,
     .last-run-container,
+    #last-run-container,
     .summary-details {
         background-color: var(--sidebar-bg);
         border-color: var(--border-light);

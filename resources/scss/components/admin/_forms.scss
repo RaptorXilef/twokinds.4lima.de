@@ -213,10 +213,8 @@ body.theme-night .search-wrapper input {
 }
 
 .drag-drop-zone .instructions {
-    width: 100%; // Volle Breite für korrekte Ausrichtung
     margin: 0;
     font-size: 1.2em;
-    color: var(--text-color-medium);
     text-align: center; // Sicherstellen, dass Text zentriert ist
     pointer-events: none;
 }
