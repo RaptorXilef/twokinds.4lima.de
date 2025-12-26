@@ -250,7 +250,7 @@ body.theme-night .progress-text {
 
 /* --- Log Console --- */
 .log-console {
-    height: 200px;
+    height: 300px;
     padding: 15px;
     margin-bottom: 20px;
     overflow-y: auto;
@@ -318,7 +318,7 @@ body.theme-night .collapsible-section {
     padding: 12px 15px;
     cursor: pointer;
     background-color: var(--table-header-bg);
-    border-bottom: 1px solid var(--border-medium);
+    border-bottom: 1px solid var(--border-medium); /// var(--border-light)
     transition: background-color 0.2s;
 }
 
@@ -492,11 +492,24 @@ body.theme-night .row-highlight {
     display: none;
 }
 
-#fixed-buttons-container {
+/*#fixed-buttons-container {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
     margin-top: 20px;
+}*/
+
+/* --- Fixed Footer Actions --- */
+
+#fixed-buttons-container {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    padding: 15px;
+    margin-top: 30px;
+    text-align: center;
+    background-color: var(--content-bg); //--table-header-bg
+    border-top: 1px solid var(--border-medium);
 }
 
 .sr-only {
