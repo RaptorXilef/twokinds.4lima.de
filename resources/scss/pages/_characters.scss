@@ -53,6 +53,10 @@
 @use '../abstracts/mixins' as *;
 
 /* --- Bookmarks Page --- */
+.bookmarks {
+    margin-top: 20px;
+}
+
 .bookmarks-page .page-header {
     display: flex;
     gap: 12px;
@@ -73,14 +77,15 @@
 .bookmarks-page .comic-count-badge {
     display: inline-block;
     padding: 4px 10px;
-    font-size: 0.7em;
+    margin-left: 10px;
+    font-size: 0.75em;
     font-weight: 700;
     line-height: 1;
-    vertical-align: baseline;
-    color: #fff;
+    vertical-align: baseline; // middle
+    color: var(--text-on-medium);
     text-align: center;
     white-space: nowrap;
-    background-color: var(--cookie-btn-accept-bg);
+    background-color: var(--button-bg); // var(--cookie-btn-accept-bg);
     border-radius: 12px;
 }
 
@@ -113,18 +118,22 @@
 }
 
 .no-bookmarks {
-    padding: 2rem 1rem;
+    padding: 3rem 2rem;
     margin: 1rem;
     font-size: 1.2rem;
-    color: #666;
+    //color: #666;
     text-align: center;
-    border: 2px dashed #ccc;
-    border-radius: 5px;
+    background-color: var(--table-row-even);
+    //border: 2px dashed #ccc;
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
 }
 
 .no-bookmarks p {
     margin: 0;
-    line-height: 1.5;
+    //line-height: 1.5;
+    font-style: italic;
+    color: var(--text-color-medium);
 }
 
 .bookmarks-controls {
