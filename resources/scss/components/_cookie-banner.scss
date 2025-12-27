@@ -27,6 +27,8 @@
 /// - refactor(HTML): IDs auf Kebab-Case umgestellt (erfordert HTML/JS-Anpassung).
 /// - style(Linter): Unerwartete Leerzeile entfernt.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - fix: .toggle-details-container hinzugefügt für besseres Spacing im Banner.
+/// - fix: .inner-collapsible für verschachtelte Details implementiert.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -236,4 +238,21 @@ body.theme-night .collapsible-content {
 .cookie-settings-container {
     margin-top: 20px;
     text-align: center;
+}
+
+/* Hinzugefügte Class nach dem Refactoring */
+.toggle-details-container {
+    margin: 8px 0;
+}
+
+.inner-collapsible {
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    background-color: rgb(0 0 0 / 0.03);
+    border-radius: 4px;
+}
+
+body.theme-night .inner-collapsible {
+    background-color: rgb(255 255 255 / 0.05);
 }

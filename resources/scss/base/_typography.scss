@@ -23,6 +23,7 @@
 /// @since    5.0.0
 /// - Einführung von CSS Vars für Farben.
 /// - style(Refactor): Nesting für Theme-Overrides reduziert (Phase 2 Flattening).
+/// - feat: Utility-Klasse .mono für technische Textauszeichnungen hinzugefügt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -59,7 +60,11 @@ body.transitioning:not(.preload) * {
 }
 
 .mono {
-    font-family: $font-mono;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    padding: 1px 4px;
+    background-color: var(--table-row-even);
+    border-radius: 3px;
 }
 
 h1,
