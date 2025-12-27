@@ -5,7 +5,7 @@
  * Version 2.0: Vollständig an die neue, sichere Architektur mit
  * init_public.php und einem zentralen Bild-Helfer angepasst.
  *
- * @file      ROOT/public/charaktere.php
+ * @file      ROOT/public/charakter-vorstellung.php  |  ehemals ROOT/public/charaktere.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.

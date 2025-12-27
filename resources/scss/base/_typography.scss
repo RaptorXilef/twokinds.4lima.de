@@ -60,9 +60,9 @@ body.transitioning:not(.preload) * {
 }
 
 .mono {
+    padding: 1px 4px;
     font-family: var(--font-mono);
     font-size: 0.9em;
-    padding: 1px 4px;
     background-color: var(--table-row-even);
     border-radius: 3px;
 }

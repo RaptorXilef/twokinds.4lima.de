@@ -175,6 +175,7 @@
 /* --- Character Detail Page (Wiederhergestellt) --- */
 .char-detail {
     @include clearfix; // Nutzt das Mixin aus abstracts/_mixins.scss
+
     padding: 15px 10px;
     margin-bottom: 10px;
     color: var(--text-color);
