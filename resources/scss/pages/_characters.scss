@@ -377,7 +377,8 @@ body.theme-night .character-group h4 {
     text-decoration: underline;
 }
 
-.character-item img {
+.character-item img,
+.character-image-fallback {
     width: 80px;
     height: 80px;
     object-fit: cover;
@@ -387,7 +388,8 @@ body.theme-night .character-group h4 {
     box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
 }
 
-body.theme-night .character-item img {
+body.theme-night .character-item img,
+body.theme-night .character-image-fallback {
     background-color: var(--characters-area-bg);
     border-color: var(--border-light);
 }
