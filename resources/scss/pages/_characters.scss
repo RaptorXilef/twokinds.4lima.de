@@ -32,6 +32,9 @@
 /// - refactor(SCSS): .tag-page-links entfernt (jetzt in components/_thumbnail-grid.scss).
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 /// - fix: Fehlende Klasse .charaktere-overview für die Hauptübersicht hinzugefügt.
+/// - fix: Clearfix für .char-detail hinzugefügt, um kollabierende Border zu verhindern.
+/// - fix: Abstände für h3 innerhalb von .charaktere-overview korrigiert.- fix: Clearfix für .char-detail hinzugefügt, um kollabierende Border zu verhindern.
+/// - fix: Abstände für h3 innerhalb von .charaktere-overview korrigiert.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -159,13 +162,20 @@
 
 // - .charaktere-overview: Container für die Charakter-Listenansicht
 .charaktere-overview {
-    padding-top: 0px;
-    padding-bottom: 0px;
+    padding-top: 0;
+    padding-bottom: 0;
+
+    h3 {
+        margin-top: 20px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border-medium);
+    }
 }
 
 /* --- Character Detail Page (Wiederhergestellt) --- */
 .char-detail {
-    padding: 10px;
+    @include clearfix; // Nutzt das Mixin aus abstracts/_mixins.scss
+    padding: 15px 10px;
     margin-bottom: 10px;
     color: var(--text-color);
     border-bottom: 1px solid var(--border-medium);

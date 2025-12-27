@@ -26,6 +26,8 @@
 /// - style(Linter): Spezifität der Navigations-Icons durch Nesting korrigiert.
 /// - fix(CSS): Linter-Fehler (no-descending-specificity) durch Gruppierung der Dark-Mode-Overrides am Ende behoben.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - fix: Image-Alignment in der Comic-Navigation verbessert.
+/// - fix: Sichtbarkeit von .navarchive-mobile gesteuert.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -260,4 +262,19 @@ body.theme-night .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
 .comicnav .disabled {
     cursor: default;
     opacity: 0.4;
+}
+/* Korrekturen */
+.navbegin,
+.navprev,
+.navarchive,
+.navnext,
+.navend {
+    img {
+        vertical-align: middle;
+        margin-top: -2px; // Optische Zentrierung zum Text
+    }
+}
+
+.navarchive-mobile {
+    display: none; // Standardmäßig aus, wird via Media-Query in layout/_sidebar.scss oder hier gesteuert
 }
