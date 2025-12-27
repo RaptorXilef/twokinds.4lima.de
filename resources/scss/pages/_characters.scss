@@ -272,3 +272,112 @@ body.theme-night .bookmarks-controls button {
 body.theme-night .bookmarks-controls button:hover {
     background-color: var(--border-light);
 }
+
+/* Aus _comic.scss übernommen */
+// Comic Characters Component
+.comic-characters {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 0.35);
+}
+
+body.theme-night .comic-characters {
+    background-color: var(--sidebar-bg);
+    border-color: var(--page-bg);
+}
+
+.comic-characters h3 {
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    color: var(--text-color-light);
+    text-align: center;
+}
+
+body.theme-night .comic-characters h3 {
+    color: #bbb;
+}
+
+.character-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.character-group {
+    width: 100%;
+}
+
+.character-group h4 {
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--text-color);
+    text-align: center;
+    border-bottom: 1px solid rgb(0 0 0 / 0.1);
+}
+
+body.theme-night .character-group h4 {
+    color: #ddd;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.character-group-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+}
+
+// Character Item Styling (Flat)
+.character-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    text-align: center;
+}
+
+.character-item .character-name {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9em;
+    font-weight: bold;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+}
+
+.character-item a {
+    display: block;
+    max-width: 100%;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.2s ease-in-out;
+}
+
+.character-item a:hover {
+    transform: translateY(-5px);
+}
+
+.character-item a:hover .character-name {
+    text-decoration: underline;
+}
+
+.character-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    background-color: var(--characters-area-bg);
+    border: 2px solid var(--border-medium);
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+body.theme-night .character-item img {
+    background-color: var(--characters-area-bg);
+    border-color: var(--border-light);
+}
