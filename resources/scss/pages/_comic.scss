@@ -179,7 +179,8 @@ body.theme-night .comic .below-nav {
 }
 
 // Tag Wrapper - Wiederhergestellt
-.comic .tag-wrapper {
+.comic .tag-wrapper,
+.comic .below-nav {
     display: flex;
     flex-flow: row nowrap;
     gap: 1rem;
@@ -188,7 +189,9 @@ body.theme-night .comic .below-nav {
     margin-top: 10px;
 }
 
-.comic .tag-wrapper .comic-tags {
+/*
+.comic .tag-wrapper .comic-tags,
+.comic .below-nav .comic-tags {
     display: flex;
     flex: 1 1 auto;
     flex-flow: row wrap;
@@ -200,16 +203,21 @@ body.theme-night .comic .below-nav {
 }
 
 @include media-retina-mobile {
-    .comic .tag-wrapper .comic-tags {
+    .comic .tag-wrapper .comic-tags,
+    .comic .below-nav .comic-tags {
         font-size: 1.2em;
     }
 }
 
-.comic .tag-wrapper .comic-tags .button {
+.comic .tag-wrapper .comic-tags .button,
+.comic .below-nav .comic-tags .button {
     font-size: 1em;
 }
+*/ // Deaktiviert, weil aktuell nicht genutzt
 
-.comic .tag-wrapper .permalink {
+/*.comic .tag-wrapper .permalink,
+.comic .below-nav .permalink */
+.permalink {
     flex: 0 0 auto;
     padding-top: 3px;
     font-size: 0.9em;
@@ -220,16 +228,21 @@ body.theme-night .comic .below-nav {
     color: var(--link-color);
 }
 
-body.theme-night .comic .tag-wrapper .permalink {
+/*body.theme-night .comic .tag-wrapper .permalink,
+body.theme-night .comic .below-nav .permalink, */
+body.theme-night .permalink {
     color: #ccc;
 }
 
 @include media-retina-mobile {
-    .comic .tag-wrapper .permalink {
+    /*.comic .tag-wrapper .permalink,
+    .comic .below-nav .permalink */
+    .permalink {
         font-size: 1.2em;
     }
 }
 
+/*
 .comic .comic-footer {
     margin-top: 7px;
 }
@@ -238,3 +251,4 @@ body.theme-night .comic .tag-wrapper .permalink {
     position: relative;
     margin-bottom: 15px;
 }
+*/ // Deaktiviert, weil aktuell nicht genutzt
