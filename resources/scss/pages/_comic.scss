@@ -136,6 +136,11 @@ body.theme-night .comic .below-nav {
     color: #ccc;
 }
 
+.nav-instruction-content {
+    color: var(--text-color-light);
+    font-size: 0.95em;
+}
+
 @include media-retina-mobile {
     .comic .below-nav {
         margin-top: 0.5rem;
@@ -208,6 +213,11 @@ body.theme-night .comic .below-nav {
     flex: 0 0 auto;
     padding-top: 3px;
     font-size: 0.9em;
+}
+
+.permalink a {
+    //font-weight: bold;
+    color: var(--link-color);
 }
 
 body.theme-night .comic .tag-wrapper .permalink {
