@@ -39,6 +39,7 @@
 // - --link-visited: Farbe für besuchte Links
 // - --text-color-light: Hellere Textfarbe für Instruktionen
 
+@use '../abstracts/mixins' as *;
 @use '../abstracts/variables' as *;
 
 body {
@@ -91,7 +92,7 @@ h3.page-header,
 h4.page-header,
 h5.page-header,
 h6.page-header {
-    padding: 2px 10px;
+    padding: 5px 10px;
     margin-bottom: 10px;
     font-size: 22.5px;
     color: var(--text-color);
@@ -134,12 +135,22 @@ body.theme-night hr {
 }
 
 .instructions,
-.editor-footer-info {
+.editor-footer-info,
+.character-overview-intro {
     margin-bottom: 15px;
     font-size: 1em;
     font-style: italic;
     line-height: 1.5;
     color: var(--text-color-medium);
+}
+
+@include media-retina-mobile {
+    .instructions,
+    .editor-footer-info,
+    .character-overview-intro {
+        padding: 0 15px;
+        font-size: 1.2em;
+    }
 }
 
 .smalltext {
