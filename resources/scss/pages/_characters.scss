@@ -31,6 +31,7 @@
 /// - chore(Linter): False-Positive bei Dark-Mode Spezifität global für den Theme-Block ignoriert.
 /// - refactor(SCSS): .tag-page-links entfernt (jetzt in components/_thumbnail-grid.scss).
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - fix: Fehlende Klasse .charaktere-overview für die Hauptübersicht hinzugefügt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -154,6 +155,12 @@
 
 .bookmarks-controls .hidden-file-input {
     display: none;
+}
+
+// - .charaktere-overview: Container für die Charakter-Listenansicht
+.charaktere-overview {
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
 /* --- Character Detail Page (Wiederhergestellt) --- */

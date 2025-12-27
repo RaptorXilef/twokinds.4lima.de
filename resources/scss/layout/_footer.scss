@@ -23,6 +23,7 @@
 /// @since    5.0.0
 /// - Initiale Erstellung.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - fix: Fehlende Klasse .website-version zur korrekten Darstellung der Systemversion hinzugefügt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -33,6 +34,7 @@
 // - --page-bg: Rahmenfarbe im Dark Mode
 // - --text-color: Standard Textfarbe
 // - --link-color: Linkfarbe
+// - --text-color-medium: Mittlere Textfarbe für Meta-Infos
 
 @use '../abstracts/variables' as *;
 
@@ -106,4 +108,12 @@ footer a {
     background: transparent
         url('#{$base-url}/assets/images/layout/footer.webp?c=20251024') 50% 0
         no-repeat;
+}
+
+.website-version {
+    margin-top: 5px;
+    font-size: 10px;
+    color: var(--text-color-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
