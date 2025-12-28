@@ -52,7 +52,7 @@
 
 .chapter p {
     margin-inline: 0.5rem;
-    margin-top: 0.3rem;
+    margin: 0.8rem 1.5rem;
     color: var(--text-color);
     text-align: justify;
 }
@@ -70,7 +70,7 @@ body.theme-night .chapter p a {
 .chapter h2 {
     display: flex; // Flexbox statt inline-block
     align-items: center; // Vertikale Zentrierung
-    width: 100%; // Volle Breite nutzen
+    //width: 100%; // Volle Breite nutzen
     margin: 0;
     font-size: 1.2em;
     color: var(--text-on-medium);

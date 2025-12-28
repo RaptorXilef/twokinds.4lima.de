@@ -13,7 +13,7 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   5.0.0
+ *
  * @since     1.0.0 Verarbeitung der Daten aus archive_chapters.json und comic_var.json.
  * @since     1.1.0 Anpassung an versionalisierte comic_var.json (Schema v2).
  * @since     1.2.0 Umstellung auf globale Pfad-Konstanten.
@@ -87,12 +87,14 @@ if ($debugMode && empty($imageCache)) {
 $comicsByChapter = [];
 foreach ($comicData as $comicId => $details) {
     $chapterId = $details['chapter'] ?? null;
-    if ($chapterId !== null) {
-        if (!isset($comicsByChapter[$chapterId])) {
-            $comicsByChapter[$chapterId] = [];
-        }
-        $comicsByChapter[$chapterId][$comicId] = $details;
+    if ($chapterId === null) {
+        continue;
     }
+
+    if (!isset($comicsByChapter[$chapterId])) {
+        $comicsByChapter[$chapterId] = [];
+    }
+    $comicsByChapter[$chapterId][$comicId] = $details;
 }
 if ($debugMode) {
     error_log("DEBUG: Comics nach Kapiteln gruppiert.");
@@ -101,16 +103,20 @@ if ($debugMode) {
 // Füge fehlende Kapitel aus comic_var.json hinzu
 $existingChapterIds = array_column($archiveChapters, 'chapterId');
 foreach (array_keys($comicsByChapter) as $chId) {
-    if (!in_array($chId, $existingChapterIds)) {
-        $archiveChapters[] = [
-            'chapterId' => (string) $chId,
-            'title' => '',
-            'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt.'
-        ];
-        if ($debugMode) {
-            error_log("DEBUG: Fehlendes Kapitel {$chId} hinzugefügt.");
-        }
+    if (in_array($chId, $existingChapterIds)) {
+        continue;
     }
+
+    $archiveChapters[] = [
+        'chapterId' => (string) $chId,
+        'title' => '',
+        'description' => 'Die Informationen zu diesem Kapitel werden noch erstellt.',
+    ];
+    if (!$debugMode) {
+        continue;
+    }
+
+    error_log("DEBUG: Fehlendes Kapitel {$chId} hinzugefügt.");
 }
 
 // FILTERLOGIK: Entferne Kapitel mit leerer chapterId ohne Comics

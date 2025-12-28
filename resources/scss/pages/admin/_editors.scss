@@ -564,11 +564,17 @@ body.theme-night .image-box {
 .collapsible-section,
 .generator-settings,
 .summary-details {
-    padding: 20px;
+    //padding: 20px;
     margin-bottom: 25px;
     background-color: var(--table-row-even);
     border: 1px solid var(--border-medium);
     border-radius: 5px;
+}
+
+#settings-and-actions-container,
+.generator-settings,
+.summary-details {
+    padding: 20px;
 }
 
 .last-run-container,

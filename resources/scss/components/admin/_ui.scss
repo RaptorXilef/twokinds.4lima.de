@@ -306,7 +306,7 @@ body.theme-night .progress-text {
 
 /* --- Collapsibles --- */
 .collapsible-section {
-    margin-bottom: 20px;
+    //margin-bottom: 20px;
     overflow: hidden;
     background-color: var(--content-bg);
     border: 1px solid var(--border-medium);
@@ -362,7 +362,8 @@ body.theme-night .collapsible-header {
 
 .collapsible-content {
     display: none; // Standardmäßig zu (wird per JS/Klasse gesteuert)
-    padding: 15px;
+    padding: 1.5rem;
+    border-left: 2px solid var(--border-medium);
 }
 
 .collapsible-content .path-hint {
