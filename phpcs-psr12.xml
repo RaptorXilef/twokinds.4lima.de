@@ -8,6 +8,10 @@
     <file>tests</file>
     <file>public</file>
 
+    <!-- Exclude Pfade -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
+
     <arg value="p"/>
     <arg name="colors"/>
     <arg name="parallel" value="80"/>

@@ -10,7 +10,9 @@
     "editor.formatOnSave": true,
     //"editor.formatOnPaste": true,
     //"editor.formatOnType": true,
-    "editor.renderWhitespace": "all" // alternativ "boundary"
+    "editor.renderWhitespace": "all", // alternativ "boundary"
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -82,6 +84,8 @@
   "phpsab.fixerEnable": true,
   "phpsab.fixer": "phpcbf",
   "phpsab.fixerStandard": "", // Nutzt ebenfalls die phpcs.xml.dist
+  // PHP-spezifische Ergänzung für den Sniffer
+  "phpsab.autoRuleset": true,
   // WICHTIG: Dynamischer Pfad statt C:\xampp...
   //  "phpsab.executablePathCBF": "${workspaceFolder}/vendor/bin/phpcbf.bat", // Autoerkennung anktiviert
   "phpsab.debug": false,
@@ -95,6 +99,8 @@
   // PROJEKT-SPEZIFISCHE EINSTELLUNGEN
   // Regeln, die für alle Teammitglieder gelten sollen.
   // =========================================================================
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 120,
   // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
   "files.eol": "\n",
   // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
