@@ -73,7 +73,7 @@ $comicCount = count($characterComics);
 // === 5. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Alle Auftritte von ' . htmlspecialchars($characterName);
 $siteDescription = 'Eine Übersicht aller Comic-Seiten, auf denen der Charakter ' . htmlspecialchars($characterName) . ' erscheint.';
-$viewportContent = 'width=1099';
+//$viewportContent = 'width=1099';
 $robotsContent = 'index, follow';
 
 // === 6. HEADER EINBINDEN ===

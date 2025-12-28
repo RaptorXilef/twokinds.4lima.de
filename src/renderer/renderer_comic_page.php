@@ -117,7 +117,7 @@ $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "'>window.p
 // WICHTIG: comic.js MUSS NACH jQuery/Summernote geladen werden
 $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 
-$viewportContent = 'width=1099';
+//$viewportContent = 'width=1099';
 $robotsContent = 'index, follow';
 $canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . '.php'; // $dateiendungPHP
 

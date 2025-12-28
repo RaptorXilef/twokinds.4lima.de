@@ -35,7 +35,7 @@ require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'load_comic_da
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
 $pageTitle = 'Deine Lesezeichen';
 $siteDescription = 'Verwalte und zeige deine gespeicherten Comic-Lesezeichen an, um schnell zu deinen Lieblingsseiten zurückzukehren.';
-$viewportContent = 'width=1099';
+//$viewportContent = 'width=1099';
 $robotsContent = 'noindex, follow';
 
 // Automatischer Cache-Buster für comic.min.js
