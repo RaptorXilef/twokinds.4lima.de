@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file      ROOT/src/components/Path.php
  * @package   twokinds.4lima.de
@@ -28,6 +29,12 @@ class Path
     // =================================================================
     // --- PRIVATE FILE PATHS (for server-side operations) ---
     // =================================================================
+
+    // --- System-ROOT ---
+    public static function getRootPath(string $filename): string
+    {
+        return DIRECTORY_ROOT . DIRECTORY_SEPARATOR . $filename;
+    }
 
     // --- System, Config & Data ---
     public static function getConfigPath(string $filename): string
@@ -181,4 +188,3 @@ class Path
  * $iconPath = Path::getImgIcons('favicon.ico');
  *
  */
-?>

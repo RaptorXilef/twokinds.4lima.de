@@ -8,22 +8,22 @@
     "editor.defaultFormatter": "valeryanm.vscode-phpsab",
     // Erzwingt das Formatieren beim Speichern für PHP-Dateien
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.formatOnType": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
     "editor.renderWhitespace": "all" // alternativ "boundary"
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.formatOnType": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
     "editor.renderWhitespace": "all"
   },
   "[scss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.formatOnType": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
     // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
     "editor.codeActionsOnSave": {
       "source.fixAll.stylelint": "explicit"
@@ -33,8 +33,8 @@
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.formatOnType": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
     // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
     "editor.codeActionsOnSave": {
       "source.fixAll.stylelint": "explicit"
@@ -44,15 +44,15 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.formatOnType": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
     "editor.renderWhitespace": "all"
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features",
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": true,
-    "editor.formatOnType": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
     "editor.renderWhitespace": "all"
   },
   "[xml]": {
