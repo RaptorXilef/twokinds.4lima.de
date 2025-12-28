@@ -1,4 +1,48 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// FAQ Page (Accordion Styles)
+/// Styling für die häufig gestellten Fragen.
+///
+/// Beinhaltet das Layout für den FAQ-Container sowie die Akkordeon-Logik
+/// für Fragen und Antworten inklusive Animationen und Status-Indikatoren.
+///
+
+/*!
+ * @file       resources/scss/pages/_faq.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - refactor(FAQ): Migration aus _misc.scss und Angleichung an UI-Sichtbarkeit.
+/// - fix(Style): Hintergrundfarben für bessere Kontraste optimiert.
+/// - style: Linker Akzent-Border für aktive Antworten hinzugefügt.
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --text-color: Standard Textfarbe
+// - --text-color-light: Helle Textfarbe (für Pfeile)
+// - --table-row-hover: Hintergrund für Header (Light Mode)
+// - --table-row-even: Hintergrund für Header (Night Mode)
+// - --button-bg: Hintergrund für Hover (Night Mode)
+// - --button-hover-bg: Hintergrund für Hover (Light Mode)
+// - --text-on-medium: Kontrastfarbe für Text auf farbigen Hintergründen
+
 /* --- FAQ Page --- */
+/*
 div.page-faq section {
     padding-top: 10px;
     margin-top: 10px;
@@ -9,6 +53,7 @@ div.page-faq h2 {
     margin-bottom: 5px;
     font-size: 15px;
 }
+*/
 
 /* --- FAQ Page (Accordion) --- */
 .faq-container {
@@ -16,9 +61,11 @@ div.page-faq h2 {
     margin: 20px auto;
 }
 
+/*
 .faq-container p {
     margin-bottom: 20px;
 }
+*/
 
 .faq-item {
     margin-bottom: 15px;
@@ -38,19 +85,19 @@ body.theme-night .faq-item {
     font-weight: bold;
     color: var(--text-color);
     cursor: pointer;
-    background-color: var(
-        --content-bg
-    ); // Optional: Leichter Hintergrund für Klickbarkeit
-
+    // Angleichung an Collapsible-Header für bessere Sichtbarkeit
+    background-color: var(--table-row-hover);
     transition: background-color 0.2s;
 }
 
 .faq-question:hover {
-    background-color: var(--table-row-hover);
+    background-color: var(--button-hover-bg);
+    color: var(--text-on-medium);
 }
 
 body.theme-night .faq-question {
-    background-color: transparent;
+    background-color: var(--table-row-even);
+    //background-color: transparent;
 }
 
 body.theme-night .faq-question:hover {
@@ -61,7 +108,7 @@ body.theme-night .faq-question:hover {
 .faq-question::after {
     font-size: 0.8em;
     color: var(--text-color-light);
-    content: '\25B6';
+    content: '\25B6'; // ▶
     transition: transform 0.3s ease;
 }
 
@@ -76,4 +123,11 @@ body.theme-night .faq-question:hover {
     overflow: hidden;
     color: var(--text-color);
     transition: max-height 0.3s ease-out; // Animation beim Öffnen
+}
+
+.faq-item.active .faq-answer {
+    max-height: 500px;
+    padding: 15px;
+    border-left: 2px solid var(--border-medium);
+    transition: max-height 0.5s ease-in;
 }

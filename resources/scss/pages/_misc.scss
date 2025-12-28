@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Miscellaneous Pages (FAQ, Chat, Links)
-/// FAQ und Impressum Styles.
+/// Miscellaneous Pages (Chat, Links)
+/// Impressum Styles.
 ///
 /// Zusammenfassung kleinerer Seiten.
-/// Styling für die Akkordeon-Funktion der FAQ und das Layout des Impressums.
+/// Layout des Impressums.
 ///
 
 /*!
@@ -24,6 +24,7 @@
 /// @since    5.0.0
 /// - Zusammenfassung kleinerer Seiten.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - refactor(faq): faq zu _faq.scss verschoben
 ///
 
 // Verwendete SCSS-Variablen:
