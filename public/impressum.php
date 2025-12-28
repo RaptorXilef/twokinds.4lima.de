@@ -13,13 +13,13 @@
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     5.0.0 refactor(Page): Inline-CSS und Tailwind-Logik durch SCSS-Klasse .imprint-container ersetzt.
+ * @since     5.0.0-fix: E-Mail-Logik verbessert, sodass Instruktionstext beim Klick verschwindet.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
 // === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -27,18 +27,18 @@ $pageTitle = 'Impressum';
 $siteDescription = 'Impressum und Kontaktinformationen für das deutsche TwoKinds Fanprojekt.';
 $robotsContent = 'noindex, follow';
 
-// JavaScript für die E-Mail-Anzeige (CSP-konform mit Event Listener)
+// JavaScript für die E-Mail-Anzeige (Ersetzt nun den gesamten Platzhalter)
 $additionalScripts = '
 <script nonce="' . htmlspecialchars($nonce) . '" type="text/javascript">
   document.addEventListener(\'DOMContentLoaded\', function() {
-    const emailButton = document.getElementById(\'email-button\');
+    const emailButton = document.getElementById(\'impressum-email-button\');
     if (emailButton) {
         emailButton.addEventListener(\'click\', function() {
             const email = \'MCRaptorDragon\' + \'@\' + \'gmail.com\';
             const mailtoLink = \'<a href="mailto:\' + email + \'">\' + email + \'</a>\';
-            const container = document.getElementById(\'email-container\');
-            if (container) {
-                container.innerHTML = mailtoLink;
+            const placeholder = document.getElementById(\'email-placeholder\');
+            if (placeholder) {
+                placeholder.innerHTML = mailtoLink;
             }
         });
     }
@@ -46,7 +46,7 @@ $additionalScripts = '
 </script>
 ';
 
-// === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+// === 3. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
@@ -67,10 +67,11 @@ require_once Path::getPartialTemplatePath('header.php');
                     rel="noopener noreferrer">GitHub</a>
             </li>
             <li><a href="https://inkbunny.net/RaptorXilefSFW" target="_blank" rel="noopener noreferrer">InkBunny</a></li>
-            <li>E-Mail: Bitte klicken Sie auf den Button, um die E-Mail-Adresse anzuzeigen.
-                <div id="email-container">
-                    <button id="email-button" type="button">E-Mail anzeigen</button>
-                </div>
+            <li><strong>E-Mail:</strong>
+                <span id="email-placeholder">
+                    <!-- Bitte klicken Sie auf den Button, um die E-Mail-Adresse anzuzeigen. -->
+                    <button id="impressum-email-button" type="button">E-Mail anzeigen</button>
+                </span>
             </li>
         </ul>
 
