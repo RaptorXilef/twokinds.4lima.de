@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Diese Datei enthält Informationen über den Comic, den Künstler und den Übersetzer.
  *
@@ -8,19 +9,19 @@
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
+ *
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     5.0.0 refactor(Page): Klassen für Sektionen und Mugshots hinzugefügt, Layout an v5-Standard angepasst.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
+// === 1. ZENTRALE INITIALISIERUNG ===
 require_once __DIR__ . '/../src/components/init_public.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
+// === 2. LADE-SKRIPTE & DATEN ===
 require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'load_comic_data.php';
 
 // === 3. DATENVERARBEITUNG ===
@@ -28,12 +29,14 @@ require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'load_comic_da
 $comicPageCount = 0;
 $fillerPageCount = 0;
 foreach ($comicData as $details) {
-    if (isset($details['type'])) {
-        if ($details['type'] === 'Comicseite') {
-            $comicPageCount++;
-        } elseif ($details['type'] === 'Lückenfüller') {
-            $fillerPageCount++;
-        }
+    if (!isset($details['type'])) {
+        continue;
+    }
+
+    if ($details['type'] === 'Comicseite') {
+        $comicPageCount++;
+    } elseif ($details['type'] === 'Lückenfüller') {
+        $fillerPageCount++;
     }
 }
 
@@ -45,22 +48,22 @@ $ageTom = $today->diff($birthdateTom)->y;
 $birthdateFelix = new DateTime('1993-03-29');
 $ageFelix = $today->diff($birthdateFelix)->y;
 
-// Bild-Pfad für den Übersetzer mit Cache-Buster (NEUE METHODE)
+// Bild-des Überrsetzers mit Cache-Buster
 $felixImageWebUrl = Url::getImgAboutUrl('Felix.webp');
 $felixImagePathOnServer = DIRECTORY_PUBLIC_IMG_ABOUT . DIRECTORY_SEPARATOR . 'Felix.webp';
 if (file_exists($felixImagePathOnServer)) {
     $felixImageWebUrl .= '?c=' . filemtime($felixImagePathOnServer);
 }
 
-// === 4. VARIABLEN FÜR DEN HEADER SETZEN ===
+// === 4. VARIABLEN FÜR DEN HEADER ===
 $pageTitle = 'Über den Comic';
 $siteDescription = 'Erfahre alles über den Webcomic TwoKinds, den Künstler Tom Fischbach und den deutschen Übersetzer Felix Maywald.';
 $robotsContent = 'index, follow';
 
-// === 5. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+// === 5. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
-<section>
+<section class="about-section">
     <h2 class="page-header">Über den Comic</h2>
 
     <p>
@@ -108,79 +111,85 @@ require_once Path::getPartialTemplatePath('header.php');
         in Frage zu stellen. In der Regel sind sie ausgeglichen und diszipliniert.</p>
 </section>
 
-<section>
+<section class="about-section">
     <h2 class="page-header">Über den Künstler</h2>
 
-    <img class="float-left" src="https://cdn.twokinds.keenspot.com/img/mugshot.jpg" alt="Tom" height="275">
+    <img class="about-mugshot float-left" src="https://cdn.twokinds.keenspot.com/img/mugshot.jpg" alt="Tom Fischbach" height="275">
 
-    <p>
-        <b>Name:</b> Tom Fischbach<br>
-        <b>Geboren:</b> 28 Juli 1987<br>
-        <b>Alter:</b> <?php echo $ageTom; ?> Jahre<br>
-        <b>Ethnie:</b> Asiatisch (Koreanisch)<br>
-        <b>Nationalität:</b> Amerikanisch<br>
-    </p>
+    <div class="about-bio">
+        <p>
+            <b>Name:</b> Tom Fischbach<br>
+            <b>Geboren:</b> 28. Juli 1987<br>
+            <b>Alter:</b> <?php echo $ageTom; ?> Jahre<br>
+            <b>Ethnie:</b> Asiatisch (Koreanisch)<br>
+            <b>Nationalität:</b> Amerikanisch<br>
+        </p>
 
-    <p>Ich bin seit über 6 Jahren als Künstler tätig und habe im Alter von 14 Jahren angefangen. Der erste Anime, den
-        ich gesehen habe, war Mein Nachbar Totoro. Ich beschloss, mit dem Zeichnen anzufangen, nachdem ich durch eine
-        zufällige Websuche auf Webcomics gestoßen war. Der erste Webcomic, den ich las, war Vet on the Net, und das war
-        nur der Erste.</p>
+        <p>Ich bin seit über 6 Jahren als Künstler tätig und habe im Alter von 14 Jahren angefangen. Der erste Anime, den
+            ich gesehen habe, war Mein Nachbar Totoro. Ich beschloss, mit dem Zeichnen anzufangen, nachdem ich durch eine
+            zufällige Websuche auf Webcomics gestoßen war. Der erste Webcomic, den ich las, war Vet on the Net, und das war
+            nur der Erste.</p>
 
-    <p>Ich wurde zum Schreiben von TwoKinds inspiriert, nachdem ich in meiner Schule eine Menge Rassendiskriminierung
-        durch überwiegend weiße Schüler erlebt hatte. Meine Schreibfähigkeiten waren damals nicht sehr gut, aber ich
-        hatte trotzdem das Gefühl, etwas Gutes zu tun, indem ich versuchte, durch mein Schreiben eine gute Botschaft zu
-        vermitteln. Nachdem ich mich ein Jahr lang mit der Erstellung eines Buches abgemüht hatte, beschloss ich, dass
-        ein Comic die bessere Wahl sein könnte. Nachdem ich noch einige Jahre an meiner Kunst gearhbeitet hatte, brachte
-        ich schließlich am 22. Oktober 2003 TwoKinds heraus.</p>
+        <p>Ich wurde zum Schreiben von TwoKinds inspiriert, nachdem ich in meiner Schule eine Menge Rassendiskriminierung
+            durch überwiegend weiße Schüler erlebt hatte. Meine Schreibfähigkeiten waren damals nicht sehr gut, aber ich
+            hatte trotzdem das Gefühl, etwas Gutes zu tun, indem ich versuchte, durch mein Schreiben eine gute Botschaft zu
+            vermitteln. Nachdem ich mich ein Jahr lang mit der Erstellung eines Buches abgemüht hatte, beschloss ich, dass
+            ein Comic die bessere Wahl sein könnte. Nachdem ich noch einige Jahre an meiner Kunst gearbeitet hatte, brachte
+            ich schließlich am 22. Oktober 2003 TwoKinds heraus.</p>
 
-    <p>Heute bin ich Student am Raymond Walters College, das zur Universität von Cincinnati gehört. Ich studiere, um
-        Strahlentherapeut zu werden, während ich nebenbei Kunst erstelle.</p>
+        <p>Heute bin ich Student am Raymond Walters College, das zur Universität von Cincinnati gehört. Ich studiere, um
+            Strahlentherapeut zu werden, während ich nebenbei Kunst erstelle.</p>
+    </div>
+    <div class="clear"></div>
 </section>
 
-<section>
+<section class="about-section">
     <h2 class="page-header">Über den Übersetzer</h2>
 
-    <img class="float-left" src="<?php echo htmlspecialchars($felixImageWebUrl); ?>" alt="Felix" height="275">
+    <img class="about-mugshot float-left" src="<?php echo htmlspecialchars($felixImageWebUrl); ?>" alt="Felix Maywald" height="275">
 
-    <p>
-        <b>Name:</b> Felix Maywald<br>
-        <b>Geboren:</b> März 1993<br>
-        <b>Alter:</b> <?php echo $ageFelix; ?> Jahre<br>
-        <b>Ethnie:</b> Deutsch<br>
-        <b>Nationalität:</b> Deutsch<br>
-    </p>
+    <div class="about-bio">
+        <p>
+            <b>Name:</b> Felix Maywald<br>
+            <b>Geboren:</b> März 1993<br>
+            <b>Alter:</b> <?php echo $ageFelix; ?> Jahre<br>
+            <b>Ethnie:</b> Deutsch<br>
+            <b>Nationalität:</b> Deutsch<br>
+        </p>
 
-    <p>Seit 2022 übersetze ich als Hobby Webcomics in deutsche. Alles begann, als ich bedauerlicherweise im Jahr 2021
-        feststellen musste, dass Cornelius damit aufgehört hatte, mein Lieblings-Webcomic TwoKinds zu übersetzen. Das
-        ließ mich nicht kalt, denn ich wollte weiterhin anderen Fans die Möglichkeit geben, diesen großartigen Comic in
-        ihrer Sprache genießen zu können. Also beschloss ich kurzerhand, mich selbst als Übersetzer zu versuchen.</p>
+        <p>Seit 2022 übersetze ich als Hobby Webcomics ins Deutsche. Alles begann, als ich bedauerlicherweise im Jahr 2021
+            feststellen musste, dass Cornelius damit aufgehört hatte, meinen Lieblings-Webcomic TwoKinds zu übersetzen. Das
+            ließ mich nicht kalt, denn ich wollte weiterhin anderen Fans die Möglichkeit geben, diesen großartigen Comic in
+            ihrer Sprache genießen zu können. Also beschloss ich kurzerhand, mich selbst als Übersetzer zu versuchen.</p>
 
-    <p>TwoKinds war tatsächlich der erste Webcomic, den ich von Anfang bis Ende gelesen habe. Seit 2009 begleitet er
-        mich, und ich habe die Charaktere lieben gelernt und mit ihnen mitgefiebert. Die Geschichte und die wunderbaren
-        Zeichnungen, die sich immer weiterentwickelten, haben mich von Anfang an gefesselt und ich wollte unbedingt,
-        dass auch andere Menschen mit meiner Muttersprache die gleiche Begeisterung teilen können.</p>
+        <p>TwoKinds war tatsächlich der erste Webcomic, den ich von Anfang bis Ende gelesen habe. Seit 2009 begleitet er
+            mich, und ich habe die Charaktere lieben gelernt und mit ihnen mitgefiebert. Die Geschichte und die wunderbaren
+            Zeichnungen, die sich immer weiterentwickelten, haben mich von Anfang an gefesselt und ich wollte unbedingt,
+            dass auch andere Menschen mit meiner Muttersprache die gleiche Begeisterung teilen können.</p>
 
-    <p>Als echter Fan habe ich natürlich sämtliche Bücher von TwoKinds, eines sogar signiert. :D</p>
+        <p>Als echter Fan habe ich natürlich sämtliche Bücher von TwoKinds, eines sogar signiert. :D</p>
 
-    <p>Aber nicht nur TwoKinds fasziniert mich. Als ich mich in die Welt der Webcomics vertieft habe, habe ich viele
-        andere großartige Werke entdeckt, die es verdient haben, in andere Sprachen übersetzt zu werden. So habe ich
-        mich kürzlich daran gemacht, <a href="https://www.twindragonscomic.com/">TwinDragons von Robin Dassen</a> zu <a
-            href="https://inkbunny.net/submissionsviewall.php?rid=b55ccb4c75&mode=pool&pool_id=81411&page=1&orderby=pool_order&random=no&success=">übersetzen</a>.
-        Es ist eine spannende Aufgabe, die mir viel Freude bereitet und mich immer wieder dazu anspornt, mein Bestes zu
-        geben.</p>
+        <p>Aber nicht nur TwoKinds fasziniert mich. Als ich mich in die Welt der Webcomics vertieft habe, habe ich viele
+            andere großartige Werke entdeckt, die es verdient haben, in andere Sprachen übersetzt zu werden. So habe ich
+            mich kürzlich daran gemacht, <a href="https://www.twindragonscomic.com/">TwinDragons von Robin Dassen</a> zu <a
+                href="https://inkbunny.net/submissionsviewall.php?rid=b55ccb4c75&mode=pool&pool_id=81411&page=1&orderby=pool_order&random=no&success=">übersetzen</a>.
+            Es ist eine spannende Aufgabe, die mir viel Freude bereitet und mich immer wieder dazu anspornt, mein Bestes zu
+            geben.</p>
 
-    <p>Neben meinem Hobby als Übersetzer bin ich heute als Medienpädagoge tätig. Ich arbeite gerne mit Menschen und
-        liebe es, mein Wissen und meine Begeisterung für Medien weiterzugeben. Fotografie ist ein weiteres Hobby, dem
-        ich leidenschaftlich nachgehe. Es erlaubt mir, die Schönheit der Welt einzufangen und meine eigene kreative
-        Perspektive auszudrücken. In meiner Freizeit bearbeite ich auch gerne meine eigenen Bilder und <a
-            href="https://felixmaywaldfotografie.myportfolio.com/home">teile</a> und <a
-            href="https://stock.adobe.com/de/contributor/207896179/Felix">verkaufe</a> sie in kleinem Rahmen online.</p>
+        <p>Neben meinem Hobby als Übersetzer bin ich heute als Medienpädagoge tätig. Ich arbeite gerne mit Menschen und
+            liebe es, mein Wissen und meine Begeisterung für Medien weiterzugeben. Fotografie ist ein weiteres Hobby, dem
+            ich leidenschaftlich nachgehe. Es erlaubt mir, die Schönheit der Welt einzufangen und meine eigene kreative
+            Perspektive auszudrücken. In meiner Freizeit bearbeite ich auch gerne meine eigenen Bilder und <a
+                href="https://felixmaywaldfotografie.myportfolio.com/home">teile</a> und <a
+                href="https://stock.adobe.com/de/contributor/207896179/Felix">verkaufe</a> sie in kleinem Rahmen online.</p>
 
-    <p>Das Übersetzen von Webcomics hat sich zu einer wunderbaren Ergänzung meines Lebens entwickelt. Es erfüllt mich
-        mit Freude, andere Menschen in meiner Muttersprache an den Geschichten und Charakteren teilhaben zu lassen, die
-        mich so sehr begeistern. Ich bin gespannt darauf, welche neuen Webcomics ich noch entdecken und übersetzen darf
-        und werde, und ich freue mich darauf, weiterhin meine Leidenschaft für Medien, Fotografie und kreative Projekte
-        ausleben zu können.</p>
+        <p>Das Übersetzen von Webcomics hat sich zu einer wunderbaren Ergänzung meines Lebens entwickelt. Es erfüllt mich
+            mit Freude, andere Menschen in meiner Muttersprache an den Geschichten und Charakteren teilhaben zu lassen, die
+            mich so sehr begeistern. Ich bin gespannt darauf, welche neuen Webcomics ich noch entdecken und übersetzen darf
+            und werde, und ich freue mich darauf, weiterhin meine Leidenschaft für Medien, Fotografie und kreative Projekte
+            ausleben zu können.</p>
+    </div>
+    <div class="clear"></div>
 </section>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
