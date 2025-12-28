@@ -324,7 +324,7 @@ body.theme-night .collapsible-section {
     justify-content: space-between;
     padding: 12px 15px;
     cursor: pointer;
-    background-color: var(--table-header-bg);
+    background-color: var(--table-row-hover); //--table-header-bg
     border-bottom: 1px solid var(--border-medium); /// var(--border-light)
     transition: background-color 0.2s;
 }

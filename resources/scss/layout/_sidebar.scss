@@ -158,3 +158,24 @@ body.theme-night .menu a.theme span.themename {
         transform: none;
     }
 }
+
+// Aus config_menue_admin.php extrahiert und angepasst
+.session-timer {
+    background-color: var(--button-hover-bg);
+    color: var(--text-on-medium);
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9em;
+    border: 1px solid var(--comic-nav-hover-bg);
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.session-timer i {
+    margin-right: 8px;
+}
+
+body.theme-night .session-timer {
+    background-color: #002b3c;
+    border: 1px solid #2a6177;
+}
