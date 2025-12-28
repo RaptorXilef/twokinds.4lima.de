@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Miscellaneous Pages (Chat, Links, About, Imprint, RSS)
-/// Styling für das Impressum, die "Über den Comic"-Seite und RSS-Anleitungen.
+/// Miscellaneous Pages (Chat, Links, About, Imprint, RSS, License)
+/// Styling für das Impressum, die "Über den Comic"-Seite, RSS-Anleitungen und Lizenzen.
 ///
 
 /*!
@@ -21,11 +21,11 @@
 /// @since    5.0.0
 /// - Zusammenfassung kleinerer Seiten.
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-/// - feat(About/RSS): Stile für ueber_den_comic.php und rss_anleitung.php hinzugefügt.
+/// - feat(About/RSS/License): Stile für Info-Seiten vereinheitlicht.
 /// - fix(Misc): .license-image und .rss-icon-text integriert.
 /// - style(RSS): code-Tag Styling für URLs optimiert.
 /// - fix(UX): Email-Button Styling für nahtlose Inline-Integration (Keine Zeilensprünge).
-/// - fix(Layout): Feste Breite für .about-mugshot hinzugefügt, um Layout-Shift bei langsamem Laden zu verhindern.
+/// - fix(Layout): Feste Breite für .about-mugshot verhindert Layout-Shift.
 ///
 
 // Variablen-Index:
@@ -45,7 +45,8 @@
 
 .about-section,
 .imprint-container,
-.rss-container {
+.rss-container,
+.license-container {
     margin-bottom: 40px;
 
     &:last-of-type {
@@ -112,8 +113,10 @@
 
 /* --- Lists and Technical Elements --- */
 
+.about-section,
 .imprint-container,
-.rss-container {
+.rss-container,
+.license-container {
     ul,
     ol {
         padding-left: 25px;
@@ -193,8 +196,10 @@
 /* --- Theme Overrides --- */
 
 body.theme-night {
+    .about-section h3,
     .imprint-container h3,
-    .rss-container h3 {
+    .rss-container h3,
+    .license-container h3 {
         border-bottom-color: var(--button-bg);
     }
 

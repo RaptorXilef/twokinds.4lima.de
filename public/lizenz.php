@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Diese Datei erklärt die Lizenzbedingungen für die Nutzung der Comic-Inhalte.
  *
@@ -11,13 +12,13 @@
  * @version   4.0.0
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
+ * @since     5.0.0 refactor(Page): Nutzung der .license-container Klasse für Layout-Konsistenz.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
+// === 1. ZENTRALE INITIALISIERUNG ===
 require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -25,10 +26,11 @@ $pageTitle = 'Lizenz';
 $siteDescription = 'Informationen zu den Creative Commons-Lizenzen, unter denen der TwoKinds-Comic und diese Webseite stehen.';
 $robotsContent = 'index, follow';
 
-// === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+// === 3. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
+<div class="license-container">
     <header>
         <h1 class="page-header">Lizenz</h1>
     </header>
@@ -38,51 +40,45 @@ require_once Path::getPartialTemplatePath('header.php');
         Seiner Galerie. Daher wollte er den Sachverhalt klarstellen, damit er in Zukunft hoffentlich weitere dieser
         „Berichte“ vermeiden kann.</p>
     <p>Toms öffentliche Arbeit unterliegt hiermit einer <a
-            href="https://creativecommons.org/licenses/by-nc-sa/3.0/de/deed.de">Creative Commons-Lizenz</a>, sofern
-        nicht
-        anders angegeben. </p>
+            href="https://creativecommons.org/licenses/by-nc-sa/3.0/de/deed.de" target="_blank" rel="noopener noreferrer">
+        Creative Commons-Lizenz</a>, sofern nicht anders angegeben.</p>
 
     <div class="center">
-        <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/de/">
+        <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/de/" target="_blank" rel="noopener noreferrer">
             <img src="https://i.creativecommons.org/l/by-nc-sa/3.0/de/88x31.png" alt="Creative Commons Lizenz" />
         </a>
     </div>
 
     <p>Was bedeutet das also? Das bedeutet, dass es jedem freisteht:</p>
     <ul>
-        <li><b>Toms Arbeit zu teilen</b> – Sie können Toms Arbeit speichern, ausdrucken und anderen Leuten zeigen. Sie
+        <li><b>Toms Arbeit zu teilen</b> - Sie können Toms Arbeit speichern, ausdrucken und anderen Leuten zeigen. Sie
             können es in Foren, Imageboards und Chatrooms veröffentlichen. Sie könnten sogar den gesamten Comic
-            komprimieren
-            und ihn als Torrent verteilen, wenn Sie Lust dazu hätten.</li>
-        <li><b>Toms Arbeit anpassen</b> – Das bedeutet, dass es den Leuten freisteht, Toms Arbeit zu ändern. Sie können
-            die
-            Comicseiten in eine andere Sprache übersetzen, (Wie auf dieser Webseite geschehen!) etwas aus seiner Galerie
-            neu
-            einfärben, Fankunst oder Fiktion von Toms Charaktere oder seiner Welt erstellen, Ihren eigenen Comic oder
-            Ihr
-            eigenes Kunstwerk basierend auf seine Arbeit erstellen usw. </li>
+            komprimieren und ihn als Torrent verteilen, wenn Sie Lust dazu hätten.</li>
+        <li><b>Toms Arbeit anpassen</b> - Das bedeutet, dass es den Leuten freisteht, Toms Arbeit zu ändern. Sie können
+            die Comicseiten in eine andere Sprache übersetzen (Wie auf dieser Webseite geschehen!), etwas aus seiner Galerie
+            neu einfärben, Fankunst oder Fiktion von Toms Charaktere oder seiner Welt erstellen, Ihren eigenen Comic oder
+            Ihr eigenes Kunstwerk basierend auf seiner Arbeit erstellen usw.</li>
     </ul>
 
     <p>Sie dürfen alles davon tun, solange Sie:</p>
     <ul>
-        <li><b>Quellenangaben angeben</b> – Sie müssen Tom als Quelle angeben. Beanspruchen Sie seine Arbeit nicht als
-            Ihre
-            eigene.</li>
-        <li><b>Nicht kommerziell</b> – Sie können seine Arbeit nicht verkaufen oder seine Arbeit in etwas zum Verkauf
+        <li><b>Quellenangaben angeben</b> - Sie müssen Tom als Quelle angeben. Beanspruchen Sie seine Arbeit nicht als
+            Ihre eigene.</li>
+        <li><b>Nicht kommerziell</b> - Sie können seine Arbeit nicht verkaufen oder seine Arbeit in etwas zum Verkauf
             einbeziehen, es sei denn, Sie treffen spezielle Vereinbarungen mit ihm.</li>
-        <li><b>Weitergabe unter gleichen Bedingungen</b> – Wenn Sie seine Arbeit ändern, sollte sie ebenfalls unter
+        <li><b>Weitergabe unter gleichen Bedingungen</b> - Wenn Sie seine Arbeit ändern, sollte sie ebenfalls unter
             derselben Lizenz oder einer gleichwertigen Lizenz fallen.</li>
     </ul>
 
     <p>Diese Lizenz gilt für alle seine öffentlich zugänglichen Arbeiten. Dies gilt nicht für seine kommerziellen
-        Arbeiten
-        wie Comics und Broschüren.</p>
+        Arbeiten wie Comics und Broschüren.</p>
     <p>Warum macht er das? Weil es seiner Meinung nach so ist, wie es sein sollte. Er stellt seine Arbeit öffentlich zur
         Verfügung, damit die Leute sie genießen können, und es stört ihn nicht, wenn Leute beschließen, seine Arbeit auf
         andere Weise zu ergänzen oder anzupassen. Das ist also seine offizielle Art zu verkünden, dass er damit
         einverstanden ist. Er verzichtet nicht auf alle Rechte an seiner Arbeit, aber er gibt Ihnen einige davon frei.
     </p>
 
-    Quelle: <a href="https://twokinds.keenspot.com/license/"> https://twokinds.keenspot.com/license/ </a>
+    <p class="source-link">Quelle: <a href="https://twokinds.keenspot.com/license/" target="_blank" rel="noopener noreferrer">https://twokinds.keenspot.com/license/</a></p>
+</div>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
