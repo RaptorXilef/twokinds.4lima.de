@@ -4,7 +4,6 @@
 /// Sidebar & Navigation Styles.
 ///
 /// Styling für die Seitenleiste, Navigation und Incentives.
-/// Styles für die Seitenleiste und deren Menü.
 ///
 
 /*!
@@ -21,21 +20,11 @@
 
 ///
 /// @since    5.0.0
-/// - CSS Vars Integration.
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - Rückkehr zum klassischen Design-Layout.
+/// - fix: NEU-Marker exakt am linken Rand positioniert (vertikal).
+/// - style: Theme-Toggle Schalter-Optik implementiert.
+/// - style: Original-Link Box Layout für Bild/Text Kombination.
 ///
-
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --sidebar-bg: Hintergrund der Sidebar
-// - --text-on-medium: Textfarbe in Menüs
-// - --menu-bg: Hintergrund Menü-Items
-// - --menu-hover-bg: Hintergrund Menü-Items bei Hover
-// - --theme-label-bg: Hintergrund für Theme-Label
-// - --text-color: Standard Textfarbe (Dark Mode)
-// - --new-tag-bg: Hintergrund für "New"-Tag
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -46,15 +35,13 @@
 }
 
 .sidebar-content {
-    //width: 167px;
-    margin-left: 12px;
-    margin-right: 12px;
     display: flex;
     flex-direction: column;
-    //height: 100%;
     padding: 25px 12px;
-    background-color: var(--sidebar-bg); // Sichtbare Hintergrundfarbe für die Sidebar
-    border-right: 1px solid var(--menu-bg); // --border-light Klare Trennung zum Content
+    margin-right: 12px;
+    margin-left: 12px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--menu-bg);
 }
 
 /* --- Social Icons Area --- */
@@ -72,7 +59,7 @@
 
 .social-icon {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border-radius: 8px;
+    border-radius: 6px;
 
     &:hover {
         transform: scale(1.15) translateY(-2px);
@@ -113,7 +100,7 @@
 .menu {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     text-align: center;
 
     .menu-group {
@@ -123,8 +110,7 @@
     }
 
     .menu-label {
-        padding-left: 5px;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         font-size: 0.65rem;
         font-weight: 800;
         color: var(--text-color-light);
@@ -134,26 +120,24 @@
     }
 
     a {
+        position: relative; // Notwendig für den NEU-Marker
         display: block;
         padding: 6px 3px;
         font-size: 0.95rem;
         color: var(--text-color);
         text-decoration: none;
-        background-color: var(--menu-bg); // --content-box-bg Hellerer Hintergrund für Kontrast zur Sidebar
-        border: 1px solid var(--button-bg); // --border-medium
+        text-transform: uppercase;
+        background-color: var(--menu-bg);
+        border: 1px solid var(--button-bg);
         border-left: 4px solid transparent;
         border-radius: 8px;
         box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
         transition: all 0.2s ease;
-        text-transform: uppercase;
 
         &:hover {
-            //color: var(--link-color);
             background-color: var(--menu-hover-bg);
             border-color: var(--comic-nav-archive-hover-bg);
-            border-left-color: var(--comic-nav-archive-hover-bg);
-            transform: translateX(5px);
-            box-shadow: 2px 4px 12px rgb(0 0 0 / 0.1);
+            transform: translateX(3px);
         }
 
         &.active {
@@ -163,12 +147,21 @@
             border-color: var(--link-color);
             border-left-color: var(--link-color);
         }
-        /* Marker */
+
+        /* --- INTELLIGENTER NEU-MARKER --- */
         &.menu-new:after {
-            content: 'Neu';
-            background-color: #7ba181;
+            content: 'NEU';
+            position: absolute;
+            top: 50%;
+            left: -11px; // Positioniert ihn genau auf dem Rand
+            padding: 2px 5px;
+            font-size: 0.5rem;
+            font-weight: 900;
             color: #fff;
-            transform: rotate(-90deg);
+            background-color: #7ba181;
+            border-radius: 0 0 4px 4px;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: center;
         }
     }
 }
@@ -178,20 +171,6 @@
     padding-top: 20px;
     margin-top: auto; // Schiebt Footer ans Ende der Sidebar
     border-top: 1px solid var(--border-light);
-
-    .theme-toggle {
-        display: block;
-        padding: 12px;
-        font-weight: bold;
-        text-align: center;
-        background-color: var(--button-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 8px;
-
-        .themename {
-            color: var(--link-color);
-        }
-    }
 
     .logout-link {
         margin-bottom: 12px;
@@ -207,24 +186,67 @@
     }
 }
 
-/* --- Original Link Styling --- */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important; // Padding wird über die Spans gesteuert
+    margin-top: 10px;
+    overflow: hidden;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-decoration: none;
+    background-color: var(--button-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+
+    .themelabel {
+        padding: 8px 10px;
+        color: var(--text-color-light);
+        background-color: var(--table-row-even);
+        border-right: 1px solid var(--border-medium);
+    }
+
+    .themename {
+        flex-grow: 1;
+        padding: 8px 10px;
+        color: var(--link-color);
+    }
+}
+
+/* --- Original Link (Bild Rechts, Text Links) --- */
 .original-link {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 8px 10px;
     margin-top: 15px;
-    background-color: var(--content-box-bg);
-    border: 1px solid var(--border-medium);
-    border-radius: 8px;
+    text-decoration: none;
+    background-color: var(--menu-bg);
+    border: 1px solid var(--button-bg);
+    border-radius: 4px;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: var(--menu-hover-bg);
+    }
 
     .original-text {
         display: flex;
         flex-direction: column;
-        line-height: 1.2;
+        line-height: 1.1;
+        text-align: left;
+
+        span {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
 
         small {
-            font-size: 0.7em;
+            font-size: 0.7rem;
             opacity: 0.8;
+            color: var(--text-color-light);
         }
     }
 
@@ -265,7 +287,7 @@
     }
 }
 
-/* --- Theme Specifics --- */
+/* --- Theme Specifics (Night Mode) --- */
 body.theme-night {
     .sidebar-content {
         background-color: var(--sidebar-bg);
