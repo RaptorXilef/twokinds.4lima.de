@@ -25,12 +25,14 @@
 /// - fix(Misc): .license-image und .rss-icon-text integriert.
 /// - style(RSS): code-Tag Styling für URLs optimiert.
 /// - fix(UX): Email-Button Styling für nahtlose Inline-Integration (Keine Zeilensprünge).
+/// - fix(Layout): Feste Breite für .about-mugshot hinzugefügt, um Layout-Shift bei langsamem Laden zu verhindern.
 ///
 
 // Variablen-Index:
 // - --border-medium: Mittlere Rahmenfarbe
 // - --border-light: Helle Rahmenfarbe
 // - --text-color: Standard Textfarbe
+// - --text-on-medium: Textfarbe auf Buttons
 // - --link-color: Akzentfarbe für Links
 // - --button-bg: Hintergrund für Buttons
 // - --button-hover-bg: Hintergrund bei Hover
@@ -86,9 +88,11 @@
 /* --- About Mugshots (Tom & Felix) --- */
 
 .about-mugshot {
-    width: auto;
-    height: 275px;
+    // FIX: Feste Breite reserviert den Platz vor dem Laden (verhindert Text-Springen)
+    width: 200px;
+    height: auto;
     margin-bottom: 15px;
+    object-fit: cover; // Stellt sicher, dass das Bild innerhalb der 200x275px gut aussieht
     border: 1px solid var(--border-medium);
     border-radius: 7px;
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
@@ -103,7 +107,7 @@
 }
 
 .about-bio {
-    overflow: hidden;
+    overflow: hidden; // Behält den Text rechts vom Bild (Clearfix-Verhalten)
 }
 
 /* --- Lists and Technical Elements --- */
