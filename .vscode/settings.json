@@ -3,6 +3,9 @@
   // SPRACH-SPEZIFISCHE FORMATIERER
   // Erzwingt, dass das gesamte Team dieselben Tools verwendet.
   // =========================================================================
+  "rewrap.wrappingColumn": 120,
+  "rewrap.doubleSentenceSpacing": false,
+  "rewrap.wholeComment": true,
   "[php]": {
     // Setzt "valeryanm.vscode-phpsab" als Standard-Formatierer FÜR DIESES PROJEKT
     "editor.defaultFormatter": "valeryanm.vscode-phpsab",
@@ -11,7 +14,8 @@
     //"editor.formatOnPaste": true,
     //"editor.formatOnType": true,
     "editor.renderWhitespace": "all", // alternativ "boundary"
-    "editor.wordWrap": "wordWrapColumn",
+    "proseWrap": "always",
+    "editor.wordWrap": "off",
     "editor.wordWrapColumn": 120
   },
   "[javascript]": {
@@ -99,8 +103,12 @@
   // PROJEKT-SPEZIFISCHE EINSTELLUNGEN
   // Regeln, die für alle Teammitglieder gelten sollen.
   // =========================================================================
-  "editor.wordWrap": "wordWrapColumn",
-  "editor.wordWrapColumn": 120,
+  //"editor.wordWrap": "wordWrapColumn",
+  //"editor.wordWrapColumn": 120,
+  "editor.rulers": [
+    120
+  ],
+  "prettier.prettierPath": "./node_modules/prettier",
   // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
   "files.eol": "\n",
   // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
