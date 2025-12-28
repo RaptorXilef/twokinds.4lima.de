@@ -161,14 +161,14 @@ body.theme-night .menu a.theme span.themename {
 
 // Aus config_menue_admin.php extrahiert und angepasst
 .session-timer {
-    background-color: var(--button-hover-bg);
-    color: var(--text-on-medium);
     padding: 10px;
-    text-align: center;
+    margin-bottom: 15px;
     font-size: 0.9em;
+    color: var(--text-on-medium);
+    text-align: center;
+    background-color: var(--button-hover-bg);
     border: 1px solid var(--comic-nav-hover-bg);
     border-radius: 5px;
-    margin-bottom: 15px;
 }
 
 .session-timer i {

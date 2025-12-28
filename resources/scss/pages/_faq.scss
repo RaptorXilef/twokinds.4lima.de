@@ -42,6 +42,7 @@
 // - --text-on-medium: Kontrastfarbe für Text auf farbigen Hintergründen
 
 /* --- FAQ Page --- */
+
 /*
 div.page-faq section {
     padding-top: 10px;
@@ -85,19 +86,19 @@ body.theme-night .faq-item {
     font-weight: bold;
     color: var(--text-color);
     cursor: pointer;
-    // Angleichung an Collapsible-Header für bessere Sichtbarkeit
     background-color: var(--table-row-hover);
     transition: background-color 0.2s;
 }
 
 .faq-question:hover {
-    background-color: var(--button-hover-bg);
     color: var(--text-on-medium);
+    background-color: var(--button-hover-bg);
 }
 
 body.theme-night .faq-question {
     background-color: var(--table-row-even);
-    //background-color: transparent;
+
+    // background-color: transparent;
 }
 
 body.theme-night .faq-question:hover {
@@ -109,7 +110,7 @@ body.theme-night .faq-question:hover {
     font-size: 0.8em;
     color: var(--text-color-light);
     content: '\25B6'; // ▶
-    transition: transform 0.3s ease;
+    transition: transform 0.8s ease;
 }
 
 // Active State: Pfeil drehen (90 Grad nach unten)
@@ -117,17 +118,28 @@ body.theme-night .faq-question:hover {
     transform: rotate(90deg);
 }
 
+// Der Grid-Container (steuert die Höhe)
 .faq-answer {
-    max-height: 0; // Startet geschlossen
-    padding: 0 15px;
+    display: grid;
+    grid-template-rows: 0fr; // Start: 0 Höhe
+    padding: 0 15px; // Fixiertes horizontales Padding für flüssigeren Flow
     overflow: hidden;
     color: var(--text-color);
-    transition: max-height 0.3s ease-out; // Animation beim Öffnen
+    transition: grid-template-rows 0.8s ease-out;
 }
 
 .faq-item.active .faq-answer {
-    max-height: 500px;
-    padding: 15px;
+    grid-template-rows: 1fr; // Ziel: volle Inhaltshöhe
+}
+
+// Der Inhalts-Wrapper (trägt Padding und Rahmen)
+.faq-answer-inner {
+    min-height: 0;
+    padding: 0 15px; // Start ohne vertikales Padding
     border-left: 2px solid var(--border-medium);
-    transition: max-height 0.5s ease-in;
+    transition: padding 0.8s ease-out;
+}
+
+.faq-item.active .faq-answer-inner {
+    padding: 15px; // Endzustand mit vollem Padding
 }

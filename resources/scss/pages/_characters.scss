@@ -121,17 +121,20 @@
     padding: 3rem 2rem;
     margin: 1rem;
     font-size: 1.2rem;
-    //color: #666;
+
+    // color: #666;
     text-align: center;
     background-color: var(--table-row-even);
-    //border: 2px dashed #ccc;
+
+    // border: 2px dashed #ccc;
     border: 1px solid var(--border-medium);
     border-radius: 8px;
 }
 
 .no-bookmarks p {
     margin: 0;
-    //line-height: 1.5;
+
+    // line-height: 1.5;
     font-style: italic;
     color: var(--text-color-medium);
 }

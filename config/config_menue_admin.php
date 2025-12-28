@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Dieses Skript enthält die Konfiguration für das Navigationsmenü im Admin-Bereich.
  * Es wird dynamisch in header.php geladen, wenn sich der Benutzer im Admin-Bereich befindet.
@@ -76,25 +77,3 @@ $nonce = $nonce ?? '';
   </nav>
   <!-- Menü Ende -->
 </div>
-
-<!-- NEU: CSS für den Session-Timer mit CSP-Nonce -->
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-  .session-timer {
-    background-color: #00425c;
-    color: #fff;
-    padding: 10px;
-    text-align: center;
-    font-size: 0.9em;
-    border-radius: 5px;
-    margin-bottom: 15px;
-  }
-
-  .session-timer i {
-    margin-right: 8px;
-  }
-
-  body.theme-night .session-timer {
-    background-color: #002B3C;
-    border: 1px solid #2a6177;
-  }
-</style>

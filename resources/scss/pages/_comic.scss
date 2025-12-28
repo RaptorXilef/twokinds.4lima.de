@@ -137,8 +137,8 @@ body.theme-night .comic .below-nav {
 }
 
 .nav-instruction-content {
-    color: var(--text-color-light);
     font-size: 0.95em;
+    color: var(--text-color-light);
 }
 
 @include media-retina-mobile {
@@ -215,7 +215,7 @@ body.theme-night .comic .below-nav {
 }
 */ // Deaktiviert, weil aktuell nicht genutzt
 
-/*.comic .tag-wrapper .permalink,
+/* .comic .tag-wrapper .permalink,
 .comic .below-nav .permalink */
 .permalink {
     flex: 0 0 auto;
@@ -228,14 +228,14 @@ body.theme-night .comic .below-nav {
     color: var(--link-color);
 }
 
-/*body.theme-night .comic .tag-wrapper .permalink,
+/* body.theme-night .comic .tag-wrapper .permalink,
 body.theme-night .comic .below-nav .permalink, */
 body.theme-night .permalink {
     color: #ccc;
 }
 
 @include media-retina-mobile {
-    /*.comic .tag-wrapper .permalink,
+    /* .comic .tag-wrapper .permalink,
     .comic .below-nav .permalink */
     .permalink {
         font-size: 1.2em;
