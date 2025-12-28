@@ -24,8 +24,8 @@ $nonce = $nonce ?? '';
     <div class="social-area">
         <div class="social-icons-container patreon-icon-wrapper">
             <a href="https://www.patreon.com/RaptorXilef" target="_blank" rel="noopener noreferrer" title="Patreon">
-                <img class="patreon-light-icon social-icon" src="<?php echo Url::getImgUiUrl('patreon.png'); ?>" alt="Patreon" width="32" height="32">
-                <img class="patreon-dark-icon social-icon" src="<?php echo Url::getImgUiUrl('patreon_dark.png'); ?>" alt="Patreon Dark" width="32" height="32">
+                <img class="patreon-light-icon social-icon" id="rssFeedLink" src="<?php echo Url::getImgUiUrl('patreon.png'); ?>" alt="Patreon" width="32" height="32">
+                <img class="patreon-dark-icon social-icon" id="rssFeedLink" src="<?php echo Url::getImgUiUrl('patreon_dark.png'); ?>" alt="Patreon Dark" width="32" height="32">
             </a>
             <a href="https://inkbunny.net/RaptorXilefSFW" target="_blank" title="Mein InkBunny" rel="noopener noreferrer">
                 <img class="social-icon" src="<?php echo Url::getImgUiUrl('inkbunny.png'); ?>" alt="InkBunny" width="32" height="32">
@@ -45,7 +45,7 @@ $nonce = $nonce ?? '';
             <span class="menu-label">Comic & Archiv</span>
             <a href="<?php echo DIRECTORY_PUBLIC_COMIC_URL; ?>">Comic lesen</a>
             <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/archiv<?php echo $dateiendungPHP; ?>">Archiv</a>
-            <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/lesezeichen<?php echo $dateiendungPHP; ?>">Lesezeichen</a>
+            <a href="<?php echo DIRECTORY_PUBLIC_URL; ?>/lesezeichen<?php echo $dateiendungPHP; ?>" >Lesezeichen</a>
         </div>
 
         <div class="menu-group">
@@ -66,16 +66,19 @@ $nonce = $nonce ?? '';
 
         <div class="menu-footer">
             <a id="toggle_lights" class="theme-toggle jsdep" href="#">
-                <span class="themelabel">Design: </span>
+                <span class="themelabel">Design:</span>
                 <span class="themename">LICHT AUS</span>
             </a>
-            <a href='https://twokinds.keenspot.com' class="original-link" target="_blank" rel="noopener noreferrer">
-                <div class="original-text">
-                    <span>Zum Original</span>
-                    <small>auf Englisch</small>
-                </div>
-                <img src='<?php echo Url::getImgUiUrl('tkbutton3.webp'); ?>' alt='Twokinds Original'>
-            </a>
+
+
+
+            <div class="incentive">
+                <div class="tinytext">Zum Original auf Englisch</div>
+                <a href='https://twokinds.keenspot.com' target="_blank" rel="noopener noreferrer">
+
+                    <img src='<?php echo Url::getImgUiUrl('tkbutton3.webp'); ?>' alt='Twokinds Original'>
+                </a>
+            </div>
         </div>
     </nav>
 </div>

@@ -21,9 +21,9 @@
 ///
 /// @since    5.0.0
 /// - Rückkehr zum klassischen Design-Layout.
-/// - fix: NEU-Marker exakt am linken Rand positioniert (vertikal).
-/// - style: Theme-Toggle Schalter-Optik implementiert.
-/// - style: Original-Link Box Layout für Bild/Text Kombination.
+/// - fix: NEU-Marker als durchgehender vertikaler Balken am linken Rand.
+/// - style: Theme-Toggle als zweigeteilter Schalter.
+/// - style: Original-Link Box mit bündigem Bild rechts.
 ///
 
 @use '../abstracts/variables' as *;
@@ -145,23 +145,27 @@
             color: var(--link-color);
             background-color: var(--table-row-hover);
             border-color: var(--link-color);
-            border-left-color: var(--link-color);
         }
 
-        /* --- INTELLIGENTER NEU-MARKER --- */
+        /* --- DER NEU MARKER (Vollständige Höhe am Rand) --- */
         &.menu-new:after {
             content: 'NEU';
             position: absolute;
-            top: 50%;
-            left: -11px; // Positioniert ihn genau auf dem Rand
-            padding: 2px 5px;
-            font-size: 0.5rem;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px; // Breite des Balkens
+            font-size: 0.6rem;
             font-weight: 900;
+            line-height: 1;
             color: #fff;
             background-color: #7ba181;
-            border-radius: 0 0 4px 4px;
-            transform: translateY(-50%) rotate(-90deg);
-            transform-origin: center;
+            writing-mode: vertical-rl; // Dreht den Text vertikal
+            transform: rotate(180deg);
+            border-radius: 3px 0 0 3px;
         }
     }
 }
@@ -169,57 +173,58 @@
 /* --- Menu Footer Elements --- */
 .menu-footer {
     padding-top: 20px;
-    margin-top: auto; // Schiebt Footer ans Ende der Sidebar
+    margin-top: auto;
     border-top: 1px solid var(--border-light);
 
     .logout-link {
+        display: block;
+        padding: 8px;
         margin-bottom: 12px;
+        font-size: 0.9rem;
+        font-weight: bold;
         color: #fff;
         text-align: center;
+        text-decoration: none;
         background-color: #dc3545;
-        border: none;
+        border-radius: 4px;
 
         &:hover {
             background-color: #c82333;
-            transform: scale(1.02);
+            border-color: #971421;
+            transform: translateX(3px);
         }
     }
 }
 
-.theme-toggle {
+/* --- Theme Toggle (Modern & Zweigeteilt) --- */
+a.theme-toggle {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 !important; // Padding wird über die Spans gesteuert
+    flex-flow: column nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
     margin-top: 10px;
-    overflow: hidden;
-    font-size: 0.85rem;
-    font-weight: bold;
-    text-decoration: none;
-    background-color: var(--button-bg);
-    border: 1px solid var(--border-medium);
-    border-radius: 4px;
-
-    .themelabel {
-        padding: 8px 10px;
-        color: var(--text-color-light);
-        background-color: var(--table-row-even);
-        border-right: 1px solid var(--border-medium);
-    }
-
-    .themename {
-        flex-grow: 1;
-        padding: 8px 10px;
-        color: var(--link-color);
-    }
+}
+a.theme-toggle span.themelabel {
+    flex: 0 0 0;
+    padding: 1px;
+    background-color: #7ba181;
+    color: #fff;
+    font-size: 0.7em;
 }
 
-/* --- Original Link (Bild Rechts, Text Links) --- */
+a.theme-toggle span.themename {
+    text-align: center;
+    flex: 1 1 auto;
+    padding: 3px;
+}
+
+/* --- Original Link (Optimiertes Layout) --- */
 .original-link {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 10px;
+    padding: 6px 8px;
     margin-top: 15px;
     text-decoration: none;
     background-color: var(--menu-bg);
@@ -238,15 +243,15 @@
         text-align: left;
 
         span {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
             color: var(--text-color);
         }
 
         small {
-            font-size: 0.7rem;
-            opacity: 0.8;
+            font-size: 0.65rem;
             color: var(--text-color-light);
+            opacity: 0.8;
         }
     }
 
@@ -316,7 +321,6 @@ body.theme-night {
 
         &.menu-new:after {
             background-color: #628492;
-            color: #fff;
         }
     }
 
@@ -334,4 +338,18 @@ body:not(.theme-night) {
     .patreon-dark-icon {
         display: none;
     }
+}
+
+.incentive {
+    padding-top: 10px;
+    margin: auto;
+    margin-bottom: 10px;
+
+    a {
+        padding: 0;
+        border-left: 0px;
+    }
+}
+.incentive .tinytext {
+    margin-bottom: 2px;
 }
