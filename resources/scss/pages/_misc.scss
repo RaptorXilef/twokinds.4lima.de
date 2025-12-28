@@ -44,21 +44,6 @@
 
 @use '../abstracts/variables' as *;
 
-// Active State: Antwort öffnen
-.faq-item.active .faq-answer {
-    max-height: 500px; // Ausreichend hoch für Text
-    padding: 15px;
-    transition: max-height 0.5s ease-in;
-}
-
-.faq-answer p {
-    margin-bottom: 10px;
-}
-
-.faq-answer p:last-child {
-    margin-bottom: 0;
-}
-
 /* --- Impressum (Imprint) Page --- */
 .imprint-container {
     margin-top: 15px;

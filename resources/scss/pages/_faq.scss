@@ -110,7 +110,7 @@ body.theme-night .faq-question:hover {
     font-size: 0.8em;
     color: var(--text-color-light);
     content: '\25B6'; // ▶
-    transition: transform 0.8s ease;
+    transition: transform 1.5s ease;
 }
 
 // Active State: Pfeil drehen (90 Grad nach unten)
@@ -118,28 +118,40 @@ body.theme-night .faq-question:hover {
     transform: rotate(90deg);
 }
 
-// Der Grid-Container (steuert die Höhe)
+// Der Grid-Container (Das Fenster)
 .faq-answer {
     display: grid;
-    grid-template-rows: 0fr; // Start: 0 Höhe
-    padding: 0 15px; // Fixiertes horizontales Padding für flüssigeren Flow
+    grid-template-rows: 0fr; // Schließt das Grid auf exakt 0px
     overflow: hidden;
     color: var(--text-color);
-    transition: grid-template-rows 0.8s ease-out;
+    transition: grid-template-rows 1.5s ease-in-out;
 }
 
 .faq-item.active .faq-answer {
-    grid-template-rows: 1fr; // Ziel: volle Inhaltshöhe
+    grid-template-rows: 1fr; // Öffnet das Grid auf Inhaltsgröße
 }
 
-// Der Inhalts-Wrapper (trägt Padding und Rahmen)
+// Der Inhalts-Wrapper
 .faq-answer-inner {
-    min-height: 0;
-    padding: 0 15px; // Start ohne vertikales Padding
+    min-height: 0; // Wichtig für Grid-Kollaps
+    padding: 0 25px; // NUR horizontales Padding (löst keinen Grafikbug aus)
     border-left: 2px solid var(--border-medium);
-    transition: padding 0.8s ease-out;
+    box-sizing: border-box;
 }
 
-.faq-item.active .faq-answer-inner {
-    padding: 15px; // Endzustand mit vollem Padding
+// Abstände innerhalb der Antwort
+.faq-answer p {
+    margin: 0 0 15px 0; // Nur Abstand nach unten für alle Absätze
+    padding: 0;
+}
+
+// Erzeugt den Abstand zum oberen Rand (NUR beim ersten Absatz)
+.faq-answer p:first-child {
+    padding-top: 15px;
+}
+
+// Erzeugt den Abstand zum unteren Rand (NUR beim letzten Absatz)
+.faq-answer p:last-child {
+    margin-bottom: 0; // Entfernt den Standard-Abstand nach unten
+    padding-bottom: 15px;
 }
