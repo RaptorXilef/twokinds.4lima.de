@@ -354,7 +354,9 @@ body.theme-night .collapsible-header {
     transform: rotate(180deg);
 }
 
-.collapsible-section.expanded .collapsible-content {
+// Der Trigger-Status (Global)
+.collapsible-section.expanded .collapsible-content,
+.chapter.active .collapsible-content {
     display: block;
 }
 

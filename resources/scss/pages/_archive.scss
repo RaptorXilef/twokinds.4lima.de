@@ -68,7 +68,9 @@ body.theme-night .chapter p a {
 
 // Chapter Headline (Akkordeon-Trigger)
 .chapter h2 {
-    display: inline-block;
+    display: flex; // Flexbox statt inline-block
+    align-items: center; // Vertikale Zentrierung
+    width: 100%; // Volle Breite nutzen
     margin: 0;
     font-size: 1.2em;
     color: var(--text-on-medium);
@@ -100,15 +102,22 @@ body.theme-night .chapter h2:hover {
 // Standard-Status: Ausgeklappt (Pfeil nach unten)
 .chapter h2::before {
     display: inline-block;
-    margin-right: 5px;
+    margin-right: 10px;
     content: '►';
     transform: rotate(90deg);
     transition: transform 0.2s;
+    flex-shrink: 0; // Verhindert das Quetschen des Symbols
 }
 
 // Status: Eingeklappt (Pfeil nach rechts)
 .chapter.collapsed h2::before {
     transform: rotate(0deg);
+}
+
+// Der zweite Pfeil (span.arrow-left) an den rechten Rand schieben
+.chapter h2 .arrow-left {
+    margin-left: auto; // Das ist der "Zaubertrick", der alles nach rechts schiebt
+    flex-shrink: 0;
 }
 
 // Content visibility toggle

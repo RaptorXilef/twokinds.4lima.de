@@ -202,10 +202,8 @@ body.theme-night #accept-all-cookies {
     }
 }
 
-.collapsible-content {
-    display: none;
-    padding-bottom: 5px;
-    padding-left: 15px;
+.cookie-banner .collapsible-content {
+    padding: 0 0 5px 15px; // Spezielles Padding für den Banner
     margin-top: 5px;
     font-size: 0.9em;
     border-left: 2px solid var(--border-medium);
