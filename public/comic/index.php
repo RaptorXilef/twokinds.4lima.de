@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Dies ist die Startseite des Comic-Bereichs.
  * Sie lädt dynamisch den neuesten Comic und zeigt ihn an und verweist
@@ -110,7 +111,6 @@ $isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article class="comic">
     <header class="comic-header">
         <h1><?php echo htmlspecialchars($comicTyp) . ' vom ' . $formattedDateGerman; ?>:
             <?php echo htmlspecialchars($comicName); ?>
@@ -155,7 +155,7 @@ require_once Path::getPartialTemplatePath('header.php');
         unset($isCurrentPageLatest);
         ?>
         <!-- SPRACHUMSCHALTER-BUTTON -->
-        <?php if (!empty($urlOriginalbildFilename)): ?>
+        <?php if (!empty($urlOriginalbildFilename)) : ?>
             <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
                 data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, './')); ?>"
                 data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, './')); ?>"
@@ -192,7 +192,7 @@ require_once Path::getPartialTemplatePath('header.php');
     <?php
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
-</article>
+
 
 <?php
 // NEU: Modal einbinden
