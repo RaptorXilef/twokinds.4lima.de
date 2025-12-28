@@ -25,6 +25,7 @@
 /// - refactor(FAQ): Migration aus _misc.scss und Angleichung an UI-Sichtbarkeit.
 /// - fix(Style): Hintergrundfarben für bessere Kontraste optimiert.
 /// - style: Linker Akzent-Border für aktive Antworten hinzugefügt.
+/// - fix(Syntax): Überflüssige schließende Klammer entfernt.
 ///
 
 // Verwendete SCSS-Variablen:
@@ -41,32 +42,15 @@
 // - --button-hover-bg: Hintergrund für Hover (Light Mode)
 // - --text-on-medium: Kontrastfarbe für Text auf farbigen Hintergründen
 
-/* --- FAQ Page --- */
-
-/*
-div.page-faq section {
-    padding-top: 10px;
-    margin-top: 10px;
-    border-top: 1px solid var(--border-medium);
-}
-
-div.page-faq h2 {
-    margin-bottom: 5px;
-    font-size: 15px;
-}
-*/
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
 
 /* --- FAQ Page (Accordion) --- */
+
 .faq-container {
     max-width: 800px;
     margin: 20px auto;
 }
-
-/*
-.faq-container p {
-    margin-bottom: 20px;
-}
-*/
 
 .faq-item {
     margin-bottom: 15px;
@@ -88,25 +72,29 @@ body.theme-night .faq-item {
     cursor: pointer;
     background-color: var(--table-row-hover);
     transition: background-color 1s;
-}
 
-.faq-question:hover {
-    color: var(--text-on-medium);
-    background-color: var(--button-hover-bg);
+    &:hover {
+        color: var(--text-on-medium);
+        background-color: var(--button-hover-bg);
+    }
+
+    @include media-retina-mobile {
+        padding: 18px 20px;
+        font-size: 1.2em;
+    }
 }
 
 body.theme-night .faq-question {
     background-color: var(--table-row-even);
 
-    // background-color: transparent;
-}
-
-body.theme-night .faq-question:hover {
-    background-color: var(--button-bg);
+    &:hover {
+        background-color: var(--button-bg);
+    }
 }
 
 // Pfeil-Icon (Rechtszeigendes Dreieck)
 .faq-question::after {
+    display: inline-block;
     font-size: 0.8em;
     color: var(--text-color-light);
     content: '\25B6'; // ▶
@@ -141,17 +129,15 @@ body.theme-night .faq-question:hover {
 
 // Abstände innerhalb der Antwort
 .faq-answer p {
-    margin: 0 0 15px 0; // Nur Abstand nach unten für alle Absätze
+    margin: 0 0 15px;
     padding: 0;
-}
 
-// Erzeugt den Abstand zum oberen Rand (NUR beim ersten Absatz)
-.faq-answer p:first-child {
-    padding-top: 15px;
-}
+    &:first-child {
+        padding-top: 15px;
+    }
 
-// Erzeugt den Abstand zum unteren Rand (NUR beim letzten Absatz)
-.faq-answer p:last-child {
-    margin-bottom: 0; // Entfernt den Standard-Abstand nach unten
-    padding-bottom: 15px;
+    &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 15px;
+    }
 }
