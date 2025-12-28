@@ -184,6 +184,30 @@
     }
 }
 
+/* --- Character Quick Navigation --- */
+
+.char-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: left;
+    text-align: center;
+
+    a {
+        display: inline-block;
+        transition: transform 0.2s ease;
+
+        &:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    img {
+        width: 2.9rem;
+        height: 2.9rem;
+    }
+}
+
 /* --- Character Detail Page (Wiederhergestellt) --- */
 .char-detail {
     @include clearfix; // Nutzt das Mixin aus abstracts/_mixins.scss
@@ -217,6 +241,29 @@
     margin-top: 0;
 }
 
+// Image Column (Left)
+.char-img {
+    float: left;
+    width: 220px;
+    margin-right: 25px;
+    text-align: center;
+
+    img.char-swatch {
+        display: inline-block;
+        width: auto;
+        height: auto;
+        margin: 5px 2px;
+        border: 1px solid var(--border-medium);
+        border-radius: 3px;
+        transition: opacity 0.6s;
+
+        &:hover {
+            opacity: 0.7;
+            //transform: scale(1.05);
+        }
+    }
+}
+
 // Layout Logik (Floats)
 .char-detail .char-info {
     float: left;
@@ -231,21 +278,81 @@
 }
 
 // Villain Section Overrides
-.char-detail .villain-image-container {
+/*.char-detail .villain-image-container {
     margin-bottom: 10px;
     text-align: center;
-}
+}*/
 
-.char-detail.villain-section .char-info {
+/* --- Villain Section Overrides --- */
+
+.villain-image-container {
     float: none;
-    width: 800px; // Breiterer Text
-    margin: auto; // Zentriert
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+
+    img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
 }
 
-.char-detail .villain-group-image {
-    width: 800px;
-    max-width: 100%;
-    height: auto;
+.villain-section {
+    border-color: var(--status-red-border, #dc3545);
+
+    .char-info {
+        float: none;
+        width: 100%;
+        margin: 0;
+
+        h3 {
+            color: var(--status-red-text, #dc3545);
+            border-bottom-color: var(--status-red-border, #dc3545);
+        }
+    }
+
+    .villain-group-image {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+} /* --- Villain Section Overrides --- */
+
+.villain-image-container {
+    float: none;
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+
+    img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+}
+
+.villain-section {
+    border-color: var(--status-red-border, #dc3545);
+
+    .char-info {
+        float: none;
+        width: 100%;
+        margin: 0;
+
+        h3 {
+            color: var(--status-red-text, #dc3545);
+            border-bottom-color: var(--status-red-border, #dc3545);
+        }
+    }
+
+    .villain-group-image {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
 }
 
 /* --- Theme Overrides (Flattened & Grouped) --- */

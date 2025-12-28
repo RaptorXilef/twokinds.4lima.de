@@ -112,6 +112,17 @@ body.theme-night .comic .transcript-content {
     margin-bottom: 0;
 }
 
+// Unterstützung für Listen in Transkripten (z.B. Fehlerseiten)
+.comic .transcript-content ul {
+    padding-left: 20px;
+    margin-bottom: 10px;
+    list-style-type: disc;
+}
+
+.comic .transcript-content li {
+    margin-bottom: 5px;
+}
+
 @include media-retina-mobile {
     .comic .transcript-content {
         font-size: 1.3em;
@@ -119,7 +130,7 @@ body.theme-night .comic .transcript-content {
 }
 
 // Below Navigation (Bookmarks)
-.comic .below-nav {
+.below-nav {
     display: flex;
     flex-flow: row nowrap;
     gap: 1rem;
@@ -132,7 +143,7 @@ body.theme-night .comic .transcript-content {
     text-align: left;
 }
 
-body.theme-night .comic .below-nav {
+body.theme-night .below-nav {
     color: #ccc;
 }
 
@@ -142,21 +153,21 @@ body.theme-night .comic .below-nav {
 }
 
 @include media-retina-mobile {
-    .comic .below-nav {
+    .below-nav {
         margin-top: 0.5rem;
         font-size: 1.2em;
     }
 
-    .comic .below-nav .nav-instruction-content {
+    .below-nav .nav-instruction-content {
         display: none;
     }
 }
 
-.comic .below-nav .nav-instruction {
+.below-nav .nav-instruction {
     flex: 1 1 auto;
 }
 
-.comic .below-nav .bookmark-control {
+.below-nav .bookmark-control {
     display: flex;
     flex: 0 0 auto;
     flex-flow: row nowrap;
@@ -164,23 +175,23 @@ body.theme-night .comic .below-nav {
     justify-content: flex-end;
 }
 
-.comic .below-nav .bookmark-control .arrow-left {
+.below-nav .bookmark-control .arrow-left {
     font-size: 1.4em;
 }
 
-.comic .below-nav .bookmark-control .button {
+.below-nav .bookmark-control .button {
     font-size: 1em;
 }
 
 @include media-retina-mobile {
-    .comic .below-nav .bookmark-control .button {
+    .below-nav .bookmark-control .button {
         font-size: 1.1em;
     }
 }
 
 // Tag Wrapper - Wiederhergestellt
 .comic .tag-wrapper,
-.comic .below-nav {
+.below-nav {
     display: flex;
     flex-flow: row nowrap;
     gap: 1rem;

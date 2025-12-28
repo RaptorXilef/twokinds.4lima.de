@@ -298,7 +298,7 @@ require_once Path::getPartialTemplatePath('header.php');
         <div class="collapsible-header">
             <h3>2. Gruppen-Zuweisung & Sortierung</h3>
             <div class="group-actions">
-                <button class="button add-group-btn" title="Neue Gruppe hinzufügen"><i class="fas fa-folder-plus"></i> Neue Gruppe</button>
+                <button class="button add add-group-btn" title="Neue Gruppe hinzufügen"><i class="fas fa-folder-plus"></i> Neue Gruppe</button>
             </div>
         </div>
         <div class="collapsible-content">

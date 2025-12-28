@@ -86,126 +86,127 @@ require_once Path::getPartialTemplatePath('header.php');
                     und -prinzipien, die ihm bei der Verfeinerung seiner Arbeit hilfreich war.</p>
             </div>
         </div>
+    </div>
 
-        <div class="faq-item">
-            <div class="faq-question">Hat Tom eine formelle Ausbildung?</div>
-            <div class="faq-answer">
-                <div class="faq-answer-inner">
-                    <p>Er ist dabei, einen Abschluss in Animation zu erwerben. Außerhalb der Künste arbeitet er auch an
-                        einem Abschluss im medizinischen Bereich - insbesondere Strahlentechnologie.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Hat Tom schonmal darüber nachgedacht, ein TwoKinds-Videospiel oder einen Cartoon
-                zu machen?</div>
-            <div class="faq-answer">
-                <div class="faq-answer-inner">
-                    <p>Natürlich hat er darüber nachgedacht. Aber selbst wenn so etwas möglich wäre, würde er den
-                        TwoKinds-Webcomic
-                        wahrscheinlich sowieso nicht als Drehbuch dafür verwenden. Der Comic wurde nie im Hinblick auf
-                        Animationen oder Spiele formatiert. Er hat andere TwoKinds-bezogene Skripte im Hinterkopf, die für
-                        solche Dinge
-                        viel besser geeignet wären, wenn sie jemals machbar wären. Vielleicht eines Tages.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Würde Tom etwas für mich zeichnen?</div>
-            <div class="faq-answer">
-                <div class="faq-answer-inner">
-                    <p>Ich fürchte, er hat bei all der Arbeit, die er durchmachen muss, keine Zeit, Anfragen oder
-                        Kunsttausch
-                        entgegenzunehmen.</p>
-                    <p>Wenn du Tom auf <a href="https://www.patreon.com/twokinds">Patreon</a> unterstützt, kannst du jedoch
-                        einen
-                        begrenzten Einfluss auf die dort entstehenden Kunstwerke nehmen.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Kann Tom meine Figur in seinen Comic aufnehmen?</div>
-            <div class="faq-answer">
-                <div class="faq-answer-inner">
-                    <p>Nein, tut mir leid.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Wie sende ich Tom Fanart?</div>
-            <div class="faq-answer">
-                <div class="faq-answer-inner">
-                    <p>Sie können ihm Ihr Fanart als Datei oder Link per E-Mail senden. Der Fanart-Bereich wird von Hand
-                        aktualisiert, daher kann es einige Zeit dauern, bis er dazu kommt, Ihren zu veröffentlichen.</p>
-                    <p>Allerdings hat Tom den Bereich schon seit Jahren nicht mehr aktualisiert. Einfacher ist es deine
-                        Fanart bei
-                        <a href="https://www.deviantart.com/twokinds">Deviantart</a> hochzuladen und Tom/TwoKinds zu
-                        verlinken oder
-                        als Hashtag anzugeben. So sieht auch Tom dein Kunstwerk, wenn er mal Zeit hat in Deviantart zu
-                        stöbern. So
-                        hab ich das zumindest vor einigen Jahren gemacht :.) <a
-                            href="https://www.deviantart.com/raptorxilef/art/Mandie-am-Strand-2014-12-27-635022310">Beispiel</a>
-                    </p>
-                    <p>Aber mir liegt Zeichnen nicht so, ich bleibe lieber beim Übersetzen und Bearbeiten. Die Fanarts
-                        überlasse ich
-                        euch. :D</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Kann Tom mir das Zeichnen beibringen, mir Tipps geben oder sie kritisieren?</div>
-            <div class="faq-answer">
-                <div class="faq-answer-inner">
-                    <p>Nein, tut mir leid. Er mag es nicht, Ratschläge zu geben oder Leuten zu sagen, was sie tun sollen. Es
-                        wäre
-                        wahrscheinlich das Beste für Sie, das zu tun, was er getan hat: online nach Tutorials und Tipps zu
-                        suchen.
-                        Versuchen Sie es mit Google und DeviantART.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Kann ich Toms Arbeit anpassen?</div>
-            <div class="faq-answer">
-                <div class="faq-answer-inner">
-                    <p>Ja. Sie dürfen seine nichtkommerziellen Arbeiten ändern, übersetzen oder weiterverbreiten. Sie können
-                        seine
-                        Charaktere und Einstellungen verwenden oder sich für Ihre eigenen Arbeiten inspirieren lassen. Alle
-                        Details
-                        und Einschränkungen finden Sie auf seiner <a
-                            href="https://twokinds.keenspot.com/license/">Lizenzierungsseite</a>.</p>
-                    <p>Oder bei mir in deutsch: <a
-                            href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/lizenz<?php echo $dateiendungPHP; ?>">Lizenzierungsseite</a>
-                    </p>
-                </div>
+    <div class="faq-item">
+        <div class="faq-question">Hat Tom eine formelle Ausbildung?</div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <p>Er ist dabei, einen Abschluss in Animation zu erwerben. Außerhalb der Künste arbeitet er auch an
+                    einem Abschluss im medizinischen Bereich - insbesondere Strahlentechnologie.</p>
             </div>
         </div>
     </div>
 
-    <script nonce="<?php echo htmlspecialchars($nonce); ?>">
-        document.addEventListener('DOMContentLoaded', function() {
-            const faqItems = document.querySelectorAll('.faq-item');
+    <div class="faq-item">
+        <div class="faq-question">Hat Tom schonmal darüber nachgedacht, ein TwoKinds-Videospiel oder einen Cartoon
+            zu machen?</div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <p>Natürlich hat er darüber nachgedacht. Aber selbst wenn so etwas möglich wäre, würde er den
+                    TwoKinds-Webcomic
+                    wahrscheinlich sowieso nicht als Drehbuch dafür verwenden. Der Comic wurde nie im Hinblick auf
+                    Animationen oder Spiele formatiert. Er hat andere TwoKinds-bezogene Skripte im Hinterkopf, die für
+                    solche Dinge
+                    viel besser geeignet wären, wenn sie jemals machbar wären. Vielleicht eines Tages.</p>
+            </div>
+        </div>
+    </div>
 
-            faqItems.forEach(item => {
-                const question = item.querySelector('.faq-question');
-                question.addEventListener('click', () => {
-                    const isActive = item.classList.contains('active');
+    <div class="faq-item">
+        <div class="faq-question">Würde Tom etwas für mich zeichnen?</div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <p>Ich fürchte, er hat bei all der Arbeit, die er durchmachen muss, keine Zeit, Anfragen oder
+                    Kunsttausch
+                    entgegenzunehmen.</p>
+                <p>Wenn du Tom auf <a href="https://www.patreon.com/twokinds">Patreon</a> unterstützt, kannst du jedoch
+                    einen
+                    begrenzten Einfluss auf die dort entstehenden Kunstwerke nehmen.</p>
+            </div>
+        </div>
+    </div>
 
-                    // Optional: Andere Items schließen (Accordion-Verhalten)
-                    faqItems.forEach(i => i.classList.remove('active'));
+    <div class="faq-item">
+        <div class="faq-question">Kann Tom meine Figur in seinen Comic aufnehmen?</div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <p>Nein, tut mir leid.</p>
+            </div>
+        </div>
+    </div>
 
-                    if (!isActive) {
-                        item.classList.add('active');
-                    }
-                });
+    <div class="faq-item">
+        <div class="faq-question">Wie sende ich Tom Fanart?</div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <p>Sie können ihm Ihr Fanart als Datei oder Link per E-Mail senden. Der Fanart-Bereich wird von Hand
+                    aktualisiert, daher kann es einige Zeit dauern, bis er dazu kommt, Ihren zu veröffentlichen.</p>
+                <p>Allerdings hat Tom den Bereich schon seit Jahren nicht mehr aktualisiert. Einfacher ist es deine
+                    Fanart bei
+                    <a href="https://www.deviantart.com/twokinds">Deviantart</a> hochzuladen und Tom/TwoKinds zu
+                    verlinken oder
+                    als Hashtag anzugeben. So sieht auch Tom dein Kunstwerk, wenn er mal Zeit hat in Deviantart zu
+                    stöbern. So
+                    hab ich das zumindest vor einigen Jahren gemacht :.) <a
+                        href="https://www.deviantart.com/raptorxilef/art/Mandie-am-Strand-2014-12-27-635022310">Beispiel</a>
+                </p>
+                <p>Aber mir liegt Zeichnen nicht so, ich bleibe lieber beim Übersetzen und Bearbeiten. Die Fanarts
+                    überlasse ich
+                    euch. :D</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Kann Tom mir das Zeichnen beibringen, mir Tipps geben oder sie kritisieren?</div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <p>Nein, tut mir leid. Er mag es nicht, Ratschläge zu geben oder Leuten zu sagen, was sie tun sollen. Es
+                    wäre
+                    wahrscheinlich das Beste für Sie, das zu tun, was er getan hat: online nach Tutorials und Tipps zu
+                    suchen.
+                    Versuchen Sie es mit Google und DeviantART.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Kann ich Toms Arbeit anpassen?</div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <p>Ja. Sie dürfen seine nichtkommerziellen Arbeiten ändern, übersetzen oder weiterverbreiten. Sie können
+                    seine
+                    Charaktere und Einstellungen verwenden oder sich für Ihre eigenen Arbeiten inspirieren lassen. Alle
+                    Details
+                    und Einschränkungen finden Sie auf seiner <a
+                        href="https://twokinds.keenspot.com/license/">Lizenzierungsseite</a>.</p>
+                <p>Oder bei mir in deutsch: <a
+                        href="<?php echo htmlspecialchars(DIRECTORY_PUBLIC_URL); ?>/lizenz<?php echo $dateiendungPHP; ?>">Lizenzierungsseite</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script nonce="<?php echo htmlspecialchars($nonce); ?>">
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+
+                // Optional: Andere Items schließen (Accordion-Verhalten)
+                faqItems.forEach(i => i.classList.remove('active'));
+
+                if (!isActive) {
+                    item.classList.add('active');
+                }
             });
         });
-    </script>
+    });
+</script>
 
-    <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
+<?php require_once Path::getPartialTemplatePath('footer.php'); ?>
