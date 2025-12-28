@@ -566,7 +566,7 @@ body.theme-night .image-box {
 .summary-details {
     // padding: 20px;
     margin-bottom: 25px;
-    background-color: var(--table-row-even);
+    background-color: var(--content-box-bg); // --table-row-even
     border: 1px solid var(--border-medium);
     border-radius: 5px;
 }
@@ -589,7 +589,7 @@ body.theme-night {
     .last-run-container,
     #last-run-container,
     .summary-details {
-        background-color: var(--sidebar-bg);
+        background-color: var(--content-box-bg); // --sidebar-bg
         border-color: var(--border-light);
     }
 }

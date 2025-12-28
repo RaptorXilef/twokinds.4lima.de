@@ -48,6 +48,7 @@
 // - --status-red-text: Farbe für Fehler
 
 @use '../../abstracts/variables' as *;
+@use '../../abstracts/mixins' as *;
 
 .source-markers {
     display: flex;
@@ -73,7 +74,7 @@
     background-color: #dc3545;
     border-radius: 10px;
     opacity: 0.3;
-    filter: grayscale(1);
+    //filter: grayscale(1);
 }
 
 // --- AKTIVZUSTAND (VORHANDEN) ---
@@ -305,36 +306,47 @@ body.theme-night .progress-text {
 }
 
 /* --- Collapsibles --- */
-.collapsible-section {
+/*.collapsible-section {
     // margin-bottom: 20px;
     overflow: hidden;
-    background-color: var(--content-bg);
+    background-color: var(--content-box-bg); //--content-bg
     border: 1px solid var(--border-medium);
     border-radius: 5px;
 }
 
 body.theme-night .collapsible-section {
-    background-color: var(--sidebar-bg);
+    background-color: var(--content-box-bg); // --sidebar-bg
     border-color: var(--border-light);
-}
+}*/
 
 .collapsible-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 12px 15px;
+    margin: 0;
+    font-size: 1.2em;
     cursor: pointer;
-    background-color: var(--table-row-hover); // --table-header-bg
+    background-color: var(--button-bg); // --table-header-bg --table-row-hover
     border-bottom: 1px solid var(--border-medium); /// var(--border-light)
     transition: background-color 0.2s;
+
+    &:hover {
+        background-color: var(--button-hover-bg);
+    }
+
+    @include media-retina-mobile {
+        padding: 15px;
+        font-size: 1.8em;
+    }
 }
+
+//.collapsible-header .arrow-left {
+// Siehe main-container .arrow-left in _ui.scss
+//}
 
 body.theme-night .collapsible-header {
     border-bottom-color: var(--border-light);
-}
-
-.collapsible-header:hover {
-    background-color: var(--table-row-hover);
 }
 
 .collapsible-header h3,
@@ -403,7 +415,7 @@ body.theme-night .transcript-display-box {
 .status-list {
     padding: 5px 15px;
     margin-bottom: 15px;
-    background-color: var(--table-row-even);
+    background-color: var(--content-bg); // --table-row-even
     border: 1px solid var(--border-medium);
     border-radius: 5px;
 }
@@ -452,6 +464,7 @@ body.theme-night .status-list {
 // OK (Grün)
 .status-item.status-ok .status-icon {
     color: var(--status-green-text);
+    background-color: var(--status-green-bg);
 }
 
 // Missing (Rot)

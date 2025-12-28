@@ -47,18 +47,18 @@
 
 .chapter {
     margin-bottom: 15px;
-    font-size: 14px;
-}
+    font-size: 1rem;
 
-.chapter p {
-    margin: 0.8rem 1.5rem;
-    margin-inline: 0.5rem;
-    color: var(--text-color);
-    text-align: justify;
-}
+    p {
+        margin: 0.8rem 1.5rem;
+        font-style: italic;
+        color: var(--text-color-light);
 
-.chapter p a {
-    color: var(--text-on-medium); // Im Original Schwarz/Dunkelgrau
+        a {
+            color: var(--text-on-medium); // Im Original Schwarz/Dunkelgrau
+            font-weight: 700;
+        }
+    }
 }
 
 // Dark Mode Override für Links
@@ -104,9 +104,9 @@ body.theme-night .chapter h2:hover {
     display: inline-block;
     flex-shrink: 0; // Verhindert das Quetschen des Symbols
     margin-right: 10px;
-    content: '►';
-    transform: rotate(90deg);
-    transition: transform 0.2s;
+    content: '►'; // Als führender optischer Pfeil, der auf die Überschrift zeigt
+    //transform: rotate(90deg);
+    //transition: transform 0.2s;
 }
 
 // Status: Eingeklappt (Pfeil nach rechts)
