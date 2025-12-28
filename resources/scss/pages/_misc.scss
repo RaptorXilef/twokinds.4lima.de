@@ -46,7 +46,8 @@
 .about-section,
 .imprint-container,
 .rss-container,
-.license-container {
+.license-container,
+.privacy-container {
     margin-bottom: 40px;
 
     &:last-of-type {
@@ -116,7 +117,8 @@
 .about-section,
 .imprint-container,
 .rss-container,
-.license-container {
+.license-container,
+.privacy-container {
     ul,
     ol {
         padding-left: 25px;
@@ -199,7 +201,8 @@ body.theme-night {
     .about-section h3,
     .imprint-container h3,
     .rss-container h3,
-    .license-container h3 {
+    .license-container h3,
+    .privacy-container h3 {
         border-bottom-color: var(--button-bg);
     }
 
