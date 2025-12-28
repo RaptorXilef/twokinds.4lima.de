@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
 ///
-/// Miscellaneous Pages (Chat, Links, About)
-/// Styling für das Impressum und die "Über den Comic"-Seite.
+/// Miscellaneous Pages (Chat, Links, About, Imprint)
+/// Styling für das Impressum, die "Über den Comic"-Seite und RSS-Anleitungen.
 ///
 
 /*!
@@ -23,19 +23,17 @@
 /// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 /// - refactor(faq): faq zu _faq.scss verschoben.
 /// - feat(About): Stile für ueber_den_comic.php hinzugefügt (.about-section, .about-mugshot).
+/// - fix(Misc): .license-image und .rss-icon-text wiederhergestellt (nutzer-spezifisch).
+/// - style(Imprint): Zeilenabstand für Listenpunkte (li) zur besseren Lesbarkeit optimiert.
 ///
 
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
+// Variablen-Index:
 // - --border-medium: Mittlere Rahmenfarbe
 // - --border-light: Helle Rahmenfarbe
 // - --text-color: Standard Textfarbe
 // - --link-color: Akzentfarbe für Links
 // - --button-bg: Hintergrund für Buttons
 // - --button-hover-bg: Hintergrund bei Hover
-// - --content-bg: Hintergrundfarbe im Dark Mode (über Page-BG)
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -63,6 +61,8 @@
 /* --- About Mugshots (Tom & Felix) --- */
 
 .about-mugshot {
+    width: auto;
+    height: 275px;
     margin-bottom: 15px;
     border: 1px solid var(--border-medium);
     border-radius: 7px;
@@ -81,7 +81,7 @@
     overflow: hidden; // Verhindert Umfließen bei sehr kurzem Text
 }
 
-/* --- Imprint Specifics --- */
+/* --- Imprint & License Utilities --- */
 
 .imprint-container {
     h3 {
@@ -98,6 +98,14 @@
         padding-left: 20px;
         margin-bottom: 15px;
         list-style-type: disc;
+
+        li {
+            margin-bottom: 8px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
     }
 
     a {
@@ -107,6 +115,20 @@
             text-decoration: underline;
         }
     }
+}
+
+.license-image {
+    display: inline-block;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+/* --- RSS Anleitung Page --- */
+
+.rss-icon-text {
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 // Email Button
@@ -138,17 +160,4 @@ body.theme-night {
         border-color: var(--button-bg);
         box-shadow: 0 4px 10px rgb(0 0 0 / 0.4);
     }
-}
-
-.license-image {
-    display: inline-block;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-/* --- RSS Anleitung Page --- */
-.rss-icon-text {
-    vertical-align: middle;
-    cursor: pointer;
-    border-radius: 5px;
 }
