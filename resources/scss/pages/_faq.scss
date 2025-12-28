@@ -1,0 +1,79 @@
+/* --- FAQ Page --- */
+div.page-faq section {
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid var(--border-medium);
+}
+
+div.page-faq h2 {
+    margin-bottom: 5px;
+    font-size: 15px;
+}
+
+/* --- FAQ Page (Accordion) --- */
+.faq-container {
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.faq-container p {
+    margin-bottom: 20px;
+}
+
+.faq-item {
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-medium);
+}
+
+body.theme-night .faq-item {
+    border-bottom-color: var(--border-light);
+}
+
+.faq-question {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    font-weight: bold;
+    color: var(--text-color);
+    cursor: pointer;
+    background-color: var(
+        --content-bg
+    ); // Optional: Leichter Hintergrund für Klickbarkeit
+
+    transition: background-color 0.2s;
+}
+
+.faq-question:hover {
+    background-color: var(--table-row-hover);
+}
+
+body.theme-night .faq-question {
+    background-color: transparent;
+}
+
+body.theme-night .faq-question:hover {
+    background-color: var(--button-bg);
+}
+
+// Pfeil-Icon (Rechtszeigendes Dreieck)
+.faq-question::after {
+    font-size: 0.8em;
+    color: var(--text-color-light);
+    content: '\25B6';
+    transition: transform 0.3s ease;
+}
+
+// Active State: Pfeil drehen (90 Grad nach unten)
+.faq-item.active .faq-question::after {
+    transform: rotate(90deg);
+}
+
+.faq-answer {
+    max-height: 0; // Startet geschlossen
+    padding: 0 15px;
+    overflow: hidden;
+    color: var(--text-color);
+    transition: max-height 0.3s ease-out; // Animation beim Öffnen
+}
