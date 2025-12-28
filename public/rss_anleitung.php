@@ -14,14 +14,13 @@
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.0.1 FIX falschen RSS-Icon Pfad
- * @since     5.0.0 refactor(CSS): Inline-Styles entfernt (jetzt in pages/_misc.scss).
+ * @since     5.0.0 refactor(Page): Nutzung der .rss-container Klasse für Layout-Konsistenz.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// === 1. ZENTRALE INITIALISIERUNG (Sicherheit & Basis-Konfiguration) ===
-// Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
+// === 1. ZENTRALE INITIALISIERUNG ===
 require_once __DIR__ . '/../src/components/init_public.php';
 
 // === 2. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -32,10 +31,11 @@ $robotsContent = 'index, follow';
 // Die URL des RSS-Feeds, die dynamisch eingefügt wird.
 $rssFeedUrl = htmlspecialchars(DIRECTORY_PUBLIC_URL) . '/rss.xml';
 
-// === 3. HEADER EINBINDEN (Jetzt mit Path-Klasse) ===
+// === 3. HEADER EINBINDEN ===
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
+<div class="rss-container">
     <header>
         <h1 class="page-header">So nutzt du RSS-Feeds: Immer auf dem neuesten Stand bleiben</h1>
     </header>
@@ -184,5 +184,6 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <p>Ich hoffe, diese Anleitung hilft dir dabei, meine Inhalte noch einfacher und effizienter zu verfolgen. Bei
         Fragen stehe ich dir gerne zur Verfügung!</p>
+</div>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
