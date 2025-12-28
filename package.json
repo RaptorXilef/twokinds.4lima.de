@@ -1,6 +1,6 @@
 {
   "name": "twokinds-frontend",
-  "version": "5.0.0-alpha.15",
+  "version": "5.0.0-alpha.16",
   "description": "Frontend-Setup mit PostCSS, Sass und striktem Linting.",
   "scripts": {
     "// --- INFRASTRUKTUR & SETUP ---": "",

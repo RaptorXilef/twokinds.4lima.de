@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.16](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.15...v5.0.0-alpha.16) (2025-12-28)
+
+
+### Bug Fixes
+
+* **about:** prevent layout shift by reserving space for mugshots ([ef0de5c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ef0de5cf41c663e984b32dd952f59e0618252cd2))
+* **faq:** resolve accordion ghost-gap using selective paragraph padding ([c713b33](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c713b335a52e706b6d9d9d81e5c91c6f87aee8c2))
+* **header:** restore missing classes for cookie banner and typography ([a23cbb1](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a23cbb1b4c3fa38ad8e3bf7309c06eae6fe25a67))
+* **imprint:** improve email display logic and finalize button styling ([c2ceab8](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c2ceab89b9f9b7e69a1ded01e9919c129ff4f17b))
+* **layout:** resolve floating issues in character overview and align navigation icons ([e186be4](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e186be402436f90ae8efb1a8d46521dd829db5d6))
+* **scss:** add missing original-transcript-box class to modals ([5523df7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5523df756b8e90742c53b4081bdcf58f4fa97bb9))
+* **scss:** restore missing classes for character overview and website version ([75da30e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/75da30e5aa42311a0b6b3e3fbbef6bb48f8fe378))
+
 ## [5.0.0-alpha.15](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.14...v5.0.0-alpha.15) (2025-12-26)
 
 
