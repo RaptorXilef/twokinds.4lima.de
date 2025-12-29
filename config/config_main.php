@@ -75,3 +75,10 @@ define('SESSION_WARNING_SECONDS', 60);
 // Ich empfehle diesen Wert nicht niedriger als 300 und höher als 3600 zu setzen (5 Min bis 1 Stunde)
 // Standard: 900 (alle 15 Minuten)
 define('SESSION_REGENERATION_SECOUNDS', 900);
+
+
+// ###################################################################
+// SOZIAL-MEDIA
+
+// Definiert ein Bild, welches geladen in Sozial-Media geladen wird, wenn keine Comicseite verfügbar ist.
+define('DEFAULT_SOCIAL_IMAGE', DIRECTORY_PUBLIC_URL . '/assets/images/layout/default_sozial_preview.webp');

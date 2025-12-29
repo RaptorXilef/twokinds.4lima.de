@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file      ROOT/src/components/load_config.php
  * @package   twokinds.4lima.de
@@ -11,21 +12,19 @@
  */
 
 $configExist = true;
-// Lädt die Haupt-Konfigurationsdatei.
-include_once __DIR__ . '/../../config/config_main.php';
 
 // Lädt die grundlegenden Verzeichnis-Konstanten.
 include_once __DIR__ . '/../../config/config_folder_path.php';
+
+// Lädt die Haupt-Konfigurationsdatei.
+include_once __DIR__ . '/../../config/config_main.php';
 
 // Lädt die neue Path-Helfer-Klasse für dynamische Pfad-Generierung.
 include_once 'Path.php';
 include_once 'Url.php';
 
-
-
-if ($phpBoolen):
+if ($phpBoolen) :
     $dateiendungPHP = '.php';
-else:
+else :
     $dateiendungPHP = '';
 endif;
-?>

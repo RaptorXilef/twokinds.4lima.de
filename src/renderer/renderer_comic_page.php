@@ -69,7 +69,7 @@ $urlOriginalsketchFromCache = get_cached_image_path($currentComicId, 'url_origin
 
 // --- FALLBACK-LOGIK ---
 if (empty($comicImagePath)) {
-//$comicImagePath = get_cached_image_path('in_translation', 'lowres');
+    //$comicImagePath = get_cached_image_path('in_translation', 'lowres');
     $comicImagePath = URL::getImgLayoutLowresUrl('in_translation.webp?c=20251101');
     if (empty($comicHiresPath)) { // Nur wenn Hires auch fehlt
         //$comicHiresPath = get_cached_image_path('in_translation', 'hires');
@@ -133,7 +133,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </h1>
     </header>
 
-    <div class='comicnav'> <?php // Obere Navigation ?>
+    <div class='comicnav'> <?php // Obere Navigation
+    ?>
         <?php
         $comicKeys = array_keys($comicData);
         $latestComicId = !empty($comicKeys) ? end($comicKeys) : '';
@@ -157,7 +158,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </button>
     </div>
 
-    <a id="comic-image-link" <?php // Bild-Link ?>
+    <a id="comic-image-link" <?php // Bild-Link
+    ?>
         href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, '/')); ?>"
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
@@ -166,7 +168,8 @@ require_once Path::getPartialTemplatePath('header.php');
             onerror="this.onerror=null; this.src='https://placehold.co/800x600/cccccc/333333?text=Bild+Fehler'; this.parentElement.href='#'; console.warn('Haupt-Comicbild Fehler (onerror)');">
     </a>
 
-    <div class='comicnav bottomnav'> <?php // Untere Navigation ?>
+    <div class='comicnav bottomnav'> <?php // Untere Navigation
+    ?>
         <?php
         include DIRECTORY_PRIVATE_PARTIAL_TEMPLATES . DIRECTORY_SEPARATOR . 'navigation_comic.php';
         ?>
@@ -185,7 +188,8 @@ require_once Path::getPartialTemplatePath('header.php');
         <?php endif; ?>
     </div>
 
-    <div class="below-nav jsdep"> <?php // Permalink & Nav-Hinweis ?>
+    <div class="below-nav jsdep"> <?php // Permalink & Nav-Hinweis
+    ?>
         <div class="nav-instruction">
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
@@ -196,7 +200,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
     </div>
 
-    <aside class="transcript"> <?php // Transkript ?>
+    <aside class="transcript"> <?php // Transkript
+    ?>
         <div class="transcript-header">
             <h2>Transkript</h2>
 
@@ -207,7 +212,8 @@ require_once Path::getPartialTemplatePath('header.php');
             <?php endif; ?>
         </div>
         <div class="transcript-content">
-            <?php echo $comicTranscript; // HTML-Tags sind hier erlaubt ?>
+            <?php echo $comicTranscript; // HTML-Tags sind hier erlaubt
+            ?>
         </div>
     </aside>
 
@@ -225,25 +231,28 @@ require_once Path::getPartialTemplatePath('header.php');
 include_once Path::getPartialTemplatePath('report_modal.php');
 ?>
 
-<?php // Original JavaScript Block für URL-Kopieren und Sprachumschaltung ?>
+<?php // Original JavaScript Block für URL-Kopieren und Sprachumschaltung
+?>
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     // === GEÄNDERT V4.4.2: Alle Funktionsdefinitionen (checkUrlExists, etc.)
     // wurden nach comic.js verschoben. Dieses Skript ruft nur noch
     // die globalen Funktionen auf (window.findExistingUrl). ===
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const debugJs = window.phpDebugMode || false; // Verwende die PHP Debug-Variable
 
         // --- URL-Kopieren Logik ---
         const copyLink = document.getElementById('copy-comic-url');
         if (copyLink) {
-            copyLink.addEventListener('click', function (event) {
+            copyLink.addEventListener('click', function(event) {
                 event.preventDefault();
                 const urlToCopy = '<?php echo $canonicalUrl; ?>';
                 const originalText = this.textContent;
                 navigator.clipboard.writeText(urlToCopy).then(() => {
                     this.textContent = 'Kopiert!';
-                    setTimeout(() => { this.textContent = originalText; }, 2000);
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
                 }).catch(err => {
                     console.error('Fehler beim Kopieren der URL: ', err);
                     // Fallback für execCommand
@@ -257,7 +266,9 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
                         this.textContent = 'Kopiert! (Fallback)';
-                        setTimeout(() => { this.textContent = originalText; }, 2000);
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                        }, 2000);
                     } catch (copyErr) {
                         console.error('Fallback-Kopieren fehlgeschlagen: ', copyErr);
                         this.textContent = 'Fehler beim Kopieren';
@@ -273,7 +284,8 @@ include_once Path::getPartialTemplatePath('report_modal.php');
             const comicImage = document.getElementById('comic-image');
             const langToggleText = document.getElementById('lang-toggle-text');
             let isGerman = true;
-            let englishSrc = '', englishHref = ''; // Lokaler Cache für den Button-Klick
+            let englishSrc = '',
+                englishHref = ''; // Lokaler Cache für den Button-Klick
 
             // Prüfen, ob die globalen Funktionen von comic.js geladen wurden
             if (typeof window.checkUrlExists !== 'function' || typeof window.runOriginalProbingLogic !== 'function') {
@@ -282,7 +294,7 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                 return;
             }
 
-            toggleBtn.addEventListener('click', async function (event) {
+            toggleBtn.addEventListener('click', async function(event) {
                 event.preventDefault();
                 if (!comicImage || !comicLink) return; // Schutz
 
@@ -310,7 +322,9 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                                 foundInCache = true;
                                 if (debugJs) console.log("DEBUG: Originalbild aus Cache verwendet:", urlFromCache);
                             } else if (debugJs) console.warn("DEBUG: Gespeicherter Original-Link nicht erreichbar:", urlFromCache);
-                        } catch (err) { console.warn("DEBUG: Fehler bei Prüfung des Original-Cache-Links:", err); }
+                        } catch (err) {
+                            console.warn("DEBUG: Fehler bei Prüfung des Original-Cache-Links:", err);
+                        }
                     }
 
                     if (!foundInCache) {

@@ -111,12 +111,38 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
     <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s', filemtime(__FILE__)); ?>">
 
     <!-- Open Graph Meta Tags für Social Media -->
+    <?php
+    // --- 1. Bild-Logik vorbereiten ---
+    // Wenn kein spezifisches Bild da ist, nimm den globalen Standard
+    $finalSocialImage = !empty($ogImage) ? $ogImage : (defined('DEFAULT_SOCIAL_IMAGE') ? DEFAULT_SOCIAL_IMAGE : '');
+
+    // --- 2. Debug-Check (nur im Quelltext sichtbar) ---
+    if ($debugMode && !empty($finalSocialImage)) {
+        // Sicherstellen, dass wir den lokalen Pfad korrekt berechnen
+        $relativePart = str_replace(DIRECTORY_PUBLIC_URL, '', $finalSocialImage);
+        $localPath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relativePart, '/\\');
+
+        echo "\n    ";
+        if (!file_exists($localPath)) {
+            echo "\n    ";
+        } else {
+            echo "\n    ";
+        }
+    }
+    ?>
+
     <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
     <meta property="og:description" content="<?php echo htmlspecialchars($siteDescription); ?>" />
     <meta property="og:type" content="website" />
-    <?php if (!empty($ogImage)) : ?>
-        <meta property="og:image" content="<?php echo htmlspecialchars($ogImage); ?>" />
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($pageTitle); ?>">
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($siteDescription); ?>">
+
+    <?php if (!empty($finalSocialImage)) : ?>
+        <meta property="og:image" content="<?php echo htmlspecialchars($finalSocialImage); ?>" />
+        <meta name="twitter:image" content="<?php echo htmlspecialchars($finalSocialImage); ?>">
     <?php endif; ?>
+
 
     <!-- Weitere Meta-Informationen -->
     <link rel="sitemap" type="application/xml" title="Sitemap"
@@ -315,3 +341,39 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
                         echo '<header><h1 class="page-header">' . htmlspecialchars($pageHeader) . '</h1></header>';
                     }
                     ?>
+
+<?php
+// --- ABSOLUT SICHERE DEBUG-HILFE FÜR SOCIAL MEDIA ---
+if ($debugMode) {
+    echo "<div class='debug-box' style='background: #1a1a1a; color: #00ff00; padding: 15px; border: 2px dashed #00ff00; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.6; border-radius: 8px;'>";
+    echo "<strong style='color: #fff; border-bottom: 1px solid #555; display: block; margin-bottom: 10px;'>🔍 Social Media Image Debug</strong>";
+
+    // 1. Die reine URL (für die Crawler)
+    echo "<strong>Public URL:</strong> " . htmlspecialchars($ogImage ?: '--- LEER ---') . "<br>";
+
+    // 2. Pfad-Berechnung korrigieren
+    // Zuerst den Query-String (?c=...) entfernen, falls vorhanden
+    $cleanOgImage = explode('?', $ogImage)[0];
+
+    // Relativen Teil extrahieren
+    $relativePart = str_replace(DIRECTORY_PUBLIC_URL, '', $cleanOgImage);
+
+    // Pfad für das Betriebssystem säubern (Slashes zu Backslashes auf Windows)
+    $localPath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relativePart, '/\\');
+    $localPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $localPath);
+
+    echo "<strong>Bereinigter Server-Pfad:</strong> " . htmlspecialchars($localPath) . "<br>";
+
+    if (!empty($ogImage) && file_exists($localPath)) {
+        echo "<span style='color: #00ff00; font-weight: bold;'>✔ DATEI GEFUNDEN:</span> Crawler können das Bild laden.";
+    } else {
+        echo "<span style='color: #ff3333; font-weight: bold;'>✘ DATEI NICHT GEFUNDEN:</span> ";
+        if (str_contains($ogImage, '?')) {
+            echo "Der Query-String wurde für die Prüfung ignoriert.";
+        }
+        echo "<br><small style='color: #aaa;'>Tipp: Prüfe, ob DIRECTORY_PUBLIC_URL exakt mit dem Pfad in der URL übereinstimmt.</small>";
+    }
+
+    echo "</div>";
+}
+?>
