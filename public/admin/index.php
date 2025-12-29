@@ -179,9 +179,17 @@ $messageType = 'info';
 $clientIp = $_SERVER['REMOTE_ADDR'];
 $usersExist = hasUsers();
 
-// NEU: Variablen für die Felder-Wiederherstellung
+// Weiche: Ist die Verbindung sicher?
+$isSecureConnection = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+
 $lastUser = '';
 $lastPass = '';
+
+// Nur wenn HTTPS aktiv ist, erlauben wir das Zwischenspeichern der Eingaben
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isSecureConnection) {
+    $lastUser = $_POST['username'] ?? '';
+    $lastPass = $_POST['password'] ?? '';
+}
 
 // 1. Gründe aus URL verarbeiten (z.B. nach Logout oder Timeout)
 if (isset($_GET['reason'])) {
