@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.18](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.17...v5.0.0-alpha.18) (2025-12-29)
+
+
+### Features
+
+* **admin:** achieve absolute perfection in login logic, security, and UX ([bd55f65](https://github.com/RaptorXilef/twokinds.4lima.de/commit/bd55f651db0353d7f4be0cb032e1f5e2a879d8ed))
+* **admin:** enhance login UX with input persistence and password toggle ([7b4012d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7b4012d5ee01326920bf3bad7f8bb16ae7d80e52))
+* **admin:** implement multi-layered detection for password manager compatibility ([e54db13](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e54db135d0b60b8063b94643ae96c964d00d6fe8))
+* **admin:** implement pre-login security warnings and adaptive persistence ([d537ac2](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d537ac2a8d478439ac9dae5803eddb57f2512ceb))
+* **admin:** implement secure input persistence and password visibility toggle ([d82dddf](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d82dddfb44220efa09014fba262ddb687038b446))
+* **admin:** restore brute-force protection and rate-limiting for login ([98c257a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/98c257ace7f3a70e5912d1fd4297e90d89dbcc86))
+* **admin:** restore brute-force protection and rate-limiting for login ([31eb792](https://github.com/RaptorXilef/twokinds.4lima.de/commit/31eb79213064bc20381187dc0703b0b727202765))
+* **admin:** restore directory creation and synchronize session timing ([44bebce](https://github.com/RaptorXilef/twokinds.4lima.de/commit/44bebce31111db90025dddd98bde16cbb118090a))
+* **security:** achieve 'Final Perfection' state for admin initialization ([8353de7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8353de77d4ee96cd3392a191d601a398364b6073))
+* **seo:** implement comprehensive social media integration and image validation ([66d49bd](https://github.com/RaptorXilef/twokinds.4lima.de/commit/66d49bd86a3439409ec9ded5c7eaa42989d2a880))
+
+
+### Bug Fixes
+
+* **admin:** resolve password field UI conflicts and improve manager compatibility ([c69fb28](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c69fb282bcade0fb279a7a73a31ea6665d04ff1f))
+* **auth:** resolve zombie sessions and implement multi-tab synchronization ([13c3202](https://github.com/RaptorXilef/twokinds.4lima.de/commit/13c320219a94c2e7adfe0cd0eb786ce42224f64f))
+
 ## [5.0.0-alpha.17](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.16...v5.0.0-alpha.17) (2025-12-29)
 
 
