@@ -4,6 +4,7 @@
 /// Sidebar & Navigation Styles.
 ///
 /// Styling für die Seitenleiste, Navigation und Incentives.
+/// Styles für die Seitenleiste und deren Menü.
 ///
 
 /*!
@@ -20,11 +21,21 @@
 
 ///
 /// @since    5.0.0
-/// - Rückkehr zum klassischen Design-Layout.
-/// - fix: NEU-Marker als durchgehender vertikaler Balken am linken Rand.
-/// - style: Theme-Toggle als zweigeteilter Schalter.
-/// - style: Original-Link Box mit bündigem Bild rechts.
+/// - CSS Vars Integration.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
 ///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --sidebar-bg: Hintergrund der Sidebar
+// - --text-on-medium: Textfarbe in Menüs
+// - --menu-bg: Hintergrund Menü-Items
+// - --menu-hover-bg: Hintergrund Menü-Items bei Hover
+// - --theme-label-bg: Hintergrund für Theme-Label
+// - --text-color: Standard Textfarbe (Dark Mode)
+// - --new-tag-bg: Hintergrund für "New"-Tag
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -35,321 +46,215 @@
 }
 
 .sidebar-content {
-    display: flex;
-    flex-direction: column;
-    padding: 25px 12px;
-    margin-right: 12px;
+    width: 167px;
+    padding: 11px 4px 7px;
     margin-left: 12px;
+    text-align: center;
     background-color: var(--sidebar-bg);
-    border-right: 1px solid var(--menu-bg);
+    border-radius: 0 0 5px 5px;
 }
 
-/* --- Social Icons Area --- */
-.social-area {
-    margin-bottom: 25px;
-    text-align: center;
+.sidebar-content .full-width-img {
+    margin-left: -5px;
 }
 
-.social-icons-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: center;
+.incentive {
+    width: 160px;
+    margin: auto;
+    margin-bottom: 10px;
 }
 
-.social-icon {
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border-radius: 6px;
-
-    &:hover {
-        transform: scale(1.15) translateY(-2px);
-    }
+.menu .incentive a {
+    background-color: transparent;
+}
+.menu .incentive a:hover {
+    background-color: transparent;
 }
 
-/* --- RSS Feedback Popup --- */
-#rssFeedLink {
-    position: relative;
-
-    .copy-feedback {
-        position: absolute;
-        bottom: 120%;
-        left: 50%;
-        z-index: 100;
-        padding: 5px 12px;
-        font-size: 11px;
-        font-weight: bold;
-        color: #fff;
-        white-space: nowrap;
-        background-color: var(--cookie-btn-accept-bg, #28a745);
-        border-radius: 20px;
-        box-shadow: 0 4px 10px rgb(0 0 0 / 0.2);
-        visibility: hidden;
-        opacity: 0;
-        transition: all 0.3s ease;
-        transform: translateX(-50%) translateY(10px);
-
-        &.show {
-            visibility: visible;
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-    }
+.incentive .tinytext {
+    margin-bottom: 2px;
 }
 
-/* --- Navigation Menu --- */
+/* Navigation Menu */
 .menu {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
+    margin-bottom: 10px;
+    font-size: 14px;
 
-    .menu-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .menu-label {
-        margin-bottom: 2px;
-        font-size: 0.65rem;
-        font-weight: 800;
-        color: var(--text-color-light);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        opacity: 0.6;
-    }
-
-    a {
-        position: relative; // Notwendig für den NEU-Marker
-        display: block;
-        padding: 6px 3px;
-        font-size: 0.95rem;
-        color: var(--text-color);
-        text-decoration: none;
-        text-transform: uppercase;
-        background-color: var(--menu-bg);
-        border: 1px solid var(--button-bg);
-        border-left: 4px solid transparent;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
-        transition: all 0.2s ease;
-
-        &:hover {
-            background-color: var(--menu-hover-bg);
-            border-color: var(--comic-nav-archive-hover-bg);
-            transform: translateX(3px);
-        }
-
-        &.active {
-            font-weight: bold;
-            color: var(--link-color);
-            background-color: var(--table-row-hover);
-            border-color: var(--link-color);
-        }
-
-        /* --- DER NEU MARKER (Vollständige Höhe am Rand) --- */
-        &.menu-new:after {
-            content: 'NEU';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 15px; // Breite des Balkens
-            font-size: 0.6rem;
-            font-weight: 900;
-            line-height: 1;
-            color: #fff;
-            background-color: #7ba181;
-            writing-mode: vertical-rl; // Dreht den Text vertikal
-            transform: rotate(180deg);
-            border-radius: 3px 0 0 3px;
-        }
+    @include media-retina-mobile {
+        font-size: 1.1em;
     }
 }
 
-/* --- Menu Footer Elements --- */
-.menu-footer {
-    padding-top: 20px;
-    margin-top: auto;
-    border-top: 1px solid var(--border-light);
+.menu a {
+    position: relative;
+    display: block;
+    width: 160px;
+    padding: 3px 0;
+    margin: 3px auto;
+    overflow: hidden;
+    color: var(--text-on-medium);
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    list-style-type: none;
+    background-color: var(--menu-bg);
+    border-radius: 4px;
 
-    .logout-link {
-        display: block;
-        padding: 8px;
-        margin-bottom: 12px;
-        font-size: 0.9rem;
-        font-weight: bold;
-        color: #fff;
-        text-align: center;
-        text-decoration: none;
-        background-color: #dc3545;
-        border-radius: 4px;
-
-        &:hover {
-            background-color: #c82333;
-            border-color: #971421;
-            transform: translateX(3px);
-        }
+    @include media-retina-mobile {
+        padding: 8px 0;
+        margin: 8px auto;
     }
 }
 
-/* --- Theme Toggle (Modern & Zweigeteilt) --- */
-a.theme-toggle {
+.menu a:hover {
+    background-color: var(--menu-hover-bg);
+}
+
+.menu a.theme {
     display: flex;
     flex-flow: column nowrap;
     align-items: stretch;
     justify-content: flex-start;
     padding: 0;
     margin-top: 10px;
+    margin-bottom: 10px;
 }
-a.theme-toggle span.themelabel {
+
+.menu a.theme span.themelabel {
     flex: 0 0 0;
     padding: 1px;
-    background-color: #7ba181;
-    color: #fff;
     font-size: 0.7em;
+    color: #fff;
+    background-color: var(--theme-label-bg);
 }
 
-a.theme-toggle span.themename {
-    text-align: center;
+.menu a.theme span.themename {
     flex: 1 1 auto;
     padding: 3px;
+    color: var(--text-on-medium);
+    text-align: center;
 }
 
-/* --- Original Link (Optimiertes Layout) --- */
-.original-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 8px;
-    margin-top: 15px;
-    text-decoration: none;
-    background-color: var(--menu-bg);
-    border: 1px solid var(--button-bg);
-    border-radius: 4px;
-    transition: background-color 0.2s;
+body.theme-night .menu a.theme span.themename {
+    color: var(--text-color);
+}
 
-    &:hover {
-        background-color: var(--menu-hover-bg);
-    }
-
-    .original-text {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.1;
-        text-align: left;
-
-        span {
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: var(--text-color);
-        }
-
-        small {
-            font-size: 0.65rem;
-            color: var(--text-color-light);
-            opacity: 0.8;
-        }
-    }
-
-    img {
-        width: 32px;
-        height: auto;
-        border-radius: 4px;
+.menu a.menu-new {
+    @include media-retina-mobile {
+        padding-top: calc(0.7em + 5px);
+        padding-bottom: calc(8px - 0.7em + 5px);
     }
 }
 
-/* --- Admin Session Timer --- */
+.menu a.menu-new::after {
+    position: absolute;
+    top: 6px;
+    left: -6px;
+    display: inline-block;
+    width: 26px;
+    font-size: 0.7em;
+    color: #fff;
+    content: 'New';
+    background-color: var(--new-tag-bg);
+    transform: rotate(-90deg);
+
+    @include media-retina-mobile {
+        top: 0;
+        right: 0;
+        left: 0;
+        width: auto;
+        transform: none;
+    }
+}
+
+// Aus config_menue_admin.php extrahiert und angepasst
 .session-timer {
+    padding: 10px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    color: var(--text-on-medium);
+    text-align: center;
+    background-color: var(--button-hover-bg);
+    border: 1px solid var(--comic-nav-hover-bg);
+    border-radius: 5px;
+}
+
+.session-timer i {
+    margin-right: 8px;
+}
+
+body.theme-night .session-timer {
+    background-color: #002b3c;
+    border: 1px solid #2a6177;
+}
+
+.social-icons-container {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 15px;
-    margin-bottom: 25px;
-    background-color: var(--content-box-bg);
-    border: 1px solid var(--border-medium);
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgb(0 0 0 / 0.05);
-
-    i {
-        font-size: 1.4rem;
-        color: var(--link-color);
-    }
-
-    .timer-text {
-        display: flex;
-        flex-direction: column;
-        font-size: 0.8rem;
-        line-height: 1.3;
-
-        strong {
-            font-size: 1.1rem;
-            font-family: var(--font-mono, monospace);
-        }
-    }
-}
-
-/* --- Theme Specifics (Night Mode) --- */
-body.theme-night {
-    .sidebar-content {
-        background-color: var(--sidebar-bg);
-        border-right-color: var(--page-bg);
-    }
-
-    .patreon-light-icon {
-        display: none;
-    }
-    .patreon-dark-icon {
-        display: inline-block;
-    }
-
-    .menu-group .menu-label {
-        color: var(--text-color-medium);
-    }
-
-    .menu a {
-        background-color: var(--button-bg);
-        border-color: var(--page-bg);
-
-        &:hover {
-            background-color: var(--sidebar-bg);
-            border-color: var(--border-medium);
-        }
-
-        &.menu-new:after {
-            background-color: #628492;
-        }
-    }
-
-    .original-link,
-    .session-timer {
-        background-color: var(--button-bg);
-        border-color: var(--page-bg);
-    }
-}
-
-body:not(.theme-night) {
-    .patreon-light-icon {
-        display: inline-block;
-    }
-    .patreon-dark-icon {
-        display: none;
-    }
-}
-
-.incentive {
-    padding-top: 10px;
-    margin: auto;
+    justify-content: center;
+    gap: 10px;
     margin-bottom: 10px;
-
-    a {
-        padding: 0;
-        border-left: 0px;
-    }
 }
-.incentive .tinytext {
-    margin-bottom: 2px;
+
+.social-icon {
+    border-radius: 5px;
+}
+
+#rssFeedLink {
+    position: relative;
+    /* Wichtig für die Positionierung der Feedback-Nachricht */
+}
+
+#rssFeedLink .social-icon {
+    cursor: pointer;
+}
+
+/* Stile für die "Kopiert!"-Nachricht */
+.copy-feedback {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.3s,
+        visibility 0.3s;
+    z-index: 10;
+}
+
+.copy-feedback.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Standard-Stile für das Light-Theme */
+.patreon-icon-wrapper .patreon-light-icon {
+    display: inline-block;
+    /* Zeige das helle Icon standardmäßig an */
+}
+
+.patreon-icon-wrapper .patreon-dark-icon {
+    display: none;
+    /* Verstecke das dunkle Icon standardmäßig */
+}
+
+/* Stile für das Dark-Theme, wenn die Body-Klasse 'theme-night' aktiv ist */
+body.theme-night .patreon-icon-wrapper .patreon-light-icon {
+    display: none;
+    /* Verstecke das helle Icon im Dark-Theme */
+}
+
+body.theme-night .patreon-icon-wrapper .patreon-dark-icon {
+    display: inline-block;
+    /* Zeige das dunkle Icon im Dark-Theme an */
+}
+
+body.theme-night .copy-feedback {
+    background-color: #3c763d;
 }

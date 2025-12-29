@@ -1,63 +1,79 @@
 <?php
 
 /**
- * Navigationsmenü für den Admin-Bereich.
+ * Dieses Skript enthält die Konfiguration für das Navigationsmenü im Admin-Bereich.
+ * Es wird dynamisch in header.php geladen, wenn sich der Benutzer im Admin-Bereich befindet.
  *
  * @file      ROOT/config/config_menue_admin.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
- * @since     5.0.0 refactor: Struktur modernisiert, Labels zur Gruppierung eingeführt.
+ * @copyright 2025 Felix M.
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de
+ * @version   4.1.0
+ * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und URL-Konstanten.
+ * @since     4.1.0 Fügt den Link zur Report-Verwaltung hinzu.
  */
 
+// === DEBUG-MODUS STEUERUNG ===
+$debugMode = $debugMode ?? false;
+
+// Die Variable $nonce wird in init_admin.php definiert und ist hier verfügbar.
 $nonce = $nonce ?? '';
 ?>
 
-<div class="sidebar-content admin-sidebar">
+<div class="sidebar-content">
+  <!-- NEU: Session-Timer-Anzeige -->
   <div id="session-timer-display" class="session-timer">
     <i class="fas fa-stopwatch"></i>
-    <div class="timer-text">
-        <span>Logout in:</span>
-        <strong id="session-timer-countdown">10:00</strong>
-    </div>
+    <span>Auto-Logout in:</span>
+    <strong id="session-timer-countdown">10:00</strong>
   </div>
 
+  <!-- Menü-Navigation -->
   <nav id="menu" class="menu">
-    <div class="menu-group">
-        <span class="menu-label">System & User</span>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup' . $dateiendungPHP; ?>">Initial Setup</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user' . $dateiendungPHP; ?>">Benutzer verwalten</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_login' . $dateiendungPHP; ?>">Profil & Sicherheit</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports' . $dateiendungPHP; ?>">Fehlermeldungen</a>
-    </div>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup' . $dateiendungPHP; ?>">Initial Setup</a>
+    <br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_user' . $dateiendungPHP; ?>">Benutzer verwalten</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_login' . $dateiendungPHP; ?>">Eigene Anmeldedaten
+      ändern</a>
+    <br>
+    <!-- NEU: Link zur Report-Verwaltung -->
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/management_reports' . $dateiendungPHP; ?>">Fehlermeldungen</a>
+    <br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter Daten
+      Editor</a>
+    <br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Daten
+      Editor</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Comic-Seiten-Generator</a>
+    <br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Daten
+      Editor</a>
+    <br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image' . $dateiendungPHP; ?>">Bild-Upload</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail' . $dateiendungPHP; ?>">Thumbnail-Generator</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . $dateiendungPHP; ?>">Social Media
+      Vorschau Generator</a>
+    <a
+      href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . $dateiendungPHP; ?>">Bild-Cache-Generator</a>
+    <br>
 
-    <div class="menu-group">
-        <span class="menu-label">Inhalte editieren</span>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_comic' . $dateiendungPHP; ?>">Comic Editor</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_charaktere' . $dateiendungPHP; ?>">Charakter Editor</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_archiv' . $dateiendungPHP; ?>">Archiv Editor</a>
-    </div>
-
-    <div class="menu-group">
-        <span class="menu-label">Generatoren</span>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_comic' . $dateiendungPHP; ?>">Seiten-Generator</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_thumbnail' . $dateiendungPHP; ?>">Thumbnails</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_image_socialmedia' . $dateiendungPHP; ?>">Social Preview</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS Feed</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_sitemap' . $dateiendungPHP; ?>">Sitemap</a>
-    </div>
-
-    <div class="menu-group">
-        <span class="menu-label">Wartung</span>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/upload_image' . $dateiendungPHP; ?>">Bild-Upload</a>
-        <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . $dateiendungPHP; ?>">Cache-Management</a>
-    </div>
-
-    <div class="menu-footer">
-        <a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" class="logout-link">Abmelden</a>
-        <a id="toggle_lights" class="theme-toggle jsdep" href="#">
-            <span class="themelabel">Design: </span>
-            <span class="themename">LICHT AUS</span>
-        </a>
-    </div>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS-Generator</a>
+    <br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_sitemap' . $dateiendungPHP; ?>">Sitemap
+      Editor</a>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_sitemap' . $dateiendungPHP; ?>">Sitemap
+      Generator</a>
+    <br>
+    <!-- CSRF-Token zum Logout-Link hinzugefügt -->
+    <a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">Logout</a>
+    <br>
+    <br>
+    <a id="toggle_lights" class="theme jsdep" href=""><span class="themelabel">Theme</span><span class="themename">LICHT
+        AUS</span></a>
   </nav>
+  <!-- Menü Ende -->
 </div>
