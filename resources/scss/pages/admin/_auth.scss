@@ -147,6 +147,38 @@ body.theme-night .login-management-container {
     border-left: 4px solid var(--link-color);
 }
 
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    input {
+        width: 100%;
+        padding-right: 40px; // Platz für das Icon lassen
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        color: var(--text-on-medium);
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 1;
+            background: none !important; // Verhindert Hintergrund-Änderung aus allgemeinen Button-Styles
+            transform: none !important; // Verhindert Bewegung aus allgemeinen Button-Styles
+        }
+    }
+}
+
 /* --- Specific Form Tweaks --- */
 // User Management Form
 .user-management-container .admin-form {

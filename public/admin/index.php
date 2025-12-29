@@ -179,6 +179,10 @@ $messageType = 'info';
 $clientIp = $_SERVER['REMOTE_ADDR'];
 $usersExist = hasUsers();
 
+// NEU: Variablen für die Felder-Wiederherstellung
+$lastUser = '';
+$lastPass = '';
+
 // 1. Gründe aus URL verarbeiten (z.B. nach Logout oder Timeout)
 if (isset($_GET['reason'])) {
     $reason = $_GET['reason'];
@@ -210,6 +214,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
     } else {
         $action = $_POST['action'] ?? '';
 
+        // Werte für die Wiederbefüllung zwischenspeichern
+        $lastUser = $_POST['username'] ?? '';
+        $lastPass = $_POST['password'] ?? '';
+
         // --- AKTION: Ersteinrichtung ---
         if ($action === 'create_initial_user' && !$usersExist) {
             $username = trim($_POST['username'] ?? '');
@@ -225,16 +233,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
                 $message = 'Bitte geben Sie einen Namen und ein Passwort an.';
                 $messageType = 'error';
             }
-        }
-
-        // --- AKTION: Login ---
-        elseif ($action === 'login') {
-            $username = trim($_POST['username'] ?? '');
-            $password = $_POST['password'] ?? '';
+        } elseif ($action === 'login') {
+            $username = trim($lastUser);
+            $password = $lastPass;
             $users = json_decode(file_get_contents(Path::getSecretPath('admin_users.json')), true) ?? [];
 
             if (isset($users[$username]) && password_verify($password, $users[$username]['passwordHash'])) {
-                // ERFOLG
+                // ERFOLG -> Weiterleitung
                 resetLoginAttempts($clientIp);
                 session_regenerate_id(true);
                 $_SESSION = []; // Alte Session-Daten komplett verwerfen
@@ -309,19 +314,48 @@ require_once Path::getPartialTemplatePath('header.php');
         <?php $isLocked = ($lockoutSeconds > 0); ?>
         <form action="" method="POST" class="admin-form">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>">
+
             <div class="form-group">
                 <label for="log_user">Benutzername:</label>
-                <input type="text" id="log_user" name="username" required autocomplete="username" <?= $isLocked ? 'disabled' : '' ?>>
+                <input type="text" id="log_user" name="username" required autocomplete="username"
+                       value="<?= htmlspecialchars($lastUser) ?>" <?= $isLocked ? 'disabled' : '' ?>>
             </div>
+
             <div class="form-group">
                 <label for="log_pass">Passwort:</label>
-                <input type="password" id="log_pass" name="password" required autocomplete="current-password" <?= $isLocked ? 'disabled' : '' ?>>
+                <div class="password-wrapper">
+                    <input type="password" id="log_pass" name="password" required autocomplete="current-password"
+                           value="<?= htmlspecialchars($lastPass) ?>" <?= $isLocked ? 'disabled' : '' ?>>
+                    <button type="button" id="togglePassword" class="password-toggle">
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
             </div>
+
             <button type="submit" name="action" value="login" class="button button-blue" <?= $isLocked ? 'disabled' : '' ?>>
                 <?= $isLocked ? 'Gesperrt' : 'Einloggen' ?>
             </button>
         </form>
     <?php endif; ?>
 </div>
+
+<script nonce="<?= $nonce ?>">
+    // JavaScript für das Umschalten der Passwort-Sichtbarkeit
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#log_pass');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function (e) {
+            // Typ umschalten
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+
+            // Icon umschalten
+            eyeIcon.classList.toggle('fa-eye');
+            eyeIcon.classList.toggle('fa-eye-slash');
+        });
+    }
+</script>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

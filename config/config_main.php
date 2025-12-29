@@ -59,6 +59,10 @@ define('TRUNCATE_REPORT_DESCRIPTION', TRUNCATE_DESCRIPTION);
 // ###################################################################
 // Session & Sicherheit:
 
+// Maximale Login-Versuche vor der IP-Sperre.
+// Standard: 5
+define('MAX_LOGIN_ATTEMPTS', 5);
+
 // Zeit in Sekunden bis zum automatischen Logout bei Inaktivität.
 // Standard: 600 (10 Minuten)
 define('SESSION_TIMEOUT_SECONDS', 600);
