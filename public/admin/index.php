@@ -296,22 +296,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
                 ob_end_clean();
                 header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
                 exit;
-            } else {
-                // --- FEHLSCHLAG ---
-                recordFailedAttempt($clientIp);
-                sleep(1); // Tarpitting: Verlangsamt Brute-Force Bots
-
-                // Versuche neu laden und berechnen
-                $attempts = getLoginAttempts();
-                $remaining = MAX_LOGIN_ATTEMPTS - ($attempts[$clientIp]['count'] ?? 0);
-
-                if ($remaining > 0) {
-                    $message = "Ungültige Zugangsdaten. Sie haben noch $remaining Versuch(e).";
-                } else {
-                    $message = "Zu viele Fehlversuche. Ihr Zugang wurde gesperrt.";
-                }
-                $messageType = 'error';
             }
+
+            // --- FEHLSCHLAG ---
+            recordFailedAttempt($clientIp);
+            sleep(1); // Tarpitting: Verlangsamt Brute-Force Bots
+
+            // Versuche neu laden und berechnen
+            $attempts = getLoginAttempts();
+            $remaining = MAX_LOGIN_ATTEMPTS - ($attempts[$clientIp]['count'] ?? 0);
+
+            if ($remaining > 0) {
+                $message = "Ungültige Zugangsdaten. Sie haben noch $remaining Versuch(e).";
+            } else {
+                $message = "Zu viele Fehlversuche. Ihr Zugang wurde gesperrt.";
+            }
+            $messageType = 'error';
         }
     }
 }
@@ -389,21 +389,64 @@ require_once Path::getPartialTemplatePath('header.php');
 </div>
 
 <script nonce="<?= $nonce ?>">
-    // JavaScript für das Umschalten der Passwort-Sichtbarkeit
-    const togglePassword = document.querySelector('#togglePassword');
-    const passwordInput = document.querySelector('#log_pass');
+    const pwdInput = document.querySelector('#log_pass');
+    const pwdWrapper = pwdInput ? pwdInput.closest('.password-wrapper') : null;
     const eyeIcon = document.querySelector('#eyeIcon');
+    const toggleBtn = document.querySelector('#togglePassword');
 
-    if (togglePassword) {
-        togglePassword.addEventListener('click', () => {
-            // Typ umschalten
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
+    if (toggleBtn && pwdInput && pwdWrapper) {
 
-            // Icon umschalten
+        // 1. Passwort-Sichtbarkeit umschalten
+        toggleBtn.addEventListener('click', () => {
+            const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            pwdInput.setAttribute('type', type);
             eyeIcon.classList.toggle('fa-eye');
             eyeIcon.classList.toggle('fa-eye-slash');
         });
+
+        /**
+         * 2. ULTIMATIVER KPXC-DETEKTOR (v6.2.0)
+         * Identifiziert Passwort-Manager anhand ihrer Shadow-DOM-Footprints.
+         */
+        const detectKeePass = () => {
+            // A: Suche nach den anonymen Shadow-Hosts am Ende des Bodys (all: unset)
+            const shadowHosts = Array.from(document.body.children).filter(el =>
+                el.tagName === 'DIV' && el.getAttribute('style') === 'all: unset;'
+            );
+
+            // B: Suche nach KeePass-Attributen, die oft erst bei Fokus erscheinen
+            const hasKPAttr = Array.from(pwdInput.attributes).some(attr =>
+                attr.name.includes('kpxc')
+            );
+
+            // C: Browser-nativ (Padding-Check)
+            const padding = parseInt(window.getComputedStyle(pwdInput).paddingRight);
+
+            const isDetected = shadowHosts.length > 0 || hasKPAttr || padding > 55;
+            const hasClass = pwdWrapper.classList.contains('pm-detected');
+
+            if (isDetected && !hasClass) {
+                pwdWrapper.classList.add('pm-detected');
+            } else if (!isDetected && hasClass) {
+                pwdWrapper.classList.remove('pm-detected');
+            }
+        };
+
+        // MutationObserver: Überwacht den Body auf neue Shadow-Hosts
+        const observer = new MutationObserver(() => detectKeePass());
+        observer.observe(document.body, { childList: true });
+
+        // Event-Listener für sofortige Reaktion
+        pwdInput.addEventListener('focus', () => {
+            detectKeePass();
+            // KPXC braucht manchmal 100ms zum Injizieren
+            setTimeout(detectKeePass, 150);
+        });
+
+        pwdInput.addEventListener('mouseenter', detectKeePass);
+
+        // Initialer Check
+        detectKeePass();
     }
 </script>
 

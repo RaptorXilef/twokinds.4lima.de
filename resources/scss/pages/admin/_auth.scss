@@ -150,30 +150,28 @@ body.theme-night .login-management-container {
 .password-wrapper {
     position: relative;
     display: flex;
-    align-items: stretch; // Sorgt dafür, dass der Wrapper die Höhe des Inputs annimmt
+    align-items: stretch;
     width: 100%;
 
     input {
         width: 100%;
-        // Wir brauchen Platz: ~30px für den Passwort-Manager + ~30px für unser Auge
-        padding-right: 70px !important;
+        // Wir reservieren standardmäßig Platz für ein Icon (40px)
+        // Im Falle eines Managers wird das Padding per JS auf 75px erhöht
+        padding-right: 40px;
+        transition: padding-right 0.3s ease;
     }
 
     .password-toggle {
         position: absolute;
-        // Positionierung: Das Auge rückt weiter nach links (ca. 38px vom Rand),
-        // damit das Manager-Icon (grüner Schlüssel) rechts davon Platz hat.
-        right: 38px;
+        // Standard: Sauber am rechten Rand (10px)
+        right: 10px;
         top: 50%;
         transform: translateY(-50%);
 
-        // Hitbox & Größe
         width: 28px;
         height: 28px;
         padding: 0;
         margin: 0;
-
-        // Styling
         background: transparent !important;
         border: none !important;
         color: var(--text-color-medium);
@@ -182,19 +180,29 @@ body.theme-night .login-management-container {
         align-items: center;
         justify-content: center;
         opacity: 0.6;
-        z-index: 10; // Höherer Z-Index für Klickbarkeit
+        z-index: 20; // Höher als die meisten PM-Icons
         transition:
-            opacity 0.2s,
-            transform 0.2s;
+            right 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.2s;
 
         &:hover {
             opacity: 1;
-            transform: translateY(-50%) scale(1.15);
+            transform: translateY(-50%) scale(1.1);
         }
 
         i {
             font-size: 16px;
-            pointer-events: none; // Klicks gehen direkt durch zum Button
+            pointer-events: none;
+        }
+    }
+
+    // Wenn KeePassXC oder ein anderer Manager erkannt wurde:
+    &.pm-detected {
+        input {
+            padding-right: 75px; // Platz für beide Icons schaffen
+        }
+        .password-toggle {
+            right: 42px; // Auge nach links schieben (hinter den Schlüssel)
         }
     }
 }
