@@ -150,33 +150,64 @@ body.theme-night .login-management-container {
 .password-wrapper {
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: stretch; // Sorgt dafür, dass der Wrapper die Höhe des Inputs annimmt
+    width: 100%;
 
     input {
         width: 100%;
-        padding-right: 40px; // Platz für das Icon lassen
+        // Wir brauchen Platz: ~30px für den Passwort-Manager + ~30px für unser Auge
+        padding-right: 70px !important;
     }
 
     .password-toggle {
         position: absolute;
-        right: 10px;
-        background: none;
-        border: none;
-        color: var(--text-on-medium);
+        // Positionierung: Das Auge rückt weiter nach links (ca. 38px vom Rand),
+        // damit das Manager-Icon (grüner Schlüssel) rechts davon Platz hat.
+        right: 38px;
+        top: 50%;
+        transform: translateY(-50%);
+
+        // Hitbox & Größe
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        margin: 0;
+
+        // Styling
+        background: transparent !important;
+        border: none !important;
+        color: var(--text-color-medium);
         cursor: pointer;
-        padding: 5px;
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0.7;
-        transition: opacity 0.2s;
+        opacity: 0.6;
+        z-index: 10; // Höherer Z-Index für Klickbarkeit
+        transition:
+            opacity 0.2s,
+            transform 0.2s;
 
         &:hover {
             opacity: 1;
-            background: none !important; // Verhindert Hintergrund-Änderung aus allgemeinen Button-Styles
-            transform: none !important; // Verhindert Bewegung aus allgemeinen Button-Styles
+            transform: translateY(-50%) scale(1.15);
+        }
+
+        i {
+            font-size: 16px;
+            pointer-events: none; // Klicks gehen direkt durch zum Button
         }
     }
+}
+
+/**
+ * SPIESSER-TIPP: Browser-eigene Icons deaktivieren
+ * Verhindert, dass Chrome/Edge ihr eigenes "Auge" über deins legen.
+ */
+input::-ms-reveal,
+input::-ms-clear,
+input::-webkit-password-toggle,
+input::-webkit-credentials-auto-fill-button {
+    display: none !important;
 }
 
 /* --- Specific Form Tweaks --- */
