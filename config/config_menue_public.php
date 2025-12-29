@@ -78,50 +78,58 @@ $dateiendungPHP = $dateiendungPHP ?? '.php';
 <script nonce="<?= $nonce; ?>">
     // Warte, bis das DOM vollständig geladen ist
     document.addEventListener('DOMContentLoaded', function () {
-        const rssFeedLink = document.getElementById('rssFeedLink');
+    const rssFeedLink = document.getElementById('rssFeedLink');
+    let feedbackTimer;
 
-        if (rssFeedLink) {
-            rssFeedLink.addEventListener('click', function (event) {
-                // Verhindere das Standardverhalten des Links (das Öffnen der URL)
-                event.preventDefault();
-
-                const rssUrl = this.href;
-                const feedbackElement = this.querySelector('.copy-feedback');
-
-                navigator.clipboard.writeText(rssUrl)
-                    .then(() => {
-                        if (feedbackElement) {
-                            feedbackElement.classList.add('show');
-                            setTimeout(() => {
-                                feedbackElement.classList.remove('show');
-                            }, 2000);
-                        }
-                        console.log('RSS-Feed URL erfolgreich kopiert: ' + rssUrl);
-                    })
-                    .catch(err => {
-                        console.error('Fehler beim Kopieren der RSS-Feed URL: ', err);
-                        // Fallback für ältere Browser oder Fehler
-                        try {
-                            const tempInput = document.createElement('textarea');
-                            tempInput.value = rssUrl;
-                            document.body.appendChild(tempInput);
-                            tempInput.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(tempInput);
-                            if (feedbackElement) {
-                                feedbackElement.textContent = 'Kopiert! (Fallback)';
-                                feedbackElement.classList.add('show');
-                                setTimeout(() => {
-                                    feedbackElement.classList.remove('show');
-                                    feedbackElement.textContent = 'Kopiert!';
-                                }, 2000);
-                            }
-                            console.log('RSS-Feed URL kopiert (Fallback): ' + rssUrl);
-                        } catch (copyErr) {
-                            console.error('Fallback-Kopieren fehlgeschlagen: ', copyErr);
-                    }
-                });
-            });
+    /**
+     * Kopiert Text in die Zwischenablage mit modernem API-Ansatz und Fallback.
+     */
+    async function copyToClipboard(text) {
+        // 1. Versuch: Moderne Clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
         }
-    });
+
+        // 2. Versuch: Fallback für ältere Browser oder unsichere Kontexte (HTTP)
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed'; // Verhindert Scrolling-Effekte
+        textArea.style.left = '-9999px';
+        textArea.style.top = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            textArea.remove();
+            return true;
+        } catch (err) {
+            console.error('Fallback Copy fehlgeschlagen:', err);
+            textArea.remove();
+            return false;
+        }
+    }
+
+    if (rssFeedLink) {
+        rssFeedLink.addEventListener('click', async function (event) {
+            event.preventDefault();
+
+            const rssUrl = this.href;
+            const feedbackElement = this.querySelector('.copy-feedback');
+
+            const success = await copyToClipboard(rssUrl);
+
+            if (success && feedbackElement) {
+                clearTimeout(feedbackTimer);
+                feedbackElement.classList.add('show');
+
+                feedbackTimer = setTimeout(() => {
+                    feedbackElement.classList.remove('show');
+                }, 2500);
+            }
+        });
+    }
+});
 </script>

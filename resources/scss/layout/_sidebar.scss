@@ -197,24 +197,60 @@ body.theme-night .session-timer {
     border: 1px solid #2a6177;
 }
 
+/* --- Modernes RSS Copy Feedback (v4.0) --- */
+#rssFeedLink {
+    position: relative; // Wichtiger Ankerpunkt
+}
+
 /* Copy Feedback */
 .copy-feedback {
     position: absolute;
-    bottom: 115%;
+    bottom: 130%; // Etwas mehr Abstand zum Icon
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(10px);
+
     background-color: #28a745;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
     font-size: 11px;
+    font-weight: bold;
     white-space: nowrap;
+
     opacity: 0;
     visibility: hidden;
-    transition: 0.3s;
-    z-index: 20;
+    pointer-events: none;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 105; // Dein Korrektur-Vorschlag
+
+    transition:
+        opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        visibility 0.3s;
+
+    // Kleiner Pfeil nach unten
+    &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: #28a745 transparent transparent transparent;
+    }
+
     &.show {
         opacity: 1;
         visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+body.theme-night .copy-feedback {
+    background-color: #3c763d;
+    &::after {
+        border-top-color: #3c763d;
     }
 }
