@@ -179,12 +179,12 @@ $messageType = 'info';
 $clientIp = $_SERVER['REMOTE_ADDR'];
 $usersExist = hasUsers();
 
-// Weiche: Ist die Verbindung sicher?
+// 1. SICHERHEITS-CHECK (HTTPS & BROWSER)
 $isSecureConnection = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
 
 $securityWarnings = [];
 
-// 1. Check: HTTPS (Kritisch)
+// 1.1. Check: HTTPS (Kritisch)
 if (!$isSecureConnection) {
     $securityWarnings[] = [
         'type' => 'status-orange', // Orange für Warnung
@@ -193,17 +193,17 @@ if (!$isSecureConnection) {
     ];
 }
 
-// 2. Check: Bekannte veraltete Browser (Beispiel für IE)
+// 1.2. Check: Bekannte veraltete Browser (Beispiel für IE)
 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 if (strpos($userAgent, 'MSIE') !== false || strpos($userAgent, 'Trident') !== false) {
     $securityWarnings[] = [
         'type' => 'status-red', // Rot für technisches Risiko
         'icon' => 'fa-exclamation-triangle',
-        'text' => '<strong>Browser-Risiko:</strong> Sie nutzen einen veralteten Browser. Dies stellt ein Sicherheitsrisiko dar und könnte die Funktion des Admin-Bereichs beeinträchtigen.',
+        'text' => '<strong>Browser-Risiko:</strong> Sie nutzen einen veralteten Browser (IE). Dies stellt ein Sicherheitsrisiko dar und könnte die Funktion des Admin-Bereichs beeinträchtigen.',
     ];
 }
 
-// 3. Check: Cookies (Wichtig für die Funktion)
+// 1.3. Check: Cookies (Wichtig für die Funktion)
 // Da wir PHP nutzen, sehen wir Cookies erst nach dem ersten Refresh.
 // Ein Hinweis ist aber gut, falls $_COOKIE leer ist und es kein Redirect war.
 if (empty($_COOKIE) && !isset($_GET['reason'])) {
@@ -214,17 +214,11 @@ if (empty($_COOKIE) && !isset($_GET['reason'])) {
     ];
 }
 
-
+// 2. INPUT-PERSISTENZ VORBEREITUNG
 $lastUser = '';
 $lastPass = '';
 
-// Nur wenn HTTPS aktiv ist, erlauben wir das Zwischenspeichern der Eingaben
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isSecureConnection) {
-    $lastUser = $_POST['username'] ?? '';
-    $lastPass = $_POST['password'] ?? '';
-}
-
-// 1. Gründe aus URL verarbeiten (z.B. nach Logout oder Timeout)
+// 3. GRÜNDE AUS URL VERARBEITEN (z.B. nach Logout oder Timeout)
 if (isset($_GET['reason'])) {
     $reason = $_GET['reason'];
     if ($reason === 'session_expired') {
@@ -239,15 +233,15 @@ if (isset($_GET['reason'])) {
     }
 }
 
-// 2. Brute-Force Check
+// 4. BRUTE-FORCE CHECK
 $lockoutSeconds = checkRateLimit($clientIp);
 if ($lockoutSeconds > 0) {
     $minutes = ceil($lockoutSeconds / 60);
-    $message = "Zu viele Fehlversuche. Ihr Zugang ist für $minutes Minute(n) gesperrt.";
+    $message = "Zu viele Fehlversuche. Zugang für $minutes Min. gesperrt.";
     $messageType = 'error';
 }
 
-// 3. POST-Verarbeitung (Login / Ersteinrichtung)
+// 5. POST-VERARBEITUNG (Login / Ersteinrichtung)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
     if (!verify_csrf_token()) {
         $message = 'Sicherheits-Fehler (CSRF). Bitte laden Sie die Seite neu.';
@@ -255,9 +249,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
     } else {
         $action = $_POST['action'] ?? '';
 
-        // Werte für die Wiederbefüllung zwischenspeichern
-        $lastUser = $_POST['username'] ?? '';
-        $lastPass = $_POST['password'] ?? '';
+        // UX-SICHERHEIT: Werte NUR bei HTTPS für die Wiederherstellung puffern
+        if ($isSecureConnection) {
+            $lastUser = $_POST['username'] ?? '';
+            $lastPass = $_POST['password'] ?? '';
+        }
 
         // --- AKTION: Ersteinrichtung ---
         if ($action === 'create_initial_user' && !$usersExist) {
@@ -274,10 +270,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
                 $message = 'Bitte geben Sie einen Namen und ein Passwort an.';
                 $messageType = 'error';
             }
-        } elseif ($action === 'login') {
-            $username = trim($lastUser);
-            $password = $lastPass;
-            $users = json_decode(file_get_contents(Path::getSecretPath('admin_users.json')), true) ?? [];
+        }
+        // --- AKTION: Normaler Login ---
+        elseif ($action === 'login') {
+            $username = trim($_POST['username'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $usersFile = Path::getSecretPath('admin_users.json');
+            $users = file_exists($usersFile) ? json_decode(file_get_contents($usersFile), true) : [];
 
             if (isset($users[$username]) && password_verify($password, $users[$username]['passwordHash'])) {
                 // ERFOLG -> Weiterleitung
@@ -297,21 +296,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
                 ob_end_clean();
                 header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
                 exit;
-            }
-
-            // FEHLSCHLAG
-            recordFailedAttempt($clientIp);
-            sleep(1); // Tarpitting: Verlangsamt Brute-Force Bots
-
-            $attempts = getLoginAttempts();
-            $remaining = MAX_LOGIN_ATTEMPTS - ($attempts[$clientIp]['count'] ?? 0);
-
-            if ($remaining > 0) {
-                $message = "Ungültige Zugangsdaten. Sie haben noch $remaining Versuch(e).";
             } else {
-                $message = "Zu viele Fehlversuche. Ihr Zugang wurde gesperrt.";
+                // --- FEHLSCHLAG ---
+                recordFailedAttempt($clientIp);
+                sleep(1); // Tarpitting: Verlangsamt Brute-Force Bots
+
+                // Versuche neu laden und berechnen
+                $attempts = getLoginAttempts();
+                $remaining = MAX_LOGIN_ATTEMPTS - ($attempts[$clientIp]['count'] ?? 0);
+
+                if ($remaining > 0) {
+                    $message = "Ungültige Zugangsdaten. Sie haben noch $remaining Versuch(e).";
+                } else {
+                    $message = "Zu viele Fehlversuche. Ihr Zugang wurde gesperrt.";
+                }
+                $messageType = 'error';
             }
-            $messageType = 'error';
         }
     }
 }
@@ -332,7 +332,7 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <?php foreach ($securityWarnings as $warn) : ?>
         <div class="status-message <?= $warn['type']; ?> visible" style="text-align: left; margin-bottom: 10px;">
-            <i class="fas <?= $warn['icon']; ?>" style="margin-right: 10px;"></i>
+            <i class="fas <?= $warn['icon']; ?>" style="margin-right: 10px; width: 20px; text-align: center;"></i>
             <?= $warn['text']; ?>
         </div>
     <?php endforeach; ?>
@@ -367,15 +367,15 @@ require_once Path::getPartialTemplatePath('header.php');
             <div class="form-group">
                 <label for="log_user">Benutzername:</label>
                 <input type="text" id="log_user" name="username" required autocomplete="username"
-                       value="<?= htmlspecialchars($lastUser) ?>" <?= $isLocked ? 'disabled' : '' ?>>
+                    value="<?= htmlspecialchars($lastUser) ?>" <?= $isLocked ? 'disabled' : '' ?>>
             </div>
 
             <div class="form-group">
                 <label for="log_pass">Passwort:</label>
                 <div class="password-wrapper">
                     <input type="password" id="log_pass" name="password" required autocomplete="current-password"
-                           value="<?= htmlspecialchars($lastPass) ?>" <?= $isLocked ? 'disabled' : '' ?>>
-                    <button type="button" id="togglePassword" class="password-toggle">
+                        value="<?= htmlspecialchars($lastPass) ?>" <?= $isLocked ? 'disabled' : '' ?>>
+                    <button type="button" id="togglePassword" class="password-toggle" title="Passwort anzeigen">
                         <i class="fas fa-eye" id="eyeIcon"></i>
                     </button>
                 </div>
@@ -391,14 +391,14 @@ require_once Path::getPartialTemplatePath('header.php');
 <script nonce="<?= $nonce ?>">
     // JavaScript für das Umschalten der Passwort-Sichtbarkeit
     const togglePassword = document.querySelector('#togglePassword');
-    const password = document.querySelector('#log_pass');
+    const passwordInput = document.querySelector('#log_pass');
     const eyeIcon = document.querySelector('#eyeIcon');
 
     if (togglePassword) {
-        togglePassword.addEventListener('click', function (e) {
+        togglePassword.addEventListener('click', () => {
             // Typ umschalten
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
 
             // Icon umschalten
             eyeIcon.classList.toggle('fa-eye');
