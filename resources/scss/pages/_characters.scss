@@ -408,11 +408,16 @@ body.theme-night .character-group h4 {
     text-align: center;
 
     .character-name {
-        display: block;
-        margin-top: 5px;
+        display: flex;
+        align-items: flex-start; // Richtet Namen oben am reservierten Raum aus
+        justify-content: center;
+        width: 100%;
+        min-height: 3.8em; // Reserviert Platz für ca. 3 Zeilen (längster Name)
+        margin-top: 8px;
+        margin-bottom: 5px;
         font-size: 0.9em;
         font-weight: bold;
-        line-height: 1.3;
+        line-height: 1.2;
         overflow-wrap: break-word;
     }
 
@@ -429,6 +434,34 @@ body.theme-night .character-group h4 {
             .character-name {
                 text-decoration: underline;
             }
+        }
+    }
+
+    /* --- Ergänzung für den Charakter-Tag-Modus --- */
+    .character-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+        width: 100%; // Nutzt die volle Breite des Items (120px)
+        margin-top: 5px;
+
+        .char-tag {
+            display: inline-block;
+            max-width: 100%; // Verhindert das Überlaufen aus dem Item
+            padding: 2px 8px;
+            font-size: 0.7em;
+            font-weight: bold;
+            color: var(--text-color-light);
+            background-color: var(--table-header-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+
+            /* --- Umbruch-Logik für lange Tags --- */
+            white-space: normal; // Erlaubt Zeilenumbruch statt Abschneiden
+            overflow-wrap: anywhere; // Erzwingt Umbruch bei "-" oder "_" wenn nötig
+            line-height: 1.1;
+            text-align: center;
         }
     }
 
@@ -520,28 +553,6 @@ body.theme-night .comic-characters-container {
     }
     i {
         margin-right: 6px;
-    }
-}
-
-/* --- Ergänzung für den Charakter-Tag-Modus --- */
-.character-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: center;
-    margin-top: 8px; // Abstand zum Namen
-
-    .char-tag {
-        padding: 2px 8px;
-        font-size: 0.7em;
-        font-weight: bold;
-        color: var(--text-color-light);
-        background-color: var(--table-header-bg); // Nutzt das Grau deiner Tabellen-Header
-        border: 1px solid var(--border-light);
-        border-radius: 12px; // Schöner "Pillen"-Look
-        white-space: nowrap;
-        opacity: 0.8;
-        transition: opacity 0.2s ease;
     }
 }
 
