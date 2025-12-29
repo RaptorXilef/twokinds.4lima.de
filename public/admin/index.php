@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Admin Login & Ersteinrichtung (v5.4.2 - Anti-Zombie Edition).
+ * Admin Login & Ersteinrichtung (v5.0.0 - Brute-Force Protected).
  *
  * @file      ROOT/public/admin/index.php
  * @package   twokinds.4lima.de
@@ -48,6 +48,8 @@
  * - fix(UX): Explizite Behandlung von `session_expired`.
  *
  * - fix(login): Neuaufbau der Loginlogik (SESSION,  COOKIE, ....)
+ * - Wiederherstellung des Brute-Force-Schutzes (Rate-Limiting).
+ * - Implementierung von Tarpitting (sleep) bei Fehlversuchen.
  */
 
 declare(strict_types=1);
@@ -68,12 +70,15 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     exit;
 }
 
-// --- KONSTANTEN ---
+// --- KONSTANTEN FÜR SICHERHEIT ---
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOGIN_LOCKOUT_TIME = 900; // 15 Minuten in Sekunden
+const LOGIN_LOCKOUT_TIME = 900; // 15 Minuten Sperre
 
-// --- HILFSFUNKTIONEN (Wiederhergestellt) ---
+// --- HILFSFUNKTIONEN (Sicherheits-Ebene) ---
 
+/**
+ * Prüft, ob bereits Administrator-Accounts existieren.
+ */
 function hasUsers(): bool
 {
     $usersFile = Path::getSecretPath('admin_users.json');
@@ -84,6 +89,9 @@ function hasUsers(): bool
     return is_array($users) && !empty($users);
 }
 
+/**
+ * Speichert die Liste der Administratoren.
+ */
 function saveUsersList(array $users): bool
 {
     $usersFile = Path::getSecretPath('admin_users.json');
@@ -93,15 +101,22 @@ function saveUsersList(array $users): bool
     return file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
+/**
+ * Lädt die aktuellen Login-Versuche aus dem Dateisystem.
+ */
 function getLoginAttempts(): array
 {
     $file = Path::getSecretPath('login_attempts.json');
     if (!file_exists($file)) {
         return [];
     }
-    return json_decode(file_get_contents($file), true) ?? [];
+    $data = json_decode(file_get_contents($file), true);
+    return is_array($data) ? $data : [];
 }
 
+/**
+ * Speichert Login-Versuche (Brute-Force-Schutz).
+ */
 function saveLoginAttempts(array $attempts): void
 {
     $file = Path::getSecretPath('login_attempts.json');
@@ -111,10 +126,15 @@ function saveLoginAttempts(array $attempts): void
     file_put_contents($file, json_encode($attempts, JSON_PRETTY_PRINT), LOCK_EX);
 }
 
+/**
+ * Prüft das Rate-Limit für die aktuelle IP.
+ * @return int Verbleibende Sekunden der Sperre (0 = nicht gesperrt).
+ */
 function checkRateLimit(string $ip): int
 {
     $attempts = getLoginAttempts();
     if (isset($attempts[$ip])) {
+        // Sperre abgelaufen?
         if ($attempts[$ip]['last_attempt'] < time() - LOGIN_LOCKOUT_TIME) {
             return 0;
         }
@@ -125,6 +145,9 @@ function checkRateLimit(string $ip): int
     return 0;
 }
 
+/**
+ * Protokolliert einen fehlgeschlagenen Versuch.
+ */
 function recordFailedAttempt(string $ip): void
 {
     $attempts = getLoginAttempts();
@@ -136,20 +159,27 @@ function recordFailedAttempt(string $ip): void
     saveLoginAttempts($attempts);
 }
 
+/**
+ * Setzt die Versuche nach erfolgreichem Login zurück.
+ */
 function resetLoginAttempts(string $ip): void
 {
     $attempts = getLoginAttempts();
+    if (!isset($attempts[$ip])) {
+        return;
+    }
+
     unset($attempts[$ip]);
     saveLoginAttempts($attempts);
 }
 
-// --- LOGIK ---
+// --- LOGIK-VERARBEITUNG ---
 $message = '';
 $messageType = 'info';
 $clientIp = $_SERVER['REMOTE_ADDR'];
 $usersExist = hasUsers();
 
-// 1. Gründe verarbeiten
+// 1. Gründe aus URL verarbeiten (z.B. nach Logout oder Timeout)
 if (isset($_GET['reason'])) {
     $reason = $_GET['reason'];
     if ($reason === 'session_expired') {
@@ -159,50 +189,63 @@ if (isset($_GET['reason'])) {
         $message = 'Erfolgreich abgemeldet.';
         $messageType = 'success';
     } elseif ($reason === 'session_hijacked') {
-        $message = 'Sicherheit: Sitzung beendet.';
+        $message = 'Sicherheitswarnung: Sitzung wurde beendet.';
         $messageType = 'error';
     }
 }
 
-// 2. Rate-Limit Check
-$lockoutTime = checkRateLimit($clientIp);
-if ($lockoutTime > 0) {
-    $message = 'Zu viele Versuche. Bitte ' . ceil($lockoutTime / 60) . ' Min. warten.';
+// 2. Brute-Force Check
+$lockoutSeconds = checkRateLimit($clientIp);
+if ($lockoutSeconds > 0) {
+    $minutes = ceil($lockoutSeconds / 60);
+    $message = "Zu viele Fehlversuche. Ihr Zugang ist für $minutes Minute(n) gesperrt.";
     $messageType = 'error';
 }
 
-// 3. POST-Verarbeitung
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutTime === 0) {
+// 3. POST-Verarbeitung (Login / Ersteinrichtung)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutSeconds === 0) {
     if (!verify_csrf_token()) {
-        $message = 'Sicherheits-Fehler (CSRF). Bitte Seite neu laden.';
+        $message = 'Sicherheits-Fehler (CSRF). Bitte laden Sie die Seite neu.';
         $messageType = 'error';
     } else {
         $action = $_POST['action'] ?? '';
 
+        // --- AKTION: Ersteinrichtung ---
         if ($action === 'create_initial_user' && !$usersExist) {
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
-            if ($username && $password) {
+            if (!empty($username) && !empty($password)) {
                 $users = [$username => ['passwordHash' => password_hash($password, PASSWORD_DEFAULT)]];
                 if (saveUsersList($users)) {
-                    $message = 'Admin erstellt. Bitte einloggen.';
+                    $message = 'Administrator erfolgreich erstellt. Sie können sich nun anmelden.';
                     $messageType = 'success';
                     $usersExist = true;
                 }
+            } else {
+                $message = 'Bitte geben Sie einen Namen und ein Passwort an.';
+                $messageType = 'error';
             }
-        } elseif ($action === 'login') {
+        }
+
+        // --- AKTION: Login ---
+        elseif ($action === 'login') {
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
             $users = json_decode(file_get_contents(Path::getSecretPath('admin_users.json')), true) ?? [];
 
             if (isset($users[$username]) && password_verify($password, $users[$username]['passwordHash'])) {
+                // ERFOLG
                 resetLoginAttempts($clientIp);
                 session_regenerate_id(true);
-                $_SESSION = [];
+                $_SESSION = []; // Alte Session-Daten komplett verwerfen
+
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $username;
                 $_SESSION['last_activity'] = time();
-                $_SESSION['session_fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . substr($_SERVER['REMOTE_ADDR'], 0, (strrpos($_SERVER['REMOTE_ADDR'], '.') ?: 0)));
+
+                // Fingerprint mit IP-Netzwerk-Teil (die ersten 3 Oktette) für bessere Stabilität
+                $ipSegment = substr($clientIp, 0, (strrpos($clientIp, '.') ?: 0));
+                $_SESSION['session_fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . $ipSegment);
 
                 session_write_close();
                 ob_end_clean();
@@ -210,13 +253,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutTime === 0) {
                 exit;
             }
 
+            // FEHLSCHLAG
             recordFailedAttempt($clientIp);
-            $message = 'Zugangsdaten falsch.';
+            sleep(1); // Tarpitting: Verlangsamt Brute-Force Bots
+
+            $attempts = getLoginAttempts();
+            $remaining = MAX_LOGIN_ATTEMPTS - ($attempts[$clientIp]['count'] ?? 0);
+
+            if ($remaining > 0) {
+                $message = "Ungültige Zugangsdaten. Sie haben noch $remaining Versuch(e).";
+            } else {
+                $message = "Zu viele Fehlversuche. Ihr Zugang wurde gesperrt.";
+            }
             $messageType = 'error';
         }
     }
 }
 
+// UI-Vorbereitung
 $csrfToken = $_SESSION['csrf_token'];
 $alertClass = [
     'info' => 'status-info',
@@ -237,25 +291,35 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <?php if (!$usersExist) : ?>
         <h2>Ersteinrichtung</h2>
+        <p class="intro-text">Willkommen! Bitte erstellen Sie den ersten Administrator-Zugang.</p>
         <form action="" method="POST" class="admin-form">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>">
-            <input type="text" name="username" required placeholder="Admin Name">
-            <input type="password" name="password" required placeholder="Passwort">
-            <button type="submit" name="action" value="create_initial_user" class="button button-green">Einrichten</button>
+            <div class="form-group">
+                <label for="reg_user">Admin-Name:</label>
+                <input type="text" id="reg_user" name="username" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="reg_pass">Passwort:</label>
+                <input type="password" id="reg_pass" name="password" required autocomplete="new-password">
+            </div>
+            <button type="submit" name="action" value="create_initial_user" class="button button-green">Admin erstellen</button>
         </form>
     <?php else : ?>
         <h2>Anmeldung</h2>
+        <?php $isLocked = ($lockoutSeconds > 0); ?>
         <form action="" method="POST" class="admin-form">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>">
             <div class="form-group">
-                <label>Benutzername:</label>
-                <input type="text" name="username" required placeholder="Dein Benutzername" <?= $lockoutTime > 0 ? 'disabled' : '' ?>>
+                <label for="log_user">Benutzername:</label>
+                <input type="text" id="log_user" name="username" required autocomplete="username" <?= $isLocked ? 'disabled' : '' ?>>
             </div>
             <div class="form-group">
-                <label>Passwort:</label>
-                <input type="password" name="password" required placeholder="Dein Passwort" <?= $lockoutTime > 0 ? 'disabled' : '' ?>>
+                <label for="log_pass">Passwort:</label>
+                <input type="password" id="log_pass" name="password" required autocomplete="current-password" <?= $isLocked ? 'disabled' : '' ?>>
             </div>
-            <button type="submit" name="action" value="login" class="button button-blue" <?= $lockoutTime > 0 ? 'disabled' : '' ?>>Einloggen</button>
+            <button type="submit" name="action" value="login" class="button button-blue" <?= $isLocked ? 'disabled' : '' ?>>
+                <?= $isLocked ? 'Gesperrt' : 'Einloggen' ?>
+            </button>
         </form>
     <?php endif; ?>
 </div>
