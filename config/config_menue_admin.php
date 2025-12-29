@@ -61,12 +61,14 @@ $nonce = $nonce ?? '';
       href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/build_image_cache_and_busting' . $dateiendungPHP; ?>">Bild-Cache-Generator</a>
     <br>
 
-    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS-Generator</a>
-    <br>
+
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/data_editor_sitemap' . $dateiendungPHP; ?>">Sitemap
       Editor</a>
     <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_sitemap' . $dateiendungPHP; ?>">Sitemap
       Generator</a>
+<br>
+    <a href="<?php echo DIRECTORY_PUBLIC_ADMIN_URL . '/generator_rss' . $dateiendungPHP; ?>">RSS-Generator</a>
+
     <br>
     <!-- CSRF-Token zum Logout-Link hinzugefügt -->
     <a href="?action=logout&token=<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">Logout</a>

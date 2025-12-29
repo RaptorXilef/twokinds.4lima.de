@@ -1,41 +1,14 @@
 // SPDX-License-Identifier: CC BY-NC-SA 4.0
 
-///
-/// Sidebar & Navigation Styles.
-///
-/// Styling für die Seitenleiste, Navigation und Incentives.
-/// Styles für die Seitenleiste und deren Menü.
-///
-
-/*!
+/**
+ * Sidebar & Navigation Styles (v3.9 - The Spießer Edition)
+ *
  * @file       resources/scss/layout/_sidebar.scss
+ * @since      5.0.9
+ * - fix(NEU): Border-Radius für 180°-Drehung korrigiert (Ecken jetzt rund).
+ * - fix(Layout): Breite auf 175px mit border-box standardisiert.
+ * - fix(Admin): Session-Timer und Image-Korrekturen wiederhergestellt.
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - CSS Vars Integration.
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-///
-
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --sidebar-bg: Hintergrund der Sidebar
-// - --text-on-medium: Textfarbe in Menüs
-// - --menu-bg: Hintergrund Menü-Items
-// - --menu-hover-bg: Hintergrund Menü-Items bei Hover
-// - --theme-label-bg: Hintergrund für Theme-Label
-// - --text-color: Standard Textfarbe (Dark Mode)
-// - --new-tag-bg: Hintergrund für "New"-Tag
 
 @use '../abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
@@ -46,145 +19,177 @@
 }
 
 .sidebar-content {
-    width: 167px;
+    box-sizing: border-box;
+    width: 175px;
     padding: 11px 4px 7px;
     margin-left: 12px;
     text-align: center;
     background-color: var(--sidebar-bg);
     border-radius: 0 0 5px 5px;
-}
 
-.sidebar-content .full-width-img {
-    margin-left: -5px;
-}
-
-.incentive {
-    width: 160px;
-    margin: auto;
-    margin-bottom: 10px;
-}
-
-.menu .incentive a {
-    background-color: transparent;
-}
-.menu .incentive a:hover {
-    background-color: transparent;
-}
-
-.incentive .tinytext {
-    margin-bottom: 2px;
-}
-
-/* Navigation Menu */
-.menu {
-    margin-bottom: 10px;
-    font-size: 14px;
-
-    @include media-retina-mobile {
-        font-size: 1.1em;
+    .full-width-img {
+        margin-left: -5px;
     }
 }
 
+/* --- Social Icons --- */
+.social-icons-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.social-icon {
+    border-radius: 5px;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    &:hover {
+        transform: scale(1.15);
+    }
+}
+
+.patreon-icon-wrapper {
+    display: inline-block;
+    .patreon-light-icon {
+        display: inline-block;
+    }
+    .patreon-dark-icon {
+        display: none;
+    }
+}
+
+body.theme-night .patreon-icon-wrapper {
+    .patreon-light-icon {
+        display: none;
+    }
+    .patreon-dark-icon {
+        display: inline-block;
+    }
+}
+
+/* --- Navigation Menu --- */
+.menu {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.menu-label {
+    display: block;
+    margin: 14px 0 4px;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-on-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.5;
+}
+
 .menu a {
+    box-sizing: border-box;
     position: relative;
     display: block;
     width: 160px;
     padding: 5px 0;
     margin: 3px auto;
-    overflow: hidden;
     color: var(--text-on-medium);
     text-transform: uppercase;
     text-decoration: none;
-    cursor: pointer;
-    list-style-type: none;
     background-color: var(--menu-bg);
     border-radius: 4px;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
 
-    @include media-retina-mobile {
-        padding: 8px 0;
-        margin: 8px auto;
+    &:hover {
+        background-color: var(--menu-hover-bg);
+        transform: translateX(3px);
     }
 }
 
-.menu a:hover {
-    background-color: var(--menu-hover-bg);
+/* DYNAMISCHER NEU-TAG (Spießer-Edition) */
+.menu a.menu-new {
+    padding-left: 16px;
+
+    &::after {
+        content: 'NEU';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.55rem;
+        font-weight: 900;
+        color: #fff;
+        background-color: var(--new-tag-bg);
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        // Da wir 180 Grad drehen, müssen TR und BR gerundet werden,
+        // damit sie nach der Drehung auf der linken Seite liegen.
+        border-radius: 0 4px 4px 0;
+    }
 }
 
+/* Theme Toggle */
 .menu a.theme {
     display: flex;
     flex-flow: column nowrap;
-    align-items: stretch;
-    justify-content: flex-start;
     padding: 0;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.menu a.theme span.themelabel {
-    flex: 0 0 0;
-    padding: 1px;
-    font-size: 0.7em;
-    color: #fff;
-    background-color: var(--theme-label-bg);
-}
-
-.menu a.theme span.themename {
-    flex: 1 1 auto;
-    padding: 3px;
-    color: var(--text-on-medium);
-    text-align: center;
-}
-
-body.theme-night .menu a.theme span.themename {
-    color: var(--text-color);
-}
-
-.menu a.menu-new {
-    @include media-retina-mobile {
-        padding-top: calc(0.7em + 5px);
-        padding-bottom: calc(8px - 0.7em + 5px);
-    }
-}
-
-.menu a.menu-new::after {
-    position: absolute;
-    top: 6px;
-    left: -6px;
-    display: inline-block;
-    width: 26px;
-    font-size: 0.7em;
-    color: #fff;
-    content: 'Neu';
-    background-color: var(--new-tag-bg);
-    transform: rotate(-90deg);
-
-    @include media-retina-mobile {
-        top: 0;
-        right: 0;
-        left: 0;
-        width: auto;
+    margin: 10px auto;
+    &:hover {
         transform: none;
     }
+
+    span.themelabel {
+        padding: 2px;
+        font-size: 0.7em;
+        color: #fff;
+        background-color: var(--theme-label-bg);
+    }
+    span.themename {
+        padding: 4px;
+        color: var(--text-on-medium);
+    }
 }
 
-body.theme-night .menu a.menu-new:after {
-    background-color: #628492;
+/* --- Admin & Incentive --- */
+.incentive {
+    width: 160px;
+    margin: 15px auto 10px;
+    .tinytext {
+        margin-bottom: 3px;
+        font-size: 0.75rem;
+        color: var(--text-on-medium);
+    }
+    a {
+        display: block;
+        padding: 0;
+        background-color: transparent !important;
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
 }
 
-// Aus config_menue_admin.php extrahiert und angepasst
 .session-timer {
+    box-sizing: border-box;
+    width: 160px;
     padding: 10px;
-    margin-bottom: 15px;
+    margin: 0 auto 15px;
     font-size: 0.9em;
     color: var(--text-on-medium);
     text-align: center;
     background-color: var(--button-hover-bg);
     border: 1px solid var(--comic-nav-hover-bg);
     border-radius: 5px;
-}
 
-.session-timer i {
-    margin-right: 8px;
+    i {
+        margin-right: 8px;
+    }
 }
 
 body.theme-night .session-timer {
@@ -192,73 +197,24 @@ body.theme-night .session-timer {
     border: 1px solid #2a6177;
 }
 
-.social-icons-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.social-icon {
-    border-radius: 5px;
-}
-
-#rssFeedLink {
-    position: relative;
-    /* Wichtig für die Positionierung der Feedback-Nachricht */
-}
-
-#rssFeedLink .social-icon {
-    cursor: pointer;
-}
-
-/* Stile für die "Kopiert!"-Nachricht */
+/* Copy Feedback */
 .copy-feedback {
     position: absolute;
-    bottom: 110%;
+    bottom: 115%;
     left: 50%;
     transform: translateX(-50%);
     background-color: #28a745;
     color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
-    transition:
-        opacity 0.3s,
-        visibility 0.3s;
-    z-index: 10;
-}
-
-.copy-feedback.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Standard-Stile für das Light-Theme */
-.patreon-icon-wrapper .patreon-light-icon {
-    display: inline-block;
-    /* Zeige das helle Icon standardmäßig an */
-}
-
-.patreon-icon-wrapper .patreon-dark-icon {
-    display: none;
-    /* Verstecke das dunkle Icon standardmäßig */
-}
-
-/* Stile für das Dark-Theme, wenn die Body-Klasse 'theme-night' aktiv ist */
-body.theme-night .patreon-icon-wrapper .patreon-light-icon {
-    display: none;
-    /* Verstecke das helle Icon im Dark-Theme */
-}
-
-body.theme-night .patreon-icon-wrapper .patreon-dark-icon {
-    display: inline-block;
-    /* Zeige das dunkle Icon im Dark-Theme an */
-}
-
-body.theme-night .copy-feedback {
-    background-color: #3c763d;
+    transition: 0.3s;
+    z-index: 20;
+    &.show {
+        opacity: 1;
+        visibility: visible;
+    }
 }
