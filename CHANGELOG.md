@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.17](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.16...v5.0.0-alpha.17) (2025-12-29)
+
+
+### Features
+
+* **admin:** finalize admin menu structure and integrate red logout style ([57b610a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/57b610a0b9450e26bd9f03fb74198720ef012494))
+* **sidebar:** implement subheadings and dynamic tag with precision layout ([3696b6e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3696b6e0e991f30056bef88ab97b08ba961ca471))
+
+
+### Bug Fixes
+
+* **layout:** unify viewport settings for responsive design ([64551d4](https://github.com/RaptorXilef/twokinds.4lima.de/commit/64551d41d9c25974b0f60d88faf155973e9eced9))
+* **menu:** redesign the light-button ([e694035](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e69403585ba442905bfe250ee60d146643a4dff1))
+* **menu:** set new dark design ([7cd2a57](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7cd2a576d1ba026be63dfde4d659f59ce4954852))
+* **menu:** wiederhergestellt v5.0.0-alpha.15 ([4715ada](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4715adad1eafea3b05845bafe7ad2ff6b53ea129))
+* **sidebar:** implement robust and modern RSS copy feedback tooltip ([7d74727](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7d747271151fcc2badc6c2694ee3337cd8fad881))
+
 ## [5.0.0-alpha.16](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.15...v5.0.0-alpha.16) (2025-12-28)
 
 
