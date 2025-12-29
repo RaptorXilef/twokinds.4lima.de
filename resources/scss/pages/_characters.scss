@@ -112,8 +112,7 @@
     flex: 0 0 auto;
     width: 27px;
     height: 36px;
-    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png') 0 0
-        no-repeat;
+    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png') 0 0 no-repeat;
     background-size: contain;
 }
 
@@ -449,4 +448,32 @@ body.theme-night .character-item img,
 body.theme-night .character-image-fallback {
     background-color: var(--characters-area-bg);
     border-color: var(--border-light);
+}
+
+/* --- Ergänzung für den Charakter-Tag-Modus --- */
+.character-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 8px; // Abstand zum Namen
+
+    .char-tag {
+        padding: 2px 8px;
+        font-size: 0.7em;
+        font-weight: bold;
+        color: var(--text-color-light);
+        background-color: var(--table-header-bg); // Nutzt das Grau deiner Tabellen-Header
+        border: 1px solid var(--border-light);
+        border-radius: 12px; // Schöner "Pillen"-Look
+        white-space: nowrap;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
+    }
+}
+
+// Hover-Interaktion verfeinern
+.character-item:hover .char-tag {
+    opacity: 1;
+    border-color: var(--link-color); // Leichter Akzent beim Hover
 }

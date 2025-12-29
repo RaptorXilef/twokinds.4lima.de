@@ -221,6 +221,7 @@ require_once Path::getPartialTemplatePath('header.php');
     // KORRIGIERT: Binde das Modul zur Anzeige der Charaktere direkt ein (wie im Original)
     // $characterIds wurde weiter oben definiert
     // Die Datei display_character.php muss existieren und $characterIds und $nonce ggf. global nutzen
+    $useCharacterTags = true; // Aktiviert die neue Rollen-Anzeige
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
 </article>

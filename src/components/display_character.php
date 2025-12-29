@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Dieses Modul zeigt die Charaktere an, die auf einer bestimmten Comic-Seite vorkommen.
  * Die Charaktere werden nach den Gruppen und der Reihenfolge aus charaktere.json sortiert.
  * Die Gruppen-Überschriften werden dynamisch aus der charaktere.json geladen.
- * 
+ *
  * @file      ROOT/src/components/display_character.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -25,88 +26,138 @@
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
-
 $charaktereData = [];
 
-// Lade und verarbeite die Charakterdaten nur einmal mit der Path-Klasse
+// 1. Daten laden (unverändert aus deinem Original)
 $charaktereJsonPath = Path::getDataPath('charaktere.json');
 if (file_exists($charaktereJsonPath)) {
     $charaktereJsonContent = file_get_contents($charaktereJsonPath);
     $decodedData = json_decode($charaktereJsonContent, true);
-
     if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['characters']) && isset($decodedData['groups'])) {
         $charaktereData = $decodedData;
     }
 }
 
-// Hole die Liste der Charakter-IDs für die aktuelle Seite aus den Comic-Daten.
 $pageCharaktereIDs = $comicData[$currentComicId]['charaktere'] ?? [];
 
-// Wenn keine Charaktere für diese Seite definiert sind oder die Charakter-Daten fehlen, zeige nichts an.
-if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
-
-    // Standardwert für die Sichtbarkeit der Überschrift.
-    if (!isset($showCharacterSectionTitle)) {
-        $showCharacterSectionTitle = true;
-    }
+if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
+    $showCharacterSectionTitle = $showCharacterSectionTitle ?? true;
+    $useCharacterTags = $useCharacterTags ?? false; // Flag für die Comicseite
     ?>
 
     <div class="comic-characters">
-        <?php if ($showCharacterSectionTitle): ?>
+        <?php if ($showCharacterSectionTitle) : ?>
             <h3>Charaktere auf dieser Seite:</h3>
         <?php endif; ?>
-        <div class="character-list">
-            <?php
-            foreach ($charaktereData['groups'] as $groupName => $char_id_list):
-                $idsToShowInGroup = array_intersect($char_id_list, $pageCharaktereIDs);
 
-                if (!empty($idsToShowInGroup)):
+        <?php if ($useCharacterTags) :
+            // --- MODUS: TAGS (KEINE DUBLETTEN, SORTIERT) ---
+
+            // 1. Identifiziere Hauptcharaktere anhand der Gruppe in der JSON
+            $mainCharIds = $charaktereData['groups']['Hauptcharaktere'] ?? [];
+
+            $mainList = [];
+            $otherList = [];
+
+            // 2. Charaktere in zwei Töpfe sortieren
+            foreach ($pageCharaktereIDs as $id) {
+                if (!isset($charaktereData['characters'][$id])) {
+                    continue;
+                }
+                $char = $charaktereData['characters'][$id];
+                $char['id'] = $id;
+
+                if (in_array($id, $mainCharIds)) {
+                    $mainList[] = $char;
+                } else {
+                    $otherList[] = $char;
+                }
+            }
+
+            // 3. Alphabetische Sortierung innerhalb der Töpfe
+            $sortFunc = fn($a, $b) => strcasecmp($a['name'], $b['name']);
+            usort($mainList, $sortFunc);
+            usort($otherList, $sortFunc);
+
+            // 4. Zusammenführen (Hauptcharaktere oben)
+            $finalList = array_merge($mainList, $otherList);
+
+            // 5. Rollen-Mapping für Tags sammeln
+            $tagsMap = [];
+            foreach ($charaktereData['groups'] as $groupName => $idList) {
+                foreach ($idList as $id) {
+                    if (!in_array($id, $pageCharaktereIDs)) {
+                        continue;
+                    }
+
+                    $tagsMap[$id][] = $groupName;
+                }
+            }
+            ?>
+
+            <div class="character-group-list">
+                <?php foreach ($finalList as $char) :
+                    $charId = $char['id'];
+                    $characterName = $char['name'];
+                    $filename = str_replace(' ', '_', $characterName);
+                    $characterLink = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
+                    $imageSrc = !empty($char['pic_url'])
+                        ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($char['pic_url'])
+                        : 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
                     ?>
-                    <div class="character-group">
-                        <h4><?php echo htmlspecialchars($groupName); ?></h4>
-                        <div class="character-group-list">
-                            <?php
-                            foreach ($char_id_list as $char_id):
-                                if (in_array($char_id, $idsToShowInGroup)):
-                                    $characterDetails = $charaktereData['characters'][$char_id] ?? null;
+                    <div class="character-item">
+                        <a href="<?= htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
+                           title="Mehr über <?= htmlspecialchars($characterName); ?> erfahren">
+                            <img src="<?= htmlspecialchars($imageSrc); ?>"
+                                 alt="Bild von <?= htmlspecialchars($characterName); ?>"
+                                 class="character-image-fallback" width="80" height="80" loading="lazy">
+                            <span class="character-name"><?= htmlspecialchars($characterName); ?></span>
+                        </a>
 
-                                    if ($characterDetails):
-                                        $characterName = $characterDetails['name'];
-                                        
-                                        // FIX 3.0.2: Ersetze Leerzeichen durch Unterstriche für den Dateinamen
-                                        $filename = str_replace(' ', '_', $characterName);
-                                        
-                                        // Link mit DIRECTORY_PUBLIC_URL erstellen
-                                        $characterLink = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
-
-                                        $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
-                                        if (!empty($characterDetails['pic_url'])) {
-                                            // Bild-URL mit DIRECTORY_PUBLIC_URL erstellen
-                                            $imageSrc = DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($characterDetails['pic_url']);
-                                        }
-                                        ?>
-                                        <div class="character-item">
-                                            <a href="<?php echo htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
-                                                title="Mehr über <?php echo htmlspecialchars($characterName); ?> erfahren">
-                                                <!-- FIX 3.0.3: Bild zuerst, dann Name -->
-                                                <img src="<?php echo htmlspecialchars($imageSrc); ?>"
-                                                    alt="Bild von <?php echo htmlspecialchars($characterName); ?>" loading="lazy" width="80"
-                                                    height="80" class="character-image-fallback">
-                                                <span class="character-name"><?php echo htmlspecialchars($characterName); ?></span>
-                                            </a>
-                                        </div>
-                                        <?php
-                                    endif;
-                                endif;
-                            endforeach;
-                            ?>
+                        <div class="character-tags">
+                            <?php if (isset($tagsMap[$charId])) :
+                                foreach ($tagsMap[$charId] as $tagName) : ?>
+                                    <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
+                                <?php endforeach;
+                            endif; ?>
                         </div>
                     </div>
-                    <?php
-                endif;
-            endforeach;
-            ?>
-        </div>
+                <?php endforeach; ?>
+            </div>
+
+        <?php else : ?>
+            <div class="character-list">
+                <?php foreach ($charaktereData['groups'] as $groupName => $idList) :
+                    $idsInPage = array_intersect($idList, $pageCharaktereIDs);
+                    if (!empty($idsInPage)) : ?>
+                        <div class="character-group">
+                            <h4><?= htmlspecialchars($groupName); ?></h4>
+                            <div class="character-group-list">
+                                <?php foreach ($idList as $id) :
+                                    if (in_array($id, $idsInPage)) :
+                                        $c = $charaktereData['characters'][$id] ?? null;
+                                        if (!$c) {
+                                            continue;
+                                        }
+                                        $charName = $c['name'];
+                                        $file = str_replace(' ', '_', $charName);
+                                        $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $file . $dateiendungPHP;
+                                        $img = !empty($c['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($c['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
+                                        ?>
+                                        <div class="character-item">
+                                            <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
+                                                <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                                <span class="character-name"><?= htmlspecialchars($charName); ?></span>
+                                            </a>
+                                        </div>
+                                    <?php endif;
+                                endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif;
+                endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
 
     <script nonce="<?php echo htmlspecialchars($nonce ?? ''); ?>">
@@ -119,4 +170,5 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
             });
         });
     </script>
-<?php endif; ?>
+    <?php
+endif; ?>
