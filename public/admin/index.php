@@ -1,9 +1,7 @@
 <?php
 
 /**
- * Dies ist die Login-Seite des Admin-Bereichs.
- * Sie verwaltet die Anmeldung und die Erstellung des ersten Admin-Benutzers.
- * Diese Version ist gehärtet mit CSP (Nonce), CSRF-Schutz und Rate-Limiting.
+ * Admin Login & Ersteinrichtung (v5.4.2 - Anti-Zombie Edition).
  *
  * @file      ROOT/public/admin/index.php
  * @package   twokinds.4lima.de
@@ -48,6 +46,8 @@
  *
  * - fix(UX): `reason`-Parameter wird nun ganz am Anfang verarbeitet, um Konflikte mit Rate-Limiting oder anderen Meldungen zu vermeiden.
  * - fix(UX): Explizite Behandlung von `session_expired`.
+ *
+ * - fix(login): Neuaufbau der Loginlogik (SESSION,  COOKIE, ....)
  */
 
 declare(strict_types=1);
@@ -61,11 +61,18 @@ $debugMode = $debugMode ?? false;
 // === ZENTRALE ADMIN-INITIALISIERUNG ===
 require_once __DIR__ . '/../../src/components/admin/init_admin.php';
 
-// === KONSTANTEN FÜR SICHERHEIT ===
+// --- MULTI-TAB ERKENNUNG ---
+if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    ob_end_clean();
+    header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
+    exit;
+}
+
+// --- KONSTANTEN ---
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOGIN_LOCKOUT_TIME = 900; // 15 Minuten in Sekunden
 
-// --- HILFSFUNKTIONEN ---
+// --- HILFSFUNKTIONEN (Wiederhergestellt) ---
 
 function hasUsers(): bool
 {
@@ -73,21 +80,17 @@ function hasUsers(): bool
     if (!file_exists($usersFile) || filesize($usersFile) === 0) {
         return false;
     }
-    $content = file_get_contents($usersFile);
-    $users = json_decode($content, true);
+    $users = json_decode(file_get_contents($usersFile), true);
     return is_array($users) && !empty($users);
 }
 
 function saveUsersList(array $users): bool
 {
     $usersFile = Path::getSecretPath('admin_users.json');
-    $dir = dirname($usersFile);
-    if (!is_dir($dir) && !mkdir($dir, 0755, true)) {
-        error_log("Fehler: Konnte Verzeichnis für Benutzerdatei nicht erstellen: " . $dir);
-        return false;
+    if (!is_dir(dirname($usersFile))) {
+        mkdir(dirname($usersFile), 0755, true);
     }
-    $jsonContent = json_encode($users, JSON_PRETTY_PRINT);
-    return file_put_contents($usersFile, $jsonContent, LOCK_EX) !== false;
+    return file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
 function getLoginAttempts(): array
@@ -96,17 +99,14 @@ function getLoginAttempts(): array
     if (!file_exists($file)) {
         return [];
     }
-    $content = file_get_contents($file);
-    $data = json_decode($content, true);
-    return is_array($data) ? $data : [];
+    return json_decode(file_get_contents($file), true) ?? [];
 }
 
 function saveLoginAttempts(array $attempts): void
 {
     $file = Path::getSecretPath('login_attempts.json');
-    $dir = dirname($file);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
+    if (!is_dir(dirname($file))) {
+        mkdir(dirname($file), 0755, true);
     }
     file_put_contents($file, json_encode($attempts, JSON_PRETTY_PRINT), LOCK_EX);
 }
@@ -114,23 +114,12 @@ function saveLoginAttempts(array $attempts): void
 function checkRateLimit(string $ip): int
 {
     $attempts = getLoginAttempts();
-    $hasChanges = false;
-    foreach ($attempts as $key => $data) {
-        if ($data['last_attempt'] >= time() - LOGIN_LOCKOUT_TIME) {
-            continue;
-        }
-
-        unset($attempts[$key]);
-        $hasChanges = true;
-    }
-    if ($hasChanges) {
-        saveLoginAttempts($attempts);
-    }
-
     if (isset($attempts[$ip])) {
+        if ($attempts[$ip]['last_attempt'] < time() - LOGIN_LOCKOUT_TIME) {
+            return 0;
+        }
         if ($attempts[$ip]['count'] >= MAX_LOGIN_ATTEMPTS) {
-            $timeLeft = $attempts[$ip]['last_attempt'] + LOGIN_LOCKOUT_TIME - time();
-            return max(0, $timeLeft);
+            return $attempts[$ip]['last_attempt'] + LOGIN_LOCKOUT_TIME - time();
         }
     }
     return 0;
@@ -140,10 +129,7 @@ function recordFailedAttempt(string $ip): void
 {
     $attempts = getLoginAttempts();
     if (!isset($attempts[$ip])) {
-        $attempts[$ip] = [
-            'count' => 0,
-            'last_attempt' => time(),
-        ];
+        $attempts[$ip] = ['count' => 0, 'last_attempt' => 0];
     }
     $attempts[$ip]['count']++;
     $attempts[$ip]['last_attempt'] = time();
@@ -153,10 +139,6 @@ function recordFailedAttempt(string $ip): void
 function resetLoginAttempts(string $ip): void
 {
     $attempts = getLoginAttempts();
-    if (!isset($attempts[$ip])) {
-        return;
-    }
-
     unset($attempts[$ip]);
     saveLoginAttempts($attempts);
 }
@@ -165,54 +147,34 @@ function resetLoginAttempts(string $ip): void
 $message = '';
 $messageType = 'info';
 $clientIp = $_SERVER['REMOTE_ADDR'];
-
-// Prüfen, ob bereits Benutzer existieren
 $usersExist = hasUsers();
 
-// Wenn bereits eingeloggt, direkt weiterleiten
-if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-    ob_end_clean();
-    header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
-    exit;
-}
-
-// --- 0. URL-GRÜNDE PRÜFEN (Höchste Priorität für Feedback) ---
-// Wir prüfen das VOR allem anderen, damit es nicht überschrieben wird.
+// 1. Gründe verarbeiten
 if (isset($_GET['reason'])) {
-    $reason = htmlspecialchars($_GET['reason']); // XSS Schutz
-    switch ($reason) {
-        case 'timeout':
-        case 'session_expired': // Entspricht dem Wert aus init_admin.php
-            $message = 'Sie wurden aufgrund von Inaktivität automatisch abgemeldet.';
-            $messageType = 'warning';
-            break;
-        case 'security':
-        case 'session_hijacked':
-            $message = 'Sitzung aus Sicherheitsgründen beendet.';
-            $messageType = 'error';
-            break;
-        case 'logout':
-            $message = 'Erfolgreich abgemeldet.';
-            $messageType = 'success';
-            break;
-    }
-}
-
-// --- 1. Rate Limit Prüfung ---
-// Nur prüfen, wenn wir nicht gerade eine Erfolgsmeldung (Logout) anzeigen
-if (empty($message) || $messageType !== 'success') {
-    $lockoutTime = checkRateLimit($clientIp);
-    if ($lockoutTime > 0) {
-        $minutes = ceil($lockoutTime / 60);
-        $message = "Zu viele fehlgeschlagene Anmeldeversuche. Bitte warten Sie $minutes Minute(n).";
+    $reason = $_GET['reason'];
+    if ($reason === 'session_expired') {
+        $message = 'Sitzung abgelaufen.';
+        $messageType = 'warning';
+    } elseif ($reason === 'logout') {
+        $message = 'Erfolgreich abgemeldet.';
+        $messageType = 'success';
+    } elseif ($reason === 'session_hijacked') {
+        $message = 'Sicherheit: Sitzung beendet.';
         $messageType = 'error';
     }
 }
 
-// --- 2. Verarbeitung von POST-Requests (Login / Setup) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($lockoutTime ?? 0) === 0) {
-    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        $message = 'Ungültiger CSRF-Token.';
+// 2. Rate-Limit Check
+$lockoutTime = checkRateLimit($clientIp);
+if ($lockoutTime > 0) {
+    $message = 'Zu viele Versuche. Bitte ' . ceil($lockoutTime / 60) . ' Min. warten.';
+    $messageType = 'error';
+}
+
+// 3. POST-Verarbeitung
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $lockoutTime === 0) {
+    if (!verify_csrf_token()) {
+        $message = 'Sicherheits-Fehler (CSRF). Bitte Seite neu laden.';
         $messageType = 'error';
     } else {
         $action = $_POST['action'] ?? '';
@@ -220,139 +182,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($lockoutTime ?? 0) === 0) {
         if ($action === 'create_initial_user' && !$usersExist) {
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
-
-            if (empty($username) || empty($password)) {
-                $message = 'Bitte Benutzername und Passwort angeben.';
-                $messageType = 'error';
-            } else {
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                $users = [$username => ['passwordHash' => $hashedPassword]];
-
+            if ($username && $password) {
+                $users = [$username => ['passwordHash' => password_hash($password, PASSWORD_DEFAULT)]];
                 if (saveUsersList($users)) {
-                    $message = 'Admin-Benutzer erfolgreich erstellt. Bitte einloggen.';
+                    $message = 'Admin erstellt. Bitte einloggen.';
                     $messageType = 'success';
                     $usersExist = true;
-                } else {
-                    $message = 'Fehler beim Speichern des Benutzers.';
-                    $messageType = 'error';
                 }
             }
         } elseif ($action === 'login') {
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
-
-            $usersFile = Path::getSecretPath('admin_users.json');
-            $users = [];
-            if (file_exists($usersFile)) {
-                $users = json_decode(file_get_contents($usersFile), true) ?? [];
-            }
+            $users = json_decode(file_get_contents(Path::getSecretPath('admin_users.json')), true) ?? [];
 
             if (isset($users[$username]) && password_verify($password, $users[$username]['passwordHash'])) {
                 resetLoginAttempts($clientIp);
-
                 session_regenerate_id(true);
                 $_SESSION = [];
-
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_username'] = $username;
                 $_SESSION['last_activity'] = time();
-
-                $fingerprint = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.')));
-                $_SESSION['session_fingerprint'] = $fingerprint;
+                $_SESSION['session_fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . substr($_SERVER['REMOTE_ADDR'], 0, (strrpos($_SERVER['REMOTE_ADDR'], '.') ?: 0)));
 
                 session_write_close();
                 ob_end_clean();
-
                 header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/initial_setup.php');
                 exit;
             }
 
             recordFailedAttempt($clientIp);
-            sleep(1);
-
-            $attemptsLeft = MAX_LOGIN_ATTEMPTS - (getLoginAttempts()[$clientIp]['count'] ?? 0);
-
-            if ($attemptsLeft <= 0) {
-                $message = "Zu viele fehlgeschlagene Versuche. Zugang gesperrt.";
-            } else {
-                $message = "Ungültige Zugangsdaten. Noch $attemptsLeft Versuch(e).";
-            }
+            $message = 'Zugangsdaten falsch.';
             $messageType = 'error';
         }
     }
 }
 
-// Map message types to CSS classes
-$cssClassMap = [
+$csrfToken = $_SESSION['csrf_token'];
+$alertClass = [
     'info' => 'status-info',
     'success' => 'status-green',
     'error' => 'status-red',
     'warning' => 'status-orange',
-];
-$alertClass = $cssClassMap[$messageType] ?? 'status-info';
-
-$pageTitle = 'Admin Login';
-$pageHeader = 'Adminbereich';
-$robotsContent = 'noindex, nofollow';
+][$messageType];
 
 require_once Path::getPartialTemplatePath('header.php');
-ob_end_flush();
 ?>
 
-    <div class="admin-login-container">
+<div class="admin-login-container page-login">
+    <?php if (!empty($message)) : ?>
+        <div class="status-message <?= $alertClass; ?> visible">
+            <?= htmlspecialchars($message); ?>
+        </div>
+    <?php endif; ?>
 
-        <?php if (!empty($message)) : ?>
-            <div class="status-message <?php echo $alertClass; ?> visible">
-                <?php echo htmlspecialchars($message); ?>
+    <?php if (!$usersExist) : ?>
+        <h2>Ersteinrichtung</h2>
+        <form action="" method="POST" class="admin-form">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>">
+            <input type="text" name="username" required placeholder="Admin Name">
+            <input type="password" name="password" required placeholder="Passwort">
+            <button type="submit" name="action" value="create_initial_user" class="button button-green">Einrichten</button>
+        </form>
+    <?php else : ?>
+        <h2>Anmeldung</h2>
+        <form action="" method="POST" class="admin-form">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken); ?>">
+            <div class="form-group">
+                <label>Benutzername:</label>
+                <input type="text" name="username" required placeholder="Dein Benutzername" <?= $lockoutTime > 0 ? 'disabled' : '' ?>>
             </div>
-        <?php endif; ?>
-
-        <?php if (!$usersExist) : ?>
-            <!-- INITIAL SETUP FORM -->
-            <h2>Ersteinrichtung</h2>
-            <p class="intro-text">Willkommen! Es existiert noch kein Administrator-Konto.<br>Bitte erstelle jetzt den ersten Zugang.</p>
-
-            <form action="<?php /*echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php';*/ ?>" method="POST" class="admin-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-
-                <div class="form-group">
-                    <label for="create_username">Benutzername:</label>
-                    <input type="text" id="create_username" name="username" required autocomplete="username" placeholder="Neuer Benutzername">
-                </div>
-
-                <div class="form-group">
-                    <label for="create_password">Passwort:</label>
-                    <input type="password" id="create_password" name="password" required autocomplete="new-password" placeholder="Sicheres Passwort">
-                </div>
-
-                <button type="submit" name="action" value="create_initial_user" class="button button-green">Admin erstellen</button>
-            </form>
-
-        <?php else : ?>
-            <!-- LOGIN FORM -->
-            <h2>Anmeldung</h2>
-            <p class="intro-text">Bitte melde dich an, um auf den Admin-Bereich zuzugreifen.</p>
-
-            <!-- Formular deaktivieren, wenn gesperrt -->
-            <?php $isLocked = ($lockoutTime ?? 0) > 0; ?>
-
-            <form action="<?php /*echo DIRECTORY_PUBLIC_ADMIN_URL . '/index.php';*/ ?>" method="POST" class="admin-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-
-                <div class="form-group">
-                    <label for="login_username">Benutzername:</label>
-                    <input type="text" id="login_username" name="username" required autocomplete="username" placeholder="Dein Benutzername" <?php echo $isLocked ? 'disabled' : ''; ?>>
-                </div>
-
-                <div class="form-group">
-                    <label for="login_password">Passwort:</label>
-                    <input type="password" id="login_password" name="password" required autocomplete="current-password" placeholder="Dein Passwort" <?php echo $isLocked ? 'disabled' : ''; ?>>
-                </div>
-
-                <button type="submit" name="action" value="login" class="button button-blue" <?php echo $isLocked ? 'disabled' : ''; ?>>Einloggen</button>
-            </form>
-        <?php endif; ?>
-
-    </div>
+            <div class="form-group">
+                <label>Passwort:</label>
+                <input type="password" name="password" required placeholder="Dein Passwort" <?= $lockoutTime > 0 ? 'disabled' : '' ?>>
+            </div>
+            <button type="submit" name="action" value="login" class="button button-blue" <?= $lockoutTime > 0 ? 'disabled' : '' ?>>Einloggen</button>
+        </form>
+    <?php endif; ?>
+</div>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>
