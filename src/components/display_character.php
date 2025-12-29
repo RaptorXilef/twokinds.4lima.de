@@ -69,59 +69,59 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
         </div>
 
         <div class="char-view-section view-tags">
-            <div class="character-group-list">
-                <?php
-                    $mainCharIds = $charaktereData['groups']['Hauptcharaktere'] ?? [];
-                    $mainList = [];
-                    $otherList = [];
+            <div class="character-group">
+            <?php
+            $mainCharIds = $charaktereData['groups']['Hauptcharaktere'] ?? [];
+            $mainList = [];
+            $otherList = [];
 
-                foreach ($pageCharaktereIDs as $id) {
-                    if (!isset($charaktereData['characters'][$id])) {
+            foreach ($pageCharaktereIDs as $id) {
+                if (!isset($charaktereData['characters'][$id])) {
+                    continue;
+                }
+                $char = $charaktereData['characters'][$id];
+                $char['id'] = $id;
+                if (in_array($id, $mainCharIds)) {
+                    $mainList[] = $char;
+                } else {
+                    $otherList[] = $char;
+                }
+            }
+
+            $sortFunc = fn($a, $b) => strcasecmp($a['name'], $b['name']);
+            usort($mainList, $sortFunc);
+            usort($otherList, $sortFunc);
+            $finalList = array_merge($mainList, $otherList);
+
+            $tagsMap = [];
+            foreach ($charaktereData['groups'] as $groupName => $idList) {
+                foreach ($idList as $id) {
+                    if (!in_array($id, $pageCharaktereIDs)) {
                         continue;
                     }
-                    $char = $charaktereData['characters'][$id];
-                    $char['id'] = $id;
-                    if (in_array($id, $mainCharIds)) {
-                        $mainList[] = $char;
-                    } else {
-                        $otherList[] = $char;
-                    }
+
+                    $tagsMap[$id][] = $groupName;
                 }
-
-                    $sortFunc = fn($a, $b) => strcasecmp($a['name'], $b['name']);
-                    usort($mainList, $sortFunc);
-                    usort($otherList, $sortFunc);
-                    $finalList = array_merge($mainList, $otherList);
-
-                    $tagsMap = [];
-                foreach ($charaktereData['groups'] as $groupName => $idList) {
-                    foreach ($idList as $id) {
-                        if (!in_array($id, $pageCharaktereIDs)) {
-                            continue;
-                        }
-
-                        $tagsMap[$id][] = $groupName;
-                    }
-                }
-                ?>
-                <div class="character-group-list">
-                    <?php foreach ($finalList as $char) :
-                        $filename = str_replace(' ', '_', $char['name']);
-                        $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
-                        $img = !empty($char['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($char['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
-                        ?>
-                        <div class="character-item">
-                            <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
-                                <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
-                                <span class="character-name"><?= htmlspecialchars($char['name']); ?></span>
-                            </a>
-                            <div class="character-tags">
-                                <?php foreach ($tagsMap[$char['id']] as $tagName) : ?>
-                                    <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
-                                <?php endforeach; ?>
-                            </div>
+            }
+            ?>
+            <div class="character-group-list">
+                <?php foreach ($finalList as $char) :
+                    $filename = str_replace(' ', '_', $char['name']);
+                    $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
+                    $img = !empty($char['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($char['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
+                    ?>
+                    <div class="character-item">
+                        <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
+                            <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                            <span class="character-name"><?= htmlspecialchars($char['name']); ?></span>
+                        </a>
+                        <div class="character-tags">
+                            <?php foreach ($tagsMap[$char['id']] as $tagName) : ?>
+                                <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
+                            <?php endforeach; ?>
                         </div>
-                    <?php endforeach; ?>
+                    </div>
+                <?php endforeach; ?>
                 </div>
             </div>
         </div>
@@ -141,16 +141,17 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
                                         $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $file . $dateiendungPHP;
                                         $img = !empty($c['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($c['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
                                         ?>
-                                        <div class="character-item">
-                                            <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
-                                                <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                    <div class="character-item">
+                                        <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
+                                            <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
                                                 <span class="character-name"><?= htmlspecialchars($c['name']); ?></span>
-                                            </a>
+                                        </a>
                                         </div>
                                     <?php endif;
                                 endforeach; ?>
                             </div>
                         </div>
+
                     <?php endif;
                 endforeach; ?>
             </div>
@@ -158,7 +159,7 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
     </div>
 
     <script nonce="<?= htmlspecialchars($nonce ?? ''); ?>">
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const wrapper = document.getElementById('char-display-wrapper');
             const toggleBtn = document.getElementById('toggle-char-view');
             const toggleText = document.getElementById('toggle-view-text');
@@ -182,8 +183,8 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
             }
 
             // Image-Fallback (unverändert)
-            document.querySelectorAll('.character-image-fallback').forEach(function (img) {
-                img.addEventListener('error', function () {
+            document.querySelectorAll('.character-image-fallback').forEach(function(img) {
+                img.addEventListener('error', function() {
                     this.onerror = null;
                     this.src = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0AFehlt';
                 });
