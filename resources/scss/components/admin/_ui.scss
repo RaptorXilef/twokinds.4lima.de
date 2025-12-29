@@ -104,6 +104,12 @@
     border-radius: 5px;
 }
 
+.status-message i {
+    width: 20px;
+    text-align: center;
+    opacity: 0.8;
+}
+
 .status-message.visible {
     display: block;
 }
@@ -421,9 +427,7 @@ body.theme-night .transcript-display-box {
 }
 
 body.theme-night .status-list {
-    background-color: rgb(
-        0 0 0 / 0.2
-    ); // Leicht abgedunkelter Hintergrund im Dark Mode
+    background-color: rgb(0 0 0 / 0.2); // Leicht abgedunkelter Hintergrund im Dark Mode
 }
 
 .status-item {

@@ -182,6 +182,39 @@ $usersExist = hasUsers();
 // Weiche: Ist die Verbindung sicher?
 $isSecureConnection = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
 
+$securityWarnings = [];
+
+// 1. Check: HTTPS (Kritisch)
+if (!$isSecureConnection) {
+    $securityWarnings[] = [
+        'type' => 'status-orange', // Orange für Warnung
+        'icon' => 'fa-unlock-alt',
+        'text' => '<strong>Unsichere Verbindung:</strong> Die Seite wird über unverschlüsseltes HTTP geladen. Ihr Passwort könnte im Netzwerk mitgelesen werden.',
+    ];
+}
+
+// 2. Check: Bekannte veraltete Browser (Beispiel für IE)
+$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+if (strpos($userAgent, 'MSIE') !== false || strpos($userAgent, 'Trident') !== false) {
+    $securityWarnings[] = [
+        'type' => 'status-red', // Rot für technisches Risiko
+        'icon' => 'fa-exclamation-triangle',
+        'text' => '<strong>Browser-Risiko:</strong> Sie nutzen einen veralteten Browser. Dies stellt ein Sicherheitsrisiko dar und könnte die Funktion des Admin-Bereichs beeinträchtigen.',
+    ];
+}
+
+// 3. Check: Cookies (Wichtig für die Funktion)
+// Da wir PHP nutzen, sehen wir Cookies erst nach dem ersten Refresh.
+// Ein Hinweis ist aber gut, falls $_COOKIE leer ist und es kein Redirect war.
+if (empty($_COOKIE) && !isset($_GET['reason'])) {
+    $securityWarnings[] = [
+        'type' => 'status-info',
+        'icon' => 'fa-cookie-bite',
+        'text' => '<strong>Hinweis:</strong> Bitte stellen Sie sicher, dass Cookies in Ihrem Browser aktiviert sind, um angemeldet zu bleiben.',
+    ];
+}
+
+
 $lastUser = '';
 $lastPass = '';
 
@@ -296,6 +329,14 @@ require_once Path::getPartialTemplatePath('header.php');
 ?>
 
 <div class="admin-login-container page-login">
+
+    <?php foreach ($securityWarnings as $warn) : ?>
+        <div class="status-message <?= $warn['type']; ?> visible" style="text-align: left; margin-bottom: 10px;">
+            <i class="fas <?= $warn['icon']; ?>" style="margin-right: 10px;"></i>
+            <?= $warn['text']; ?>
+        </div>
+    <?php endforeach; ?>
+
     <?php if (!empty($message)) : ?>
         <div class="status-message <?= $alertClass; ?> visible">
             <?= htmlspecialchars($message); ?>
