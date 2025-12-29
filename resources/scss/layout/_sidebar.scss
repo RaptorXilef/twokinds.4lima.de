@@ -284,3 +284,8 @@ body.theme-night .copy-feedback {
         border-top-color: #3c763d;
     }
 }
+
+// Nur wenn wir auf der Login-Seite sind (z.B. über eine Body-Klasse .page-login)
+.page-login .menu {
+    margin-top: 100px;
+}
