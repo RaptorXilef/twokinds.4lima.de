@@ -4,7 +4,7 @@
  * Sidebar & Navigation Styles (v3.9 - The Spießer Edition)
  *
  * @file       resources/scss/layout/_sidebar.scss
- * @since      5.0.9
+ * @since      5.0.0
  * - fix(NEU): Border-Radius für 180°-Drehung korrigiert (Ecken jetzt rund).
  * - fix(Layout): Breite auf 175px mit border-box standardisiert.
  * - fix(Admin): Session-Timer und Image-Korrekturen wiederhergestellt.
@@ -155,23 +155,53 @@ body.theme-night .patreon-icon-wrapper {
 }
 
 /* --- Admin & Incentive --- */
+/* --- Professioneller Incentive-Bereich (v5.0.0-alpha.17) --- */
 .incentive {
     width: 160px;
-    margin: 15px auto 10px;
+    margin: 20px auto 10px; // Etwas mehr Luft nach oben zur Abgrenzung
+    text-align: center;
+
     .tinytext {
-        margin-bottom: 3px;
-        font-size: 0.75rem;
+        margin-bottom: 6px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
         color: var(--text-on-medium);
+        opacity: 0.6;
+        letter-spacing: 0.05em;
     }
+
+    // Wir überschreiben die Standard-Link-Stile gezielt ohne !important
     a {
         display: block;
-        padding: 0;
-        background-color: transparent !important;
-    }
-    img {
-        max-width: 100%;
-        height: auto;
+        width: 100%;
+        padding: 0; // Entfernt das Padding der Text-Buttons
+        margin: 0;
+        background: none; // Entfernt den Button-Hintergrund
+        border: none; // Entfernt eventuelle Rahmen
         border-radius: 4px;
+        overflow: hidden; // Sorgt dafür, dass das Bild an den Ecken nicht übersteht
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        // Die neue, elegante Animation (kein translateX mehr!)
+        &:hover {
+            transform: translateY(-3px) scale(1.02); // Leichtes Anheben und Vergrößern
+            background: none; // Sicherstellung
+        }
+    }
+
+    img {
+        display: block; // Verhindert den Ghost-Margin unter Bildern
+        width: 100%; // Füllt die vollen 160px aus
+        height: auto;
+        border-radius: 4px; // Abgerundete Ecken direkt am Bild
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); // Dezenter Schatten für Tiefe
+        transition: filter 0.3s ease;
+    }
+
+    a:hover img {
+        filter: brightness(1.05); // Dezentes Aufleuchten beim Hover
     }
 }
 
