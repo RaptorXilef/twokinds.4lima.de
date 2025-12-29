@@ -62,9 +62,11 @@ if (file_exists($charaktereJsonPath)) {
 $characterComics = [];
 if ($characterId !== null && !empty($comicData) && is_array($comicData)) {
     foreach ($comicData as $comicId => $details) {
-        if (isset($details['charaktere']) && is_array($details['charaktere']) && in_array($characterId, $details['charaktere'])) {
-            $characterComics[$comicId] = $details;
+        if (!isset($details['charaktere']) || !is_array($details['charaktere']) || !in_array($characterId, $details['charaktere'])) {
+            continue;
         }
+
+        $characterComics[$comicId] = $details;
     }
 }
 krsort($characterComics);

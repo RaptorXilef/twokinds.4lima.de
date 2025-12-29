@@ -343,36 +343,66 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
                     ?>
 
 <?php
-// --- ABSOLUT SICHERE DEBUG-HILFE FÜR SOCIAL MEDIA ---
+// --- UNIVERSALER SOCIAL MEDIA DEBUGGER (v6.4.0) ---
 if ($debugMode) {
     echo "<div class='debug-box' style='background: #1a1a1a; color: #00ff00; padding: 15px; border: 2px dashed #00ff00; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.6; border-radius: 8px;'>";
     echo "<strong style='color: #fff; border-bottom: 1px solid #555; display: block; margin-bottom: 10px;'>🔍 Social Media Image Debug</strong>";
 
-    // 1. Die reine URL (für die Crawler)
-    echo "<strong>Public URL:</strong> " . htmlspecialchars($ogImage ?: '--- LEER ---') . "<br>";
+    $displayImage = null;
+    $statusType = 'none'; // 'specific', 'fallback', 'none'
 
-    // 2. Pfad-Berechnung korrigieren
-    // Zuerst den Query-String (?c=...) entfernen, falls vorhanden
-    $cleanOgImage = explode('?', $ogImage)[0];
+    // 1. Prüfung: Spezifisches Bild ($ogImage)
+    if (!empty($ogImage)) {
+        $cleanOg = explode('?', $ogImage)[0];
+        $relOg = str_replace(DIRECTORY_PUBLIC_URL, '', $cleanOg);
+        $pathOg = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relOg, '/\\'));
 
-    // Relativen Teil extrahieren
-    $relativePart = str_replace(DIRECTORY_PUBLIC_URL, '', $cleanOgImage);
+        echo "<strong>Public URL (Spezifisch):</strong> " . htmlspecialchars($ogImage) . "<br>";
 
-    // Pfad für das Betriebssystem säubern (Slashes zu Backslashes auf Windows)
-    $localPath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relativePart, '/\\');
-    $localPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $localPath);
-
-    echo "<strong>Bereinigter Server-Pfad:</strong> " . htmlspecialchars($localPath) . "<br>";
-
-    if (!empty($ogImage) && file_exists($localPath)) {
-        echo "<span style='color: #00ff00; font-weight: bold;'>✔ DATEI GEFUNDEN:</span> Crawler können das Bild laden.";
-    } else {
-        echo "<span style='color: #ff3333; font-weight: bold;'>✘ DATEI NICHT GEFUNDEN:</span> ";
-        if (str_contains($ogImage, '?')) {
-            echo "Der Query-String wurde für die Prüfung ignoriert.";
+        if (file_exists($pathOg)) {
+            echo "<span style='color: #00ff00;'>✔ SPEZIFISCHES BILD GEFUNDEN.</span><br>";
+            $displayImage = $ogImage;
+            $statusType = 'specific';
+        } else {
+            echo "<span style='color: #ff3333;'>✘ SPEZIFISCHES BILD FEHLT AUF SERVER.</span><br>";
         }
-        echo "<br><small style='color: #aaa;'>Tipp: Prüfe, ob DIRECTORY_PUBLIC_URL exakt mit dem Pfad in der URL übereinstimmt.</small>";
+    } else {
+        echo "<strong>Public URL:</strong> <span style='color: #aaa;'>--- LEER ---</span><br>";
     }
+
+    // 2. Prüfung: Fallback (nur wenn spezifisches Bild fehlt oder leer ist)
+    if ($statusType === 'none') {
+        echo "<hr style='border: 0; border-top: 1px solid #333; margin: 10px 0;'>";
+        if (defined('DEFAULT_SOCIAL_IMAGE') && !empty(DEFAULT_SOCIAL_IMAGE)) {
+            $cleanFb = explode('?', DEFAULT_SOCIAL_IMAGE)[0];
+            $relFb = str_replace(DIRECTORY_PUBLIC_URL, '', $cleanFb);
+            $pathFb = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relFb, '/\\'));
+
+            echo "<strong>Nutze Fallback aus DEFAULT_SOCIAL_IMAGE:</strong><br>";
+            echo htmlspecialchars(DEFAULT_SOCIAL_IMAGE) . "<br>";
+
+            if (file_exists($pathFb)) {
+                echo "<span style='color: #00ff00;'>✔ FALLBACK-BILD GEFUNDEN.</span><br>";
+                $displayImage = DEFAULT_SOCIAL_IMAGE;
+                $statusType = 'fallback';
+            } else {
+                echo "<span style='color: #ff3333;'>✘ AUCH FALLBACK-BILD FEHLT AUF SERVER.</span><br>";
+            }
+        } else {
+            echo "<span style='color: #ff3333;'>✘ KEIN FALLBACK DEFINIERT (DEFAULT_SOCIAL_IMAGE).</span><br>";
+        }
+    }
+
+    // 3. Visuelle Einbindung & Abschluss-Meldung
+    echo "<div style='margin-top: 15px; padding-top: 10px; border-top: 1px solid #333;'>";
+    if ($displayImage) {
+        echo "<strong style='color: #fff;'>Vorschau (Crawler-Ansicht):</strong><br>";
+        echo "<img src='" . htmlspecialchars($displayImage) . "' style='max-width: 100%; border: 1px solid #555; margin-top: 10px; background: #000;'>";
+    } else {
+        echo "<span style='color: #ff3333; font-weight: bold; font-size: 14px;'>CRITICAL: KEIN BILD VERFÜGBAR!</span><br>";
+        echo "<small style='color: #aaa;'>Crawler werden kein Vorschaubild anzeigen.</small>";
+    }
+    echo "</div>";
 
     echo "</div>";
 }
