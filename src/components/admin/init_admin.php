@@ -42,6 +42,7 @@
  *
  * - Zusammenführung von Session-Stabilität und High-Security Headern.
  * - Optimierte CSP für Summernote-Support und Google Analytics.
+ * - Wiederherstellung der automatischen Verzeichniserstellung
  */
 
 // Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
@@ -50,12 +51,31 @@ $callingScript = basename($_SERVER['PHP_SELF']);
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Zentrale Pfade und Konstanten laden
+// 1. Zentrale Konfiguration laden
 require_once __DIR__ . '/../load_config.php';
 
 $isLoginPage = ($callingScript === 'index.php');
 
+// --- SESSION-PFAD & ORDNER-CHECK ---
+try {
+    $sessionSavePath = Path::getSecretPath('sessions');
+    if (!is_dir($sessionSavePath)) {
+        // Erstellt den Ordner mit rwx für den Besitzer (PHP)
+        if (!mkdir($sessionSavePath, 0755, true)) {
+            error_log("FEHLER: Session-Ordner konnte nicht erstellt werden: " . $sessionSavePath);
+        }
+    }
+    if (is_dir($sessionSavePath)) {
+        session_save_path($sessionSavePath);
+    }
+} catch (Exception $e) {
+    error_log("FEHLER beim Session-Pfad: " . $e->getMessage());
+}
+
 // --- HILFSFUNKTION: SESSION-VERNICHTUNG ---
+/**
+ * Hilfsfunktion zur vollständigen Zerstörung der Session (Server & Browser).
+ */
 if (!function_exists('destroy_admin_session')) {
     /**
      * Eliminiert die Session auf dem Server und erzwingt das Löschen des Browser-Cookies.
@@ -86,7 +106,7 @@ if (!function_exists('destroy_admin_session')) {
     }
 }
 
-// --- 1. SICHERHEITS-HEADER & CSP ---
+// --- 2. SICHERHEITS-HEADER & CSP ---
 // Einmalige Nonce für diesen Request generieren
 $nonce = bin2hex(random_bytes(16));
 
@@ -115,7 +135,7 @@ header("Referrer-Policy: strict-origin-when-cross-origin");
 header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
 header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
 
-// --- 2. SESSION-KONFIGURATION ---
+// --- 3. SESSION-KONFIGURATION ---
 // PHP Garbage Collection Zeit mit dem Timeout synchronisieren
 ini_set('session.gc_maxlifetime', (string)(SESSION_TIMEOUT_SECONDS + 60));
 
@@ -131,12 +151,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- 3. SESSION PROTECTION (Rotation & Fingerprint) ---
+// --- 4. SESSION PROTECTION (Rotation & Fingerprint) ---
 // Session-ID regelmäßig erneuern (Schutz vor Fixation)
 if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
-if (time() - $_SESSION['last_regeneration'] > 900) {
+// Nutzt SESSION_REGENERATION_SECOUNDS aus deiner Config
+$regenTime = defined('SESSION_REGENERATION_SECOUNDS') ? SESSION_REGENERATION_SECOUNDS : 900;
+if (time() - $_SESSION['last_regeneration'] > $regenTime) {
     session_regenerate_id(true);
     $_SESSION['last_regeneration'] = time();
 }
@@ -173,7 +195,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     }
 }
 
-// --- 4. CSRF-SCHUTZ ---
+// --- 5. CSRF-SCHUTZ ---
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -204,7 +226,7 @@ if (!function_exists('verify_csrf_token')) {
     }
 }
 
-// --- 5. LOGOUT-LOGIK ---
+// --- 6. LOGOUT-LOGIK ---
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     $csrfValid = verify_csrf_token(true);
     destroy_admin_session();
@@ -213,7 +235,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     exit;
 }
 
-// --- 6. GATEKEEPER FÜR INTERNE SEITEN ---
+// --- 7. GATEKEEPER FÜR INTERNE SEITEN ---
 if (!$isLoginPage) {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
         // Falls ein Cookie da ist, aber die Session-Daten fehlen -> Cleanup!
