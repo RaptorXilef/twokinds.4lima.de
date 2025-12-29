@@ -51,6 +51,13 @@ $callingScript = basename($_SERVER['PHP_SELF']);
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
+if ($debugMode === false) {
+    ini_set('display_errors', '0');
+    ini_set('display_startup_errors', '0');
+    error_reporting(E_ALL); // Intern alles loggen...
+    ini_set('log_errors', '1'); // ...aber in eine Datei schreiben, nicht auf den Bildschirm.
+}
+
 // 1. Zentrale Konfiguration laden
 require_once __DIR__ . '/../load_config.php';
 
@@ -128,12 +135,17 @@ foreach ($csp as $directive => $sources) {
     $cspHeader .= $directive . " " . implode(" ", $sources) . "; ";
 }
 
+header_remove("X-Powered-By");
 header("Content-Security-Policy: " . trim($cspHeader));
 header("X-Content-Type-Options: nosniff");
 header("X-Frame-Options: SAMEORIGIN");
 header("Referrer-Policy: strict-origin-when-cross-origin");
 header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
-header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+header("Strict-Transport-Security: max-age=300; includeSubDomains; preload");
+/* Wenn Homepage finalisiert, austauschen mit folgendem, um den HTTPS Zwang auf ein Jahr zu setzen */
+/* Achtung! Einmal gesetzt und mit einem Browser aufgerufen, gibt es kein zurück mehr! */
+// header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+// https://hstspreload.org/?domain=twokinds.4lima.de#submission-form
 
 // --- 3. SESSION-KONFIGURATION ---
 // PHP Garbage Collection Zeit mit dem Timeout synchronisieren
