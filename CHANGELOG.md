@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.20](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.19...v5.0.0-alpha.20) (2025-12-30)
+
+
+### Bug Fixes
+
+* **admin:** prevent HTML output pollution in API responses and add buffering ([4bcf416](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4bcf416b41ac8c7e623b33418ac4ee05aecb54ad))
+* **summernote:** fix report buttons design ([1144718](https://github.com/RaptorXilef/twokinds.4lima.de/commit/11447182f68683ac432accd6f6acfb4f366548eb))
+
 ## [5.0.0-alpha.19](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.18...v5.0.0-alpha.19) (2025-12-30)
 
 
