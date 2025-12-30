@@ -45,13 +45,19 @@
  * - Wiederherstellung der automatischen Verzeichniserstellung
  */
 
-// Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
+declare(strict_types=1);
+
+// 0. Output-Buffering starten (Verhindert "Headers already sent" und fängt versehentlichen Output ab)
+ob_start();
+
+// Der Dateiname des aufrufenden Skripts für Debug-Zwecke
 $callingScript = basename($_SERVER['PHP_SELF']);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-if ($debugMode === false) {
+// Fehleranzeige im Produktivbetrieb unterdrücken
+if (!$debugMode) {
     ini_set('display_errors', '0');
     ini_set('display_startup_errors', '0');
     error_reporting(E_ALL); // Intern alles loggen...
@@ -61,6 +67,8 @@ if ($debugMode === false) {
 // 1. Zentrale Konfiguration laden
 require_once __DIR__ . '/../load_config.php';
 
+// Konstanten-Check (API-Modus?)
+$isApiCall = defined('IS_API_CALL') && IS_API_CALL === true;
 $isLoginPage = ($callingScript === 'index.php');
 
 // --- SESSION-PFAD & ORDNER-CHECK ---
@@ -84,10 +92,10 @@ try {
  * Hilfsfunktion zur vollständigen Zerstörung der Session (Server & Browser).
  */
 if (!function_exists('destroy_admin_session')) {
-    /**
+        /**
      * Eliminiert die Session auf dem Server und erzwingt das Löschen des Browser-Cookies.
      */
-    function destroy_admin_session()
+    function destroy_admin_session(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -119,11 +127,11 @@ $nonce = bin2hex(random_bytes(16));
 
 $csp = [
     'default-src' => ["'self'"],
-    'script-src'  => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"],
-    'style-src'   => ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-    'font-src'    => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+    'script-src'  => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co"],
+    'style-src'   => ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://code.jquery.com/"],
+    'font-src'    => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://twokinds.4lima.de"],
     'img-src'     => ["'self'", "data:", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://placehold.co"],
-    'connect-src' => ["'self'", "https://cdn.jsdelivr.net", "https://*.google-analytics.com"],
+    'connect-src' => ["'self'", "https://cdn.jsdelivr.net", "https://*.google-analytics.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com"],
     'object-src'  => ["'none'"],
     'frame-ancestors' => ["'self'"],
     'base-uri'    => ["'self'"],
@@ -183,6 +191,12 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     // Check 1: Fingerprint (Hijacking-Schutz)
     if (!isset($_SESSION['session_fingerprint']) || $_SESSION['session_fingerprint'] !== $sessionIdentifier) {
         destroy_admin_session();
+        if ($isApiCall) {
+            header('Content-Type: application/json');
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'session_hijacked']);
+            exit;
+        }
         header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_hijacked');
         exit;
     }
@@ -191,7 +205,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     $phpTimeout = SESSION_TIMEOUT_SECONDS + 30; // 30s Grace Period für AJAX/JS
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $phpTimeout)) {
         destroy_admin_session();
-        if (defined('IS_API_CALL') && IS_API_CALL === true) {
+        if ($isApiCall) {
             header('Content-Type: application/json');
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'session_expired']);
@@ -216,14 +230,14 @@ if (!function_exists('verify_csrf_token')) {
     /**
      * Validiert das CSRF-Token für POST, GET oder AJAX-Header.
      */
-    function verify_csrf_token($isLogoutContext = false)
+    function verify_csrf_token(bool $isLogoutContext = false): bool
     {
         $token = $_POST['csrf_token'] ?? $_GET['token'] ?? null;
 
         // AJAX Fallback
         if (!$token && function_exists('getallheaders')) {
             $headers = getallheaders();
-            $token = $headers['X-Csrf-Token'] ?? null;
+            $token = $headers['X-Csrf-Token'] ?? $headers['x-csrf-token'] ?? null;
         }
 
         // Logout ist fehlertolerant (falls Session bereits weg)
@@ -253,20 +267,36 @@ if (!$isLoginPage) {
         // Falls ein Cookie da ist, aber die Session-Daten fehlen -> Cleanup!
         if (isset($_COOKIE[session_name()])) {
             destroy_admin_session();
+            if ($isApiCall) {
+                header('Content-Type: application/json');
+                http_response_code(401);
+                echo json_encode(['success' => false, 'error' => 'auth_required']);
+                exit;
+            }
             header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_expired');
         } else {
+            if ($isApiCall) {
+                header('Content-Type: application/json');
+                http_response_code(401);
+                echo json_encode(['success' => false, 'error' => 'auth_required']);
+                exit;
+            }
             header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php');
         }
         exit;
     }
 
-    // JS-Brücke: Übergabe der Timeout-Konfiguration an session_timeout.js
-    if (!defined('IS_API_CALL') || IS_API_CALL !== true) {
-        echo '<script nonce="' . htmlspecialchars($nonce) . '">';
-        echo 'window.sessionConfig = {
+    // STRIKTE TRENNUNG: JS-Brücke nur wenn KEIN API-Call
+    if (!$isApiCall) {
+        // Sicherstellen, dass der Puffer vor der Script-Ausgabe leer ist,
+        // falls andere Komponenten bereits unabsichtlich etwas ausgegeben haben.
+        ob_clean();
+
+        echo '<script nonce="' . htmlspecialchars($nonce) . '">
+            window.sessionConfig = {
                 timeoutSeconds: ' . (int)SESSION_TIMEOUT_SECONDS . ',
                 warningSeconds: ' . (int)SESSION_WARNING_SECONDS . '
-              };';
-        echo '</script>';
+            };
+        </script>';
     }
 }
