@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.19](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.18...v5.0.0-alpha.19) (2025-12-30)
+
+
+### Features
+
+* **characters:** implement interactive view toggle for character display ([ba22971](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ba22971edf120b1358a1d5575f1b9757dd9d8c08))
+* **characters:** implement prioritized logic control for interactive views ([e5f0992](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e5f09929f783667bd062e513d4a48110732413c9))
+* **characters:** implement sorted tag-based display using existing SCSS grid ([a419b0f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a419b0f83eb758bcdbe576a2383c4f9a62f2b9a1))
+* **characters:** implement sorted tag-based view with interactive toggle ([3d9962d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3d9962dea8e0766b9d0f3b2e4e06230c4fbad70a))
+* **debug:** upgrade social media debugger with fallback logic and image preview ([bb30e9e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/bb30e9ea900b6992eef1f91faf81eb24aef433d3))
+
+
+### Bug Fixes
+
+* **characters:** achieve 100% UI perfection with unified tag alignment ([13dbb69](https://github.com/RaptorXilef/twokinds.4lima.de/commit/13dbb699f99f73ddd4b37a04480d206e49096fdb))
+* **characters:** reach 100% perfection with centered grid and row-synced tags ([1c44823](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1c448236a2ddb3739b7b1e83a8d885831b203b59))
+* **characters:** restore centering and implement row-based tag alignment ([5e12133](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5e121334a519e3bfe3f021705546bf953ad451b3))
+
 ## [5.0.0-alpha.18](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.17...v5.0.0-alpha.18) (2025-12-29)
 
 
