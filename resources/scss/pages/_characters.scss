@@ -393,76 +393,44 @@ body.theme-night .character-group h4 {
 }
 
 .character-group-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    display: grid;
+    // Erzeugt das Gitter; auto-fill füllt die Zeile, minmax sorgt für Responsivität
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 30px 20px;
     justify-content: center;
+    align-items: stretch; // Alle Items einer Zeile werden gleich hoch
     padding: 20px;
 }
 
 .character-item {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; // Zentriert Bilder und Namen horizontal
     width: 120px;
     text-align: center;
 
-    .character-name {
-        display: flex;
-        align-items: flex-start; // Richtet Namen oben am reservierten Raum aus
-        justify-content: center;
-        width: 100%;
-        min-height: 3.8em; // Reserviert Platz für ca. 3 Zeilen (längster Name)
-        margin-top: 8px;
-        margin-bottom: 5px;
-        font-size: 0.9em;
-        font-weight: bold;
-        line-height: 1.2;
-        overflow-wrap: break-word;
-    }
-
+    // Der Link muss selbst ein Flex-Container sein, um das Wachstum zu kontrollieren
     a {
-        display: block;
-        max-width: 100%;
-        color: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center; // Zentriert Bild und Text im Link
+        flex-grow: 1; // Füllt die gesamte Höhe der Grid-Zelle aus
+        width: 100%;
         text-decoration: none;
-        transition: transform 0.2s ease-in-out;
+        color: inherit;
+        transition: transform 0.3s ease-in-out;
 
         &:hover {
             transform: translateY(-5px);
-
             .character-name {
-                text-decoration: underline;
+                text-decoration: none;
             }
         }
     }
 
-    /* --- Ergänzung für den Charakter-Tag-Modus --- */
-    .character-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        justify-content: center;
-        width: 100%; // Nutzt die volle Breite des Items (120px)
-        margin-top: 5px;
-
-        .char-tag {
-            display: inline-block;
-            max-width: 100%; // Verhindert das Überlaufen aus dem Item
-            padding: 2px 8px;
-            font-size: 0.7em;
-            font-weight: bold;
-            color: var(--text-color-light);
-            background-color: var(--table-header-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 10px;
-
-            /* --- Umbruch-Logik für lange Tags --- */
-            white-space: normal; // Erlaubt Zeilenumbruch statt Abschneiden
-            overflow-wrap: anywhere; // Erzwingt Umbruch bei "-" oder "_" wenn nötig
-            line-height: 1.1;
-            text-align: center;
-        }
+    .character-avatar-container {
+        flex-shrink: 0; // Bild darf nicht gestaucht werden
+        margin-bottom: 8px;
     }
 
     img,
@@ -475,10 +443,51 @@ body.theme-night .character-group h4 {
         border-radius: 50%;
         box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
     }
+
+    .character-name {
+        display: flex;
+        align-items: center; // Zentriert den Namen vertikal im verfügbaren Raum
+        justify-content: center;
+        //flex-grow: 1; // Nimmt den kompletten Platz zwischen Bild und Tags ein
+        margin: 0;
+        font-size: 0.9em;
+        font-weight: bold;
+        line-height: 1.2;
+        overflow-wrap: break-word;
+        padding-top: 7px;
+    }
+
+    /* --- Ergänzung für den Charakter-Tag-Modus --- */
+    .character-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+        margin-top: auto; // Drückt die Tags an das absolute Ende des Items (Baseline)
+        padding-top: 10px; // Abstand zum Namen
+        width: 100%;
+
+        .char-tag {
+            display: inline-block;
+            max-width: 100%;
+            padding: 2px 8px;
+            font-size: 0.7em;
+            font-weight: bold;
+            color: var(--text-color-light);
+            background-color: var(--table-header-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height: 1.1;
+            text-align: center;
+        }
+    }
 }
 
+/* Theme-spezifische Anpassungen */
 body.theme-night .character-item img,
-body.theme-night .character-image-fallback {
+body.theme-night .character-item .character-image-fallback {
     background-color: var(--characters-area-bg);
     border-color: var(--border-light);
 }

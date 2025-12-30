@@ -85,6 +85,7 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
 
         <div class="char-view-section view-tags">
             <div class="character-group">
+                <h4>Alle Charaktere (alphabetisch sortiert)</h4>
                 <?php
                 // --- SORTIERLOGIK ---
                 $mainCharIds = $charaktereData['groups']['Hauptcharaktere'] ?? [];
@@ -129,9 +130,11 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
                         ?>
                         <div class="character-item">
                             <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
-                                <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                <div class="char-avatar-container">
+                                    <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                </div>
                                 <span class="character-name"><?= htmlspecialchars($char['name']); ?></span>
-                            </a>
+
                             <div class="character-tags">
                                 <?php if (isset($tagsMap[$char['id']])) :
                                     foreach ($tagsMap[$char['id']] as $tagName) : ?>
@@ -139,6 +142,7 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
                                     <?php endforeach;
                                 endif; ?>
                             </div>
+                            </a>
                         </div>
                     <?php endforeach; ?>
                 </div>
