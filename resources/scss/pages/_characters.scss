@@ -408,6 +408,10 @@ body.theme-night .character-group h4 {
     width: 120px;
     text-align: center;
 
+    &:hover img {
+        border-color: #007bff;
+    }
+
     a {
         display: flex;
         flex-direction: column;
@@ -456,6 +460,13 @@ body.theme-night .character-group h4 {
         overflow-wrap: break-word;
     }
 
+    // Hover-Interaktion verfeinern
+    &:hover .character-tags .char-tag {
+        opacity: 1;
+        border-color: var(--link-color); // Leichter Akzent beim Hover
+        //background-color: var(--button-hover-bg);
+    }
+
     /* --- Die perfekt ausgerichtete Tag-Sektion --- */
     .character-tags {
         display: flex;
@@ -475,7 +486,7 @@ body.theme-night .character-group h4 {
             font-size: 0.7em;
             font-weight: bold;
             color: var(--text-color-light);
-            background-color: var(--table-header-bg);
+            background-color: var(--menu-bg); // --button-bg
             border: 1px solid var(--border-light);
             border-radius: 10px;
             white-space: normal;
@@ -491,6 +502,11 @@ body.theme-night .character-item img,
 body.theme-night .character-item .character-image-fallback {
     background-color: var(--characters-area-bg);
     border-color: var(--border-light);
+}
+
+body.theme-night .character-item:hover img,
+body.theme-night .character-item:hover .character-image-fallback {
+    border-color: #007bff;
 }
 
 /* --- Polierter Charakter-Umschalter (v6.5.1) --- */
@@ -564,10 +580,4 @@ body.theme-night .comic-characters-container {
     i {
         margin-right: 6px;
     }
-}
-
-// Hover-Interaktion verfeinern
-.character-item:hover .char-tag {
-    opacity: 1;
-    border-color: var(--link-color); // Leichter Akzent beim Hover
 }
