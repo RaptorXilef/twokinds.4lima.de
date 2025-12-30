@@ -75,6 +75,21 @@ body.theme-night .note-editor.note-frame .note-toolbar {
     border: 1px solid transparent;
 }
 
+.form-group .note-editor.note-frame .note-btn {
+    padding: 2px;
+    font-size: 1.3rem;
+    width: auto;
+    font-weight: 200;
+}
+
+.form-group .note-editor.note-frame {
+    text-align: left;
+}
+
+.original-transcript-box .transcript-display-box {
+    text-align: left;
+}
+
 // Hover ZUERST (Niedrigere Spezifität)
 .note-editor.note-frame .note-btn:hover,
 .note-editor.note-frame .note-btn:focus,
