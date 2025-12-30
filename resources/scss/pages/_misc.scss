@@ -136,6 +136,7 @@
     ul {
         list-style-type: disc;
     }
+
     ol {
         list-style-type: decimal;
     }
@@ -144,10 +145,10 @@
         padding: 2px 6px;
         font-family: var(--font-mono, monospace);
         font-size: 0.9em;
+        word-break: break-all; // Wichtig für lange URLs auf Mobile
         background-color: var(--table-row-even, #f4f4f4);
         border: 1px solid var(--border-medium);
         border-radius: 4px;
-        word-break: break-all; // Wichtig für lange URLs auf Mobile
     }
 }
 
@@ -186,8 +187,8 @@
 
     &:hover {
         background-color: var(--button-hover-bg);
-        transform: translateY(-1px);
         box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        transform: translateY(-1px);
     }
 
     &:active {

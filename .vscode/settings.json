@@ -112,7 +112,7 @@
   // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
   "files.eol": "\n",
   // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
-  "diffEditor.ignoreTrimWhitespace": true,
+  "diffEditor.ignoreTrimWhitespace": false,
   "diffEditor.codeLens": true,
   "diffEditor.experimental.showMoves": true,
   "diffEditor.maxComputationTime": 30000,

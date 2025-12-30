@@ -74,7 +74,8 @@
     background-color: #dc3545;
     border-radius: 10px;
     opacity: 0.3;
-    //filter: grayscale(1);
+
+    // filter: grayscale(1);
 }
 
 // --- AKTIVZUSTAND (VORHANDEN) ---
@@ -312,7 +313,8 @@ body.theme-night .progress-text {
 }
 
 /* --- Collapsibles --- */
-/*.collapsible-section {
+
+/* .collapsible-section {
     // margin-bottom: 20px;
     overflow: hidden;
     background-color: var(--content-box-bg); //--content-bg
@@ -323,7 +325,7 @@ body.theme-night .progress-text {
 body.theme-night .collapsible-section {
     background-color: var(--content-box-bg); // --sidebar-bg
     border-color: var(--border-light);
-}*/
+} */
 
 .collapsible-header {
     display: flex;
@@ -347,9 +349,9 @@ body.theme-night .collapsible-section {
     }
 }
 
-//.collapsible-header .arrow-left {
+// .collapsible-header .arrow-left {
 // Siehe main-container .arrow-left in _ui.scss
-//}
+// }
 
 body.theme-night .collapsible-header {
     border-bottom-color: var(--border-light);

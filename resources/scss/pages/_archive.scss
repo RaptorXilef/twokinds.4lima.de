@@ -55,8 +55,8 @@
         color: var(--text-color-light);
 
         a {
-            color: var(--text-on-medium); // Im Original Schwarz/Dunkelgrau
             font-weight: 700;
+            color: var(--text-on-medium); // Im Original Schwarz/Dunkelgrau
         }
     }
 }
@@ -105,8 +105,8 @@ body.theme-night .chapter h2:hover {
     flex-shrink: 0; // Verhindert das Quetschen des Symbols
     margin-right: 10px;
     content: '►'; // Als führender optischer Pfeil, der auf die Überschrift zeigt
-    //transform: rotate(90deg);
-    //transition: transform 0.2s;
+    // transform: rotate(90deg);
+    // transition: transform 0.2s;
 }
 
 // Status: Eingeklappt (Pfeil nach rechts)

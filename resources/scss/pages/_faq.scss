@@ -121,23 +121,23 @@ body.theme-night .faq-question {
 
 // Der Inhalts-Wrapper
 .faq-answer-inner {
+    box-sizing: border-box;
     min-height: 0; // Wichtig für Grid-Kollaps
     padding: 0 25px; // NUR horizontales Padding (löst keinen Grafikbug aus)
     border-left: 2px solid var(--border-medium);
-    box-sizing: border-box;
 }
 
 // Abstände innerhalb der Antwort
 .faq-answer p {
-    margin: 0 0 15px;
     padding: 0;
+    margin: 0 0 15px;
 
     &:first-child {
         padding-top: 15px;
     }
 
     &:last-child {
-        margin-bottom: 0;
         padding-bottom: 15px;
+        margin-bottom: 0;
     }
 }

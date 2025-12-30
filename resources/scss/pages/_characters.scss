@@ -103,8 +103,8 @@
     margin-bottom: 0;
     font-size: 0.9em;
     font-style: italic;
-    text-align: center;
     color: #555;
+    text-align: center;
 }
 
 // Ribbon Icon
@@ -396,8 +396,8 @@ body.theme-night .character-group h4 {
     display: flex;
     flex-wrap: wrap; // Erlaubt das Umbrechen in neue Zeilen
     gap: 35px 32px; // Zeilenabstand 35px, Spalten 20px
-    justify-content: center; // ZENTRIERT die letzte Reihe perfekt mittig!
     align-items: stretch; // Macht alle Items EINER Zeile gleich hoch
+    justify-content: center; // ZENTRIERT die letzte Reihe perfekt mittig!
     padding: 20px;
 }
 
@@ -414,16 +414,17 @@ body.theme-night .character-group h4 {
 
     a {
         display: flex;
+        flex-grow: 1; // Füllt die Höhe der Zeile innerhalb des Links aus
         flex-direction: column;
         align-items: center;
-        flex-grow: 1; // Füllt die Höhe der Zeile innerhalb des Links aus
         width: 100%;
-        text-decoration: none;
         color: inherit;
+        text-decoration: none;
         transition: transform 0.3s ease-in-out;
 
         &:hover {
             transform: translateY(-5px);
+
             .character-name {
                 text-decoration: none;
             }
@@ -448,12 +449,12 @@ body.theme-night .character-group h4 {
 
     .character-name {
         display: flex;
+        flex-grow: 1; // Füllt den Raum zum Tag-Bereich auf
         align-items: flex-start; // Name klebt direkt unter dem Bild
         justify-content: center;
-        flex-grow: 1; // Füllt den Raum zum Tag-Bereich auf
         width: 100%;
-        margin: 0;
         padding-top: 5px;
+        margin: 0;
         font-size: 0.9em;
         font-weight: bold;
         line-height: 1.2;
@@ -462,37 +463,38 @@ body.theme-night .character-group h4 {
 
     // Hover-Interaktion verfeinern
     &:hover .character-tags .char-tag {
-        opacity: 1;
         border-color: var(--link-color); // Leichter Akzent beim Hover
-        //background-color: var(--button-hover-bg);
+        opacity: 1;
+        // border-color: #8be1f3;
+        // background-color: var(--button-hover-bg);
     }
 
     /* --- Die perfekt ausgerichtete Tag-Sektion --- */
     .character-tags {
         display: flex;
         flex-direction: column; // Tags untereinander für einheitliche Breite
-        align-items: center;
         gap: 4px;
+        align-items: center;
         width: 100%;
-        margin-top: 15px; // Abstand zum Namen
         padding-top: 0; // Tags fangen oben an der Linie an
+        margin-top: 15px; // Abstand zum Namen
         border-top: 1px transparent;
 
         .char-tag {
+            box-sizing: border-box;
             display: block;
             width: 100%; // Alle Tags exakt 120px breit
-            box-sizing: border-box;
             padding: 3px 4px;
             font-size: 0.7em;
             font-weight: bold;
+            line-height: 1.1;
             color: var(--text-color-light);
+            text-align: center;
+            overflow-wrap: anywhere;
+            white-space: normal;
             background-color: var(--menu-bg); // --button-bg
             border: 1px solid var(--border-light);
             border-radius: 10px;
-            white-space: normal;
-            overflow-wrap: anywhere;
-            line-height: 1.1;
-            text-align: center;
         }
     }
 }
@@ -507,6 +509,12 @@ body.theme-night .character-item .character-image-fallback {
 body.theme-night .character-item:hover img,
 body.theme-night .character-item:hover .character-image-fallback {
     border-color: #007bff;
+}
+
+body.theme-night .character-item .character-tags .char-tag {
+    color: #8be1f3;
+
+    // color: var(--link-color);
 }
 
 /* --- Polierter Charakter-Umschalter (v6.5.1) --- */
@@ -537,8 +545,9 @@ body.theme-night .character-item:hover .character-image-fallback {
         #toggle-char-view {
             grid-column: 3; // Der Button sitzt rechts
             justify-self: end;
-            font-size: 0.8em;
             padding: 5px 12px;
+            font-size: 0.8em;
+
             i {
                 margin-right: 6px;
             }
@@ -549,9 +558,11 @@ body.theme-night .character-item:hover .character-image-fallback {
     .char-view-section {
         display: none;
     }
+
     &[data-active-view='tags'] .view-tags {
         display: block;
     }
+
     &[data-active-view='grouped'] .view-grouped {
         display: block;
     }
@@ -569,14 +580,15 @@ body.theme-night .comic-characters-container {
 
 // Kleinere Button-Anpassung für den Umschalter
 #toggle-char-view {
-    font-size: 0.8em;
     padding: 5px 12px;
+    font-size: 0.8em;
     background-color: var(--button-bg); //
     border: 1px solid var(--border-medium);
 
     &:hover {
         background-color: var(--button-hover-bg);
     }
+
     i {
         margin-right: 6px;
     }

@@ -41,11 +41,9 @@
     /* Wir nutzen hier nur WOFF2, da alle modernen Browser das können.
      Das TTF ist als Fallback optional, aber meist nicht mehr nötig. */
     src:
-        url('#{$base-url}/assets/fonts/noto-sans-mono-v37-latin-regular.woff2')
-            format('woff2'),
+        url('#{$base-url}/assets/fonts/noto-sans-mono-v37-latin-regular.woff2') format('woff2'),
         /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-            url('#{$base-url}/assets/fonts/NotoSansMono-Regular.ttf')
-            format('truetype'); /* Chrome 4+, Firefox 3.5+, IE 9+, Safari 3.1+, iOS 4.2+, Android Browser 2.2+ */
+            url('#{$base-url}/assets/fonts/NotoSansMono-Regular.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5+, IE 9+, Safari 3.1+, iOS 4.2+, Android Browser 2.2+ */
 
     font-display: swap;
 }
@@ -57,8 +55,6 @@
     font-weight: 700;
 
     /* Hier binden wir die TTF ein, da Sie diese im Screenshot haben. */
-    src: url('#{$base-url}/assets/fonts/NotoSansMono-Bold.ttf')
-        format('truetype'); /* Chrome 4+, Firefox 3.5+, IE 9+, Safari 3.1+, iOS 4.2+, Android Browser 2.2+ */
-
+    src: url('#{$base-url}/assets/fonts/NotoSansMono-Bold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5+, IE 9+, Safari 3.1+, iOS 4.2+, Android Browser 2.2+ */
     font-display: swap;
 }
