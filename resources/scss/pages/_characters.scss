@@ -393,28 +393,26 @@ body.theme-night .character-group h4 {
 }
 
 .character-group-list {
-    display: grid;
-    // Erzeugt das Gitter; auto-fill füllt die Zeile, minmax sorgt für Responsivität
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 30px 20px;
-    justify-content: center;
-    align-items: stretch; // Alle Items einer Zeile werden gleich hoch
+    display: flex;
+    flex-wrap: wrap; // Erlaubt das Umbrechen in neue Zeilen
+    gap: 35px 32px; // Zeilenabstand 35px, Spalten 20px
+    justify-content: center; // ZENTRIERT die letzte Reihe perfekt mittig!
+    align-items: stretch; // Macht alle Items EINER Zeile gleich hoch
     padding: 20px;
 }
 
 .character-item {
     display: flex;
     flex-direction: column;
-    align-items: center; // Zentriert Bilder und Namen horizontal
+    align-items: center;
     width: 120px;
     text-align: center;
 
-    // Der Link muss selbst ein Flex-Container sein, um das Wachstum zu kontrollieren
     a {
         display: flex;
         flex-direction: column;
-        align-items: center; // Zentriert Bild und Text im Link
-        flex-grow: 1; // Füllt die gesamte Höhe der Grid-Zelle aus
+        align-items: center;
+        flex-grow: 1; // Füllt die Höhe der Zeile innerhalb des Links aus
         width: 100%;
         text-decoration: none;
         color: inherit;
@@ -429,8 +427,8 @@ body.theme-night .character-group h4 {
     }
 
     .character-avatar-container {
-        flex-shrink: 0; // Bild darf nicht gestaucht werden
-        margin-bottom: 8px;
+        flex-shrink: 0;
+        margin-bottom: 10px;
     }
 
     img,
@@ -446,31 +444,34 @@ body.theme-night .character-group h4 {
 
     .character-name {
         display: flex;
-        align-items: center; // Zentriert den Namen vertikal im verfügbaren Raum
+        align-items: flex-start; // Name klebt direkt unter dem Bild
         justify-content: center;
-        //flex-grow: 1; // Nimmt den kompletten Platz zwischen Bild und Tags ein
+        flex-grow: 1; // Füllt den Raum zum Tag-Bereich auf
+        width: 100%;
         margin: 0;
+        padding-top: 5px;
         font-size: 0.9em;
         font-weight: bold;
         line-height: 1.2;
         overflow-wrap: break-word;
-        padding-top: 7px;
     }
 
-    /* --- Ergänzung für den Charakter-Tag-Modus --- */
+    /* --- Die perfekt ausgerichtete Tag-Sektion --- */
     .character-tags {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column; // Tags untereinander für einheitliche Breite
+        align-items: center;
         gap: 4px;
-        justify-content: center;
-        margin-top: auto; // Drückt die Tags an das absolute Ende des Items (Baseline)
-        padding-top: 10px; // Abstand zum Namen
         width: 100%;
+        margin-top: 15px; // Abstand zum Namen
+        padding-top: 0; // Tags fangen oben an der Linie an
+        border-top: 1px transparent;
 
         .char-tag {
-            display: inline-block;
-            max-width: 100%;
-            padding: 2px 8px;
+            display: block;
+            width: 100%; // Alle Tags exakt 120px breit
+            box-sizing: border-box;
+            padding: 3px 4px;
             font-size: 0.7em;
             font-weight: bold;
             color: var(--text-color-light);

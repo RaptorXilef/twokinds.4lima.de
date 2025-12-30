@@ -135,13 +135,13 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
                                 </div>
                                 <span class="character-name"><?= htmlspecialchars($char['name']); ?></span>
 
-                            <div class="character-tags">
-                                <?php if (isset($tagsMap[$char['id']])) :
-                                    foreach ($tagsMap[$char['id']] as $tagName) : ?>
-                                        <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
-                                    <?php endforeach;
-                                endif; ?>
-                            </div>
+                                <div class="character-tags">
+                                    <?php if (isset($tagsMap[$char['id']])) :
+                                        foreach ($tagsMap[$char['id']] as $tagName) : ?>
+                                            <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
+                                        <?php endforeach;
+                                    endif; ?>
+                                </div>
                             </a>
                         </div>
                     <?php endforeach; ?>
