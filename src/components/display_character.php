@@ -40,17 +40,32 @@ if (file_exists($charaktereJsonPath)) {
 
 $pageCharaktereIDs = $comicData[$currentComicId]['charaktere'] ?? [];
 
-// Prüfen, ob wir uns auf einer Comicseite befinden (für den Umschalter)
-$isInteractiveComicPage = (isset($isComicPage) && $isComicPage);
+/**
+ * LOGIK-UMSCHALTER (v3.3.0)
+ * Priorität 1: Manuelles Flag $useCharacterTags (true/false)
+ * Priorität 2: Automatischer Comic-Seiten-Status ($isComicPage)
+ */
+$interactiveFlag = $useCharacterTags ?? null;
+
+if ($interactiveFlag === false) {
+    // Explizit deaktiviert (höchste Priorität)
+    $isInteractiveView = false;
+} elseif ($interactiveFlag === true || (isset($isComicPage) && $isComicPage)) {
+    // Aktiviert durch Flag ODER Comic-Seite
+    $isInteractiveView = true;
+} else {
+    // Standardmäßig (z.B. Admin) aus
+    $isInteractiveView = false;
+}
 
 if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
-    $showCharacterSectionTitle = $showCharacterSectionTitle ?? true;
+    $showCharacterSectionTitle = $showCharacterSectionTitle ?? true; // Setze die Variable, um die Standard-Überschrift "Charaktere auf dieser Seite:" in der Komponente ein- / auszublenden.
 
     // Standard-Ansicht festlegen (z.B. Tag-Modus als Standard für Comicseiten)
-    $activeMode = $isInteractiveComicPage ? 'tags' : 'grouped';
+    $activeMode = $isInteractiveView ? 'tags' : 'grouped';
     ?>
 
-    <div class="comic-characters-container <?= $isInteractiveComicPage ? 'interactive' : ''; ?>" id="char-display-wrapper" data-active-view="<?= $activeMode; ?>">
+    <div class="comic-characters-container <?= $isInteractiveView ? 'interactive' : ''; ?>" id="char-display-wrapper" data-active-view="<?= $activeMode; ?>">
 
         <div class="char-display-header">
             <div class="header-spacer"></div>
@@ -59,7 +74,7 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
                 <h3>Charaktere auf dieser Seite:</h3>
             <?php endif; ?>
 
-            <?php if ($isInteractiveComicPage) : ?>
+            <?php if ($isInteractiveView) : ?>
                 <button type="button" id="toggle-char-view" class="button button-small" title="Ansicht umschalten">
                     <i class="fas fa-th-list"></i> <span id="toggle-view-text">Gruppierte Ansicht</span>
                 </button>
@@ -70,58 +85,62 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
 
         <div class="char-view-section view-tags">
             <div class="character-group">
-            <?php
-            $mainCharIds = $charaktereData['groups']['Hauptcharaktere'] ?? [];
-            $mainList = [];
-            $otherList = [];
+                <?php
+                // --- SORTIERLOGIK ---
+                $mainCharIds = $charaktereData['groups']['Hauptcharaktere'] ?? [];
+                $mainList = [];
+                $otherList = [];
 
-            foreach ($pageCharaktereIDs as $id) {
-                if (!isset($charaktereData['characters'][$id])) {
-                    continue;
-                }
-                $char = $charaktereData['characters'][$id];
-                $char['id'] = $id;
-                if (in_array($id, $mainCharIds)) {
-                    $mainList[] = $char;
-                } else {
-                    $otherList[] = $char;
-                }
-            }
-
-            $sortFunc = fn($a, $b) => strcasecmp($a['name'], $b['name']);
-            usort($mainList, $sortFunc);
-            usort($otherList, $sortFunc);
-            $finalList = array_merge($mainList, $otherList);
-
-            $tagsMap = [];
-            foreach ($charaktereData['groups'] as $groupName => $idList) {
-                foreach ($idList as $id) {
-                    if (!in_array($id, $pageCharaktereIDs)) {
+                foreach ($pageCharaktereIDs as $id) {
+                    if (!isset($charaktereData['characters'][$id])) {
                         continue;
                     }
-
-                    $tagsMap[$id][] = $groupName;
+                    $char = $charaktereData['characters'][$id];
+                    $char['id'] = $id;
+                    if (in_array($id, $mainCharIds)) {
+                        $mainList[] = $char;
+                    } else {
+                        $otherList[] = $char;
+                    }
                 }
-            }
-            ?>
-            <div class="character-group-list">
-                <?php foreach ($finalList as $char) :
-                    $filename = str_replace(' ', '_', $char['name']);
-                    $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
-                    $img = !empty($char['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($char['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
-                    ?>
-                    <div class="character-item">
-                        <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
-                            <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
-                            <span class="character-name"><?= htmlspecialchars($char['name']); ?></span>
-                        </a>
-                        <div class="character-tags">
-                            <?php foreach ($tagsMap[$char['id']] as $tagName) : ?>
-                                <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
-                            <?php endforeach; ?>
+
+                $sortFunc = fn($a, $b) => strcasecmp($a['name'], $b['name']);
+                usort($mainList, $sortFunc);
+                usort($otherList, $sortFunc);
+                $finalList = array_merge($mainList, $otherList);
+
+                // --- TAG-MAPPING ---
+                $tagsMap = [];
+                foreach ($charaktereData['groups'] as $groupName => $idList) {
+                    foreach ($idList as $id) {
+                        if (!in_array($id, $pageCharaktereIDs)) {
+                            continue;
+                        }
+
+                        $tagsMap[$id][] = $groupName;
+                    }
+                }
+                ?>
+                <div class="character-group-list">
+                    <?php foreach ($finalList as $char) :
+                        $filename = str_replace(' ', '_', $char['name']);
+                        $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
+                        $img = !empty($char['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($char['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
+                        ?>
+                        <div class="character-item">
+                            <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
+                                <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                <span class="character-name"><?= htmlspecialchars($char['name']); ?></span>
+                            </a>
+                            <div class="character-tags">
+                                <?php if (isset($tagsMap[$char['id']])) :
+                                    foreach ($tagsMap[$char['id']] as $tagName) : ?>
+                                        <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
+                                    <?php endforeach;
+                                endif; ?>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
@@ -141,17 +160,16 @@ if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
                                         $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $file . $dateiendungPHP;
                                         $img = !empty($c['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($c['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
                                         ?>
-                                    <div class="character-item">
-                                        <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
-                                            <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                        <div class="character-item">
+                                            <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
+                                                <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
                                                 <span class="character-name"><?= htmlspecialchars($c['name']); ?></span>
-                                        </a>
+                                            </a>
                                         </div>
                                     <?php endif;
                                 endforeach; ?>
                             </div>
                         </div>
-
                     <?php endif;
                 endforeach; ?>
             </div>

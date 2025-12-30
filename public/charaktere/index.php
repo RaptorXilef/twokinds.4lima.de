@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Index-Seite für die Charakter-Übersicht.
  * Diese Seite lädt alle Charaktere aus der charaktere.json und zeigt sie
@@ -42,8 +43,8 @@ if (file_exists($charaktereJsonPath)) {
 $currentComicId = 'all_characters';
 $comicData = [
     $currentComicId => [
-        'charaktere' => $allCharacterIDs
-    ]
+        'charaktere' => $allCharacterIDs,
+    ],
 ];
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -65,8 +66,9 @@ require_once Path::getPartialTemplatePath('header.php');
 
     <?php
     // === 5. CHARAKTER-ANZEIGE KOMPONENTE EINBINDEN ===
-    // Setze die Variable, um die Standard-Überschrift in der Komponente auszublenden.
+    // Setze die Variable, um die Standard-Überschrift "Charaktere auf dieser Seite:" in der Komponente auszublenden.
     $showCharacterSectionTitle = false;
+    $useCharacterTags = true; // Aktiviert die neue Rollen-Anzeige
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
 
