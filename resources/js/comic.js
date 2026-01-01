@@ -42,20 +42,15 @@
 
     // === NEU: Konstanten für die Bild-Suche ===
     const reportModalImageEnId = 'report-modal-image-en';
-    const placeholderImageLoading =
-        'https://placehold.co/600x400/cccccc/333333?text=Original+wird+geladen...';
-    const placeholderImageNotFound =
-        'https://placehold.co/600x400/dc3545/ffffff?text=Original+nicht+gefunden';
+    const placeholderImageLoading = 'https://placehold.co/600x400/cccccc/333333?text=Original+wird+geladen...';
+    const placeholderImageNotFound = 'https://placehold.co/600x400/dc3545/ffffff?text=Original+nicht+gefunden';
     const originalImageUrlBase = 'https://cdn.twokinds.keenspot.com/comics/';
     const sketchImageUrlBase = 'https://twokindscomic.com/images/'; // Hinzugefügt für EN-Button
     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
     // === ENDE NEU ===
 
     // Debug-Modus
-    const debugModeJsComic =
-        typeof window.phpDebugMode !== 'undefined'
-            ? window.phpDebugMode
-            : false;
+    const debugModeJsComic = typeof window.phpDebugMode !== 'undefined' ? window.phpDebugMode : false;
 
     // === Bild-Suchlogik hier zentralisiert ===
     /**
@@ -69,9 +64,7 @@
         // und CSP (auf twokindscomic.com, da nicht in 'connect-src') blockiert.
         // new Image() respektiert 'img-src', was korrekt konfiguriert ist.
         if (debugModeJsComic) {
-            console.log(
-                `DEBUG: checkUrlExists (using Image() fallback only): ${url}`
-            );
+            console.log(`DEBUG: checkUrlExists (using Image() fallback only): ${url}`);
         }
         return new Promise((resolve) => {
             const img = new Image();
@@ -90,45 +83,25 @@
             try {
                 if (await checkUrlExists(url)) {
                     // Nutzt die lokale Funktion
-                    if (debugModeJsComic)
-                        console.log(
-                            `DEBUG: findExistingUrl SUCCESS for ${url}`
-                        );
+                    if (debugModeJsComic) console.log(`DEBUG: findExistingUrl SUCCESS for ${url}`);
                     return url;
                 }
             } catch (error) {
-                if (debugModeJsComic)
-                    console.log(
-                        `DEBUG: findExistingUrl Check failed for ${url}:`,
-                        error
-                    );
+                if (debugModeJsComic) console.log(`DEBUG: findExistingUrl Check failed for ${url}:`, error);
             }
         }
-        if (debugModeJsComic)
-            console.log(
-                `DEBUG: findExistingUrl FAILED for ${baseUrl}${filename}`
-            );
+        if (debugModeJsComic) console.log(`DEBUG: findExistingUrl FAILED for ${baseUrl}${filename}`);
         return null; // Explizit null zurückgeben, wenn nichts gefunden wurde
     }
     /**
      * Sucht nach der Sketch-URL.
      */
-    async function findEnglishSketchUrl(
-        baseFilename,
-        sketchUrlBase,
-        extensions
-    ) {
+    async function findEnglishSketchUrl(baseFilename, sketchUrlBase, extensions) {
         try {
             const sketchFilename = baseFilename.substring(0, 8) + '_sketch';
-            const sketchFoundUrl = await findExistingUrl(
-                sketchUrlBase,
-                sketchFilename,
-                extensions
-            ); // Nutzt die lokale Funktion
-            if (sketchFoundUrl && debugModeJsComic)
-                console.log('DEBUG: Sketch online gefunden:', sketchFoundUrl);
-            else if (debugModeJsComic)
-                console.log('DEBUG: Kein Sketch online gefunden.');
+            const sketchFoundUrl = await findExistingUrl(sketchUrlBase, sketchFilename, extensions); // Nutzt die lokale Funktion
+            if (sketchFoundUrl && debugModeJsComic) console.log('DEBUG: Sketch online gefunden:', sketchFoundUrl);
+            else if (debugModeJsComic) console.log('DEBUG: Kein Sketch online gefunden.');
             return sketchFoundUrl;
         } catch (err) {
             console.warn('Fehler bei Sketch-Suche:', err);
@@ -140,13 +113,7 @@
      * Setzt das Haupt-Comicbild und den Link auf die englische Version/Sketch.
      * (Wird vom EN-Button-Listener aufgerufen)
      */
-    async function setEnglishImage(
-        mainUrl,
-        toggleBtn,
-        comicImage,
-        comicLink,
-        langToggleText
-    ) {
+    async function setEnglishImage(mainUrl, toggleBtn, comicImage, comicLink, langToggleText) {
         if (!comicImage || !comicLink) return;
         let englishSrc = mainUrl;
         comicImage.src = englishSrc;
@@ -164,21 +131,11 @@
             try {
                 if (await checkUrlExists(sketchUrlFromCache)) {
                     sketchFoundUrl = sketchUrlFromCache;
-                    if (debugModeJsComic)
-                        console.log(
-                            'DEBUG: Sketch aus Cache verwendet:',
-                            sketchFoundUrl
-                        );
+                    if (debugModeJsComic) console.log('DEBUG: Sketch aus Cache verwendet:', sketchFoundUrl);
                 } else if (debugModeJsComic)
-                    console.warn(
-                        'DEBUG: Gespeicherter Sketch-Link nicht erreichbar:',
-                        sketchUrlFromCache
-                    );
+                    console.warn('DEBUG: Gespeicherter Sketch-Link nicht erreichbar:', sketchUrlFromCache);
             } catch (e) {
-                console.warn(
-                    'DEBUG: Fehler bei Prüfung des Sketch-Cache-Links:',
-                    e
-                );
+                console.warn('DEBUG: Fehler bei Prüfung des Sketch-Cache-Links:', e);
             }
         }
 
@@ -190,7 +147,7 @@
             );
         }
         setHref(sketchFoundUrl || mainUrl);
-        return { englishSrc, englishHref: sketchFoundUrl || mainUrl };
+        return {englishSrc, englishHref: sketchFoundUrl || mainUrl};
     }
 
     /**
@@ -213,8 +170,7 @@
             }
         } catch (err) {
             console.error('Fehler beim Finden des Originalbilds:', err);
-            if (langToggleText)
-                langToggleText.textContent = 'Original nicht gefunden';
+            if (langToggleText) langToggleText.textContent = 'Original nicht gefunden';
             setTimeout(() => {
                 if (langToggleText) langToggleText.textContent = originalText;
             }, 2000);
@@ -235,10 +191,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
         // === NEU: Summernote initialisieren ===
         // Wir prüfen, ob jQuery und Summernote geladen wurden
-        if (
-            typeof $ !== 'undefined' &&
-            typeof $.fn.summernote !== 'undefined'
-        ) {
+        if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
             $('#' + transcriptSuggestionTextareaId).summernote({
                 placeholder: 'Transkript-Vorschlag hier eingeben...',
                 tabsize: 2,
@@ -254,10 +207,7 @@
             // Initial leer lassen, wird beim Öffnen des Modals gefüllt
             $('#' + transcriptSuggestionTextareaId).summernote('code', '');
         } else {
-            if (debugModeJsComic)
-                console.error(
-                    '[Report Modal] jQuery oder Summernote ist nicht geladen!'
-                );
+            if (debugModeJsComic) console.error('[Report Modal] jQuery oder Summernote ist nicht geladen!');
         }
 
         // Key Navigation Logic
@@ -314,17 +264,10 @@
             const importBtn = document.getElementById('importButton');
             const importFile = document.getElementById('import');
 
-            if (removeAllBtn)
-                removeAllBtn.addEventListener(
-                    'click',
-                    handleRemoveAllBookmarks
-                );
-            if (exportBtn)
-                exportBtn.addEventListener('click', handleExportBookmarks);
-            if (importBtn)
-                importBtn.addEventListener('click', () => importFile?.click());
-            if (importFile)
-                importFile.addEventListener('change', handleImportBookmarks);
+            if (removeAllBtn) removeAllBtn.addEventListener('click', handleRemoveAllBookmarks);
+            if (exportBtn) exportBtn.addEventListener('click', handleExportBookmarks);
+            if (importBtn) importBtn.addEventListener('click', () => importFile?.click());
+            if (importFile) importFile.addEventListener('change', handleImportBookmarks);
 
             if (bookmarks.size === 0) {
                 if (removeAllBtn) removeAllBtn.disabled = true;
@@ -338,50 +281,28 @@
     // ===========================================
     function initializeReportModal() {
         // (Konstanten für Modal-Elemente)
-        const openReportModalButton = document.getElementById(
-            openReportModalButtonId
-        );
+        const openReportModalButton = document.getElementById(openReportModalButtonId);
         const reportModal = document.getElementById(reportModalId);
         const reportForm = document.getElementById(reportFormId);
         const reportTypeSelect = document.getElementById(reportTypeSelectId);
-        const transcriptSuggestionContainer = document.getElementById(
-            transcriptSuggestionContainerId
-        );
+        const transcriptSuggestionContainer = document.getElementById(transcriptSuggestionContainerId);
         // === GEÄNDERT: Referenzen auf neue Elemente ===
-        const originalTranscriptDisplay = document.getElementById(
-            originalTranscriptDisplayId
-        );
-        const originalTranscriptHidden = document.getElementById(
-            originalTranscriptHiddenId
-        );
-        const reportStatusMessage = document.getElementById(
-            reportStatusMessageId
-        );
-        const reportSubmitButton =
-            document.getElementById(reportSubmitButtonId);
-        const closeReportModalButtons = document.querySelectorAll(
-            closeReportModalSelector
-        );
+        const originalTranscriptDisplay = document.getElementById(originalTranscriptDisplayId);
+        const originalTranscriptHidden = document.getElementById(originalTranscriptHiddenId);
+        const reportStatusMessage = document.getElementById(reportStatusMessageId);
+        const reportSubmitButton = document.getElementById(reportSubmitButtonId);
+        const closeReportModalButtons = document.querySelectorAll(closeReportModalSelector);
         const imageEn = document.getElementById(reportModalImageEnId); // NEU V3.1.0
 
         if (openReportModalButton && reportModal && reportForm) {
             // --- Event Listeners ---
             openReportModalButton.addEventListener('click', openReportModal);
-            closeReportModalButtons.forEach((button) =>
-                button.addEventListener('click', closeReportModal)
-            );
+            closeReportModalButtons.forEach((button) => button.addEventListener('click', closeReportModal));
             reportModal.addEventListener('click', (event) => {
-                if (
-                    event.target === reportModal.querySelector('.modal-overlay')
-                )
-                    closeReportModal();
+                if (event.target === reportModal.querySelector('.modal-overlay')) closeReportModal();
             });
             document.addEventListener('keydown', (event) => {
-                if (
-                    event.key === 'Escape' &&
-                    reportModal.style.display === 'flex'
-                )
-                    closeReportModal();
+                if (event.key === 'Escape' && reportModal.style.display === 'flex') closeReportModal();
             });
             reportTypeSelect.addEventListener('change', () => {
                 transcriptSuggestionContainer.style.display =
@@ -407,15 +328,9 @@
 
                     if (filename) {
                         if (debugModeJsComic)
-                            console.log(
-                                `[Report Modal] Suche Originalbild mit Dateiname: ${filename}`
-                            );
+                            console.log(`[Report Modal] Suche Originalbild mit Dateiname: ${filename}`);
                         // Rufe die Suchfunktion auf (jetzt im Scope verfügbar)
-                        findExistingUrl(
-                            originalImageUrlBase,
-                            filename,
-                            imageExtensions
-                        )
+                        findExistingUrl(originalImageUrlBase, filename, imageExtensions)
                             .then((url) => {
                                 if (url) {
                                     imageEn.src = url;
@@ -426,56 +341,35 @@
                                 } else {
                                     // findExistingUrl hat null zurückgegeben (nichts gefunden)
                                     if (debugModeJsComic)
-                                        console.warn(
-                                            '[Report Modal] findExistingUrl hat null zurückgegeben.'
-                                        );
+                                        console.warn('[Report Modal] findExistingUrl hat null zurückgegeben.');
                                     imageEn.src = placeholderImageNotFound;
                                 }
                             })
                             .catch((err) => {
                                 // Schwerer Fehler während der Suche
-                                if (debugModeJsComic)
-                                    console.error(
-                                        '[Report Modal] Fehler bei findExistingUrl:',
-                                        err
-                                    );
+                                if (debugModeJsComic) console.error('[Report Modal] Fehler bei findExistingUrl:', err);
                                 imageEn.src = placeholderImageNotFound;
                             });
                     } else {
                         // Fallback, falls kein Dateiname im data-Attribut ist
                         if (debugModeJsComic)
-                            console.warn(
-                                "[Report Modal] Kein 'data-original-filename' am Modal gefunden."
-                            );
-                        imageEn.src =
-                            'https://placehold.co/600x400/cccccc/333333?text=Original+fehlt+(kein+Dateiname)';
+                            console.warn("[Report Modal] Kein 'data-original-filename' am Modal gefunden.");
+                        imageEn.src = 'https://placehold.co/600x400/cccccc/333333?text=Original+fehlt+(kein+Dateiname)';
                     }
                 }
                 // === ENDE GEÄNDERT V3.2.0 ===
 
                 // === Summernote und Display-Div befüllen ===
                 try {
-                    const currentTranscriptElement = document.querySelector(
-                        comicTranscriptSelector
-                    );
-                    const rawHtml = currentTranscriptElement
-                        ? currentTranscriptElement.innerHTML.trim()
-                        : '';
+                    const currentTranscriptElement = document.querySelector(comicTranscriptSelector);
+                    const rawHtml = currentTranscriptElement ? currentTranscriptElement.innerHTML.trim() : '';
 
                     // 1. Fülle den Summernote Editor
-                    if (
-                        typeof $ !== 'undefined' &&
-                        typeof $.fn.summernote !== 'undefined'
-                    ) {
-                        $('#' + transcriptSuggestionTextareaId).summernote(
-                            'code',
-                            rawHtml
-                        );
+                    if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
+                        $('#' + transcriptSuggestionTextareaId).summernote('code', rawHtml);
                     } else {
                         // Fallback, falls Summernote nicht geladen ist (sollte nicht passieren)
-                        const fallbackTextarea = document.getElementById(
-                            transcriptSuggestionTextareaId
-                        );
+                        const fallbackTextarea = document.getElementById(transcriptSuggestionTextareaId);
                         if (fallbackTextarea)
                             fallbackTextarea.value =
                                 'Editor konnte nicht geladen werden. Bitte beschreibe den Fehler stattdessen.';
@@ -491,25 +385,14 @@
                         originalTranscriptHidden.value = rawHtml;
                     }
                 } catch (e) {
-                    console.error(
-                        '[Report Modal] Fehler beim Befüllen des Transkripts:',
-                        e
-                    );
+                    console.error('[Report Modal] Fehler beim Befüllen des Transkripts:', e);
                     // Fehler-Fallback
-                    if (
-                        typeof $ !== 'undefined' &&
-                        typeof $.fn.summernote !== 'undefined'
-                    ) {
-                        $('#' + transcriptSuggestionTextareaId).summernote(
-                            'code',
-                            ''
-                        );
+                    if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
+                        $('#' + transcriptSuggestionTextareaId).summernote('code', '');
                     }
                     if (originalTranscriptDisplay)
-                        originalTranscriptDisplay.innerHTML =
-                            '<p>Fehler beim Laden des Original-Transkripts.</p>';
-                    if (originalTranscriptHidden)
-                        originalTranscriptHidden.value = '';
+                        originalTranscriptDisplay.innerHTML = '<p>Fehler beim Laden des Original-Transkripts.</p>';
+                    if (originalTranscriptHidden) originalTranscriptHidden.value = '';
                 }
 
                 reportModal.style.display = 'flex';
@@ -519,14 +402,8 @@
             function closeReportModal() {
                 reportModal.style.display = 'none';
                 // Leere den Summernote-Editor beim Schließen, damit kein alter Inhalt verbleibt
-                if (
-                    typeof $ !== 'undefined' &&
-                    typeof $.fn.summernote !== 'undefined'
-                ) {
-                    $('#' + transcriptSuggestionTextareaId).summernote(
-                        'code',
-                        ''
-                    );
+                if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
+                    $('#' + transcriptSuggestionTextareaId).summernote('code', '');
                 }
 
                 // === NEU V3.1.0: Bild zurücksetzen ===
@@ -558,38 +435,26 @@
                 data.comic_id = comicId;
 
                 // === GEÄNDERT: HTML-Inhalt aus Summernote holen ===
-                if (
-                    typeof $ !== 'undefined' &&
-                    typeof $.fn.summernote !== 'undefined'
-                ) {
-                    const suggestionHtml = $(
-                        '#' + transcriptSuggestionTextareaId
-                    ).summernote('code');
+                if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
+                    const suggestionHtml = $('#' + transcriptSuggestionTextareaId).summernote('code');
                     data.report_transcript_suggestion = suggestionHtml;
                 } else {
                     // Fallback, falls Summernote fehlgeschlagen ist
                     data.report_transcript_suggestion =
-                        document.getElementById(transcriptSuggestionTextareaId)
-                            .value || '';
+                        document.getElementById(transcriptSuggestionTextareaId).value || '';
                 }
                 // === ENDE ÄNDERUNG ===
 
                 // Der Rest (Name, Description, Original) kommt korrekt aus dem FormData
                 data.report_name = data.report_name || 'Anonym';
                 data.report_description = data.report_description || '';
-                data.report_transcript_original =
-                    data.report_transcript_original || '';
+                data.report_transcript_original = data.report_transcript_original || '';
                 delete data.report_honeypot;
 
                 // Korrigierte API URL
                 const apiUrl = '../api/submit_report.php';
 
-                if (debugModeJsComic)
-                    console.log(
-                        '[Report Modal] Sende Daten an API:',
-                        apiUrl,
-                        JSON.stringify(data)
-                    );
+                if (debugModeJsComic) console.log('[Report Modal] Sende Daten an API:', apiUrl, JSON.stringify(data));
 
                 try {
                     const response = await fetch(apiUrl, {
@@ -602,37 +467,19 @@
                     });
 
                     if (debugModeJsComic)
-                        console.log(
-                            '[Report Modal] API Antwort Status:',
-                            response.status,
-                            response.statusText
-                        );
+                        console.log('[Report Modal] API Antwort Status:', response.status, response.statusText);
 
                     let responseText = await response.text();
                     let result = {};
 
-                    if (
-                        response.headers
-                            .get('content-type')
-                            ?.includes('application/json')
-                    ) {
+                    if (response.headers.get('content-type')?.includes('application/json')) {
                         try {
                             result = JSON.parse(responseText);
-                            if (debugModeJsComic)
-                                console.log(
-                                    '[Report Modal] API Antwort JSON:',
-                                    result
-                                );
+                            if (debugModeJsComic) console.log('[Report Modal] API Antwort JSON:', result);
                         } catch (jsonError) {
                             if (debugModeJsComic) {
-                                console.error(
-                                    '[Report Modal] Fehler beim Parsen der JSON-Antwort:',
-                                    jsonError
-                                );
-                                console.log(
-                                    '[Report Modal] Empfangener Text:',
-                                    responseText
-                                );
+                                console.error('[Report Modal] Fehler beim Parsen der JSON-Antwort:', jsonError);
+                                console.log('[Report Modal] Empfangener Text:', responseText);
                             }
                             throw new Error(
                                 `Server antwortete mit JSON-Header, aber Parsen schlug fehl (Status ${
@@ -642,44 +489,25 @@
                         }
                     } else {
                         if (debugModeJsComic)
-                            console.log(
-                                '[Report Modal] API antwortete nicht mit JSON. Antwort-Text:',
-                                responseText
-                            );
+                            console.log('[Report Modal] API antwortete nicht mit JSON. Antwort-Text:', responseText);
                         let errorMsg = `Server antwortete nicht mit JSON (Status ${response.status}).`;
-                        if (
-                            responseText.toLowerCase().includes('not found') ||
-                            response.status === 404
-                        ) {
+                        if (responseText.toLowerCase().includes('not found') || response.status === 404) {
                             errorMsg = `API-Endpunkt nicht gefunden (${apiUrl}). Bitte Pfad prüfen.`;
                         } else if (responseText) {
-                            errorMsg += ` Antwort-Anfang: ${responseText.substring(
-                                0,
-                                200
-                            )}...`;
+                            errorMsg += ` Antwort-Anfang: ${responseText.substring(0, 200)}...`;
                         }
                         throw new Error(errorMsg);
                     }
 
                     if (response.ok && result.success) {
-                        showReportStatus(
-                            result.message || 'Meldung erfolgreich gesendet!',
-                            'green'
-                        );
+                        showReportStatus(result.message || 'Meldung erfolgreich gesendet!', 'green');
                         reportForm.reset(); // Formular zurücksetzen
 
                         // NEU: Auch Summernote und Display-Box leeren
-                        if (
-                            typeof $ !== 'undefined' &&
-                            typeof $.fn.summernote !== 'undefined'
-                        ) {
-                            $('#' + transcriptSuggestionTextareaId).summernote(
-                                'code',
-                                ''
-                            );
+                        if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
+                            $('#' + transcriptSuggestionTextareaId).summernote('code', '');
                         }
-                        if (originalTranscriptDisplay)
-                            originalTranscriptDisplay.innerHTML = '';
+                        if (originalTranscriptDisplay) originalTranscriptDisplay.innerHTML = '';
 
                         // NEU: Modal nach 1.5 Sekunden schließen, damit die Meldung gelesen werden kann
                         setTimeout(() => {
@@ -688,22 +516,13 @@
                     } else {
                         showReportStatus(
                             result.message ||
-                                `Fehler ${response.status}: ${
-                                    response.statusText ||
-                                    'Unbekannter Serverfehler'
-                                }`,
+                                `Fehler ${response.status}: ${response.statusText || 'Unbekannter Serverfehler'}`,
                             'red'
                         );
                     }
                 } catch (error) {
-                    console.error(
-                        '[Report Modal] Fehler beim Senden des Reports (Fetch/Netzwerk/Parse):',
-                        error
-                    );
-                    showReportStatus(
-                        `Ein Fehler ist aufgetreten: ${error.message}`,
-                        'red'
-                    );
+                    console.error('[Report Modal] Fehler beim Senden des Reports (Fetch/Netzwerk/Parse):', error);
+                    showReportStatus(`Ein Fehler ist aufgetreten: ${error.message}`, 'red');
                 } finally {
                     reportSubmitButton.disabled = false;
                 }
@@ -758,13 +577,7 @@
                     data.id = id;
                 }
                 // KORRIGIERT V5: Prüfe nur auf notwendige Felder, erlaube leere 'page'
-                if (
-                    data &&
-                    data.id === id &&
-                    data.page !== undefined &&
-                    data.thumb &&
-                    data.permalink
-                ) {
+                if (data && data.id === id && data.page !== undefined && data.thumb && data.permalink) {
                     data.added = data.added || Date.now();
                     cleanedBookmarksArray.push([id, data]);
                 } else {
@@ -775,24 +588,14 @@
                         );
                 }
             }
-            window.localStorage.setItem(
-                'comicBookmarks',
-                JSON.stringify(cleanedBookmarksArray)
-            );
+            window.localStorage.setItem('comicBookmarks', JSON.stringify(cleanedBookmarksArray));
         } catch (e) {
             console.error('[Bookmark/Lesezeichen] Fehler beim Speichern:', e);
             // KORRIGIERT V5: Verwende nativen Alert als Fallback
-            if (
-                e.name === 'QuotaExceededError' ||
-                e.name === 'NS_ERROR_DOM_QUOTA_REACHED'
-            ) {
-                alert(
-                    'Speicherlimit für Lesezeichen erreicht. Bitte lösche alte Lesezeichen.'
-                );
+            if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                alert('Speicherlimit für Lesezeichen erreicht. Bitte lösche alte Lesezeichen.');
             } else {
-                alert(
-                    'Ein Fehler ist beim Speichern der Lesezeichen aufgetreten.'
-                );
+                alert('Ein Fehler ist beim Speichern der Lesezeichen aufgetreten.');
             }
         }
     }
@@ -810,24 +613,20 @@
                 );
             return;
         }
-        if (debugModeJsComic)
-            console.log(
-                '[Bookmark/Lesezeichen V5] Button Dataset:',
-                button.dataset
-            );
+        if (debugModeJsComic) console.log('[Bookmark/Lesezeichen V5] Button Dataset:', button.dataset);
 
-        const { id, page, permalink, thumb } = button.dataset;
+        const {id, page, permalink, thumb} = button.dataset;
 
         // KORRIGIERT V5: Validiere nur id, permalink und thumb. 'page' darf leer sein.
         if (!id || !permalink || !thumb) {
-            console.error(
-                '[Bookmark/Lesezeichen] Fehlende kritische Datenattribute (id, permalink, thumb).',
-                { id, page, permalink, thumb }
-            );
+            console.error('[Bookmark/Lesezeichen] Fehlende kritische Datenattribute (id, permalink, thumb).', {
+                id,
+                page,
+                permalink,
+                thumb,
+            });
             // KORRIGIERT V5: Verwende nativen Alert als Fallback
-            alert(
-                'Fehler: Lesezeichen konnte nicht hinzugefügt/entfernt werden (fehlende Daten).'
-            );
+            alert('Fehler: Lesezeichen konnte nicht hinzugefügt/entfernt werden (fehlende Daten).');
             return;
         }
         // Gib 'page' einen Standardwert, falls es leer ist, bevor es verwendet wird. '' ist ok.
@@ -848,8 +647,7 @@
                 bookmarks.delete(id);
                 await storeBookmarks(bookmarks);
                 setBookmarkButtonInactive();
-                if (document.getElementById('bookmarksPage'))
-                    populateBookmarksPage(bookmarks);
+                if (document.getElementById('bookmarksPage')) populateBookmarksPage(bookmarks);
                 // KORRIGIERT V5: Verwende nativen Alert als Fallback
                 // alert(`Lesezeichen für Seite "${safePage || id}" entfernt.`); // Meldung deaktiviert
             }
@@ -868,10 +666,7 @@
                         const oldestId = bookmarksSortedArray[0][0];
                         bookmarks.delete(oldestId);
                         if (debugModeJsComic)
-                            console.log(
-                                '[Bookmark/Lesezeichen] Ältestes Lesezeichen entfernt:',
-                                oldestId
-                            );
+                            console.log('[Bookmark/Lesezeichen] Ältestes Lesezeichen entfernt:', oldestId);
                     }
                     bookmarks.set(id, {
                         id,
@@ -882,12 +677,9 @@
                     });
                     await storeBookmarks(bookmarks);
                     setBookmarkButtonActive();
-                    if (document.getElementById('bookmarksPage'))
-                        populateBookmarksPage(bookmarks);
+                    if (document.getElementById('bookmarksPage')) populateBookmarksPage(bookmarks);
                     // KORRIGIERT V5: Verwende nativen Alert als Fallback
-                    alert(
-                        `Lesezeichen für Seite "${safePage || id}" hinzugefügt.`
-                    ); // Meldung ggf. deaktivieren
+                    alert(`Lesezeichen für Seite "${safePage || id}" hinzugefügt.`); // Meldung ggf. deaktivieren
                 }
             } else {
                 // Normales Hinzufügen mit Zeitstempel
@@ -900,8 +692,7 @@
                 });
                 await storeBookmarks(bookmarks);
                 setBookmarkButtonActive();
-                if (document.getElementById('bookmarksPage'))
-                    populateBookmarksPage(bookmarks);
+                if (document.getElementById('bookmarksPage')) populateBookmarksPage(bookmarks);
                 // KORRIGIERT V5: Verwende nativen Alert als Fallback
                 // alert(`Lesezeichen für Seite "${safePage || id}" hinzugefügt.`); // Meldung deaktiviert
             }
@@ -931,17 +722,10 @@
     function populateBookmarksPage(bookmarkMap) {
         const bookmarksSection = document.querySelector('#bookmarksWrapper');
         const noBookmarksTemplate = document.querySelector('#noBookmarks');
-        const bookmarkWrapperTemplate = document.querySelector(
-            '#pageBookmarkWrapper'
-        );
+        const bookmarkWrapperTemplate = document.querySelector('#pageBookmarkWrapper');
         const pageBookmarkTemplate = document.querySelector('#pageBookmark');
 
-        if (
-            !bookmarksSection ||
-            !noBookmarksTemplate ||
-            !bookmarkWrapperTemplate ||
-            !pageBookmarkTemplate
-        ) {
+        if (!bookmarksSection || !noBookmarksTemplate || !bookmarkWrapperTemplate || !pageBookmarkTemplate) {
             console.error('[Bookmark Page] Ein oder mehrere Templates fehlen.');
             return;
         }
@@ -951,9 +735,7 @@
         const exportBtn = document.getElementById('export');
 
         if (!bookmarkMap || bookmarkMap.size === 0) {
-            bookmarksSection.appendChild(
-                noBookmarksTemplate.content.cloneNode(true)
-            );
+            bookmarksSection.appendChild(noBookmarksTemplate.content.cloneNode(true));
             if (removeAllBtn) removeAllBtn.disabled = true;
             if (exportBtn) exportBtn.disabled = true;
             return;
@@ -961,12 +743,9 @@
 
         const wrapper = bookmarkWrapperTemplate.content.cloneNode(true);
         bookmarksSection.appendChild(wrapper);
-        const chapterLinksContainer =
-            bookmarksSection.querySelector('.chapter-links');
+        const chapterLinksContainer = bookmarksSection.querySelector('.chapter-links');
         if (!chapterLinksContainer) {
-            console.error(
-                "[Bookmark Page] Container '.chapter-links' nicht gefunden."
-            );
+            console.error("[Bookmark Page] Container '.chapter-links' nicht gefunden.");
             return;
         }
 
@@ -983,19 +762,9 @@
         const bookmarksSorted = new Map(bookmarksSortedArray);
 
         bookmarksSorted.forEach((b, id) => {
-            if (
-                !b ||
-                !b.id ||
-                b.page === undefined ||
-                !b.permalink ||
-                !b.thumb
-            ) {
+            if (!b || !b.id || b.page === undefined || !b.permalink || !b.thumb) {
                 // Erlaube leere 'page'
-                if (debugModeJsComic)
-                    console.warn(
-                        `[Bookmark Page] Ungültiges Objekt für ID ${id} übersprungen:`,
-                        b
-                    );
+                if (debugModeJsComic) console.warn(`[Bookmark Page] Ungültiges Objekt für ID ${id} übersprungen:`, b);
                 return;
             }
             const bookmark = pageBookmarkTemplate.content.cloneNode(true);
@@ -1014,15 +783,13 @@
                         day = comicId.substring(6, 8);
                     const formattedDate = `${day}.${month}.${year}`;
                     pageName = `Seite vom ${formattedDate}`;
-                    if (comicDetails.name && comicDetails.name.trim() !== '')
-                        pageName += `: ${comicDetails.name}`;
+                    if (comicDetails.name && comicDetails.name.trim() !== '') pageName += `: ${comicDetails.name}`;
                 } else pageName = b.page || `Seite ${b.id}`;
             } else pageName = b.page || `Seite ${b.id}`;
 
             const pageNumTextNode = document.createTextNode(pageName);
             const deleteButton = pageNumSpan.querySelector('.delete');
-            if (deleteButton)
-                pageNumSpan.insertBefore(pageNumTextNode, deleteButton);
+            if (deleteButton) pageNumSpan.insertBefore(pageNumTextNode, deleteButton);
             else pageNumSpan.appendChild(pageNumTextNode);
             link.title = pageName;
 
@@ -1032,12 +799,8 @@
             image.onerror = function () {
                 // Wie V4
                 this.onerror = null;
-                this.src =
-                    'https://placehold.co/96x96/cccccc/333333?text=Bild%0AFehlt';
-                if (debugModeJsComic)
-                    console.warn(
-                        `[Bookmark Page] Thumbnail ${b.id} Fehler: ${b.thumb}`
-                    );
+                this.src = 'https://placehold.co/96x96/cccccc/333333?text=Bild%0AFehlt';
+                if (debugModeJsComic) console.warn(`[Bookmark Page] Thumbnail ${b.id} Fehler: ${b.thumb}`);
             };
 
             const currentDeleteButton = bookmark.querySelector('.delete');
@@ -1058,11 +821,7 @@
     async function handleRemoveBookmarkById(id, pageName) {
         // Wie V4
         // KORRIGIERT V5: Verwende nativen Confirm
-        if (
-            confirm(
-                `Möchten Sie das Lesezeichen für "${pageName}" wirklich entfernen?`
-            )
-        ) {
+        if (confirm(`Möchten Sie das Lesezeichen für "${pageName}" wirklich entfernen?`)) {
             const bookmarks = await getStoredBookmarks();
             bookmarks.delete(id);
             await storeBookmarks(bookmarks);
@@ -1099,21 +858,14 @@
             alert('Es gibt keine Lesezeichen zum Exportieren.');
             return;
         }
-        const dataStr = JSON.stringify(
-            Array.from(bookmarks.entries()),
-            null,
-            2
-        );
-        const blob = new Blob([dataStr], { type: 'application/json' });
+        const dataStr = JSON.stringify(Array.from(bookmarks.entries()), null, 2);
+        const blob = new Blob([dataStr], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         const date = new Date(),
             dateString = `${date.getFullYear()}${(date.getMonth() + 1)
                 .toString()
-                .padStart(
-                    2,
-                    '0'
-                )}${date.getDate().toString().padStart(2, '0')}`;
+                .padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
         a.href = url;
         a.download = `twokinds.4lima.de_bookmarks_${dateString}.json`;
         document.body.appendChild(a);
@@ -1145,8 +897,7 @@
         reader.onload = async (e) => {
             try {
                 const importedData = JSON.parse(e.target.result);
-                if (!Array.isArray(importedData))
-                    throw new Error('Ungültiges JSON: Array erwartet.');
+                if (!Array.isArray(importedData)) throw new Error('Ungültiges JSON: Array erwartet.');
 
                 const validBookmarksArray = [];
                 let invalidCount = 0;
@@ -1167,19 +918,13 @@
                         validBookmarksArray.push(item);
                     } else {
                         invalidCount++;
-                        if (debugModeJsComic)
-                            console.warn(
-                                '[Bookmark Import] Ungültiger Eintrag übersprungen:',
-                                item
-                            );
+                        if (debugModeJsComic) console.warn('[Bookmark Import] Ungültiger Eintrag übersprungen:', item);
                     }
                 });
 
                 if (validBookmarksArray.length === 0)
                     throw new Error(
-                        invalidCount > 0
-                            ? 'Keine gültigen Einträge gefunden.'
-                            : 'Datei enthält keine Lesezeichen.'
+                        invalidCount > 0 ? 'Keine gültigen Einträge gefunden.' : 'Datei enthält keine Lesezeichen.'
                     );
 
                 const newBookmarks = new Map(validBookmarksArray);
@@ -1202,8 +947,7 @@
                 let message = `${addedCount} Lesezeichen importiert.`;
                 if (skippedCount > 0)
                     message += ` ${skippedCount} Duplikate oder Lesezeichen über dem Limit wurden übersprungen.`;
-                if (invalidCount > 0)
-                    message += ` ${invalidCount} ungültige Einträge wurden ignoriert.`;
+                if (invalidCount > 0) message += ` ${invalidCount} ungültige Einträge wurden ignoriert.`;
                 // KORRIGIERT V5: Verwende nativen Alert
                 alert(message);
             } catch (error) {
