@@ -449,10 +449,11 @@
                 data.report_name = data.report_name || 'Anonym';
                 data.report_description = data.report_description || '';
                 data.report_transcript_original = data.report_transcript_original || '';
-                delete data.report_honeypot;
+                // delete data.report_honeypot;
 
-                // Korrigierte API URL
-                const apiUrl = '../api/submit_report.php';
+                // Hinweis: Honeypot wird mitgesendet, damit der Server ihn prüfen kann.
+
+                const apiUrl = event.currentTarget.dataset.apiUrl || '../api/submit_report.php';
 
                 if (debugModeJsComic) console.log('[Report Modal] Sende Daten an API:', apiUrl, JSON.stringify(data));
 

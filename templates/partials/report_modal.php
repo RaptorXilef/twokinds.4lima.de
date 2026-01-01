@@ -62,8 +62,12 @@ $imageEnPlaceholder = 'https://placehold.co/600x400/cccccc/333333?text=Original+
         <div class="modal-scroll-content">
             <p>Hier kannst du Fehler im Transkript oder im Comicbild melden.</p>
 
-            <form id="report-form" class="admin-form">
-                <input type="hidden" name="csrf_token" value="">
+            <form id="report-form" class="admin-form"
+                data-api-url="<?php echo Url::getBaseUrl() . '/api/submit_report' . ($dateiendungPHP ?? ''); ?>"
+                method="POST"
+                enctype="multipart/form-data">
+
+                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
 
                 <div class="honeypot-field" aria-hidden="true">
                     <label for="report-honeypot">Bitte nicht ausfüllen</label>
