@@ -62,8 +62,10 @@ $imageEnPlaceholder = 'https://placehold.co/600x400/cccccc/333333?text=Original+
         <div class="modal-scroll-content">
             <p>Hier kannst du Fehler im Transkript oder im Comicbild melden.</p>
 
+<?php $explicitApiUrl = Url::getBaseUrl() . '/api/submit_report.php';?>
+
             <form id="report-form" class="admin-form"
-                data-api-url="<?php echo Url::getBaseUrl() . '/api/submit_report' . ($dateiendungPHP ?? ''); ?>"
+                data-api-url="<?php echo htmlspecialchars($explicitApiUrl); ?>"
                 method="POST"
                 enctype="multipart/form-data">
 

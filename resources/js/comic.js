@@ -453,24 +453,37 @@
 
                 // Hinweis: Honeypot wird mitgesendet, damit der Server ihn prüfen kann.
 
-                const apiUrl = event.currentTarget.dataset.apiUrl || '../api/submit_report.php';
+                // Sicherstellen, dass wir die URL vom Formular nehmen
+                const form = event.currentTarget;
+                const apiUrl = form.dataset.apiUrl || form.getAttribute('action');
 
-                if (debugModeJsComic) console.log('[Report Modal] Sende Daten an API:', apiUrl, JSON.stringify(data));
+                if (debugModeJsComic) {
+                    console.log(`[Report Modal] Ziel-URL: ${apiUrl}`);
+                }
 
                 try {
                     const response = await fetch(apiUrl, {
                         method: 'POST',
+                        redirect: 'manual', // Verhindert das automatische Folgen von Redirects für besseres Debugging
                         headers: {
                             'Content-Type': 'application/json',
                             Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
                         },
                         body: JSON.stringify(data),
                     });
+
+                    if (response.type === 'opaqueredirect' || response.status === 301 || response.status === 302) {
+                        throw new Error(
+                            "Server erzwingt einen Redirect. Bitte prüfe, ob die API-URL ein '.php' benötigt."
+                        );
+                    }
 
                     if (debugModeJsComic)
                         console.log('[Report Modal] API Antwort Status:', response.status, response.statusText);
 
                     let responseText = await response.text();
+                    console.log('[DEBUG] Vollständige Antwort vom Server:', responseText); // Das hier einfügen!
                     let result = {};
 
                     if (response.headers.get('content-type')?.includes('application/json')) {
@@ -497,7 +510,11 @@
                         } else if (responseText) {
                             errorMsg += ` Antwort-Anfang: ${responseText.substring(0, 200)}...`;
                         }
-                        throw new Error(errorMsg);
+                        //throw new Error(errorMsg);
+                        console.error('[DEBUG] Erwartete JSON, erhielt aber:', responseText.substring(0, 500));
+
+                        // Wir ändern die Fehlermeldung temporär, um nicht zu raten:
+                        throw new Error(`Server-Antwort war kein JSON (Status ${response.status}). Prüfe die Konsole!`);
                     }
 
                     if (response.ok && result.success) {

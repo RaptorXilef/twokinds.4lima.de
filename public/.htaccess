@@ -138,7 +138,12 @@ RewriteRule ^ /%1 [R=301,L,NE]
 # Entfernt .php von ALLEN anderen Dateien (auch die im /comic/ Ordner)
 # Greift nur, wenn Regel 4c nicht schon zugeschlagen hat.
 # -----------------------------------------------------------
+# RewriteCond %{REQUEST_URI} !(^/api/|^/admin/api/)
+# 1. Bedingung: Nicht im API-Ordner
+RewriteCond %{REQUEST_URI} !^/(api|admin/api)/
+# 2. Bedingung: Die Anfrage enthält .php
 RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+# Regel: 301-Weiterleitung auf die URL ohne .php
 RewriteRule ^ /%1 [R=301,L,NE]
 
 # -----------------------------------------------------------
