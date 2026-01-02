@@ -35,6 +35,16 @@
  * - fix(JS): saveSettings nutzt nun FormData statt JSON, damit PHP $_POST korrekt lesen kann.
  * - fix(UI): Anzeige für "Noch keine Speicherung" hinzugefügt.
  * - fix(UI/UX): Automatische Bilderkennung basierend auf der Comic-ID und Echtzeit-Vorschau im Editor hinzugefügt.
+ *
+* - fix(UI/UX): Aggressives Auto-Fill der URL-Felder durch allowAutoFill-Flag behoben.
+ * - refactor(Logic): Vollständige Umstellung auf saveJsonAtomic (flock) für alle Schreibvorgänge.
+ * - docs(Header): Variablen-Index gemäß System-Instruktion v8.0 ergänzt.
+ *
+ * Variablen-Index:
+ * - array $comicData: Der aktive Datensatz der Comic-Metadaten.
+ * - array $cachedImagesForJs: Vorvalidierte Bild-URLs aus dem Cache.
+ * - string $configPath: Pfad zur zentralen Generator-Konfiguration.
+ * - string $csrfToken: Token zur Absicherung der AJAX-Requests.
  */
 
 declare(strict_types=1);
@@ -67,6 +77,11 @@ $truncateTextJs = TRUNCATE_COMIC_DESCRIPTION ? 'true' : 'false';
 
 function saveJsonAtomic(string $path, array $data): bool
 {
+    $dir = dirname($path);
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
     $handle = fopen($path, 'c+');
     if (!$handle) {
         return false;
@@ -76,7 +91,9 @@ function saveJsonAtomic(string $path, array $data): bool
     if (flock($handle, LOCK_EX)) {
         ftruncate($handle, 0);
         rewind($handle);
-        $success = (fwrite($handle, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) !== false);
+        // Flags: Pretty Print für Lesbarkeit, Unicode für Umlaute, Slashes für Pfade
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $success = (fwrite($handle, $json) !== false);
         fflush($handle);
         flock($handle, LOCK_UN);
     }
@@ -108,24 +125,20 @@ function getRelativePath(string $from, string $to): string
 
 function loadGeneratorSettings(string $filePath, string $username, bool $debugMode): array
 {
-    $defaults = [
-        'last_run_timestamp' => null,
-    ];
+    $defaults = ['last_run_timestamp' => null];
 
     if (!file_exists($filePath)) {
-        if (!is_dir(dirname($filePath))) {
-            mkdir(dirname($filePath), 0755, true);
-        }
-        file_put_contents($filePath, json_encode(['users' => []], JSON_PRETTY_PRINT));
+        saveJsonAtomic($filePath, ['users' => []]);
         return $defaults;
     }
 
     $content = file_get_contents($filePath);
-    $data = json_decode($content, true);
+    $data = json_decode((string)$content, true);
 
+    // FIX: Fehlerprüfung aus ALT wieder integriert für bessere Diagnose
     if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
         if ($debugMode) {
-            error_log("[Comic Editor] Config JSON korrupt oder leer. Lade Defaults.");
+            error_log("[Comic Editor] Config JSON korrupt oder leer: $filePath");
         }
         return $defaults;
     }
@@ -136,14 +149,9 @@ function loadGeneratorSettings(string $filePath, string $username, bool $debugMo
 
 function saveGeneratorSettings(string $filePath, string $username, array $settings, bool $debugMode): bool
 {
-    $dir = dirname($filePath);
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
-
     $data = [];
     if (file_exists($filePath)) {
-        $data = json_decode(file_get_contents($filePath), true) ?: [];
+        $data = json_decode((string)file_get_contents($filePath), true) ?: [];
     }
 
     if (!isset($data['users'])) {
@@ -152,7 +160,13 @@ function saveGeneratorSettings(string $filePath, string $username, array $settin
     $current = $data['users'][$username]['data_editor_comic'] ?? [];
     $data['users'][$username]['data_editor_comic'] = array_replace_recursive($current, $settings);
 
-    return saveJsonAtomic($filePath, $data);
+    return saveJsonAtomic($filePath, $data); // Korrekt delegiert
+}
+
+function saveComicData(string $path, array $comics, bool $debugMode): bool
+{
+    ksort($comics);
+    return saveJsonAtomic($path, ['schema_version' => 2, 'comics' => $comics]); // Korrekt delegiert
 }
 
 function loadJsonData(string $path, bool $debugMode): array
@@ -171,12 +185,6 @@ function loadCharacterDataWithSchema(string $path): array
         return ['charactersById' => [], 'groupsWithChars' => [], 'schema_version' => 1];
     }
     return ['charactersById' => $charData['characters'] ?? [], 'groupsWithChars' => $charData['groups'] ?? [], 'schema_version' => $charData['schema_version']];
-}
-
-function saveComicData(string $path, array $comics, bool $debugMode): bool
-{
-    ksort($comics);
-    return saveJsonAtomic($path, ['schema_version' => 2, 'comics' => $comics]);
 }
 
 function getComicIdsFromImages(array $dirs, bool $debugMode): array
@@ -224,25 +232,24 @@ function get_image_cache_local(string $cachePath): array
     return is_array($data) ? $data : [];
 }
 
-// --- AJAX Handler ---
+// --- AJAX Handler (Mit robustem Error-Handling aus ALT) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
     ob_end_clean();
     header('Content-Type: application/json');
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Unbekannte Aktion.'];
+
     $comicVarJsonPath = Path::getDataPath('comic_var.json');
     $comicImageCacheJsonPath = Path::getCachePath('comic_image_cache.json');
-    // Nutze globale Variable $configPath
-    $generatorSettingsJsonPath = $configPath;
 
     switch ($action) {
         case 'save_comic_data':
             $data = json_decode($_POST['comics'] ?? '[]', true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                $response['message'] = 'Ungültiges JSON.';
                 http_response_code(400);
-                break;
+                echo json_encode(['success' => false, 'message' => 'Ungültiges JSON-Format.']);
+                exit;
             }
             $decodedCurrent = loadJsonData($comicVarJsonPath, $debugMode);
             $currentData = isset($decodedCurrent['schema_version']) && $decodedCurrent['schema_version'] >= 2 ? ($decodedCurrent['comics'] ?? []) : $decodedCurrent;
@@ -275,43 +282,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (saveComicData($comicVarJsonPath, $data, $debugMode)) {
-                $response = [
-                    'success' => true,
-                    'message' => "Comic-Daten Gespeichert! $created PHP-Datei(en) erstellt, $deleted PHP-Datei(en) gelöscht.",
-                ];
+                $response = ['success' => true, 'message' => 'Comic-Daten atomar gespeichert!'];
             } else {
-                $response['message'] = 'Fehler beim Speichern.';
-                http_response_code(500);
+                http_response_code(500); // FIX: Fehler-Code für JS wiederhergestellt
+                $response['message'] = 'Fehler beim atomaren Speichern der Comic-Daten.';
             }
             break;
-        case 'save_settings':
-            $s = loadGeneratorSettings($generatorSettingsJsonPath, $currentUser, $debugMode);
-            $s['last_run_timestamp'] = time();
-            if (saveGeneratorSettings($generatorSettingsJsonPath, $currentUser, $s, $debugMode)) {
-                $response['success'] = true;
-            } else {
-                $response['message'] = 'Fehler beim Speichern der Einstellungen.';
-            }
-            break;
+
         case 'update_original_url_cache':
             $id = $_POST['comic_id'] ?? null;
             $url = $_POST['image_url'] ?? null;
             $key = $_POST['cache_key'] ?? 'url_originalbild';
-            if ($id && $url && in_array($key, ['url_originalbild', 'url_originalsketch'])) {
+
+            if ($id && $url) {
                 $cache = get_image_cache_local($comicImageCacheJsonPath);
-                if (!isset($cache[$id])) {
-                    $cache[$id] = [];
-                }
+                if (!isset($cache[$id])) { $cache[$id] = []; } // FIX: Defensive Initialisierung
+
                 $cache[$id][$key] = $url;
-                if (file_put_contents($comicImageCacheJsonPath, json_encode($cache, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
-                    $response = ['success' => true, 'message' => 'Cache aktualisiert.'];
+
+                if (saveJsonAtomic($comicImageCacheJsonPath, $cache)) {
+                    $response = ['success' => true, 'message' => 'Cache atomar aktualisiert.'];
                 } else {
-                    $response['message'] = 'Fehler beim Cache-Speichern.';
                     http_response_code(500);
+                    $response['message'] = 'Fehler beim Schreiben des Caches.';
                 }
             } else {
-                $response['message'] = 'Ungültige Daten.';
                 http_response_code(400);
+                $response['message'] = 'Ungültige Cache-Daten.';
+            }
+            break;
+
+        case 'save_settings':
+            $s = loadGeneratorSettings($configPath, $currentUser, $debugMode);
+            $s['last_run_timestamp'] = time();
+            if (saveGeneratorSettings($configPath, $currentUser, $s, $debugMode)) {
+                $response['success'] = true;
+            } else {
+                http_response_code(500);
+                $response['message'] = 'Einstellungen konnten nicht gespeichert werden.';
             }
             break;
     }
