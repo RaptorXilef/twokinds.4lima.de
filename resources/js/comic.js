@@ -334,6 +334,10 @@
                             .then((url) => {
                                 if (url) {
                                     imageEn.src = url;
+                                    // NEU: Sobald das Bild gefunden wurde, Telemetrie aktualisieren!
+                                    imageEn.onload = () => {
+                                        if (debugTextarea) debugTextarea.value = collectDebugInfo();
+                                    };
                                     // Setze einen onerror-Fallback für den Fall, dass das gefundene Bild doch fehlschlägt
                                     imageEn.onerror = () => {
                                         imageEn.src = placeholderImageNotFound;
@@ -343,12 +347,14 @@
                                     if (debugModeJsComic)
                                         console.warn('[Report Modal] findExistingUrl hat null zurückgegeben.');
                                     imageEn.src = placeholderImageNotFound;
+                                    if (debugTextarea) debugTextarea.value = collectDebugInfo();
                                 }
                             })
                             .catch((err) => {
                                 // Schwerer Fehler während der Suche
                                 if (debugModeJsComic) console.error('[Report Modal] Fehler bei findExistingUrl:', err);
                                 imageEn.src = placeholderImageNotFound;
+                                if (debugTextarea) debugTextarea.value = collectDebugInfo();
                             });
                     } else {
                         // Fallback, falls kein Dateiname im data-Attribut ist
@@ -356,6 +362,8 @@
                             console.warn("[Report Modal] Kein 'data-original-filename' am Modal gefunden.");
                         imageEn.src = 'https://placehold.co/600x400/cccccc/333333?text=Original+fehlt+(kein+Dateiname)';
                     }
+                    reportModal.style.display = 'flex';
+                    document.getElementById('report-name')?.focus();
                 }
                 // === ENDE GEÄNDERT V3.2.0 ===
 
@@ -395,8 +403,73 @@
                     if (originalTranscriptHidden) originalTranscriptHidden.value = '';
                 }
 
+                // === NEU: Debug-Informationen sammeln ===
+                const debugTextarea = document.getElementById('report-debug-info');
+                if (debugTextarea) {
+                    debugTextarea.value = collectDebugInfo();
+                }
+
                 reportModal.style.display = 'flex';
                 document.getElementById('report-name')?.focus();
+            }
+
+            function collectDebugInfo() {
+                const m = document.getElementById('report-modal');
+                const d = m.dataset;
+
+                // 1. Hires-URL: Jetzt exakt über die von dir genannte ID
+                const hiresLinkElement = document.getElementById('comic-image-link');
+                const actualHiresUrl = hiresLinkElement ? hiresLinkElement.href : 'Nicht im DOM gefunden';
+
+                // 2. Comic-Name: Fallback-Kette
+                const comicName =
+                    d.debugComicName || document.querySelector('h1')?.innerText.split('|')[0].trim() || 'N/A';
+
+                // 3. Original-URL (Das Ergebnis der JS-Suche)
+                const probedImageEn = document.getElementById('report-modal-image-en');
+                let currentOriginalUrl = 'Wird gesucht...';
+                if (probedImageEn && probedImageEn.src) {
+                    // Falls der Placeholder noch drin ist, zeigen wir "Lade..."
+                    currentOriginalUrl = probedImageEn.src.includes('placehold.co')
+                        ? 'Suche läuft...'
+                        : probedImageEn.src;
+                }
+
+                // 4. Charaktere (Duplikate entfernen)
+                const charElements = document.querySelectorAll('#char-display-wrapper a span');
+                const activeChars =
+                    charElements.length > 0
+                        ? [...new Set(Array.from(charElements).map((el) => el.innerText.trim()))].join(', ')
+                        : 'Keine Charaktere gefunden';
+
+                // 5. Transkript Snippet
+                const transcriptEl = document.querySelector('.transcript-content');
+                const transcriptSnippet = transcriptEl
+                    ? transcriptEl.innerText.substring(0, 300).trim().replace(/\s+/g, ' ')
+                    : 'N/A';
+
+                const consentData = localStorage.getItem('cookie_consent') || 'Nicht gesetzt';
+
+                let info = `--- COMIC TELEMETRY (DYNAMIC) ---\n`;
+                info += `ID:         ${d.debugComicId}\n`;
+                info += `Name:       ${comicName}\n`;
+                info += `Lowres:     ${d.debugUrlLowres}\n`;
+                info += `Hires:      ${actualHiresUrl}\n`; // FIX: Jetzt korrekt befüllt!
+                info += `Original:   ${currentOriginalUrl}\n`; // Reaktiv nach Load
+                info += `Characters: ${activeChars}\n`;
+                info += `Transcript: ${transcriptSnippet}...\n\n`;
+
+                info += `--- ENVIRONMENT ---\n`;
+                info += `Browser/OS: ${navigator.userAgent}\n`;
+                info += `Resolution: ${window.screen.width}x${window.screen.height} (DPR: ${window.devicePixelRatio})\n`;
+                info += `Viewport:   ${window.innerWidth}x${window.innerHeight}\n`;
+                info += `Theme:      ${window.matchMedia('(prefers-color-scheme: dark)').matches ? 'Dark' : 'Light'}\n\n`;
+
+                info += `--- STORAGE & COOKIES ---\n`;
+                info += `Consent:    ${consentData}\n`;
+                info += `Cookies:    ${document.cookie || 'Keine Cookies lesbar'}\n`;
+
+                return info;
             }
 
             function closeReportModal() {

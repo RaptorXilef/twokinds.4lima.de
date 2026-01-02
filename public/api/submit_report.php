@@ -188,6 +188,8 @@ try {
         'description'           => htmlspecialchars(strip_tags($description), ENT_QUOTES, 'UTF-8'),
         'transcript_suggestion' => $purifier->purify($suggestion),
         'transcript_original'   => $purifier->purify($original),
+        // NEU: Hier fügen wir die Telemetrie-Daten hinzu!
+        'debug_info'            => htmlspecialchars(strip_tags($input['report_debug_info'] ?? ''), ENT_QUOTES, 'UTF-8'),
     ];
 
     // --- F. Speichern ---

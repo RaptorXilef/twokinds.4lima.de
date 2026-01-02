@@ -44,11 +44,30 @@ if (!$imageDeUrl) {
 $fullImageDeUrl = str_starts_with($imageDeUrl, 'http') ? $imageDeUrl : DIRECTORY_PUBLIC_URL . '/' . ltrim($imageDeUrl, '/');
 $originalFilename = $urlOriginalbildFilename ?? '';
 $imageEnPlaceholder = 'https://placehold.co/600x400/cccccc/333333?text=Original+wird+geladen...';
+
+// Vorbereitung der Daten für JS
+// Wir greifen auf die vom Renderer bereitgestellten Variablen zu.
+$comicEntry = $comicData[$currentComicId] ?? [];
+
+$debugData = [
+    'comic-id'      => $currentComicId,
+    'comic-name'    => $comicEntry['name'] ?? 'Nicht im Index',
+    'comic-date'    => $currentComicId,
+    'url-lowres'    => $fullImageDeUrl,
+    'url-hires'     => get_cached_image_path($currentComicId, 'highres') ?: 'Nicht vorhanden',
+    // Hier nutzen wir die Variable, die auch für den EN-Button genutzt wird:
+    'url-original'  => $urlOriginalbild ?? 'Nicht ermittelbar',
+    'characters'    => implode(', ', $comicEntry['characters'] ?? ['Keine']),
+];
 ?>
 
 <div id="report-modal" class="modal report-modal" role="dialog" aria-labelledby="report-modal-title" aria-modal="true"
     data-comic-id="<?php echo htmlspecialchars($currentComicId); ?>"
-    data-original-filename="<?php echo htmlspecialchars($originalFilename); ?>">
+    data-original-filename="<?php echo htmlspecialchars($originalFilename); ?>"
+    <?php foreach ($debugData as $key => $val) : ?>
+        data-debug-<?php echo $key; ?>="<?php echo htmlspecialchars((string)$val); ?>"
+    <?php endforeach; ?>
+>
 
     <div class="modal-overlay" tabindex="-1" data-action="close-report-modal"></div>
 
@@ -121,6 +140,13 @@ $imageEnPlaceholder = 'https://placehold.co/600x400/cccccc/333333?text=Original+
                         <img id="report-modal-image-en" src="<?php echo htmlspecialchars($imageEnPlaceholder); ?>" alt="Referenzbild Englisch" loading="lazy">
                     </div>
                 </div>
+
+                <div class="form-group debug-info-section">
+            <label for="report-debug-info">System-Informationen (Telemetrie)</label>
+            <textarea id="report-debug-info" name="report_debug_info" rows="8" readonly
+                      style="font-size: 0.75rem; font-family: 'Courier New', monospace;"></textarea>
+            <p class="input-help">Diese technischen Daten werden automatisch angehängt.</p>
+        </div>
 
                 <div id="report-status-message" class="status-message"></div>
             </form>
