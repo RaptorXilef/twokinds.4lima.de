@@ -59,9 +59,30 @@ if (!defined('ENTRIES_PER_PAGE_COMIC')) {
 if (!defined('TRUNCATE_COMIC_DESCRIPTION')) {
     define('TRUNCATE_COMIC_DESCRIPTION', false);
 }
+
 // Übergabe an JS
 $truncateTextJs = TRUNCATE_COMIC_DESCRIPTION ? 'true' : 'false';
 
+// === 2. SICHERES DATEI-HANDLING (flock) ===
+
+function saveJsonAtomic(string $path, array $data): bool
+{
+    $handle = fopen($path, 'c+');
+    if (!$handle) {
+        return false;
+    }
+
+    $success = false;
+    if (flock($handle, LOCK_EX)) {
+        ftruncate($handle, 0);
+        rewind($handle);
+        $success = (fwrite($handle, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) !== false);
+        fflush($handle);
+        flock($handle, LOCK_UN);
+    }
+    fclose($handle);
+    return $success;
+}
 
 // --- HILFSFUNKTIONEN ---
 /**
@@ -122,24 +143,16 @@ function saveGeneratorSettings(string $filePath, string $username, array $settin
 
     $data = [];
     if (file_exists($filePath)) {
-        $content = file_get_contents($filePath);
-        $decoded = json_decode($content, true);
-        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-            $data = $decoded;
-        }
+        $data = json_decode(file_get_contents($filePath), true) ?: [];
     }
 
     if (!isset($data['users'])) {
         $data['users'] = [];
     }
-    if (!isset($data['users'][$username])) {
-        $data['users'][$username] = [];
-    }
+    $current = $data['users'][$username]['data_editor_comic'] ?? [];
+    $data['users'][$username]['data_editor_comic'] = array_replace_recursive($current, $settings);
 
-    $currentGeneratorSettings = $data['users'][$username]['data_editor_comic'] ?? [];
-    $data['users'][$username]['data_editor_comic'] = array_replace_recursive($currentGeneratorSettings, $settings);
-
-    return file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) !== false;
+    return saveJsonAtomic($filePath, $data);
 }
 
 function loadJsonData(string $path, bool $debugMode): array
@@ -163,7 +176,7 @@ function loadCharacterDataWithSchema(string $path): array
 function saveComicData(string $path, array $comics, bool $debugMode): bool
 {
     ksort($comics);
-    return file_put_contents($path, json_encode(['schema_version' => 2, 'comics' => $comics], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) !== false;
+    return saveJsonAtomic($path, ['schema_version' => 2, 'comics' => $comics]);
 }
 
 function getComicIdsFromImages(array $dirs, bool $debugMode): array
@@ -800,31 +813,54 @@ require_once Path::getPartialTemplatePath('header.php');
             searchInput.dispatchEvent(new Event('input'));
         });
 
-        // --- Bild-Vorschau Logik (KORRIGIERT & ERWEITERT) ---
-        modalIdInput.addEventListener('input', updateImagePreviewsWithDebounce);
-        modalUrlInput.addEventListener('input', updateImagePreviewsWithDebounce);
-        modalUrlSketchInput.addEventListener('input', updateImagePreviewsWithDebounce);
+        // --- VERBESSERTE BILD-VORSCHAU LOGIK (Fix für Low-Res & Auto-Fill) ---
 
-        function updateImagePreviewsWithDebounce() {
+        // 1. Listener für Comic-ID: Hier ist Auto-Fill ausdrücklich erwünscht!
+        modalIdInput.addEventListener('input', () => updateImagePreviewsWithDebounce(true));
+
+        // 2. Listener für URL-Felder: Nur Vorschau aktualisieren, NIEMALS Auto-Fill!
+        modalUrlInput.addEventListener('input', () => updateImagePreviewsWithDebounce(false));
+        modalUrlSketchInput.addEventListener('input', () => updateImagePreviewsWithDebounce(false));
+
+        function updateImagePreviewsWithDebounce(allowAutoFill) {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(updateImagePreviews, 500);
+            debounceTimer = setTimeout(() => updateImagePreviews(allowAutoFill), 500);
         }
 
-        async function updateImagePreviews() {
-            // Aktuelle Werte aus den Inputs
+        /**
+         * Aktualisiert die Bildvorschauen und führt optional das Auto-Fill aus.
+         * * @param {boolean} allowAutoFill - Ob leere Felder mit der ID befüllt werden dürfen.
+         */
+        async function updateImagePreviews(allowAutoFill = false) {
             const currentInputId = modalIdInput.value.trim();
-            const originalFilename = modalUrlInput.value.trim();
-            const sketchFilename = modalUrlSketchInput.value.trim();
 
+            // DOM-Referenzen sicherstellen
             const deImg = modalPreviewDe.querySelector('img');
             const enImg = modalPreviewEn.querySelector('img');
             const sketchImg = modalPreviewSketch.querySelector('img');
+
             const placeholderSrc = (cachedImages['placeholder'] && cachedImages['placeholder'].lowres) ?
                 `${baseUrl}/${cachedImages['placeholder'].lowres}` :
                 placeholderUrl;
 
-            // 1. Lokale deutsche Low-Res Vorschau
-            // Wir nutzen die ID aus dem Input (falls gültig) oder die aktive Bearbeitungs-ID
+            // --- 1. SOFORTIGES MIRRORING (Text-Ebene) ---
+            // Wenn allowAutoFill aktiv ist und wir eine 8-stellige ID haben:
+            // Text in die Felder schreiben, BEVOR die Suche startet.
+            if (allowAutoFill && /^\d{8}$/.test(currentInputId)) {
+                if (!modalUrlInput.value.trim()) {
+                    modalUrlInput.value = currentInputId;
+                }
+                if (!modalUrlSketchInput.value.trim()) {
+                    modalUrlSketchInput.value = currentInputId;
+                }
+            }
+
+            // Jetzt die aktuell (evtl. gerade befüllten) Dateinamen lesen
+            const originalFilename = modalUrlInput.value.trim();
+            const sketchFilename = modalUrlSketchInput.value.trim();
+
+            // --- 2. LOKALE DEUTSCHE VORSCHAU ---
+            // Nutzt die ID aus dem Input (während des Tippens) oder die ID des Eintrags
             const lookupId = (/^\d{8}$/.test(currentInputId)) ? currentInputId : activeEditId;
 
             if (lookupId && lookupId !== 'new_entry' && cachedImages[lookupId]?.lowres) {
@@ -833,26 +869,29 @@ require_once Path::getPartialTemplatePath('header.php');
                 deImg.src = placeholderSrc;
             }
 
-            // 2. Originalbild & Skizze Suche
-            // Falls Felder leer sind, suchen wir proaktiv nach der ID
-            const searchNameEn = originalFilename || currentInputId;
-            const searchNameSketch = sketchFilename || currentInputId;
+            // --- 3. EXTERNE SUCHE (Keenspot/Originale) ---
+            // Abbruch der externen Suche, wenn keine gültige 8-stellige ID vorliegt
+            if (!/^\d{8}$/.test(currentInputId)) {
+                enImg.src = placeholderSrc;
+                sketchImg.src = placeholderSrc;
+                return;
+            }
 
-            // Suche nur starten, wenn eine 8-stellige ID vorliegt
-            if (/^\d{8}$/.test(currentInputId)) {
-                findAndCacheUrl(lookupId, searchNameEn, 'https://cdn.twokinds.keenspot.com/comics/', 'url_originalbild', enImg, placeholderSrc, (foundName) => {
-                    // Auto-Fill: Wenn das Feld leer war, befüllen wir es mit dem gefundenen Namen
-                    if (!modalUrlInput.value.trim()) modalUrlInput.value = foundName;
-                });
-
-                findAndCacheUrl(lookupId, searchNameSketch, 'https://twokindscomic.com/images/', 'url_originalsketch', sketchImg, placeholderSrc, (foundName) => {
-                    if (!modalUrlSketchInput.value.trim()) modalUrlSketchInput.value = foundName;
-                });
+            // Suche für das Originalbild
+            if (originalFilename) {
+                findAndCacheUrl(currentInputId, originalFilename, 'https://cdn.twokinds.keenspot.com/comics/', 'url_originalbild', enImg, placeholderSrc);
             } else {
                 enImg.src = placeholderSrc;
+            }
+
+            // Suche für die Skizze
+            if (sketchFilename) {
+                findAndCacheUrl(currentInputId, sketchFilename, 'https://twokindscomic.com/images/', 'url_originalsketch', sketchImg, placeholderSrc);
+            } else {
                 sketchImg.src = placeholderSrc;
             }
         }
+
 
         function findAndCacheUrl(comicId, filename, baseUrlSearch, cacheKey, imgElement, placeholderSrc, successCallback = null) {
             if (!filename || comicId === 'new_entry') {
