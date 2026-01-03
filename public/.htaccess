@@ -14,8 +14,12 @@
 #           Bitte passe die Domain-Namen und Pfade entsprechend deiner Webseite an.
 # Version:  5.0.0
 
+# --- Block 1: UTF-8 Erzwingung & Verzeichniseinstellungen ---
+# Stellt sicher, dass alle Textinhalte korrekt kodiert übertragen werden.
+AddDefaultCharset UTF-8
+DefaultLanguage de-DE
 
-# --- Block 1: Sicherheits- und Kompatibilitäts-Header ---
+# --- Block 2: Sicherheits- und Kompatibilitäts-Header ---
 # Dieser Block sendet bei jeder Anfrage wichtige HTTP-Header mit,
 # die den Browser anweisen, sich sicherer zu verhalten und die Seite korrekt darzustellen.
 <IfModule mod_headers.c>
@@ -39,25 +43,32 @@
 
 </IfModule>
 
-# --- Block 2: Eigene Fehlerseiten (Benutzerfreundlichkeit) ---
+# --- Block 3: Eigene Fehlerseiten (Benutzerfreundlichkeit) ---
 # Zeigt anstelle der technischen Standard-Fehlerseiten des Servers eigene,
 # benutzerfreundliche und im Design der Webseite gehaltene Seiten an.
 # WICHTIG: Du musst die Dateien 403.php und 404.php im Hauptverzeichnis deiner Webseite erstellen.
 ErrorDocument 403 /403.php
 ErrorDocument 404 /404.php
 
-# --- Block 3: Grundlegende Servereinstellungen & Basisschutz ---
+# --- Block 4: Grundlegende Servereinstellungen & Basisschutz ---
 # Verhindert "Directory Listing" und das "Erraten" von Dateinamen (MultiViews).
 Options -Indexes -MultiViews
+DirectoryIndex index.php index.html
 
 # Schützt diese .htaccess-Datei selbst und andere sensible Konfigurationsdateien vor direktem Zugriff über den Browser.
-<FilesMatch "(^\.htaccess|php\.ini|licence\.txt|readme\.html)">
+<FilesMatch "(^\.htaccess|php\.ini|licence\.txt|readme\.html|composer\.json|package\.json)$">
     Require all denied
 </FilesMatch>
 
-# --- Block 4: Umschreibungs- und Weiterleitungsregeln ---
+# --- Block 5: Umschreibungs- und Weiterleitungsregeln ---
 # Das Herzstück für saubere, SEO-freundliche URLs.
 RewriteEngine On
+
+# Sicherheits-Zusatz: Blockiere bekannte Exploit-Muster in URLs
+RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+RewriteRule ^(.*)$ - [F,L]
 
 # Stoppt die Umschreibung für die Fehlerdokumente.
 # Dies verhindert Endlosschleifen (Loops) bei der Fehlerbehandlung,
@@ -83,7 +94,7 @@ RewriteRule ^ /charakter-vorstellung [R=301,L]
 # und landet ganz normal im Ordner bei der index.php)
 # ===========================================================
 
-# 4a: Kanonische URL erzwingen (HTTPS & non-www)
+# 5a: Kanonische URL erzwingen (HTTPS & non-www)
 # Leitet alle Anfragen auf https://meine-domain.de um,
 # um doppelten Inhalt (Duplicate Content) bei Suchmaschinen zu vermeiden.
 # Erzwingt HTTPS für alle Anfragen.
@@ -94,17 +105,16 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
-# 4b: Schutz vor Hotlinking von Bildern
+# 5b: Schutz vor Hotlinking von Bildern
 # Verhindert, dass andere Webseiten deine Bilder direkt einbinden und so deinen Traffic verbrauchen.
 # Bilder werden nur angezeigt, wenn der Aufruf von deiner eigenen Domain kommt.
 RewriteCond %{HTTP_REFERER} !^$
 RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.de [NC]
 RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.local [NC]
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?localhost [NC]
 RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [NC,F,L]
 
 # -----------------------------------------------------------
-# 4c: SPEZIAL-REGEL (Muss VOR der allgemeinen Regel stehen)
+# 5c: SPEZIAL-REGEL (Muss VOR der allgemeinen Regel stehen)
 # Leitet alte Root-Dateien (mit oder ohne .php) direkt in den Comic-Ordner
 # -----------------------------------------------------------
 # Permanente Weiterleitungen (Redirects) für alte Comic-Pfade
@@ -116,7 +126,7 @@ RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
 RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 
 # -----------------------------------------------------------
-# 4d: Trailing Slash entfernen
+# 5d: Trailing Slash entfernen
 # -----------------------------------------------------------
 # Trailing-Slash-Weiterleitung (SEO-Optimierung)
 # Entfernt den Schrägstrich (/) am Ende von URLs (z.B. /kontakt/ -> /kontakt) (301).
@@ -147,7 +157,7 @@ RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
 RewriteRule ^ /%1 [R=301,L,NE]
 
 # -----------------------------------------------------------
-# 4e: INTERNE UMSCHREIBUNG (Damit die Seiten ohne .php funktionieren)
+# 5e: INTERNE UMSCHREIBUNG (Damit die Seiten ohne .php funktionieren)
 # -----------------------------------------------------------
 # Interne Umschreibungen für "saubere" URLs (ohne .php-Endung)
 # Dies ist die zentrale Regel, die für ALLE Ordner gilt.
@@ -168,31 +178,43 @@ RewriteRule ^(.*)$ $1.php [L]
 # Die Funktionalität war bereits durch die Regeln 4c und 4e abgedeckt.
 # Eine einzige, allgemeine Regel (4e) ist sauberer und weniger fehleranfällig.
 
-# --- Block 5: GZIP-Komprimierung (Performance) ---
+# --- Block 6: GZIP-Komprimierung (Performance - Kategorisiert) ---
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE application/javascript
-    AddOutputFilterByType DEFLATE application/rss+xml
-    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
-    AddOutputFilterByType DEFLATE application/x-font
-    AddOutputFilterByType DEFLATE application/x-font-opentype
-    AddOutputFilterByType DEFLATE application/x-font-truetype
-    AddOutputFilterByType DEFLATE application/x-font-ttf
-    AddOutputFilterByType DEFLATE application/x-javascript
-    AddOutputFilterByType DEFLATE application/xhtml+xml
-    AddOutputFilterByType DEFLATE application/xml
-    AddOutputFilterByType DEFLATE font/opentype
-    AddOutputFilterByType DEFLATE font/otf
-    AddOutputFilterByType DEFLATE font/ttf
-    AddOutputFilterByType DEFLATE image/svg+xml
-    AddOutputFilterByType DEFLATE image/x-icon
-    AddOutputFilterByType DEFLATE text/css
-    AddOutputFilterByType DEFLATE text/html
-    AddOutputFilterByType DEFLATE text/javascript
-    AddOutputFilterByType DEFLATE text/plain
-    AddOutputFilterByType DEFLATE text/xml
+    # 1. Text- und Dokumentformate
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+
+    # 2. Skripte (JavaScript)
+    AddOutputFilterByType DEFLATE text/javascript application/javascript
+
+    # 3. Datenaustausch-Formate
+    AddOutputFilterByType DEFLATE application/json application/xml
+
+    # 4. Web-Fonts und Vektorgrafiken
+    AddOutputFilterByType DEFLATE font/woff2 font/ttf image/svg+xml
 </IfModule>
 
-# --- Block 6: Browser-Caching (Performance) ---
+# --- Block 7: Expires-Caching & CORS (The Perfect Mix) ---
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+
+    # Bilder & Fonts: 1 Jahr
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+
+    # Daten & Styles: 1 Monat
+    ExpiresByType application/json "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# --- Block 8: Browser-Caching (Performance) ---
 # Weist den Browser des Besuchers an, statische Dateien (Bilder, CSS, JS) für einen
 # langen Zeitraum lokal zu speichern. Bei einem erneuten Besuch müssen diese Dateien nicht
 # erneut vom Server geladen werden, was die Seite extrem beschleunigt.
@@ -222,16 +244,17 @@ RewriteRule ^(.*)$ $1.php [L]
  </FilesMatch>
 </IfModule>
 
-# --- Block 7: Korrekte MIME-Typen für moderne Formate ---
+# --- Block 9: Korrekte MIME-Typen für moderne Formate ---
 # Stellt sicher, dass moderne Dateiformate vom Server mit dem korrekten
 # Content-Type-Header ausgeliefert werden, um Darstellungsprobleme im Browser zu vermeiden.
 <IfModule mod_mime.c>
     AddType image/webp                      .webp
     AddType image/svg+xml                   .svg .svgz
     AddType font/woff2                      .woff2
+    AddType application/json                .json
 </IfModule>
 
-# --- Block 8: ETags entfernen (Performance-Optimierung) ---
+# --- Block 10: ETags entfernen (Performance-Optimierung) ---
 # ETags sind eine Methode zur Validierung von Cache-Dateien. In manchen Konfigurationen
 # können sie das Caching behindern oder unnötige Server-Informationen preisgeben.
 # Das Entfernen ist eine gängige Best-Practice-Optimierung.
@@ -240,7 +263,7 @@ RewriteRule ^(.*)$ $1.php [L]
 </IfModule>
 FileETag None
 
-# --- Block 9: Erweiterte Sicherheits-Header (CSP & HSTS) ---
+# --- Block 11: Erweiterte Sicherheits-Header (CSP & HSTS) ---
 # Dies sind fortgeschrittene Header, die einen robusten Schutz gegen moderne Web-Angriffe bieten.
 <IfModule mod_headers.c>
     # Content Security Policy (CSP): Definiert eine Whitelist für ausführbare Ressourcen.
@@ -261,6 +284,5 @@ FileETag None
     # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
     Header always set Strict-Transport-Security "max-age=300; includeSubDomains; preload"
 
-    # HINWEIS: CSP wird jetzt via PHP (init_admin.php / init_public.php) gesetzt, da dort dynamische Nonces
-    # für maximale Sicherheit (XSS-Schutz) generiert werden können.
+    # CSP wird dynamisch in PHP verwaltet (init_admin.php).
 </IfModule>
