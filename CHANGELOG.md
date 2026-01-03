@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.21](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.20...v5.0.0-alpha.21) (2026-01-03)
+
+
+### Features
+
+* **admin:** finalize atomic storage and optimized preview logic ([c6d003f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c6d003f731627d2d071b857e5efa18c41231b363))
+* **admin:** implement image comparison and modernize report logic ([d177ff1](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d177ff1bd62d315676466d786a0fd4fbb6835cec))
+* **api:** implement automated telemetry collection and storage ([692ea92](https://github.com/RaptorXilef/twokinds.4lima.de/commit/692ea92a35a197c6339985465d80378bce710eb6))
+* implement browser reporting endpoint and upgrade infrastructure to v5.0.0-alpha.21 ([2f90ad4](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2f90ad45b1cd5ff6bf2458d8d0c85c12c088c850))
+
+
+### Bug Fixes
+
+* **api:** implement dynamic endpoint routing and csrf validation ([8c6f4ea](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8c6f4eaecfde440f6edb3f4ba63eb01127df553d))
+* **editor:** resolve auto-fill aggression and restore preview integrity ([438525d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/438525de928e04c586f1fdf1c02d1d9534bb1fc9))
+* resolve 500 Internal Server Error and stabilize local environment ([016b62a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/016b62aa570bb90760680296885f2ff162534015))
+
 ## [5.0.0-alpha.20](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.19...v5.0.0-alpha.20) (2025-12-30)
 
 
