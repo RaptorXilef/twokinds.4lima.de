@@ -23,9 +23,10 @@ ServerSignature Off
     Header set Content-Language "de"
     Header add Link "</sitemap.xml>; rel=sitemap"
 
-    # SEO & Crawler-Hints
+    # FIX: Canonical Header für Assets (Expression-Syntax für REQUEST_URI)
+    # Das "expr=" sorgt dafür, dass Apache die Variable korrekt auflöst
     <FilesMatch "\.(jpg|jpeg|png|gif|webp|avif|ico)$">
-        Header set Link "<https://twokinds.4lima.de%{REQUEST_URI}>; rel=canonical"
+        Header set Link "expr='<https://twokinds.4lima.de' . %{REQUEST_URI} . '>; rel=canonical'"
         Header set X-Robots-Tag "max-image-preview:large, max-snippet:-1, max-video-preview:-1"
         Header unset Set-Cookie
     </FilesMatch>
@@ -39,13 +40,17 @@ ServerSignature Off
     </FilesMatch>
 </IfModule>
 
+
 # --- Block 2: Sicherheits-Hardening ---
 <IfModule mod_rewrite.c>
+    RewriteEngine On
     RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK) [NC]
     RewriteRule .* - [F]
 </IfModule>
 
+
 LimitRequestBody 10485760
+
 
 <IfModule mod_headers.c>
     Header set X-UA-Compatible "IE=Edge"
@@ -64,128 +69,155 @@ LimitRequestBody 10485760
     Header set Cross-Origin-Opener-Policy "same-origin-allow-popups"
     Header set Cross-Origin-Embedder-Policy "credentialless"
 
+    # FIX: NEL Header Syntax (Anführungszeichen-Check für XAMPP)
     Header set Reporting-Endpoints "default='https://twokinds.4lima.de/api/report/index.php'"
-    Header set NEL "{\"report_to\":\"default\",\"max_age\":2592000,\"include_subdomains\":true}"
+    Header set NEL '{"report_to":"default","max_age":2592000,"include_subdomains":true}'
 
     Header edit Set-Cookie ^(.*)$ "$1; HttpOnly; Secure; SameSite=Lax"
-    Header remove X-Powered-By
-    Header remove Server
+
+    # HINWEIS: Header remove Server/X-Powered-By entfernt wegen System-Inkompatibilität
+    # Header remove Server
+    # Header remove X-Powered-By
 </IfModule>
 
-# --- Block 3: Fehlerbehandlung ---
-ErrorDocument 403 /403.php
-ErrorDocument 404 /404.php
+    # --- Block 3: Fehlerbehandlung ---
+    ErrorDocument 403 /403.php
+    ErrorDocument 404 /404.php
 
 # --- Block 4: Zero-Trust & Environment ---
-RewriteEngine On
-RewriteCond %{HTTP_HOST} !^twokinds\.4lima\.local$ [NC]
-RewriteRule \.map$ - [F,L]
-RewriteCond %{REQUEST_URI} !(^|/)\.well-known/ [NC]
-RewriteRule "(^|/)\." - [F]
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Source-Map Zugriff nur lokal erlauben
+    RewriteCond %{HTTP_HOST} !\.local$ [NC]
+    RewriteRule \.map$ - [F,L]
+
+    RewriteCond %{REQUEST_URI} !(^|/)\.well-known/ [NC]
+    RewriteRule "(^|/)\." - [F]
+</IfModule>
 
 <FilesMatch "(^\.htaccess|php\.ini|licence\.txt|readme\.html|composer\.|package\.|^\.env|\.sql$|\.log$|\.bak$)$">
     Require all denied
 </FilesMatch>
 
-<DirectoryMatch "^.*/(assets|data|resources|img|cache|src|private|secret|vendor|node_modules|\.vscode|\.git)/.*$">
-    <FilesMatch "\.(php|phtml|php[345]|phps)$">
-        Require all denied
-    </FilesMatch>
-</DirectoryMatch>
-
+# --- Block 4c: Schutz vor Skript-Ausführung in Asset-Ordnern (Rewrite-Variante) ---
+# Wenn der Pfad einen dieser Ordner enthält UND auf eine PHP-Datei endet -> Blockieren
+RewriteCond %{REQUEST_URI} ^.*/(assets|data|resources|img|cache|src|private|secret|vendor|node_modules|\.vscode|\.git)/.*\.php$ [NC]
+RewriteRule .* - [F,L]
 # --- Block 5: Performance-Hints ---
 <IfModule mod_headers.c>
-    Header add Link "</favicon.ico>; rel=preload; as=image; nopush"
-    Header add Link "</assets/img/logo.webp>; rel=preload; as=image; nopush"
-    Header add Link "</assets/css/main.min.css>; rel=preload; as=style; nopush"
-    Header add Link "</assets/fonts/main-font.woff2>; rel=preload; as=font; crossorigin; nopush"
-    Header add Link "</speculation-rules.json>; rel=speculationrules"
+#    Header add Link "</favicon.ico>; rel=preload; as=image; nopush"
+#    Header add Link "</assets/img/logo.webp>; rel=preload; as=image; nopush"
+#    Header add Link "</assets/css/main.min.css>; rel=preload; as=style; nopush"
+#    Header add Link "</assets/fonts/main-font.woff2>; rel=preload; as=font; crossorigin; nopush"
+#    Header add Link "</speculation-rules.json>; rel=speculationrules"
 
     Header add Link "<https://www.google-analytics.com>; rel=dns-prefetch"
     Header add Link "<https://www.bing.com>; rel=dns-prefetch"
     Header add Link "<https://yandex.ru>; rel=dns-prefetch"
 </IfModule>
 
-# --- Block 6: Rewrite-Engine ---
-RewriteCond %{REQUEST_URI} \.(jpe?g?|png|gif|webp|avif|css|js|mjs|woff2?|ico|br|gz|svg|json|webmanifest)$ [NC,OR]
-RewriteCond %{ENV:REDIRECT_STATUS} 200
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
+# --- Block 6: Rewrite-Engine (Inkl. Adaptive Images & Bots) ---
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-RewriteCond %{THE_REQUEST} \s[^?]*//
-RewriteRule ^.*$ /$0 [R=301,L,NE]
+    # 6a: FAST-EXIT für statische Dateien
+    RewriteCond %{REQUEST_URI} \.(jpe?g?|png|gif|webp|avif|css|js|mjs|woff2?|ico|br|gz|svg|json|webmanifest)$ [NC,OR]
+    RewriteCond %{ENV:REDIRECT_STATUS} 200
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
 
-RewriteCond %{HTTP:Accept-Encoding} br
-RewriteCond %{REQUEST_FILENAME}.br -f
-RewriteRule ^(.*)$ $1.br [L]
-RewriteCond %{HTTP:Accept-Encoding} gzip
-RewriteCond %{REQUEST_FILENAME}.gz -f
-RewriteRule ^(.*)$ $1.gz [L]
+
+
+# 6b: URL-HYGIENE
+    RewriteCond %{THE_REQUEST} \s[^?]*//
+    RewriteRule ^.*$ /$0 [R=301,L,NE]
+
+    # 6c: PRE-COMPRESSED ASSETS
+    RewriteCond %{HTTP:Accept-Encoding} br
+    RewriteCond %{REQUEST_FILENAME}.br -f
+    RewriteRule ^(.*)$ $1.br [L]
+    RewriteCond %{HTTP:Accept-Encoding} gzip
+    RewriteCond %{REQUEST_FILENAME}.gz -f
+    RewriteRule ^(.*)$ $1.gz [L]
 
 <FilesMatch "\.(js\.br|css\.br|mjs\.br)$">
     Header set Content-Encoding br
     Header append Vary Accept-Encoding
 </FilesMatch>
 
-# Adaptive Images
-RewriteCond %{HTTP_ACCEPT} image/avif
-RewriteCond %{DOCUMENT_ROOT}/$1.avif -f
-RewriteRule ^(assets/img/.*\.(?:jpg|png))$ $1.avif [T=image/avif,L]
-RewriteCond %{HTTP_ACCEPT} image/webp
-RewriteCond %{DOCUMENT_ROOT}/$1.webp -f
-RewriteRule ^(assets/img/.*\.(?:jpg|png))$ $1.webp [T=image/webp,L]
+    # 6d: ADAPTIVE IMAGES
+    RewriteCond %{HTTP_ACCEPT} image/avif
+    RewriteCond %{DOCUMENT_ROOT}/$1.avif -f
+    RewriteRule ^(assets/img/.*\.(?:jpg|png))$ $1.avif [T=image/avif,L]
+    RewriteCond %{HTTP_ACCEPT} image/webp
+    RewriteCond %{DOCUMENT_ROOT}/$1.webp -f
+    RewriteRule ^(assets/img/.*\.(?:jpg|png))$ $1.webp [T=image/webp,L]
 
-# Bots
-<IfModule mod_setenvif.c>
-    SetEnvIfNoCase User-Agent (GPTBot|CCBot|ChatGPT-User|PerplexityBot|Amazonbot|ClaudeBot|Omigili|ImagesiftBot|CriteoBot|Pinterestbot|AhrefsBot|SemrushBot|DotBot|Bytespider) bad_bot
-    <RequireAll>
-        Require all granted
-        Require not env bad_bot
-    </RequireAll>
-</IfModule>
+    # 6e: BOT-FIREWALL
+    <IfModule mod_setenvif.c>
+        SetEnvIfNoCase User-Agent (GPTBot|CCBot|ChatGPT-User|PerplexityBot|Amazonbot|ClaudeBot|Omigili|ImagesiftBot|CriteoBot|Pinterestbot|AhrefsBot|SemrushBot|DotBot|Bytespider) bad_bot
+        <RequireAll>
+            Require all granted
+            Require not env bad_bot
+        </RequireAll>
+    </IfModule>
 
-# SEO Redirects
-RewriteCond %{HTTPS} off [OR]
-RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
-RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*index\.php\ HTTP/
-RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
-RewriteRule ^ https://%1/ [R=301,L]
+    # 6f: SEO Redirects & Clean URLs
+    RewriteCond %{HTTPS} off [OR]
+    RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*index\.php\ HTTP/
+    RewriteCond %{HTTP_HOST} ^(?:www\.)?(.+)$ [NC]
+    RewriteRule ^ https://%1/ [R=301,L]
 
-RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /(.+)\.php\ HTTP/ [NC]
-RewriteRule ^(.+)\.php$ /%1 [R=301,L]
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /(.+)\.php\ HTTP/ [NC]
+    RewriteRule ^(.+)\.php$ /%1 [R=301,L]
 
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)/$ /$1 [L,R=301]
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)/$ /$1 [L,R=301]
 
-# Comic Logic
-RewriteCond %{HTTP_REFERER} !^$
-RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.(de|local) [NC]
-RewriteRule \.(jpg|jpeg|png|gif|webp|avif)$ - [NC,F,L]
+    # 6g: Comic Logic
+    RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.(de|local) [NC]
+    RewriteRule \.(jpg|jpeg|png|gif|webp|avif)$ - [NC,F,L]
 
-RewriteCond %{REQUEST_URI} !^/comic/
-RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
-RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
+    RewriteCond %{REQUEST_URI} !^/comic/
+    RewriteCond %{DOCUMENT_ROOT}/comic/$1.php -f
+    RewriteRule ^(\d{8})(\.php)?$ /comic/$1 [R=301,L]
 
-RewriteCond %{REQUEST_URI} !^/(api|admin/api)/
-RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
-RewriteRule ^ /%1 [R=301,L,NE]
+    RewriteCond %{REQUEST_URI} !^/(api|admin/api)/
+    RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+    RewriteRule ^ /%1 [R=301,L,NE]
 
-RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^(.*)$ $1.php [L]
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteRule ^(.*)$ $1.php [L]
 
 # --- Block 7: Komprimierung ---
 <IfModule mod_brotli.c>
     AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json application/ld+json application/xml font/woff font/woff2 image/svg+xml application/manifest+json
 </IfModule>
 
-# --- Block 8: Caching ---
+# --- Block 8: Asset-Lebenszyklus ---
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresDefault "access plus 1 month"
+
+    # Bilder & Fonts: 1 Jahr
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
     ExpiresByType image/webp "access plus 1 year"
     ExpiresByType image/avif "access plus 1 year"
+
     ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+
+    # Daten & Styles: 1 Monat
+    ExpiresByType application/json "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
 
 <IfModule mod_headers.c>
@@ -208,7 +240,6 @@ RewriteRule ^(.*)$ $1.php [L]
         Header merge Vary "Accept-Encoding, Cookie"
     </FilesMatch>
 </IfModule>
-FileETag None
 
 # --- Block 9: MIME ---
 <IfModule mod_mime.c>
@@ -217,11 +248,13 @@ FileETag None
     AddType font/woff2 .woff2
     AddType application/javascript .mjs
     AddType "application/json; charset=utf-8" .json
-    AddType "application/ld+json; charset=utf-8" .jsonld
-    AddType "application/manifest+json; charset=utf-8" .webmanifest
 </IfModule>
 
-# --- Block 10: HSTS ---
+# --- Block 10: HSTS (Nur Live) ---
 <IfModule mod_headers.c>
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    <If "%{HTTP_HOST} != 'twokinds.4lima.local'">
+        # Header always set Strict-Transport-Security "max-age=300; includeSubDomains; preload"
+        Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    </If>
 </IfModule>
+
