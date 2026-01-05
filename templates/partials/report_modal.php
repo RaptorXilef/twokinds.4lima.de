@@ -127,7 +127,7 @@ $debugData = [
                         <div id="report-transcript-original-display" class="transcript-display-box"></div>
                     </div>
 
-                    <textarea id="report-transcript-original" name="report_transcript_original" style="display: none;" readonly></textarea>
+                    <textarea id="report-transcript-original" name="report_transcript_original" class="c-report-modal__transcript-hidden" readonly></textarea>
                 </div>
 
                 <div class="report-images-container form-group">
@@ -144,7 +144,7 @@ $debugData = [
                 <div class="form-group debug-info-section">
             <label for="report-debug-info">System-Informationen (Telemetrie)</label>
             <textarea id="report-debug-info" name="report_debug_info" rows="8" readonly
-                      style="font-size: 0.75rem; font-family: 'Courier New', monospace;"></textarea>
+                      class="c-report-modal__telemetry"></textarea>
             <p class="input-help">Diese technischen Daten werden automatisch angehängt.</p>
         </div>
 
