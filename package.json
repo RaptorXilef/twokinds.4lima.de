@@ -96,14 +96,15 @@
     "// Erstellt einen regulären Release basierend auf der Commit-Historie.": "",
     "rel:init": "npm run rel -- --first-release",
     "// Initialisiert das Versioning und erstellt das erste Changelog.": "",
-    "rel:alpha": "npm run rel -- --prerelease alpha",
+    "rel:alpha": "npm run rel -- --prerelease alpha && npm run push-all",
     "// Erstellt oder erhöht eine Alpha-Vorabversion.": "",
     "rel:beta": "npm run rel -- --prerelease beta",
     "// Erstellt oder erhöht eine Beta-Vorabversion.": "",
     "rel:rc": "npm run rel -- --prerelease rc",
     "// Erstellt einen Release Candidate für die finale Abnahme.": "",
     "rel:patch": "npm run rel -- --release-as patch",
-    "// Erzwingt einen Patch-Release (z.B. für dringende Bugfixes).": ""
+    "// Erzwingt einen Patch-Release (z.B. für dringende Bugfixes).": "",
+    "push-all": "git push --follow-tags origin $(git branch --show-current)"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.2.0",
