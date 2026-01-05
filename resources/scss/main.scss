@@ -55,6 +55,7 @@
 @use 'components/modals';
 @use 'components/cookie-banner';
 @use 'components/thumbnail-grid';
+
 @use 'components/debug';
 @use 'components/report-modal';
 
@@ -62,6 +63,8 @@
 @use 'components/admin/tables';
 @use 'components/admin/forms';
 @use 'components/admin/ui';
+
+@use 'components/admin/session-timeout';
 
 // 6. Pages (Comic, Archive, Characters, Admin)
 @use 'pages/comic';
