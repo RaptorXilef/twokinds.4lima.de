@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.23](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.22...v5.0.0-alpha.23) (2026-01-05)
+
+
+### Bug Fixes
+
+* **security:** expand img-src csp to include explicit domains and add upgrade-insecure-requests ([2c14efb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2c14efb1e9741a9dea46df15f7d6dd602a26529a))
+
 ## [5.0.0-alpha.22](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.21...v5.0.0-alpha.22) (2026-01-05)
 
 ## [5.0.0-alpha.21](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.20...v5.0.0-alpha.21) (2026-01-03)
