@@ -88,3 +88,10 @@ body.theme-night #banner-lights-off {
 .maintbanner a:active {
     color: var(--maintbanner-text);
 }
+
+.l-main-container__disclaimer {
+    text-align: center;
+    display: block;
+    width: 100%;
+    // Ggf. noch margin/font-size ergänzen
+}

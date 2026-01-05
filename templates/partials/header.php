@@ -303,8 +303,8 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
     <!-- Ende Cookie-Consent-Banner -->
 
     <div id="mainContainer" class="main-container">
-        <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
-                target="_blank">twokinds.keenspot.com</a></center>
+        <p class="l-main-container__disclaimer">Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
+                target="_blank">twokinds.keenspot.com</a></p>
         <div id="banner-lights-off" class="banner-lights-off"></div>
         <div id="banner" class="banner">Twokinds</div>
         <div id="content-area" class="content-area">
@@ -345,8 +345,8 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
 <?php
 // --- UNIVERSALER SOCIAL MEDIA DEBUGGER (v6.4.0) ---
 if ($debugMode) {
-    echo "<div class='debug-box' style='background: #1a1a1a; color: #00ff00; padding: 15px; border: 2px dashed #00ff00; margin: 20px 0; font-family: monospace; font-size: 13px; line-height: 1.6; border-radius: 8px;'>";
-    echo "<strong style='color: #fff; border-bottom: 1px solid #555; display: block; margin-bottom: 10px;'>🔍 Social Media Image Debug</strong>";
+    echo "<div class='c-debug-box'>";
+    echo "<strong class='c-debug-box__title'>🔍 Social Media Image Debug</strong>";
 
     $displayImage = null;
     $statusType = 'none'; // 'specific', 'fallback', 'none'
@@ -360,19 +360,19 @@ if ($debugMode) {
         echo "<strong>Public URL (Spezifisch):</strong> " . htmlspecialchars($ogImage) . "<br>";
 
         if (file_exists($pathOg)) {
-            echo "<span style='color: #00ff00;'>✔ SPEZIFISCHES BILD GEFUNDEN.</span><br>";
+            echo "<span class='c-debug-box__status--success'>✔ SPEZIFISCHES BILD GEFUNDEN.</span><br>";
             $displayImage = $ogImage;
             $statusType = 'specific';
         } else {
-            echo "<span style='color: #ff3333;'>✘ SPEZIFISCHES BILD FEHLT AUF SERVER.</span><br>";
+            echo "<span class='c-debug-box__status--error'>✘ SPEZIFISCHES BILD FEHLT AUF SERVER.</span><br>";
         }
     } else {
-        echo "<strong>Public URL:</strong> <span style='color: #aaa;'>--- LEER ---</span><br>";
+        echo "<strong>Public URL:</strong> <span class='c-debug-box__status--muted'>--- LEER ---</span><br>";
     }
 
     // 2. Prüfung: Fallback (nur wenn spezifisches Bild fehlt oder leer ist)
     if ($statusType === 'none') {
-        echo "<hr style='border: 0; border-top: 1px solid #333; margin: 10px 0;'>";
+        echo "<hr class='c-debug-box__separator'>";
         if (defined('DEFAULT_SOCIAL_IMAGE') && !empty(DEFAULT_SOCIAL_IMAGE)) {
             $cleanFb = explode('?', DEFAULT_SOCIAL_IMAGE)[0];
             $relFb = str_replace(DIRECTORY_PUBLIC_URL, '', $cleanFb);
@@ -382,25 +382,25 @@ if ($debugMode) {
             echo htmlspecialchars(DEFAULT_SOCIAL_IMAGE) . "<br>";
 
             if (file_exists($pathFb)) {
-                echo "<span style='color: #00ff00;'>✔ FALLBACK-BILD GEFUNDEN.</span><br>";
+                echo "<span class='c-debug-box__status--success'>✔ FALLBACK-BILD GEFUNDEN.</span><br>";
                 $displayImage = DEFAULT_SOCIAL_IMAGE;
                 $statusType = 'fallback';
             } else {
-                echo "<span style='color: #ff3333;'>✘ AUCH FALLBACK-BILD FEHLT AUF SERVER.</span><br>";
+                echo "<span class='c-debug-box__status--error'>✘ AUCH FALLBACK-BILD FEHLT AUF SERVER.</span><br>";
             }
         } else {
-            echo "<span style='color: #ff3333;'>✘ KEIN FALLBACK DEFINIERT (DEFAULT_SOCIAL_IMAGE).</span><br>";
+            echo "<span class='c-debug-box__status--error'>✘ KEIN FALLBACK DEFINIERT (DEFAULT_SOCIAL_IMAGE).</span><br>";
         }
     }
 
     // 3. Visuelle Einbindung & Abschluss-Meldung
-    echo "<div style='margin-top: 15px; padding-top: 10px; border-top: 1px solid #333;'>";
+    echo "<div class='c-debug-box__preview'>";
     if ($displayImage) {
-        echo "<strong style='color: #fff;'>Vorschau (Crawler-Ansicht):</strong><br>";
-        echo "<img src='" . htmlspecialchars($displayImage) . "' style='max-width: 100%; border: 1px solid #555; margin-top: 10px; background: #000;'>";
+        echo "<strong class='c-debug-box__preview-title'>Vorschau (Crawler-Ansicht):</strong><br>";
+        echo "<img src='" . htmlspecialchars($displayImage) . "' class='c-debug-box__preview-img' alt='Debug Preview'>";
     } else {
-        echo "<span style='color: #ff3333; font-weight: bold; font-size: 14px;'>CRITICAL: KEIN BILD VERFÜGBAR!</span><br>";
-        echo "<small style='color: #aaa;'>Crawler werden kein Vorschaubild anzeigen.</small>";
+        echo "<span class='c-debug-box__error-msg'>CRITICAL: KEIN BILD VERFÜGBAR!</span>";
+        echo "<small class='c-debug-box__status--muted'>Crawler werden kein Vorschaubild anzeigen.</small>";
     }
     echo "</div>";
 
