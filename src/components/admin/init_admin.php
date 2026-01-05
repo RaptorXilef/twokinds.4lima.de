@@ -13,7 +13,8 @@
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+ *            <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  *
  * @since 2.0.0 - 4.0.0
@@ -33,9 +34,11 @@
  * - fix(UX): Fehlender Logout-Grund bei abgelaufener Session in Block 7 ergänzt (Cookie-Check).
  * - feat(API): Korrekte JSON-Antworten (401) für AJAX-Calls bei Session-Ende statt HTML-Redirects.
  * - feat(JS): Übergabe der Timeout-Konstanten an JavaScript via globalem window-Objekt.
- * - fix(Stability): PHP-Timeout um 30 Sekunden verlängert ("Grace Period"), damit JS-Logout-Requests nicht in eine abgelaufene Session laufen.
+ * - fix(Stability): PHP-Timeout um 30 Sekunden verlängert ("Grace Period"), damit JS-Logout-Requests nicht in eine
+ *    abgelaufene Session laufen.
  * - fix(Stability): Explizites Setzen von `session.gc_maxlifetime` passend zum Timeout.
- * - fix(Security): `verify_csrf_token` erkennt Logout-Aktionen nun automatisch als "fehlertolerant", um White-Screen-Errors bei abgelaufener Session zu verhindern.
+ * - fix(Security): `verify_csrf_token` erkennt Logout-Aktionen nun automatisch als "fehlertolerant", um
+ *    White-Screen-Errors bei abgelaufener Session zu verhindern.
  *
  * - fix(Session): Zombie-Cookie-Vernichtung integriert.
  * - fix(Logic): Timeout-Redirect auf index.php deaktiviert, um POST-Requests nicht zu unterbrechen.
@@ -92,7 +95,7 @@ try {
  * Hilfsfunktion zur vollständigen Zerstörung der Session (Server & Browser).
  */
 if (!function_exists('destroy_admin_session')) {
-        /**
+    /**
      * Eliminiert die Session auf dem Server und erzwingt das Löschen des Browser-Cookies.
      */
     function destroy_admin_session(): void
@@ -126,17 +129,65 @@ if (!function_exists('destroy_admin_session')) {
 $nonce = bin2hex(random_bytes(16));
 
 $csp = [
-    'default-src' => ["'self'"],
+    'default-src' => [
+        "'self'",
+    ],
     'upgrade-insecure-requests' => [],
-    'script-src'  => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co"],
-    'style-src'   => ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://code.jquery.com/"],
-    'font-src'    => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://twokinds.4lima.de", "https://twokinds.4lima.local"],
-    'img-src'     => ["'self'", "data:", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://placehold.co", "https://twokinds.4lima.de", "https://twokinds.4lima.local"],
-    'connect-src' => ["'self'", "https://cdn.jsdelivr.net", "https://*.google-analytics.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com"],
-    'object-src'  => ["'none'"],
-    'frame-ancestors' => ["'self'"],
-    'base-uri'    => ["'self'"],
-    'form-action' => ["'self'"],
+    'script-src'  => [
+        "'self'",
+        "'nonce-{$nonce}'",
+        "https://code.jquery.com",
+        "https://cdnjs.cloudflare.com",
+        "https://cdn.jsdelivr.net",
+        "https://www.googletagmanager.com",
+        "https://placehold.co",
+    ],
+    'style-src'   => [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com",
+        "https://cdnjs.cloudflare.com",
+        "https://code.jquery.com/",
+    ],
+    'font-src'    => [
+        "'self'",
+        "data:",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.gstatic.com",
+        "https://cdnjs.cloudflare.com",
+        "https://twokinds.4lima.de",
+        "https://twokinds.4lima.local",
+    ],
+    'img-src'     => [
+        "'self'",
+        "data:",
+        "https://www.googletagmanager.com",
+        "https://cdn.twokinds.keenspot.com",
+        "https://twokindscomic.com",
+        "https://placehold.co",
+        "https://twokinds.4lima.de",
+        "https://twokinds.4lima.local",
+    ],
+    'connect-src' => [
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://*.google-analytics.com",
+        "https://cdn.twokinds.keenspot.com",
+        "https://twokindscomic.com",
+    ],
+    'object-src'  => [
+        "'none'",
+    ],
+    'frame-ancestors' => [
+        "'self'",
+    ],
+    'base-uri'    => [
+        "'self'",
+    ],
+    'form-action' => [
+        "'self'",
+    ],
 ];
 
 $cspHeader = "";

@@ -96,7 +96,7 @@
     "// Erstellt einen regulären Release basierend auf der Commit-Historie.": "",
     "rel:init": "npm run rel -- --first-release",
     "// Initialisiert das Versioning und erstellt das erste Changelog.": "",
-    "rel:alpha": "npm run rel -- --prerelease alpha && npm run push-all",
+    "rel:alpha": "npm run rel -- --prerelease alpha",
     "// Erstellt oder erhöht eine Alpha-Vorabversion.": "",
     "rel:beta": "npm run rel -- --prerelease beta",
     "// Erstellt oder erhöht eine Beta-Vorabversion.": "",

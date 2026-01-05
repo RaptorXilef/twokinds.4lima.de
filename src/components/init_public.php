@@ -13,7 +13,8 @@
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+ *            <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
  * @version   2.0.0
  * @since     2.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
@@ -45,17 +46,69 @@ $nonce = bin2hex(random_bytes(16));
 
 // Content-Security-Policy (CSP)
 $csp = [
-    'default-src' => ["'self'"],
+    'default-src' => [
+        "'self'",
+    ],
     'upgrade-insecure-requests' => [],
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co", "https://cdn.twokinds.keenspot.com"],
-    'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
-    'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com", "https://cdn.jsdelivr.net", "https://twokinds.4lima.de"],
-    'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://www.2kinds.com", "https://i.creativecommons.org", "https://licensebuttons.net", "https://twokinds.4lima.de", "https://twokinds.4lima.local", "https://twokinds.4lima.de", "https://twokinds.4lima.local"],
-    'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com", "https://twokindscomic.com", "https://cdn.jsdelivr.net"],
-    'object-src' => ["'none'"],
-    'frame-ancestors' => ["'self'"],
-    'base-uri' => ["'self'"],
-    'form-action' => ["'self'"],
+    'script-src' => [
+        "'self'",
+        "'nonce-{$nonce}'",
+        "https://code.jquery.com",
+        "https://cdnjs.cloudflare.com",
+        "https://cdn.jsdelivr.net",
+        "https://www.googletagmanager.com",
+        "https://placehold.co",
+        "https://cdn.twokinds.keenspot.com",
+    ],
+    'style-src' => [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdnjs.cloudflare.com",
+        "https://cdn.jsdelivr.net",
+        "https://cdn.twokinds.keenspot.com",
+        "https://fonts.googleapis.com",
+    ],
+    'font-src' => [
+        "'self'",
+        "https://cdnjs.cloudflare.com",
+        "https://fonts.gstatic.com",
+        "https://cdn.twokinds.keenspot.com",
+        "https://cdn.jsdelivr.net",
+        "https://twokinds.4lima.de",
+    ],
+    'img-src' => [
+        "'self'",
+        "data:",
+        "https://placehold.co",
+        "https://cdn.twokinds.keenspot.com",
+        "https://twokindscomic.com",
+        "https://www.2kinds.com",
+        "https://i.creativecommons.org",
+        "https://licensebuttons.net",
+        "https://twokinds.4lima.de",
+        "https://twokinds.4lima.local",
+        "https://twokinds.4lima.de",
+        "https://twokinds.4lima.local",
+    ],
+    'connect-src' => [
+        "'self'",
+        "https://cdn.twokinds.keenspot.com",
+        "https://region1.google-analytics.com",
+        "https://twokindscomic.com",
+        "https://cdn.jsdelivr.net",
+    ],
+    'object-src' => [
+        "'none'",
+    ],
+    'frame-ancestors' => [
+        "'self'",
+    ],
+    'base-uri' => [
+        "'self'",
+    ],
+    'form-action' => [
+        "'self'",
+    ],
 ];
 $cspHeader = '';
 foreach ($csp as $directive => $sources) {
