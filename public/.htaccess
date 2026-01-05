@@ -63,7 +63,7 @@ LimitRequestBody 10485760
     Header set Permissions-Policy "accelerometer=(), autoplay=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=(), hid=(), serial=(), idle-detection=(), bluetooth=(), publickey-credentials-get=(), web-share=(self), attribution-reporting=(self)"
 
     Header set X-XSS-Protection "0"
-    Header set Content-Security-Policy "default-src 'self' https:; upgrade-insecure-requests; frame-ancestors 'self'; frame-src 'self' https://*.google.com https://*.doubleclick.net https://*.google-analytics.com https://*.bing.com; object-src 'none'; base-uri 'self';"
+    # Header set Content-Security-Policy "default-src 'self' https:; upgrade-insecure-requests; frame-ancestors 'self'; frame-src 'self' https://*.google.com https://*.doubleclick.net https://*.google-analytics.com https://*.bing.com; object-src 'none'; base-uri 'self';"
 
     Header set Cross-Origin-Resource-Policy "cross-origin"
     Header set Cross-Origin-Opener-Policy "same-origin-allow-popups"

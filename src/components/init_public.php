@@ -33,7 +33,7 @@ session_set_cookie_params([
     'domain' => $_SERVER['HTTP_HOST'],
     'secure' => isset($_SERVER['HTTPS']),
     'httponly' => true,
-    'samesite' => 'Strict'
+    'samesite' => 'Strict',
 ]);
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -46,10 +46,11 @@ $nonce = bin2hex(random_bytes(16));
 // Content-Security-Policy (CSP)
 $csp = [
     'default-src' => ["'self'"],
+    'upgrade-insecure-requests' => [],
     'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co", "https://cdn.twokinds.keenspot.com"],
     'style-src' => ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://fonts.googleapis.com"],
     'font-src' => ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com", "https://cdn.twokinds.keenspot.com", "https://cdn.jsdelivr.net", "https://twokinds.4lima.de"],
-    'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://www.2kinds.com", "https://i.creativecommons.org", "https://licensebuttons.net"],
+    'img-src' => ["'self'", "data:", "https://placehold.co", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://www.2kinds.com", "https://i.creativecommons.org", "https://licensebuttons.net", "https://twokinds.4lima.de", "https://twokinds.4lima.local", "https://twokinds.4lima.de", "https://twokinds.4lima.local"],
     'connect-src' => ["'self'", "https://cdn.twokinds.keenspot.com", "https://region1.google-analytics.com", "https://twokindscomic.com", "https://cdn.jsdelivr.net"],
     'object-src' => ["'none'"],
     'frame-ancestors' => ["'self'"],
