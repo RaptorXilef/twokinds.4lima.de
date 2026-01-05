@@ -1,3 +1,37 @@
 {
-    "extends": "stylelint-config-standard-scss"
+  "extends": [
+    "stylelint-config-standard-scss",
+    "stylelint-config-recess-order"
+  ],
+  "plugins": ["stylelint-declaration-strict-value"],
+  "rules": {
+    "alpha-value-notation": "number",
+    "no-empty-source": null,
+    "scss/at-rule-no-unknown": true,
+    "max-nesting-depth": [
+      3,
+      {
+        "ignorePseudoClasses": [
+          "hover",
+          "focus",
+          "&.theme-night",
+          "body.theme-night &"
+        ]
+      }
+    ],
+    "//": "Zwingt zur Nutzung von Variablen für Farben und Schriften",
+    "scale-unlimited/declaration-strict-value": [
+      ["/color/", "font-family"],
+      {
+        "ignoreValues": [
+          "inherit",
+          "transparent",
+          "initial",
+          "none",
+          "currentColor"
+        ],
+        "message": "Bitte nutze eine SCSS-Variable für '${property}'. Hartcodierte Werte sind nicht erlaubt."
+      }
+    ]
+  }
 }

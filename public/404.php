@@ -1,17 +1,19 @@
 <?php
+
 /**
  * Fehlerseite für den HTTP-Status 404 (Not Found / Seite nicht gefunden).
- * 
+ *
  * @file      ROOT/public/404.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.1
+ *
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.0.1 Umstellung der Bildpfade und Logik auf das neue Layout.
+ * @since     5.0.0 refactor(Page): Inline-CSS entfernt, Nutzung der Comic-Page-Komponenten für einheitliches Design.
  */
 
 // Setze den HTTP-Statuscode, damit Browser und Suchmaschinen wissen, dass dies ein Fehler ist.
@@ -24,21 +26,17 @@ $debugMode = $debugMode ?? false;
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/init_public.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
-// require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
-
-// === 3. BILD-PFADE & FALLBACKS ===
-// URLs erstellen (für die Ausgabe im HTML)
+// === 2. LADE-SKRIPTE & DATEN ===
+// URLs erstellen
 $lowresImage = URL::getImgLayoutLowresUrl('404.webp');
 $hiresImage = URL::getImgLayoutHiresUrl('404.webp');
 
-// Lokale Pfade erstellen (für die Existenzprüfung)
+// Lokale Pfade erstellen
 $lowresImagePath = Path::getImgLayoutLowresPath('404.webp');
 $hiresImagePath = Path::getImgLayoutHiresPath('404.webp');
 
 $placeholderUrl = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
 
-// URLs mit DIRECTORY_PUBLIC_URL erstellen
 $imageToShow = ($lowresImage && file_exists($lowresImagePath)) ? ltrim($lowresImage, '/') : $placeholderUrl;
 $linkToShow = ($hiresImage && file_exists($hiresImagePath)) ? ltrim($hiresImage, '/') : $imageToShow;
 
@@ -51,45 +49,28 @@ $pageTitle = 'Fehler 404 - Seite nicht gefunden';
 $pageHeader = 'Fehler 404: Seite nicht gefunden';
 $robotsContent = 'noindex, follow'; // Wichtig für SEO: Seite nicht indexieren
 
-// === 5. HEADER EINBINDEN (mit Path-Klasse) ===
+// === 4. HEADER EINBINDEN ===
+$isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<!-- ... (unveränderter CSS-Code) ... -->
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* Passt die Größe des Fehler-Bildes an die Containerbreite an */
-    #error-image {
-        width: 100%;
-        max-width: 800px;
-        /* Maximale Breite des Bildes */
-        height: auto;
-        display: block;
-        margin: 20px auto;
-        /* Zentriert das Bild */
-        border-radius: 8px;
-    }
-
-    .transcript {
-        border-top: 1px dashed #ccc;
-        padding-top: 15px;
-        margin-top: 20px;
-    }
-</style>
-
-<article class="comic">
     <header>
-        <h1><?php echo htmlspecialchars($pageHeader); ?></h1>
+        <h1 class="page-header"><?php echo htmlspecialchars($pageHeader); ?></h1>
     </header>
 
     <div>
         <a href="<?php echo htmlspecialchars($linkToShow); ?>" target="_blank" rel="noopener noreferrer">
-            <img id="error-image" src="<?php echo htmlspecialchars($imageToShow); ?>"
+            <img class="comic-image" src="<?php echo htmlspecialchars($imageToShow); ?>"
                 alt="Fehlerbild: Seite nicht gefunden">
         </a>
     </div>
 
+    <hr>
+
     <aside class="transcript">
-        <h2>Wo sind wir denn hier gelandet?</h2>
+        <div class="transcript-header">
+            <h3>Wo sind wir denn hier gelandet?</h3>
+        </div>
         <div class="transcript-content">
             <p>
                 Du bist einem Link gefolgt oder hast eine Adresse eingegeben, die ins Leere führt.
@@ -113,6 +94,5 @@ require_once Path::getPartialTemplatePath('header.php');
             </p>
         </div>
     </aside>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

@@ -1,0 +1,256 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Cookie Consent Banner.
+///
+/// Styling für das Overlay, Kategorien-Auswahl und Action-Buttons.
+/// DSGVO-konformer Cookie-Consent Banner.
+///
+
+/*!
+ * @file       resources/scss/components/_cookie-banner.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Refactoring.
+/// - Zusammenführung von Light/Dark Mode via CSS Vars.
+/// - style(Linter): Hover-Specificity gefixt.
+/// - refactor(HTML): IDs auf Kebab-Case umgestellt (erfordert HTML/JS-Anpassung).
+/// - style(Linter): Unerwartete Leerzeile entfernt.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - fix: .toggle-details-container hinzugefügt für besseres Spacing im Banner.
+/// - fix: .inner-collapsible für verschachtelte Details implementiert.
+///
+
+// Verwendete SCSS-Variablen:
+// - $font-stack: Hauptschriftart
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --cookie-text: Textfarbe im Banner
+// - --cookie-bg: Hintergrundfarbe des Banners
+// - --cookie-heading: Farbe der Überschrift
+// - --cookie-cat-bg: Hintergrundfarbe der Kategorie-Boxen
+// - --cookie-desc: Farbe der Beschreibungstexte
+// - --cookie-btn-accept-bg: Hintergrund "Alle akzeptieren"
+// - --cookie-btn-accept-hover: Hover "Alle akzeptieren"
+// - --cookie-btn-reject-bg: Hintergrund "Alle ablehnen"
+// - --cookie-btn-reject-hover: Hover "Alle ablehnen"
+// - --cookie-btn-save-bg: Hintergrund "Speichern"
+// - --cookie-btn-save-hover: Hover "Speichern"
+// - --border-medium: Rahmenfarbe für Collapsibles
+// - --cookie-link: Linkfarbe
+// - --cookie-link-hover: Link Hover-Farbe
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+#cookie-consent-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    z-index: 9999;
+    display: none;
+    width: 90%;
+    max-width: 600px;
+    padding: 20px;
+    font-family: $font-stack;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--cookie-text);
+    background-color: var(--cookie-bg);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.2);
+    transform: translateX(-50%);
+
+    h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.4em;
+        color: var(--cookie-heading);
+        text-align: center;
+    }
+
+    p {
+        margin-bottom: 15px;
+    }
+
+    @include media-tablet {
+        bottom: 10px;
+        width: 95%;
+        padding: 15px;
+
+        h3 {
+            font-size: 1.2em;
+        }
+    }
+}
+
+// Theme Override: Banner Shadow
+body.theme-night #cookie-consent-banner {
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.4);
+}
+
+.cookie-category {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: var(--cookie-cat-bg);
+    border-radius: 5px;
+
+    label {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    input[type='checkbox'] {
+        margin-right: 10px;
+        cursor: pointer;
+        transform: scale(1.2);
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    }
+
+    .description {
+        margin-top: 5px;
+        margin-left: 30px;
+        font-size: 0.9em;
+        color: var(--cookie-desc);
+    }
+
+    ul {
+        padding-left: 0;
+        margin-top: 10px;
+        margin-bottom: 0;
+        list-style-type: none;
+    }
+
+    li {
+        margin-bottom: 10px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+.cookie-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-around;
+    margin-top: 20px;
+
+    button {
+        flex: 1 1 auto;
+        min-width: 120px;
+        padding: 10px 15px;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.2s ease;
+    }
+
+    @include media-tablet {
+        flex-direction: column;
+    }
+}
+
+#accept-all-cookies {
+    color: #fff;
+    background-color: var(--cookie-btn-accept-bg);
+
+    &:hover {
+        background-color: var(--cookie-btn-accept-hover);
+    }
+}
+
+// Theme Override: Accept Button Text Color
+body.theme-night #accept-all-cookies {
+    color: var(--cookie-text);
+}
+
+#reject-all-cookies {
+    color: var(--cookie-text);
+    background-color: var(--cookie-btn-reject-bg);
+
+    &:hover {
+        background-color: var(--cookie-btn-reject-hover);
+    }
+}
+
+#save-cookie-preferences {
+    color: var(--cookie-text);
+    background-color: var(--cookie-btn-save-bg);
+
+    &:hover {
+        background-color: var(--cookie-btn-save-hover);
+    }
+}
+
+.cookie-banner .collapsible-content {
+    padding: 0 0 5px 15px; // Spezielles Padding für den Banner
+    margin-top: 5px;
+    font-size: 0.9em;
+    border-left: 2px solid var(--border-medium);
+}
+
+// Theme Override: Border Color (falls abweichend von Default)
+body.theme-night .collapsible-content {
+    border-left-color: var(--border-medium);
+}
+
+.toggle-details {
+    margin-left: 10px;
+    font-size: 0.9em;
+    color: var(--cookie-link);
+    white-space: nowrap;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--cookie-link-hover);
+    }
+}
+
+.toggle-icon {
+    margin-left: 5px;
+    transition: transform 0.2s ease;
+}
+
+// Button-Container auf der Datenschutzerklärungs-Seite
+.cookie-settings-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Hinzugefügte Class nach dem Refactoring */
+.toggle-details-container {
+    margin: 8px 0;
+}
+
+.inner-collapsible {
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    background-color: rgb(0 0 0 / 0.03);
+    border-radius: 4px;
+}
+
+body.theme-night .inner-collapsible {
+    background-color: rgb(255 255 255 / 0.05);
+}

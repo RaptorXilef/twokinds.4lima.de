@@ -1,0 +1,212 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Normalize.css (Moderne Minimal-Version)
+///
+/// Reset auf einen konsistenten Browser-Standard.
+///
+/// Browser Normalisierung.
+///  Setzt Standard-Styles zurück, um ein konsistentes Aussehen über verschiedene Browser hinweg zu gewährleisten.
+///  Basiert auf normalize.css.
+///
+
+/*!
+ * @file       resources/scss/vendors/_normalize.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Original Version.
+/// - style(Linter): Doppelte Font-Family Deklarationen entfernt.
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine)
+
+html {
+    line-height: 1.15;
+    text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+}
+
+main {
+    display: block;
+}
+
+h1 {
+    margin: 0.67em 0;
+    font-size: 2em;
+}
+
+hr {
+    box-sizing: content-box;
+    height: 0;
+    overflow: visible;
+}
+
+pre {
+    font-family: monospace;
+    font-size: 1em;
+}
+
+a {
+    background-color: transparent;
+}
+
+abbr[title] {
+    text-decoration: underline;
+    text-decoration: underline dotted;
+    border-bottom: none;
+}
+
+b,
+strong {
+    font-weight: bolder;
+}
+
+code,
+kbd,
+samp {
+    font-family: monospace;
+    font-size: 1em;
+}
+
+small {
+    font-size: 80%;
+}
+
+sub,
+sup {
+    position: relative;
+    font-size: 75%;
+    line-height: 0;
+    vertical-align: baseline;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+sup {
+    top: -0.5em;
+}
+
+img {
+    border-style: none;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+    margin: 0;
+    font-family: inherit;
+    font-size: 100%;
+    line-height: 1.15;
+}
+
+button,
+input {
+    overflow: visible;
+}
+
+button,
+select {
+    text-transform: none;
+}
+
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+    appearance: auto;
+}
+
+button::-moz-focus-inner,
+[type='button']::-moz-focus-inner,
+[type='reset']::-moz-focus-inner,
+[type='submit']::-moz-focus-inner {
+    padding: 0;
+    border-style: none;
+}
+
+button:-moz-focusring,
+[type='button']:-moz-focusring,
+[type='reset']:-moz-focusring,
+[type='submit']:-moz-focusring {
+    outline: 1px dotted ButtonText;
+}
+
+fieldset {
+    padding: 0.35em 0.75em 0.625em;
+}
+
+legend {
+    box-sizing: border-box;
+    display: table;
+    max-width: 100%;
+    padding: 0;
+    color: inherit;
+    white-space: normal;
+}
+
+progress {
+    vertical-align: baseline;
+}
+
+textarea {
+    overflow: auto;
+}
+
+[type='checkbox'],
+[type='radio'] {
+    box-sizing: border-box;
+    padding: 0;
+}
+
+[type='number']::-webkit-inner-spin-button,
+[type='number']::-webkit-outer-spin-button {
+    height: auto;
+}
+
+[type='search'] {
+    appearance: textfield;
+    outline-offset: -2px;
+}
+
+[type='search']::-webkit-search-decoration {
+    appearance: none;
+}
+
+::-webkit-file-upload-button {
+    font: inherit;
+    appearance: auto;
+}
+
+details {
+    display: block;
+}
+
+summary {
+    display: list-item;
+}
+
+template {
+    display: none;
+}
+
+[hidden] {
+    display: none;
+}

@@ -1,0 +1,608 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Modals und Dialoge.
+///
+/// Styling für Popups, Advanced-Modals (Sticky Header/Footer) und Report-Details.
+/// Includes Report Modals & Popups.
+///
+
+/*!
+ * @file       resources/scss/components/_modals.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Zusammenführung von Light/Dark Mode.
+/// - Erweiterung um .modal-advanced-layout (Sticky Header/Footer).
+/// - Integration von Image Preview und Character Grid Styles.
+/// - fix(Design): Original-Styles für Dialoge und Close-Buttons wiederhergestellt.
+/// - style(Report): Styles für Diff-Box und Code-Ansicht hinzugefügt.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - style(Report): Report-spezifische Grid-Styles und Diff-Viewer Container hinzugefügt.
+/// - fix(Design): .report-images-container wiederhergestellt.
+/// - style(Refactor): Selektoren gruppiert, um Redundanzen zu vermeiden (DRY).
+/// - style(Code): Gemeinsame Definition für Monospace-Elemente.
+///
+
+// Verwendete SCSS-Variablen:
+// - $font-mono: Monospace Schriftart für Code/Diffs
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --content-bg: Hintergrund für Modals/Inputs
+// - --border-dark: Dunkler Rahmen
+// - --border-light: Heller Rahmen
+// - --border-medium: Mittlerer Rahmen
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --page-bg: Seitenhintergrund (für Mix)
+// - --text-on-medium: Text auf Buttons/Headern
+// - --button-hover-bg: Hover-Hintergrund
+// - --button-bg: Button Hintergrund
+// - --content-area-bg: Hintergrund für Bild-Container
+// - --characters-area-bg: Hintergrund für Charaktere
+// - --text-color-light: Helle Textfarbe
+// - --link-color: Akzentfarbe
+
+@use '../abstracts/variables' as *;
+
+/* --- Allgemeine Modal-Stile (Basis) --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    overflow: auto;
+    background-color: rgb(0 0 0 / 0.6);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1001;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.modal-content {
+    position: relative;
+    z-index: 1002;
+    display: flex;
+    flex-direction: column; // Wichtig für Sticky Footer
+    width: 100%;
+    max-width: 1045px; // Standardbreite für große Editor-Modals
+    max-height: 90vh;
+    margin: auto;
+    font-size: 1.2em;
+    color: var(--text-color);
+    background-color: var(--content-bg); // Default Light
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    box-shadow:
+        0 4px 8px 0 rgb(0 0 0 / 0.2),
+        0 6px 20px 0 rgb(0 0 0 / 0.19);
+}
+
+body.theme-night .modal-content {
+    background-color: var(--sidebar-bg); // Dark Modal BG
+    border-color: var(--border-light);
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.5);
+}
+
+/* --- Advanced Modal Layout (Sticky Header/Footer) --- */
+.modal-advanced-layout {
+    overflow: hidden; // Verhindert doppelte Scrollbalken am Hauptcontainer
+}
+
+// Entschachtelte Elemente von .modal-advanced-layout
+.modal-header-wrapper {
+    display: flex;
+    flex-shrink: 0; // Darf nicht schrumpfen
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    background-color: var(--content-bg);
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.modal-header-wrapper h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+body.theme-night .modal-header-wrapper {
+    background-color: var(--sidebar-bg);
+    border-bottom-color: var(--border-light);
+}
+
+.modal-scroll-content {
+    flex-grow: 1;
+    padding: 25px;
+    overflow-y: auto; // Hier findet das Scrollen statt
+}
+
+.modal-scroll-content .form-group {
+    margin-bottom: 15px;
+}
+
+.modal-scroll-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.modal-scroll-content input,
+.modal-scroll-content textarea,
+.modal-scroll-content select {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px;
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+body.theme-night .modal-scroll-content input,
+body.theme-night .modal-scroll-content textarea,
+body.theme-night .modal-scroll-content select {
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
+}
+
+.modal-footer-actions {
+    z-index: 10;
+    flex-shrink: 0; // Darf nicht schrumpfen
+    padding: 15px 25px;
+    background-color: var(--content-bg);
+    border-top: 1px solid var(--border-medium);
+}
+
+.modal-footer-actions .modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+body.theme-night .modal-footer-actions {
+    background-color: var(--sidebar-bg);
+    border-top-color: var(--border-light);
+}
+
+.modal-close,
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    padding: 0 5px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.modal-close:hover,
+.modal-close:focus,
+.close-button:hover,
+.close-button:focus {
+    color: var(--text-on-medium);
+}
+
+body.theme-night .modal-close,
+body.theme-night .close-button {
+    color: rgb(255 255 255 / 0.6);
+}
+
+body.theme-night .modal-close:hover,
+body.theme-night .modal-close:focus,
+body.theme-night .close-button:hover,
+body.theme-night .close-button:focus {
+    color: var(--text-color);
+}
+
+/* --- Image Preview Section (Toggle Buttons & Images) --- */
+#modal-image-preview-section {
+    padding-top: 15px;
+    margin-top: 20px;
+    text-align: center;
+    border-top: 1px dashed var(--border-medium);
+}
+
+// TODO Erinnerung für Phase 3 -Konsolidierung (DRY - Don't Repeat Yourself)
+// .button-toggle-group und .report-images-container sind jetzt in admin/_forms.scss bzw. admin/_editors.scss oder globaler
+// Da diese hier noch benötigt werden für Frontend-Modals (z.B. Report),
+// sollten sie idealerweise importiert oder hier definiert werden.
+// Da sie im ursprünglichen File waren, lasse ich die Struktur für das Frontend hier
+// und referenziere auf die globale Definition (falls vorhanden) oder definiere neu.
+
+// ACHTUNG: Duplizierung vermeiden.
+// .report-images-container war vorher hier definiert.
+
+// Button Toggle Group (Wiederhergestellt und verflacht)
+.button-toggle-group {
+    display: inline-flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    overflow: hidden;
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+}
+
+.button-toggle-group .button-toggle {
+    padding: 8px 15px;
+    margin: 0;
+    color: var(--text-color);
+    cursor: pointer;
+    background-color: var(--content-bg);
+    border: none;
+    border-right: 1px solid var(--border-medium);
+    border-radius: 0;
+}
+
+.button-toggle-group .button-toggle:last-child {
+    border-right: none;
+}
+
+.button-toggle-group .button-toggle:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.button-toggle-group .button-toggle.active {
+    color: white;
+    background-color: #007bff;
+}
+
+body.theme-night .button-toggle-group .button-toggle {
+    background-color: var(--button-bg);
+}
+
+body.theme-night .button-toggle-group .button-toggle.active {
+    background-color: #007bff;
+}
+
+/* --- Report Specific Details --- */
+
+.report-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+// Gemeinsame Box-Styles (Container & Viewer)
+.report-info-grid,
+.report-description-box,
+.diff-viewer {
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
+.report-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 15px;
+    background-color: var(--table-row-even);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-item .label {
+    font-size: 0.75em;
+    font-weight: bold;
+    color: var(--text-color-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+// Gemeinsame Monospace-Styles
+.info-item .value,
+.diff-viewer,
+.loading-text {
+    font-family: $font-mono;
+    font-size: 0.9em;
+}
+
+.info-item .value {
+    color: var(--text-color);
+}
+
+.report-description-box {
+    padding: 15px;
+    line-height: 1.5;
+    background-color: var(--content-bg);
+}
+
+/* --- Diff Viewer & Logic --- */
+
+.diff-container {
+    margin-top: 10px;
+}
+
+.diff-viewer {
+    padding: 12px;
+    white-space: pre-wrap;
+    background-color: #1e1e1e; // Fester dunkler Hintergrund für Code-Kontrast
+}
+
+.diff-msg-empty,
+.diff-msg-error {
+    margin: 0;
+    text-align: center;
+}
+
+.diff-msg-empty {
+    font-style: italic;
+    color: var(--text-color-light);
+}
+
+.diff-msg-error {
+    color: var(--status-red-text);
+}
+
+.loading-text {
+    font-weight: bold;
+    opacity: 0.7;
+}
+
+/* --- Images --- */
+
+// Unified Image Preview Layout
+.report-images-container,
+#modal-image-previews {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 10px;
+
+    // justify-content: center;
+    // width: 100%;
+    margin-top: 10px;
+}
+
+.report-images-container > div,
+.image-preview-box {
+    display: flex;
+    flex: 1; // Beide Container wachsen gleichmäßig
+    flex-direction: column;
+    width: 0;
+    min-width: 0;
+}
+
+.report-images-container label,
+.image-preview-box p {
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: bold;
+    color: var(--text-color);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.report-images-container img,
+.image-preview-box img {
+    align-self: flex-start;
+    width: 100%;
+    height: auto;
+    max-height: 60vh;
+    object-fit: contain;
+    background-color: var(--content-area-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+body.theme-night .report-images-container img,
+body.theme-night .image-preview-box img {
+    background-color: rgb(0 0 0 / 0.2);
+    border-color: var(--border-light);
+}
+
+/* --- Character Selection Grid --- */
+#modal-charaktere-section {
+    padding-top: 15px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-medium);
+}
+
+#modal-charaktere-section .charakter-kategorie {
+    margin-bottom: 15px;
+}
+
+#modal-charaktere-section h3 {
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.charaktere-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.charaktere-grid .charakter-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.charaktere-grid .charakter-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    background-color: var(--characters-area-bg);
+    border: 3px solid transparent;
+    border-radius: 50%;
+    filter: grayscale(100%);
+    transition:
+        border-color 0.3s,
+        filter 0.3s;
+}
+
+.charaktere-grid .charakter-item.active img {
+    border-color: #007bff;
+    filter: grayscale(0%);
+}
+
+.charaktere-grid .charakter-item span {
+    margin-top: 5px;
+    font-size: 0.8em;
+    word-break: break-word;
+}
+
+/* --- Report Detail & Diff View --- */
+
+// Container für Textblöcke im Modal
+.report-text-box {
+    max-height: 30vh;
+    padding: 15px;
+    margin-bottom: 15px;
+    overflow-y: auto;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: var(--text-color);
+    overflow-wrap: break-word;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+body.theme-night .report-text-box {
+    background-color: rgb(0 0 0 / 0.2);
+    border-color: var(--border-light);
+}
+
+// Diff-Ansicht (Text-Vergleich)
+.diff-box {
+    font-family: $font-mono;
+    white-space: pre-wrap; // Zeilenumbrüche erhalten
+}
+
+.diff-box .loading-text {
+    font-style: italic;
+    color: var(--text-color-light);
+}
+
+.diff-box ins {
+    padding: 0 2px;
+    color: #155724;
+    text-decoration: none;
+    background-color: rgb(40 167 69 / 0.2);
+    border-bottom: 2px solid #28a745;
+}
+
+.diff-box del {
+    padding: 0 2px;
+    color: #721c24;
+    text-decoration: line-through;
+    background-color: rgb(220 53 69 / 0.2);
+}
+
+body.theme-night .diff-box ins {
+    color: #a5d6a7;
+    background-color: rgb(40 167 69 / 0.3);
+    border-color: #2e7d32;
+}
+
+body.theme-night .diff-box del {
+    color: #ef9a9a;
+    background-color: rgb(220 53 69 / 0.3);
+}
+
+// Code-Ansicht im Summernote-Style
+.summernote-code-look {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-height: 150px;
+    padding: 10px;
+    font-family: $font-mono; // !important
+    font-size: 14px; // !important
+    line-height: 1.4;
+    color: #d4d4d4; // !important
+    resize: vertical;
+    background-color: #1e1e1e; // !important
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+.summernote-code-look:focus {
+    outline: none;
+    border-color: var(--link-color);
+}
+
+body.theme-night .summernote-code-look {
+    color: var(--link-color);
+    background-color: var(--page-bg);
+}
+
+/* --- Popup Dialog --- */
+.dialog {
+    position: fixed;
+    z-index: 200;
+    display: none;
+    width: 490px;
+    margin: auto;
+    color: var(--text-color);
+    background: var(--content-bg);
+    border-radius: 5px;
+    box-shadow: 0 0 4px 0 rgb(0 0 0 / 0.6);
+}
+
+body.theme-night .dialog {
+    box-shadow: 0 0 5px 1px rgb(255 255 255 / 0.25);
+}
+
+.dialog .dialog-title {
+    padding: 5px 10px;
+    color: var(--text-on-medium);
+    background-color: var(--button-hover-bg);
+}
+
+body.theme-night .dialog .dialog-title {
+    color: var(--text-color);
+    background-color: var(--sidebar-bg);
+}
+
+.dialog .dialog-body {
+    padding: 10px;
+}
+
+/* Errgänzte Class */
+
+.original-transcript-box {
+    margin-top: 25px;
+    margin-bottom: 5px;
+}
+
+.original-transcript-box label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}

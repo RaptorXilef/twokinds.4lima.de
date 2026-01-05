@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Global Mixins
+///
+/// Grundlegende Mixins für Media Queries und Layout-Hilfen.
+///
+///
+/// Globale Mixins und Helper.
+///  Hilfsfunktionen für Media Queries, Clearfix und andere wiederkehrende CSS-Muster.
+///
+
+/*!
+ * @file       resources/scss/abstracts/_mixins.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Initiale Erstellung für 7-1 Pattern.
+/// - style(Linter): Standardkonforme Media-Query für High-Res Displays hinzugefügt.
+/// - fix(SCSS): Veraltete Media-Query-Syntax (Range Notation) aktualisiert und Vendor-Prefixes entfernt.
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine direkten Abhängigkeiten in diesen Mixins, aber Import für Zugriff vorhanden)
+
+// Media Query für High-Res Mobile Devices
+@mixin media-retina-mobile {
+    @media only screen and (resolution >= 2dppx) and (width <= 640px) {
+        @content;
+    }
+}
+
+@mixin media-tablet {
+    @media (width <= 768px) {
+        @content;
+    }
+}
+
+// Clearfix helper
+@mixin clearfix {
+    &::after {
+        clear: both;
+        display: table;
+        content: '';
+    }
+}

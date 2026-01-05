@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin & Report Pages
+///
+/// Styles für Admin-Tabellen, Filter und den Comic-Editor.
+///
+
+/*!
+ * @file       resources/scss/pages/_admin.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Zusammenführung von Filter-Forms und Data-Tables.
+/// - Integration der Styles aus dem Comic-Daten-Editor (Tabellen, Status-Icons, Suche).
+/// - fix(Design): Pagination im Dark Mode transparent gesetzt.
+/// - fix(Design): Status-Legende immer bunt angezeigt (Binäres System).
+/// - fix(Design): Last-Run Status Message immer sichtbar.
+/// - feat(Layout): Neue Klassen für zentrierte Filter und Action-Bars (Comic Editor Redesign).
+/// - refactor(SCSS): Sitemap-Editor Styles (Collapsibles, Table-Modifier) integriert und Datei-Struktur bereinigt.
+/// - feat(SCSS): Utilities .text-right und Styles für disabled buttons hinzugefügt.
+/// - feat(SCSS): Styles für Comic-Editor (Charakter-Grid, Image-Preview) hinzugefügt.
+/// - feat(SCSS): Styles für data_editor_charaktere.php hinzugefügt
+/// - feat(SCSS): Styles für index.php hinzugefügt (Login-Bereich)
+///
+/// @deprecated 5.0.0
+///
+
+// LEER - Inhalt wurde verschoben nach:
+// - components/admin/_tables.scss
+// - components/admin/_forms.scss
+// - components/admin/_ui.scss
+// - pages/admin/_auth.scss
+// - pages/admin/_editors.scss
+// - pages/admin/_generators.scss

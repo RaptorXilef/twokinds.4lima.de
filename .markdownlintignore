@@ -1,0 +1,8 @@
+node_modules/
+vendor/
+# Schließe ToDo-Dateien aus
+ToDo*.md
+# Schließe Notizen aus
+*notizen*.md
+# Schließe Backups aus
+*bak*.md

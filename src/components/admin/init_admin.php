@@ -1,253 +1,354 @@
 <?php
+
 /**
- * Zentrales Initialisierungsskript für alle Admin-Seiten (Final gehärtete Version).
+ * Zentrales Initialisierungsskript für Admin-Seiten (v5.0.0 - Final Perfection).
  *
- * Dieses Skript übernimmt wiederkehrende Aufgaben und implementiert wichtige Sicherheitsmaßnahmen:
- * - Dynamische Bestimmung der Basis-URL.
- * - Strikte Sicherheits-Header (CSP mit Nonce, HSTS, Permissions-Policy etc.).
- * - Session-Konfiguration für erhöhte Sicherheit (HTTPOnly, Secure, SameSite).
- * - Schutz vor Session Hijacking durch User-Agent- und IP-Adressen-Bindung.
- * - Schutz vor Session Fixation durch regelmäßige ID-Erneuerung.
- * - Umfassender CSRF-Schutz für Formulare und AJAX-Anfragen.
- * 
- * @file      ROOT/src/components/init_admin.php
+ * Sicherheits-Architektur:
+ * 1. Content-Security-Policy (CSP): Schutz vor XSS durch Nonces und Whitelisting.
+ * 2. Session-Hardening: Fingerprinting (IP-Segment + UA), Regeneration & Strict Cookies.
+ * 3. Zombie-Protection: Aktive Cookie-Vernichtung im Browser bei Logout/Ablauf.
+ * 4. Multi-Tab-Sync: Globale Pfad-Erkennung für nahtlose Tab-Übergänge.
+ *
+ * @file      ROOT/src/components/admin/init_admin.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
- * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
+ * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+ *            <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   2.1.0
- * @since     1.2.3 Session-Fingerprinting zur Erhöhung der Sicherheit wieder hinzugefügt.
- * @since     2.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
- * @since     2.1.0 Kleine Fixes die ein fehlgeschlagenen Login durch beschädigte Cookies verhindert haben. Siehe https://github.com/RaptorXilef/twokinds.4lima.de/issues/76
- * @comment   2.1.0 Der Parameter 'domain' wurde aus `session_set_cookie_params` entfernt, da er bei bestimmten Server-Konfigurationen zu ungültigen Cookies führte.
- * @comment   2.1.0 `ob_end_clean()` wurde aus der Logout-Logik entfernt. Dieser Aufruf verhinderte, dass der `setcookie`-Header zum Löschen des Session-Cookies korrekt an den Browser gesendet wurde.
- * @comment   2.1.0 Der `session_save_path` wird nun dynamisch auf ein Verzeichnis (`secret/sessions`) außerhalb des öffentlichen Web-Roots gesetzt. Dies schützt die Session-Dateien vor direktem Zugriff und erhöht die Sicherheit.
+ *
+ * @since 2.0.0 - 4.0.0
+ *    SICHERHEIT & SESSION-MANAGEMENT
+ *    - Wiedereinführung von Session-Fingerprinting zur Erhöhung der Sicherheit.
+ *    - Verlagerung des `session_save_path` in ein geschütztes Verzeichnis (`secret/sessions`).
+ *
+ *    BUGFIXES & STABILITÄT
+ *    - Behebung von Login-Problemen (GitHub #76) durch Entfernung des problematischen 'domain'-Parameters.
+ *    - Korrektur der Logout-Logik: Entfernung von `ob_end_clean()` garantiert das Senden des Lösch-Headers.
+ *
+ *    ARCHITEKTUR
+ *    - Umstellung auf die dynamische Path-Helfer-Klasse.
+ *
+ * @since 5.0.0
+ * - fix(Session): Session-Rotation (ID-Erneuerung) von Timeout entkoppelt (eigener Timestamp).
+ * - fix(UX): Fehlender Logout-Grund bei abgelaufener Session in Block 7 ergänzt (Cookie-Check).
+ * - feat(API): Korrekte JSON-Antworten (401) für AJAX-Calls bei Session-Ende statt HTML-Redirects.
+ * - feat(JS): Übergabe der Timeout-Konstanten an JavaScript via globalem window-Objekt.
+ * - fix(Stability): PHP-Timeout um 30 Sekunden verlängert ("Grace Period"), damit JS-Logout-Requests nicht in eine
+ *    abgelaufene Session laufen.
+ * - fix(Stability): Explizites Setzen von `session.gc_maxlifetime` passend zum Timeout.
+ * - fix(Security): `verify_csrf_token` erkennt Logout-Aktionen nun automatisch als "fehlertolerant", um
+ *    White-Screen-Errors bei abgelaufener Session zu verhindern.
+ *
+ * - fix(Session): Zombie-Cookie-Vernichtung integriert.
+ * - fix(Logic): Timeout-Redirect auf index.php deaktiviert, um POST-Requests nicht zu unterbrechen.
+ *
+ * - Zusammenführung von Session-Stabilität und High-Security Headern.
+ * - Optimierte CSP für Summernote-Support und Google Analytics.
+ * - Wiederherstellung der automatischen Verzeichniserstellung
  */
 
-// Der Dateiname des aufrufenden Skripts wird für die dynamische Debug-Meldung verwendet.
+declare(strict_types=1);
+
+// 0. Output-Buffering starten (Verhindert "Headers already sent" und fängt versehentlichen Output ab)
+ob_start();
+
+// Der Dateiname des aufrufenden Skripts für Debug-Zwecke
 $callingScript = basename($_SERVER['PHP_SELF']);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
 
-// Lädt die zentrale Konfiguration, Konstanten und die Path-Klasse.
+// Fehleranzeige im Produktivbetrieb unterdrücken
+if (!$debugMode) {
+    ini_set('display_errors', '0');
+    ini_set('display_startup_errors', '0');
+    error_reporting(E_ALL); // Intern alles loggen...
+    ini_set('log_errors', '1'); // ...aber in eine Datei schreiben, nicht auf den Bildschirm.
+}
+
+// 1. Zentrale Konfiguration laden
 require_once __DIR__ . '/../load_config.php';
 
-if ($debugMode) {
-    error_log("DEBUG: init_admin.php wird von {$callingScript} eingebunden.");
-    error_log("DEBUG (config_loader): Basis-URL bestimmt: " . (defined('DIRECTORY_PUBLIC_URL') ? DIRECTORY_PUBLIC_URL : 'NICHT DEFINIERT'));
-}
+// Konstanten-Check (API-Modus?)
+$isApiCall = defined('IS_API_CALL') && IS_API_CALL === true;
+$isLoginPage = ($callingScript === 'index.php');
 
-// --- NEU: Eigener Session-Speicherpfad ---
-// Wir nutzen die Path-Klasse, um einen Pfad im 'secret' (nicht-öffentlichen) Verzeichnis zu definieren.
-// Dieser Ordner muss für den PHP-Prozess beschreibbar sein.
+// --- SESSION-PFAD & ORDNER-CHECK ---
 try {
     $sessionSavePath = Path::getSecretPath('sessions');
-
-    // Sicherstellen, dass das Verzeichnis existiert
     if (!is_dir($sessionSavePath)) {
-        // Versuche, es rekursiv zu erstellen. 
-        // 0700 = Nur der Eigentümer (PHP-Prozess) darf lesen/schreiben/ausführen.
-        if (!mkdir($sessionSavePath, 0755, true)) { // Vorzugsweise 0700, bei Shared-Hosting ist 0755 aber die zuverlässigere Wahl.
-            error_log("FEHLER: Konnte das benutzerdefinierte Session-Verzeichnis nicht erstellen: " . $sessionSavePath);
-        } else {
-            // Verzeichnis erfolgreich erstellt, setze den Pfad
-            session_save_path($sessionSavePath);
-            if ($debugMode)
-                error_log("DEBUG: Eigenes Session-Verzeichnis erstellt und Pfad gesetzt auf: " . $sessionSavePath);
+        // Erstellt den Ordner mit rwx für den Besitzer (PHP)
+        if (!mkdir($sessionSavePath, 0755, true)) {
+            error_log("FEHLER: Session-Ordner konnte nicht erstellt werden: " . $sessionSavePath);
         }
-    } else {
-        // Verzeichnis existiert bereits, setze den Pfad
+    }
+    if (is_dir($sessionSavePath)) {
         session_save_path($sessionSavePath);
-        if ($debugMode)
-            error_log("DEBUG: Eigenen Session-Pfad gesetzt auf: " . $sessionSavePath);
     }
 } catch (Exception $e) {
-    error_log("FEHLER beim Setzen des Session-Pfads: " . $e->getMessage());
+    error_log("FEHLER beim Session-Pfad: " . $e->getMessage());
 }
-// --- ENDE: Eigener Session-Speicherpfad ---
 
-ob_start();
+// --- HILFSFUNKTION: SESSION-VERNICHTUNG ---
+/**
+ * Hilfsfunktion zur vollständigen Zerstörung der Session (Server & Browser).
+ */
+if (!function_exists('destroy_admin_session')) {
+    /**
+     * Eliminiert die Session auf dem Server und erzwingt das Löschen des Browser-Cookies.
+     */
+    function destroy_admin_session(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
+            );
+        }
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            return;
+        }
 
-// --- 1. SICHERHEITS-HEADER & CSP MIT NONCE ---
+        session_destroy();
+    }
+}
+
+// --- 2. SICHERHEITS-HEADER & CSP ---
+// Einmalige Nonce für diesen Request generieren
 $nonce = bin2hex(random_bytes(16));
-$csp = [
-    'default-src' => ["'self'"],
-    'script-src' => ["'self'", "'nonce-{$nonce}'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net", "https://www.googletagmanager.com", "https://placehold.co"],
-    'style-src' => ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://code.jquery.com/", "https://cdnjs.cloudflare.com"], // 'unsafe-inline' für Summernote
-    'font-src' => ["'self'", "data:", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"], // 'data:' für Summernote
-    'img-src' => ["'self'", "data:", "https://www.googletagmanager.com", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://placehold.co"],
-    'connect-src' => ["'self'", "https://cdn.jsdelivr.net", "https://cdn.twokinds.keenspot.com", "https://twokindscomic.com", "https://*.google-analytics.com"],
-    'object-src' => ["'none'"],
-    'frame-ancestors' => ["'self'"],
-    'base-uri' => ["'self'"],
-    'form-action' => ["'self'"],
-];
-$cspHeader = '';
-foreach ($csp as $directive => $sources) {
-    $cspHeader .= $directive . ' ' . implode(' ', $sources) . '; ';
-}
-header("Content-Security-Policy: " . trim($cspHeader));
-header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: SAMEORIGIN');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
 
-// --- 2. STRIKTE SESSION-KONFIGURATION ---
+$csp = [
+    'default-src' => [
+        "'self'",
+    ],
+    'upgrade-insecure-requests' => [],
+    'script-src'  => [
+        "'self'",
+        "'nonce-{$nonce}'",
+        "https://code.jquery.com",
+        "https://cdnjs.cloudflare.com",
+        "https://cdn.jsdelivr.net",
+        "https://www.googletagmanager.com",
+        "https://placehold.co",
+    ],
+    'style-src'   => [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.googleapis.com",
+        "https://cdnjs.cloudflare.com",
+        "https://code.jquery.com/",
+    ],
+    'font-src'    => [
+        "'self'",
+        "data:",
+        "https://cdn.jsdelivr.net",
+        "https://fonts.gstatic.com",
+        "https://cdnjs.cloudflare.com",
+        "https://twokinds.4lima.de",
+        "https://twokinds.4lima.local",
+    ],
+    'img-src'     => [
+        "'self'",
+        "data:",
+        "https://www.googletagmanager.com",
+        "https://cdn.twokinds.keenspot.com",
+        "https://twokindscomic.com",
+        "https://placehold.co",
+        "https://twokinds.4lima.de",
+        "https://twokinds.4lima.local",
+    ],
+    'connect-src' => [
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://*.google-analytics.com",
+        "https://cdn.twokinds.keenspot.com",
+        "https://twokindscomic.com",
+    ],
+    'object-src'  => [
+        "'none'",
+    ],
+    'frame-ancestors' => [
+        "'self'",
+    ],
+    'base-uri'    => [
+        "'self'",
+    ],
+    'form-action' => [
+        "'self'",
+    ],
+];
+
+$cspHeader = "";
+foreach ($csp as $directive => $sources) {
+    $cspHeader .= $directive . " " . implode(" ", $sources) . "; ";
+}
+
+header_remove("X-Powered-By");
+header("Content-Security-Policy: " . trim($cspHeader));
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: SAMEORIGIN");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
+header("Strict-Transport-Security: max-age=300; includeSubDomains; preload");
+/* Wenn Homepage finalisiert, austauschen mit folgendem, um den HTTPS Zwang auf ein Jahr zu setzen */
+/* Achtung! Einmal gesetzt und mit einem Browser aufgerufen, gibt es kein zurück mehr! */
+// header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
+// https://hstspreload.org/?domain=twokinds.4lima.de#submission-form
+
+// --- 3. SESSION-KONFIGURATION ---
+// PHP Garbage Collection Zeit mit dem Timeout synchronisieren
+ini_set('session.gc_maxlifetime', (string)(SESSION_TIMEOUT_SECONDS + 60));
+
 session_set_cookie_params([
-    'lifetime' => 0,
-    'path' => '/',
-    //'domain' => $_SERVER['HTTP_HOST'], // Das war die wahrscheinlichste Ursache für dein "kaputtes" Cookie.
-    'secure' => isset($_SERVER['HTTPS']),
-    'httponly' => true,
-    'samesite' => 'Strict'
+    'lifetime' => 0,       // Session-Cookie erlischt beim Schließen des Browsers
+    'path'     => '/',     // Wichtig für Multi-Tab Erkennung
+    'secure'   => isset($_SERVER['HTTPS']),
+    'httponly' => true,    // Schutz vor Cookie-Diebstahl via JS
+    'samesite' => 'Strict', // Schutz vor CSRF
 ]);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- 3. SCHUTZ VOR SESSION FIXATION UND HIJACKING ---
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 900)) { // 15 Minuten
-    session_regenerate_id(true);
+// --- 4. SESSION PROTECTION (Rotation & Fingerprint) ---
+// Session-ID regelmäßig erneuern (Schutz vor Fixation)
+if (!isset($_SESSION['last_regeneration'])) {
+    $_SESSION['last_regeneration'] = time();
 }
-// $_SESSION['last_activity'] = time();
+// Nutzt SESSION_REGENERATION_SECOUNDS aus deiner Config
+$regenTime = defined('SESSION_REGENERATION_SECOUNDS') ? SESSION_REGENERATION_SECOUNDS : 900;
+if (time() - $_SESSION['last_regeneration'] > $regenTime) {
+    session_regenerate_id(true);
+    $_SESSION['last_regeneration'] = time();
+}
 
-// Robuster Session-Fingerabdruck (User-Agent + IP-Netzwerk)
-$sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . (substr($_SERVER['REMOTE_ADDR'], 0, strrpos($_SERVER['REMOTE_ADDR'], '.'))));
-if (isset($_SESSION['session_fingerprint'])) {
-    if ($_SESSION['session_fingerprint'] !== $sessionIdentifier) {
-        // Fingerabdruck hat sich geändert -> Möglicher Angriff! Session zerstören.
-        error_log("SECURITY ALERT: Session-Fingerabdruck hat sich geändert. Möglicher Hijacking-Versuch von IP: " . $_SERVER['REMOTE_ADDR']);
-        session_unset();
-        session_destroy();
-        header('Location: index.php?reason=session_hijacked');
+// Fingerprint aus User-Agent und IP-Netzsegment (Oktett 1-3)
+$ipSegment = substr($_SERVER['REMOTE_ADDR'], 0, (strrpos($_SERVER['REMOTE_ADDR'], '.') ?: 0));
+$sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . $ipSegment);
+
+if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    // Check 1: Fingerprint (Hijacking-Schutz)
+    if (!isset($_SESSION['session_fingerprint']) || $_SESSION['session_fingerprint'] !== $sessionIdentifier) {
+        destroy_admin_session();
+        if ($isApiCall) {
+            header('Content-Type: application/json');
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'session_hijacked']);
+            exit;
+        }
+        header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_hijacked');
         exit;
     }
-} else {
-    $_SESSION['session_fingerprint'] = $sessionIdentifier;
+
+    // Check 2: Timeout (Inaktivitäts-Schutz)
+    $phpTimeout = SESSION_TIMEOUT_SECONDS + 30; // 30s Grace Period für AJAX/JS
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $phpTimeout)) {
+        destroy_admin_session();
+        if ($isApiCall) {
+            header('Content-Type: application/json');
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'session_expired']);
+            exit;
+        }
+        header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_expired');
+        exit;
+    }
+
+    // Aktivität nur bei echtem Seitenaufruf erneuern, nicht bei Logout-Request
+    if (!(isset($_GET['action']) && $_GET['action'] === 'logout')) {
+        $_SESSION['last_activity'] = time();
+    }
 }
 
-// --- 4. UMFASSENDER CSRF-SCHUTZ ---
+// --- 5. CSRF-SCHUTZ ---
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
-$csrfToken = $_SESSION['csrf_token'];
 
 if (!function_exists('verify_csrf_token')) {
-    function verify_csrf_token()
+    /**
+     * Validiert das CSRF-Token für POST, GET oder AJAX-Header.
+     */
+    function verify_csrf_token(bool $isLogoutContext = false): bool
     {
-        global $debugMode, $callingScript;
-        $token = null;
+        $token = $_POST['csrf_token'] ?? $_GET['token'] ?? null;
 
-        if (!empty($_POST['csrf_token'])) {
-            $token = $_POST['csrf_token'];
-        } elseif (!empty($_GET['token'])) {
-            $token = $_GET['token'];
-        } else {
+        // AJAX Fallback
+        if (!$token && function_exists('getallheaders')) {
             $headers = getallheaders();
-            if (isset($headers['X-Csrf-Token'])) {
-                $token = $headers['X-Csrf-Token'];
-            }
+            $token = $headers['X-Csrf-Token'] ?? $headers['x-csrf-token'] ?? null;
         }
 
-        if ($debugMode)
-            error_log("DEBUG ({$callingScript}): CSRF-Prüfung. Erhaltener Token: " . ($token ?? 'KEINER') . ". Session-Token: " . $_SESSION['csrf_token']);
-
-        if (!isset($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
-            if ($debugMode)
-                error_log("FEHLER ({$callingScript}): CSRF-Token-Validierung fehlgeschlagen.");
-
-            $isApiCall = (defined('IS_API_CALL') && IS_API_CALL === true);
-
-            if ($isApiCall) {
-                http_response_code(403);
-                echo json_encode(['success' => false, 'message' => 'Ungültige Anfrage (CSRF-Token fehlt oder ist falsch).']);
-            } else {
-                die('CSRF-Token-Validierung fehlgeschlagen.');
-            }
-            exit;
+        // Logout ist fehlertolerant (falls Session bereits weg)
+        if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+            $isLogoutContext = true;
         }
-    }
-}
 
-// --- 5. HILFSFUNKTIONEN FÜR EINSTELLUNGS-JSON ---
-if (!function_exists('load_settings')) {
-    function load_settings(string $filePath, string $key, bool $debugMode): array
-    {
-        $defaults = ['last_run_timestamp' => null];
-        if (!file_exists($filePath)) {
-            if ($debugMode)
-                error_log("DEBUG: Einstellungsdatei $filePath nicht gefunden, verwende Standardwerte.");
-            return $defaults;
+        if (!$token || !isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+            return (bool)$isLogoutContext;
         }
-        $allSettings = json_decode(file_get_contents($filePath), true);
-        return $allSettings[$key] ?? $defaults;
-    }
-}
-
-if (!function_exists('save_settings')) {
-    function save_settings(string $filePath, string $key, array $data, bool $debugMode): void
-    {
-        $allSettings = file_exists($filePath) ? json_decode(file_get_contents($filePath), true) : [];
-        if (!is_array($allSettings))
-            $allSettings = [];
-        $allSettings[$key] = $data;
-        file_put_contents($filePath, json_encode($allSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        if ($debugMode)
-            error_log("DEBUG: Einstellungen für Schlüssel '$key' in $filePath gespeichert.");
+        return true;
     }
 }
 
 // --- 6. LOGOUT-LOGIK ---
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    verify_csrf_token();
-    if ($debugMode)
-        error_log("DEBUG: Logout-Aktion mit gültigem CSRF-Token erkannt.");
-
-    $_SESSION = array();
-
-    if (ini_get("session.use_cookies")) {
-        $params = session_get_cookie_params();
-        setcookie(
-            session_name(),
-            '',
-            time() - 42000,
-            $params["path"],
-            $params["domain"],
-            $params["secure"],
-            $params["httponly"]
-        );
-    }
-
-    session_destroy();
-    //ob_end_clean();  // Diese Zeile war ein Fehler im Logout-Code. Sie hat verhindert, dass der Befehl zum Löschen des Cookies an den Browser gesendet wird.
-    header('Location: index.php');
+    $csrfValid = verify_csrf_token(true);
+    destroy_admin_session();
+    $reason = (isset($_GET['timeout']) && $_GET['timeout'] === 'true') || !$csrfValid ? 'session_expired' : 'logout';
+    header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=' . $reason);
     exit;
 }
 
-// --- 7. FINALER LOGIN-CHECK ---
-if (basename($_SERVER['PHP_SELF']) !== 'index.php') {
+// --- 7. GATEKEEPER FÜR INTERNE SEITEN ---
+if (!$isLoginPage) {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-        if ($debugMode)
-            error_log("DEBUG: Nicht angemeldet. Weiterleitung zur Login-Seite von init_admin.php (aufgerufen von {$callingScript}).");
-
-        header('Location: index.php');
+        // Falls ein Cookie da ist, aber die Session-Daten fehlen -> Cleanup!
+        if (isset($_COOKIE[session_name()])) {
+            destroy_admin_session();
+            if ($isApiCall) {
+                header('Content-Type: application/json');
+                http_response_code(401);
+                echo json_encode(['success' => false, 'error' => 'auth_required']);
+                exit;
+            }
+            header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_expired');
+        } else {
+            if ($isApiCall) {
+                header('Content-Type: application/json');
+                http_response_code(401);
+                echo json_encode(['success' => false, 'error' => 'auth_required']);
+                exit;
+            }
+            header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php');
+        }
         exit;
     }
+
+    // STRIKTE TRENNUNG: JS-Brücke nur wenn KEIN API-Call
+    if (!$isApiCall) {
+        // Sicherstellen, dass der Puffer vor der Script-Ausgabe leer ist,
+        // falls andere Komponenten bereits unabsichtlich etwas ausgegeben haben.
+        ob_clean();
+
+        echo '<script nonce="' . htmlspecialchars($nonce) . '">
+            window.sessionConfig = {
+                timeoutSeconds: ' . (int)SESSION_TIMEOUT_SECONDS . ',
+                warningSeconds: ' . (int)SESSION_WARNING_SECONDS . '
+            };
+        </script>';
+    }
 }
-
-// --- 8. SESSION-TIMEOUT-LOGIK ---
-define('SESSION_TIMEOUT_SECONDS', 600); // 10 Minuten
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > SESSION_TIMEOUT_SECONDS)) {
-    if ($debugMode)
-        error_log("DEBUG: Session abgelaufen. Letzte Aktivität vor " . (time() - $_SESSION['last_activity']) . " Sekunden.");
-
-    session_unset();
-    session_destroy();
-    header("Location: index.php?reason=session_expired");
-    exit;
-}
-$_SESSION['last_activity'] = time();
-
-?>

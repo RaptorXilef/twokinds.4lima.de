@@ -1,0 +1,51 @@
+# =============================================================================
+# PHPStan Konfiguration für High-End Code-Qualität
+# =============================================================================
+
+includes:
+    # WICHTIG: Bleeding Edge muss unter 'includes' stehen, nicht bei bootstrapFiles.
+    # Aktiviert die neuesten, striktesten Analysen (z.B. Dead Code Detection).
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    # - vendor/phpstan/phpstan-phpunit/extension.neon # (macht jetzt der installer)
+    # - vendor/phpstan/phpstan-strict-rules/rules.neon # (macht jetzt der installer)
+
+parameters:
+    # Level 0-9
+    # Level 5 prüft Typen, erlaubt aber noch etwas Flexibilität.
+    # Level 9 wäre "Maximaler Schmerz" (nur für neue Projekte empfohlen).
+    # TODO: Auf "max" setzen ohen "
+    level: 5
+
+    # Welche Ordner sollen analysiert werden?
+    paths:
+        - src
+        - tests
+        - public
+
+    # Wir simulieren eine PHP 8.4 Umgebung (80400), damit PHPStan
+    # neue Features (wie Property Hooks) bereits jetzt versteht.
+    phpVersion: 80400
+
+    # Cache-Ordner (Beschleunigt die Analyse bei wiederholtem Aufruf)
+    tmpDir: .cache/phpstan
+
+    # Nutzt alle CPU-Kerne für maximale Geschwindigkeit
+    parallel:
+        processTimeout: 300.0
+
+    # Hier kannst du Fehler ignorieren, die du aktuell nicht fixen kannst/willst.
+    # Ich habe Beispiele auskommentiert (#).
+    ignoreErrors:
+        # Beispiel: Erlaubt Zugriff auf private Properties in Tests
+        # - '#Call to an undefined method [a-zA-Z0-9\\_]+::methodName\(\)#'
+
+        # Ignoriert Mocking-Warnungen von PHPUnit in Tests
+        # -
+        #     message: '#Call to an undefined method PHPUnit\\Framework\\MockObject\\MockObject::.*#'
+        #     path: tests/*
+
+    # Prüft, ob Funktionen Seiteneffekte haben (Clean Code)
+    rememberPossiblyImpureFunctionValues: true
+
+    # Meldet, wenn du einen Fehler ignorierst, der gar nicht mehr existiert
+    reportUnmatchedIgnoredErrors: true

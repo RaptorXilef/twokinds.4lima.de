@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Index-Seite für die Charakter-Übersicht.
  * Diese Seite lädt alle Charaktere aus der charaktere.json und zeigt sie
  * mithilfe der wiederverwendeten display_character.php Komponente an.
- * 
+ *
  * @file      ROOT/public/charaktere/index.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -42,8 +43,8 @@ if (file_exists($charaktereJsonPath)) {
 $currentComicId = 'all_characters';
 $comicData = [
     $currentComicId => [
-        'charaktere' => $allCharacterIDs
-    ]
+        'charaktere' => $allCharacterIDs,
+    ],
 ];
 
 // === 3. VARIABLEN FÜR DEN HEADER SETZEN ===
@@ -53,22 +54,22 @@ $canonicalUrl = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/'; // Verweist auf den Ordne
 $robotsContent = 'index, follow';
 
 // === 4. HEADER EINBINDEN ===
+$isCharakterPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article class="charaktere-overview">
     <header>
-        <h1>Alle Charaktere im Überblick</h1>
+        <h1 class="page-header">Alle Charaktere im Überblick</h1>
         <p class="character-overview-intro">Hier findest du eine Liste aller Charaktere, die im Comic eine Rolle
             spielen, sortiert nach ihren Gruppen.</p>
     </header>
 
     <?php
     // === 5. CHARAKTER-ANZEIGE KOMPONENTE EINBINDEN ===
-    // Setze die Variable, um die Standard-Überschrift in der Komponente auszublenden.
+    // Setze die Variable, um die Standard-Überschrift "Charaktere auf dieser Seite:" in der Komponente auszublenden.
     $showCharacterSectionTitle = false;
+    $useCharacterTags = true; // Aktiviert die neue Rollen-Anzeige
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

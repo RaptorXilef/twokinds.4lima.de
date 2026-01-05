@@ -1,17 +1,19 @@
 <?php
+
 /**
  * Fehlerseite für den HTTP-Status 403 (Forbidden / Zugriff verweigert).
- * 
+ *
  * @file      ROOT/public/403.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.1
+ *
  * @since     1.1.0 Umstellung auf globale Pfad-Konstanten.
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse und DIRECTORY_PUBLIC_URL.
  * @since     4.0.1 Umstellung der Bildpfade und Logik auf das neue Layout.
+ * @since     5.0.0 refactor(Page): Inline-CSS entfernt, Nutzung der Comic-Page-Komponenten für einheitliches Design.
  */
 
 // Setze den HTTP-Statuscode, damit Browser und Suchmaschinen wissen, dass dies ein Fehler ist.
@@ -24,21 +26,15 @@ $debugMode = $debugMode ?? false;
 // Dieser Pfad MUSS relativ bleiben, da er die Konfigurationen und die Path-Klasse erst lädt.
 require_once __DIR__ . '/../src/components/init_public.php';
 
-// === 2. LADE-SKRIPTE & DATEN (Jetzt mit der Path-Klasse) ===
-// require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'helper_image_cache.php';
-
-// === 3. BILD-PFADE & FALLBACKS ===
-// URLs erstellen (für die Ausgabe im HTML)
+// === 2. BILD-PFADE & FALLBACKS ===
 $lowresImage = URL::getImgLayoutLowresUrl('403.webp');
 $hiresImage = URL::getImgLayoutHiresUrl('403.webp');
 
-// Lokale Pfade erstellen (für die Existenzprüfung)
 $lowresImagePath = Path::getImgLayoutLowresPath('403.webp');
 $hiresImagePath = Path::getImgLayoutHiresPath('403.webp');
 
 $placeholderUrl = 'https://placehold.co/800x600/cccccc/333333?text=Zugriff+verweigert';
 
-// URLs mit DIRECTORY_PUBLIC_URL erstellen
 $imageToShow = ($lowresImage && file_exists($lowresImagePath)) ? ltrim($lowresImage, '/') : $placeholderUrl;
 $linkToShow = ($hiresImage && file_exists($hiresImagePath)) ? ltrim($hiresImage, '/') : $imageToShow;
 
@@ -51,44 +47,28 @@ $pageTitle = 'Fehler 403 - Zugriff verweigert';
 $pageHeader = 'Fehler 403: Zugriff verweigert';
 $robotsContent = 'noindex, follow'; // Wichtig für SEO: Seite nicht indexieren
 
-// === 5. HEADER EINBINDEN (mit Path-Klasse) ===
+// === 4. HEADER EINBINDEN ===
+$isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    /* Passt die Größe des Fehler-Bildes an die Containerbreite an */
-    #error-image {
-        width: 100%;
-        max-width: 800px;
-        /* Maximale Breite des Bildes */
-        height: auto;
-        display: block;
-        margin: 20px auto;
-        /* Zentriert das Bild */
-        border-radius: 8px;
-    }
-
-    .transcript {
-        border-top: 1px dashed #ccc;
-        padding-top: 15px;
-        margin-top: 20px;
-    }
-</style>
-
-<article class="comic">
     <header>
-        <h1><?php echo htmlspecialchars($pageHeader); ?></h1>
+        <h1 class="page-header"><?php echo htmlspecialchars($pageHeader); ?></h1>
     </header>
 
     <div>
         <a href="<?php echo htmlspecialchars($linkToShow); ?>" target="_blank" rel="noopener noreferrer">
-            <img id="error-image" src="<?php echo htmlspecialchars($imageToShow); ?>"
+            <img class="comic-image" src="<?php echo htmlspecialchars($imageToShow); ?>"
                 alt="Fehlerbild: Zugriff verweigert">
         </a>
     </div>
 
+    <hr>
+
     <aside class="transcript">
-        <h2>Was ist passiert?</h2>
+        <div class="transcript-header">
+            <h3>Was ist passiert?</h3>
+        </div>
         <div class="transcript-content">
             <p>
                 Hoppla! Es scheint, als hättest du versucht, einen Bereich zu betreten, für den du keine
@@ -109,6 +89,5 @@ require_once Path::getPartialTemplatePath('header.php');
             </p>
         </div>
     </aside>
-</article>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

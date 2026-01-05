@@ -1,0 +1,82 @@
+/**
+ * @file       resources/scss/components/_debug.scss
+ * @description Styles für den universellen Social Media Debugger im Header.
+ * @since      5.0.0-alpha.21
+ * - feat(debug): Erstelung der Debug-Komponente aus Inline-Styles.
+ *
+ * Variablen-Index:
+ * - .c-debug-box: Hauptcontainer der Debug-Ausgabe.
+ * - .c-debug-box__title: Titelzeile des Debuggers.
+ * - .c-debug-box__status: Status-Anzeige (Erfolg/Fehler).
+ * - .c-debug-box__separator: Trennlinie (HR-Ersatz).
+ * - .c-debug-box__preview: Container für die Bildvorschau.
+ */
+
+.c-debug-box {
+    background: #1a1a1a;
+    color: #00ff00;
+    padding: 15px;
+    border: 2px dashed #00ff00;
+    margin: 20px 0;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    border-radius: 8px;
+
+    &__title {
+        color: #fff;
+        border-bottom: 1px solid #555;
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    &__item {
+        strong {
+            color: #fff;
+        }
+    }
+
+    &__status {
+        &--success {
+            color: #00ff00;
+        }
+        &--error {
+            color: #ff3333;
+        }
+        &--muted {
+            color: #aaa; // Die Klasse für "--- LEER ---"
+        }
+    }
+
+    &__separator {
+        border: 0;
+        border-top: 1px solid #333;
+        margin: 10px 0;
+    }
+
+    &__preview {
+        margin-top: 15px;
+        padding-top: 10px;
+        border-top: 1px solid #333;
+
+        &-title {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        &-img {
+            max-width: 100%;
+            border: 1px solid #555;
+            margin-top: 10px;
+            background: #000;
+        }
+    }
+
+    &__error-msg {
+        color: #ff3333;
+        font-weight: bold;
+        font-size: 14px;
+        display: block;
+    }
+}

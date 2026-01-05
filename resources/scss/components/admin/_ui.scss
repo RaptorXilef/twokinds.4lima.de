@@ -1,0 +1,573 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin UI Elemente & Utilities.
+///
+/// Styling für Status-Indikatoren, Meldungen, Progress-Bars, Logs und Collapsibles.
+/// Statusmeldungen, Logs, Progress-Bars und generische Helfer.
+///
+
+/*!
+ * @file       resources/scss/components/admin/_ui.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --status-info-bg: Hintergrund für Info-Boxen
+// - --status-info-border: Rahmenfarbe für Info-Boxen
+// - --table-row-even: Hintergrund für Container/Listen
+// - --border-medium: Mittlere Rahmenfarbe
+// - --link-color: Primärfarbe (Progress Bar)
+// - --text-color: Standard Textfarbe
+// - --font-mono: Monospace Schriftart (Logs)
+// - --content-bg: Hintergrund für Collapsibles
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --border-light: Helle Rahmenfarbe
+// - --table-header-bg: Hintergrund für Header
+// - --text-color-medium: Mittlere Textfarbe (Icons)
+// - --table-row-hover: Hintergrund bei Hover
+// - --page-bg: Hintergrund für Transkript-Box
+// - --button-bg: Border-Color im Dark Mode
+// - --status-green-text: Farbe für Erfolg
+// - --status-red-text: Farbe für Fehler
+
+@use '../../abstracts/variables' as *;
+@use '../../abstracts/mixins' as *;
+
+.source-markers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 5px;
+}
+
+/* --- Status & Source Markers (Binary System) --- */
+.source-marker,
+.status-icon {
+    display: inline-block;
+    padding: 2px 6px;
+    margin-right: 2px;
+    font-size: 0.7em;
+    font-weight: bold;
+    line-height: 1.5;
+    color: #fff;
+    text-transform: uppercase;
+    cursor: help;
+
+    // --- GRUNDZUSTAND (FEHLT / NICHT VORHANDEN) ---
+    background-color: #dc3545;
+    border-radius: 10px;
+    opacity: 0.3;
+
+    // filter: grayscale(1);
+}
+
+// --- AKTIVZUSTAND (VORHANDEN) ---
+.source-marker.source-marker,
+.source-marker.present,
+.status-icon.source-marker,
+.status-icon.present {
+    background-color: #07710c; // !important
+    opacity: 1;
+    filter: grayscale(0);
+}
+
+// --- LEGENDE ---
+.marker-legend .source-marker,
+.marker-legend .status-icon {
+    background-color: #07710c; // !important
+    opacity: 1; // !important
+    filter: none; // !important
+}
+
+/* --- Status Messages (Alerts) --- */
+.status-message {
+    display: none; // Per JS eingeblendet
+    padding: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.status-message i {
+    width: 20px;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.status-message.visible {
+    display: block;
+}
+
+// Spezieller Container für Last-Run Messages
+#last-run-container .status-message {
+    display: block;
+}
+
+.status-message.status-green {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+body.theme-night .status-message.status-green {
+    color: #e8f5e9;
+    background-color: #1e4620;
+    border-color: #1e4620;
+}
+
+.status-message.status-red {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+body.theme-night .status-message.status-red {
+    color: #fce4e4;
+    background-color: #5a1e1e;
+    border-color: #5a1e1e;
+}
+
+.status-message.status-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+}
+
+body.theme-night .status-message.status-info {
+    color: #d1ecf1;
+    background-color: #00425c;
+    border-color: #005a7e;
+}
+
+.status-message.status-orange {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+}
+
+body.theme-night .status-message.status-orange {
+    color: #fff8e1;
+    background-color: #5a4e1e;
+    border-color: #5a4e1e;
+}
+
+// Notification Box (z.B. nach Upload)
+.notification-box {
+    padding: 20px;
+    margin-top: 30px;
+    color: #0c5460;
+    text-align: center;
+    background-color: var(--status-info-bg);
+    border: 1px solid var(--status-info-border);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.05);
+}
+
+body.theme-night .notification-box {
+    color: #d1ecf1;
+    background-color: rgb(23 162 184 / 0.15);
+    border-color: rgb(23 162 184 / 0.4);
+}
+
+.notification-box h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    color: inherit;
+}
+
+.notification-box .next-steps-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.notification-box .next-steps-actions a.button {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 20px;
+    font-size: 1em;
+    text-decoration: none;
+}
+
+/* --- Progress Bar --- */
+.progress-wrapper {
+    position: relative;
+    height: 30px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+body.theme-night .progress-wrapper {
+    background-color: rgb(0 0 0 / 0.3);
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--link-color); // Primärfarbe nutzen
+    background-image: linear-gradient(
+        45deg,
+        rgb(255 255 255 / 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgb(255 255 255 / 0.15) 50%,
+        rgb(255 255 255 / 0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 1rem 1rem;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: var(--text-color); // Automatisch dunkel/hell je nach Theme
+    text-shadow: 0 0 2px rgb(255 255 255 / 0.5); // Lesbarkeit erhöhen
+}
+
+body.theme-night .progress-text {
+    text-shadow: 0 0 2px rgb(0 0 0 / 0.8);
+}
+
+/* --- Log Console --- */
+.log-console {
+    height: 300px;
+    padding: 15px;
+    margin-bottom: 20px;
+    overflow-y: auto;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.9em;
+    color: #d4d4d4;
+    background-color: #1e1e1e; // Immer dunkel für Code-Look
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    box-shadow: inset 0 0 10px rgb(0 0 0 / 0.5);
+}
+
+.log-console p {
+    margin: 2px 0;
+    font-family: inherit;
+    line-height: 1.4;
+    border-bottom: 1px solid rgb(255 255 255 / 0.05);
+}
+
+.log-console .log-time {
+    margin-right: 10px;
+    font-size: 0.85em;
+    color: #888;
+}
+
+.log-console .log-info {
+    color: #9cdcfe;
+}
+
+.log-console .log-success {
+    color: #6a9955;
+}
+
+.log-console .log-warning {
+    color: #ce9178;
+}
+
+.log-console .log-error {
+    color: #f44747;
+}
+
+.log-console .log-detail {
+    font-style: italic;
+    color: #b5cea8;
+}
+
+/* --- Collapsibles --- */
+
+/* .collapsible-section {
+    // margin-bottom: 20px;
+    overflow: hidden;
+    background-color: var(--content-box-bg); //--content-bg
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+}
+
+body.theme-night .collapsible-section {
+    background-color: var(--content-box-bg); // --sidebar-bg
+    border-color: var(--border-light);
+} */
+
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    margin: 0;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: var(--button-bg); // --table-header-bg --table-row-hover
+    border-bottom: 1px solid var(--border-medium); /// var(--border-light)
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: var(--button-hover-bg);
+    }
+
+    @include media-retina-mobile {
+        padding: 15px;
+        font-size: 1.8em;
+    }
+}
+
+// .collapsible-header .arrow-left {
+// Siehe main-container .arrow-left in _ui.scss
+// }
+
+body.theme-night .collapsible-header {
+    border-bottom-color: var(--border-light);
+}
+
+.collapsible-header h3,
+.setup-section .collapsible-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.collapsible-header i {
+    color: var(--text-color-medium);
+    transition: transform 0.3s ease;
+}
+
+// Status: Ausgeklappt
+.collapsible-section.expanded .collapsible-header i {
+    transform: rotate(180deg);
+}
+
+// Der Trigger-Status (Global)
+.collapsible-section.expanded .collapsible-content,
+.chapter.active .collapsible-content {
+    display: block;
+}
+
+.collapsible-content {
+    display: none; // Standardmäßig zu (wird per JS/Klasse gesteuert)
+    padding: 1.5rem;
+    border-left: 2px solid var(--border-medium);
+}
+
+.collapsible-content .path-hint {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    font-style: italic;
+    color: var(--text-color-light);
+}
+
+/* --- Misc Utilities --- */
+.transcript-display-box {
+    max-height: 150px;
+    padding: 10px;
+    margin-bottom: 15px;
+    overflow-y: auto;
+    font-size: 0.9em;
+    color: var(--text-color);
+    overflow-wrap: break-word;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
+body.theme-night .transcript-display-box {
+    background-color: var(--page-bg);
+    border-color: var(--button-bg);
+}
+
+.transcript-display-box p {
+    margin-bottom: 7px;
+}
+
+.transcript-display-box p:last-of-type {
+    margin-bottom: 0;
+}
+
+.status-list {
+    padding: 5px 15px;
+    margin-bottom: 15px;
+    background-color: var(--content-bg); // --table-row-even
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+}
+
+body.theme-night .status-list {
+    background-color: rgb(0 0 0 / 0.2); // Leicht abgedunkelter Hintergrund im Dark Mode
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-medium);
+    transition: background-color 0.2s ease;
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-item:hover {
+    background-color: var(--table-row-hover);
+}
+
+.status-item .status-label {
+    font-family: monospace;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.status-item .status-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 1.2rem;
+}
+
+// Status Modifiers (Flat)
+
+// OK (Grün)
+.status-item.status-ok .status-icon {
+    color: var(--status-green-text);
+    background-color: var(--status-green-bg);
+}
+
+// Missing (Rot)
+.status-item.status-missing {
+    background-color: rgb(220 53 69 / 0.1);
+}
+
+body.theme-night .status-item.status-missing {
+    background-color: rgb(220 53 69 / 0.2);
+}
+
+.status-item.status-missing .status-icon,
+.status-item.status-missing .status-label {
+    color: var(--status-red-text);
+}
+
+.status-icon.missing,
+.source-marker.missing {
+    background-color: #dc3545;
+    opacity: 0.3;
+    filter: grayscale(1);
+}
+
+// Animations
+@keyframes highlight-row {
+    from {
+        background-color: #d4edda;
+    }
+
+    to {
+        background-color: transparent;
+    }
+}
+
+@keyframes highlight-row-dark {
+    from {
+        background-color: #1a4d2e;
+    }
+
+    to {
+        background-color: transparent;
+    }
+}
+
+.row-highlight {
+    animation: highlight-row 8s ease-out;
+}
+
+body.theme-night .row-highlight {
+    animation: highlight-row-dark 8s ease-out;
+}
+
+// Helper Classes
+.hidden-by-default {
+    display: none;
+}
+
+/* #fixed-buttons-container {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+} */
+
+/* --- Fixed Footer Actions --- */
+
+#fixed-buttons-container {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    padding: 15px;
+    margin-top: 30px;
+    text-align: center;
+    background-color: var(--content-bg); // --table-header-bg
+    border-top: 1px solid var(--border-medium);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mb-15 {
+    margin-bottom: 15px;
+}

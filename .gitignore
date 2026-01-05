@@ -1,3 +1,4 @@
+*.txt
 ################################################################################
 # SYSTEM & OS DATEIEN
 ################################################################################
@@ -29,8 +30,8 @@ ehthumbs_vista.db
 *.iws
 
 # VS Code
-.vscode/
-*.code-workspace
+# .vscode/
+# *.code-workspace
 .history/
 
 # Andere (Sublime, Eclipse, NetBeans)
@@ -103,9 +104,16 @@ yarn.lock
 # BUILDS, LOGS & TESTING
 ################################################################################
 /build/
+/.build/
 /log/
 /logs/
 sync.ffs_db
+
+# Cache & Logs
+/.cache/
+!.gitkeep
+/.phpstan.cache/
+.phpcs.cache
 
 # PHPUnit / Coverage
 .phpunit.result.cache
@@ -123,6 +131,9 @@ test*.php
 # Minifizierte Dateien (falls Build-Prozess vorhanden)
 *.min.css
 *.min.js
+
+
+!CHANGELOG.md
 
 ################################################################################
 # DATENBANKEN (Lokal)
@@ -212,8 +223,8 @@ public/assets/images/comic/thumbnails/*.webp
 # Ordner ignorieren, aber Basis-Dateien behalten
 public/charaktere/*
 !public/charaktere/index.php
-!public/charaktere/Trace.php
-!public/charaktere/Flora.php
+!public/charaktere/Trace_Legacy.php
+!public/charaktere/Flora_-_Regenwald-Tigerstamm.php
 
 # Spezifische Charakter-Bilder ignorieren
 public/assets/img/charaktere/characters/themaskedgods.png
@@ -246,3 +257,5 @@ Mein*Code*.*
 *.zip
 *.7z
 *.rar
+ToDo*.md
+*.pdf

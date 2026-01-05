@@ -1,9 +1,10 @@
 <?php
+
 /**
  * Dieses Modul zeigt die Charaktere an, die auf einer bestimmten Comic-Seite vorkommen.
  * Die Charaktere werden nach den Gruppen und der Reihenfolge aus charaktere.json sortiert.
  * Die Gruppen-Überschriften werden dynamisch aus der charaktere.json geladen.
- * 
+ *
  * @file      ROOT/src/components/display_character.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
@@ -25,94 +26,187 @@
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
-
 $charaktereData = [];
 
-// Lade und verarbeite die Charakterdaten nur einmal mit der Path-Klasse
+// 1. Daten laden (unverändert)
 $charaktereJsonPath = Path::getDataPath('charaktere.json');
 if (file_exists($charaktereJsonPath)) {
     $charaktereJsonContent = file_get_contents($charaktereJsonPath);
     $decodedData = json_decode($charaktereJsonContent, true);
-
     if (json_last_error() === JSON_ERROR_NONE && isset($decodedData['characters']) && isset($decodedData['groups'])) {
         $charaktereData = $decodedData;
     }
 }
 
-// Hole die Liste der Charakter-IDs für die aktuelle Seite aus den Comic-Daten.
 $pageCharaktereIDs = $comicData[$currentComicId]['charaktere'] ?? [];
 
-// Wenn keine Charaktere für diese Seite definiert sind oder die Charakter-Daten fehlen, zeige nichts an.
-if (!empty($pageCharaktereIDs) && !empty($charaktereData)):
+/**
+ * LOGIK-UMSCHALTER (v3.3.0)
+ * Priorität 1: Manuelles Flag $useCharacterTags (true/false)
+ * Priorität 2: Automatischer Comic-Seiten-Status ($isComicPage)
+ */
+$interactiveFlag = $useCharacterTags ?? null;
 
-    // Standardwert für die Sichtbarkeit der Überschrift.
-    if (!isset($showCharacterSectionTitle)) {
-        $showCharacterSectionTitle = true;
-    }
+if ($interactiveFlag === false) {
+    // Explizit deaktiviert (höchste Priorität)
+    $isInteractiveView = false;
+} elseif ($interactiveFlag === true || (isset($isComicPage) && $isComicPage)) {
+    // Aktiviert durch Flag ODER Comic-Seite
+    $isInteractiveView = true;
+} else {
+    // Standardmäßig (z.B. Admin) aus
+    $isInteractiveView = false;
+}
+
+if (!empty($pageCharaktereIDs) && !empty($charaktereData)) :
+    $showCharacterSectionTitle = $showCharacterSectionTitle ?? true; // Setze die Variable, um die Standard-Überschrift "Charaktere auf dieser Seite:" in der Komponente ein- / auszublenden.
+
+    // Standard-Ansicht festlegen (z.B. Tag-Modus als Standard für Comicseiten)
+    $activeMode = $isInteractiveView ? 'tags' : 'grouped';
     ?>
 
-    <div class="comic-characters">
-        <?php if ($showCharacterSectionTitle): ?>
-            <h3>Charaktere auf dieser Seite:</h3>
-        <?php endif; ?>
-        <div class="character-list">
-            <?php
-            foreach ($charaktereData['groups'] as $groupName => $char_id_list):
-                $idsToShowInGroup = array_intersect($char_id_list, $pageCharaktereIDs);
+    <div class="comic-characters-container <?= $isInteractiveView ? 'interactive' : ''; ?>" id="char-display-wrapper" data-active-view="<?= $activeMode; ?>">
 
-                if (!empty($idsToShowInGroup)):
-                    ?>
-                    <div class="character-group">
-                        <h4><?php echo htmlspecialchars($groupName); ?></h4>
-                        <div class="character-group-list">
-                            <?php
-                            foreach ($char_id_list as $char_id):
-                                if (in_array($char_id, $idsToShowInGroup)):
-                                    $characterDetails = $charaktereData['characters'][$char_id] ?? null;
+        <div class="char-display-header">
+            <div class="header-spacer"></div>
 
-                                    if ($characterDetails):
-                                        $characterName = $characterDetails['name'];
-                                        
-                                        // FIX 3.0.2: Ersetze Leerzeichen durch Unterstriche für den Dateinamen
-                                        $filename = str_replace(' ', '_', $characterName);
-                                        
-                                        // Link mit DIRECTORY_PUBLIC_URL erstellen
-                                        $characterLink = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
+            <?php if ($showCharacterSectionTitle) : ?>
+                <h3>Charaktere auf dieser Seite:</h3>
+            <?php endif; ?>
 
-                                        $imageSrc = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0Afehlt';
-                                        if (!empty($characterDetails['pic_url'])) {
-                                            // Bild-URL mit DIRECTORY_PUBLIC_URL erstellen
-                                            $imageSrc = DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($characterDetails['pic_url']);
-                                        }
+            <?php if ($isInteractiveView) : ?>
+                <button type="button" id="toggle-char-view" class="button button-small" title="Ansicht umschalten">
+                    <i class="fas fa-th-list"></i> <span id="toggle-view-text">Gruppierte Ansicht</span>
+                </button>
+            <?php else : ?>
+                <div class="header-spacer"></div>
+            <?php endif; ?>
+        </div>
+
+        <div class="char-view-section view-tags">
+            <div class="character-group">
+                <h4>Alle Charaktere (alphabetisch sortiert)</h4>
+                <?php
+                // --- SORTIERLOGIK ---
+                $mainCharIds = $charaktereData['groups']['Hauptcharaktere'] ?? [];
+                $mainList = [];
+                $otherList = [];
+
+                foreach ($pageCharaktereIDs as $id) {
+                    if (!isset($charaktereData['characters'][$id])) {
+                        continue;
+                    }
+                    $char = $charaktereData['characters'][$id];
+                    $char['id'] = $id;
+                    if (in_array($id, $mainCharIds)) {
+                        $mainList[] = $char;
+                    } else {
+                        $otherList[] = $char;
+                    }
+                }
+
+                $sortFunc = fn($a, $b) => strcasecmp($a['name'], $b['name']);
+                usort($mainList, $sortFunc);
+                usort($otherList, $sortFunc);
+                $finalList = array_merge($mainList, $otherList);
+
+                // --- TAG-MAPPING ---
+                $tagsMap = [];
+                foreach ($charaktereData['groups'] as $groupName => $idList) {
+                    foreach ($idList as $id) {
+                        if (!in_array($id, $pageCharaktereIDs)) {
+                            continue;
+                        }
+
+                        $tagsMap[$id][] = $groupName;
+                    }
+                }
+                ?>
+                <div class="character-group-list">
+                    <?php foreach ($finalList as $char) :
+                        $filename = str_replace(' ', '_', $char['name']);
+                        $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $filename . $dateiendungPHP;
+                        $img = !empty($char['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($char['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
+                        ?>
+                        <div class="character-item">
+                            <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
+                                <div class="char-avatar-container">
+                                    <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                </div>
+                                <span class="character-name"><?= htmlspecialchars($char['name']); ?></span>
+
+                                <div class="character-tags">
+                                    <?php if (isset($tagsMap[$char['id']])) :
+                                        foreach ($tagsMap[$char['id']] as $tagName) : ?>
+                                            <span class="char-tag"><?= htmlspecialchars($tagName); ?></span>
+                                        <?php endforeach;
+                                    endif; ?>
+                                </div>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="char-view-section view-grouped">
+            <div class="character-list">
+                <?php foreach ($charaktereData['groups'] as $groupName => $idList) :
+                    $idsInPage = array_intersect($idList, $pageCharaktereIDs);
+                    if (!empty($idsInPage)) : ?>
+                        <div class="character-group">
+                            <h4><?= htmlspecialchars($groupName); ?></h4>
+                            <div class="character-group-list">
+                                <?php foreach ($idList as $id) :
+                                    if (in_array($id, $idsInPage)) :
+                                        $c = $charaktereData['characters'][$id];
+                                        $file = str_replace(' ', '_', $c['name']);
+                                        $link = DIRECTORY_PUBLIC_CHARAKTERE_URL . '/' . $file . $dateiendungPHP;
+                                        $img = !empty($c['pic_url']) ? DIRECTORY_PUBLIC_IMG_CHARAKTERS_PROFILES_URL . '/' . htmlspecialchars($c['pic_url']) : 'https://placehold.co/80x80/cccccc/333333?text=Fehlt';
                                         ?>
                                         <div class="character-item">
-                                            <a href="<?php echo htmlspecialchars($characterLink); ?>" target="_blank" rel="noopener noreferrer"
-                                                title="Mehr über <?php echo htmlspecialchars($characterName); ?> erfahren">
-                                                <!-- FIX 3.0.3: Bild zuerst, dann Name -->
-                                                <img src="<?php echo htmlspecialchars($imageSrc); ?>"
-                                                    alt="Bild von <?php echo htmlspecialchars($characterName); ?>" loading="lazy" width="80"
-                                                    height="80" class="character-image-fallback">
-                                                <span class="character-name"><?php echo htmlspecialchars($characterName); ?></span>
+                                            <a href="<?= htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer">
+                                                <img src="<?= htmlspecialchars($img); ?>" class="character-image-fallback" width="80" height="80">
+                                                <span class="character-name"><?= htmlspecialchars($c['name']); ?></span>
                                             </a>
                                         </div>
-                                        <?php
-                                    endif;
-                                endif;
-                            endforeach;
-                            ?>
+                                    <?php endif;
+                                endforeach; ?>
+                            </div>
                         </div>
-                    </div>
-                    <?php
-                endif;
-            endforeach;
-            ?>
+                    <?php endif;
+                endforeach; ?>
+            </div>
         </div>
     </div>
 
-    <script nonce="<?php echo htmlspecialchars($nonce ?? ''); ?>">
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.character-image-fallback').forEach(function (img) {
-                img.addEventListener('error', function () {
+    <script nonce="<?= htmlspecialchars($nonce ?? ''); ?>">
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.getElementById('char-display-wrapper');
+            const toggleBtn = document.getElementById('toggle-char-view');
+            const toggleText = document.getElementById('toggle-view-text');
+
+            if (toggleBtn && wrapper) {
+                toggleBtn.addEventListener('click', function() {
+                    const currentView = wrapper.getAttribute('data-active-view');
+                    const newView = currentView === 'tags' ? 'grouped' : 'tags';
+
+                    wrapper.setAttribute('data-active-view', newView);
+
+                    // Button-Text und Icon aktualisieren
+                    if (newView === 'grouped') {
+                        toggleText.textContent = 'Tag Ansicht';
+                        toggleBtn.querySelector('i').className = 'fas fa-tags';
+                    } else {
+                        toggleText.textContent = 'Gruppierte Ansicht';
+                        toggleBtn.querySelector('i').className = 'fas fa-th-list';
+                    }
+                });
+            }
+
+            // Image-Fallback (unverändert)
+            document.querySelectorAll('.character-image-fallback').forEach(function(img) {
+                img.addEventListener('error', function() {
                     this.onerror = null;
                     this.src = 'https://placehold.co/80x80/cccccc/333333?text=Bild%0AFehlt';
                 });

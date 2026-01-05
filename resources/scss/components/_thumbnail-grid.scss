@@ -1,0 +1,246 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Thumbnail Grids.
+///
+/// Styling für Kapitel-Übersichten, Tag-Seiten und allgemeine Bild-Raster.
+///
+/// Universelles Grid-Layout für Comics, Charaktere und Lesezeichen.
+/// Ersetzt spezifische Grids in Archive und Characters.
+///
+
+/*!
+ * @file       resources/scss/components/_thumbnail-grid.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0-alpha.3
+/// - refactor(SCSS): Zusammenführung von .chapter-links und .tag-page-links in eine wiederverwendbare Komponente.
+/// - feat(Design): Modernes CSS Grid für alle Galerien.
+/// - fix(Design): Overlay auf Desktop wieder vollflächig, auf Mobile als Leiste unten.
+/// - fix(Design): Aspect Ratio für alle Grids einheitlich auf 1/1.3 gesetzt.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-on-medium: Textfarbe auf Karten
+// - --button-bg: Hintergrund für Karten (Loading/Fallback)
+// - --button-hover-bg: Hintergrund bei Hover
+// - --text-color: Standard Textfarbe (Dark Mode)
+// - --content-area-bg: Hintergrund im Dark Mode
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// Gemeinsame Selektoren für alle Grids
+.chapter-links,
+.tag-page-links,
+.thumbnail-grid {
+    display: grid;
+
+    // Responsive: Min 96px, Max Space-filling
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.chapter-links noscript,
+.tag-page-links noscript,
+.thumbnail-grid noscript {
+    display: contents;
+}
+
+// 1. Item Card Styling (Gruppiert für DRY)
+.chapter-links a,
+.tag-page-links a,
+.thumbnail-grid a {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1.3;
+    overflow: hidden;
+    font-size: 1.2em;
+    color: var(--text-on-medium);
+    text-decoration: none;
+    background-color: var(--button-bg); // Fallback / Loading BG
+    border-radius: 5px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.chapter-links a:hover,
+.tag-page-links a:hover,
+.thumbnail-grid a:hover {
+    z-index: 10;
+    background-color: var(--button-hover-bg);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.3);
+    transform: scale(1.05);
+}
+
+@include media-retina-mobile {
+    .chapter-links a,
+    .tag-page-links a,
+    .thumbnail-grid a {
+        zoom: 1.5;
+    }
+}
+
+// Overlay (Text/Nummer)
+.chapter-links a span,
+.tag-page-links a span,
+.thumbnail-grid a span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 80;
+    box-sizing: border-box;
+    display: none; // Standardmäßig versteckt auf Desktop
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%; // Vollflächig auf Desktop
+    padding: 5px; // Etwas Padding für Textumbruch
+    font-size: 14px;
+    color: #fff;
+    text-align: center;
+    background: rgb(0 0 0 / 0.65);
+    transition: background-color 0.2s;
+}
+
+// Mobile Anpassung: Leiste unten, immer sichtbar
+@include media-retina-mobile {
+    .chapter-links a span,
+    .tag-page-links a span,
+    .thumbnail-grid a span {
+        top: auto; // Reset top
+        bottom: 0; // Unten fixieren
+        display: flex;
+        height: auto; // Nur so hoch wie der Text
+        padding: 2px 0;
+    }
+}
+
+// Hover zeigt Overlay auf Desktop
+.chapter-links a:hover span,
+.tag-page-links a:hover span,
+.thumbnail-grid a:hover span {
+    display: flex;
+}
+
+// Delete Button (Admin/Bookmarks)
+.chapter-links a .delete,
+.tag-page-links a .delete,
+.thumbnail-grid a .delete {
+    position: absolute;
+    top: 4px;
+    right: 2px;
+    z-index: 91;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 2px;
+    cursor: pointer;
+    background: rgb(255 255 255 / 0.2);
+    border: none;
+    border-radius: 50%;
+    opacity: 0; // Standardmäßig unsichtbar bis Hover (Desktop)
+    transition:
+        opacity 0.2s,
+        background-color 0.2s;
+}
+
+@include media-retina-mobile {
+    .chapter-links a .delete,
+    .tag-page-links a .delete,
+    .thumbnail-grid a .delete {
+        top: 3px;
+        opacity: 1; // Auf Mobile immer sichtbar
+    }
+}
+
+.chapter-links a .delete svg,
+.tag-page-links a .delete svg,
+.thumbnail-grid a .delete svg {
+    width: 18px;
+    height: 18px;
+    color: #f00;
+    filter: drop-shadow(0 0 1px rgb(0 0 0 / 0.5));
+    stroke: #fff;
+    stroke-width: 2px;
+}
+
+.chapter-links a .delete:hover,
+.tag-page-links a .delete:hover,
+.thumbnail-grid a .delete:hover {
+    background: rgb(255 80 80 / 0.8);
+}
+
+.chapter-links a .delete:hover svg,
+.tag-page-links a .delete:hover svg,
+.thumbnail-grid a .delete:hover svg {
+    color: #c00;
+}
+
+// Hover auf Karte zeigt Delete-Button
+.chapter-links a:hover .delete,
+.tag-page-links a:hover .delete,
+.thumbnail-grid a:hover .delete {
+    opacity: 1;
+}
+
+// 2. Image Logic
+.chapter-links img,
+.tag-page-links img,
+.thumbnail-grid img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+    transition: opacity 0.5s;
+}
+
+// Lazy Loading Logic
+.chapter-links img:not(.delicon),
+.tag-page-links img:not(.delicon),
+.thumbnail-grid img:not(.delicon) {
+    opacity: 0;
+}
+
+// Wenn geladen oder Noscript -> Sichtbar
+/* stylelint-disable no-descending-specificity */
+.chapter-links a noscript img,
+.chapter-links a.loaded img,
+.tag-page-links a noscript img,
+.tag-page-links a.loaded img,
+.thumbnail-grid a noscript img,
+.thumbnail-grid a.loaded img {
+    opacity: 1;
+}
+
+// 3. Theme Overrides
+body.theme-night .chapter-links a,
+body.theme-night .tag-page-links a,
+body.theme-night .thumbnail-grid a {
+    color: var(--text-color);
+    background-color: var(--content-area-bg);
+}
+
+body.theme-night .chapter-links a span,
+body.theme-night .tag-page-links a span,
+body.theme-night .thumbnail-grid a span {
+    background-color: rgb(0 0 0 / 0.8);
+}
+/* stylelint-enable no-descending-specificity */

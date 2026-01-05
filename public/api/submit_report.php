@@ -1,57 +1,55 @@
 <?php
+
 /**
+ * Beschreibung: Hochstabiler API-Endpunkt für Comic-Fehlermeldungen.
+ * Verarbeitet POST-Daten, bereinigt HTML via HTML Purifier und schützt
+ * die Anwendung durch globales Error-Handling (Throwable).
+ *
  * @file      ROOT/public/api/submit_report.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   1.1.0
- * @since     1.0.0 Initiale Erstellung
- * @since     1.1.0 Implementiert HTML Purifier zur sicheren Annahme von HTML aus dem Summernote-Editor.
  *
- * @description Öffentlicher API-Endpunkt zum Empfangen von Fehlermeldungen (Reports) von der Comic-Seite.
- * Nimmt JSON-POST-Daten entgegen, validiert sie, prüft auf Rate-Limiting/Honeypot
- * und speichert die Meldung in data/comic_reports.json.
+ * @since     5.0.0
+ * - Refactoring: Trennung von Funktionsdefinition und Logik-Fluss.
+ * - Restore: Alle spezifischen Validierungs- und Rate-Limit-Regeln integriert.
+ *
+ * Variablen-Index:
+ * - $configPath, $autoloadPath: string - Pfade für Systemkomponenten.
+ * - $reportsFilePath: string - Pfad zur JSON-Datenbank.
+ * - $clientIpHash: string - Fingerabdruck des Nutzers für das Rate-Limiting.
+ * - $purifier: HTMLPurifier - Das Sicherheitswerkzeug für HTML-Input.
  */
 
-// === 1. ZENTRALE INITIALISIERUNG & KONFIGURATION ===
-// Lädt die Pfad-Konstanten und die Path-Klasse.
-require_once __DIR__ . '/../../src/components/load_config.php';
+declare(strict_types=1);
 
-// === 2. HTML PURIFIER LADEN ===
-// Setzt voraus, dass HTML Purifier via Composer installiert wurde.
-// Passe den Pfad an, falls du es manuell installiert hast.
-require_once __DIR__ . '/../../vendor/autoload.php';
+// === 1. SYSTEM-SETUP & HEADER ===
+// Wir schalten die HTML-Fehleranzeige ab, da wir Fehler als JSON-Objekt abfangen.
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
 
-// === 3. KONSTANTEN & VARIABLEN ===
-$debugMode = $debugMode ?? false;
-define('RATE_LIMIT_COUNT', 5); // Max 5 Meldungen...
-define('RATE_LIMIT_WINDOW', 600); // ...innerhalb von 10 Minuten (600 Sekunden).
-$reportsFilePath = Path::getDataPath('comic_reports.json');
-$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-$clientIpHash = hash('sha256', $clientIp); // IP-Adresse hashen
+header('Content-Type: application/json; charset=utf-8');
 
-// === 4. HELFERFUNKTIONEN ===
+// === 2. HILFSWERKZEUGE (Definitionen) ===
 
 /**
- * Sendet eine JSON-Antwort und beendet das Skript.
- * @param bool $success Erfolg oder Misserfolg
- * @param string $message Die Nachricht an den Benutzer
- * @param int $statusCode HTTP-Statuscode (z.B. 400, 405, 429, 500)
+ * Sendet eine strukturierte JSON-Antwort und terminiert das Skript.
  */
-function sendJsonResponse(bool $success, string $message, int $statusCode = 200)
+function sendJsonResponse(bool $success, string $message, int $statusCode = 200, ?array $debug = null): void
 {
     http_response_code($statusCode);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['success' => $success, 'message' => $message]);
+    echo json_encode(array_filter([
+        'success' => $success,
+        'message' => $message,
+        'debug'   => $debug,
+    ]), JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 /**
- * Liest die JSON-Datei sicher (mit Sperre).
- * @param string $path Pfad zur Datei
- * @return array Die dekodierten Daten
+ * Lädt die JSON-Datenbank mit einer Lese-Sperre (Shared Lock).
  */
 function loadJsonWithLock(string $path): array
 {
@@ -62,144 +60,152 @@ function loadJsonWithLock(string $path): array
     if (!$handle) {
         return [];
     }
-    flock($handle, LOCK_SH); // Shared lock für das Lesen
+    flock($handle, LOCK_SH);
     $content = stream_get_contents($handle);
     flock($handle, LOCK_UN);
     fclose($handle);
-
-    $data = json_decode($content, true);
+    $data = json_decode((string)$content, true);
     return is_array($data) ? $data : [];
 }
 
 /**
- * Schreibt die JSON-Datei sicher (mit exklusiver Sperre).
- * @param string $path Pfad zur Datei
- * @param array $data Die zu schreibenden Daten
- * @return bool Erfolg
+ * Speichert Daten in der JSON-Datenbank mit Schreib-Sperre (Exclusive Lock).
  */
 function saveJsonWithLock(string $path, array $data): bool
 {
-    $handle = fopen($path, 'c+'); // 'c+' öffnet zum Lesen/Schreiben, erstellt Datei, wenn nicht existent, scheitert nicht, wenn existent.
+    $handle = fopen($path, 'c+');
     if (!$handle) {
         return false;
     }
-    if (flock($handle, LOCK_EX)) { // Exklusive Sperre
-        ftruncate($handle, 0); // Inhalt löschen
+    if (flock($handle, LOCK_EX)) {
+        ftruncate($handle, 0);
         rewind($handle);
         fwrite($handle, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         fflush($handle);
-        flock($handle, LOCK_UN); // Sperre freigeben
+        flock($handle, LOCK_UN);
     }
     fclose($handle);
     return true;
 }
 
-// === 5. SKRIPT-LOGIK ===
+// === 3. AUSFÜHRUNGS-LOGIK (Der "Flow") ===
 
-// --- A. Nur POST-Requests erlauben ---
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    sendJsonResponse(false, 'Methode nicht erlaubt.', 405);
-}
+try {
+    // --- A. Initialisierung ---
+    $configPath = __DIR__ . '/../../src/components/load_config.php';
+    $autoloadPath = __DIR__ . '/../../vendor/autoload.php';
 
-// --- B. JSON-Body einlesen ---
-$inputJSON = file_get_contents('php://input');
-$input = json_decode($inputJSON, true);
+    if (!file_exists($configPath)) {
+        throw new RuntimeException('System-Konfiguration nicht gefunden.');
+    }
+    if (!file_exists($autoloadPath)) {
+        throw new RuntimeException('Vendor-Bibliotheken fehlen (HTML Purifier).');
+    }
 
-if (json_last_error() !== JSON_ERROR_NONE || !is_array($input)) {
-    sendJsonResponse(false, 'Ungültige Anfrage (JSON erwartet).', 400);
-}
+    require_once $configPath;
+    require_once $autoloadPath;
 
-// --- C. Honeypot-Prüfung ---
-if (!empty($input['report_honeypot'])) {
-    // Bot gefangen. Wir tun so, als wäre es erfolgreich, um den Bot nicht zu alarmieren.
-    // Wir loggen dies aber ggf. oder speichern es als 'spam' (optional, hier einfacher Exit).
-    sendJsonResponse(true, 'Meldung erfolgreich übermittelt.', 200);
-}
+    $debugMode = $debugMode ?? false;
+    $reportsFilePath = Path::getDataPath('comic_reports.json');
+    $clientIpHash = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? 'unknown');
 
-// --- D. Datenvalidierung ---
-$comicId = $input['comic_id'] ?? null;
-$reportType = $input['report_type'] ?? null;
-$description = $input['report_description'] ?? '';
-$suggestion = $input['report_transcript_suggestion'] ?? '';
-$original = $input['report_transcript_original'] ?? ''; // Das Original für den Diff
-$submitterName = $input['report_name'] ?? 'Anonym';
+    // --- B. Request-Prüfung ---
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        sendJsonResponse(false, 'Methode nicht erlaubt.', 405);
+    }
 
-// Typ muss einer der erwarteten Werte sein
-$validTypes = ['transcript', 'image', 'other'];
-if (empty($comicId) || empty($reportType) || !in_array($reportType, $validTypes)) {
-    sendJsonResponse(false, 'Fehlende oder ungültige Daten (Comic-ID und Typ sind Pflichtfelder).', 400);
-}
+    $input = json_decode((string)file_get_contents('php://input'), true);
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($input)) {
+        sendJsonResponse(false, 'Ungültige Anfrage (JSON erwartet).', 400);
+    }
 
-// Wenn Typ "Transkript" ist, MUSS entweder eine Beschreibung ODER ein Vorschlag vorhanden sein.
-if ($reportType === 'transcript' && empty($description) && empty($suggestion)) {
-    sendJsonResponse(false, 'Bitte gib eine Beschreibung oder einen Transkript-Vorschlag an.', 400);
-}
-// Wenn Typ nicht "Transkript" ist, MUSS eine Beschreibung vorhanden sein.
-if ($reportType !== 'transcript' && empty($description)) {
-    sendJsonResponse(false, 'Bitte gib eine Fehlerbeschreibung an.', 400);
-}
+    // Honeypot (Bot-Schutz)
+    if (!empty($input['report_honeypot'])) {
+        sendJsonResponse(true, 'Meldung erfolgreich übermittelt.', 200);
+    }
 
-// --- E. Rate-Limiting ---
-$reports = loadJsonWithLock($reportsFilePath);
-$now = time();
-$userReportCount = 0;
+    // --- C. Detaillierte Validierung (Wiederhergestellt) ---
+    $comicId      = $input['comic_id'] ?? null;
+    $reportType   = $input['report_type'] ?? null;
+    $description  = $input['report_description'] ?? '';
+    $suggestion   = $input['report_transcript_suggestion'] ?? '';
+    $original     = $input['report_transcript_original'] ?? '';
+    $submitter    = $input['report_name'] ?? 'Anonym';
 
-foreach ($reports as $report) {
-    if (($report['ip_hash'] ?? '') === $clientIpHash) {
-        $reportTime = strtotime($report['date'] ?? 0);
-        if ($reportTime > ($now - RATE_LIMIT_WINDOW)) {
-            $userReportCount++;
+    $validTypes = ['transcript', 'image', 'other'];
+    if (empty($comicId) || !in_array($reportType, $validTypes)) {
+        sendJsonResponse(false, 'Fehlende oder ungültige Pflichtfelder.', 400);
+    }
+
+    // Spezialregel Transkript
+    if ($reportType === 'transcript' && empty($description) && empty($suggestion)) {
+        sendJsonResponse(false, 'Bitte gib eine Beschreibung oder einen Transkript-Vorschlag an.', 400);
+    }
+    // Spezialregel Bild/Sonstiges
+    if ($reportType !== 'transcript' && empty($description)) {
+        sendJsonResponse(false, 'Bitte gib eine Fehlerbeschreibung an.', 400);
+    }
+
+    // --- D. Rate-Limiting Logik (Wiederhergestellt) ---
+    define('RATE_LIMIT_COUNT', 5);
+    define('RATE_LIMIT_WINDOW', 600); // 10 Minuten
+
+    $reports = loadJsonWithLock($reportsFilePath);
+    $now = time();
+    $userReportCount = 0;
+
+    foreach ($reports as $report) {
+        if (!(($report['ip_hash'] ?? '') === $clientIpHash)) {
+            continue;
         }
+
+        $reportTime = strtotime($report['date'] ?? '0');
+        if ($reportTime <= $now - RATE_LIMIT_WINDOW) {
+            continue;
+        }
+
+        $userReportCount++;
     }
-}
 
-if ($userReportCount >= RATE_LIMIT_COUNT) {
-    sendJsonResponse(false, 'Du hast das Limit für Meldungen erreicht. Bitte versuche es später noch einmal.', 429);
-}
+    if ($userReportCount >= RATE_LIMIT_COUNT) {
+        sendJsonResponse(false, 'Limit erreicht. Bitte versuche es in 10 Minuten erneut.', 429);
+    }
 
-// --- F. Datenbereinigung & Erstellung ---
+    // --- E. Datenbereinigung ---
+    $purifierConfig = HTMLPurifier_Config::createDefault();
+    $purifierConfig->set('HTML.Allowed', 'p,b,strong,i,em,br');
+    $purifierConfig->set('Cache.DefinitionImpl', null);
+    $purifier = new HTMLPurifier($purifierConfig);
 
-// HTML Purifier-Konfiguration
-$config = HTMLPurifier_Config::createDefault();
-// Definiere exakt, welche HTML-Tags und Attribute erlaubt sind.
-// <p>, <strong>, <b> (fett), <em>, <i> (kursiv), <br>
-$config->set('HTML.Allowed', 'p,b,strong,i,em,br');
-$config->set('HTML.Doctype', 'HTML 4.01 Transitional');
-// Deaktiviere den Cache, um Berechtigungsprobleme auf Live-Servern zu vermeiden
-// Alternativ: $config->set('Cache.SerializerPath', '/pfad/zu/schreibbarem/cache-ordner');
-$config->set('Cache.DefinitionImpl', null);
-$purifier = new HTMLPurifier($config);
+    $newReport = [
+        'id'                    => uniqid('report_', true),
+        'comic_id'              => $comicId,
+        'date'                  => gmdate('c'),
+        'status'                => 'open',
+        'ip_hash'               => $clientIpHash,
+        'submitter_name'        => htmlspecialchars(strip_tags($submitter), ENT_QUOTES, 'UTF-8'),
+        'report_type'           => $reportType,
+        'description'           => htmlspecialchars(strip_tags($description), ENT_QUOTES, 'UTF-8'),
+        'transcript_suggestion' => $purifier->purify($suggestion),
+        'transcript_original'   => $purifier->purify($original),
+        // NEU: Hier fügen wir die Telemetrie-Daten hinzu!
+        'debug_info'            => htmlspecialchars(strip_tags($input['report_debug_info'] ?? ''), ENT_QUOTES, 'UTF-8'),
+    ];
 
-// Bereinige Standard-Text-Eingaben (kein HTML erlaubt)
-$cleanSubmitterName = htmlspecialchars(strip_tags($submitterName), ENT_QUOTES, 'UTF-8');
-$cleanDescription = htmlspecialchars(strip_tags($description), ENT_QUOTES, 'UTF-8');
+    // --- F. Speichern ---
+    $reports[] = $newReport;
+    if (!saveJsonWithLock($reportsFilePath, $reports)) {
+        throw new RuntimeException('Fehler beim Schreiben der Datenbank-Datei.');
+    }
 
-// Bereinige die HTML-Eingaben (Suggestion & Original) mit HTML Purifier
-// Dies entfernt alle gefährlichen Tags (<script>, onerror etc.), behält aber die erlaubten Tags.
-$cleanSuggestion = $purifier->purify($suggestion);
-$cleanOriginal = $purifier->purify($original); // Auch Original bereinigen, nur zur Sicherheit.
-
-$newReport = [
-    'id' => uniqid('report_', true),
-    'comic_id' => $comicId, // Comic-ID wird als sicher angenommen, da sie aus dem Modal-Datenattribut stammt
-    'date' => gmdate('c'), // ISO 8601 Zeitstempel (UTC)
-    'status' => 'open',
-    'ip_hash' => $clientIpHash,
-    'submitter_name' => $cleanSubmitterName,
-    'report_type' => $reportType,
-    'description' => $cleanDescription,
-    'transcript_suggestion' => $cleanSuggestion,
-    'transcript_original' => $cleanOriginal // Speichere das bereinigte Original für den Diff
-];
-
-// --- G. Speichern ---
-$reports[] = $newReport;
-if (saveJsonWithLock($reportsFilePath, $reports)) {
     sendJsonResponse(true, 'Vielen Dank! Deine Meldung wurde erfolgreich übermittelt.', 201);
-} else {
-    if ($debugMode) {
-        error_log("FEHLER [submit_report.php]: Konnte '$reportsFilePath' nicht schreiben (flock/fopen Problem).");
-    }
-    sendJsonResponse(false, 'Ein interner Serverfehler ist aufgetreten. Die Meldung konnte nicht gespeichert werden.', 500);
+} catch (\Throwable $e) {
+    // Globaler Catch-Block für absolute Stabilität
+    $debug = $debugMode ? [
+        'error' => $e->getMessage(),
+        'file'  => basename($e->getFile()),
+        'line'  => $e->getLine(),
+    ] : null;
+
+    sendJsonResponse(false, 'Ein interner Serverfehler ist aufgetreten.', 500, $debug);
 }
-?>

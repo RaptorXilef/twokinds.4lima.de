@@ -1,25 +1,40 @@
 <?php
+
 /**
  * Dies ist die Administrationsseite für die Erstkonfiguration der Webseite.
  * Hier können grundlegende Einstellungen wie die Erstellung notwendiger Ordner
  * und die Überprüfung/Sortierung der Comic-Datenbankdatei vorgenommen werden.
- * 
+ *
  * @file      ROOT/public/admin/initial_setup.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.0
- * @since     2.1.0 Angepasst an das neue Design mit einheitlichen Statusmeldungen, Button-Stilen
- * @since     2.2.0 Anpassung an versionierte comic_var.json (Schema v2).
- * @since     3.0.0 Umstellung auf neue, ausgelagerte Verzeichnisstruktur (twokinds_src).
- * @since     3.0.1 asset Ordner wieder prüfen
- * @since     3.1.0 Implementiert GitHub-Fallback für fehlende Konfigurationsvorlagen.
- * @since     3.5.0 Vollständige Umstellung auf Konstanten und reinen GitHub-Download, Entfernung lokaler Vorlagen.
- * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
- * @since     4.0.1 Zwei Korrekturen bei $requiredFiles [getComponent wird zu getConfig für config_main.php und config_folder_path.php
+ *
+ * @since 2.0.0 - 4.0.0
+ * - Infrastruktur & Verzeichnisse:
+ *  - Umstellung auf ausgelagerte Verzeichnisstruktur (`twokinds_src`) und dynamische Path-Helfer-Klasse.
+ *  - Einführung von Konstanten für Pfade und vollständiger Wechsel auf GitHub-Download als Quelle.
+ *  - Implementierung eines GitHub-Fallbacks für fehlende Konfigurationsvorlagen.
+ *
+ * - Daten & Anpassungen:
+ *  - Anpassung an versionierte `comic_var.json` (Schema v2).
+ *  - UI-Anpassung an das neue Design (einheitliche Statusmeldungen und Button-Stile).
+ *
+ * - Fixes:
+ *  - Korrekturen bei der Prüfung von Asset-Ordnern und `$requiredFiles`.
+ *
+ * @since     5.0.0
+ * - refactor(UI): Komplettes Redesign mit SCSS (.setup-container, .status-list).
+ * - refactor(Code): Entfernung von Inline-CSS und veralteten HTML-Strukturen.
+ * - fix(Standard): Nutzung der globalen Status-Klassen (.status-message).
+ * - refactor(Config): `config_generator_settings.json` nach `config/admin/` verschoben.
+ * - feat(Config): Ordner `config/admin` zu den benötigten Ordnern hinzugefügt.
+ * - refactor(UI): Letzte Inline-Styles entfernt (Float).
  */
+
+declare(strict_types=1);
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -32,6 +47,7 @@ $requiredFolders = [
     'Private > Source' => DIRECTORY_PRIVATE_SRC,
     'Private > Config' => DIRECTORY_PRIVATE_CONFIG,
     'Private > Config > Secrets' => DIRECTORY_PRIVATE_SECRETS,
+    'Private > Config > Admin' => DIRECTORY_PRIVATE_CONFIG . DIRECTORY_SEPARATOR . 'admin', // NEU: Admin Config Ordner
     'Private > Data' => DIRECTORY_PRIVATE_DATA,
     'Private > Data > Cache' => DIRECTORY_PRIVATE_CACHE,
     'Public > Assets' => DIRECTORY_PUBLIC_ASSETS,
@@ -51,12 +67,14 @@ $requiredFiles = [
     'charaktere.json' => ['target' => Path::getDataPath('charaktere.json'), 'github_path' => 'data/charaktere.json'],
     'comic_image_cache.json' => ['target' => Path::getCachePath('comic_image_cache.json'), 'github_path' => 'data/cache/comic_image_cache.json'],
     'comic_var.json' => ['target' => Path::getDataPath('comic_var.json'), 'github_path' => 'data/comic_var.json'],
-    'config_generator_settings.json' => ['target' => Path::getConfigPath('config_generator_settings.json'), 'github_path' => 'config/config_generator_settings.json'],
+    // NEU: Zielpfad ist nun im admin-Unterordner
+    'config_generator_settings.json' => ['target' => Path::getConfigPath('admin/config_generator_settings.json'), 'github_path' => 'config/config_generator_settings.json'],
     'config_rss.json' => ['target' => Path::getConfigPath('config_rss.json'), 'github_path' => 'config/config_rss.json'],
     'sitemap.json' => ['target' => Path::getDataPath('sitemap.json'), 'github_path' => 'data/sitemap.json'],
 ];
 
 $message = '';
+$messageType = 'info';
 
 // --- FUNKTIONEN ---
 function getFolderStatuses(array $folders): array
@@ -72,9 +90,11 @@ function createFolders(array $folders): array
 {
     $created = [];
     foreach ($folders as $folder) {
-        if (!is_dir($folder['path']) && mkdir($folder['path'], 0777, true)) {
-            $created[] = $folder['name'];
+        if (is_dir($folder['path']) || !mkdir($folder['path'], 0777, true)) {
+            continue;
         }
+
+        $created[] = $folder['name'];
     }
     return $created;
 }
@@ -95,23 +115,25 @@ function createRequiredFiles(array $files): array
 
     foreach ($files as $name => $details) {
         $targetPath = $details['target'];
-        if (!file_exists($targetPath)) {
-            $githubUrl = $githubBaseUrl . $details['github_path'];
-            $templateContent = @file_get_contents($githubUrl);
+        if (file_exists($targetPath)) {
+            continue;
+        }
 
-            if ($templateContent !== false) {
-                $targetDir = dirname($targetPath);
-                if (!is_dir($targetDir)) {
-                    mkdir($targetDir, 0777, true);
-                }
-                if (file_put_contents($targetPath, $templateContent) !== false) {
-                    $results[] = ['name' => $name, 'status' => 'success', 'message' => 'aus GitHub geladen'];
-                } else {
-                    $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Fehler beim Speichern der GitHub-Datei'];
-                }
-            } else {
-                $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Datei auf GitHub nicht gefunden'];
+        $githubUrl = $githubBaseUrl . $details['github_path'];
+        $templateContent = @file_get_contents($githubUrl);
+
+        if ($templateContent !== false) {
+            $targetDir = dirname($targetPath);
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
             }
+            if (file_put_contents($targetPath, $templateContent) !== false) {
+                $results[] = ['name' => $name, 'status' => 'success', 'message' => 'aus GitHub geladen'];
+            } else {
+                $results[] = ['name' => $name, 'status' => 'error', 'message' => 'Fehler beim Speichern der von GitHub bezogenen Datei'];
+            }
+        } else {
+            $results[] = ['name' => $name, 'status' => 'error', 'message' => 'GitHub-Quelle nicht gefunden'];
         }
     }
     return $results;
@@ -119,14 +141,17 @@ function createRequiredFiles(array $files): array
 
 function getComicData(string $filePath): ?array
 {
-    if (!file_exists($filePath))
+    if (!file_exists($filePath)) {
         return null;
+    }
     $content = file_get_contents($filePath);
-    if ($content === false)
+    if ($content === false) {
         return null;
+    }
     $data = json_decode($content, true);
-    if (json_last_error() !== JSON_ERROR_NONE)
+    if (json_last_error() !== JSON_ERROR_NONE) {
         return null;
+    }
     if (is_array($data)) {
         return $data['comics'] ?? $data; // Handles both v2 and v1
     }
@@ -141,8 +166,9 @@ function saveComicData(string $filePath, array $comicsData): bool
 
 function isAlphabeticallySorted(array $data): bool
 {
-    if (empty($data))
+    if (empty($data)) {
         return true;
+    }
     $keys = array_keys($data);
     $sortedKeys = $keys;
     sort($sortedKeys);
@@ -153,273 +179,176 @@ function isAlphabeticallySorted(array $data): bool
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf_token();
     $action = $_POST['action'] ?? '';
-    $comicVarJsonPath = Path::getDataPath('comic_var.json'); // Definiere den Pfad hier
+    $comicVarJsonPath = Path::getDataPath('comic_var.json');
 
     switch ($action) {
         case 'create_folders':
             $missingFolders = array_filter(getFolderStatuses($requiredFolders), fn($f) => !$f['exists']);
-            if (empty($missingFolders)) {
-                $message = '<p class="status-message status-orange">Alle erforderlichen Ordner existieren bereits.</p>';
+            $created = createFolders($missingFolders);
+            if (!empty($created)) {
+                $message = count($created) . ' Ordner wurden erfolgreich erstellt.';
+                $messageType = 'success';
             } else {
-                $created = createFolders($missingFolders);
-                $message = !empty($created) ? '<p class="status-message status-green">Ordner erfolgreich erstellt: ' . implode(', ', $created) . '</p>' : '<p class="status-message status-red">Fehler beim Erstellen der Ordner.</p>';
+                $message = 'Es konnten keine Ordner erstellt werden (evtl. Berechtigungsproblem).';
+                $messageType = 'error';
             }
             break;
+
         case 'create_files':
-            $results = createRequiredFiles($requiredFiles);
+            $missingFiles = array_filter(getFileStatuses($requiredFiles), fn($f) => !$f['exists']);
+            // Filtere nur die benötigten Details
+            $filesToCreate = array_intersect_key($requiredFiles, array_flip(array_column($missingFiles, 'name')));
+            $results = createRequiredFiles($filesToCreate);
+
             $successCount = count(array_filter($results, fn($r) => $r['status'] === 'success'));
             if ($successCount > 0) {
-                $message = '<p class="status-message status-green">' . $successCount . ' Datei(en) erfolgreich von GitHub erstellt.</p>';
-            } elseif (empty($results)) {
-                $message = '<p class="status-message status-orange">Alle erforderlichen Dateien existieren bereits.</p>';
+                $message = "$successCount Datei(en) wurden erstellt.";
+                $messageType = 'success';
             } else {
-                $message = '<p class="status-message status-red">Fehler beim Erstellen der Dateien.</p>';
+                $message = 'Fehler beim Erstellen der Dateien.';
+                $messageType = 'error';
             }
             break;
+
         case 'sort_json':
             $comicData = getComicData($comicVarJsonPath);
-            if ($comicData === null) {
-                $message = '<p class="status-message status-red">`comic_var.json` existiert nicht oder ist fehlerhaft.</p>';
-            } elseif (empty($comicData)) {
-                $message = '<p class="status-message status-orange">`comic_var.json` ist leer, keine Sortierung nötig.</p>';
-            } elseif (isAlphabeticallySorted($comicData)) {
-                $message = '<p class="status-message status-orange">`comic_var.json` ist bereits korrekt geordnet.</p>';
-            } else {
+            if ($comicData !== null) {
                 ksort($comicData);
-                $message = saveComicData($comicVarJsonPath, $comicData)
-                    ? '<p class="status-message status-green">`comic_var.json` wurde erfolgreich alphabetisch geordnet.</p>'
-                    : '<p class="status-message status-red">Fehler beim Speichern der sortierten `comic_var.json`.</p>';
+                if (saveComicData($comicVarJsonPath, $comicData)) {
+                    $message = '`comic_var.json` wurde erfolgreich sortiert und als Schema v2 gespeichert.';
+                    $messageType = 'success';
+                } else {
+                    $message = 'Fehler beim Speichern der `comic_var.json`.';
+                    $messageType = 'error';
+                }
+            } else {
+                $message = 'Konnte `comic_var.json` nicht laden.';
+                $messageType = 'error';
             }
             break;
     }
 }
 
-// Status für die Anzeige ermitteln
+// --- STATUS-CHECK ---
 $folderStatuses = getFolderStatuses($requiredFolders);
+$allFoldersExist = empty(array_filter($folderStatuses, fn($f) => !$f['exists']));
+
 $fileStatuses = getFileStatuses($requiredFiles);
-$allFoldersExist = !in_array(false, array_column($folderStatuses, 'exists'));
-$allFilesExist = !in_array(false, array_column($fileStatuses, 'exists'));
+$allFilesExist = empty(array_filter($fileStatuses, fn($f) => !$f['exists']));
 
-$comicVarJsonPathForCheck = Path::getDataPath('comic_var.json');
-$currentComicData = getComicData($comicVarJsonPathForCheck);
-$jsonFileSorted = $currentComicData === null ? false : isAlphabeticallySorted($currentComicData);
+$comicVarJsonPath = Path::getDataPath('comic_var.json');
+$currentComicData = getComicData($comicVarJsonPath);
+$jsonFileSorted = ($currentComicData !== null) && isAlphabeticallySorted($currentComicData);
 
 
-$pageTitle = 'Adminbereich - Ersteinrichtung';
-$pageHeader = 'Webseiten-Ersteinrichtung';
+$pageTitle = 'Initial Setup';
+$pageHeader = 'System-Einrichtung';
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
-<article>
-    <div class="admin-form-container">
-        <header>
-            <h1><?php echo htmlspecialchars($pageHeader); ?></h1>
-        </header>
-        <?php if (!empty($message))
-            echo $message; ?>
+    <div class="setup-container content-section">
+        <div id="settings-and-actions-container">
+            <h2>Initial Setup</h2>
+            <p>Überprüfung und Einrichtung der Systemumgebung.</p>
+        </div>
 
-        <section class="content-section">
-            <h3>1. Verzeichnisstruktur prüfen</h3>
-            <div class="status-list">
-                <?php foreach ($folderStatuses as $folder): ?>
-                    <div class="status-item"><span><?php echo htmlspecialchars($folder['name']); ?>:</span><span
-                            class="status-indicator <?php echo $folder['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $folder['exists'] ? 'Existiert' : 'Fehlt'; ?></span>
-                    </div>
-                <?php endforeach; ?>
+        <?php if ($message) : ?>
+            <div class="status-message status-<?php echo ($messageType === 'success' ? 'green' : ($messageType === 'error' ? 'red' : 'info')); ?> visible">
+                <?php echo htmlspecialchars($message); ?>
             </div>
-            <?php if (!$allFoldersExist): ?>
-                <form action="" method="POST"><input type="hidden" name="csrf_token"
-                        value="<?php echo htmlspecialchars($csrfToken); ?>"><button type="submit" name="action"
-                        value="create_folders" class="status-green-button">Fehlende Ordner erstellen</button></form>
-            <?php endif; ?>
+        <?php endif; ?>
+
+        <!-- 1. ORDNER STRUKTUR -->
+        <section class="setup-section collapsible-section expanded">
+            <div class="collapsible-header">
+                <h3>1. Ordner-Struktur</h3>
+                <!-- Icon oder Status hier -->
+            </div>
+            <div class="collapsible-content">
+                <ul class="status-list">
+                    <?php foreach ($folderStatuses as $folder) : ?>
+                        <li class="status-item <?php echo $folder['exists'] ? 'status-ok' : 'status-missing'; ?>">
+                            <span class="status-label"><?php echo htmlspecialchars($folder['name']); ?></span>
+                            <span class="status-icon">
+                                <?php if ($folder['exists']) : ?>
+                                    <i class="fas fa-check-circle" title="Vorhanden"></i>
+                                    <span class="sr-only">OK</span>
+                                <?php else : ?>
+                                    <i class="fas fa-times-circle" title="Fehlt"></i>
+                                    <span class="sr-only">Fehlt</span>
+                                <?php endif; ?>
+                            </span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php if (!$allFoldersExist) : ?>
+                    <form action="" method="POST" class="setup-actions">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                        <button type="submit" name="action" value="create_folders" class="button button-green setup-action-btn">
+                            <i class="fas fa-folder-plus"></i> Fehlende Ordner erstellen
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
         </section>
 
-        <section class="content-section">
-            <h3>2. Konfigurations- & Datendateien prüfen</h3>
-            <div class="status-list">
-                <?php foreach ($fileStatuses as $file): ?>
-                    <div class="status-item"><span><?php echo htmlspecialchars($file['name']); ?>:</span><span
-                            class="status-indicator <?php echo $file['exists'] ? 'status-green-text' : 'status-red-text'; ?>"><?php echo $file['exists'] ? 'Existiert' : 'Fehlt (wird von GitHub geladen)'; ?></span>
-                    </div>
-                <?php endforeach; ?>
+        <!-- 2. DATEIEN -->
+        <section class="setup-section collapsible-section expanded">
+             <div class="collapsible-header">
+                <h3>2. Notwendige Dateien</h3>
             </div>
-            <?php if (!$allFilesExist): ?>
-                <form action="" method="POST"><input type="hidden" name="csrf_token"
-                        value="<?php echo htmlspecialchars($csrfToken); ?>"><button type="submit" name="action"
-                        value="create_files" class="status-green-button">Fehlende Dateien erstellen</button></form>
-            <?php endif; ?>
+            <div class="collapsible-content">
+                <ul class="status-list">
+                    <?php foreach ($fileStatuses as $file) : ?>
+                        <li class="status-item <?php echo $file['exists'] ? 'status-ok' : 'status-missing'; ?>">
+                            <span class="status-label"><?php echo htmlspecialchars($file['name']); ?></span>
+                            <span class="status-icon">
+                                <?php if ($file['exists']) : ?>
+                                    <i class="fas fa-check-circle" title="Vorhanden"></i>
+                                <?php else : ?>
+                                    <i class="fas fa-times-circle" title="Fehlt"></i>
+                                <?php endif; ?>
+                            </span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php if (!$allFilesExist) : ?>
+                    <form action="" method="POST" class="setup-actions">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                        <button type="submit" name="action" value="create_files" class="button button-green setup-action-btn">
+                            <i class="fas fa-file-download"></i> Fehlende Dateien laden (GitHub)
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
         </section>
 
-        <section class="content-section">
-            <h3>5. `comic_var.json` alphabetisch ordnen</h3>
-            <?php if ($currentComicData === null): ?>
-                <p class="status-message status-orange">Datei `comic_var.json` existiert nicht. Bitte zuerst erstellen.</p>
-            <?php elseif (empty($currentComicData)): ?>
-                <p class="status-message status-orange">Datei `comic_var.json` ist leer und muss nicht sortiert werden.</p>
-            <?php elseif ($jsonFileSorted): ?>
-                <p class="status-message status-green">Datei `comic_var.json` ist bereits korrekt alphabetisch geordnet.</p>
-            <?php else: ?>
-                <p class="status-message status-red">Datei `comic_var.json` ist nicht alphabetisch geordnet.</p>
-                <form action="" method="POST"><input type="hidden" name="csrf_token"
-                        value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>"><button type="submit" name="action"
-                        value="sort_json" class="status-red-button">`comic_var.json` alphabetisch ordnen</button></form>
-            <?php endif; ?>
+        <!-- 3. DATENBANK SORTIERUNG -->
+        <section class="setup-section collapsible-section expanded">
+             <div class="collapsible-header">
+                <h3>3. Datenbank-Prüfung</h3>
+            </div>
+            <div class="collapsible-content">
+                <p class="instructions">
+                    Hier wird geprüft, ob die Comic-Datenbank korrekt sortiert ist (nach ID). Dies ist wichtig für die Navigation.
+                </p>
+                <?php if ($currentComicData === null) : ?>
+                    <p class="status-message status-orange visible">Datei `comic_var.json` existiert nicht.</p>
+                <?php elseif (empty($currentComicData)) : ?>
+                    <p class="status-message status-info visible">Datei `comic_var.json` ist leer.</p>
+                <?php elseif ($jsonFileSorted) : ?>
+                    <p class="status-message status-green visible"><i class="fas fa-check"></i> Datei ist korrekt sortiert.</p>
+                <?php else : ?>
+                    <p class="status-message status-red visible"><i class="fas fa-exclamation-triangle"></i> Datei ist nicht sortiert.</p>
+                    <form action="" method="POST" class="setup-actions">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                        <button type="submit" name="action" value="sort_json" class="button delete setup-action-btn">
+                            <i class="fas fa-sort-numeric-down"></i> Jetzt sortieren
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
         </section>
     </div>
-</article>
-
-<style nonce="<?php echo htmlspecialchars($nonce); ?>">
-    :root {
-        --missing-grid-border-color: #e0e0e0;
-        --missing-grid-bg-color: #f9f9f9;
-        --default-text-color: #333;
-        --status-green-text: #155724;
-        --status-red-text: #721c24;
-    }
-
-    body.theme-night {
-        --missing-grid-border-color: #045d81;
-        --missing-grid-bg-color: #03425b;
-        --default-text-color: #f0f0f0;
-        --status-green-text: #28a745;
-        --status-red-text: #dc3545;
-    }
-
-    .admin-form-container {
-        max-width: 825px;
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid rgba(221, 221, 221, 0.2);
-        border-radius: 8px;
-        background-color: rgba(240, 240, 240, 0.2);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        color: var(--default-text-color);
-    }
-
-    body.theme-night .admin-form-container {
-        background-color: rgba(30, 30, 30, 0.2);
-        border-color: rgba(80, 80, 80, 0.15);
-    }
-
-    .content-section {
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px dashed #eee;
-    }
-
-    body.theme-night .content-section {
-        border-bottom: 1px dashed #555;
-    }
-
-    .content-section:last-child {
-        border-bottom: none;
-    }
-
-    .content-section h3 {
-        margin-bottom: 10px;
-    }
-
-    .message {
-        margin-bottom: 15px;
-    }
-
-    .status-message {
-        padding: 8px 12px;
-        border-radius: 5px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
-    .status-green {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-
-    .status-orange {
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
-    }
-
-    .status-red {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-    .status-info {
-        background-color: #d1ecf1;
-        color: #0c5460;
-        border: 1px solid #bee5eb;
-    }
-
-    .status-green-text,
-    .status-red-text {
-        font-weight: bold;
-    }
-
-    .status-green-text {
-        color: var(--status-green-text);
-    }
-
-    .status-red-text {
-        color: var(--status-red-text);
-    }
-
-    .status-red-button,
-    .status-green-button {
-        color: white;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1em;
-        border: none;
-        display: block;
-        width: fit-content;
-        margin-top: 10px;
-    }
-
-    .status-red-button {
-        background-color: #dc3545;
-    }
-
-    .status-red-button:hover {
-        background-color: #c82333;
-    }
-
-    .status-green-button {
-        background-color: #28a745;
-    }
-
-    .status-green-button:hover {
-        background-color: #218838;
-    }
-
-    .status-list {
-        margin-top: 10px;
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid var(--missing-grid-border-color);
-        border-radius: 5px;
-        background-color: var(--missing-grid-bg-color);
-    }
-
-    .status-item {
-        padding: 4px 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px dashed var(--missing-grid-border-color);
-    }
-
-    .status-item:last-child {
-        border-bottom: none;
-    }
-
-    .status-indicator {
-        font-weight: bold;
-    }
-</style>
 
 <?php require_once Path::getPartialTemplatePath('footer.php'); ?>

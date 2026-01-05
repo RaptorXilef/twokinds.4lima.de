@@ -1,0 +1,296 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+/**
+ * Sidebar & Navigation Styles (v3.9 - The Spießer Edition)
+ *
+ * @file       resources/scss/layout/_sidebar.scss
+ * @since      5.0.0
+ * - fix(NEU): Border-Radius für 180°-Drehung korrigiert (Ecken jetzt rund).
+ * - fix(Layout): Breite auf 175px mit border-box standardisiert.
+ * - fix(Admin): Session-Timer und Image-Korrekturen wiederhergestellt.
+ */
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.sidebar {
+    display: flex;
+    flex: 0 0 200px;
+}
+
+.sidebar-content {
+    box-sizing: border-box;
+    width: 175px;
+    padding: 11px 4px 7px;
+    margin-left: 12px;
+    text-align: center;
+    background-color: var(--sidebar-bg);
+    border-radius: 0 0 5px 5px;
+
+    .full-width-img {
+        margin-left: -5px;
+    }
+}
+
+/* --- Social Icons --- */
+.social-icons-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.social-icon {
+    border-radius: 5px;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    &:hover {
+        transform: scale(1.15);
+    }
+}
+
+.patreon-icon-wrapper {
+    display: inline-block;
+
+    .patreon-light-icon {
+        display: inline-block;
+    }
+
+    .patreon-dark-icon {
+        display: none;
+    }
+}
+
+body.theme-night .patreon-icon-wrapper {
+    .patreon-light-icon {
+        display: none;
+    }
+
+    .patreon-dark-icon {
+        display: inline-block;
+    }
+}
+
+/* --- Navigation Menu --- */
+.menu {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.menu-label {
+    display: block;
+    margin: 14px 0 4px;
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-on-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.5;
+}
+
+.menu a {
+    position: relative;
+    box-sizing: border-box;
+    display: block;
+    width: 160px;
+    padding: 5px 0;
+    margin: 3px auto;
+    color: var(--text-on-medium);
+    text-transform: uppercase;
+    text-decoration: none;
+    background-color: var(--menu-bg);
+    border-radius: 4px;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
+
+    &:hover {
+        background-color: var(--menu-hover-bg);
+        transform: translateX(3px);
+    }
+}
+
+/* DYNAMISCHER NEU-TAG (Spießer-Edition) */
+.menu a.menu-new {
+    padding-left: 16px;
+
+    &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        font-size: 0.55rem;
+        font-weight: 900;
+        color: #fff;
+        content: 'NEU';
+        background-color: var(--new-tag-bg);
+
+        // Da wir 180 Grad drehen, müssen TR und BR gerundet werden,
+        // damit sie nach der Drehung auf der linken Seite liegen.
+        border-radius: 0 4px 4px 0;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+    }
+}
+
+/* Theme Toggle */
+.menu a.theme {
+    display: flex;
+    flex-flow: column nowrap;
+    padding: 0;
+    margin: 10px auto;
+
+    &:hover {
+        transform: none;
+    }
+
+    span.themelabel {
+        padding: 2px;
+        font-size: 0.7em;
+        color: #fff;
+        background-color: var(--theme-label-bg);
+    }
+
+    span.themename {
+        padding: 4px;
+        color: var(--text-on-medium);
+    }
+}
+
+/* --- Admin & Incentive --- */
+
+/* --- Professioneller Incentive-Bereich (v5.0.0-alpha.17) --- */
+.incentive {
+    width: 160px;
+    margin: 20px auto 10px; // Etwas mehr Luft nach oben zur Abgrenzung
+    text-align: center;
+
+    .tinytext {
+        margin-bottom: 6px;
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--text-on-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.6;
+    }
+
+    // Wir überschreiben die Standard-Link-Stile gezielt ohne !important
+    a {
+        display: block;
+        width: 100%;
+        padding: 0; // Entfernt das Padding der Text-Buttons
+        margin: 0;
+        overflow: hidden; // Sorgt dafür, dass das Bild an den Ecken nicht übersteht
+        cursor: pointer;
+        background: none; // Entfernt den Button-Hintergrund
+        border: none; // Entfernt eventuelle Rahmen
+        border-radius: 4px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        // Die neue, elegante Animation (kein translateX mehr!)
+        &:hover {
+            background: none; // Sicherstellung
+            transform: translateY(-3px) scale(1.02); // Leichtes Anheben und Vergrößern
+        }
+    }
+
+    img {
+        display: block; // Verhindert den Ghost-Margin unter Bildern
+        width: 100%; // Füllt die vollen 160px aus
+        height: auto;
+        border-radius: 4px; // Abgerundete Ecken direkt am Bild
+        box-shadow: 0 2px 5px rgb(0 0 0 / 0.1); // Dezenter Schatten für Tiefe
+        transition: filter 0.3s ease;
+    }
+
+    a:hover img {
+        filter: brightness(1.05); // Dezentes Aufleuchten beim Hover
+    }
+}
+
+.session-timer {
+    box-sizing: border-box;
+    width: 160px;
+    padding: 10px;
+    margin: 0 auto 15px;
+    font-size: 0.9em;
+    color: var(--text-on-medium);
+    text-align: center;
+    background-color: var(--button-hover-bg);
+    border: 1px solid var(--comic-nav-hover-bg);
+    border-radius: 5px;
+
+    i {
+        margin-right: 8px;
+    }
+}
+
+body.theme-night .session-timer {
+    background-color: #002b3c;
+    border: 1px solid #2a6177;
+}
+
+/* --- Modernes RSS Copy Feedback (v4.0) --- */
+#rssFeedLink {
+    position: relative; // Wichtiger Ankerpunkt
+}
+
+/* Copy Feedback */
+.copy-feedback {
+    position: absolute;
+    bottom: 130%; // Etwas mehr Abstand zum Icon
+    left: 50%;
+    z-index: 105; // Dein Korrektur-Vorschlag
+    visibility: hidden;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    white-space: nowrap;
+    pointer-events: none;
+    background-color: #28a745;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+    transition:
+        opacity 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        visibility 0.3s;
+
+    // Kleiner Pfeil nach unten
+    &::after {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        content: '';
+        border-color: #28a745 transparent transparent;
+        border-style: solid;
+        border-width: 6px;
+        transform: translateX(-50%);
+    }
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+body.theme-night .copy-feedback {
+    background-color: #3c763d;
+
+    &::after {
+        border-top-color: #3c763d;
+    }
+}
+
+// Nur wenn wir auf der Login-Seite sind (z.B. über eine Body-Klasse .page-login)
+.page-login .menu {
+    margin-top: 100px;
+}

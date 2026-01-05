@@ -1,0 +1,595 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Bookmarks und Charakter-Details.
+///
+/// Styling für die Lesezeichen-Verwaltung und die detaillierte Charakter-Ansicht.
+/// Styles für Charakter-Übersichten und Lesezeichen.
+///
+
+/*!
+ * @file       resources/scss/pages/_characters.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Refactoring.
+/// - fix(CSS): word-break deprecated property ersetzt.
+/// - style(Linter): Selector Order korrigiert.
+/// - style(Linter): Spezifität für Dark Mode Overrides durch Nesting korrigiert.
+/// - style(Linter): Theme-Overrides in .char-detail ans Ende verschoben.
+/// - style(Linter): Dateistruktur umgestellt (.bookmarks-page vor .char-detail), um absteigende Spezifität zu verhindern.
+/// - refactor(CSS): Vollständige Trennung von Basis-Styles und Theme-Overrides.
+/// - chore(Linter): False-Positive bei Dark-Mode Spezifität global für den Theme-Block ignoriert.
+/// - refactor(SCSS): .tag-page-links entfernt (jetzt in components/_thumbnail-grid.scss).
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - fix: Fehlende Klasse .charaktere-overview für die Hauptübersicht hinzugefügt.
+/// - fix: Clearfix für .char-detail hinzugefügt, um kollabierende Border zu verhindern.
+/// - fix: Abstände für h3 innerhalb von .charaktere-overview korrigiert.
+/// - fix: Clearfix für .char-detail hinzugefügt, um kollabierende Border zu verhindern.
+/// - fix: Abstände für h3 innerhalb von .charaktere-overview korrigiert.
+/// - fix(Villains): Layout für Bösewichte auf Full-Width Block-Design umgestellt (Bild über Text).
+/// - refactor(DRY): Redundante Thumbnail-Overlay Styles entfernt (jetzt zentral in components/_thumbnail-grid.scss).
+///
+
+// Verwendete SCSS-Variablen:
+// - $base-url: Basis-URL für Assets
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --button-bg: Hintergrund für Buttons / Dark Mode Elemente
+// - --cookie-btn-accept-bg: Primärfarbe (Grün)
+// - --cookie-btn-accept-hover: Hover Primärfarbe
+// - --link-color: Linkfarbe
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+/* --- Bookmarks Page Layout --- */
+
+.bookmarks {
+    margin-top: 20px;
+}
+
+.bookmarks-page .page-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
+    margin-bottom: 0;
+    font-size: 1.8em;
+    font-weight: 300;
+    text-align: center;
+}
+
+.bookmarks-page .page-header strong {
+    font-weight: 700;
+    color: #333;
+}
+
+.bookmarks-page .comic-count-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    margin-left: 10px;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: baseline; // middle
+    color: var(--text-on-medium);
+    text-align: center;
+    white-space: nowrap;
+    background-color: var(--button-bg); // var(--cookie-btn-accept-bg);
+    border-radius: 12px;
+}
+
+.bookmarks-page .bookmark-example {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-end;
+    margin-right: 1rem;
+    margin-bottom: 0;
+    font-size: 0.9em;
+    font-style: italic;
+    color: #555;
+    text-align: center;
+}
+
+// Ribbon Icon
+.bookmarks-page .bookmark-example .ribbon {
+    flex: 0 0 auto;
+    width: 27px;
+    height: 36px;
+    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png') 0 0 no-repeat;
+    background-size: contain;
+}
+
+.no-bookmarks {
+    padding: 3rem 2rem;
+    margin: 1rem;
+    font-size: 1.2rem;
+    text-align: center;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+
+    p {
+        margin: 0;
+        font-style: italic;
+        color: var(--text-color-medium);
+    }
+}
+
+.bookmarks-controls {
+    padding-top: 20px;
+    margin-top: 20px;
+    text-align: center;
+
+    hr {
+        height: 1px;
+        margin-bottom: 20px;
+        background-color: var(--border-light);
+        border: 0;
+    }
+
+    button {
+        padding: 10px 15px;
+        margin: 5px;
+        font-size: 0.9em;
+        color: white;
+        cursor: pointer;
+        background-color: var(--cookie-btn-accept-bg);
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: var(--cookie-btn-accept-hover);
+        }
+    }
+
+    .hidden-file-input {
+        display: none;
+    }
+}
+
+/* --- Character Quick Navigation --- */
+
+.char-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: left;
+    text-align: center;
+
+    a {
+        display: inline-block;
+        transition: transform 0.2s ease;
+
+        &:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    img {
+        width: 2.9rem;
+        height: 2.9rem;
+    }
+}
+
+/* --- Character Detail Page --- */
+
+.charaktere-overview {
+    padding-top: 0;
+    padding-bottom: 0;
+
+    h3 {
+        margin-top: 20px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--border-medium);
+    }
+}
+
+.char-detail {
+    @include clearfix;
+
+    padding: 15px 10px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-medium);
+
+    &:last-of-type {
+        margin-bottom: 0;
+        border: none;
+    }
+
+    h3 {
+        margin-bottom: 10px;
+        text-align: justify;
+
+        img {
+            vertical-align: middle;
+        }
+    }
+
+    p {
+        margin-bottom: 10px;
+        text-align: justify;
+    }
+
+    img.portrait {
+        margin-top: 0;
+    }
+}
+
+// Standard Image Column (Floated)
+.char-img {
+    float: left;
+    width: 175px;
+    margin-right: 20px;
+    text-align: center;
+
+    img.char-swatch {
+        display: inline-block;
+        width: auto;
+        height: auto;
+        margin: 5px 2px;
+        border: 1px solid var(--border-medium);
+        border-radius: 3px;
+        transition: opacity 0.6s;
+
+        &:hover {
+            opacity: 0.7;
+        }
+    }
+}
+
+.char-info {
+    float: left;
+    width: 600px;
+}
+
+/* --- Villain Section (Full-Width Block Design) --- */
+
+.villain-section {
+    border-color: var(--status-red-border, #dc3545);
+
+    .villain-image-container {
+        float: none;
+        width: 100%;
+        margin-bottom: 20px;
+        text-align: center;
+
+        img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    }
+
+    .char-info {
+        float: none;
+        width: 100%;
+        margin: 0;
+
+        h3 {
+            color: var(--status-red-text, #dc3545);
+            border-bottom-color: var(--status-red-border, #dc3545);
+        }
+    }
+
+    .villain-group-image {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* --- Theme Overrides --- */
+
+body.theme-night {
+    .char-detail {
+        border-bottom-color: var(--button-bg);
+
+        h3 img {
+            filter: brightness(1.1);
+        }
+    }
+
+    .bookmarks-page {
+        .page-header strong {
+            color: #ddd;
+        }
+
+        .comic-count-badge {
+            background-color: var(--button-bg);
+        }
+
+        .bookmark-example {
+            color: #ccc;
+        }
+    }
+
+    .no-bookmarks {
+        color: #ccc;
+        border-color: var(--button-bg);
+    }
+
+    .bookmarks-controls {
+        hr,
+        button {
+            background-color: var(--button-bg);
+        }
+
+        button:hover {
+            background-color: var(--border-light);
+        }
+    }
+}
+
+/* --- Character Components (Shared) --- */
+
+.comic-characters {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 0.35);
+
+    h3 {
+        margin-bottom: 20px;
+        font-size: 1.2em;
+        color: var(--text-color-light);
+        text-align: center;
+    }
+}
+
+body.theme-night .comic-characters {
+    background-color: var(--sidebar-bg);
+    border-color: var(--page-bg);
+
+    h3 {
+        color: #bbb;
+    }
+}
+
+.character-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.character-group {
+    width: 100%;
+
+    h4 {
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: var(--text-color);
+        text-align: center;
+        border-bottom: 1px solid rgb(0 0 0 / 0.1);
+    }
+}
+
+body.theme-night .character-group h4 {
+    color: #ddd;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.character-group-list {
+    display: flex;
+    flex-wrap: wrap; // Erlaubt das Umbrechen in neue Zeilen
+    gap: 35px 32px; // Zeilenabstand 35px, Spalten 20px
+    align-items: stretch; // Macht alle Items EINER Zeile gleich hoch
+    justify-content: center; // ZENTRIERT die letzte Reihe perfekt mittig!
+    padding: 20px;
+}
+
+.character-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 120px;
+    text-align: center;
+
+    &:hover img {
+        border-color: #007bff;
+    }
+
+    a {
+        display: flex;
+        flex-grow: 1; // Füllt die Höhe der Zeile innerhalb des Links aus
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        color: inherit;
+        text-decoration: none;
+        transition: transform 0.3s ease-in-out;
+
+        &:hover {
+            transform: translateY(-5px);
+
+            .character-name {
+                text-decoration: none;
+            }
+        }
+    }
+
+    .character-avatar-container {
+        flex-shrink: 0;
+        margin-bottom: 10px;
+    }
+
+    img,
+    .character-image-fallback {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        background-color: var(--characters-area-bg);
+        border: 2px solid var(--border-medium);
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+    }
+
+    .character-name {
+        display: flex;
+        flex-grow: 1; // Füllt den Raum zum Tag-Bereich auf
+        align-items: flex-start; // Name klebt direkt unter dem Bild
+        justify-content: center;
+        width: 100%;
+        padding-top: 5px;
+        margin: 0;
+        font-size: 0.9em;
+        font-weight: bold;
+        line-height: 1.2;
+        overflow-wrap: break-word;
+    }
+
+    // Hover-Interaktion verfeinern
+    &:hover .character-tags .char-tag {
+        border-color: var(--link-color); // Leichter Akzent beim Hover
+        opacity: 1;
+        // border-color: #8be1f3;
+        // background-color: var(--button-hover-bg);
+    }
+
+    /* --- Die perfekt ausgerichtete Tag-Sektion --- */
+    .character-tags {
+        display: flex;
+        flex-direction: column; // Tags untereinander für einheitliche Breite
+        gap: 4px;
+        align-items: center;
+        width: 100%;
+        padding-top: 0; // Tags fangen oben an der Linie an
+        margin-top: 15px; // Abstand zum Namen
+        border-top: 1px transparent;
+
+        .char-tag {
+            box-sizing: border-box;
+            display: block;
+            width: 100%; // Alle Tags exakt 120px breit
+            padding: 3px 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+            line-height: 1.1;
+            color: var(--text-color-light);
+            text-align: center;
+            overflow-wrap: anywhere;
+            white-space: normal;
+            background-color: var(--menu-bg); // --button-bg
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+        }
+    }
+}
+
+/* Theme-spezifische Anpassungen */
+body.theme-night .character-item img,
+body.theme-night .character-item .character-image-fallback {
+    background-color: var(--characters-area-bg);
+    border-color: var(--border-light);
+}
+
+body.theme-night .character-item:hover img,
+body.theme-night .character-item:hover .character-image-fallback {
+    border-color: #007bff;
+}
+
+body.theme-night .character-item .character-tags .char-tag {
+    color: #8be1f3;
+
+    // color: var(--link-color);
+}
+
+/* --- Polierter Charakter-Umschalter (v6.5.1) --- */
+.comic-characters-container {
+    padding: 15px;
+    margin: 20px 0;
+    background-color: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 0.35);
+
+    .char-display-header {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr; // Erzeugt 3 Spalten für perfekte Zentrierung
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: none; // Entfernt die Strichellinie
+
+        h3 {
+            grid-column: 2; // Die Überschrift sitzt fest in der Mitte
+            margin: 0;
+            font-size: 1.2em;
+            color: var(--text-color-light); // Das gewünschte Gräulich
+            text-align: center;
+            border: none;
+        }
+
+        #toggle-char-view {
+            grid-column: 3; // Der Button sitzt rechts
+            justify-self: end;
+            padding: 5px 12px;
+            font-size: 0.8em;
+
+            i {
+                margin-right: 6px;
+            }
+        }
+    }
+
+    // Steuerung der Sichtbarkeit
+    .char-view-section {
+        display: none;
+    }
+
+    &[data-active-view='tags'] .view-tags {
+        display: block;
+    }
+
+    &[data-active-view='grouped'] .view-grouped {
+        display: block;
+    }
+}
+
+/* --- Night Mode Feinschliff --- */
+body.theme-night .comic-characters-container {
+    background-color: var(--sidebar-bg);
+    border-color: var(--page-bg);
+
+    .char-display-header h3 {
+        color: #bbb; // Exakter Farbwert aus deiner originalen SCSS
+    }
+}
+
+// Kleinere Button-Anpassung für den Umschalter
+#toggle-char-view {
+    padding: 5px 12px;
+    font-size: 0.8em;
+    background-color: var(--button-bg); //
+    border: 1px solid var(--border-medium);
+
+    &:hover {
+        background-color: var(--button-hover-bg);
+    }
+
+    i {
+        margin-right: 6px;
+    }
+}

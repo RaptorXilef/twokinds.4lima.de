@@ -1,47 +1,183 @@
 {
-    "name": "raptorxilef/twokinds.4lima.de",
-    "description": "Dieses Projekt ist eine PHP-basierte Webseite zur Anzeige und Verwaltung der deutschen Übersetzungen des Webcomics \"Twokinds\".",
-    "type": "project",
-    "license": "CC-BY-NC-SA-4.0",
-    "authors": [
-        {
-            "name": "Felix Maywald",
-            "email": "31962607+RaptorXilef@users.noreply.github.com"
-        }
-    ],
-    "minimum-stability": "stable",
-    "require": {
-        "php": ">=8.1",
-        "scssphp/scssphp": "^2.0",
-        "matthiasmullie/minify": "^1.3",
-        "ezyang/htmlpurifier": "^4.19"
-    },
-    "require-dev": {
-        "squizlabs/php_codesniffer": "*",
-        "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^12.4"
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
-        }
-    },
-    "config": {
-        "allow-plugins": {
-            "php-http/discovery": true
-        }
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "echo 'Die Installation ist abgeschlossen. CodeSniffer und PHPStan sind bereit.'"
-        ],
-        "check-standards": "phpcs --standard=PSR12 src/ tests/",
-        "fix-standards": "phpcbf --standard=PSR12 src/ tests/",
-        "analyse": "phpstan analyse src/ tests/ --level max"
+  "name": "raptorxilef/twokinds.4lima.de",
+  "description": "Dieses Projekt ist eine PHP-basierte Webseite zur Anzeige und Verwaltung der deutschen Übersetzungen des Webcomics \"Twokinds\".",
+  "type": "project",
+  "license": "CC-BY-NC-SA-4.0",
+  "authors": [
+    {
+      "name": "Felix Maywald",
+      "email": "31962607+RaptorXilef@users.noreply.github.com"
     }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=8.3",
+    "scssphp/scssphp": "^2.1",
+    "matthiasmullie/minify": "^1.3",
+    "ezyang/htmlpurifier": "^4.19",
+    "ext-zip": "*",
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^11.0",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
+    "squizlabs/php_codesniffer": "^3.13",
+    "phpcsstandards/phpcsextra": "^1.5",
+    "phpcsstandards/phpcsutils": "^1.2",
+    "slevomat/coding-standard": "^8.22",
+    "php-http/discovery": "^1.20",
+    "phpcompatibility/php-compatibility": "^10.0",
+    "rector/rector": "^2.2",
+    "phpmd/phpmd": "^2.15",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "friendsofphp/php-cs-fixer": "^3.92",
+    "pdepend/pdepend": "^2.16"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "scripts": {
+    "// --- LIFECYCLE HOOKS ---": "",
+    "post-install-cmd": [
+      "echo 'Installation fertig. Prüfe Standards... | Installation complete. Checking standards...'"
+    ],
+    "// --- PACKAGES & SECURITY (PKG) ---": "",
+    "pkg:audit": [
+      "@composer audit",
+      "npm audit"
+    ],
+    "// Checks both Composer and NPM for vulnerabilities. | Prüft Composer und NPM auf Sicherheitslücken.": "",
+    "pkg:fix": [
+      "npm audit fix",
+      "@composer update"
+    ],
+    "// Fixes security issues and updates dependencies. | Behebt Sicherheitsprobleme und aktualisiert Abhängigkeiten.": "",
+    "// --- STATIC ANALYSIS & LINTING (CHK) ---": "",
+    "chk:cs": "phpcs",
+    "// Main check for Coding Standards (PHPCS). | Hauptprüfung der Coding-Standards (PHPCS).": "",
+    "chk:cs:src": "phpcs src/",
+    "// Checks the source directory. | Prüft das Quellverzeichnis (src/).": "",
+    "chk:cs:tests": "phpcs tests/",
+    "// Checks the test directory. | Prüft das Testverzeichnis (tests/).": "",
+    "chk:stan": "phpstan analyse --memory-limit=1G",
+    "// Deep static analysis with PHPStan. | Tiefgreifende statische Analyse mit PHPStan.": "",
+    "ci:chk:stan": [
+      "@php vendor/bin/phpstan analyse --error-format=checkstyle --no-progress > .build/reports/phpstan-report.xml || true",
+      "@php vendor/bin/phpstan analyse --no-progress || true"
+    ],
+    "// Runs PHPStan with checkstyle output for CI and a standard output for logs. | Führt PHPStan mit Checkstyle-Ausgabe für CI und Standard-Ausgabe für Logs aus.": "",
+    "chk:rector": "rector process --dry-run",
+    "// Dry-run for potential Rector refactorings. | Testlauf für mögliche Rector-Refactorings.": "",
+    "chk:cpd": "phpcpd src/ --min-lines=5 --min-tokens=70",
+    "// Checks for duplicate code (Composer version). | Prüft auf Code-Duplikate (Composer-Version).": "",
+    "chk:cpd:phar": "php tools/phpcpd.phar src/ --min-lines=5 --min-tokens=70",
+    "// Checks for duplicate code (PHAR version). | Prüft auf Code-Duplikate (PHAR-Version).": "",
+    "chk:md": "phpmd src/ text phpmd.xml",
+    "// Finds messy or complex code (Mess Detector). | Findet unsauberen oder komplexen Code.": "",
+    "chk:fixer": "vendor/bin/php-cs-fixer fix --dry-run --diff --no-interaction",
+    "// Shows potential style changes (Dry-run). | Zeigt mögliche Stil-Änderungen (Testlauf).": "",
+    "//1": "",
+    "// --- AUTOMATIC FIXING (FMT) ---": "",
+    "fmt:cs": "phpcbf",
+    "// Automatically fixes simple CS violations. | Behebt einfache CS-Verstöße automatisch.": "",
+    "fmt:cs:src": "phpcbf src/",
+    "// Fixes CS violations in src/. | Behebt CS-Verstöße in src/.": "",
+    "fmt:cs:tests": "phpcbf tests/",
+    "// Fixes CS violations in tests/. | Behebt CS-Verstöße in tests/.": "",
+    "fmt:rector": "rector process",
+    "// Applies automated refactorings via Rector. | Wendet automatisierte Refactorings via Rector an.": "",
+    "fmt:fixer": "vendor/bin/php-cs-fixer fix",
+    "// Applies PHP-CS-Fixer rules. | Wendet PHP-CS-Fixer Regeln an.": "",
+    "//2": "",
+    "// --- TESTING & MUTATION (TEST) ---": "",
+    "test:unit": "phpunit",
+    "// Runs the PHPUnit test suite. | Führt PHPUnit-Tests aus.": "",
+    "test:unit:full": "phpunit --display-deprecations --display-warnings --display-notices",
+    "ci:test:unit:full": "phpunit --configuration phpunit.xml.dist --cache-result --testdox --testdox-html .build/reports/phpunit-report.html",
+    "// Runs tests with full debug output. | Führt Tests mit vollständiger Debug-Ausgabe aus.": "",
+    "test:mut": "php -d xdebug.mode=coverage -d xdebug.start_with_request=no tools/infection.phar",
+    "// Mutation Testing with Infection. | Mutation-Testing mit Infection.": "",
+    "//3": "",
+    "// --- UTILITIES & TOOLING (UTIL) ---": "",
+    "util:up": [
+      "@php -r \"copy('https://github.com/infection/infection/releases/latest/download/infection.phar', 'tools/infection.phar');\"",
+      "@php -r \"copy('https://phar.phpunit.de/phpcpd.phar', 'tools/phpcpd.phar');\"",
+      "@php -r \"echo 'Tools updated! | Tools wurden aktualisiert!' . PHP_EOL;\""
+    ],
+    "// Updates external PHAR tools. | Aktualisiert externe PHAR-Werkzeuge.": "",
+    "//4": "",
+    "// --- CI/CD PIPELINES (CI) ---": "",
+    "ci:chk:rector": "@chk:rector",
+    "// Runs Rector in dry-run mode for CI. | Führt Rector im Testlauf für CI aus.": "",
+    "ci:fmt:rector": "@fmt:rector",
+    "// Applies Rector refactorings for CI. | Wendet Rector-Refactorings für CI an.": "",
+    "ci:chk:psr12": "phpcs --standard=phpcs-psr12.xml",
+    "// Checks PSR-12 compliance via specific ruleset. | Prüft PSR-12 Konformität via speziellem Ruleset.": "",
+    "ci:fmt:psr12": "phpcbf --standard=phpcs-psr12.xml",
+    "// Fixes PSR-12 violations via specific ruleset. | Behebt PSR-12 Verstöße via speziellem Ruleset.": "",
+    "ci:chk:universal": "phpcs --standard=phpcs-universal.xml",
+    "// Checks code via universal standards ruleset. | Prüft Code via universalem Standard-Ruleset.": "",
+    "ci:fmt:universal": "phpcbf --standard=phpcs-universal.xml",
+    "// Fixes code via universal standards ruleset. | Behebt Code via universalem Standard-Ruleset.": "",
+    "ci:chk:slevomat": "phpcs --standard=phpcs-slevomat-coding-standard-ruleset.xml",
+    "// Checks Slevomat coding standard rules. | Prüft Slevomat Coding-Standard Regeln.": "",
+    "ci:fmt:slevomat": "phpcbf --standard=phpcs-slevomat-coding-standard-ruleset.xml",
+    "// Fixes Slevomat coding standard violations. | Behebt Slevomat Coding-Standard Verstöße.": "",
+    "// --- CI/CD DIRECTORY SPECIFIC CHECKS ---": "",
+    "ci:chk:psr12:src": "@ci:chk:psr12 src/",
+    "// Checks PSR-12 specifically for the src/ directory. | Prüft PSR-12 speziell für das src/ Verzeichnis.": "",
+    "ci:chk:psr12:public": "@ci:chk:psr12 public/",
+    "// Checks PSR-12 specifically for the public/ directory. | Prüft PSR-12 speziell für das public/ Verzeichnis.": "",
+    "ci:chk:psr12:tests": "@ci:chk:psr12 tests/",
+    "// Checks PSR-12 specifically for the tests/ directory. | Prüft PSR-12 speziell für das tests/ Verzeichnis.": "",
+    "ci:chk:universal:src": "@ci:chk:universal src/",
+    "// Checks universal standards for the src/ directory. | Prüft universelle Standards für das src/ Verzeichnis.": "",
+    "ci:chk:universal:public": "@ci:chk:universal public/",
+    "// Checks universal standards for the public/ directory. | Prüft universelle Standards für das public/ Verzeichnis.": "",
+    "ci:chk:universal:tests": "@ci:chk:universal tests/",
+    "// Checks universal standards for the tests/ directory. | Prüft universelle Standards für das tests/ Verzeichnis.": "",
+    "ci:chk:slevomat:src": "@ci:chk:slevomat src/",
+    "// Checks Slevomat rules for the src/ directory. | Prüft Slevomat Regeln für das src/ Verzeichnis.": "",
+    "ci:chk:slevomat:public": "@ci:chk:slevomat public/",
+    "// Checks Slevomat rules for the public/ directory. | Prüft Slevomat Regeln für das public/ Verzeichnis.": "",
+    "ci:chk:slevomat:tests": "@ci:chk:slevomat tests/",
+    "// Checks Slevomat rules for the tests/ directory. | Prüft Slevomat Regeln für das tests/ Verzeichnis.": "",
+    "// --- CI/CD DIRECTORY SPECIFIC FIXES ---": "",
+    "ci:fmt:psr12:src": "@ci:fmt:psr12 src/",
+    "// Fixes PSR-12 violations in the src/ directory. | Behebt PSR-12 Verstöße im src/ Verzeichnis.": "",
+    "ci:fmt:psr12:public": "@ci:fmt:psr12 public/",
+    "// Fixes PSR-12 violations in the public/ directory. | Behebt PSR-12 Verstöße im public/ Verzeichnis.": "",
+    "ci:fmt:psr12:tests": "@ci:fmt:psr12 tests/",
+    "// Fixes PSR-12 violations in the tests/ directory. | Behebt PSR-12 Verstöße im tests/ Verzeichnis.": "",
+    "ci:fmt:universal:src": "@ci:fmt:universal src/",
+    "// Fixes universal standards in the src/ directory. | Behebt universelle Standards im src/ Verzeichnis.": "",
+    "ci:fmt:universal:public": "@ci:fmt:universal public/",
+    "// Fixes universal standards in the public/ directory. | Behebt universelle Standards im public/ Verzeichnis.": "",
+    "ci:fmt:universal:tests": "@ci:fmt:universal tests/",
+    "// Fixes universal standards in the tests/ directory. | Behebt universelle Standards im tests/ Verzeichnis.": "",
+    "ci:fmt:slevomat:src": "@ci:fmt:slevomat src/",
+    "// Fixes Slevomat violations in the src/ directory. | Behebt Slevomat Verstöße im src/ Verzeichnis.": "",
+    "ci:fmt:slevomat:public": "@ci:fmt:slevomat public/",
+    "// Fixes Slevomat violations in the public/ directory. | Behebt Slevomat Verstöße im public/ Verzeichnis.": "",
+    "ci:fmt:slevomat:tests": "@ci:fmt:slevomat tests/",
+    "// Fixes Slevomat violations in the tests/ directory. | Behebt Slevomat Verstöße im tests/ Verzeichnis.": ""
+  }
 }

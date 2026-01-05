@@ -1,0 +1,225 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Summernote Editor Overrides
+///
+/// Passt das Design des WYSIWYG-Editors an das Theme an (Light/Dark).
+///
+
+/*!
+ * @file       resources/scss/vendors/_summernote.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Extrahiert aus main_dark.scss für bessere Kapselung.
+/// - style(Linter): Button-Status Selektoren priorisiert.
+/// - style(Linter): Button-Status Spezifität korrigiert.
+/// - feat(CSS): Fehlende Styles für Popovers aus main_dark.scss integriert.
+/// - style(Linter): Reihenfolge von Hover und Theme-Override in .note-btn getauscht (Fix no-descending-specificity).
+///
+
+// Verwendete SCSS-Variablen:
+// - $font-mono: Monospace Schriftart für Code-View
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --border-medium: Mittlere Rahmenfarbe
+// - --button-bg: Hintergrund für Buttons / Borders (Dark Mode)
+// - --text-color: Standard Textfarbe
+// - --table-header-bg: Hintergrund Toolbar / Statusbar
+// - --sidebar-bg: Hintergrund Toolbar (Dark Mode)
+// - --text-on-medium: Text auf Buttons
+// - --button-hover-bg: Hintergrund bei Hover
+// - --content-bg: Hintergrund Dropdowns/Popovers
+// - --page-bg: Hintergrund im Dark Mode
+// - --menu-bg: Hintergrund Menü-Items
+// - --header-bg: Hintergrund Popover-Header
+// - --border-light: Helle Rahmenfarbe
+// - --link-color: Code-Farbe im Dark Mode
+
+@use '../abstracts/variables' as *;
+
+// Haupt-Container
+.note-editor.note-frame {
+    border-color: var(--border-medium);
+}
+
+body.theme-night .note-editor.note-frame {
+    border-color: var(--button-bg);
+}
+
+/* --- Toolbar --- */
+.note-editor.note-frame .note-toolbar {
+    color: var(--text-color);
+    background-color: var(--table-header-bg); // !important
+    border-bottom: 1px solid var(--border-medium);
+}
+
+body.theme-night .note-editor.note-frame .note-toolbar {
+    background-color: var(--sidebar-bg); // Accent Dark // !important
+    border-bottom-color: var(--button-bg);
+}
+
+/* --- Buttons --- */
+.note-editor.note-frame .note-btn {
+    color: var(--text-on-medium);
+    background-color: var(--button-bg);
+    border: 1px solid transparent;
+}
+
+.form-group .note-editor.note-frame .note-btn {
+    padding: 2px;
+    font-size: 1.3rem;
+    width: auto;
+    font-weight: 200;
+}
+
+.form-group .note-editor.note-frame {
+    text-align: left;
+}
+
+.original-transcript-box .transcript-display-box {
+    text-align: left;
+}
+
+// Hover ZUERST (Niedrigere Spezifität)
+.note-editor.note-frame .note-btn:hover,
+.note-editor.note-frame .note-btn:focus,
+.note-editor.note-frame .note-btn:active {
+    background-color: var(--button-hover-bg);
+}
+
+// Theme Override DANACH (Höhere Spezifität)
+body.theme-night .note-editor.note-frame .note-btn {
+    color: var(--text-color);
+}
+
+.note-editor.note-frame .note-btn.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* --- Dropdowns --- */
+.note-editor.note-frame .dropdown-menu {
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border-color: var(--border-medium);
+}
+
+body.theme-night .note-editor.note-frame .dropdown-menu {
+    background-color: var(--page-bg);
+    border-color: var(--button-bg);
+}
+
+.note-editor.note-frame .dropdown-item {
+    color: var(--text-color);
+}
+
+.note-editor.note-frame .dropdown-item:hover {
+    background-color: var(--menu-bg);
+}
+
+body.theme-night .note-editor.note-frame .dropdown-item:hover {
+    background-color: var(--button-bg);
+}
+
+/* --- Popovers (z.B. Link-Editor) --- */
+.note-editor.note-frame .note-popover .popover-content,
+.note-editor.note-frame .note-modal-content {
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+}
+
+body.theme-night .note-editor.note-frame .note-popover .popover-content,
+body.theme-night .note-editor.note-frame .note-modal-content {
+    background-color: var(--content-bg);
+    border-color: var(--button-hover-bg);
+}
+
+.note-editor.note-frame .note-popover .popover-header,
+.note-editor.note-frame .note-modal-header {
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--border-medium);
+}
+
+body.theme-night .note-editor.note-frame .note-popover .popover-header,
+body.theme-night .note-editor.note-frame .note-modal-header {
+    background-color: var(--sidebar-bg);
+    border-bottom-color: var(--button-hover-bg);
+}
+
+.note-editor.note-frame .note-modal-footer {
+    border-top: 1px solid var(--border-light);
+}
+
+body.theme-night .note-editor.note-frame .note-modal-footer {
+    border-top-color: var(--button-hover-bg);
+}
+
+.note-editor.note-frame .note-form-label {
+    color: var(--text-color);
+}
+
+/* --- Editor Area (Editable) --- */
+.note-editor.note-frame .note-editable {
+    color: var(--text-color); // !important
+    background-color: var(--content-bg); // !important
+}
+
+body.theme-night .note-editor.note-frame .note-editable {
+    background-color: var(--page-bg);
+}
+
+.note-editor.note-frame .note-editable p {
+    color: var(--text-color); // !important
+}
+
+/* --- Code View --- */
+.note-editor.note-frame .note-codable {
+    font-family: $font-mono; // !important
+    font-size: 14px;
+    line-height: 1.4;
+    color: #ccc;
+    background-color: #222;
+}
+
+body.theme-night .note-editor.note-frame .note-codable {
+    color: var(--link-color);
+    background-color: var(--page-bg);
+}
+
+/* --- Statusbar / Resize --- */
+.note-editor.note-frame .note-statusbar {
+    background-color: var(--table-header-bg);
+    border-top: 1px solid var(--border-medium);
+}
+
+body.theme-night .note-editor.note-frame .note-statusbar {
+    background-color: var(--sidebar-bg);
+    border-top-color: var(--button-bg);
+}
+
+.note-editor.note-frame .note-resizebar {
+    border-top: 1px solid var(--border-light);
+}
+
+/* --- Inputs within Summernote --- */
+.note-editor.note-frame .note-input {
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+}
+
+body.theme-night .note-editor.note-frame .note-input {
+    background-color: var(--page-bg);
+    border-color: var(--button-bg);
+}

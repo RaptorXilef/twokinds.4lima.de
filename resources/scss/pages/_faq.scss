@@ -1,0 +1,143 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// FAQ Page (Accordion Styles)
+/// Styling für die häufig gestellten Fragen.
+///
+/// Beinhaltet das Layout für den FAQ-Container sowie die Akkordeon-Logik
+/// für Fragen und Antworten inklusive Animationen und Status-Indikatoren.
+///
+
+/*!
+ * @file       resources/scss/pages/_faq.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - refactor(FAQ): Migration aus _misc.scss und Angleichung an UI-Sichtbarkeit.
+/// - fix(Style): Hintergrundfarben für bessere Kontraste optimiert.
+/// - style: Linker Akzent-Border für aktive Antworten hinzugefügt.
+/// - fix(Syntax): Überflüssige schließende Klammer entfernt.
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --text-color: Standard Textfarbe
+// - --text-color-light: Helle Textfarbe (für Pfeile)
+// - --table-row-hover: Hintergrund für Header (Light Mode)
+// - --table-row-even: Hintergrund für Header (Night Mode)
+// - --button-bg: Hintergrund für Hover (Night Mode)
+// - --button-hover-bg: Hintergrund für Hover (Light Mode)
+// - --text-on-medium: Kontrastfarbe für Text auf farbigen Hintergründen
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+/* --- FAQ Page (Accordion) --- */
+
+.faq-container {
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.faq-item {
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-medium);
+}
+
+body.theme-night .faq-item {
+    border-bottom-color: var(--border-light);
+}
+
+.faq-question {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    font-weight: bold;
+    color: var(--text-color);
+    cursor: pointer;
+    background-color: var(--table-row-hover);
+    transition: background-color 1s;
+
+    &:hover {
+        color: var(--text-on-medium);
+        background-color: var(--button-hover-bg);
+    }
+
+    @include media-retina-mobile {
+        padding: 18px 20px;
+        font-size: 1.2em;
+    }
+}
+
+body.theme-night .faq-question {
+    background-color: var(--table-row-even);
+
+    &:hover {
+        background-color: var(--button-bg);
+    }
+}
+
+// Pfeil-Icon (Rechtszeigendes Dreieck)
+.faq-question::after {
+    display: inline-block;
+    font-size: 0.8em;
+    color: var(--text-color-light);
+    content: '\25B6'; // ▶
+    transition: transform 1.5s ease;
+}
+
+// Active State: Pfeil drehen (90 Grad nach unten)
+.faq-item.active .faq-question::after {
+    transform: rotate(90deg);
+}
+
+// Der Grid-Container (Das Fenster)
+.faq-answer {
+    display: grid;
+    grid-template-rows: 0fr; // Schließt das Grid auf exakt 0px
+    overflow: hidden;
+    color: var(--text-color);
+    transition: grid-template-rows 1.5s ease-in-out;
+}
+
+.faq-item.active .faq-answer {
+    grid-template-rows: 1fr; // Öffnet das Grid auf Inhaltsgröße
+}
+
+// Der Inhalts-Wrapper
+.faq-answer-inner {
+    box-sizing: border-box;
+    min-height: 0; // Wichtig für Grid-Kollaps
+    padding: 0 25px; // NUR horizontales Padding (löst keinen Grafikbug aus)
+    border-left: 2px solid var(--border-medium);
+}
+
+// Abstände innerhalb der Antwort
+.faq-answer p {
+    padding: 0;
+    margin: 0 0 15px;
+
+    &:first-child {
+        padding-top: 15px;
+    }
+
+    &:last-child {
+        padding-bottom: 15px;
+        margin-bottom: 0;
+    }
+}

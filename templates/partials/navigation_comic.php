@@ -4,7 +4,7 @@
  * Es erwartet, dass $currentComicId, $comicData und $baseUrl
  * aus dem inkludierenden Skript verfügbar sind.
  * $isCurrentPageLatest ist optional und kann vom inkludierenden Skript gesetzt werden (z.B. von index.php).
- * 
+ *
  * @file      ROOT/templates/partials/navigation_comic.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)

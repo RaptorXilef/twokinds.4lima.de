@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Comic-Seiten-Renderer
  *
@@ -20,7 +21,7 @@
  * @since     4.3.2 Fehler melden Button in obere Navigantionsleiste verschoben und design angepasst.
  * @since     4.4.0 Lädt jQuery und Summernote-Bibliotheken für das Report-Modal (WYSIWYG-Editor).
  * @since     4.4.1 Machte Bild-Suchfunktionen global verfügbar.
- * @since     4.4.2 Logik für Bildsuche (checkUrlExists, findExistingUrl etc.) vollständig nach comic.js verschoben. Dieses Skript ruft nur noch die globalen Funktionen (window.findExistingUrl) auf. 
+ * @since     4.4.2 Logik für Bildsuche (checkUrlExists, findExistingUrl etc.) vollständig nach comic.js verschoben. Dieses Skript ruft nur noch die globalen Funktionen (window.findExistingUrl) auf.
  */
 
 // === DEBUG-MODUS STEUERUNG ===
@@ -41,6 +42,7 @@ if (!isset($comicData[$currentComicId])) {
     http_response_code(404);
     $pageTitle = 'Seite nicht gefunden (404)';
     $siteDescription = 'Der gesuchte Comic konnte leider nicht gefunden werden.';
+    $isComicPage = true;
     require_once Path::getPartialTemplatePath('header.php');
     echo '<h1>404 - Seite nicht gefunden</h1>';
     echo '<p>Leider existiert unter dieser Adresse kein Comic. Möglicherweise haben Sie sich vertippt oder die Seite wurde verschoben.</p>';
@@ -115,11 +117,12 @@ $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "'>window.p
 // WICHTIG: comic.js MUSS NACH jQuery/Summernote geladen werden
 $additionalScripts .= "<script nonce='" . htmlspecialchars($nonce) . "' type='text/javascript' src='" . htmlspecialchars($comicJsWebUrl . $cacheBuster) . "'></script>";
 
-$viewportContent = 'width=1099';
+//$viewportContent = 'width=1099';
 $robotsContent = 'index, follow';
-$canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . $dateiendungPHP;
+$canonicalUrl = DIRECTORY_PUBLIC_COMIC_URL . '/' . $currentComicId . '.php'; // $dateiendungPHP
 
 // === 8. HEADER EINBINDEN ===
+$isComicPage = true;
 require_once Path::getPartialTemplatePath('header.php');
 ?>
 
@@ -130,7 +133,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </h1>
     </header>
 
-    <div class='comicnav'> <?php // Obere Navigation ?>
+    <div class='comicnav'> <?php // Obere Navigation
+    ?>
         <?php
         $comicKeys = array_keys($comicData);
         $latestComicId = !empty($comicKeys) ? end($comicKeys) : '';
@@ -154,7 +158,8 @@ require_once Path::getPartialTemplatePath('header.php');
         </button>
     </div>
 
-    <a id="comic-image-link" <?php // Bild-Link ?>
+    <a id="comic-image-link" <?php // Bild-Link
+    ?>
         href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, '/')); ?>"
         target="_blank" rel="noopener noreferrer">
         <img id="comic-image"
@@ -163,12 +168,13 @@ require_once Path::getPartialTemplatePath('header.php');
             onerror="this.onerror=null; this.src='https://placehold.co/800x600/cccccc/333333?text=Bild+Fehler'; this.parentElement.href='#'; console.warn('Haupt-Comicbild Fehler (onerror)');">
     </a>
 
-    <div class='comicnav bottomnav'> <?php // Untere Navigation ?>
+    <div class='comicnav bottomnav'> <?php // Untere Navigation
+    ?>
         <?php
         include DIRECTORY_PRIVATE_PARTIAL_TEMPLATES . DIRECTORY_SEPARATOR . 'navigation_comic.php';
         ?>
         <!-- SPRACHUMSCHALTER-BUTTON -->
-        <?php if (!empty($urlOriginalbildFilename)): ?>
+        <?php if (!empty($urlOriginalbildFilename)) : ?>
             <button type="button" id="toggle-language-btn" class="navarrow nav-lang-toggle" title="Sprache umschalten"
                 data-german-src="<?php echo htmlspecialchars(str_starts_with($comicImagePath, 'http') ? $comicImagePath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicImagePath, '/')); ?>"
                 data-german-href="<?php echo htmlspecialchars(str_starts_with($comicHiresPath, 'http') ? $comicHiresPath : DIRECTORY_PUBLIC_URL . '/' . ltrim($comicHiresPath, '/')); ?>"
@@ -182,7 +188,8 @@ require_once Path::getPartialTemplatePath('header.php');
         <?php endif; ?>
     </div>
 
-    <div class="below-nav jsdep"> <?php // Permalink & Nav-Hinweis ?>
+    <div class="below-nav jsdep"> <?php // Permalink & Nav-Hinweis
+    ?>
         <div class="nav-instruction">
             <span class="nav-instruction-content">Sie können auch mit den Pfeiltasten oder den Tasten J und K
                 navigieren.</span>
@@ -193,18 +200,20 @@ require_once Path::getPartialTemplatePath('header.php');
         </div>
     </div>
 
-    <aside class="transcript"> <?php // Transkript ?>
+    <aside class="transcript"> <?php // Transkript
+    ?>
         <div class="transcript-header">
             <h2>Transkript</h2>
 
             <!-- Sketch-Button (optional) -->
-            <?php if (!empty($urlOriginalsketchFromCache)): ?>
+            <?php if (!empty($urlOriginalsketchFromCache)) : ?>
                 <a href="<?php echo htmlspecialchars($urlOriginalsketchFromCache); ?>" target="_blank"
                     rel="noopener noreferrer" class="button">Sketch ansehen</a>
             <?php endif; ?>
         </div>
         <div class="transcript-content">
-            <?php echo $comicTranscript; // HTML-Tags sind hier erlaubt ?>
+            <?php echo $comicTranscript; // HTML-Tags sind hier erlaubt
+            ?>
         </div>
     </aside>
 
@@ -212,6 +221,7 @@ require_once Path::getPartialTemplatePath('header.php');
     // KORRIGIERT: Binde das Modul zur Anzeige der Charaktere direkt ein (wie im Original)
     // $characterIds wurde weiter oben definiert
     // Die Datei display_character.php muss existieren und $characterIds und $nonce ggf. global nutzen
+    $useCharacterTags = true; // Aktiviert die neue Rollen-Anzeige
     require_once DIRECTORY_PRIVATE_COMPONENTS . DIRECTORY_SEPARATOR . 'display_character.php';
     ?>
 </article>
@@ -222,25 +232,28 @@ require_once Path::getPartialTemplatePath('header.php');
 include_once Path::getPartialTemplatePath('report_modal.php');
 ?>
 
-<?php // Original JavaScript Block für URL-Kopieren und Sprachumschaltung ?>
+<?php // Original JavaScript Block für URL-Kopieren und Sprachumschaltung
+?>
 <script nonce="<?php echo htmlspecialchars($nonce); ?>">
     // === GEÄNDERT V4.4.2: Alle Funktionsdefinitionen (checkUrlExists, etc.)
     // wurden nach comic.js verschoben. Dieses Skript ruft nur noch
     // die globalen Funktionen auf (window.findExistingUrl). ===
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const debugJs = window.phpDebugMode || false; // Verwende die PHP Debug-Variable
 
         // --- URL-Kopieren Logik ---
         const copyLink = document.getElementById('copy-comic-url');
         if (copyLink) {
-            copyLink.addEventListener('click', function (event) {
+            copyLink.addEventListener('click', function(event) {
                 event.preventDefault();
                 const urlToCopy = '<?php echo $canonicalUrl; ?>';
                 const originalText = this.textContent;
                 navigator.clipboard.writeText(urlToCopy).then(() => {
                     this.textContent = 'Kopiert!';
-                    setTimeout(() => { this.textContent = originalText; }, 2000);
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                    }, 2000);
                 }).catch(err => {
                     console.error('Fehler beim Kopieren der URL: ', err);
                     // Fallback für execCommand
@@ -254,7 +267,9 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
                         this.textContent = 'Kopiert! (Fallback)';
-                        setTimeout(() => { this.textContent = originalText; }, 2000);
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                        }, 2000);
                     } catch (copyErr) {
                         console.error('Fallback-Kopieren fehlgeschlagen: ', copyErr);
                         this.textContent = 'Fehler beim Kopieren';
@@ -270,7 +285,8 @@ include_once Path::getPartialTemplatePath('report_modal.php');
             const comicImage = document.getElementById('comic-image');
             const langToggleText = document.getElementById('lang-toggle-text');
             let isGerman = true;
-            let englishSrc = '', englishHref = ''; // Lokaler Cache für den Button-Klick
+            let englishSrc = '',
+                englishHref = ''; // Lokaler Cache für den Button-Klick
 
             // Prüfen, ob die globalen Funktionen von comic.js geladen wurden
             if (typeof window.checkUrlExists !== 'function' || typeof window.runOriginalProbingLogic !== 'function') {
@@ -279,7 +295,7 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                 return;
             }
 
-            toggleBtn.addEventListener('click', async function (event) {
+            toggleBtn.addEventListener('click', async function(event) {
                 event.preventDefault();
                 if (!comicImage || !comicLink) return; // Schutz
 
@@ -307,7 +323,9 @@ include_once Path::getPartialTemplatePath('report_modal.php');
                                 foundInCache = true;
                                 if (debugJs) console.log("DEBUG: Originalbild aus Cache verwendet:", urlFromCache);
                             } else if (debugJs) console.warn("DEBUG: Gespeicherter Original-Link nicht erreichbar:", urlFromCache);
-                        } catch (err) { console.warn("DEBUG: Fehler bei Prüfung des Original-Cache-Links:", err); }
+                        } catch (err) {
+                            console.warn("DEBUG: Fehler bei Prüfung des Original-Cache-Links:", err);
+                        }
                     }
 
                     if (!foundInCache) {

@@ -1,0 +1,219 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Miscellaneous Pages (Chat, Links, About, Imprint, RSS, License)
+/// Styling für das Impressum, die "Über den Comic"-Seite, RSS-Anleitungen und Lizenzen.
+///
+
+/*!
+ * @file       resources/scss/pages/_misc.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Zusammenfassung kleinerer Seiten.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - feat(About/RSS/License): Stile für Info-Seiten vereinheitlicht.
+/// - fix(Misc): .license-image und .rss-icon-text integriert.
+/// - style(RSS): code-Tag Styling für URLs optimiert.
+/// - fix(UX): Email-Button Styling für nahtlose Inline-Integration (Keine Zeilensprünge).
+/// - fix(Layout): Feste Breite für .about-mugshot verhindert Layout-Shift.
+///
+
+// Variablen-Index:
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --text-color: Standard Textfarbe
+// - --text-on-medium: Textfarbe auf Buttons
+// - --link-color: Akzentfarbe für Links
+// - --button-bg: Hintergrund für Buttons
+// - --button-hover-bg: Hintergrund bei Hover
+// - --font-mono: Monospace Schriftart (für URLs)
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+/* --- General Info Sections --- */
+
+.about-section,
+.imprint-container,
+.rss-container,
+.license-container,
+.privacy-container {
+    margin-bottom: 40px;
+
+    &:last-of-type {
+        margin-bottom: 0;
+    }
+
+    p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+
+    h2 {
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+    }
+
+    h3 {
+        padding-bottom: 5px;
+        margin-top: 25px;
+        margin-bottom: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+        color: var(--text-color);
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    b,
+    strong {
+        color: var(--text-color);
+    }
+
+    hr {
+        margin: 30px 0;
+        border: 0;
+        border-top: 1px solid var(--border-light);
+    }
+}
+
+/* --- About Mugshots (Tom & Felix) --- */
+
+.about-mugshot {
+    // FIX: Feste Breite reserviert den Platz vor dem Laden (verhindert Text-Springen)
+    width: 200px;
+    height: auto;
+    margin-bottom: 15px;
+    object-fit: cover; // Stellt sicher, dass das Bild innerhalb der 200x275px gut aussieht
+    border: 1px solid var(--border-medium);
+    border-radius: 7px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+
+    @include media-retina-mobile {
+        float: none;
+        display: block;
+        width: 100%;
+        height: auto;
+        margin: 0 auto 20px;
+    }
+}
+
+.about-bio {
+    overflow: hidden; // Behält den Text rechts vom Bild (Clearfix-Verhalten)
+}
+
+/* --- Lists and Technical Elements --- */
+
+.about-section,
+.imprint-container,
+.rss-container,
+.license-container,
+.privacy-container {
+    ul,
+    ol {
+        padding-left: 25px;
+        margin-bottom: 20px;
+
+        li {
+            margin-bottom: 8px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    ul {
+        list-style-type: disc;
+    }
+
+    ol {
+        list-style-type: decimal;
+    }
+
+    code {
+        padding: 2px 6px;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.9em;
+        word-break: break-all; // Wichtig für lange URLs auf Mobile
+        background-color: var(--table-row-even, #f4f4f4);
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+    }
+}
+
+/* --- Icons & Specific Links --- */
+
+.license-image {
+    display: inline-block;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.rss-icon-text {
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+// Email Button (Maximale Inline-Kompatibilität)
+#impressum-email-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.6em;
+    padding: 0 10px;
+    margin-left: 8px;
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: 600;
+    line-height: 1;
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: var(--button-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+        background-color: var(--button-hover-bg);
+        box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+/* --- Theme Overrides --- */
+
+body.theme-night {
+    .about-section h3,
+    .imprint-container h3,
+    .rss-container h3,
+    .license-container h3,
+    .privacy-container h3 {
+        border-bottom-color: var(--button-bg);
+    }
+
+    .about-mugshot {
+        border-color: var(--button-bg);
+        box-shadow: 0 4px 10px rgb(0 0 0 / 0.4);
+    }
+
+    code {
+        background-color: var(--sidebar-bg);
+        border-color: var(--page-bg);
+    }
+}

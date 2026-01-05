@@ -1,0 +1,224 @@
+{
+  // =========================================================================
+  // SPRACH-SPEZIFISCHE FORMATIERER
+  // Erzwingt, dass das gesamte Team dieselben Tools verwendet.
+  // =========================================================================
+  "rewrap.wrappingColumn": 120,
+  "rewrap.doubleSentenceSpacing": false,
+  "rewrap.wholeComment": true,
+  "[php]": {
+    // Setzt "valeryanm.vscode-phpsab" als Standard-Formatierer FÜR DIESES PROJEKT
+    "editor.defaultFormatter": "valeryanm.vscode-phpsab",
+    // Erzwingt das Formatieren beim Speichern für PHP-Dateien
+    "editor.formatOnSave": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
+    "editor.renderWhitespace": "all", // alternativ "boundary"
+    "proseWrap": "always",
+    "editor.wordWrap": "off",
+    "editor.wordWrapColumn": 120
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
+    "editor.renderWhitespace": "all"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
+    // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
+    "editor.codeActionsOnSave": {
+      "source.fixAll.stylelint": "explicit"
+    },
+    "editor.renderWhitespace": "all"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
+    // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
+    "editor.codeActionsOnSave": {
+      "source.fixAll.stylelint": "explicit"
+    },
+    "editor.renderWhitespace": "all"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
+    "editor.renderWhitespace": "all"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnSave": true,
+    //"editor.formatOnPaste": true,
+    //"editor.formatOnType": true,
+    "editor.renderWhitespace": "all"
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml",
+    "editor.renderWhitespace": "all"
+  },
+  // =========================================================================
+  // PHP FORMATIERUNG & LINTING (valeryanm.vscode-phpsab)
+  // Das Herzstück unserer PHP-PSR-12-Regeln.
+  // =========================================================================
+  // Zeigt versteckte und unsichtbare Zeichen
+  "gremlins.showInProblemPane": true,
+  // Deaktiviert die Intelephense-Formatierung, um Konflikte zu vermeiden. (Wenn false)
+  // Aktuelll aktiviert um die Einrückungen von Kommentareen formatieren zu können
+  // (Rechtsklick->Dokument formatieren mit ...->PHP Intelephense)
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "intelephense.format.enable": true,
+  // LINTING (Fehler FINDEN mit phpcs)
+  "phpsab.snifferEnable": true,
+  // WICHTIG: Leer lassen oder auf null setzen, damit er die phpcs.xml.dist im Root findet!
+  // Alternativ explizit: "${workspaceFolder}/phpcs.xml.dist"
+  "phpsab.standard": "",
+  // WICHTIG: Dynamischer Pfad statt C:\xampp...
+  // Alternativ: Absoluter Pfad, da dieser bei dir nachweislich funktioniert
+  //  "phpsab.executablePathCS": "${workspaceFolder}/vendor/bin/phpcs.bat", // Autoerkennung anktiviert
+  // FORMATTING (Fehler BEHEBEN mit phpcbf)
+  "phpsab.fixerEnable": true,
+  "phpsab.fixer": "phpcbf",
+  "phpsab.fixerStandard": "", // Nutzt ebenfalls die phpcs.xml.dist
+  // PHP-spezifische Ergänzung für den Sniffer
+  "phpsab.autoRuleset": true,
+  // WICHTIG: Dynamischer Pfad statt C:\xampp...
+  //  "phpsab.executablePathCBF": "${workspaceFolder}/vendor/bin/phpcbf.bat", // Autoerkennung anktiviert
+  "phpsab.debug": false,
+  // Für phpsab ausgeschlossenee Ordner und Dateien
+  "phpsab.snifferArguments": [
+    // --ignore wird eigentlich jetzt über phpcs.xml.dist gesteuert,
+    // kann hier aber als Fallback bleiben.
+    "--ignore=vendor/*,node_modules/*,.Notizen/*,_Commites/*,.secrets/*,**/.vscode/**"
+  ],
+  // =========================================================================
+  // PROJEKT-SPEZIFISCHE EINSTELLUNGEN
+  // Regeln, die für alle Teammitglieder gelten sollen.
+  // =========================================================================
+  //"editor.wordWrap": "wordWrapColumn",
+  //"editor.wordWrapColumn": 120,
+  "editor.rulers": [
+    120
+  ],
+  "prettier.prettierPath": "./node_modules/prettier",
+  // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
+  "files.eol": "\n",
+  // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
+  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.codeLens": true,
+  "diffEditor.experimental.showMoves": true,
+  "diffEditor.maxComputationTime": 30000,
+  // Rechtschreibung
+  "cSpell.language": "en,de",
+  "cSpell.diagnosticLevel": "Hint",
+  "cSpell.words": [
+    "twokinds"
+  ],
+  // Definiert Projekt-spezifische TODO-Tags
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]",
+    "VOR_RELEASE"
+  ],
+  // Definiert die Farben für diese Tags
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "todo-tree.highlights.useColourScheme": true,
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "todo-tree.highlights.backgroundColourScheme": [
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "indigo",
+    "violet",
+    "purple"
+  ],
+  // Stellt sicher, dass 'vendor' und 'node_modules' ignoriert werden
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "todo-tree.filtering.excludeGlobs": [
+    "**/node_modules/*/**",
+    "**/vendor/*/**",
+    "**/*.pdf"
+  ],
+  // Alles beginnend mit todo-tree, muss möglicherweise in die Globale settings.json übertragen werden
+  "todo-tree.general.automaticGitRefreshInterval": 30,
+  "todo-tree.general.periodicRefreshInterval": 30,
+  "todo-tree.general.revealBehaviour": "leave focus in tree",
+  //  "todo-tree.general.rootFolder": "${workspaceFolder}", // Leer lassen = aktueller Workspace (besser als Hardcoded Pfad)
+  "todo-tree.general.showActivityBarBadge": true,
+  "todo-tree.general.statusBar": "total",
+  "todo-tree.general.showIconsInsteadOfTagsInStatusBar": true,
+  "todo-tree.filtering.ignoreGitSubmodules": true,
+  "todo-tree.tree.showCountsInTree": true,
+  "todo-tree.tree.buttons.export": true,
+  // Schließt Ordner aus der VS-Code-Suche aus
+  // Exclude files and folder
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/vendor/": true,
+    "**/node_modules/": true,
+    "**/_Commites/": true,
+    "**/.Notizen/": true,
+    // Optional: Cache Dateien ausblenden
+    ".phpcs.cache": true,
+    ".phpstan.cache": true,
+    ".phpunit.cache": true
+  },
+  // Schließt Ordner aus dem Datei-Watcher aus (spart Leistung)
+  // Watcher Exclude
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/vendor/*/**": true,
+    "**/_Commites/*/**": true,
+    "**/.Notizen/*/**": true
+  },
+  // Optional
+  // Konsolen / Terminal
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "terminal.integrated.profiles.windows": {
+    "PowerShell 7 (pwsh)": {
+      "path": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
+      "icon": "terminal-powershell"
+    },
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell"
+    },
+    "Command Prompt": {
+      "path": [
+        "${env:windir}\\Sysnative\\cmd.exe",
+        "${env:windir}\\System32\\cmd.exe"
+      ],
+      "args": [],
+      "icon": "terminal-cmd"
+    },
+    "Git Bash": {
+      "source": "Git Bash"
+    }
+  },
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "terminal.integrated.defaultProfile.windows": "PowerShell 7 (pwsh)",
+  // Muss möglicherweise in die Globale settings.json übertragen werden
+  "workbench.colorTheme": "Monokai Pirokai - Beach Sunset"
+}

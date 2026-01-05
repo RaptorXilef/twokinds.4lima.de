@@ -1,0 +1,265 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Comic View und Charaktere.
+///
+/// Styling für die Einzelansicht eines Comics (Bild, Transkript, Tags) und Charakter-Listen.
+/// Styles für die Comic-Ansicht und Transcript.
+///
+
+/*!
+ * @file       resources/scss/pages/_comic.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Refactoring.
+/// - style(Linter): Hover-Effekt Spezifität gefixt.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - fix: Vertikalen Rhythmus zwischen Navigation, Bookmarks und Tags harmonisiert.
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --content-box-bg: Hintergrund für Transkript-Box
+// - --border-medium: Mittlere Rahmenfarbe
+// - --text-color: Standard Textfarbe
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --page-bg: Rahmenfarbe im Dark Mode
+// - --text-on-medium: Textfarbe auf Buttons (Transkript Header)
+// - --button-bg: Hintergrund Header
+// - --button-hover-bg: Hintergrund Header Hover
+// - --text-color-medium: Mittlere Textfarbe
+// - --characters-area-bg: Hintergrund Charakter-Bilder
+// - --link-color: Akzentfarbe für Hover
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+.comic {
+    margin: auto;
+    text-align: center;
+}
+
+.comic h1 {
+    margin-bottom: 5px;
+    font-size: 18px;
+    font-weight: normal;
+}
+
+.comic header {
+    margin-bottom: 15px;
+}
+
+// Comic Image Styling
+#comic-image,
+.comic-image {
+    display: block; // Verhindert Abstände unten bei Inline-Images
+    width: 100%;
+    max-width: 100%; // Sicherheitsnetz für kleinere Container
+    height: auto;
+    margin: 0 auto; // Zentrierung sicherstellen
+    border-radius: 7px;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.2);
+}
+
+// Transcript Box (Wiederhergestellt: Scroll-Box statt Akkordeon)
+.comic .transcript {
+    margin-top: 15px;
+    font-size: 0.8em;
+    text-align: left;
+}
+
+.comic .transcript-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.comic .transcript-content {
+    max-height: 550px;
+    padding: 15px;
+    margin-top: 5px;
+    overflow: auto;
+    background-color: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 1px 0 rgb(0 0 0 / 0.35);
+}
+
+body.theme-night .comic .transcript-content {
+    color: var(--text-color);
+    background-color: var(--sidebar-bg); // Accent Dark
+    border-color: var(--page-bg);
+}
+
+.comic .transcript-content p {
+    margin-bottom: 7px;
+}
+
+.comic .transcript-content p:last-of-type {
+    margin-bottom: 0;
+}
+
+// Unterstützung für Listen in Transkripten (z.B. Fehlerseiten)
+.comic .transcript-content ul {
+    padding-left: 20px;
+    margin-bottom: 10px;
+    list-style-type: disc;
+}
+
+.comic .transcript-content li {
+    margin-bottom: 5px;
+}
+
+@include media-retina-mobile {
+    .comic .transcript-content {
+        font-size: 1.3em;
+    }
+}
+
+// Below Navigation (Bookmarks)
+.below-nav {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 3px;
+    margin-bottom: 0;
+    font-size: 0.9em;
+    font-style: italic;
+    text-align: left;
+}
+
+body.theme-night .below-nav {
+    color: #ccc;
+}
+
+.nav-instruction-content {
+    font-size: 0.95em;
+    color: var(--text-color-light);
+}
+
+@include media-retina-mobile {
+    .below-nav {
+        margin-top: 0.5rem;
+        font-size: 1.2em;
+    }
+
+    .below-nav .nav-instruction-content {
+        display: none;
+    }
+}
+
+.below-nav .nav-instruction {
+    flex: 1 1 auto;
+}
+
+.below-nav .bookmark-control {
+    display: flex;
+    flex: 0 0 auto;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.below-nav .bookmark-control .arrow-left {
+    font-size: 1.4em;
+}
+
+.below-nav .bookmark-control .button {
+    font-size: 1em;
+}
+
+@include media-retina-mobile {
+    .below-nav .bookmark-control .button {
+        font-size: 1.1em;
+    }
+}
+
+// Tag Wrapper - Wiederhergestellt
+.comic .tag-wrapper,
+.below-nav {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+/*
+.comic .tag-wrapper .comic-tags,
+.comic .below-nav .comic-tags {
+    display: flex;
+    flex: 1 1 auto;
+    flex-flow: row wrap;
+    gap: 0.3rem;
+    row-gap: 0.5rem;
+    align-items: center;
+    font-size: 0.9em;
+    text-align: left;
+}
+
+@include media-retina-mobile {
+    .comic .tag-wrapper .comic-tags,
+    .comic .below-nav .comic-tags {
+        font-size: 1.2em;
+    }
+}
+
+.comic .tag-wrapper .comic-tags .button,
+.comic .below-nav .comic-tags .button {
+    font-size: 1em;
+}
+*/ // Deaktiviert, weil aktuell nicht genutzt
+
+/* .comic .tag-wrapper .permalink,
+.comic .below-nav .permalink */
+.permalink {
+    flex: 0 0 auto;
+    padding-top: 3px;
+    font-size: 0.9em;
+}
+
+.permalink a {
+    font-weight: bold;
+    color: var(--link-color);
+}
+
+/* body.theme-night .comic .tag-wrapper .permalink,
+body.theme-night .comic .below-nav .permalink, */
+body.theme-night .permalink {
+    color: #ccc;
+}
+
+@include media-retina-mobile {
+    /* .comic .tag-wrapper .permalink,
+    .comic .below-nav .permalink */
+    .permalink {
+        font-size: 1.2em;
+    }
+}
+
+/*
+.comic .comic-footer {
+    margin-top: 7px;
+}
+
+.comic .comic-header {
+    position: relative;
+    margin-bottom: 15px;
+}
+*/ // Deaktiviert, weil aktuell nicht genutzt

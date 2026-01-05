@@ -1,0 +1,213 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// CSS Custom Properties & Sass Variables
+///
+/// Definiert die Farbpaletten für Light und Dark Mode sowie globale Einstellungen.
+///
+/// Globale Variablen und Theming.
+///  Definiert SCSS-Variablen (statisch) und CSS Custom Properties (dynamisch/theming).
+///
+
+/*!
+ * @file       resources/scss/abstracts/_variables.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Refactoring auf 7-1 Pattern und Einführung von CSS Custom Properties für Theming.
+///
+
+// --- SASS Variablen (Statisch, Pre-Compile) ---
+$font-stack: 'Open Sans', 'Lucida Grande', arial, sans-serif;
+$font-mono: 'Noto Sans Mono', 'Lucida Console', 'Consolas', courier, monospace;
+$base-url: 'https://twokinds.4lima.de'; // Basis-URL für Assets
+
+// ZENTRALE STELLE FÜR DEN NAMEN:
+$font-icon: 'Font Awesome 7 Free';
+
+// Breakpoints
+$breakpoint-mobile: 768px;
+
+// --- CSS Custom Properties (Dynamisches Theming) ---
+:root {
+    // Backgrounds
+    --page-bg: #81dbfe;
+    --content-area-bg: #fff;
+    --content-bg: #fafafa;
+    --content-box-bg: #fff;
+    --sidebar-bg: #d1e5d4;
+    --header-bg: #ddead7;
+
+    // Text
+    --text-color: #333;
+    --text-color-light: #555;
+    --text-color-medium: #666;
+    --text-color-faded: #999;
+    --text-on-dark: #fff;
+    --text-on-medium: #000;
+
+    // Links
+    --link-color: #08c;
+    --link-color-rgb: 0, 136, 204; // Für rgba() Nutzung (z.B. Schatten)
+    --link-visited: #08c;
+
+    // Borders
+    --border-light: #ddd;
+    --border-medium: #ccc;
+    --border-dark: #888;
+    --border-black: #000;
+
+    // Characters
+    --characters-area-bg: #e0ffe485;
+
+    // Navigation & Buttons
+    --menu-bg: #effff2;
+    --menu-hover-bg: #fff;
+    --button-bg: #d1e5d4;
+    --button-hover-bg: #b1cab5;
+    --button-disabled-bg: #e0e0e0;
+    --comic-nav-bg: #c8e0c8;
+    --comic-nav-hover-bg: #aac8aa;
+    --comic-nav-archive-bg: #5d7b5d;
+    --comic-nav-archive-hover-bg: #789e78;
+
+    // Theme Specifics
+    --theme-label-bg: #7ba181;
+    --new-tag-bg: #7ba181;
+    --maintbanner-bg: #f5d568;
+    --maintbanner-text: #000;
+
+    // Status Colors
+    // Green (Success)
+    --status-green-bg: #d4edda;
+    --status-green-text: #155724;
+    --status-green-border: #c3e6cb;
+
+    // Red (Error)
+    --status-red-bg: #f8d7da;
+    --status-red-text: #721c24;
+    --status-red-border: #f5c6cb;
+
+    // Orange (Warning)
+    --status-orange-bg: #fff3cd;
+    --status-orange-text: #856404;
+    --status-orange-border: #ffeeba;
+
+    // Blue (Info) - Hinzugefügt
+    --status-info-bg: #d1ecf1;
+    --status-info-text: #0c5460;
+    --status-info-border: #bee5eb;
+
+    // Admin Tables
+    --table-header-bg: #e9ecef;
+    --table-row-even: #e9ecef; // Abgedunkelt für Sichtbarkeit
+    --table-row-hover: #e2e6ea;
+
+    // Cookie Banner (Light)
+    --cookie-bg: #f5f5f5;
+    --cookie-text: #333;
+    --cookie-heading: #000;
+    --cookie-cat-bg: #e0e0e0;
+    --cookie-desc: #555;
+    --cookie-link: #007bff;
+    --cookie-link-hover: #0056b3;
+    --cookie-btn-accept-bg: #6c8f6c;
+    --cookie-btn-accept-hover: #85aa85;
+    --cookie-btn-reject-bg: #d1e5d4;
+    --cookie-btn-reject-hover: #b1cab5;
+    --cookie-btn-save-bg: #b1cab5;
+    --cookie-btn-save-hover: #9cb59c;
+}
+
+// --- Dark Mode Overrides ---
+body.theme-night {
+    // Backgrounds
+    --page-bg: #002b3c;
+    --content-area-bg: #00425c;
+    --content-bg: #0e3d5a; // #003f58
+    --content-box-bg: #00334c;
+    --sidebar-bg: #00334c;
+    --header-bg: #002b3c;
+
+    // Text
+    --text-color: #fff;
+    --text-color-light: #ccc;
+    --text-color-medium: #aaa;
+    --text-color-faded: #777;
+    --text-on-medium: #fff;
+
+    // Links
+    --link-color: #00add9; // #81dbfe
+    --link-color-rgb: 129, 219, 254; // #81dbfe in RGB
+    --link-visited: #00add9; // #81dbfe
+
+    // Borders
+    --border-light: #48778a;
+    --border-medium: #2a6177;
+    --border-dark: #00334c;
+    --border-black: #002b3c;
+
+    // Characters
+    --characters-area-bg: #393322;
+
+    // Navigation & Buttons
+    --menu-bg: #2a6177;
+    --menu-hover-bg: #48778a;
+    --button-bg: #2a6177;
+    --button-hover-bg: #48778a;
+    --button-disabled-bg: rgb(42 97 119 / 0.6);
+    --comic-nav-bg: #00334c;
+    --comic-nav-hover-bg: #003f58;
+    --comic-nav-archive-bg: #2a6177;
+    --comic-nav-archive-hover-bg: #48778a;
+
+    // Theme Specifics
+    --theme-label-bg: #628492;
+    --maintbanner-bg: #bfa54c; // Abgedunkeltes Gelb
+    --maintbanner-text: #000;
+
+    // Status Colors (Darkened for contrast)
+    --status-green-bg: #1e4620;
+    --status-green-text: #e8f5e9;
+    --status-green-border: #1e4620;
+    --status-red-bg: #5a1e1e;
+    --status-red-text: #fce4e4;
+    --status-red-border: #5a1e1e;
+    --status-orange-bg: #5a4e1e;
+    --status-orange-text: #fff8e1;
+    --status-orange-border: #5a4e1e;
+
+    // Blue (Info) - Hinzugefügt
+    --status-info-bg: #00425c;
+    --status-info-text: #d1ecf1;
+    --status-info-border: #005a7e;
+
+    // Admin Tables
+    --table-header-bg: #48778a;
+    --table-row-even: #00334c;
+    --table-row-hover: #2a6177;
+
+    // Cookie Banner (Dark)
+    --cookie-bg: #00334c;
+    --cookie-text: #fff;
+    --cookie-heading: #fff;
+    --cookie-cat-bg: #00425c;
+    --cookie-desc: #ccc;
+    --cookie-link: #81dbfe;
+    --cookie-link-hover: #a0eaff;
+    --cookie-btn-accept-bg: #2a6177;
+    --cookie-btn-accept-hover: #48778a;
+    --cookie-btn-reject-bg: #002b3c;
+    --cookie-btn-reject-hover: #00425c;
+    --cookie-btn-save-bg: #002b3c;
+    --cookie-btn-save-hover: #00425c;
+}

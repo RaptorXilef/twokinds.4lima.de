@@ -18,6 +18,8 @@ export default [
             '.github/', // Ignoriert GitHub-Workflows
             '.git/', // Ignoriert GitHub
             '_Notizen/', // Ignoriert Meine Code-Notizen
+            '.cache/',
+            '.build/',
         ],
     },
 
@@ -53,7 +55,9 @@ export default [
             // 'off' entfernt den Fehler für console.error in deiner main.js
             // Alternativ: 'warn' lassen, wenn du es sehen willst, aber den Build nicht abbrechen möchtest.
             'no-console': 'off',
-            'no-unused-vars': ['warn', { vars: 'all', args: 'none' }],
+            'no-unused-vars': ['warn', { vars: 'all', args: 'none' }], // Sie findet Variablen, die zwar definiert (let x = 5;), aber niemals im Code verwendet wurden („toter Code“).
+            // 'quotes': ['error', 'single'] // Erzwingt die Nutzung von einfachen Anführungszeichen (') statt doppelten (").
+            // 'semi': ['error', 'always'] // Schreibt vor, dass jedes Statement zwingend mit einem Semikolon (;) beendet werden muss.
         },
     },
 ];

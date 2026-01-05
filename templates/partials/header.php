@@ -1,14 +1,15 @@
 <?php
+
 /**
  * Gemeinsamer, modularer Header für alle Seiten (SEO-optimierte Version).
- * 
+ *
  * @file      ROOT/templates/partials/header.php
  * @package   twokinds.4lima.de
  * @author    Felix M. (@RaptorXilef)
  * @copyright 2025 Felix M.
  * @license   Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International <https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE>
  * @link      https://github.com/RaptorXilef/twokinds.4lima.de
- * @version   4.0.2
+ * @version   5.0.0
  * @since     2.6.0 Diese Datei wurde verschlankt und konzentriert sich auf die HTML-Struktur und das Asset-Management.
  * Die sicherheitsrelevanten Initialisierungen wurden in separate `init.php`-Dateien ausgelagert.
  * @since     2.7.0 Entfernung redundanter URL-Berechnung und Ersetzung von Pfaden durch globale Konstanten.
@@ -18,6 +19,8 @@
  * @since     4.0.0 Umstellung auf die dynamische Path-Helfer-Klasse.
  * @since     4.0.1 Aktualisiere den Pfad zur Sitemap-XML im Header
  * @since     4.0.2 Füge Font aus main.css direkt hinzu fonts.googleapis.com/css?family=Open+Sans:400,400i,700
+ * @since     4.1.0 (CSS-Refactoring) Konsolidierung aller separaten Stylesheets (main, main_dark, cookie_banner, etc.) in eine einzige 'main.min.css'.
+ * @since     5.0.0-alpha.1 refactor(HTML): IDs auf Kebab-Case umgestellt für SCSS-Kompatibilität.
  *
  * @param string $pageTitle Der spezifische Titel für die aktuelle Seite.
  * @param string $pageHeader Der sichtbare H1-Header für die aktuelle Seite im Hauptinhaltsbereich.
@@ -29,8 +32,10 @@
  * @param string $ogImage Die URL zu einem Vorschaubild für Social Media (optional).
  * @param string $robotsContent Inhalt des robots-Meta-Tags (Standard: "index, follow").
  * @param string $canonicalUrl Eine explizite URL für den Canonical-Tag (optional, überschreibt die automatisch generierte URL).
+ *
+ * @note Die Variablen ($pageTitle, $nonce, $debugMode etc.) werden erwartet von
+ * einer übergeordneten `init.php`-Datei (z.B. `init_public.php` oder `init_admin.php`) bereitgestellt zu werden.
  */
-
 
 // === DEBUG-MODUS STEUERUNG ===
 $debugMode = $debugMode ?? false;
@@ -56,7 +61,7 @@ if (isset($debugMode) && $debugMode) {
 // --- 3. SETUP DER SEITEN-VARIABLEN MIT STANDARDWERTEN ---
 $isAdminPage = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
 $filenameWithoutExtension = pathinfo(basename($_SERVER['PHP_SELF']), PATHINFO_FILENAME);
-$pageTitlePrefix = 'Twokinds – Das Webcomic auf Deutsch | ';
+$pageTitlePrefix = 'Twokinds – Deutsch | '; // $pageTitlePrefix = 'Twokinds – Das Webcomic auf Deutsch | ';
 $pageTitle = $pageTitlePrefix . ($pageTitle ?? ucfirst($filenameWithoutExtension));
 $siteDescription = $siteDescription ?? 'Tauche ein in die Welt von Twokinds – dem beliebten Fantasy-Webcomic von Tom Fischbach, jetzt komplett auf Deutsch verfügbar. Erlebe die spannende Geschichte von Trace und Flora und entdecke die Rassenkonflikte zwischen Menschen und Keidran.';
 $ogImage = $ogImage ?? '';
@@ -80,11 +85,8 @@ $faviconUrl = DIRECTORY_PUBLIC_URL . '/favicon.ico?v=' . filemtime(DIRECTORY_PUB
 $appleIconUrl = DIRECTORY_PUBLIC_URL . '/appleicon.png?v=' . filemtime(DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . 'appleicon.png');
 
 // Generiere versionierte URLs für CSS und JS mit der Path-Klasse
+// Nur noch main.min.css laden
 $mainCssUrl = getVersionedUrl(Url::getCssUrl('main.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main.min.css');
-$mainDarkCssUrl = getVersionedUrl(Url::getCssUrl('main_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'main_dark.min.css');
-$cookieBannerCssUrl = getVersionedUrl(Url::getCssUrl('cookie_banner.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner.min.css');
-$cookieBannerDarkCssUrl = getVersionedUrl(Url::getCssUrl('cookie_banner_dark.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'cookie_banner_dark.min.css');
-$characterDisplayCssUrl = getVersionedUrl(Url::getCssUrl('character_display.min.css'), DIRECTORY_PUBLIC_CSS . DIRECTORY_SEPARATOR . 'character_display.min.css');
 
 $commonJsUrl = getVersionedUrl(Url::getJsUrl('common.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'common.min.js');
 $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DIRECTORY_PUBLIC_JS . DIRECTORY_SEPARATOR . 'cookie_consent.min.js');
@@ -109,12 +111,38 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
     <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s', filemtime(__FILE__)); ?>">
 
     <!-- Open Graph Meta Tags für Social Media -->
+    <?php
+    // --- 1. Bild-Logik vorbereiten ---
+    // Wenn kein spezifisches Bild da ist, nimm den globalen Standard
+    $finalSocialImage = !empty($ogImage) ? $ogImage : (defined('DEFAULT_SOCIAL_IMAGE') ? DEFAULT_SOCIAL_IMAGE : '');
+
+    // --- 2. Debug-Check (nur im Quelltext sichtbar) ---
+    if ($debugMode && !empty($finalSocialImage)) {
+        // Sicherstellen, dass wir den lokalen Pfad korrekt berechnen
+        $relativePart = str_replace(DIRECTORY_PUBLIC_URL, '', $finalSocialImage);
+        $localPath = DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relativePart, '/\\');
+
+        echo "\n    ";
+        if (!file_exists($localPath)) {
+            echo "\n    ";
+        } else {
+            echo "\n    ";
+        }
+    }
+    ?>
+
     <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
     <meta property="og:description" content="<?php echo htmlspecialchars($siteDescription); ?>" />
     <meta property="og:type" content="website" />
-    <?php if (!empty($ogImage)): ?>
-        <meta property="og:image" content="<?php echo htmlspecialchars($ogImage); ?>" />
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($pageTitle); ?>">
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($siteDescription); ?>">
+
+    <?php if (!empty($finalSocialImage)) : ?>
+        <meta property="og:image" content="<?php echo htmlspecialchars($finalSocialImage); ?>" />
+        <meta name="twitter:image" content="<?php echo htmlspecialchars($finalSocialImage); ?>">
     <?php endif; ?>
+
 
     <!-- Weitere Meta-Informationen -->
     <link rel="sitemap" type="application/xml" title="Sitemap"
@@ -131,18 +159,16 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
         rel="stylesheet">
 
     <!-- Stylesheets -->
+    <!--
+        *** START ÄNDERUNG (CSS Refactoring) ***
+        Alle Stile (main, main_dark, cookie_banner, character_display etc.)
+        sind jetzt in main.min.css gebündelt (7-1 SCSS Refactoring).
+    -->
     <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
         href="<?php echo htmlspecialchars($mainCssUrl); ?>" fetchpriority="high">
-    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($mainDarkCssUrl); ?>" fetchpriority="high">
-    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($cookieBannerCssUrl); ?>">
-    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($cookieBannerDarkCssUrl); ?>">
-    <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet" type="text/css"
-        href="<?php echo htmlspecialchars($characterDisplayCssUrl); ?>">
+    <!-- *** ENDE ÄNDERUNG *** -->
 
-    <?php if ($isAdminPage): ?>
+    <?php if ($isAdminPage) : ?>
         <link nonce="<?php echo htmlspecialchars($nonce); ?>" rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <?php endif; ?>
@@ -158,7 +184,9 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
     <script nonce="<?php echo htmlspecialchars($nonce); ?>" type='text/javascript'
         src='<?php echo htmlspecialchars($cookieConsentJsUrl); ?>'></script>
     <script nonce="<?php echo htmlspecialchars($nonce); ?>"
-        type='text/javascript'>window.isAdminPage = <?php echo ($isAdminPage ? 'true' : 'false'); ?>;</script>
+        type='text/javascript'>
+        window.isAdminPage = <?php echo ($isAdminPage ? 'true' : 'false'); ?>;
+    </script>
 
     <?php
     echo $additionalScripts;
@@ -168,7 +196,7 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
 
 <body class="<?php echo htmlspecialchars($bodyClass); ?>">
     <!-- Cookie-Consent-Banner -->
-    <div id="cookieConsentBanner">
+    <div id="cookie-consent-banner">
         <h3>Datenschutz-Einstellungen</h3>
         <p>Ich verwende Cookies und vergleichbare Technologien, um die Funktionalität dieser Webseite zu gewährleisten
             und die Nutzung zu analysieren. Bitte treffe deine Auswahl:</p>
@@ -267,16 +295,16 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
                 verwendet!</p>
         </div>
         <div class="cookie-buttons">
-            <button id="acceptAllCookies">Alle akzeptieren</button>
-            <button id="rejectAllCookies">Alle ablehnen</button>
-            <button id="saveCookiePreferences">Auswahl speichern</button>
+            <button id="accept-all-cookies">Alle akzeptieren</button>
+            <button id="reject-all-cookies">Alle ablehnen</button>
+            <button id="save-cookie-preferences">Auswahl speichern</button>
         </div>
     </div>
     <!-- Ende Cookie-Consent-Banner -->
 
     <div id="mainContainer" class="main-container">
-        <center>Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
-                target="_blank">twokinds.keenspot.com</a></center>
+        <p class="l-main-container__disclaimer">Dieses Fanprojekt ist die deutsche Übersetzung von <a href="https://twokinds.keenspot.com/"
+                target="_blank">twokinds.keenspot.com</a></p>
         <div id="banner-lights-off" class="banner-lights-off"></div>
         <div id="banner" class="banner">Twokinds</div>
         <div id="content-area" class="content-area">
@@ -296,10 +324,86 @@ $cookieConsentJsUrl = getVersionedUrl(Url::getJsUrl('cookie_consent.min.js'), DI
                 ?>
             </div>
             <main id="content" class="content">
-                <article>
+                <?php
+                $dynamicClass = '';
+                if (isset($isComicPage) && $isComicPage) {
+                    $dynamicClass = ' class="comic"'; // Fügt das Attribut komplett hinzu
+                } elseif (isset($isCharakterPage) && $isCharakterPage) {
+                    $dynamicClass = ' class="charaktere-overview"'; // Fügt das Attribut komplett hinzu
+                }
+                ?>
+
+                <article<?php echo $dynamicClass; ?>>
+
                     <?php
                     // Der Seiten-Header wird hier dynamisch eingefügt, wenn er übergeben wurde.
                     if (!empty($pageHeader) && $isAdminPage) {
                         echo '<header><h1 class="page-header">' . htmlspecialchars($pageHeader) . '</h1></header>';
                     }
                     ?>
+
+<?php
+// --- UNIVERSALER SOCIAL MEDIA DEBUGGER (v6.4.0) ---
+if ($debugMode) {
+    echo "<div class='c-debug-box'>";
+    echo "<strong class='c-debug-box__title'>🔍 Social Media Image Debug</strong>";
+
+    $displayImage = null;
+    $statusType = 'none'; // 'specific', 'fallback', 'none'
+
+    // 1. Prüfung: Spezifisches Bild ($ogImage)
+    if (!empty($ogImage)) {
+        $cleanOg = explode('?', $ogImage)[0];
+        $relOg = str_replace(DIRECTORY_PUBLIC_URL, '', $cleanOg);
+        $pathOg = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relOg, '/\\'));
+
+        echo "<strong>Public URL (Spezifisch):</strong> " . htmlspecialchars($ogImage) . "<br>";
+
+        if (file_exists($pathOg)) {
+            echo "<span class='c-debug-box__status--success'>✔ SPEZIFISCHES BILD GEFUNDEN.</span><br>";
+            $displayImage = $ogImage;
+            $statusType = 'specific';
+        } else {
+            echo "<span class='c-debug-box__status--error'>✘ SPEZIFISCHES BILD FEHLT AUF SERVER.</span><br>";
+        }
+    } else {
+        echo "<strong>Public URL:</strong> <span class='c-debug-box__status--muted'>--- LEER ---</span><br>";
+    }
+
+    // 2. Prüfung: Fallback (nur wenn spezifisches Bild fehlt oder leer ist)
+    if ($statusType === 'none') {
+        echo "<hr class='c-debug-box__separator'>";
+        if (defined('DEFAULT_SOCIAL_IMAGE') && !empty(DEFAULT_SOCIAL_IMAGE)) {
+            $cleanFb = explode('?', DEFAULT_SOCIAL_IMAGE)[0];
+            $relFb = str_replace(DIRECTORY_PUBLIC_URL, '', $cleanFb);
+            $pathFb = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, DIRECTORY_PUBLIC . DIRECTORY_SEPARATOR . ltrim($relFb, '/\\'));
+
+            echo "<strong>Nutze Fallback aus DEFAULT_SOCIAL_IMAGE:</strong><br>";
+            echo htmlspecialchars(DEFAULT_SOCIAL_IMAGE) . "<br>";
+
+            if (file_exists($pathFb)) {
+                echo "<span class='c-debug-box__status--success'>✔ FALLBACK-BILD GEFUNDEN.</span><br>";
+                $displayImage = DEFAULT_SOCIAL_IMAGE;
+                $statusType = 'fallback';
+            } else {
+                echo "<span class='c-debug-box__status--error'>✘ AUCH FALLBACK-BILD FEHLT AUF SERVER.</span><br>";
+            }
+        } else {
+            echo "<span class='c-debug-box__status--error'>✘ KEIN FALLBACK DEFINIERT (DEFAULT_SOCIAL_IMAGE).</span><br>";
+        }
+    }
+
+    // 3. Visuelle Einbindung & Abschluss-Meldung
+    echo "<div class='c-debug-box__preview'>";
+    if ($displayImage) {
+        echo "<strong class='c-debug-box__preview-title'>Vorschau (Crawler-Ansicht):</strong><br>";
+        echo "<img src='" . htmlspecialchars($displayImage) . "' class='c-debug-box__preview-img' alt='Debug Preview'>";
+    } else {
+        echo "<span class='c-debug-box__error-msg'>CRITICAL: KEIN BILD VERFÜGBAR!</span>";
+        echo "<small class='c-debug-box__status--muted'>Crawler werden kein Vorschaubild anzeigen.</small>";
+    }
+    echo "</div>";
+
+    echo "</div>";
+}
+?>

@@ -1,0 +1,170 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Globale Basis-Styles und Typografie.
+///
+/// Definiert das Grundgerüst (Body), Überschriften und globale Textelemente.
+/// Definition von Schriftarten, Überschriften und Textfluss.
+///
+
+/*!
+ * @file       resources/scss/base/_typography.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Einführung von CSS Vars für Farben.
+/// - style(Refactor): Nesting für Theme-Overrides reduziert (Phase 2 Flattening).
+/// - feat: Utility-Klasse .mono für technische Textauszeichnungen hinzugefügt.
+///
+
+// Verwendete SCSS-Variablen:
+// - $font-stack: Hauptschriftart
+// - $font-mono: Monospace Schriftart
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --text-color: Standard Textfarbe
+// - --page-bg: Hintergrundfarbe der Seite
+// - --header-bg: Hintergrund für Header-Elemente
+// - --button-bg: Farbe für Buttons (hier als Border-Color im Night-Theme genutzt)
+// - --link-color: Farbe für Links
+// - --link-visited: Farbe für besuchte Links
+// - --text-color-light: Hellere Textfarbe für Instruktionen
+
+@use '../abstracts/mixins' as *;
+@use '../abstracts/variables' as *;
+
+body {
+    min-width: 1099px;
+    font-family: $font-stack;
+    font-size: 15px;
+    color: var(--text-color);
+    background-color: var(--page-bg);
+}
+
+// Transition für Theme-Wechsel (Separat definiert um Nesting zu sparen)
+body.transitioning:not(.preload),
+body.transitioning:not(.preload) * {
+    transition:
+        background-color 0.25s,
+        border-color 0.25s,
+        background-image 0.25s,
+        color 0.25s;
+}
+
+.mono {
+    padding: 1px 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background-color: var(--table-row-even);
+    border-radius: 3px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: bold;
+}
+
+h3 {
+    margin-bottom: 0.7rem;
+}
+
+p {
+    margin-bottom: 10px;
+}
+
+// Page Headers
+h1.page-header,
+h2.page-header,
+h3.page-header,
+h4.page-header,
+h5.page-header,
+h6.page-header {
+    padding: 5px 10px;
+    margin-bottom: 10px;
+    font-size: 22.5px;
+    color: var(--text-color);
+    background-color: var(--header-bg);
+    border-bottom: 1px solid transparent; // Placeholder für Dark Mode Border
+}
+
+// Theme Override (Flach) - Night Mode für Page Headers
+body.theme-night h1.page-header,
+body.theme-night h2.page-header,
+body.theme-night h3.page-header,
+body.theme-night h4.page-header,
+body.theme-night h5.page-header,
+body.theme-night h6.page-header {
+    border-bottom-color: var(--button-bg);
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none; // Default reset, optional
+
+    &:visited {
+        color: var(--link-visited);
+    }
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+hr {
+    margin-block: 1rem;
+    border: none;
+    border-color: var(--header-bg); // Default Light
+    border-top: 1px solid;
+}
+
+body.theme-night hr {
+    border-color: var(--button-bg);
+}
+
+.instructions,
+.editor-footer-info,
+.character-overview-intro {
+    margin-bottom: 15px;
+    font-size: 1em;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--text-color-medium);
+}
+
+@include media-retina-mobile {
+    .instructions,
+    .editor-footer-info,
+    .character-overview-intro {
+        padding: 0 15px;
+        font-size: 1.2em;
+    }
+}
+
+.smalltext {
+    font-size: 12px;
+}
+
+.tinytext {
+    margin-bottom: 5px;
+    font-size: 9px;
+}
+
+.tinyheader {
+    margin-bottom: 4px;
+    font-size: 10px;
+    text-align: center;
+    text-transform: uppercase;
+}

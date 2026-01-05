@@ -1,0 +1,599 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin Editor Styles.
+///
+/// Styling für Bildvorschau, Charakter-Auswahl, Sitemap-Editor und Report-Management.
+/// Styles für Comic-, Charakter-, Sitemap- und Report-Editoren.
+///
+
+/*!
+ * @file       resources/scss/pages/admin/_editors.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - style(Refactor): Selektoren für Character-Editor gruppiert und DRY-Prinzip angewendet.
+/// - feat(Editor): Styles für data_editor_charaktere.php hinzugefügt.
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-light: Helle Rahmenfarbe
+// - --table-row-even: Hintergrund für Vorschau-Boxen / Grid-Items
+// - --table-row-hover: Hintergrund bei Hover
+// - --table-header-bg: Hintergrund für Header / Infos
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --text-color: Standard Textfarbe
+// - --text-color-medium: Mittlere Textfarbe
+// - --text-color-light: Helle Textfarbe
+// - --content-bg: Hintergrund für Listen-Elemente
+// - --content-area-bg: Hintergrund für Editor-Bereiche
+// - --page-bg: Hintergrund für Bilder
+// - --button-bg: Hover-Hintergrund im Dark Mode
+// - --button-hover-bg: Hintergrund für Sortable Ghost
+// - --link-color: Akzentfarbe
+// - --characters-area-bg: Hintergrund für Charakter-Bilder
+// - --status-red-text: Fehlerfarbe
+
+@use '../../abstracts/variables' as *;
+
+/* --- Comic Editor Image Preview --- */
+.image-preview-section {
+    padding-top: 15px;
+    margin-top: 15px;
+    border-top: 1px solid var(--border-medium);
+}
+
+#modal-image-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.image-preview-box {
+    flex: 1;
+    min-width: 200px;
+    max-width: 45%;
+    padding: 10px;
+    text-align: center;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+body.theme-night .image-preview-box {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-light);
+}
+
+.image-preview-box p {
+    margin: 0 0 8px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.image-preview-box img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+/* --- Modal Character Selection --- */
+#modal-charaktere-section {
+    padding-top: 15px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border-medium);
+}
+
+#modal-charaktere-section .charakter-kategorie {
+    margin-bottom: 20px;
+}
+
+#modal-charaktere-section h3 {
+    padding-bottom: 5px;
+    margin: 0 0 10px;
+    font-size: 1.1em;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.charaktere-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+}
+
+.charakter-item {
+    padding: 5px;
+    text-align: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.charakter-item img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 5px;
+    object-fit: cover;
+    border: 2px solid var(--border-medium);
+    border-radius: 50%;
+}
+
+.charakter-item span {
+    display: block;
+    font-size: 0.8em;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+}
+
+.charakter-item:hover {
+    background-color: var(--table-row-hover);
+}
+
+.charakter-item img:hover {
+    filter: grayscale(0%);
+}
+
+.charakter-item.active {
+    background-color: rgb(40 167 69 / 0.1);
+    border-color: #28a745;
+}
+
+.charakter-item.active img {
+    border-color: #28a745;
+}
+
+/* --- Sitemap Editor --- */
+.add-row-container {
+    margin-top: 15px;
+}
+
+/* --- Report Management --- */
+.report-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-medium);
+}
+
+.diff-msg-empty {
+    font-style: italic;
+}
+
+.diff-msg-error {
+    color: #dc3545;
+}
+
+body.theme-night .diff-msg-error {
+    color: #ff6b6b;
+}
+
+/* --- Character Editor (Main Page) --- */
+.char-editor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.master-list-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.master-char-entry {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    text-align: center;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    transition:
+        box-shadow 0.2s,
+        transform 0.2s;
+}
+
+body.theme-night .master-char-entry {
+    background-color: rgb(0 0 0 / 0.2); // var(--sidebar-bg)
+    border-color: var(--border-light);
+}
+
+.master-char-entry:hover {
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+    transform: translateY(-2px);
+}
+
+.master-char-entry img {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 10px;
+    object-fit: cover;
+    background-color: var(--characters-area-bg);
+    border: 3px solid var(--border-light);
+    border-radius: 50%;
+}
+
+.master-char-entry strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+    color: var(--text-color);
+    overflow-wrap: break-word;
+}
+
+.master-char-entry small {
+    display: block;
+    margin-bottom: 15px;
+    font-family: monospace;
+    font-size: 0.85em;
+    color: var(--text-color-light);
+}
+
+.character-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    margin-top: auto; // Drückt Buttons nach unten
+}
+
+.character-group {
+    margin-bottom: 25px;
+    overflow: hidden;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+}
+
+body.theme-night .character-group {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-light);
+}
+
+.character-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    cursor: move; // Zeigt an, dass die ganze Gruppe sortierbar ist
+    background-color: var(--table-header-bg);
+    border-bottom: 1px solid var(--border-medium);
+}
+
+body.theme-night .character-group-header {
+    border-bottom-color: var(--border-light);
+}
+
+.character-group-header h3 {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.character-group-header h3::before {
+    margin-right: 10px;
+    font-size: 0.9em;
+    color: var(--text-color-light);
+    content: '\2630'; // Hamburger Icon
+}
+
+.character-group-header .group-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.character-list-container {
+    min-height: 50px; // Damit man auch in leere Gruppen droppen kann
+    padding: 0;
+}
+
+.character-entry {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--content-bg);
+    border-bottom: 1px solid var(--border-medium); /// var(--border-light)
+    transition: background-color 0.2s;
+}
+
+body.theme-night .character-entry {
+    background-color: var(--sidebar-bg);
+    border-bottom-color: var(--border-light);
+}
+
+.character-entry:last-child {
+    border-bottom: none;
+}
+
+.character-entry:hover {
+    cursor: grab;
+    background-color: var(--table-row-hover);
+}
+
+body.theme-night .character-entry:hover {
+    background-color: var(--button-bg);
+}
+
+.character-entry img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border: 1px solid var(--border-medium);
+    border-radius: 50%;
+}
+
+.character-entry .character-info {
+    display: flex;
+    flex-grow: 1;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.character-entry .character-info strong {
+    color: var(--text-color);
+}
+
+.character-entry .char-id-display {
+    padding: 2px 6px;
+    font-size: 0.8em;
+    color: var(--text-color-light);
+    background-color: var(--table-header-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
+// SortableJS Ghost State
+.sortable-ghost {
+    background-color: var(--button-hover-bg);
+    border: 2px dashed var(--link-color);
+    opacity: 0.4;
+}
+
+.char-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 5px;
+}
+
+.char-selection-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 5px;
+    text-align: center;
+    cursor: pointer;
+    background-color: var(--content-bg);
+    border: 2px solid transparent;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+body.theme-night .char-selection-item {
+    background-color: var(--sidebar-bg);
+}
+
+.char-selection-item:hover {
+    background-color: var(--table-row-hover);
+}
+
+.char-selection-item img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 5px;
+    object-fit: cover;
+    border: 2px solid var(--border-light);
+    border-radius: 50%;
+    opacity: 0.6;
+    filter: grayscale(100%);
+    transition: all 0.2s;
+}
+
+.char-selection-item:hover img {
+    opacity: 1;
+    filter: grayscale(0%);
+}
+
+.char-selection-item span {
+    font-size: 0.85em;
+    line-height: 1.2;
+    color: var(--text-color-medium);
+}
+
+.char-selection-item.selected {
+    background-color: rgb(0 123 255 / 0.1);
+    border-color: var(--link-color);
+}
+
+body.theme-night .char-selection-item.selected {
+    background-color: rgb(129 219 254 / 0.15);
+}
+
+.char-selection-item.selected img {
+    border-color: var(--link-color);
+    opacity: 1;
+    filter: grayscale(0%);
+}
+
+.char-selection-item.selected span {
+    font-weight: bold;
+    color: var(--link-color);
+}
+
+.char-list-empty {
+    padding: 10px;
+    font-style: italic;
+    color: var(--text-color-light);
+    text-align: center;
+}
+
+.char-id-invalid {
+    font-weight: bold;
+    color: var(--status-red-text);
+}
+
+.preview-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.preview-container img {
+    max-width: 120px;
+    max-height: 120px;
+    border: 3px solid var(--border-medium);
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.2);
+}
+
+/* --- Image Comparison / Upload Editor --- */
+.image-comparison {
+    display: flex;
+    flex-wrap: wrap; // Wichtig für Responsiveness
+    gap: 20px;
+    justify-content: center;
+    width: 100%; // Container nimmt volle Breite des Modals
+    margin: 20px 0;
+}
+
+.image-box {
+    box-sizing: border-box; // Padding inkludieren
+    flex: 1 1 300px; // Basisbreite, darf wachsen und schrumpfen
+    min-width: 0; // CRITICAL FIX: Verhindert, dass Flex-Items überlaufen
+    max-width: 100%; // Sicherheitshalber
+    padding: 15px;
+    text-align: center;
+    background-color: var(--content-area-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+}
+
+body.theme-night .image-box {
+    background-color: var(--sidebar-bg);
+}
+
+.image-box h3 {
+    padding-bottom: 8px;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1em;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-light);
+}
+
+// Gemeinsame Bild-Klasse nutzen
+.image-box img,
+.image-box .modal-preview-image {
+    display: block;
+    width: 100%; // Bild passt sich der Box-Breite an
+    height: auto; // Höhe proportional skalieren
+    max-height: 100%;
+    margin: 0 auto;
+    object-fit: contain; // Bildinhalt vollständig sichtbar halten
+    background-color: var(--page-bg);
+    border: 1px solid var(--border-light);
+}
+
+.resolution-selection-content {
+    text-align: center;
+}
+
+.resolution-selection-content p {
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.resolution-selection-content .file-info {
+    display: inline-block;
+    padding: 5px 10px;
+    margin-bottom: 20px;
+    font-family: monospace;
+    font-size: 0.95em;
+    color: var(--text-color-light);
+    background-color: var(--table-header-bg);
+    border-radius: 4px;
+}
+
+.resolution-selection-content .preview-container {
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+.resolution-selection-content .preview-container img {
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    background-color: var(--page-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+}
+
+.modal-footer-actions.actions-center .modal-buttons {
+    justify-content: center;
+}
+
+// * --- Shared Admin Layout Elements (DRY) --- */
+
+// Gemeinsame Basis für Header-Container, Sektionen und Generator-Boxen
+#settings-and-actions-container,
+.collapsible-section,
+.generator-settings,
+.summary-details {
+    // padding: 20px;
+    margin-bottom: 25px;
+    background-color: var(--content-box-bg); // --table-row-even
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+}
+
+#settings-and-actions-container,
+.generator-settings,
+.summary-details {
+    padding: 20px;
+}
+
+.last-run-container,
+#last-run-container {
+    margin-bottom: 25px;
+}
+
+body.theme-night {
+    #settings-and-actions-container,
+    .collapsible-section,
+    .generator-settings,
+    .last-run-container,
+    #last-run-container,
+    .summary-details {
+        background-color: var(--content-box-bg); // --sidebar-bg
+        border-color: var(--border-light);
+    }
+}

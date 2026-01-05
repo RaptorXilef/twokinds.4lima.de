@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Fanart Galerie Styles.
+///
+/// Styling für die Fanart-Liste, Grid-Items und Metadaten (Autor/Datum).
+///
+
+/*!
+ * @file       resources/scss/pages/_fanart.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Extrahiert aus main_dark.scss.
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --border-medium: Mittlere Rahmenfarbe
+// - --content-bg: Hintergrundfarbe der Karte
+// - --text-color: Standard Textfarbe
+// - --page-bg: Rahmenfarbe im Dark Mode
+// - --content-area-bg: Hintergrund im Dark Mode
+// - --button-bg: Hintergrund für Thumbnail-Container
+// - --button-hover-bg: Hintergrund bei Hover
+// - --text-color-light: Helle Textfarbe für das Datum
+
+/*
+@use '../abstracts/variables' as *;
+
+.fanart-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+.fanart-item {
+    max-width: 200px;
+    padding: 10px;
+    text-align: center;
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
+}
+
+body.theme-night .fanart-item {
+    background-color: var(--content-area-bg);
+    border-color: var(--page-bg);
+}
+
+.fanart-item .thumbnail {
+    margin-bottom: 10px;
+}
+
+.fanart-item .thumbnail a {
+    display: block;
+    padding: 5px;
+    color: var(--text-color);
+    background-color: var(--button-bg);
+    border-radius: 3px;
+}
+
+.fanart-item .thumbnail a:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.fanart-item .thumbnail img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.fanart-item .meta {
+    font-size: 0.9em;
+}
+
+.fanart-item .meta .author {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: bold;
+}
+
+// Wiederhergestellt: Datum Styling
+.fanart-item .meta .date {
+    font-size: 0.8em;
+    color: var(--text-color-light);
+}
+*/

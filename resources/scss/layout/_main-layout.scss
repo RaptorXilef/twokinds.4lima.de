@@ -1,0 +1,146 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Main Layout Grid & Containers
+/// Hauptinhalt und Layout-Struktur.
+///
+/// Struktur des Hauptinhalts und Container.
+/// Styling für den Hauptcontainer, Artikel und Standard-Inhaltselemente.
+///
+
+/*!
+ * @file       resources/scss/layout/_main-layout.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Umstellung auf CSS Vars.
+/// - style(Linter): Reihenfolge der Tabellen-Selektoren korrigiert (Specificity).
+/// - style(Linter): Doppelte Selektoren für Dark Mode zusammengeführt.
+/// - refactor(SCSS): Datei von _grid.scss zu _main-layout.scss umbenannt (semantisch korrekter).
+/// - fix: Fixiert den Footer am unteren Bildschirmrand um einen Grafikfehler auf den Adminseiten zu beheben (Überlauf)
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --content-area-bg: Hintergrund für den Hauptbereich
+// - --text-color: Standard Textfarbe
+// - --content-bg: Hintergrund für Inhaltsboxen
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-black: Dunkle Rahmenfarbe (Tabellen)
+// - --page-bg: Rahmenfarbe im Dark Mode
+// - --header-bg: Hintergrund für Tabellenköpfe
+// - --button-hover-bg: Hintergrund für Tabellenköpfe im Dark Mode
+
+@use '../abstracts/variables' as *;
+
+article {
+    width: 825px;
+    margin: auto;
+}
+
+.main-container {
+    // display: flex; // Notfalllösung wenn Footer nicht am unteren Rand bleibt
+    // flex-direction: column; // Notfalllösung wenn Footer nicht am unteren Rand bleibt
+    width: 1079px;
+    margin: auto;
+    overflow: visible;
+    background-color: var(--content-area-bg);
+    box-shadow: 0 0 3px 1px rgb(0 0 0 / 0.5);
+}
+
+.content-area {
+    position: relative;
+    z-index: 100;
+    display: flex;
+    flex-flow: nowrap;
+    align-items: stretch;
+    min-height: 600px;
+    padding-top: 11px;
+    margin-top: -15px;
+    margin-bottom: 15px;
+}
+
+.content {
+    position: relative;
+    z-index: 102;
+    display: inline-block;
+    flex: 1 1 auto;
+    padding: 10px 15px 11px;
+    margin-right: 11px;
+    overflow: visible;
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 0 0 5px 5px;
+}
+
+// Entschachtelte Content-Elemente
+.content li {
+    margin-right: 30px;
+    margin-bottom: 5px;
+    margin-left: 30px;
+    list-style-position: inside;
+}
+
+.content ul {
+    margin-bottom: 10px;
+}
+
+// Entschachtelte Content-Elemente
+.content table {
+    margin-bottom: 10px;
+    border-collapse: collapse;
+    border: 1px solid var(--border-black);
+}
+
+body.theme-night .content table {
+    border-color: var(--page-bg);
+}
+
+.content th,
+.content td {
+    padding: 2px 7px;
+    color: var(--text-color);
+    border: 1px solid var(--border-black);
+}
+
+.content th {
+    background-color: var(--header-bg);
+}
+
+// Merged Dark Mode Styles (Flat)
+body.theme-night .content {
+    border-color: var(--page-bg);
+}
+
+body.theme-night .content th {
+    background-color: var(--button-hover-bg);
+}
+
+body.theme-night .content th,
+body.theme-night .content td {
+    border-color: var(--page-bg);
+}
+
+.content-bottom {
+    width: 1079px;
+    height: 4px;
+    margin-bottom: 15px;
+}
+
+.content-section {
+    padding: 0;
+    margin-bottom: 30px;
+}

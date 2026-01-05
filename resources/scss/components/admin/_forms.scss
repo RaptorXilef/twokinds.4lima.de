@@ -1,0 +1,374 @@
+// SPDX-License-Identifier: CC BY-NC-SA 4.0
+
+///
+/// Admin Formularelemente und Filter.
+///
+/// Styling für Filterformulare, Suchfelder, Drag & Drop Upload Zonen und Toggle-Buttons.
+///
+
+/*!
+ * @file       resources/scss/components/admin/_forms.scss
+ */
+/// @link      twokinds.4lima.de
+///
+/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
+/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
+///
+/// @author    Felix Maywald (@RaptorXilef)
+/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
+///
+
+///
+/// @since    5.0.0
+/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
+/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
+/// - style(SCSS): .search-wrapper und .button-toggle-group optimiert.
+/// - fix(Admin): Styling für Inputs und Selects in .filter-controls hinzugefügt.
+/// - refactor(scss): Alle !important entfernt (Grundlage für Kaskaden-Reset).
+/// - style(Admin): Filter-Inputs flexibel gestaltet, um den horizontalen Platz optimal auszunutzen.
+///
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --table-row-even: Hintergrund für Filter-Formular
+// - --border-light: Helle Rahmenfarbe
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-dark: Dunkle Rahmenfarbe
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --button-bg: Button Hintergrund / Border im Dark Mode
+// - --button-hover-bg: Button Hover Hintergrund
+// - --text-color: Standard Textfarbe
+// - --text-color-light: Helle Textfarbe (Labels)
+// - --text-color-medium: Mittlere Textfarbe (Icons/Placeholder)
+// - --text-on-medium: Textfarbe auf Buttons
+// - --content-bg: Hintergrund für Inputs/Upload-Zone
+// - --status-red-text: Farbe für Lösch-Button Hover
+// - --table-row-hover: Hintergrund bei Hover (Upload/Toggle)
+// - --link-color: Akzentfarbe
+// - --page-bg: Seitenhintergrund (für Mix)
+
+@use '../../abstracts/variables' as *;
+
+// Filter Form Container
+.filter-form {
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+    border-radius: 5px;
+}
+
+body.theme-night .filter-form {
+    background-color: var(--sidebar-bg);
+    border-color: var(--button-bg);
+}
+
+.filter-form legend {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+// Wrapper-Divs für Label/Input flexibel machen
+.filter-controls > div {
+    display: flex;
+    flex: 1 1 150px;
+    flex-direction: column;
+}
+
+// Aktions-Buttons kompakt halten
+.filter-controls .filter-actions {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.filter-controls label {
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: var(--text-color-light);
+}
+
+body.theme-night .filter-controls label {
+    color: var(--text-color-light);
+}
+
+// Konsistentes Design für Inputs und Selects in Filtern
+.filter-controls input[type='text'],
+.filter-controls input[type='number'],
+.filter-controls select {
+    box-sizing: border-box; // Wichtig für 100% Breite inkl. Padding
+    width: 100%;
+    padding: 11px;
+    font-family: inherit;
+    font-size: 0.9em;
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+.filter-controls select {
+    appearance: auto;
+    cursor: pointer;
+}
+
+body.theme-night .filter-controls input,
+body.theme-night .filter-controls select {
+    // background-color: var(--content-bg);
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
+}
+
+// Spezifisch für das neue Comic-Editor Layout (Zentriert, Input breit)
+.filter-controls.center-filter {
+    justify-content: center;
+    width: 100%;
+}
+
+.search-wrapper {
+    position: relative;
+    display: flex; // Stellt sicher, dass Input die Höhe vorgibt
+    flex-grow: 1;
+    align-items: center;
+    max-width: 600px;
+    margin-bottom: 12px;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 8px 35px 8px 8px; // Rechts Platz für den Button lassen!
+    margin: 0; // Wichtig für exakte Ausrichtung
+    color: var(--text-color);
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+body.theme-night .search-wrapper input {
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
+}
+
+.search-wrapper button#clear-search-btn {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    display: block; // Explizit setzen
+    width: auto;
+    min-width: 0; // Überschreibt globale Button-Regeln
+    height: auto;
+    padding: 0 5px;
+    font-size: 1.5em;
+    line-height: 1;
+    color: var(--text-color-medium);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    transform: translateY(-50%);
+}
+
+.search-wrapper button#clear-search-btn:hover {
+    color: var(--status-red-text); // Rot beim Hover
+    background-color: rgb(0 0 0 / 0.05); // Leichter Hover-Effekt
+}
+
+.honeypot-field {
+    display: none;
+}
+
+// Drag & Drop Zone (Upload)
+.drag-drop-zone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; // Mehr Abstand zwischen Text und Button
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    background-color: var(--content-bg); // Neutraler Hintergrund für die Zone
+    border: 2px dashed var(--border-medium); // Etwas dezenterer Rahmen
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+// Hover-Effekt für die Zone selbst dezenter gestalten
+.drag-drop-zone:hover,
+.drag-drop-zone.drag-over {
+    background-color: var(--table-row-hover);
+    border-color: var(--link-color);
+}
+
+.drag-drop-zone .instructions {
+    margin: 0;
+    font-size: 1.2em;
+    text-align: center; // Sicherstellen, dass Text zentriert ist
+    pointer-events: none;
+}
+
+.drag-drop-zone .instructions i {
+    display: block;
+    margin: 0 auto 15px;
+    font-size: 4em;
+    color: var(--border-dark); // Alternative Farbe --link-color
+    opacity: 0.8;
+}
+
+// Button deutlich als interaktives Element hervorheben
+.drag-drop-zone label.button {
+    display: inline-block;
+    padding: 12px 30px;
+    font-weight: bold;
+    color: var(--text-on-medium);
+    pointer-events: auto;
+    cursor: pointer;
+    background-color: var(--button-bg);
+    border: 1px solid var(--border-dark); // Kontur für Button-Look
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1); // Schatten für Tiefe
+    transition:
+        transform 0.1s,
+        background-color 0.2s;
+}
+
+.drag-drop-zone label.button:hover {
+    background-color: var(--button-hover-bg);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
+    transform: translateY(-2px); // Kleiner Hebe-Effekt
+}
+
+.drag-drop-zone label.button:active {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+    transform: translateY(0);
+}
+
+.upload-file-list {
+    min-height: 1.5em;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-style: italic;
+    color: var(--text-color);
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
+.upload-file-list:empty {
+    display: none;
+}
+
+.button-toggle-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.button-toggle-group .button-toggle {
+    padding: 6px 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.button-toggle-group .button-toggle:hover {
+    background-color: var(--table-row-hover);
+}
+
+.button-toggle-group .button-toggle.active {
+    color: #fff;
+    background-color: var(--link-color);
+    border-color: var(--link-color);
+}
+
+body.theme-night .button-toggle-group .button-toggle {
+    border-color: var(--border-light);
+}
+
+/* --- Shared Form Styles (Flat) --- */
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.admin-form input[type='text'],
+.admin-form input[type='password'] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    color: var(--text-color);
+    background-color: var(--content-area-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.admin-form input[type='text']:focus,
+.admin-form input[type='password']:focus {
+    outline: none;
+    border-color: var(--link-color);
+    box-shadow: 0 0 0 3px rgb(0 123 255 / 0.1);
+}
+
+body.theme-night .admin-form input[type='text'],
+body.theme-night .admin-form input[type='password'] {
+    // background-color: var(--content-bg);
+    background-color: color-mix(in srgb, var(--page-bg), black 20%);
+    border-color: var(--border-light);
+}
+
+.admin-form button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    background-color: var(--link-color);
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.admin-form button:hover {
+    filter: brightness(1.1);
+}
+
+/* --- Ergänzung für deaktivierte Felder --- */
+.admin-form .disabled-input,
+.admin-form input:disabled,
+.admin-form textarea:disabled,
+.modal-content input:disabled,
+.modal-content textarea:disabled {
+    cursor: not-allowed;
+    background-color: var(--table-header-bg);
+    opacity: 0.7;
+    filter: grayscale(1);
+}
