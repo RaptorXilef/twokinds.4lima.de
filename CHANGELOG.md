@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [5.0.0-alpha.22](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.21...v5.0.0-alpha.22) (2026-01-05)
+
 ## [5.0.0-alpha.21](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v5.0.0-alpha.20...v5.0.0-alpha.21) (2026-01-03)
 
 
