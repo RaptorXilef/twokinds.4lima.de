@@ -18,6 +18,15 @@ return (new PhpCsFixer\Config())
         '@PER-CS' => true, // Der neue Standard (Nachfolger von PSR-12)
         '@PHP83Migration' => true,
         '@Symfony' => true, // Ein sehr guter Basis-Standard für Clean Code
+
+        // Verhindert, dass Exceptions in eine Zeile gequetscht werden
+        'single_line_throw' => false,
+
+        // Verhindert, dass einfache Arrays in eine Zeile gequetscht werden
+        'array_indentation' => true,
+        'multiline_whitespace_before_semicolons' => ['strategy' => 'no_multi_line'],
+
+        // WICHTIG: Erlaubt manuelle Zeilenumbrüche bei Verkettungen (.)
         'concat_space' => ['spacing' => 'one'], // DAS HIER ERZWINGT ' . ' STATT '.'
 
         // --- STRIKTE TYPEN & SICHERHEIT ---
