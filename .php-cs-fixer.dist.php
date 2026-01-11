@@ -18,6 +18,7 @@ return (new PhpCsFixer\Config())
         '@PER-CS' => true, // Der neue Standard (Nachfolger von PSR-12)
         '@PHP83Migration' => true,
         '@Symfony' => true, // Ein sehr guter Basis-Standard für Clean Code
+        'concat_space' => ['spacing' => 'one'], // DAS HIER ERZWINGT ' . ' STATT '.'
 
         // --- STRIKTE TYPEN & SICHERHEIT ---
         'declare_strict_types' => true,
