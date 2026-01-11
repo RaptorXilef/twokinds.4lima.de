@@ -22,6 +22,11 @@ parameters:
         - tests
         - public
 
+    # EXKLUSIONEN: Hier schließen wir Ordner explizit aus.
+    excludePaths:
+        - vendor
+        - node_modules
+
     # Wir simulieren eine PHP 8.4 Umgebung (80400), damit PHPStan
     # neue Features (wie Property Hooks) bereits jetzt versteht.
     phpVersion: 80400

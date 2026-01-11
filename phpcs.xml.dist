@@ -1,15 +1,18 @@
 <?xml version="1.0"?>
 <ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Project Standards">
-<config name="installed_paths" value="../../slevomat/coding-standard,../../phpcsstandards/phpcsextra,../../phpcompatibility/php-compatibility"/>
-    <description>Unified Modern PHP 8.3 Standard</description>
+    <description>Unified Modern PHP 8.4+ High-End Standard</description>
+
+    <config name="installed_paths" value="../../slevomat/coding-standard,../../phpcsstandards/phpcsextra,../../phpcompatibility/php-compatibility"/>
 
     <rule ref="PSR12"/>
 
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/.cache/*</exclude-pattern>
 
     <rule ref="Universal.Arrays.DuplicateArrayKey"/>
     <rule ref="Universal.CodeAnalysis.ConstructorDestructorReturn"/>
     <rule ref="Universal.ControlStructures.DisallowLonelyIf"/>
-
 
     <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
         <properties><property name="searchAnnotations" value="true"/></properties>
@@ -28,8 +31,8 @@
     <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>
     <rule ref="SlevomatCodingStandard.Classes.RequireConstructorPropertyPromotion"/>
     <rule ref="SlevomatCodingStandard.Attributes.AttributeAndTargetSpacing"/>
-
     <rule ref="SlevomatCodingStandard.Exceptions.RequireNonCapturingCatch"/>
+
     <rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition"/>
     <rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit"/>
     <rule ref="SlevomatCodingStandard.ControlStructures.UselessIfConditionWithReturn"/>
@@ -43,17 +46,12 @@
     <rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints"/>
     <rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint"/>
 
-
     <config name="testVersion" value="8.3-8.5"/>
     <rule ref="PHPCompatibility"/>
 
     <file>src</file>
     <file>tests</file>
     <file>public</file>
-
-    <!-- Exclude Pfade -->
-    <exclude-pattern>vendor/*</exclude-pattern>
-    <exclude-pattern>node_modules/*</exclude-pattern>
 
     <!-- DIE REGEL FÜR DIE ZEILENLÄNGE -->
     <rule ref="Generic.Files.LineLength">
@@ -65,7 +63,7 @@
 
     <arg value="p"/>
     <arg name="colors"/>
-    <arg name="parallel" value="80"/>
+    <arg name="parallel" value="16"/>
     <arg name="cache" value=".cache/phpcs/.phpcs.cache"/>
     <arg name="extensions" value="php"/>
 </ruleset>
