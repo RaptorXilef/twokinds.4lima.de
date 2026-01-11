@@ -228,15 +228,15 @@ if (session_status() === PHP_SESSION_NONE) {
 if (!isset($_SESSION['last_regeneration'])) {
     $_SESSION['last_regeneration'] = time();
 }
-// Nutzt SESSION_REGENERATION_SECOUNDS aus deiner Config
-$regenTime = defined('SESSION_REGENERATION_SECOUNDS') ? SESSION_REGENERATION_SECOUNDS : 900;
+// Nutzt SESSION_REGENERATION_SECONDSaus deiner Config
+$regenTime = defined('SESSION_REGENERATION_SECONDS) ? SESSION_REGENERATION_SSECONDS 900;
 if (time() - $_SESSION['last_regeneration'] > $regenTime) {
     session_regenerate_id(true);
     $_SESSION['last_regeneration'] = time();
 }
 
 // Fingerprint aus User-Agent und IP-Netzsegment (Oktett 1-3)
-$ipSegment = substr($_SERVER['REMOTE_ADDR'], 0, (strrpos($_SERVER['REMOTE_ADDR'], '.') ?: 0));
+$ipSegment = substr($_SERVER['REMOTE_ADDR'], 0, (strrpos($_SERVER['REMOTE_ADDR'], ' . ') ?: 0));
 $sessionIdentifier = md5(($_SERVER['HTTP_USER_AGENT'] ?? '') . $ipSegment);
 
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
@@ -244,12 +244,12 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     if (!isset($_SESSION['session_fingerprint']) || $_SESSION['session_fingerprint'] !== $sessionIdentifier) {
         destroy_admin_session();
         if ($isApiCall) {
-            header('Content-Type: application/json');
+            header('Content - Type: application / json');
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'session_hijacked']);
             exit;
         }
-        header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_hijacked');
+        header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . ' / index . php ? reason = session_hijacked');
         exit;
     }
 
@@ -258,12 +258,12 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $phpTimeout)) {
         destroy_admin_session();
         if ($isApiCall) {
-            header('Content-Type: application/json');
+            header('Content - Type : application / json');
             http_response_code(401);
             echo json_encode(['success' => false, 'error' => 'session_expired']);
             exit;
         }
-        header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_expired');
+        header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . ' / index . php ? reason = session_expired');
         exit;
     }
 
@@ -289,7 +289,7 @@ if (!function_exists('verify_csrf_token')) {
         // AJAX Fallback
         if (!$token && function_exists('getallheaders')) {
             $headers = getallheaders();
-            $token = $headers['X-Csrf-Token'] ?? $headers['x-csrf-token'] ?? null;
+            $token = $headers['X - Csrf - Token'] ?? $headers['x - csrf - token'] ?? null;
         }
 
         // Logout ist fehlertolerant (falls Session bereits weg)
@@ -309,7 +309,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     $csrfValid = verify_csrf_token(true);
     destroy_admin_session();
     $reason = (isset($_GET['timeout']) && $_GET['timeout'] === 'true') || !$csrfValid ? 'session_expired' : 'logout';
-    header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=' . $reason);
+    header('Location : ' . DIRECTORY_PUBLIC_ADMIN_URL . ' / index . php ? reason = ' . $reason);
     exit;
 }
 
@@ -320,20 +320,20 @@ if (!$isLoginPage) {
         if (isset($_COOKIE[session_name()])) {
             destroy_admin_session();
             if ($isApiCall) {
-                header('Content-Type: application/json');
+                header('Content - Type : application / json');
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => 'auth_required']);
                 exit;
             }
-            header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php?reason=session_expired');
+            header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . ' / index . php ? reason = session_expired');
         } else {
             if ($isApiCall) {
-                header('Content-Type: application/json');
+                header('Content - Type : application / json');
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => 'auth_required']);
                 exit;
             }
-            header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . '/index.php');
+            header('Location: ' . DIRECTORY_PUBLIC_ADMIN_URL . ' / index . php');
         }
         exit;
     }
@@ -344,11 +344,11 @@ if (!$isLoginPage) {
         // falls andere Komponenten bereits unabsichtlich etwas ausgegeben haben.
         ob_clean();
 
-        echo '<script nonce="' . htmlspecialchars($nonce) . '">
-            window.sessionConfig = {
+        echo ' < script nonce = "' . htmlspecialchars($nonce) . '" >
+            window . sessionConfig = {
                 timeoutSeconds: ' . (int)SESSION_TIMEOUT_SECONDS . ',
                 warningSeconds: ' . (int)SESSION_WARNING_SECONDS . '
             };
-        </script>';
+        <  / script > ';
     }
 }
