@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "stylelint-config-standard-scss",
-    "stylelint-config-recess-order"
-  ],
+  "extends": ["stylelint-config-standard-scss", "stylelint-config-recess-order"],
   "plugins": ["stylelint-declaration-strict-value"],
   "rules": {
     "alpha-value-notation": "number",
@@ -11,26 +8,20 @@
     "max-nesting-depth": [
       3,
       {
-        "ignorePseudoClasses": [
-          "hover",
-          "focus",
-          "&.theme-night",
-          "body.theme-night &"
-        ]
+        "ignorePseudoClasses": ["hover", "focus", "&.theme-night", "body.theme-night &"]
       }
     ],
-    "//": "Zwingt zur Nutzung von Variablen für Farben und Schriften",
     "scale-unlimited/declaration-strict-value": [
       ["/color/", "font-family"],
       {
-        "ignoreValues": [
-          "inherit",
-          "transparent",
-          "initial",
-          "none",
-          "currentColor"
-        ],
+        "ignoreValues": ["inherit", "transparent", "initial", "none", "currentColor"],
         "message": "Bitte nutze eine SCSS-Variable für '${property}'. Hartcodierte Werte sind nicht erlaubt."
+      }
+    ],
+    "selector-class-pattern": [
+      "^([a-z][a-z0-9]*)(-[a-z0-9]+)*(__[a-z0-9]+(-[a-z0-9]+)*)?(--[a-z0-9]+(-[a-z0-9]+)*)?$",
+      {
+        "message": "Klassennamen müssen dem BEM-Muster entsprechen (z.B. .block__element--modifier)"
       }
     ]
   }
