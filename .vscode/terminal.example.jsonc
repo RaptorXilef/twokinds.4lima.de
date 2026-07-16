@@ -1,0 +1,26 @@
+{
+    // Optional
+    // Konsolen / Terminal
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    "terminal.integrated.profiles.windows": {
+        "PowerShell 7 (pwsh)": {
+            "path": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
+            "icon": "terminal-powershell"
+        },
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        },
+        "Command Prompt": {
+            "path": ["${env:windir}\\Sysnative\\cmd.exe", "${env:windir}\\System32\\cmd.exe"],
+            "args": [],
+            "icon": "terminal-cmd"
+        },
+        "Git Bash": {
+            "source": "Git Bash"
+        }
+    },
+    // Muss möglicherweise in die Globale settings.json übertragen werden
+    //"terminal.integrated.defaultProfile.windows": "PowerShell 7 (pwsh)",
+    "terminal.integrated.defaultProfile.windows": "Git Bash"
+}

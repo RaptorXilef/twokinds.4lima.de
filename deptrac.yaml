@@ -1,0 +1,100 @@
+# Path: deptrac.yaml
+# @description Erzwingt die architektonische Integrität des universellen OOP/DTO Blueprints.
+
+deptrac:
+  paths:
+    - src
+  cache_file: .cache/deptrac/.deptrac.cache
+
+  layers:
+    - name: Domain # Reines Datenmodell (Entities, ValueObjects)
+      collectors:
+        - type: directory
+          value: src/Core/Entity/.*
+        - type: directory
+          value: src/Core/ValueObject/.*
+
+    - name: Contracts # Globale Schnittstellen (z.B. UserRepositoryInterface)
+      collectors:
+        - type: directory
+          value: src/Contracts/.*
+
+    - name: Core # Anwendungsspezifische Logik (Services, Events, DTOs, Utils, Security)
+      collectors:
+        - type: directory
+          value: src/Core/Service/.*
+        - type: directory
+          value: src/Core/Event/.*
+        - type: directory
+          value: src/Core/DTO/.*
+        - type: directory
+          value: src/Core/Utils/.*
+        - type: directory
+          value: src/Core/Security/.*
+
+    - name: Infrastructure # Externe Implementierungen (MySQL-Repository, Mailer, API-Clients)
+      collectors:
+        - type: directory
+          value: src/Infrastructure/.*
+
+    - name: Application # Einstiegspunkt (Controller/Actions, HTTP, CLI, Middlewares)
+      collectors:
+        - type: directory
+          value: src/Application/.*
+
+    - name: Bootstrap # DI-Container, Configuration, App-Initialisierung
+      collectors:
+        - type: directory
+          value: src/Bootstrap/.*
+
+    - name: Vendor # Alles was nicht zu uns gehört (PHP-Core, Composer-Pakete)
+      collectors:
+        - type: bool
+          must:
+            - type: classNameRegex
+              value: /.*/
+          must_not:
+            - type: directory
+              value: src/.*
+
+  ruleset:
+    # 1. Domain ist unabhängig von allem (darf nur native PHP-Klassen/Vendor nutzen)
+    Domain:
+      - Vendor
+
+    # 2. Contracts kennen nur die Domain (für Typisierungen) und Vendor
+    Contracts:
+      - Domain
+      - Vendor
+
+    # 3. Core nutzt Contracts und Domain. Hier leben deine DTOs und Services.
+    Core:
+      - Contracts
+      - Domain
+      - Vendor
+
+    # 4. INFRASTRUKTUR: Kennt KEINEN Core mehr!
+    # Sie implementiert nur die Contracts und nutzt Domain-Objekte.
+    Infrastructure:
+      - Contracts
+      - Domain
+      - Vendor
+
+    # 5. Application nimmt Input an, baut DTOs und schickt sie in den Core.
+    Application:
+      - Contracts
+      - Core
+      - Domain
+      - Vendor # Application darf keine Bootstrap-Kenntnis haben!
+
+    # 6. Bootstrap darf alles kennen, um die Abhängigkeiten via DI-Container aufzulösen.
+    Bootstrap:
+      - Application
+      - Contracts
+      - Core
+      - Domain
+      - Infrastructure
+      - Vendor
+
+  # Wir brauchen KEINE Ausnahmen mehr! Das System ist zu 100% sauber entkoppelt.
+  # skip_violations: ~

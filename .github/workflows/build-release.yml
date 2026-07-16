@@ -1,0 +1,77 @@
+name: Build Production Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Wichtig für Upload
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Behebt die Node-Warnung
+      VERSION: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.0
+          # https://github.com/marketplace/actions/checkout
+
+      - name: Setup PHP Action
+        uses: shivammathur/setup-php@2.37.2
+        # https://github.com/marketplace/actions/setup-php-action
+        with:
+          php-version: '8.3'
+
+      - name: Install PHP dependencies (No Dev)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # --- Node.js Setup und Asset-Build ---
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6.4.0
+        # https://github.com/marketplace/actions/setup-node-js-environment
+        with:
+          node-version: '20' # LTS Version, passend für gängige Scripte
+
+      - name: Install NPM dependencies
+        run: npm ci # 'npm ci' ist besser für CI-Umgebungen als 'npm install'
+
+      - name: Build CSS and JS Assets
+        run: |
+          npm run legacy:css:build
+          npm run legacy:js:build
+      # -----------------------------------------
+
+      - name: Create Release ZIPs
+        run: |
+          # 1. INSTALL-PAKET (Für Neuinstallationen)
+          # Hier packen wir die originalen Dateien (wie im Repo) ein.
+          # (Die zuvor gebauten Assets in public/assets/ werden hier automatisch mitgenommen!)
+          zip -r kga-einfahrts-manager-install-${{ env.VERSION }}.zip config/ public/ src/ templates/ vendor/ CHANGELOG.md README.md composer.json package.json -x "src/assets/*"
+
+          # 2. BASH-MAGIC: Umbenennen ALLER Config-Dateien für das Update
+          # Da schema und permissions jetzt in src/ liegen, können wir hier gefahrlos alles umbenennen
+          for file in config/*.php; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              # Verhindert, dass bereits vorhandene .default.php nochmal umbenannt werden
+              if [[ "$filename" != *".default.php" ]]; then
+                mv "$file" "config/${filename%.php}.default.php"
+              fi
+            fi
+          done
+
+          # 3. UPDATE-PAKET (Für Bestandskunden)
+          # Hier sind die config-Dateien nun als .default.php benannt (verhindert Überschreiben live!)
+          zip -r kga-einfahrts-manager-update-${{ env.VERSION }}.zip config/ public/ src/ templates/ vendor/ CHANGELOG.md README.md composer.json package.json update_manifest.json -x "src/assets/*" "public/assets/img/user_images/*" "public/assets/img/group_images/*" "public/assets/documents/*"
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v3.0.1
+          # https://github.com/marketplace/actions/gh-release
+        with:
+          files: |
+            kga-einfahrts-manager-update-${{ env.VERSION }}.zip
+            kga-einfahrts-manager-install-${{ env.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

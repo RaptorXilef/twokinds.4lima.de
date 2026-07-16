@@ -1,0 +1,67 @@
+name: 'CLA Check'
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  cla-check:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Behebt die Node-Warnung
+      VERSION: ${{ github.ref_name }}
+
+    steps:
+      - name: Check if actor is bot
+        id: check_bot
+        run: echo "is_bot=${{ github.actor == 'dependabot[bot]' }}" >> $GITHUB_OUTPUT
+
+      - name: 'Check for CLA Agreement'
+        if: steps.check_bot.outputs.is_bot == 'false'
+        uses: actions/github-script@v9.0.0
+        # https://github.com/marketplace/actions/github-script
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prBody = context.payload.pull_request.body;
+            const user = context.payload.pull_request.user.login;
+
+            // Sucht nach der Bestätigung im Text des Pull Requests
+            const agreed = prBody && prBody.includes("I accept the CLA");
+
+            if (agreed) {
+              console.log(`${user} has accepted the CLA.`);
+              return;
+            } else {
+              const message = `
+              English below | Deutsch unten
+
+              ---
+
+              Hello @${user}, thank you for your contribution!
+              Before we can merge your code, you must accept our [CLA](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CLA.md).
+
+              **Please edit your PR description and add the following sentence:**
+              > I accept the CLA
+
+              ---
+
+              Hallo @${user}, vielen Dank für deinen Beitrag!
+              Bevor wir deinen Code übernehmen können, musst du unser [CLA](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CLA.md) akzeptieren.
+
+              **Bitte editiere deine PR-Beschreibung und füge folgenden Satz hinzu:**
+              > I accept the CLA
+              `;
+
+              // Postet einen Kommentar, falls der Satz fehlt
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+
+              core.setFailed("CLA not accepted / CLA nicht akzeptiert.");
+            }

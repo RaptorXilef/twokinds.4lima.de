@@ -1,0 +1,11 @@
+{
+    "config": {
+        "default": true,
+        "MD013": false,
+        "MD033": false,
+        "MD041": {
+            "level": 1
+        }
+    },
+    "ignores": ["node_modules", "vendor", "CHANGELOG.md", "ToDo*.md", "*notizen*.md", "*bak*.md"]
+}

@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "composer: fix:style",
+            "command": "composer fix:style",
+            "problemMatcher": [],
+            "group": "none",
+            "detail": "Führt PHP-CS-Fixer manuell aus"
+        }
+    ]
+}

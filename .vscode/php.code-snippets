@@ -1,0 +1,31 @@
+{
+    "Project Header": {
+        "prefix": "header",
+        "body": [
+            "<?php",
+            "",
+            "// SPDX-License-Identifier: LicenseRef-Proprietary",
+            "// Copyright (c) 2026-${CURRENT_YEAR} Felix Maywald alias RaptorXilef. All rights reserved.",
+            "// Usage without explicit permission is strictly prohibited.",
+            "// See LICENSE.md for full license details.",
+            "",
+            "/**",
+            " * ${1:Kurzbeschreibung der Klasse/Funktionalität.}",
+            " *",
+            " * ${2:Eine detaillierte Beschreibung der Verantwortung dieser Datei unter Berücksichtigung der SOLID-Prinzipien und der Architektur.}",
+            " *",
+            " * Path:      ${RELATIVE_FILEPATH}",
+            " */",
+            "",
+            "declare(strict_types=1);",
+            "",
+            "namespace ${4:App\\IO};",
+            "",
+            "${5:interface} ${TM_FILENAME_BASE}",
+            "{",
+            "    $0",
+            "}"
+        ],
+        "description": "Erstellt den projektspezifischen PHP-Header"
+    }
+}

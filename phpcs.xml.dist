@@ -1,69 +1,122 @@
 <?xml version="1.0"?>
 <ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Project Standards">
-    <description>Unified Modern PHP 8.4+ High-End Standard</description>
+    <description>Unified Modern PHP 8.3-8.5+ High-End Standard</description>
 
-    <config name="installed_paths" value="../../slevomat/coding-standard,../../phpcsstandards/phpcsextra,../../phpcompatibility/php-compatibility"/>
-
-    <rule ref="PSR12"/>
-
-    <exclude-pattern>*/vendor/*</exclude-pattern>
-    <exclude-pattern>*/node_modules/*</exclude-pattern>
-    <exclude-pattern>*/.cache/*</exclude-pattern>
-
-    <rule ref="Universal.Arrays.DuplicateArrayKey"/>
-    <rule ref="Universal.CodeAnalysis.ConstructorDestructorReturn"/>
-    <rule ref="Universal.ControlStructures.DisallowLonelyIf"/>
-
-    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
-        <properties><property name="searchAnnotations" value="true"/></properties>
-    </rule>
-    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable"/>
-    <rule ref="SlevomatCodingStandard.Variables.UselessVariable"/>
-    <rule ref="SlevomatCodingStandard.Functions.UnusedParameter"/>
-    <rule ref="SlevomatCodingStandard.Functions.UselessParameterDefaultValue"/>
-    <rule ref="SlevomatCodingStandard.Exceptions.DeadCatch"/>
-    <rule ref="SlevomatCodingStandard.PHP.UselessParentheses"/>
-    <rule ref="SlevomatCodingStandard.PHP.UselessSemicolon"/>
-
-    <rule ref="SlevomatCodingStandard.ControlStructures.RequireNullSafeObjectOperator"/>
-    <rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator"/>
-    <rule ref="SlevomatCodingStandard.Functions.RequireArrowFunction"/>
-    <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>
-    <rule ref="SlevomatCodingStandard.Classes.RequireConstructorPropertyPromotion"/>
-    <rule ref="SlevomatCodingStandard.Attributes.AttributeAndTargetSpacing"/>
-    <rule ref="SlevomatCodingStandard.Exceptions.RequireNonCapturingCatch"/>
-
-    <rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition"/>
-    <rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit"/>
-    <rule ref="SlevomatCodingStandard.ControlStructures.UselessIfConditionWithReturn"/>
-    <rule ref="SlevomatCodingStandard.Classes.ClassConstantVisibility"/>
-
-    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
-    <rule ref="SlevomatCodingStandard.Arrays.TrailingArrayComma"/>
-    <rule ref="SlevomatCodingStandard.Operators.RequireCombinedAssignmentOperator"/>
-
-    <rule ref="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue"/>
-    <rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints"/>
-    <rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint"/>
-
-    <config name="testVersion" value="8.3-8.5"/>
-    <rule ref="PHPCompatibility"/>
+    <arg name="basepath" value="." />
+    <arg name="extensions" value="php" />
+    <arg name="parallel" value="16" />
+    <arg name="colors" />
+    <arg value="ps" />
+    <arg name="cache" value=".cache/phpcs/.phpcs.cache" />
 
     <file>src</file>
     <file>tests</file>
     <file>public</file>
+    <file>config</file>
+
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>public/index.php</exclude-pattern>
+        <exclude-pattern>tests/Pest.php</exclude-pattern>
+    </rule>
+
+    <rule ref="PSR12" />
+
+    <rule ref="Universal.Arrays.DuplicateArrayKey" />
+    <rule ref="Universal.CodeAnalysis.ConstructorDestructorReturn" />
+    <rule ref="Universal.ControlStructures.DisallowLonelyIf" />
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
+        <properties>
+            <property name="searchAnnotations" value="true" />
+        </properties>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable" />
+    <rule ref="SlevomatCodingStandard.Variables.UselessVariable" />
+    <rule ref="SlevomatCodingStandard.Functions.UnusedParameter" />
+    <rule ref="SlevomatCodingStandard.Functions.UselessParameterDefaultValue" />
+    <rule ref="SlevomatCodingStandard.Exceptions.DeadCatch" />
+    <rule ref="SlevomatCodingStandard.PHP.UselessParentheses" />
+    <rule ref="SlevomatCodingStandard.PHP.UselessSemicolon" />
+
+    <rule ref="SlevomatCodingStandard.ControlStructures.RequireNullSafeObjectOperator" />
+    <rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator" />
+    <rule ref="SlevomatCodingStandard.Functions.RequireArrowFunction" />
+    <rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference" />
+    <rule ref="SlevomatCodingStandard.Classes.RequireConstructorPropertyPromotion" />
+    <rule ref="SlevomatCodingStandard.Attributes.AttributeAndTargetSpacing" />
+    <rule ref="SlevomatCodingStandard.Exceptions.RequireNonCapturingCatch" />
+
+    <rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition" />
+    <rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit" />
+    <rule ref="SlevomatCodingStandard.ControlStructures.UselessIfConditionWithReturn" />
+    <rule ref="SlevomatCodingStandard.Classes.ClassConstantVisibility" />
+
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax" />
+    <rule ref="SlevomatCodingStandard.Arrays.TrailingArrayComma" />
+    <rule ref="SlevomatCodingStandard.Operators.RequireCombinedAssignmentOperator" />
+
+    <rule ref="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue" />
+    <rule ref="SlevomatCodingStandard.TypeHints.LongTypeHints" />
+    <rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint" />
+
+    <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
+        <properties>
+            <property name="allowFullyQualifiedGlobalClasses" value="true" />
+            <property name="allowFullyQualifiedGlobalFunctions" value="true" />
+            <property name="allowFullyQualifiedGlobalConstants" value="true" />
+            <property name="searchAnnotations" value="true" />
+        </properties>
+        <exclude
+            name="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFullyQualifiedNameWithoutNamespace" />
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
+        <properties>
+            <property name="searchAnnotations" value="true" />
+        </properties>
+    </rule>
+
+    <!--<rule
+    ref="Generic.Commenting.DocComment">
+        <exclude name="Generic.Commenting.DocComment.SpacingBeforeTagValue" />
+        <exclude name="Generic.Commenting.DocComment.TagValueIndent" />
+
+        <exclude name="Generic.Commenting.DocComment.TagValueSentence" />
+        <exclude name="Generic.Commenting.DocComment.ShortNotCapital" />
+        <exclude name="Generic.Commenting.DocComment.MissingShort" />
+
+        <exclude name="Generic.Commenting.DocComment.ContentAfterOpen" />
+        <exclude name="Generic.Commenting.DocComment.ContentBeforeClose" />
+    </rule>-->
+    <!--<rule
+    ref="SlevomatCodingStandard.Commenting.DocCommentRequired"></rule>-->
+
+    <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing">
+        <properties>
+            <property name="linesCountBeforeFirstContent" value="0" />
+            <property name="linesCountAfterLastContent" value="0" />
+            <property name="linesCountBetweenDescriptionAndAnnotations" value="1" />
+            <property name="linesCountBetweenAnnotationsGroups" value="1" />
+            <property name="annotationsGroups" type="array">
+                <element value="@copyright, @license" />
+                <element value="@link" />
+                <element value="@author" />
+                <element value="@since" />
+                <element value="@param" />
+                <element value="@return, @throws" />
+                <element value="@var" />
+            </property>
+        </properties>
+    </rule>
+
+    <config name="testVersion" value="8.3-8.5" />
+    <rule ref="PHPCompatibility" />
 
     <!-- DIE REGEL FÜR DIE ZEILENLÄNGE -->
     <rule ref="Generic.Files.LineLength">
         <properties>
-            <property name="lineLimit" value="120"/>
-            <property name="absoluteLineLimit" value="120"/>
+            <property name="lineLimit" value="120" />
+            <property name="absoluteLineLimit" value="120" />
         </properties>
     </rule>
-
-    <arg value="p"/>
-    <arg name="colors"/>
-    <arg name="parallel" value="16"/>
-    <arg name="cache" value=".cache/phpcs/.phpcs.cache"/>
-    <arg name="extensions" value="php"/>
 </ruleset>

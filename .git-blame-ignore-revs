@@ -1,7 +1,12 @@
 # Beschreibung: Liste von Commits, die von git blame ignoriert werden sollen (z.B. Massen-Formatierungen)
-# @file: .git-blame-ignore-revs
+# Path:: .git-blame-ignore-revs
 #
-# @since: 5.0.0 Initiale Erstellung
+# @since: 0.1.0 Initiale Erstellung
+
+# Aktivieren mit "git config blame.ignoreRevsFile .git-blame-ignore-revs"
+
+# Beschreibung/Commit-Name
+# Commit-ID
 
 # Style: Umstellung JSON/MD auf 2 Spaces (Prettier)
 5fe01711455d2ceec106165765a71efe632f31e0

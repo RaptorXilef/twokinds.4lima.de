@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         colors="true"
-         cacheDirectory=".cache/phpunit"
-         executionOrder="depends,defects"
-         beStrictAboutOutputDuringTests="true"
-         failOnRisky="true"
-         failOnWarning="true">
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.5/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    cacheDirectory=".cache/phpunit"
+    executionOrder="depends,defects"
+    requireCoverageMetadata="true"
+    beStrictAboutOutputDuringTests="true"
+    beStrictAboutChangesToGlobalState="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    failOnEmptyTestSuite="true"
+    failOnRisky="true"
+    failOnWarning="true"
+    failOnNotice="true"
+    displayDetailsOnTestsThatTriggerDeprecations="true"
+    displayDetailsOnTestsThatTriggerErrors="true"
+    displayDetailsOnTestsThatTriggerNotices="true"
+    displayDetailsOnTestsThatTriggerWarnings="true">
 
     <testsuites>
-        <testsuite name="App Test Suite">
-            <directory>./tests</directory>
-
-            <!--<exclude>./tests/Unit/Legacy/KaputteTestKlasseTest.php</exclude>-->
-
-            </testsuite>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./tests/Feature</directory>
+        </testsuite>
     </testsuites>
 
     <source>
@@ -24,4 +33,15 @@
         </include>
     </source>
 
+    <coverage>
+        <report>
+            <clover outputFile=".cache/phpunit/clover.xml" />
+            <html outputDirectory=".build/reports/phpunit-html" lowUpperBound="50"
+                highLowerBound="90" />
+        </report>
+    </coverage>
+
+    <logging>
+        <junit outputFile=".cache/phpunit/junit.xml" />
+    </logging>
 </phpunit>
