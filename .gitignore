@@ -47,8 +47,6 @@ ehthumbs_vista.db
 *.log
 *.tmp
 *.temp
-*.swp
-*.swo
 * - Kopie*
 .testfiles/
 /data/tmp/*
@@ -269,21 +267,21 @@ public/assets/img/test/**
 # PROJEKT SPEZIFISCH: CONFIG & DATA
 ################################################################################
 # Generierte Konfigurationen ignorieren
-config/config_generator_settings.json
-config/config_rss.json
+.old-5.0.0-alpha.23/config/config_generator_settings.json
+.old-5.0.0-alpha.23/config/config_rss.json
 
 # Temporäre Configs im Public Ordner
-public/src/config/*
-public/sitemap.xml
-public/rss.xml
-public/assets/Ordnerstruktur.txt
-public/admin/json-vorlagen/*
-public/admin/consolenanwendung/*
+.old-5.0.0-alpha.23/public/src/config/*
+.old-5.0.0-alpha.23/public/sitemap.xml
+.old-5.0.0-alpha.23/public/rss.xml
+.old-5.0.0-alpha.23/public/assets/Ordnerstruktur.txt
+.old-5.0.0-alpha.23/public/admin/json-vorlagen/*
+.old-5.0.0-alpha.23/public/admin/consolenanwendung/*
 
 # Data Ordner (Inhalt ignorieren, aber version.json behalten)
-data/*
-!data/version.json
-/data/tmp/*
+.old-5.0.0-alpha.23/data/*
+!.old-5.0.0-alpha.23/data/version.json
+/.old-5.0.0-alpha.23/data/tmp/*
 
 ################################################################################
 # PROJEKT SPEZIFISCH: CONTENT & ASSETS
@@ -291,78 +289,95 @@ data/*
 
 # --- COMIC VERWALTUNG ---
 # Inhalt ignorieren, aber spezifische PHP-Dateien behalten
-public/comic/*
-!public/comic/index.php
-!public/comic/20170728.php
-!public/comic/20250312.php
-!public/comic/20250604.php
+.old-5.0.0-alpha.23/public/comic/*
+!.old-5.0.0-alpha.23/public/comic/index.php
+!.old-5.0.0-alpha.23/public/comic/20170728.php
+!.old-5.0.0-alpha.23/public/comic/20250312.php
+!.old-5.0.0-alpha.23/public/comic/20250604.php
 
 # --- BILDER & MEDIEN (COMIC) ---
 # High-Res Bilder ignorieren, Systemdateien behalten
-public/assets/images/comic/hires/*.jpg
-public/assets/images/comic/hires/*.png
-public/assets/images/comic/hires/*.gif
-public/assets/images/comic/hires/*.webp
-!public/assets/images/comic/hires/in_translation.*
-!public/assets/images/comic/hires/index.php
-!public/assets/images/comic/hires/.htaccess
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/in_translation.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/.htaccess
 # Fehlerseiten Bilder behalten
-!public/assets/images/comic/hires/404.*
-!public/assets/images/comic/hires/403.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/404.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/403.*
 
 # Low-Res Bilder ignorieren
-public/assets/images/comic/lowres/*.jpg
-public/assets/images/comic/lowres/*.png
-public/assets/images/comic/lowres/*.gif
-public/assets/images/comic/lowres/*.webp
-!public/assets/images/comic/lowres/in_translation.*
-!public/assets/images/comic/lowres/index.php
-!public/assets/images/comic/lowres/.htaccess
-!public/assets/images/comic/lowres/404.*
-!public/assets/images/comic/lowres/403.*
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/in_translation.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/.htaccess
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/404.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/403.*
 
 # Andere Auflösungen
-public/assets/images/comic/lowres_png/*
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres_png/*
 
 # Social Media Bilder
-public/assets/images/comic/socialmedia/*.jpg
-public/assets/images/comic/socialmedia/*.png
-public/assets/images/comic/socialmedia/*.gif
-public/assets/images/comic/socialmedia/*.webp
-!public/assets/images/comic/socialmedia/index.php
-!public/assets/images/comic/socialmedia/.htaccess
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/.htaccess
 
 # Thumbnails
-public/assets/images/comic/thumbnails/*.jpg
-public/assets/images/comic/thumbnails/*.png
-public/assets/images/comic/thumbnails/*.gif
-public/assets/images/comic/thumbnails/*.webp
-!public/assets/images/comic/thumbnails/placeholder.*
-!public/assets/images/comic/thumbnails/in_translation.*
-!public/assets/images/comic/thumbnails/index.php
-!public/assets/images/comic/thumbnails/.htaccess
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/placeholder.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/in_translation.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/.htaccess
 
 # --- CHARAKTERE ---
 # Ordner ignorieren, aber Basis-Dateien behalten
-public/charaktere/*
-!public/charaktere/index.php
-!public/charaktere/Trace_Legacy.php
-!public/charaktere/Flora_-_Regenwald-Tigerstamm.php
+.old-5.0.0-alpha.23/public/charaktere/*
+!.old-5.0.0-alpha.23/public/charaktere/index.php
+!.old-5.0.0-alpha.23/public/charaktere/Trace_Legacy.php
+!.old-5.0.0-alpha.23/public/charaktere/Flora_-_Regenwald-Tigerstamm.php
 
 # Spezifische Charakter-Bilder ignorieren
-public/assets/img/charaktere/characters/themaskedgods.png
-public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
-public/assets/img/charaktere/characters/TheMaskedGods2025.png
-public/assets/img/charaktere/characters_webp/templarchart-Original.png
-public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/themaskedgods.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/TheMaskedGods2025.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters_webp/templarchart-Original.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
 
 # --- SONSTIGE ASSETS ---
-public/assets/img/github/twokinds.4lima.de.psd
-public/assets/img/about/*
-public/assets/icons/nicht verwendet/*
+.old-5.0.0-alpha.23/public/assets/img/github/twokinds.4lima.de.psd
+.old-5.0.0-alpha.23/public/assets/img/about/*
+.old-5.0.0-alpha.23/public/assets/icons/nicht verwendet/*
 
 # --- GOOGLE & LINKS ---
-public/google*.html
-public/src/layout/js_backup/gtag.js
-public/_links/*
-public/_debug/*
+.old-5.0.0-alpha.23/public/google*.html
+.old-5.0.0-alpha.23/public/src/layout/js_backup/gtag.js
+.old-5.0.0-alpha.23/public/_links/*
+.old-5.0.0-alpha.23/public/_debug/*
+
+#############################################
+
+.old-5.0.0-alpha.23/config/secrets/*
+
+# Sensible Daten & Konfiguration
+/.old-5.0.0-alpha.23/config/_dev.local.php
+
+/.old-5.0.0-alpha.23/public/assets/css/*.map
+/.old-5.0.0-alpha.23/public/assets/js/*.map
+
+# Generierte Frontend-Assets (Build-Artefakte)
+# Wir vertrauen unserem Build-Prozess (npm run make)
+/.old-5.0.0-alpha.23/public/assets/css/*
+/.old-5.0.0-alpha.23/public/assets/js/*
+!/.old-5.0.0-alpha.23/public/assets/css/.gitkeep
+!/.old-5.0.0-alpha.23/public/assets/js/.gitkeep

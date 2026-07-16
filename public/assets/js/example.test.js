@@ -1,1 +1,0 @@
-import{expect,test}from"vitest";test("Prüfe, ob Mathe noch funktioniert",()=>{expect(2).toBe(2)});
