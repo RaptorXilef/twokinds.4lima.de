@@ -20,6 +20,7 @@ const ALWAYS_IGNORE_DIRS = [
     '.git',
     '.cache',
     '.build',
+    '.old-5.0.0-alpha.23',
 ];
 
 const ALWAYS_IGNORE_FILES = [
