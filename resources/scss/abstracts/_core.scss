@@ -1,0 +1,134 @@
+/**
+ * @description Kern-Logik und Konfiguration des SCSS-Frameworks (Abstracts).
+ * @file        abstracts/_core.scss (Zusammenfassung der Core-Logik)
+ *
+ * @since       5.0.0-alpha.24
+ * - feat(abstracts): Initialisierung von Funktionen, Variablen, Mixins und dem Theme-Generator.
+ *
+ * @variables-index:
+ * - $theme-map: Zentrale Map für alle Design-Token (Farben, Abstände).
+ * - get-contrast-text(): Funktion zur automatischen Berechnung der Textfarbe (A11y).
+ * - generate-theme-vars(): Mixin zur Erzeugung von CSS-Variablen aus Sass-Maps.
+ */
+
+@use 'sass:map';
+@use 'sass:color';
+@use 'sass:math';
+
+// ==========================================================================
+// 1. FUNCTIONS (_functions.scss)
+// ==========================================================================
+
+/**
+ * Berechnet, ob schwarzer oder weißer Text auf einem gegebenen Hintergrund besser lesbar ist.
+ * Calculates whether black or white text is more readable on a given background.
+ * @param {Color} $background - Die Hintergrundfarbe.
+ * @return {Color} - Entweder #000 oder #fff.
+ */
+@function get-contrast-text($background) {
+    $luma: 0;
+
+    @if $background {
+        // Luminanz-Berechnung nach W3C-Standard
+        // L = 0.2126 * R + 0.7152 * G + 0.0722 * B
+        $red: color.channel($background, 'red', $space: rgb);
+        $green: color.channel($background, 'green', $space: rgb);
+        $blue: color.channel($background, 'blue', $space: rgb);
+
+        $luma: (0.2126 * $red) + (0.7152 * $green) + (0.0722 * $blue);
+    }
+
+    @return if($luma > 128, #000, #fff);
+}
+
+// ==========================================================================
+// 2. VARIABLES & CONFIG (_variables.scss)
+// ==========================================================================
+
+$theme-map: (
+    'primary': (
+        'base': #007bff,
+        'hover': #0056b3,
+    ),
+    'secondary': (
+        'base': #6c757d,
+        'hover': #5a6268,
+    ),
+    'success': (
+        'base': #28a745,
+        'text': #ffffff,
+    ),
+    'danger': (
+        'base': #dc3545,
+    ),
+    'surface': (
+        'base': #ffffff,
+        'subtle': #f8f9fa,
+        'border': #dee2e6,
+    ),
+) !default;
+
+// ==========================================================================
+// 3. GENERATOR (_generator.scss)
+// ==========================================================================
+
+/**
+ * Generiert CSS-Variablen aus einer Sass-Map.
+ * Erzeugt automatisch Kontrastfarben, wenn kein 'text' Key vorhanden ist.
+ */
+@mixin generate-theme-vars($map) {
+    @each $group, $props in $map {
+        // Basis-Farbe extrahieren
+        $base-color: map.get($props, 'base');
+
+        @if $base-color {
+            --color-#{$group}: #{$base-color};
+
+            // Wenn keine explizite Textfarbe definiert ist, berechne sie automatisch
+            @if not map.has-key($props, 'text') {
+                --color-#{$group}-text: #{get-contrast-text($base-color)};
+            }
+        }
+
+        // Alle weiteren Properties der Gruppe als Variablen ausgeben
+        @each $key, $value in $props {
+            @if $key != 'base' {
+                --color-#{$group}-#{$key}: #{$value};
+            }
+        }
+    }
+}
+
+// ==========================================================================
+// 4. MIXINS & RESPONSIVENESS (_mixins.scss)
+// ==========================================================================
+
+$breakpoints: (
+    'sm': 576px,
+    'md': 768px,
+    'lg': 992px,
+    'xl': 1200px,
+) !default;
+
+@mixin respond-to($breakpoint) {
+    @if map.has-key($breakpoints, $breakpoint) {
+        @media (min-width: map.get($breakpoints, $breakpoint)) {
+            @content;
+        }
+    } @else {
+        @error "Breakpoint #{$breakpoint} nicht gefunden.";
+    }
+}
+
+// ==========================================================================
+// 5. INITIALIZATION (Root-Level)
+// ==========================================================================
+
+:root {
+    @include generate-theme-vars($theme-map);
+
+    // Weitere globale Konstanten
+    --font-main: 'Noto Sans', sans-serif;
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}

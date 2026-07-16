@@ -112,7 +112,7 @@
   // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
   "files.eol": "\n",
   // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
-  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.ignoreTrimWhitespace": true,
   "diffEditor.codeLens": true,
   "diffEditor.experimental.showMoves": true,
   "diffEditor.maxComputationTime": 30000,
@@ -220,5 +220,6 @@
   // Muss möglicherweise in die Globale settings.json übertragen werden
   "terminal.integrated.defaultProfile.windows": "PowerShell 7 (pwsh)",
   // Muss möglicherweise in die Globale settings.json übertragen werden
-  "workbench.colorTheme": "Monokai Pirokai - Beach Sunset"
+  "workbench.colorTheme": "Monokai Pirokai - Beach Sunset",
+  "editor.linkedEditing": true
 }
