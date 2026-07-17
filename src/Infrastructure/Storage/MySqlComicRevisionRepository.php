@@ -7,6 +7,7 @@ namespace App\Infrastructure\Storage;
 use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
+use App\Core\ValueObject\CharacterId;
 
 final readonly class MySqlComicRevisionRepository implements ComicRevisionRepositoryInterface
 {
@@ -23,7 +24,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             'name'             => $oldState->name,
             'transcript'       => $oldState->transcript,
             'chapter_id'       => $oldState->chapterId,
-            'character_ids'    => \array_map(fn ($id) => $id->value, $oldState->characterIds),
+            'character_ids'    => \array_map(fn (CharacterId $id) => $id->value, $oldState->characterIds),
             'original_url'     => $oldState->originalUrl,
             'sketch_url'       => $oldState->sketchUrl,
             'image_updated_at' => $oldState->imageUpdatedAt,

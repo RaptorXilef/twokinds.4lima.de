@@ -88,9 +88,9 @@ if (! \is_dir($customLogDir)) {
 $settings = [];
 
 // A. Die feste Registry laden (Ehemalige sql_schema & permissions)
-//$settings['db_schema'] = SchemaRegistry::getSchemas();
-//$settings['structure'] = PermissionRegistry::getStructure();
-$settings['admin_ui']  = ['permissions_desc_on_top' => true];
+$settings['db_schema'] = SchemaRegistry::getSchemas();
+// $settings['structure'] = PermissionRegistry::getStructure();
+$settings['admin_ui'] = ['permissions_desc_on_top' => true];
 
 $flatPerms = [];
 $flatten   = function (array $nodes) use (&$flatten, &$flatPerms): void {

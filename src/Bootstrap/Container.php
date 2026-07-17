@@ -20,9 +20,9 @@ use App\Infrastructure\Config\Config;
  * SPDX-License-Identifier: LicenseRef-Proprietary
  *
  * @copyright (c) 2026 Felix Maywald. All rights reserved.
- * @license   https://github.com/RaptorXilef/kga-einfahrgenehmigung/blob/main/LICENSE
+ * @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
  *
- * @link      https://github.com/RaptorXilef/kga-einfahrgenehmigung/
+ * @link      https://github.com/RaptorXilef/twokinds.4lima.de/
  *
  * @author    Felix Maywald (@RaptorXilef)
  */
