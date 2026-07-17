@@ -1,0 +1,44 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @var array  $settings
+ * @var string $pageTitle
+ */
+$baseUrl      = \rtrim($settings['base_url'], '/');
+$imagePath    = "{$baseUrl}/assets/images/layout/lowres/404.webp";
+$fallbackPath = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
+
+include __DIR__ . '/../components/_public_header.phtml';
+?>
+
+<header>
+    <h1 class="page-header"><?php echo \htmlspecialchars($pageTitle); ?></h1>
+</header>
+
+<div>
+    <img class="comic-image"
+         src="<?php echo \htmlspecialchars($imagePath); ?>"
+         alt="Fehlerbild: Seite nicht gefunden"
+         onerror="this.onerror=null; this.src='<?php echo $fallbackPath; ?>';">
+</div>
+
+<hr>
+
+<aside class="transcript">
+    <div class="transcript-header">
+        <h3>Wo sind wir denn hier gelandet?</h3>
+    </div>
+    <div class="transcript-content">
+        <p>Du bist einem Link gefolgt oder hast eine Adresse eingegeben, die ins Leere führt. Vielleicht hat sich ein Tippfehler eingeschlichen, oder die Seite wurde verschoben oder entfernt.</p>
+        <p><strong>Keine Sorge, hier sind ein paar Vorschläge, um wieder auf den richtigen Weg zu kommen:</strong></p>
+        <ul>
+            <li>Überprüfe die URL auf Tippfehler.</li>
+            <li>Gehe zurück zur <a href="<?php echo $baseUrl; ?>/">Startseite</a>, um den neuesten Comic zu sehen.</li>
+            <li>Besuche das <a href="<?php echo $baseUrl; ?>/archiv">Archiv</a>, um einen bestimmten Comic zu finden.</li>
+        </ul>
+        <p>Wenn du glaubst, dass hier ein Fehler auf der Webseite vorliegt, würde ich mich freuen, wenn du ihn meldest!</p>
+    </div>
+</aside>
+
+<?php include __DIR__ . '/../components/_public_footer.phtml'; ?>
