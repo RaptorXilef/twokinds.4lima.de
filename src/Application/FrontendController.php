@@ -87,6 +87,16 @@ final readonly class FrontendController
             return ['action' => 'render_character_detail', 'input' => ['char_name' => $matches[1]]];
         }
 
+        // Backend (Admin-Bereich) Routing
+        if (\str_starts_with($relativePath, 'admin')) {
+            if ($relativePath === 'admin/login' || $relativePath === 'admin/login.php') {
+                return ['action' => 'render_admin_login', 'input' => $input];
+            }
+
+            // Standardmäßig alles in /admin auf das Dashboard routen
+            return ['action' => 'render_admin_dashboard', 'input' => $input];
+        }
+
         return ['action' => 'render_404', 'input' => $input];
     }
 }
