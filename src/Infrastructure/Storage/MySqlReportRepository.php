@@ -11,32 +11,31 @@ use App\Core\ValueObject\ReportId;
 
 final readonly class MySqlReportRepository implements ReportRepositoryInterface
 {
+    use DynamicSqlTrait; // Trait einbinden
+
     public function __construct(private \PDO $pdo)
     {
     }
 
     public function save(Report $report): void
     {
-        $sql = 'INSERT INTO `reports`
-                (id, comic_id, date, status, ip_hash, submitter_name, type, description, transcript_suggestion, transcript_original, debug_info)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE
-                status = VALUES(status), description = VALUES(description),
-                transcript_suggestion = VALUES(transcript_suggestion)';
+        // Nur noch das Array definieren. Das Schema diktiert die Keys.
+        $data = [
+            'id'                    => $report->id->value,
+            'comic_id'              => $report->comicId->value,
+            'date'                  => $report->date->format('Y-m-d H:i:s'),
+            'status'                => $report->status,
+            'ip_hash'               => $report->ipHash,
+            'submitter_name'        => $report->submitterName,
+            'type'                  => $report->type,
+            'description'           => $report->description,
+            'transcript_suggestion' => $report->transcriptSuggestion,
+            'transcript_original'   => $report->transcriptOriginal,
+            'debug_info'            => $report->debugInfo,
+        ];
 
-        $this->pdo->prepare($sql)->execute([
-            $report->id->value,
-            $report->comicId->value,
-            $report->date->format('Y-m-d H:i:s'),
-            $report->status,
-            $report->ipHash,
-            $report->submitterName,
-            $report->type,
-            $report->description,
-            $report->transcriptSuggestion,
-            $report->transcriptOriginal,
-            $report->debugInfo,
-        ]);
+        // Trait aufrufen. 'id', 'comic_id', 'date' etc. sollen beim Update nicht überschrieben werden.
+        $this->executeUpsert('reports', $data, ['id', 'comic_id', 'date', 'ip_hash', 'submitter_name', 'type']);
     }
 
     public function findById(ReportId $id): ?Report
