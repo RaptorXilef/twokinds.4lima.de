@@ -32,8 +32,12 @@ final class PdoFactory
         $portStr   = ! empty($db['port']) ? ";port={$db['port']}" : '';
         $dsnWithDb = "mysql:host={$db['host']}{$portStr};dbname={$db['dbname']};charset={$db['charset']}";
 
+        $pdo = null;
+
         try {
-            return new \PDO($dsnWithDb, $db['user'], $db['pass'], [
+            // ACHTUNG: Hier KEIN "return" mehr! Wir speichern die Verbindung nur in $pdo,
+            // damit das Script danach die Tabellen-Prüfung ausführt.
+            $pdo = new \PDO($dsnWithDb, $db['user'], $db['pass'], [
                 \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                 \PDO::ATTR_EMULATE_PREPARES   => false,
@@ -42,7 +46,7 @@ final class PdoFactory
         } catch (\PDOException $e) {
             $mysqlErrorCode = $e->errorInfo[1] ?? null;
 
-            // Wenn die DB (Fehler 1049) nicht existiert, versuchen wir sie anzulegen
+            // 1049 = Unknown database (Datenbank existiert noch nicht)
             if ($mysqlErrorCode === 1049) {
                 $dsnWithoutDb = "mysql:host={$db['host']}{$portStr};charset={$db['charset']}";
 
@@ -57,14 +61,29 @@ final class PdoFactory
                     $sql = "CREATE DATABASE IF NOT EXISTS `{$db['dbname']}` CHARACTER SET {$db['charset']} COLLATE {$db['charset']}_unicode_ci";
                     $pdo->exec($sql);
                     $pdo->exec("USE `{$db['dbname']}`");
-
-                    return $pdo;
                 } catch (\PDOException $e2) {
                     throw new \RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage());
                 }
+            } else {
+                throw new \RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage());
             }
-
-            throw new \RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage());
         }
+
+        // Korrekte Prüfung auf TwoKinds-Tabellen (nicht mehr "users")
+        try {
+            $pdo->query('SELECT 1 FROM `comics` LIMIT 1');
+        } catch (\PDOException) {
+            // Wenn die Tabelle fehlt, bügeln wir das Schema drüber
+            $schema = $config->get('db_schema', []);
+            foreach ($schema as $tableName => $sql) {
+                try {
+                    $pdo->exec($sql);
+                } catch (\PDOException $ex) {
+                    throw new \RuntimeException("MySQL Auto-Install Fehler (Tabelle $tableName konnte nicht angelegt werden): " . $ex->getMessage());
+                }
+            }
+        }
+
+        return $pdo;
     }
 }
