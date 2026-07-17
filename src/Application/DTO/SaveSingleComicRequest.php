@@ -39,6 +39,18 @@ final readonly class SaveSingleComicRequest
         // Checkboxen oder Multi-Selects senden Arrays
         $characterIds = (array) ($post['character_ids'] ?? []);
 
+        // Flexible URL-Behandlung für Originalbilder
+        $originalUrl = \trim((string) ($post['url_originalbild'] ?? ''));
+        if ($originalUrl !== '' && ! \str_starts_with($originalUrl, 'http')) {
+            $originalUrl = 'https://cdn.twokinds.keenspot.com/comics/' . $originalUrl; // TODO URL in Config auslagern
+        }
+
+        // Flexible URL-Behandlung für Skizzen
+        $sketchUrl = \trim((string) ($post['url_originalsketch'] ?? ''));
+        if ($sketchUrl !== '' && ! \str_starts_with($sketchUrl, 'http')) {
+            $sketchUrl = 'https://twokindscomic.com/images/' . $sketchUrl; // TODO URL in Config auslagern
+        }
+
         return new self(
             id: $id,
             type: $type,
@@ -46,8 +58,8 @@ final readonly class SaveSingleComicRequest
             transcript: $transcript,
             chapterId: $chapterId === '' ? null : $chapterId,
             characterIds: $characterIds,
-            originalUrl: \trim((string) ($post['url_originalbild'] ?? '')),
-            sketchUrl: \trim((string) ($post['url_originalsketch'] ?? '')),
+            originalUrl: $originalUrl,
+            sketchUrl: $sketchUrl,
         );
     }
 }

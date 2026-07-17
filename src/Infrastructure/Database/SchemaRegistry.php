@@ -45,6 +45,14 @@ final class SchemaRegistry
                 INDEX `idx_chapter` (`chapter_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
+            'comic_revisions' => 'CREATE TABLE IF NOT EXISTS `comic_revisions` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `comic_id` VARCHAR(8) NOT NULL,
+                `revision_data` JSON NOT NULL,
+                `created_at` DATETIME NOT NULL,
+                INDEX `idx_comic` (`comic_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+
             // Domain: Characters
             'characters' => 'CREATE TABLE IF NOT EXISTS `characters` (
                 `id` VARCHAR(20) PRIMARY KEY,

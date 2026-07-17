@@ -15,16 +15,20 @@ final readonly class ComicService
     public function __construct(
         private ComicRepositoryInterface $comicRepository,
         private ClockInterface $clock,
+        private \PDO $pdo, // Hinzugefügt für schnelle Revisions-Inserts
     ) {
     }
 
     public function saveComic(ComicPage $comic): void
     {
-        // Bewahre den imageUpdatedAt Timestamp, falls dieser in der DB existiert,
-        // im aktuellen Request aber nicht explizit neu gesetzt wurde.
-        if ($comic->imageUpdatedAt === null) {
-            $existing = $this->comicRepository->findById($comic->id);
-            if ($existing instanceof ComicPage && $existing->imageUpdatedAt !== null) {
+        $existing = $this->comicRepository->findById($comic->id);
+
+        if ($existing instanceof ComicPage) {
+            // 1. Snapshot für Undo-Funktion erstellen
+            $this->createRevisionSnapshot($existing);
+
+            // 2. Timestamp bewahren, falls im Request nicht neu gesetzt
+            if ($comic->imageUpdatedAt === null && $existing->imageUpdatedAt !== null) {
                 $comic = new ComicPage(
                     id: $comic->id,
                     type: $comic->type,
@@ -38,7 +42,29 @@ final readonly class ComicService
                 );
             }
         }
+
         $this->comicRepository->save($comic);
+    }
+
+    private function createRevisionSnapshot(ComicPage $oldState): void
+    {
+        $snapshotData = [
+            'type'             => $oldState->type,
+            'name'             => $oldState->name,
+            'transcript'       => $oldState->transcript,
+            'chapter_id'       => $oldState->chapterId,
+            'character_ids'    => \array_map(fn ($id) => $id->value, $oldState->characterIds),
+            'original_url'     => $oldState->originalUrl,
+            'sketch_url'       => $oldState->sketchUrl,
+            'image_updated_at' => $oldState->imageUpdatedAt,
+        ];
+
+        $stmt = $this->pdo->prepare('INSERT INTO `comic_revisions` (`comic_id`, `revision_data`, `created_at`) VALUES (?, ?, ?)');
+        $stmt->execute([
+            $oldState->id->value,
+            \json_encode($snapshotData, \JSON_UNESCAPED_UNICODE),
+            $this->clock->now()->format('Y-m-d H:i:s'),
+        ]);
     }
 
     public function triggerImageCacheBust(ComicId $id): void
