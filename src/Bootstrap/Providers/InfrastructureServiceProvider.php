@@ -15,12 +15,14 @@ use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\System\ErrorLoggerInterface;
+use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
 use App\Infrastructure\Storage\JsonHelper;
+use App\Infrastructure\Storage\LocalImageStorage;
 use App\Infrastructure\Storage\MySqlCharacterGroupRepository;
 use App\Infrastructure\Storage\MySqlCharacterRepository;
 use App\Infrastructure\Storage\MySqlComicRepository;
@@ -39,7 +41,12 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         ));
 
         $container->bind(ClockInterface::class, fn () => new SystemClock());
+
         $container->bind(JsonHelperInterface::class, fn () => new JsonHelper());
+
+        $container->bind(ImageStorageInterface::class, fn () => new LocalImageStorage(
+            $container->get(ConfigInterface::class),
+        ));
 
         $container->bind(ErrorLoggerInterface::class, fn () => new ErrorLogger(
             $container->get(ConfigInterface::class),
