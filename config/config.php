@@ -20,4 +20,8 @@ return [
     // --- UMGEBUNGSSTEUERUNG ---
     'test_mode'      => false, // true = Sandbox-Modus (PayPal & Mails blockiert) | false = Produktion
     'admin_dev_mode' => false, // true = Hebelt Admin-Login aus (Nur für lokale Entwicklung!)
+
+    // --- ADMINBEREICH ---
+    // Wie oft rückgängig möglich?
+    'comic_revision_limit' => 20,
 ];

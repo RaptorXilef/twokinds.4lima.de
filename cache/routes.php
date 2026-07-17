@@ -1,4 +1,7 @@
 <?php return array (
+  'render_admin_login' => 'App\\Application\\Actions\\AdminLoginRenderAction',
+  'api_admin_login' => 'App\\Application\\Actions\\ApiAdminLoginAction',
+  'api_admin_logout' => 'App\\Application\\Actions\\ApiAdminLogoutAction',
   'api_delete_character' => 'App\\Application\\Actions\\ApiDeleteCharacterAction',
   'api_delete_comic' => 'App\\Application\\Actions\\ApiDeleteComicAction',
   'api_save_single_character' => 'App\\Application\\Actions\\ApiSaveSingleCharacterAction',

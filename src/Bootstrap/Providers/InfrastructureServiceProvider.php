@@ -65,6 +65,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         $container->bind(ComicRevisionRepositoryInterface::class, fn () => new MySqlComicRevisionRepository(
             $container->get(\PDO::class),
             $container->get(ClockInterface::class),
+            $container->get(ConfigInterface::class),
         ));
 
         $container->bind(CharacterRepositoryInterface::class, fn () => new MySqlCharacterRepository(
