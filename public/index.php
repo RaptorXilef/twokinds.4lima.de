@@ -10,10 +10,14 @@
 
 declare(strict_types=1);
 
+use App\Application\FrontendController;
 use App\Application\Http\ServerRequest;
-use App\Application\PermitController;
 
+// Lade das Bootstrap-Fundament (DI-Container, Config, etc.)
 $container = require_once __DIR__ . '/../src/Bootstrap/app.php';
 
+// Erstelle das Request-Objekt aus den globalen PHP-Variablen
 $req = new ServerRequest($_GET, $_POST, $_FILES, $_SERVER);
-$container->get(PermitController::class)->handleRequest($req);
+
+// Übergebe die Kontrolle an den FrontendController
+$container->get(FrontendController::class)->handleRequest($req);

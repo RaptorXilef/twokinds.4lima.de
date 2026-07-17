@@ -6,10 +6,7 @@ namespace App\Application\Actions;
 
 use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ViewActionInterface;
-use App\Application\DTO\ComicViewRequest;
-use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
-use App\Application\Response\RedirectResponse;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\ValueObject\ComicId;
@@ -25,25 +22,32 @@ final readonly class ComicRenderAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        try {
-            $dto   = ComicViewRequest::fromRequest($request);
-            $comic = $this->comicRepository->findById(new ComicId($dto->comicId));
+        $comicIdStr = $request->input['id'] ?? null;
+        $comic      = null;
 
-            if ($comic === null) {
-                // Fallback auf 404 Seite, wenn die ID nicht in der DB existiert
-                return new RedirectResponse('404.php');
+        if ($comicIdStr !== null) {
+            try {
+                $comic = $this->comicRepository->findById(new ComicId($comicIdStr));
+            } catch (\InvalidArgumentException) {
+                $comic = null; // Ungültiges Format
             }
+        } else {
+            // Keine ID in der URL -> Startseite -> Neuesten Comic laden
+            $allComics = $this->comicRepository->findAll();
+            $comic     = \reset($allComics) ?: null;
+        }
 
-            // Hier übergeben wir die Entity an das PHTML-Template
-            $this->renderer->render('comic_page', [
-                'comic'     => $comic,
-                'pageTitle' => $comic->name !== '' ? $comic->name : "Seite {$comic->id->value}",
-            ]);
+        if ($comic === null) {
+            $this->renderer->render('404', ['pageTitle' => 'Seite nicht gefunden']);
 
             return null;
-
-        } catch (ValidationException|\InvalidArgumentException $e) {
-            return new RedirectResponse('404.php');
         }
+
+        $this->renderer->render('comic_page', [
+            'comic'     => $comic,
+            'pageTitle' => $comic->name !== '' ? $comic->name : "Seite {$comic->id->value}",
+        ]);
+
+        return null;
     }
 }
