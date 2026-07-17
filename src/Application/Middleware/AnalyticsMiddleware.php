@@ -47,7 +47,7 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
         }
 
         // --- 1. DATENSCHUTZ-FIX: Consent-Prüfung ---
-        $consentCookie = $_COOKIE['kga_cookie_consent'] ?? null;
+        $consentCookie = $_COOKIE['kga_cookie_consent'] ?? null; // TODO Auf twokinds anpassen
         if (! $consentCookie) {
             return; // Kein Consent-Cookie vorhanden -> Nichts tracken
         }

@@ -29,7 +29,7 @@ if (empty($settings['base_url'])) {
     $settings['base_url'] = \rtrim($rootPath, '/') . '/';
 }
 
-$vereinsName = $settings['vereins_name'] ?? 'KGA';
+$vereinsName = $settings['vereins_name'] ?? 'KGA'; // TODO noch auf twokinds.4lima.de anpassen!
 
 // Suche Logo
 $logoFile = null;

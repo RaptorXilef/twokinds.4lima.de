@@ -83,7 +83,7 @@ final readonly class GlobalExceptionHandler
             @\http_response_code(500);
         }
 
-        $vereinsName  = \htmlspecialchars((string) $this->config->get('vereins_name', 'KGA'));
+        $vereinsName  = \htmlspecialchars((string) $this->config->get('vereins_name', 'KGA')); // TODO Auf twokinds anpassen
         $errorTitle   = 'Ups! Etwas ist schiefgelaufen';
         $errorMessage = 'Das System hat einen unerwarteten Fehler festgestellt. Keine Sorge, die Administratoren wurden automatisch benachrichtigt um das Problem zu beheben.';
 
