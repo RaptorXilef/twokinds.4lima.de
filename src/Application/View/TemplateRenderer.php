@@ -6,6 +6,7 @@ namespace App\Application\View;
 
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\AssetHelperInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\SystemInfoInterface;
@@ -17,7 +18,8 @@ final readonly class TemplateRenderer
         private ImageStorageInterface $imageStorage,
         private JsonHelperInterface $jsonHelper,
         private SessionManager $sessionManager,
-        private SystemInfoInterface $systemInfo, // Neu injiziert
+        private SystemInfoInterface $systemInfo,
+        private AssetHelperInterface $assetHelper,
     ) {
     }
 
@@ -25,13 +27,13 @@ final readonly class TemplateRenderer
     {
         $appRoot = \rtrim((string) $this->config->get('root_path'), '/\\');
 
-        // 1. Systemvariablen bereitstellen
         $systemVars = [
             'appRoot'      => $appRoot,
             'config'       => $this->config,
             'imageStorage' => $this->imageStorage,
             'jsonHelper'   => $this->jsonHelper,
             'settings'     => $this->getGlobalSettings(),
+            'asset'        => $this->assetHelper, // (Steht nun als $asset im Template bereit)
         ];
 
         // Lade alle Flashes automatisch in die View-Daten!

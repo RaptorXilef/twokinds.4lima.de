@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
 
+use App\Contracts\System\AssetHelperInterface;
+
 /**
- * @var array $settings
+ * @var array                $settings
+ * @var AssetHelperInterface $asset
  */
 ?>
         </div> <!-- Schließt .content aus dem Header -->
@@ -31,9 +34,10 @@ declare(strict_types=1);
 </div> <!-- Schließt .main-container aus dem Header -->
 
 <!-- Gemeinsame JS-Dateien für das Frontend -->
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $settings['base_url']; ?>assets/js/common.js"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $settings['base_url']; ?>assets/js/comic.js"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $settings['base_url']; ?>assets/js/cookie_consent.js"></script>
+<!-- Automatisch cache-gebustetes JS -->
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/comic.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/cookie_consent.js'); ?>"></script>
 
 </body>
 </html>

@@ -14,6 +14,7 @@ use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
+use App\Contracts\System\AssetHelperInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
@@ -28,6 +29,7 @@ use App\Infrastructure\Storage\MySqlCharacterRepository;
 use App\Infrastructure\Storage\MySqlComicRepository;
 use App\Infrastructure\Storage\MySqlComicRevisionRepository;
 use App\Infrastructure\Storage\MySqlReportRepository;
+use App\Infrastructure\System\LocalAssetHelper;
 use App\Infrastructure\System\SystemInfoService;
 use App\Infrastructure\Utils\SystemClock;
 
@@ -80,6 +82,10 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         $container->bind(SystemInfoInterface::class, fn () => new SystemInfoService(
             $container->get(ConfigInterface::class),
             $container->get(JsonHelperInterface::class),
+        ));
+
+        $container->bind(AssetHelperInterface::class, fn () => new LocalAssetHelper(
+            $container->get(ConfigInterface::class),
         ));
     }
 }
