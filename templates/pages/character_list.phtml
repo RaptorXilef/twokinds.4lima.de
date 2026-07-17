@@ -52,8 +52,7 @@ include __DIR__ . '/../components/_public_header.phtml';
                                     <a href="<?php echo $baseUrl; ?>/charaktere/<?php echo \htmlspecialchars($character->name); ?>">
                                         <div class="character-avatar-container">
                                             <img src="<?php echo \htmlspecialchars($picUrl); ?>"
-                                                 alt="<?php echo \htmlspecialchars($character->name); ?>"
-                                                 onerror="this.onerror=null; this.src='<?php echo $placeholderPath; ?>';">
+                                                 alt="<?php echo \htmlspecialchars($character->name); ?>">
                                         </div>
                                         <p class="character-name"><?php echo \htmlspecialchars($character->name); ?></p>
                                     </a>

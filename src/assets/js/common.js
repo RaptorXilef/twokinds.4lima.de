@@ -29,13 +29,9 @@
         var body = document.getElementsByTagName('body')[0];
 
         // Show elements that are hidden by default due to requiring JS.
-        document
-            .querySelectorAll('.jsdep')
-            .forEach((el) => el.classList.remove('jsdep'));
+        document.querySelectorAll('.jsdep').forEach((el) => el.classList.remove('jsdep'));
 
-        document
-            .querySelector('#toggle_lights')
-            .addEventListener('click', toggleTheme);
+        document.querySelector('#toggle_lights').addEventListener('click', toggleTheme);
 
         if (typeof window.localStorage != 'undefined') {
             if (typeof window.localStorage.themePref == 'undefined') {
@@ -59,14 +55,12 @@
 
         // Watch the system theme change event and automatically change with it.
         if (window.matchMedia) {
-            window
-                .matchMedia('(prefers-color-scheme: dark)')
-                .addEventListener('change', () => {
-                    // Ignore the event if the system theme is not currently selected.
-                    if (currentTheme == systemThemeId) {
-                        setTheme(systemThemeId, false, true);
-                    }
-                });
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                // Ignore the event if the system theme is not currently selected.
+                if (currentTheme == systemThemeId) {
+                    setTheme(systemThemeId, false, true);
+                }
+            });
         }
     });
 
@@ -119,8 +113,7 @@
         }
 
         // Update the toggle button.
-        document.querySelector('#toggle_lights .themename').innerHTML =
-            theme.name;
+        document.querySelector('#toggle_lights .themename').innerHTML = theme.name;
 
         // Store the theme selection in localstorage if enabled.
         if (storePref && typeof window.localStorage != 'undefined') {
@@ -141,10 +134,7 @@
      * @returns {undefined}
      */
     function setSystemTheme(doTransition) {
-        if (
-            window.matchMedia &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches
-        ) {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             setTheme(systemDarkThemeId, false, doTransition);
         } else {
             setTheme(systemLightThemeId, false, doTransition);
@@ -162,4 +152,27 @@
             body.classList.remove('preload');
         }, 300);
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Zero-Trust Image Fallback Logic
+        // Ersetzt defekte Bilder durch ein graues Platzhalterbild, ohne CSP zu verletzen.
+        document.querySelectorAll('img').forEach((img) => {
+            img.addEventListener('error', function () {
+                if (!this.dataset.fallbackApplied) {
+                    this.dataset.fallbackApplied = 'true';
+                    this.src =
+                        'https://placehold.co/800x600/cccccc/333333?text=Bild+nicht+gefunden';
+                }
+            });
+        });
+
+        // 2. Language Toggle Bindung (Ersatz für das gelöschte onclick="")
+        const langToggleBtn = document.getElementById('lang-toggle-btn');
+        const comicImage = document.getElementById('comic-image');
+        if (langToggleBtn && comicImage && typeof window.runOriginalProbingLogic === 'function') {
+            langToggleBtn.addEventListener('click', function () {
+                window.runOriginalProbingLogic(comicImage, this);
+            });
+        }
+    });
 })();

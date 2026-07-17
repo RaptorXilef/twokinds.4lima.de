@@ -61,14 +61,12 @@ $thumbnailPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}
                  src="<?php echo \htmlspecialchars($imagePath); ?>"
                  data-english-filename="<?php echo \htmlspecialchars($comic->originalUrl); ?>"
                  data-english-sketch-url-from-cache="<?php echo \htmlspecialchars($comic->sketchUrl); ?>"
-                 alt="<?php echo \htmlspecialchars($pageTitle); ?>"
-                 onerror="this.onerror=null; this.src='<?php echo $fallbackPath; ?>';">
+                 alt="<?php echo \htmlspecialchars($pageTitle); ?>">
         </div>
 
         <!-- Untere Navigation -->
         <nav class="comicnav bottomnav">
-            <button type="button" class="navarrow nav-lang-toggle" id="lang-toggle-btn"
-                    onclick="window.runOriginalProbingLogic(document.getElementById('comic-image'), this)">
+            <button type="button" class="navarrow nav-lang-toggle" id="lang-toggle-btn">
                 <span class="nav-wrapper">EN</span>
             </button>
             <button type="button" class="navarrow nav-report-issue" id="open-report-modal"

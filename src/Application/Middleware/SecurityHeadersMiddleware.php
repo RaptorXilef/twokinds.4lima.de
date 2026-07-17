@@ -72,6 +72,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                     'https://fonts.gstatic.com',
                     'https://cdn.twokinds.keenspot.com',
                     'https://cdn.jsdelivr.net',
+                    'https://twokinds.4lima.de',
                 ],
                 'img-src' => [
                     "'self'",
@@ -84,6 +85,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                     'https://licensebuttons.net',
                     'https://www.google-analytics.com',
                     'https://www.googletagmanager.com',
+                    'https://twokinds.4lima.de',
                 ],
                 'connect-src' => [
                     "'self'",
