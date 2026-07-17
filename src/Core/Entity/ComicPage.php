@@ -23,6 +23,7 @@ final class ComicPage
         array $characterIds,
         public readonly string $originalUrl,
         public readonly string $sketchUrl,
+        public readonly ?int $imageUpdatedAt = null, // Ersetzt die image_cache.json
     ) {
         foreach ($characterIds as $charId) {
             if (! $charId instanceof CharacterId) {

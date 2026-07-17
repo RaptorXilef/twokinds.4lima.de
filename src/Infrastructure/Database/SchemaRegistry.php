@@ -41,6 +41,7 @@ final class SchemaRegistry
                 `character_ids` JSON,
                 `original_url` VARCHAR(255),
                 `sketch_url` VARCHAR(255),
+                `image_updated_at` INT NULL,
                 INDEX `idx_chapter` (`chapter_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
@@ -63,6 +64,7 @@ final class SchemaRegistry
                 `comic_id` VARCHAR(8) NOT NULL,
                 `date` DATETIME NOT NULL,
                 `status` VARCHAR(20) NOT NULL DEFAULT \'open\',
+                `ip_hash` VARCHAR(64) NOT NULL,
                 `submitter_name` VARCHAR(255) NOT NULL,
                 `type` VARCHAR(50) NOT NULL,
                 `description` TEXT,

@@ -14,6 +14,7 @@ final readonly class Report
         public ComicId $comicId,
         public \DateTimeImmutable $date,
         public string $status,
+        public string $ipHash, // Spamschutz aus alter JSON übernommen
         public string $submitterName,
         public string $type,
         public string $description,
