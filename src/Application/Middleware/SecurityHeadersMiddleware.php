@@ -25,11 +25,11 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             \header('Referrer-Policy: strict-origin-when-cross-origin');
             $cspDirectives = [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.paypal.com https://www.sandbox.paypal.com https://www.googletagmanager.com",
+                "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.googletagmanager.com",
                 "style-src 'self' 'unsafe-inline'",
-                "img-src 'self' data: https://api.qrserver.com https://www.google-analytics.com https://www.paypalobjects.com",
-                "connect-src 'self' https://www.google-analytics.com https://www.paypal.com https://www.sandbox.paypal.com",
-                "frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com",
+                "img-src 'self' data: https://www.google-analytics.com",
+                "connect-src 'self' https://www.google-analytics.com",
+                "frame-src 'self'",
             ];
             // Verbindet die Zeilen mit "; " und sendet den Header
             \header('Content-Security-Policy: ' . \implode('; ', $cspDirectives) . ';');

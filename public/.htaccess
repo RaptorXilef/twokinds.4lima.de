@@ -112,35 +112,49 @@ LimitRequestBody 10485760
     RewriteCond %{HTTP_HOST} !^localhost$ [NC]
     RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L,NE]
 
-    # 5.2: Spezifische Legacy-URLs retten (SEO)
+    # ========================================================
+    # 5.2: GOOGLE SEARCH CONSOLE - SEO REDIRECTS (301)
+    # ========================================================
+
+    # Entfernt explizite /index.php Aufrufe aus der URL (Duplicate Content Schutz)
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php[\s?] [NC]
+    RewriteRule ^index\.php$ / [R=301,L]
+
+    # Trailing Slashes von Ordnern entfernen (z.B. /charaktere/ -> /charaktere)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)/$ /$1 [R=301,L]
+
+    # Alte Charakter-URLs
     RewriteRule ^charakter-vorstellung(\.php)?$ /charaktere [R=301,L]
 
-    # Falls Comics früher direkt im Root lagen (z.B. /20031022.php)
-    RewriteCond %{THE_REQUEST} \s/+(\d{8})\.php[\s?] [NC]
-    RewriteRule ^ /comic/%1 [R=301,L,NE]
+    # Alte "Über den Comic" Seite (Leitet auf Startseite um)
+    RewriteRule ^ueber_den_comic(\.php)?$ / [R=301,L]
 
-    # 5.3: Globale .php Entfernung (SEO: 301 Redirect für Google)
-    # Wenn direkt eine .php Datei angefragt wird (außer index.php)
+    # Alte Comics im Root-Verzeichnis (z.B. /20231021.php -> /comic/20231021)
+    RewriteRule ^(\d{8})\.php$ /comic/$1 [R=301,L]
+
+    # Alte Comics im Comic-Ordner (z.B. /comic/20200513.php -> /comic/20200513)
+    RewriteRule ^comic/(\d{8})\.php$ /comic/$1 [R=301,L]
+
+    # ========================================================
+
+    # 5.3: Globale .php Entfernung (SEO: 301 Redirect für den Rest)
+    # Fängt alles ab, was noch eine .php Endung hat, aber keine API ist
     RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
     RewriteCond %{REQUEST_URI} !^/index\.php$ [NC]
     RewriteCond %{REQUEST_URI} !^/api/ [NC]
     RewriteRule ^ /%1 [R=301,L,NE]
 
-    # 5.4: Trailing Slashes entfernen (SEO Canonical)
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [R=301,L]
-
-    # 5.5: Hotlink-Schutz für Comics
+    # 5.4: Hotlink-Schutz für Comics (Bandbreiten-Schutz)
     RewriteCond %{HTTP_REFERER} !^$
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.(de|local) [NC]
     RewriteCond %{REQUEST_URI} ^/assets/images/comic/ [NC]
     RewriteRule \.(jpg|jpeg|png|gif|webp|avif)$ - [NC,F,L]
 
-    # 5.6: THE FRONT CONTROLLER (Das Herzstück der neuen Architektur)
-    # Wenn die Datei existiert (Bilder, CSS, JS), direkt ausliefern (Fast-Exit)
+    # 5.5: THE FRONT CONTROLLER (Das Herzstück der Architektur)
+    # Wenn die Datei physisch existiert (Bilder, CSS, JS), direkt ausliefern (Fast-Exit)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    # Alles andere geht an die index.php
+    # Alles andere geht transparent an die index.php
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
