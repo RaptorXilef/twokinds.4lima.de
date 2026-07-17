@@ -16,6 +16,7 @@ use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Contracts\System\JsonHelperInterface;
+use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
@@ -25,6 +26,7 @@ use App\Infrastructure\Storage\MySqlCharacterRepository;
 use App\Infrastructure\Storage\MySqlComicRepository;
 use App\Infrastructure\Storage\MySqlComicRevisionRepository;
 use App\Infrastructure\Storage\MySqlReportRepository;
+use App\Infrastructure\System\SystemInfoService;
 use App\Infrastructure\Utils\SystemClock;
 
 final class InfrastructureServiceProvider implements ServiceProviderInterface
@@ -66,6 +68,11 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
         $container->bind(ReportRepositoryInterface::class, fn () => new MySqlReportRepository(
             $container->get(\PDO::class),
+        ));
+
+        $container->bind(SystemInfoInterface::class, fn () => new SystemInfoService(
+            $container->get(ConfigInterface::class),
+            $container->get(JsonHelperInterface::class),
         ));
     }
 }

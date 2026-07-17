@@ -8,14 +8,8 @@ use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
+use App\Contracts\System\SystemInfoInterface;
 
-/**
- * TODO DOCBLOCK
- * Zentraler Service für das Rendering von PHTML-Templates.
- * Sammelt globale System-Variablen und injiziert sie sicher in den View-Scope.
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
- */
 final readonly class TemplateRenderer
 {
     public function __construct(
@@ -23,10 +17,10 @@ final readonly class TemplateRenderer
         private ImageStorageInterface $imageStorage,
         private JsonHelperInterface $jsonHelper,
         private SessionManager $sessionManager,
+        private SystemInfoInterface $systemInfo, // Neu injiziert
     ) {
     }
 
-    // TODO DOCBLOCK
     public function render(string $templatePath, array $data = []): void
     {
         $appRoot = \rtrim((string) $this->config->get('root_path'), '/\\');
@@ -52,23 +46,12 @@ final readonly class TemplateRenderer
         include $appRoot . "/templates/pages/{$templatePath}.phtml";
     }
 
-    // TODO DOCBLOCK
     private function getGlobalSettings(): array
     {
-        $templates = (array) $this->config->get('permit_templates', []);
-
         return [
-            'base_url'           => $this->config->getBaseUrl(),
-            'bic'                => $this->config->get('bic'),
-            'iban'               => $this->config->get('iban'),
-            'jahresFarbe'        => $this->config->get('jahresFarbe'),
-            'kontoinhaber'       => $this->config->get('kontoinhaber'),
-            'opening_hours'      => $this->config->get('default_opening_hours'),
-            'public_templates'   => \array_filter($templates, fn (array $t): bool => ($t['public'] ?? false) === true),
-            'purposes'           => $this->config->get('purposes'),
-            'terminkalender_url' => $this->config->get('terminkalender_url'),
-            'vehicle_types'      => $this->config->get('vehicle_types'),
-            'vereins_name'       => $this->config->get('vereins_name'),
+            'base_url'     => $this->config->getBaseUrl(),
+            'vereins_name' => $this->config->get('vereins_name', 'Twokinds auf Deutsch'),
+            'app_version'  => $this->systemInfo->getCurrentVersion(), // SSOT Abfrage
         ];
     }
 }
