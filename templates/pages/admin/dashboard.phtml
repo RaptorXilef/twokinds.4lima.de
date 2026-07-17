@@ -44,11 +44,11 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
                 <nav id="menu" class="menu">
                     <span class="menu-label">Verwaltung</span>
-                    <a href="#section-comics" class="tab-link active" onclick="switchTab('section-comics', this)">Comics</a>
-                    <a href="#section-characters" class="tab-link" onclick="switchTab('section-characters', this)">Charaktere</a>
+                    <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
+                    <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
 
                     <span class="menu-label">System</span>
-                    <a href="#section-reports" class="tab-link" onclick="switchTab('section-reports', this)">
+                    <a href="#section-reports" class="tab-link" data-target="section-reports">
                         Reports
                         <?php if (\count($openReports) > 0) { ?>
                             <span style="background: #dc3545; color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.8em; margin-left: 5px;">
@@ -80,12 +80,9 @@ $baseUrl = \rtrim($settings['base_url'], '/');
             <section id="section-comics" class="content-section active">
                 <div class="table-controls actions-bar">
                     <div class="top-actions">
-                        <button type="button" class="button add" onclick="openComicModal()">
+                        <button type="button" class="button add" id="btn-add-comic">
                             <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen
                         </button>
-                    </div>
-                    <div class="search-wrapper">
-                        <input type="text" id="comic-search" placeholder="Comics durchsuchen (ID, Name, Transkript)...">
                     </div>
                 </div>
 
@@ -127,7 +124,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                                     <tr>
                                         <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
                                         <td>
-                                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" class="comic-thumbnail" loading="lazy" onerror="this.src='https://placehold.co/100x140?text=N/A'">
+                                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" class="comic-thumbnail" loading="lazy">
                                         </td>
                                         <td>
                                             <span class="comic-type-display"><?php echo \htmlspecialchars($comic->type); ?></span>
@@ -143,13 +140,13 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                                         </td>
                                         <td class="actions-cell">
                                             <form>
-                                                <button type="button" class="button button-orange" onclick="undoComic('<?php echo \htmlspecialchars($cId); ?>')" title="Letzte Änderung rückgängig machen">
+                                                <button type="button" class="button button-orange btn-undo-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Letzte Änderung rückgängig machen">
                                                     <i class="fa-solid fa-rotate-left"></i>
                                                 </button>
-                                                <button type="button" class="button edit" onclick='openComicModal(<?php echo $comicData; ?>)' title="Bearbeiten">
+                                                <button type="button" class="button edit btn-edit-comic" data-payload='<?php echo $comicData; ?>' title="Bearbeiten">
                                                     <i class="fa-solid fa-pen"></i>
                                                 </button>
-                                                <button type="button" class="button delete" onclick="deleteComic('<?php echo \htmlspecialchars($cId); ?>')" title="Löschen">
+                                                <button type="button" class="button delete btn-delete-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Löschen">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             </form>
@@ -168,7 +165,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
             <section id="section-characters" class="content-section">
                 <div class="table-controls actions-bar">
                     <div class="top-actions">
-                        <button type="button" class="button add" onclick="openCharModal()">
+                        <button type="button" class="button add" id="btn-add-char">
                             <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen
                         </button>
                     </div>
@@ -204,7 +201,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                                     <tr>
                                         <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
                                         <td>
-                                            <img src="<?php echo \htmlspecialchars($pic); ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;" onerror="this.src='https://placehold.co/100x100?text=N/A'">
+                                            <img src="<?php echo \htmlspecialchars($pic); ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
                                         </td>
                                         <td>
                                             <strong><?php echo \htmlspecialchars($char->name); ?></strong>
@@ -214,10 +211,10 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                                         </td>
                                         <td class="actions-cell">
                                             <form>
-                                                <button type="button" class="button edit" onclick='openCharModal(<?php echo $charData; ?>)' title="Bearbeiten">
+                                                <button type="button" class="button edit btn-edit-char" data-payload='<?php echo $charData; ?>' title="Bearbeiten">
                                                     <i class="fa-solid fa-pen"></i>
                                                 </button>
-                                                <button type="button" class="button delete" onclick="deleteCharacter('<?php echo \htmlspecialchars($cId); ?>', '<?php echo \htmlspecialchars(\addslashes($char->name)); ?>')" title="Löschen">
+                                                <button type="button" class="button delete btn-delete-char" data-id="<?php echo \htmlspecialchars($cId); ?>" data-name="<?php echo \htmlspecialchars($char->name); ?>" title="Löschen">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             </form>
@@ -247,16 +244,14 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
 <!-- Comic Modal -->
 <div id="comic-modal" class="modal">
-    <div class="modal-overlay" onclick="closeComicModal()"></div>
+    <div class="modal-overlay btn-close-comic-modal"></div>
     <div class="modal-content" style="max-width: 800px;">
         <div class="modal-header-wrapper">
             <h2 id="modal-title-comic">Comic bearbeiten</h2>
-            <button class="modal-close" onclick="closeComicModal()">&times;</button>
+            <button class="modal-close btn-close-comic-modal">&times;</button>
         </div>
         <div class="modal-scroll-content">
             <form id="comic-form" class="admin-form">
-                <input type="hidden" id="form-action" name="action" value="save">
-
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
                         <label for="comic_id">Comic ID (YYYYMMDD)</label>
@@ -304,8 +299,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
         </div>
         <div class="modal-footer-actions">
             <div class="modal-buttons">
-                <button type="button" class="button" onclick="closeComicModal()">Abbrechen</button>
-                <button type="button" class="button edit" onclick="saveComic()">Speichern (Live)</button>
+                <button type="button" class="button btn-close-comic-modal">Abbrechen</button>
+                <button type="button" class="button edit" id="btn-save-comic">Speichern (Live)</button>
             </div>
         </div>
     </div>
@@ -313,11 +308,11 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
 <!-- Character Modal -->
 <div id="char-modal" class="modal">
-    <div class="modal-overlay" onclick="closeCharModal()"></div>
+    <div class="modal-overlay btn-close-char-modal"></div>
     <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header-wrapper">
             <h2 id="modal-title-char">Charakter bearbeiten</h2>
-            <button class="modal-close" onclick="closeCharModal()">&times;</button>
+            <button class="modal-close btn-close-char-modal">&times;</button>
         </div>
         <div class="modal-scroll-content">
             <form id="char-form" class="admin-form">
@@ -330,7 +325,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
                 <div class="form-group">
                     <label for="pic_url">Dateiname des Profilbildes</label>
-                    <input type="text" id="pic_url" name="pic_url" placeholder="z.B. trace.jpg (Bild muss in /assets/images/characters/profiles/ liegen)">
+                    <input type="text" id="pic_url" name="pic_url" placeholder="z.B. trace.jpg">
                 </div>
 
                 <div class="form-group">
@@ -341,25 +336,14 @@ $baseUrl = \rtrim($settings['base_url'], '/');
         </div>
         <div class="modal-footer-actions">
             <div class="modal-buttons">
-                <button type="button" class="button" onclick="closeCharModal()">Abbrechen</button>
-                <button type="button" class="button edit" onclick="saveCharacter()">Speichern (Live)</button>
+                <button type="button" class="button btn-close-char-modal">Abbrechen</button>
+                <button type="button" class="button edit" id="btn-save-char">Speichern (Live)</button>
             </div>
         </div>
     </div>
 </div>
 
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    // Einfache Tab-Steuerung für das Sidebar-Menü
-    function switchTab(sectionId, linkElement) {
-        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-        document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
-        document.getElementById(sectionId).classList.add('active');
-        linkElement.classList.add('active');
-    }
-</script>
-
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
-<!-- HIER BINDEN WIR ADMIN JS EIN! -->
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/admin.js'); ?>"></script>
 </body>
 </html>

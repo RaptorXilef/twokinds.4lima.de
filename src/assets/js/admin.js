@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
     const statusBox = document.getElementById('global-status-message');
     const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
     const baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
@@ -8,7 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!statusBox) return;
         statusBox.className = 'status-message visible status-' + type;
         statusBox.innerHTML = text;
-        setTimeout(() => { statusBox.className = 'status-message'; }, 5000);
+        setTimeout(() => {
+            statusBox.className = 'status-message';
+        }, 5000);
     }
 
     async function sendApiRequest(endpoint, formData) {
@@ -16,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(baseUrl + '/api/' + endpoint, {
                 method: 'POST',
-                body: formData
+                body: formData,
             });
             const data = await response.json();
             if (data.success) {
@@ -29,13 +32,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- COMIC LOGIC ---
-    window.openComicModal = function(data = null) {
+    // --- TAB LOGIK ---
+    document.querySelectorAll('.tab-link').forEach((link) => {
+        link.addEventListener('click', function (e) {
+            if (this.dataset.target) {
+                document
+                    .querySelectorAll('.content-section')
+                    .forEach((sec) => sec.classList.remove('active'));
+                document.querySelectorAll('.tab-link').forEach((l) => l.classList.remove('active'));
+                document.getElementById(this.dataset.target).classList.add('active');
+                this.classList.add('active');
+            }
+        });
+    });
+
+    // --- MODAL FUNKTIONEN (INTERN) ---
+    function openComicModal(data = null) {
         const form = document.getElementById('comic-form');
         form.reset();
-
         if (data) {
-            document.getElementById('modal-title-comic').textContent = 'Comic bearbeiten: ' + data.id;
+            document.getElementById('modal-title-comic').textContent =
+                'Comic bearbeiten: ' + data.id;
             document.getElementById('comic_id').value = data.id;
             document.getElementById('comic_id').readOnly = true;
             document.getElementById('type').value = data.type;
@@ -49,39 +66,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('comic_id').readOnly = false;
         }
         document.getElementById('comic-modal').style.display = 'flex';
-    };
+    }
 
-    window.closeComicModal = function() {
+    function closeComicModal() {
         document.getElementById('comic-modal').style.display = 'none';
-    };
+    }
 
-    window.saveComic = function() {
-        const form = document.getElementById('comic-form');
-        if(!form.reportValidity()) return;
-        sendApiRequest('save_single_comic', new FormData(form));
-    };
-
-    window.deleteComic = function(id) {
-        if(confirm('ACHTUNG: Willst du Comic ' + id + ' wirklich unwiderruflich löschen?')) {
-            const fd = new FormData();
-            fd.append('comic_id', id);
-            sendApiRequest('delete_comic', fd);
-        }
-    };
-
-    window.undoComic = function(id) {
-        if(confirm('Soll der Comic ' + id + ' auf die VORHERIGE Version zurückgesetzt werden?')) {
-            const fd = new FormData();
-            fd.append('comic_id', id);
-            sendApiRequest('undo_comic', fd);
-        }
-    };
-
-    // --- CHARACTER LOGIC ---
-    window.openCharModal = function(data = null) {
+    function openCharModal(data = null) {
         const form = document.getElementById('char-form');
         form.reset();
-
         if (data) {
             document.getElementById('modal-title-char').textContent = 'Charakter bearbeiten';
             document.getElementById('character_id').value = data.id;
@@ -93,25 +86,94 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('character_id').value = 'new';
         }
         document.getElementById('char-modal').style.display = 'flex';
-    };
+    }
 
-    window.closeCharModal = function() {
+    function closeCharModal() {
         document.getElementById('char-modal').style.display = 'none';
-    };
+    }
 
-    window.saveCharacter = function() {
+    // --- DIREKTE BUTTON BINDINGS (SPEICHERN & MODAL TRIGGERS) ---
+    document.getElementById('btn-add-comic')?.addEventListener('click', () => openComicModal());
+    document.getElementById('btn-save-comic')?.addEventListener('click', () => {
+        const form = document.getElementById('comic-form');
+        if (!form.reportValidity()) return;
+        sendApiRequest('save_single_comic', new FormData(form));
+    });
+    document
+        .querySelectorAll('.btn-close-comic-modal')
+        .forEach((btn) => btn.addEventListener('click', closeComicModal));
+
+    document.getElementById('btn-add-char')?.addEventListener('click', () => openCharModal());
+    document.getElementById('btn-save-char')?.addEventListener('click', () => {
         const form = document.getElementById('char-form');
-        if(!form.reportValidity()) return;
+        if (!form.reportValidity()) return;
         sendApiRequest('save_single_character', new FormData(form));
-    };
+    });
+    document
+        .querySelectorAll('.btn-close-char-modal')
+        .forEach((btn) => btn.addEventListener('click', closeCharModal));
 
-    window.deleteCharacter = function(id, name) {
-        if(confirm('Möchtest du den Charakter "' + name + '" (' + id + ') wirklich löschen?')) {
+    // --- EVENT DELEGATION FÜR DYNAMISCHE TABELLEN-BUTTONS ---
+    document.addEventListener('click', (e) => {
+        // Comic Aktionen
+        const undoComicBtn = e.target.closest('.btn-undo-comic');
+        if (
+            undoComicBtn &&
+            confirm(
+                'Soll der Comic ' +
+                    undoComicBtn.dataset.id +
+                    ' auf die VORHERIGE Version zurückgesetzt werden?'
+            )
+        ) {
             const fd = new FormData();
-            fd.append('character_id', id);
-            sendApiRequest('delete_character', fd);
+            fd.append('comic_id', undoComicBtn.dataset.id);
+            sendApiRequest('undo_comic', fd);
+            return;
         }
-    };
+
+        const editComicBtn = e.target.closest('.btn-edit-comic');
+        if (editComicBtn) {
+            openComicModal(JSON.parse(editComicBtn.dataset.payload));
+            return;
+        }
+
+        const deleteComicBtn = e.target.closest('.btn-delete-comic');
+        if (
+            deleteComicBtn &&
+            confirm(
+                'ACHTUNG: Willst du Comic ' + deleteComicBtn.dataset.id + ' unwiderruflich löschen?'
+            )
+        ) {
+            const fd = new FormData();
+            fd.append('comic_id', deleteComicBtn.dataset.id);
+            sendApiRequest('delete_comic', fd);
+            return;
+        }
+
+        // Charakter Aktionen
+        const editCharBtn = e.target.closest('.btn-edit-char');
+        if (editCharBtn) {
+            openCharModal(JSON.parse(editCharBtn.dataset.payload));
+            return;
+        }
+
+        const deleteCharBtn = e.target.closest('.btn-delete-char');
+        if (
+            deleteCharBtn &&
+            confirm(
+                'Möchtest du den Charakter "' +
+                    deleteCharBtn.dataset.name +
+                    '" (' +
+                    deleteCharBtn.dataset.id +
+                    ') wirklich löschen?'
+            )
+        ) {
+            const fd = new FormData();
+            fd.append('character_id', deleteCharBtn.dataset.id);
+            sendApiRequest('delete_character', fd);
+            return;
+        }
+    });
 
     // --- LOGOUT ---
     document.getElementById('admin-logout-btn')?.addEventListener('click', (e) => {
