@@ -76,7 +76,7 @@ require_once $appRoot . '/vendor/autoload.php';
 // Zwingt PHP, alle \error_log() Aufrufe und interne Fehler
 // in eine lokale Datei zu schreiben, statt ins unzugängliche Server-Log.
 // =========================================================================
-$customLogDir = $appRoot . '/storage/logs';
+$customLogDir = $appRoot . '/logs';
 if (! \is_dir($customLogDir)) {
     @\mkdir($customLogDir, 0o755, true);
 }

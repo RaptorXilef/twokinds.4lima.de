@@ -31,16 +31,17 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
      */
     public function logThrowable(\Throwable $throwable): void
     {
-        $logDir = $this->config->getStoragePath('logs');
+        // Fix: Explizit den gleichen Ordner nutzen wie app.php (storage/logs)
+        $logDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/logs';
 
         if (! \is_dir($logDir)) {
             @\mkdir($logDir, 0o755, true);
         }
 
-        $logFile = $logDir . '/system_error.log';
+        $logFile   = $logDir . '/system_error.log';
+        $timestamp = \defined('APP_REQUEST_TIME_STR') ? APP_REQUEST_TIME_STR : \date('Y-m-d H:i:s');
 
-        $timestamp = APP_REQUEST_TIME_STR;
-        $message   = \sprintf(
+        $message = \sprintf(
             "[%s] [%s] %s in %s:%d\nStack Trace:\n%s\n%s\n",
             $timestamp,
             \get_class($throwable),
@@ -56,8 +57,9 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
             $message,
             \FILE_APPEND | \LOCK_EX,
         );
+
         if ($result === false) {
-            throw new \RuntimeException('Kritischer Schreibfehler: system_error.log voll.');
+            throw new \RuntimeException('Kritischer Schreibfehler: system_error.log voll oder keine Rechte.');
         }
     }
 }
