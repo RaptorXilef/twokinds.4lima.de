@@ -22,4 +22,6 @@ interface ReportRepositoryInterface
      * @return Report[]
      */
     public function findByStatus(string $status): array;
+
+    public function countRecentByIpHash(string $ipHash, \DateTimeImmutable $since): int;
 }

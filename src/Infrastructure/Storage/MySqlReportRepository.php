@@ -80,4 +80,12 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
             debugInfo: $row['debug_info'] ?? '',
         );
     }
+
+    public function countRecentByIpHash(string $ipHash, \DateTimeImmutable $since): int
+    {
+        $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM `reports` WHERE ip_hash = ? AND date >= ?');
+        $stmt->execute([$ipHash, $since->format('Y-m-d H:i:s')]);
+
+        return (int) $stmt->fetchColumn();
+    }
 }
