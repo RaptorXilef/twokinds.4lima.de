@@ -264,7 +264,78 @@ src/assets/img/**
 public/assets/img/test/**
 
 ################################################################################
-# PROJEKT SPEZIFISCH: CONFIG & DATA
+# PROJEKT SPEZIFISCH: CONTENT & ASSETS
+################################################################################
+
+# --- BILDER & MEDIEN (COMIC) ---
+# High-Res Bilder ignorieren, Systemdateien behalten
+public/assets/images/comic/hires/*.jpg
+public/assets/images/comic/hires/*.png
+public/assets/images/comic/hires/*.gif
+public/assets/images/comic/hires/*.webp
+!public/assets/images/comic/hires/in_translation.*
+!public/assets/images/comic/hires/index.php
+!public/assets/images/comic/hires/.htaccess
+# Fehlerseiten Bilder behalten
+!public/assets/images/comic/hires/404.*
+!public/assets/images/comic/hires/403.*
+
+# Low-Res Bilder ignorieren
+public/assets/images/comic/lowres/*.jpg
+public/assets/images/comic/lowres/*.png
+public/assets/images/comic/lowres/*.gif
+public/assets/images/comic/lowres/*.webp
+!public/assets/images/comic/lowres/in_translation.*
+!public/assets/images/comic/lowres/index.php
+!public/assets/images/comic/lowres/.htaccess
+!public/assets/images/comic/lowres/404.*
+!public/assets/images/comic/lowres/403.*
+
+# Andere Auflösungen
+public/assets/images/comic/lowres_png/*
+
+# Social Media Bilder
+public/assets/images/comic/socialmedia/*.jpg
+public/assets/images/comic/socialmedia/*.png
+public/assets/images/comic/socialmedia/*.gif
+public/assets/images/comic/socialmedia/*.webp
+!public/assets/images/comic/socialmedia/index.php
+!public/assets/images/comic/socialmedia/.htaccess
+
+# Thumbnails
+public/assets/images/comic/thumbnails/*.jpg
+public/assets/images/comic/thumbnails/*.png
+public/assets/images/comic/thumbnails/*.gif
+public/assets/images/comic/thumbnails/*.webp
+!public/assets/images/comic/thumbnails/placeholder.*
+!public/assets/images/comic/thumbnails/in_translation.*
+!public/assets/images/comic/thumbnails/index.php
+!public/assets/images/comic/thumbnails/.htaccess
+
+# Spezifische Charakter-Bilder ignorieren
+public/assets/img/charaktere/characters/themaskedgods.png
+public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
+public/assets/img/charaktere/characters/TheMaskedGods2025.png
+public/assets/img/charaktere/characters_webp/templarchart-Original.png
+public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
+
+# --- SONSTIGE ASSETS ---
+public/assets/img/github/twokinds.4lima.de.psd
+public/assets/img/about/*
+public/assets/icons/nicht verwendet/*
+
+# --- GOOGLE & LINKS ---
+public/google*.html
+
+
+
+
+
+
+
+
+################################################################################
+# PROJEKT SPEZIFISCH: CONFIG & DATA                                          OLD
 ################################################################################
 # Generierte Konfigurationen ignorieren
 .old-5.0.0-alpha.23/config/config_generator_settings.json
@@ -284,7 +355,7 @@ public/assets/img/test/**
 /.old-5.0.0-alpha.23/data/tmp/*
 
 ################################################################################
-# PROJEKT SPEZIFISCH: CONTENT & ASSETS
+# PROJEKT SPEZIFISCH: CONTENT & ASSETS                                      OLD
 ################################################################################
 
 # --- COMIC VERWALTUNG ---
