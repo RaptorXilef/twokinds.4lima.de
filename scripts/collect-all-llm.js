@@ -130,7 +130,8 @@ function optimizeTokens(content, fileExtension) {
 
         // Speziell für PHP/PHTML: # Kommentare und SQL-Kommentare entfernen
         if (isPhpOrPhtml) {
-            content = content.replace(/(^|[^"'])#.*$/gm, (_match, prefix) => {
+            // (?!\[) stellt sicher, dass PHP 8 Attribute wie #[ActionRoute] NICHT gelöscht werden
+            content = content.replace(/(^|[^"'])#(?!\[).*$/gm, (_match, prefix) => {
                 return prefix;
             });
             // SQL "-- " Kommentare entfernen, damit Zeilen sicher kombiniert werden können
@@ -192,7 +193,9 @@ function optimizeTokens(content, fileExtension) {
             const lastLine = optimizedLines[optimizedLines.length - 1];
 
             // Ein kleines Leerzeichen spendieren, falls Wortgrenzen aufeinandertreffen
-            if (/[a-zA-Z0-9_]$/.test(lastLine) && /^[a-zA-Z0-9_]/.test(line)) {
+            // Erweitert: '\]' im ersten Regex erlaubt nahtloses Anschließen von PHP-Attributen
+            // Erweitert: '$' im zweiten Regex berücksichtigt PHP-Variablen
+            if (/[a-zA-Z0-9_\]]$/.test(lastLine) && /^[a-zA-Z0-9_$]/.test(line)) {
                 optimizedLines[optimizedLines.length - 1] += ` ${line}`;
             } else {
                 optimizedLines[optimizedLines.length - 1] += line;
