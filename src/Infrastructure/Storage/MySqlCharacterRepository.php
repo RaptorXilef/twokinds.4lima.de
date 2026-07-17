@@ -10,23 +10,22 @@ use App\Core\ValueObject\CharacterId;
 
 final readonly class MySqlCharacterRepository implements CharacterRepositoryInterface
 {
+    use DynamicSqlTrait;
+
     public function __construct(private \PDO $pdo)
     {
     }
 
     public function save(Character $character): void
     {
-        $sql = 'INSERT INTO `characters` (id, name, pic_url, description)
-                VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE
-                name = VALUES(name), pic_url = VALUES(pic_url), description = VALUES(description)';
+        $data = [
+            'id'          => $character->id->value,
+            'name'        => $character->name,
+            'pic_url'     => $character->picUrl,
+            'description' => $character->description,
+        ];
 
-        $this->pdo->prepare($sql)->execute([
-            $character->id->value,
-            $character->name,
-            $character->picUrl,
-            $character->description,
-        ]);
+        $this->executeUpsert('characters', $data, ['id']);
     }
 
     public function findById(CharacterId $id): ?Character

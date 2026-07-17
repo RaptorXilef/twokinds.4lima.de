@@ -10,6 +10,8 @@ use App\Core\ValueObject\CharacterId;
 
 final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepositoryInterface
 {
+    use DynamicSqlTrait;
+
     public function __construct(private \PDO $pdo)
     {
     }
@@ -18,14 +20,12 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
     {
         $charIds = \array_map(fn (CharacterId $id) => $id->value, $group->characterIds);
 
-        $sql = 'INSERT INTO `character_groups` (name, character_ids)
-                VALUES (?, ?)
-                ON DUPLICATE KEY UPDATE character_ids = VALUES(character_ids)';
+        $data = [
+            'name'          => $group->name,
+            'character_ids' => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
+        ];
 
-        $this->pdo->prepare($sql)->execute([
-            $group->name,
-            \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
-        ]);
+        $this->executeUpsert('character_groups', $data, ['name']);
     }
 
     public function findByName(string $name): ?CharacterGroup

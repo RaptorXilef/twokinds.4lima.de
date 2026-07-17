@@ -11,6 +11,8 @@ use App\Core\ValueObject\ComicId;
 
 final readonly class MySqlComicRepository implements ComicRepositoryInterface
 {
+    use DynamicSqlTrait;
+
     public function __construct(private \PDO $pdo)
     {
     }
@@ -19,27 +21,20 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
     {
         $charIds = \array_map(fn (CharacterId $id) => $id->value, $comic->characterIds);
 
-        $sql = 'INSERT INTO `comics`
-                (id, type, name, transcript, chapter_id, character_ids, original_url, sketch_url, image_updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE
-                type = VALUES(type), name = VALUES(name), transcript = VALUES(transcript),
-                chapter_id = VALUES(chapter_id), character_ids = VALUES(character_ids),
-                original_url = VALUES(original_url), sketch_url = VALUES(sketch_url),
-                image_updated_at = VALUES(image_updated_at)';
+        $data = [
+            'id'               => $comic->id->value,
+            'type'             => $comic->type,
+            'name'             => $comic->name,
+            'transcript'       => $comic->transcript,
+            'chapter_id'       => $comic->chapterId,
+            'character_ids'    => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
+            'original_url'     => $comic->originalUrl,
+            'sketch_url'       => $comic->sketchUrl,
+            'image_updated_at' => $comic->imageUpdatedAt,
+        ];
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            $comic->id->value,
-            $comic->type,
-            $comic->name,
-            $comic->transcript,
-            $comic->chapterId,
-            \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
-            $comic->originalUrl,
-            $comic->sketchUrl,
-            $comic->imageUpdatedAt,
-        ]);
+        // Die ID soll bei einem Update natürlich nicht überschrieben werden
+        $this->executeUpsert('comics', $data, ['id']);
     }
 
     public function findById(ComicId $id): ?ComicPage
