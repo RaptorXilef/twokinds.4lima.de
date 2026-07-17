@@ -67,13 +67,15 @@ $baseUrl = \rtrim($settings['base_url'], '/');
         <div class="content">
             <h1 class="page-header"><i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
 
+            <div id="global-status-message" class="status-message"></div>
+
             <!-- ========================================== -->
             <!-- SECTION: COMICS                            -->
             <!-- ========================================== -->
             <section id="section-comics" class="content-section">
                 <div class="table-controls actions-bar">
                     <div class="top-actions">
-                        <button type="button" class="button add" id="btn-add-comic">
+                        <button type="button" class="button add" onclick="openComicModal()">
                             <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen
                         </button>
                     </div>
@@ -90,25 +92,37 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                                 <th>Thumbnail</th>
                                 <th>Typ & Kapitel</th>
                                 <th>Titel & Transkript</th>
-                                <th>Status</th>
                                 <th>Aktionen</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (empty($comics)) { ?>
                                 <tr>
-                                    <td colspan="6" class="empty-table-message">Keine Comics gefunden.</td>
+                                    <td colspan="5" class="empty-table-message">Keine Comics gefunden.</td>
                                 </tr>
                             <?php } else { ?>
                                 <?php foreach ($comics as $comic) {
                                     $cId       = $comic->id->value;
                                     $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
                                     $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$cId}.webp{$cb}";
+
+                                    // Alle Daten für JS bereitstellen
+                                    $charIds   = \array_map(fn ($id) => $id->value, $comic->characterIds);
+                                    $comicData = \json_encode([
+                                        'id'          => $cId,
+                                        'type'        => $comic->type,
+                                        'name'        => $comic->name,
+                                        'chapterId'   => $comic->chapterId ?? '',
+                                        'originalUrl' => $comic->originalUrl,
+                                        'sketchUrl'   => $comic->sketchUrl,
+                                        'transcript'  => $comic->transcript ?? '',
+                                        'characters'  => $charIds,
+                                    ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
                                     ?>
                                     <tr>
                                         <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
                                         <td>
-                                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" class="comic-thumbnail" alt="Thumb" loading="lazy" onerror="this.src='https://placehold.co/100x140?text=N/A'">
+                                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" class="comic-thumbnail" loading="lazy" onerror="this.src='https://placehold.co/100x140?text=N/A'">
                                         </td>
                                         <td>
                                             <span class="comic-type-display"><?php echo \htmlspecialchars($comic->type); ?></span>
@@ -122,23 +136,15 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                                                 <div class="description-preview"><?php echo \strip_tags($comic->transcript); ?></div>
                                             <?php } ?>
                                         </td>
-                                        <td>
-                                            <?php if (empty($comic->characterIds)) { ?>
-                                                <span class="status-icon missing" title="Keine Charaktere verknüpft"><i class="fa-solid fa-users-slash"></i></span>
-                                            <?php } else { ?>
-                                                <span class="status-icon present" title="<?php echo \count($comic->characterIds); ?> Charaktere verknüpft"><i class="fa-solid fa-users"></i></span>
-                                            <?php } ?>
-                                        </td>
                                         <td class="actions-cell">
                                             <form>
-                                                <!-- Undo Button (Dein Wunsch!) -->
-                                                <button type="button" class="button button-orange btn-undo-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Letzte Änderung rückgängig machen">
+                                                <button type="button" class="button button-orange" onclick="undoComic('<?php echo \htmlspecialchars($cId); ?>')" title="Letzte Änderung rückgängig machen">
                                                     <i class="fa-solid fa-rotate-left"></i>
                                                 </button>
-                                                <button type="button" class="button edit btn-edit-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Bearbeiten">
+                                                <button type="button" class="button edit" onclick='openComicModal(<?php echo $comicData; ?>)' title="Bearbeiten">
                                                     <i class="fa-solid fa-pen"></i>
                                                 </button>
-                                                <button type="button" class="button delete btn-delete-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Löschen">
+                                                <button type="button" class="button delete" onclick="deleteComic('<?php echo \htmlspecialchars($cId); ?>')" title="Löschen">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </button>
                                             </form>
@@ -150,31 +156,160 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                     </table>
                 </div>
             </section>
+        </div>
+    </div>
+</div>
 
+<!-- ========================================== -->
+<!-- COMIC EDITOR MODAL                         -->
+<!-- ========================================== -->
+<div id="comic-modal" class="modal">
+    <div class="modal-overlay" onclick="closeComicModal()"></div>
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header-wrapper">
+            <h2 id="modal-title">Comic bearbeiten</h2>
+            <button class="modal-close" onclick="closeComicModal()">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <form id="comic-form" class="admin-form">
+                <input type="hidden" id="form-action" name="action" value="save">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="comic_id">Comic ID (YYYYMMDD)</label>
+                        <input type="text" id="comic_id" name="comic_id" required pattern="\d{8}" placeholder="z.B. 20251024">
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Typ</label>
+                        <select id="type" name="type">
+                            <option value="Comicseite">Comicseite</option>
+                            <option value="Filler">Filler</option>
+                            <option value="Art">Art</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="name">Titel / Name</label>
+                        <input type="text" id="name" name="name" placeholder="Name des Comics">
+                    </div>
+                    <div class="form-group">
+                        <label for="chapter_id">Kapitel ID</label>
+                        <input type="text" id="chapter_id" name="chapter_id" placeholder="z.B. 21">
+                    </div>
+                </div>
+
+                <!-- Keenspot Base URL Logik ist im Backend verbaut! -->
+                <div class="form-group">
+                    <label for="url_originalbild">Original URL (Bild)</label>
+                    <input type="text" id="url_originalbild" name="url_originalbild" placeholder="Dateiname (z.B. 12345.jpg) oder volle https:// URL">
+                </div>
+
+                <div class="form-group">
+                    <label for="url_originalsketch">Original URL (Sketch)</label>
+                    <input type="text" id="url_originalsketch" name="url_originalsketch" placeholder="Dateiname oder volle https:// URL">
+                </div>
+
+                <div class="form-group">
+                    <label for="transcript">Transkript (HTML)</label>
+                    <textarea id="transcript" name="transcript" class="summernote-code-look" rows="5"></textarea>
+                </div>
+
+                <!-- Hinweis: Charaktere kommen in der nächsten Ausbaustufe! -->
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button" class="button" onclick="closeComicModal()">Abbrechen</button>
+                <button type="button" class="button edit" onclick="saveComic()">Speichern (Live)</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-document.addEventListener('DOMContentLoaded', () => {
-    // Logout Logic
-    const logoutBtn = document.getElementById('admin-logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const formData = new window.FormData(); // TODO Entferne window. wenn in eigener JS-Datei
-            formData.append('csrf_token', document.querySelector('meta[name="csrf-token"]').content);
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+const statusBox = document.getElementById('global-status-message');
 
-            const response = await fetch('<?php echo $baseUrl; ?>/api/admin_logout', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-            if (data.success) {
-                window.location.href = '<?php echo $baseUrl; ?>/' + data.redirect;
-            }
+function showMsg(text, type) {
+    statusBox.className = 'status-message visible status-' + type;
+    statusBox.innerHTML = text;
+    setTimeout(() => { statusBox.className = 'status-message'; }, 5000);
+}
+
+async function sendApiRequest(endpoint, formData) {
+    formData.append('csrf_token', csrfToken);
+    try {
+        const response = await fetch('<?php echo $baseUrl; ?>/api/' + endpoint, {
+            method: 'POST',
+            body: formData
         });
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload(); // Sofort neu laden, um Änderungen zu sehen
+        } else {
+            showMsg('<i class="fa-solid fa-triangle-exclamation"></i> ' + data.error, 'red');
+        }
+    } catch (e) {
+        showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
     }
+}
+
+// Modal Logik
+function openComicModal(data = null) {
+    const form = document.getElementById('comic-form');
+    form.reset();
+
+    if (data) {
+        document.getElementById('modal-title').textContent = 'Comic bearbeiten: ' + data.id;
+        document.getElementById('comic_id').value = data.id;
+        document.getElementById('comic_id').readOnly = true; // ID darf beim Editieren nicht geändert werden
+        document.getElementById('type').value = data.type;
+        document.getElementById('name').value = data.name;
+        document.getElementById('chapter_id').value = data.chapterId;
+        document.getElementById('url_originalbild').value = data.originalUrl;
+        document.getElementById('url_originalsketch').value = data.sketchUrl;
+        document.getElementById('transcript').value = data.transcript;
+    } else {
+        document.getElementById('modal-title').textContent = 'Neuen Comic anlegen';
+        document.getElementById('comic_id').readOnly = false;
+    }
+
+    document.getElementById('comic-modal').style.display = 'flex';
+}
+
+function closeComicModal() {
+    document.getElementById('comic-modal').style.display = 'none';
+}
+
+// API Aktionen
+function saveComic() {
+    const form = document.getElementById('comic-form');
+    if(!form.reportValidity()) return;
+    sendApiRequest('save_single_comic', new window.FormData(form));
+}
+
+function deleteComic(id) {
+    if(confirm('ACHTUNG: Willst du Comic ' + id + ' wirklich unwiderruflich löschen?')) {
+        const fd = new window.FormData(); // TODO Entferne window. wenn in eigener JS-Datei
+        fd.append('comic_id', id);
+        sendApiRequest('delete_comic', fd);
+    }
+}
+
+function undoComic(id) {
+    if(confirm('Soll der Comic ' + id + ' auf die VORHERIGE Version zurückgesetzt werden?')) {
+        const fd = new window.FormData();
+        fd.append('comic_id', id);
+        sendApiRequest('undo_comic', fd);
+    }
+}
+
+// Logout
+document.getElementById('admin-logout-btn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    sendApiRequest('admin_logout', new window.FormData());
 });
 </script>
 

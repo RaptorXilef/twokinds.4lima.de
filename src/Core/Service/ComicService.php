@@ -9,6 +9,7 @@ use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Exception\EntityNotFoundException;
+use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
 
 final readonly class ComicService
@@ -76,5 +77,37 @@ final readonly class ComicService
     public function deleteComic(ComicId $id): void
     {
         $this->comicRepository->delete($id);
+    }
+
+    public function restoreLatestRevision(ComicId $id): void
+    {
+        $revisionData = $this->revisionRepository->popLatestRevision($id);
+
+        if ($revisionData === null) {
+            throw new \DomainException('Keine vorherige Version (Snapshot) für diesen Comic gefunden.');
+        }
+
+        $charIds = [];
+        foreach ($revisionData['character_ids'] ?? [] as $cid) {
+            try {
+                $charIds[] = new CharacterId($cid);
+            } catch (\InvalidArgumentException) {
+            }
+        }
+
+        $restoredComic = new ComicPage(
+            id: $id,
+            type: $revisionData['type'] ?? 'Comicseite',
+            name: $revisionData['name'] ?? '',
+            transcript: $revisionData['transcript'] ?? null,
+            chapterId: $revisionData['chapter_id'] ?? null,
+            characterIds: $charIds,
+            originalUrl: $revisionData['original_url'] ?? '',
+            sketchUrl: $revisionData['sketch_url'] ?? '',
+            imageUpdatedAt: $revisionData['image_updated_at'] ?? null,
+        );
+
+        // Wir speichern direkt ins Repo, um nicht NOCH EINEN Snapshot vom jetzigen (kaputten) Zustand zu machen
+        $this->comicRepository->save($restoredComic);
     }
 }
