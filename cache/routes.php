@@ -8,6 +8,7 @@
   'api_save_single_character' => 'App\\Application\\Actions\\ApiSaveSingleCharacterAction',
   'api_save_single_comic' => 'App\\Application\\Actions\\ApiSaveSingleComicAction',
   'api_submit_report' => 'App\\Application\\Actions\\ApiSubmitReportAction',
+  'api_undo_comic' => 'App\\Application\\Actions\\ApiUndoComicAction',
   'render_archive' => 'App\\Application\\Actions\\ArchiveRenderAction',
   'render_character_list' => 'App\\Application\\Actions\\CharacterListRenderAction',
   'render_comic' => 'App\\Application\\Actions\\ComicRenderAction',

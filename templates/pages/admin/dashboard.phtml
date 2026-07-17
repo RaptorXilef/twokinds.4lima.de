@@ -22,6 +22,11 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <!-- FontAwesome (falls du es nutzt) für Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta name="csrf-token" content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    <style>
+        /* Ein kleines bisschen Layout-Voodoo für die Menü-Tabs */
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+    </style>
 </head>
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
 
@@ -39,11 +44,11 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
                 <nav id="menu" class="menu">
                     <span class="menu-label">Verwaltung</span>
-                    <a href="#section-comics" class="active">Comics</a>
-                    <a href="#section-characters">Charaktere</a>
+                    <a href="#section-comics" class="tab-link active" onclick="switchTab('section-comics', this)">Comics</a>
+                    <a href="#section-characters" class="tab-link" onclick="switchTab('section-characters', this)">Charaktere</a>
 
                     <span class="menu-label">System</span>
-                    <a href="#section-reports">
+                    <a href="#section-reports" class="tab-link" onclick="switchTab('section-reports', this)">
                         Reports
                         <?php if (\count($openReports) > 0) { ?>
                             <span style="background: #dc3545; color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.8em; margin-left: 5px;">
@@ -72,7 +77,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
             <!-- ========================================== -->
             <!-- SECTION: COMICS                            -->
             <!-- ========================================== -->
-            <section id="section-comics" class="content-section">
+            <section id="section-comics" class="content-section active">
                 <div class="table-controls actions-bar">
                     <div class="top-actions">
                         <button type="button" class="button add" onclick="openComicModal()">
@@ -156,18 +161,96 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                     </table>
                 </div>
             </section>
+
+            <!-- ========================================== -->
+            <!-- SECTION: CHARAKTERE                        -->
+            <!-- ========================================== -->
+            <section id="section-characters" class="content-section">
+                <div class="table-controls actions-bar">
+                    <div class="top-actions">
+                        <button type="button" class="button add" onclick="openCharModal()">
+                            <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sitemap-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 100px;">ID</th>
+                                <th style="width: 80px;">Avatar</th>
+                                <th>Name & Beschreibung</th>
+                                <th style="width: 120px; text-align: right;">Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($characters)) { ?>
+                                <tr>
+                                    <td colspan="4" class="empty-table-message">Keine Charaktere angelegt.</td>
+                                </tr>
+                            <?php } else { ?>
+                                <?php foreach ($characters as $char) {
+                                    $cId = $char->id->value;
+                                    $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/100x100?text=N/A';
+
+                                    $charData = \json_encode([
+                                        'id'          => $cId,
+                                        'name'        => $char->name,
+                                        'picUrl'      => $char->picUrl ?? '',
+                                        'description' => $char->description ?? '',
+                                    ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
+                                    ?>
+                                    <tr>
+                                        <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
+                                        <td>
+                                            <img src="<?php echo \htmlspecialchars($pic); ?>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;" onerror="this.src='https://placehold.co/100x100?text=N/A'">
+                                        </td>
+                                        <td>
+                                            <strong><?php echo \htmlspecialchars($char->name); ?></strong>
+                                            <?php if ($char->description) { ?>
+                                                <div class="description-preview" style="max-height: 2.5em;"><?php echo \strip_tags($char->description); ?></div>
+                                            <?php } ?>
+                                        </td>
+                                        <td class="actions-cell">
+                                            <form>
+                                                <button type="button" class="button edit" onclick='openCharModal(<?php echo $charData; ?>)' title="Bearbeiten">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button type="button" class="button delete" onclick="deleteCharacter('<?php echo \htmlspecialchars($cId); ?>', '<?php echo \htmlspecialchars(\addslashes($char->name)); ?>')" title="Löschen">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ========================================== -->
+            <!-- SECTION: REPORTS                           -->
+            <!-- ========================================== -->
+            <section id="section-reports" class="content-section">
+                <p>Das Report-System wird in Kürze implementiert.</p>
+            </section>
+
         </div>
     </div>
 </div>
 
 <!-- ========================================== -->
-<!-- COMIC EDITOR MODAL                         -->
+<!-- MODALS                                     -->
 <!-- ========================================== -->
+
+<!-- Comic Modal -->
 <div id="comic-modal" class="modal">
     <div class="modal-overlay" onclick="closeComicModal()"></div>
     <div class="modal-content" style="max-width: 800px;">
         <div class="modal-header-wrapper">
-            <h2 id="modal-title">Comic bearbeiten</h2>
+            <h2 id="modal-title-comic">Comic bearbeiten</h2>
             <button class="modal-close" onclick="closeComicModal()">&times;</button>
         </div>
         <div class="modal-scroll-content">
@@ -228,91 +311,55 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     </div>
 </div>
 
+<!-- Character Modal -->
+<div id="char-modal" class="modal">
+    <div class="modal-overlay" onclick="closeCharModal()"></div>
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header-wrapper">
+            <h2 id="modal-title-char">Charakter bearbeiten</h2>
+            <button class="modal-close" onclick="closeCharModal()">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <form id="char-form" class="admin-form">
+                <input type="hidden" id="character_id" name="character_id" value="new">
+
+                <div class="form-group">
+                    <label for="char_name">Name des Charakters</label>
+                    <input type="text" id="char_name" name="name" required placeholder="z.B. Trace Legacy">
+                </div>
+
+                <div class="form-group">
+                    <label for="pic_url">Dateiname des Profilbildes</label>
+                    <input type="text" id="pic_url" name="pic_url" placeholder="z.B. trace.jpg (Bild muss in /assets/images/characters/profiles/ liegen)">
+                </div>
+
+                <div class="form-group">
+                    <label for="char_description">Beschreibung (HTML)</label>
+                    <textarea id="char_description" name="description" class="summernote-code-look" rows="5"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button" class="button" onclick="closeCharModal()">Abbrechen</button>
+                <button type="button" class="button edit" onclick="saveCharacter()">Speichern (Live)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-const statusBox = document.getElementById('global-status-message');
-
-function showMsg(text, type) {
-    statusBox.className = 'status-message visible status-' + type;
-    statusBox.innerHTML = text;
-    setTimeout(() => { statusBox.className = 'status-message'; }, 5000);
-}
-
-async function sendApiRequest(endpoint, formData) {
-    formData.append('csrf_token', csrfToken);
-    try {
-        const response = await fetch('<?php echo $baseUrl; ?>/api/' + endpoint, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
-        if (data.success) {
-            window.location.reload(); // Sofort neu laden, um Änderungen zu sehen
-        } else {
-            showMsg('<i class="fa-solid fa-triangle-exclamation"></i> ' + data.error, 'red');
-        }
-    } catch (e) {
-        showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
+    // Einfache Tab-Steuerung für das Sidebar-Menü
+    function switchTab(sectionId, linkElement) {
+        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        linkElement.classList.add('active');
     }
-}
-
-// Modal Logik
-function openComicModal(data = null) {
-    const form = document.getElementById('comic-form');
-    form.reset();
-
-    if (data) {
-        document.getElementById('modal-title').textContent = 'Comic bearbeiten: ' + data.id;
-        document.getElementById('comic_id').value = data.id;
-        document.getElementById('comic_id').readOnly = true; // ID darf beim Editieren nicht geändert werden
-        document.getElementById('type').value = data.type;
-        document.getElementById('name').value = data.name;
-        document.getElementById('chapter_id').value = data.chapterId;
-        document.getElementById('url_originalbild').value = data.originalUrl;
-        document.getElementById('url_originalsketch').value = data.sketchUrl;
-        document.getElementById('transcript').value = data.transcript;
-    } else {
-        document.getElementById('modal-title').textContent = 'Neuen Comic anlegen';
-        document.getElementById('comic_id').readOnly = false;
-    }
-
-    document.getElementById('comic-modal').style.display = 'flex';
-}
-
-function closeComicModal() {
-    document.getElementById('comic-modal').style.display = 'none';
-}
-
-// API Aktionen
-function saveComic() {
-    const form = document.getElementById('comic-form');
-    if(!form.reportValidity()) return;
-    sendApiRequest('save_single_comic', new window.FormData(form));
-}
-
-function deleteComic(id) {
-    if(confirm('ACHTUNG: Willst du Comic ' + id + ' wirklich unwiderruflich löschen?')) {
-        const fd = new window.FormData(); // TODO Entferne window. wenn in eigener JS-Datei
-        fd.append('comic_id', id);
-        sendApiRequest('delete_comic', fd);
-    }
-}
-
-function undoComic(id) {
-    if(confirm('Soll der Comic ' + id + ' auf die VORHERIGE Version zurückgesetzt werden?')) {
-        const fd = new window.FormData();
-        fd.append('comic_id', id);
-        sendApiRequest('undo_comic', fd);
-    }
-}
-
-// Logout
-document.getElementById('admin-logout-btn')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    sendApiRequest('admin_logout', new window.FormData());
-});
 </script>
 
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
+<!-- HIER BINDEN WIR ADMIN JS EIN! -->
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/admin.js'); ?>"></script>
 </body>
 </html>
