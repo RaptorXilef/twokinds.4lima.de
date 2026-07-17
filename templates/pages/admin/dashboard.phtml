@@ -1,0 +1,183 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @var array                                      $settings
+ * @var string                                     $pageTitle
+ * @var string                                     $adminUser
+ * @var \App\Core\Entity\ComicPage[]               $comics
+ * @var \App\Core\Entity\Character[]               $characters
+ * @var \App\Core\Entity\Report[]                  $openReports
+ * @var \App\Contracts\System\AssetHelperInterface $asset
+ */
+$baseUrl = \rtrim($settings['base_url'], '/');
+?>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
+    <link rel="stylesheet" href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
+    <!-- FontAwesome (falls du es nutzt) für Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="csrf-token" content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+</head>
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+
+<div class="main-container">
+    <header>
+        <div class="banner" id="banner-lights-off"></div>
+    </header>
+
+    <div class="content-area">
+        <aside class="sidebar">
+            <div class="sidebar-content">
+                <div class="session-timer">
+                    <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
+                </div>
+
+                <nav id="menu" class="menu">
+                    <span class="menu-label">Verwaltung</span>
+                    <a href="#section-comics" class="active">Comics</a>
+                    <a href="#section-characters">Charaktere</a>
+
+                    <span class="menu-label">System</span>
+                    <a href="#section-reports">
+                        Reports
+                        <?php if (\count($openReports) > 0) { ?>
+                            <span style="background: #dc3545; color: white; border-radius: 10px; padding: 2px 6px; font-size: 0.8em; margin-left: 5px;">
+                                <?php echo \count($openReports); ?>
+                            </span>
+                        <?php } ?>
+                    </a>
+
+                    <span class="menu-label">Account</span>
+                    <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite <i class="fa-solid fa-external-link-alt" style="font-size: 0.8em;"></i></a>
+                    <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
+
+                    <a id="toggle_lights" class="theme" href="#">
+                        <span class="themelabel">Theme</span>
+                        <span class="themename">LICHT AUS</span>
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <div class="content">
+            <h1 class="page-header"><i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
+
+            <!-- ========================================== -->
+            <!-- SECTION: COMICS                            -->
+            <!-- ========================================== -->
+            <section id="section-comics" class="content-section">
+                <div class="table-controls actions-bar">
+                    <div class="top-actions">
+                        <button type="button" class="button add" id="btn-add-comic">
+                            <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen
+                        </button>
+                    </div>
+                    <div class="search-wrapper">
+                        <input type="text" id="comic-search" placeholder="Comics durchsuchen (ID, Name, Transkript)...">
+                    </div>
+                </div>
+
+                <div class="sitemap-table-container">
+                    <table class="admin-table comic-editor-table">
+                        <thead>
+                            <tr>
+                                <th>ID / Datum</th>
+                                <th>Thumbnail</th>
+                                <th>Typ & Kapitel</th>
+                                <th>Titel & Transkript</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($comics)) { ?>
+                                <tr>
+                                    <td colspan="6" class="empty-table-message">Keine Comics gefunden.</td>
+                                </tr>
+                            <?php } else { ?>
+                                <?php foreach ($comics as $comic) {
+                                    $cId       = $comic->id->value;
+                                    $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                                    $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$cId}.webp{$cb}";
+                                    ?>
+                                    <tr>
+                                        <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
+                                        <td>
+                                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" class="comic-thumbnail" alt="Thumb" loading="lazy" onerror="this.src='https://placehold.co/100x140?text=N/A'">
+                                        </td>
+                                        <td>
+                                            <span class="comic-type-display"><?php echo \htmlspecialchars($comic->type); ?></span>
+                                            <?php if ($comic->chapterId) { ?>
+                                                <small>Kapitel <?php echo \htmlspecialchars($comic->chapterId); ?></small>
+                                            <?php } ?>
+                                        </td>
+                                        <td>
+                                            <strong><?php echo \htmlspecialchars($comic->name !== '' ? $comic->name : 'Kein Titel'); ?></strong>
+                                            <?php if ($comic->transcript) { ?>
+                                                <div class="description-preview"><?php echo \strip_tags($comic->transcript); ?></div>
+                                            <?php } ?>
+                                        </td>
+                                        <td>
+                                            <?php if (empty($comic->characterIds)) { ?>
+                                                <span class="status-icon missing" title="Keine Charaktere verknüpft"><i class="fa-solid fa-users-slash"></i></span>
+                                            <?php } else { ?>
+                                                <span class="status-icon present" title="<?php echo \count($comic->characterIds); ?> Charaktere verknüpft"><i class="fa-solid fa-users"></i></span>
+                                            <?php } ?>
+                                        </td>
+                                        <td class="actions-cell">
+                                            <form>
+                                                <!-- Undo Button (Dein Wunsch!) -->
+                                                <button type="button" class="button button-orange btn-undo-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Letzte Änderung rückgängig machen">
+                                                    <i class="fa-solid fa-rotate-left"></i>
+                                                </button>
+                                                <button type="button" class="button edit btn-edit-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Bearbeiten">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </button>
+                                                <button type="button" class="button delete btn-delete-comic" data-id="<?php echo \htmlspecialchars($cId); ?>" title="Löschen">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+document.addEventListener('DOMContentLoaded', () => {
+    // Logout Logic
+    const logoutBtn = document.getElementById('admin-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const formData = new window.FormData(); // TODO Entferne window. wenn in eigener JS-Datei
+            formData.append('csrf_token', document.querySelector('meta[name="csrf-token"]').content);
+
+            const response = await fetch('<?php echo $baseUrl; ?>/api/admin_logout', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = '<?php echo $baseUrl; ?>/' + data.redirect;
+            }
+        });
+    }
+});
+</script>
+
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
+</body>
+</html>

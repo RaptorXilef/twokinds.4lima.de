@@ -1,4 +1,5 @@
 <?php return array (
+  'render_admin_dashboard' => 'App\\Application\\Actions\\AdminDashboardRenderAction',
   'render_admin_login' => 'App\\Application\\Actions\\AdminLoginRenderAction',
   'api_admin_login' => 'App\\Application\\Actions\\ApiAdminLoginAction',
   'api_admin_logout' => 'App\\Application\\Actions\\ApiAdminLogoutAction',

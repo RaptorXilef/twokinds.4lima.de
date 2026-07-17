@@ -6,9 +6,11 @@ namespace App\Application;
 
 use App\Application\Contracts\ResponseInterface;
 use App\Application\Http\ServerRequest;
+use App\Application\Middleware\AuthMiddleware;
 use App\Application\Middleware\MiddlewarePipeline;
 use App\Application\Middleware\SecurityHeadersMiddleware;
 use App\Application\Routing\UniversalActionFactory;
+use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 
 final readonly class FrontendController
@@ -17,6 +19,7 @@ final readonly class FrontendController
         private ConfigInterface $config,
         private UniversalActionFactory $actionFactory,
         private SecurityHeadersMiddleware $securityHeaders,
+        private SessionManager $sessionManager,
         // Weitere Middlewares (wie Analytics) kommen später hier rein
     ) {
     }
@@ -32,6 +35,15 @@ final readonly class FrontendController
 
         $pipeline = new MiddlewarePipeline();
         $pipeline->add($this->securityHeaders);
+
+        // --- AuthMiddleware dynamisch einhängen ---
+        $isProtectedApi   = \str_starts_with($actionKey, 'api_') && $actionKey !== 'api_admin_login';
+        $isProtectedAdmin = \str_starts_with($actionKey, 'render_admin_') && $actionKey !== 'render_admin_login';
+
+        if ($isProtectedApi || $isProtectedAdmin) {
+            $pipeline->add(new AuthMiddleware($this->sessionManager, $this->config));
+        }
+        // -----------------------------------------------
 
         $response = $pipeline->process($request, function (ServerRequest $req) use ($actionKey): mixed {
             $action = $this->actionFactory->create($actionKey);
