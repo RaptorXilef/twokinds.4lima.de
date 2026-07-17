@@ -20,6 +20,24 @@ final readonly class ComicService
 
     public function saveComic(ComicPage $comic): void
     {
+        // Bewahre den imageUpdatedAt Timestamp, falls dieser in der DB existiert,
+        // im aktuellen Request aber nicht explizit neu gesetzt wurde.
+        if ($comic->imageUpdatedAt === null) {
+            $existing = $this->comicRepository->findById($comic->id);
+            if ($existing instanceof ComicPage && $existing->imageUpdatedAt !== null) {
+                $comic = new ComicPage(
+                    id: $comic->id,
+                    type: $comic->type,
+                    name: $comic->name,
+                    transcript: $comic->transcript,
+                    chapterId: $comic->chapterId,
+                    characterIds: $comic->characterIds,
+                    originalUrl: $comic->originalUrl,
+                    sketchUrl: $comic->sketchUrl,
+                    imageUpdatedAt: $existing->imageUpdatedAt,
+                );
+            }
+        }
         $this->comicRepository->save($comic);
     }
 
