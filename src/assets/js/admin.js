@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Lokal Thumbnail
         if (idVal.length === 8) {
-            prevLocal.src = baseUrl + '/assets/images/comic/thumbnails/' + idVal + '.webp';
+            prevLocal.src = baseUrl + '/assets/images/comic/lowres/' + idVal + '.webp';
         } else {
             prevLocal.src = 'https://placehold.co/100x140?text=Fehlt';
         }
@@ -150,10 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
     origUrlInput?.addEventListener('input', updateComicPreviews);
     origSketchInput?.addEventListener('input', updateComicPreviews);
 
-    // Auto-Fill nach Verlassen der Comic-ID
+    // Auto-Fill nach Verlassen der Comic-ID (NUR bei neuen Comics!)
     comicIdInput?.addEventListener('blur', () => {
         const val = comicIdInput.value.trim();
-        if (val.length === 8) {
+        // !comicIdInput.readOnly bedeutet: Wir sind im "Neu anlegen" Modus
+        if (val.length === 8 && !comicIdInput.readOnly) {
             // YYYYMMDD
             if (origUrlInput.value === '') origUrlInput.value = val;
             if (origSketchInput.value === '') origSketchInput.value = val;

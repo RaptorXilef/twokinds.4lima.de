@@ -86,6 +86,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                     'https://www.google-analytics.com',
                     'https://www.googletagmanager.com',
                     'https://twokinds.4lima.de',
+                    'https://placehold.co/',
                 ],
                 'connect-src' => [
                     "'self'",
