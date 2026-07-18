@@ -5,6 +5,7 @@
   'api_admin_logout' => 'App\\Application\\Actions\\ApiAdminLogoutAction',
   'api_delete_character' => 'App\\Application\\Actions\\ApiDeleteCharacterAction',
   'api_delete_comic' => 'App\\Application\\Actions\\ApiDeleteComicAction',
+  'api_save_character_groups' => 'App\\Application\\Actions\\ApiSaveCharacterGroupsAction',
   'api_save_single_character' => 'App\\Application\\Actions\\ApiSaveSingleCharacterAction',
   'api_save_single_comic' => 'App\\Application\\Actions\\ApiSaveSingleComicAction',
   'api_submit_report' => 'App\\Application\\Actions\\ApiSubmitReportAction',
