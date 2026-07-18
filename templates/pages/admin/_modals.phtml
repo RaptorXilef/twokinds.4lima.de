@@ -86,25 +86,79 @@ declare(strict_types=1); ?>
 
                 <div class="form-group"
                      style="margin-top: 15px;">
-                    <label>Auf der Seite vorkommende Charaktere</label>
-                    <div class="char-selection-grid"
-                         id="comic-char-grid"
-                         style="max-height: 250px; overflow-y: auto; background: var(--table-row-even); border: 1px solid var(--border-medium); border-radius: 4px;">
-                        <?php foreach ($characters as $char) {
-                            $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A';
-                            ?>
-                            <div class="char-selection-item"
-                                 data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
-                                <img src="<?php echo \htmlspecialchars($pic); ?>"
-                                     loading="lazy">
-                                <span><?php echo \htmlspecialchars($char->name); ?></span>
-                                <!-- WICHTIG: Das versteckte Feld für den POST-Request. Wird per JS aktiviert/deaktiviert! -->
-                                <input type="hidden"
-                                       name="character_ids[]"
-                                       value="<?php echo \htmlspecialchars($char->id->value); ?>"
-                                       disabled>
-                            </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label>Auf der Seite vorkommende Charaktere</label>
+                        <button type="button"
+                                class="button"
+                                id="btn-toggle-char-view"><i class="fa-solid fa-layer-group"></i> Gruppiert
+                            anzeigen</button>
+                    </div>
+
+                    <!-- Das versteckte Select-Feld sammelt die echten Daten für den Request -->
+                    <select name="character_ids[]"
+                            id="hidden-comic-chars"
+                            multiple
+                            style="display:none;">
+                        <?php foreach ($characters as $char) { ?>
+                            <option value="<?php echo \htmlspecialchars($char->id->value); ?>"></option>
                         <?php } ?>
+                    </select>
+
+                    <div
+                         style="background: var(--table-row-even); border: 1px solid var(--border-medium); border-radius: 4px; padding: 10px;">
+
+                        <!-- Ansicht 1: Alphabetisch -->
+                        <div id="view-chars-alpha"
+                             class="char-selection-grid"
+                             style="max-height: 250px; overflow-y: auto;">
+                            <?php
+                            $alphaChars = $characters;
+\usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
+foreach ($alphaChars as $char) {
+    $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A';
+    ?>
+                                <div class="char-selection-item"
+                                     data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                                    <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                         loading="lazy">
+                                    <span><?php echo \htmlspecialchars($char->name); ?></span>
+                                </div>
+                            <?php } ?>
+                        </div>
+
+                        <!-- Ansicht 2: Gruppiert -->
+                        <div id="view-chars-grouped"
+                             style="display: none; max-height: 250px; overflow-y: auto;">
+                            <?php foreach ($groups as $group) { ?>
+                                <h4 style="margin: 10px 0 5px 0; border-bottom: 1px solid var(--border-medium);">
+                                    <?php echo \htmlspecialchars($group->name); ?></h4>
+                                <div class="char-selection-grid"
+                                     style="margin-bottom: 15px;">
+                                    <?php foreach ($group->characterIds as $cidObj) {
+                                        $char = null;
+                                        foreach ($characters as $c) {
+                                            if ($c->id->value === $cidObj->value) {
+                                                $char = $c;
+
+                                                break;
+                                            }
+                                        }
+                                        if (! $char) {
+                                            continue;
+                                        }
+                                        $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A';
+                                        ?>
+                                        <div class="char-selection-item"
+                                             data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                                            <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                                 loading="lazy">
+                                            <span><?php echo \htmlspecialchars($char->name); ?></span>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                            <?php } ?>
+                        </div>
+
                     </div>
                 </div>
             </form>

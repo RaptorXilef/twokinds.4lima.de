@@ -36,15 +36,15 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         $groups      = $this->groupRepo->findAll();
         $openReports = $this->reportRepo->findByStatus('open');
 
-        // 1. Unzugeordnete Charaktere herausfinden
+        // 1. Zugeordnete Charaktere herausfinden (Für den Pool-Filter)
         $assignedIds = [];
         foreach ($groups as $group) {
             foreach ($group->characterIds as $cid) {
                 $assignedIds[] = $cid->value;
             }
         }
-        $assignedIds          = \array_unique($assignedIds);
-        $unassignedCharacters = \array_filter($characters, fn ($char) => ! \in_array($char->id->value, $assignedIds, true));
+        // Wir übergeben einfach die Liste der zugeordneten IDs ans Template!
+        $assignedIds = \array_unique($assignedIds);
 
         // 2. Einzigartige Ränge für das Dropdown ermitteln
         $ranks = [];
@@ -69,15 +69,15 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         }
 
         $this->renderer->render('admin/dashboard', [
-            'pageTitle'            => 'Admin Dashboard',
-            'adminUser'            => $this->sessionManager->getAdminUser(),
-            'comics'               => $comics,
-            'characters'           => $characters,
-            'groups'               => $groups,
-            'unassignedCharacters' => $unassignedCharacters,
-            'openReports'          => $openReports,
-            'existingRanks'        => $existingRanks,
-            'availableImages'      => $availableImages,
+            'pageTitle'       => 'Admin Dashboard',
+            'adminUser'       => $this->sessionManager->getAdminUser(),
+            'comics'          => $comics,
+            'characters'      => $characters,
+            'groups'          => $groups,
+            'assignedIds'     => $assignedIds,
+            'openReports'     => $openReports,
+            'existingRanks'   => $existingRanks,
+            'availableImages' => $availableImages,
         ]);
 
         return null;

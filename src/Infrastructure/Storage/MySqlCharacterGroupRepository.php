@@ -23,6 +23,8 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
         $data = [
             'name'          => $group->name,
             'character_ids' => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
+            'sort_order'    => $group->sortOrder,
+            'manual_sort'   => (int) $group->manualSort,
         ];
 
         $this->executeUpsert('character_groups', $data, ['name']);
@@ -39,7 +41,8 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
 
     public function findAll(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM `character_groups` ORDER BY name ASC');
+        // WICHTIG: Hier greift jetzt die neue Sortierung!
+        $stmt = $this->pdo->query('SELECT * FROM `character_groups` ORDER BY sort_order ASC, name ASC');
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         return \array_map($this->mapToEntity(...), $rows);
@@ -59,6 +62,8 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
         return new CharacterGroup(
             name: $row['name'],
             characterIds: $charIds,
+            sortOrder: (int) ($row['sort_order'] ?? 0),
+            manualSort: (bool) ($row['manual_sort'] ?? false),
         );
     }
 }

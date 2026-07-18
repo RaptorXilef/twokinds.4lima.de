@@ -61,16 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- COMIC MODAL & VISUAL CHAR SELECTION ---
+    // --- COMIC MODAL & VISUAL CHAR SELECTION (DUAL VIEW) ---
+    const hiddenSelect = document.getElementById('hidden-comic-chars');
+
     function openComicModal(data = null) {
         const form = document.getElementById('comic-form');
         form.reset();
 
-        // Alle Charakter-Avatare zurücksetzen
-        document.querySelectorAll('.char-selection-item').forEach((item) => {
-            item.classList.remove('selected');
-            item.querySelector('input').disabled = true;
-        });
+        // Alle Selections zurücksetzen (Charakter-Avatare)
+        if (hiddenSelect) {
+            Array.from(hiddenSelect.options).forEach((opt) => (opt.selected = false));
+        }
+        document
+            .querySelectorAll('.char-selection-item')
+            .forEach((item) => item.classList.remove('selected'));
 
         if (data) {
             document.getElementById('modal-title-comic').textContent =
@@ -87,13 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Markiere die im Array enthaltenen Charaktere als ausgewählt
             if (data.characters && Array.isArray(data.characters)) {
                 data.characters.forEach((charId) => {
-                    const item = document.querySelector(
-                        `.char-selection-item[data-char-id="${charId}"]`
-                    );
-                    if (item) {
-                        item.classList.add('selected');
-                        item.querySelector('input').disabled = false;
-                    }
+                    const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
+                    if (opt) opt.selected = true;
+                    document
+                        .querySelectorAll(`.char-selection-item[data-char-id="${charId}"]`)
+                        .forEach((item) => {
+                            item.classList.add('selected');
+                        });
                 });
             }
         } else {
@@ -107,13 +111,33 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('comic-modal').style.display = 'none';
     }
 
-    // Avatar Klick-Logik im Comic Modal
+    // Toggle Alphabetical / Grouped View
+    let charViewAlpha = true;
+    document.getElementById('btn-toggle-char-view')?.addEventListener('click', (e) => {
+        charViewAlpha = !charViewAlpha;
+        e.target.innerHTML = charViewAlpha
+            ? '<i class="fa-solid fa-layer-group"></i> Gruppiert anzeigen'
+            : '<i class="fa-solid fa-font"></i> Alphabetisch anzeigen';
+        document.getElementById('view-chars-alpha').style.display = charViewAlpha ? 'flex' : 'none';
+        document.getElementById('view-chars-grouped').style.display = charViewAlpha
+            ? 'none'
+            : 'block';
+    });
+
+    // Avatar Klick-Logik synchronisiert Hidden-Select und BEIDE Ansichten
     document.addEventListener('click', (e) => {
         const charItem = e.target.closest('.char-selection-item');
         if (charItem) {
-            charItem.classList.toggle('selected');
-            const hiddenInput = charItem.querySelector('input');
-            hiddenInput.disabled = !charItem.classList.contains('selected');
+            const charId = charItem.dataset.charId;
+            const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
+            const newState = !opt.selected;
+            opt.selected = newState;
+
+            document
+                .querySelectorAll(`.char-selection-item[data-char-id="${charId}"]`)
+                .forEach((item) => {
+                    item.classList.toggle('selected', newState);
+                });
         }
     });
 
@@ -121,12 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function openCharModal(data = null) {
         const form = document.getElementById('char-form');
         form.reset();
+        document.getElementById('upload-preview-name').textContent = '';
         if (data) {
             document.getElementById('modal-title-char').textContent = 'Charakter bearbeiten';
             document.getElementById('character_id').value = data.id;
             document.getElementById('char_name').value = data.name;
             document.getElementById('pic_url').value = data.picUrl;
             document.getElementById('char_description').value = data.description;
+            document.getElementById('alt_names').value = data.altNames || '';
+            document.getElementById('char_rank').value = data.rank || '';
         } else {
             document.getElementById('modal-title-char').textContent = 'Neuen Charakter anlegen';
             document.getElementById('character_id').value = 'new';
@@ -138,106 +165,83 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('char-modal').style.display = 'none';
     }
 
-    // --- BILD UPLOAD DRAG & DROP ---
-    const dropZone = document.getElementById('char-drop-zone');
-    const fileInput = document.getElementById('profile_image');
-    const previewName = document.getElementById('upload-preview-name');
-
-    if (dropZone && fileInput) {
-        dropZone.addEventListener('click', () => fileInput.click());
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--link-color)';
-        });
-
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-medium)';
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-medium)';
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
-                document.getElementById('pic_url').value = ''; // Textfeld leeren bei Upload
-            }
-        });
-
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length) {
-                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
-                document.getElementById('pic_url').value = '';
-            }
-        });
-    }
-
-    // --- BILDER GALERIE MODAL ---
-    document.getElementById('btn-open-gallery')?.addEventListener('click', () => {
-        document.getElementById('gallery-modal').style.display = 'flex';
-    });
-
-    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
-        btn.addEventListener(
-            'click',
-            () => (document.getElementById('gallery-modal').style.display = 'none')
-        );
-    });
-
-    document.querySelectorAll('.gallery-item').forEach((item) => {
-        item.addEventListener('click', function () {
-            document.getElementById('pic_url').value = this.dataset.filename;
-            document.getElementById('gallery-modal').style.display = 'none';
-            // Upload leeren, da Galerie genutzt wird
-            if (fileInput) fileInput.value = '';
-            if (previewName) previewName.textContent = '';
-        });
-    });
-
     // --- GRUPPEN DRAG & DROP LOGIK ---
     function initSortable() {
         if (typeof Sortable === 'undefined') return;
 
-        // Initialisiere alle Listen (Pool + Gruppen)
-        const lists = document.querySelectorAll('.sortable-list');
-        lists.forEach((list) => {
-            new Sortable(list, {
-                group: 'shared', // Alle Listen teilen sich die selbe Gruppe -> D&D untereinander möglich
+        // 1. Der Pool: Erzeugt Klone beim Ziehen!
+        const poolEl = document.getElementById('char-pool');
+        if (poolEl && !poolEl.dataset.sortableInitialized) {
+            new Sortable(poolEl, {
+                group: { name: 'shared', pull: 'clone', put: false },
+                sort: false, // Pool selbst wird nicht manuell sortiert
                 animation: 150,
-                ghostClass: 'sortable-ghost',
             });
+            poolEl.dataset.sortableInitialized = 'true';
+        }
+
+        // 2. Die Gruppen: Nehmen Charaktere auf
+        document.querySelectorAll('.sortable-group').forEach((groupEl) => {
+            if (!groupEl.dataset.sortableInitialized) {
+                const manual = groupEl.dataset.manual === 'true';
+                new Sortable(groupEl, {
+                    group: 'shared',
+                    animation: 150,
+                    sort: manual, // Sortieren innerhalb der Gruppe nur, wenn manualSort aktiv ist
+                });
+                groupEl.dataset.sortableInitialized = 'true';
+            }
         });
+
+        // 3. Die Gruppen-Container selbst (Reihenfolge der Gruppen)
+        const wrapper = document.getElementById('groups-wrapper');
+        if (wrapper && !wrapper.dataset.sortableInitialized) {
+            new Sortable(wrapper, {
+                animation: 150,
+                handle: '.group-drag-handle',
+            });
+            wrapper.dataset.sortableInitialized = 'true';
+        }
     }
 
-    // Starte Sortable sofort
     initSortable();
+
+    // Pool Ansicht filtern ("Alle" vs "Nur Unzugeordnete")
+    let poolViewAll = true;
+    document.getElementById('btn-toggle-pool')?.addEventListener('click', (e) => {
+        poolViewAll = !poolViewAll;
+        e.target.textContent = poolViewAll ? 'Nur Unzugeordnete zeigen' : 'Alle anzeigen';
+        document.querySelectorAll('#char-pool .character-entry.is-assigned').forEach((el) => {
+            el.style.display = poolViewAll ? 'flex' : 'none';
+        });
+    });
 
     document.getElementById('btn-add-group')?.addEventListener('click', () => {
         const wrapper = document.getElementById('groups-wrapper');
         const defaultName = 'Neue Gruppe';
-
         const html = `
             <div class="character-group">
-                <div class="character-group-header">
-                    <h3 contenteditable="true" spellcheck="false" class="group-title-edit" style="outline: none; border-bottom: 1px dashed var(--border-medium);">${defaultName}</h3>
-                    <div class="group-actions">
-                        <button type="button" class="button delete btn-delete-group" title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
+                <div class="character-group-header" style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-grip-vertical group-drag-handle" title="Gruppe verschieben"></i>
+                    <div style="flex: 1;">
+                        <h3 contenteditable="true" spellcheck="false" class="group-title-edit" style="outline: none; border-bottom: 1px dashed var(--border-medium); margin: 0;">${defaultName}</h3>
+                        <label style="font-size: 0.8em; color: var(--text-color-light); font-weight: normal; margin-top: 5px; display: block;">
+                            <input type="checkbox" class="manual-sort-cb"> Manuell sortieren
+                        </label>
                     </div>
+                    <button type="button" class="button delete btn-delete-group" title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
                 </div>
-                <div class="character-list-container sortable-list" style="min-height: 50px; padding: 10px;"></div>
+                <div class="character-list-container sortable-group" data-manual="false" style="min-height: 50px; padding: 10px;"></div>
             </div>
         `;
         wrapper.insertAdjacentHTML('beforeend', html);
 
         // Fokus direkt in den Titel setzen
-        const newTitle = wrapper.lastElementChild.querySelector('h3');
-        newTitle.focus();
+        wrapper.lastElementChild.querySelector('.group-title-edit').focus();
         document.execCommand('selectAll', false, null);
 
         // Sortable für die neue Box neu initialisieren
-        initSortable();
+        initSortable(); // Neu einbinden
     });
 
     document.getElementById('btn-save-groups')?.addEventListener('click', () => {
@@ -248,11 +252,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = groupEl.querySelector('.group-title-edit').textContent.trim();
             if (!title) return; // Leere Gruppen ignorieren
 
+            const manualSort = groupEl.querySelector('.manual-sort-cb')?.checked || false;
             const charElements = groupEl.querySelectorAll('.character-entry');
             const charIds = Array.from(charElements).map((el) => el.dataset.id);
 
             groupsData.push({
                 name: title,
+                manual_sort: manualSort,
                 characters: charIds,
             });
         });
@@ -262,7 +268,24 @@ document.addEventListener('DOMContentLoaded', () => {
         sendApiRequest('save_character_groups', fd);
     });
 
-    // --- EVENT DELEGATION FÜR BUTTONS ---
+    // Char aus Gruppe löschen (X Button)
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-char-from-group')) {
+            e.target.closest('.character-entry').remove();
+        }
+    });
+
+    // Checkbox für manuelles Sortieren umschalten -> State updaten
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('manual-sort-cb')) {
+            const container = e.target.closest('.character-group').querySelector('.sortable-group');
+            container.dataset.manual = e.target.checked ? 'true' : 'false';
+            // Hinweis für den User
+            showMsg('Einstellung geändert. Bitte "Sortierung Speichern" klicken.', 'orange');
+        }
+    });
+
+    // --- EVENT DELEGATION FÜR BUTTONS (Bleibt wie vorher) ---
     document.addEventListener('click', (e) => {
         // Comic Aktionen
         if (e.target.closest('#btn-add-comic')) openComicModal();
@@ -333,15 +356,61 @@ document.addEventListener('DOMContentLoaded', () => {
         // Gruppe Löschen
         const deleteGroupBtn = e.target.closest('.btn-delete-group');
         if (deleteGroupBtn) {
-            const groupEl = deleteGroupBtn.closest('.character-group');
-            const chars = groupEl.querySelectorAll('.character-entry');
-            if (chars.length > 0) {
-                // Verschiebe alle Charaktere zurück in den Pool bevor die Gruppe gelöscht wird
-                const pool = document.getElementById('char-pool');
-                chars.forEach((char) => pool.appendChild(char));
-            }
-            groupEl.remove();
+            deleteGroupBtn.closest('.character-group').remove();
         }
+    });
+
+    // --- BILD UPLOAD DRAG & DROP ---
+    const dropZone = document.getElementById('char-drop-zone');
+    const fileInput = document.getElementById('profile_image');
+    const previewName = document.getElementById('upload-preview-name');
+
+    if (dropZone && fileInput) {
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--link-color)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
+                document.getElementById('pic_url').value = '';
+            }
+        });
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
+                document.getElementById('pic_url').value = '';
+            }
+        });
+    }
+
+    // --- BILDER GALERIE MODAL ---
+    document.getElementById('btn-open-gallery')?.addEventListener('click', () => {
+        document.getElementById('gallery-modal').style.display = 'flex';
+    });
+
+    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
+        btn.addEventListener(
+            'click',
+            () => (document.getElementById('gallery-modal').style.display = 'none')
+        );
+    });
+
+    document.querySelectorAll('.gallery-item').forEach((item) => {
+        item.addEventListener('click', function () {
+            document.getElementById('pic_url').value = this.dataset.filename;
+            document.getElementById('gallery-modal').style.display = 'none';
+            if (fileInput) fileInput.value = '';
+            if (previewName) previewName.textContent = '';
+        });
     });
 
     // --- LOGOUT ---

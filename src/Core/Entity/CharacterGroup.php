@@ -16,6 +16,8 @@ final class CharacterGroup
     public function __construct(
         public readonly string $name,
         array $characterIds,
+        public readonly int $sortOrder = 0,
+        public readonly bool $manualSort = false,
     ) {
         // Strikte Typisierung für das Array erzwingen
         foreach ($characterIds as $charId) {

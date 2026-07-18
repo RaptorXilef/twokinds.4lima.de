@@ -69,7 +69,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
         </aside>
 
         <div class="content">
-            <h1 class="page-header"><i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
+            <h1 class="page-header"><!--<i class="fa-solid fa-gauge">--></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
 
             <div id="global-status-message" class="status-message"></div>
 
@@ -86,7 +86,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
 <?php include __DIR__ . '/_modals.phtml'; ?>
 
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/admin.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/admin.min.js'); ?>"></script>
 </body>
 </html>

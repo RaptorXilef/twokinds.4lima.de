@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Application\Actions;
@@ -14,17 +15,22 @@ use App\Core\ValueObject\CharacterId;
 #[ActionRoute('api_save_character_groups')]
 final readonly class ApiSaveCharacterGroupsAction implements ActionInterface
 {
-    public function __construct(private CharacterGroupRepositoryInterface $groupRepo) {}
+    public function __construct(
+        private CharacterGroupRepositoryInterface $groupRepo,
+    ) {
+    }
 
     public function execute(ServerRequest $request): mixed
     {
         try {
-            $jsonData = $request->post['groups_data'] ?? '[]';
+            $jsonData    = $request->post['groups_data'] ?? '[]';
             $inputGroups = \json_decode($jsonData, true, 512, \JSON_THROW_ON_ERROR);
 
             $existingGroups = $this->groupRepo->findAll();
-            $existingNames = \array_map(fn($g) => $g->name, $existingGroups);
-            $newNames = [];
+            $existingNames  = \array_map(fn ($g) => $g->name, $existingGroups);
+            $newNames       = [];
+
+            $sortOrder = 0; // Hochzählen für die Drag&Drop Reihenfolge
 
             // 1. Alle reinkommenden Gruppen speichern/updaten
             foreach ($inputGroups as $groupData) {
@@ -34,15 +40,19 @@ final readonly class ApiSaveCharacterGroupsAction implements ActionInterface
                 }
 
                 $newNames[] = $name;
+                $manualSort = (bool) ($groupData['manual_sort'] ?? false);
 
                 $charIds = [];
-                foreach ($groupData['characters'] ?? [] as $cid) {
+                // Eindeutige Zuweisung, falls ein Charakter versehentlich doppelt reingezogen wurde
+                $uniqueChars = \array_unique($groupData['characters'] ?? []);
+                foreach ($uniqueChars as $cid) {
                     try {
                         $charIds[] = new CharacterId($cid);
-                    } catch (\InvalidArgumentException) {}
+                    } catch (\InvalidArgumentException) {
+                    }
                 }
 
-                $this->groupRepo->save(new CharacterGroup($name, $charIds));
+                $this->groupRepo->save(new CharacterGroup($name, $charIds, $sortOrder++, $manualSort));
             }
 
             // 2. Gruppen löschen, die der User im Frontend entfernt hat
@@ -51,7 +61,7 @@ final readonly class ApiSaveCharacterGroupsAction implements ActionInterface
                 $this->groupRepo->delete($delName);
             }
 
-            return JsonResponse::success(['message' => 'Gruppen-Sortierung erfolgreich gespeichert.']);
+            return JsonResponse::success(['message' => 'Gruppen und Sortierungen erfolgreich gespeichert.']);
         } catch (\Throwable $e) {
             return JsonResponse::error('Fehler beim Speichern der Gruppen: ' . $e->getMessage(), 500);
         }
