@@ -58,13 +58,17 @@ final class SchemaRegistry
                 `id` VARCHAR(20) PRIMARY KEY,
                 `name` VARCHAR(255) NOT NULL,
                 `pic_url` VARCHAR(255),
-                `description` TEXT
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+                `description` TEXT,
+                `alt_names` VARCHAR(255),
+                `rank` VARCHAR(100)
+            ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;',
 
             'character_groups' => 'CREATE TABLE IF NOT EXISTS `character_groups` (
                 `name` VARCHAR(100) PRIMARY KEY,
-                `character_ids` JSON
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+                `character_ids` JSON,
+                `sort_order` INT NOT NULL DEFAULT 0,
+                `manual_sort` TINYINT(1) NOT NULL DEFAULT 0
+            ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;',
 
             // Domain: Reports
             'reports' => 'CREATE TABLE IF NOT EXISTS `reports` (

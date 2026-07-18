@@ -33,9 +33,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- TAB LOGIK ---
+    const activeTab = sessionStorage.getItem('activeAdminTab') || 'section-comics';
+
+    // Beim Laden der Seite den gespeicherten Tab aktivieren
+    document.querySelectorAll('.content-section').forEach((sec) => sec.classList.remove('active'));
+    document.querySelectorAll('.tab-link').forEach((l) => l.classList.remove('active'));
+
+    const targetSection = document.getElementById(activeTab);
+    const targetLink = document.querySelector(`.tab-link[data-target="${activeTab}"]`);
+
+    if (targetSection) targetSection.classList.add('active');
+    if (targetLink) targetLink.classList.add('active');
+
     document.querySelectorAll('.tab-link').forEach((link) => {
         link.addEventListener('click', function (e) {
             if (this.dataset.target) {
+                // Klick merken!
+                sessionStorage.setItem('activeAdminTab', this.dataset.target);
+
                 document
                     .querySelectorAll('.content-section')
                     .forEach((sec) => sec.classList.remove('active'));

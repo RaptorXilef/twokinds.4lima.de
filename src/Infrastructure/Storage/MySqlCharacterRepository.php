@@ -23,8 +23,9 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
             'name'        => $character->name,
             'pic_url'     => $character->picUrl,
             'description' => $character->description,
+            'alt_names'   => $character->altNames,
+            'rank'        => $character->rank,
         ];
-
         $this->executeUpsert('characters', $data, ['id']);
     }
 
@@ -58,6 +59,8 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
             name: $row['name'],
             picUrl: $row['pic_url'],
             description: $row['description'],
+            altNames: $row['alt_names'] ?? null,
+            rank: $row['rank'] ?? null,
         );
     }
 }

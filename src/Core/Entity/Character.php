@@ -13,6 +13,8 @@ final readonly class Character
         public string $name,
         public ?string $picUrl,
         public ?string $description,
+        public ?string $altNames = null,
+        public ?string $rank = null,
     ) {
     }
 }
