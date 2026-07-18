@@ -94,6 +94,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                     'https://*.google-analytics.com',
                     'https://twokindscomic.com',
                     'https://cdn.jsdelivr.net',
+                    'https://cdnjs.cloudflare.com',
                 ],
                 'object-src' => [
                     "'none'",

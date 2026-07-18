@@ -97,31 +97,88 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- COMIC MODAL & VISUAL CHAR SELECTION (DUAL VIEW) ---
+    // --- COMIC MODAL: LIVE PREVIEWS & AUTO-FILL ---
     const hiddenSelect = document.getElementById('hidden-comic-chars');
     const comicIdInput = document.getElementById('comic_id');
     const origUrlInput = document.getElementById('url_originalbild');
     const origSketchInput = document.getElementById('url_originalsketch');
-    const comicPreviewImg = document.getElementById('comic-preview-img');
 
-    // Auto-Fill Logic
+    const prevLocal = document.getElementById('prev-comic-local');
+    const prevOrig = document.getElementById('prev-comic-orig');
+    const prevSketch = document.getElementById('prev-comic-sketch');
+
+    function updateComicPreviews() {
+        const idVal = comicIdInput.value.trim();
+        const origVal = origUrlInput.value.trim();
+        const sketchVal = origSketchInput.value.trim();
+
+        // Lokal Thumbnail
+        if (idVal.length === 8) {
+            prevLocal.src = baseUrl + '/assets/images/comic/thumbnails/' + idVal + '.webp';
+        } else {
+            prevLocal.src = 'https://placehold.co/100x140?text=Fehlt';
+        }
+
+        // Keenspot Original
+        if (origVal !== '') {
+            if (origVal.startsWith('http')) {
+                prevOrig.src = origVal;
+            } else {
+                // Wenn Endung fehlt, raten wir .jpg für die Vorschau (Backend macht cURL check)
+                const file = origVal.includes('.') ? origVal : origVal + '.jpg';
+                prevOrig.src = 'https://cdn.twokinds.keenspot.com/comics/' + file;
+            }
+        } else {
+            prevOrig.src = 'https://placehold.co/100x140?text=Fehlt';
+        }
+
+        // Keenspot Sketch
+        if (sketchVal !== '') {
+            if (sketchVal.startsWith('http')) {
+                prevSketch.src = sketchVal;
+            } else {
+                const file = sketchVal.includes('.') ? sketchVal : sketchVal + '.png';
+                prevSketch.src = 'https://twokindscomic.com/images/' + file;
+            }
+        } else {
+            prevSketch.src = 'https://placehold.co/100x140?text=Fehlt';
+        }
+    }
+
+    // Event Listener für die 3 Felder
+    comicIdInput?.addEventListener('input', updateComicPreviews);
+    origUrlInput?.addEventListener('input', updateComicPreviews);
+    origSketchInput?.addEventListener('input', updateComicPreviews);
+
+    // Auto-Fill nach Verlassen der Comic-ID
     comicIdInput?.addEventListener('blur', () => {
         const val = comicIdInput.value.trim();
         if (val.length === 8) {
             // YYYYMMDD
             if (origUrlInput.value === '') origUrlInput.value = val;
             if (origSketchInput.value === '') origSketchInput.value = val;
-
-            // Preview Image Update (falls es existiert)
-            comicPreviewImg.src = baseUrl + '/assets/images/comic/lowres/' + val + '.webp';
-            comicPreviewImg.style.display = 'inline-block';
+            updateComicPreviews();
         }
+    });
+
+    // Hover Zoom Overlay
+    const hoverOverlay = document.getElementById('image-hover-overlay');
+    const hoverOverlayImg = document.getElementById('hover-overlay-img');
+    document.querySelectorAll('.hover-zoom-trigger').forEach((img) => {
+        img.addEventListener('mouseenter', () => {
+            if (img.src && !img.src.includes('placehold.co')) {
+                hoverOverlayImg.src = img.src;
+                hoverOverlay.style.display = 'flex';
+            }
+        });
+        img.addEventListener('mouseleave', () => {
+            hoverOverlay.style.display = 'none';
+        });
     });
 
     function openComicModal(data = null) {
         const form = document.getElementById('comic-form');
         form.reset();
-        comicPreviewImg.style.display = 'none';
 
         // Alle Selections zurücksetzen (Charakter-Avatare)
         if (hiddenSelect) Array.from(hiddenSelect.options).forEach((opt) => (opt.selected = false));
@@ -141,9 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
             origSketchInput.value = data.sketchUrl;
             $('#transcript').trumbowyg('html', data.transcript);
 
-            comicPreviewImg.src = baseUrl + '/assets/images/comic/thumbnails/' + data.id + '.webp';
-            comicPreviewImg.style.display = 'inline-block';
-
             // Markiere die im Array enthaltenen Charaktere als ausgewählt
             if (data.characters && Array.isArray(data.characters)) {
                 data.characters.forEach((charId) => {
@@ -161,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
             comicIdInput.readOnly = false;
             $('#transcript').trumbowyg('empty');
         }
+        updateComicPreviews(); // Vorschauen direkt triggern
         document.getElementById('comic-modal').style.display = 'flex';
     }
 
@@ -287,22 +342,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- BILDER GALERIE MODAL ---
-    document.getElementById('btn-open-gallery')?.addEventListener('click', () => {
-        document.getElementById('gallery-modal').style.display = 'flex';
-    });
-
-    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
-        btn.addEventListener(
+    document
+        .getElementById('btn-open-gallery')
+        ?.addEventListener(
             'click',
-            () => (document.getElementById('gallery-modal').style.display = 'none')
+            () => (document.getElementById('gallery-modal').style.display = 'flex')
         );
-    });
+
+    document
+        .querySelectorAll('.btn-close-gallery-modal')
+        .forEach((btn) =>
+            btn.addEventListener(
+                'click',
+                () => (document.getElementById('gallery-modal').style.display = 'none')
+            )
+        );
 
     document.querySelectorAll('.gallery-item').forEach((item) => {
         item.addEventListener('click', function () {
             isDirty = true;
             picUrlInput.value = this.dataset.filename;
-            charPreviewImg.src = this.dataset.url; // Vorschau setzen
+            charPreviewImg.src = this.dataset.url;
             document.getElementById('gallery-modal').style.display = 'none';
             if (fileInput) fileInput.value = '';
             if (previewName) previewName.textContent = '';
@@ -358,20 +418,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const wrapper = document.getElementById('groups-wrapper');
         const defaultName = 'Neue Gruppe';
         const html = `
-            <div class="character-group">
-                <div class="character-group-header" style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-grip-vertical group-drag-handle" title="Gruppe verschieben"></i>
+        <div class="character-group">
+            <div class="character-group-header" style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-grip-vertical group-drag-handle" title="Gruppe verschieben"></i>
                     <div style="flex: 1;">
                         <h3 contenteditable="true" spellcheck="false" class="group-title-edit" style="outline: none; border-bottom: 1px dashed var(--border-medium); margin: 0;">${defaultName}</h3>
                         <label style="font-size: 0.8em; color: var(--text-color-light); font-weight: normal; margin-top: 5px; display: block;">
                             <input type="checkbox" class="manual-sort-cb"> Manuell sortieren
                         </label>
+                        </div>
+                        <button type="button" class="button delete btn-delete-group" title="Gruppe löschen">
+                        <i class="fa-solid fa-times"></i>
+                        </button>
                     </div>
-                    <button type="button" class="button delete btn-delete-group" title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
-                </div>
-                <div class="character-list-container sortable-group" data-manual="false" style="min-height: 50px; padding: 10px;"></div>
+                <div class="character-list-container sortable-group" data-manual="false" style="min-height: 50px; padding: 10px;">
             </div>
-        `;
+        </div>`;
         wrapper.insertAdjacentHTML('beforeend', html);
 
         // Fokus direkt in den Titel setzen
@@ -393,12 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const manualSort = groupEl.querySelector('.manual-sort-cb')?.checked || false;
             const charElements = groupEl.querySelectorAll('.character-entry');
             const charIds = Array.from(charElements).map((el) => el.dataset.id);
-
-            groupsData.push({
-                name: title,
-                manual_sort: manualSort,
-                characters: charIds,
-            });
+            groupsData.push({ name: title, manual_sort: manualSort, characters: charIds });
         });
 
         const fd = new FormData();
@@ -415,12 +472,20 @@ document.addEventListener('DOMContentLoaded', () => {
             container.dataset.manual = isManual ? 'true' : 'false';
 
             const sortableInstance = Sortable.get(container);
-            if (sortableInstance) {
-                sortableInstance.option('sort', isManual); // Live-Update des Moduls!
-            }
+            if (sortableInstance) sortableInstance.option('sort', isManual);
+
             // Hinweis für den User
             showMsg('Sortier-Modus geändert. Nicht vergessen zu speichern.', 'orange');
         }
+    });
+
+    let poolViewAll = true;
+    document.getElementById('btn-toggle-pool')?.addEventListener('click', (e) => {
+        poolViewAll = !poolViewAll;
+        e.target.textContent = poolViewAll ? 'Nur Unzugeordnete zeigen' : 'Alle anzeigen';
+        document.querySelectorAll('#char-pool .character-entry.is-assigned').forEach((el) => {
+            el.style.display = poolViewAll ? 'flex' : 'none';
+        });
     });
 
     // --- EVENT DELEGATION FÜR BUTTONS ---

@@ -1,6 +1,50 @@
 <?php
 
 declare(strict_types=1); ?>
+<style>
+/* CSS für den Bild-Hover-Zoom */
+#image-hover-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    /* Klicks gehen durch aufs Modal */
+}
+
+#image-hover-overlay img {
+    max-width: 90vw;
+    max-height: 95vh;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--border-medium);
+}
+
+.preview-box {
+    background: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+}
+
+.hover-zoom-trigger {
+    cursor: zoom-in;
+    border-radius: 4px;
+    border: 1px solid var(--border-medium);
+    margin-top: 10px;
+    max-height: 140px;
+    object-fit: contain;
+    background: #fff;
+}
+
+</style>
 
 <!-- ========================================== -->
 <!-- MODALS                                     -->
@@ -17,11 +61,29 @@ declare(strict_types=1); ?>
             <button class="modal-close btn-close-comic-modal">&times;</button>
         </div>
         <div class="modal-scroll-content">
-            <div style="text-align: center; margin-bottom: 15px;">
-                <img id="comic-preview-img"
-                     src=""
-                     style="max-height: 200px; max-width: 100%; display: none; border-radius: 4px; border: 1px solid var(--border-medium);">
+
+            <!-- NEU: Die 3 Live-Vorschauen -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="preview-box">
+                    <strong>Lokal (Thumbnail)</strong><br>
+                    <img id="prev-comic-local"
+                         src="https://placehold.co/100x140?text=Kein+Bild"
+                         class="hover-zoom-trigger">
+                </div>
+                <div class="preview-box">
+                    <strong>Original (Keenspot)</strong><br>
+                    <img id="prev-comic-orig"
+                         src="https://placehold.co/100x140?text=Kein+Bild"
+                         class="hover-zoom-trigger">
+                </div>
+                <div class="preview-box">
+                    <strong>Sketch (Keenspot)</strong><br>
+                    <img id="prev-comic-sketch"
+                         src="https://placehold.co/100x140?text=Kein+Bild"
+                         class="hover-zoom-trigger">
+                </div>
             </div>
+
             <form id="comic-form"
                   class="admin-form">
                 <input type="hidden"
@@ -77,20 +139,22 @@ declare(strict_types=1); ?>
                 </div>
 
                 <!-- Keenspot Base URL Logik ist im Backend verbaut! -->
-                <div class="form-group">
-                    <label for="url_originalbild">Original URL (Bild)</label>
-                    <input type="text"
-                           id="url_originalbild"
-                           name="url_originalbild"
-                           placeholder="Dateiname (z.B. 12345.jpg) oder volle https:// URL">
-                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label for="url_originalbild">Original URL (Bild)</label>
+                        <input type="text"
+                               id="url_originalbild"
+                               name="url_originalbild"
+                               placeholder="Dateiname (z.B. 12345.jpg) oder volle https:// URL">
+                    </div>
 
-                <div class="form-group">
-                    <label for="url_originalsketch">Original URL (Sketch)</label>
-                    <input type="text"
-                           id="url_originalsketch"
-                           name="url_originalsketch"
-                           placeholder="Dateiname oder volle https:// URL">
+                    <div class="form-group">
+                        <label for="url_originalsketch">Original URL (Sketch)</label>
+                        <input type="text"
+                               id="url_originalsketch"
+                               name="url_originalsketch"
+                               placeholder="Dateiname oder volle https:// URL">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -205,7 +269,7 @@ foreach ($alphaChars as $char) {
                 <div style="flex: 0 0 120px; text-align: center;">
                     <img id="char-preview-img"
                          src="https://placehold.co/120x120?text=Kein+Bild"
-                         style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium);">
+                         style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium); background: #fff;">
                     <div style="margin-top: 10px; font-weight: bold; color: var(--text-color-faded);"
                          id="char-display-id">ID: NEW</div>
                 </div>
@@ -256,19 +320,21 @@ foreach ($alphaChars as $char) {
                         <div class="form-group"
                              style="margin-bottom: 15px;">
                             <label>Profilbild Upload & Auswahl</label>
-                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                            <!-- UX FIX: Buttons und Input untereinander, damit es nicht quetscht -->
+                            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
                                 <button type="button"
                                         class="button"
-                                        id="btn-open-gallery"><i class="fa-solid fa-images"></i> Aus Galerie
+                                        id="btn-open-gallery"
+                                        style="width: 100%;"><i class="fa-solid fa-images"></i> Aus Galerie
                                     wählen</button>
                                 <input type="text"
                                        id="pic_url"
                                        name="pic_url"
-                                       placeholder="Oder Dateiname eintippen (z.B. trace.webp)"
-                                       style="flex: 1;">
+                                       placeholder="Oder Dateiname manuell eintippen (z.B. trace.webp)"
+                                       style="width: 100%;">
                             </div>
 
-                    <!-- Drag & Drop Zone für neuen Upload -->
+                            <!-- Drag & Drop Zone für neuen Upload -->
                             <div id="char-drop-zone"
                                  class="drag-drop-zone"
                                  style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
@@ -338,4 +404,11 @@ foreach ($alphaChars as $char) {
             </div>
         </div>
     </div>
+</div>
+
+<!-- Das globale Overlay für das Hover-Zoom der Comic-Vorschauen -->
+<div id="image-hover-overlay">
+    <img src=""
+         id="hover-overlay-img"
+         alt="Zoom Preview">
 </div>
