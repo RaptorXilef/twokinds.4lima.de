@@ -5,6 +5,41 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
     const baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
 
+    // --- UNSAVED CHANGES WARNING ---
+    let isDirty = false;
+    window.addEventListener('beforeunload', (e) => {
+        if (isDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // Registriere Änderungen an Textfeldern
+    document.addEventListener('input', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') isDirty = true;
+    });
+
+    // --- WYSIWYG TRUMBOWYG INITIALISIERUNG ---
+    if (typeof $.fn.trumbowyg !== 'undefined') {
+        $.trumbowyg.svgPath =
+            'https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg';
+        $('.wysiwyg-editor')
+            .trumbowyg({
+                lang: 'de',
+                btns: [
+                    ['viewHTML'],
+                    ['undo', 'redo'],
+                    ['formatting'],
+                    ['strong', 'em', 'del'],
+                    ['link'],
+                    ['insertImage'],
+                    ['unorderedList', 'orderedList'],
+                    ['removeformat'],
+                ],
+            })
+            .on('tbwchange', () => (isDirty = true));
+    }
+
     function showMsg(text, type) {
         if (!statusBox) return;
         statusBox.className = 'status-message visible status-' + type;
@@ -23,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             if (data.success) {
+                isDirty = false; // Zurücksetzen!
                 window.location.reload();
             } else {
                 showMsg('<i class="fa-solid fa-triangle-exclamation"></i> ' + data.error, 'red');
@@ -63,15 +99,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- COMIC MODAL & VISUAL CHAR SELECTION (DUAL VIEW) ---
     const hiddenSelect = document.getElementById('hidden-comic-chars');
+    const comicIdInput = document.getElementById('comic_id');
+    const origUrlInput = document.getElementById('url_originalbild');
+    const origSketchInput = document.getElementById('url_originalsketch');
+    const comicPreviewImg = document.getElementById('comic-preview-img');
+
+    // Auto-Fill Logic
+    comicIdInput?.addEventListener('blur', () => {
+        const val = comicIdInput.value.trim();
+        if (val.length === 8) {
+            // YYYYMMDD
+            if (origUrlInput.value === '') origUrlInput.value = val;
+            if (origSketchInput.value === '') origSketchInput.value = val;
+
+            // Preview Image Update (falls es existiert)
+            comicPreviewImg.src = baseUrl + '/assets/images/comic/lowres/' + val + '.webp';
+            comicPreviewImg.style.display = 'inline-block';
+        }
+    });
 
     function openComicModal(data = null) {
         const form = document.getElementById('comic-form');
         form.reset();
+        comicPreviewImg.style.display = 'none';
 
         // Alle Selections zurücksetzen (Charakter-Avatare)
-        if (hiddenSelect) {
-            Array.from(hiddenSelect.options).forEach((opt) => (opt.selected = false));
-        }
+        if (hiddenSelect) Array.from(hiddenSelect.options).forEach((opt) => (opt.selected = false));
         document
             .querySelectorAll('.char-selection-item')
             .forEach((item) => item.classList.remove('selected'));
@@ -79,14 +132,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data) {
             document.getElementById('modal-title-comic').textContent =
                 'Comic bearbeiten: ' + data.id;
-            document.getElementById('comic_id').value = data.id;
-            document.getElementById('comic_id').readOnly = true;
+            comicIdInput.value = data.id;
+            comicIdInput.readOnly = true;
             document.getElementById('type').value = data.type;
             document.getElementById('name').value = data.name;
             document.getElementById('chapter_id').value = data.chapterId;
-            document.getElementById('url_originalbild').value = data.originalUrl;
-            document.getElementById('url_originalsketch').value = data.sketchUrl;
-            document.getElementById('transcript').value = data.transcript;
+            origUrlInput.value = data.originalUrl;
+            origSketchInput.value = data.sketchUrl;
+            $('#transcript').trumbowyg('html', data.transcript);
+
+            comicPreviewImg.src = baseUrl + '/assets/images/comic/thumbnails/' + data.id + '.webp';
+            comicPreviewImg.style.display = 'inline-block';
 
             // Markiere die im Array enthaltenen Charaktere als ausgewählt
             if (data.characters && Array.isArray(data.characters)) {
@@ -102,7 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             document.getElementById('modal-title-comic').textContent = 'Neuen Comic anlegen';
-            document.getElementById('comic_id').readOnly = false;
+            comicIdInput.readOnly = false;
+            $('#transcript').trumbowyg('empty');
         }
         document.getElementById('comic-modal').style.display = 'flex';
     }
@@ -126,8 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Avatar Klick-Logik synchronisiert Hidden-Select und BEIDE Ansichten
     document.addEventListener('click', (e) => {
-        const charItem = e.target.closest('.char-selection-item');
+        const charItem = e.target.closest('.char-selection-item:not(.gallery-item)');
         if (charItem) {
+            isDirty = true;
             const charId = charItem.dataset.charId;
             const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
             const newState = !opt.selected;
@@ -142,21 +200,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- CHARAKTER MODAL ---
+    const charPreviewImg = document.getElementById('char-preview-img');
+    const charDisplayId = document.getElementById('char-display-id');
+    const picUrlInput = document.getElementById('pic_url');
+
+    // Live update preview on text input
+    picUrlInput?.addEventListener('input', (e) => {
+        const val = e.target.value.trim();
+        if (val) {
+            charPreviewImg.src = baseUrl + '/assets/images/characters/profiles/' + val;
+        } else {
+            charPreviewImg.src = 'https://placehold.co/120x120?text=Kein+Bild';
+        }
+    });
+
     function openCharModal(data = null) {
         const form = document.getElementById('char-form');
         form.reset();
         document.getElementById('upload-preview-name').textContent = '';
+
         if (data) {
             document.getElementById('modal-title-char').textContent = 'Charakter bearbeiten';
             document.getElementById('character_id').value = data.id;
+            charDisplayId.textContent = 'ID: ' + data.id;
             document.getElementById('char_name').value = data.name;
-            document.getElementById('pic_url').value = data.picUrl;
-            document.getElementById('char_description').value = data.description;
+            picUrlInput.value = data.picUrl;
+            $('#char_description').trumbowyg('html', data.description);
             document.getElementById('alt_names').value = data.altNames || '';
             document.getElementById('char_rank').value = data.rank || '';
+
+            charPreviewImg.src = data.picUrl
+                ? baseUrl + '/assets/images/characters/profiles/' + data.picUrl
+                : 'https://placehold.co/120x120?text=Kein+Bild';
         } else {
             document.getElementById('modal-title-char').textContent = 'Neuen Charakter anlegen';
             document.getElementById('character_id').value = 'new';
+            charDisplayId.textContent = 'ID: NEW';
+            $('#char_description').trumbowyg('empty');
+            charPreviewImg.src = 'https://placehold.co/120x120?text=Kein+Bild';
         }
         document.getElementById('char-modal').style.display = 'flex';
     }
@@ -164,6 +245,69 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeCharModal() {
         document.getElementById('char-modal').style.display = 'none';
     }
+
+    // --- BILD UPLOAD DRAG & DROP ---
+    const dropZone = document.getElementById('char-drop-zone');
+    const fileInput = document.getElementById('profile_image');
+    const previewName = document.getElementById('upload-preview-name');
+
+    if (dropZone && fileInput) {
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--link-color)';
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileUploadPreview();
+            }
+        });
+        fileInput.addEventListener('change', handleFileUploadPreview);
+    }
+
+    function handleFileUploadPreview() {
+        if (fileInput.files && fileInput.files[0]) {
+            isDirty = true;
+            previewName.textContent = 'Bereit zum Upload: ' + fileInput.files[0].name;
+            picUrlInput.value = ''; // Textfeld leeren
+            // Live Browser-Vorschau des lokalen Bildes
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                charPreviewImg.src = e.target.result;
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    }
+
+    // --- BILDER GALERIE MODAL ---
+    document.getElementById('btn-open-gallery')?.addEventListener('click', () => {
+        document.getElementById('gallery-modal').style.display = 'flex';
+    });
+
+    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
+        btn.addEventListener(
+            'click',
+            () => (document.getElementById('gallery-modal').style.display = 'none')
+        );
+    });
+
+    document.querySelectorAll('.gallery-item').forEach((item) => {
+        item.addEventListener('click', function () {
+            isDirty = true;
+            picUrlInput.value = this.dataset.filename;
+            charPreviewImg.src = this.dataset.url; // Vorschau setzen
+            document.getElementById('gallery-modal').style.display = 'none';
+            if (fileInput) fileInput.value = '';
+            if (previewName) previewName.textContent = '';
+        });
+    });
 
     // --- GRUPPEN DRAG & DROP LOGIK ---
     function initSortable() {
@@ -174,8 +318,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (poolEl && !poolEl.dataset.sortableInitialized) {
             new Sortable(poolEl, {
                 group: { name: 'shared', pull: 'clone', put: false },
-                sort: false, // Pool selbst wird nicht manuell sortiert
+                sort: false,
                 animation: 150,
+                onEnd: () => (isDirty = true),
             });
             poolEl.dataset.sortableInitialized = 'true';
         }
@@ -188,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     group: 'shared',
                     animation: 150,
                     sort: manual, // Sortieren innerhalb der Gruppe nur, wenn manualSort aktiv ist
+                    onEnd: () => (isDirty = true),
                 });
                 groupEl.dataset.sortableInitialized = 'true';
             }
@@ -199,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
             new Sortable(wrapper, {
                 animation: 150,
                 handle: '.group-drag-handle',
+                onEnd: () => (isDirty = true),
             });
             wrapper.dataset.sortableInitialized = 'true';
         }
@@ -206,17 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initSortable();
 
-    // Pool Ansicht filtern ("Alle" vs "Nur Unzugeordnete")
-    let poolViewAll = true;
-    document.getElementById('btn-toggle-pool')?.addEventListener('click', (e) => {
-        poolViewAll = !poolViewAll;
-        e.target.textContent = poolViewAll ? 'Nur Unzugeordnete zeigen' : 'Alle anzeigen';
-        document.querySelectorAll('#char-pool .character-entry.is-assigned').forEach((el) => {
-            el.style.display = poolViewAll ? 'flex' : 'none';
-        });
-    });
-
     document.getElementById('btn-add-group')?.addEventListener('click', () => {
+        isDirty = true;
         const wrapper = document.getElementById('groups-wrapper');
         const defaultName = 'Neue Gruppe';
         const html = `
@@ -268,24 +406,24 @@ document.addEventListener('DOMContentLoaded', () => {
         sendApiRequest('save_character_groups', fd);
     });
 
-    // Char aus Gruppe löschen (X Button)
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-char-from-group')) {
-            e.target.closest('.character-entry').remove();
-        }
-    });
-
-    // Checkbox für manuelles Sortieren umschalten -> State updaten
+    // Checkbox für manuelles Sortieren -> LIVE UPDATE IN SORTABLE!
     document.addEventListener('change', (e) => {
         if (e.target.classList.contains('manual-sort-cb')) {
+            isDirty = true;
             const container = e.target.closest('.character-group').querySelector('.sortable-group');
-            container.dataset.manual = e.target.checked ? 'true' : 'false';
+            const isManual = e.target.checked;
+            container.dataset.manual = isManual ? 'true' : 'false';
+
+            const sortableInstance = Sortable.get(container);
+            if (sortableInstance) {
+                sortableInstance.option('sort', isManual); // Live-Update des Moduls!
+            }
             // Hinweis für den User
-            showMsg('Einstellung geändert. Bitte "Sortierung Speichern" klicken.', 'orange');
+            showMsg('Sortier-Modus geändert. Nicht vergessen zu speichern.', 'orange');
         }
     });
 
-    // --- EVENT DELEGATION FÜR BUTTONS (Bleibt wie vorher) ---
+    // --- EVENT DELEGATION FÜR BUTTONS ---
     document.addEventListener('click', (e) => {
         // Comic Aktionen
         if (e.target.closest('#btn-add-comic')) openComicModal();
@@ -356,61 +494,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Gruppe Löschen
         const deleteGroupBtn = e.target.closest('.btn-delete-group');
         if (deleteGroupBtn) {
+            isDirty = true;
             deleteGroupBtn.closest('.character-group').remove();
         }
-    });
 
-    // --- BILD UPLOAD DRAG & DROP ---
-    const dropZone = document.getElementById('char-drop-zone');
-    const fileInput = document.getElementById('profile_image');
-    const previewName = document.getElementById('upload-preview-name');
-
-    if (dropZone && fileInput) {
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--link-color)';
-        });
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-medium)';
-        });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-medium)';
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
-                document.getElementById('pic_url').value = '';
-            }
-        });
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length) {
-                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
-                document.getElementById('pic_url').value = '';
-            }
-        });
-    }
-
-    // --- BILDER GALERIE MODAL ---
-    document.getElementById('btn-open-gallery')?.addEventListener('click', () => {
-        document.getElementById('gallery-modal').style.display = 'flex';
-    });
-
-    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
-        btn.addEventListener(
-            'click',
-            () => (document.getElementById('gallery-modal').style.display = 'none')
-        );
-    });
-
-    document.querySelectorAll('.gallery-item').forEach((item) => {
-        item.addEventListener('click', function () {
-            document.getElementById('pic_url').value = this.dataset.filename;
-            document.getElementById('gallery-modal').style.display = 'none';
-            if (fileInput) fileInput.value = '';
-            if (previewName) previewName.textContent = '';
-        });
+        if (e.target.classList.contains('remove-char-from-group')) {
+            isDirty = true;
+            e.target.closest('.character-entry').remove();
+        }
     });
 
     // --- LOGOUT ---

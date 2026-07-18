@@ -59,7 +59,19 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 }
 
                 // Wir speichern das Bild als "charid_timestamp.ext" um Caching-Probleme zu vermeiden
-                $fileName = $charIdStr . '_' . \time() . '.' . $ext;
+                $file = $request->files['profile_image'];
+                $ext  = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION));
+                if ($ext === '') {
+                    $ext = 'webp';
+                }
+
+                // Dateinamen aus Charakternamen generieren (Leerzeichen durch _, nur Alphanumerisch)
+                $safeName = \preg_replace('/[^a-zA-Z0-9_-]/', '', \str_replace(' ', '_', $dto->name));
+                if ($safeName === '') {
+                    $safeName = $charIdStr; // Fallback auf ID
+                }
+
+                $fileName = $safeName . '.' . $ext;
 
                 if (\move_uploaded_file($file['tmp_name'], $targetDir . '/' . $fileName)) {
                     $picUrl = $fileName;

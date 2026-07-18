@@ -11,12 +11,17 @@ declare(strict_types=1); ?>
      class="modal">
     <div class="modal-overlay btn-close-comic-modal"></div>
     <div class="modal-content"
-         style="max-width: 800px;">
+         style="max-width: 1080px;">
         <div class="modal-header-wrapper">
             <h2 id="modal-title-comic">Comic bearbeiten</h2>
             <button class="modal-close btn-close-comic-modal">&times;</button>
         </div>
         <div class="modal-scroll-content">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <img id="comic-preview-img"
+                     src=""
+                     style="max-height: 200px; max-width: 100%; display: none; border-radius: 4px; border: 1px solid var(--border-medium);">
+            </div>
             <form id="comic-form"
                   class="admin-form">
                 <input type="hidden"
@@ -26,13 +31,16 @@ declare(strict_types=1); ?>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <div class="form-group">
-                        <label for="comic_id">Comic ID (YYYYMMDD)</label>
+                        <label for="comic_id">Comic ID (YYYYMMDD) *</label>
                         <input type="text"
                                id="comic_id"
                                name="comic_id"
                                required
                                pattern="\d{8}"
                                placeholder="z.B. 20251024">
+                        <small style="color: var(--text-color-faded);">
+                            Füllt URLs beim Verlassen des Feldes automatisch aus.
+                        </small>
                     </div>
                     <div class="form-group">
                         <label for="type">Typ</label>
@@ -58,7 +66,13 @@ declare(strict_types=1); ?>
                         <input type="text"
                                id="chapter_id"
                                name="chapter_id"
+                               list="chapter-datalist"
                                placeholder="z.B. 21">
+                        <datalist id="chapter-datalist">
+                            <?php foreach ($existingChapters ?? [] as $ch) { ?>
+                                <option value="<?php echo \htmlspecialchars((string) $ch); ?>">
+                                <?php } ?>
+                        </datalist>
                     </div>
                 </div>
 
@@ -81,7 +95,7 @@ declare(strict_types=1); ?>
 
                 <div class="form-group">
                     <label for="transcript">Transkript (HTML)</label>
-                    <textarea id="transcript" name="transcript" class="summernote-code-look" rows="5"></textarea>
+                    <textarea id="transcript" name="transcript" class="wysiwyg-editor" rows="5"></textarea>
                 </div>
 
                 <div class="form-group"
@@ -175,98 +189,114 @@ foreach ($alphaChars as $char) {
     </div>
 </div>
 
-<!-- ERWEITERTES Charakter Modal -->
+<!-- Charakter Modal -->
 <div id="char-modal"
      class="modal">
     <div class="modal-overlay btn-close-char-modal"></div>
     <div class="modal-content"
-         style="max-width: 750px;">
+         style="max-width: 1080px;">
         <div class="modal-header-wrapper">
             <h2 id="modal-title-char">Charakter bearbeiten</h2>
             <button class="modal-close btn-close-char-modal">&times;</button>
         </div>
         <div class="modal-scroll-content">
-            <form id="char-form"
-                  class="admin-form"
-                  enctype="multipart/form-data">
-                <input type="hidden"
-                       id="character_id"
-                       name="character_id"
-                       value="new">
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div class="form-group">
-                        <label for="char_name">Name *</label>
-                        <input type="text"
-                               id="char_name"
-                               name="name"
-                               required
-                               placeholder="z.B. Trace Legacy">
-                    </div>
-                    <div class="form-group">
-                        <label for="alt_names">Alternative Namen</label>
-                        <input type="text"
-                               id="alt_names"
-                               name="alt_names"
-                               placeholder="Z.B. Großtempler">
-                    </div>
+            <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 15px;">
+                <!-- Linke Spalte: Vorschaubild -->
+                <div style="flex: 0 0 120px; text-align: center;">
+                    <img id="char-preview-img"
+                         src="https://placehold.co/120x120?text=Kein+Bild"
+                         style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium);">
+                    <div style="margin-top: 10px; font-weight: bold; color: var(--text-color-faded);"
+                         id="char-display-id">ID: NEW</div>
                 </div>
 
-                <div class="form-group">
-                    <label for="char_rank">Rang (Optional)</label>
-                    <input type="text"
-                           id="char_rank"
-                           name="rank"
-                           list="rank-datalist"
-                           placeholder="Tippen oder auswählen...">
-                    <datalist id="rank-datalist">
-                        <?php foreach ($existingRanks as $rank) { ?>
-                            <option value="<?php echo \htmlspecialchars($rank); ?>">
-                            <?php } ?>
-                    </datalist>
-                </div>
+                <!-- Rechte Spalte: Formular -->
+                <div style="flex: 1;">
+                    <form id="char-form"
+                          class="admin-form"
+                          enctype="multipart/form-data">
+                        <input type="hidden"
+                               id="character_id"
+                               name="character_id"
+                               value="new">
 
-                <div class="form-group"
-                     style="margin-top: 15px;">
-                    <label>Profilbild</label>
-                    <div style="display: flex; gap: 10px; align-items: stretch; margin-bottom: 10px;">
-                        <input type="text"
-                               id="pic_url"
-                               name="pic_url"
-                               placeholder="Dateiname (z.B. trace.webp)"
-                               style="flex: 1;">
-                        <button type="button"
-                                class="button"
-                                id="btn-open-gallery"><i class="fa-solid fa-images"></i> Aus Galerie...</button>
-                    </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label for="char_name">Name *</label>
+                                <input type="text"
+                                       id="char_name"
+                                       name="name"
+                                       required
+                                       placeholder="z.B. Trace Legacy">
+                            </div>
+                            <div class="form-group">
+                                <label for="alt_names">Alternative Namen</label>
+                                <input type="text"
+                                       id="alt_names"
+                                       name="alt_names"
+                                       placeholder="Z.B. Großtempler">
+                            </div>
+                        </div>
+
+                        <div class="form-group"
+                             style="margin-bottom: 15px;">
+                            <label for="char_rank">Rang (Optional)</label>
+                            <input type="text"
+                                   id="char_rank"
+                                   name="rank"
+                                   list="rank-datalist"
+                                   placeholder="Tippen oder auswählen...">
+                            <datalist id="rank-datalist">
+                                <?php foreach ($existingRanks as $rank) { ?>
+                                    <option value="<?php echo \htmlspecialchars($rank); ?>">
+                                    <?php } ?>
+                            </datalist>
+                        </div>
+
+                        <div class="form-group"
+                             style="margin-bottom: 15px;">
+                            <label>Profilbild Upload & Auswahl</label>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                                <button type="button"
+                                        class="button"
+                                        id="btn-open-gallery"><i class="fa-solid fa-images"></i> Aus Galerie
+                                    wählen</button>
+                                <input type="text"
+                                       id="pic_url"
+                                       name="pic_url"
+                                       placeholder="Oder Dateiname eintippen (z.B. trace.webp)"
+                                       style="flex: 1;">
+                            </div>
 
                     <!-- Drag & Drop Zone für neuen Upload -->
-                    <div id="char-drop-zone"
-                         class="drag-drop-zone"
-                         style="padding: 20px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
-                        <i class="fa-solid fa-cloud-arrow-up"
-                           style="font-size: 2em; color: var(--text-color-light);"></i>
-                        <p style="margin: 10px 0 0; color: var(--text-color-light);">Neues Bild hier ablegen oder
-                            klicken</p>
-                        <input type="file"
-                               id="profile_image"
-                               name="profile_image"
-                               accept="image/*"
-                               style="display: none;">
-                        <div id="upload-preview-name"
-                             style="margin-top: 5px; font-weight: bold; color: var(--link-color);"></div>
-                    </div>
-                </div>
+                            <div id="char-drop-zone"
+                                 class="drag-drop-zone"
+                                 style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
+                                <i class="fa-solid fa-cloud-arrow-up"
+                                   style="font-size: 2em; color: var(--text-color-light);"></i>
+                                <p style="margin: 5px 0 0; color: var(--text-color-light);">Neues Bild hier ablegen oder
+                                    klicken</p>
+                                <input type="file"
+                                       id="profile_image"
+                                       name="profile_image"
+                                       accept="image/*"
+                                       style="display: none;">
+                                <div id="upload-preview-name"
+                                     style="margin-top: 5px; font-weight: bold; color: var(--link-color);"></div>
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label for="char_description">Beschreibung (HTML)</label>
-                    <textarea id="char_description"
-                              name="description"
-                              class="summernote-code-look"
-                              rows="4">
-                    </textarea>
+                        <div class="form-group">
+                            <label for="char_description">Beschreibung (HTML)</label>
+                            <textarea id="char_description"
+                                      name="description"
+                                      class="wysiwyg-editor"
+                                      rows="4">
+                            </textarea>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
         <div class="modal-footer-actions">
             <div class="modal-buttons">
@@ -286,7 +316,7 @@ foreach ($alphaChars as $char) {
      style="z-index: 1050;">
     <div class="modal-overlay btn-close-gallery-modal"></div>
     <div class="modal-content"
-         style="max-width: 600px;">
+         style="max-width: 800px;">
         <div class="modal-header-wrapper">
             <h2>Bild aus Galerie wählen</h2>
             <button class="modal-close btn-close-gallery-modal">&times;</button>
@@ -297,7 +327,8 @@ foreach ($alphaChars as $char) {
                     $url = "{$baseUrl}/assets/images/characters/profiles/{$img}";
                     ?>
                     <div class="char-selection-item gallery-item"
-                         data-filename="<?php echo \htmlspecialchars($img); ?>">
+                         data-filename="<?php echo \htmlspecialchars($img); ?>"
+                         data-url="<?php echo \htmlspecialchars($url); ?>">
                         <img src="<?php echo \htmlspecialchars($url); ?>"
                              loading="lazy"
                              style="width:60px;height:60px;object-fit:cover;border-radius:5px;">

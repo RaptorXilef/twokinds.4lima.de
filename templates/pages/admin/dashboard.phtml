@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -8,9 +9,10 @@ declare(strict_types=1);
  * @var \App\Core\Entity\ComicPage[]               $comics
  * @var \App\Core\Entity\Character[]               $characters
  * @var array                                      $groups
- * @var \App\Core\Entity\Character[]               $unassignedCharacters
+ * @var array                                      $assignedIds
  * @var \App\Core\Entity\Report[]                  $openReports
  * @var array                                      $existingRanks
+ * @var array                                      $existingChapters
  * @var array                                      $availableImages
  * @var \App\Contracts\System\AssetHelperInterface $asset
  */
@@ -18,75 +20,102 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 ?>
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
     <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
-    <link rel="stylesheet" href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
+    <link rel="stylesheet"
+          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
     <!-- FontAwesome (falls du es nutzt) für Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Trumbowyg Editor Styles -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <meta name="csrf-token" content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/langs/de.min.js"></script>
+    <meta name="csrf-token"
+          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     <style>
-        /* Ein kleines bisschen Layout-Voodoo für die Menü-Tabs */
-        .content-section { display: none; }
-        .content-section.active { display: block; }
+    .content-section {
+        display: none;
+    }
+
+    .content-section.active {
+        display: block;
+    }
+
     </style>
 </head>
+
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
 
-<div class="main-container">
-    <header>
-        <div class="banner" id="banner-lights-off"></div>
-    </header>
+    <div class="main-container">
+        <header>
+            <div class="banner"
+                 id="banner-lights-off"></div>
+        </header>
 
-    <div class="content-area">
-        <aside class="sidebar">
-            <div class="sidebar-content">
-                <div class="session-timer">
-                    <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
-                </div>
+        <div class="content-area">
+            <aside class="sidebar">
+                <div class="sidebar-content">
+                    <div class="session-timer">
+                        <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
+                    </div>
 
-                <nav id="menu" class="menu">
-                    <span class="menu-label">Verwaltung</span>
-                    <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
-                    <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
-                    <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
+                    <nav id="menu"
+                         class="menu">
+                        <span class="menu-label">Verwaltung</span>
+                        <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
+                        <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
+                        <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
 
-                    <span class="menu-label">System</span>
-                    <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
+                        <span class="menu-label">System</span>
+                        <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
 
-                    <span class="menu-label">Account</span>
-                    <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite <i class="fa-solid fa-external-link-alt" style="font-size: 0.8em;"></i></a>
-                    <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
+                        <span class="menu-label">Account</span>
+                        <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a>
+                        <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
 
-                    <a id="toggle_lights" class="theme" href="#">
+                        <a id="toggle_lights" class="theme" href="#">
                         <span class="themelabel">Theme</span>
                         <span class="themename">LICHT AUS</span>
                     </a>
-                </nav>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="content">
+                <h1 class="page-header"><!--<i class="fa-solid fa-gauge">--></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
+
+                <div id="global-status-message"
+                     class="status-message"></div>
+
+                <?php include __DIR__ . '/_section_comics.phtml'; ?>
+                <?php include __DIR__ . '/_section_characters.phtml'; ?>
+                <?php include __DIR__ . '/_section_groups.phtml'; ?>
+
+                <section id="section-reports"
+                         class="content-section">
+                    <p>Das Report-System wird in Kürze implementiert.</p>
+                </section>
             </div>
-        </aside>
-
-        <div class="content">
-            <h1 class="page-header"><!--<i class="fa-solid fa-gauge">--></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
-
-            <div id="global-status-message" class="status-message"></div>
-
-            <?php include __DIR__ . '/_section_comics.phtml'; ?>
-            <?php include __DIR__ . '/_section_characters.phtml'; ?>
-            <?php include __DIR__ . '/_section_groups.phtml'; ?>
-
-            <section id="section-reports" class="content-section">
-                <p>Das Report-System wird in Kürze implementiert.</p>
-            </section>
         </div>
     </div>
-</div>
 
-<?php include __DIR__ . '/_modals.phtml'; ?>
+    <?php include __DIR__ . '/_modals.phtml'; ?>
 
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/admin.min.js'); ?>"></script>
+    <!-- MIN.JS UPDATES -->
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $asset->url('assets/js/admin.min.js'); ?>"></script>
 </body>
+
 </html>

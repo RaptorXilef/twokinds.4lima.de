@@ -27,12 +27,22 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         try {
             $dto = SaveSingleComicRequest::fromRequest($request);
 
+            // Auto-Detect für fehlende Dateiendungen bei Keenspot / Twokinds URLs
+            $originalUrl = $dto->originalUrl;
+            $sketchUrl   = $dto->sketchUrl;
+
+            if ($originalUrl !== '' && ! \preg_match('/\.[a-z0-9]{3,4}$/i', $originalUrl)) {
+                $originalUrl .= '.' . $this->probeRemoteExtension($originalUrl);
+            }
+            if ($sketchUrl !== '' && ! \preg_match('/\.[a-z0-9]{3,4}$/i', $sketchUrl)) {
+                $sketchUrl .= '.' . $this->probeRemoteExtension($sketchUrl);
+            }
+
             $charIds = [];
             foreach ($dto->characterIds as $cId) {
                 try {
                     $charIds[] = new CharacterId((string) $cId);
                 } catch (\InvalidArgumentException) {
-                    continue;
                 }
             }
 
@@ -43,9 +53,9 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 transcript: $dto->transcript,
                 chapterId: $dto->chapterId,
                 characterIds: $charIds,
-                originalUrl: $dto->originalUrl,
-                sketchUrl: $dto->sketchUrl,
-                imageUpdatedAt: null, // Wird im Service intelligent bewahrt
+                originalUrl: $originalUrl,
+                sketchUrl: $sketchUrl,
+                imageUpdatedAt: null,
             );
 
             $this->comicService->saveComic($comic);
@@ -57,5 +67,25 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         } catch (\Throwable $e) {
             return JsonResponse::error('Ein interner Fehler ist aufgetreten: ' . $e->getMessage(), 500);
         }
+    }
+
+    // Pinged den Server blitzschnell an (HEAD request), um zu sehen, welche Dateiendung existiert
+    private function probeRemoteExtension(string $baseUrl): string
+    {
+        foreach (['jpg', 'png', 'gif', 'jpeg'] as $ext) { // TODO ggf. ins Interface
+            $ch = \curl_init($baseUrl . '.' . $ext);
+            \curl_setopt($ch, \CURLOPT_NOBODY, true); // Nur Header laden, spart Bandbreite
+            \curl_setopt($ch, \CURLOPT_TIMEOUT, 2);
+            \curl_setopt($ch, \CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TwokindsAdminProbe/1.0');
+            \curl_exec($ch);
+            $code = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+            \curl_close($ch);
+
+            if ($code === 200 || $code === 301 || $code === 302) {
+                return $ext;
+            }
+        }
+
+        return 'jpg'; // Fallback
     }
 }

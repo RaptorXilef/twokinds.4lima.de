@@ -68,16 +68,27 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             }
         }
 
+        // 4. Einzigartige Kapitel für das Dropdown ermitteln
+        $chapters = [];
+        foreach ($comics as $comic) {
+            if ($comic->chapterId !== null && $comic->chapterId !== '') {
+                $chapters[] = $comic->chapterId;
+            }
+        }
+        $existingChapters = \array_values(\array_unique($chapters));
+        \sort($existingChapters, \SORT_NUMERIC);
+
         $this->renderer->render('admin/dashboard', [
-            'pageTitle'       => 'Admin Dashboard',
-            'adminUser'       => $this->sessionManager->getAdminUser(),
-            'comics'          => $comics,
-            'characters'      => $characters,
-            'groups'          => $groups,
-            'assignedIds'     => $assignedIds,
-            'openReports'     => $openReports,
-            'existingRanks'   => $existingRanks,
-            'availableImages' => $availableImages,
+            'pageTitle'        => 'Admin Dashboard',
+            'adminUser'        => $this->sessionManager->getAdminUser(),
+            'comics'           => $comics,
+            'characters'       => $characters,
+            'groups'           => $groups,
+            'assignedIds'      => $assignedIds,
+            'openReports'      => $openReports,
+            'existingRanks'    => $existingRanks,
+            'existingChapters' => $existingChapters,
+            'availableImages'  => $availableImages,
         ]);
 
         return null;
