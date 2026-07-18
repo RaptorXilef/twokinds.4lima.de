@@ -1,0 +1,256 @@
+<?php
+
+declare(strict_types=1); ?>
+
+<!-- ========================================== -->
+<!-- MODALS                                     -->
+<!-- ========================================== -->
+
+<!-- Comic Modal -->
+<div id="comic-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-comic-modal"></div>
+    <div class="modal-content"
+         style="max-width: 800px;">
+        <div class="modal-header-wrapper">
+            <h2 id="modal-title-comic">Comic bearbeiten</h2>
+            <button class="modal-close btn-close-comic-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <form id="comic-form"
+                  class="admin-form">
+                <input type="hidden"
+                       id="form-action"
+                       name="action"
+                       value="save">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label for="comic_id">Comic ID (YYYYMMDD)</label>
+                        <input type="text"
+                               id="comic_id"
+                               name="comic_id"
+                               required
+                               pattern="\d{8}"
+                               placeholder="z.B. 20251024">
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Typ</label>
+                        <select id="type"
+                                name="type">
+                            <option value="Comicseite">Comicseite</option>
+                            <option value="Filler">Filler</option>
+                            <option value="Art">Art</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label for="name">Titel / Name</label>
+                        <input type="text"
+                               id="name"
+                               name="name"
+                               placeholder="Name des Comics">
+                    </div>
+                    <div class="form-group">
+                        <label for="chapter_id">Kapitel ID</label>
+                        <input type="text"
+                               id="chapter_id"
+                               name="chapter_id"
+                               placeholder="z.B. 21">
+                    </div>
+                </div>
+
+                <!-- Keenspot Base URL Logik ist im Backend verbaut! -->
+                <div class="form-group">
+                    <label for="url_originalbild">Original URL (Bild)</label>
+                    <input type="text"
+                           id="url_originalbild"
+                           name="url_originalbild"
+                           placeholder="Dateiname (z.B. 12345.jpg) oder volle https:// URL">
+                </div>
+
+                <div class="form-group">
+                    <label for="url_originalsketch">Original URL (Sketch)</label>
+                    <input type="text"
+                           id="url_originalsketch"
+                           name="url_originalsketch"
+                           placeholder="Dateiname oder volle https:// URL">
+                </div>
+
+                <div class="form-group">
+                    <label for="transcript">Transkript (HTML)</label>
+                    <textarea id="transcript" name="transcript" class="summernote-code-look" rows="5"></textarea>
+                </div>
+
+                <div class="form-group"
+                     style="margin-top: 15px;">
+                    <label>Auf der Seite vorkommende Charaktere</label>
+                    <div class="char-selection-grid"
+                         id="comic-char-grid"
+                         style="max-height: 250px; overflow-y: auto; background: var(--table-row-even); border: 1px solid var(--border-medium); border-radius: 4px;">
+                        <?php foreach ($characters as $char) {
+                            $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A';
+                            ?>
+                            <div class="char-selection-item"
+                                 data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                                <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                     loading="lazy">
+                                <span><?php echo \htmlspecialchars($char->name); ?></span>
+                                <!-- WICHTIG: Das versteckte Feld für den POST-Request. Wird per JS aktiviert/deaktiviert! -->
+                                <input type="hidden"
+                                       name="character_ids[]"
+                                       value="<?php echo \htmlspecialchars($char->id->value); ?>"
+                                       disabled>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-comic-modal">Abbrechen</button>
+                <button type="button"
+                        class="button edit"
+                        id="btn-save-comic">Speichern (Live)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ERWEITERTES Charakter Modal -->
+<div id="char-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-char-modal"></div>
+    <div class="modal-content"
+         style="max-width: 750px;">
+        <div class="modal-header-wrapper">
+            <h2 id="modal-title-char">Charakter bearbeiten</h2>
+            <button class="modal-close btn-close-char-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <form id="char-form"
+                  class="admin-form"
+                  enctype="multipart/form-data">
+                <input type="hidden"
+                       id="character_id"
+                       name="character_id"
+                       value="new">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label for="char_name">Name *</label>
+                        <input type="text"
+                               id="char_name"
+                               name="name"
+                               required
+                               placeholder="z.B. Trace Legacy">
+                    </div>
+                    <div class="form-group">
+                        <label for="alt_names">Alternative Namen</label>
+                        <input type="text"
+                               id="alt_names"
+                               name="alt_names"
+                               placeholder="Z.B. Großtempler">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="char_rank">Rang (Optional)</label>
+                    <input type="text"
+                           id="char_rank"
+                           name="rank"
+                           list="rank-datalist"
+                           placeholder="Tippen oder auswählen...">
+                    <datalist id="rank-datalist">
+                        <?php foreach ($existingRanks as $rank) { ?>
+                            <option value="<?php echo \htmlspecialchars($rank); ?>">
+                            <?php } ?>
+                    </datalist>
+                </div>
+
+                <div class="form-group"
+                     style="margin-top: 15px;">
+                    <label>Profilbild</label>
+                    <div style="display: flex; gap: 10px; align-items: stretch; margin-bottom: 10px;">
+                        <input type="text"
+                               id="pic_url"
+                               name="pic_url"
+                               placeholder="Dateiname (z.B. trace.webp)"
+                               style="flex: 1;">
+                        <button type="button"
+                                class="button"
+                                id="btn-open-gallery"><i class="fa-solid fa-images"></i> Aus Galerie...</button>
+                    </div>
+
+                    <!-- Drag & Drop Zone für neuen Upload -->
+                    <div id="char-drop-zone"
+                         class="drag-drop-zone"
+                         style="padding: 20px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
+                        <i class="fa-solid fa-cloud-arrow-up"
+                           style="font-size: 2em; color: var(--text-color-light);"></i>
+                        <p style="margin: 10px 0 0; color: var(--text-color-light);">Neues Bild hier ablegen oder
+                            klicken</p>
+                        <input type="file"
+                               id="profile_image"
+                               name="profile_image"
+                               accept="image/*"
+                               style="display: none;">
+                        <div id="upload-preview-name"
+                             style="margin-top: 5px; font-weight: bold; color: var(--link-color);"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="char_description">Beschreibung (HTML)</label>
+                    <textarea id="char_description"
+                              name="description"
+                              class="summernote-code-look"
+                              rows="4">
+                    </textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-char-modal">Abbrechen</button>
+                <button type="button"
+                        class="button edit"
+                        id="btn-save-char">Speichern (Live)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Gallery Modal -->
+<div id="gallery-modal"
+     class="modal"
+     style="z-index: 1050;">
+    <div class="modal-overlay btn-close-gallery-modal"></div>
+    <div class="modal-content"
+         style="max-width: 600px;">
+        <div class="modal-header-wrapper">
+            <h2>Bild aus Galerie wählen</h2>
+            <button class="modal-close btn-close-gallery-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <div class="char-selection-grid">
+                <?php foreach ($availableImages as $img) {
+                    $url = "{$baseUrl}/assets/images/characters/profiles/{$img}";
+                    ?>
+                    <div class="char-selection-item gallery-item"
+                         data-filename="<?php echo \htmlspecialchars($img); ?>">
+                        <img src="<?php echo \htmlspecialchars($url); ?>"
+                             loading="lazy"
+                             style="width:60px;height:60px;object-fit:cover;border-radius:5px;">
+                        <span style="font-size: 0.75em; word-break: break-all;"><?php echo \htmlspecialchars($img); ?></span>
+                    </div>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>

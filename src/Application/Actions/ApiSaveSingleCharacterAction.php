@@ -38,7 +38,11 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 $charIdStr = 'char_' . \str_pad((string) \random_int(1, 9999), 4, '0', \STR_PAD_LEFT);
             }
 
-            $picUrl    = $dto->picUrl;
+            $picUrl = $dto->picUrl;
+            // Leerzeichen durch Unterstriche ersetzen
+            if ($picUrl !== null && $picUrl !== '') {
+                $picUrl = \str_replace(' ', '_', $picUrl);
+            }
             $warnings  = [];
             $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
 

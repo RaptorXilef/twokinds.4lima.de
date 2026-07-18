@@ -1,0 +1,92 @@
+<!-- ========================================== -->
+<!-- SECTION: GRUPPEN (DRAG & DROP)             -->
+<!-- ========================================== -->
+<section id="section-groups"
+         class="content-section">
+    <div class="table-controls actions-bar">
+        <div class="top-actions">
+            <button type="button"
+                    class="button add"
+                    id="btn-add-group">
+                <i class="fa-solid fa-folder-plus"></i> Neue Gruppe
+            </button>
+            <button type="button"
+                    class="button edit"
+                    id="btn-save-groups">
+                <i class="fa-solid fa-save"></i> Sortierung Speichern
+            </button>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 20px; align-items: flex-start;">
+        <!-- Pool: Unzugeordnete -->
+        <div class="character-group"
+             style="flex: 0 0 300px; background-color: var(--table-row-even);">
+            <div class="character-group-header"
+                 style="cursor: default;">
+                <h3>Unzugeordnet (Pool)</h3>
+            </div>
+            <div id="char-pool"
+                 class="character-list-container sortable-list"
+                 style="min-height: 200px; padding: 10px;">
+                <?php foreach ($unassignedCharacters as $char) {
+                    $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/40x40?text=N/A';
+                    ?>
+                    <div class="character-entry"
+                         data-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                        <img src="<?php echo \htmlspecialchars($pic); ?>">
+                        <div class="character-info">
+                            <strong><?php echo \htmlspecialchars($char->name); ?></strong>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
+        </div>
+
+        <!-- Die aktiven Gruppen -->
+        <div id="groups-wrapper"
+             style="flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            <?php foreach ($groups as $group) { ?>
+                <div class="character-group">
+                    <div class="character-group-header">
+                        <h3 contenteditable="true"
+                            spellcheck="false"
+                            class="group-title-edit"
+                            style="outline: none; border-bottom: 1px dashed var(--border-medium);"><?php echo \htmlspecialchars($group->name); ?></h3>
+                        <div class="group-actions">
+                            <button type="button"
+                                    class="button delete btn-delete-group"
+                                    title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
+                        </div>
+                    </div>
+                    <div class="character-list-container sortable-list"
+                         style="min-height: 50px; padding: 10px;">
+                        <?php foreach ($group->characterIds as $cidObj) {
+                            // Wir suchen das Char-Objekt aus dem globalen Array
+                            $char = null;
+                            foreach ($characters as $c) {
+                                if ($c->id->value === $cidObj->value) {
+                                    $char = $c;
+
+                                    break;
+                                }
+                            }
+                            if (! $char) {
+                                continue;
+                            }
+                            $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/40x40?text=N/A';
+                            ?>
+                            <div class="character-entry"
+                                 data-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                                <img src="<?php echo \htmlspecialchars($pic); ?>">
+                                <div class="character-info">
+                                    <strong><?php echo \htmlspecialchars($char->name); ?></strong>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            <?php } ?>
+        </div>
+    </div>
+</section>

@@ -138,6 +138,64 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('char-modal').style.display = 'none';
     }
 
+    // --- BILD UPLOAD DRAG & DROP ---
+    const dropZone = document.getElementById('char-drop-zone');
+    const fileInput = document.getElementById('profile_image');
+    const previewName = document.getElementById('upload-preview-name');
+
+    if (dropZone && fileInput) {
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--link-color)';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
+                document.getElementById('pic_url').value = ''; // Textfeld leeren bei Upload
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                previewName.textContent = 'Datei ausgewählt: ' + fileInput.files[0].name;
+                document.getElementById('pic_url').value = '';
+            }
+        });
+    }
+
+    // --- BILDER GALERIE MODAL ---
+    document.getElementById('btn-open-gallery')?.addEventListener('click', () => {
+        document.getElementById('gallery-modal').style.display = 'flex';
+    });
+
+    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
+        btn.addEventListener(
+            'click',
+            () => (document.getElementById('gallery-modal').style.display = 'none')
+        );
+    });
+
+    document.querySelectorAll('.gallery-item').forEach((item) => {
+        item.addEventListener('click', function () {
+            document.getElementById('pic_url').value = this.dataset.filename;
+            document.getElementById('gallery-modal').style.display = 'none';
+            // Upload leeren, da Galerie genutzt wird
+            if (fileInput) fileInput.value = '';
+            if (previewName) previewName.textContent = '';
+        });
+    });
+
     // --- GRUPPEN DRAG & DROP LOGIK ---
     function initSortable() {
         if (typeof Sortable === 'undefined') return;

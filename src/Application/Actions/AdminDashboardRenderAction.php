@@ -9,6 +9,7 @@ use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
 use App\Application\View\TemplateRenderer;
+use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
@@ -24,6 +25,7 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         private CharacterRepositoryInterface $charRepo,
         private CharacterGroupRepositoryInterface $groupRepo,
         private ReportRepositoryInterface $reportRepo,
+        private ConfigInterface $config,
     ) {
     }
 
@@ -34,19 +36,37 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         $groups      = $this->groupRepo->findAll();
         $openReports = $this->reportRepo->findByStatus('open');
 
-        // Unzugeordnete Charaktere herausfinden
+        // 1. Unzugeordnete Charaktere herausfinden
         $assignedIds = [];
         foreach ($groups as $group) {
             foreach ($group->characterIds as $cid) {
                 $assignedIds[] = $cid->value;
             }
         }
-        $assignedIds = \array_unique($assignedIds);
+        $assignedIds          = \array_unique($assignedIds);
+        $unassignedCharacters = \array_filter($characters, fn ($char) => ! \in_array($char->id->value, $assignedIds, true));
 
-        $unassignedCharacters = \array_filter(
-            $characters,
-            fn ($char) => ! \in_array($char->id->value, $assignedIds, true),
-        );
+        // 2. Einzigartige Ränge für das Dropdown ermitteln
+        $ranks = [];
+        foreach ($characters as $char) {
+            if ($char->rank !== null && $char->rank !== '') {
+                $ranks[] = $char->rank;
+            }
+        }
+        $existingRanks = \array_values(\array_unique($ranks));
+        \sort($existingRanks);
+
+        // 3. Verfügbare Profilbilder aus dem Ordner scannen
+        $imageDir        = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
+        $availableImages = [];
+        if (\is_dir($imageDir)) {
+            $files = \scandir($imageDir);
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..' && \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file)) {
+                    $availableImages[] = $file;
+                }
+            }
+        }
 
         $this->renderer->render('admin/dashboard', [
             'pageTitle'            => 'Admin Dashboard',
@@ -56,6 +76,8 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             'groups'               => $groups,
             'unassignedCharacters' => $unassignedCharacters,
             'openReports'          => $openReports,
+            'existingRanks'        => $existingRanks,
+            'availableImages'      => $availableImages,
         ]);
 
         return null;
