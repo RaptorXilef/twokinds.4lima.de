@@ -171,21 +171,6 @@ use App\Core\Entity\CharacterGroup;
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div class="form-group">
-                        <label>Hires-Datei (Übersetzung):</label>
-                        <input type="file"
-                               name="upload_hires"
-                               accept="image/*">
-                    </div>
-                    <div class="form-group">
-                        <label>Lowres-Datei (Optional, überschreibt Auto-Skalierung):</label>
-                        <input type="file"
-                               name="upload_lowres"
-                               accept="image/*">
-                    </div>
-                </div>
-
                 <!-- Keenspot Base URL Logik ist im Backend verbaut! -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <div class="form-group">
@@ -205,11 +190,55 @@ use App\Core\Entity\CharacterGroup;
                     </div>
                 </div>
 
+                <!-- Drag n Drop Upload Felder für Comic-Seiten -->
+                <div class="form-group"
+                     style="margin-bottom: 20px;">
+                    <label>Bild(er) hochladen (Drag & Drop oder Klick)</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+                        <div id="comic-drop-zone-hires"
+                             class="drag-drop-zone"
+                             style="padding: 20px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
+                            <i class="fa-solid fa-file-image"
+                               style="font-size: 2em; color: var(--link-color);"></i>
+                            <p style="margin: 5px 0 0; color: var(--text-color); font-weight: bold;">Hires (Pflicht)</p>
+                            <small style="color: var(--text-color-light);">Wird automatisch skaliert</small>
+                            <input type="file"
+                                   id="upload_hires"
+                                   name="upload_hires"
+                                   accept="image/*"
+                                   style="display: none;">
+                            <div id="preview-name-hires"
+                                 style="margin-top: 5px; font-weight: bold; color: var(--status-green-text);"></div>
+                        </div>
+
+                        <div id="comic-drop-zone-lowres"
+                             class="drag-drop-zone"
+                             style="padding: 20px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
+                            <i class="fa-solid fa-compress"
+                               style="font-size: 2em; color: var(--text-color-faded);"></i>
+                            <p style="margin: 5px 0 0; color: var(--text-color); font-weight: bold;">Lowres (Optional)
+                            </p>
+                            <small style="color: var(--text-color-light);">Überschreibt Auto-Skalierung</small>
+                            <input type="file"
+                                   id="upload_lowres"
+                                   name="upload_lowres"
+                                   accept="image/*"
+                                   style="display: none;">
+                            <div id="preview-name-lowres"
+                                 style="margin-top: 5px; font-weight: bold; color: var(--status-green-text);"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Trumbowyg Textfeld -->
                 <div class="form-group">
                     <label for="transcript">Transkript (HTML)</label>
                     <textarea id="transcript" name="transcript" class="wysiwyg-editor" rows="5"></textarea>
                 </div>
 
+                <!-- Charakter-Auswahl -->
                 <div class="form-group"
                      style="margin-top: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">

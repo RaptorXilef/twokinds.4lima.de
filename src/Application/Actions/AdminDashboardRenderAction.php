@@ -71,18 +71,6 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             }
         }
 
-        // 4. Einzigartige Kapitel für das Dropdown ermitteln
-        /*
-        $chapters = [];
-        foreach ($comics as $comic) {
-            if ($comic->chapterId !== null && $comic->chapterId !== '') {
-                $chapters[] = $comic->chapterId;
-            }
-        }
-        $existingChapters = \array_values(\array_unique($chapters));
-        \sort($existingChapters, \SORT_NUMERIC);
-        */
-
         // Wirkliche Kapitel aus der Datenbank laden
         $dbChapters = $this->chapterRepo->findAll();
 

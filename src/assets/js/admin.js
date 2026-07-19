@@ -501,6 +501,69 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal) modal.style.display = 'flex';
     };
 
+    // --- BILD UPLOAD DRAG & DROP FÜR COMICS ---
+    function setupComicDropZone(zoneId, inputId, previewId) {
+        const dropZone = document.getElementById(zoneId);
+        const fileInput = document.getElementById(inputId);
+        const previewName = document.getElementById(previewId);
+
+        if (!dropZone || !fileInput) return;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--link-color)';
+            dropZone.style.backgroundColor = 'var(--table-row-hover)';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+            dropZone.style.backgroundColor = 'var(--table-row-even)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--status-green-text)';
+            dropZone.style.backgroundColor = 'var(--status-green-bg)';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                isDirty = true;
+                if (previewName) previewName.textContent = `Ausgewählt: ${fileInput.files[0].name}`;
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files && fileInput.files[0]) {
+                isDirty = true;
+                dropZone.style.borderColor = 'var(--status-green-text)';
+                dropZone.style.backgroundColor = 'var(--status-green-bg)';
+                if (previewName) previewName.textContent = `Ausgewählt: ${fileInput.files[0].name}`;
+            }
+        });
+    }
+
+    setupComicDropZone('comic-drop-zone-hires', 'upload_hires', 'preview-name-hires');
+    setupComicDropZone('comic-drop-zone-lowres', 'upload_lowres', 'preview-name-lowres');
+
+    // Erweitere die bestehende openComicModal Funktion, um die Boxen beim Öffnen zu leeren:
+    const originalOpenComicModal = window.openComicModal;
+    window.openComicModal = (data = null) => {
+        originalOpenComicModal(data);
+
+        // Upload-Felder resetten
+        document.getElementById('preview-name-hires').textContent = '';
+        document.getElementById('preview-name-lowres').textContent = '';
+        document.getElementById('comic-drop-zone-hires').style.borderColor = 'var(--border-medium)';
+        document.getElementById('comic-drop-zone-hires').style.backgroundColor =
+            'var(--table-row-even)';
+        document.getElementById('comic-drop-zone-lowres').style.borderColor =
+            'var(--border-medium)';
+        document.getElementById('comic-drop-zone-lowres').style.backgroundColor =
+            'var(--table-row-even)';
+    };
+
     window.closeComicModal = () => {
         const modal = document.getElementById('comic-modal');
         if (modal) modal.style.display = 'none';

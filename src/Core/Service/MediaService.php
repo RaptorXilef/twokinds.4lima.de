@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core\Service;
 
-use App\Contracts\Config\ConfigInterface;
-
-final readonly class MediaService
+final class MediaService
 {
-    public function __construct(private ConfigInterface $config)
-    {
-    }
-
     /**
      * Skaliert ein Bild unter Beibehaltung des Seitenverhältnisses.
+     * Nutzt GD-Library zur Konvertierung in WebP.
      */
     public function generateScaledImage(string $sourcePath, string $targetPath, int $maxWidth): bool
     {
@@ -28,24 +23,24 @@ final readonly class MediaService
 
         [$width, $height, $type] = $info;
 
-        // Wenn das Bild schon klein genug ist, einfach kopieren
-        if ($width <= $maxWidth) {
-            return \copy($sourcePath, $targetPath);
-        }
-
-        // Neues Seitenverhältnis berechnen
-        $ratio     = $maxWidth / $width;
-        $newWidth  = $maxWidth;
-        $newHeight = (int) \round($height * $ratio);
-
         $image = $this->createImageFromFile($sourcePath, $type);
         if (! $image) {
             return false;
         }
 
+        // Muss es überhaupt skaliert werden?
+        if ($width <= $maxWidth) {
+            $newWidth  = $width;
+            $newHeight = $height;
+        } else {
+            $ratio     = $maxWidth / $width;
+            $newWidth  = $maxWidth;
+            $newHeight = (int) \round($height * $ratio);
+        }
+
         $targetImage = \imagecreatetruecolor($newWidth, $newHeight);
 
-        // Transparenz für WebP/PNG erhalten
+        // WICHTIG: Transparenz für PNG/WebP erhalten!
         \imagealphablending($targetImage, false);
         \imagesavealpha($targetImage, true);
         $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
@@ -53,6 +48,7 @@ final readonly class MediaService
 
         \imagecopyresampled($targetImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
+        // WebP mit 85% Qualität erzeugen (Perfekter Kompromiss aus Qualität und Dateigröße)
         $success = \imagewebp($targetImage, $targetPath, 85); // 85% Qualität für exzellente Web-Performance
 
         \imagedestroy($image);
@@ -84,7 +80,7 @@ final readonly class MediaService
 
         $targetImage = \imagecreatetruecolor($size, $size);
 
-        // Transparenz erhalten
+        // WICHTIG: Transparenz für PNG/WebP erhalten!
         \imagealphablending($targetImage, false);
         \imagesavealpha($targetImage, true);
         $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
@@ -97,6 +93,7 @@ final readonly class MediaService
 
         \imagecopyresampled($targetImage, $image, 0, 0, $srcX, $srcY, $size, $size, $minSize, $minSize);
 
+        // WebP mit 80% Qualität für Thumbnails
         $success = \imagewebp($targetImage, $targetPath, 80);
 
         \imagedestroy($image);
@@ -108,10 +105,10 @@ final readonly class MediaService
     private function createImageFromFile(string $path, int $type): \GdImage|false
     {
         return match ($type) {
-            \IMAGETYPE_JPEG => \imagecreatefromjpeg($path),
-            \IMAGETYPE_PNG  => \imagecreatefrompng($path),
-            \IMAGETYPE_WEBP => \imagecreatefromwebp($path),
-            \IMAGETYPE_GIF  => \imagecreatefromgif($path),
+            \IMAGETYPE_JPEG => @\imagecreatefromjpeg($path),
+            \IMAGETYPE_PNG  => @\imagecreatefrompng($path),
+            \IMAGETYPE_WEBP => @\imagecreatefromwebp($path),
+            \IMAGETYPE_GIF  => @\imagecreatefromgif($path),
             default         => false,
         };
     }
