@@ -110,4 +110,17 @@ final readonly class ComicService
         // Wir speichern direkt ins Repo, um nicht NOCH EINEN Snapshot vom jetzigen (kaputten) Zustand zu machen
         $this->comicRepository->save($restoredComic);
     }
+
+    public function renameComic(ComicId $oldId, ComicId $newId): void
+    {
+        if ($oldId->value === $newId->value) {
+            return;
+        }
+
+        if ($this->comicRepository->findById($newId) !== null) {
+            throw new \DomainException("Die neue Comic-ID {$newId->value} existiert bereits und kann nicht überschrieben werden!");
+        }
+
+        $this->comicRepository->renameComicId($oldId, $newId);
+    }
 }

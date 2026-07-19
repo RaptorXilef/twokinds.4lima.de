@@ -130,4 +130,21 @@ final readonly class MediaService
             default         => false,
         };
     }
+
+    /**
+     * Benennt alle physischen Medien-Dateien eines Comics auf dem Server um.
+     */
+    public function renameComicMedia(string $oldId, string $newId): void
+    {
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
+        $folders   = ['hires', 'lowres', 'thumbnails', 'socialmedia'];
+
+        foreach ($folders as $folder) {
+            $oldFile = "$targetDir/$folder/$oldId.webp";
+            $newFile = "$targetDir/$folder/$newId.webp";
+            if (\file_exists($oldFile)) {
+                @\rename($oldFile, $newFile);
+            }
+        }
+    }
 }

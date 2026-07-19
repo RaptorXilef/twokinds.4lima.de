@@ -57,6 +57,17 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 }
             }
 
+            $oldIdStr = \trim((string) ($request->post['old_comic_id'] ?? ''));
+            $newIdStr = $dto->id;
+
+            // --- DEEP RENAMING LOGIK ---
+            if ($oldIdStr !== '' && $oldIdStr !== $newIdStr) {
+                // 1. Datenbank kaskadierend umbenennen (Comics, Reports, Revisions)
+                $this->comicService->renameComic(new ComicId($oldIdStr), new ComicId($newIdStr));
+                // 2. Physische Dateien auf der Festplatte umbenennen
+                $this->mediaService->renameComicMedia($oldIdStr, $newIdStr);
+            }
+
             // --- BILD UPLOAD LOGIK ---
             $files       = $request->files;
             $targetDir   = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';

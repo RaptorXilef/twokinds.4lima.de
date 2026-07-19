@@ -19,4 +19,6 @@ interface ComicRepositoryInterface
     public function findAll(): array;
 
     public function delete(ComicId $id): void;
+
+    public function renameComicId(ComicId $oldId, ComicId $newId): void;
 }

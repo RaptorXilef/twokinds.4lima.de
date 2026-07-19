@@ -77,4 +77,26 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
             imageUpdatedAt: $row['image_updated_at'] !== null ? (int) $row['image_updated_at'] : null,
         );
     }
+
+    public function renameComicId(ComicId $oldId, ComicId $newId): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $stmt1 = $this->pdo->prepare('UPDATE `comics` SET `id` = ? WHERE `id` = ?');
+            $stmt1->execute([$newId->value, $oldId->value]);
+
+            $stmt2 = $this->pdo->prepare('UPDATE `comic_revisions` SET `comic_id` = ? WHERE `comic_id` = ?');
+            $stmt2->execute([$newId->value, $oldId->value]);
+
+            $stmt3 = $this->pdo->prepare('UPDATE `reports` SET `comic_id` = ? WHERE `comic_id` = ?');
+            $stmt3->execute([$newId->value, $oldId->value]);
+
+            $this->pdo->commit();
+        } catch (\Exception $e) {
+            $this->pdo->rollBack();
+
+            throw clone $e;
+        }
+    }
 }

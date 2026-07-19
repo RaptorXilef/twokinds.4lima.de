@@ -429,14 +429,18 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.remove('selected');
         });
 
+        const oldIdInput = document.getElementById('old_comic_id');
+
         if (data) {
             const titleEl = document.getElementById('modal-title-comic');
             if (titleEl) titleEl.textContent = `Comic bearbeiten: ${data.id}`;
 
             if (comicIdInput) {
                 comicIdInput.value = data.id;
-                comicIdInput.readOnly = true;
+                comicIdInput.readOnly = false; // HIER ENTSPERRT!
             }
+            if (oldIdInput) oldIdInput.value = data.id;
+
             const typeInput = document.getElementById('type');
             if (typeInput) typeInput.value = data.type;
 
@@ -453,7 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 $('#transcript').trumbowyg('html', data.transcript);
             }
 
-            // Markiere die im Array enthaltenen Charaktere als ausgewählt
             if (data.characters && Array.isArray(data.characters)) {
                 data.characters.forEach((charId) => {
                     const opt = hiddenSelect?.querySelector(`option[value="${charId}"]`);
@@ -468,7 +471,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             const titleEl = document.getElementById('modal-title-comic');
             if (titleEl) titleEl.textContent = 'Neuen Comic anlegen';
+
             if (comicIdInput) comicIdInput.readOnly = false;
+            if (oldIdInput) oldIdInput.value = '';
 
             // Höchstes Kapitel suchen und automatisch eintragen
             const chapInput = document.getElementById('chapter_id');
