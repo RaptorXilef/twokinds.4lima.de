@@ -77,11 +77,11 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 }
 
                 $baseProcessPath = '';
+                $hiresPath       = "$targetDir/hires/{$dto->id}.webp";
 
                 // 1. Hires verarbeiten
                 if ($hiresUploaded) {
-                    $tmpHires  = $files['upload_hires']['tmp_name'];
-                    $hiresPath = "$targetDir/hires/{$dto->id}.webp";
+                    $tmpHires = $files['upload_hires']['tmp_name'];
                     // Speichert Hires als WebP (mit Safenet-Breite von max 4000px)
                     $this->mediaService->generateScaledImage($tmpHires, $hiresPath, 4000);
                     $baseProcessPath = $hiresPath;
@@ -94,7 +94,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                     // Manuelles Lowres einfach in WebP umwandeln
                     $this->mediaService->generateScaledImage($tmpLowres, $lowresPath, 1500);
                     $baseProcessPath = $lowresPath;
-                } elseif ($hiresUploaded) {
+                } elseif ($hiresUploaded && \file_exists($hiresPath)) { // Extra Check zur Sicherheit
                     // Kein manuelles Lowres da -> Wir generieren es automatisch aus dem Hires!
                     $lowresPath = "$targetDir/lowres/{$dto->id}.webp";
                     // Skalieren auf max 1080px Breite

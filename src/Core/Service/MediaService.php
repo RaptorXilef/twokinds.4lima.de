@@ -49,7 +49,9 @@ final class MediaService
         \imagecopyresampled($targetImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
         // WebP mit 85% Qualität erzeugen (Perfekter Kompromiss aus Qualität und Dateigröße)
-        $success = \imagewebp($targetImage, $targetPath, 85); // 85% Qualität für exzellente Web-Performance
+        // WebP Qualität aus der Config lesen (Standard: 85)
+        $quality = (int) $this->config->get('webp_quality', 85);
+        $success = \imagewebp($targetImage, $targetPath, $quality);
 
         \imagedestroy($image);
         \imagedestroy($targetImage);
@@ -94,7 +96,9 @@ final class MediaService
         \imagecopyresampled($targetImage, $image, 0, 0, $srcX, $srcY, $size, $size, $minSize, $minSize);
 
         // WebP mit 80% Qualität für Thumbnails
-        $success = \imagewebp($targetImage, $targetPath, 80);
+        // WebP Qualität für Thumbnails etwas geringer (Standard: 80)
+        $quality = (int) $this->config->get('webp_quality_thumb', 80);
+        $success = \imagewebp($targetImage, $targetPath, $quality);
 
         \imagedestroy($image);
         \imagedestroy($targetImage);

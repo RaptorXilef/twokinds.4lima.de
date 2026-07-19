@@ -24,4 +24,9 @@ return [
     // --- ADMINBEREICH ---
     // Wie oft rückgängig möglich?
     'comic_revision_limit' => 20,
+
+    // Bild-Qualität beim Dateiupload
+    'webp_quality'       => 90,
+    'webp_quality_thumb' => 85,
+
 ];

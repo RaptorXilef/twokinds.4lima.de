@@ -535,11 +535,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         fileInput.addEventListener('change', () => {
-            if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files?.[0];
+            if (file) {
                 isDirty = true;
                 dropZone.style.borderColor = 'var(--status-green-text)';
                 dropZone.style.backgroundColor = 'var(--status-green-bg)';
-                if (previewName) previewName.textContent = `Ausgewählt: ${fileInput.files[0].name}`;
+                if (previewName) previewName.textContent = `Ausgewählt: ${file.name}`;
             }
         });
     }
