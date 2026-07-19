@@ -21,6 +21,7 @@ use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
+use App\Core\Service\SiteGeneratorService;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
 use App\Infrastructure\Storage\JsonHelper;
@@ -92,6 +93,13 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         ));
 
         $container->bind(AssetHelperInterface::class, fn () => new LocalAssetHelper(
+            $container->get(ConfigInterface::class),
+        ));
+
+        // TODO Prüfen ob definition überhaupt nötig, oder ob Magisch geladen
+        $container->bind(SiteGeneratorService::class, fn () => new SiteGeneratorService(
+            $container->get(ComicRepositoryInterface::class),
+            $container->get(ChapterRepositoryInterface::class),
             $container->get(ConfigInterface::class),
         ));
     }

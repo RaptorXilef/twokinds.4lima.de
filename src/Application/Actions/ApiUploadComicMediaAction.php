@@ -11,6 +11,7 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Service\MediaService;
+use App\Core\Service\SiteGeneratorService;
 use App\Core\ValueObject\ComicId;
 
 #[ActionRoute('api_upload_comic_media')]
@@ -19,6 +20,7 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
     public function __construct(
         private ComicRepositoryInterface $comicRepo,
         private MediaService $mediaService,
+        private SiteGeneratorService $siteGenerator,
         private ConfigInterface $config,
     ) {
     }
@@ -99,6 +101,7 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
                     imageUpdatedAt: \time(),
                 );
                 $this->comicRepo->save($updatedComic);
+                $this->siteGenerator->generateAll();
             }
 
             return JsonResponse::success(['message' => "Medien für {$comicIdStr} erfolgreich verarbeitet!"]);

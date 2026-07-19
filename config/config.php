@@ -38,4 +38,9 @@ return [
     // Legt die Höhe und Breite fest, ab wann ein Bild als Hires gild
     'hires_min_width'  => 1000,
     'hires_min_height' => 1800,
+
+    // --- GRUNDEINSTELLUNGEN RSS und SITEMAP ---
+    'base_url'         => 'https://twokinds.4lima.de', // OHNE Slash am Ende!
+    'site_title'       => 'Twokinds - German Translation',
+    'site_description' => 'Die deutsche Übersetzung des Webcomics Twokinds von Tom Fischbach, übersetzt von Felix Maywald.',
 ];

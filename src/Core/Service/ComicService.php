@@ -18,6 +18,7 @@ final readonly class ComicService
         private ComicRepositoryInterface $comicRepository,
         private ComicRevisionRepositoryInterface $revisionRepository,
         private ClockInterface $clock,
+        private SiteGeneratorService $siteGenerator,
     ) {
     }
 
@@ -47,6 +48,7 @@ final readonly class ComicService
         }
 
         $this->comicRepository->save($comic);
+        $this->siteGenerator->generateAll();
     }
 
     public function triggerImageCacheBust(ComicId $id): void
@@ -77,6 +79,7 @@ final readonly class ComicService
     public function deleteComic(ComicId $id): void
     {
         $this->comicRepository->delete($id);
+        $this->siteGenerator->generateAll();
     }
 
     public function restoreLatestRevision(ComicId $id): void
