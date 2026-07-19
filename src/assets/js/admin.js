@@ -1080,6 +1080,194 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal) modal.style.display = 'flex';
     };
 
+    // --- MASSEN UPLOAD WARTESCHLANGE (QUEUE) ---
+    const massDropZone = document.getElementById('mass-drop-zone');
+    const massFileInput = document.getElementById('mass-upload-input');
+    const queueTableBody = document.querySelector('#upload-queue-table tbody');
+    const btnStartMassUpload = document.getElementById('btn-start-mass-upload');
+    const cfgWidth = document.getElementById('cfg-hires-width');
+    const cfgHeight = document.getElementById('cfg-hires-height');
+    const btnResetThresholds = document.getElementById('btn-reset-thresholds');
+
+    const uploadQueue = new Map(); // Speichert { id: { hires: File, lowres: File } }
+
+    if (massDropZone && queueTableBody) {
+        // LocalStorage für Schwellenwerte laden
+        if (localStorage.getItem('hires_min_width'))
+            cfgWidth.value = localStorage.getItem('hires_min_width');
+        if (localStorage.getItem('hires_min_height'))
+            cfgHeight.value = localStorage.getItem('hires_min_height');
+
+        cfgWidth.addEventListener('input', () =>
+            localStorage.setItem('hires_min_width', cfgWidth.value)
+        );
+        cfgHeight.addEventListener('input', () =>
+            localStorage.setItem('hires_min_height', cfgHeight.value)
+        );
+
+        btnResetThresholds.addEventListener('click', () => {
+            cfgWidth.value = btnResetThresholds.dataset.defaultW;
+            cfgHeight.value = btnResetThresholds.dataset.defaultH;
+            localStorage.removeItem('hires_min_width');
+            localStorage.removeItem('hires_min_height');
+        });
+
+        massDropZone.addEventListener('click', () => massFileInput.click());
+        massDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            massDropZone.style.backgroundColor = 'var(--table-row-hover)';
+        });
+        massDropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            massDropZone.style.backgroundColor = 'var(--table-row-even)';
+        });
+        massDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            massDropZone.style.backgroundColor = 'var(--table-row-even)';
+            processDroppedFiles(e.dataTransfer.files);
+        });
+        massFileInput.addEventListener('change', () => {
+            processDroppedFiles(massFileInput.files);
+            massFileInput.value = ''; // Reset für weitere Klicks
+        });
+
+        function processDroppedFiles(files) {
+            const thresholdW = parseInt(cfgWidth.value, 10);
+            const thresholdH = parseInt(cfgHeight.value, 10);
+
+            Array.from(files).forEach((file) => {
+                // Regex: Sucht am Anfang nach 8 Ziffern + max. 1 Buchstabe (z.B. 20260503a)
+                const match = file.name.match(/^(\d{8}[a-z]?)/i);
+                if (!match) {
+                    showMsg(
+                        `Datei "${file.name}" ignoriert (Keine Comic-ID am Anfang erkannt).`,
+                        'orange'
+                    );
+                    return;
+                }
+                const id = match[1].toLowerCase();
+
+                const img = new Image();
+                img.onload = () => {
+                    const isHires = img.width >= thresholdW || img.height >= thresholdH;
+                    URL.revokeObjectURL(img.src);
+
+                    if (!uploadQueue.has(id)) {
+                        uploadQueue.set(id, { hires: null, lowres: null, status: 'Wartet' });
+                    }
+
+                    const entry = uploadQueue.get(id);
+                    if (isHires) entry.hires = file;
+                    else entry.lowres = file;
+
+                    renderQueueTable();
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        function renderQueueTable() {
+            queueTableBody.innerHTML = '';
+
+            if (uploadQueue.size === 0) {
+                queueTableBody.innerHTML =
+                    '<tr id="queue-empty-msg"><td colspan="5" class="empty-table-message">Warteschlange ist leer.</td></tr>';
+                btnStartMassUpload.disabled = true;
+                return;
+            }
+
+            btnStartMassUpload.disabled = false;
+
+            // Sortiere nach ID
+            const sortedIds = Array.from(uploadQueue.keys()).sort();
+
+            sortedIds.forEach((id) => {
+                const data = uploadQueue.get(id);
+                const tr = document.createElement('tr');
+
+                const hiresName = data.hires
+                    ? data.hires.name
+                    : '<span style="color:var(--text-color-faded)">Wird auto-generiert</span>';
+                const lowresName = data.lowres
+                    ? data.lowres.name
+                    : '<span style="color:var(--text-color-faded)">Wird auto-skaliert</span>';
+
+                let statusHtml = `<strong>${data.status}</strong>`;
+                if (data.status === 'Lädt...')
+                    statusHtml = `<i class="fa-solid fa-spinner fa-spin"></i> Verarbeitung...`;
+                if (data.status === 'Fertig')
+                    statusHtml = `<span style="color:var(--status-green-text)"><i class="fa-solid fa-check"></i> Fertig</span>`;
+                if (data.status.startsWith('Fehler'))
+                    statusHtml = `<span style="color:var(--status-red-text)"><i class="fa-solid fa-xmark"></i> ${data.status}</span>`;
+
+                tr.innerHTML = `
+                    <td class="mono"><strong>${id}</strong></td>
+                    <td><small>${hiresName}</small></td>
+                    <td><small>${lowresName}</small></td>
+                    <td style="text-align: center;">${statusHtml}</td>
+                    <td style="text-align: center;">
+                        <button type="button" class="button delete btn-remove-queue" data-id="${id}" ${data.status === 'Lädt...' ? 'disabled' : ''}><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
+                queueTableBody.appendChild(tr);
+            });
+        }
+
+        // Delegation für "Entfernen" Button in der Queue
+        queueTableBody.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-remove-queue');
+            if (btn) {
+                uploadQueue.delete(btn.dataset.id);
+                renderQueueTable();
+            }
+        });
+
+        // Batch Upload ausführen
+        btnStartMassUpload.addEventListener('click', async () => {
+            btnStartMassUpload.disabled = true;
+            const ids = Array.from(uploadQueue.keys());
+
+            for (const id of ids) {
+                const data = uploadQueue.get(id);
+                if (data.status === 'Fertig') continue; // Bereits erfolgreich überspringen
+
+                if (!data.hires && !data.lowres) continue;
+
+                data.status = 'Lädt...';
+                renderQueueTable();
+
+                const fd = new FormData();
+                fd.append('comic_id', id);
+                fd.append('csrf_token', csrfToken);
+                if (data.hires) fd.append('upload_hires', data.hires);
+                if (data.lowres) fd.append('upload_lowres', data.lowres);
+
+                try {
+                    const res = await fetch(`${baseUrl}/api/upload_comic_media`, {
+                        method: 'POST',
+                        body: fd,
+                    });
+                    const json = await res.json();
+
+                    if (json.success) {
+                        data.status = 'Fertig';
+                    } else {
+                        data.status = `Fehler: ${json.error}`;
+                    }
+                } catch {
+                    data.status = 'Fehler: Netzwerk';
+                }
+                renderQueueTable();
+            }
+
+            showMsg(
+                'Massenverarbeitung abgeschlossen! Alle Zeitstempel wurden geupdated.',
+                'green'
+            );
+            btnStartMassUpload.disabled = false;
+        });
+    }
+
     // --- ZENTRALE EVENT DELEGATION ---
     document.addEventListener('click', (e) => {
         // Comic Aktionen

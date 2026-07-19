@@ -90,6 +90,8 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             'existingChapters' => $existingChapters,
             'availableImages'  => $availableImages,
             'allReports'       => $allReports,
+            'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
+            'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
         ]);
 
         return null;

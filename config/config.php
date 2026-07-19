@@ -33,4 +33,9 @@ return [
     // Hintergrundfarbe bei PNG/WebP Transparenzen.
     // 'transparent' belässt es durchsichtig. Hex-Code (z.B. '#ffffff') füllt es auf.
     'image_background_color' => 'transparent',
+
+    // --- MASSEN-UPLOAD SCHWELLENWERTE ---
+    // Legt die Höhe und Breite fest, ab wann ein Bild als Hires gild
+    'hires_min_width'  => 1000,
+    'hires_min_height' => 1800,
 ];
