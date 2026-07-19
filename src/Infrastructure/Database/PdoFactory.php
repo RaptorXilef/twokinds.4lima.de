@@ -48,6 +48,7 @@ final class PdoFactory
 
             // 1049 = Unknown database (Datenbank existiert noch nicht)
             if ($mysqlErrorCode === 1049) {
+                // Datenbank existiert nicht, versuche sie anzulegen
                 $dsnWithoutDb = "mysql:host={$db['host']}{$portStr};charset={$db['charset']}";
 
                 try {
@@ -69,17 +70,34 @@ final class PdoFactory
             }
         }
 
-        // Korrekte Prüfung auf TwoKinds-Tabellen (nicht mehr "users")
+        // --- INTELLIGENTE SELBST-REPARATUR ---
+        $schema        = $config->get('db_schema', []);
+        $missingTables = false;
+
         try {
-            $pdo->query('SELECT 1 FROM `comics` LIMIT 1');
+            // Lade eine Liste aller aktuell existierenden Tabellen
+            $stmt           = $pdo->query('SHOW TABLES');
+            $existingTables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+            // Vergleiche sie mit dem Schema
+            foreach (\array_keys($schema) as $requiredTable) {
+                if (! \in_array($requiredTable, $existingTables, true)) {
+                    $missingTables = true;
+
+                    break; // Sobald eine fehlt, lösen wir die Reparatur aus
+                }
+            }
         } catch (\PDOException) {
-            // Wenn die Tabelle fehlt, bügeln wir das Schema drüber
-            $schema = $config->get('db_schema', []);
+            // Falls SHOW TABLES fehlschlägt, gehen wir auf Nummer sicher
+            $missingTables = true;
+        }
+
+        if ($missingTables) {
             foreach ($schema as $tableName => $sql) {
                 try {
-                    $pdo->exec($sql);
+                    $pdo->exec($sql); // CREATE TABLE IF NOT EXISTS ist sicher mehrfach auszuführen
                 } catch (\PDOException $ex) {
-                    throw new \RuntimeException("MySQL Auto-Install Fehler (Tabelle $tableName konnte nicht angelegt werden): " . $ex->getMessage());
+                    throw new \RuntimeException("MySQL Auto-Install Fehler (Tabelle {$tableName} konnte nicht angelegt werden): " . $ex->getMessage());
                 }
             }
         }
