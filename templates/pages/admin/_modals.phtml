@@ -438,3 +438,75 @@ foreach ($alphaChars as $char) {
          id="hover-overlay-img"
          alt="Zoom Preview">
 </div>
+
+<!-- Report Detail Modal -->
+<div id="report-detail-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-report-modal"></div>
+    <div class="modal-content"
+         style="max-width: 900px; display: flex; flex-direction: column; max-height: 95vh;">
+        <div class="modal-header-wrapper"
+             style="flex: 0 0 auto;">
+            <h2>Meldung überprüfen</h2>
+            <button class="modal-close btn-close-report-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content"
+             style="flex: 1 1 auto; overflow-y: auto;">
+
+            <div class="report-info-grid"
+                 style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: var(--table-row-even); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <div><strong>Comic ID:</strong> <span id="rep-modal-comic-id" class="mono"></span></div>
+                <div><strong>Melder:</strong> <span id="rep-modal-submitter"></span></div>
+                <div><strong>Datum:</strong> <span id="rep-modal-date"></span></div>
+            </div>
+
+            <div class="form-group"
+                 style="margin-bottom: 20px;">
+                <label>Beschreibung des Nutzers:</label>
+                <div id="rep-modal-desc"
+                     style="padding: 15px; background: var(--content-area-bg); border: 1px solid var(--border-medium); border-radius: 4px; white-space: pre-wrap;">
+                </div>
+            </div>
+
+            <div id="rep-modal-transcript-section"
+                 style="display: none; margin-bottom: 20px;">
+                <label>Transkript-Abgleich (Diff):</label>
+                <div class="diff-box"
+                     id="rep-modal-diff"
+                     style="padding: 15px; background: #1e1e1e; color: #d4d4d4; border-radius: 4px; max-height: 300px; overflow-y: auto; font-size: 14px;">
+                </div>
+
+                <div style="margin-top: 10px; text-align: right;">
+                    <button type="button"
+                            class="button"
+                            id="btn-transfer-transcript"
+                            style="background: #28a745; color: white;">
+                        <i class="fa-solid fa-file-import"></i> Im Comic-Editor öffnen & einfügen
+                    </button>
+                </div>
+            </div>
+
+            <details style="margin-top: 20px;">
+                <summary style="cursor: pointer; color: var(--text-color-light);">Telemetrie & Debug-Infos (für
+                    Administratoren)</summary>
+                <textarea id="rep-modal-debug" rows="6" class="summernote-code-look" readonly style="margin-top: 10px; width: 100%;"></textarea>
+            </details>
+
+        </div>
+        <div class="modal-footer-actions"
+             style="flex: 0 0 auto; display: flex; justify-content: space-between; z-index: 10; background: var(--main-bg);">
+            <div>
+                <button type="button"
+                        class="button delete"
+                        id="btn-rep-spam"
+                        style="background: #dc3545;"><i class="fa-solid fa-trash"></i> Als Spam markieren</button>
+                <button type="button"
+                        class="button edit"
+                        id="btn-rep-resolve"
+                        style="background: #28a745;"><i class="fa-solid fa-check"></i> Als Erledigt markieren</button>
+            </div>
+            <button type="button"
+                    class="button btn-close-report-modal">Schließen</button>
+        </div>
+    </div>
+</div>

@@ -113,6 +113,7 @@ final readonly class FrontendController
                 'save_single_comic'     => ['action' => 'api_save_single_comic', 'input' => $input],
                 'submit_report'         => ['action' => 'api_submit_report', 'input' => $input],
                 'undo_comic'            => ['action' => 'api_undo_comic', 'input' => $input],
+                'update_report_status'  => ['action' => 'api_update_report_status', 'input' => $input],
                 default                 => ['action' => 'render_404', 'input' => $input],
             };
         }

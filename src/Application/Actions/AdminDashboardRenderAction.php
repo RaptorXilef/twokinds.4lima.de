@@ -34,7 +34,8 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         $comics      = $this->comicRepo->findAll();
         $characters  = $this->charRepo->findAll();
         $groups      = $this->groupRepo->findAll();
-        $openReports = $this->reportRepo->findByStatus('open');
+        $allReports  = $this->reportRepo->findAll(); // <--- (Alle Reports laden)
+        $openReports = $this->reportRepo->findByStatus('open'); // für die rote Badge im Menü
 
         // 1. Zugeordnete Charaktere herausfinden (Für den Pool-Filter)
         $assignedIds = [];
@@ -89,6 +90,7 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             'existingRanks'    => $existingRanks,
             'existingChapters' => $existingChapters,
             'availableImages'  => $availableImages,
+            'allReports'       => $allReports,
         ]);
 
         return null;

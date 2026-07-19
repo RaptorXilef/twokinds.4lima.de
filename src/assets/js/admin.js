@@ -812,6 +812,183 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- REPORT PAGINIERUNG, FILTER & LOGIK ---
+    const reportSearchInput = document.getElementById('report-search');
+    const reportPerPageSelect = document.getElementById('report-per-page');
+    const reportStatusSelect = document.getElementById('report-status-filter');
+    const reportTableBody = document.querySelector('#reports-table tbody');
+    const reportPaginationContainer = document.getElementById('report-pagination');
+
+    let currentReportPayload = null;
+
+    if (
+        reportTableBody &&
+        reportSearchInput &&
+        reportPerPageSelect &&
+        reportStatusSelect &&
+        reportPaginationContainer
+    ) {
+        const allReportRows = Array.from(reportTableBody.querySelectorAll('tr')).filter(
+            (row) => !row.classList.contains('empty-table-message')
+        );
+
+        let repPage = 1;
+        let repLimit = '15';
+        let repSearch = '';
+        let repStatus = 'open';
+
+        function renderReportTable() {
+            const filteredRows = allReportRows.filter((row) => {
+                const matchesSearch = row.textContent
+                    .toLowerCase()
+                    .includes(repSearch.toLowerCase());
+                const matchesStatus = repStatus === 'all' || row.dataset.status === repStatus;
+                return matchesSearch && matchesStatus;
+            });
+
+            const totalItems = filteredRows.length;
+            const limit = repLimit === 'all' ? totalItems : parseInt(repLimit, 10);
+            const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 1;
+
+            if (repPage > totalPages) repPage = totalPages || 1;
+
+            const startIndex = limit === totalItems ? 0 : (repPage - 1) * limit;
+            const endIndex = startIndex + limit;
+
+            allReportRows.forEach((row) => {
+                row.style.display = 'none';
+            });
+            filteredRows.slice(startIndex, endIndex).forEach((row) => {
+                row.style.display = '';
+            });
+
+            let emptyMsg = reportTableBody.querySelector('.dyn-empty-msg');
+            if (filteredRows.length === 0) {
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('tr');
+                    emptyMsg.className = 'dyn-empty-msg empty-table-message';
+                    emptyMsg.innerHTML =
+                        '<td colspan="6">Keine Reports für diese Filter gefunden.</td>';
+                    reportTableBody.appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = '';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
+
+            // Pagination Buttons generieren
+            reportPaginationContainer.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            const createBtn = (text, isDisabled, isActive, clickHandler) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `button ${isActive ? 'edit ' : ''}${isDisabled ? 'disabled' : ''}`;
+                btn.innerHTML = text;
+                if (isDisabled) btn.style.opacity = '0.5';
+                if (!isDisabled && clickHandler) btn.onclick = clickHandler;
+                return btn;
+            };
+
+            reportPaginationContainer.appendChild(
+                createBtn('&laquo;', repPage === 1, false, () => {
+                    repPage--;
+                    renderReportTable();
+                })
+            );
+            for (let i = 1; i <= totalPages; i++) {
+                reportPaginationContainer.appendChild(
+                    createBtn(i.toString(), false, i === repPage, () => {
+                        repPage = i;
+                        renderReportTable();
+                    })
+                );
+            }
+            reportPaginationContainer.appendChild(
+                createBtn('&raquo;', repPage === totalPages, false, () => {
+                    repPage++;
+                    renderReportTable();
+                })
+            );
+        }
+
+        reportSearchInput.addEventListener('input', (e) => {
+            repSearch = e.target.value;
+            repPage = 1;
+            renderReportTable();
+        });
+        reportPerPageSelect.addEventListener('change', (e) => {
+            repLimit = e.target.value;
+            repPage = 1;
+            renderReportTable();
+        });
+        reportStatusSelect.addEventListener('change', (e) => {
+            repStatus = e.target.value;
+            repPage = 1;
+            renderReportTable();
+        });
+
+        renderReportTable(); // Init
+    }
+
+    // Hilfsfunktion: HTML in reinen Text wandeln (Für Diffing)
+    function convertHtmlToText(html) {
+        if (!html) return '';
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        tempDiv.querySelectorAll('p, br').forEach((el) => {
+            el.after(document.createTextNode('\n'));
+        });
+        return (tempDiv.textContent || tempDiv.innerText || '').trim();
+    }
+
+    function openReportModal(data) {
+        currentReportPayload = data;
+        document.getElementById('rep-modal-comic-id').innerHTML =
+            `<a href="${baseUrl}/comic/${data.comicId}" target="_blank">${data.comicId}</a>`;
+        document.getElementById('rep-modal-submitter').textContent = data.submitter;
+        document.getElementById('rep-modal-date').textContent = data.date;
+        document.getElementById('rep-modal-desc').textContent =
+            data.description || 'Keine Beschreibung angegeben.';
+        document.getElementById('rep-modal-debug').value = data.debug;
+
+        const transcriptSec = document.getElementById('rep-modal-transcript-section');
+        const diffBox = document.getElementById('rep-modal-diff');
+
+        if (data.type === 'transcript') {
+            transcriptSec.style.display = 'block';
+            if (typeof Diff !== 'undefined' && Diff.diffLines) {
+                const oldTxt = convertHtmlToText(data.original);
+                const newTxt = convertHtmlToText(data.suggestion);
+                const diff = Diff.diffLines(oldTxt, newTxt, { newlineIsToken: true });
+
+                const fragment = document.createDocumentFragment();
+                diff.forEach((part) => {
+                    const node = document.createElement(
+                        part.added ? 'ins' : part.removed ? 'del' : 'span'
+                    );
+                    node.appendChild(document.createTextNode(part.value));
+                    fragment.appendChild(node);
+                });
+                diffBox.innerHTML = '';
+                diffBox.appendChild(fragment);
+            } else {
+                diffBox.innerHTML =
+                    'Diff-Bibliothek nicht geladen. Vorschlag:\n\n' + data.suggestion;
+            }
+        } else {
+            transcriptSec.style.display = 'none';
+        }
+
+        // Buttons ausblenden, falls schon erledigt/spam
+        document.getElementById('btn-rep-resolve').style.display =
+            data.status === 'open' ? 'inline-block' : 'none';
+        document.getElementById('btn-rep-spam').style.display =
+            data.status === 'open' ? 'inline-block' : 'none';
+
+        document.getElementById('report-detail-modal').style.display = 'flex';
+    }
+
     // --- ZENTRALE EVENT DELEGATION ---
     document.addEventListener('click', (e) => {
         // Comic Aktionen
@@ -931,6 +1108,55 @@ document.addEventListener('DOMContentLoaded', () => {
             if (entry) entry.remove();
         }
     });
+
+    // --- REPORT EVENTS ---
+    const viewReportBtn = e.target.closest('.btn-view-report');
+    if (viewReportBtn) {
+        openReportModal(JSON.parse(viewReportBtn.dataset.payload));
+    }
+
+    if (e.target.closest('.btn-close-report-modal')) {
+        document.getElementById('report-detail-modal').style.display = 'none';
+    }
+
+    const resolveRepBtn = e.target.closest('#btn-rep-resolve');
+    if (resolveRepBtn && currentReportPayload) {
+        const fd = new FormData();
+        fd.append('report_id', currentReportPayload.id);
+        fd.append('status', 'closed');
+        sendApiRequest('update_report_status', fd, resolveRepBtn, resolveRepBtn.innerHTML);
+    }
+
+    const spamRepBtn = e.target.closest('#btn-rep-spam');
+    if (spamRepBtn && currentReportPayload) {
+        const fd = new FormData();
+        fd.append('report_id', currentReportPayload.id);
+        fd.append('status', 'spam');
+        sendApiRequest('update_report_status', fd, spamRepBtn, spamRepBtn.innerHTML);
+    }
+
+    // DAS KILLER-FEATURE: Transkript übernehmen
+    if (e.target.closest('#btn-transfer-transcript') && currentReportPayload) {
+        // Finde den Comic in der Tabelle, um sein Payload zu klauen
+        const comicBtn = document.querySelector(
+            `.btn-edit-comic[data-id="${currentReportPayload.comicId}"]`
+        );
+        if (comicBtn) {
+            const comicData = JSON.parse(comicBtn.dataset.payload);
+            // Überschreibe das alte Transkript mit dem neuen Vorschlag!
+            comicData.transcript = currentReportPayload.suggestion;
+
+            // Report schließen, Comic Modal öffnen!
+            document.getElementById('report-detail-modal').style.display = 'none';
+            window.openComicModal(comicData);
+            showMsg(
+                'Transkript-Vorschlag wurde in den Editor geladen. Bitte prüfen und speichern.',
+                'green'
+            );
+        } else {
+            alert('Der Comic konnte in der aktuellen Liste nicht gefunden werden.');
+        }
+    }
 
     // --- LOGOUT ---
     document.getElementById('admin-logout-btn')?.addEventListener('click', (e) => {
