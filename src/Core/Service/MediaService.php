@@ -4,11 +4,18 @@ declare(strict_types=1);
 
 namespace App\Core\Service;
 
-final class MediaService
+use App\Contracts\Config\ConfigInterface;
+
+final readonly class MediaService
 {
+    public function __construct(private ConfigInterface $config)
+    {
+    }
+
     /**
      * Skaliert ein Bild unter Beibehaltung des Seitenverhältnisses.
-     * Nutzt GD-Library zur Konvertierung in WebP.
+     * Wenn das Bild bereits WebP ist und nicht skaliert werden muss (oder es das Original-Hires ist),
+     * wird es verlustfrei 1:1 kopiert.
      */
     public function generateScaledImage(string $sourcePath, string $targetPath, int $maxWidth): bool
     {
@@ -23,34 +30,27 @@ final class MediaService
 
         [$width, $height, $type] = $info;
 
+        // Smart-Copy: Wenn es schon WebP ist UND (kleiner als Max-Breite ODER Hires(4000px) ist)
+        // -> Kein Re-Encoding! 1:1 kopieren für 100% Original-Qualität.
+        if ($type === \IMAGETYPE_WEBP && ($width <= $maxWidth || $maxWidth >= 4000)) {
+            return \copy($sourcePath, $targetPath);
+        }
+
+        $ratio     = $width > $maxWidth ? ($maxWidth / $width) : 1;
+        $newWidth  = (int) \round($width * $ratio);
+        $newHeight = (int) \round($height * $ratio);
+
         $image = $this->createImageFromFile($sourcePath, $type);
         if (! $image) {
             return false;
         }
 
-        // Muss es überhaupt skaliert werden?
-        if ($width <= $maxWidth) {
-            $newWidth  = $width;
-            $newHeight = $height;
-        } else {
-            $ratio     = $maxWidth / $width;
-            $newWidth  = $maxWidth;
-            $newHeight = (int) \round($height * $ratio);
-        }
-
         $targetImage = \imagecreatetruecolor($newWidth, $newHeight);
-
-        // WICHTIG: Transparenz für PNG/WebP erhalten!
-        \imagealphablending($targetImage, false);
-        \imagesavealpha($targetImage, true);
-        $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
-        \imagefilledrectangle($targetImage, 0, 0, $newWidth, $newHeight, $transparent);
+        $this->applyBackground($targetImage, $newWidth, $newHeight);
 
         \imagecopyresampled($targetImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
-        // WebP mit 85% Qualität erzeugen (Perfekter Kompromiss aus Qualität und Dateigröße)
-        // WebP Qualität aus der Config lesen (Standard: 85)
-        $quality = (int) $this->config->get('webp_quality', 85);
+        $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality', 85);
         $success = \imagewebp($targetImage, $targetPath, $quality);
 
         \imagedestroy($image);
@@ -81,12 +81,7 @@ final class MediaService
         }
 
         $targetImage = \imagecreatetruecolor($size, $size);
-
-        // WICHTIG: Transparenz für PNG/WebP erhalten!
-        \imagealphablending($targetImage, false);
-        \imagesavealpha($targetImage, true);
-        $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
-        \imagefilledrectangle($targetImage, 0, 0, $size, $size, $transparent);
+        $this->applyBackground($targetImage, $size, $size);
 
         // Quadratischen Ausschnitt aus der Mitte berechnen
         $minSize = \min($width, $height);
@@ -95,15 +90,40 @@ final class MediaService
 
         \imagecopyresampled($targetImage, $image, 0, 0, $srcX, $srcY, $size, $size, $minSize, $minSize);
 
-        // WebP mit 80% Qualität für Thumbnails
-        // WebP Qualität für Thumbnails etwas geringer (Standard: 80)
-        $quality = (int) $this->config->get('webp_quality_thumb', 80);
+        $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
         $success = \imagewebp($targetImage, $targetPath, $quality);
 
         \imagedestroy($image);
         \imagedestroy($targetImage);
 
         return $success;
+    }
+
+    /**
+     * Setzt den Hintergrund basierend auf der Config (Transparent oder Hex-Farbe)
+     */
+    private function applyBackground(\GdImage $targetImage, int $width, int $height): void
+    {
+        $bgColor = $this->config->get('image_background_color', 'transparent');
+
+        if (\strtolower($bgColor) === 'transparent') {
+            \imagealphablending($targetImage, false);
+            \imagesavealpha($targetImage, true);
+            $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
+            \imagefilledrectangle($targetImage, 0, 0, $width, $height, $transparent);
+        } else {
+            // Hex Color in RGB umwandeln
+            $hex = \ltrim($bgColor, '#');
+            if (\strlen($hex) === 3) {
+                $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+            }
+            $r = \hexdec(\substr($hex, 0, 2));
+            $g = \hexdec(\substr($hex, 2, 2));
+            $b = \hexdec(\substr($hex, 4, 2));
+
+            $color = \imagecolorallocate($targetImage, $r, $g, $b);
+            \imagefilledrectangle($targetImage, 0, 0, $width, $height, $color);
+        }
     }
 
     private function createImageFromFile(string $path, int $type): \GdImage|false

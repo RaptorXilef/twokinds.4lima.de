@@ -25,8 +25,12 @@ return [
     // Wie oft rückgängig möglich?
     'comic_revision_limit' => 20,
 
-    // Bild-Qualität beim Dateiupload
-    'webp_quality'       => 90,
-    'webp_quality_thumb' => 85,
+    // --- BILD-VERARBEITUNG (MEDIA SERVICE) ---
+    'webp_quality'       => 85,    // Standard WebP-Qualität (0-100)
+    'webp_quality_thumb' => 80,    // Etwas aggressiver für Thumbnails
+    'webp_lossless'      => false, // true = Erzwingt Qualität 100 (Lossless)
 
+    // Hintergrundfarbe bei PNG/WebP Transparenzen.
+    // 'transparent' belässt es durchsichtig. Hex-Code (z.B. '#ffffff') füllt es auf.
+    'image_background_color' => 'transparent',
 ];
