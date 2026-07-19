@@ -10,16 +10,21 @@ use App\Application\DTO\SaveSingleComicRequest;
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Contracts\Config\ConfigInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Service\ComicService;
+use App\Core\Service\MediaService;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
 
 #[ActionRoute('api_save_single_comic')]
 final readonly class ApiSaveSingleComicAction implements ActionInterface
 {
-    public function __construct(private ComicService $comicService)
-    {
+    public function __construct(
+        private ComicService $comicService,
+        private MediaService $mediaService,
+        private ConfigInterface $config,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
@@ -52,6 +57,58 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 }
             }
 
+            // --- BILD UPLOAD LOGIK ---
+            $files       = $request->files;
+            $targetDir   = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
+            $hasNewImage = false;
+
+            $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
+            $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
+
+            if ($hiresUploaded || $lowresUploaded) {
+                $hasNewImage = true;
+
+                // Ordner-Struktur sicherstellen
+                foreach (['hires', 'lowres', 'thumbnails', 'socialmedia'] as $sub) {
+                    $path = "$targetDir/$sub";
+                    if (! \is_dir($path)) {
+                        @\mkdir($path, 0o755, true);
+                    }
+                }
+
+                $baseProcessPath = '';
+
+                // 1. Hires verarbeiten
+                if ($hiresUploaded) {
+                    $tmpHires  = $files['upload_hires']['tmp_name'];
+                    $hiresPath = "$targetDir/hires/{$dto->id}.webp";
+                    // Speichert Hires als WebP (mit Safenet-Breite von max 4000px)
+                    $this->mediaService->generateScaledImage($tmpHires, $hiresPath, 4000);
+                    $baseProcessPath = $hiresPath;
+                }
+
+                // 2. Lowres verarbeiten
+                if ($lowresUploaded) {
+                    $tmpLowres  = $files['upload_lowres']['tmp_name'];
+                    $lowresPath = "$targetDir/lowres/{$dto->id}.webp";
+                    // Manuelles Lowres einfach in WebP umwandeln
+                    $this->mediaService->generateScaledImage($tmpLowres, $lowresPath, 1500);
+                    $baseProcessPath = $lowresPath;
+                } elseif ($hiresUploaded) {
+                    // Kein manuelles Lowres da -> Wir generieren es automatisch aus dem Hires!
+                    $lowresPath = "$targetDir/lowres/{$dto->id}.webp";
+                    // Skalieren auf max 1080px Breite
+                    $this->mediaService->generateScaledImage($hiresPath, $lowresPath, 1080);
+                    $baseProcessPath = $lowresPath;
+                }
+
+                // 3. Thumbnails & Social Media Crop generieren
+                if ($baseProcessPath !== '') {
+                    $this->mediaService->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$dto->id}.webp", 200);
+                    $this->mediaService->generateSquareCrop($baseProcessPath, "$targetDir/socialmedia/{$dto->id}.webp", 600);
+                }
+            }
+
             $comic = new ComicPage(
                 id: new ComicId($dto->id),
                 type: $dto->type,
@@ -61,7 +118,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 characterIds: $charIds,
                 originalUrl: $originalUrl,
                 sketchUrl: $sketchUrl,
-                imageUpdatedAt: null,
+                imageUpdatedAt: $hasNewImage ? \time() : null, // ComicService behält alten Timestamp, wenn null übergeben wird
             );
 
             $this->comicService->saveComic($comic);
@@ -82,6 +139,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         if (! \function_exists('curl_init')) {
             $context = \stream_context_create(['http' => ['method' => 'HEAD', 'timeout' => 2]]);
             foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) {
+                // HIER IST DER FIX FÜR DEN 500 ERROR (true statt 1)
                 $headers = @\get_headers($baseUrl . '.' . $ext, true, $context);
                 if ($headers !== false) {
                     $status = $headers[0] ?? '';
@@ -101,7 +159,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         }
 
         // Standard-Weg mit cURL (schneller & ressourcenschonender)
-        foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) { // TODO ggf. ins Interface
+        foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) { // TODO ggf. ins Interface?
             $ch = \curl_init($baseUrl . '.' . $ext);
             \curl_setopt($ch, \CURLOPT_NOBODY, true); // Nur Header laden, spart Bandbreite
             \curl_setopt($ch, \CURLOPT_TIMEOUT, 2);

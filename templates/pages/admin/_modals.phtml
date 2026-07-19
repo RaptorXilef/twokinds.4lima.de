@@ -117,7 +117,8 @@ use App\Core\Entity\CharacterGroup;
             </div>
 
             <form id="comic-form"
-                  class="admin-form">
+                  class="admin-form"
+                  enctype="multipart/form-data">
                 <input type="hidden"
                        id="form-action"
                        name="action"
@@ -167,6 +168,21 @@ use App\Core\Entity\CharacterGroup;
                                 <option value="<?php echo \htmlspecialchars((string) $ch); ?>">
                                 <?php } ?>
                         </datalist>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label>Hires-Datei (Übersetzung):</label>
+                        <input type="file"
+                               name="upload_hires"
+                               accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label>Lowres-Datei (Optional, überschreibt Auto-Skalierung):</label>
+                        <input type="file"
+                               name="upload_lowres"
+                               accept="image/*">
                     </div>
                 </div>
 
