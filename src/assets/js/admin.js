@@ -97,6 +97,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- ROW HIGHLIGHT & SCROLL LOGIC ---
+    function highlightAndScroll(id) {
+        if (!id) return;
+        // Wir suchen den Delete-Button, da dieser die reine ID im data-id Attribut hat
+        const targetBtn =
+            document.querySelector(`.btn-delete-comic[data-id="${id}"]`) ||
+            document.querySelector(`.btn-delete-char[data-id="${id}"]`);
+        if (targetBtn) {
+            const tr = targetBtn.closest('tr');
+            if (tr) {
+                tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                tr.classList.add('row-highlight');
+                setTimeout(() => tr.classList.remove('row-highlight'), 3000);
+            }
+        }
+    }
+
+    // Beim Laden der Seite prüfen, ob wir gerade gespeichert haben
+    const highlightId = sessionStorage.getItem('highlightEntityId');
+    if (highlightId) {
+        setTimeout(() => highlightAndScroll(highlightId), 300); // 300ms warten, bis Tabs initialisiert sind
+        sessionStorage.removeItem('highlightEntityId');
+    }
+
     // --- COMIC MODAL: LIVE PREVIEWS & AUTO-FILL ---
     const hiddenSelect = document.getElementById('hidden-comic-chars');
     const comicIdInput = document.getElementById('comic_id');
@@ -110,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hilfsfunktion testet Endungen durch, indem sie unsichtbare Image-Objekte lädt
     function loadPreviewWithProbe(imgElement, basePath, extensions, fallbackUrl) {
         let i = 0;
-        imgElement.src = 'https://placehold.co/100x140?text=Lädt...';
+        imgElement.src = 'https://placehold.co/100x140?text=L%C3%A4dt...';
 
         const testNext = () => {
             if (i >= extensions.length) {
@@ -174,11 +198,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (sketchVal.includes('.')) {
                 prevSketch.src = 'https://twokindscomic.com/images/' + sketchVal;
             } else {
-                // NEU: Hängt _sketch an, wenn es fehlt
+                // Hängt _sketch an, wenn es fehlt
                 let baseSketch = sketchVal;
-                if (!baseSketch.endsWith('_sketch')) {
-                    baseSketch += '_sketch';
-                }
+                if (!baseSketch.endsWith('_sketch')) baseSketch += '_sketch';
                 loadPreviewWithProbe(
                     prevSketch,
                     'https://twokindscomic.com/images/' + baseSketch,
@@ -266,12 +288,21 @@ document.addEventListener('DOMContentLoaded', () => {
             comicIdInput.readOnly = false;
             $('#transcript').trumbowyg('empty');
         }
+
+        // Merken fürs spätere Hervorheben bei "Abbrechen"
+        sessionStorage.setItem('highlightEntityIdCancel', comicIdInput.value.trim());
+
         updateComicPreviews(); // Vorschauen direkt triggern
         document.getElementById('comic-modal').style.display = 'flex';
     }
 
     function closeComicModal() {
         document.getElementById('comic-modal').style.display = 'none';
+        const cancelId = sessionStorage.getItem('highlightEntityIdCancel');
+        if (cancelId) {
+            highlightAndScroll(cancelId);
+            sessionStorage.removeItem('highlightEntityIdCancel');
+        }
     }
 
     // Toggle Alphabetical / Grouped View
@@ -285,24 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('view-chars-grouped').style.display = charViewAlpha
             ? 'none'
             : 'block';
-    });
-
-    // Avatar Klick-Logik synchronisiert Hidden-Select und BEIDE Ansichten
-    document.addEventListener('click', (e) => {
-        const charItem = e.target.closest('.char-selection-item:not(.gallery-item)');
-        if (charItem) {
-            isDirty = true;
-            const charId = charItem.dataset.charId;
-            const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
-            const newState = !opt.selected;
-            opt.selected = newState;
-
-            document
-                .querySelectorAll(`.char-selection-item[data-char-id="${charId}"]`)
-                .forEach((item) => {
-                    item.classList.toggle('selected', newState);
-                });
-        }
     });
 
     // --- CHARAKTER MODAL ---
@@ -345,11 +358,21 @@ document.addEventListener('DOMContentLoaded', () => {
             $('#char_description').trumbowyg('empty');
             charPreviewImg.src = 'https://placehold.co/120x120?text=Kein+Bild';
         }
+
+        sessionStorage.setItem(
+            'highlightEntityIdCancel',
+            document.getElementById('character_id').value.trim()
+        );
         document.getElementById('char-modal').style.display = 'flex';
     }
 
     function closeCharModal() {
         document.getElementById('char-modal').style.display = 'none';
+        const cancelId = sessionStorage.getItem('highlightEntityIdCancel');
+        if (cancelId) {
+            highlightAndScroll(cancelId);
+            sessionStorage.removeItem('highlightEntityIdCancel');
+        }
     }
 
     // --- BILD UPLOAD DRAG & DROP ---
@@ -393,21 +416,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- BILDER GALERIE MODAL ---
-    document
-        .getElementById('btn-open-gallery')
-        ?.addEventListener(
-            'click',
-            () => (document.getElementById('gallery-modal').style.display = 'flex')
-        );
+    document.getElementById('btn-open-gallery')?.addEventListener('click', () => {
+        document.getElementById('gallery-modal').style.display = 'flex';
+    });
 
-    document
-        .querySelectorAll('.btn-close-gallery-modal')
-        .forEach((btn) =>
-            btn.addEventListener(
-                'click',
-                () => (document.getElementById('gallery-modal').style.display = 'none')
-            )
+    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
+        btn.addEventListener(
+            'click',
+            () => (document.getElementById('gallery-modal').style.display = 'none')
         );
+    });
 
     document.querySelectorAll('.gallery-item').forEach((item) => {
         item.addEventListener('click', function () {
@@ -495,7 +513,11 @@ document.addEventListener('DOMContentLoaded', () => {
         initSortable(); // Neu einbinden
     });
 
-    document.getElementById('btn-save-groups')?.addEventListener('click', () => {
+    document.getElementById('btn-save-groups')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('#btn-save-groups');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+        btn.style.pointerEvents = 'none';
+
         const groupElements = document.querySelectorAll('#groups-wrapper .character-group');
         const groupsData = [];
 
@@ -504,8 +526,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!title) return; // Leere Gruppen ignorieren
 
             const manualSort = groupEl.querySelector('.manual-sort-cb')?.checked || false;
-            const charElements = groupEl.querySelectorAll('.character-entry');
-            const charIds = Array.from(charElements).map((el) => el.dataset.id);
+            const charIds = Array.from(groupEl.querySelectorAll('.character-entry')).map(
+                (el) => el.dataset.id
+            );
             groupsData.push({ name: title, manual_sort: manualSort, characters: charIds });
         });
 
@@ -539,13 +562,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- EVENT DELEGATION FÜR BUTTONS ---
+    // --- ZENTRALE EVENT DELEGATION ---
     document.addEventListener('click', (e) => {
         // Comic Aktionen
         if (e.target.closest('#btn-add-comic')) openComicModal();
         if (e.target.closest('#btn-save-comic')) {
+            e.preventDefault();
             const form = document.getElementById('comic-form');
             if (!form.reportValidity()) return;
+            const btn = e.target.closest('#btn-save-comic');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+            btn.style.pointerEvents = 'none';
+            sessionStorage.setItem(
+                'highlightEntityId',
+                document.getElementById('comic_id').value.trim()
+            );
             sendApiRequest('save_single_comic', new FormData(form));
         }
         if (e.target.closest('.btn-close-comic-modal')) closeComicModal();
@@ -561,6 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ) {
             const fd = new FormData();
             fd.append('comic_id', undoComicBtn.dataset.id);
+            sessionStorage.setItem('highlightEntityId', undoComicBtn.dataset.id);
             sendApiRequest('undo_comic', fd);
         }
 
@@ -579,11 +611,35 @@ document.addEventListener('DOMContentLoaded', () => {
             sendApiRequest('delete_comic', fd);
         }
 
+        // Avatar Selektion im Comic-Modal
+        const charItem = e.target.closest('.char-selection-item:not(.gallery-item)');
+        if (charItem) {
+            isDirty = true;
+            const charId = charItem.dataset.charId;
+            const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
+            const newState = !opt.selected;
+            opt.selected = newState;
+            document
+                .querySelectorAll(`.char-selection-item[data-char-id="${charId}"]`)
+                .forEach((item) => {
+                    item.classList.toggle('selected', newState);
+                });
+        }
+
         // Charakter Aktionen
         if (e.target.closest('#btn-add-char')) openCharModal();
         if (e.target.closest('#btn-save-char')) {
+            e.preventDefault();
             const form = document.getElementById('char-form');
             if (!form.reportValidity()) return;
+            const btn = e.target.closest('#btn-save-char');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+            btn.style.pointerEvents = 'none';
+            // Bei "NEW" haben wir die ID erst nach Server-Antwort, wir markieren ihn als Neu
+            sessionStorage.setItem(
+                'highlightEntityId',
+                document.getElementById('character_id').value.trim()
+            );
             sendApiRequest('save_single_character', new FormData(form));
         }
         if (e.target.closest('.btn-close-char-modal')) closeCharModal();
