@@ -9,6 +9,7 @@ use App\Contracts\Bootstrap\ServiceProviderInterface;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
 use App\Contracts\Security\AuthSessionInterface;
+use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
@@ -24,6 +25,7 @@ use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
 use App\Infrastructure\Storage\JsonHelper;
 use App\Infrastructure\Storage\LocalImageStorage;
+use App\Infrastructure\Storage\MySqlChapterRepository;
 use App\Infrastructure\Storage\MySqlCharacterGroupRepository;
 use App\Infrastructure\Storage\MySqlCharacterRepository;
 use App\Infrastructure\Storage\MySqlComicRepository;
@@ -77,6 +79,10 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         ));
 
         $container->bind(ReportRepositoryInterface::class, fn () => new MySqlReportRepository(
+            $container->get(\PDO::class),
+        ));
+
+        $container->bind(ChapterRepositoryInterface::class, fn () => new MySqlChapterRepository(
             $container->get(\PDO::class),
         ));
 

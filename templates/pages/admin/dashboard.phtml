@@ -90,6 +90,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                          class="menu">
                         <span class="menu-label">Verwaltung</span>
                         <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
+                        <a href="#section-archive" class="tab-link" data-target="section-archive">Archiv / Kapitel</a>
                         <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
                         <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
 
@@ -115,6 +116,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                      class="status-message"></div>
 
                 <?php include __DIR__ . '/_section_comics.phtml'; ?>
+                <?php include __DIR__ . '/_section_archive.phtml'; ?>
                 <?php include __DIR__ . '/_section_characters.phtml'; ?>
                 <?php include __DIR__ . '/_section_groups.phtml'; ?>
                 <?php include __DIR__ . '/_section_reports.phtml'; ?>

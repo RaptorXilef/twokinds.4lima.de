@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
@@ -22,6 +23,7 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         private TemplateRenderer $renderer,
         private SessionManager $sessionManager,
         private ComicRepositoryInterface $comicRepo,
+        private ChapterRepositoryInterface $chapterRepo,
         private CharacterRepositoryInterface $charRepo,
         private CharacterGroupRepositoryInterface $groupRepo,
         private ReportRepositoryInterface $reportRepo,
@@ -70,6 +72,7 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         }
 
         // 4. Einzigartige Kapitel für das Dropdown ermitteln
+        /*
         $chapters = [];
         foreach ($comics as $comic) {
             if ($comic->chapterId !== null && $comic->chapterId !== '') {
@@ -78,11 +81,19 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         }
         $existingChapters = \array_values(\array_unique($chapters));
         \sort($existingChapters, \SORT_NUMERIC);
+        */
+
+        // Wirkliche Kapitel aus der Datenbank laden
+        $dbChapters = $this->chapterRepo->findAll();
+
+        // (Wir behalten das $existingChapters Array für das Datalist-Dropdown bei Comics)
+        $existingChapters = \array_map(fn ($c) => $c->id, $dbChapters);
 
         $this->renderer->render('admin/dashboard', [
             'pageTitle'        => 'Admin Dashboard',
             'adminUser'        => $this->sessionManager->getAdminUser(),
             'comics'           => $comics,
+            'dbChapters'       => $dbChapters,
             'characters'       => $characters,
             'groups'           => $groups,
             'assignedIds'      => $assignedIds,

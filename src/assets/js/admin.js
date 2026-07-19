@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            console.error('API Error:', error); // HIER WIRD DER FEHLER GELOGGT
+            console.error('API Fetch Error:', error); // HIER WIRD DER FEHLER GELOGGT
             showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
             // Button wieder freigeben bei Absturz (z.B. 500 Internal Server Error)
             if (btnElement) {
@@ -1164,6 +1164,72 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
             } else {
                 alert('Der Comic konnte in der aktuellen Liste nicht gefunden werden.');
+            }
+        }
+    });
+
+    // --- KAPITEL / ARCHIV LOGIK ---
+    window.openChapterModal = (data = null) => {
+        const form = document.getElementById('chapter-form');
+        form?.reset();
+
+        const idInput = document.getElementById('chap_id');
+        const titleInput = document.getElementById('chap_title');
+
+        if (data) {
+            document.getElementById('modal-title-chapter').textContent =
+                `Kapitel bearbeiten: ${data.id}`;
+            if (idInput) idInput.value = data.id;
+            if (titleInput) titleInput.value = data.title;
+            if (typeof $.fn.trumbowyg !== 'undefined') {
+                $('#chap_description').trumbowyg('html', data.description);
+            }
+        } else {
+            document.getElementById('modal-title-chapter').textContent = 'Neues Kapitel anlegen';
+            if (typeof $.fn.trumbowyg !== 'undefined') {
+                $('#chap_description').trumbowyg('empty');
+            }
+        }
+
+        const modal = document.getElementById('chapter-modal');
+        if (modal) modal.style.display = 'flex';
+    };
+
+    document.addEventListener('click', (e) => {
+        // ... (Deine anderen Klick-Events)
+
+        if (e.target.closest('#btn-add-chapter')) window.openChapterModal();
+        if (e.target.closest('.btn-close-chapter-modal')) {
+            const m = document.getElementById('chapter-modal');
+            if (m) m.style.display = 'none';
+        }
+
+        if (e.target.closest('#btn-save-chapter')) {
+            e.preventDefault();
+            const form = document.getElementById('chapter-form');
+            if (!form?.reportValidity()) return;
+
+            const btn = e.target.closest('#btn-save-chapter');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+            btn.style.pointerEvents = 'none';
+
+            sendApiRequest('save_chapter', new FormData(form), btn, origText);
+        }
+
+        const editChapBtn = e.target.closest('.btn-edit-chapter');
+        if (editChapBtn) window.openChapterModal(JSON.parse(editChapBtn.dataset?.payload ?? '{}'));
+
+        const deleteChapBtn = e.target.closest('.btn-delete-chapter');
+        if (deleteChapBtn) {
+            const id = deleteChapBtn.dataset?.id;
+            const check = prompt(
+                `Willst du das Kapitel "${id}" löschen?\nTippe "${id}" zur Bestätigung:`
+            );
+            if (check === id) {
+                const fd = new FormData();
+                fd.append('chapter_id', id);
+                sendApiRequest('delete_chapter', fd);
             }
         }
     });
