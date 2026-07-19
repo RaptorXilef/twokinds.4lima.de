@@ -469,6 +469,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleEl = document.getElementById('modal-title-comic');
             if (titleEl) titleEl.textContent = 'Neuen Comic anlegen';
             if (comicIdInput) comicIdInput.readOnly = false;
+
+            // Höchstes Kapitel suchen und automatisch eintragen
+            const chapInput = document.getElementById('chapter_id');
+            if (chapInput) {
+                const chapterOptions = Array.from(
+                    document.querySelectorAll('#chapter-datalist option')
+                )
+                    .map((opt) => parseInt(opt.value, 10))
+                    .filter((num) => !isNaN(num));
+
+                if (chapterOptions.length > 0) {
+                    chapInput.value = Math.max(...chapterOptions);
+                } else {
+                    chapInput.value = '';
+                }
+            }
+
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#transcript').trumbowyg('empty');
             }
@@ -832,10 +849,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const deleteComicBtn = e.target.closest('.btn-delete-comic');
         if (deleteComicBtn) {
             const id = deleteComicBtn.dataset.id;
-            if (confirm(`ACHTUNG: Willst du Comic ${id} unwiderruflich löschen?`)) {
+            // HIER IST DER FIX: prompt statt confirm
+            const check = prompt(
+                `ACHTUNG: Willst du Comic ${id} unwiderruflich löschen?\n\nUm den Löschvorgang zu bestätigen, tippe bitte die ID "${id}" in das Feld ein:`
+            );
+            if (check === id) {
                 const fd = new FormData();
                 fd.append('comic_id', id);
                 sendApiRequest('delete_comic', fd);
+            } else if (check !== null) {
+                alert('Eingabe war fehlerhaft. Der Comic wurde NICHT gelöscht.');
             }
         }
 
@@ -881,10 +904,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (deleteCharBtn) {
             const id = deleteCharBtn.dataset.id;
             const name = deleteCharBtn.dataset.name;
-            if (confirm(`Möchtest du den Charakter "${name}" (${id}) wirklich löschen?`)) {
+            // HIER IST DER FIX: prompt statt confirm (Mit dem Namen als Bestätigung)
+            const check = prompt(
+                `ACHTUNG: Möchtest du den Charakter "${name}" (${id}) wirklich löschen?\n\nUm den Löschvorgang zu bestätigen, tippe bitte den Namen "${name}" in das Feld ein:`
+            );
+            if (check === name) {
                 const fd = new FormData();
                 fd.append('character_id', id);
                 sendApiRequest('delete_character', fd);
+            } else if (check !== null) {
+                alert('Eingabe war fehlerhaft. Der Charakter wurde NICHT gelöscht.');
             }
         }
 

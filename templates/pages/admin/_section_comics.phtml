@@ -44,13 +44,14 @@
                     <th>Thumbnail</th>
                     <th>Typ & Kapitel</th>
                     <th>Titel & Transkript</th>
+                    <th style="width: 150px;">Status</th>
                     <th>Aktionen</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($comics)) { ?>
                     <tr>
-                        <td colspan="5"
+                        <td colspan="6"
                             class="empty-table-message">Keine Comics gefunden.</td>
                     </tr>
                 <?php } else { ?>
@@ -71,6 +72,27 @@
                             'transcript'  => $comic->transcript ?? '',
                             'characters'  => $charIds,
                         ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
+
+                        // Fehlende Dinge ermitteln
+                        $missing = [];
+                        if ($comic->name === '') {
+                            $missing[] = 'Titel';
+                        }
+                        if ($comic->chapterId === null || $comic->chapterId === '') {
+                            $missing[] = 'Kapitel';
+                        }
+                        if ($comic->originalUrl === '') {
+                            $missing[] = 'Original-Bild';
+                        }
+                        if ($comic->sketchUrl === '') {
+                            $missing[] = 'Sketch';
+                        }
+                        if ($comic->transcript === null || $comic->transcript === '') {
+                            $missing[] = 'Transkript';
+                        }
+                        if (empty($comic->characterIds)) {
+                            $missing[] = 'Charaktere';
+                        }
                         ?>
                         <tr>
                             <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
@@ -89,6 +111,20 @@
                                 <strong><?php echo \htmlspecialchars($comic->name !== '' ? $comic->name : 'Kein Titel'); ?></strong>
                                 <?php if ($comic->transcript) { ?>
                                     <div class="description-preview"><?php echo \strip_tags($comic->transcript); ?></div>
+                                <?php } ?>
+                            </td>
+                            <!-- Die Status-Spalte -->
+                            <td>
+                                <?php if (empty($missing)) { ?>
+                                    <span style="display: inline-block; padding: 2px 6px; font-size: 0.75em; background-color: #28a745; color: white; border-radius: 4px;">
+                                        <i class="fa-solid fa-check"></i> Komplett
+                                    </span>
+                                <?php } else { ?>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                        <?php foreach ($missing as $miss) { ?>
+                                            <span style="display: inline-block; padding: 2px 6px; font-size: 0.75em; background-color: #dc3545; color: white; border-radius: 4px; line-height: 1;">Fehlt: <?php echo $miss; ?></span>
+                                        <?php } ?>
+                                    </div>
                                 <?php } ?>
                             </td>
                             <td class="actions-cell">
