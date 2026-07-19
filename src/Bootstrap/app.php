@@ -160,7 +160,7 @@ $hardConfigs = [
     $appRoot . '/config/config.php',
     $appRoot . '/config/storage.php',
     $appRoot . '/config/secrets.php',
-    $appRoot . '/config/_dev.local.php', // Lokaler Override gewinnt IMMER
+    $appRoot . '/config/config.local.php', // Lokaler Override gewinnt IMMER
 ];
 
 foreach ($hardConfigs as $file) {
