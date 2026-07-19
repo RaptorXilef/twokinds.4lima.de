@@ -1236,34 +1236,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 data.status = 'Lädt...';
                 renderQueueTable();
 
-                const fd = new FormData();
-                fd.append('comic_id', id);
-                fd.append('csrf_token', csrfToken);
-                if (data.hires) fd.append('upload_hires', data.hires);
-                if (data.lowres) fd.append('upload_lowres', data.lowres);
+                // Wir packen den Upload in eine rekursive Funktion, um ihn bei "force" zu wiederholen
+                const processUpload = async (force = false) => {
+                    const fd = new FormData();
+                    fd.append('comic_id', id);
+                    fd.append('csrf_token', csrfToken);
+                    if (force) fd.append('force', '1');
+                    if (data.hires) fd.append('upload_hires', data.hires);
+                    if (data.lowres) fd.append('upload_lowres', data.lowres);
 
-                try {
                     const res = await fetch(`${baseUrl}/api/upload_comic_media`, {
                         method: 'POST',
                         body: fd,
                     });
                     const json = await res.json();
 
+                    // Spezieller Catch für "Comic existiert noch nicht"
+                    if (!res.ok && json.error === 'COMIC_NOT_FOUND') {
+                        if (
+                            confirm(
+                                `Comicseite für die ID "${id}" existiert noch nicht.\n\nTrotzdem hochladen?\n(Die Bilder werden auf dem Server generiert, aber erst sichtbar, wenn die Seite später angelegt wird)`
+                            )
+                        ) {
+                            return await processUpload(true); // Rekursiv nochmal mit force=1 ausführen
+                        } else {
+                            return { success: false, error: 'Übersprungen' };
+                        }
+                    }
+                    return json;
+                };
+
+                try {
+                    const json = await processUpload(false);
                     if (json.success) {
                         data.status = 'Fertig';
                     } else {
                         data.status = `Fehler: ${json.error}`;
                     }
-                } catch {
+                } catch (error) {
+                    console.error('Batch Upload Error:', error);
                     data.status = 'Fehler: Netzwerk';
                 }
                 renderQueueTable();
             }
 
-            showMsg(
-                'Massenverarbeitung abgeschlossen! Alle Zeitstempel wurden geupdated.',
-                'green'
-            );
+            showMsg('Massenverarbeitung abgeschlossen! Warteschlange geleert.', 'green');
             btnStartMassUpload.disabled = false;
         });
     }

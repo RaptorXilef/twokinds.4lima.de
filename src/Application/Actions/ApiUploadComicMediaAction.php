@@ -33,9 +33,15 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
 
             $comicId = new ComicId($comicIdStr);
             $comic   = $this->comicRepo->findById($comicId);
+            $force   = (bool) ($request->post['force'] ?? false);
 
-            if (! $comic) {
-                return JsonResponse::error("Comic {$comicIdStr} existiert nicht in der Datenbank. Bitte lege ihn zuerst an.", 404);
+            // Wenn Comic nicht existiert UND kein force-Flag gesetzt ist, brich ab und frag nach
+            if (! $comic && ! $force) {
+                return JsonResponse::sendPayload([
+                    'success' => false,
+                    'error'   => 'COMIC_NOT_FOUND',
+                    'message' => "Comic {$comicIdStr} existiert nicht.",
+                ], 404);
             }
 
             $files     = $request->files;
@@ -48,6 +54,7 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
                 return JsonResponse::error('Keine gültigen Bilder hochgeladen.', 400);
             }
 
+            // Ordnerstruktur sicherstellen
             foreach (['hires', 'lowres', 'thumbnails', 'socialmedia'] as $sub) {
                 $path = "$targetDir/$sub";
                 if (! \is_dir($path)) {
@@ -78,19 +85,21 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
                 $this->mediaService->generateSquareCrop($baseProcessPath, "$targetDir/socialmedia/{$comicIdStr}.webp", 600);
             }
 
-            // Zeitstempel für RSS / Cachebusting aktualisieren!
-            $updatedComic = new \App\Core\Entity\ComicPage(
-                id: $comic->id,
-                type: $comic->type,
-                name: $comic->name,
-                transcript: $comic->transcript,
-                chapterId: $comic->chapterId,
-                characterIds: $comic->characterIds,
-                originalUrl: $comic->originalUrl,
-                sketchUrl: $comic->sketchUrl,
-                imageUpdatedAt: \time(),
-            );
-            $this->comicRepo->save($updatedComic);
+            // Zeitstempel für RSS / Cachebusting aktualisieren (NUR WENN COMIC EXISTIERT!)
+            if ($comic) {
+                $updatedComic = new \App\Core\Entity\ComicPage(
+                    id: $comic->id,
+                    type: $comic->type,
+                    name: $comic->name,
+                    transcript: $comic->transcript,
+                    chapterId: $comic->chapterId,
+                    characterIds: $comic->characterIds,
+                    originalUrl: $comic->originalUrl,
+                    sketchUrl: $comic->sketchUrl,
+                    imageUpdatedAt: \time(),
+                );
+                $this->comicRepo->save($updatedComic);
+            }
 
             return JsonResponse::success(['message' => "Medien für {$comicIdStr} erfolgreich verarbeitet!"]);
         } catch (\Throwable $e) {
