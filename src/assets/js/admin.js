@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnElement.style.pointerEvents = 'auto';
                 }
             }
-        } catch (e) {
+        } catch (error) {
             showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
             // Button wieder freigeben bei Absturz (z.B. 500 Internal Server Error)
             if (btnElement) {
@@ -162,11 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const createBtn = (text, isDisabled, isActive, clickHandler) => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className =
-                    'button ' + (isActive ? 'edit ' : '') + (isDisabled ? 'disabled' : '');
+                btn.className = `button ${isActive ? 'edit ' : ''}${isDisabled ? 'disabled' : ''}`;
                 btn.innerHTML = text;
                 if (isDisabled) btn.style.opacity = '0.5';
-                if (!isDisabled) btn.onclick = clickHandler;
+                if (!isDisabled && clickHandler) btn.onclick = clickHandler;
                 return btn;
             };
 
@@ -189,13 +188,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderComicTable();
                     })
                 );
-                if (startPage > 2)
+                if (startPage > 2) {
                     comicPaginationContainer.appendChild(createBtn('...', true, false, null));
+                }
             }
 
             for (let i = startPage; i <= endPage; i++) {
                 comicPaginationContainer.appendChild(
-                    createBtn(i, false, i === currentPage, () => {
+                    createBtn(i.toString(), false, i === currentPage, () => {
                         currentPage = i;
                         renderComicTable();
                     })
@@ -203,10 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (endPage < totalPages) {
-                if (endPage < totalPages - 1)
+                if (endPage < totalPages - 1) {
                     comicPaginationContainer.appendChild(createBtn('...', true, false, null));
+                }
                 comicPaginationContainer.appendChild(
-                    createBtn(totalPages, false, false, () => {
+                    createBtn(totalPages.toString(), false, false, () => {
                         currentPage = totalPages;
                         renderComicTable();
                     })
@@ -252,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     emptyMsg = document.createElement('tr');
                     emptyMsg.className = 'dyn-empty-msg empty-table-message';
                     emptyMsg.innerHTML =
-                        '<td colspan="5">Keine Comics für diesen Suchbegriff gefunden.</td>';
+                        '<td colspan="6">Keine Comics für diesen Suchbegriff gefunden.</td>';
                     comicTableBody.appendChild(emptyMsg);
                 }
                 emptyMsg.style.display = '';
@@ -477,10 +478,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.querySelectorAll('#chapter-datalist option')
                 )
                     .map((opt) => parseInt(opt.value, 10))
-                    .filter((num) => !isNaN(num));
+                    .filter((num) => !Number.isNaN(num));
 
                 if (chapterOptions.length > 0) {
-                    chapInput.value = Math.max(...chapterOptions);
+                    chapInput.value = Math.max(...chapterOptions).toString();
                 } else {
                     chapInput.value = '';
                 }
@@ -611,8 +612,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFileUploadPreview() {
         if (fileInput && fileInput.files && fileInput.files[0]) {
             isDirty = true;
-            if (previewName)
+            if (previewName) {
                 previewName.textContent = `Bereit zum Upload: ${fileInput.files[0].name}`;
+            }
             if (picUrlInput) picUrlInput.value = '';
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -766,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
         groupElements.forEach((groupEl) => {
             const titleEl = groupEl.querySelector('.group-title-edit');
             const title = titleEl ? titleEl.textContent.trim() : '';
-            if (!title) return; // Leere Gruppen ignorieren
+            if (!title) return;
 
             const checkbox = groupEl.querySelector('.manual-sort-cb');
             const manualSort = checkbox ? checkbox.checked : false;
@@ -973,8 +975,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 diffBox.innerHTML = '';
                 diffBox.appendChild(fragment);
             } else {
-                diffBox.innerHTML =
-                    'Diff-Bibliothek nicht geladen. Vorschlag:\n\n' + data.suggestion;
+                diffBox.innerHTML = `Diff-Bibliothek nicht geladen. Vorschlag:\n\n${data.suggestion}`;
             }
         } else {
             transcriptSec.style.display = 'none';
@@ -1026,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const deleteComicBtn = e.target.closest('.btn-delete-comic');
         if (deleteComicBtn) {
             const id = deleteComicBtn.dataset.id;
-            // HIER IST DER FIX: prompt statt confirm
+            // prompt statt confirm
             const check = prompt(
                 `ACHTUNG: Willst du Comic ${id} unwiderruflich löschen?\n\nUm den Löschvorgang zu bestätigen, tippe bitte die ID "${id}" in das Feld ein:`
             );
@@ -1081,7 +1082,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (deleteCharBtn) {
             const id = deleteCharBtn.dataset.id;
             const name = deleteCharBtn.dataset.name;
-            // HIER IST DER FIX: prompt statt confirm (Mit dem Namen als Bestätigung)
+            // prompt statt confirm (Mit dem Namen als Bestätigung)
             const check = prompt(
                 `ACHTUNG: Möchtest du den Charakter "${name}" (${id}) wirklich löschen?\n\nUm den Löschvorgang zu bestätigen, tippe bitte den Namen "${name}" in das Feld ein:`
             );
@@ -1107,56 +1108,64 @@ document.addEventListener('DOMContentLoaded', () => {
             const entry = e.target.closest('.character-entry');
             if (entry) entry.remove();
         }
-    });
 
-    // --- REPORT EVENTS ---
-    const viewReportBtn = e.target.closest('.btn-view-report');
-    if (viewReportBtn) {
-        openReportModal(JSON.parse(viewReportBtn.dataset.payload));
-    }
-
-    if (e.target.closest('.btn-close-report-modal')) {
-        document.getElementById('report-detail-modal').style.display = 'none';
-    }
-
-    const resolveRepBtn = e.target.closest('#btn-rep-resolve');
-    if (resolveRepBtn && currentReportPayload) {
-        const fd = new FormData();
-        fd.append('report_id', currentReportPayload.id);
-        fd.append('status', 'closed');
-        sendApiRequest('update_report_status', fd, resolveRepBtn, resolveRepBtn.innerHTML);
-    }
-
-    const spamRepBtn = e.target.closest('#btn-rep-spam');
-    if (spamRepBtn && currentReportPayload) {
-        const fd = new FormData();
-        fd.append('report_id', currentReportPayload.id);
-        fd.append('status', 'spam');
-        sendApiRequest('update_report_status', fd, spamRepBtn, spamRepBtn.innerHTML);
-    }
-
-    // DAS KILLER-FEATURE: Transkript übernehmen
-    if (e.target.closest('#btn-transfer-transcript') && currentReportPayload) {
-        // Finde den Comic in der Tabelle, um sein Payload zu klauen
-        const comicBtn = document.querySelector(
-            `.btn-edit-comic[data-id="${currentReportPayload.comicId}"]`
-        );
-        if (comicBtn) {
-            const comicData = JSON.parse(comicBtn.dataset.payload);
-            // Überschreibe das alte Transkript mit dem neuen Vorschlag!
-            comicData.transcript = currentReportPayload.suggestion;
-
-            // Report schließen, Comic Modal öffnen!
-            document.getElementById('report-detail-modal').style.display = 'none';
-            window.openComicModal(comicData);
-            showMsg(
-                'Transkript-Vorschlag wurde in den Editor geladen. Bitte prüfen und speichern.',
-                'green'
-            );
-        } else {
-            alert('Der Comic konnte in der aktuellen Liste nicht gefunden werden.');
+        // --- REPORT EVENTS ---
+        const viewReportBtn = e.target.closest('.btn-view-report');
+        if (viewReportBtn) {
+            openReportModal(JSON.parse(viewReportBtn.dataset.payload));
         }
-    }
+
+        if (e.target.closest('.btn-close-report-modal')) {
+            const repModal = document.getElementById('report-detail-modal');
+            if (repModal) repModal.style.display = 'none';
+        }
+
+        const resolveRepBtn = e.target.closest('#btn-rep-resolve');
+        if (resolveRepBtn && currentReportPayload) {
+            const fd = new FormData();
+            fd.append('report_id', currentReportPayload.id);
+            fd.append('status', 'closed');
+            const origText = resolveRepBtn.innerHTML;
+            resolveRepBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lade...';
+            resolveRepBtn.style.pointerEvents = 'none';
+            sendApiRequest('update_report_status', fd, resolveRepBtn, origText);
+        }
+
+        const spamRepBtn = e.target.closest('#btn-rep-spam');
+        if (spamRepBtn && currentReportPayload) {
+            const fd = new FormData();
+            fd.append('report_id', currentReportPayload.id);
+            fd.append('status', 'spam');
+            const origText = spamRepBtn.innerHTML;
+            spamRepBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lade...';
+            spamRepBtn.style.pointerEvents = 'none';
+            sendApiRequest('update_report_status', fd, spamRepBtn, origText);
+        }
+
+        // DAS KILLER-FEATURE: Transkript übernehmen
+        if (e.target.closest('#btn-transfer-transcript') && currentReportPayload) {
+            // Finde den Comic in der Tabelle, um sein Payload zu klauen
+            const comicBtn = document.querySelector(
+                `.btn-edit-comic[data-id="${currentReportPayload.comicId}"]`
+            );
+            if (comicBtn) {
+                const comicData = JSON.parse(comicBtn.dataset.payload);
+                // Überschreibe das alte Transkript mit dem neuen Vorschlag!
+                comicData.transcript = currentReportPayload.suggestion;
+
+                // Report schließen, Comic Modal öffnen!
+                const repModal = document.getElementById('report-detail-modal');
+                if (repModal) repModal.style.display = 'none';
+                window.openComicModal(comicData);
+                showMsg(
+                    'Transkript-Vorschlag in den Editor geladen. Bitte prüfen und speichern.',
+                    'green'
+                );
+            } else {
+                alert('Der Comic konnte in der aktuellen Liste nicht gefunden werden.');
+            }
+        }
+    });
 
     // --- LOGOUT ---
     document.getElementById('admin-logout-btn')?.addEventListener('click', (e) => {
