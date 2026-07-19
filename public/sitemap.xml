@@ -16,6 +16,12 @@
   <priority>0.8</priority>
  </url>
  <url>
+  <loc>https://twokinds.4lima.local/comic/20250306</loc>
+  <lastmod>2025-03-06</lastmod>
+  <changefreq>monthly</changefreq>
+  <priority>0.6</priority>
+ </url>
+ <url>
   <loc>https://twokinds.4lima.local/comic/20200822</loc>
   <lastmod>2020-08-22</lastmod>
   <changefreq>monthly</changefreq>

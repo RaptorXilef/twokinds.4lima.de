@@ -17,9 +17,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds</title>
-    <?php /* <link rel="stylesheet" href="<?php echo $asset->url('assets/css/main.min.css'); ?>"> */ ?>
     <link rel="stylesheet"
-          href="/assets/css/main.min.css">
+          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
     <meta name="csrf-token"
           content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
 </head>
@@ -139,9 +138,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
     </script>
 
-    <?php /* <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script> */ ?>
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="/assets/js/common.js"></script>
+            src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
 </body>
 
 </html>

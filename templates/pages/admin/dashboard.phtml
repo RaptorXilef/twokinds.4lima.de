@@ -26,9 +26,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
-    <?php /* <link rel="stylesheet" href="<?php echo $asset->url('assets/css/main.min.css'); ?>"> */ ?>
     <link rel="stylesheet"
-          href="/assets/css/main.min.css">
+          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
     <!-- FontAwesome (falls du es nutzt) für Icons -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -67,6 +66,29 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
     .row-highlight {
         animation: row-glow 3s ease-out;
+    }
+
+    /* --- Flexbox Trap Fix --- */
+    .content {
+        min-width: 0;
+    }
+
+    .sitemap-table-container {
+        width: 100%;
+        overflow-x: auto; /* Greift nur noch bei extrem kleinen Handys */
+        border-radius: 6px;
+    }
+
+    .comic-editor-table {
+        table-layout: fixed;
+        width: 100%; /* Passt sich jetzt zu 100% genau in den Content ein */
+    }
+
+    .comic-editor-table td {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word; /* "break-word" ist eleganter als "break-all", da es normale Wörter ganz lässt */
+        white-space: normal;
     }
 
     </style>
@@ -130,16 +152,10 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <?php include __DIR__ . '/_modals.phtml'; ?>
 
     <!-- MIN.JS UPDATES -->
-    <?php /*
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
             src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
             src="<?php echo $asset->url('assets/js/admin.min.js'); ?>"></script>
-            */ ?>
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="/assets/js/common.min.js"></script>
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="/assets/js/admin.min.js"></script>
 </body>
 
 </html>

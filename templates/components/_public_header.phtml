@@ -20,8 +20,8 @@ use App\Contracts\System\AssetHelperInterface;
     <title><?php echo \htmlspecialchars($pageTitle ?? $settings['vereins_name']); ?></title>
 
     <!-- Automatisch cache-gebustetes CSS -->
-    <?php /* <link rel="stylesheet" href="<?php echo $asset->url('assets/css/main.min.css'); ?>"> */ ?>
-    <link rel="stylesheet" href="/assets/css/main.min.css">
+    <link rel="stylesheet"
+          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
 
     <!-- Meta-Tags für Sicherheit & Analytics -->
     <meta name="csrf-token"
