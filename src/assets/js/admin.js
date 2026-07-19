@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
-    const csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
+    const csrfToken = csrfTokenMeta?.content ?? '';
     const statusBox = document.getElementById('global-status-message');
     const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
     const baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
+            console.error('API Error:', error); // HIER WIRD DER FEHLER GELOGGT
             showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
             // Button wieder freigeben bei Absturz (z.B. 500 Internal Server Error)
             if (btnElement) {
@@ -87,17 +88,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!id) return;
         // Wir suchen den Delete-Button, da dieser die reine ID im data-id Attribut hat
         const targetBtn =
-            document.querySelector(`.btn-delete-comic[data-id="${id}"]`) ||
+            document.querySelector(`.btn-delete-comic[data-id="${id}"]`) ??
             document.querySelector(`.btn-delete-char[data-id="${id}"]`);
-        if (targetBtn) {
-            const tr = targetBtn.closest('tr');
-            if (tr) {
-                tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                tr.classList.add('row-highlight');
-                setTimeout(() => {
-                    tr.classList.remove('row-highlight');
-                }, 3000);
-            }
+
+        const tr = targetBtn?.closest('tr');
+        if (tr) {
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tr.classList.add('row-highlight');
+            setTimeout(() => {
+                tr.classList.remove('row-highlight');
+            }, 3000);
         }
     }
 
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- TAB LOGIK ---
-    const activeTab = sessionStorage.getItem('activeAdminTab') || 'section-comics';
+    const activeTab = sessionStorage.getItem('activeAdminTab') ?? 'section-comics';
     document.querySelectorAll('.content-section').forEach((sec) => {
         sec.classList.remove('active');
     });
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('.tab-link').forEach((l) => {
                     l.classList.remove('active');
                 });
-                document.getElementById(this.dataset.target).classList.add('active');
+                document.getElementById(this.dataset.target)?.classList.add('active');
                 this.classList.add('active');
             }
         });
@@ -312,9 +312,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateComicPreviews() {
-        const idVal = comicIdInput?.value.trim() || '';
-        const origVal = origUrlInput?.value.trim() || '';
-        const sketchVal = origSketchInput?.value.trim() || '';
+        const idVal = comicIdInput?.value.trim() ?? '';
+        const origVal = origUrlInput?.value.trim() ?? '';
+        const sketchVal = origSketchInput?.value.trim() ?? '';
 
         const remoteExts = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
         const localExts = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openComicModal = (data = null) => {
         const form = document.getElementById('comic-form');
-        if (form) form.reset();
+        form?.reset();
 
         // Alle Selections zurücksetzen (Charakter-Avatare)
         if (hiddenSelect) {
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openCharModal = (data = null) => {
         const form = document.getElementById('char-form');
-        if (form) form.reset();
+        form?.reset();
 
         const previewNameEl = document.getElementById('upload-preview-name');
         if (previewNameEl) previewNameEl.textContent = '';
@@ -566,8 +566,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#char_description').trumbowyg('html', data.description);
             }
-            if (altInput) altInput.value = data.altNames || '';
-            if (rankInput) rankInput.value = data.rank || '';
+            if (altInput) altInput.value = data.altNames ?? '';
+            if (rankInput) rankInput.value = data.rank ?? '';
 
             if (charPreviewImg) {
                 charPreviewImg.src = data.picUrl
@@ -610,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewName = document.getElementById('upload-preview-name');
 
     function handleFileUploadPreview() {
-        if (fileInput && fileInput.files && fileInput.files[0]) {
+        if (fileInput?.files?.[0]) {
             isDirty = true;
             if (previewName) {
                 previewName.textContent = `Bereit zum Upload: ${fileInput.files[0].name}`;
@@ -767,11 +767,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const groupsData = [];
         groupElements.forEach((groupEl) => {
             const titleEl = groupEl.querySelector('.group-title-edit');
-            const title = titleEl ? titleEl.textContent.trim() : '';
+            const title = titleEl?.textContent.trim() ?? '';
             if (!title) return;
 
             const checkbox = groupEl.querySelector('.manual-sort-cb');
-            const manualSort = checkbox ? checkbox.checked : false;
+            const manualSort = checkbox?.checked ?? false;
 
             const charElements = groupEl.querySelectorAll('.character-entry');
             const charIds = Array.from(charElements).map((el) => el.dataset.id);
@@ -796,7 +796,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.dataset.manual = isManual ? 'true' : 'false';
                 if (typeof Sortable !== 'undefined') {
                     const sortableInstance = Sortable.get(container);
-                    if (sortableInstance) sortableInstance.option('sort', isManual);
+                    sortableInstance?.option('sort', isManual);
                 }
 
                 // Hinweis für den User
@@ -982,12 +982,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Buttons ausblenden, falls schon erledigt/spam
-        document.getElementById('btn-rep-resolve').style.display =
-            data.status === 'open' ? 'inline-block' : 'none';
-        document.getElementById('btn-rep-spam').style.display =
-            data.status === 'open' ? 'inline-block' : 'none';
+        const btnResolve = document.getElementById('btn-rep-resolve');
+        const btnSpam = document.getElementById('btn-rep-spam');
+        if (btnResolve) btnResolve.style.display = data.status === 'open' ? 'inline-block' : 'none';
+        if (btnSpam) btnSpam.style.display = data.status === 'open' ? 'inline-block' : 'none';
 
-        document.getElementById('report-detail-modal').style.display = 'flex';
+        const repModal = document.getElementById('report-detail-modal');
+        if (repModal) repModal.style.display = 'flex';
     }
 
     // --- ZENTRALE EVENT DELEGATION ---
@@ -997,7 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.closest('#btn-save-comic')) {
             e.preventDefault();
             const form = document.getElementById('comic-form');
-            if (!form || !form.reportValidity()) return;
+            if (!form?.reportValidity()) return;
 
             const btn = e.target.closest('#btn-save-comic');
             const origText = btn.innerHTML;
@@ -1062,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.closest('#btn-save-char')) {
             e.preventDefault();
             const form = document.getElementById('char-form');
-            if (!form || !form.reportValidity()) return;
+            if (!form?.reportValidity()) return;
 
             const btn = e.target.closest('#btn-save-char');
             const origText = btn.innerHTML;
