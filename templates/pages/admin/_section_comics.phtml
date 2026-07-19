@@ -3,13 +3,36 @@
 <!-- ========================================== -->
 <section id="section-comics"
          class="content-section active">
-    <div class="table-controls actions-bar">
+    <div class="table-controls actions-bar"
+         style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 15px; align-items: center;">
         <div class="top-actions">
             <button type="button"
                     class="button add"
                     id="btn-add-comic">
                 <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen
             </button>
+        </div>
+        <div class="search-wrapper"
+             style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <select id="comic-per-page"
+                    style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--table-row-even); color: var(--text-color);">
+                <option value="5">5 Einträge</option>
+                <option value="10">10 Einträge</option>
+                <option value="15"
+                        selected>15 Einträge</option>
+                <option value="25">25 Einträge</option>
+                <option value="50">50 Einträge</option>
+                <option value="75">75 Einträge</option>
+                <option value="100">100 Einträge</option>
+                <option value="250">250 Einträge</option>
+                <option value="500">500 Einträge</option>
+                <option value="1000">1000 Einträge</option>
+                <option value="all">Alle</option>
+            </select>
+            <input type="text"
+                   id="comic-search"
+                   placeholder="Comics durchsuchen (ID, Name, Transkript)..."
+                   style="min-width: 250px;">
         </div>
     </div>
 
@@ -95,5 +118,9 @@
                 <?php } ?>
             </tbody>
         </table>
+    </div>
+    <div id="comic-pagination"
+         style="display: flex; gap: 5px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+        <!-- Die Buttons werden hier per JS generiert -->
     </div>
 </section>

@@ -681,4 +681,143 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         sendApiRequest('admin_logout', new FormData());
     });
+
+    // --- PAGINIERUNG & INTELLIGENTE SUCHE ---
+    const comicSearchInput = document.getElementById('comic-search');
+    const comicPerPageSelect = document.getElementById('comic-per-page');
+    const comicTableBody = document.querySelector('.comic-editor-table tbody');
+    const comicPaginationContainer = document.getElementById('comic-pagination');
+
+    if (comicTableBody && comicSearchInput && comicPerPageSelect && comicPaginationContainer) {
+        // Wir holen uns alle Tabellenzeilen als Array (ignorieren die "Keine Comics gefunden"-Nachricht)
+        const allComicRows = Array.from(comicTableBody.querySelectorAll('tr')).filter(
+            (row) => !row.classList.contains('empty-table-message')
+        );
+
+        let currentPage = 1;
+        let itemsPerPage = 15;
+        let currentSearchQuery = '';
+
+        function renderComicTable() {
+            // 1. Filtern (Intelligente Suche über den gesamten Text in der Zeile)
+            const filteredRows = allComicRows.filter((row) => {
+                return row.textContent.toLowerCase().includes(currentSearchQuery.toLowerCase());
+            });
+
+            // 2. Limits & Seiten berechnen
+            const totalItems = filteredRows.length;
+            const limit = itemsPerPage === 'all' ? totalItems : parseInt(itemsPerPage, 10);
+            const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 1;
+
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+
+            const startIndex = limit === totalItems ? 0 : (currentPage - 1) * limit;
+            const endIndex = startIndex + limit;
+
+            // 3. Zeilen ein/ausblenden
+            allComicRows.forEach((row) => (row.style.display = 'none')); // Alle verstecken
+            filteredRows.slice(startIndex, endIndex).forEach((row) => (row.style.display = '')); // Nur aktuellen Slice zeigen
+
+            // Info, wenn Suche keine Treffer liefert
+            let emptyMsg = comicTableBody.querySelector('.dyn-empty-msg');
+            if (filteredRows.length === 0) {
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('tr');
+                    emptyMsg.className = 'dyn-empty-msg empty-table-message';
+                    emptyMsg.innerHTML =
+                        '<td colspan="5">Keine Comics für diesen Suchbegriff gefunden.</td>';
+                    comicTableBody.appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = '';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
+
+            // 4. Buttons generieren
+            renderPaginationButtons(totalPages);
+        }
+
+        function renderPaginationButtons(totalPages) {
+            comicPaginationContainer.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            const createBtn = (text, isDisabled, isActive, clickHandler) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className =
+                    'button ' + (isActive ? 'edit ' : '') + (isDisabled ? 'disabled' : '');
+                btn.innerHTML = text;
+                if (isDisabled) btn.style.opacity = '0.5';
+                if (!isDisabled) btn.onclick = clickHandler;
+                return btn;
+            };
+
+            // "Zurück" Button
+            comicPaginationContainer.appendChild(
+                createBtn('&laquo;', currentPage === 1, false, () => {
+                    currentPage--;
+                    renderComicTable();
+                })
+            );
+
+            // Dynamische Seitenzahlen (max 5 Buttons in der Mitte anzeigen, damit es nicht ausufert)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                comicPaginationContainer.appendChild(
+                    createBtn('1', false, false, () => {
+                        currentPage = 1;
+                        renderComicTable();
+                    })
+                );
+                if (startPage > 2)
+                    comicPaginationContainer.appendChild(createBtn('...', true, false, null));
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                comicPaginationContainer.appendChild(
+                    createBtn(i, false, i === currentPage, () => {
+                        currentPage = i;
+                        renderComicTable();
+                    })
+                );
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1)
+                    comicPaginationContainer.appendChild(createBtn('...', true, false, null));
+                comicPaginationContainer.appendChild(
+                    createBtn(totalPages, false, false, () => {
+                        currentPage = totalPages;
+                        renderComicTable();
+                    })
+                );
+            }
+
+            // "Vor" Button
+            comicPaginationContainer.appendChild(
+                createBtn('&raquo;', currentPage === totalPages, false, () => {
+                    currentPage++;
+                    renderComicTable();
+                })
+            );
+        }
+
+        // Event Listener anbinden
+        comicSearchInput.addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value;
+            currentPage = 1; // Bei neuer Suche immer auf Seite 1 springen
+            renderComicTable();
+        });
+
+        comicPerPageSelect.addEventListener('change', (e) => {
+            itemsPerPage = e.target.value;
+            currentPage = 1;
+            renderComicTable();
+        });
+
+        // Initiale Paginierung auslösen
+        renderComicTable();
+    }
 });

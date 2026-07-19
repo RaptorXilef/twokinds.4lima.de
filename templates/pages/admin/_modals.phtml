@@ -72,12 +72,14 @@ declare(strict_types=1); ?>
      class="modal">
     <div class="modal-overlay btn-close-comic-modal"></div>
     <div class="modal-content"
-         style="max-width: 1080px;">
-        <div class="modal-header-wrapper">
+         style="max-width: 1080px; display: flex; flex-direction: column; max-height: 95vh;">
+        <div class="modal-header-wrapper"
+             style="flex: 0 0 auto;">
             <h2 id="modal-title-comic">Comic bearbeiten</h2>
             <button class="modal-close btn-close-comic-modal">&times;</button>
         </div>
-        <div class="modal-scroll-content">
+        <div class="modal-scroll-content"
+             style="flex: 1 1 auto; overflow-y: auto;">
 
             <!-- NEU: Die 3 Live-Vorschauen -->
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
@@ -257,8 +259,10 @@ foreach ($alphaChars as $char) {
                     </div>
                 </div>
             </form>
+
         </div>
-        <div class="modal-footer-actions">
+        <div class="modal-footer-actions"
+             style="flex: 0 0 auto; position: relative; z-index: 10; background: var(--main-bg);">
             <div class="modal-buttons">
                 <button type="button"
                         class="button btn-close-comic-modal">Abbrechen</button>
@@ -275,12 +279,15 @@ foreach ($alphaChars as $char) {
      class="modal">
     <div class="modal-overlay btn-close-char-modal"></div>
     <div class="modal-content"
-         style="max-width: 1080px;">
-        <div class="modal-header-wrapper">
+         style="max-width: 1080px; display: flex; flex-direction: column; max-height: 95vh;">
+        <div class="modal-header-wrapper"
+             style="flex: 0 0 auto;">
             <h2 id="modal-title-char">Charakter bearbeiten</h2>
             <button class="modal-close btn-close-char-modal">&times;</button>
         </div>
-        <div class="modal-scroll-content">
+        <div class="modal-scroll-content"
+             style="flex: 1 1 auto; overflow-y: auto;">
+
             <div style="display: flex; gap: 20px; align-items: flex-start; margin-bottom: 15px;">
                 <!-- Linke Spalte: Vorschaubild -->
                 <div style="flex: 0 0 120px; text-align: center;">
@@ -380,8 +387,10 @@ foreach ($alphaChars as $char) {
                     </form>
                 </div>
             </div>
+
         </div>
-        <div class="modal-footer-actions">
+        <div class="modal-footer-actions"
+             style="flex: 0 0 auto; position: relative; z-index: 10; background: var(--main-bg);">
             <div class="modal-buttons">
                 <button type="button"
                         class="button btn-close-char-modal">Abbrechen</button>
