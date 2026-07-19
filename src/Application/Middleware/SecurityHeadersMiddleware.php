@@ -77,6 +77,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                 'img-src' => [
                     "'self'",
                     'data:',
+                    'blob:',
                     'https://placehold.co',
                     'https://cdn.twokinds.keenspot.com',
                     'https://twokindscomic.com',
