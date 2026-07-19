@@ -312,6 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateComicPreviews() {
         const idVal = comicIdInput?.value.trim() ?? '';
+        const oldIdVal = document.getElementById('old_comic_id')?.value.trim() ?? '';
+
+        // Nutze für die Vorschau das alte Bild, solange nicht gespeichert wurde!
+        const localPreviewId = oldIdVal !== '' ? oldIdVal : idVal;
+
         const origVal = origUrlInput?.value.trim() ?? '';
         const sketchVal = origSketchInput?.value.trim() ?? '';
 
@@ -321,10 +326,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 1. Lokal Lowres
         if (prevLocal) {
-            if (idVal.length >= 8) {
+            if (localPreviewId.length >= 8) {
                 loadPreviewWithProbe(
                     prevLocal,
-                    `${baseUrl}/assets/images/comic/lowres/${idVal}`,
+                    `${baseUrl}/assets/images/comic/lowres/${localPreviewId}`,
                     localExts,
                     fallback
                 );
@@ -1243,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('overwrite-new-img').src = localUrl;
                 // '?t=' verhindert, dass der Browser ein altes gecachtes Bild anzeigt
                 document.getElementById('overwrite-server-img').src =
-                    `${serverSrc}?t=${new Date().getTime()}`;
+                    `${serverSrc}?t=${Date.now()}`;
 
                 const btnSkip = document.getElementById('btn-overwrite-skip');
                 const btnVariant = document.getElementById('btn-overwrite-variant');
@@ -1417,8 +1422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         data.status = `Fehler: ${json.error}`;
                     }
-                } catch (error) {
-                    console.error('Batch Upload Error:', error);
+                } catch {
                     data.status = 'Fehler: Netzwerk';
                 }
                 renderQueueTable();
