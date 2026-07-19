@@ -80,16 +80,20 @@ final readonly class SiteGeneratorService
         $xml->startDocument('1.0', 'UTF-8');
 
         $xml->startElement('rss');
-        $xml->writeAttribute('version', '2.0');
         $xml->writeAttribute('xmlns:atom', 'http://www.w3.org/2005/Atom');
+        $xml->writeAttribute('version', '2.0');
 
         $xml->startElement('channel');
-        $xml->writeElement('title', $this->config->get('site_title', 'Twokinds'));
+        $xml->writeElement('title', $this->config->get('site_title', 'Twokinds auf Deutsch'));
         $xml->writeElement('link', $baseUrl);
-        $xml->writeElement('description', $this->config->get('site_description', 'Webcomic'));
+        $xml->writeElement('description', $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'));
         $xml->writeElement('language', 'de-de');
 
-        // Atom Self-Link für Feed-Reader
+        // Die beiden fehlenden Header für Feed-Reader
+        $xml->writeElement('lastBuildDate', (new \DateTimeImmutable())->format(\DATE_RFC2822));
+        $xml->writeElement('generator', 'Twokinds Admin Panel Generator');
+
+        // Atom Self-Link
         $xml->startElement('atom:link');
         $xml->writeAttribute('href', $baseUrl . '/rss.xml');
         $xml->writeAttribute('rel', 'self');
@@ -98,13 +102,23 @@ final readonly class SiteGeneratorService
 
         $comics = $this->comicRepo->findAll();
 
-        // WICHTIGSTER FILTER: Nur Comics MIT hochgeladenem Bild in den Feed!
-        $feedComics = \array_filter($comics, fn ($c) => $c->imageUpdatedAt !== null);
+        // WICHTIG: Schlauer Filter mit Fallback auf die Festplatte
+        $feedComics = [];
+        foreach ($comics as $c) {
+            if ($c->imageUpdatedAt !== null) {
+                $feedComics[] = $c;
+            } else {
+                // Fallback: Wenn in der DB kein Zeitstempel steht, prüfe ob die Datei physisch existiert
+                if (\file_exists($publicDir . '/assets/images/comic/lowres/' . $c->id->value . '.webp')) {
+                    $feedComics[] = $c;
+                }
+            }
+        }
 
         // Die neuesten zuerst (anhand der ID sortieren, da YYYYMMDD)
         \usort($feedComics, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
 
-        // Nur die letzten 30 Einträge in den RSS Feed packen (spart Bandbreite)
+        // Nur die letzten 30 Einträge in den RSS Feed packen
         $feedComics = \array_slice($feedComics, 0, 30);
 
         foreach ($feedComics as $comic) {
@@ -113,24 +127,28 @@ final readonly class SiteGeneratorService
             $title = $comic->name !== '' ? $comic->name : "Comic Seite {$comic->id->value}";
             $xml->writeElement('title', $title);
 
+            // Ich belasse die URLs im neuen Format (ohne .php), damit das neue Routing greift
             $url = $baseUrl . '/comic/' . $comic->id->value;
             $xml->writeElement('link', $url);
             $xml->writeElement('guid', $url);
 
-            // Datum aus ID (erste 8 Zeichen) extrahieren und in RFC 2822 formatieren
-            $dateStr = \substr($comic->id->value, 0, 8);
-            $pubDate = \DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new \DateTimeImmutable();
-            $xml->writeElement('pubDate', $pubDate->format(\DATE_RFC2822));
+            // Exakter Nachbau deines alten HTML-Formats für die Feed-Reader
+            $imgSrc = $baseUrl . '/assets/images/comic/lowres/' . $comic->id->value . '.webp';
+            $desc   = '<p><img src="' . $imgSrc . '" alt="' . \htmlspecialchars($title, \ENT_QUOTES) . '" style="max-width: 100%; height: auto;" /></p>';
 
-            // Thumbnail in die Description packen, damit Feed-Reader ein Bild haben
-            $desc = '<a href="' . $url . '"><img src="' . $baseUrl . '/assets/images/comic/thumbnails/' . $comic->id->value . '.webp" alt="' . $title . '"></a>';
             if ($comic->transcript !== '') {
-                $desc .= '<br><br>' . $comic->transcript;
+                // Das Transkript wird vom Editor bereits in <p> Tags geliefert
+                $desc .= $comic->transcript;
             }
 
             $xml->startElement('description');
             $xml->writeCdata($desc);
             $xml->endElement(); // description
+
+            // Datum aus ID (erste 8 Zeichen) extrahieren
+            $dateStr = \substr($comic->id->value, 0, 8);
+            $pubDate = \DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new \DateTimeImmutable();
+            $xml->writeElement('pubDate', $pubDate->format(\DATE_RFC2822));
 
             $xml->endElement(); // item
         }
