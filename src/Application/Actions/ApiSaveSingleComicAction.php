@@ -69,23 +69,29 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         }
     }
 
-    // Pinged den Server blitzschnell an (HEAD request), um zu sehen, welche Dateiendung existiert
+    // Pinged den Server blitzschnell an (HEAD request) und prüft ZWINGEND auf Content-Type: image/*
     private function probeRemoteExtension(string $baseUrl): string
     {
-        foreach (['jpg', 'png', 'gif', 'jpeg'] as $ext) { // TODO ggf. ins Interface
+        // Reihenfolge angepasst: PNG und JPG sind am wahrscheinlichsten
+        foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) { // TODO ggf. ins Interface
             $ch = \curl_init($baseUrl . '.' . $ext);
             \curl_setopt($ch, \CURLOPT_NOBODY, true); // Nur Header laden, spart Bandbreite
             \curl_setopt($ch, \CURLOPT_TIMEOUT, 2);
             \curl_setopt($ch, \CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TwokindsAdminProbe/1.0');
+            \curl_setopt($ch, \CURLOPT_RETURNTRANSFER, true);
+            \curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);
             \curl_exec($ch);
-            $code = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+
+            $code        = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+            $contentType = \curl_getinfo($ch, \CURLINFO_CONTENT_TYPE);
             \curl_close($ch);
 
-            if ($code === 200 || $code === 301 || $code === 302) {
+            // Keenspot Custom 404s geben 200 + text/html zurück. Wir MÜSSEN prüfen, ob es ein Bild ist!
+            if ($code === 200 && \is_string($contentType) && \str_starts_with($contentType, 'image/')) {
                 return $ext;
             }
         }
 
-        return 'jpg'; // Fallback
+        return 'png'; // Fallback auf das wahrscheinlichste Format
     }
 }

@@ -1,8 +1,25 @@
 <?php
 
 declare(strict_types=1); ?>
+
 <style>
-/* CSS für den Bild-Hover-Zoom */
+/* Trumbowyg Button Reset: Schützt den Editor vor globalen Button-Styles */
+.trumbowyg-button-pane button {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    line-height: normal !important;
+}
+
+.trumbowyg-box {
+    margin-top: 0 !important;
+}
+
+/* CSS für den Bild-Klick-Zoom (Lightbox) */
 #image-hover-overlay {
     display: none;
     position: fixed;
@@ -10,12 +27,12 @@ declare(strict_types=1); ?>
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 9999;
     justify-content: center;
     align-items: center;
-    pointer-events: none;
-    /* Klicks gehen durch aufs Modal */
+    cursor: zoom-out;
+    /* NEU: Cursor zeigt an, dass man es wegklicken kann */
 }
 
 #image-hover-overlay img {
@@ -25,21 +42,6 @@ declare(strict_types=1); ?>
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     border: 2px solid var(--border-medium);
 }
-
-/* Trumbowyg Button Reset: Schützt den Editor vor globalen Button-Styles */
-    .trumbowyg-button-pane button {
-        padding: 0 !important;
-        margin: 0 !important;
-        min-width: 0 !important;
-        min-height: 0 !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        line-height: normal !important;
-    }
-    .trumbowyg-box {
-        margin-top: 0 !important;
-    }
 
 .preview-box {
     background: var(--table-row-even);

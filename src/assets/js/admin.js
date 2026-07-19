@@ -107,41 +107,82 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevOrig = document.getElementById('prev-comic-orig');
     const prevSketch = document.getElementById('prev-comic-sketch');
 
+    // Hilfsfunktion testet Endungen durch, indem sie unsichtbare Image-Objekte lädt
+    function loadPreviewWithProbe(imgElement, basePath, extensions, fallbackUrl) {
+        let i = 0;
+        imgElement.src = 'https://placehold.co/100x140?text=Lädt...';
+
+        const testNext = () => {
+            if (i >= extensions.length) {
+                imgElement.src = fallbackUrl;
+                return;
+            }
+            const ext = extensions[i++];
+            const testImg = new Image();
+            testImg.onload = () => {
+                imgElement.src = testImg.src;
+            };
+            testImg.onerror = testNext; // Wenn Fehler (404), versuche die nächste Endung
+            testImg.src = basePath + '.' + ext;
+        };
+        testNext();
+    }
+
     function updateComicPreviews() {
         const idVal = comicIdInput.value.trim();
         const origVal = origUrlInput.value.trim();
         const sketchVal = origSketchInput.value.trim();
 
-        // Lokal Thumbnail
-        if (idVal.length === 8) {
-            prevLocal.src = baseUrl + '/assets/images/comic/lowres/' + idVal + '.webp';
+        const remoteExts = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
+        const localExts = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
+        const fallback = 'https://placehold.co/100x140?text=Fehlt';
+
+        // 1. Lokal Lowres
+        if (idVal.length >= 8) {
+            loadPreviewWithProbe(
+                prevLocal,
+                baseUrl + '/assets/images/comic/lowres/' + idVal,
+                localExts,
+                fallback
+            );
         } else {
-            prevLocal.src = 'https://placehold.co/100x140?text=Fehlt';
+            prevLocal.src = fallback;
         }
 
-        // Keenspot Original
+        // 2. Keenspot Original
         if (origVal !== '') {
             if (origVal.startsWith('http')) {
                 prevOrig.src = origVal;
+            } else if (origVal.includes('.')) {
+                prevOrig.src = 'https://cdn.twokinds.keenspot.com/comics/' + origVal;
             } else {
-                // Wenn Endung fehlt, raten wir .jpg für die Vorschau (Backend macht cURL check)
-                const file = origVal.includes('.') ? origVal : origVal + '.jpg';
-                prevOrig.src = 'https://cdn.twokinds.keenspot.com/comics/' + file;
+                loadPreviewWithProbe(
+                    prevOrig,
+                    'https://cdn.twokinds.keenspot.com/comics/' + origVal,
+                    remoteExts,
+                    fallback
+                );
             }
         } else {
-            prevOrig.src = 'https://placehold.co/100x140?text=Fehlt';
+            prevOrig.src = fallback;
         }
 
-        // Keenspot Sketch
+        // 3. Keenspot Sketch
         if (sketchVal !== '') {
             if (sketchVal.startsWith('http')) {
                 prevSketch.src = sketchVal;
+            } else if (sketchVal.includes('.')) {
+                prevSketch.src = 'https://twokindscomic.com/images/' + sketchVal;
             } else {
-                const file = sketchVal.includes('.') ? sketchVal : sketchVal + '.png';
-                prevSketch.src = 'https://twokindscomic.com/images/' + file;
+                loadPreviewWithProbe(
+                    prevSketch,
+                    'https://twokindscomic.com/images/' + sketchVal,
+                    remoteExts,
+                    fallback
+                );
             }
         } else {
-            prevSketch.src = 'https://placehold.co/100x140?text=Fehlt';
+            prevSketch.src = fallback;
         }
     }
 
@@ -162,19 +203,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Hover Zoom Overlay
+    // --- KLICK-ZOOM OVERLAY (LIGHTBOX) ---
     const hoverOverlay = document.getElementById('image-hover-overlay');
     const hoverOverlayImg = document.getElementById('hover-overlay-img');
+
     document.querySelectorAll('.hover-zoom-trigger').forEach((img) => {
-        img.addEventListener('mouseenter', () => {
+        img.addEventListener('click', () => {
             if (img.src && !img.src.includes('placehold.co')) {
                 hoverOverlayImg.src = img.src;
                 hoverOverlay.style.display = 'flex';
             }
         });
-        img.addEventListener('mouseleave', () => {
-            hoverOverlay.style.display = 'none';
-        });
+    });
+
+    // Klick ins Schwarze schließt die Vorschau wieder
+    hoverOverlay?.addEventListener('click', () => {
+        hoverOverlay.style.display = 'none';
+        hoverOverlayImg.src = '';
     });
 
     function openComicModal(data = null) {
