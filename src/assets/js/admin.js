@@ -1136,27 +1136,75 @@ document.addEventListener('DOMContentLoaded', () => {
             const thresholdH = parseInt(cfgHeight.value, 10);
 
             Array.from(files).forEach((file) => {
-                // Regex: Sucht am Anfang nach 8 Ziffern + max. 1 Buchstabe (z.B. 20260503a)
-                const match = file.name.match(/^(\d{8}[a-z]?)/i);
+                // Regex: Sucht STRIKT nur nach exakt 8 Ziffern!
+                const match = file.name.match(/^(\d{8})/);
                 if (!match) {
                     showMsg(
-                        `Datei "${file.name}" ignoriert (Keine Comic-ID am Anfang erkannt).`,
+                        `Datei "${file.name}" ignoriert (Keine 8-stellige ID am Anfang).`,
                         'orange'
                     );
                     return;
                 }
-                const id = match[1].toLowerCase();
+                const baseId = match[1];
 
                 const img = new Image();
                 img.onload = () => {
                     const isHires = img.width >= thresholdW || img.height >= thresholdH;
                     URL.revokeObjectURL(img.src);
 
-                    if (!uploadQueue.has(id)) {
-                        uploadQueue.set(id, { hires: null, lowres: null, status: 'Wartet' });
+                    const fileTypeStr = isHires ? 'Hires' : 'Lowres';
+                    let targetId = baseId;
+
+                    // Kollisionsprüfung
+                    if (uploadQueue.has(targetId)) {
+                        const existingEntry = uploadQueue.get(targetId);
+                        // Ist der entsprechende Platz (Hires oder Lowres) schon belegt?
+                        if (
+                            (isHires && existingEntry.hires) ||
+                            (!isHires && existingEntry.lowres)
+                        ) {
+                            if (
+                                confirm(
+                                    `Für die ID "${baseId}" liegt bereits ein ${fileTypeStr}-Bild in der Warteschlange.\nMöchtest du "${file.name}" als Unterseite (a, b, c...) hinzufügen?`
+                                )
+                            ) {
+                                const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+                                let foundFreeSlot = false;
+
+                                for (const letter of alphabet) {
+                                    const testId = baseId + letter;
+                                    if (!uploadQueue.has(testId)) {
+                                        targetId = testId;
+                                        foundFreeSlot = true;
+                                        break;
+                                    } else {
+                                        const testEntry = uploadQueue.get(testId);
+                                        if (
+                                            (isHires && !testEntry.hires) ||
+                                            (!isHires && !testEntry.lowres)
+                                        ) {
+                                            targetId = testId;
+                                            foundFreeSlot = true;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!foundFreeSlot) {
+                                    alert('Zu viele Unterseiten! Datei wurde übersprungen.');
+                                    return;
+                                }
+                            } else {
+                                showMsg(`Datei "${file.name}" wurde übersprungen.`, 'orange');
+                                return;
+                            }
+                        }
                     }
 
-                    const entry = uploadQueue.get(id);
+                    if (!uploadQueue.has(targetId)) {
+                        uploadQueue.set(targetId, { hires: null, lowres: null, status: 'Wartet' });
+                    }
+                    const entry = uploadQueue.get(targetId);
                     if (isHires) entry.hires = file;
                     else entry.lowres = file;
 

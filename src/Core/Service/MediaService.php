@@ -53,9 +53,6 @@ final readonly class MediaService
         $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality', 85);
         $success = \imagewebp($targetImage, $targetPath, $quality);
 
-        \imagedestroy($image);
-        \imagedestroy($targetImage);
-
         return $success;
     }
 
@@ -92,9 +89,6 @@ final readonly class MediaService
 
         $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
         $success = \imagewebp($targetImage, $targetPath, $quality);
-
-        \imagedestroy($image);
-        \imagedestroy($targetImage);
 
         return $success;
     }
