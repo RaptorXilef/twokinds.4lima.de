@@ -1131,87 +1131,178 @@ document.addEventListener('DOMContentLoaded', () => {
             massFileInput.value = ''; // Reset für weitere Klicks
         });
 
-        function processDroppedFiles(files) {
+        async function processDroppedFiles(files) {
             const thresholdW = parseInt(cfgWidth.value, 10);
             const thresholdH = parseInt(cfgHeight.value, 10);
 
-            Array.from(files).forEach((file) => {
-                // Regex: Sucht STRIKT nur nach exakt 8 Ziffern!
+            // Wir nutzen eine for...of Schleife, um asynchron auf User-Entscheidungen (Modals) warten zu können
+            for (const file of Array.from(files)) {
+                // Strikt nach genau 8 Ziffern am Anfang suchen
                 const match = file.name.match(/^(\d{8})/);
                 if (!match) {
                     showMsg(
                         `Datei "${file.name}" ignoriert (Keine 8-stellige ID am Anfang).`,
                         'orange'
                     );
-                    return;
+                    continue;
                 }
                 const baseId = match[1];
 
-                const img = new Image();
-                img.onload = () => {
-                    const isHires = img.width >= thresholdW || img.height >= thresholdH;
-                    URL.revokeObjectURL(img.src);
+                // 1. Auflösung ermitteln (Hires vs Lowres)
+                const isHires = await new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        resolve(img.width >= thresholdW || img.height >= thresholdH);
+                        URL.revokeObjectURL(img.src);
+                    };
+                    img.onerror = () => resolve(false);
+                    img.src = URL.createObjectURL(file);
+                });
 
-                    const fileTypeStr = isHires ? 'Hires' : 'Lowres';
-                    let targetId = baseId;
+                const fileTypeStr = isHires ? 'Hires' : 'Lowres';
+                let targetId = baseId;
+                const skipFile = false;
 
-                    // Kollisionsprüfung
-                    if (uploadQueue.has(targetId)) {
-                        const existingEntry = uploadQueue.get(targetId);
-                        // Ist der entsprechende Platz (Hires oder Lowres) schon belegt?
+                // 2. Prüfen, ob die ID in der LOKALEN Warteschlange schon belegt ist
+                if (uploadQueue.has(targetId)) {
+                    const existingEntry = uploadQueue.get(targetId);
+                    if ((isHires && existingEntry.hires) || (!isHires && existingEntry.lowres)) {
                         if (
-                            (isHires && existingEntry.hires) ||
-                            (!isHires && existingEntry.lowres)
+                            confirm(
+                                `Für die ID "${baseId}" liegt lokal bereits ein ${fileTypeStr}-Bild in der Warteschlange.\nMöchtest du "${file.name}" als Variante (a, b, c...) hinzufügen?`
+                            )
                         ) {
-                            if (
-                                confirm(
-                                    `Für die ID "${baseId}" liegt bereits ein ${fileTypeStr}-Bild in der Warteschlange.\nMöchtest du "${file.name}" als Unterseite (a, b, c...) hinzufügen?`
-                                )
-                            ) {
-                                const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-                                let foundFreeSlot = false;
-
-                                for (const letter of alphabet) {
-                                    const testId = baseId + letter;
-                                    if (!uploadQueue.has(testId)) {
-                                        targetId = testId;
-                                        foundFreeSlot = true;
-                                        break;
-                                    } else {
-                                        const testEntry = uploadQueue.get(testId);
-                                        if (
-                                            (isHires && !testEntry.hires) ||
-                                            (!isHires && !testEntry.lowres)
-                                        ) {
-                                            targetId = testId;
-                                            foundFreeSlot = true;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                if (!foundFreeSlot) {
-                                    alert('Zu viele Unterseiten! Datei wurde übersprungen.');
-                                    return;
-                                }
-                            } else {
-                                showMsg(`Datei "${file.name}" wurde übersprungen.`, 'orange');
-                                return;
+                            targetId = await findFreeVariantId(baseId, isHires);
+                            if (!targetId) {
+                                alert('Zu viele Unterseiten! Datei wurde übersprungen.');
+                                continue;
                             }
+                        } else {
+                            showMsg(`Datei "${file.name}" wurde übersprungen.`, 'orange');
+                            continue;
                         }
                     }
+                }
 
-                    if (!uploadQueue.has(targetId)) {
-                        uploadQueue.set(targetId, { hires: null, lowres: null, status: 'Wartet' });
+                // 3. Prüfen, ob das Bild auf dem SERVER bereits existiert
+                if (!skipFile) {
+                    const folder = isHires ? 'hires' : 'lowres';
+                    const serverUrl = `${baseUrl}/assets/images/comic/${folder}/${targetId}.webp`;
+
+                    const serverExists = await new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(true);
+                        img.onerror = () => resolve(false);
+                        img.src = serverUrl;
+                    });
+
+                    if (serverExists) {
+                        const decision = await showOverwriteModal(
+                            targetId,
+                            file,
+                            serverUrl,
+                            fileTypeStr
+                        );
+                        if (decision === 'skip') {
+                            continue;
+                        } else if (decision === 'variant') {
+                            targetId = await findFreeVariantId(baseId, isHires);
+                            if (!targetId) {
+                                alert('Zu viele Unterseiten! Datei wurde übersprungen.');
+                                continue;
+                            }
+                        }
+                        // bei 'overwrite' bleibt targetId wie sie ist
                     }
-                    const entry = uploadQueue.get(targetId);
-                    if (isHires) entry.hires = file;
-                    else entry.lowres = file;
+                }
 
-                    renderQueueTable();
+                // 4. In die Warteschlange einfügen
+                if (!uploadQueue.has(targetId)) {
+                    uploadQueue.set(targetId, { hires: null, lowres: null, status: 'Wartet' });
+                }
+                const entry = uploadQueue.get(targetId);
+                if (isHires) entry.hires = file;
+                else entry.lowres = file;
+
+                renderQueueTable();
+            }
+        }
+
+        // --- HELFER: Modal für Server-Kollision aufrufen ---
+        function showOverwriteModal(id, file, serverSrc, typeStr) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('overwrite-modal');
+                document.getElementById('overwrite-id-display').textContent = `${id} (${typeStr})`;
+
+                const localUrl = URL.createObjectURL(file);
+                document.getElementById('overwrite-new-img').src = localUrl;
+                // '?t=' verhindert, dass der Browser ein altes gecachtes Bild anzeigt
+                document.getElementById('overwrite-server-img').src =
+                    `${serverSrc}?t=${new Date().getTime()}`;
+
+                const btnSkip = document.getElementById('btn-overwrite-skip');
+                const btnVariant = document.getElementById('btn-overwrite-variant');
+                const btnOverwrite = document.getElementById('btn-overwrite-confirm');
+
+                const cleanup = () => {
+                    btnSkip.removeEventListener('click', onSkip);
+                    btnVariant.removeEventListener('click', onVariant);
+                    btnOverwrite.removeEventListener('click', onOverwrite);
+                    modal.style.display = 'none';
+                    URL.revokeObjectURL(localUrl); // Speicher wieder freigeben
                 };
-                img.src = URL.createObjectURL(file);
+
+                const onSkip = () => {
+                    cleanup();
+                    resolve('skip');
+                };
+                const onVariant = () => {
+                    cleanup();
+                    resolve('variant');
+                };
+                const onOverwrite = () => {
+                    cleanup();
+                    resolve('overwrite');
+                };
+
+                btnSkip.addEventListener('click', onSkip);
+                btnVariant.addEventListener('click', onVariant);
+                btnOverwrite.addEventListener('click', onOverwrite);
+
+                modal.style.display = 'flex';
             });
+        }
+
+        // --- HELFER: Freie Variante (a-z) suchen (Lokal + Server) ---
+        async function findFreeVariantId(baseId, isHires) {
+            const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+            const folder = isHires ? 'hires' : 'lowres';
+
+            for (const letter of alphabet) {
+                const testId = baseId + letter;
+
+                // 1. Lokal prüfen
+                if (uploadQueue.has(testId)) {
+                    const testEntry = uploadQueue.get(testId);
+                    if ((isHires && testEntry.hires) || (!isHires && testEntry.lowres)) {
+                        continue; // Ist lokal schon belegt -> nächster Buchstabe
+                    }
+                }
+
+                // 2. Server prüfen
+                const serverUrl = `${baseUrl}/assets/images/comic/${folder}/${testId}.webp`;
+                const serverExists = await new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => resolve(true);
+                    img.onerror = () => resolve(false);
+                    img.src = serverUrl;
+                });
+
+                if (!serverExists) {
+                    return testId; // Super, der Platz ist komplett frei!
+                }
+            }
+            return null; // Alle 26 Buchstaben belegt
         }
 
         function renderQueueTable() {

@@ -552,6 +552,37 @@ foreach ($alphaChars as $char) {
     </div>
 </div>
 
+<!-- Overwrite Modal (Mass Upload) -->
+<div id="overwrite-modal" class="modal" style="z-index: 1060;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content" style="max-width: 900px; display: flex; flex-direction: column; max-height: 95vh;">
+        <div class="modal-header-wrapper" style="flex: 0 0 auto;">
+            <h2 style="color: var(--status-red-text);"><i class="fa-solid fa-triangle-exclamation"></i> Bild existiert bereits!</h2>
+        </div>
+        <div class="modal-scroll-content" style="flex: 1 1 auto; overflow-y: auto;">
+            <p>Für die ID <strong id="overwrite-id-display" class="mono"></strong> existiert auf dem Server bereits ein Bild. Was möchtest du tun?</p>
+
+            <div style="display: flex; gap: 20px; text-align: center; margin-top: 20px;">
+                <div style="flex: 1; padding: 15px; background: var(--table-row-even); border-radius: 8px;">
+                    <h3 style="margin-top: 0; color: var(--status-green-text);">Neues Bild (Lokal)</h3>
+                    <img id="overwrite-new-img" src="" style="width: 100%; height: auto; max-height: 350px; object-fit: contain; border: 2px solid #28a745; border-radius: 4px; background: var(--content-bg);">
+                </div>
+                <div style="flex: 1; padding: 15px; background: var(--table-row-even); border-radius: 8px;">
+                    <h3 style="margin-top: 0; color: var(--text-color);">Auf dem Server</h3>
+                    <img id="overwrite-server-img" src="" style="width: 100%; height: auto; max-height: 350px; object-fit: contain; border: 2px solid var(--border-medium); border-radius: 4px; background: var(--content-bg);">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer-actions" style="flex: 0 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <button type="button" class="button" id="btn-overwrite-skip">Server-Bild behalten (Überspringen)</button>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="button button-orange" id="btn-overwrite-variant">Als Variante (a,b,c) anfügen</button>
+                <button type="button" class="button delete" id="btn-overwrite-confirm"><i class="fa-solid fa-bolt"></i> Überschreiben</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Das globale Overlay für das Hover-Zoom der Comic-Vorschauen -->
 <div id="image-hover-overlay">
     <img src=""
