@@ -267,6 +267,9 @@ public/assets/img/test/**
 # PROJEKT SPEZIFISCH: CONTENT & ASSETS
 ################################################################################
 
+rss.xml
+sitemap.xml
+
 # --- BILDER & MEDIEN (COMIC) ---
 # High-Res Bilder ignorieren, Systemdateien behalten
 public/assets/images/comic/hires/*.jpg
