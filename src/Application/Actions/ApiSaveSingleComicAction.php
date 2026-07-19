@@ -34,7 +34,13 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
             if ($originalUrl !== '' && ! \preg_match('/\.[a-z0-9]{3,4}$/i', $originalUrl)) {
                 $originalUrl .= '.' . $this->probeRemoteExtension($originalUrl);
             }
+
+            // Die clevere Sketch-Erkennung
             if ($sketchUrl !== '' && ! \preg_match('/\.[a-z0-9]{3,4}$/i', $sketchUrl)) {
+                // Wenn es nicht schon auf _sketch endet, hängen wir es an
+                if (! \str_ends_with($sketchUrl, '_sketch')) {
+                    $sketchUrl .= '_sketch';
+                }
                 $sketchUrl .= '.' . $this->probeRemoteExtension($sketchUrl);
             }
 

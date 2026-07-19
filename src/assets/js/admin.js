@@ -174,9 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (sketchVal.includes('.')) {
                 prevSketch.src = 'https://twokindscomic.com/images/' + sketchVal;
             } else {
+                // NEU: Hängt _sketch an, wenn es fehlt
+                let baseSketch = sketchVal;
+                if (!baseSketch.endsWith('_sketch')) {
+                    baseSketch += '_sketch';
+                }
                 loadPreviewWithProbe(
                     prevSketch,
-                    'https://twokindscomic.com/images/' + sketchVal,
+                    'https://twokindscomic.com/images/' + baseSketch,
                     remoteExts,
                     fallback
                 );
