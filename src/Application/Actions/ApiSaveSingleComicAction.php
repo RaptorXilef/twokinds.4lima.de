@@ -82,7 +82,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         if (! \function_exists('curl_init')) {
             $context = \stream_context_create(['http' => ['method' => 'HEAD', 'timeout' => 2]]);
             foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) {
-                $headers = @\get_headers($baseUrl . '.' . $ext, 1, $context);
+                $headers = @\get_headers($baseUrl . '.' . $ext, true, $context);
                 if ($headers !== false) {
                     $status = $headers[0] ?? '';
                     if (\str_contains($status, '200')) {
