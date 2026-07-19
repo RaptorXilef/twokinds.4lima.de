@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     }
 
-    async function sendApiRequest(endpoint, formData) {
+    async function sendApiRequest(endpoint, formData, btnElement = null, origBtnHtml = '') {
         formData.append('csrf_token', csrfToken);
         try {
             const response = await fetch(baseUrl + '/api/' + endpoint, {
@@ -58,13 +58,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             if (data.success) {
-                isDirty = false; // Zurücksetzen!
+                isDirty = false;
                 window.location.reload();
             } else {
                 showMsg('<i class="fa-solid fa-triangle-exclamation"></i> ' + data.error, 'red');
+                // Button wieder freigeben bei Server-Fehler (z.B. 400 Bad Request)
+                if (btnElement) {
+                    btnElement.innerHTML = origBtnHtml;
+                    btnElement.style.pointerEvents = 'auto';
+                }
             }
         } catch (e) {
             showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
+            // Button wieder freigeben bei Absturz (z.B. 500 Internal Server Error)
+            if (btnElement) {
+                btnElement.innerHTML = origBtnHtml;
+                btnElement.style.pointerEvents = 'auto';
+            }
         }
     }
 
@@ -571,13 +581,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('comic-form');
             if (!form.reportValidity()) return;
             const btn = e.target.closest('#btn-save-comic');
+            const origText = btn.innerHTML; // Den alten Text merken
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
             btn.style.pointerEvents = 'none';
             sessionStorage.setItem(
                 'highlightEntityId',
                 document.getElementById('comic_id').value.trim()
             );
-            sendApiRequest('save_single_comic', new FormData(form));
+            sendApiRequest('save_single_comic', new FormData(form), btn, origText); // Button mit übergeben
         }
         if (e.target.closest('.btn-close-comic-modal')) closeComicModal();
 
@@ -633,6 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('char-form');
             if (!form.reportValidity()) return;
             const btn = e.target.closest('#btn-save-char');
+            const origText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
             btn.style.pointerEvents = 'none';
             // Bei "NEW" haben wir die ID erst nach Server-Antwort, wir markieren ihn als Neu
@@ -640,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'highlightEntityId',
                 document.getElementById('character_id').value.trim()
             );
-            sendApiRequest('save_single_character', new FormData(form));
+            sendApiRequest('save_single_character', new FormData(form), btn, origText);
         }
         if (e.target.closest('.btn-close-char-modal')) closeCharModal();
 

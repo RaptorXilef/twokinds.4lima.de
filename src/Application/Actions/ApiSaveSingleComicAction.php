@@ -78,7 +78,29 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
     // Pinged den Server blitzschnell an (HEAD request) und prüft ZWINGEND auf Content-Type: image/*
     private function probeRemoteExtension(string $baseUrl): string
     {
-        // Reihenfolge angepasst: PNG und JPG sind am wahrscheinlichsten
+        // Fallback für lokale Server (wie XAMPP), bei denen cURL deaktiviert ist
+        if (! \function_exists('curl_init')) {
+            $context = \stream_context_create(['http' => ['method' => 'HEAD', 'timeout' => 2]]);
+            foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) {
+                $headers = @\get_headers($baseUrl . '.' . $ext, 1, $context);
+                if ($headers !== false) {
+                    $status = $headers[0] ?? '';
+                    if (\str_contains($status, '200')) {
+                        $contentType = $headers['Content-Type'] ?? ($headers['content-type'] ?? '');
+                        if (\is_array($contentType)) {
+                            $contentType = \end($contentType);
+                        }
+                        if (\is_string($contentType) && \str_starts_with($contentType, 'image/')) {
+                            return $ext;
+                        }
+                    }
+                }
+            }
+
+            return 'png'; // Fallback
+        }
+
+        // Standard-Weg mit cURL (schneller & ressourcenschonender)
         foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) { // TODO ggf. ins Interface
             $ch = \curl_init($baseUrl . '.' . $ext);
             \curl_setopt($ch, \CURLOPT_NOBODY, true); // Nur Header laden, spart Bandbreite
