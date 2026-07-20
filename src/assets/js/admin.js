@@ -1475,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         .map(
                             (f) => `
                         <div class="preview-box" style="position: relative;">
-                            <img src="${f.url}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+                            <img src="${f.url}" loading="lazy" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
                             <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 8px 0;" title="${f.filename}">${f.filename}</p>
                             <button type="button" class="button delete btn-delete-gallery-item" data-type="character" data-id="${f.filename}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Löschen</button>
                         </div>
@@ -1489,12 +1489,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         .map(
                             (f) => `
                         <div class="preview-box" style="position: relative; border: 2px solid var(--border-medium);">
-                            <img src="${f.url}" style="width: 100%; height: 225px; object-fit: contain; border-radius: 4px; background: #fff;">
+                            <img src="${f.url}" loading="lazy" style="width: 100%; height: 225px; object-fit: contain; border-radius: 4px; background: #fff;">
                             <h4 style="margin: 8px 0 4px 0;" class="mono">${f.id}</h4>
                             <div style="display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; font-size: 0.75em; color: var(--text-color-faded);">
                                 <span style="color: ${f.has_hires ? 'var(--status-green-text)' : 'inherit'}">HR</span> |
                                 <span style="color: ${f.has_lowres ? 'var(--status-green-text)' : 'inherit'}">LR</span> |
-                                <span style="color: ${f.has_social ? 'var(--status-green-text)' : 'inherit'}">SM</span>
+                                <span style="color: ${f.has_social ? 'var(--status-green-text)' : 'inherit'}">SM</span> |
+                                <span style="color: ${f.has_thumb ? 'var(--status-green-text)' : 'inherit'}">TN</span>
                             </div>
                             <button type="button" class="button delete btn-delete-gallery-item" data-type="comic" data-id="${f.id}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Alle 4 löschen</button>
                         </div>

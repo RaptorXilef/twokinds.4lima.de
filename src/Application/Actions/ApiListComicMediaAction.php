@@ -37,6 +37,7 @@ final readonly class ApiListComicMediaAction implements ActionInterface
                 'has_hires'  => \file_exists("$baseDir/hires/$file"),
                 'has_lowres' => \file_exists("$baseDir/lowres/$file"),
                 'has_social' => \file_exists("$baseDir/socialmedia/$file"),
+                'has_thumb'  => \file_exists("$baseDir/thumbnails/$file"),
                 'url'        => "/assets/images/comic/thumbnails/{$file}",
             ];
         }
