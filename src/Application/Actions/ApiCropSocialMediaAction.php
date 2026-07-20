@@ -22,8 +22,10 @@ final readonly class ApiCropSocialMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        // RAM-Limit hochsetzen, da Hires-Bilder > 3000px viel Speicher beim Entpacken brauchen!
-        \ini_set('memory_limit', '512M');
+        // Maximale Power für riesige Bilder und Warnungen unterdrücken, damit das JSON nicht kaputt geht
+        \ini_set('memory_limit', '1024M');
+        \ini_set('display_errors', '0');
+        \error_reporting(0);
 
         try {
             $comicId = \trim((string) ($request->post['comic_id'] ?? ''));
@@ -66,7 +68,7 @@ final readonly class ApiCropSocialMediaAction implements ActionInterface
                 return JsonResponse::success(['message' => 'Social-Media-Bild erfolgreich zugeschnitten!']);
             }
 
-            return JsonResponse::error('Fehler beim Generieren des Bildes.', 500);
+            return JsonResponse::error('Fehler beim Generieren des Bildes (GD Error).', 500);
 
         } catch (\Throwable $e) {
             // Fängt alle fatalen PHP-Fehler (z.B. OOM) als sauberes JSON ab

@@ -2008,7 +2008,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     );
                 }
             } catch (err) {
-                console.error('Cropper Fetch Error:', err);
+                // console.error('Cropper Fetch Error:', err);
                 showMsg(`<i class="fa-solid fa-bomb"></i> Fehler: ${err.message}`, 'red');
             }
 

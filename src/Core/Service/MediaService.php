@@ -161,11 +161,13 @@ final readonly class MediaService
         int $finalWidth = 1200,
         int $finalHeight = 630,
     ): bool {
-        // Fix P1005: Bildtyp dynamisch ermitteln
-        $info = \getimagesize($sourcePath);
+        $info = @\getimagesize($sourcePath);
         if (! $info) {
             return false;
         }
+
+        $srcW = $info[0];
+        $srcH = $info[1];
         $type = $info[2];
 
         $sourceImage = $this->createImageFromFile($sourcePath, $type);
@@ -173,8 +175,20 @@ final readonly class MediaService
             return false;
         }
 
-        // 1. Zuerst den gewünschten Bereich exakt ausschneiden
-        $croppedImage = \imagecrop($sourceImage, [
+        // SICHERHEIT: Koordinaten zwingend in die Bildgrenzen pressen (Verhindert GD Absturz!)
+        $cropX      = \max(0, \min($cropX, $srcW - 1));
+        $cropY      = \max(0, \min($cropY, $srcH - 1));
+        $cropWidth  = \min($cropWidth, $srcW - $cropX);
+        $cropHeight = \min($cropHeight, $srcH - $cropY);
+
+        if ($cropWidth <= 0 || $cropHeight <= 0) {
+            \imagedestroy($sourceImage);
+
+            return false;
+        }
+
+        // @ unterdrückt irrelevante GD Warnings, die das JSON zerstören könnten
+        $croppedImage = @\imagecrop($sourceImage, [
             'x'      => $cropX,
             'y'      => $cropY,
             'width'  => $cropWidth,
@@ -187,14 +201,11 @@ final readonly class MediaService
             return false;
         }
 
-        // 2. Das ausgeschnittene Bild auf die finale Social-Media-Größe (1200x630) skalieren
         $finalImage = \imagecreatetruecolor($finalWidth, $finalHeight);
-
-        // Hintergrund weiß füllen (für evtl. Transparenzen)
-        $white = \imagecolorallocate($finalImage, 255, 255, 255);
+        $white      = \imagecolorallocate($finalImage, 255, 255, 255);
         \imagefill($finalImage, 0, 0, $white);
 
-        \imagecopyresampled(
+        @\imagecopyresampled(
             $finalImage,
             $croppedImage,
             0,
@@ -207,15 +218,12 @@ final readonly class MediaService
             $cropHeight,
         );
 
-        // Prüfen, ob wir JPG oder WebP wollen (anhand der Dateiendung)
         $ext     = \strtolower(\pathinfo($targetPath, \PATHINFO_EXTENSION));
         $success = false;
 
         if ($ext === 'jpg' || $ext === 'jpeg') {
-            // Hochwertiges JPEG (Qualität 90) für Open Graph Crawler
             $success = \imagejpeg($finalImage, $targetPath, 90);
         } else {
-            // Fix P1013: Fallback auf den normalen WebP Speicher-Prozess
             $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
             $success = \imagewebp($finalImage, $targetPath, $quality);
         }
