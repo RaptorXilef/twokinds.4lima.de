@@ -1437,49 +1437,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const mediaSection = document.getElementById('section-media');
     if (mediaSection) {
         const gallery = document.getElementById('media-gallery');
-        const uploadInput = document.getElementById('media-upload-input');
+        const mediaDropZone = document.getElementById('media-drop-zone');
+        const mediaUploadInput = document.getElementById('media-upload-input');
 
         window.loadMedia = async () => {
             if (!gallery) return;
             try {
                 const res = await fetch(`${baseUrl}/api/list_media`);
                 const json = await res.json();
+
+                // ACHTUNG: Hier steht nun KEIN onclick="..." mehr drin!
                 gallery.innerHTML = json.files
                     .map(
                         (f) => `
                 <div class="preview-box" style="position: relative;">
-                    <img src="${f.url}" style="width: 100%; height: 100px; object-fit: cover;">
-                    <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.filename}</p>
-                    <button class="button delete" onclick="deleteMedia('${f.filename}')" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i></button>
+                    <img src="${f.url}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+                    <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 8px 0;">${f.filename}</p>
+                    <button type="button" class="button delete btn-delete-gallery-item" data-filename="${f.filename}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Löschen</button>
                 </div>
             `
                     )
                     .join('');
-            } catch (err) {
-                console.error('Fehler beim Laden der Galerie:', err);
+            } catch {
+                // silent
             }
         };
 
-        window.deleteMedia = async (filename) => {
+        // Zentrale Event-Delegation für die Löschen-Buttons in der Galerie (CSP-Konform)
+        gallery?.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.btn-delete-gallery-item');
+            if (!btn) return;
+
+            const filename = btn.dataset.filename;
             if (!confirm(`Datei ${filename} wirklich löschen?`)) return;
+
             const fd = new FormData();
             fd.append('filename', filename);
             fd.append('csrf_token', csrfToken);
             await fetch(`${baseUrl}/api/delete_media`, { method: 'POST', body: fd });
             window.loadMedia();
-        };
+        });
 
-        // Das ist der Auslöser für den "Bilder hochladen" Button
-        if (uploadInput) {
-            uploadInput.addEventListener('change', async () => {
-                if (uploadInput.files.length === 0) return;
+        // --- DRAG & DROP LOGIK FÜR DIE GALERIE ---
+        if (mediaDropZone && mediaUploadInput) {
+            mediaDropZone.addEventListener('click', () => mediaUploadInput.click());
+
+            mediaDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                mediaDropZone.style.backgroundColor = 'var(--table-row-hover)';
+            });
+
+            mediaDropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                mediaDropZone.style.backgroundColor = 'var(--table-row-even)';
+            });
+
+            mediaDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                mediaDropZone.style.backgroundColor = 'var(--table-row-even)';
+                if (e.dataTransfer.files.length) {
+                    mediaUploadInput.files = e.dataTransfer.files;
+                    mediaUploadInput.dispatchEvent(new Event('change')); // Triggert den Upload
+                }
+            });
+
+            mediaUploadInput.addEventListener('change', async () => {
+                if (mediaUploadInput.files.length === 0) return;
                 showMsg(
                     '<i class="fa-solid fa-spinner fa-spin"></i> Lade Bilder hoch...',
                     'orange'
                 );
 
                 const fd = new FormData();
-                for (const file of uploadInput.files) {
+                for (const file of mediaUploadInput.files) {
                     fd.append('files[]', file);
                 }
                 fd.append('csrf_token', csrfToken);
@@ -1499,7 +1529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             'red'
                         );
                     }
-                } catch (e) {
+                } catch {
                     showMsg('<i class="fa-solid fa-bomb"></i> Fehler beim Upload', 'red');
                 }
                 uploadInput.value = ''; // Wichtig, damit man dieselbe Datei nochmal wählen kann

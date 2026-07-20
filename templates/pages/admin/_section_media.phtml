@@ -1,8 +1,8 @@
 <section id="section-media" class="content-section">
-    <div class="actions-bar" style="margin-bottom: 20px;">
-        <button type="button" class="button add" onclick="document.getElementById('media-upload-input').click()">
-            <i class="fa-solid fa-upload"></i> Bilder hochladen
-        </button>
+    <div id="media-drop-zone" class="drag-drop-zone" style="margin-bottom: 20px; padding: 30px 20px; border: 3px dashed var(--link-color); background: var(--table-row-even); text-align: center; cursor: pointer; border-radius: 8px;">
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 3em; color: var(--link-color); margin-bottom: 10px;"></i>
+        <h3 style="margin:0;">Charakter-Bilder hier ablegen</h3>
+        <p style="color: var(--text-color-light);">Oder klicken, um Dateien auszuwählen (werden automatisch als WebP gespeichert).</p>
         <input type="file" id="media-upload-input" accept="image/*" multiple style="display: none;">
     </div>
 
