@@ -1933,8 +1933,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSaveCrop.addEventListener('click', async () => {
             if (!cropperInstance) return;
 
-            // Holt die exakten Koordinaten und Dimensionen (in Relation zum Originalbild!)
-            const cropData = cropperInstance.getData(true); // true = gerundete INT-Werte
+            const cropData = cropperInstance.getData(true);
             const comicId = cropComicIdInput.value;
 
             const origText = btnSaveCrop.innerHTML;
@@ -1947,9 +1946,56 @@ document.addEventListener('DOMContentLoaded', () => {
             fd.append('y', cropData.y);
             fd.append('width', cropData.width);
             fd.append('height', cropData.height);
+            fd.append('csrf_token', csrfToken); // WICHTIG!
 
-            // Wir bauen hier gleich eine neue Api-Route dafür: api_crop_social_media
-            sendApiRequest('crop_social_media', fd, btnSaveCrop, origText);
+            try {
+                const res = await fetch(`${baseUrl}/api/crop_social_media`, {
+                    method: 'POST',
+                    body: fd,
+                });
+                const json = await res.json();
+
+                if (json.success) {
+                    showMsg(`<i class="fa-solid fa-check"></i> ${json.message}`, 'green');
+
+                    // 1. Cropper Modal schließen
+                    if (cropperModal) cropperModal.style.display = 'none';
+                    cropperInstance.destroy();
+                    cropperInstance = null;
+
+                    const timestamp = Date.now(); // Cache-Buster
+
+                    // 2. Vorschau-Bild im Comic-Modal aktualisieren
+                    const prevSocial = document.getElementById('prev-comic-social');
+                    if (prevSocial) {
+                        prevSocial.src = `${baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
+                    }
+
+                    // 3. Mini-Vorschau in der Haupttabelle im Hintergrund mit aktualisieren!
+                    const tableRow = document
+                        .querySelector(`.btn-delete-comic[data-id="${comicId}"]`)
+                        ?.closest('tr');
+                    if (tableRow) {
+                        // Sucht das zweite Bild in der Zelle (das ist das Social Media Bild)
+                        const tableThumb = tableRow.querySelectorAll('img')[1];
+                        if (tableThumb) {
+                            tableThumb.src = `${baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
+                            tableThumb.style.display = 'inline-block'; // Falls es vorher versteckt war
+                        }
+                    }
+                } else {
+                    showMsg(
+                        `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`,
+                        'red'
+                    );
+                }
+            } catch {
+                showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler beim Zuschneiden.', 'red');
+            }
+
+            // Button wieder freigeben
+            btnSaveCrop.innerHTML = origText;
+            btnSaveCrop.style.pointerEvents = 'auto';
         });
     }
 });
