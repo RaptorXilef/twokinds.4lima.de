@@ -118,8 +118,9 @@ final readonly class SiteGeneratorService
         // Die neuesten zuerst (anhand der ID sortieren, da YYYYMMDD)
         \usort($feedComics, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
 
-        // Nur die letzten 30 Einträge in den RSS Feed packen
-        $feedComics = \array_slice($feedComics, 0, 30);
+        // Max Items aus der Config ziehen (Default 25, falls Eintrag fehlt)
+        $maxItems   = (int) $this->config->get('rss_max_items', 25);
+        $feedComics = \array_slice($feedComics, 0, $maxItems);
 
         foreach ($feedComics as $comic) {
             $xml->startElement('item');
