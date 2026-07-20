@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Actions;
+
+use App\Application\Attribute\ActionRoute;
+use App\Application\Contracts\ActionInterface;
+use App\Application\Http\ServerRequest;
+use App\Application\Response\JsonResponse;
+use App\Contracts\Config\ConfigInterface;
+
+#[ActionRoute('api_delete_comic_media')]
+final readonly class ApiDeleteComicMediaAction implements ActionInterface
+{
+    public function __construct(private ConfigInterface $config)
+    {
+    }
+
+    public function execute(ServerRequest $request): mixed
+    {
+        $id = \basename((string) ($request->post['comic_id'] ?? ''));
+        if ($id === '') {
+            return JsonResponse::error('Keine ID übergeben.', 400);
+        }
+
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
+        $folders   = ['hires', 'lowres', 'thumbnails', 'socialmedia'];
+
+        $deleted = 0;
+        foreach ($folders as $folder) {
+            $file = "$targetDir/$folder/$id.webp";
+            if (\file_exists($file)) {
+                @\unlink($file);
+                ++$deleted;
+            }
+        }
+
+        if ($deleted > 0) {
+            return JsonResponse::success(['message' => "Erfolgreich $deleted Dateiversionen gelöscht."]);
+        }
+
+        return JsonResponse::error('Keine Dateien zu dieser ID gefunden.', 404);
+    }
+}

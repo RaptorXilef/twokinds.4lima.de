@@ -1436,48 +1436,111 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MEDIA GALLERY LOGIK ---
     const mediaSection = document.getElementById('section-media');
     if (mediaSection) {
-        const gallery = document.getElementById('media-gallery');
+        const galChars = document.getElementById('media-gallery-characters');
+        const galComics = document.getElementById('media-gallery-comics');
+
         const mediaDropZone = document.getElementById('media-drop-zone');
         const mediaUploadInput = document.getElementById('media-upload-input');
 
-        window.loadMedia = async () => {
-            if (!gallery) return;
-            try {
-                const res = await fetch(`${baseUrl}/api/list_media`);
-                const json = await res.json();
+        let currentMediaTab = 'characters';
 
-                gallery.innerHTML = json.files
-                    .map(
-                        (f) => `
-                <div class="preview-box" style="position: relative;">
-                    <img src="${f.url}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px;">
-                    <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 8px 0;">${f.filename}</p>
-                    <button type="button" class="button delete btn-delete-gallery-item" data-filename="${f.filename}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Löschen</button>
-                </div>
-            `
-                    )
-                    .join('');
+        // TABS UMSCHALTEN
+        document.querySelectorAll('.media-tab-btn').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.media-tab-btn').forEach((b) => {
+                    b.classList.remove('active');
+                    b.classList.add('edit');
+                });
+                e.target.classList.remove('edit');
+                e.target.classList.add('active');
+
+                currentMediaTab = e.target.dataset.type;
+
+                document.getElementById('media-view-characters').style.display =
+                    currentMediaTab === 'characters' ? 'block' : 'none';
+                document.getElementById('media-view-comics').style.display =
+                    currentMediaTab === 'comics' ? 'block' : 'none';
+
+                window.loadMedia();
+            });
+        });
+
+        window.loadMedia = async () => {
+            try {
+                if (currentMediaTab === 'characters') {
+                    const res = await fetch(`${baseUrl}/api/list_media`);
+                    const json = await res.json();
+
+                    galChars.innerHTML = json.files
+                        .map(
+                            (f) => `
+                        <div class="preview-box" style="position: relative;">
+                            <img src="${f.url}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+                            <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 8px 0;" title="${f.filename}">${f.filename}</p>
+                            <button type="button" class="button delete btn-delete-gallery-item" data-type="character" data-id="${f.filename}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Löschen</button>
+                        </div>
+                    `
+                        )
+                        .join('');
+                } else if (currentMediaTab === 'comics') {
+                    const res = await fetch(`${baseUrl}/api/list_comic_media`);
+                    const json = await res.json();
+                    galComics.innerHTML = json.files
+                        .map(
+                            (f) => `
+                        <div class="preview-box" style="position: relative; border: 2px solid var(--border-medium);">
+                            <img src="${f.url}" style="width: 100%; height: 225px; object-fit: contain; border-radius: 4px; background: #fff;">
+                            <h4 style="margin: 8px 0 4px 0;" class="mono">${f.id}</h4>
+                            <div style="display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; font-size: 0.75em; color: var(--text-color-faded);">
+                                <span style="color: ${f.has_hires ? 'var(--status-green-text)' : 'inherit'}">HR</span> |
+                                <span style="color: ${f.has_lowres ? 'var(--status-green-text)' : 'inherit'}">LR</span> |
+                                <span style="color: ${f.has_social ? 'var(--status-green-text)' : 'inherit'}">SM</span>
+                            </div>
+                            <button type="button" class="button delete btn-delete-gallery-item" data-type="comic" data-id="${f.id}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Alle 4 löschen</button>
+                        </div>
+                    `
+                        )
+                        .join('');
+                }
             } catch {
-                // silent error
+                // silent
             }
         };
 
-        // Zentrale Event-Delegation für die Löschen-Buttons in der Galerie (CSP-Konform)
-        gallery?.addEventListener('click', async (e) => {
+        // ZENTRALE EVENT DELEGATION FÜR LÖSCHEN (BEIDE TABS)
+        mediaSection.addEventListener('click', async (e) => {
             const btn = e.target.closest('.btn-delete-gallery-item');
             if (!btn) return;
 
-            const filename = btn.dataset.filename;
-            if (!confirm(`Datei ${filename} wirklich löschen?`)) return;
+            const type = btn.dataset.type;
+            const id = btn.dataset.id;
 
-            const fd = new FormData();
-            fd.append('filename', filename);
-            fd.append('csrf_token', csrfToken);
-            await fetch(`${baseUrl}/api/delete_media`, { method: 'POST', body: fd });
+            if (type === 'character') {
+                if (!confirm(`Datei ${id} wirklich löschen?`)) return;
+                const fd = new FormData();
+                fd.append('filename', id);
+                fd.append('csrf_token', csrfToken);
+                await fetch(`${baseUrl}/api/delete_media`, { method: 'POST', body: fd });
+            } else if (type === 'comic') {
+                const check = prompt(
+                    `ACHTUNG: Dies löscht physisch ALLE Varianten (Hires, Lowres, Thumb, Social) der Comicseite ${id}.\n\nTippe "${id}" zum Bestätigen:`
+                );
+                if (check === id) {
+                    const fd = new FormData();
+                    fd.append('comic_id', id);
+                    fd.append('csrf_token', csrfToken);
+                    await fetch(`${baseUrl}/api/delete_comic_media`, { method: 'POST', body: fd });
+                } else if (check !== null) {
+                    alert('Abgebrochen.');
+                    return;
+                } else {
+                    return;
+                }
+            }
             window.loadMedia();
         });
 
-        // --- DRAG & DROP LOGIK FÜR DIE GALERIE ---
+        // --- DRAG & DROP LOGIK FÜR CHARAKTERE ---
         if (mediaDropZone && mediaUploadInput) {
             mediaDropZone.addEventListener('click', () => mediaUploadInput.click());
 

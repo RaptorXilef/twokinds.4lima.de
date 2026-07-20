@@ -101,15 +101,18 @@ final readonly class FrontendController
 
         // === API Routing ===
         if (\str_starts_with($relativePath, 'api/')) {
-            $apiPath = \substr($relativePath, 4); // Schneidet 'api/' ab
+            // Schneidet 'api/' ab und entfernt eventuelle Slashes am Ende
+            $apiPath = \trim(\substr($relativePath, 4), '/');
 
             return match ($apiPath) {
                 'admin_login'           => ['action' => 'api_admin_login', 'input' => $input],
                 'admin_logout'          => ['action' => 'api_admin_logout', 'input' => $input],
                 'delete_chapter'        => ['action' => 'api_delete_chapter', 'input' => $input],
                 'delete_character'      => ['action' => 'api_delete_character', 'input' => $input],
+                'delete_comic_media'    => ['action' => 'api_delete_comic_media', 'input' => $input],
                 'delete_comic'          => ['action' => 'api_delete_comic', 'input' => $input],
                 'delete_media'          => ['action' => 'api_delete_media', 'input' => $input],
+                'list_comic_media'      => ['action' => 'api_list_comic_media', 'input' => $input],
                 'list_media'            => ['action' => 'api_list_media', 'input' => $input],
                 'save_chapter'          => ['action' => 'api_save_chapter', 'input' => $input],
                 'save_character_groups' => ['action' => 'api_save_character_groups', 'input' => $input],
