@@ -68,9 +68,10 @@ use App\Core\Entity\ComicPage;
                     </tr>
                 <?php } else { ?>
                     <?php foreach ($comics as $comic) {
-                        $cId       = $comic->id->value;
-                        $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-                        $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$cId}.webp{$cb}";
+                        $cId        = $comic->id->value;
+                        $cb         = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                        $thumbPath  = "{$baseUrl}/assets/images/comic/thumbnails/{$cId}.webp{$cb}";
+                        $socialPath = "{$baseUrl}/assets/images/comic/socialmedia/{$cId}.jpg{$cb}";
 
                         // Alle Daten für JS bereitstellen
                         $charIds   = \array_map(fn ($id) => $id->value, $comic->characterIds);
@@ -112,6 +113,13 @@ use App\Core\Entity\ComicPage;
                                 <img src="<?php echo \htmlspecialchars($thumbPath); ?>"
                                      class="comic-thumbnail"
                                      loading="lazy">
+                            <!-- Social Media Preview (Mini) -->
+                                <img src="<?php echo \htmlspecialchars($socialPath); ?>"
+                                     class="hover-zoom-trigger"
+                                     loading="lazy"
+                                     title="Social Media Thumbnail (Klicken zum Vergrößern)"
+                                     onerror="this.style.display='none'"
+                                     style="width: 100%; max-width: 100px; height: auto; margin-top: 5px; border: 1px solid var(--border-medium); border-radius: 4px; display: inline-block;">
                             </td>
                             <td>
                                 <span class="comic-type-display"><?php echo \htmlspecialchars($comic->type); ?></span>

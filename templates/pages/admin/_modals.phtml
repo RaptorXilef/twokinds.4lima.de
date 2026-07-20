@@ -94,32 +94,27 @@ use App\Core\Entity\CharacterGroup;
         <div class="modal-scroll-content"
              style="flex: 1 1 auto; overflow-y: auto;">
 
-            <!-- NEU: Die 3 Live-Vorschauen -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            <!-- NEU: Die 4 Live-Vorschauen -->
+            <!-- Wir nutzen 1fr 1fr 1fr 1.5fr, damit die Breitbild-Vorschau rechts etwas mehr Platz hat -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 20px;">
                 <div class="preview-box">
                     <strong>Lokal (Thumbnail)</strong><br>
-                    <img id="prev-comic-local"
-                         src="https://placehold.co/100x140?text=Kein+Bild"
-                         class="hover-zoom-trigger">
-                    <!-- NEUER BUTTON: -->
-                    <button type="button"
-                            class="button"
-                            id="btn-open-cropper"
-                            style="width: 100%; margin-top: 10px; font-size: 0.8em;">
-                        <i class="fa-solid fa-crop"></i> Social-Bild anpassen
-                    </button>
+                    <img id="prev-comic-local" src="https://placehold.co/100x140?text=Kein+Bild" class="hover-zoom-trigger">
                 </div>
                 <div class="preview-box">
                     <strong>Original (Keenspot)</strong><br>
-                    <img id="prev-comic-orig"
-                         src="https://placehold.co/100x140?text=Kein+Bild"
-                         class="hover-zoom-trigger">
+                    <img id="prev-comic-orig" src="https://placehold.co/100x140?text=Kein+Bild" class="hover-zoom-trigger">
                 </div>
                 <div class="preview-box">
                     <strong>Sketch (Keenspot)</strong><br>
-                    <img id="prev-comic-sketch"
-                         src="https://placehold.co/100x140?text=Kein+Bild"
-                         class="hover-zoom-trigger">
+                    <img id="prev-comic-sketch" src="https://placehold.co/100x140?text=Kein+Bild" class="hover-zoom-trigger">
+                </div>
+                <div class="preview-box">
+                    <strong>Social Media (1.91:1)</strong><br>
+                    <img id="prev-comic-social" src="https://placehold.co/191x100?text=Kein+Bild" class="hover-zoom-trigger" style="width: 100%; max-height: 100px; object-fit: contain;">
+                    <button type="button" class="button" id="btn-open-cropper" style="width: 100%; margin-top: 10px; font-size: 0.8em; padding: 5px;">
+                        <i class="fa-solid fa-crop"></i> Bild anpassen
+                    </button>
                 </div>
             </div>
 

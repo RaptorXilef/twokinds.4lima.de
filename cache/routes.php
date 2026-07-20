@@ -3,6 +3,7 @@
   'render_admin_login' => 'App\\Application\\Actions\\AdminLoginRenderAction',
   'api_admin_login' => 'App\\Application\\Actions\\ApiAdminLoginAction',
   'api_admin_logout' => 'App\\Application\\Actions\\ApiAdminLogoutAction',
+  'api_crop_social_media' => 'App\\Application\\Actions\\ApiCropSocialMediaAction',
   'api_delete_chapter' => 'App\\Application\\Actions\\ApiDeleteChapterAction',
   'api_delete_character' => 'App\\Application\\Actions\\ApiDeleteCharacterAction',
   'api_delete_comic' => 'App\\Application\\Actions\\ApiDeleteComicAction',

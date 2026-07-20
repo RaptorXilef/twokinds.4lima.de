@@ -288,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevLocal = document.getElementById('prev-comic-local');
     const prevOrig = document.getElementById('prev-comic-orig');
     const prevSketch = document.getElementById('prev-comic-sketch');
+    const prevSocial = document.getElementById('prev-comic-social');
 
     // Hilfsfunktion testet Endungen durch, indem sie unsichtbare Image-Objekte lädt
     function loadPreviewWithProbe(imgElement, basePath, extensions, fallbackUrl) {
@@ -378,6 +379,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 prevSketch.src = fallback;
+            }
+        }
+
+        // 4. Social Media (JPG)
+        if (prevSocial) {
+            if (localPreviewId.length >= 8) {
+                // Suchen nach .jpg (primär), danach Fallback auf webp/png
+                loadPreviewWithProbe(
+                    prevSocial,
+                    `${baseUrl}/assets/images/comic/socialmedia/${localPreviewId}`,
+                    ['jpg', 'jpeg', 'webp', 'png'],
+                    'https://placehold.co/191x100?text=Fehlt'
+                );
+            } else {
+                prevSocial.src = 'https://placehold.co/191x100?text=Fehlt';
             }
         }
     }
