@@ -1446,12 +1446,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${baseUrl}/api/list_media`);
                 const json = await res.json();
 
-                // ACHTUNG: Hier steht nun KEIN onclick="..." mehr drin!
                 gallery.innerHTML = json.files
                     .map(
                         (f) => `
                 <div class="preview-box" style="position: relative;">
-                    <img src="${f.url}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+                    <img src="${f.url}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 4px;">
                     <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 8px 0;">${f.filename}</p>
                     <button type="button" class="button delete btn-delete-gallery-item" data-filename="${f.filename}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Löschen</button>
                 </div>
@@ -1459,7 +1458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     )
                     .join('');
             } catch {
-                // silent
+                // silent error
             }
         };
 
@@ -1532,7 +1531,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch {
                     showMsg('<i class="fa-solid fa-bomb"></i> Fehler beim Upload', 'red');
                 }
-                uploadInput.value = ''; // Wichtig, damit man dieselbe Datei nochmal wählen kann
+                mediaUploadInput.value = ''; // WICHTIG: Setzt das Input-Feld zurück
             });
         }
 
