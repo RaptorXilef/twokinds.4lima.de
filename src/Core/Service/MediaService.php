@@ -161,7 +161,14 @@ final readonly class MediaService
         int $finalWidth = 1200,
         int $finalHeight = 630,
     ): bool {
-        $sourceImage = $this->createImageFromFile($sourcePath);
+        // Fix P1005: Bildtyp dynamisch ermitteln
+        $info = \getimagesize($sourcePath);
+        if (! $info) {
+            return false;
+        }
+        $type = $info[2];
+
+        $sourceImage = $this->createImageFromFile($sourcePath, $type);
         if (! $sourceImage) {
             return false;
         }
@@ -208,8 +215,9 @@ final readonly class MediaService
             // Hochwertiges JPEG (Qualität 90) für Open Graph Crawler
             $success = \imagejpeg($finalImage, $targetPath, 90);
         } else {
-            // Fallback auf den normalen WebP Speicher-Prozess
-            $success = $this->saveImage($finalImage, $targetPath);
+            // Fix P1013: Fallback auf den normalen WebP Speicher-Prozess
+            $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
+            $success = \imagewebp($finalImage, $targetPath, $quality);
         }
 
         \imagedestroy($sourceImage);

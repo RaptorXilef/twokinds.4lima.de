@@ -1841,4 +1841,99 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         sendApiRequest('admin_logout', new FormData());
     });
+
+    // --- SOCIAL MEDIA CROPPER LOGIK ---
+    let cropperInstance = null;
+    const cropperModal = document.getElementById('cropper-modal');
+    const cropperImage = document.getElementById('cropper-image');
+    const cropComicIdInput = document.getElementById('crop_comic_id');
+    const btnOpenCropper = document.getElementById('btn-open-cropper');
+    const btnSaveCrop = document.getElementById('btn-save-crop');
+
+    // Button im Comic-Modal triggert den Cropper
+    if (btnOpenCropper) {
+        btnOpenCropper.addEventListener('click', () => {
+            const comicId = document.getElementById('comic_id')?.value.trim();
+            if (!comicId || comicId.length !== 8) {
+                alert(
+                    'Bitte zuerst eine gültige 8-stellige Comic-ID eingeben oder Comic speichern!'
+                );
+                return;
+            }
+
+            // Hires-Bild als Quelle nutzen (t=... verhindert Caching beim Neuladen)
+            const imgUrl = `${baseUrl}/assets/images/comic/hires/${comicId}.webp?t=${Date.now()}`;
+
+            // Vorab testen, ob das Bild auf dem Server existiert
+            const testImg = new Image();
+            testImg.onload = () => {
+                openCropperModal(comicId, imgUrl);
+            };
+            testImg.onerror = () => {
+                alert(
+                    'Es existiert noch kein Hires-Bild für diesen Comic auf dem Server. Bitte lade die Bilder zuerst hoch.'
+                );
+            };
+            testImg.src = imgUrl;
+        });
+    }
+
+    function openCropperModal(comicId, imgUrl) {
+        if (cropComicIdInput) cropComicIdInput.value = comicId;
+        if (cropperImage) {
+            cropperImage.src = imgUrl;
+            cropperImage.style.display = 'block';
+        }
+
+        if (cropperModal) cropperModal.style.display = 'flex';
+
+        // Cropper.js initialisieren (mit leichter Verzögerung für sauberes Rendering im Modal)
+        setTimeout(() => {
+            if (cropperInstance) cropperInstance.destroy();
+            cropperInstance = new Cropper(cropperImage, {
+                aspectRatio: 1200 / 630, // Der goldene Open-Graph Standard (1.91:1)
+                viewMode: 1, // Rahmen darf das Bild nicht verlassen
+                autoCropArea: 0.8, // Startgröße (80% des Bildes)
+                background: false, // Grid-Hintergrund verstecken
+                zoomable: false, // Wir wollen nur zuschneiden, nicht zoomen
+                guides: true,
+            });
+        }, 100);
+    }
+
+    // Modal schließen
+    document.querySelectorAll('.btn-close-cropper-modal').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            if (cropperModal) cropperModal.style.display = 'none';
+            if (cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+        });
+    });
+
+    // Ausschneiden & Speichern
+    if (btnSaveCrop) {
+        btnSaveCrop.addEventListener('click', async () => {
+            if (!cropperInstance) return;
+
+            // Holt die exakten Koordinaten und Dimensionen (in Relation zum Originalbild!)
+            const cropData = cropperInstance.getData(true); // true = gerundete INT-Werte
+            const comicId = cropComicIdInput.value;
+
+            const origText = btnSaveCrop.innerHTML;
+            btnSaveCrop.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Schneide zu...';
+            btnSaveCrop.style.pointerEvents = 'none';
+
+            const fd = new FormData();
+            fd.append('comic_id', comicId);
+            fd.append('x', cropData.x);
+            fd.append('y', cropData.y);
+            fd.append('width', cropData.width);
+            fd.append('height', cropData.height);
+
+            // Wir bauen hier gleich eine neue Api-Route dafür: api_crop_social_media
+            sendApiRequest('crop_social_media', fd, btnSaveCrop, origText);
+        });
+    }
 });
