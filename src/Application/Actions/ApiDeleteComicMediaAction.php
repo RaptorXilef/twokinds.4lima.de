@@ -29,10 +29,13 @@ final readonly class ApiDeleteComicMediaAction implements ActionInterface
 
         $deleted = 0;
         foreach ($folders as $folder) {
-            $file = "$targetDir/$folder/$id.webp";
-            if (\file_exists($file)) {
-                @\unlink($file);
-                ++$deleted;
+            // Suche sowohl nach .webp als auch nach .jpg
+            foreach (['webp', 'jpg'] as $ext) {
+                $file = "$targetDir/$folder/$id.$ext";
+                if (\file_exists($file)) {
+                    @\unlink($file);
+                    ++$deleted;
+                }
             }
         }
 

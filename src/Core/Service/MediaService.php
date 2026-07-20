@@ -147,4 +147,75 @@ final readonly class MediaService
             }
         }
     }
+
+    /**
+     * Schneidet einen exakten Bereich aus und speichert ihn, primär für Social Media.
+     */
+    public function generateManualCrop(
+        string $sourcePath,
+        string $targetPath,
+        int $cropX,
+        int $cropY,
+        int $cropWidth,
+        int $cropHeight,
+        int $finalWidth = 1200,
+        int $finalHeight = 630,
+    ): bool {
+        $sourceImage = $this->createImageFromFile($sourcePath);
+        if (! $sourceImage) {
+            return false;
+        }
+
+        // 1. Zuerst den gewünschten Bereich exakt ausschneiden
+        $croppedImage = \imagecrop($sourceImage, [
+            'x'      => $cropX,
+            'y'      => $cropY,
+            'width'  => $cropWidth,
+            'height' => $cropHeight,
+        ]);
+
+        if (! $croppedImage) {
+            \imagedestroy($sourceImage);
+
+            return false;
+        }
+
+        // 2. Das ausgeschnittene Bild auf die finale Social-Media-Größe (1200x630) skalieren
+        $finalImage = \imagecreatetruecolor($finalWidth, $finalHeight);
+
+        // Hintergrund weiß füllen (für evtl. Transparenzen)
+        $white = \imagecolorallocate($finalImage, 255, 255, 255);
+        \imagefill($finalImage, 0, 0, $white);
+
+        \imagecopyresampled(
+            $finalImage,
+            $croppedImage,
+            0,
+            0,
+            0,
+            0,
+            $finalWidth,
+            $finalHeight,
+            $cropWidth,
+            $cropHeight,
+        );
+
+        // Prüfen, ob wir JPG oder WebP wollen (anhand der Dateiendung)
+        $ext     = \strtolower(\pathinfo($targetPath, \PATHINFO_EXTENSION));
+        $success = false;
+
+        if ($ext === 'jpg' || $ext === 'jpeg') {
+            // Hochwertiges JPEG (Qualität 90) für Open Graph Crawler
+            $success = \imagejpeg($finalImage, $targetPath, 90);
+        } else {
+            // Fallback auf den normalen WebP Speicher-Prozess
+            $success = $this->saveImage($finalImage, $targetPath);
+        }
+
+        \imagedestroy($sourceImage);
+        \imagedestroy($croppedImage);
+        \imagedestroy($finalImage);
+
+        return $success;
+    }
 }
