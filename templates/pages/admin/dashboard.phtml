@@ -118,6 +118,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                         <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
                         <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
 
+                        <a href="#section-media" class="tab-link" data-target="section-media">Galerie</a>
+
                         <span class="menu-label">System</span>
                         <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
 
@@ -144,6 +146,9 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                 <?php include __DIR__ . '/_section_archive.phtml'; ?>
                 <?php include __DIR__ . '/_section_characters.phtml'; ?>
                 <?php include __DIR__ . '/_section_groups.phtml'; ?>
+
+                <?php include __DIR__ . '/_section_media.phtml'; ?>
+
                 <?php include __DIR__ . '/_section_reports.phtml'; ?>
             </div>
         </div>

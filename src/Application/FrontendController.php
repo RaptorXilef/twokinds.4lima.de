@@ -109,6 +109,8 @@ final readonly class FrontendController
                 'delete_chapter'        => ['action' => 'api_delete_chapter', 'input' => $input],
                 'delete_character'      => ['action' => 'api_delete_character', 'input' => $input],
                 'delete_comic'          => ['action' => 'api_delete_comic', 'input' => $input],
+                'delete_media'          => ['action' => 'api_delete_media', 'input' => $input],
+                'list_media'            => ['action' => 'api_list_media', 'input' => $input],
                 'save_chapter'          => ['action' => 'api_save_chapter', 'input' => $input],
                 'save_character_groups' => ['action' => 'api_save_character_groups', 'input' => $input],
                 'save_single_character' => ['action' => 'api_save_single_character', 'input' => $input],
@@ -117,6 +119,7 @@ final readonly class FrontendController
                 'undo_comic'            => ['action' => 'api_undo_comic', 'input' => $input],
                 'update_report_status'  => ['action' => 'api_update_report_status', 'input' => $input],
                 'upload_comic_media'    => ['action' => 'api_upload_comic_media', 'input' => $input],
+                'upload_media'          => ['action' => 'api_upload_media', 'input' => $input],
                 default                 => ['action' => 'render_404', 'input' => $input],
             };
         }

@@ -6,6 +6,8 @@
   'api_delete_chapter' => 'App\\Application\\Actions\\ApiDeleteChapterAction',
   'api_delete_character' => 'App\\Application\\Actions\\ApiDeleteCharacterAction',
   'api_delete_comic' => 'App\\Application\\Actions\\ApiDeleteComicAction',
+  'api_delete_media' => 'App\\Application\\Actions\\ApiDeleteMediaAction',
+  'api_list_media' => 'App\\Application\\Actions\\ApiMediaListAction',
   'api_save_chapter' => 'App\\Application\\Actions\\ApiSaveChapterAction',
   'api_save_character_groups' => 'App\\Application\\Actions\\ApiSaveCharacterGroupsAction',
   'api_save_single_character' => 'App\\Application\\Actions\\ApiSaveSingleCharacterAction',

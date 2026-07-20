@@ -1433,6 +1433,82 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- MEDIA GALLERY LOGIK ---
+    const mediaSection = document.getElementById('section-media');
+    if (mediaSection) {
+        const gallery = document.getElementById('media-gallery');
+        const uploadInput = document.getElementById('media-upload-input');
+
+        window.loadMedia = async () => {
+            if (!gallery) return;
+            try {
+                const res = await fetch(`${baseUrl}/api/list_media`);
+                const json = await res.json();
+                gallery.innerHTML = json.files
+                    .map(
+                        (f) => `
+                <div class="preview-box" style="position: relative;">
+                    <img src="${f.url}" style="width: 100%; height: 100px; object-fit: cover;">
+                    <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f.filename}</p>
+                    <button class="button delete" onclick="deleteMedia('${f.filename}')" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `
+                    )
+                    .join('');
+            } catch (err) {
+                console.error('Fehler beim Laden der Galerie:', err);
+            }
+        };
+
+        window.deleteMedia = async (filename) => {
+            if (!confirm(`Datei ${filename} wirklich löschen?`)) return;
+            const fd = new FormData();
+            fd.append('filename', filename);
+            fd.append('csrf_token', csrfToken);
+            await fetch(`${baseUrl}/api/delete_media`, { method: 'POST', body: fd });
+            window.loadMedia();
+        };
+
+        // Das ist der Auslöser für den "Bilder hochladen" Button
+        if (uploadInput) {
+            uploadInput.addEventListener('change', async () => {
+                if (uploadInput.files.length === 0) return;
+                showMsg(
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Lade Bilder hoch...',
+                    'orange'
+                );
+
+                const fd = new FormData();
+                for (const file of uploadInput.files) {
+                    fd.append('files[]', file);
+                }
+                fd.append('csrf_token', csrfToken);
+
+                try {
+                    const res = await fetch(`${baseUrl}/api/upload_media`, {
+                        method: 'POST',
+                        body: fd,
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        showMsg(`<i class="fa-solid fa-check"></i> ${json.message}`, 'green');
+                        window.loadMedia();
+                    } else {
+                        showMsg(
+                            `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`,
+                            'red'
+                        );
+                    }
+                } catch (e) {
+                    showMsg('<i class="fa-solid fa-bomb"></i> Fehler beim Upload', 'red');
+                }
+                uploadInput.value = ''; // Wichtig, damit man dieselbe Datei nochmal wählen kann
+            });
+        }
+
+        window.loadMedia();
+    }
+
     // --- ZENTRALE EVENT DELEGATION ---
     document.addEventListener('click', (e) => {
         // Comic Aktionen
