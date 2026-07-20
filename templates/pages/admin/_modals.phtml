@@ -98,38 +98,43 @@ use App\Core\Entity\CharacterGroup;
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; gap: 15px; margin-bottom: 20px;">
                 <div class="preview-box"
                      style="display: flex; flex-direction: column;">
-                    <strong>Lokal (Thumbnail)</strong>
-                    <img id="prev-comic-local"
-                         src="https://placehold.co/100x160?text=Kein+Bild"
-                         class="hover-zoom-trigger"
-                         style="margin-top: auto; width: 100%; height: 160px; object-fit: contain; background: transparent; border: none;">
+                    <strong style="margin-bottom: 10px;">Lokal (Thumbnail)</strong>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <img id="prev-comic-local"
+                             src="https://placehold.co/100x160?text=Kein+Bild"
+                             class="hover-zoom-trigger"
+                             style="width: 100%; height: 160px; max-height: 160px; object-fit: contain; background: transparent; border: none; margin: 0; padding: 0;">
+                    </div>
                 </div>
                 <div class="preview-box"
                      style="display: flex; flex-direction: column;">
-                    <strong>Original (Keenspot)</strong>
-                    <img id="prev-comic-orig"
-                         src="https://placehold.co/100x160?text=Kein+Bild"
-                         class="hover-zoom-trigger"
-                         style="margin-top: auto; width: 100%; height: 160px; object-fit: contain; background: transparent; border: none;">
+                    <strong style="margin-bottom: 10px;">Original (Keenspot)</strong>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <img id="prev-comic-orig"
+                             src="https://placehold.co/100x160?text=Kein+Bild"
+                             class="hover-zoom-trigger"
+                             style="width: 100%; height: 160px; max-height: 160px; object-fit: contain; background: transparent; border: none; margin: 0; padding: 0;">
+                    </div>
                 </div>
                 <div class="preview-box"
                      style="display: flex; flex-direction: column;">
-                    <strong>Sketch (Keenspot)</strong>
-                    <img id="prev-comic-sketch"
-                         src="https://placehold.co/100x160?text=Kein+Bild"
-                         class="hover-zoom-trigger"
-                         style="margin-top: auto; width: 100%; height: 160px; object-fit: contain; background: transparent; border: none;">
+                    <strong style="margin-bottom: 10px;">Sketch (Keenspot)</strong>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <img id="prev-comic-sketch"
+                             src="https://placehold.co/100x160?text=Kein+Bild"
+                             class="hover-zoom-trigger"
+                             style="width: 100%; height: 160px; max-height: 160px; object-fit: contain; background: transparent; border: none; margin: 0; padding: 0;">
+                    </div>
                 </div>
                 <div class="preview-box"
                      style="display: flex; flex-direction: column;">
-                    <strong>Social Media (1.91:1)</strong>
-                    <!-- Der Wrapper zentriert das Bild vertikal, object-fit: cover entfernt die weißen Ränder -->
+                    <strong style="margin-bottom: 10px;">Social Media (1.91:1)</strong>
                     <div
-                         style="flex: 1; display: flex; align-items: center; justify-content: center; margin-top: 10px; border-radius: 4px; overflow: hidden; background: var(--main-bg); border: 1px solid var(--border-medium);">
+                         style="flex: 1; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden; background: var(--main-bg); border: 1px solid var(--border-medium);">
                         <img id="prev-comic-social"
                              src="https://placehold.co/191x100?text=Kein+Bild"
                              class="hover-zoom-trigger"
-                             style="width: 100%; height: 100%; object-fit: cover; margin: 0; border: none; background: transparent;">
+                             style="width: 100%; height: 100%; max-height: 160px; object-fit: cover; margin: 0; border: none; background: transparent;">
                     </div>
                     <button type="button"
                             class="button"
