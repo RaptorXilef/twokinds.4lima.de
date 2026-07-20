@@ -21,6 +21,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Globaler Listener für kaputte Bilder (CSP-Konform für onerror)
+    document.addEventListener(
+        'error',
+        (e) => {
+            if (
+                e.target &&
+                e.target.tagName === 'IMG' &&
+                e.target.classList.contains('hide-on-error')
+            ) {
+                e.target.style.display = 'none';
+            }
+        },
+        true
+    ); // "true" fängt das Event frühzeitig ab!
+
     // --- WYSIWYG TRUMBOWYG INITIALISIERUNG ---
     if (typeof $.fn.trumbowyg !== 'undefined') {
         $.trumbowyg.svgPath =
@@ -1860,41 +1875,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SOCIAL MEDIA CROPPER LOGIK ---
     let cropperInstance = null;
-    const cropperModal = document.getElementById('cropper-modal');
-    const cropperImage = document.getElementById('cropper-image');
-    const cropComicIdInput = document.getElementById('crop_comic_id');
-    const btnOpenCropper = document.getElementById('btn-open-cropper');
-    const btnSaveCrop = document.getElementById('btn-save-crop');
 
-    // Button im Comic-Modal triggert den Cropper
-    if (btnOpenCropper) {
-        btnOpenCropper.addEventListener('click', () => {
-            const comicId = document.getElementById('comic_id')?.value.trim();
-            if (!comicId || comicId.length !== 8) {
-                alert(
-                    'Bitte zuerst eine gültige 8-stellige Comic-ID eingeben oder Comic speichern!'
-                );
-                return;
-            }
+    // Globale Funktion, um das Modal von überall aus aufzurufen
+    window.openCropperModal = (comicId, imgUrl) => {
+        const cropperModal = document.getElementById('cropper-modal');
+        const cropperImage = document.getElementById('cropper-image');
+        const cropComicIdInput = document.getElementById('crop_comic_id');
 
-            // Hires-Bild als Quelle nutzen (t=... verhindert Caching beim Neuladen)
-            const imgUrl = `${baseUrl}/assets/images/comic/hires/${comicId}.webp?t=${Date.now()}`;
-
-            // Vorab testen, ob das Bild auf dem Server existiert
-            const testImg = new Image();
-            testImg.onload = () => {
-                openCropperModal(comicId, imgUrl);
-            };
-            testImg.onerror = () => {
-                alert(
-                    'Es existiert noch kein Hires-Bild für diesen Comic auf dem Server. Bitte lade die Bilder zuerst hoch.'
-                );
-            };
-            testImg.src = imgUrl;
-        });
-    }
-
-    function openCropperModal(comicId, imgUrl) {
         if (cropComicIdInput) cropComicIdInput.value = comicId;
         if (cropperImage) {
             cropperImage.src = imgUrl;
@@ -1903,7 +1890,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (cropperModal) cropperModal.style.display = 'flex';
 
-        // Cropper.js initialisieren (mit leichter Verzögerung für sauberes Rendering im Modal)
         setTimeout(() => {
             if (cropperInstance) cropperInstance.destroy();
             cropperInstance = new Cropper(cropperImage, {
@@ -1915,26 +1901,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 guides: true,
             });
         }, 100);
-    }
+    };
 
-    // Modal schließen
-    document.querySelectorAll('.btn-close-cropper-modal').forEach((btn) => {
-        btn.addEventListener('click', () => {
+    // Zentrale Klick-Events für den Cropper (Ausfallsicher delegiert)
+    document.addEventListener('click', async (e) => {
+        // 1. Cropper öffnen
+        if (e.target.closest('#btn-open-cropper')) {
+            e.preventDefault();
+            const comicId = document.getElementById('comic_id')?.value.trim();
+            if (!comicId || comicId.length !== 8) {
+                alert(
+                    'Bitte zuerst eine gültige 8-stellige Comic-ID eingeben oder Comic speichern!'
+                );
+                return;
+            }
+            const imgUrl = `${baseUrl}/assets/images/comic/hires/${comicId}.webp?t=${Date.now()}`;
+            const testImg = new Image();
+            testImg.onload = () => window.openCropperModal(comicId, imgUrl);
+            testImg.onerror = () =>
+                alert(
+                    'Es existiert noch kein Hires-Bild für diesen Comic auf dem Server. Bitte lade die Bilder zuerst hoch.'
+                );
+            testImg.src = imgUrl;
+        }
+
+        // 2. Cropper schließen (Abbrechen oder X)
+        if (e.target.closest('.btn-close-cropper-modal')) {
+            e.preventDefault();
+            const cropperModal = document.getElementById('cropper-modal');
             if (cropperModal) cropperModal.style.display = 'none';
             if (cropperInstance) {
                 cropperInstance.destroy();
                 cropperInstance = null;
             }
-        });
-    });
+        }
 
-    // Ausschneiden & Speichern
-    if (btnSaveCrop) {
-        btnSaveCrop.addEventListener('click', async () => {
+        // 3. Zuschneiden & Speichern
+        if (e.target.closest('#btn-save-crop')) {
+            e.preventDefault();
+            const btnSaveCrop = e.target.closest('#btn-save-crop');
             if (!cropperInstance) return;
 
             const cropData = cropperInstance.getData(true);
-            const comicId = cropComicIdInput.value;
+            const comicId = document.getElementById('crop_comic_id').value;
 
             const origText = btnSaveCrop.innerHTML;
             btnSaveCrop.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Schneide zu...';
@@ -1946,22 +1955,32 @@ document.addEventListener('DOMContentLoaded', () => {
             fd.append('y', cropData.y);
             fd.append('width', cropData.width);
             fd.append('height', cropData.height);
-            fd.append('csrf_token', csrfToken); // WICHTIG!
+            fd.append('csrf_token', csrfToken);
 
             try {
                 const res = await fetch(`${baseUrl}/api/crop_social_media`, {
                     method: 'POST',
                     body: fd,
                 });
-                const json = await res.json();
+
+                let json;
+                try {
+                    // Versuche das JSON zu lesen, selbst wenn res.ok false (400/500) ist!
+                    json = await res.json();
+                } catch {
+                    throw new Error(`Kritischer Server-Absturz (HTTP Code ${res.status})`);
+                }
 
                 if (json.success) {
                     showMsg(`<i class="fa-solid fa-check"></i> ${json.message}`, 'green');
 
-                    // 1. Cropper Modal schließen
+                    // 1. Cropper Modal sofort schließen
+                    const cropperModal = document.getElementById('cropper-modal');
                     if (cropperModal) cropperModal.style.display = 'none';
-                    cropperInstance.destroy();
-                    cropperInstance = null;
+                    if (cropperInstance) {
+                        cropperInstance.destroy();
+                        cropperInstance = null;
+                    }
 
                     const timestamp = Date.now(); // Cache-Buster
 
@@ -1976,11 +1995,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         .querySelector(`.btn-delete-comic[data-id="${comicId}"]`)
                         ?.closest('tr');
                     if (tableRow) {
-                        // Sucht das zweite Bild in der Zelle (das ist das Social Media Bild)
                         const tableThumb = tableRow.querySelectorAll('img')[1];
                         if (tableThumb) {
                             tableThumb.src = `${baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
-                            tableThumb.style.display = 'inline-block'; // Falls es vorher versteckt war
+                            tableThumb.style.display = 'inline-block';
                         }
                     }
                 } else {
@@ -1989,13 +2007,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         'red'
                     );
                 }
-            } catch {
-                showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler beim Zuschneiden.', 'red');
+            } catch (err) {
+                console.error('Cropper Fetch Error:', err);
+                showMsg(`<i class="fa-solid fa-bomb"></i> Fehler: ${err.message}`, 'red');
             }
 
-            // Button wieder freigeben
             btnSaveCrop.innerHTML = origText;
             btnSaveCrop.style.pointerEvents = 'auto';
-        });
-    }
+        }
+    });
 });
