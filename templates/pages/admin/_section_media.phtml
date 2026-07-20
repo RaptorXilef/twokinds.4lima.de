@@ -1,8 +1,13 @@
 <section id="section-media" class="content-section">
-    <!-- Sub-Navigation für die Media-Galerie -->
-    <div style="margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 2px solid var(--border-medium); padding-bottom: 10px;">
-        <button class="button media-tab-btn active" data-type="characters" style="flex: 1;">Charaktere & Profile</button>
-        <button class="button edit media-tab-btn" data-type="comics" style="flex: 1;">Comic-Seiten (Medien)</button>
+    <!-- Sub-Navigation & Suche für die Media-Galerie -->
+    <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; border-bottom: 2px solid var(--border-medium); padding-bottom: 15px; align-items: center; justify-content: space-between;">
+        <div style="display: flex; gap: 10px;">
+            <button class="button media-tab-btn active" data-type="characters">Charaktere & Profile</button>
+            <button class="button edit media-tab-btn" data-type="comics">Comic-Seiten (Medien)</button>
+        </div>
+        <div class="search-wrapper" style="flex: 1; min-width: 250px; display: flex; justify-content: flex-end;">
+            <input type="text" id="media-search" placeholder="Bilder durchsuchen (Name oder ID)..." style="width: 100%; max-width: 350px;">
+        </div>
     </div>
 
     <!-- ANSICHT 1: Charaktere -->

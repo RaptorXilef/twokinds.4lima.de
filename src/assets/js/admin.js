@@ -1441,6 +1441,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mediaDropZone = document.getElementById('media-drop-zone');
         const mediaUploadInput = document.getElementById('media-upload-input');
+        const mediaSearchInput = document.getElementById('media-search');
 
         let currentMediaTab = 'characters';
 
@@ -1465,16 +1466,33 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // LIVE-FILTER LOGIK
+        function applyMediaFilter() {
+            if (!mediaSearchInput) return;
+            const term = mediaSearchInput.value.toLowerCase().trim();
+            const activeGallery = currentMediaTab === 'characters' ? galChars : galComics;
+
+            if (activeGallery) {
+                activeGallery.querySelectorAll('.preview-box').forEach((box) => {
+                    const searchable = box.dataset.search || '';
+                    box.style.display = searchable.includes(term) ? 'block' : 'none';
+                });
+            }
+        }
+
+        mediaSearchInput?.addEventListener('input', applyMediaFilter);
+
         window.loadMedia = async () => {
             try {
                 if (currentMediaTab === 'characters') {
                     const res = await fetch(`${baseUrl}/api/list_media`);
                     const json = await res.json();
 
+                    // data-search="${f.filename.toLowerCase()}" hinzugefügt
                     galChars.innerHTML = json.files
                         .map(
                             (f) => `
-                        <div class="preview-box" style="position: relative;">
+                        <div class="preview-box" data-search="${f.filename.toLowerCase()}" style="position: relative;">
                             <img src="${f.url}" loading="lazy" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
                             <p style="font-size: 0.7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 8px 0;" title="${f.filename}">${f.filename}</p>
                             <button type="button" class="button delete btn-delete-gallery-item" data-type="character" data-id="${f.filename}" style="width: 100%; padding: 5px;"><i class="fa-solid fa-trash"></i> Löschen</button>
@@ -1485,10 +1503,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (currentMediaTab === 'comics') {
                     const res = await fetch(`${baseUrl}/api/list_comic_media`);
                     const json = await res.json();
+
+                    // data-search="${f.id.toLowerCase()}" hinzugefügt
                     galComics.innerHTML = json.files
                         .map(
                             (f) => `
-                        <div class="preview-box" style="position: relative; border: 2px solid var(--border-medium);">
+                        <div class="preview-box" data-search="${f.id.toLowerCase()}" style="position: relative; border: 2px solid var(--border-medium);">
                             <img src="${f.url}" loading="lazy" style="width: 100%; height: 225px; object-fit: contain; border-radius: 4px; background: #fff;">
                             <h4 style="margin: 8px 0 4px 0;" class="mono">${f.id}</h4>
                             <div style="display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; font-size: 0.75em; color: var(--text-color-faded);">
@@ -1503,6 +1523,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         )
                         .join('');
                 }
+
+                // Filter direkt anwenden, falls beim Laden schon Text im Suchfeld steht
+                applyMediaFilter();
             } catch {
                 // silent
             }
