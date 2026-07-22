@@ -20,7 +20,8 @@ use App\Contracts\System\AssetHelperInterface;
         <div class="bottom-ctr">
             <p>Twokinds auf Deutsch</p>
             <p>Übersetzung & Programmierung:
-                <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a></p>
+                <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a>
+            </p>
             <p>Original Twokinds Comic:
                 <a href="https://twokinds.keenspot.com/" target="_blank" rel="noopener noreferrer">Thomas Fischbach</a>
             </p>
@@ -55,11 +56,7 @@ use App\Contracts\System\AssetHelperInterface;
         </div>
 
         <form id="global-report-form">
-            <!-- URL / Context Tracking -->
-            <input type="hidden"
-                   name="report_debug_info"
-                   id="report_debug_info"
-                   value="">
+            <!-- URL / Context Tracking (Wird immer angezeigt) -->
             <input type="text"
                    name="report_honeypot"
                    style="display:none;"
@@ -67,13 +64,24 @@ use App\Contracts\System\AssetHelperInterface;
                    autocomplete="off">
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Betroffene Comic-ID
-                    (Optional)</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Betroffene Seite (URL)</label>
+                <input type="text"
+                       name="report_debug_info"
+                       id="report_debug_info"
+                       value=""
+                       readonly
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
+            </div>
+
+            <!-- Dieses Div wird per JS auf Nicht-Comic-Seiten versteckt -->
+            <div id="comic-id-section"
+                 style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Comic-ID</label>
                 <input type="text"
                        id="report_comic_id"
                        name="comic_id"
-                       placeholder="z.B. 20240101 (Leer lassen bei allg. Fehlern)"
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                       readonly
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
             </div>
 
             <div style="margin-bottom: 15px;">
@@ -83,29 +91,30 @@ use App\Contracts\System\AssetHelperInterface;
                         required
                         style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
                     <option value="">-- Bitte wählen --</option>
-                    <option value="transcript">Tippfehler / Transkript-Fehler</option>
+                    <option value="transcript"
+                            id="report_type_transcript"
+                            style="display: none;">Tippfehler / Transkript-Fehler</option>
                     <option value="image">Bild wird nicht geladen / Bildfehler</option>
-                    <option value="other">Allgemeiner Website-Fehler</option>
+                    <option value="other">Allgemeiner Website-Fehler / Sonstiges</option>
                 </select>
-            </div>
-
-            <!-- Das Transkript-Editor Feld (Standardmäßig versteckt) -->
-            <div id="transcript-edit-section"
-                 style="display: none; margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Transkript korrigieren</label>
-                <p style="font-size: 0.85em; color: var(--text-color-faded); margin-top: 0; margin-bottom: 10px;">Bitte
-                    korrigiere den Fehler direkt im Textfeld. Wir gleichen deine Version später automatisch mit dem
-                    Original ab.</p>
-                <input type="hidden"
-                       id="report_transcript_original"
-                       name="report_transcript_original"
-                       value="">
-                <textarea id="report_transcript_suggestion" name="report_transcript_suggestion" rows="8" style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color); resize: vertical; font-family: monospace; font-size: 0.9em;"></textarea>
             </div>
 
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Fehlerbeschreibung *</label>
-                <textarea id="report_description" name="report_description" placeholder="Beschreibe kurz, was nicht stimmt..." style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color); resize: vertical;"></textarea>
+                <textarea id="report_description" name="report_description" rows="4" placeholder="Beschreibe kurz, was nicht stimmt..." style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color); resize: vertical;"></textarea>
+            </div>
+
+            <div id="transcript-edit-section"
+                 style="display: none; margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Transkript korrigieren</label>
+                <p style="font-size: 0.85em; color: var(--text-color-faded); margin-top: 0; margin-bottom: 10px;">Bitte
+                    korrigiere den Fehler direkt im Editor. Wir vergleichen deine Version später automatisch mit dem
+                    Original.</p>
+                <input type="hidden"
+                       id="report_transcript_original"
+                       name="report_transcript_original"
+                       value="">
+                <textarea id="report_transcript_suggestion" name="report_transcript_suggestion" class="public-wysiwyg" rows="8"></textarea>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
@@ -142,6 +151,10 @@ use App\Contracts\System\AssetHelperInterface;
 </div>
 
 <!-- Gemeinsame JS-Dateien für das Frontend -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/langs/de.min.js"></script>
+
 <!-- Automatisch cache-gebustetes JS -->
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
         src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>

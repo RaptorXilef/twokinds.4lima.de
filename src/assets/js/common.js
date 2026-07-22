@@ -178,27 +178,54 @@
 
     // --- GLOBAL REPORT MODAL LOGIC ---
     const reportModal = document.getElementById('global-report-modal');
-    const btnOpenReport = document.getElementById('open-global-report'); // Footer Link
-    const btnOpenReportComic = document.getElementById('open-report-modal'); // Link in der Comic-Navi
+    const btnOpenReport = document.getElementById('open-global-report');
+    const btnOpenReportComic = document.getElementById('open-report-modal');
     const btnCloseReport = document.getElementById('close-report-modal');
     const reportForm = document.getElementById('global-report-form');
     const reportStatusMsg = document.getElementById('report-status-msg');
+
+    // Editor Initialisierung für Public (ohne Bilder-Upload, nur Formatierung!)
+    if (typeof $.fn.trumbowyg !== 'undefined') {
+        $.trumbowyg.svgPath =
+            'https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg';
+        $('.public-wysiwyg').trumbowyg({
+            lang: 'de',
+            btns: [
+                ['viewHTML'],
+                ['undo', 'redo'],
+                ['strong', 'em', 'del'],
+                ['link'],
+                ['removeformat'],
+            ],
+        });
+    }
 
     function openReportWindow() {
         if (!reportModal) return;
         reportModal.style.display = 'flex';
 
-        // Versuchen wir, die Comic-ID aus der Seite auszulesen (falls wir auf einer Comicseite sind)
         const comicImg = document.getElementById('comic-image');
         const idInput = document.getElementById('report_comic_id');
-        if (comicImg && idInput) {
-            idInput.value = comicImg.dataset.id || '';
-        }
-
-        // Debug-Infos mitgeben (Wo genau war der User?)
+        const idSection = document.getElementById('comic-id-section');
+        const optTranscript = document.getElementById('report_type_transcript');
         const debugInput = document.getElementById('report_debug_info');
+
+        // URL immer erfassen
         if (debugInput) {
             debugInput.value = window.location.href;
+        }
+
+        // Intelligente Comic-Erkennung
+        if (comicImg && idInput) {
+            // Wir SIND auf einer Comic-Seite
+            idInput.value = comicImg.dataset.id || '';
+            idSection.style.display = 'block';
+            optTranscript.style.display = 'block'; // Transkript-Meldung erlauben
+        } else {
+            // Wir sind irgendwo anders
+            idInput.value = '';
+            idSection.style.display = 'none';
+            optTranscript.style.display = 'none'; // Transkript-Meldung verstecken
         }
     }
 
@@ -218,8 +245,6 @@
             reportModal.style.display = 'none';
         });
     }
-
-    // Modal schließen, wenn man daneben (ins Dunkle) klickt
     if (reportModal) {
         reportModal.addEventListener('click', (e) => {
             if (e.target === reportModal) reportModal.style.display = 'none';
@@ -230,7 +255,6 @@
     const typeSelect = document.getElementById('report_type');
     const transcriptSection = document.getElementById('transcript-edit-section');
     const originalInput = document.getElementById('report_transcript_original');
-    const suggestionInput = document.getElementById('report_transcript_suggestion');
     const comicIdInput = document.getElementById('report_comic_id');
     const descInput = document.getElementById('report_description');
 
@@ -238,6 +262,8 @@
         typeSelect.addEventListener('change', async (e) => {
             if (e.target.value === 'transcript') {
                 const comicId = comicIdInput.value.trim();
+                descInput.required = false; // Beschreibung ist jetzt optional
+
                 if (comicId.length >= 8) {
                     reportStatusMsg.style.display = 'block';
                     reportStatusMsg.style.backgroundColor = 'var(--status-info-bg)';
@@ -254,7 +280,9 @@
                         reportStatusMsg.style.display = 'none';
                         if (json.success) {
                             originalInput.value = json.transcript;
-                            suggestionInput.value = json.transcript;
+                            // Trumbowyg mit Text befüllen
+                            $('.public-wysiwyg').trumbowyg('html', json.transcript);
+
                             transcriptSection.style.display = 'block';
                             if (descInput)
                                 descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
@@ -268,13 +296,11 @@
                         e.target.value = '';
                     }
                 } else {
-                    alert(
-                        'Bitte trage zuerst die Comic-ID oben ein, um das Transkript bearbeiten zu können!'
-                    );
+                    alert('Systemfehler: Comic-ID fehlt.');
                     e.target.value = '';
-                    comicIdInput.focus();
                 }
             } else {
+                descInput.required = true; // Beschreibung ist wieder Pflicht
                 transcriptSection.style.display = 'none';
                 if (descInput) descInput.placeholder = 'Beschreibe kurz, was nicht stimmt...';
             }
@@ -293,7 +319,6 @@
             formData.append('csrf_token', csrfToken);
 
             try {
-                // Den baseUrl global holen, falls nicht vorhanden Fallback auf root
                 const baseUrl = window.location.origin;
                 const res = await fetch(`${baseUrl}/api/submit_report`, {
                     method: 'POST',
@@ -309,6 +334,9 @@
                     reportStatusMsg.style.border = '1px solid var(--status-green-border)';
                     reportStatusMsg.innerHTML = `<i class="fa-solid fa-check"></i> ${json.message}`;
                     reportForm.reset();
+                    $('.public-wysiwyg').trumbowyg('empty');
+                    transcriptSection.style.display = 'none';
+
                     setTimeout(() => {
                         reportModal.style.display = 'none';
                         reportStatusMsg.style.display = 'none';
@@ -331,4 +359,5 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Fehler melden';
         });
     }
+    // --- GLOBAL REPORT MODAL LOGIC ENDE ---
 })();
