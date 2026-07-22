@@ -21,6 +21,7 @@
   'api_upload_comic_media' => 'App\\Application\\Actions\\ApiUploadComicMediaAction',
   'api_upload_media' => 'App\\Application\\Actions\\ApiUploadMediaAction',
   'render_archive' => 'App\\Application\\Actions\\Frontend\\RenderArchiveAction',
+  'render_character_detail' => 'App\\Application\\Actions\\Frontend\\RenderCharacterDetailAction',
   'render_character_list' => 'App\\Application\\Actions\\Frontend\\RenderCharacterListAction',
   'render_comic' => 'App\\Application\\Actions\\Frontend\\RenderComicAction',
   'render_404' => 'App\\Application\\Actions\\Frontend\\RenderError404Action',

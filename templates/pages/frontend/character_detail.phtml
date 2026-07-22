@@ -1,0 +1,116 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @var \App\Core\Entity\Character $character
+ * @var array                      $characterComics
+ * @var string                     $pageTitle
+ * @var array                      $settings
+ */
+$baseUrl         = \rtrim($settings['base_url'], '/');
+$placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
+$picUrl          = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
+<main class="content-area">
+    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+        <!-- Header -->
+        <header style="margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 10px;">
+            <h1 class="page-header"
+                style="border: none; margin: 0; padding: 0;">
+                <?php echo \htmlspecialchars($character->name); ?>
+            </h1>
+        </header>
+
+        <!-- Biografie & Infos -->
+        <section class="char-detail"
+                 style="border: none; padding: 0; margin-bottom: 40px; display: flex; flex-wrap: wrap; gap: 30px;">
+            <div class="char-img"
+                 style="flex: 0 0 200px; text-align: center;">
+                <img class="portrait"
+                     src="<?php echo \htmlspecialchars($picUrl); ?>"
+                     alt="<?php echo \htmlspecialchars($character->name); ?>"
+                     style="width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-medium); box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+
+                <!-- PLATZHALTER: Hier kommen in Phase 3 die Swatches & Ref-Sheets hin -->
+                <div
+                     style="margin-top: 15px; font-size: 0.85em; color: var(--text-color-faded); font-style: italic; background: var(--table-row-even); padding: 10px; border-radius: 5px;">
+                    <i class="fa-solid fa-palette"></i> Swatches & Refs<br>(Folgen in Kürze)
+                </div>
+            </div>
+
+            <div class="char-info"
+                 style="flex: 1; min-width: 300px;">
+                <!-- Ränge & Alt-Namen (nur anzeigen, wenn vorhanden) -->
+                <?php if ($character->altNames || $character->rank) { ?>
+                    <div
+                         style="margin-bottom: 20px; padding: 15px; background: var(--table-row-even); border-radius: 5px; border: 1px solid var(--border-light);">
+                        <?php if ($character->altNames) { ?>
+                            <p style="margin-bottom: 5px;"><strong>Alternative Namen:</strong> <?php echo \htmlspecialchars($character->altNames); ?></p>
+                        <?php } ?>
+                        <?php if ($character->rank) { ?>
+                            <p style="margin-bottom: 0;"><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></p>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+
+                <!-- Das HTML-Transkript / Die Biografie -->
+                <div class="character-description"
+                     style="line-height: 1.6; font-size: 1.05em;">
+                    <?php
+                    if ($character->description !== null && \trim($character->description) !== '') {
+                        echo $character->description;
+                    } else {
+                        echo '<p style="font-style: italic; color: var(--text-color-faded);">Noch keine Biografie in der Datenbank hinterlegt.</p>';
+                    }
+?>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comic-Auftritte -->
+        <section>
+            <h2
+                style="font-size: 1.5em; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">
+                Alle Comic-Auftritte
+                <span class="comic-count-badge" style="font-size: 0.6em; background: var(--button-bg); color: var(--text-on-medium); padding: 4px 12px; border-radius: 12px;">
+                    <?php echo \count($characterComics); ?> Seiten
+                </span>
+            </h2>
+
+            <?php if (empty($characterComics)) { ?>
+                <div class="no-bookmarks"
+                     style="text-align: center; padding: 30px; background: var(--table-row-even); border-radius: 8px;">
+                    <p style="margin: 0; color: var(--text-color-light);">Dieser Charakter hat bisher keine markierten
+                        Comic-Auftritte.</p>
+                </div>
+            <?php } else { ?>
+                <div class="chapter-links tag-page-links">
+                    <?php foreach ($characterComics as $comic) {
+                        $comicId   = $comic->id->value;
+                        $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                        $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}";
+
+                        $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
+                        $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
+                        $pageName    = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
+                        $pageLink    = "{$baseUrl}/comic/{$comicId}";
+                        ?>
+                        <a href="<?php echo $pageLink; ?>" title="<?php echo \htmlspecialchars($pageName); ?>" class="loaded">
+                            <span><?php echo \htmlspecialchars($pageName); ?></span>
+                            <!-- Natives Lazy Loading -->
+                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
+                        </a>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+        </section>
+
+    </article>
+</main>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
