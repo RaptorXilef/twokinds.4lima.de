@@ -1,0 +1,43 @@
+<?php
+declare(strict_types=1);
+
+use App\Contracts\System\AssetHelperInterface;
+
+/**
+ * @var array                $settings
+ * @var AssetHelperInterface $asset
+ */
+?>
+        </div> <!-- Schließt .content aus dem Header -->
+    </div> <!-- Schließt .content-area aus dem Header -->
+
+    <footer>
+        <div class="bottom">
+            <div class="bottom-left">
+                <!-- Platzhalter für Empfehlungen / Links -->
+            </div>
+            <div class="bottom-ctr">
+                <p>Twokinds auf Deutsch</p>
+                <p>Übersetzung & Programmierung: <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a></p>
+                <p>Original Twokinds Comic: <a href="https://twokinds.keenspot.com/" target="_blank" rel="noopener noreferrer">Thomas Fischbach</a></p>
+            </div>
+            <div class="bottom-right">
+                <!-- Platzhalter für Twitter Box etc. -->
+            </div>
+        </div>
+
+        <div class="footer-img"></div>
+
+        <!-- Dynamische, serverseitige Versionsnummer aus package.json -->
+        <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version']); ?></div>
+    </footer>
+</div> <!-- Schließt .main-container aus dem Header -->
+
+<!-- Gemeinsame JS-Dateien für das Frontend -->
+<!-- Automatisch cache-gebustetes JS -->
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/comic.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/cookie_consent.js'); ?>"></script>
+
+</body>
+</html>

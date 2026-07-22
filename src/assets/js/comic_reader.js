@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const comicImg = document.getElementById('comic-image');
     const comicLink = document.getElementById('comic-image-link');
-    const btnToggleLang = document.getElementById('btn-toggle-lang');
+    const btnToggleLang = document.getElementById('toggle-language-btn');
+    const btnBookmark = document.getElementById('add-bookmark');
 
     const navPrev = document.querySelector('.navprev:not(.disabled)');
     const navNext = document.querySelector('.navnext:not(.disabled)');
@@ -16,23 +17,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (comicImg) {
         let touchstartX = 0;
         let touchendX = 0;
-        const swipeThreshold = 50; // Mindestdistanz für einen Swipe in Pixeln
+        const swipeThreshold = 50;
 
-        comicImg.addEventListener('touchstart', e => {
-            touchstartX = e.changedTouches[0].screenX;
-        }, { passive: true });
+        comicImg.addEventListener(
+            'touchstart',
+            (e) => {
+                touchstartX = e.changedTouches[0].screenX;
+            },
+            { passive: true }
+        );
 
-        comicImg.addEventListener('touchend', e => {
-            touchendX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, { passive: true });
+        comicImg.addEventListener(
+            'touchend',
+            (e) => {
+                touchendX = e.changedTouches[0].screenX;
+                handleSwipe();
+            },
+            { passive: true }
+        );
 
         function handleSwipe() {
-            // Nach Links wischen = Nächste Seite
             if (touchendX < touchstartX - swipeThreshold && navNext) {
                 window.location.href = navNext.href;
             }
-            // Nach Rechts wischen = Vorherige Seite
             if (touchendX > touchstartX + swipeThreshold && navPrev) {
                 window.location.href = navPrev.href;
             }
@@ -41,63 +48,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 3. SPRACHE UMSCHALTEN (DE / EN) ---
     if (btnToggleLang && comicImg) {
-        const urlDeLowres = comicImg.src;
-        const urlDeHires = comicLink.href;
-        const originalFilename = comicImg.dataset.enOriginal;
+        const langText = btnToggleLang.querySelector('.nav-text');
 
         btnToggleLang.addEventListener('click', () => {
-            const currentState = btnToggleLang.dataset.state;
+            // Wenn aktuell DE angezeigt wird (Button zeigt "EN"), wechsle zu EN
+            if (langText.textContent === 'EN') {
+                const enOriginal = comicImg.dataset.enOriginal;
+                const enUrl = `https://cdn.twokinds.keenspot.com/comics/${enOriginal}`;
 
-            if (currentState === 'de') {
-                // Wechsle zu Englisch
-                btnToggleLang.innerHTML = '<i class="fa-solid fa-language"></i> Zurück zu Deutsch';
-                btnToggleLang.dataset.state = 'en';
-
-                // Nutze den CDN Link von Keenspot
-                const enUrl = `https://cdn.twokinds.keenspot.com/comics/${originalFilename}`;
                 comicImg.src = enUrl;
                 comicLink.href = enUrl;
+                langText.textContent = 'DE';
             } else {
-                // Wechsle zu Deutsch
-                btnToggleLang.innerHTML = '<i class="fa-solid fa-language"></i> Auf Englisch (Original) lesen';
-                btnToggleLang.dataset.state = 'de';
-
-                comicImg.src = urlDeLowres;
-                comicLink.href = urlDeHires;
+                // Zurück zu Deutsch
+                comicImg.src = btnToggleLang.dataset.germanSrc;
+                comicLink.href = btnToggleLang.dataset.germanHref;
+                langText.textContent = 'EN';
             }
         });
     }
 
     // --- 4. LESEZEICHEN (LOCAL STORAGE) ---
-    const btnBookmark = document.getElementById('btn-toggle-bookmark');
     if (btnBookmark) {
         const comicId = btnBookmark.dataset.id;
-        const comicTitle = btnBookmark.dataset.title;
 
-        // Prüfen, ob schon gemerkt
-        let bookmarks = JSON.parse(localStorage.getItem('comicBookmarks') || '{}');
+        // Modernes Objekt-Format für LocalStorage (vorwärtskompatibel zu deinem alten Array-System)
+        let bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+
+        // Beim Laden prüfen
         if (bookmarks[comicId]) {
-            btnBookmark.classList.add('active', 'button-green');
-            btnBookmark.innerHTML = '<i class="fa-solid fa-check"></i> Gemerkt';
+            btnBookmark.classList.add('bookmarked');
+            btnBookmark.title = 'Lesezeichen entfernt';
         }
 
         btnBookmark.addEventListener('click', () => {
-            bookmarks = JSON.parse(localStorage.getItem('comicBookmarks') || '{}');
+            bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
 
             if (bookmarks[comicId]) {
                 delete bookmarks[comicId];
-                btnBookmark.classList.remove('active', 'button-green');
-                btnBookmark.innerHTML = '<i class="fa-solid fa-bookmark"></i> Lesezeichen';
+                btnBookmark.classList.remove('bookmarked');
+                btnBookmark.title = 'Diese Seite mit Lesezeichen versehen';
             } else {
                 bookmarks[comicId] = {
-                    title: comicTitle,
-                    url: window.location.pathname,
-                    date: Date.now()
+                    id: comicId,
+                    page: btnBookmark.dataset.page,
+                    permalink: btnBookmark.dataset.permalink,
+                    thumb: btnBookmark.dataset.thumb,
+                    added: Date.now(),
                 };
-                btnBookmark.classList.add('active', 'button-green');
-                btnBookmark.innerHTML = '<i class="fa-solid fa-check"></i> Gemerkt';
+                btnBookmark.classList.add('bookmarked');
+                btnBookmark.title = 'Lesezeichen entfernt';
             }
-            localStorage.setItem('comicBookmarks', JSON.stringify(bookmarks));
+            localStorage.setItem('comicBookmarksMap', JSON.stringify(bookmarks));
         });
     }
 });
