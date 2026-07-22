@@ -72,32 +72,40 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 <?php } ?>
             </div>
 
-            <!-- Rechte Spalte: Infos & Text -->
-            <div class="char-info"
-                 style="flex: 1; min-width: 300px;">
-                <?php if ($character->altNames || $character->rank) { ?>
-                    <div
-                         style="margin-bottom: 20px; padding: 15px; background: var(--table-row-even); border-radius: 5px; border: 1px solid var(--border-light);">
+            <!-- Biografische Daten (nur anzeigen, wenn mindestens eines existiert) -->
+            <?php if ($character->fullName || $character->altNames || $character->gender || $character->age || $character->rank || $character->species || $character->languages) { ?>
+                <div
+                     style="margin-bottom: 20px; padding: 15px; background: var(--table-row-even); border-radius: 5px; border: 1px solid var(--border-light);">
+
+                    <?php if ($character->fullName) { ?>
+                        <h3
+                            style="margin-top: 0; margin-bottom: 12px; color: var(--text-color); font-size: 1.25em; border-bottom: 1px solid var(--border-medium); padding-bottom: 6px;">
+                            <?php echo \htmlspecialchars($character->fullName); ?>
+                        </h3>
+                    <?php } ?>
+
+                    <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8; font-size: 0.95em;">
                         <?php if ($character->altNames) { ?>
-                            <p style="margin-bottom: 5px;"><strong>Alternative Namen:</strong> <?php echo \htmlspecialchars($character->altNames); ?></p>
+                            <li><strong>Alternative Namen:</strong> <?php echo \htmlspecialchars($character->altNames); ?></li>
+                        <?php } ?>
+                        <?php if ($character->gender) { ?>
+                            <li><strong>Geschlecht:</strong> <?php echo \htmlspecialchars($character->gender); ?></li>
+                        <?php } ?>
+                        <?php if ($character->age) { ?>
+                            <li><strong>Alter:</strong> <?php echo \htmlspecialchars($character->age); ?></li>
                         <?php } ?>
                         <?php if ($character->rank) { ?>
-                            <p style="margin-bottom: 0;"><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></p>
+                            <li><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></li>
                         <?php } ?>
-                    </div>
-                <?php } ?>
-
-                <div class="character-description"
-                     style="line-height: 1.6; font-size: 1.05em;">
-                    <?php
-                    if ($character->description !== null && \trim($character->description) !== '') {
-                        echo $character->description;
-                    } else {
-                        echo '<p style="font-style: italic; color: var(--text-color-faded);">Noch keine Biografie in der Datenbank hinterlegt.</p>';
-                    }
-?>
+                        <?php if ($character->species) { ?>
+                            <li><strong>Spezies:</strong> <?php echo \htmlspecialchars($character->species); ?></li>
+                        <?php } ?>
+                        <?php if ($character->languages) { ?>
+                            <li><strong>Sprachen:</strong> <?php echo \htmlspecialchars($character->languages); ?></li>
+                        <?php } ?>
+                    </ul>
                 </div>
-            </div>
+            <?php } ?>
         </section>
 
         <!-- Comic-Auftritte -->

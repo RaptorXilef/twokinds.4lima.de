@@ -57,10 +57,15 @@ final class SchemaRegistry
             'characters' => 'CREATE TABLE IF NOT EXISTS `characters` (
                 `id` VARCHAR(20) PRIMARY KEY,
                 `name` VARCHAR(255) NOT NULL,
+                `full_name` VARCHAR(255),
                 `pic_url` VARCHAR(255),
                 `description` TEXT,
                 `alt_names` VARCHAR(255),
+                `gender` VARCHAR(100),
+                `age` VARCHAR(100),
                 `rank` VARCHAR(100),
+                `species` VARCHAR(100),
+                `languages` VARCHAR(255),
                 `main_pic` VARCHAR(255),
                 `swatch_pic` VARCHAR(255),
                 `ref_sheets` JSON

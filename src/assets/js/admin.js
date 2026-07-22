@@ -655,9 +655,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const idInput = document.getElementById('character_id');
         const nameInput = document.getElementById('char_name');
+        const fullInput = document.getElementById('full_name');
         const altInput = document.getElementById('alt_names');
+        const genderInput = document.getElementById('gender');
+        const ageInput = document.getElementById('age');
         const rankInput = document.getElementById('char_rank');
-        const picUrlInput = document.getElementById('pic_url');
+        const speciesInput = document.getElementById('species');
+        const langInput = document.getElementById('languages');
 
         // File-Inputs immer leeren und Rahmen zurücksetzen
         ['profile_image', 'main_pic', 'swatch_pic', 'ref_sheets'].forEach((id) => {
@@ -686,16 +690,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleEl = document.getElementById('modal-title-char');
             if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
 
-            if (idInput) idInput.value = data.id;
-            if (charDisplayId) charDisplayId.textContent = `ID: ${data.id}`;
             if (nameInput) nameInput.value = data.name;
-            if (picUrlInput) picUrlInput.value = data.picUrl ?? '';
+            if (fullInput) fullInput.value = data.fullName ?? '';
+            if (altInput) altInput.value = data.altNames ?? '';
+            if (genderInput) genderInput.value = data.gender ?? '';
+            if (ageInput) ageInput.value = data.age ?? '';
+            if (rankInput) rankInput.value = data.rank ?? '';
+            if (speciesInput) speciesInput.value = data.species ?? '';
+            if (langInput) langInput.value = data.languages ?? '';
 
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#char_description').trumbowyg('html', data.description);
             }
-            if (altInput) altInput.value = data.altNames ?? '';
-            if (rankInput) rankInput.value = data.rank ?? '';
 
             if (charPreviewImg) {
                 charPreviewImg.src = data.picUrl
@@ -703,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     : 'https://placehold.co/120x120?text=Kein+Bild';
             }
 
-            // NEU: Erweiterte Bilder über Textfelder befüllen und Previews triggern
+            // Erweiterte Bilder über Textfelder befüllen und Previews triggern
             if (mainPicInput) {
                 mainPicInput.value = data.mainPic ?? '';
                 mainPicInput.dispatchEvent(new Event('input'));
@@ -722,6 +728,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (titleEl) titleEl.textContent = 'Neuen Charakter anlegen';
             if (idInput) idInput.value = 'new';
             if (charDisplayId) charDisplayId.textContent = 'ID: NEW';
+            if (fullInput) fullInput.value = '';
+            if (altInput) altInput.value = '';
+            if (genderInput) genderInput.value = '';
+            if (ageInput) ageInput.value = '';
+            if (rankInput) rankInput.value = '';
+            if (speciesInput) speciesInput.value = '';
+            if (langInput) langInput.value = '';
 
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#char_description').trumbowyg('empty');

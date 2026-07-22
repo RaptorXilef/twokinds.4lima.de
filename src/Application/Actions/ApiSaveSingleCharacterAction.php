@@ -69,6 +69,12 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             $swatchPicUrl     = \trim((string) ($request->post['swatch_pic_url'] ?? ''));
             $refSheetsUrlsRaw = \trim((string) ($request->post['ref_sheets_urls'] ?? ''));
 
+            $fullName  = \trim((string) ($request->post['full_name'] ?? '')) ?: null;
+            $gender    = \trim((string) ($request->post['gender'] ?? '')) ?: null;
+            $age       = \trim((string) ($request->post['age'] ?? '')) ?: null;
+            $species   = \trim((string) ($request->post['species'] ?? '')) ?: null;
+            $languages = \trim((string) ($request->post['languages'] ?? '')) ?: null;
+
             // 1. Profilbild (Klein)
             if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
                 // ... (Hier bleibt deine bisherige Upload-Logik für Profile unverändert!)
@@ -143,8 +149,13 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 name: $dto->name,
                 picUrl: $picUrl === '' ? null : $picUrl,
                 description: $dto->description,
+                fullName: $fullName,
                 altNames: $dto->altNames,
+                gender: $gender,
+                age: $age,
                 rank: $dto->rank,
+                species: $species,
+                languages: $languages,
                 mainPic: $mainPic,
                 swatchPic: $swatchPic,
                 refSheets: $refSheets,
