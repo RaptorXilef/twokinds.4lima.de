@@ -27,14 +27,41 @@ final readonly class RenderArchiveAction implements ViewActionInterface
         $chapters = $this->chapterRepository->findAll();
 
         // Comics nach Kapitel gruppieren
-        $groupedComics = [];
+        $groupedComics    = [];
+        $unassignedComics = [];
+
+        // 1. Comics sauber trennen
         foreach ($comics as $comic) {
-            $chapterId                   = $comic->chapterId ?? 'Kein Kapitel';
-            $groupedComics[$chapterId][] = $comic;
+            $chapterId = $comic->chapterId;
+            if ($chapterId === null || \trim((string) $chapterId) === '') {
+                $unassignedComics[] = $comic;
+            } else {
+                $groupedComics[$chapterId][] = $comic;
+            }
         }
 
-        // Wir sortieren die Kapitel-IDs absteigend (neueste oben)
-        \krsort($groupedComics);
+        // 2. Normale Kapitel sortieren (Aufsteigend: 0, 1, 2...)
+        \uksort($groupedComics, function (string|int $a, string|int $b) {
+            $numA = \is_numeric($a) ? (float) $a : null;
+            $numB = \is_numeric($b) ? (float) $b : null;
+
+            if ($numA !== null && $numB !== null) {
+                return $numA <=> $numB; // Aufsteigend
+            }
+            if ($numA !== null) {
+                return -1;
+            } // Zahlen immer zuerst
+            if ($numB !== null) {
+                return 1;
+            }
+
+            return \strnatcasecmp((string) $a, (string) $b); // Texte (falls vorhanden) aufsteigend
+        });
+
+        // 3. Den Stapel ohne Kapitel GANZ SICHER ans Ende hängen!
+        if (! empty($unassignedComics)) {
+            $groupedComics['Kein Kapitel'] = $unassignedComics;
+        }
 
         // Die Kapitel-Informationen (Titel/Beschreibung) als einfaches Dictionary aufbauen
         $chapterDetails = [];
