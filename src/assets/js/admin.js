@@ -658,6 +658,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const altInput = document.getElementById('alt_names');
         const rankInput = document.getElementById('char_rank');
 
+        // NEU: Erweiterte Medien Elemente
+        const prevMain = document.getElementById('preview-img-main');
+        const prevSwatch = document.getElementById('preview-img-swatch');
+        const containerRefs = document.getElementById('preview-container-refs');
+
+        // File-Inputs immer leeren und Rahmen zurücksetzen
+        ['profile_image', 'main_pic', 'swatch_pic', 'ref_sheets'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        [
+            'char-drop-zone',
+            'char-drop-zone-main',
+            'char-drop-zone-swatch',
+            'char-drop-zone-refs',
+        ].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.borderColor = 'var(--border-medium)';
+                el.style.backgroundColor = 'var(--content-bg)';
+            }
+        });
+
         if (data) {
             const titleEl = document.getElementById('modal-title-char');
             if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
@@ -678,6 +701,43 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? `${baseUrl}/assets/images/characters/profiles/${data.picUrl}`
                     : 'https://placehold.co/120x120?text=Kein+Bild';
             }
+
+            // NEU: Bestehende erweiterte Bilder laden
+            if (prevMain) {
+                if (data.mainPic) {
+                    prevMain.src = `${baseUrl}/assets/images/characters/main/${data.mainPic}`;
+                    prevMain.style.display = 'block';
+                } else {
+                    prevMain.style.display = 'none';
+                    prevMain.src = '';
+                }
+            }
+
+            if (prevSwatch) {
+                if (data.swatchPic) {
+                    prevSwatch.src = `${baseUrl}/assets/images/characters/swatches/${data.swatchPic}`;
+                    prevSwatch.style.display = 'block';
+                } else {
+                    prevSwatch.style.display = 'none';
+                    prevSwatch.src = '';
+                }
+            }
+
+            if (containerRefs) {
+                containerRefs.innerHTML = '';
+                if (data.refSheets && data.refSheets.length > 0) {
+                    data.refSheets.forEach((sheet) => {
+                        const img = document.createElement('img');
+                        img.src = `${baseUrl}/assets/images/characters/refsheets/${sheet}`;
+                        img.style.maxWidth = '80px';
+                        img.style.maxHeight = '80px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '4px';
+                        img.style.border = '1px solid var(--border-medium)';
+                        containerRefs.appendChild(img);
+                    });
+                }
+            }
         } else {
             const titleEl = document.getElementById('modal-title-char');
             if (titleEl) titleEl.textContent = 'Neuen Charakter anlegen';
@@ -688,6 +748,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 $('#char_description').trumbowyg('empty');
             }
             if (charPreviewImg) charPreviewImg.src = 'https://placehold.co/120x120?text=Kein+Bild';
+
+            // NEU: Previews leeren bei Neu-Anlage
+            if (prevMain) {
+                prevMain.style.display = 'none';
+                prevMain.src = '';
+            }
+            if (prevSwatch) {
+                prevSwatch.style.display = 'none';
+                prevSwatch.src = '';
+            }
+            if (containerRefs) containerRefs.innerHTML = '';
         }
 
         if (idInput) {
@@ -709,44 +780,127 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- BILD UPLOAD DRAG & DROP ---
-    const dropZone = document.getElementById('char-drop-zone');
-    const fileInput = document.getElementById('profile_image');
-    const previewName = document.getElementById('upload-preview-name');
 
-    function handleFileUploadPreview() {
-        if (fileInput?.files?.[0]) {
-            isDirty = true;
-            if (previewName) {
-                previewName.textContent = `Bereit zum Upload: ${fileInput.files[0].name}`;
+    // Universelle Drag & Drop Setup Funktion (Für Profil, Main, Swatch)
+    function setupCharDropZone(zoneId, inputId, previewImgId, previewTextId = null) {
+        const zone = document.getElementById(zoneId);
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewImgId);
+        const previewText = document.getElementById(previewTextId);
+
+        if (!zone || !input) return;
+
+        zone.addEventListener('click', () => input.click());
+
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'var(--link-color)';
+            zone.style.backgroundColor = 'var(--table-row-hover)';
+        });
+
+        zone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'var(--border-medium)';
+            zone.style.backgroundColor = 'var(--content-bg)';
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'var(--status-green-text)';
+            zone.style.backgroundColor = 'var(--status-green-bg)';
+            if (e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                input.dispatchEvent(new Event('change'));
             }
-            if (picUrlInput) picUrlInput.value = '';
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (charPreviewImg) charPreviewImg.src = e.target.result;
-            };
-            reader.readAsDataURL(fileInput.files[0]);
-        }
+        });
+
+        input.addEventListener('change', () => {
+            if (input.files && input.files[0]) {
+                isDirty = true;
+                zone.style.borderColor = 'var(--status-green-text)';
+                zone.style.backgroundColor = 'var(--status-green-bg)';
+
+                if (previewText) {
+                    previewText.textContent = `Bereit: ${input.files[0].name}`;
+                }
+
+                // Live Vorschau setzen
+                if (preview) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        preview.src = e.target.result;
+                        if (preview.style.display === 'none') preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+
+                // Falls es das Profilbild ist, das Inputfeld für Text zurücksetzen
+                if (inputId === 'profile_image' && picUrlInput) {
+                    picUrlInput.value = '';
+                }
+            }
+        });
     }
 
-    if (dropZone && fileInput) {
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => {
+    // 1. Profilbild (Kleines Avatar)
+    setupCharDropZone('char-drop-zone', 'profile_image', 'char-preview-img', 'upload-preview-name');
+
+    // 2. Erweitert: Hauptbild & Swatch
+    setupCharDropZone('char-drop-zone-main', 'main_pic', 'preview-img-main');
+    setupCharDropZone('char-drop-zone-swatch', 'swatch_pic', 'preview-img-swatch');
+
+    // 3. Erweitert: Reference Sheets (Multiple)
+    const zoneRefs = document.getElementById('char-drop-zone-refs');
+    const inputRefs = document.getElementById('ref_sheets');
+    const containerRefs = document.getElementById('preview-container-refs');
+
+    if (zoneRefs && inputRefs && containerRefs) {
+        zoneRefs.addEventListener('click', () => inputRefs.click());
+
+        zoneRefs.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropZone.style.borderColor = 'var(--link-color)';
+            zoneRefs.style.borderColor = 'var(--link-color)';
+            zoneRefs.style.backgroundColor = 'var(--table-row-hover)';
         });
-        dropZone.addEventListener('dragleave', (e) => {
+
+        zoneRefs.addEventListener('dragleave', (e) => {
             e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-medium)';
+            zoneRefs.style.borderColor = 'var(--border-medium)';
+            zoneRefs.style.backgroundColor = 'var(--content-bg)';
         });
-        dropZone.addEventListener('drop', (e) => {
+
+        zoneRefs.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-medium)';
+            zoneRefs.style.borderColor = 'var(--status-green-text)';
+            zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
             if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                handleFileUploadPreview();
+                inputRefs.files = e.dataTransfer.files;
+                inputRefs.dispatchEvent(new Event('change'));
             }
         });
-        fileInput.addEventListener('change', handleFileUploadPreview);
+
+        inputRefs.addEventListener('change', () => {
+            if (inputRefs.files.length > 0) {
+                isDirty = true;
+                zoneRefs.style.borderColor = 'var(--status-green-text)';
+                zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
+
+                Array.from(inputRefs.files).forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '80px';
+                        img.style.maxHeight = '80px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '4px';
+                        img.style.border = '2px solid var(--status-green-text)'; // Grün umrandet = Neu
+                        containerRefs.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        });
     }
 
     // --- BILDER GALERIE MODAL ---

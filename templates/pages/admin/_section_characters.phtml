@@ -53,6 +53,11 @@ use App\Core\Entity\CharacterGroup;
                             'name'        => $char->name,
                             'picUrl'      => $char->picUrl ?? '',
                             'description' => $char->description ?? '',
+                            'altNames'    => $char->altNames ?? '',
+                            'rank'        => $char->rank ?? '',
+                            'mainPic'     => $char->mainPic ?? '',
+                            'swatchPic'   => $char->swatchPic ?? '',
+                            'refSheets'   => $char->refSheets ?? [],
                         ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
                         ?>
                         <tr>
