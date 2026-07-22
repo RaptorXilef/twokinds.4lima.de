@@ -1,78 +1,82 @@
 <?php
-
 declare(strict_types=1);
 
 /**
- * @var array                        $settings
- * @var string                       $pageTitle
- * @var \App\Core\Entity\ComicPage[] $comics
+ * @var array $groupedComics
+ * @var array $chapterDetails
+ * @var string $pageTitle
+ * @var array $settings
  */
 
-// Comics nach Kapiteln gruppieren (Simulation der alten Logik)
-$comicsByChapter = [];
-foreach ($comics as $comic) {
-    // Falls chapterId null ist, landet es in der Gruppe "0" oder "Ohne Kapitel"
-    $chapterId                     = $comic->chapterId ?? 'Kein Kapitel';
-    $comicsByChapter[$chapterId][] = $comic;
-}
-
-// Kapitel absteigend sortieren (Könnte später durch eine echte Chapter-Entity ersetzt werden)
-\krsort($comicsByChapter);
-
-$baseUrl         = \rtrim($settings['base_url'], '/');
+$baseUrl = \rtrim($settings['base_url'], '/');
 $placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
 
-include __DIR__ . '/../../components/_public_header.phtml';
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 
-<header>
-    <h1 class="page-header">TwoKinds Archiv</h1>
-</header>
-<div class="instructions jsdep">Klicken Sie auf eine Kapitelüberschrift, um das Kapitel zu erweitern.</div>
+<main class="content-area">
+    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+        <header>
+            <h1 class="page-header">TwoKinds Archiv</h1>
+        </header>
 
-<?php if (empty($comicsByChapter)) { ?>
-    <p>Es sind noch keine Comics im Archiv vorhanden.</p>
-<?php } else { ?>
-    <?php foreach ($comicsByChapter as $chapterId => $chapterComics) { ?>
-        <section class="chapter collapsible-section"
-                 data-ch-id="<?php echo \htmlspecialchars($chapterId); ?>">
+        <div class="instructions jsdep">Klicken Sie auf eine Kapitelüberschrift, um das Kapitel zu erweitern.</div>
 
-            <h2 class="collapsible-header">
-                Kapitel <?php echo \htmlspecialchars($chapterId); ?>
-                <span class="arrow-left jsdep"></span>
-            </h2>
+        <?php if (empty($groupedComics)) { ?>
+            <p style="text-align: center; margin: 40px 0;">Es sind noch keine Comics im Archiv vorhanden.</p>
+        <?php } else { ?>
+            <?php foreach ($groupedComics as $chapterId => $chapterComics) {
+                // Hole Titel und Beschreibung aus der Datenbank, falls vorhanden
+                $chapTitle = 'Dieses Kapitel wird im Moment bearbeitet.';
+                $chapDesc = 'Die Informationen zu diesem Kapitel werden noch erstellt.';
 
-            <!-- Die alte Beschreibung könnte hier aus einer echten Chapter-Tabelle kommen -->
-            <p>Die Informationen zu diesem Kapitel werden noch erstellt.</p>
-
-            <div class="collapsible-content">
-                <aside class="chapter-links">
-                    <?php
-                    // Innerhalb des Kapitels aufsteigend sortieren (Ältester zuerst)
-                    \usort($chapterComics, fn ($a, $b) => $a->id->value <=> $b->id->value);
-
-        foreach ($chapterComics as $comic) {
-            $comicId = $comic->id->value;
-            $cb      = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-
-            // Im Archiv zeigen wir Thumbnails
-            $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}";
-
-            $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', $comicId);
-            $displayDate = $dateObj ? $dateObj->format('d.m.Y') : 'Unbekannt';
-            $tooltipText = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
+                if (isset($chapterDetails[$chapterId])) {
+                    $chapTitle = $chapterDetails[$chapterId]->title;
+                    if ($chapterDetails[$chapterId]->description !== '') {
+                        $chapDesc = $chapterDetails[$chapterId]->description;
+                    }
+                }
             ?>
-                        <a href="<?php echo $baseUrl; ?>/comic/<?php echo $comicId; ?>"
-                           title="<?php echo \htmlspecialchars($tooltipText); ?>">
-                            <span><?php echo \htmlspecialchars($tooltipText); ?></span>
-                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>"
-                                 alt="<?php echo \htmlspecialchars($tooltipText); ?>">
-                        </a>
-                    <?php } ?>
-                </aside>
-            </div>
-        </section>
-    <?php } ?>
-<?php } ?>
+                <section class="chapter collapsible-section" data-ch-id="<?php echo \htmlspecialchars($chapterId); ?>">
+                    <h2 class="collapsible-header">
+                        <?php echo \htmlspecialchars($chapTitle); ?>
+                        <span class="arrow-left jsdep"></span>
+                    </h2>
 
-<?php include __DIR__ . '/../../components/_public_footer.phtml'; ?>
+                    <p><?php echo $chapDesc; ?></p>
+
+                    <div class="collapsible-content">
+                        <aside class="chapter-links">
+                            <?php
+                            // Wir sortieren die Comics innerhalb des Kapitels aufsteigend (älteste zuerst)
+                            \usort($chapterComics, fn ($a, $b) => $a->id->value <=> $b->id->value);
+
+                            foreach ($chapterComics as $comic) {
+                                $comicId = $comic->id->value;
+                                $cb = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                                $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}";
+
+                                $dateObj = \DateTimeImmutable::createFromFormat('Ymd', substr($comicId, 0, 8));
+                                $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
+                                $tooltipText = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
+                            ?>
+                                <a href="<?php echo $baseUrl; ?>/comic/<?php echo $comicId; ?>" title="<?php echo \htmlspecialchars($tooltipText); ?>">
+                                    <span><?php echo \htmlspecialchars($tooltipText); ?></span>
+                                    <!-- Lazy Loading & Fallback via archive.js (data-src) -->
+                                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
+                                         data-src="<?php echo \htmlspecialchars($thumbPath); ?>"
+                                         alt="<?php echo \htmlspecialchars($tooltipText); ?>">
+                                </a>
+                            <?php } ?>
+                        </aside>
+                    </div>
+                </section>
+            <?php } ?>
+        <?php } ?>
+    </article>
+</main>
+
+<!-- Das Archiv-Script einbinden -->
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $baseUrl; ?>/assets/js/archive.min.js"></script>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

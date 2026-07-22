@@ -10,6 +10,7 @@ declare(strict_types=1);
  * @var \App\Core\Entity\ComicPage      $latest
  * @var bool                            $isLatest
  * @var string                          $pageTitle
+ * @var string                          $displayDate
  * @var array                           $settings
  */
 $baseUrl       = \rtrim($settings['base_url'], '/');
@@ -25,11 +26,29 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
 <main class="content-area">
     <article class="comic">
-        <header>
-            <?php if ($comic->chapterId !== null) { ?>
-                <h2 class="tinyheader">Kapitel <?php echo \htmlspecialchars((string) $comic->chapterId); ?></h2>
+        <header style="text-align: center; margin-bottom: 20px;">
+            <?php if ($comic->chapterId !== null && $comic->chapterId !== '') { ?>
+                <h2 class="tinyheader"
+                    style="color: var(--text-color-faded); margin-bottom: 5px; font-weight: bold; letter-spacing: 1px; font-size: 0.9em;">
+                    KAPITEL <?php echo \htmlspecialchars((string) $comic->chapterId); ?>
+                </h2>
             <?php } ?>
-            <h1><?php echo \htmlspecialchars($pageTitle); ?></h1>
+
+            <h1
+                style="font-size: 1.5em; margin: 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; color: var(--text-color);">
+                <?php if (\strtolower($comic->type) !== 'comicseite' && $comic->type !== '') { ?>
+                    <span style="font-size: 0.6em; background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border); padding: 3px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">
+                        <?php echo \htmlspecialchars($comic->type); ?>
+                    </span>
+                <?php } ?>
+
+                <span>Seite vom <?php echo $displayDate; ?></span>
+
+                <?php if ($comic->name !== '') { ?>
+                    <span style="color: var(--text-color-light); opacity: 0.5;">|</span>
+                    <span style="color: var(--link-color);"><?php echo \htmlspecialchars($comic->name); ?></span>
+                <?php } ?>
+            </h1>
         </header>
 
         <!-- Haupt-Navigation Oben -->
