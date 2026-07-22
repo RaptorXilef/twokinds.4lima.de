@@ -27,7 +27,7 @@ final readonly class RenderComicAction implements ActionInterface
         $allComics = $this->comicRepo->findAll();
 
         if (empty($allComics)) {
-            $this->renderer->render('404', ['pageTitle' => 'Keine Comics gefunden.']);
+            $this->renderer->render('frontend/404', ['pageTitle' => 'Keine Comics gefunden.']);
 
             return null;
         }
@@ -51,7 +51,7 @@ final readonly class RenderComicAction implements ActionInterface
         }
 
         if (! $comic) {
-            $this->renderer->render('404', ['pageTitle' => 'Comic nicht gefunden.']);
+            $this->renderer->render('frontend/404', ['pageTitle' => 'Comic nicht gefunden.']);
 
             return null;
         }
@@ -61,12 +61,19 @@ final readonly class RenderComicAction implements ActionInterface
         $latest = $allComics[0];
         $first  = $allComics[\count($allComics) - 1];
 
-        $prev = ($currentIndex < \count($allComics) - 1) ? $allComics[$currentIndex + 1] : null; // Älter
-        $next = ($currentIndex > 0) ? $allComics[$currentIndex - 1] : null; // Neuer
+        $prev = ($currentIndex < \count($allComics) - 1) ? $allComics[$currentIndex + 1] : null;
+        $next = ($currentIndex > 0) ? $allComics[$currentIndex - 1] : null;
 
-        // WICHTIG: Setze die Variablen, die der alte _public_header erwartet
-        $pageTitle   = $comic->name !== '' ? $comic->name : "Seite {$comic->id->value}";
-        $isComicPage = true;
+        // --- Datum aus ID extrahieren (ignoriert Buchstaben am Ende) ---
+        $dateStr     = \substr($comic->id->value, 0, 8);
+        $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', $dateStr);
+        $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $dateStr;
+
+        // --- Dynamischer Browser-Tab-Titel ---
+        $pageTitle = $comic->name !== '' ? $comic->name : "Seite vom {$displayDate}";
+        if (\strtolower($comic->type) !== 'comicseite' && $comic->type !== '') {
+            $pageTitle = $comic->type . ': ' . $pageTitle;
+        }
 
         $this->renderer->render('frontend/comic', [
             'comic'       => $comic,
@@ -76,7 +83,8 @@ final readonly class RenderComicAction implements ActionInterface
             'latest'      => $latest,
             'isLatest'    => ($comic->id->value === $latest->id->value),
             'pageTitle'   => $pageTitle,
-            'isComicPage' => $isComicPage,
+            'isComicPage' => true,
+            'displayDate' => $displayDate, // An Template übergeben
         ]);
 
         return null;
