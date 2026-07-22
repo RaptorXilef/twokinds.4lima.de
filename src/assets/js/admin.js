@@ -665,11 +665,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const langInput = document.getElementById('languages');
         const picUrlInput = document.getElementById('pic_url');
 
-        // Erweiterte Medien Elemente
-        const prevMain = document.getElementById('preview-img-main');
-        const prevSwatch = document.getElementById('preview-img-swatch');
-        const containerRefs = document.getElementById('preview-container-refs');
-
         // File-Inputs immer leeren und Rahmen zurücksetzen
         ['profile_image', 'main_pic', 'swatch_pic', 'ref_sheets'].forEach((id) => {
             const el = document.getElementById(id);
@@ -730,7 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 swatchPicInput.dispatchEvent(new Event('input'));
             }
             if (refSheetsInput) {
-                refSheetsInput.value = data.refSheets && data.refSheets.length ? data.refSheets.join(', ') : '';
+                refSheetsInput.value = data.refSheets?.length ? data.refSheets.join(', ') : '';
                 refSheetsInput.dispatchEvent(new Event('input'));
             }
         } else {
@@ -823,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         input.addEventListener('change', () => {
-            if (input.files && input.files[0]) {
+            if (input.files?.[0]) {
                 isDirty = true;
                 zone.style.borderColor = 'var(--status-green-text)';
                 zone.style.backgroundColor = 'var(--status-green-bg)';
@@ -1057,7 +1052,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (modal) modal.style.display = 'none';
                     });
                 });
-            } catch (err) {
+            } catch {
                 galGrid.innerHTML = '<p style="color:red;">Fehler beim Laden der Galerie.</p>';
             }
         });
