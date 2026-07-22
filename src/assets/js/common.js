@@ -226,6 +226,61 @@
         });
     }
 
+    // Transkript Logik
+    const typeSelect = document.getElementById('report_type');
+    const transcriptSection = document.getElementById('transcript-edit-section');
+    const originalInput = document.getElementById('report_transcript_original');
+    const suggestionInput = document.getElementById('report_transcript_suggestion');
+    const comicIdInput = document.getElementById('report_comic_id');
+    const descInput = document.getElementById('report_description');
+
+    if (typeSelect && transcriptSection) {
+        typeSelect.addEventListener('change', async (e) => {
+            if (e.target.value === 'transcript') {
+                const comicId = comicIdInput.value.trim();
+                if (comicId.length >= 8) {
+                    reportStatusMsg.style.display = 'block';
+                    reportStatusMsg.style.backgroundColor = 'var(--status-info-bg)';
+                    reportStatusMsg.style.color = 'var(--status-info-text)';
+                    reportStatusMsg.style.border = '1px solid var(--status-info-border)';
+                    reportStatusMsg.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin"></i> Lade aktuelles Transkript...';
+
+                    try {
+                        const baseUrl = window.location.origin;
+                        const res = await fetch(`${baseUrl}/api/get_transcript?id=${comicId}`);
+                        const json = await res.json();
+
+                        reportStatusMsg.style.display = 'none';
+                        if (json.success) {
+                            originalInput.value = json.transcript;
+                            suggestionInput.value = json.transcript;
+                            transcriptSection.style.display = 'block';
+                            if (descInput)
+                                descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
+                        } else {
+                            alert(json.error);
+                            e.target.value = '';
+                        }
+                    } catch {
+                        reportStatusMsg.style.display = 'none';
+                        alert('Fehler beim Laden des Transkripts.');
+                        e.target.value = '';
+                    }
+                } else {
+                    alert(
+                        'Bitte trage zuerst die Comic-ID oben ein, um das Transkript bearbeiten zu können!'
+                    );
+                    e.target.value = '';
+                    comicIdInput.focus();
+                }
+            } else {
+                transcriptSection.style.display = 'none';
+                if (descInput) descInput.placeholder = 'Beschreibe kurz, was nicht stimmt...';
+            }
+        });
+    }
+
     if (reportForm) {
         reportForm.addEventListener('submit', async (e) => {
             e.preventDefault();

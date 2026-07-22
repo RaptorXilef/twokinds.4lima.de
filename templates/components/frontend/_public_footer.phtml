@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use App\Contracts\System\AssetHelperInterface;
@@ -8,53 +9,79 @@ use App\Contracts\System\AssetHelperInterface;
  * @var AssetHelperInterface $asset
  */
 ?>
-        </div> <!-- Schließt .content aus dem Header -->
-    </div> <!-- Schließt .content-area aus dem Header -->
+</div> <!-- Schließt .content aus dem Header -->
+</div> <!-- Schließt .content-area aus dem Header -->
 
-    <footer>
-        <div class="bottom">
-            <div class="bottom-left">
-                <!-- Platzhalter für Empfehlungen / Links -->
-            </div>
-            <div class="bottom-ctr">
-                <p>Twokinds auf Deutsch</p>
-                <p>Übersetzung & Programmierung: <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a></p>
-                <p>Original Twokinds Comic: <a href="https://twokinds.keenspot.com/" target="_blank" rel="noopener noreferrer">Thomas Fischbach</a></p>
-                <!-- Dynamische, serverseitige Versionsnummer aus package.json -->
-                <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version']); ?> | <a href="#" id="open-global-report">Fehler melden</a></div>
-            </div>
-            <div class="bottom-right">
-                <!-- Platzhalter für Twitter Box etc. -->
-            </div>
+<footer>
+    <div class="bottom">
+        <div class="bottom-left">
+            <!-- Platzhalter für Empfehlungen / Links -->
         </div>
+        <div class="bottom-ctr">
+            <p>Twokinds auf Deutsch</p>
+            <p>Übersetzung & Programmierung:
+                <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a></p>
+            <p>Original Twokinds Comic:
+                <a href="https://twokinds.keenspot.com/" target="_blank" rel="noopener noreferrer">Thomas Fischbach</a>
+            </p>
+            <!-- Dynamische, serverseitige Versionsnummer aus package.json -->
+            <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version']); ?> | <a href="#" id="open-global-report">Fehler melden</a></div>
+        </div>
+        <div class="bottom-right">
+            <!-- Platzhalter für Twitter Box etc. -->
+        </div>
+    </div>
 
-        <div class="footer-img"></div>
-    </footer>
+    <div class="footer-img"></div>
+</footer>
 </div> <!-- Schließt .main-container aus dem Header -->
 
 <!-- GLOBAL REPORT MODAL -->
-<div id="global-report-modal" class="c-session-timeout" style="display: none; align-items: flex-start; padding-top: 50px; z-index: 10000;">
-    <div class="c-session-timeout__content" style="text-align: left; max-width: 600px; width: 100%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-medium); padding-bottom: 10px; margin-bottom: 15px;">
+<div id="global-report-modal"
+     class="c-session-timeout"
+     style="display: none; align-items: flex-start; padding-top: 50px; z-index: 10000;">
+    <div class="c-session-timeout__content"
+         style="text-align: left; max-width: 600px; width: 100%;">
+        <div
+             style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-medium); padding-bottom: 10px; margin-bottom: 15px;">
             <h2 style="margin: 0; font-size: 1.5em; color: var(--text-color);">Fehler melden</h2>
-            <button type="button" id="close-report-modal" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: var(--text-color-faded);">&times;</button>
+            <button type="button"
+                    id="close-report-modal"
+                    style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: var(--text-color-faded);">&times;</button>
         </div>
 
-        <div id="report-status-msg" style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: center;"></div>
+        <div id="report-status-msg"
+             style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: center;">
+        </div>
 
         <form id="global-report-form">
             <!-- URL / Context Tracking -->
-            <input type="hidden" name="report_debug_info" id="report_debug_info" value="">
-            <input type="text" name="report_honeypot" style="display:none;" tabindex="-1" autocomplete="off">
+            <input type="hidden"
+                   name="report_debug_info"
+                   id="report_debug_info"
+                   value="">
+            <input type="text"
+                   name="report_honeypot"
+                   style="display:none;"
+                   tabindex="-1"
+                   autocomplete="off">
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Betroffene Comic-ID (Optional)</label>
-                <input type="text" id="report_comic_id" name="comic_id" placeholder="z.B. 20240101 (Leer lassen bei allg. Fehlern)" style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Betroffene Comic-ID
+                    (Optional)</label>
+                <input type="text"
+                       id="report_comic_id"
+                       name="comic_id"
+                       placeholder="z.B. 20240101 (Leer lassen bei allg. Fehlern)"
+                       style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
             </div>
 
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Art des Fehlers *</label>
-                <select id="report_type" name="report_type" required style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                <select id="report_type"
+                        name="report_type"
+                        required
+                        style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
                     <option value="">-- Bitte wählen --</option>
                     <option value="transcript">Tippfehler / Transkript-Fehler</option>
                     <option value="image">Bild wird nicht geladen / Bildfehler</option>
@@ -62,27 +89,51 @@ use App\Contracts\System\AssetHelperInterface;
                 </select>
             </div>
 
+            <!-- Das Transkript-Editor Feld (Standardmäßig versteckt) -->
+            <div id="transcript-edit-section"
+                 style="display: none; margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Transkript korrigieren</label>
+                <p style="font-size: 0.85em; color: var(--text-color-faded); margin-top: 0; margin-bottom: 10px;">Bitte
+                    korrigiere den Fehler direkt im Textfeld. Wir gleichen deine Version später automatisch mit dem
+                    Original ab.</p>
+                <input type="hidden"
+                       id="report_transcript_original"
+                       name="report_transcript_original"
+                       value="">
+                <textarea id="report_transcript_suggestion" name="report_transcript_suggestion" rows="8" style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color); resize: vertical; font-family: monospace; font-size: 0.9em;"></textarea>
+            </div>
+
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Fehlerbeschreibung *</label>
-                <textarea id="report_description" name="report_description" required rows="4" placeholder="Beschreibe kurz, was nicht stimmt..." style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color); resize: vertical;"></textarea>
+                <textarea id="report_description" name="report_description" placeholder="Beschreibe kurz, was nicht stimmt..." style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color); resize: vertical;"></textarea>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div>
                     <label style="display: block; font-weight: bold; margin-bottom: 5px;">Dein Name (Optional)</label>
-                    <input type="text" id="report_name" name="report_name" placeholder="Wie sollen wir dich nennen?" style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                    <input type="text"
+                           id="report_name"
+                           name="report_name"
+                           placeholder="Wie sollen wir dich nennen?"
+                           style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
                 </div>
             </div>
 
             <div style="margin-bottom: 20px;">
                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" id="wants_credit" name="wants_credit" value="1" style="transform: scale(1.2);">
+                    <input type="checkbox"
+                           id="wants_credit"
+                           name="wants_credit"
+                           value="1"
+                           style="transform: scale(1.2);">
                     <span>Ich möchte bei Behebung als Helfer genannt werden!</span>
                 </label>
             </div>
 
             <div style="text-align: right;">
-                <button type="submit" id="report-submit-btn" style="background: var(--link-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background 0.2s;">
+                <button type="submit"
+                        id="report-submit-btn"
+                        style="background: var(--link-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background 0.2s;">
                     <i class="fa-solid fa-paper-plane"></i> Fehler melden
                 </button>
             </div>
@@ -92,9 +143,13 @@ use App\Contracts\System\AssetHelperInterface;
 
 <!-- Gemeinsame JS-Dateien für das Frontend -->
 <!-- Automatisch cache-gebustetes JS -->
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/comic.min.js'); ?>"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/cookie_consent.min.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+        src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+        src="<?php echo $asset->url('assets/js/comic.min.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+        src="<?php echo $asset->url('assets/js/cookie_consent.min.js'); ?>"></script>
 
 </body>
+
 </html>

@@ -113,6 +113,7 @@ final readonly class FrontendController
                 'delete_comic_media'    => ['action' => 'api_delete_comic_media', 'input' => $input],
                 'delete_comic'          => ['action' => 'api_delete_comic', 'input' => $input],
                 'delete_media'          => ['action' => 'api_delete_media', 'input' => $input],
+                'get_transcript'        => ['action' => 'api_get_transcript', 'input' => $input],
                 'list_comic_media'      => ['action' => 'api_list_comic_media', 'input' => $input],
                 'list_media'            => ['action' => 'api_list_media', 'input' => $input],
                 'save_chapter'          => ['action' => 'api_save_chapter', 'input' => $input],

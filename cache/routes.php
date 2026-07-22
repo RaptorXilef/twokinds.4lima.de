@@ -9,6 +9,7 @@
   'api_delete_comic' => 'App\\Application\\Actions\\ApiDeleteComicAction',
   'api_delete_comic_media' => 'App\\Application\\Actions\\ApiDeleteComicMediaAction',
   'api_delete_media' => 'App\\Application\\Actions\\ApiDeleteMediaAction',
+  'api_get_transcript' => 'App\\Application\\Actions\\ApiGetTranscriptAction',
   'api_list_comic_media' => 'App\\Application\\Actions\\ApiListComicMediaAction',
   'api_list_media' => 'App\\Application\\Actions\\ApiMediaListAction',
   'api_save_chapter' => 'App\\Application\\Actions\\ApiSaveChapterAction',
