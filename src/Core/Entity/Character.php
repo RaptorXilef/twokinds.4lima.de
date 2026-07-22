@@ -19,6 +19,7 @@ final readonly class Character
         public ?string $age = null,
         public ?string $rank = null,
         public ?string $species = null,
+        public ?string $subspecies = null,
         public ?string $languages = null,
         public ?string $mainPic = null,
         public ?string $swatchPic = null,

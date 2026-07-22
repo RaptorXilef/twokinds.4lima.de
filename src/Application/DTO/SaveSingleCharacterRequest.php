@@ -9,44 +9,43 @@ use App\Application\Http\ServerRequest;
 
 final readonly class SaveSingleCharacterRequest
 {
-    private function __construct(
+    public function __construct(
         public string $id,
         public string $name,
         public ?string $picUrl,
         public ?string $description,
+        public ?string $fullName,
         public ?string $altNames,
+        public ?string $gender,
+        public ?string $age,
         public ?string $rank,
+        public ?string $species,
+        public ?string $subspecies,
+        public ?string $languages,
     ) {
     }
 
     public static function fromRequest(ServerRequest $request): self
     {
-        $post = $request->post;
+        $data = $request->post;
 
-        $id = \trim((string) ($post['character_id'] ?? ''));
-        if (! \preg_match('/^char_\d{4}$/', $id) && $id !== 'new') {
-            // Falls es ein komplett neuer Charakter ist, generieren wir in der Action eine ID.
-            // Erlauben wir hier das Schlüsselwort 'new' als Indikator.
-            throw ValidationException::withMessage('Ungültige oder fehlende Charakter-ID.');
+        if (empty($data['name'])) {
+            throw new ValidationException('Der Name des Charakters darf nicht leer sein.');
         }
-
-        $name = \trim((string) ($post['name'] ?? ''));
-        if ($name === '') {
-            throw ValidationException::withMessage('Der Charakter-Name darf nicht leer sein.');
-        }
-
-        $picUrl      = \trim((string) ($post['pic_url'] ?? ''));
-        $description = \trim((string) ($post['description'] ?? ''));
-        $altNames    = \trim((string) ($post['alt_names'] ?? ''));
-        $rank        = \trim((string) ($post['rank'] ?? ''));
 
         return new self(
-            id: $id,
-            name: $name,
-            picUrl: $picUrl === '' ? null : $picUrl,
-            description: $description === '' ? null : $description,
-            altNames: $altNames === '' ? null : $altNames,
-            rank: $rank === '' ? null : $rank,
+            id: \trim((string) ($data['id'] ?? 'new')),
+            name: \trim((string) $data['name']),
+            picUrl: \trim((string) ($data['pic_url'] ?? '')) ?: null,
+            description: \trim((string) ($data['description'] ?? '')) ?: null,
+            fullName: \trim((string) ($data['full_name'] ?? '')) ?: null,
+            altNames: \trim((string) ($data['alt_names'] ?? '')) ?: null,
+            gender: \trim((string) ($data['gender'] ?? '')) ?: null,
+            age: \trim((string) ($data['age'] ?? '')) ?: null,
+            rank: \trim((string) ($data['rank'] ?? '')) ?: null,
+            species: \trim((string) ($data['species'] ?? '')) ?: null,
+            subspecies: \trim((string) ($data['subspecies'] ?? '')) ?: null,
+            languages: \trim((string) ($data['languages'] ?? '')) ?: null,
         );
     }
 }

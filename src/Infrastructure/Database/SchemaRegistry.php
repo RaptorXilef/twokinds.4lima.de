@@ -65,6 +65,7 @@ final class SchemaRegistry
                 `age` VARCHAR(100),
                 `rank` VARCHAR(100),
                 `species` VARCHAR(100),
+                `subspecies` VARCHAR(100),
                 `languages` VARCHAR(255),
                 `main_pic` VARCHAR(255),
                 `swatch_pic` VARCHAR(255),

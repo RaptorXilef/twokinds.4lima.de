@@ -661,7 +661,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const ageInput = document.getElementById('age');
         const rankInput = document.getElementById('char_rank');
         const speciesInput = document.getElementById('species');
+        const subInput = document.getElementById('subspecies');
         const langInput = document.getElementById('languages');
+        const picUrlInput = document.getElementById('pic_url');
+
+        // Erweiterte Medien Elemente
+        const prevMain = document.getElementById('preview-img-main');
+        const prevSwatch = document.getElementById('preview-img-swatch');
+        const containerRefs = document.getElementById('preview-container-refs');
 
         // File-Inputs immer leeren und Rahmen zurücksetzen
         ['profile_image', 'main_pic', 'swatch_pic', 'ref_sheets'].forEach((id) => {
@@ -677,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(id);
             if (el) {
                 el.style.borderColor = 'var(--border-medium)';
-                el.style.backgroundColor = 'var(--content-bg)';
+                el.style.backgroundColor = 'var(--table-row-even)';
             }
         });
 
@@ -690,6 +697,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleEl = document.getElementById('modal-title-char');
             if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
 
+            if (idInput) idInput.value = data.id;
+            if (charDisplayId) charDisplayId.textContent = `ID: ${data.id}`;
             if (nameInput) nameInput.value = data.name;
             if (fullInput) fullInput.value = data.fullName ?? '';
             if (altInput) altInput.value = data.altNames ?? '';
@@ -697,7 +706,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ageInput) ageInput.value = data.age ?? '';
             if (rankInput) rankInput.value = data.rank ?? '';
             if (speciesInput) speciesInput.value = data.species ?? '';
+            if (subInput) subInput.value = data.subspecies ?? '';
             if (langInput) langInput.value = data.languages ?? '';
+            if (picUrlInput) picUrlInput.value = data.picUrl ?? '';
 
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#char_description').trumbowyg('html', data.description);
@@ -719,8 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 swatchPicInput.dispatchEvent(new Event('input'));
             }
             if (refSheetsInput) {
-                refSheetsInput.value =
-                    data.refSheets && data.refSheets.length ? data.refSheets.join(', ') : '';
+                refSheetsInput.value = data.refSheets && data.refSheets.length ? data.refSheets.join(', ') : '';
                 refSheetsInput.dispatchEvent(new Event('input'));
             }
         } else {
@@ -728,20 +738,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (titleEl) titleEl.textContent = 'Neuen Charakter anlegen';
             if (idInput) idInput.value = 'new';
             if (charDisplayId) charDisplayId.textContent = 'ID: NEW';
+
             if (fullInput) fullInput.value = '';
             if (altInput) altInput.value = '';
             if (genderInput) genderInput.value = '';
             if (ageInput) ageInput.value = '';
             if (rankInput) rankInput.value = '';
             if (speciesInput) speciesInput.value = '';
+            if (subInput) subInput.value = '';
             if (langInput) langInput.value = '';
+            if (picUrlInput) picUrlInput.value = '';
 
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#char_description').trumbowyg('empty');
             }
             if (charPreviewImg) charPreviewImg.src = 'https://placehold.co/120x120?text=Kein+Bild';
 
-            // NEU: Previews leeren bei Neu-Anlage
+            // Previews leeren bei Neu-Anlage
             if (mainPicInput) {
                 mainPicInput.value = '';
                 mainPicInput.dispatchEvent(new Event('input'));

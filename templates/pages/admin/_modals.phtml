@@ -394,14 +394,15 @@ foreach ($alphaChars as $char) {
                     <form id="char-form"
                           class="admin-form"
                           enctype="multipart/form-data">
+                        <!-- BESEITIGT DEN "NEW" BUG: name="id" anstatt "character_id" -->
                         <input type="hidden"
                                id="character_id"
-                               name="character_id"
+                               name="id"
                                value="new">
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                             <div class="form-group">
-                                <label for="char_name">Anzeige Name * (Pflichtfeld)</label>
+                                <label for="char_name">Anzeige Name * (Pflicht)</label>
                                 <input type="text"
                                        id="char_name"
                                        name="name"
@@ -409,7 +410,7 @@ foreach ($alphaChars as $char) {
                                        style="background: var(--content-bg);">
                             </div>
                             <div class="form-group">
-                                <label for="full_name">Voller Name (Titel)</label>
+                                <label for="full_name">Voller Name</label>
                                 <input type="text"
                                        id="full_name"
                                        name="full_name"
@@ -424,23 +425,33 @@ foreach ($alphaChars as $char) {
                             </div>
                             <div class="form-group">
                                 <label for="gender">Geschlecht</label>
-                                <input type="text"
-                                       id="gender"
-                                       name="gender"
-                                       style="background: var(--content-bg);">
+                                <select id="gender"
+                                        name="gender"
+                                        style="background: var(--content-bg);">
+                                    <option value="">Keine Angabe</option>
+                                    <option value="Männlich">Männlich</option>
+                                    <option value="Weiblich">Weiblich</option>
+                                    <option value="Neutrum">Neutrum</option>
+                                    <option value="Androgyn">Androgyn</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="age">Alter</label>
                                 <input type="text"
                                        id="age"
                                        name="age"
+                                       pattern="^[0-9~]+|n/a|N/A$"
+                                       title="Nur Zahlen, die Tilde (~) oder n/a"
+                                       placeholder="z.B. 24, ~11, n/a"
                                        style="background: var(--content-bg);">
                             </div>
                             <div class="form-group">
-                                <label for="char_rank">Klasse / Rang</label>
+                                <label for="char_rank">Klasse / Rang (Mehrfach mgl.)</label>
                                 <input type="text"
                                        id="char_rank"
                                        name="rank"
+                                       list="dl-ranks"
+                                       placeholder="z.B. Magier, Templer"
                                        style="background: var(--content-bg);">
                             </div>
                             <div class="form-group">
@@ -448,69 +459,67 @@ foreach ($alphaChars as $char) {
                                 <input type="text"
                                        id="species"
                                        name="species"
+                                       list="dl-species"
+                                       placeholder="z.B. Keidran, Mensch"
                                        style="background: var(--content-bg);">
                             </div>
                             <div class="form-group">
-                                <label for="languages">Sprachen</label>
+                                <label for="subspecies">Subspezies</label>
+                                <input type="text"
+                                       id="subspecies"
+                                       name="subspecies"
+                                       list="dl-subspecies"
+                                       placeholder="z.B. Tiger, Wolf"
+                                       style="background: var(--content-bg);">
+                            </div>
+                            <div class="form-group"
+                                 style="grid-column: span 2;">
+                                <label for="languages">Sprachen (Kommagetrennt)</label>
                                 <input type="text"
                                        id="languages"
                                        name="languages"
+                                       list="dl-languages"
+                                       placeholder="z.B. Keidran, Mensch"
                                        style="background: var(--content-bg);">
                             </div>
-                        </div>
-
-                        <div class="form-group"
-                             style="margin-bottom: 15px;">
-                            <label for="char_rank">Rang (Optional)</label>
-                            <input type="text"
-                                   id="char_rank"
-                                   name="rank"
-                                   list="rank-datalist"
-                                   placeholder="Tippen oder auswählen...">
-                            <datalist id="rank-datalist">
-                                <?php foreach ($existingRanks as $rank) { ?>
-                                    <option value="<?php echo \htmlspecialchars($rank); ?>">
-                                    <?php } ?>
-                            </datalist>
                         </div>
 
                         <div class="form-group"
                              style="margin-bottom: 15px;">
                             <label>Profilbild Upload & Auswahl</label>
-                            <!-- UX FIX: Buttons und Input untereinander, damit es nicht quetscht -->
-                            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
-                                <button type="button"
-                                        class="button btn-open-gallery-dynamic"
-                                        data-target="pic_url"
-                                        data-folder="profiles"
-                                        style="width: 100%;"><i class="fa-solid fa-images"></i> Aus Galerie
-                                    wählen</button>
-                                <input type="text"
-                                       id="pic_url"
-                                       name="pic_url"
-                                       placeholder="Oder Dateiname manuell eintippen (z.B. trace.webp)"
-                                       style="width: 100%;">
-                            </div>
-
-                            <!-- Drag & Drop Zone für neuen Upload -->
-                            <div id="char-drop-zone"
-                                 class="drag-drop-zone"
-                                 style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
-                                <i class="fa-solid fa-cloud-arrow-up"
-                                   style="font-size: 2em; color: var(--text-color-light);"></i>
-                                <p style="margin: 5px 0 0; color: var(--text-color-light);">Neues Bild hier ablegen oder
-                                    klicken</p>
-                                <input type="file"
-                                       id="profile_image"
-                                       name="profile_image"
-                                       accept="image/*"
-                                       style="display: none;">
-                                <div id="upload-preview-name"
-                                     style="margin-top: 5px; font-weight: bold; color: var(--link-color);"></div>
+                            <div style="display: flex; flex-direction: column;">
+                                <div id="char-drop-zone"
+                                     class="drag-drop-zone"
+                                     style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even);">
+                                    <i class="fa-solid fa-user-circle"
+                                       style="font-size: 2em; color: var(--text-color-light);"></i>
+                                    <p style="margin: 5px 0 0; color: var(--text-color-light);">Neues Bild hier ablegen
+                                        oder klicken</p>
+                                    <input type="file"
+                                           id="profile_image"
+                                           name="profile_image"
+                                           accept="image/*"
+                                           style="display: none;">
+                                    <div id="upload-preview-name"
+                                         style="margin-top: 5px; font-weight: bold; color: var(--link-color);"></div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 10px;">
+                                    <button type="button"
+                                            class="button btn-open-gallery-dynamic"
+                                            data-target="pic_url"
+                                            data-folder="profiles"
+                                            style="width: 100%;"><i class="fa-solid fa-images"></i> Aus Galerie
+                                        wählen</button>
+                                    <input type="text"
+                                           id="pic_url"
+                                           name="pic_url"
+                                           placeholder="Oder Dateiname manuell eintippen (z.B. trace.webp)"
+                                           style="width: 100%;">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- NEU: Zusatzbilder für das Frontend mit Drag & Drop -->
+                        <!-- Zusatzbilder für das Frontend mit Drag & Drop -->
                         <div
                              style="padding: 15px; margin-bottom: 15px; background: var(--table-row-even); border: 1px solid var(--border-medium); border-radius: 6px;">
                             <h4 style="margin-top: 0; margin-bottom: 15px;">Zusätzliche Medien</h4>
@@ -619,16 +628,11 @@ foreach ($alphaChars as $char) {
                         <!-- Beschreibung / HTML Text -->
                         <div class="form-group">
                             <label for="char_description">Beschreibung (HTML)</label>
-                            <textarea id="char_description"
-                                      name="description"
-                                      class="wysiwyg-editor"
-                                      rows="4">
-                            </textarea>
+                            <textarea id="char_description" name="description" class="wysiwyg-editor" rows="4"></textarea>
                         </div>
                     </form>
                 </div>
             </div>
-
         </div>
         <div class="modal-footer-actions"
              style="flex: 0 0 auto; position: relative; z-index: 10; background: var(--main-bg);">

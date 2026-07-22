@@ -1,16 +1,53 @@
 <?php
-
 declare(strict_types=1);
 
-use App\Core\Entity\Character;
-use App\Core\Entity\CharacterGroup;
-
 /**
- * @var string           $baseUrl
- * @var Character[]      $characters
- * @var CharacterGroup[] $groups
+ * @var string $baseUrl
+ * @var array  $groups
+ * @var array  $characters
+ * @var array  $settings
  */
+
+// --- Datalists vorbereiten ---
+$allSpecies    = [];
+$allSubspecies = [];
+$allLanguages  = [];
+$allRanks      = [];
+foreach ($characters as $c) {
+    if ($c->species) {
+        $allSpecies[$c->species] = true;
+    }
+    if ($c->subspecies) {
+        $allSubspecies[$c->subspecies] = true;
+    }
+    if ($c->languages) {
+        foreach (\explode(',', $c->languages) as $l) {
+            $allLanguages[\trim($l)] = true;
+        }
+    }
+    if ($c->rank) {
+        foreach (\explode(',', $c->rank) as $r) {
+            $allRanks[\trim($r)] = true;
+        }
+    }
+}
 ?>
+
+<!-- Die Datalists für das Modal -->
+<datalist id="dl-species"><?php foreach (\array_keys($allSpecies) as $v) {
+    echo '<option value="' . \htmlspecialchars($v) . '">';
+} ?></datalist>
+<datalist id="dl-subspecies"><?php foreach (\array_keys($allSubspecies) as $v) {
+    echo '<option value="' . \htmlspecialchars($v) . '">';
+} ?></datalist>
+<datalist id="dl-languages"><?php foreach (\array_keys($allLanguages) as $v) {
+    echo '<option value="' . \htmlspecialchars($v) . '">';
+} ?></datalist>
+<datalist id="dl-ranks"><?php foreach (\array_keys($allRanks) as $v) {
+    echo '<option value="' . \htmlspecialchars($v) . '">';
+} ?></datalist>
+
+<!-- ... ab hier dein normales HTML ... -->
 
 <!-- ========================================== -->
 <!-- SECTION: CHARAKTERE                        -->
@@ -59,6 +96,7 @@ use App\Core\Entity\CharacterGroup;
                             'age'         => $char->age ?? '',
                             'rank'        => $char->rank ?? '',
                             'species'     => $char->species ?? '',
+                            'subspecies'  => $char->subspecies ?? '',
                             'languages'   => $char->languages ?? '',
                             'mainPic'     => $char->mainPic ?? '',
                             'swatchPic'   => $char->swatchPic ?? '',

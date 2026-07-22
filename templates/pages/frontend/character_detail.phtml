@@ -97,8 +97,12 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         <?php if ($character->rank) { ?>
                             <li><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></li>
                         <?php } ?>
-                        <?php if ($character->species) { ?>
-                            <li><strong>Spezies:</strong> <?php echo \htmlspecialchars($character->species); ?></li>
+                        <?php if ($character->species || $character->subspecies) {
+                            $sp             = $character->species ?: '';
+                            $sub            = $character->subspecies ?: '';
+                            $displaySpecies = \trim($sub . ' ' . $sp);
+                            ?>
+                            <li><strong>Spezies:</strong> <?php echo \htmlspecialchars($displaySpecies); ?></li>
                         <?php } ?>
                         <?php if ($character->languages) { ?>
                             <li><strong>Sprachen:</strong> <?php echo \htmlspecialchars($character->languages); ?></li>
