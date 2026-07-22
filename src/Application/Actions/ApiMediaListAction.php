@@ -19,15 +19,26 @@ final readonly class ApiMediaListAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $dir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
+        $folder  = $request->get['folder'] ?? 'profiles';
+        $allowed = ['profiles', 'main', 'swatches', 'refsheets'];
+
+        if (! \in_array($folder, $allowed, true)) {
+            $folder = 'profiles';
+        }
+
+        $dir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/' . $folder;
+
         if (! \is_dir($dir)) {
             return JsonResponse::success(['files' => []]);
         }
 
         $files  = \array_diff(\scandir($dir), ['.', '..']);
         $result = [];
+
         foreach ($files as $file) {
-            $result[] = ['filename' => $file, 'url' => "/assets/images/characters/profiles/{$file}"];
+            if (\is_file($dir . '/' . $file)) {
+                $result[] = ['filename' => $file, 'url' => "/assets/images/characters/{$folder}/{$file}"];
+            }
         }
 
         return JsonResponse::success(['files' => $result]);

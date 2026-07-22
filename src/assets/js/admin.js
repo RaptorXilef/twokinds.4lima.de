@@ -657,11 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nameInput = document.getElementById('char_name');
         const altInput = document.getElementById('alt_names');
         const rankInput = document.getElementById('char_rank');
-
-        // NEU: Erweiterte Medien Elemente
-        const prevMain = document.getElementById('preview-img-main');
-        const prevSwatch = document.getElementById('preview-img-swatch');
-        const containerRefs = document.getElementById('preview-container-refs');
+        const picUrlInput = document.getElementById('pic_url');
 
         // File-Inputs immer leeren und Rahmen zurücksetzen
         ['profile_image', 'main_pic', 'swatch_pic', 'ref_sheets'].forEach((id) => {
@@ -681,6 +677,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Die Text-Inputs für die erweiterten Bilder holen
+        const mainPicInput = document.getElementById('main_pic_url');
+        const swatchPicInput = document.getElementById('swatch_pic_url');
+        const refSheetsInput = document.getElementById('ref_sheets_urls');
+
         if (data) {
             const titleEl = document.getElementById('modal-title-char');
             if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
@@ -688,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (idInput) idInput.value = data.id;
             if (charDisplayId) charDisplayId.textContent = `ID: ${data.id}`;
             if (nameInput) nameInput.value = data.name;
-            if (picUrlInput) picUrlInput.value = data.picUrl;
+            if (picUrlInput) picUrlInput.value = data.picUrl ?? '';
 
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#char_description').trumbowyg('html', data.description);
@@ -702,41 +703,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     : 'https://placehold.co/120x120?text=Kein+Bild';
             }
 
-            // NEU: Bestehende erweiterte Bilder laden
-            if (prevMain) {
-                if (data.mainPic) {
-                    prevMain.src = `${baseUrl}/assets/images/characters/main/${data.mainPic}`;
-                    prevMain.style.display = 'block';
-                } else {
-                    prevMain.style.display = 'none';
-                    prevMain.src = '';
-                }
+            // NEU: Erweiterte Bilder über Textfelder befüllen und Previews triggern
+            if (mainPicInput) {
+                mainPicInput.value = data.mainPic ?? '';
+                mainPicInput.dispatchEvent(new Event('input'));
             }
-
-            if (prevSwatch) {
-                if (data.swatchPic) {
-                    prevSwatch.src = `${baseUrl}/assets/images/characters/swatches/${data.swatchPic}`;
-                    prevSwatch.style.display = 'block';
-                } else {
-                    prevSwatch.style.display = 'none';
-                    prevSwatch.src = '';
-                }
+            if (swatchPicInput) {
+                swatchPicInput.value = data.swatchPic ?? '';
+                swatchPicInput.dispatchEvent(new Event('input'));
             }
-
-            if (containerRefs) {
-                containerRefs.innerHTML = '';
-                if (data.refSheets && data.refSheets.length > 0) {
-                    data.refSheets.forEach((sheet) => {
-                        const img = document.createElement('img');
-                        img.src = `${baseUrl}/assets/images/characters/refsheets/${sheet}`;
-                        img.style.maxWidth = '80px';
-                        img.style.maxHeight = '80px';
-                        img.style.objectFit = 'cover';
-                        img.style.borderRadius = '4px';
-                        img.style.border = '1px solid var(--border-medium)';
-                        containerRefs.appendChild(img);
-                    });
-                }
+            if (refSheetsInput) {
+                refSheetsInput.value =
+                    data.refSheets && data.refSheets.length ? data.refSheets.join(', ') : '';
+                refSheetsInput.dispatchEvent(new Event('input'));
             }
         } else {
             const titleEl = document.getElementById('modal-title-char');
@@ -750,15 +729,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (charPreviewImg) charPreviewImg.src = 'https://placehold.co/120x120?text=Kein+Bild';
 
             // NEU: Previews leeren bei Neu-Anlage
-            if (prevMain) {
-                prevMain.style.display = 'none';
-                prevMain.src = '';
+            if (mainPicInput) {
+                mainPicInput.value = '';
+                mainPicInput.dispatchEvent(new Event('input'));
             }
-            if (prevSwatch) {
-                prevSwatch.style.display = 'none';
-                prevSwatch.src = '';
+            if (swatchPicInput) {
+                swatchPicInput.value = '';
+                swatchPicInput.dispatchEvent(new Event('input'));
             }
-            if (containerRefs) containerRefs.innerHTML = '';
+            if (refSheetsInput) {
+                refSheetsInput.value = '';
+                refSheetsInput.dispatchEvent(new Event('input'));
+            }
         }
 
         if (idInput) {
@@ -926,6 +908,139 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modal) modal.style.display = 'none';
             if (fileInput) fileInput.value = '';
             if (previewName) previewName.textContent = '';
+        });
+    });
+
+    // --- LIVE PREVIEWS DURCH TEXT-INPUTS ---
+    const mainPicInput = document.getElementById('main_pic_url');
+    const swatchPicInput = document.getElementById('swatch_pic_url');
+    const refSheetsInput = document.getElementById('ref_sheets_urls');
+
+    mainPicInput?.addEventListener('input', (e) => {
+        const prevMain = document.getElementById('preview-img-main');
+        const val = e.target.value.trim();
+        if (prevMain) {
+            if (val) {
+                prevMain.src = `${baseUrl}/assets/images/characters/main/${val}`;
+                prevMain.style.display = 'block';
+            } else {
+                prevMain.style.display = 'none';
+                prevMain.src = '';
+            }
+        }
+    });
+
+    swatchPicInput?.addEventListener('input', (e) => {
+        const prevSwatch = document.getElementById('preview-img-swatch');
+        const val = e.target.value.trim();
+        if (prevSwatch) {
+            if (val) {
+                prevSwatch.src = `${baseUrl}/assets/images/characters/swatches/${val}`;
+                prevSwatch.style.display = 'block';
+            } else {
+                prevSwatch.style.display = 'none';
+                prevSwatch.src = '';
+            }
+        }
+    });
+
+    refSheetsInput?.addEventListener('input', (e) => {
+        const containerRefs = document.getElementById('preview-container-refs');
+        if (containerRefs) {
+            containerRefs.innerHTML = '';
+            const vals = e.target.value
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean);
+            vals.forEach((sheet) => {
+                const img = document.createElement('img');
+                img.src = `${baseUrl}/assets/images/characters/refsheets/${sheet}`;
+                img.style.maxWidth = '80px';
+                img.style.maxHeight = '80px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
+                img.style.border = '1px solid var(--border-medium)';
+                containerRefs.appendChild(img);
+            });
+        }
+    });
+
+    // --- DYNAMISCHES BILDER GALERIE MODAL ---
+    let currentGalleryTargetInput = null;
+
+    document.querySelectorAll('.btn-open-gallery-dynamic').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+            const button = e.target.closest('.btn-open-gallery-dynamic');
+            const targetId = button.dataset.target;
+            const folder = button.dataset.folder;
+
+            currentGalleryTargetInput = document.getElementById(targetId);
+
+            const modalTitle = document.getElementById('gallery-modal-title');
+            if (modalTitle) modalTitle.textContent = `Galerie: ${folder}`;
+
+            // Modal öffnen & Lade-Status anzeigen
+            const modal = document.getElementById('gallery-modal');
+            const galGrid = document.getElementById('gallery-grid-dynamic');
+            if (modal) modal.style.display = 'flex';
+            if (galGrid) galGrid.innerHTML = '<p>Lade Bilder...</p>';
+
+            try {
+                const res = await fetch(`${baseUrl}/api/list_media?folder=${folder}`);
+                const json = await res.json();
+
+                if (json.files.length === 0) {
+                    galGrid.innerHTML =
+                        '<p style="font-style:italic; color:var(--text-color-light);">Ordner ist leer.</p>';
+                    return;
+                }
+
+                galGrid.innerHTML = json.files
+                    .map(
+                        (f) => `
+                    <div class="char-selection-item gallery-item" data-filename="${f.filename}" style="position: relative;">
+                        <img src="${f.url}" loading="lazy" style="width:60px;height:60px;object-fit:cover;border-radius:5px;">
+                        <span style="font-size: 0.75em; word-break: break-all;">${f.filename}</span>
+                    </div>
+                `
+                    )
+                    .join('');
+
+                // Klick auf ein Galerie-Bild
+                galGrid.querySelectorAll('.gallery-item').forEach((item) => {
+                    item.addEventListener('click', function () {
+                        isDirty = true;
+                        if (currentGalleryTargetInput) {
+                            if (currentGalleryTargetInput.id === 'ref_sheets_urls') {
+                                // Bei Ref Sheets kommagetrennt anhängen
+                                const vals = currentGalleryTargetInput.value
+                                    .split(',')
+                                    .map((s) => s.trim())
+                                    .filter(Boolean);
+                                if (!vals.includes(this.dataset.filename)) {
+                                    vals.push(this.dataset.filename);
+                                }
+                                currentGalleryTargetInput.value = vals.join(', ');
+                            } else {
+                                // Bei den anderen einfach überschreiben
+                                currentGalleryTargetInput.value = this.dataset.filename;
+                            }
+                            // WICHTIG: Das Input-Event auslösen, damit die Live-Preview lädt!
+                            currentGalleryTargetInput.dispatchEvent(new Event('input'));
+                        }
+                        if (modal) modal.style.display = 'none';
+                    });
+                });
+            } catch (err) {
+                galGrid.innerHTML = '<p style="color:red;">Fehler beim Laden der Galerie.</p>';
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-close-gallery-modal').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const modal = document.getElementById('gallery-modal');
+            if (modal) modal.style.display = 'none';
         });
     });
 

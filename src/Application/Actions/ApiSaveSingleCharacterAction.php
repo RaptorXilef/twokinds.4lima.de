@@ -64,8 +64,14 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 $safeName = $charIdStr;
             }
 
+            // Text-Eingaben auslesen
+            $mainPicUrl       = \trim((string) ($request->post['main_pic_url'] ?? ''));
+            $swatchPicUrl     = \trim((string) ($request->post['swatch_pic_url'] ?? ''));
+            $refSheetsUrlsRaw = \trim((string) ($request->post['ref_sheets_urls'] ?? ''));
+
             // 1. Profilbild (Klein)
             if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
+                // ... (Hier bleibt deine bisherige Upload-Logik für Profile unverändert!)
                 $file     = $request->files['profile_image'];
                 $ext      = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION)) ?: 'webp';
                 $fileName = $safeName . '_profile.' . $ext;
@@ -73,6 +79,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                     $picUrl = $fileName;
                 }
             } elseif ($picUrl !== null && $picUrl !== '') {
+                // ... (Bleibt unverändert)
                 $picUrl = \str_replace(' ', '_', $picUrl);
                 if (! \preg_match('/\.[a-z0-9]+$/i', $picUrl)) {
                     foreach (['webp', 'png', 'jpg', 'jpeg', 'gif'] as $ext) {
@@ -83,6 +90,8 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                         }
                     }
                 }
+            } else {
+                $picUrl = null;
             }
 
             // 2. Hauptbild (Groß)
@@ -93,6 +102,8 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/main/' . $fileName)) {
                     $mainPic = $fileName;
                 }
+            } elseif (isset($request->post['main_pic_url'])) { // Wurde das Feld mitgesendet?
+                $mainPic = $mainPicUrl !== '' ? $mainPicUrl : null; // Ermöglicht das Löschen, wenn das Feld leer ist!
             }
 
             // 3. Farbpalette (Swatch)
@@ -103,9 +114,17 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/swatches/' . $fileName)) {
                     $swatchPic = $fileName;
                 }
+            } elseif (isset($request->post['swatch_pic_url'])) {
+                $swatchPic = $swatchPicUrl !== '' ? $swatchPicUrl : null;
             }
 
             // 4. Reference Sheets (Array)
+            if (isset($request->post['ref_sheets_urls'])) {
+                $refSheets = []; // Wir überschreiben die bestehenden mit dem, was im Textfeld steht!
+                if ($refSheetsUrlsRaw !== '') {
+                    $refSheets = \array_values(\array_filter(\array_map('trim', \explode(',', $refSheetsUrlsRaw))));
+                }
+            }
             if (isset($request->files['ref_sheets']) && \is_array($request->files['ref_sheets']['name'])) {
                 $refFiles = $request->files['ref_sheets'];
                 for ($i = 0; $i < \count($refFiles['name']); ++$i) {
@@ -113,8 +132,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                         $ext      = \strtolower(\pathinfo($refFiles['name'][$i], \PATHINFO_EXTENSION)) ?: 'webp';
                         $fileName = $safeName . '_ref_' . \uniqid() . '.' . $ext;
                         if (\move_uploaded_file($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName)) {
-                            // Einfach an das bestehende Array anhängen
-                            $refSheets[] = $fileName;
+                            $refSheets[] = $fileName; // Einfach anhängen
                         }
                     }
                 }
