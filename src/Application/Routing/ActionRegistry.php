@@ -27,7 +27,8 @@ final class ActionRegistry
             return;
         }
 
-        $this->routes = $this->scanDirectory(\rtrim((string) $this->config->get('root_path'), '/\\') . '/src/Application/Actions');
+        $baseDir      = \rtrim((string) $this->config->get('root_path'), '/\\') . '/src/Application/Actions';
+        $this->routes = $this->scanDirectoryRecursively($baseDir);
 
         $cacheDir = \dirname($cacheFile);
         if (! \is_dir($cacheDir)) {
@@ -37,20 +38,26 @@ final class ActionRegistry
         \file_put_contents($cacheFile, '<?php return ' . \var_export($this->routes, true) . ';', \LOCK_EX);
     }
 
-    private function scanDirectory(string $dir): array
+    private function scanDirectoryRecursively(string $dir): array
     {
         $map = [];
         if (! \is_dir($dir)) {
             return $map;
         }
 
-        foreach (\glob($dir . '/*.php') as $file) {
-            $className = 'App\\Application\\Actions\\' . \basename($file, '.php');
-            if (\class_exists($className)) {
-                $reflection = new \ReflectionClass($className);
-                foreach ($reflection->getAttributes(ActionRoute::class) as $attribute) {
-                    $route            = $attribute->newInstance();
-                    $map[$route->key] = $className;
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                $relativePath = \str_replace($dir . \DIRECTORY_SEPARATOR, '', $file->getPathname());
+                $classSuffix  = \str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $relativePath);
+                $className    = 'App\\Application\\Actions\\' . $classSuffix;
+
+                if (\class_exists($className)) {
+                    $reflection = new \ReflectionClass($className);
+                    foreach ($reflection->getAttributes(ActionRoute::class) as $attribute) {
+                        $route            = $attribute->newInstance();
+                        $map[$route->key] = $className;
+                    }
                 }
             }
         }

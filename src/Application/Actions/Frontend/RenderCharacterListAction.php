@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Actions;
+namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ViewActionInterface;
@@ -12,7 +12,7 @@ use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 
 #[ActionRoute('render_character_list')]
-final readonly class CharacterListRenderAction implements ViewActionInterface
+final readonly class RenderCharacterListAction implements ViewActionInterface
 {
     public function __construct(
         private CharacterRepositoryInterface $charRepo,
@@ -25,8 +25,8 @@ final readonly class CharacterListRenderAction implements ViewActionInterface
     {
         $characters = $this->charRepo->findAll();
         $groups     = $this->groupRepo->findAll();
-
-        $this->renderer->render('character_list', [
+        // Auf neuen template-Pfad geändert:
+        $this->renderer->render('frontend/character_list', [
             'characters'      => $characters,
             'groups'          => $groups,
             'pageTitle'       => 'Charaktere',

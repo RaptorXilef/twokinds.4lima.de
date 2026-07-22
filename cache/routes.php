@@ -20,8 +20,8 @@
   'api_update_report_status' => 'App\\Application\\Actions\\ApiUpdateReportStatusAction',
   'api_upload_comic_media' => 'App\\Application\\Actions\\ApiUploadComicMediaAction',
   'api_upload_media' => 'App\\Application\\Actions\\ApiUploadMediaAction',
-  'render_archive' => 'App\\Application\\Actions\\ArchiveRenderAction',
-  'render_character_list' => 'App\\Application\\Actions\\CharacterListRenderAction',
-  'render_comic' => 'App\\Application\\Actions\\ComicRenderAction',
-  'render_404' => 'App\\Application\\Actions\\Error404RenderAction',
+  'render_archive' => 'App\\Application\\Actions\\Frontend\\RenderArchiveAction',
+  'render_character_list' => 'App\\Application\\Actions\\Frontend\\RenderCharacterListAction',
+  'render_comic' => 'App\\Application\\Actions\\Frontend\\RenderComicAction',
+  'render_404' => 'App\\Application\\Actions\\Frontend\\RenderError404Action',
 );

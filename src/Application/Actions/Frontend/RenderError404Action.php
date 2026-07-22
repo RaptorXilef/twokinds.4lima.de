@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Actions;
+namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ViewActionInterface;
@@ -10,7 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
 
 #[ActionRoute('render_404')]
-final readonly class Error404RenderAction implements ViewActionInterface
+final readonly class RenderError404Action implements ViewActionInterface
 {
     public function __construct(private TemplateRenderer $renderer)
     {
@@ -19,8 +19,8 @@ final readonly class Error404RenderAction implements ViewActionInterface
     public function execute(ServerRequest $request): mixed
     {
         \http_response_code(404);
-
-        $this->renderer->render('404', [
+        // Auf neuen template-Pfad geändert:
+        $this->renderer->render('frontend/404', [
             'pageTitle' => 'Fehler 404 - Seite nicht gefunden',
         ]);
 
