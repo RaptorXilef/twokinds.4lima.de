@@ -79,7 +79,7 @@ final readonly class FrontendController
             $relativePath = \trim((string) $path, '/');
         }
 
-        if ($relativePath === '' || $relativePath === 'index.php') {
+        if ($relativePath === '' || $relativePath === 'index.php' || $relativePath === 'comic') {
             return ['action' => 'render_comic', 'input' => $input];
         }
 
