@@ -46,7 +46,7 @@
     flex-flow: row nowrap;
     gap: 10px;
     width: 1039px;
-    min-height: 350px;
+    //min-height: 350px;
     padding: 8px;
     margin: auto;
     margin-bottom: 10px;
@@ -60,7 +60,7 @@ body.theme-night .bottom {
 
 .bottom-left {
     display: flex;
-    flex: 0 0 160px;
+    flex: 0 0 300px;
     flex-direction: column;
     justify-content: flex-start;
 }
@@ -95,7 +95,7 @@ body.theme-night .bottom {
 }
 
 footer {
-    padding: 20px 10px;
+    padding: /*20px*/ 0px 10px;
     font-size: 0.85em;
     line-height: 1.6;
     color: var(--text-color);

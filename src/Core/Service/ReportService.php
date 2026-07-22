@@ -24,9 +24,10 @@ final readonly class ReportService
     }
 
     public function submitReport(
-        string $comicIdStr,
+        ?string $comicIdStr, // ? Optional
         string $ipAddress,
         string $submitterName,
+        bool $wantsCredit,
         string $type,
         string $description,
         string $transcriptSuggestion,
@@ -47,11 +48,12 @@ final readonly class ReportService
         // 2. Report Entity aufbauen (Validierung passiert automatisch in den VOs und der Entity)
         $report = new Report(
             id: new ReportId(\uniqid('report_', true)),
-            comicId: new ComicId($comicIdStr),
+            comicId: $comicIdStr ? new ComicId($comicIdStr) : null, // Check ob null
             date: $now,
             status: 'open',
             ipHash: $ipHash,
             submitterName: \htmlspecialchars(\strip_tags($submitterName), \ENT_QUOTES, 'UTF-8'),
+            wantsCredit: $wantsCredit,
             type: $type,
             description: \htmlspecialchars(\strip_tags($description), \ENT_QUOTES, 'UTF-8'),
             transcriptSuggestion: $transcriptSuggestion, // HTML-Purify machen wir später im DTO oder der Action

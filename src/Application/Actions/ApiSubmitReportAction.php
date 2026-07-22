@@ -29,6 +29,7 @@ final readonly class ApiSubmitReportAction implements ActionInterface
                 $dto->comicId,
                 $dto->ipAddress,
                 $dto->submitterName,
+                $dto->wantsCredit,
                 $dto->reportType,
                 $dto->description,
                 $dto->transcriptSuggestion,

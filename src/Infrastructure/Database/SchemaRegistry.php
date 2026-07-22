@@ -82,11 +82,12 @@ final class SchemaRegistry
             // Domain: Reports
             'reports' => 'CREATE TABLE IF NOT EXISTS `reports` (
                 `id` VARCHAR(50) PRIMARY KEY,
-                `comic_id` VARCHAR(8) NOT NULL,
+                `comic_id` VARCHAR(8),
                 `date` DATETIME NOT NULL,
                 `status` VARCHAR(20) NOT NULL DEFAULT \'open\',
                 `ip_hash` VARCHAR(64) NOT NULL,
                 `submitter_name` VARCHAR(255) NOT NULL,
+                `wants_credit` TINYINT(1) NOT NULL DEFAULT 0,
                 `type` VARCHAR(50) NOT NULL,
                 `description` TEXT,
                 `transcript_suggestion` TEXT,

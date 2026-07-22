@@ -175,4 +175,105 @@
             });
         }
     });
+
+    // --- GLOBAL REPORT MODAL LOGIC ---
+    const reportModal = document.getElementById('global-report-modal');
+    const btnOpenReport = document.getElementById('open-global-report'); // Footer Link
+    const btnOpenReportComic = document.getElementById('open-report-modal'); // Link in der Comic-Navi
+    const btnCloseReport = document.getElementById('close-report-modal');
+    const reportForm = document.getElementById('global-report-form');
+    const reportStatusMsg = document.getElementById('report-status-msg');
+
+    function openReportWindow() {
+        if (!reportModal) return;
+        reportModal.style.display = 'flex';
+
+        // Versuchen wir, die Comic-ID aus der Seite auszulesen (falls wir auf einer Comicseite sind)
+        const comicImg = document.getElementById('comic-image');
+        const idInput = document.getElementById('report_comic_id');
+        if (comicImg && idInput) {
+            idInput.value = comicImg.dataset.id || '';
+        }
+
+        // Debug-Infos mitgeben (Wo genau war der User?)
+        const debugInput = document.getElementById('report_debug_info');
+        if (debugInput) {
+            debugInput.value = window.location.href;
+        }
+    }
+
+    if (btnOpenReport)
+        btnOpenReport.addEventListener('click', (e) => {
+            e.preventDefault();
+            openReportWindow();
+        });
+    if (btnOpenReportComic)
+        btnOpenReportComic.addEventListener('click', (e) => {
+            e.preventDefault();
+            openReportWindow();
+        });
+
+    if (btnCloseReport) {
+        btnCloseReport.addEventListener('click', () => {
+            reportModal.style.display = 'none';
+        });
+    }
+
+    // Modal schließen, wenn man daneben (ins Dunkle) klickt
+    if (reportModal) {
+        reportModal.addEventListener('click', (e) => {
+            if (e.target === reportModal) reportModal.style.display = 'none';
+        });
+    }
+
+    if (reportForm) {
+        reportForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('report-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sende...';
+
+            const formData = new FormData(reportForm);
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                // Den baseUrl global holen, falls nicht vorhanden Fallback auf root
+                const baseUrl = window.location.origin;
+                const res = await fetch(`${baseUrl}/api/submit_report`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const json = await res.json();
+                reportStatusMsg.style.display = 'block';
+
+                if (json.success) {
+                    reportStatusMsg.style.backgroundColor = 'var(--status-green-bg)';
+                    reportStatusMsg.style.color = 'var(--status-green-text)';
+                    reportStatusMsg.style.border = '1px solid var(--status-green-border)';
+                    reportStatusMsg.innerHTML = `<i class="fa-solid fa-check"></i> ${json.message}`;
+                    reportForm.reset();
+                    setTimeout(() => {
+                        reportModal.style.display = 'none';
+                        reportStatusMsg.style.display = 'none';
+                    }, 3000);
+                } else {
+                    reportStatusMsg.style.backgroundColor = 'var(--status-red-bg)';
+                    reportStatusMsg.style.color = 'var(--status-red-text)';
+                    reportStatusMsg.style.border = '1px solid var(--status-red-border)';
+                    reportStatusMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`;
+                }
+            } catch {
+                reportStatusMsg.style.display = 'block';
+                reportStatusMsg.style.backgroundColor = 'var(--status-red-bg)';
+                reportStatusMsg.style.color = 'var(--status-red-text)';
+                reportStatusMsg.innerHTML =
+                    '<i class="fa-solid fa-bomb"></i> Fehler bei der Serververbindung.';
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Fehler melden';
+        });
+    }
 })();

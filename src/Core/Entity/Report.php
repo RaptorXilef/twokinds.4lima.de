@@ -11,11 +11,12 @@ final readonly class Report
 {
     public function __construct(
         public ReportId $id,
-        public ComicId $comicId,
+        public ?ComicId $comicId, // Jetzt optional (?)
         public \DateTimeImmutable $date,
         public string $status,
         public string $ipHash, // Spamschutz aus alter JSON übernommen
         public string $submitterName,
+        public bool $wantsCredit,
         public string $type,
         public string $description,
         public string $transcriptSuggestion,

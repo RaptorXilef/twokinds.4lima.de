@@ -22,11 +22,12 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         // Nur noch das Array definieren. Das Schema diktiert die Keys.
         $data = [
             'id'                    => $report->id->value,
-            'comic_id'              => $report->comicId->value,
+            'comic_id'              => $report->comicId?->value, // ? Optional
             'date'                  => $report->date->format('Y-m-d H:i:s'),
             'status'                => $report->status,
             'ip_hash'               => $report->ipHash,
             'submitter_name'        => $report->submitterName,
+            'wants_credit'          => (int) $report->wantsCredit,
             'type'                  => $report->type,
             'description'           => $report->description,
             'transcript_suggestion' => $report->transcriptSuggestion,
@@ -68,11 +69,12 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
     {
         return new Report(
             id: new ReportId($row['id']),
-            comicId: new ComicId($row['comic_id']),
+            comicId: ! empty($row['comic_id']) ? new ComicId($row['comic_id']) : null,
             date: new \DateTimeImmutable($row['date']),
             status: $row['status'],
             ipHash: $row['ip_hash'],
             submitterName: $row['submitter_name'],
+            wantsCredit: (bool) ($row['wants_credit'] ?? false),
             type: $row['type'],
             description: $row['description'] ?? '',
             transcriptSuggestion: $row['transcript_suggestion'] ?? '',
