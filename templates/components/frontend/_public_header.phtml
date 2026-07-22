@@ -9,6 +9,9 @@ use App\Contracts\System\AssetHelperInterface;
  * @var string|null          $pageTitle
  * @var AssetHelperInterface $asset
  */
+
+// Den doppelten Slash verhindern
+$baseUrl = \rtrim($settings['base_url'], '/');
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -26,6 +29,8 @@ use App\Contracts\System\AssetHelperInterface;
     <!-- Meta-Tags für Sicherheit & Analytics -->
     <meta name="csrf-token"
           content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
@@ -44,19 +49,19 @@ use App\Contracts\System\AssetHelperInterface;
                 <div class="sidebar-content">
                     <div class="social-icons-container">
                         <a href="https://www.patreon.com/RaptorXilef" target="_blank" rel="noopener noreferrer" class="patreon-icon-wrapper" title="Patreon">
-                        <img class="patreon-light-icon social-icon" src="<?php echo $settings['base_url']; ?>assets/images/layout/ui/patreon.png" alt="Patreon" width="32" height="32">
-                        <img class="patreon-dark-icon social-icon" src="<?php echo $settings['base_url']; ?>assets/images/layout/ui/patreon_dark.png" alt="Patreon Dark" width="32" height="32">
+                        <img class="patreon-light-icon social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/patreon.png" alt="Patreon" width="32" height="32">
+                        <img class="patreon-dark-icon social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/patreon_dark.png" alt="Patreon Dark" width="32" height="32">
                     </a>
                     </div>
 
                     <nav id="menu"
                          class="menu">
                         <span class="menu-label">Comic & Archiv</span>
-                        <a href="<?php echo $settings['base_url']; ?>/comic">Comic</a>
-                        <a href="<?php echo $settings['base_url']; ?>/archiv">Archiv</a>
+                        <a href="<?php echo $baseUrl; ?>/comic">Comic</a>
+                        <a href="<?php echo $baseUrl; ?>/archiv">Archiv</a>
 
                         <span class="menu-label">Welt & Charaktere</span>
-                        <a href="<?php echo $settings['base_url']; ?>/charaktere">Charaktere</a>
+                        <a href="<?php echo $baseUrl; ?>/charaktere">Charaktere</a>
 
                         <a id="toggle_lights" class="theme" href="#">
                         <span class="themelabel">Theme</span>

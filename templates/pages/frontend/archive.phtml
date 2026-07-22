@@ -2,13 +2,12 @@
 declare(strict_types=1);
 
 /**
- * @var array $groupedComics
- * @var array $chapterDetails
+ * @var array  $groupedComics
+ * @var array  $chapterDetails
  * @var string $pageTitle
- * @var array $settings
+ * @var array  $settings
  */
-
-$baseUrl = \rtrim($settings['base_url'], '/');
+$baseUrl         = \rtrim($settings['base_url'], '/');
 $placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
 
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
@@ -28,7 +27,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <?php foreach ($groupedComics as $chapterId => $chapterComics) {
                 // Hole Titel und Beschreibung aus der Datenbank, falls vorhanden
                 $chapTitle = 'Dieses Kapitel wird im Moment bearbeitet.';
-                $chapDesc = 'Die Informationen zu diesem Kapitel werden noch erstellt.';
+                $chapDesc  = 'Die Informationen zu diesem Kapitel werden noch erstellt.';
 
                 if (isset($chapterDetails[$chapterId])) {
                     $chapTitle = $chapterDetails[$chapterId]->title;
@@ -36,8 +35,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         $chapDesc = $chapterDetails[$chapterId]->description;
                     }
                 }
-            ?>
-                <section class="chapter collapsible-section" data-ch-id="<?php echo \htmlspecialchars($chapterId); ?>">
+                ?>
+                <section class="chapter collapsible-section" data-ch-id="<?php echo \htmlspecialchars((string) $chapterId); ?>">
                     <h2 class="collapsible-header">
                         <?php echo \htmlspecialchars($chapTitle); ?>
                         <span class="arrow-left jsdep"></span>
@@ -48,18 +47,18 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <div class="collapsible-content">
                         <aside class="chapter-links">
                             <?php
-                            // Wir sortieren die Comics innerhalb des Kapitels aufsteigend (älteste zuerst)
-                            \usort($chapterComics, fn ($a, $b) => $a->id->value <=> $b->id->value);
+                                // Wir sortieren die Comics innerhalb des Kapitels aufsteigend (älteste zuerst)
+                                \usort($chapterComics, fn ($a, $b) => $a->id->value <=> $b->id->value);
 
-                            foreach ($chapterComics as $comic) {
-                                $comicId = $comic->id->value;
-                                $cb = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-                                $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}";
+                foreach ($chapterComics as $comic) {
+                    $comicId   = $comic->id->value;
+                    $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                    $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}";
 
-                                $dateObj = \DateTimeImmutable::createFromFormat('Ymd', substr($comicId, 0, 8));
-                                $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
-                                $tooltipText = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
-                            ?>
+                    $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
+                    $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
+                    $tooltipText = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
+                    ?>
                                 <a href="<?php echo $baseUrl; ?>/comic/<?php echo $comicId; ?>" title="<?php echo \htmlspecialchars($tooltipText); ?>">
                                     <span><?php echo \htmlspecialchars($tooltipText); ?></span>
                                     <!-- Lazy Loading & Fallback via archive.js (data-src) -->
