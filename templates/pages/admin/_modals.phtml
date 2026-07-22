@@ -468,7 +468,7 @@ foreach ($alphaChars as $char) {
                             </div>
                         </div>
 
-                        <!-- Zusatzbilder für das Frontend -->
+                        <!-- NEU: Zusatzbilder für das Frontend mit Drag & Drop -->
                         <div
                              style="padding: 15px; margin-bottom: 15px; background: var(--table-row-even); border: 1px solid var(--border-medium); border-radius: 6px;">
                             <h4 style="margin-top: 0; margin-bottom: 15px;">Zusätzliche Medien</h4>
@@ -492,17 +492,17 @@ foreach ($alphaChars as $char) {
                                              src=""
                                              style="display: none; width: auto; max-width: 100%; max-height: 120px; margin: 10px auto 0; border-radius: 4px; border: 1px solid var(--border-light);">
                                     </div>
-                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                        <input type="text"
-                                               id="main_pic_url"
-                                               name="main_pic_url"
-                                               placeholder="Oder Dateiname..."
-                                               style="flex: 1;">
+                                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 10px;">
                                         <button type="button"
                                                 class="button btn-open-gallery-dynamic"
                                                 data-target="main_pic_url"
                                                 data-folder="main"
-                                                title="Aus Galerie"><i class="fa-solid fa-images"></i></button>
+                                                title="Aus Galerie"><i class="fa-solid fa-images"></i> Aus
+                                            Galerie</button>
+                                        <input type="text"
+                                               id="main_pic_url"
+                                               name="main_pic_url"
+                                               placeholder="Manueller Dateiname...">
                                     </div>
                                 </div>
 
@@ -514,7 +514,7 @@ foreach ($alphaChars as $char) {
                                         <i class="fa-solid fa-palette"
                                            style="font-size: 2em; color: var(--text-color-light);"></i>
                                         <p style="margin: 5px 0 0; color: var(--text-color); font-weight: bold;">
-                                            Farbpalette (Swatch)</p>
+                                            Farbpalette</p>
                                         <input type="file"
                                                id="swatch_pic"
                                                name="swatch_pic"
@@ -524,17 +524,17 @@ foreach ($alphaChars as $char) {
                                              src=""
                                              style="display: none; width: auto; max-width: 100%; max-height: 120px; margin: 10px auto 0; border-radius: 4px; border: 1px solid var(--border-light);">
                                     </div>
-                                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                        <input type="text"
-                                               id="swatch_pic_url"
-                                               name="swatch_pic_url"
-                                               placeholder="Oder Dateiname..."
-                                               style="flex: 1;">
+                                    <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 10px;">
                                         <button type="button"
                                                 class="button btn-open-gallery-dynamic"
                                                 data-target="swatch_pic_url"
                                                 data-folder="swatches"
-                                                title="Aus Galerie"><i class="fa-solid fa-images"></i></button>
+                                                title="Aus Galerie"><i class="fa-solid fa-images"></i> Aus
+                                            Galerie</button>
+                                        <input type="text"
+                                               id="swatch_pic_url"
+                                               name="swatch_pic_url"
+                                               placeholder="Manueller Dateiname...">
                                     </div>
                                 </div>
                             </div>
@@ -559,17 +559,17 @@ foreach ($alphaChars as $char) {
                                          style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 15px;">
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 5px; margin-top: 5px;">
-                                    <input type="text"
-                                           id="ref_sheets_urls"
-                                           name="ref_sheets_urls"
-                                           placeholder="Dateinamen (kommagetrennt)..."
-                                           style="flex: 1;">
+                                <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 10px;">
                                     <button type="button"
                                             class="button btn-open-gallery-dynamic"
                                             data-target="ref_sheets_urls"
                                             data-folder="refsheets"
-                                            title="Aus Galerie"><i class="fa-solid fa-images"></i></button>
+                                            title="Aus Galerie"><i class="fa-solid fa-images"></i> Bilder aus Galerie
+                                        wählen</button>
+                                    <input type="text"
+                                           id="ref_sheets_urls"
+                                           name="ref_sheets_urls"
+                                           placeholder="Dateinamen (kommagetrennt)...">
                                 </div>
                             </div>
                         </div>

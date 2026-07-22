@@ -2,20 +2,25 @@
 
 declare(strict_types=1);
 
+use App\Core\Entity\Character;
+
 /**
- * @var \App\Core\Entity\Character $character
- * @var array                      $characterComics
- * @var string                     $pageTitle
- * @var array                      $settings
+ * @var Character $character
+ * @var array     $characterComics
+ * @var string    $pageTitle
+ * @var array     $settings
  */
 $baseUrl         = \rtrim($settings['base_url'], '/');
 $placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
 
-// Bestimme das Hauptbild: Wenn ein großes Bild existiert, nutze es, sonst fallback auf das kleine Profilbild
+// Das kleine Profilbild für den Header
+$profilePicUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+
+// Bestimme das Hauptbild für die große Ansicht links
 if ($character->mainPic) {
     $picUrl = "{$baseUrl}/assets/images/characters/main/{$character->mainPic}";
 } else {
-    $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+    $picUrl = $profilePicUrl; // Fallback, falls kein großes Bild existiert
 }
 
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
@@ -24,7 +29,12 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 <main class="content-area">
     <article style="width: 100%; max-width: 900px; margin: 0 auto;">
 
-        <header style="margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 10px;">
+        <!-- Header mit kleinem Avatar -->
+        <header
+                style="margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 15px; display: flex; align-items: center; gap: 20px;">
+            <img src="<?php echo \htmlspecialchars($profilePicUrl); ?>"
+                 alt="Avatar von <?php echo \htmlspecialchars($character->name); ?>"
+                 style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <h1 class="page-header"
                 style="border: none; margin: 0; padding: 0;">
                 <?php echo \htmlspecialchars($character->name); ?>
