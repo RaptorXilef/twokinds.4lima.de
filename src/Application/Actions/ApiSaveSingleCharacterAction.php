@@ -78,11 +78,17 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             $languages = \trim((string) ($request->post['languages'] ?? '')) ?: null;
 
             // 1. Profilbild (Klein) - auf max 1000px skaliert
-            if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
-                $file     = $request->files['profile_image'];
-                $fileName = $safeName . '_profile.webp'; // IMMER webp!
-                if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/profiles/' . $fileName, 1000)) {
-                    $picUrl = $fileName;
+            if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] !== \UPLOAD_ERR_NO_FILE) {
+                if ($request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
+                    $file     = $request->files['profile_image'];
+                    $fileName = $safeName . '_profile.webp'; // IMMER webp!
+                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/profiles/' . $fileName, 1000)) {
+                        $picUrl = $fileName;
+                    } else {
+                        $warnings[] = 'Profilbild: Konnte vom Server nicht verarbeitet werden.';
+                    }
+                } else {
+                    $warnings[] = 'Profilbild: PHP Upload-Fehler (Code: ' . $request->files['profile_image']['error'] . ')';
                 }
             } elseif ($picUrl !== null && $picUrl !== '') {
                 $picUrl = \str_replace(' ', '_', $picUrl);
@@ -100,22 +106,34 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             }
 
             // 2. Hauptbild (Groß) - auf max 2000px skaliert
-            if (isset($request->files['main_pic']) && $request->files['main_pic']['error'] === \UPLOAD_ERR_OK) {
-                $file     = $request->files['main_pic'];
-                $fileName = $safeName . '_main.webp';
-                if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/main/' . $fileName, 2000)) {
-                    $mainPic = $fileName;
+            if (isset($request->files['main_pic']) && $request->files['main_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
+                if ($request->files['main_pic']['error'] === \UPLOAD_ERR_OK) {
+                    $file     = $request->files['main_pic'];
+                    $fileName = $safeName . '_main.webp';
+                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/main/' . $fileName, 2000)) {
+                        $mainPic = $fileName;
+                    } else {
+                        $warnings[] = 'Hauptbild: Konnte vom Server nicht verarbeitet werden.';
+                    }
+                } else {
+                    $warnings[] = 'Hauptbild: PHP Upload-Fehler (Code: ' . $request->files['main_pic']['error'] . ')';
                 }
             } elseif (isset($request->post['main_pic_url'])) {
                 $mainPic = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
             }
 
             // 3. Farbpalette (Swatch) - auf max 1500px skaliert
-            if (isset($request->files['swatch_pic']) && $request->files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
-                $file     = $request->files['swatch_pic'];
-                $fileName = $safeName . '_swatch.webp';
-                if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/swatches/' . $fileName, 1500)) {
-                    $swatchPic = $fileName;
+            if (isset($request->files['swatch_pic']) && $request->files['swatch_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
+                if ($request->files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
+                    $file     = $request->files['swatch_pic'];
+                    $fileName = $safeName . '_swatch.webp';
+                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/swatches/' . $fileName, 1500)) {
+                        $swatchPic = $fileName;
+                    } else {
+                        $warnings[] = 'Farbpalette: Konnte vom Server nicht verarbeitet werden.';
+                    }
+                } else {
+                    $warnings[] = 'Farbpalette: PHP Upload-Fehler (Code: ' . $request->files['swatch_pic']['error'] . ')';
                 }
             } elseif (isset($request->post['swatch_pic_url'])) {
                 $swatchPic = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
@@ -135,7 +153,11 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                         $fileName = $safeName . '_ref_' . \uniqid() . '.webp';
                         if ($this->mediaService->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
                             $refSheets[] = $fileName;
+                        } else {
+                            $warnings[] = "Ref-Sheet '{$refFiles['name'][$i]}': Bildverarbeitung fehlgeschlagen.";
                         }
+                    } elseif ($refFiles['error'][$i] !== \UPLOAD_ERR_NO_FILE) {
+                        $warnings[] = "Ref-Sheet '{$refFiles['name'][$i]}': PHP Upload-Fehler (Code: " . $refFiles['error'][$i] . ')';
                     }
                 }
             }
@@ -162,7 +184,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
 
             $msg = "Charakter '{$dto->name}' erfolgreich gespeichert.";
             if (! empty($warnings)) {
-                $msg .= ' ' . \implode(' ', $warnings);
+                $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- " . \implode('<br>- ', $warnings);
             }
 
             return JsonResponse::success([

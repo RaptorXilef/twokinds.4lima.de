@@ -41,41 +41,30 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             </h1>
         </header>
 
+        <!-- HAUPT-LAYOUT: Display Block statt Flex, damit Float funktioniert! -->
         <section class="char-detail"
-                 style="border: none; padding: 0; margin-bottom: 40px; display: flex; flex-wrap: wrap; gap: 30px;">
+                 style="display: block; border: none; padding: 0; margin-bottom: 40px;">
 
-            <!-- Linke Spalte: Bilder -->
+            <!-- Linke Spalte: Profilbild & Swatch als Float -->
             <div class="char-img"
-                 style="flex: 0 0 auto; width: 100%; max-width: 150px; text-align: center;">
+                 style="float: left; width: 175px; margin-right: 25px; margin-bottom: 15px; text-align: center;">
                 <img class="portrait"
                      src="<?php echo \htmlspecialchars($picUrl); ?>"
                      alt="<?php echo \htmlspecialchars($character->name); ?>"
-                     style="width: 100%; height: auto; max-width: 150px; border-radius: 8px; border: 2px solid var(--border-medium); box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px;">
+                     style="width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-medium); box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px;">
 
                 <!-- Swatch -->
                 <?php if ($character->swatchPic) { ?>
                     <img src="<?php echo $baseUrl; ?>/assets/images/characters/swatches/<?php echo \htmlspecialchars($character->swatchPic); ?>"
                          alt="Color Swatch"
-                         style="width: 100%; max-width: 1500px; height: auto; border-radius: 4px; border: 1px solid var(--border-medium); margin-bottom: 15px;"
+                         style="width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border-medium); margin-bottom: 15px;"
                          loading="lazy">
-                <?php } ?>
-
-                <!-- Ref Sheets (Jetzt im Grid-Layout, falls viel Platz ist!) -->
-                <?php if (! empty($character->refSheets)) { ?>
-                    <div
-                         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; align-items: start; margin-top: 10px;">
-                        <?php foreach ($character->refSheets as $sheet) { ?>
-                            <a href="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>" target="_blank" title="Reference Sheet (Vollbild)">
-                                <img src="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>" alt="Ref Sheet" style="width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border-medium); box-shadow: 0 2px 4px rgba(0,0,0,0.1);" loading="lazy">
-                            </a>
-                        <?php } ?>
-                    </div>
                 <?php } ?>
             </div>
 
-            <!-- Rechte Spalte: Infos & Text -->
+            <!-- Rechte Spalte: Infos & Text umfließen das linke Bild -->
             <div class="char-info"
-                 style="flex: 1; min-width: 300px;">
+                 style="float: none; width: auto; display: block;">
 
                 <!-- Der volle Name als Untertitel, falls vorhanden -->
                 <?php if ($character->fullName) { ?>
@@ -99,7 +88,6 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                             $displayAge = \htmlspecialchars($character->age);
 
                             // Keidran Alter-Magie!
-                            // Wir schauen ob "keidran" oder "kaidran" in Spezies ODER Subspezies vorkommt
                             $isKeidran = \stripos($character->species ?? '', 'k') !== false || \stripos($character->subspecies ?? '', 'k') !== false;
 
                             if ($isKeidran && \preg_match('/(\d+)/', $character->age, $matches)) {
@@ -131,7 +119,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
                 <!-- Das HTML-Transkript / Die Biografie -->
                 <div class="character-description"
-                     style="line-height: 1.6; font-size: 1.05em; margin-bottom: 25px;">
+                     style="line-height: 1.6; font-size: 1.05em; margin-bottom: 25px; margin-top: 15px;">
                     <?php
                     if ($character->description !== null && \trim($character->description) !== '') {
                         echo $character->description;
@@ -140,7 +128,29 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     }
 ?>
                 </div>
+
             </div>
+
+            <!-- Ref Sheets: Fließen elegant als Inline-Blöcke um die Hauptbilder! -->
+            <?php if (! empty($character->refSheets)) { ?>
+                <div style="display: block; margin-top: 15px;">
+                    <?php foreach ($character->refSheets as $sheet) { ?>
+                        <a href="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>"
+                           target="_blank"
+                           title="Reference Sheet (Vollbild)"
+                           style="display: inline-block; vertical-align: top; width: 140px; margin-right: 15px; margin-bottom: 15px; transition: transform 0.2s ease;">
+                            <img src="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>"
+                                 alt="Ref Sheet"
+                                 style="width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border-medium); box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                                 loading="lazy">
+                        </a>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+
+            <!-- Clearfix, damit die Section den gesamten Inhalt umschließt -->
+            <div style="clear: both;"></div>
+
         </section>
 
         <!-- Comic-Auftritte -->
