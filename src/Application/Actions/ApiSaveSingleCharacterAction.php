@@ -14,6 +14,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Core\Entity\Character;
 use App\Core\Service\CharacterService;
+use App\Core\Service\MediaService;
 use App\Core\ValueObject\CharacterId;
 
 #[ActionRoute('api_save_single_character')]
@@ -23,6 +24,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
         private CharacterService $characterService,
         private CharacterRepositoryInterface $charRepo,
         private ConfigInterface $config,
+        private MediaService $mediaService,
     ) {
     }
 
@@ -75,17 +77,14 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             $species   = \trim((string) ($request->post['species'] ?? '')) ?: null;
             $languages = \trim((string) ($request->post['languages'] ?? '')) ?: null;
 
-            // 1. Profilbild (Klein)
+            // 1. Profilbild (Klein) - auf max 1000px skaliert
             if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
-                // ... (Hier bleibt deine bisherige Upload-Logik für Profile unverändert!)
                 $file     = $request->files['profile_image'];
-                $ext      = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION)) ?: 'webp';
-                $fileName = $safeName . '_profile.' . $ext;
-                if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/profiles/' . $fileName)) {
+                $fileName = $safeName . '_profile.webp'; // IMMER webp!
+                if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/profiles/' . $fileName, 1000)) {
                     $picUrl = $fileName;
                 }
             } elseif ($picUrl !== null && $picUrl !== '') {
-                // ... (Bleibt unverändert)
                 $picUrl = \str_replace(' ', '_', $picUrl);
                 if (! \preg_match('/\.[a-z0-9]+$/i', $picUrl)) {
                     foreach (['webp', 'png', 'jpg', 'jpeg', 'gif'] as $ext) {
@@ -100,45 +99,42 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 $picUrl = null;
             }
 
-            // 2. Hauptbild (Groß)
+            // 2. Hauptbild (Groß) - auf max 2000px skaliert
             if (isset($request->files['main_pic']) && $request->files['main_pic']['error'] === \UPLOAD_ERR_OK) {
                 $file     = $request->files['main_pic'];
-                $ext      = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION)) ?: 'webp';
-                $fileName = $safeName . '_main.' . $ext;
-                if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/main/' . $fileName)) {
+                $fileName = $safeName . '_main.webp';
+                if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/main/' . $fileName, 2000)) {
                     $mainPic = $fileName;
                 }
-            } elseif (isset($request->post['main_pic_url'])) { // Wurde das Feld mitgesendet?
-                $mainPic = $mainPicUrl !== '' ? $mainPicUrl : null; // Ermöglicht das Löschen, wenn das Feld leer ist!
+            } elseif (isset($request->post['main_pic_url'])) {
+                $mainPic = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
             }
 
-            // 3. Farbpalette (Swatch)
+            // 3. Farbpalette (Swatch) - auf max 1500px skaliert
             if (isset($request->files['swatch_pic']) && $request->files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
                 $file     = $request->files['swatch_pic'];
-                $ext      = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION)) ?: 'webp';
-                $fileName = $safeName . '_swatch.' . $ext;
-                if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/swatches/' . $fileName)) {
+                $fileName = $safeName . '_swatch.webp';
+                if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/swatches/' . $fileName, 1500)) {
                     $swatchPic = $fileName;
                 }
             } elseif (isset($request->post['swatch_pic_url'])) {
-                $swatchPic = $swatchPicUrl !== '' ? $swatchPicUrl : null;
+                $swatchPic = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
             }
 
-            // 4. Reference Sheets (Array)
+            // 4. Reference Sheets (Array) - auf max 3000px skaliert
             if (isset($request->post['ref_sheets_urls'])) {
-                $refSheets = []; // Wir überschreiben die bestehenden mit dem, was im Textfeld steht!
+                $refSheets = [];
                 if ($refSheetsUrlsRaw !== '') {
-                    $refSheets = \array_values(\array_filter(\array_map('trim', \explode(',', $refSheetsUrlsRaw))));
+                    $refSheets = \array_values(\array_filter(\array_map(fn ($s) => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsRaw))));
                 }
             }
             if (isset($request->files['ref_sheets']) && \is_array($request->files['ref_sheets']['name'])) {
                 $refFiles = $request->files['ref_sheets'];
                 for ($i = 0; $i < \count($refFiles['name']); ++$i) {
                     if ($refFiles['error'][$i] === \UPLOAD_ERR_OK) {
-                        $ext      = \strtolower(\pathinfo($refFiles['name'][$i], \PATHINFO_EXTENSION)) ?: 'webp';
-                        $fileName = $safeName . '_ref_' . \uniqid() . '.' . $ext;
-                        if (\move_uploaded_file($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName)) {
-                            $refSheets[] = $fileName; // Einfach anhängen
+                        $fileName = $safeName . '_ref_' . \uniqid() . '.webp';
+                        if ($this->mediaService->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
+                            $refSheets[] = $fileName;
                         }
                     }
                 }

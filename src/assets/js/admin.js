@@ -852,10 +852,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCharDropZone('char-drop-zone-main', 'main_pic', 'preview-img-main');
     setupCharDropZone('char-drop-zone-swatch', 'swatch_pic', 'preview-img-swatch');
 
-    // 3. Erweitert: Reference Sheets (Multiple)
+    // 3. Erweitert: Reference Sheets (Multiple) mit Sammel-Logik
     const zoneRefs = document.getElementById('char-drop-zone-refs');
     const inputRefs = document.getElementById('ref_sheets');
     const containerRefs = document.getElementById('preview-container-refs');
+
+    // Dieser Speicher hält alle Dateien, bis das Formular abgeschickt wird
+    let accumulatedRefFiles = new DataTransfer();
 
     if (zoneRefs && inputRefs && containerRefs) {
         zoneRefs.addEventListener('click', () => inputRefs.click());
@@ -877,7 +880,11 @@ document.addEventListener('DOMContentLoaded', () => {
             zoneRefs.style.borderColor = 'var(--status-green-text)';
             zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
             if (e.dataTransfer.files.length) {
-                inputRefs.files = e.dataTransfer.files;
+                // Bei Drag & Drop: Füge Dateien zum echten Input hinzu
+                Array.from(e.dataTransfer.files).forEach((file) =>
+                    accumulatedRefFiles.items.add(file)
+                );
+                inputRefs.files = accumulatedRefFiles.files;
                 inputRefs.dispatchEvent(new Event('change'));
             }
         });
@@ -888,22 +895,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 zoneRefs.style.borderColor = 'var(--status-green-text)';
                 zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
 
-                Array.from(inputRefs.files).forEach((file) => {
+                // Falls man über "Klick" (Datei-Dialog) neue Dateien ausgewählt hat,
+                // müssen diese auch ins Sammel-Array (DataTransfer hat nur neue).
+                // Wir überschreiben das accumulated Array einfach mit den aktullen inputRefs.files,
+                // da der Browser bei "Klick" ohnehin alles ersetzt.
+                accumulatedRefFiles = new DataTransfer();
+                Array.from(inputRefs.files).forEach((file) => accumulatedRefFiles.items.add(file));
+
+                // Wir rendern zur Sicherheit das Preview immer komplett neu,
+                // aber behalten die Bilder bei, die vom Server kommen (die haben keine grüne Umrandung).
+                // Deshalb leeren wir containerRefs nicht, sondern fügen nur die neuen an.
+
+                // Um Duplikate in der Ansicht zu vermeiden: Entferne alle *neuen* Bilder (grüner Rand)
+                Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) =>
+                    img.remove()
+                );
+
+                Array.from(accumulatedRefFiles.files).forEach((file) => {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const img = document.createElement('img');
                         img.src = e.target.result;
+                        img.className = 'is-new'; // Markierung für neue Bilder
                         img.style.maxWidth = '80px';
                         img.style.maxHeight = '80px';
                         img.style.objectFit = 'cover';
                         img.style.borderRadius = '4px';
-                        img.style.border = '2px solid var(--status-green-text)'; // Grün umrandet = Neu
+                        img.style.border = '2px solid var(--status-green-text)'; // Grün umrandet
                         containerRefs.appendChild(img);
                     };
                     reader.readAsDataURL(file);
                 });
             }
         });
+
+        // WICHTIG: Wenn das Modal neu geöffnet wird, leeren wir unseren Sammler!
+        const originalOpenCharModal = window.openCharModal;
+        window.openCharModal = (data = null) => {
+            accumulatedRefFiles = new DataTransfer(); // Leeren!
+            originalOpenCharModal(data);
+        };
     }
 
     // --- BILDER GALERIE MODAL ---

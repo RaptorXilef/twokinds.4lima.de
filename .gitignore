@@ -270,6 +270,9 @@ public/assets/img/test/**
 rss.xml
 sitemap.xml
 
+src/assets/images/
+public/assets/images/
+
 # --- BILDER & MEDIEN (COMIC) ---
 # High-Res Bilder ignorieren, Systemdateien behalten
 public/assets/images/comic/hires/*.jpg
