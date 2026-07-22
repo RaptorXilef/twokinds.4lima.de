@@ -79,11 +79,10 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                         <div class="character-item">
                             <a href="<?php echo $link; ?>">
                                 <div class="character-avatar-container">
-                                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                                         data-src="<?php echo \htmlspecialchars($picUrl); ?>"
+                                    <img src="<?php echo \htmlspecialchars($picUrl); ?>"
                                          alt="<?php echo \htmlspecialchars($character->name); ?>"
                                          loading="lazy"
-                                         onload="this.src=this.dataset.src; this.classList.add('loaded')">
+                                         onload="this.classList.add('loaded')">
                                 </div>
                                 <p class="character-name"><?php echo \htmlspecialchars($character->name); ?></p>
                             </a>
@@ -107,11 +106,10 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                     <div class="character-item">
                         <a href="<?php echo $link; ?>">
                             <div class="character-avatar-container">
-                                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-                                     data-src="<?php echo \htmlspecialchars($picUrl); ?>"
+                                <img src="<?php echo \htmlspecialchars($picUrl); ?>"
                                      alt="<?php echo \htmlspecialchars($character->name); ?>"
                                      loading="lazy"
-                                     onload="this.src=this.dataset.src; this.classList.add('loaded')">
+                                     onload="this.classList.add('loaded')">
                             </div>
                             <p class="character-name"><?php echo \htmlspecialchars($character->name); ?></p>
 
