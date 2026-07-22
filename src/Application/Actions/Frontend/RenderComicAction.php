@@ -8,6 +8,8 @@ use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
+use App\Contracts\Storage\CharacterGroupRepositoryInterface;
+use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 
 #[ActionRoute('render_comic')]
@@ -15,6 +17,8 @@ final readonly class RenderComicAction implements ActionInterface
 {
     public function __construct(
         private ComicRepositoryInterface $comicRepo,
+        private CharacterRepositoryInterface $charRepo,
+        private CharacterGroupRepositoryInterface $groupRepo,
         private TemplateRenderer $renderer,
     ) {
     }
@@ -75,6 +79,10 @@ final readonly class RenderComicAction implements ActionInterface
             $pageTitle = $comic->type . ': ' . $pageTitle;
         }
 
+        // Charaktere und Gruppen laden
+        $characters = $this->charRepo->findAll();
+        $groups     = $this->groupRepo->findAll();
+
         $this->renderer->render('frontend/comic', [
             'comic'       => $comic,
             'prev'        => $prev,
@@ -84,7 +92,9 @@ final readonly class RenderComicAction implements ActionInterface
             'isLatest'    => ($comic->id->value === $latest->id->value),
             'pageTitle'   => $pageTitle,
             'isComicPage' => true,
-            'displayDate' => $displayDate, // An Template übergeben
+            'displayDate' => $displayDate,
+            'characters'  => $characters,
+            'groups'      => $groups,
         ]);
 
         return null;

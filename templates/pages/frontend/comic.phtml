@@ -154,6 +154,12 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             </aside>
         <?php } ?>
 
+        <!-- NEU: Charakter-Lego-Modul einbinden (Gefiltert auf Comic-ID) -->
+        <?php
+        $limitToIds = \array_map(fn ($id) => $id->value, $comic->characterIds);
+include __DIR__ . '/../../components/frontend/_character_display.phtml';
+?>
+
     </article>
 </main>
 
