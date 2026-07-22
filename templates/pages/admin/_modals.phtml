@@ -467,6 +467,41 @@ foreach ($alphaChars as $char) {
                             </div>
                         </div>
 
+                        <!-- Zusatzbilder für das Frontend -->
+                        <div
+                             style="padding: 15px; margin-bottom: 15px; background: var(--table-row-even); border: 1px solid var(--border-medium); border-radius: 6px;">
+                            <h4 style="margin-top: 0; margin-bottom: 10px;">Zusätzliche Medien</h4>
+                            <div class="form-group"
+                                 style="margin-bottom: 10px;">
+                                <label for="main_pic">Großes Hauptbild (Detailseite)</label>
+                                <input type="file"
+                                       id="main_pic"
+                                       name="main_pic"
+                                       accept="image/*"
+                                       style="background: var(--content-bg);">
+                            </div>
+                            <div class="form-group"
+                                 style="margin-bottom: 10px;">
+                                <label for="swatch_pic">Farbpalette (Swatch)</label>
+                                <input type="file"
+                                       id="swatch_pic"
+                                       name="swatch_pic"
+                                       accept="image/*"
+                                       style="background: var(--content-bg);">
+                            </div>
+                            <div class="form-group">
+                                <label for="ref_sheets">Reference Sheets (Mehrere Bilder markierbar)</label>
+                                <input type="file"
+                                       id="ref_sheets"
+                                       name="ref_sheets[]"
+                                       accept="image/*"
+                                       multiple
+                                       style="background: var(--content-bg);">
+                            </div>
+                            <small style="color: var(--text-color-light); display: block; margin-top: 5px;">Alte Bilder
+                                werden automatisch behalten, wenn hier nichts neues ausgewählt wird.</small>
+                        </div>
+
                         <div class="form-group">
                             <label for="char_description">Beschreibung (HTML)</label>
                             <textarea id="char_description"

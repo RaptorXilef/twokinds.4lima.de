@@ -11,6 +11,7 @@ use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Core\Entity\Character;
 use App\Core\Service\CharacterService;
 use App\Core\ValueObject\CharacterId;
@@ -20,6 +21,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
 {
     public function __construct(
         private CharacterService $characterService,
+        private CharacterRepositoryInterface $charRepo,
         private ConfigInterface $config,
     ) {
     }
@@ -38,62 +40,82 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 $charIdStr = 'char_' . \str_pad((string) \random_int(1, 9999), 4, '0', \STR_PAD_LEFT);
             }
 
-            $picUrl = $dto->picUrl;
-            // Leerzeichen durch Unterstriche ersetzen
-            if ($picUrl !== null && $picUrl !== '') {
-                $picUrl = \str_replace(' ', '_', $picUrl);
-            }
-            $warnings  = [];
-            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
+            // Existierenden Charakter holen, um alte Bildpfade zu erhalten
+            $existing = $this->charRepo->findById(new CharacterId($charIdStr));
 
-            // 1. Priorität: Wurde ein Bild hochgeladen?
+            $picUrl    = $dto->picUrl;
+            $mainPic   = $existing ? $existing->mainPic : null;
+            $swatchPic = $existing ? $existing->swatchPic : null;
+            $refSheets = $existing ? $existing->refSheets : [];
+
+            $warnings      = [];
+            $baseTargetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters';
+
+            // Verzeichnisse sicherstellen
+            foreach (['profiles', 'main', 'swatches', 'refsheets'] as $sub) {
+                $dir = $baseTargetDir . '/' . $sub;
+                if (! \is_dir($dir)) {
+                    @\mkdir($dir, 0o755, true);
+                }
+            }
+
+            $safeName = \preg_replace('/[^a-zA-Z0-9_-]/', '', \str_replace(' ', '_', $dto->name));
+            if ($safeName === '') {
+                $safeName = $charIdStr;
+            }
+
+            // 1. Profilbild (Klein)
             if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
-                if (! \is_dir($targetDir)) {
-                    @\mkdir($targetDir, 0o755, true);
-                }
-
-                $file = $request->files['profile_image'];
-                $ext  = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION));
-                if ($ext === '') {
-                    $ext = 'webp';
-                }
-
-                // Wir speichern das Bild als "charid_timestamp.ext" um Caching-Probleme zu vermeiden
-                $file = $request->files['profile_image'];
-                $ext  = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION));
-                if ($ext === '') {
-                    $ext = 'webp';
-                }
-
-                // Dateinamen aus Charakternamen generieren (Leerzeichen durch _, nur Alphanumerisch)
-                $safeName = \preg_replace('/[^a-zA-Z0-9_-]/', '', \str_replace(' ', '_', $dto->name));
-                if ($safeName === '') {
-                    $safeName = $charIdStr; // Fallback auf ID
-                }
-
-                $fileName = $safeName . '.' . $ext;
-
-                if (\move_uploaded_file($file['tmp_name'], $targetDir . '/' . $fileName)) {
+                $file     = $request->files['profile_image'];
+                $ext      = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION)) ?: 'webp';
+                $fileName = $safeName . '_profile.' . $ext;
+                if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/profiles/' . $fileName)) {
                     $picUrl = $fileName;
-                } else {
-                    $warnings[] = 'Das hochgeladene Bild konnte nicht auf dem Server gespeichert werden.';
                 }
-            }
-            // 2. Priorität: Intelligente Endungs-Erkennung für das Textfeld
-            elseif ($picUrl !== null && $picUrl !== '') {
-                // Hat der String KEINE Dateiendung? (z.B. "trace" statt "trace.jpg")
+            } elseif ($picUrl !== null && $picUrl !== '') {
+                $picUrl = \str_replace(' ', '_', $picUrl);
                 if (! \preg_match('/\.[a-z0-9]+$/i', $picUrl)) {
-                    $found = false;
                     foreach (['webp', 'png', 'jpg', 'jpeg', 'gif'] as $ext) {
-                        if (\file_exists($targetDir . '/' . $picUrl . '.' . $ext)) {
+                        if (\file_exists($baseTargetDir . '/profiles/' . $picUrl . '.' . $ext)) {
                             $picUrl .= '.' . $ext;
-                            $found = true;
 
                             break;
                         }
                     }
-                    if (! $found) {
-                        $warnings[] = "Warnung: Es wurde kein Bild mit dem Namen '{$picUrl}' (webp, png, jpg...) auf dem Server gefunden.";
+                }
+            }
+
+            // 2. Hauptbild (Groß)
+            if (isset($request->files['main_pic']) && $request->files['main_pic']['error'] === \UPLOAD_ERR_OK) {
+                $file     = $request->files['main_pic'];
+                $ext      = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION)) ?: 'webp';
+                $fileName = $safeName . '_main.' . $ext;
+                if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/main/' . $fileName)) {
+                    $mainPic = $fileName;
+                }
+            }
+
+            // 3. Farbpalette (Swatch)
+            if (isset($request->files['swatch_pic']) && $request->files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
+                $file     = $request->files['swatch_pic'];
+                $ext      = \strtolower(\pathinfo($file['name'], \PATHINFO_EXTENSION)) ?: 'webp';
+                $fileName = $safeName . '_swatch.' . $ext;
+                if (\move_uploaded_file($file['tmp_name'], $baseTargetDir . '/swatches/' . $fileName)) {
+                    $swatchPic = $fileName;
+                }
+            }
+
+            // 4. Reference Sheets (Array)
+            if (isset($request->files['ref_sheets']) && \is_array($request->files['ref_sheets']['name'])) {
+                $refFiles = $request->files['ref_sheets'];
+                for ($i = 0; $i < \count($refFiles['name']); ++$i) {
+                    if ($refFiles['error'][$i] === \UPLOAD_ERR_OK) {
+                        $ext      = \strtolower(\pathinfo($refFiles['name'][$i], \PATHINFO_EXTENSION)) ?: 'webp';
+                        $fileName = $safeName . '_ref_' . \uniqid() . '.' . $ext;
+                        if (\move_uploaded_file($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName)) {
+                            // Einfach an das bestehende Array anhängen
+                            $refSheets[] = $fileName;
+                        }
                     }
                 }
             }
@@ -101,10 +123,13 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             $character = new Character(
                 id: new CharacterId($charIdStr),
                 name: $dto->name,
-                picUrl: $picUrl,
+                picUrl: $picUrl === '' ? null : $picUrl,
                 description: $dto->description,
                 altNames: $dto->altNames,
                 rank: $dto->rank,
+                mainPic: $mainPic,
+                swatchPic: $swatchPic,
+                refSheets: $refSheets,
             );
 
             $this->characterService->saveCharacter($character);

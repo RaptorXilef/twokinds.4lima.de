@@ -60,8 +60,11 @@ final class SchemaRegistry
                 `pic_url` VARCHAR(255),
                 `description` TEXT,
                 `alt_names` VARCHAR(255),
-                `rank` VARCHAR(100)
-            ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;',
+                `rank` VARCHAR(100),
+                `main_pic` VARCHAR(255),
+                `swatch_pic` VARCHAR(255),
+                `ref_sheets` JSON
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'character_groups' => 'CREATE TABLE IF NOT EXISTS `character_groups` (
                 `name` VARCHAR(100) PRIMARY KEY,

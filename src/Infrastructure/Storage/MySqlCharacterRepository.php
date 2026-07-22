@@ -25,6 +25,9 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
             'description' => $character->description,
             'alt_names'   => $character->altNames,
             'rank'        => $character->rank,
+            'main_pic'    => $character->mainPic,
+            'swatch_pic'  => $character->swatchPic,
+            'ref_sheets'  => \json_encode($character->refSheets, \JSON_UNESCAPED_UNICODE),
         ];
         $this->executeUpsert('characters', $data, ['id']);
     }
@@ -61,6 +64,9 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
             description: $row['description'],
             altNames: $row['alt_names'] ?? null,
             rank: $row['rank'] ?? null,
+            mainPic: $row['main_pic'] ?? null,
+            swatchPic: $row['swatch_pic'] ?? null,
+            refSheets: \json_decode($row['ref_sheets'] ?? '[]', true) ?? [],
         );
     }
 }

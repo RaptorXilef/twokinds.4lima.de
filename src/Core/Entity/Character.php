@@ -15,6 +15,9 @@ final readonly class Character
         public ?string $description,
         public ?string $altNames = null,
         public ?string $rank = null,
+        public ?string $mainPic = null,
+        public ?string $swatchPic = null,
+        public array $refSheets = [],
     ) {
     }
 }
