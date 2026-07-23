@@ -44,6 +44,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             $csp = [
                 'default-src' => [
                     "'self'",
+                    'https://cdnjs.cloudflare.com',
                 ],
                 'upgrade-insecure-requests' => [],
                 'script-src'                => [

@@ -360,4 +360,31 @@
         });
     }
     // --- GLOBAL REPORT MODAL LOGIC ENDE ---
+
+    // --- CSP-Konforme Ersatz-Logik für entfernte HTML-Attribute ---
+
+    // 1. Ersatz für onload="this.classList.add('loaded')" in der Charakter-Liste
+    // Da Bilder dynamisch laden, nutzen wir das Event in der Capture-Phase (true)
+    document.addEventListener(
+        'load',
+        (e) => {
+            if (e.target && e.target.tagName === 'IMG' && e.target.closest('.character-item')) {
+                e.target.classList.add('loaded');
+            }
+        },
+        true
+    );
+
+    // 2. Ersatz für onerror auf der Comic-Seite und 404-Seite
+    const mainComicImage = document.getElementById('comic-image');
+    if (mainComicImage) {
+        mainComicImage.addEventListener('error', function () {
+            this.src = 'https://placehold.co/800x600/cccccc/333333?text=Bild+Fehler';
+            if (this.parentElement.tagName === 'A') {
+                this.parentElement.href = '#';
+            }
+        });
+    }
+
+    // --- CSP-Konforme Ersatz-Logik für entfernte HTML-Attribute ENDE ---
 })();

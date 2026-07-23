@@ -25,7 +25,7 @@ final readonly class SubmitReportRequest
     public static function fromRequest(ServerRequest $request): self
     {
         // JSON-Payload auslesen (wurde von der JsonBodyParserMiddleware in $request->input gelegt)
-        $input = $request->input;
+        $input = ! empty($request->post) ? $request->post : $request->input;
 
         if (! empty($input['report_honeypot'])) {
             // Honeypot wurde ausgefüllt -> Bot-Verdacht!

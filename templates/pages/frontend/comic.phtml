@@ -89,14 +89,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         <!-- Das Comic-Bild -->
         <div class="comic-image-container">
             <a id="comic-image-link" href="<?php echo \htmlspecialchars($imageHires); ?>" target="_blank" rel="noopener noreferrer">
-                <img id="comic-image"
-                     class="comic-image"
-                     src="<?php echo \htmlspecialchars($imageLowres); ?>"
-                     alt="<?php echo \htmlspecialchars($comic->name); ?>"
-                     fetchpriority="high"
-                     data-id="<?php echo $comic->id->value; ?>"
-                     data-en-original="<?php echo \htmlspecialchars($comic->originalUrl); ?>"
-                     onerror="this.onerror=null; this.src='https://placehold.co/800x600/cccccc/333333?text=Bild+Fehler'; this.parentElement.href='#';">
+                <img id="comic-image" class="comic-image" src="<?php echo \htmlspecialchars($imageLowres); ?>" alt="<?php echo \htmlspecialchars($comic->name); ?>" fetchpriority="high" data-id="<?php echo $comic->id->value; ?>" data-en-original="<?php echo \htmlspecialchars($comic->originalUrl); ?>">
             </a>
         </div>
 
