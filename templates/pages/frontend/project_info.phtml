@@ -1,7 +1,4 @@
-<?php
-
-declare(strict_types=1);
-
+<?php declare(strict_types=1);
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
@@ -9,26 +6,20 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 <main class="content-area">
     <article style="width: 100%; max-width: 900px; margin: 0 auto;">
 
-        <header
-                style="text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--border-medium);">
-            <h1 class="page-header"
-                style="border: none; margin-bottom: 10px; font-size: 2.2em;">Info-Hub & FAQ</h1>
+        <header style="text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--border-medium);">
+            <h1 class="page-header" style="border: none; margin-bottom: 10px; font-size: 2.2em;">Info-Hub & FAQ</h1>
             <p style="color: var(--text-color-faded); font-size: 1.1em; max-width: 600px; margin: 0 auto;">
-                Alles, was du über das deutsche TwoKinds-Übersetzungsprojekt wissen musst - kompakt an einem Ort.
+                Alles, was du über das deutsche TwoKinds-Übersetzungsprojekt wissen musst – kompakt an einem Ort.
             </p>
         </header>
 
         <!-- KACHEL-LAYOUT FÜR INFOS -->
-        <div
-             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
 
             <!-- Kachel 1: Über uns -->
-            <section
-                     style="background: var(--table-row-even); padding: 25px; border-radius: 8px; border: 1px solid var(--border-medium);">
-                <h2
-                    style="margin-top: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px; color: var(--text-color);">
-                    <i class="fa-solid fa-users"
-                       style="color: var(--link-color);"></i> Das Projekt
+            <section style="background: var(--table-row-even); padding: 25px; border-radius: 8px; border: 1px solid var(--border-medium);">
+                <h2 style="margin-top: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px; color: var(--text-color);">
+                    <i class="fa-solid fa-users" style="color: var(--link-color);"></i> Das Projekt
                 </h2>
                 <p style="line-height: 1.6;">
                     Dies ist ein inoffizielles, von einem Fan (Felix Maywald / RaptorXilef) betriebenes Archiv für den Webcomic <strong>TwoKinds</strong>
@@ -37,20 +28,14 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 </p>
                 <p style="line-height: 1.6">
                     Ich übersetze, lektoriere und setze die deutschen Texte so nah wie möglich am Original in die
-                    Sprechblasen ein.
-                </p>
-                <p style="line-height: 1.6; margin-bottom: 0;">
-                    Ich hoffe sehr, dass vielleicht irgendwann Tom einmal auf diese Übersetzung aufmerksam wird und mir ein Feedback gibt. :D
+                    Sprechblasen ein. Ich hoffe sehr, dass Tom vielleicht irgendwann einmal auf diese Übersetzung aufmerksam wird! :D
                 </p>
             </section>
 
             <!-- Kachel 2: RSS & Updates -->
-            <section
-                     style="background: var(--table-row-even); padding: 25px; border-radius: 8px; border: 1px solid var(--border-medium);">
-                <h2
-                    style="margin-top: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px; color: var(--text-color);">
-                    <i class="fa-solid fa-rss"
-                       style="color: #f26522;"></i> Bleib auf dem Laufenden
+            <section style="background: var(--table-row-even); padding: 25px; border-radius: 8px; border: 1px solid var(--border-medium);">
+                <h2 style="margin-top: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px; color: var(--text-color);">
+                    <i class="fa-solid fa-rss" style="color: #f26522;"></i> Bleib auf dem Laufenden
                 </h2>
                 <p style="line-height: 1.6;">
                     Du willst keine neue übersetzte Seite verpassen? Nutze unseren RSS-Feed, um Updates direkt in deinen
@@ -65,58 +50,102 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
         </div>
 
-        <!-- FAQ BEREICH (Akkordeon-Style / Liste) -->
+        <!-- HINTERGRUNDWISSEN (AKKORDEON) -->
+        <section style="margin-bottom: 50px;">
+            <h2 style="font-size: 1.8em; border-bottom: 1px solid var(--border-medium); padding-bottom: 10px; margin-bottom: 25px;">
+                Hintergrundwissen
+            </h2>
+
+            <div class="accordion-container" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Comic -->
+                <div class="accordion-item" style="background: var(--content-bg); border: 1px solid var(--border-medium); border-radius: 4px; overflow: hidden;">
+                    <button class="accordion-trigger" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--table-row-even); border: none; cursor: pointer; font-size: 1.1em; font-weight: bold; color: var(--text-color);">
+                        <span><i class="fa-solid fa-book-open" style="color: var(--text-color-faded); margin-right: 10px;"></i> Über den Comic (Story & Rassen)</span>
+                        <i class="fa-solid fa-chevron-down transition-icon"></i>
+                    </button>
+                    <div class="accordion-content" style="display: none; padding: 20px; border-top: 1px solid var(--border-medium);">
+                        <p><strong>TwoKinds</strong> ist ein Webcomic, der in einer Welt spielt, die von Rassenspannungen geprägt ist, hauptsächlich zwischen den Menschen und den tierähnlichen Keidran. Sie haben dramatisch unterschiedliche Gesellschaften, weshalb sie sich fast immer in irgendeiner Form von Konflikt befinden.</p>
+                        <p>Die Geschichte beginnt, als die Welt am Rande eines weiteren Krieges steht. Trace Legacy, der ehemalige Anführer der Templer (einer Magier-Organisation), verliert sein Gedächtnis und findet sich in der Gesellschaft von Flora wieder – einer Flora, die zu der Rasse gehört, die eigentlich der Feind seiner Art ist.</p>
+                        <h4 style="margin-top: 15px;">Die drei Haupt-Rassen:</h4>
+                        <ul style="margin-left: 20px; margin-top: 5px;">
+                            <li style="margin-bottom: 8px;"><strong>Menschen:</strong> Primitiv, aber hochintelligent und technologisch überlegen. Sie nutzen oft Magie (Templer) und halten Keidran als Sklaven.</li>
+                            <li style="margin-bottom: 8px;"><strong>Keidran:</strong> Hunde- und katzenartige Tiermenschen (Tiger, Wölfe, Füchse). Sie sind eine kurzlebige, intensive Rasse, stark von Urinstinkten geleitet und sehr territorial.</li>
+                            <li><strong>Basitins:</strong> Eine isolierte Rasse von langohrigen, braunpelzigen Tiermenschen. Sie leben auf einer Insel, verhalten sich militärisch extrem diszipliniert und gehorchen Befehlen blind.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tom -->
+                <div class="accordion-item" style="background: var(--content-bg); border: 1px solid var(--border-medium); border-radius: 4px; overflow: hidden;">
+                    <button class="accordion-trigger" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--table-row-even); border: none; cursor: pointer; font-size: 1.1em; font-weight: bold; color: var(--text-color);">
+                        <span><i class="fa-solid fa-pen-nib" style="color: var(--text-color-faded); margin-right: 10px;"></i> Über den Künstler (Tom Fischbach)</span>
+                        <i class="fa-solid fa-chevron-down transition-icon"></i>
+                    </button>
+                    <div class="accordion-content" style="display: none; padding: 20px; border-top: 1px solid var(--border-medium);">
+                        <p><strong>Thomas Fischbach</strong> (geboren 1987) begann im Alter von 14 Jahren mit dem Zeichnen. Inspiriert durch Animes wie <em>Mein Nachbar Totoro</em> und Webcomics, erschuf er TwoKinds am 22. Oktober 2003.</p>
+                        <p>Er wurde zum Schreiben inspiriert, nachdem er in seiner eigenen Schulzeit Rassendiskriminierung beobachtet hatte. Er wollte durch seine Geschichte eine positive Botschaft über das Überwinden von Vorurteilen vermitteln.</p>
+                    </div>
+                </div>
+
+                <!-- Felix -->
+                <div class="accordion-item" style="background: var(--content-bg); border: 1px solid var(--border-medium); border-radius: 4px; overflow: hidden;">
+                    <button class="accordion-trigger" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: var(--table-row-even); border: none; cursor: pointer; font-size: 1.1em; font-weight: bold; color: var(--text-color);">
+                        <span><i class="fa-solid fa-language" style="color: var(--text-color-faded); margin-right: 10px;"></i> Über den Übersetzer (Felix Maywald)</span>
+                        <i class="fa-solid fa-chevron-down transition-icon"></i>
+                    </button>
+                    <div class="accordion-content" style="display: none; padding: 20px; border-top: 1px solid var(--border-medium);">
+                        <p><strong>Felix Maywald</strong> (geboren 1993 in Berlin). Seit 2022 übersetze ich als Hobby Webcomics ins Deutsche. Alles begann, als ich 2021 feststellte, dass Cornelius (der Übersetzer vom damaligen twokinds.de) mit seiner Übersetzung aufgehört hatte. Da TwoKinds der erste Comic war, der mich seit 2009 ununterbrochen begeistert hat, beschloss ich kurzerhand, das Projekt selbst in die Hand zu nehmen.</p>
+                        <p>Neben TwoKinds übersetze ich gelegentlich auch andere Comics (wie <em>TwinDragons</em>, was ich mir als nächstes vorgenommen habe und kleinere nsfw Werte). Im echten Leben bin ich als Medienpädagoge und Solution Architekt (Informatik) tätig und leidenschaftlicher Fotograf.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ BEREICH -->
         <section>
-            <h2
-                style="font-size: 1.8em; border-bottom: 1px solid var(--border-medium); padding-bottom: 10px; margin-bottom: 25px;">
+            <h2 style="font-size: 1.8em; border-bottom: 1px solid var(--border-medium); padding-bottom: 10px; margin-bottom: 25px;">
                 Häufige Fragen (FAQ)
             </h2>
 
             <div style="display: flex; flex-direction: column; gap: 20px;">
 
-                <div
-                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <div style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Wann kommen neue Seiten?</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Das englische Original wird von Tom aktuell unregelmäßig geupdatet (stand 07.2026). Sobald eine neue englische Seite
-                        erscheint, versuche ich, diese innerhalb weniger Tage ins Deutsche zu übersetzen.
-                        Gelegentlich bin ich durch berufliche oder private Projekte so sehr eingebunden, dass es auch mal etwas mehr als einen Monat dauert. Ich bitte da um Verständnis.
+                        Das englische Original wird von Tom aktuell unregelmäßig geupdatet. Sobald neue Seiten
+                        erscheinen, versuche ich (Felix), diese innerhalb weniger Tage ins Deutsche zu übersetzen.
+                        Da ich dies ehrenamtlich in meiner Freizeit mache, kann es bei beruflichen Verpflichtungen auch mal länger dauern. Ich bitte da um Verständnis!
                     </p>
                 </div>
 
-                <div
-                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Ich habe einen Übersetzungsfehler
-                        gefunden!</h3>
+                <div style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Ich habe einen Übersetzungsfehler gefunden!</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Fehler passieren auch den Besten! Du kannst den Fehler aber ganz einfach melden. Klicke dazu auf jeder Comicseite
-                        oder im Footer auf "Fehler melden". Dort kannst du den Text direkt im Browser für mich korrigieren.
+                        Fehler passieren auch den Besten! Du kannst sie aber ganz einfach melden: Klicke dazu auf jeder Comic- oder Charakterseite auf "Fehler melden". Dort kannst du den Text direkt im Browser für mich korrigieren.
                         Sollte ich deine Korrektur übernehmen, nenne ich gern deinen Namen als Unterstützer.
                     </p>
                 </div>
 
-                <div
-                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Unterstützt ihr Tom Fischbach (den
-                        Autor)?</h3>
+                <div style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Unterstützt ihr Tom Fischbach?</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Ich verdiene mit dieser Seite kein Geld und schalte aus Prinzip auch keine Werbung.
-                        Wenn dir die Übersetzung und meine Webseite gefällt, unterstütze mich gern auch
-                        <a href="https://www.patreon.com/raptorxilef" target="_blank" style="color: var(--link-color);">Patreon</a> oder
-                        <a href="https://paypal.me/RaptorXilef" target="_blank" style="color: var(--link-color);">PayPal</a>.
-                        Wenn dir TwoKinds allgemein gefällt, unterstütze Tom den Autor von TwoKinds bitte direkt über seinen
-                        <a href="https://www.patreon.com/twokinds" target="_blank" style="color: var(--link-color);">Patreon-Account</a>
-                        oder kaufe seine physischen Bücher im
-                        <a href="https://keenspotshop.com/collections/twokinds?srsltid=AfmBOoohf9j7Mg0Qq2AUIYrN1ygOvia8rDHGRrxr4u4mEqVjXYLeJegf" target="_blank" style="color: var(--link-color);">Keenspot-Store!</a>
+                        Ich (Felix) verdiene mit dieser Seite kein Geld und schalte keine Werbung. Wenn dir die Übersetzung gefällt, kannst du <em>mich</em> gern über <a href="https://www.patreon.com/raptorxilef" target="_blank" style="color: var(--link-color);">Patreon</a> oder
+                        <a href="https://paypal.me/RaptorXilef" target="_blank" style="color: var(--link-color);">PayPal</a> unterstützen. Wenn dir der Comic an sich gefällt, unterstütze <em>Tom</em> bitte direkt über seinen <a href="https://www.patreon.com/twokinds" target="_blank" style="color: var(--link-color);">Patreon-Account</a> oder kaufe seine Werke im <a href="https://keenspotshop.com/collections/twokinds?srsltid=AfmBOoohf9j7Mg0Qq2AUIYrN1ygOvia8rDHGRrxr4u4mEqVjXYLeJegf" target="_blank" style="color: var(--link-color);">Keenspot-Store!</a>!
                     </p>
                 </div>
 
-                <div
-                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Kann ich mithelfen?</h3>
+                <div style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Würde Tom etwas für mich zeichnen oder Fanart annehmen?</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Jede Hilfe ist willkommen! Ob beim Aufspüren von Fehlern, als Lektor oder sogar beim programieren neuer Funktionen auf der Webseite. Nutze einfach mein Meldesystem für Korrekturen oder arbeite auf
-                        <a href="https://github.com/RaptorXilef/twokinds.4lima.de" target="_blank" style="color: var(--link-color);">GitHub</a> am TwoKinds.4lima.de-Projekt mit.
+                        Tom hat leider keine Zeit, persönliche Kunst-Anfragen entgegenzunehmen. Wenn du ihm Fanart zeigen möchtest, lade sie am besten bei DeviantArt oder Twitter hoch und markiere ihn. Er stöbert dort gern, wenn er Zeit hat!
+                        Außerdem kannst du als Unterstützer auf Patreon mit Voten, welche Skizzen coloriert werden sollen und Ideen für Skizzen beitragen.
+                    </p>
+                </div>
+
+                <div style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Darf ich Toms Arbeit verwenden oder anpassen?</h3>
+                    <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
+                        Ja! Toms Werk (und auch meine Webseite/Übersetzung) stehen unter einer Creative Commons (CC BY-NC-SA) Lizenz. Das bedeutet, du darfst Bilder für nicht-kommerzielle Zwecke verändern, teilen oder für Fan-Fiction nutzen, solange du Tom (und bei deutschen Bildern diese Seite/ mich als RaptorXilef) als Quelle nennst. Genauere Infos findest du in meinem <a href="<?php echo $baseUrl; ?>/impressum" style="color: var(--link-color);">Impressum</a>.
                     </p>
                 </div>
 
@@ -125,5 +154,26 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
     </article>
 </main>
+
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    document.addEventListener('DOMContentLoaded', () => {
+        const triggers = document.querySelectorAll('.accordion-trigger');
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const content = trigger.nextElementSibling;
+                const icon = trigger.querySelector('.transition-icon');
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                    trigger.style.backgroundColor = 'var(--button-hover-bg)';
+                } else {
+                    content.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                    trigger.style.backgroundColor = 'var(--table-row-even)';
+                }
+            });
+        });
+    });
+</script>
 
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
