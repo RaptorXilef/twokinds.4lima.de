@@ -5,17 +5,24 @@ declare(strict_types=1);
 namespace App\Application\Actions;
 
 use App\Application\Attribute\ActionRoute;
-use App\Application\Contracts\ActionInterface;
+use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
-use App\Application\Response\HtmlResponse;
+use App\Application\View\TemplateRenderer;
 
 #[ActionRoute('page_project_info')]
-final readonly class ProjectInfoAction implements ActionInterface
+final readonly class ProjectInfoAction implements ViewActionInterface
 {
+    public function __construct(
+        private TemplateRenderer $renderer,
+    ) {
+    }
+
     public function execute(ServerRequest $request): mixed
     {
-        return new HtmlResponse('pages/frontend/project_info.phtml', [
+        $this->renderer->render('frontend/project_info', [
             'pageTitle' => 'Über das Projekt & FAQ',
         ]);
+
+        return null;
     }
 }

@@ -31,13 +31,16 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                        style="color: var(--link-color);"></i> Das Projekt
                 </h2>
                 <p style="line-height: 1.6;">
-                    Dies ist ein inoffizielles, von Fans betriebenes Archiv für den Webcomic <strong>TwoKinds</strong>
-                    (von Tom Fischbach). Unser Ziel ist es, den Comic für deutschsprachige Leser zugänglich zu machen,
+                    Dies ist ein inoffizielles, von einem Fan (Felix Maywald / RaptorXilef) betriebenes Archiv für den Webcomic <strong>TwoKinds</strong>
+                    (von Tom Fischbach). Mein Ziel ist es, den Comic für deutschsprachige Leser zugänglich zu machen,
                     da das englische Original mittlerweile tausende Seiten umfasst.
                 </p>
-                <p style="line-height: 1.6; margin-bottom: 0;">
-                    Wir übersetzen, lektorieren und setzen die deutschen Texte so nah wie möglich am Original in die
+                <p style="line-height: 1.6">
+                    Ich übersetze, lektoriere und setze die deutschen Texte so nah wie möglich am Original in die
                     Sprechblasen ein.
+                </p>
+                <p style="line-height: 1.6; margin-bottom: 0;">
+                    Ich hoffe sehr, dass vielleicht irgendwann Tom einmal auf diese Übersetzung aufmerksam wird und mir ein Feedback gibt. :D
                 </p>
             </section>
 
@@ -54,7 +57,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen!
                 </p>
                 <div style="margin-top: 20px;">
-                    <a href="<?php echo $baseUrl; ?>/rss" target="_blank" class="button edit" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 15px; border-radius: 4px; font-weight: bold;">
+                    <a href="<?php echo $baseUrl; ?>/rss.xml" target="_blank" class="button edit" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 15px; border-radius: 4px; font-weight: bold;">
                         <i class="fa-solid fa-square-rss"></i> RSS-Feed abonnieren
                     </a>
                 </div>
@@ -75,8 +78,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                      style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Wann kommen neue Seiten?</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Das englische Original wird von Tom unregelmäßig geupdatet. Sobald eine neue englische Seite
-                        erscheint, versuchen wir, diese innerhalb weniger Tage ins Deutsche zu übersetzen.
+                        Das englische Original wird von Tom aktuell unregelmäßig geupdatet (stand 07.2026). Sobald eine neue englische Seite
+                        erscheint, versuche ich, diese innerhalb weniger Tage ins Deutsche zu übersetzen.
+                        Gelegentlich bin ich durch berufliche oder private Projekte so sehr eingebunden, dass es auch mal etwas mehr als einen Monat dauert. Ich bitte da um Verständnis.
                     </p>
                 </div>
 
@@ -85,9 +89,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Ich habe einen Übersetzungsfehler
                         gefunden!</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Das passiert den Besten! Du kannst Fehler ganz einfach melden. Klicke dazu auf jeder Comicseite
-                        oder im Footer auf "Fehler melden". Dort kannst du den Text direkt im Browser für uns
-                        korrigieren.
+                        Fehler passieren auch den Besten! Du kannst den Fehler aber ganz einfach melden. Klicke dazu auf jeder Comicseite
+                        oder im Footer auf "Fehler melden". Dort kannst du den Text direkt im Browser für mich korrigieren.
+                        Sollte ich deine Korrektur übernehmen, nenne ich gern deinen Namen als Unterstützer.
                     </p>
                 </div>
 
@@ -96,10 +100,14 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Unterstützt ihr Tom Fischbach (den
                         Autor)?</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Wir verdienen mit dieser Seite kein Geld und schalten keine Werbung. Wenn dir TwoKinds gefällt,
-                        unterstütze Tom bitte direkt über seinen
+                        Ich verdiene mit dieser Seite kein Geld und schalte aus Prinzip auch keine Werbung.
+                        Wenn dir die Übersetzung und meine Webseite gefällt, unterstütze mich gern auch
+                        <a href="https://www.patreon.com/raptorxilef" target="_blank" style="color: var(--link-color);">Patreon</a> oder
+                        <a href="https://paypal.me/RaptorXilef" target="_blank" style="color: var(--link-color);">PayPal</a>.
+                        Wenn dir TwoKinds allgemein gefällt, unterstütze Tom den Autor von TwoKinds bitte direkt über seinen
                         <a href="https://www.patreon.com/twokinds" target="_blank" style="color: var(--link-color);">Patreon-Account</a>
-                        oder kaufe seine physischen Bücher im Keenspot-Store!
+                        oder kaufe seine physischen Bücher im
+                        <a href="https://keenspotshop.com/collections/twokinds?srsltid=AfmBOoohf9j7Mg0Qq2AUIYrN1ygOvia8rDHGRrxr4u4mEqVjXYLeJegf" target="_blank" style="color: var(--link-color);">Keenspot-Store!</a>
                     </p>
                 </div>
 
@@ -107,8 +115,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                      style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Kann ich mithelfen?</h3>
                     <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
-                        Jede Hilfe ist willkommen! Ob beim Aufspüren von Fehlern, als Lektor oder sogar beim Bereinigen
-                        (Cleanen) der originalen Sprechblasen. Nutze einfach unser Meldesystem für Korrekturen.
+                        Jede Hilfe ist willkommen! Ob beim Aufspüren von Fehlern, als Lektor oder sogar beim programieren neuer Funktionen auf der Webseite. Nutze einfach mein Meldesystem für Korrekturen oder arbeite auf
+                        <a href="https://github.com/RaptorXilef/twokinds.4lima.de" target="_blank" style="color: var(--link-color);">GitHub</a> am TwoKinds.4lima.de-Projekt mit.
                     </p>
                 </div>
 
