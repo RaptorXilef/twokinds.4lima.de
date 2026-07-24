@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
-$baseUrl = \rtrim($settings['base_url'] ?? '', '/');
+$baseUrl       = \rtrim($settings['base_url'] ?? '', '/');
+$felixImageUrl = $asset->url('assets/images/about/Felix.webp');
+$tomImageUrl   = $asset->url('assets/images/about/Tom.webp');
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 
@@ -82,8 +84,14 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         <i class="fa-solid fa-chevron-down transition-icon"></i>
                     </button>
                     <div class="accordion-content" style="display: none; padding: 20px; border-top: 1px solid var(--border-medium);">
+                        <!-- BILD HINZUGEFÜGT -->
+                        <img class="about-mugshot float-left" src="<?php echo \htmlspecialchars($tomImageUrl); ?>" alt="Thomas Fischbach" height="275" style="margin-right: 20px;">
+
                         <p><strong>Thomas Fischbach</strong> (geboren 1987) begann im Alter von 14 Jahren mit dem Zeichnen. Inspiriert durch Animes wie <em>Mein Nachbar Totoro</em> und Webcomics, erschuf er TwoKinds am 22. Oktober 2003.</p>
                         <p>Er wurde zum Schreiben inspiriert, nachdem er in seiner eigenen Schulzeit Rassendiskriminierung beobachtet hatte. Er wollte durch seine Geschichte eine positive Botschaft über das Überwinden von Vorurteilen vermitteln.</p>
+
+                        <!-- WICHTIG: Das div cleart den Float, damit das Bild nicht aus der Box rutscht -->
+                        <div style="clear: both;"></div>
                     </div>
                 </div>
 
@@ -94,10 +102,15 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         <i class="fa-solid fa-chevron-down transition-icon"></i>
                     </button>
                     <div class="accordion-content" style="display: none; padding: 20px; border-top: 1px solid var(--border-medium);">
+                        <!-- BILD HINZUGEFÜGT -->
+                        <img class="about-mugshot float-left" src="<?php echo \htmlspecialchars($felixImageUrl); ?>" alt="Felix Maywald" height="275" style="margin-right: 20px;">
                         <p><strong>Felix Maywald</strong> (geboren 1993 in Berlin). Seit 2022 übersetze ich als Hobby Webcomics ins Deutsche. Alles begann, als ich 2021 feststellte, dass Cornelius (der Übersetzer vom damaligen twokinds.de) mit seiner Übersetzung aufgehört hatte. Da TwoKinds der erste Comic war, der mich seit 2009 ununterbrochen begeistert hat, beschloss ich kurzerhand, das Projekt selbst in die Hand zu nehmen.</p>
                         <p>Ich glaube, dass ich zu dieser Zeit auch angefangen habe ernsthaft die Programmiersprachen HTML, SCSS, HTML5, JS und PHP zu lernen, die inzwischen alle Teil dieser Webseite sind.</p>
                         <p>Neben TwoKinds übersetze ich gelegentlich auch andere Comics (wie <em>TwinDragons</em>, was ich mir als nächstes vorgenommen habe und kleinere nsfw Werte). </p>
                         <p>Im echten Leben bin ich als Medienpädagoge und Solution Architekt (Informatik) tätig und leidenschaftlicher Fotograf.</p>
+
+                        <!-- WICHTIG: Das div cleart den Float -->
+                        <div style="clear: both;"></div>
                     </div>
                 </div>
             </div>
