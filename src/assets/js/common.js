@@ -210,22 +210,50 @@
         const optTranscript = document.getElementById('report_type_transcript');
         const debugInput = document.getElementById('report_debug_info');
 
-        // URL immer erfassen
-        if (debugInput) {
-            debugInput.value = window.location.href;
-        }
+        // --- 1. Allgemeine Telemetrie sammeln ---
+        const telemetry = {
+            url: window.location.href,
+            system: {
+                userAgent: navigator.userAgent,
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                pixelRatio: window.devicePixelRatio || 1,
+                theme: document.body.classList.contains('theme-night') ? 'dark' : 'light',
+            },
+            context: {},
+        };
 
-        // Intelligente Comic-Erkennung
+        // --- 2. Kontext-Intelligenz (Comic-Seite) ---
         if (comicImg && idInput) {
-            // Wir SIND auf einer Comic-Seite
+            // A. Die ID und Formular-Zustände setzen
             idInput.value = comicImg.dataset.id || '';
             idSection.style.display = 'block';
-            optTranscript.style.display = 'block'; // Transkript-Meldung erlauben
+            optTranscript.style.display = 'block';
+
+            // B. Bild-URLs mitsniffen
+            telemetry.context.comicImages = {
+                displayed: comicImg.src,
+                hiresLink:
+                    comicImg.parentElement.tagName === 'A' ? comicImg.parentElement.href : null,
+                originalName: comicImg.dataset.enOriginal || null,
+            };
+
+            // C. Sichtbare Charaktere von der Seite kratzen
+            const charElements = document.querySelectorAll('.character-item .character-name');
+            if (charElements.length > 0) {
+                telemetry.context.visibleCharacters = Array.from(charElements).map((el) =>
+                    el.textContent.trim()
+                );
+            }
         } else {
             // Wir sind irgendwo anders
             idInput.value = '';
             idSection.style.display = 'none';
-            optTranscript.style.display = 'none'; // Transkript-Meldung verstecken
+            optTranscript.style.display = 'none';
+        }
+
+        // --- 3. Telemetrie als formatiertes JSON im versteckten Feld speichern ---
+        if (debugInput) {
+            debugInput.value = JSON.stringify(telemetry, null, 4);
         }
     }
 
