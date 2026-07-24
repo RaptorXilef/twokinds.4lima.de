@@ -209,7 +209,8 @@
         const idSection = document.getElementById('comic-id-section');
         const optTranscript = document.getElementById('report_type_transcript');
         const debugInput = document.getElementById('report_debug_info');
-        const urlDisplay = document.getElementById('report_page_url_display'); // NEU
+        const urlDisplay = document.getElementById('report_page_url_display');
+        const charDescRaw = document.getElementById('raw-char-description'); // NEU
 
         // --- 1. Allgemeine Telemetrie sammeln ---
         const telemetry = {
@@ -223,15 +224,14 @@
             context: {},
         };
 
-        if (urlDisplay) {
-            urlDisplay.value = window.location.href; // Für den Nutzer sichtbar
-        }
+        if (urlDisplay) urlDisplay.value = window.location.href; // Für den Nutzer sichtbar
 
         // --- 2. Kontext-Intelligenz (Comic-Seite) ---
         if (comicImg && idInput) {
             idInput.value = comicImg.dataset.id || '';
             idSection.style.display = 'block';
             optTranscript.style.display = 'block';
+            optTranscript.textContent = 'Tippfehler / Transkript-Fehler'; // NEU
 
             telemetry.context.comicImages = {
                 displayed: comicImg.src,
@@ -246,6 +246,15 @@
                     el.textContent.trim()
                 );
             }
+        } else if (charDescRaw) {
+            // NEU: WIR SIND AUF EINER CHARAKTER-SEITE!
+            idInput.value = '';
+            idSection.style.display = 'none';
+            optTranscript.style.display = 'block';
+            optTranscript.textContent = 'Tippfehler / Biografie anpassen'; // Text ändern!
+
+            const charName = document.querySelector('.page-header')?.textContent.trim();
+            telemetry.context.characterName = charName;
         } else {
             idInput.value = '';
             idSection.style.display = 'none';
@@ -253,9 +262,7 @@
         }
 
         // --- 3. Telemetrie als formatiertes JSON im versteckten Feld speichern ---
-        if (debugInput) {
-            debugInput.value = JSON.stringify(telemetry, null, 4); // Versteckt für den Admin
-        }
+        if (debugInput) debugInput.value = JSON.stringify(telemetry, null, 4); // Versteckt für den Admin
     }
 
     if (btnOpenReport)
@@ -290,42 +297,58 @@
     if (typeSelect && transcriptSection) {
         typeSelect.addEventListener('change', async (e) => {
             if (e.target.value === 'transcript') {
-                const comicId = comicIdInput.value.trim();
                 descInput.required = false; // Beschreibung ist jetzt optional
 
-                if (comicId.length >= 8) {
-                    reportStatusMsg.style.display = 'block';
-                    reportStatusMsg.style.backgroundColor = 'var(--status-info-bg)';
-                    reportStatusMsg.style.color = 'var(--status-info-text)';
-                    reportStatusMsg.style.border = '1px solid var(--status-info-border)';
-                    reportStatusMsg.innerHTML =
-                        '<i class="fa-solid fa-spinner fa-spin"></i> Lade aktuelles Transkript...';
+                const charDescRaw = document.getElementById('raw-char-description');
+                const comicImg = document.getElementById('comic-image');
 
-                    try {
-                        const baseUrl = window.location.origin;
-                        const res = await fetch(`${baseUrl}/api/get_transcript?id=${comicId}`);
-                        const json = await res.json();
+                // FALL 1: COMIC SEITE (API Fetch)
+                if (comicImg) {
+                    const comicId = comicIdInput.value.trim();
+                    if (comicId.length >= 8) {
+                        reportStatusMsg.style.display = 'block';
+                        reportStatusMsg.style.backgroundColor = 'var(--status-info-bg)';
+                        reportStatusMsg.style.color = 'var(--status-info-text)';
+                        reportStatusMsg.style.border = '1px solid var(--status-info-border)';
+                        reportStatusMsg.innerHTML =
+                            '<i class="fa-solid fa-spinner fa-spin"></i> Lade aktuelles Transkript...';
 
-                        reportStatusMsg.style.display = 'none';
-                        if (json.success) {
-                            originalInput.value = json.transcript;
-                            // Trumbowyg mit Text befüllen
-                            $('.public-wysiwyg').trumbowyg('html', json.transcript);
+                        try {
+                            const baseUrl = window.location.origin;
+                            const res = await fetch(`${baseUrl}/api/get_transcript?id=${comicId}`);
+                            const json = await res.json();
 
-                            transcriptSection.style.display = 'block';
-                            if (descInput)
-                                descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
-                        } else {
-                            alert(json.error);
+                            reportStatusMsg.style.display = 'none';
+                            if (json.success) {
+                                originalInput.value = json.transcript;
+                                $('.public-wysiwyg').trumbowyg('html', json.transcript);
+                                transcriptSection.style.display = 'block';
+                                if (descInput)
+                                    descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
+                            } else {
+                                alert(json.error);
+                                e.target.value = '';
+                            }
+                        } catch {
+                            reportStatusMsg.style.display = 'none';
+                            alert('Fehler beim Laden des Transkripts.');
                             e.target.value = '';
                         }
-                    } catch {
-                        reportStatusMsg.style.display = 'none';
-                        alert('Fehler beim Laden des Transkripts.');
+                    } else {
+                        alert('Systemfehler: Comic-ID fehlt.');
                         e.target.value = '';
                     }
-                } else {
-                    alert('Systemfehler: Comic-ID fehlt.');
+                }
+                // FALL 2: CHARAKTER SEITE (Lokales DOM nutzen)
+                else if (charDescRaw) {
+                    originalInput.value = charDescRaw.value;
+                    $('.public-wysiwyg').trumbowyg('html', charDescRaw.value);
+                    transcriptSection.style.display = 'block';
+                    if (descInput) descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
+                }
+                // FALL 3: FEHLER
+                else {
+                    alert('Systemfehler: Keine Textquelle auf dieser Seite gefunden.');
                     e.target.value = '';
                 }
             } else {

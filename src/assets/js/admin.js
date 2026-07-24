@@ -2238,6 +2238,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // DAS KILLER-FEATURE: Transkript übernehmen
         if (e.target.closest('#btn-transfer-transcript') && currentReportPayload) {
+            // Schutz-Check: Wenn es ein Charakter-Report ist (ComicID fehlt)
+            if (!currentReportPayload.comicId) {
+                alert(
+                    'Automatisches Übernehmen ist aktuell nur für Comics verfügbar. Bitte kopiere den vorgeschlagenen Text und wechsle in die Charakter-Verwaltung.'
+                );
+                return;
+            }
+
             // Finde den Comic in der Tabelle, um sein Payload zu klauen
             const comicBtn = document.querySelector(
                 `.btn-edit-comic[data-id="${currentReportPayload.comicId}"]`
