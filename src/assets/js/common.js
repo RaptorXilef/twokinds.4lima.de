@@ -15,18 +15,18 @@
  * Enables common features throughout the website
  */
 (() => {
-    var themes = [
+    const themes = [
         { id: 0, name: 'Default', class: null },
         { id: 1, name: 'Lights On', class: null },
         { id: 2, name: 'Lights Off', class: 'theme-night' },
     ];
-    var systemThemeId = 0;
-    var systemLightThemeId = 1;
-    var systemDarkThemeId = 2;
-    var currentTheme = systemThemeId;
+    const systemThemeId = 0;
+    const systemLightThemeId = 1;
+    const systemDarkThemeId = 2;
+    let currentTheme = systemThemeId;
 
     document.addEventListener('DOMContentLoaded', () => {
-        var body = document.getElementsByTagName('body')[0];
+        const body = document.getElementsByTagName('body')[0];
 
         // Show elements that are hidden by default due to requiring JS.
         document.querySelectorAll('.jsdep').forEach((el) => el.classList.remove('jsdep'));
@@ -74,7 +74,7 @@
             e.preventDefault();
         }
 
-        var themeToSelect = (currentTheme + 1) % themes.length;
+        const themeToSelect = (currentTheme + 1) % themes.length;
         setTheme(themeToSelect, true, true);
     }
 
@@ -185,10 +185,10 @@
     const reportStatusMsg = document.getElementById('report-status-msg');
 
     // Editor Initialisierung für Public (ohne Bilder-Upload, nur Formatierung!)
-    if (typeof $.fn.trumbowyg !== 'undefined') {
-        $.trumbowyg.svgPath =
+    if (typeof window.$ !== 'undefined' && typeof window.$.fn.trumbowyg !== 'undefined') {
+        window.$.trumbowyg.svgPath =
             'https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg';
-        $('.public-wysiwyg').trumbowyg({
+        window.$('.public-wysiwyg').trumbowyg({
             lang: 'de',
             btns: [
                 ['viewHTML'],
@@ -321,7 +321,8 @@
                             reportStatusMsg.style.display = 'none';
                             if (json.success) {
                                 originalInput.value = json.transcript;
-                                $('.public-wysiwyg').trumbowyg('html', json.transcript);
+                                if (typeof window.$ !== 'undefined')
+                                    window.$('.public-wysiwyg').trumbowyg('html', json.transcript);
                                 transcriptSection.style.display = 'block';
                                 if (descInput)
                                     descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
@@ -342,7 +343,8 @@
                 // FALL 2: CHARAKTER SEITE (Lokales DOM nutzen)
                 else if (charDescRaw) {
                     originalInput.value = charDescRaw.value;
-                    $('.public-wysiwyg').trumbowyg('html', charDescRaw.value);
+                    if (typeof window.$ !== 'undefined')
+                        window.$('.public-wysiwyg').trumbowyg('html', charDescRaw.value);
                     transcriptSection.style.display = 'block';
                     if (descInput) descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
                 }
@@ -386,7 +388,8 @@
                     reportStatusMsg.style.border = '1px solid var(--status-green-border)';
                     reportStatusMsg.innerHTML = `<i class="fa-solid fa-check"></i> ${json.message}`;
                     reportForm.reset();
-                    $('.public-wysiwyg').trumbowyg('empty');
+                    if (typeof window.$ !== 'undefined')
+                        window.$('.public-wysiwyg').trumbowyg('empty');
                     transcriptSection.style.display = 'none';
 
                     setTimeout(() => {
