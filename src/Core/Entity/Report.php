@@ -18,6 +18,7 @@ final readonly class Report
         public string $submitterName,
         public bool $wantsCredit,
         public string $type,
+        public ?string $screenshotUrl,
         public string $description,
         public string $transcriptSuggestion,
         public string $transcriptOriginal,

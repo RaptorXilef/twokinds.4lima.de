@@ -11,13 +11,16 @@ use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Core\Exception\RateLimitExceededException;
+use App\Core\Service\MediaService;
 use App\Core\Service\ReportService;
 
 #[ActionRoute('api_submit_report')]
 final readonly class ApiSubmitReportAction implements ActionInterface
 {
-    public function __construct(private ReportService $reportService)
-    {
+    public function __construct(
+        private ReportService $reportService,
+        private MediaService $mediaService,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
@@ -25,12 +28,29 @@ final readonly class ApiSubmitReportAction implements ActionInterface
         try {
             $dto = SubmitReportRequest::fromRequest($request);
 
-            $this->reportService->submitReport(
+            // --- Screenshot Verarbeitung (Max 1500px, WEBP) ---
+            $screenshotUrl = null;
+            if (isset($request->files['report_screenshot']) && $request->files['report_screenshot']['error'] === \UPLOAD_ERR_OK) {
+                $file      = $request->files['report_screenshot'];
+                $targetDir = __DIR__ . '/../../../public/assets/images/reports';
+
+                if (! \is_dir($targetDir)) {
+                    \mkdir($targetDir, 0o777, true);
+                }
+
+                $fileName = 'rep_' . \uniqid() . '.webp';
+                if ($this->mediaService->generateScaledImage($file['tmp_name'], $targetDir . '/' . $fileName, 1500)) {
+                    $screenshotUrl = $fileName;
+                }
+            }
+
+            $report = $this->reportService->submitReport(
                 $dto->comicId,
                 $dto->ipAddress,
                 $dto->submitterName,
                 $dto->wantsCredit,
                 $dto->reportType,
+                $screenshotUrl,
                 $dto->description,
                 $dto->transcriptSuggestion,
                 $dto->transcriptOriginal,

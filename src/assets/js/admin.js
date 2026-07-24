@@ -1431,6 +1431,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const transcriptSec = document.getElementById('rep-modal-transcript-section');
         const diffBox = document.getElementById('rep-modal-diff');
+        const screenshotSec = document.getElementById('rep-modal-screenshot-section');
+        const screenshotImg = document.getElementById('rep-modal-screenshot-img');
+        const screenshotLink = document.getElementById('rep-modal-screenshot-link');
+
+        // --- Screenshot Logik ---
+        if (data.screenshotUrl) {
+            const fullUrl = `${baseUrl}/assets/images/reports/${data.screenshotUrl}`;
+            screenshotImg.src = fullUrl;
+            screenshotLink.href = fullUrl;
+            screenshotSec.style.display = 'block';
+        } else {
+            screenshotSec.style.display = 'none';
+            screenshotImg.src = '';
+            screenshotLink.href = '#';
+        }
 
         if (data.type === 'transcript') {
             transcriptSec.style.display = 'block';

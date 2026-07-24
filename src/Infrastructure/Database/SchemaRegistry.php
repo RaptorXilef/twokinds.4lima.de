@@ -89,6 +89,7 @@ final class SchemaRegistry
                 `submitter_name` VARCHAR(255) NOT NULL,
                 `wants_credit` TINYINT(1) NOT NULL DEFAULT 0,
                 `type` VARCHAR(50) NOT NULL,
+                `screenshot_url` VARCHAR(255),
                 `description` TEXT,
                 `transcript_suggestion` TEXT,
                 `transcript_original` TEXT,
