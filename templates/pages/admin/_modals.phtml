@@ -832,11 +832,26 @@ foreach ($alphaChars as $char) {
                 </div>
             </div>
 
-            <details style="margin-top: 20px;">
-                <summary style="cursor: pointer; color: var(--text-color-light);">Telemetrie & Debug-Infos (für
-                    Administratoren)</summary>
-                <textarea id="rep-modal-debug" rows="6" class="summernote-code-look" readonly style="margin-top: 10px; width: 100%;"></textarea>
-            </details>
+            <!-- Telemetrie / Debug -->
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px;">
+                    <label style="font-weight: bold; color: var(--text-color);">Telemetrie & Debug-Infos:</label>
+                    <button type="button"
+                            id="btn-toggle-debug-view"
+                            class="button edit"
+                            style="font-size: 0.8em; padding: 4px 8px; display: none;">
+                        <i class="fa-solid fa-code"></i> Rohdaten anzeigen
+                    </button>
+                </div>
+
+                <!-- Die gerenderte Baumansicht -->
+                <div id="rep-modal-debug-rendered"
+                     style="border: 1px solid var(--border-medium); padding: 10px; background: var(--table-row-even); border-radius: 4px; overflow-x: auto; font-size: 0.95em; line-height: 1.5; display: none;">
+                </div>
+
+                <!-- Die rohe Text-Ansicht (Fallback) -->
+                <textarea id="rep-modal-debug" rows="6" readonly style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: #1e1e1e; color: #00ff00; font-family: monospace; resize: vertical; display: block;"></textarea>
+            </div>
 
         </div>
         <div class="modal-footer-actions"

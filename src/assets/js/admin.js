@@ -1400,7 +1400,34 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('rep-modal-date').textContent = data.date;
         document.getElementById('rep-modal-desc').textContent =
             data.description || 'Keine Beschreibung angegeben.';
-        document.getElementById('rep-modal-debug').value = data.debug;
+        const debugRaw = document.getElementById('rep-modal-debug');
+        const debugRendered = document.getElementById('rep-modal-debug-rendered');
+        const btnToggleDebug = document.getElementById('btn-toggle-debug-view');
+
+        if (debugRaw) debugRaw.value = data.debug || 'Keine Telemetrie vorhanden.';
+
+        // Versuch, das JSON zu rendern
+        if (debugRendered && data.debug) {
+            try {
+                const parsed = JSON.parse(data.debug);
+                debugRendered.innerHTML = renderJsonToHtml(parsed);
+                debugRendered.style.display = 'block';
+                if (debugRaw) debugRaw.style.display = 'none';
+                if (btnToggleDebug) {
+                    btnToggleDebug.style.display = 'inline-block';
+                    btnToggleDebug.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
+                }
+            } catch (e) {
+                // Falls es kein valides JSON ist (z.B. alter Report), zeige nur Rohtext
+                debugRendered.style.display = 'none';
+                if (debugRaw) debugRaw.style.display = 'block';
+                if (btnToggleDebug) btnToggleDebug.style.display = 'none';
+            }
+        } else {
+            if (debugRendered) debugRendered.style.display = 'none';
+            if (btnToggleDebug) btnToggleDebug.style.display = 'none';
+            if (debugRaw) debugRaw.style.display = 'block';
+        }
 
         const transcriptSec = document.getElementById('rep-modal-transcript-section');
         const diffBox = document.getElementById('rep-modal-diff');
@@ -1437,6 +1464,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const repModal = document.getElementById('report-detail-modal');
         if (repModal) repModal.style.display = 'flex';
+    }
+
+    // --- HILFSFUNKTION: JSON zu formatiertem HTML-Baum ---
+    function renderJsonToHtml(obj) {
+        if (typeof obj !== 'object' || obj === null) {
+            const val = obj === null ? 'null' : obj;
+            if (typeof val === 'string' && val.startsWith('http')) {
+                return `<a href="${val}" target="_blank" style="text-decoration: underline; color: var(--link-color);">${val}</a>`;
+            }
+            return `<span style="color: var(--text-color);">${val}</span>`;
+        }
+
+        let html =
+            '<ul style="list-style: none; padding-left: 20px; margin: 5px 0; border-left: 2px solid var(--border-medium);">';
+        for (const [key, value] of Object.entries(obj)) {
+            html += `<li style="margin-bottom: 6px;">`;
+            html += `<strong style="color: var(--text-color-faded);">${key}:</strong> `;
+            html += renderJsonToHtml(value);
+            html += `</li>`;
+        }
+        html += '</ul>';
+        return html;
     }
 
     // --- KAPITEL / ARCHIV LOGIK ---
@@ -2151,6 +2200,25 @@ document.addEventListener('DOMContentLoaded', () => {
             spamRepBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lade...';
             spamRepBtn.style.pointerEvents = 'none';
             sendApiRequest('update_report_status', fd, spamRepBtn, origText);
+        }
+
+        // Telemetrie Ansicht umschalten (Report-Modal)
+        if (e.target.closest('#btn-toggle-debug-view')) {
+            const debugRaw = document.getElementById('rep-modal-debug');
+            const debugRendered = document.getElementById('rep-modal-debug-rendered');
+            const btn = e.target.closest('#btn-toggle-debug-view');
+
+            if (debugRaw.style.display === 'none') {
+                // Zeige Rohtext
+                debugRaw.style.display = 'block';
+                debugRendered.style.display = 'none';
+                btn.innerHTML = '<i class="fa-solid fa-list-tree"></i> Formatiert anzeigen';
+            } else {
+                // Zeige Renderview
+                debugRaw.style.display = 'none';
+                debugRendered.style.display = 'block';
+                btn.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
+            }
         }
 
         // DAS KILLER-FEATURE: Transkript übernehmen
