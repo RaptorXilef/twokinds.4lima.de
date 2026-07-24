@@ -26,4 +26,5 @@
   'render_character_list' => 'App\\Application\\Actions\\Frontend\\RenderCharacterListAction',
   'render_comic' => 'App\\Application\\Actions\\Frontend\\RenderComicAction',
   'render_404' => 'App\\Application\\Actions\\Frontend\\RenderError404Action',
+  'page_project_info' => 'App\\Application\\Actions\\ProjectInfoAction',
 );

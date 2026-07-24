@@ -1,0 +1,121 @@
+<?php
+
+declare(strict_types=1);
+
+$baseUrl = \rtrim($settings['base_url'] ?? '', '/');
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
+<main class="content-area">
+    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+        <header
+                style="text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid var(--border-medium);">
+            <h1 class="page-header"
+                style="border: none; margin-bottom: 10px; font-size: 2.2em;">Info-Hub & FAQ</h1>
+            <p style="color: var(--text-color-faded); font-size: 1.1em; max-width: 600px; margin: 0 auto;">
+                Alles, was du über das deutsche TwoKinds-Übersetzungsprojekt wissen musst - kompakt an einem Ort.
+            </p>
+        </header>
+
+        <!-- KACHEL-LAYOUT FÜR INFOS -->
+        <div
+             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px;">
+
+            <!-- Kachel 1: Über uns -->
+            <section
+                     style="background: var(--table-row-even); padding: 25px; border-radius: 8px; border: 1px solid var(--border-medium);">
+                <h2
+                    style="margin-top: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px; color: var(--text-color);">
+                    <i class="fa-solid fa-users"
+                       style="color: var(--link-color);"></i> Das Projekt
+                </h2>
+                <p style="line-height: 1.6;">
+                    Dies ist ein inoffizielles, von Fans betriebenes Archiv für den Webcomic <strong>TwoKinds</strong>
+                    (von Tom Fischbach). Unser Ziel ist es, den Comic für deutschsprachige Leser zugänglich zu machen,
+                    da das englische Original mittlerweile tausende Seiten umfasst.
+                </p>
+                <p style="line-height: 1.6; margin-bottom: 0;">
+                    Wir übersetzen, lektorieren und setzen die deutschen Texte so nah wie möglich am Original in die
+                    Sprechblasen ein.
+                </p>
+            </section>
+
+            <!-- Kachel 2: RSS & Updates -->
+            <section
+                     style="background: var(--table-row-even); padding: 25px; border-radius: 8px; border: 1px solid var(--border-medium);">
+                <h2
+                    style="margin-top: 0; font-size: 1.4em; display: flex; align-items: center; gap: 10px; color: var(--text-color);">
+                    <i class="fa-solid fa-rss"
+                       style="color: #f26522;"></i> Bleib auf dem Laufenden
+                </h2>
+                <p style="line-height: 1.6;">
+                    Du willst keine neue übersetzte Seite verpassen? Nutze unseren RSS-Feed, um Updates direkt in deinen
+                    Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen!
+                </p>
+                <div style="margin-top: 20px;">
+                    <a href="<?php echo $baseUrl; ?>/rss" target="_blank" class="button edit" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 15px; border-radius: 4px; font-weight: bold;">
+                        <i class="fa-solid fa-square-rss"></i> RSS-Feed abonnieren
+                    </a>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- FAQ BEREICH (Akkordeon-Style / Liste) -->
+        <section>
+            <h2
+                style="font-size: 1.8em; border-bottom: 1px solid var(--border-medium); padding-bottom: 10px; margin-bottom: 25px;">
+                Häufige Fragen (FAQ)
+            </h2>
+
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+
+                <div
+                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Wann kommen neue Seiten?</h3>
+                    <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
+                        Das englische Original wird von Tom unregelmäßig geupdatet. Sobald eine neue englische Seite
+                        erscheint, versuchen wir, diese innerhalb weniger Tage ins Deutsche zu übersetzen.
+                    </p>
+                </div>
+
+                <div
+                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Ich habe einen Übersetzungsfehler
+                        gefunden!</h3>
+                    <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
+                        Das passiert den Besten! Du kannst Fehler ganz einfach melden. Klicke dazu auf jeder Comicseite
+                        oder im Footer auf "Fehler melden". Dort kannst du den Text direkt im Browser für uns
+                        korrigieren.
+                    </p>
+                </div>
+
+                <div
+                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Unterstützt ihr Tom Fischbach (den
+                        Autor)?</h3>
+                    <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
+                        Wir verdienen mit dieser Seite kein Geld und schalten keine Werbung. Wenn dir TwoKinds gefällt,
+                        unterstütze Tom bitte direkt über seinen
+                        <a href="https://www.patreon.com/twokinds" target="_blank" style="color: var(--link-color);">Patreon-Account</a>
+                        oder kaufe seine physischen Bücher im Keenspot-Store!
+                    </p>
+                </div>
+
+                <div
+                     style="background: var(--content-bg); border-left: 4px solid var(--link-color); padding: 15px 20px; border-radius: 0 4px 4px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 1.2em;">Kann ich mithelfen?</h3>
+                    <p style="margin: 0; line-height: 1.5; color: var(--text-color-light);">
+                        Jede Hilfe ist willkommen! Ob beim Aufspüren von Fehlern, als Lektor oder sogar beim Bereinigen
+                        (Cleanen) der originalen Sprechblasen. Nutze einfach unser Meldesystem für Korrekturen.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+    </article>
+</main>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

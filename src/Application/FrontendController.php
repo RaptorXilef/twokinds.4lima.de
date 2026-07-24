@@ -101,6 +101,10 @@ final readonly class FrontendController
             return ['action' => 'render_character_detail', 'input' => ['char_name' => $matches[1]]];
         }
 
+        if ($relativePath === 'projekt' || $relativePath === 'projekt.php') {
+            return ['action' => 'page_project_info', 'input' => $input];
+        }
+
         // === API Routing ===
         if (\str_starts_with($relativePath, 'api/')) {
             // Schneidet 'api/' ab und entfernt eventuelle Slashes am Ende
@@ -127,6 +131,7 @@ final readonly class FrontendController
                 'update_report_status'  => ['action' => 'api_update_report_status', 'input' => $input],
                 'upload_comic_media'    => ['action' => 'api_upload_comic_media', 'input' => $input],
                 'upload_media'          => ['action' => 'api_upload_media', 'input' => $input],
+                'projekt'               => ['action' => 'page_project_info'],
                 default                 => ['action' => 'render_404', 'input' => $input],
             };
         }
