@@ -361,6 +361,51 @@
         });
     }
 
+    // Screenshot Drag & Drop Logik
+    const reportDropZone = document.getElementById('report-drop-zone');
+    const reportFileInput = document.getElementById('report_screenshot');
+    const reportFileName = document.getElementById('report-screenshot-name');
+
+    if (reportDropZone && reportFileInput) {
+        reportDropZone.addEventListener('click', () => reportFileInput.click());
+
+        reportDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            reportDropZone.style.borderColor = 'var(--link-color)';
+            reportDropZone.style.backgroundColor = 'var(--table-row-hover)';
+        });
+
+        reportDropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            reportDropZone.style.borderColor = 'var(--border-medium)';
+            reportDropZone.style.backgroundColor = 'var(--table-row-even)';
+        });
+
+        reportDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files.length) {
+                reportFileInput.files = e.dataTransfer.files;
+                reportFileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        reportFileInput.addEventListener('change', () => {
+            if (reportFileInput.files.length > 0) {
+                reportDropZone.style.borderColor = 'var(--status-green-text)';
+                reportDropZone.style.backgroundColor = 'var(--status-green-bg)';
+                if (reportFileName) {
+                    reportFileName.textContent = `Bereit: ${reportFileInput.files[0].name}`;
+                    reportFileName.style.display = 'block';
+                }
+            } else {
+                reportDropZone.style.borderColor = 'var(--border-medium)';
+                reportDropZone.style.backgroundColor = 'var(--table-row-even)';
+                if (reportFileName) reportFileName.style.display = 'none';
+            }
+        });
+    }
+
+    // Report
     if (reportForm) {
         reportForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -391,6 +436,12 @@
                     if (typeof window.$ !== 'undefined')
                         window.$('.public-wysiwyg').trumbowyg('empty');
                     transcriptSection.style.display = 'none';
+
+                    if (reportDropZone) {
+                        reportDropZone.style.borderColor = 'var(--border-medium)';
+                        reportDropZone.style.backgroundColor = 'var(--table-row-even)';
+                    }
+                    if (reportFileName) reportFileName.style.display = 'none';
 
                     setTimeout(() => {
                         reportModal.style.display = 'none';
