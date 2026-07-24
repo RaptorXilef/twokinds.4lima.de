@@ -1389,8 +1389,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openReportModal(data) {
         currentReportPayload = data;
-        document.getElementById('rep-modal-comic-id').innerHTML =
-            `<a href="${baseUrl}/comic/${data.comicId}" target="_blank">${data.comicId}</a>`;
+        const comicIdContainer = document.getElementById('rep-modal-comic-id');
+        if (data.comicId) {
+            comicIdContainer.innerHTML = `<a href="${baseUrl}/comic/${data.comicId}" target="_blank">${data.comicId}</a>`;
+        } else {
+            comicIdContainer.innerHTML =
+                '<em style="color: var(--text-color-faded);">Allgemeine Website</em>';
+        }
         document.getElementById('rep-modal-submitter').textContent = data.submitter;
         document.getElementById('rep-modal-date').textContent = data.date;
         document.getElementById('rep-modal-desc').textContent =

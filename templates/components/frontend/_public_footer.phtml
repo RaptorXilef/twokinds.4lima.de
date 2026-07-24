@@ -63,11 +63,22 @@ use App\Contracts\System\AssetHelperInterface;
                    tabindex="-1"
                    autocomplete="off">
 
+            <!-- URL / Context Tracking -->
+            <input type="hidden"
+                   name="report_debug_info"
+                   id="report_debug_info"
+                   value="">
+            <input type="text"
+                   name="report_honeypot"
+                   style="display:none;"
+                   tabindex="-1"
+                   autocomplete="off">
+
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Betroffene Seite (URL)</label>
+                <!-- Sichtbar für den Nutzer, wird aber nicht an die API gesendet (kein 'name' Attribut) -->
                 <input type="text"
-                       name="report_debug_info"
-                       id="report_debug_info"
+                       id="report_page_url_display"
                        value=""
                        readonly
                        style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
