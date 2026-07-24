@@ -25,6 +25,9 @@
   'render_character_detail' => 'App\\Application\\Actions\\Frontend\\RenderCharacterDetailAction',
   'render_character_list' => 'App\\Application\\Actions\\Frontend\\RenderCharacterListAction',
   'render_comic' => 'App\\Application\\Actions\\Frontend\\RenderComicAction',
+  'render_403' => 'App\\Application\\Actions\\Frontend\\RenderError403Action',
   'render_404' => 'App\\Application\\Actions\\Frontend\\RenderError404Action',
+  'page_imprint' => 'App\\Application\\Actions\\ImprintAction',
+  'page_privacy' => 'App\\Application\\Actions\\PrivacyAction',
   'page_project_info' => 'App\\Application\\Actions\\ProjectInfoAction',
 );

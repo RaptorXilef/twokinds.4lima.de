@@ -105,6 +105,18 @@ final readonly class FrontendController
             return ['action' => 'page_project_info', 'input' => $input];
         }
 
+        if ($relativePath === 'impressum' || $relativePath === 'impressum.php') {
+            return ['action' => 'page_imprint', 'input' => $input];
+        }
+
+        if ($relativePath === 'datenschutz' || $relativePath === 'datenschutz.php' || $relativePath === 'datenschutzerklaerung.php') {
+            return ['action' => 'page_privacy', 'input' => $input];
+        }
+
+        if ($relativePath === '403') {
+            return ['action' => 'render_403', 'input' => $input];
+        }
+
         // === API Routing ===
         if (\str_starts_with($relativePath, 'api/')) {
             // Schneidet 'api/' ab und entfernt eventuelle Slashes am Ende
