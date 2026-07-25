@@ -105,6 +105,10 @@ final readonly class FrontendController
             return ['action' => 'page_project_info', 'input' => $input];
         }
 
+        if ($relativePath === 'lesezeichen' || $relativePath === 'lesezeichen.php') {
+            return ['action' => 'render_bookmarks', 'input' => $input];
+        }
+
         if ($relativePath === 'impressum' || $relativePath === 'impressum.php') {
             return ['action' => 'page_imprint', 'input' => $input];
         }

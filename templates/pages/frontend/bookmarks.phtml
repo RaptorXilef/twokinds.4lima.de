@@ -1,0 +1,157 @@
+<?php declare(strict_types=1);
+$baseUrl = \rtrim($settings['base_url'] ?? '', '/');
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
+<main class="content-area bookmarks-page">
+    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+        <header style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 20px;">
+            <h1 class="page-header" style="border: none; margin-bottom: 10px; font-size: 2.2em;">
+                <i class="fa-solid fa-bookmark" style="color: var(--link-color);"></i> Meine Lesezeichen
+                <span id="bookmark-count-badge" class="comic-count-badge">0</span>
+            </h1>
+            <p style="color: var(--text-color-faded); font-size: 1.1em; max-width: 600px; margin: 0 auto;">
+                Hier findest du alle Comicseiten, die du dir gemerkt hast.
+                <br><small><i class="fa-solid fa-hard-drive"></i> Aktuell werden diese nur lokal in diesem Browser gespeichert.</small>
+            </p>
+        </header>
+
+        <!-- Container, wenn KEINE Lesezeichen da sind -->
+        <div id="no-bookmarks-msg" class="no-bookmarks" style="display: none;">
+            <i class="fa-regular fa-folder-open" style="font-size: 3em; color: var(--border-medium); margin-bottom: 15px; display: block;"></i>
+            <p>Du hast noch keine Lesezeichen gespeichert.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Klicke auf einer Comicseite einfach oben in der Leiste auf den Button <strong>"Seite merken"</strong>, um sie hier aufzulisten.
+            </p>
+            <a href="<?php echo $baseUrl; ?>/comic" class="button edit" style="display: inline-block; margin-top: 20px;">Zum aktuellen Comic</a>
+        </div>
+
+        <!-- Das Grid für die Lesezeichen -->
+        <div id="bookmarks-grid" class="chapter-links" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;">
+            <!-- Wird per JS befüllt -->
+        </div>
+
+        <!-- Kontroll-Elemente unten (Alle löschen) -->
+        <div id="bookmarks-controls" class="bookmarks-controls" style="display: none; margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-medium); text-align: center;">
+            <button type="button" id="btn-clear-all-bookmarks" class="button delete" style="padding: 10px 20px;">
+                <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen
+            </button>
+        </div>
+
+    </article>
+</main>
+
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.getElementById('bookmarks-grid');
+    const noMsg = document.getElementById('no-bookmarks-msg');
+    const controls = document.getElementById('bookmarks-controls');
+    const countBadge = document.getElementById('bookmark-count-badge');
+    const btnClearAll = document.getElementById('btn-clear-all-bookmarks');
+
+    function renderBookmarks() {
+        // Daten aus LocalStorage holen
+        const bookmarksMap = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        const bookmarks = Object.values(bookmarksMap);
+
+        countBadge.textContent = bookmarks.length;
+
+        if (bookmarks.length === 0) {
+            grid.innerHTML = '';
+            grid.style.display = 'none';
+            controls.style.display = 'none';
+            noMsg.style.display = 'block';
+            return;
+        }
+
+        // Nach Hinzufüge-Datum absteigend sortieren (Neueste zuerst)
+        bookmarks.sort((a, b) => (b.added || 0) - (a.added || 0));
+
+        grid.innerHTML = '';
+        grid.style.display = 'grid';
+        controls.style.display = 'block';
+        noMsg.style.display = 'none';
+
+        bookmarks.forEach(bm => {
+            // Datum formatieren
+            const dateStr = new Date(bm.added).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+            const card = document.createElement('div');
+            card.style.position = 'relative';
+            card.style.backgroundColor = 'var(--content-box-bg)';
+            card.style.border = '1px solid var(--border-medium)';
+            card.style.borderRadius = '6px';
+            card.style.overflow = 'hidden';
+            card.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+            card.style.transition = 'transform 0.2s';
+
+            card.onmouseenter = () => card.style.transform = 'translateY(-3px)';
+            card.onmouseleave = () => card.style.transform = 'translateY(0)';
+
+            // Das Bild ist anklickbar
+            const link = document.createElement('a');
+            link.href = bm.permalink;
+            link.style.display = 'block';
+            link.style.width = '100%';
+            link.style.aspectRatio = '1 / 1.4';
+            link.style.overflow = 'hidden';
+            link.style.backgroundColor = 'var(--page-bg)';
+            link.innerHTML = `<img src="${bm.thumb}" alt="${bm.page}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
+
+            // Titel & Info-Bereich
+            const info = document.createElement('div');
+            info.style.padding = '10px';
+            info.style.textAlign = 'center';
+            info.innerHTML = `
+                <div style="font-weight: bold; font-size: 0.9em; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${bm.page}">${bm.page}</div>
+                <div style="font-size: 0.75em; color: var(--text-color-faded);">Gemerkt am: ${dateStr}</div>
+            `;
+
+            // Löschen Button
+            const delBtn = document.createElement('button');
+            delBtn.innerHTML = '<i class="fa-solid fa-times"></i>';
+            delBtn.title = "Lesezeichen entfernen";
+            delBtn.style.position = 'absolute';
+            delBtn.style.top = '5px';
+            delBtn.style.right = '5px';
+            delBtn.style.width = '26px';
+            delBtn.style.height = '26px';
+            delBtn.style.borderRadius = '50%';
+            delBtn.style.border = 'none';
+            delBtn.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+            delBtn.style.color = '#fff';
+            delBtn.style.cursor = 'pointer';
+            delBtn.style.display = 'flex';
+            delBtn.style.alignItems = 'center';
+            delBtn.style.justifyContent = 'center';
+            delBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+
+            delBtn.onclick = (e) => {
+                e.preventDefault();
+                delete bookmarksMap[bm.id];
+                localStorage.setItem('comicBookmarksMap', JSON.stringify(bookmarksMap));
+                renderBookmarks(); // Grid sofort neu aufbauen
+            };
+
+            card.appendChild(link);
+            card.appendChild(info);
+            card.appendChild(delBtn);
+            grid.appendChild(card);
+        });
+    }
+
+    if (btnClearAll) {
+        btnClearAll.addEventListener('click', () => {
+            if (confirm('Möchtest du wirklich ALLE deine lokalen Lesezeichen unwiderruflich löschen?')) {
+                localStorage.removeItem('comicBookmarksMap');
+                renderBookmarks();
+            }
+        });
+    }
+
+    // Initiales Rendern
+    renderBookmarks();
+});
+</script>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
