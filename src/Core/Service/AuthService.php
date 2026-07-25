@@ -36,6 +36,19 @@ final readonly class AuthService
             return true;
         }
 
+        // HIER IST SYSTEMBETREUER!
+        $superCfg = $this->config->get('superadmin');
+        if (\is_array($superCfg) && $identifier === ($superCfg['user'] ?? '')) {
+            $storedPass = $superCfg['pass'] ?? '';
+            // Prüft entweder auf den Klartext (altes KGA-Design) oder Hash
+            if ($password === $storedPass || \password_verify($password, $storedPass)) {
+                $this->setupSession('sys_superadmin', 'admin', $superCfg['label'] ?? 'Systembetreuer');
+                $this->rateLimiter->clearAttempts($ip);
+
+                return true;
+            }
+        }
+
         // 2. Regulären User suchen (via Username ODER E-Mail)
         $user = $this->userRepository->findByEmail($identifier);
         if (! $user) {

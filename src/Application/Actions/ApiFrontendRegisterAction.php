@@ -60,6 +60,35 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
             return JsonResponse::error('Ungültige E-Mail-Adresse.', 400);
         }
 
+        // Admin-Namen vor Registrierung schützen!
+        $lowerUsername = \strtolower($username);
+        $restricted    = [];
+        if ($bd = $this->config->get('backdoor')) {
+            $restricted[] = \strtolower($bd['user'] ?? '');
+        }
+        if ($sa = $this->config->get('superadmin')) {
+            $restricted[] = \strtolower($sa['user'] ?? '');
+        }
+
+        if (\in_array($lowerUsername, $restricted, true)) {
+            $this->rateLimiter->recordFailedAttempt($ip);
+
+            return JsonResponse::error('Dieser Benutzername ist systemseitig reserviert.', 400);
+        }
+
+        if (\strlen($password) < 8) {
+            $this->rateLimiter->recordFailedAttempt($ip);
+
+            return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
+        }
+
+        if ($this->userRepository->findByUsername($username)) {
+            $this->rateLimiter->recordFailedAttempt($ip);
+
+            return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
+        }
+        // Admin-Namen vor Registrierung schützen! ENDE
+
         // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
         $domain = \substr(\strrchr($email, '@'), 1);
         if ($domain === false || (! \checkdnsrr($domain, 'MX') && ! \checkdnsrr($domain, 'A'))) {
@@ -89,6 +118,10 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         // User anlegen
         $newId = $this->auth->generateId('usr_');
         $hash  = \password_hash($password, \PASSWORD_DEFAULT);
+
+        // das "false" für den Newsletter
+        $user = new User($newId, $username, $email, $hash, 'pending', new \DateTimeImmutable(), false);
+        $this->userRepository->save($user);
 
         // Rolle auf 'pending' gesetzt
         $user = new User($newId, $username, $email, $hash, 'pending', new \DateTimeImmutable());

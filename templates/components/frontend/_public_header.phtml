@@ -70,7 +70,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
                         <span class="menu-label">Account</span>
                         <?php if ($isLoggedIn) { ?>
-                            <a href="<?php echo $baseUrl; ?>/lesezeichen"><i class="fa-solid fa-bookmark" style="margin-right: 5px;"></i> <?php echo \htmlspecialchars($currentUserName); ?></a>
+                            <a href="<?php echo $baseUrl; ?>/profil"><i class="fa-solid fa-user" style="margin-right: 5px;"></i> <?php echo \htmlspecialchars($currentUserName); ?></a>
+                            <a href="<?php echo $baseUrl; ?>/lesezeichen"><i class="fa-solid fa-bookmark" style="margin-right: 5px;"></i> Lesezeichen</a>
                             <?php if ($currentUserRole === 'admin') { ?>
                                 <a href="<?php echo $baseUrl; ?>/admin"><i class="fa-solid fa-shield-halved" style="margin-right: 5px;"></i> Admin-Panel</a>
                             <?php } ?>

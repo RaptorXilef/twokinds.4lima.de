@@ -144,6 +144,10 @@ final readonly class FrontendController
             return ['action' => 'render_frontend_verify', 'input' => $input];
         }
 
+        if ($relativePath === 'profil' || $relativePath === 'profil.php') {
+            return ['action' => 'render_frontend_profile', 'input' => $input];
+        }
+
         if ($relativePath === '403') {
             return ['action' => 'render_403', 'input' => $input];
         }
@@ -166,6 +170,7 @@ final readonly class FrontendController
                 'frontend_logout'          => ['action' => 'api_frontend_logout', 'input' => $input],
                 'frontend_register'        => ['action' => 'api_frontend_register', 'input' => $input],
                 'frontend_reset_password'  => ['action' => 'api_frontend_reset_password', 'input' => $input],
+                'frontend_update_profile'  => ['action' => 'api_frontend_update_profile', 'input' => $input],
                 'get_transcript'           => ['action' => 'api_get_transcript', 'input' => $input],
                 'list_comic_media'         => ['action' => 'api_list_comic_media', 'input' => $input],
                 'list_media'               => ['action' => 'api_list_media', 'input' => $input],

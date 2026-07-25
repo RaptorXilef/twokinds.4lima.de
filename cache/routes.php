@@ -29,6 +29,7 @@
   'render_frontend_login' => 'App\\Application\\Actions\\Frontend\\FrontendLoginRenderAction',
   'render_frontend_register' => 'App\\Application\\Actions\\Frontend\\FrontendRegisterRenderAction',
   'render_frontend_reset_password' => 'App\\Application\\Actions\\Frontend\\FrontendResetPasswordRenderAction',
+  'render_frontend_verify' => 'App\\Application\\Actions\\Frontend\\FrontendVerifyRenderAction',
   'render_archive' => 'App\\Application\\Actions\\Frontend\\RenderArchiveAction',
   'render_bookmarks' => 'App\\Application\\Actions\\Frontend\\RenderBookmarksAction',
   'render_character_detail' => 'App\\Application\\Actions\\Frontend\\RenderCharacterDetailAction',
@@ -39,4 +40,5 @@
   'page_imprint' => 'App\\Application\\Actions\\ImprintAction',
   'page_privacy' => 'App\\Application\\Actions\\PrivacyAction',
   'page_project_info' => 'App\\Application\\Actions\\ProjectInfoAction',
+  'api_process_mail_queue' => 'App\\Application\\Actions\\SystemProcessMailQueueAction',
 );

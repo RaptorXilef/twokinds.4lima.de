@@ -26,6 +26,7 @@ final class SchemaRegistry
                 `email` VARCHAR(255) NOT NULL,
                 `password_hash` VARCHAR(255) NOT NULL,
                 `role_id` VARCHAR(50) NOT NULL DEFAULT \'user\',
+                `wants_newsletter` TINYINT(1) NOT NULL DEFAULT 0,
                 `created_at` DATETIME NOT NULL,
                 UNIQUE KEY `idx_username` (`username`),
                 UNIQUE KEY `idx_email` (`email`),

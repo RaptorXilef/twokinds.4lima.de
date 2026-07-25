@@ -13,6 +13,7 @@ final readonly class User
         public string $passwordHash,
         public string $roleId,
         public \DateTimeImmutable $createdAt,
+        public bool $wantsNewsletter = false,
     ) {
     }
 }

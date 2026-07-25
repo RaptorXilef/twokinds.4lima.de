@@ -46,12 +46,13 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
     public function save(User $user): void
     {
         $data = [
-            'id'            => $user->id,
-            'username'      => $user->username,
-            'email'         => $user->email,
-            'password_hash' => $user->passwordHash,
-            'role_id'       => $user->roleId,
-            'created_at'    => $user->createdAt->format('Y-m-d H:i:s'),
+            'id'               => $user->id,
+            'username'         => $user->username,
+            'email'            => $user->email,
+            'password_hash'    => $user->passwordHash,
+            'role_id'          => $user->roleId,
+            'wants_newsletter' => (int) $user->wantsNewsletter,
+            'created_at'       => $user->createdAt->format('Y-m-d H:i:s'),
         ];
 
         // ID und created_at werden bei Updates nicht überschrieben!
@@ -73,6 +74,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
             $row['password_hash'],
             $row['role_id'],
             new \DateTimeImmutable($row['created_at']),
+            (bool) ($row['wants_newsletter'] ?? false),
         );
     }
 }
