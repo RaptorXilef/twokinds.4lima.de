@@ -15,6 +15,8 @@ use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
+use App\Contracts\Storage\RoleRepositoryInterface;
+use App\Contracts\Storage\UserRepositoryInterface;
 use App\Contracts\System\AssetHelperInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Contracts\System\ImageStorageInterface;
@@ -32,6 +34,8 @@ use App\Infrastructure\Storage\MySqlCharacterRepository;
 use App\Infrastructure\Storage\MySqlComicRepository;
 use App\Infrastructure\Storage\MySqlComicRevisionRepository;
 use App\Infrastructure\Storage\MySqlReportRepository;
+use App\Infrastructure\Storage\MySqlRoleRepository;
+use App\Infrastructure\Storage\MySqlUserRepository;
 use App\Infrastructure\System\LocalAssetHelper;
 use App\Infrastructure\System\SystemInfoService;
 use App\Infrastructure\Utils\SystemClock;
@@ -59,6 +63,15 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
         // 2. Security & Session
         $container->bind(AuthSessionInterface::class, fn () => clone $container->get(SessionManager::class));
+
+        $container->bind(RoleRepositoryInterface::class, fn () => new MySqlRoleRepository(
+            $container->get(\PDO::class),
+            $container->get(JsonHelperInterface::class),
+        ));
+
+        $container->bind(UserRepositoryInterface::class, fn () => new MySqlUserRepository(
+            $container->get(\PDO::class),
+        ));
 
         // 3. Domain Repositories (TwoKinds MySQL Persistenz)
         $container->bind(ComicRepositoryInterface::class, fn () => new MySqlComicRepository(
