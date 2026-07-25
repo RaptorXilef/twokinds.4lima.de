@@ -13,19 +13,41 @@ final class SchemaRegistry
     public static function getSchemas(): array
     {
         return [
-            // Admin & Security
-            'admin_users' => 'CREATE TABLE IF NOT EXISTS `admin_users` (
-                `username` VARCHAR(50) PRIMARY KEY,
-                `password_hash` VARCHAR(255) NOT NULL
+            // --- DAS NEUE BENUTZERSYSTEM ---
+            'roles' => 'CREATE TABLE IF NOT EXISTS `roles` (
+                `id` VARCHAR(50) PRIMARY KEY,
+                `name` VARCHAR(100) NOT NULL,
+                `permissions` JSON
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
+            'users' => 'CREATE TABLE IF NOT EXISTS `users` (
+                `id` VARCHAR(50) PRIMARY KEY,
+                `username` VARCHAR(50) NOT NULL,
+                `email` VARCHAR(255) NOT NULL,
+                `password_hash` VARCHAR(255) NOT NULL,
+                `role_id` VARCHAR(50) NOT NULL DEFAULT \'user\',
+                `created_at` DATETIME NOT NULL,
+                UNIQUE KEY `idx_username` (`username`),
+                UNIQUE KEY `idx_email` (`email`),
+                INDEX `idx_role` (`role_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+
+            'user_bookmarks' => 'CREATE TABLE IF NOT EXISTS `user_bookmarks` (
+                `user_id` VARCHAR(50) NOT NULL,
+                `comic_id` VARCHAR(8) NOT NULL,
+                `added_at` DATETIME NOT NULL,
+                PRIMARY KEY (`user_id`, `comic_id`),
+                INDEX `idx_user` (`user_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+
+            // --- SICHERHEIT ---
             'login_attempts' => 'CREATE TABLE IF NOT EXISTS `login_attempts` (
                 `ip_address` VARCHAR(45) PRIMARY KEY,
                 `attempts` INT NOT NULL DEFAULT 1,
                 `last_attempt` DATETIME NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
-            // Domain: Comics & Chapters
+            // --- TWOKINDS CORE ---
             'chapters' => 'CREATE TABLE IF NOT EXISTS `chapters` (
                 `id` VARCHAR(50) PRIMARY KEY,
                 `title` VARCHAR(255) NOT NULL,
@@ -77,12 +99,13 @@ final class SchemaRegistry
                 `character_ids` JSON,
                 `sort_order` INT NOT NULL DEFAULT 0,
                 `manual_sort` TINYINT(1) NOT NULL DEFAULT 0
-            ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;',
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             // Domain: Reports
             'reports' => 'CREATE TABLE IF NOT EXISTS `reports` (
                 `id` VARCHAR(50) PRIMARY KEY,
-                `comic_id` VARCHAR(8),
+                `comic_id` VARCHAR(8) DEFAULT NULL,
+                `user_id` VARCHAR(50) DEFAULT NULL,
                 `date` DATETIME NOT NULL,
                 `status` VARCHAR(20) NOT NULL DEFAULT \'open\',
                 `ip_hash` VARCHAR(64) NOT NULL,
@@ -95,7 +118,8 @@ final class SchemaRegistry
                 `transcript_original` TEXT,
                 `debug_info` TEXT,
                 INDEX `idx_status` (`status`),
-                INDEX `idx_comic` (`comic_id`)
+                INDEX `idx_comic` (`comic_id`),
+                INDEX `idx_user` (`user_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
         ];
     }

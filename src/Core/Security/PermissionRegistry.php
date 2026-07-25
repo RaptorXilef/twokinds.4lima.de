@@ -9,9 +9,12 @@ final class PermissionRegistry
     public static function getStructure(): array
     {
         return [
-            'dashboard' => [
-                'label' => 'Dashboard & Allgemein',
-                'key'   => 'dashboard.view',
+            'admin' => [
+                'label'    => 'Admin-Bereich',
+                'key'      => 'admin.access',
+                'children' => [
+                    'dashboard' => ['label' => 'Dashboard ansehen', 'key' => 'dashboard.view'],
+                ],
             ],
             'comics' => [
                 'label'    => 'Comic-Verwaltung',
@@ -43,9 +46,9 @@ final class PermissionRegistry
                 'label'    => 'System & Einstellungen',
                 'key'      => 'system.manage',
                 'children' => [
-                    'users'  => ['label' => 'Benutzer verwalten', 'key' => 'system.users.manage'],
-                    'groups' => ['label' => 'Rechte-Gruppen verwalten', 'key' => 'system.groups.manage'],
-                    'cache'  => ['label' => 'Cache & Tools ausführen', 'key' => 'system.tools.execute'],
+                    'users' => ['label' => 'Benutzer verwalten', 'key' => 'system.users.manage'],
+                    'roles' => ['label' => 'Rechte-Gruppen (Rollen) verwalten', 'key' => 'system.roles.manage'],
+                    'cache' => ['label' => 'Cache & System-Tools', 'key' => 'system.tools.execute'],
                 ],
             ],
         ];
