@@ -37,8 +37,16 @@ final readonly class FrontendController
         $pipeline->add($this->securityHeaders);
 
         // --- AuthMiddleware dynamisch einhängen ---
-        $publicApiRoutes = ['api_admin_login', 'api_submit_report', 'api_get_transcript'];
-        $isProtectedApi  = \str_starts_with($actionKey, 'api_') && ! \in_array($actionKey, $publicApiRoutes, true);
+        $publicApiRoutes = [
+            'api_admin_login',
+            'api_submit_report',
+            'api_get_transcript',
+            'api_frontend_register',
+            'api_frontend_forgot_password',
+            'api_frontend_reset_password',
+            'api_frontend_logout',
+        ];
+        $isProtectedApi = \str_starts_with($actionKey, 'api_') && ! \in_array($actionKey, $publicApiRoutes, true);
 
         $isProtectedAdmin = \str_starts_with($actionKey, 'render_admin_') && $actionKey !== 'render_admin_login';
 
