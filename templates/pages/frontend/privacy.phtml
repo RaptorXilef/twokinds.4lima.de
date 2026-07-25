@@ -30,7 +30,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <h3 style="color: var(--text-color);">5. Analyse-Cookies (Google Analytics)</h3>
             <p>Diese Website nutzt Funktionen des Webanalysedienstes Google Analytics (Google Ireland Limited), <strong>aber nur, wenn Sie dem im Cookie-Banner explizit zugestimmt haben</strong> (Art. 6 Abs. 1 lit. a DSGVO). Google Analytics verwendet Cookies zur Auswertung Ihrer Seitennutzung. Wir haben die IP-Anonymisierung aktiviert, sodass Ihre IP-Adresse vor der Übertragung in die USA gekürzt wird.</p>
             <div style="margin: 20px 0;">
-                <button class="button edit" onclick="if(typeof window.showCookieBanner === 'function') window.showCookieBanner();">
+                <button id="btn-open-cookie-banner" class="button edit">
                     <i class="fa-solid fa-cookie-bite"></i> Privatsphäre-Einstellungen anpassen
                 </button>
             </div>

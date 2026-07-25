@@ -33,6 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const acceptAllBtn = document.getElementById('accept-all-cookies');
     const rejectAllBtn = document.getElementById('reject-all-cookies');
     const savePreferencesBtn = document.getElementById('save-cookie-preferences');
+    const btnOpenSettings = document.getElementById('btn-open-cookie-banner'); // Button aus der Datenschutzerklärung
+
+    // Button aus der Datenschutzerklärung
+    if (btnOpenSettings) {
+        btnOpenSettings.addEventListener('click', (e) => {
+            e.preventDefault();
+            showCookieBanner();
+        });
+    }
 
     if (acceptAllBtn) {
         acceptAllBtn.addEventListener('click', () => {
@@ -193,7 +202,7 @@ function setConsent(preferences) {
     try {
         localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(preferences));
 
-        document.cookie = `kga_cookie_consent=${JSON.stringify(preferences)}; max-age=31536000; path=/; SameSite=Lax`;
+        document.cookie = `twokinds_cookie_consent=${JSON.stringify(preferences)}; max-age=31536000; path=/; SameSite=Lax`;
 
         if (debugModeJsCookie) console.log('DEBUG: Consent im Local Storage gespeichert.');
         // Lade oder entlade Google Analytics basierend auf der neuen Präferenz
