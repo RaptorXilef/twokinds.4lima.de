@@ -1,10 +1,27 @@
 <?php declare(strict_types=1);
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
+
+// Wir bauen ein JS-Lexikon aus der Datenbank, um immer korrekte Pfade und Kapitel zu haben
+$comicDictionary = [];
+foreach ($comics as $c) {
+    $dateObj                        = \DateTimeImmutable::createFromFormat('Ymd', \substr($c->id->value, 0, 8));
+    $cb                             = $c->imageUpdatedAt ? '?c=' . $c->imageUpdatedAt : '';
+    $comicDictionary[$c->id->value] = [
+        'id'        => $c->id->value,
+        'title'     => $c->name !== '' ? $c->name : 'Kein Titel',
+        'type'      => $c->type,
+        'chapter'   => $c->chapterId ?: 'Unbekannt',
+        'date'      => $dateObj ? $dateObj->format('d.m.Y') : \substr($c->id->value, 0, 8),
+        'thumb'     => $baseUrl . '/assets/images/comic/thumbnails/' . $c->id->value . '.webp' . $cb,
+        'permalink' => $baseUrl . '/comic/' . $c->id->value,
+    ];
+}
+
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 
 <main class="content-area bookmarks-page">
-    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+    <article style="width: 100%; max-width: 950px; margin: 0 auto;">
         <header style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 20px;">
             <h1 class="page-header" style="border: none; margin-bottom: 10px; font-size: 2.2em;">
                 <i class="fa-solid fa-bookmark" style="color: var(--link-color);"></i> Meine Lesezeichen
@@ -26,55 +43,94 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <a href="<?php echo $baseUrl; ?>/comic" class="button edit" style="display: inline-block; margin-top: 20px;">Zum aktuellen Comic</a>
         </div>
 
-        <!-- Das Grid für die Lesezeichen -->
-        <div id="bookmarks-grid" class="chapter-links" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;">
-            <!-- Wird per JS befüllt -->
-        </div>
+        <div id="bookmarks-content" style="display: none;">
+            <!-- Sortier-Dropdown -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                <div style="background: var(--table-row-even); padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border-medium);">
+                    <label for="bookmark-sort" style="font-weight: bold; margin-right: 10px; font-size: 0.9em;"><i class="fa-solid fa-sort"></i> Sortieren nach:</label>
+                    <select id="bookmark-sort" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-light); background: var(--content-bg); color: var(--text-color);">
+                        <option value="added_desc">Hinzugefügt (Neueste zuerst)</option>
+                        <option value="added_asc">Hinzugefügt (Älteste zuerst)</option>
+                        <option value="page_desc">Seiten-Datum (Neueste zuerst)</option>
+                        <option value="page_asc">Seiten-Datum (Älteste zuerst)</option>
+                    </select>
+                </div>
+            </div>
 
-        <!-- Kontroll-Elemente unten (Alle löschen) -->
-        <div id="bookmarks-controls" class="bookmarks-controls" style="display: none; margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-medium); text-align: center;">
-            <button type="button" id="btn-clear-all-bookmarks" class="button delete" style="padding: 10px 20px;">
-                <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen
-            </button>
-        </div>
+            <!-- Das Grid für die Lesezeichen -->
+            <div id="bookmarks-grid" class="chapter-links" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                <!-- Wird per JS befüllt -->
+            </div>
 
+            <!-- Kontroll-Elemente unten (Alle löschen) -->
+            <div id="bookmarks-controls" class="bookmarks-controls" style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-medium); text-align: center;">
+                <button type="button" id="btn-clear-all-bookmarks" class="button delete" style="padding: 10px 20px;">
+                    <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen
+                </button>
+            </div>
+        </div>
     </article>
 </main>
 
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
 document.addEventListener('DOMContentLoaded', () => {
+    // Die intelligente Datenbank aus PHP
+    const serverComics = <?php echo \json_encode($comicDictionary, \JSON_UNESCAPED_UNICODE | \JSON_HEX_APOS | \JSON_HEX_QUOT); ?>;
+
     const grid = document.getElementById('bookmarks-grid');
     const noMsg = document.getElementById('no-bookmarks-msg');
-    const controls = document.getElementById('bookmarks-controls');
+    const contentWrapper = document.getElementById('bookmarks-content');
     const countBadge = document.getElementById('bookmark-count-badge');
     const btnClearAll = document.getElementById('btn-clear-all-bookmarks');
+    const sortSelect = document.getElementById('bookmark-sort');
 
     function renderBookmarks() {
-        // Daten aus LocalStorage holen
         const bookmarksMap = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
-        const bookmarks = Object.values(bookmarksMap);
+        let bookmarks = Object.values(bookmarksMap);
 
+        // Lösche Lesezeichen aus dem LocalStorage, die auf dem Server nicht mehr existieren (z.B. gelöschte Comics)
+        const validBookmarks = [];
+        let hasInvalid = false;
+        bookmarks.forEach(bm => {
+            if (serverComics[bm.id]) {
+                validBookmarks.push(bm);
+            } else {
+                delete bookmarksMap[bm.id];
+                hasInvalid = true;
+            }
+        });
+
+        if (hasInvalid) {
+            localStorage.setItem('comicBookmarksMap', JSON.stringify(bookmarksMap));
+        }
+
+        bookmarks = validBookmarks;
         countBadge.textContent = bookmarks.length;
 
         if (bookmarks.length === 0) {
-            grid.innerHTML = '';
-            grid.style.display = 'none';
-            controls.style.display = 'none';
+            contentWrapper.style.display = 'none';
             noMsg.style.display = 'block';
             return;
         }
 
-        // Nach Hinzufüge-Datum absteigend sortieren (Neueste zuerst)
-        bookmarks.sort((a, b) => (b.added || 0) - (a.added || 0));
-
-        grid.innerHTML = '';
-        grid.style.display = 'grid';
-        controls.style.display = 'block';
+        contentWrapper.style.display = 'block';
         noMsg.style.display = 'none';
 
+        // Sortierung anwenden
+        const sortMode = sortSelect.value;
+        bookmarks.sort((a, b) => {
+            if (sortMode === 'added_desc') return (b.added || 0) - (a.added || 0);
+            if (sortMode === 'added_asc') return (a.added || 0) - (b.added || 0);
+            if (sortMode === 'page_desc') return b.id.localeCompare(a.id); // Neueste Comicseite
+            if (sortMode === 'page_asc') return a.id.localeCompare(b.id); // Älteste Comicseite
+            return 0;
+        });
+
+        grid.innerHTML = '';
+
         bookmarks.forEach(bm => {
-            // Datum formatieren
-            const dateStr = new Date(bm.added).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const dbData = serverComics[bm.id];
+            const addedDateStr = new Date(bm.added).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
             const card = document.createElement('div');
             card.style.position = 'relative';
@@ -84,27 +140,45 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.overflow = 'hidden';
             card.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
             card.style.transition = 'transform 0.2s';
+            card.style.display = 'flex';
+            card.style.flexDirection = 'column';
 
             card.onmouseenter = () => card.style.transform = 'translateY(-3px)';
             card.onmouseleave = () => card.style.transform = 'translateY(0)';
 
-            // Das Bild ist anklickbar
+            // Bild (nimmt den meisten Platz ein)
             const link = document.createElement('a');
-            link.href = bm.permalink;
+            link.href = dbData.permalink;
             link.style.display = 'block';
             link.style.width = '100%';
-            link.style.aspectRatio = '1 / 1.4';
+            link.style.aspectRatio = '1 / 1.3';
             link.style.overflow = 'hidden';
             link.style.backgroundColor = 'var(--page-bg)';
-            link.innerHTML = `<img src="${bm.thumb}" alt="${bm.page}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
+            link.innerHTML = `<img src="${dbData.thumb}" alt="${dbData.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
 
-            // Titel & Info-Bereich
+            // Info-Bereich unten
             const info = document.createElement('div');
             info.style.padding = '10px';
             info.style.textAlign = 'center';
+            info.style.flexGrow = '1';
+            info.style.display = 'flex';
+            info.style.flexDirection = 'column';
+            info.style.justifyContent = 'space-between';
+
+            let typeBadge = '';
+            if (dbData.type.toLowerCase() !== 'comicseite') {
+                typeBadge = `<span style="font-size: 0.8em; background: var(--status-info-bg); color: var(--status-info-text); padding: 1px 6px; border-radius: 10px; margin-bottom: 5px; display: inline-block;">${dbData.type}</span><br>`;
+            }
+
             info.innerHTML = `
-                <div style="font-weight: bold; font-size: 0.9em; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${bm.page}">${bm.page}</div>
-                <div style="font-size: 0.75em; color: var(--text-color-faded);">Gemerkt am: ${dateStr}</div>
+                <div>
+                    ${typeBadge}
+                    <div style="font-weight: bold; font-size: 0.95em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${dbData.title}">${dbData.title}</div>
+                    <div style="font-size: 0.85em; color: var(--text-color-light); margin-bottom: 8px;">Kapitel ${dbData.chapter} | ${dbData.date}</div>
+                </div>
+                <div style="font-size: 0.75em; color: var(--text-color-faded); border-top: 1px dashed var(--border-medium); padding-top: 5px;">
+                    Gemerkt am: ${addedDateStr}
+                </div>
             `;
 
             // Löschen Button
@@ -130,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 delete bookmarksMap[bm.id];
                 localStorage.setItem('comicBookmarksMap', JSON.stringify(bookmarksMap));
-                renderBookmarks(); // Grid sofort neu aufbauen
+                renderBookmarks();
             };
 
             card.appendChild(link);
@@ -138,6 +212,10 @@ document.addEventListener('DOMContentLoaded', () => {
             card.appendChild(delBtn);
             grid.appendChild(card);
         });
+    }
+
+    if (sortSelect) {
+        sortSelect.addEventListener('change', renderBookmarks);
     }
 
     if (btnClearAll) {
@@ -149,7 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initiales Rendern
     renderBookmarks();
 });
 </script>
