@@ -20,6 +20,37 @@ foreach ($comics as $c) {
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 
+<!-- Dediziertes CSS für die Lesezeichen-Karten (verhindert Konflikte mit Archiv-CSS) -->
+<style>
+    .bookmark-card {
+        position: relative;
+        background-color: var(--content-box-bg);
+        border: 1px solid var(--border-medium);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+    .bookmark-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+    .bookmark-card .delete-btn {
+        opacity: 0;
+        transition: all 0.2s ease;
+    }
+    .bookmark-card:hover .delete-btn {
+        opacity: 1;
+    }
+    @media (max-width: 768px) {
+        .bookmark-card .delete-btn {
+            opacity: 1; /* Auf Touch-Geräten immer sichtbar */
+        }
+    }
+</style>
+
 <main class="content-area bookmarks-page">
     <article style="width: 100%; max-width: 950px; margin: 0 auto;">
         <header style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 20px;">
@@ -44,21 +75,22 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         </div>
 
         <div id="bookmarks-content" style="display: none;">
+
             <!-- Sortier-Dropdown -->
             <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
                 <div style="background: var(--table-row-even); padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border-medium);">
                     <label for="bookmark-sort" style="font-weight: bold; margin-right: 10px; font-size: 0.9em;"><i class="fa-solid fa-sort"></i> Sortieren nach:</label>
                     <select id="bookmark-sort" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-light); background: var(--content-bg); color: var(--text-color);">
-                        <option value="added_desc">Hinzugefügt (Neueste zuerst)</option>
-                        <option value="added_asc">Hinzugefügt (Älteste zuerst)</option>
-                        <option value="page_desc">Seiten-Datum (Neueste zuerst)</option>
-                        <option value="page_asc">Seiten-Datum (Älteste zuerst)</option>
+                        <option value="added_desc" selected>Hinzugefügt (Neueste oben)</option>
+                        <option value="added_asc">Hinzugefügt (Älteste oben)</option>
+                        <option value="page_desc">Story-Timeline (Neueste Seite oben)</option>
+                        <option value="page_asc">Story-Timeline (Älteste Seite oben)</option>
                     </select>
                 </div>
             </div>
 
             <!-- Das Grid für die Lesezeichen -->
-            <div id="bookmarks-grid" class="chapter-links" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            <div id="bookmarks-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
                 <!-- Wird per JS befüllt -->
             </div>
 
@@ -68,13 +100,14 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen
                 </button>
             </div>
+
         </div>
     </article>
 </main>
 
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
 document.addEventListener('DOMContentLoaded', () => {
-    // Die intelligente Datenbank aus PHP
+    // Die Datenbank aus PHP als intelligentes Wörterbuch
     const serverComics = <?php echo \json_encode($comicDictionary, \JSON_UNESCAPED_UNICODE | \JSON_HEX_APOS | \JSON_HEX_QUOT); ?>;
 
     const grid = document.getElementById('bookmarks-grid');
@@ -88,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bookmarksMap = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
         let bookmarks = Object.values(bookmarksMap);
 
-        // Lösche Lesezeichen aus dem LocalStorage, die auf dem Server nicht mehr existieren (z.B. gelöschte Comics)
+        // Bereinigen: Lösche Lesezeichen, die auf dem Server nicht mehr existieren
         const validBookmarks = [];
         let hasInvalid = false;
         bookmarks.forEach(bm => {
@@ -121,8 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bookmarks.sort((a, b) => {
             if (sortMode === 'added_desc') return (b.added || 0) - (a.added || 0);
             if (sortMode === 'added_asc') return (a.added || 0) - (b.added || 0);
-            if (sortMode === 'page_desc') return b.id.localeCompare(a.id); // Neueste Comicseite
-            if (sortMode === 'page_asc') return a.id.localeCompare(b.id); // Älteste Comicseite
+            if (sortMode === 'page_desc') return b.id.localeCompare(a.id); // Timeline: Neueste oben
+            if (sortMode === 'page_asc') return a.id.localeCompare(b.id); // Timeline: Älteste oben
             return 0;
         });
 
@@ -133,32 +166,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const addedDateStr = new Date(bm.added).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
             const card = document.createElement('div');
-            card.style.position = 'relative';
-            card.style.backgroundColor = 'var(--content-box-bg)';
-            card.style.border = '1px solid var(--border-medium)';
-            card.style.borderRadius = '6px';
-            card.style.overflow = 'hidden';
-            card.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
-            card.style.transition = 'transform 0.2s';
-            card.style.display = 'flex';
-            card.style.flexDirection = 'column';
+            card.className = 'bookmark-card'; // Nutzt unser neues CSS von oben!
 
-            card.onmouseenter = () => card.style.transform = 'translateY(-3px)';
-            card.onmouseleave = () => card.style.transform = 'translateY(0)';
-
-            // Bild (nimmt den meisten Platz ein)
+            // Bild
             const link = document.createElement('a');
             link.href = dbData.permalink;
             link.style.display = 'block';
             link.style.width = '100%';
-            link.style.aspectRatio = '1 / 1.3';
+            link.style.aspectRatio = '1 / 1.35';
             link.style.overflow = 'hidden';
             link.style.backgroundColor = 'var(--page-bg)';
+            // Hier kein opacity:0 mehr! Es lädt sofort sichtbar.
             link.innerHTML = `<img src="${dbData.thumb}" alt="${dbData.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
 
-            // Info-Bereich unten
+            // Info-Bereich
             const info = document.createElement('div');
-            info.style.padding = '10px';
+            info.style.padding = '12px 10px';
             info.style.textAlign = 'center';
             info.style.flexGrow = '1';
             info.style.display = 'flex';
@@ -167,38 +190,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let typeBadge = '';
             if (dbData.type.toLowerCase() !== 'comicseite') {
-                typeBadge = `<span style="font-size: 0.8em; background: var(--status-info-bg); color: var(--status-info-text); padding: 1px 6px; border-radius: 10px; margin-bottom: 5px; display: inline-block;">${dbData.type}</span><br>`;
+                typeBadge = `<span style="font-size: 0.75em; font-weight: bold; background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border); padding: 2px 8px; border-radius: 12px; margin-bottom: 5px; display: inline-block; text-transform: uppercase;">${dbData.type}</span><br>`;
             }
 
             info.innerHTML = `
                 <div>
                     ${typeBadge}
-                    <div style="font-weight: bold; font-size: 0.95em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${dbData.title}">${dbData.title}</div>
-                    <div style="font-size: 0.85em; color: var(--text-color-light); margin-bottom: 8px;">Kapitel ${dbData.chapter} | ${dbData.date}</div>
+                    <div style="font-weight: bold; font-size: 0.95em; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color);" title="${dbData.title}">${dbData.title}</div>
+                    <div style="font-size: 0.85em; color: var(--text-color-light); margin-bottom: 8px;">Kapitel ${dbData.chapter} <span style="opacity: 0.5;">|</span> ${dbData.date}</div>
                 </div>
-                <div style="font-size: 0.75em; color: var(--text-color-faded); border-top: 1px dashed var(--border-medium); padding-top: 5px;">
-                    Gemerkt am: ${addedDateStr}
+                <div style="font-size: 0.75em; color: var(--text-color-faded); border-top: 1px dashed var(--border-medium); padding-top: 8px; margin-top: auto;">
+                    <i class="fa-regular fa-clock"></i> Gemerkt: ${addedDateStr}
                 </div>
             `;
 
             // Löschen Button
             const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn'; // Nutzt das Hover-CSS
             delBtn.innerHTML = '<i class="fa-solid fa-times"></i>';
             delBtn.title = "Lesezeichen entfernen";
             delBtn.style.position = 'absolute';
             delBtn.style.top = '5px';
             delBtn.style.right = '5px';
-            delBtn.style.width = '26px';
-            delBtn.style.height = '26px';
+            delBtn.style.width = '28px';
+            delBtn.style.height = '28px';
             delBtn.style.borderRadius = '50%';
-            delBtn.style.border = 'none';
-            delBtn.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+            delBtn.style.border = '1px solid #bd2130';
+            delBtn.style.backgroundColor = '#dc3545';
             delBtn.style.color = '#fff';
             delBtn.style.cursor = 'pointer';
             delBtn.style.display = 'flex';
             delBtn.style.alignItems = 'center';
             delBtn.style.justifyContent = 'center';
             delBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+
+            delBtn.onmouseenter = () => delBtn.style.backgroundColor = '#c82333';
+            delBtn.onmouseleave = () => delBtn.style.backgroundColor = '#dc3545';
 
             delBtn.onclick = (e) => {
                 e.preventDefault();
@@ -227,6 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Initiales Rendern
     renderBookmarks();
 });
 </script>
