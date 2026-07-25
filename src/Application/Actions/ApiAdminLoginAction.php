@@ -8,15 +8,13 @@ use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
-use App\Application\Session\SessionManager;
-use App\Contracts\Config\ConfigInterface;
+use App\Core\Service\AuthService;
 
 #[ActionRoute('api_admin_login')]
 final readonly class ApiAdminLoginAction implements ActionInterface
 {
     public function __construct(
-        private ConfigInterface $config,
-        private SessionManager $sessionManager,
+        private AuthService $auth,
     ) {
     }
 
@@ -24,36 +22,31 @@ final readonly class ApiAdminLoginAction implements ActionInterface
     {
         $username = \trim((string) ($request->post['username'] ?? ''));
         $password = (string) ($request->post['password'] ?? '');
+        $ip       = $request->getIp();
 
         if ($username === '' || $password === '') {
             return JsonResponse::error('Bitte Benutzername und Passwort eingeben.', 400);
         }
 
-        // Wir prüfen zuerst den Superadmin (dev_admin.php)
-        $superAdmin = $this->config->get('superadmin', []);
+        try {
+            if ($this->auth->login($username, $password, $ip)) {
+                $role = $this->auth->getRole();
+                // Dynamische Weiterleitung: Admin ins Dashboard, User zu den Lesezeichen
+                $target = ($role === 'admin' || $role === 'Systembetreuer') ? 'admin' : 'lesezeichen';
 
-        // Und den Backdoor-User (In app.php verankert)
-        $backdoor = $this->config->get('backdoor', []);
+                return JsonResponse::success([
+                    'message'  => 'Erfolgreich eingeloggt.',
+                    'redirect' => $target,
+                ]);
+            }
 
-        $isAuthenticated = false;
-        $userLabel       = 'Unbekannt';
+            return JsonResponse::error('Ungültige Zugangsdaten.', 401);
 
-        if (isset($superAdmin['user'], $superAdmin['pass']) && $username === $superAdmin['user'] && $password === $superAdmin['pass']) {
-            $isAuthenticated = true;
-            $userLabel       = $superAdmin['label'] ?? 'Systembetreuer';
-        } elseif (isset($backdoor['user'], $backdoor['pass']) && $username === $backdoor['user'] && \password_verify($password, $backdoor['pass'])) {
-            $isAuthenticated = true;
-            $userLabel       = $backdoor['label'] ?? 'System-Inhaber';
+        } catch (\DomainException $e) {
+            // Fängt die "Konto nicht bestätigt" Exception aus dem AuthService!
+            return JsonResponse::error($e->getMessage(), 401);
+        } catch (\RuntimeException $e) {
+            return JsonResponse::error($e->getMessage(), 429);
         }
-
-        if ($isAuthenticated) {
-            $this->sessionManager->regenerate();
-            // UserID "1", Group "admin", Label setzen
-            $this->sessionManager->setAuthSession('1', 'admin', $userLabel);
-
-            return JsonResponse::success(['message' => 'Erfolgreich eingeloggt.', 'redirect' => 'admin']);
-        }
-
-        return JsonResponse::error('Ungültige Zugangsdaten.', 401);
     }
 }

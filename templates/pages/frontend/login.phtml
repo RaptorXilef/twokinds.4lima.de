@@ -12,6 +12,26 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <p style="color: var(--text-color-faded);">Logge dich ein, um deine Lesezeichen zu synchronisieren.</p>
         </header>
 
+        <!-- Flash-Messages (z.B. für Bestätigungslink-Erfolg) -->
+        <?php if (! empty($flashes['success'])) { ?>
+            <div
+                 style="padding: 15px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center; background-color: var(--status-green-bg); color: var(--status-green-text); border: 1px solid var(--status-green-border);">
+                <i class="fa-solid fa-check"></i> <?php echo \htmlspecialchars($flashes['success'][0]); ?>
+            </div>
+        <?php } ?>
+        <?php if (! empty($flashes['error'])) { ?>
+            <div
+                 style="padding: 15px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center; background-color: var(--status-red-bg); color: var(--status-red-text); border: 1px solid var(--status-red-border);">
+                <i class="fa-solid fa-triangle-exclamation"></i> <?php echo \htmlspecialchars($flashes['error'][0]); ?>
+            </div>
+        <?php } ?>
+        <?php if (! empty($flashes['info'])) { ?>
+            <div
+                 style="padding: 15px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center; background-color: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border);">
+                <i class="fa-solid fa-circle-info"></i> <?php echo \htmlspecialchars($flashes['info'][0]); ?>
+            </div>
+        <?php } ?>
+
         <div
              style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <div id="login-status-msg"
@@ -43,7 +63,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         style="width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold;">Einloggen</button>
             </form>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 0.9em;">
+            <div
+                 style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 0.9em;">
                 <a href="<?php echo $baseUrl; ?>/passwort-vergessen" style="color: var(--text-color-faded);">Passwort vergessen?</a>
                 <span>Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" style="font-weight: bold;">Registrieren</a></span>
             </div>

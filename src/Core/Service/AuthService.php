@@ -44,6 +44,14 @@ final readonly class AuthService
 
         // 3. Passwort prüfen
         if ($user && \password_verify($password, $user->passwordHash)) {
+            // Wenn der User nicht verifiziert ist, abbrechen!
+            if ($user->roleId === 'pending') {
+                $this->rateLimiter->recordFailedAttempt($ip);
+
+                throw new \DomainException('Dein Konto wurde noch nicht bestätigt. Bitte klicke auf den Link in der E-Mail, die wir dir gesendet haben.');
+            }
+
+            $this->setupSession($user->id, $user->roleId, $user->username, $user->passwordHash);
             $this->setupSession($user->id, $user->roleId, $user->username, $user->passwordHash);
             $this->refreshSessionPermissions($user->roleId);
             $this->rateLimiter->clearAttempts($ip);

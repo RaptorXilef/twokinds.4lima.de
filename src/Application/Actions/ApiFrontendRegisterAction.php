@@ -8,10 +8,13 @@ use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
 use App\Core\Service\AuthService;
+use App\Core\Service\MagicLinkService;
 
 #[ActionRoute('api_frontend_register')]
 final readonly class ApiFrontendRegisterAction implements ActionInterface
@@ -20,6 +23,9 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         private AuthService $auth,
         private RateLimiterInterface $rateLimiter,
         private UserRepositoryInterface $userRepository,
+        private MagicLinkService $magicLinkService,
+        private MailServiceInterface $mailService,
+        private ConfigInterface $config,
     ) {
     }
 
@@ -59,7 +65,7 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         if ($domain === false || (! \checkdnsrr($domain, 'MX') && ! \checkdnsrr($domain, 'A'))) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
-            return JsonResponse::error('Die angegebene E-Mail-Domain scheint keine E-Mails empfangen zu können.', 400);
+            return JsonResponse::error('Die E-Mail-Domain scheint keine E-Mails empfangen zu können.', 400);
         }
 
         if (\strlen($password) < 8) {
@@ -84,16 +90,25 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         $newId = $this->auth->generateId('usr_');
         $hash  = \password_hash($password, \PASSWORD_DEFAULT);
 
-        // Standardrolle ist "user"
-        $user = new User($newId, $username, $email, $hash, 'user', new \DateTimeImmutable());
+        // Rolle auf 'pending' gesetzt
+        $user = new User($newId, $username, $email, $hash, 'pending', new \DateTimeImmutable());
         $this->userRepository->save($user);
 
-        // Direkt einloggen
-        $this->auth->login($username, $password, $ip);
+        // Bestätigungs-E-Mail senden
+        $tokenData = $this->magicLinkService->createToken($email);
+        $verifyUrl = \rtrim($this->config->getBaseUrl(), '/') . '/verifizieren?token=' . $tokenData['token'];
+
+        $this->mailService->sendTemplate($email, 'Bitte bestätige dein Konto', 'verify_account', [
+            'verifyUrl' => $verifyUrl,
+            'username'  => $username,
+        ]);
+
+        // E-Mail sofort aus der Queue werfen!
+        $this->mailService->processQueue(5, ['verify_account']);
 
         return JsonResponse::success([
-            'message'  => 'Registrierung erfolgreich! Du wirst eingeloggt...',
-            'redirect' => 'lesezeichen', // Leitet nach Erfolg ins Lesezeichen-Dashboard
+            'message'  => 'Fast geschafft! Ich habe dir eine E-Mail mit einem Bestätigungslink gesendet.',
+            'redirect' => 'login',
         ]);
     }
 }

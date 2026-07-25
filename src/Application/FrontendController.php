@@ -140,6 +140,10 @@ final readonly class FrontendController
             return ['action' => 'render_frontend_reset_password', 'input' => $input];
         }
 
+        if ($relativePath === 'verifizieren' || $relativePath === 'verifizieren.php') {
+            return ['action' => 'render_frontend_verify', 'input' => $input];
+        }
+
         if ($relativePath === '403') {
             return ['action' => 'render_403', 'input' => $input];
         }
