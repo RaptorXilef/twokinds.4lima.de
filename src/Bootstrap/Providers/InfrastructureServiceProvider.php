@@ -8,6 +8,8 @@ use App\Application\Session\SessionManager;
 use App\Contracts\Bootstrap\ServiceProviderInterface;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
+use App\Contracts\Mail\MailLogInterface;
+use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Security\AuthSessionInterface;
 use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\ChapterRepositoryInterface;
@@ -16,6 +18,8 @@ use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Storage\LoginAttemptRepositoryInterface;
+use App\Contracts\Storage\MagicLinkRepositoryInterface;
+use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
@@ -28,6 +32,8 @@ use App\Contracts\Utils\ClockInterface;
 use App\Core\Service\SiteGeneratorService;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
+use App\Infrastructure\Mail\MailQueueService;
+use App\Infrastructure\Mail\SmtpMailService;
 use App\Infrastructure\Security\RateLimiter;
 use App\Infrastructure\Storage\JsonHelper;
 use App\Infrastructure\Storage\LocalImageStorage;
@@ -37,6 +43,8 @@ use App\Infrastructure\Storage\MySqlCharacterRepository;
 use App\Infrastructure\Storage\MySqlComicRepository;
 use App\Infrastructure\Storage\MySqlComicRevisionRepository;
 use App\Infrastructure\Storage\MySqlLoginAttemptRepository;
+use App\Infrastructure\Storage\MySqlMagicLinkRepository;
+use App\Infrastructure\Storage\MySqlMailQueueRepository;
 use App\Infrastructure\Storage\MySqlReportRepository;
 use App\Infrastructure\Storage\MySqlRoleRepository;
 use App\Infrastructure\Storage\MySqlUserRepository;
@@ -86,7 +94,30 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             $container->get(LoginAttemptRepositoryInterface::class),
         ));
 
-        // 3. Domain Repositories (TwoKinds MySQL Persistenz)
+        // 3. E-Mail
+        $container->bind(MagicLinkRepositoryInterface::class, fn () => new MySqlMagicLinkRepository(
+            $container->get(\PDO::class),
+        ));
+
+        $container->bind(MailQueueRepositoryInterface::class, fn () => new MySqlMailQueueRepository(
+            $container->get(\PDO::class),
+            $container->get(JsonHelperInterface::class),
+        ));
+
+        // Mail Services (SMTP als interne Instanz, MailQueue als das Interface für den Rest der App)
+        $container->bind('mail.smtp', fn () => new SmtpMailService(
+            $container->get(\PDO::class),
+            $container->get(ConfigInterface::class),
+        ));
+
+        $container->bind(MailLogInterface::class, fn () => $container->get('mail.smtp'));
+
+        $container->bind(MailServiceInterface::class, fn () => new MailQueueService(
+            $container->get(MailQueueRepositoryInterface::class),
+            $container->get('mail.smtp'),
+        ));
+
+        // 4. Domain Repositories (TwoKinds MySQL Persistenz)
         $container->bind(ComicRepositoryInterface::class, fn () => new MySqlComicRepository(
             $container->get(\PDO::class),
         ));
