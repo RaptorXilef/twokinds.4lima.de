@@ -9,11 +9,13 @@ use App\Contracts\Bootstrap\ServiceProviderInterface;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
 use App\Contracts\Security\AuthSessionInterface;
+use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\ComicRevisionRepositoryInterface;
+use App\Contracts\Storage\LoginAttemptRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
@@ -26,6 +28,7 @@ use App\Contracts\Utils\ClockInterface;
 use App\Core\Service\SiteGeneratorService;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
+use App\Infrastructure\Security\RateLimiter;
 use App\Infrastructure\Storage\JsonHelper;
 use App\Infrastructure\Storage\LocalImageStorage;
 use App\Infrastructure\Storage\MySqlChapterRepository;
@@ -33,6 +36,7 @@ use App\Infrastructure\Storage\MySqlCharacterGroupRepository;
 use App\Infrastructure\Storage\MySqlCharacterRepository;
 use App\Infrastructure\Storage\MySqlComicRepository;
 use App\Infrastructure\Storage\MySqlComicRevisionRepository;
+use App\Infrastructure\Storage\MySqlLoginAttemptRepository;
 use App\Infrastructure\Storage\MySqlReportRepository;
 use App\Infrastructure\Storage\MySqlRoleRepository;
 use App\Infrastructure\Storage\MySqlUserRepository;
@@ -71,6 +75,15 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
         $container->bind(UserRepositoryInterface::class, fn () => new MySqlUserRepository(
             $container->get(\PDO::class),
+        ));
+
+        $container->bind(LoginAttemptRepositoryInterface::class, fn () => new MySqlLoginAttemptRepository(
+            $container->get(\PDO::class),
+        ));
+
+        $container->bind(RateLimiterInterface::class, fn () => new RateLimiter(
+            $container->get(ClockInterface::class),
+            $container->get(LoginAttemptRepositoryInterface::class),
         ));
 
         // 3. Domain Repositories (TwoKinds MySQL Persistenz)
