@@ -1,4 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+use App\Core\Entity\ComicPage;
+
+/**
+ * @var array            $settings
+ * @var array<ComicPage> $comics
+ */
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 
 // Wir bauen ein JS-Lexikon aus der Datenbank, um immer korrekte Pfade und Kapitel zu haben
@@ -22,66 +31,86 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
 <!-- Dediziertes CSS für die Lesezeichen-Karten (verhindert Konflikte mit Archiv-CSS) -->
 <style>
-    .bookmark-card {
-        position: relative;
-        background-color: var(--content-box-bg);
-        border: 1px solid var(--border-medium);
-        border-radius: 6px;
-        overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        transition: transform 0.2s, box-shadow 0.2s;
-        display: flex;
-        flex-direction: column;
-    }
-    .bookmark-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-    }
+.bookmark-card {
+    position: relative;
+    background-color: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.bookmark-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.bookmark-card .delete-btn {
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.bookmark-card:hover .delete-btn {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
     .bookmark-card .delete-btn {
-        opacity: 0;
-        transition: all 0.2s ease;
-    }
-    .bookmark-card:hover .delete-btn {
         opacity: 1;
+        /* Auf Touch-Geräten immer sichtbar */
     }
-    @media (max-width: 768px) {
-        .bookmark-card .delete-btn {
-            opacity: 1; /* Auf Touch-Geräten immer sichtbar */
-        }
-    }
+}
+
 </style>
 
 <main class="content-area bookmarks-page">
     <article style="width: 100%; max-width: 950px; margin: 0 auto;">
-        <header style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 20px;">
-            <h1 class="page-header" style="border: none; margin-bottom: 10px; font-size: 2.2em;">
-                <i class="fa-solid fa-bookmark" style="color: var(--link-color);"></i> Meine Lesezeichen
+        <header
+                style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 20px;">
+            <h1 class="page-header"
+                style="border: none; margin-bottom: 10px; font-size: 2.2em;">
+                <i class="fa-solid fa-bookmark"
+                   style="color: var(--link-color);"></i> Meine Lesezeichen
                 <span id="bookmark-count-badge" class="comic-count-badge">0</span>
             </h1>
             <p style="color: var(--text-color-faded); font-size: 1.1em; max-width: 600px; margin: 0 auto;">
                 Hier findest du alle Comicseiten, die du dir gemerkt hast.
-                <br><small><i class="fa-solid fa-hard-drive"></i> Aktuell werden diese nur lokal in diesem Browser gespeichert.</small>
+                <br><small><i class="fa-solid fa-hard-drive"></i> Aktuell werden diese nur lokal in diesem Browser
+                    gespeichert.</small>
             </p>
         </header>
 
         <!-- Container, wenn KEINE Lesezeichen da sind -->
-        <div id="no-bookmarks-msg" class="no-bookmarks" style="display: none;">
-            <i class="fa-regular fa-folder-open" style="font-size: 3em; color: var(--border-medium); margin-bottom: 15px; display: block;"></i>
+        <div id="no-bookmarks-msg"
+             class="no-bookmarks"
+             style="display: none;">
+            <i class="fa-regular fa-folder-open"
+               style="font-size: 3em; color: var(--border-medium); margin-bottom: 15px; display: block;"></i>
             <p>Du hast noch keine Lesezeichen gespeichert.</p>
             <p style="margin-top: 10px; font-size: 0.9em;">
-                Klicke auf einer Comicseite einfach oben in der Leiste auf den Button <strong>"Seite merken"</strong>, um sie hier aufzulisten.
+                Klicke auf einer Comicseite einfach oben in der Leiste auf den Button <strong>"Seite merken"</strong>,
+                um sie hier aufzulisten.
             </p>
             <a href="<?php echo $baseUrl; ?>/comic" class="button edit" style="display: inline-block; margin-top: 20px;">Zum aktuellen Comic</a>
         </div>
 
-        <div id="bookmarks-content" style="display: none;">
+        <div id="bookmarks-content"
+             style="display: none;">
 
             <!-- Sortier-Dropdown -->
             <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-                <div style="background: var(--table-row-even); padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border-medium);">
-                    <label for="bookmark-sort" style="font-weight: bold; margin-right: 10px; font-size: 0.9em;"><i class="fa-solid fa-sort"></i> Sortieren nach:</label>
-                    <select id="bookmark-sort" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-light); background: var(--content-bg); color: var(--text-color);">
-                        <option value="added_desc" selected>Hinzugefügt (Neueste oben)</option>
+                <div
+                     style="background: var(--table-row-even); padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border-medium);">
+                    <label for="bookmark-sort"
+                           style="font-weight: bold; margin-right: 10px; font-size: 0.9em;"><i
+                           class="fa-solid fa-sort"></i> Sortieren nach:</label>
+                    <select id="bookmark-sort"
+                            style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-light); background: var(--content-bg); color: var(--text-color);">
+                        <option value="added_desc"
+                                selected>Hinzugefügt (Neueste oben)</option>
                         <option value="added_asc">Hinzugefügt (Älteste oben)</option>
                         <option value="page_desc">Story-Timeline (Neueste Seite oben)</option>
                         <option value="page_asc">Story-Timeline (Älteste Seite oben)</option>
@@ -90,13 +119,19 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             </div>
 
             <!-- Das Grid für die Lesezeichen -->
-            <div id="bookmarks-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            <div id="bookmarks-grid"
+                 style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
                 <!-- Wird per JS befüllt -->
             </div>
 
             <!-- Kontroll-Elemente unten (Alle löschen) -->
-            <div id="bookmarks-controls" class="bookmarks-controls" style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-medium); text-align: center;">
-                <button type="button" id="btn-clear-all-bookmarks" class="button delete" style="padding: 10px 20px;">
+            <div id="bookmarks-controls"
+                 class="bookmarks-controls"
+                 style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-medium); text-align: center;">
+                <button type="button"
+                        id="btn-clear-all-bookmarks"
+                        class="button delete"
+                        style="padding: 10px 20px;">
                     <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen
                 </button>
             </div>
@@ -163,7 +198,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         bookmarks.forEach(bm => {
             const dbData = serverComics[bm.id];
-            const addedDateStr = new Date(bm.added).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const addedDateStr = new Date(bm.added).toLocaleDateString('de-DE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
 
             const card = document.createElement('div');
             card.className = 'bookmark-card'; // Nutzt unser neues CSS von oben!
@@ -177,7 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
             link.style.overflow = 'hidden';
             link.style.backgroundColor = 'var(--page-bg)';
             // Hier kein opacity:0 mehr! Es lädt sofort sichtbar.
-            link.innerHTML = `<img src="${dbData.thumb}" alt="${dbData.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
+            link.innerHTML =
+                `<img src="${dbData.thumb}" alt="${dbData.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
 
             // Info-Bereich
             const info = document.createElement('div');
@@ -190,7 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let typeBadge = '';
             if (dbData.type.toLowerCase() !== 'comicseite') {
-                typeBadge = `<span style="font-size: 0.75em; font-weight: bold; background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border); padding: 2px 8px; border-radius: 12px; margin-bottom: 5px; display: inline-block; text-transform: uppercase;">${dbData.type}</span><br>`;
+                typeBadge =
+                    `<span style="font-size: 0.75em; font-weight: bold; background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border); padding: 2px 8px; border-radius: 12px; margin-bottom: 5px; display: inline-block; text-transform: uppercase;">${dbData.type}</span><br>`;
             }
 
             info.innerHTML = `
@@ -247,7 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnClearAll) {
         btnClearAll.addEventListener('click', () => {
-            if (confirm('Möchtest du wirklich ALLE deine lokalen Lesezeichen unwiderruflich löschen?')) {
+            if (confirm(
+                'Möchtest du wirklich ALLE deine lokalen Lesezeichen unwiderruflich löschen?')) {
                 localStorage.removeItem('comicBookmarksMap');
                 renderBookmarks();
             }
@@ -257,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initiales Rendern
     renderBookmarks();
 });
+
 </script>
 
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

@@ -51,9 +51,10 @@ final readonly class TemplateRenderer
     private function getGlobalSettings(): array
     {
         return [
-            'base_url'    => $this->config->getBaseUrl(),
-            'site_title'  => $this->config->get('site_title', 'Twokinds auf Deutsch'),
-            'app_version' => $this->systemInfo->getCurrentVersion(),
+            'base_url'            => $this->config->getBaseUrl(),
+            'site_title'          => $this->config->get('site_title', 'Twokinds auf Deutsch'),
+            'app_version'         => $this->systemInfo->getCurrentVersion(),
+            'google_analytics_id' => $this->config->get('google_analytics_id', ''), // NEU HINZUGEFÜGT
         ];
     }
 }
