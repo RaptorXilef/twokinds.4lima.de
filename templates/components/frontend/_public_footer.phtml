@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Contracts\System\AssetHelperInterface;
 
 /**
+ * @var string               $baseUrl
  * @var array                $settings
  * @var AssetHelperInterface $asset
  */
@@ -39,6 +40,58 @@ use App\Contracts\System\AssetHelperInterface;
     <div class="footer-img"></div>
 </footer>
 </div> <!-- Schließt .main-container aus dem Header -->
+
+
+<!-- COOKIE CONSENT BANNER -->
+<div id="cookie-consent-banner"
+     class="cookie-banner"
+     style="display: none;">
+    <div class="cookie-content">
+        <h3>Ich verwende Cookies</h3>
+        <p>Ich nutze Cookies und ähnliche Technologien (wie Local Storage), um dir das beste Leseerlebnis zu bieten und
+            anonyme Statistiken zur Webseitennutzung zu erfassen, um diese stetig weiter zu verbessern.</p>
+
+        <div class="cookie-category">
+            <label>
+                <input type="checkbox"
+                       id="cookieNecessary"
+                       checked
+                       disabled> <strong>Notwendig</strong>
+            </label>
+            <div class="description">Diese Technologien sind essentiell (z. B. Speichern des verwendeten Designs (Dark/Light-Mode) oder deiner
+                Lesezeichen) und können nicht abgewählt werden.</div>
+        </div>
+
+        <div class="cookie-category">
+            <label>
+                <input type="checkbox"
+                       id="cookieAnalytics"> <strong>Google Analytics 4 (Anonymisiert & ohne Werbung)</strong>
+            </label>
+            <div class="description">Hilft mir (komplett anonymisiert) zu verstehen, wie viele Nutzer meine Seite
+                besuchen und welche Funktionen und Übersetzungen am beliebtesten sind.
+                Das hilft mir Funktionen zu verbessern und neue Funktionen einzubauen, die dir einen Mehrwert bieten.
+                Wenn du mich dabei unterstützen möchtest, aktivieren diesen Cookie bitte!
+                (Wird <b><u>nicht</u></b> verwendet im Werbung zu schalten!)
+            </div>
+        </div>
+
+        <div class="cookie-buttons">
+            <button id="accept-all-cookies"
+                    class="button">Alle akzeptieren</button>
+            <button id="save-cookie-preferences"
+                    class="button edit">Auswahl speichern</button>
+            <button id="reject-all-cookies"
+                    class="button delete">Nur Notwendige</button>
+        </div>
+
+        <div style="margin-top: 15px; font-size: 0.85em; text-align: center;">
+            <a href="<?php echo $baseUrl; ?>/datenschutz" style="color: var(--cookie-link);">Datenschutzerklärung</a> |
+            <a href="<?php echo $baseUrl; ?>/impressum" style="color: var(--cookie-link);">Impressum</a>
+        </div>
+    </div>
+</div>
+<!-- ENDE COOKIE CONSENT BANNER -->
+
 
 <!-- GLOBAL REPORT MODAL -->
 <div id="global-report-modal"
@@ -133,13 +186,24 @@ use App\Contracts\System\AssetHelperInterface;
 
             <!-- NEU: Screenshot Feld mit Drag & Drop -->
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Screenshot anhängen (Optional)</label>
-                <div id="report-drop-zone" style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even); transition: all 0.2s;">
-                    <i class="fa-solid fa-image" style="font-size: 2em; color: var(--text-color-light);"></i>
-                    <p style="margin: 5px 0 0; color: var(--text-color); font-weight: bold;">Bild hier ablegen oder klicken</p>
-                    <small style="color: var(--text-color-faded);">Hilft uns sehr bei Layout- oder Darstellungsfehlern!</small>
-                    <input type="file" id="report_screenshot" name="report_screenshot" accept="image/*" style="display: none;">
-                    <div id="report-screenshot-name" style="margin-top: 10px; font-weight: bold; color: var(--status-green-text); display: none;"></div>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Screenshot anhängen
+                    (Optional)</label>
+                <div id="report-drop-zone"
+                     style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even); transition: all 0.2s;">
+                    <i class="fa-solid fa-image"
+                       style="font-size: 2em; color: var(--text-color-light);"></i>
+                    <p style="margin: 5px 0 0; color: var(--text-color); font-weight: bold;">Bild hier ablegen oder
+                        klicken</p>
+                    <small style="color: var(--text-color-faded);">Hilft uns sehr bei Layout- oder
+                        Darstellungsfehlern!</small>
+                    <input type="file"
+                           id="report_screenshot"
+                           name="report_screenshot"
+                           accept="image/*"
+                           style="display: none;">
+                    <div id="report-screenshot-name"
+                         style="margin-top: 10px; font-weight: bold; color: var(--status-green-text); display: none;">
+                    </div>
                 </div>
             </div>
 

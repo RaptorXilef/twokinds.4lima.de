@@ -72,12 +72,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     id="add-bookmark"
                     class="bookmark"
                     title="Diese Seite mit Lesezeichen versehen"
-                    data-id="<?php echo $comic->id->value; ?>"
-                    data-page="<?php echo \htmlspecialchars($pageTitle); ?>"
-                    data-permalink="<?php echo $canonicalUrl; ?>"
-                    data-thumb="<?php echo \htmlspecialchars($thumbnailPath); ?>">
-                Seite merken
-            </button>
+                    data-id="<?php echo $comic->id->value; ?>"> Seite merken </button>
+
             <button type="button"
                     id="open-report-modal"
                     class="navarrow nav-report-issue"

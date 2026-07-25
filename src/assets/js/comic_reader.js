@@ -89,11 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnBookmark.classList.remove('bookmarked');
                 btnBookmark.title = 'Diese Seite mit Lesezeichen versehen';
             } else {
+                // Extrem schlankes Speicherobjekt
                 bookmarks[comicId] = {
                     id: comicId,
-                    page: btnBookmark.dataset.page,
-                    permalink: btnBookmark.dataset.permalink,
-                    thumb: btnBookmark.dataset.thumb,
                     added: Date.now(),
                 };
                 btnBookmark.classList.add('bookmarked');
