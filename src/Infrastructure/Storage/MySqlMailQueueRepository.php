@@ -52,10 +52,15 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         }
 
         try {
-            $this->pdo->exec("UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY created_at ASC LIMIT {$limit}");
-            $stmt = $this->pdo->prepare("SELECT * FROM `mail_queue` WHERE attempts >= 100 {$templateFilterSql} ORDER BY created_at ASC");
-            $stmt->execute($params);
-            $items = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            // HIER IST DER FIX: prepare() und execute() statt exec()
+            $updateSql  = "UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY created_at ASC LIMIT {$limit}";
+            $stmtUpdate = $this->pdo->prepare($updateSql);
+            $stmtUpdate->execute($params);
+
+            $selectSql  = "SELECT * FROM `mail_queue` WHERE attempts >= 100 {$templateFilterSql} ORDER BY created_at ASC";
+            $stmtSelect = $this->pdo->prepare($selectSql);
+            $stmtSelect->execute($params);
+            $items = $stmtSelect->fetchAll(\PDO::FETCH_ASSOC);
 
             foreach ($items as $item) {
                 try {
@@ -63,6 +68,7 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
                     $this->pdo->prepare('DELETE FROM `mail_queue` WHERE id = ?')->execute([$item['id']]);
                     ++$sentCount;
                 } catch (\Throwable $t) {
+                    \error_log("MailQueue Error [ID {$item['id']}]: " . $t->getMessage());
                     $origAttempts = $item['attempts'] - 100 + 1;
                     if ($origAttempts >= 3) {
                         $this->pdo->prepare('DELETE FROM `mail_queue` WHERE id = ?')->execute([$item['id']]);
