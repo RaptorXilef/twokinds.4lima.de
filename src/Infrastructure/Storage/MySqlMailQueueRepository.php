@@ -16,11 +16,24 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
 
     public function enqueue(MailJob $job): void
     {
-        $data = ['id' => $job->id, 'recipient' => $job->recipient, 'subject' => $job->subject, 'template' => $job->template->value, 'data' => \json_encode($job->data, \JSON_UNESCAPED_UNICODE), 'attempts' => $job->attempts, 'created_at' => $job->createdAt->format('Y-m-d H:i:s')];
-        $this->pdo->prepare('REPLACE INTO `mail_queue` (id, recipient, subject, template, data, attempts, created_at) VALUES (:id, :recipient, :subject, :template, :data, :attempts, :created_at)')->execute($data);
+        // Weil wir TemplateKey ausgebaut haben, job->template ist jetzt ein string!
+        $templateStr = \is_string($job->template) ? $job->template : ($job->template->value ?? 'std');
+        $data        = [
+            'id'         => $job->id,
+            'recipient'  => $job->recipient,
+            'subject'    => $job->subject,
+            'template'   => $templateStr,
+            'data'       => \json_encode($job->data, \JSON_UNESCAPED_UNICODE),
+            'attempts'   => $job->attempts,
+            'created_at' => $job->createdAt->format('Y-m-d H:i:s'),
+        ];
+
+        $sql = 'REPLACE INTO `mail_queue` (id, recipient, subject, template, data, attempts, created_at)
+                VALUES (:id, :recipient, :subject, :template, :data, :attempts, :created_at)';
+        $this->pdo->prepare($sql)->execute($data);
     }
 
-    public function processBatch(int $limit, callable $processor): int
+    public function processBatch(int $limit, callable $processor, array $allowedTemplates = []): int
     {
         $sentCount    = 0;
         $lockAcquired = $this->pdo->query("SELECT GET_LOCK('tk_mail_queue', 2)")->fetchColumn();
@@ -28,9 +41,22 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
             return 0;
         }
 
+        $templateFilterSql = '';
+        $params            = [];
+
+        // Newsletter herausfiltern oder gezielt zulassen
+        if (! empty($allowedTemplates)) {
+            $inQuery           = \implode(',', \array_fill(0, \count($allowedTemplates), '?'));
+            $templateFilterSql = " AND template IN ($inQuery)";
+            $params            = $allowedTemplates;
+        }
+
         try {
-            $this->pdo->exec("UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 ORDER BY created_at ASC LIMIT {$limit}");
-            $items = $this->pdo->query('SELECT * FROM `mail_queue` WHERE attempts >= 100 ORDER BY created_at ASC')->fetchAll(\PDO::FETCH_ASSOC);
+            $this->pdo->exec("UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY created_at ASC LIMIT {$limit}");
+            $stmt = $this->pdo->prepare("SELECT * FROM `mail_queue` WHERE attempts >= 100 {$templateFilterSql} ORDER BY created_at ASC");
+            $stmt->execute($params);
+            $items = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
             foreach ($items as $item) {
                 try {
                     $processor($item['recipient'], $item['subject'], $item['template'], $this->jsonHelper->decode((string) $item['data']));

@@ -53,6 +53,9 @@ final readonly class ApiFrontendForgotPasswordAction implements ActionInterface
                 'resetUrl' => $resetUrl,
                 'username' => $user->username,
             ]);
+
+            // NEU: Triggere den Versand SOFORT, aber NUR für die Passwort-Mails!
+            $this->mailService->processQueue(5, ['forgot_password']);
         } else {
             // Anti user-enumeration
             \usleep(\random_int(100000, 300000));

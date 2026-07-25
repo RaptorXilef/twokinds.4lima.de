@@ -157,6 +157,7 @@ final readonly class FrontendController
                 'get_transcript'           => ['action' => 'api_get_transcript', 'input' => $input],
                 'list_comic_media'         => ['action' => 'api_list_comic_media', 'input' => $input],
                 'list_media'               => ['action' => 'api_list_media', 'input' => $input],
+                'process_mail_queue'       => ['action' => 'api_process_mail_queue', 'input' => $input],
                 'projekt'                  => ['action' => 'page_project_info'],
                 'save_chapter'             => ['action' => 'api_save_chapter', 'input' => $input],
                 'save_character_groups'    => ['action' => 'api_save_character_groups', 'input' => $input],

@@ -43,8 +43,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         style="width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold;">Einloggen</button>
             </form>
 
-            <div style="text-align: center; margin-top: 20px; font-size: 0.9em;">
-                Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" style="font-weight: bold;">Jetzt registrieren</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 0.9em;">
+                <a href="<?php echo $baseUrl; ?>/passwort-vergessen" style="color: var(--text-color-faded);">Passwort vergessen?</a>
+                <span>Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" style="font-weight: bold;">Registrieren</a></span>
             </div>
         </div>
     </article>
@@ -84,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     msg.style.color = 'var(--status-red-text)';
                     msg.style.border = '1px solid var(--status-red-border)';
                     msg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + json
-                    .error;
+                        .error;
                     btn.disabled = false;
                     btn.textContent = 'Einloggen';
                 }
