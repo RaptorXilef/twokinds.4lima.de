@@ -39,12 +39,13 @@ final readonly class FrontendController
         // --- AuthMiddleware dynamisch einhängen ---
         $publicApiRoutes = [
             'api_admin_login',
-            'api_submit_report',
-            'api_get_transcript',
-            'api_frontend_register',
             'api_frontend_forgot_password',
-            'api_frontend_reset_password',
             'api_frontend_logout',
+            'api_frontend_register',
+            'api_frontend_resend_verification',
+            'api_frontend_reset_password',
+            'api_get_transcript',
+            'api_submit_report',
         ];
         $isProtectedApi = \str_starts_with($actionKey, 'api_') && ! \in_array($actionKey, $publicApiRoutes, true);
 
@@ -148,6 +149,10 @@ final readonly class FrontendController
             return ['action' => 'render_frontend_profile', 'input' => $input];
         }
 
+        if ($relativePath === 'bestaetigungsmail-anfordern' || $relativePath === 'bestaetigungsmail-anfordern.php') {
+            return ['action' => 'render_frontend_resend_verification', 'input' => $input];
+        }
+
         if ($relativePath === '403') {
             return ['action' => 'render_403', 'input' => $input];
         }
@@ -158,34 +163,35 @@ final readonly class FrontendController
             $apiPath = \trim(\substr($relativePath, 4), '/');
 
             return match ($apiPath) {
-                'admin_login'              => ['action' => 'api_admin_login', 'input' => $input],
-                'admin_logout'             => ['action' => 'api_admin_logout', 'input' => $input],
-                'crop_social_media'        => ['action' => 'api_crop_social_media', 'input' => $input],
-                'delete_chapter'           => ['action' => 'api_delete_chapter', 'input' => $input],
-                'delete_character'         => ['action' => 'api_delete_character', 'input' => $input],
-                'delete_comic_media'       => ['action' => 'api_delete_comic_media', 'input' => $input],
-                'delete_comic'             => ['action' => 'api_delete_comic', 'input' => $input],
-                'delete_media'             => ['action' => 'api_delete_media', 'input' => $input],
-                'frontend_forgot_password' => ['action' => 'api_frontend_forgot_password', 'input' => $input],
-                'frontend_logout'          => ['action' => 'api_frontend_logout', 'input' => $input],
-                'frontend_register'        => ['action' => 'api_frontend_register', 'input' => $input],
-                'frontend_reset_password'  => ['action' => 'api_frontend_reset_password', 'input' => $input],
-                'frontend_update_profile'  => ['action' => 'api_frontend_update_profile', 'input' => $input],
-                'get_transcript'           => ['action' => 'api_get_transcript', 'input' => $input],
-                'list_comic_media'         => ['action' => 'api_list_comic_media', 'input' => $input],
-                'list_media'               => ['action' => 'api_list_media', 'input' => $input],
-                'process_mail_queue'       => ['action' => 'api_process_mail_queue', 'input' => $input],
-                'projekt'                  => ['action' => 'page_project_info'],
-                'save_chapter'             => ['action' => 'api_save_chapter', 'input' => $input],
-                'save_character_groups'    => ['action' => 'api_save_character_groups', 'input' => $input],
-                'save_single_character'    => ['action' => 'api_save_single_character', 'input' => $input],
-                'save_single_comic'        => ['action' => 'api_save_single_comic', 'input' => $input],
-                'submit_report'            => ['action' => 'api_submit_report', 'input' => $input],
-                'undo_comic'               => ['action' => 'api_undo_comic', 'input' => $input],
-                'update_report_status'     => ['action' => 'api_update_report_status', 'input' => $input],
-                'upload_comic_media'       => ['action' => 'api_upload_comic_media', 'input' => $input],
-                'upload_media'             => ['action' => 'api_upload_media', 'input' => $input],
-                default                    => ['action' => 'render_404', 'input' => $input],
+                'admin_login'                  => ['action' => 'api_admin_login', 'input' => $input],
+                'admin_logout'                 => ['action' => 'api_admin_logout', 'input' => $input],
+                'crop_social_media'            => ['action' => 'api_crop_social_media', 'input' => $input],
+                'delete_chapter'               => ['action' => 'api_delete_chapter', 'input' => $input],
+                'delete_character'             => ['action' => 'api_delete_character', 'input' => $input],
+                'delete_comic_media'           => ['action' => 'api_delete_comic_media', 'input' => $input],
+                'delete_comic'                 => ['action' => 'api_delete_comic', 'input' => $input],
+                'delete_media'                 => ['action' => 'api_delete_media', 'input' => $input],
+                'frontend_forgot_password'     => ['action' => 'api_frontend_forgot_password', 'input' => $input],
+                'frontend_logout'              => ['action' => 'api_frontend_logout', 'input' => $input],
+                'frontend_register'            => ['action' => 'api_frontend_register', 'input' => $input],
+                'frontend_resend_verification' => ['action' => 'api_frontend_resend_verification', 'input' => $input],
+                'frontend_reset_password'      => ['action' => 'api_frontend_reset_password', 'input' => $input],
+                'frontend_update_profile'      => ['action' => 'api_frontend_update_profile', 'input' => $input],
+                'get_transcript'               => ['action' => 'api_get_transcript', 'input' => $input],
+                'list_comic_media'             => ['action' => 'api_list_comic_media', 'input' => $input],
+                'list_media'                   => ['action' => 'api_list_media', 'input' => $input],
+                'process_mail_queue'           => ['action' => 'api_process_mail_queue', 'input' => $input],
+                'projekt'                      => ['action' => 'page_project_info'],
+                'save_chapter'                 => ['action' => 'api_save_chapter', 'input' => $input],
+                'save_character_groups'        => ['action' => 'api_save_character_groups', 'input' => $input],
+                'save_single_character'        => ['action' => 'api_save_single_character', 'input' => $input],
+                'save_single_comic'            => ['action' => 'api_save_single_comic', 'input' => $input],
+                'submit_report'                => ['action' => 'api_submit_report', 'input' => $input],
+                'undo_comic'                   => ['action' => 'api_undo_comic', 'input' => $input],
+                'update_report_status'         => ['action' => 'api_update_report_status', 'input' => $input],
+                'upload_comic_media'           => ['action' => 'api_upload_comic_media', 'input' => $input],
+                'upload_media'                 => ['action' => 'api_upload_media', 'input' => $input],
+                default                        => ['action' => 'render_404', 'input' => $input],
             };
         }
 

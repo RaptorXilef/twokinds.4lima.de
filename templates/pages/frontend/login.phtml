@@ -64,9 +64,12 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             </form>
 
             <div
-                 style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 0.9em;">
-                <a href="<?php echo $baseUrl; ?>/passwort-vergessen" style="color: var(--text-color-faded);">Passwort vergessen?</a>
-                <span>Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" style="font-weight: bold;">Registrieren</a></span>
+                 style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px; font-size: 0.9em;">
+                <div style="width: 100%; display: flex; justify-content: space-between;">
+                    <a href="<?php echo $baseUrl; ?>/passwort-vergessen" style="color: var(--text-color-faded);">Passwort vergessen?</a>
+                    <a href="<?php echo $baseUrl; ?>/bestaetigungsmail-anfordern" style="color: var(--text-color-faded);">Aktivierungs-Mail fehlt?</a>
+                </div>
+                <span style="margin-top: 10px;">Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" style="font-weight: bold; color: var(--link-color);">Jetzt registrieren</a></span>
             </div>
         </div>
     </article>
