@@ -33,7 +33,11 @@ final readonly class TemplateRenderer
             'imageStorage' => $this->imageStorage,
             'jsonHelper'   => $this->jsonHelper,
             'settings'     => $this->getGlobalSettings(),
-            'asset'        => $this->assetHelper, // (Steht nun als $asset im Template bereit)
+            'asset'        => $this->assetHelper, // (Steht als $asset im Template bereit)
+            // NEU: Auth-Status direkt in jedes Template injizieren!
+            'isLoggedIn'      => $this->sessionManager->getUserId() !== '',
+            'currentUserName' => $this->sessionManager->getAdminUser(),
+            'currentUserRole' => $this->sessionManager->getAdminGroup(),
         ];
 
         // Lade alle Flashes automatisch in die View-Daten!
@@ -54,7 +58,7 @@ final readonly class TemplateRenderer
             'base_url'            => $this->config->getBaseUrl(),
             'site_title'          => $this->config->get('site_title', 'Twokinds auf Deutsch'),
             'app_version'         => $this->systemInfo->getCurrentVersion(),
-            'google_analytics_id' => $this->config->get('google_analytics_id', ''), // NEU HINZUGEFÜGT
+            'google_analytics_id' => $this->config->get('google_analytics_id', ''),
         ];
     }
 }

@@ -176,6 +176,28 @@
         }
     });
 
+    // --- FRONTEND LOGOUT ---
+    const btnLogout = document.getElementById('btn-frontend-logout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const formData = new FormData();
+            formData.append('csrf_token', csrfToken);
+            try {
+                const res = await fetch(window.location.origin + '/api/frontend_logout', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const json = await res.json();
+                if (json.success) window.location.href = window.location.origin + '/';
+            } catch (err) {
+                console.error('Logout failed:', err);
+            }
+        });
+    }
+    // --- FRONTEND LOGOUT ENDE ---
+
     // --- GLOBAL REPORT MODAL LOGIC ---
     const reportModal = document.getElementById('global-report-modal');
     const btnOpenReport = document.getElementById('open-global-report');

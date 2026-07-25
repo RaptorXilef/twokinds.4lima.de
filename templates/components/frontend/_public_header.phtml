@@ -61,10 +61,22 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                         <span class="menu-label">Comic & Archiv</span>
                         <a href="<?php echo $baseUrl; ?>/comic">Comic</a>
                         <a href="<?php echo $baseUrl; ?>/archiv">Archiv</a>
-                        <a href="<?php echo $baseUrl; ?>/lesezeichen">Lesezeichen</a>
 
                         <span class="menu-label">Welt & Charaktere</span>
                         <a href="<?php echo $baseUrl; ?>/charaktere">Charaktere</a>
+
+                        <span class="menu-label">Account</span>
+                        <?php if ($isLoggedIn) { ?>
+                            <a href="<?php echo $baseUrl; ?>/lesezeichen"><i class="fa-solid fa-bookmark" style="margin-right: 5px;"></i> <?php echo \htmlspecialchars($currentUserName); ?></a>
+                            <?php if ($currentUserRole === 'admin') { ?>
+                                <a href="<?php echo $baseUrl; ?>/admin"><i class="fa-solid fa-shield-halved" style="margin-right: 5px;"></i> Admin-Panel</a>
+                            <?php } ?>
+                            <a href="#" id="btn-frontend-logout" style="color: var(--status-red-text);"><i class="fa-solid fa-sign-out-alt" style="margin-right: 5px;"></i> Abmelden</a>
+                        <?php } else { ?>
+                            <a href="<?php echo $baseUrl; ?>/login"><i class="fa-solid fa-sign-in-alt" style="margin-right: 5px;"></i> Einloggen</a>
+                            <a href="<?php echo $baseUrl; ?>/registrieren"><i class="fa-solid fa-user-plus" style="margin-right: 5px;"></i> Registrieren</a>
+                            <a href="<?php echo $baseUrl; ?>/lesezeichen"><i class="fa-solid fa-bookmark" style="margin-right: 5px;"></i> Lesezeichen</a>
+                        <?php } ?>
 
                         <span class="menu-label">FAQ</span>
                         <a href="<?php echo $baseUrl; ?>/projekt">Das FAN-Projekt</a>
@@ -75,9 +87,9 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
                         <span class="menu-label">System</span>
                         <a id="toggle_lights" class="theme" href="#">
-                        <span class="themelabel">Theme</span>
-                        <span class="themename">LICHT AUS</span>
-                    </a>
+                            <span class="themelabel">Theme</span>
+                            <span class="themename">LICHT AUS</span>
+                        </a>
                     </nav>
                 </div>
             </aside>
