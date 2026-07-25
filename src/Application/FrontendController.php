@@ -117,6 +117,14 @@ final readonly class FrontendController
             return ['action' => 'page_privacy', 'input' => $input];
         }
 
+        if ($relativePath === 'login' || $relativePath === 'login.php') {
+            return ['action' => 'render_frontend_login', 'input' => $input];
+        }
+
+        if ($relativePath === 'registrieren' || $relativePath === 'registrieren.php') {
+            return ['action' => 'render_frontend_register', 'input' => $input];
+        }
+
         if ($relativePath === '403') {
             return ['action' => 'render_403', 'input' => $input];
         }
@@ -135,9 +143,11 @@ final readonly class FrontendController
                 'delete_comic_media'    => ['action' => 'api_delete_comic_media', 'input' => $input],
                 'delete_comic'          => ['action' => 'api_delete_comic', 'input' => $input],
                 'delete_media'          => ['action' => 'api_delete_media', 'input' => $input],
+                'frontend_register'     => ['action' => 'api_frontend_register', 'input' => $input],
                 'get_transcript'        => ['action' => 'api_get_transcript', 'input' => $input],
                 'list_comic_media'      => ['action' => 'api_list_comic_media', 'input' => $input],
                 'list_media'            => ['action' => 'api_list_media', 'input' => $input],
+                'projekt'               => ['action' => 'page_project_info'],
                 'save_chapter'          => ['action' => 'api_save_chapter', 'input' => $input],
                 'save_character_groups' => ['action' => 'api_save_character_groups', 'input' => $input],
                 'save_single_character' => ['action' => 'api_save_single_character', 'input' => $input],
@@ -147,7 +157,6 @@ final readonly class FrontendController
                 'update_report_status'  => ['action' => 'api_update_report_status', 'input' => $input],
                 'upload_comic_media'    => ['action' => 'api_upload_comic_media', 'input' => $input],
                 'upload_media'          => ['action' => 'api_upload_media', 'input' => $input],
-                'projekt'               => ['action' => 'page_project_info'],
                 default                 => ['action' => 'render_404', 'input' => $input],
             };
         }

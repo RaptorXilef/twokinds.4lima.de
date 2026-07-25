@@ -1,0 +1,104 @@
+<?php
+
+declare(strict_types=1);
+$baseUrl = \rtrim($settings['base_url'] ?? '', '/');
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+<main class="content-area">
+    <article style="width: 100%; max-width: 500px; margin: 0 auto; padding: 20px;">
+        <header style="text-align: center; margin-bottom: 30px;">
+            <h1 class="page-header"
+                style="border: none; margin-bottom: 10px;">Willkommen zurück!</h1>
+            <p style="color: var(--text-color-faded);">Logge dich ein, um deine Lesezeichen zu synchronisieren.</p>
+        </header>
+
+        <div
+             style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div id="login-status-msg"
+                 style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center;">
+            </div>
+
+            <form id="frontend-login-form"
+                  class="admin-form">
+                <div class="form-group"
+                     style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Benutzername oder
+                        E-Mail</label>
+                    <input type="text"
+                           name="username"
+                           required
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                </div>
+                <div class="form-group"
+                     style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Passwort</label>
+                    <input type="password"
+                           name="password"
+                           required
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                </div>
+                <button type="submit"
+                        id="login-submit-btn"
+                        class="button edit"
+                        style="width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold;">Einloggen</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px; font-size: 0.9em;">
+                Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" style="font-weight: bold;">Jetzt registrieren</a>
+            </div>
+        </div>
+    </article>
+</main>
+
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('frontend-login-form');
+    const msg = document.getElementById('login-status-msg');
+    const btn = document.getElementById('login-submit-btn');
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Prüfe...';
+
+            const formData = new FormData(form);
+            formData.append('csrf_token', '<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>');
+
+            try {
+                const res = await fetch('<?php echo $baseUrl; ?>/api/admin_login', {
+                    method: 'POST',
+                    body: formData
+                });
+                const json = await res.json();
+
+                msg.style.display = 'block';
+                if (json.success) {
+                    msg.style.backgroundColor = 'var(--status-green-bg)';
+                    msg.style.color = 'var(--status-green-text)';
+                    msg.style.border = '1px solid var(--status-green-border)';
+                    msg.innerHTML = '<i class="fa-solid fa-check"></i> Eingeloggt! Leite weiter...';
+                    setTimeout(() => window.location.href = '<?php echo $baseUrl; ?>/lesezeichen', 500);
+                } else {
+                    msg.style.backgroundColor = 'var(--status-red-bg)';
+                    msg.style.color = 'var(--status-red-text)';
+                    msg.style.border = '1px solid var(--status-red-border)';
+                    msg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + json
+                    .error;
+                    btn.disabled = false;
+                    btn.textContent = 'Einloggen';
+                }
+            } catch (err) {
+                msg.style.display = 'block';
+                msg.style.backgroundColor = 'var(--status-red-bg)';
+                msg.style.color = 'var(--status-red-text)';
+                msg.innerHTML = 'Verbindungsfehler.';
+                btn.disabled = false;
+                btn.textContent = 'Einloggen';
+            }
+        });
+    }
+});
+
+</script>
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
