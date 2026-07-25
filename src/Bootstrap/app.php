@@ -23,7 +23,6 @@ use App\Contracts\System\ErrorLoggerInterface;
 use App\Core\Security\PermissionRegistry;
 use App\Infrastructure\Config\Config;
 use App\Infrastructure\Database\SchemaRegistry;
-use App\Infrastructure\Storage\JsonHelper;
 
 // Session global starten, da fast alle Seiten sie benötigen
 if (\session_status() === \PHP_SESSION_NONE) {
@@ -108,50 +107,10 @@ $flatten   = function (array $nodes) use (&$flatten, &$flatPerms): void {
 $flatten($settings['structure']);
 $settings['permissions'] = $flatPerms;
 
-// B. Default Fallbacks laden (.default.php Skelett)
 foreach (\glob($appRoot . '/config/*.default.php') as $defaultFile) {
     $loaded = require $defaultFile;
     if (\is_array($loaded)) {
         $settings = \array_replace_recursive($settings, $loaded);
-    }
-}
-
-// C. UI/Settings-Daten aus dem Storage/JSON laden (Überschreibt Defaults)
-$settingsDir = $appRoot . '/storage/settings';
-
-// Diese Schlüssel sind Listen/Kollektionen, die dem Nutzer gehören.
-// Sie werden NICHT tief gemerged, um "Zombie-Einträge" aus den Defaults zu verhindern!
-$userManagedCollections = [
-    'vehicle_types',
-    'permit_templates',
-    'purposes',
-    'internal_reasons',
-    'agreements',
-    'seasons',
-    'custom_holidays',
-    'sections',
-];
-
-if (\is_dir($settingsDir)) {
-    foreach (\glob($settingsDir . '/*.json') as $jsonFile) {
-        $data = (new JsonHelper())->read($jsonFile);
-        if (\is_array($data)) {
-            unset($data['_meta']); // Kommentare/Meta rausschmeißen
-
-            foreach ($data as $key => $value) {
-                if (\in_array($key, $userManagedCollections, true)) {
-                    // HARTER OVERRIDE: Der Nutzer-State überschreibt die Default-Liste komplett.
-                    $settings[$key] = $value;
-                } else {
-                    // DEEP MERGE: Für technische Configs (z.B. 'mail', 'paypal', 'database')
-                    if (isset($settings[$key]) && \is_array($settings[$key]) && \is_array($value)) {
-                        $settings[$key] = \array_replace_recursive($settings[$key], $value);
-                    } else {
-                        $settings[$key] = $value;
-                    }
-                }
-            }
-        }
     }
 }
 

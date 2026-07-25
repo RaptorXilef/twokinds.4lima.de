@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 return [
     // --- WARTUNGSMODUS (MAINTENANCE) ---
-    'maintenance_mode'       => false, // true = Sperrt das öffentliche Pächter-Formular
+    'maintenance_mode'       => false, // true = Sperrt das Frontend
     'maintenance_mode_admin' => false, // true = Sperrt zusätzlich das gesamte Admin-Dashboard
 
     // --- UMGEBUNGSSTEUERUNG ---
@@ -41,7 +41,7 @@ return [
 
     // --- GRUNDEINSTELLUNGEN RSS und SITEMAP ---
     'base_url'         => 'https://twokinds.4lima.de', // OHNE Slash am Ende!
-    'site_title'       => 'Twokinds | Deutsch',
+    'site_title'       => 'Twokinds auf Deutsch',
     'site_description' => 'Die deutsche Übersetzung des Webcomics Twokinds von Tom Fischbach, übersetzt von Felix Maywald.',
     'rss_max_items'    => 25,
 

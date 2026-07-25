@@ -51,9 +51,9 @@ final readonly class TemplateRenderer
     private function getGlobalSettings(): array
     {
         return [
-            'base_url'     => $this->config->getBaseUrl(),
-            'vereins_name' => $this->config->get('vereins_name', 'Twokinds auf Deutsch'),
-            'app_version'  => $this->systemInfo->getCurrentVersion(), // SSOT Abfrage
+            'base_url'    => $this->config->getBaseUrl(),
+            'site_title'  => $this->config->get('site_title', 'Twokinds auf Deutsch'),
+            'app_version' => $this->systemInfo->getCurrentVersion(),
         ];
     }
 }

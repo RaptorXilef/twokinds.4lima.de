@@ -267,6 +267,8 @@ public/assets/img/test/**
 # PROJEKT SPEZIFISCH: CONTENT & ASSETS
 ################################################################################
 
+*.local*
+
 rss.xml
 sitemap.xml
 

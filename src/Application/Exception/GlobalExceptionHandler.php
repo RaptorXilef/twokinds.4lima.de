@@ -83,7 +83,7 @@ final readonly class GlobalExceptionHandler
             @\http_response_code(500);
         }
 
-        $vereinsName  = \htmlspecialchars((string) $this->config->get('vereins_name', 'KGA')); // TODO Auf twokinds anpassen
+        $siteTitle    = \htmlspecialchars((string) $this->config->get('site_title', 'Twokinds auf Deutsch'));
         $errorTitle   = 'Ups! Etwas ist schiefgelaufen';
         $errorMessage = 'Das System hat einen unerwarteten Fehler festgestellt. Keine Sorge, die Administratoren wurden automatisch benachrichtigt um das Problem zu beheben.';
 
@@ -104,7 +104,7 @@ final readonly class GlobalExceptionHandler
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Systemfehler - <?php echo $vereinsName; ?></title>
+    <title>Systemfehler - <?php echo $siteTitle; ?></title>
     <style>
         body { background:#f8fafc; font-family:sans-serif; display:flex; justify-content:center; padding:40px 20px; }
         .error-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 600px; width: 100%; border-top: 5px solid #e74c3c; }
