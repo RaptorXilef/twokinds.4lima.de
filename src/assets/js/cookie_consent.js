@@ -4,9 +4,6 @@
 // Steuerung für Debug-Meldungen. Setze auf true, um Debug-Meldungen in der Konsole anzuzeigen.
 const debugModeJsCookie = false;
 
-// Google Analytics Mess-ID
-const GA_MEASUREMENT_ID = 'G-7VE3ZEWZQ7';
-
 // Namen der Cookie-Kategorien
 const COOKIE_CATEGORIES = {
     NECESSARY: 'necessary', // Notwendige Cookies
@@ -271,14 +268,14 @@ function loadGoogleAnalytics() {
     }
 
     // Überprüfe, ob das gtag.js Skript bereits im DOM vorhanden ist.
-    let gaScript = document.querySelector(`script[src*="gtag/js?id=${GA_MEASUREMENT_ID}"]`);
+    let gaScript = document.querySelector(`script[src*="gtag/js?id=${window.GA_MEASUREMENT_ID}"]`);
     if (debugModeJsCookie) console.log('DEBUG: GA Skript im DOM gefunden:', !!gaScript);
 
     if (!gaScript) {
         // Wenn Skript nicht gefunden, erstelle und füge es hinzu
         gaScript = document.createElement('script');
         gaScript.async = true;
-        gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+        gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${window.GA_MEASUREMENT_ID}`;
         document.head.appendChild(gaScript);
         if (debugModeJsCookie)
             console.log('DEBUG: Google Analytics Skript wird dem DOM hinzugefügt.');
@@ -295,10 +292,10 @@ function loadGoogleAnalytics() {
                 window.gtag('js', new Date()); // Initialisiert gtag.js
                 if (debugModeJsCookie)
                     console.log(
-                        "DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf (via onload). gaConfigured (vor Setzung):",
+                        "DEBUG: Rufe gtag('config', window.GA_MEASUREMENT_ID) auf (via onload). gaConfigured (vor Setzung):",
                         window.gaConfigured
                     );
-                window.gtag('config', GA_MEASUREMENT_ID); // Konfiguriert die Mess-ID
+                window.gtag('config', window.GA_MEASUREMENT_ID); // Konfiguriert die Mess-ID
                 window.gaConfigured = true; // Setze die Flag auf true
                 if (debugModeJsCookie)
                     console.log(
@@ -330,10 +327,10 @@ function loadGoogleAnalytics() {
             window.gtag('js', new Date());
             if (debugModeJsCookie)
                 console.log(
-                    "DEBUG: Rufe gtag('config', GA_MEASUREMENT_ID) auf (direkt). gaConfigured (vor Setzung):",
+                    "DEBUG: Rufe gtag('config', window.GA_MEASUREMENT_ID) auf (direkt). gaConfigured (vor Setzung):",
                     window.gaConfigured
                 );
-            window.gtag('config', GA_MEASUREMENT_ID);
+            window.gtag('config', window.GA_MEASUREMENT_ID);
             window.gaConfigured = true;
             if (debugModeJsCookie)
                 console.log(
@@ -368,7 +365,7 @@ function disableGoogleAnalytics() {
         if (typeof window.gtag === 'function') {
             if (debugModeJsCookie)
                 console.log('DEBUG: Deaktiviere GA-Seitenansichten und anonymisiere IP.');
-            window.gtag('config', GA_MEASUREMENT_ID, { send_page_view: false }); // Deaktiviere Seitenansichten
+            window.gtag('config', window.GA_MEASUREMENT_ID, { send_page_view: false }); // Deaktiviere Seitenansichten
             window.gtag('set', 'anonymize_ip', true); // Anonymisiere IP-Adressen (falls nicht schon geschehen)
             if (debugModeJsCookie) console.log('DEBUG: Google Analytics deaktiviert.');
         }
@@ -376,7 +373,9 @@ function disableGoogleAnalytics() {
     }
 
     // Entferne das gtag.js Skript aus dem DOM, falls es vorhanden ist.
-    const gaScript = document.querySelector(`script[src*="gtag/js?id=${GA_MEASUREMENT_ID}"]`);
+    const gaScript = document.querySelector(
+        `script[src*="gtag/js?id=${window.GA_MEASUREMENT_ID}"]`
+    );
     if (gaScript) {
         gaScript.remove();
         if (debugModeJsCookie) console.log('DEBUG: Google Analytics Skript aus DOM entfernt.');

@@ -43,4 +43,7 @@ return [
     'base_url'         => 'https://twokinds.4lima.local', // OHNE Slash am Ende!
     'site_title'       => 'Twokinds - German Translation',
     'site_description' => 'Die deutsche Übersetzung des Webcomics Twokinds von Tom Fischbach, übersetzt von Felix Maywald.',
+
+    // --- TRACKING & ANALYTICS ---
+    'google_analytics_id' => 'G-7VE3ZEWZQ7', // Leer lassen (''), um Analytics und das Banner komplett zu deaktivieren
 ];
