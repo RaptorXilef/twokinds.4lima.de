@@ -33,9 +33,17 @@ final readonly class ApiFrontendForgotPasswordAction implements ActionInterface
             return JsonResponse::error('Zu viele Anfragen. Bitte versuche es in 15 Minuten erneut.', 429);
         }
 
+        // Lese die E-Mail-Config aus und baue die ausführliche Meldung
+        $mailConfig = $this->config->getMailSettings();
+        $fromEmail  = $mailConfig['from'] ?? 'no-reply@twokinds.4lima.de';
+        $successMsg = 'Falls diese E-Mail existiert, habe ich dir einen Reset-Link gesendet.<br><br>' .
+                      '&bull; Der Link ist <strong>15 Minuten</strong> gültig.<br>' .
+                      '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
+                      '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
+
         // Honeypot
         if (! empty($request->post['middle_name'])) {
-            return JsonResponse::success(['message' => 'Falls die E-Mail existiert, haben wir einen Link gesendet.']);
+            return JsonResponse::success(['message' => $successMsg]);
         }
 
         $email = \trim((string) ($request->post['email'] ?? ''));
@@ -61,6 +69,6 @@ final readonly class ApiFrontendForgotPasswordAction implements ActionInterface
             \usleep(\random_int(100000, 300000));
         }
 
-        return JsonResponse::success(['message' => 'Falls die E-Mail existiert, haben wir einen Link gesendet.']);
+        return JsonResponse::success(['message' => $successMsg]);
     }
 }

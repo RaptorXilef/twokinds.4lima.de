@@ -98,8 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     msg.style.backgroundColor = 'var(--status-green-bg)';
                     msg.style.color = 'var(--status-green-text)';
                     msg.style.border = '1px solid var(--status-green-border)';
-                    msg.innerHTML = '<i class="fa-solid fa-check"></i> ' + json.message;
-                    setTimeout(() => window.location.href = '<?php echo $baseUrl; ?>/' + json.redirect, 1000);
+                    // Timer für Weiterleitung zu Login-Seite nach Registrierung
+                    msg.innerHTML = '<i class="fa-solid fa-check"></i> ' + json.message + '<br><br><small><i>Du wirst in 30 Sekunden automatisch zum Login weitergeleitet...</i> Bitte schließe die Seite noch nicht!</small>';
+                    setTimeout(() => window.location.href = '<?php echo $baseUrl; ?>/' + json.redirect, 30000);
                 } else {
                     msg.style.backgroundColor = 'var(--status-red-bg)';
                     msg.style.color = 'var(--status-red-text)';

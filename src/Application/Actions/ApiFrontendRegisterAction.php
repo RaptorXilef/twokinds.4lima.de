@@ -38,10 +38,18 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
             return JsonResponse::error('Zu viele Anfragen. Bitte versuche es in 15 Minuten erneut.', 429);
         }
 
+        // Lese die E-Mail-Config aus und baue die ausführliche Meldung
+        $mailConfig = $this->config->getMailSettings();
+        $fromEmail  = $mailConfig['from'] ?? 'no-reply@twokinds.4lima.de';
+        $successMsg = 'Fast geschafft! Ich habe dir einen Bestätigungslink gesendet.<br><br>' .
+                      '&bull; Du hast <strong>15 Minuten</strong> Zeit, um auf den Link in der E-Mail zu klicken.<br>' .
+                      '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
+                      '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
+
         // 2. Honeypot Check (Bot-Trap)
         if (! empty($request->post['middle_name'])) {
             // Fake Success for Bots
-            return JsonResponse::success(['message' => 'Registrierung erfolgreich!', 'redirect' => 'login']);
+            return JsonResponse::success(['message' => $successMsg, 'redirect' => 'login']);
         }
 
         $username = \trim((string) ($request->post['username'] ?? ''));
@@ -140,7 +148,7 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         $this->mailService->processQueue(5, ['verify_account']);
 
         return JsonResponse::success([
-            'message'  => 'Fast geschafft! Ich habe dir eine E-Mail mit einem Bestätigungslink gesendet.',
+            'message'  => $successMsg,
             'redirect' => 'login',
         ]);
     }
