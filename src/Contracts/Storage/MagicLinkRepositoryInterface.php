@@ -11,4 +11,7 @@ interface MagicLinkRepositoryInterface
     public function saveAll(array $links, bool $forceSql = false): void;
 
     public function import(array $data): void;
+
+    // Löscht abgelaufene Tokens direkt per SQL
+    public function deleteExpired(): int;
 }

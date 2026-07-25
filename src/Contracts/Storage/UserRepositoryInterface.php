@@ -17,4 +17,7 @@ interface UserRepositoryInterface
     public function save(User $user): void;
 
     public function delete(string $id): void;
+
+    // Löscht unbestätigte Accounts, die älter als X Minuten sind
+    public function deleteUnverifiedAccounts(int $olderThanMinutes): int;
 }

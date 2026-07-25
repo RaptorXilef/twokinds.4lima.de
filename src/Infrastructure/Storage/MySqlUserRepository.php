@@ -77,4 +77,12 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
             (bool) ($row['wants_newsletter'] ?? false),
         );
     }
+
+    public function deleteUnverifiedAccounts(int $olderThanMinutes): int
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM `users` WHERE role_id = 'pending' AND created_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)");
+        $stmt->execute([$olderThanMinutes]);
+
+        return $stmt->rowCount();
+    }
 }

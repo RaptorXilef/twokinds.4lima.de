@@ -47,4 +47,12 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
     public function import(array $data): void
     {
     }
+
+    public function deleteExpired(): int
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM `magic_links` WHERE expires < NOW()');
+        $stmt->execute();
+
+        return $stmt->rowCount();
+    }
 }

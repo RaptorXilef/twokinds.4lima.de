@@ -10,6 +10,8 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Mail\MailServiceInterface;
+use App\Contracts\Storage\MagicLinkRepositoryInterface;
+use App\Contracts\Storage\UserRepositoryInterface;
 
 #[ActionRoute('api_process_mail_queue')]
 final readonly class SystemProcessMailQueueAction implements ActionInterface
@@ -17,6 +19,8 @@ final readonly class SystemProcessMailQueueAction implements ActionInterface
     public function __construct(
         private MailServiceInterface $mailService,
         private ConfigInterface $config,
+        private UserRepositoryInterface $userRepository,
+        private MagicLinkRepositoryInterface $magicLinkRepository,
     ) {
     }
 
@@ -25,21 +29,27 @@ final readonly class SystemProcessMailQueueAction implements ActionInterface
         $providedToken     = $request->get['token'] ?? '';
         $expectedCronToken = (string) $this->config->get('cron_secret', '');
 
-        // Darf nur aufgerufen werden, wenn der Token stimmt
+        // 1. Sicherheits-Check
         if ($expectedCronToken === '' || $providedToken !== $expectedCronToken) {
             return JsonResponse::error('Unautorisiert.', 403);
         }
 
-        // Limit für den Cronjob (z.B. 50 Mails pro 5 Minuten)
+        // 2. Mails versenden (inklusive Newsletter)
         $limit = 50;
+        $sent  = $this->mailService->processQueue($limit, []);
 
-        // Da wir das leere Array übergeben, darf ALLES versendet werden (auch Newsletter!)
-        $sent = $this->mailService->processQueue($limit, []);
+        // 3. Garbage Collection: Abgelaufene Magic Links löschen
+        $deletedLinks = $this->magicLinkRepository->deleteExpired();
+
+        // 4. Garbage Collection: Unbestätigte Accounts nach 60 Minuten löschen
+        $deletedUsers = $this->userRepository->deleteUnverifiedAccounts(60);
 
         return JsonResponse::success([
-            'status'     => 'processed',
-            'sent_count' => $sent,
-            'mode'       => 'cron',
+            'status'                   => 'processed',
+            'sent_count'               => $sent,
+            'deleted_links'            => $deletedLinks,
+            'deleted_unverified_users' => $deletedUsers,
+            'mode'                     => 'cron',
         ]);
     }
 }
