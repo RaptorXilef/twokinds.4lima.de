@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnClearAll) {
         btnClearAll.addEventListener('click', () => {
             if (confirm(
-                'Möchtest du wirklich ALLE deine lokalen Lesezeichen unwiderruflich löschen?')) {
+                    'Möchtest du wirklich ALLE deine lokalen Lesezeichen unwiderruflich löschen?')) {
                 localStorage.removeItem('comicBookmarksMap');
                 renderBookmarks();
             }

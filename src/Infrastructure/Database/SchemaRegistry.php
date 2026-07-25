@@ -121,6 +121,35 @@ final class SchemaRegistry
                 INDEX `idx_comic` (`comic_id`),
                 INDEX `idx_user` (`user_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+
+            'magic_links' => 'CREATE TABLE IF NOT EXISTS `magic_links` (
+                `token` VARCHAR(64) PRIMARY KEY,
+                `email` VARCHAR(255) NOT NULL,
+                `code` VARCHAR(10),
+                `expires` DATETIME,
+                INDEX `idx_code` (`code`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+
+            'mail_queue' => 'CREATE TABLE IF NOT EXISTS `mail_queue` (
+                `id` VARCHAR(50) PRIMARY KEY,
+                `recipient` VARCHAR(255) NOT NULL,
+                `subject` VARCHAR(255) NOT NULL,
+                `template` VARCHAR(100) NOT NULL,
+                `data` JSON NOT NULL,
+                `attempts` INT DEFAULT 0,
+                `created_at` DATETIME NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
+
+            'mail_logs' => 'CREATE TABLE IF NOT EXISTS `mail_logs` (
+                `id` VARCHAR(50) PRIMARY KEY,
+                `timestamp` DATETIME NOT NULL,
+                `recipient` VARCHAR(255) NOT NULL,
+                `subject` VARCHAR(255) NOT NULL,
+                `template` VARCHAR(100) NOT NULL,
+                `status` TEXT,
+                `data` JSON,
+                INDEX `idx_recipient` (`recipient`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
         ];
     }
 }
