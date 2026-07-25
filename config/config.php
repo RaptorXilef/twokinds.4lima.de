@@ -41,7 +41,7 @@ return [
 
     // --- GRUNDEINSTELLUNGEN RSS und SITEMAP ---
     'base_url'         => 'https://twokinds.4lima.de', // OHNE Slash am Ende!
-    'site_title'       => 'Twokinds - German Translation',
+    'site_title'       => 'Twokinds | Deutsch',
     'site_description' => 'Die deutsche Übersetzung des Webcomics Twokinds von Tom Fischbach, übersetzt von Felix Maywald.',
     'rss_max_items'    => 25,
 
