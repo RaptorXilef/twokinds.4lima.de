@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Storage;
+
+use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
+
+final readonly class MySqlUserRepository implements UserRepositoryInterface
+{
+    public function __construct(
+        private \PDO $pdo,
+    ) {
+    }
+
+    public function findById(string $id): ?User
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM `users` WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ? $this->mapToEntity($row) : null;
+    }
+
+    public function findByEmail(string $email): ?User
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM `users` WHERE email = ? LIMIT 1');
+        $stmt->execute([$email]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ? $this->mapToEntity($row) : null;
+    }
+
+    public function findByUsername(string $username): ?User
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM `users` WHERE username = ? LIMIT 1');
+        $stmt->execute([$username]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ? $this->mapToEntity($row) : null;
+    }
+
+    public function save(User $user): void
+    {
+        $stmt = $this->pdo->prepare('
+            INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role_id`, `created_at`)
+            VALUES (:id, :username, :email, :password_hash, :role_id, :created_at)
+            ON DUPLICATE KEY UPDATE
+                `username` = VALUES(`username`),
+                `email` = VALUES(`email`),
+                `password_hash` = VALUES(`password_hash`),
+                `role_id` = VALUES(`role_id`)
+        ');
+
+        $stmt->execute([
+            'id'            => $user->id,
+            'username'      => $user->username,
+            'email'         => $user->email,
+            'password_hash' => $user->passwordHash,
+            'role_id'       => $user->roleId,
+            'created_at'    => $user->createdAt->format('Y-m-d H:i:s'),
+        ]);
+    }
+
+    public function delete(string $id): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM `users` WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+
+    private function mapToEntity(array $row): User
+    {
+        return new User(
+            $row['id'],
+            $row['username'],
+            $row['email'],
+            $row['password_hash'],
+            $row['role_id'],
+            new \DateTimeImmutable($row['created_at']),
+        );
+    }
+}
