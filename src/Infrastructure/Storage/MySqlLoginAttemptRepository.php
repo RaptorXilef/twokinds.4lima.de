@@ -42,8 +42,7 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
             'last_attempt' => $attempt->lastAttempt->format('Y-m-d H:i:s'),
         ];
 
-        $sql = $this->buildInsertUpdateSql('login_attempts', $data);
-        $this->pdo->prepare($sql)->execute($data);
+        $this->executeUpsert('login_attempts', $data, ['ip_address']);
     }
 
     public function deleteByIp(string $ip): void
@@ -54,10 +53,5 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
     public function deleteOlderThan(int $minutes): void
     {
         $this->pdo->prepare('DELETE FROM `login_attempts` WHERE last_attempt < DATE_SUB(NOW(), INTERVAL ? MINUTE)')->execute([$minutes]);
-    }
-
-    public function import(array $data): void
-    {
-        // Wird in TwoKinds nicht mehr benötigt
     }
 }

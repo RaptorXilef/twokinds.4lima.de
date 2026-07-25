@@ -10,6 +10,8 @@ use App\Core\Entity\Role;
 
 final readonly class MySqlRoleRepository implements RoleRepositoryInterface
 {
+    use DynamicSqlTrait;
+    
     public function __construct(
         private \PDO $pdo,
         private JsonHelperInterface $jsonHelper,
@@ -38,17 +40,14 @@ final readonly class MySqlRoleRepository implements RoleRepositoryInterface
 
     public function save(Role $role): void
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO `roles` (`id`, `name`, `permissions`)
-            VALUES (:id, :name, :permissions)
-            ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `permissions` = VALUES(`permissions`)
-        ');
-
-        $stmt->execute([
+        $data = [
             'id'          => $role->id,
             'name'        => $role->name,
             'permissions' => \json_encode($role->permissions, \JSON_UNESCAPED_UNICODE),
-        ]);
+        ];
+
+        // Magic!
+        $this->executeUpsert('roles', $data, ['id']);
     }
 
     public function delete(string $roleId): void

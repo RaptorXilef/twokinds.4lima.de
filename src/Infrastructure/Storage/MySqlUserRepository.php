@@ -9,6 +9,8 @@ use App\Core\Entity\User;
 
 final readonly class MySqlUserRepository implements UserRepositoryInterface
 {
+    use DynamicSqlTrait;
+
     public function __construct(
         private \PDO $pdo,
     ) {
@@ -43,24 +45,17 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
 
     public function save(User $user): void
     {
-        $stmt = $this->pdo->prepare('
-            INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role_id`, `created_at`)
-            VALUES (:id, :username, :email, :password_hash, :role_id, :created_at)
-            ON DUPLICATE KEY UPDATE
-                `username` = VALUES(`username`),
-                `email` = VALUES(`email`),
-                `password_hash` = VALUES(`password_hash`),
-                `role_id` = VALUES(`role_id`)
-        ');
-
-        $stmt->execute([
+        $data = [
             'id'            => $user->id,
             'username'      => $user->username,
             'email'         => $user->email,
             'password_hash' => $user->passwordHash,
             'role_id'       => $user->roleId,
             'created_at'    => $user->createdAt->format('Y-m-d H:i:s'),
-        ]);
+        ];
+
+        // ID und created_at werden bei Updates nicht überschrieben!
+        $this->executeUpsert('users', $data, ['id', 'created_at']);
     }
 
     public function delete(string $id): void
