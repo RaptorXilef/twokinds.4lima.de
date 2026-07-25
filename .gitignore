@@ -161,7 +161,7 @@ yarn.lock
 # Geheime Konfiguration (enthält Passwörter/Schlüssel)
 # Secret configuration (contains passwords/keys)
 # ------------------------------------------------------------------------------
-/config/secret.php
+/config/secrets.php
 /storage/*.json
 
 # Geheimnisse
