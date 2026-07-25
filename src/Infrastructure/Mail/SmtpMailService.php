@@ -62,14 +62,16 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
 
     private function dispatch(string $recipient, string $subject, string $body, array $smtpConfig): bool|string
     {
-        $host      = $smtpConfig['host'] ?? '';
-        $port      = (int) ($smtpConfig['port'] ?? 465);
-        $user      = \str_replace(["\r", "\n"], '', $smtpConfig['user'] ?? '');
-        $pass      = \str_replace(["\r", "\n"], '', $smtpConfig['pass'] ?? '');
-        $from      = \str_replace(["\r", "\n"], '', $smtpConfig['from'] ?? '');
-        $recipient = \str_replace(["\r", "\n"], '', $recipient);
+        $host       = $smtpConfig['host'] ?? '';
+        $port       = (int) ($smtpConfig['port'] ?? 465);
+        $encryption = \strtolower($smtpConfig['encryption'] ?? '');
+        $user       = \str_replace(["\r", "\n"], '', $smtpConfig['user'] ?? '');
+        $pass       = \str_replace(["\r", "\n"], '', $smtpConfig['pass'] ?? '');
+        $from       = \str_replace(["\r", "\n"], '', $smtpConfig['from'] ?? '');
+        $recipient  = \str_replace(["\r", "\n"], '', $recipient);
 
-        $protocol = $port === 465 ? 'ssl://' : '';
+        // Port 465 bedeutet meist reines SSL direkt beim Aufbau
+        $protocol = ($port === 465 || $encryption === 'ssl') ? 'ssl://' : '';
         $socket   = @\fsockopen($protocol . $host, $port, $errno, $errstr, 15);
 
         if (! $socket) {
@@ -85,13 +87,33 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
             return 'EHLO abgelehnt';
         }
 
+        // HIER IST DER FIX: STARTTLS bei TLS oder Port 587
+        if ($encryption === 'tls' || $encryption === 'starttls' || $port === 587) {
+            \fwrite($socket, "STARTTLS\r\n");
+            if (! $this->checkResponse($socket, '220')) {
+                return 'STARTTLS abgelehnt (Wird vom Server nicht unterstützt?)';
+            }
+
+            // Kryptografie aktivieren (Schützt PHP vor alten SSL Versionen, nutzt TLS 1.2)
+            $cryptoMethod = \STREAM_CRYPTO_METHOD_TLS_CLIENT | \STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+            if (! \stream_socket_enable_crypto($socket, true, $cryptoMethod)) {
+                return 'Konnte Verschlüsselung (STARTTLS) nicht aktivieren';
+            }
+
+            // Nach dem Verschlüsseln muss sich das Skript laut SMTP-Protokoll neu vorstellen
+            \fwrite($socket, 'EHLO ' . $smtpEhloHost . "\r\n");
+            if (! $this->checkResponse($socket, '250')) {
+                return 'EHLO nach STARTTLS abgelehnt';
+            }
+        }
+
         \fwrite($socket, "AUTH LOGIN\r\n");
-        $this->getServerResponse($socket);
-        \fwrite($socket, \base64_encode((string) $user) . "\r\n");
-        $this->getServerResponse($socket);
+        $this->getServerResponse($socket); // Sollte 334 VXNlcm5hbWU6 liefern
+        \fwrite($socket, \base64_encode($user) . "\r\n");
+        $this->getServerResponse($socket); // Sollte 334 UGFzc3dvcmQ6 liefern
         \fwrite($socket, \base64_encode($pass) . "\r\n");
         if (! $this->checkResponse($socket, '235')) {
-            return 'SMTP Login fehlgeschlagen';
+            return 'SMTP Login fehlgeschlagen (Falsches Passwort / User)';
         }
 
         \fwrite($socket, "MAIL FROM: <$from>\r\n");
