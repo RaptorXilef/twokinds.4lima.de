@@ -37,6 +37,17 @@ final readonly class ApiSyncBookmarksAction implements ActionInterface
             $localIds = [];
         }
 
+        // SECURITY FIX: Rigorose Bereinigung (Sanitization) des User-Inputs
+        $sanitizedLocalIds = [];
+        foreach ($localIds as $dirtyId) {
+            $dirtyId = \trim((string) $dirtyId);
+            // Akzeptiere NUR exakt 8 Ziffern mit evtl. einem Buchstaben (z.B. 20251024 oder 20251024a)
+            if (\preg_match('/^\d{8}[a-z]?$/i', $dirtyId)) {
+                $sanitizedLocalIds[] = $dirtyId;
+            }
+        }
+        $localIds = $sanitizedLocalIds;
+
         // Was sollen wir tun? (check, merge, db_wins, local_wins)
         $resolution = $request->post['resolution'] ?? 'check';
 

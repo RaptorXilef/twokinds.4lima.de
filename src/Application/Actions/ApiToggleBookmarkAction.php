@@ -32,6 +32,11 @@ final readonly class ApiToggleBookmarkAction implements ActionInterface
         $comicId = \trim((string) ($request->post['comic_id'] ?? ''));
         $action  = \trim((string) ($request->post['bookmark_action'] ?? '')); // 'add' oder 'remove'
 
+        // SECURITY FIX: Prüfe die Comic-ID strikt auf das Format
+        if (! \preg_match('/^\d{8}[a-z]?$/i', $comicId) || ! \in_array($action, ['add', 'remove'], true)) {
+            return JsonResponse::error('Ungültige Daten manipuliert.', 400);
+        }
+
         if ($comicId === '' || ! \in_array($action, ['add', 'remove'], true)) {
             return JsonResponse::error('Ungültige Daten.', 400);
         }
