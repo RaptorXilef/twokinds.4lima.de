@@ -57,9 +57,9 @@ final readonly class ApiFrontendForgotPasswordAction implements ActionInterface
         if ($user) {
             $tokenData = $this->magicLinkService->createToken($email);
             $resetUrl  = \rtrim($this->config->getBaseUrl(), '/') . '/passwort-reset?token=' . $tokenData['token'];
-            $this->mailService->sendTemplate($email, 'Passwort zurücksetzen', 'forgot_password', [
+            $this->mailService->sendTemplate($user->email->value, 'Passwort zurücksetzen', 'forgot_password', [
                 'resetUrl' => $resetUrl,
-                'username' => $user->username,
+                'username' => $user->username->value,
             ]);
 
             // NEU: Triggere den Versand SOFORT, aber NUR für die Passwort-Mails!

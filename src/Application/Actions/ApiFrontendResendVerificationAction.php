@@ -60,9 +60,9 @@ final readonly class ApiFrontendResendVerificationAction implements ActionInterf
             $tokenData = $this->magicLinkService->createToken($email);
             $verifyUrl = \rtrim($this->config->getBaseUrl(), '/') . '/verifizieren?token=' . $tokenData['token'];
 
-            $this->mailService->sendTemplate($email, 'Bitte bestätige dein Konto', 'verify_account', [
+            $this->mailService->sendTemplate($user->email->value, 'Bitte bestätige dein Konto', 'verify_account', [
                 'verifyUrl' => $verifyUrl,
-                'username'  => $user->username,
+                'username'  => $user->username->value,
             ]);
 
             // Sofortiger Versand

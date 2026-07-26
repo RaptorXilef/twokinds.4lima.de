@@ -62,8 +62,8 @@ final readonly class ApiUpdateReportStatusAction implements ActionInterface
                             ? \rtrim($this->config->getBaseUrl(), '/') . '/comic/' . $row['comic_id']
                             : \rtrim($this->config->getBaseUrl(), '/');
 
-                        $this->mailService->sendTemplate($user->email, 'Dein Fehlerbericht wurde bearbeitet!', 'report_resolved', [
-                            'username' => $user->username,
+                        $this->mailService->sendTemplate($user->email->value, 'Dein Fehlerbericht wurde bearbeitet!', 'report_resolved', [
+                            'username' => $user->username->value,
                             'comicId'  => $row['comic_id'] ?: 'Allgemeine Webseite',
                             'pageUrl'  => $pageUrl,
                         ]);

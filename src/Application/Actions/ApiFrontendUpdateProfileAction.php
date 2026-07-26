@@ -14,6 +14,7 @@ use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
+use App\Core\ValueObject\Username;
 
 #[ActionRoute('api_frontend_update_profile')]
 final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
@@ -78,7 +79,7 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
                 return JsonResponse::error('Dieser Benutzername ist leider schon vergeben.', 400);
             }
 
-            $updated = new User($user->id, $newName, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript, $user->wantsNotificationReport);
+            $updated = new User($user->id, new Username($newName), $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript, $user->wantsNotificationReport);
             $this->userRepository->save($updated);
             $this->sessionManager->updateAdminUsername($newName); // Session updaten
 

@@ -61,12 +61,12 @@ final readonly class AuthService
             if ($user->roleId === 'pending') {
                 $this->rateLimiter->recordFailedAttempt($ip);
 
-                throw new \DomainException('Dein Konto wurde noch nicht bestätigt. Bitte klicke auf den Link in der E-Mail, die wir dir gesendet haben.');
+                throw new \DomainException('Dein Konto wurde noch nicht bestätigt...');
             }
 
-            $this->setupSession($user->id, $user->roleId, $user->username, $user->passwordHash);
-            $this->setupSession($user->id, $user->roleId, $user->username, $user->passwordHash);
+            $this->setupSession($user->id, $user->roleId, $user->username->value, $user->passwordHash);
             $this->refreshSessionPermissions($user->roleId);
+
             $this->rateLimiter->clearAttempts($ip);
 
             return true;

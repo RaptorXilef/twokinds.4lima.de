@@ -46,8 +46,8 @@ final readonly class ApiAdminTriggerNewsletterAction implements ActionInterface
 
         $count = 0;
         foreach ($subscribers as $user) {
-            $this->mailService->sendTemplate($user->email, $subject, $template, [
-                'username'   => $user->username,
+            $this->mailService->sendTemplate($user->email->value, $subject, $template, [
+                'username'   => $user->username->value,
                 'comicName'  => $comicName,
                 'pageNumber' => $pageNumber,
                 'pageUrl'    => $pageUrl,

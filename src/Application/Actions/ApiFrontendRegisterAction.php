@@ -16,6 +16,8 @@ use App\Core\Entity\User;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\Service\MagicLinkService;
+use App\Core\ValueObject\EmailAddress;
+use App\Core\ValueObject\Username;
 
 #[ActionRoute('api_frontend_register')]
 final readonly class ApiFrontendRegisterAction implements ActionInterface
@@ -129,11 +131,26 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         $hash  = \password_hash($password, \PASSWORD_DEFAULT);
 
         // das "false" für den Newsletter
-        $user = new User($newId, $username, $email, $hash, 'pending', new \DateTimeImmutable(), false);
+        $user = new User(
+            $newId,
+            new Username($username),
+            new EmailAddress($email),
+            $hash,
+            'pending',
+            new \DateTimeImmutable(),
+            false,
+        );
         $this->userRepository->save($user);
 
         // Rolle auf 'pending' gesetzt
-        $user = new User($newId, $username, $email, $hash, 'pending', new \DateTimeImmutable());
+        $user = new User(
+            $newId,
+            new Username($username),
+            new EmailAddress($email),
+            $hash,
+            'pending',
+            new \DateTimeImmutable(),
+        );
         $this->userRepository->save($user);
 
         // Bestätigungs-E-Mail senden

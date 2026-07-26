@@ -6,6 +6,8 @@ namespace App\Infrastructure\Storage;
 
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
+use App\Core\ValueObject\EmailAddress;
+use App\Core\ValueObject\Username;
 
 final readonly class MySqlUserRepository implements UserRepositoryInterface
 {
@@ -47,8 +49,8 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
     {
         $data = [
             'id'                          => $user->id,
-            'username'                    => $user->username,
-            'email'                       => $user->email,
+            'username'                    => $user->username->value,
+            'email'                       => $user->email->value,
             'password_hash'               => $user->passwordHash,
             'role_id'                     => $user->roleId,
             'wants_newsletter'            => (int) $user->wantsNewsletter,
@@ -71,8 +73,8 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
     {
         return new User(
             $row['id'],
-            $row['username'],
-            $row['email'],
+            new Username($row['username']),
+            new EmailAddress($row['email']),
             $row['password_hash'],
             $row['role_id'],
             new \DateTimeImmutable($row['created_at']),

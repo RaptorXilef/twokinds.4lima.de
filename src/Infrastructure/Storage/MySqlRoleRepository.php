@@ -11,7 +11,7 @@ use App\Core\Entity\Role;
 final readonly class MySqlRoleRepository implements RoleRepositoryInterface
 {
     use DynamicSqlTrait;
-    
+
     public function __construct(
         private \PDO $pdo,
         private JsonHelperInterface $jsonHelper,

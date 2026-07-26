@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Core\Entity;
 
+use App\Core\ValueObject\EmailAddress;
+use App\Core\ValueObject\Username;
+
 final readonly class User
 {
     public function __construct(
         public string $id,
-        public string $username,
-        public string $email,
+        public Username $username, // VO statt string
+        public EmailAddress $email, // VO statt string
         public string $passwordHash,
         public string $roleId,
         public \DateTimeImmutable $createdAt,

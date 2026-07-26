@@ -17,7 +17,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 <i class="fa-solid fa-user-gear"
                    style="color: var(--link-color);"></i> Profil verwalten
             </h1>
-            <p style="color: var(--text-color-faded);">E-Mail: <?php echo \htmlspecialchars($user->email); ?></p>
+            <p style="color: var(--text-color-faded);">E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
         </header>
 
         <div
@@ -40,7 +40,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                            name="new_username"
                            required
                            minlength="3"
-                           value="<?php echo \htmlspecialchars($user->username); ?>"
+                           value="<?php echo \htmlspecialchars($user->username->value); ?>"
                            style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
                 </div>
                 <button type="submit"
