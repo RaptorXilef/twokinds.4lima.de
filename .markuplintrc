@@ -1,0 +1,20 @@
+{
+    "extends": [
+        "markuplint:recommended"
+    ],
+    "rules": {
+        "invalid-attr": true,
+        "doctype": "always",
+        "permitted-contents": true
+    },
+    "nodeRules": [
+        {
+            "selector": "img",
+            "rules": {
+                "required-attr": [
+                    "alt"
+                ]
+            }
+        }
+    ]
+}

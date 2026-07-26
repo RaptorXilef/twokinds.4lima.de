@@ -1,0 +1,175 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @var array                                      $settings
+ * @var string                                     $pageTitle
+ * @var string                                     $adminUser
+ * @var \App\Core\Entity\ComicPage[]               $comics
+ * @var \App\Core\Entity\Character[]               $characters
+ * @var array                                      $groups
+ * @var array                                      $assignedIds
+ * @var \App\Core\Entity\Report[]                  $openReports
+ * @var array                                      $existingRanks
+ * @var array                                      $existingChapters
+ * @var array                                      $availableImages
+ * @var \App\Contracts\System\AssetHelperInterface $asset
+ */
+$baseUrl = \rtrim($settings['base_url'], '/');
+?>
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
+    <link rel="stylesheet"
+          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
+    <!-- FontAwesome (falls du es nutzt) für Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Trumbowyg Editor Styles -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css">
+    <!-- Cropper.js Styles -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/langs/de.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/7.0.0/diff.min.js"></script>
+
+    <meta name="csrf-token"
+          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    <style>
+    .content-section {
+        display: none;
+    }
+
+    .content-section.active {
+        display: block;
+    }
+
+    /* Glow Animation für editierte Zeilen */
+    @keyframes row-glow {
+        0% {
+            box-shadow: inset 0 0 15px var(--link-color);
+            background-color: rgba(41, 128, 185, 0.15);
+        }
+
+        100% {
+            box-shadow: inset 0 0 0 transparent;
+            background-color: transparent;
+        }
+    }
+
+    .row-highlight {
+        animation: row-glow 3s ease-out;
+    }
+
+    /* --- Flexbox Trap Fix --- */
+    .content {
+        min-width: 0;
+    }
+
+    .sitemap-table-container {
+        width: 100%;
+        overflow-x: auto;
+        /* Greift nur noch bei extrem kleinen Handys */
+        border-radius: 6px;
+    }
+
+    .comic-editor-table {
+        table-layout: fixed;
+        width: 100%;
+        /* Passt sich jetzt zu 100% genau in den Content ein */
+    }
+
+    .comic-editor-table td {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        /* "break-word" ist eleganter als "break-all", da es normale Wörter ganz lässt */
+        white-space: normal;
+    }
+
+    </style>
+</head>
+
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+
+    <div class="main-container">
+        <header>
+            <div class="banner"
+                 id="banner-lights-off"></div>
+        </header>
+
+        <div class="content-area">
+            <aside class="sidebar">
+                <div class="sidebar-content">
+                    <div class="session-timer">
+                        <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
+                    </div>
+
+                    <nav id="menu"
+                         class="menu">
+                        <span class="menu-label">Verwaltung</span>
+                        <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
+                        <a href="#section-upload" class="tab-link" data-target="section-upload">Bilder Upload</a>
+                        <a href="#section-archive" class="tab-link" data-target="section-archive">Archiv / Kapitel</a>
+                        <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
+                        <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
+
+                        <a href="#section-media" class="tab-link" data-target="section-media">Galerie</a>
+
+                        <span class="menu-label">System</span>
+                        <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
+
+                        <span class="menu-label">Account</span>
+                        <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a>
+                        <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
+
+                        <a id="toggle_lights" class="theme" href="#">
+                        <span class="themelabel">Theme</span>
+                        <span class="themename">LICHT AUS</span>
+                    </a>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="content">
+                <h1 class="page-header"><!--<i class="fa-solid fa-gauge">--></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
+
+                <div id="global-status-message"
+                     class="status-message"></div>
+
+                <?php include __DIR__ . '/_section_comics.phtml'; ?>
+                <?php include __DIR__ . '/_section_upload.phtml'; ?>
+                <?php include __DIR__ . '/_section_archive.phtml'; ?>
+                <?php include __DIR__ . '/_section_characters.phtml'; ?>
+                <?php include __DIR__ . '/_section_groups.phtml'; ?>
+
+                <?php include __DIR__ . '/_section_media.phtml'; ?>
+
+                <?php include __DIR__ . '/_section_reports.phtml'; ?>
+            </div>
+        </div>
+    </div>
+
+    <?php include __DIR__ . '/_modals.phtml'; ?>
+
+    <!-- MIN.JS UPDATES -->
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $asset->url('assets/js/admin.min.js'); ?>"></script>
+</body>
+
+</html>

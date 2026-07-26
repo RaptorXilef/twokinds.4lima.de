@@ -1,0 +1,49 @@
+{
+    "recommendations": [
+        // CORE INFRASTRUCTURE
+        "editorconfig.editorconfig",
+        "biomejs.biome",
+        "stylelint.vscode-stylelint",
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-debug",
+        "ms-vscode.powershell",
+
+        // PHP & COMPOSER
+        "faelv.composer-companion",
+        "neilbrayfield.php-docblocker",
+        "recca0120.vscode-phpunit",
+
+        // FRONTEND HELPER
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+        "joy-yu.css-snippets",
+
+        // GIT & WORKFLOW
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+        "github.vscode-github-actions",
+
+        // CODE QUALITY & DOKU
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-german",
+        "DavidAnson.vscode-markdownlint",
+        "usernamehw.errorlens", // Genial, um Fehler direkt in der Zeile zu sehen!
+        "todo-tree",
+        "oderwat.indent-rainbow",
+        "aaron-bond.better-comments",
+        "muuvmuuv.vscode-just-php-cs-fixer",
+
+        // UTILS
+        "mechatroner.rainbow-csv",
+        "janisdd.vscode-edit-csv",
+        "yo1dog.cursor-align",
+        "eriklynd.json-tools",
+        "ldd-vs-code.better-package-json",
+
+        // Deutsch
+        "ms-ceintl.vscode-language-pack-de"
+    ],
+    "unwantedRecommendations": ["htmlhint.vscode-htmlhint", "mikebovenlander.formate"]
+}

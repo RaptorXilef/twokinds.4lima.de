@@ -6,6 +6,7 @@ includes:
     # WICHTIG: Bleeding Edge muss unter 'includes' stehen, nicht bei bootstrapFiles.
     # Aktiviert die neuesten, striktesten Analysen (z.B. Dead Code Detection).
     - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - phpstan-baseline.neon
     # - vendor/phpstan/phpstan-phpunit/extension.neon # (macht jetzt der installer)
     # - vendor/phpstan/phpstan-strict-rules/rules.neon # (macht jetzt der installer)
 
@@ -13,39 +14,52 @@ parameters:
     # Level 0-9
     # Level 5 prüft Typen, erlaubt aber noch etwas Flexibilität.
     # Level 9 wäre "Maximaler Schmerz" (nur für neue Projekte empfohlen).
-    # TODO: Auf "max" setzen ohen "
-    level: 5
+    # TODO: Vor release auf "max" setzen ohne "
+    level: 6
 
     # Welche Ordner sollen analysiert werden?
     paths:
         - src
         - tests
         - public
+        - config
+
+    scanDirectories:
+        - src
+    bootstrapFiles:
+        - vendor/autoload.php
+
+    # Exklusionen (Vendor und Node_Modules sollten ignoriert werden)
+    excludePaths:
+        analyse:
+            - vendor
+            - node_modules
+            - public/dist
+            - '**/.debug/**'
 
     # Wir simulieren eine PHP 8.4 Umgebung (80400), damit PHPStan
     # neue Features (wie Property Hooks) bereits jetzt versteht.
     phpVersion: 80400
 
-    # Cache-Ordner (Beschleunigt die Analyse bei wiederholtem Aufruf)
+    # Cache beschleunigt die Analyse massiv
     tmpDir: .cache/phpstan
 
-    # Nutzt alle CPU-Kerne für maximale Geschwindigkeit
+    # Nutzt alle Kerne (Parallelisierung)
     parallel:
         processTimeout: 300.0
-
-    # Hier kannst du Fehler ignorieren, die du aktuell nicht fixen kannst/willst.
-    # Ich habe Beispiele auskommentiert (#).
-    ignoreErrors:
-        # Beispiel: Erlaubt Zugriff auf private Properties in Tests
-        # - '#Call to an undefined method [a-zA-Z0-9\\_]+::methodName\(\)#'
-
-        # Ignoriert Mocking-Warnungen von PHPUnit in Tests
-        # -
-        #     message: '#Call to an undefined method PHPUnit\\Framework\\MockObject\\MockObject::.*#'
-        #     path: tests/*
 
     # Prüft, ob Funktionen Seiteneffekte haben (Clean Code)
     rememberPossiblyImpureFunctionValues: true
 
     # Meldet, wenn du einen Fehler ignorierst, der gar nicht mehr existiert
     reportUnmatchedIgnoredErrors: true
+
+    # Dies verhindert, dass PHPStan denkt, er wüsste es besser als die Laufzeit,
+    # wenn es um native Funktionen geht, die false liefern können.
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # Pest nutzt interne Methoden für seine API, das ist beabsichtigt.
+        -
+            message: '#Call to method .* of internal class Pest\\.* from outside its root namespace Pest#'
+            path: tests/*

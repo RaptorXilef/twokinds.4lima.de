@@ -1,7 +1,6 @@
-*.txt
-################################################################################
+# ==============================================================================
 # SYSTEM & OS DATEIEN
-################################################################################
+# ==============================================================================
 # Mac
 .DS_Store
 .AppleDouble
@@ -15,26 +14,26 @@ ehthumbs_vista.db
 *.stackdump
 [Dd]esktop.ini
 
-# Linux / Allgemein Temporär
+# Linux (temporäre Dateien)
 *~
 *.swp
 *.swo
 .fuse_hidden*
 
-################################################################################
+# ==============================================================================
 # IDEs & EDITOREN
-################################################################################
-# JetBrains (PhpStorm, IntelliJ)
+# ==============================================================================
+# JetBrains (PhpStorm, IntelliJ, etc.)
 .idea/
 *.iml
 *.iws
 
 # VS Code
-# .vscode/
-# *.code-workspace
+#.vscode/
+#*.code-workspace
 .history/
 
-# Andere (Sublime, Eclipse, NetBeans)
+# Andere Editoren (Sublime, Atom, NetBeans, Eclipse)
 *.sublime-project
 *.sublime-workspace
 .nbproject/
@@ -42,137 +41,239 @@ ehthumbs_vista.db
 .buildpath
 .project
 
-################################################################################
+# ==============================================================================
 # GENERELLE BACKUPS & TEMPORÄRE DATEIEN
-################################################################################
-*.bak
-*.backup
-*.old
-*.orig
+# ==============================================================================
+*.log
 *.tmp
 *.temp
-*.log
-*.url
 * - Kopie*
+.testfiles/
+/data/tmp/*
+/storage/backups/
 
-# Backup-Ordner-Muster
-*backup*
-*Backup*
-
-# Spezifische Dateitypen zum Ignorieren
-*.psd
-*.c2paws
-*.ink
-*.docx
-*.xlsx
-
-################################################################################
-# SICHERHEIT & GEHEIMNISSE
-################################################################################
-# WICHTIG: Niemals Zugangsdaten committen!
+# ==============================================================================
+# SICHERHEIT & LOKALE KONFIGURATION
+# ==============================================================================
+# WICHTIG: Niemals .env Dateien mit echten Zugangsdaten commiten!
 .env
 .env.local
 .env.*.local
+# Ausnahme: .env.example sollte oft versioniert werden, damit andere wissen, welche Variablen benötigt werden.
 !/.env.example
 
-# SSL Zertifikate
+# SSL Zertifikate (falls lokal abgelegt)
 *.pem
 *.key
 *.crt
 
-# Projekt-spezifische Secrets
-config/secrets/*
-
-################################################################################
-# ABHÄNGIGKEITEN (DEPENDENCIES)
-################################################################################
-# PHP / Composer
+# ==============================================================================
+# PHP & COMPOSER
+# Composer-Abhängigkeiten
+# Composer dependencies
+# ==============================================================================
 /vendor/
+
+# Composer:
+# composer.lock sollte in ANWENDUNGEN normalerweise committed werden,
+# um konsistente Installs zu garantieren. In LIBRARIES wird es oft ignoriert.
+# Wenn du sicher bist, dass du es ignorieren willst, lass die nächste Zeile aktiv:
+
+# - `composer.lock` aus der `.gitignore` entfernt und dem Repository hinzugefügt.
+# - Dies ist notwendig, damit Caching funktioniert.
+#/composer.lock
 /composer.phar
-# composer.lock in Anwendungen committen, in Libraries ignorieren.
-# /composer.lock
 
-# Node / NPM / Yarn
-/node_modules/
-npm-debug.log*
-yarn-error.log
-yarn.lock
-# package-lock.json sollte meistens committed werden
-# package-lock.json
-
-################################################################################
-# BUILDS, LOGS & TESTING
-################################################################################
+# Builds, Logs und Cache
 /build/
-/.build/
 /log/
 /logs/
-sync.ffs_db
 
 # Cache & Logs
 /.cache/
 !.gitkeep
+
+.cache/php-cs-fixer/cache.json
+
 /.phpstan.cache/
 .phpcs.cache
 
-# PHPUnit / Coverage
+# PHPUnit & Testing
 .phpunit.result.cache
-.phpunit.cache/
+/.phpunit.cache/
 /phpunit.xml
+# Alternativ: phpunit.xml.dist versionieren, phpunit.xml ignorieren (für lokale Overrides)
+
+.lighthouseci/*
+
+.deptrac.cache
+
+# Code Coverage Reports
 /coverage/
 /html-coverage/
-.testfiles/
-test*.php
 
-# Sass Cache & Maps
-.sass-cache/
-*.css.map
-
-# Minifizierte Dateien (falls Build-Prozess vorhanden)
-*.min.css
-*.min.js
-
-
-!CHANGELOG.md
-
-################################################################################
-# DATENBANKEN (Lokal)
-################################################################################
+# ==============================================================================
+# DATENBANK DUMPS (Lokal)
+# ==============================================================================
 *.sql
 *.sqlite
 *.sqlite3
 
-################################################################################
-# PROJEKT SPEZIFISCH: CONFIG & DATA
-################################################################################
-# Generierte Konfigurationen ignorieren
-config/config_generator_settings.json
-config/config_rss.json
+# ==============================================================================
+# FRONTEND (Node, npm, yarn)
+# ==============================================================================
+/node_modules/
+npm-debug.log*
+yarn-error.log
+yarn.lock
 
-# Temporäre Configs im Public Ordner
-public/src/config/*
-public/sitemap.xml
-public/rss.xml
-public/assets/Ordnerstruktur.txt
-public/admin/json-vorlagen/*
-public/admin/consolenanwendung/*
+# - `package-lock.json` aus der `.gitignore` entfernt und dem Repository hinzugefügt.
+# - Dies ist notwendig, damit `npm ci` in der CI/CD-Pipeline deterministische Builds durchführen kann und Caching funktioniert.
+#package-lock.json
 
-# Data Ordner (Inhalt ignorieren, aber version.json behalten)
-data/*
-!data/version.json
-/data/tmp/*
+# Hinweis: package-lock.json / yarn.lock sollten ähnlich wie composer.lock
+# meistens commited werden, wenn es sich um eine Endanwendung handelt.
+
+
+# ------------------------------------------------------------------------------
+# Generierte Assets (aus resources/scss & resources/js)
+# ------------------------------------------------------------------------------
+# ENTSCHEIDUNG ERFORDERLICH:
+# Wenn auf dem Live-Server KEINEN Build-Prozess (npm run build etc.) ist,
+# müssen die folgenden Zeilen mit '#' auskommentieren, damit die fertigen
+# CSS/JS Dateien im Repository landen!
+#
+# /public/assets/css/
+# /public/assets/js/
+# /public/build/
+
+# SCSS / Sass Cache
+.sass-cache/
+*.css.map
+
+# Minifizierte Dateien (generell)
+# *.min.css
+# *.min.js
+# *.min.js.map
+
+# ------------------------------------------------------------------------------
+# Passwörter und Geheimnisse
+# Geheime Konfiguration (enthält Passwörter/Schlüssel)
+# Secret configuration (contains passwords/keys)
+# ------------------------------------------------------------------------------
+/config/secrets.php
+/storage/*.json
+
+# Geheimnisse
+/public/dev/
+
+# ------------------------------------------------------------------------------
+# Anwendungs-Log-Dateien (Sicherheit, Debugging)
+# Application log files (security, debugging)
+# ------------------------------------------------------------------------------
+logs/
+
+# ==============================================================================
+# REMOVE & DEPRECATED
+# ==============================================================================
+*_deprecated*
+*_remove*
+*_DEPRECATED*
+*_REMOVE*
+
+
+# ==============================================================================
+# PROJEKT SPEZIFISCH
+# ==============================================================================
+
+# Projekt-spezifische Secrets
+config/secrets/*
+
+# Sensible Daten & Konfiguration
+/config/_dev.local.php
+
+/public/assets/css/*.map
+/public/assets/js/*.map
+
+# Generierte Frontend-Assets (Build-Artefakte)
+# Wir vertrauen unserem Build-Prozess (npm run make)
+/public/assets/css/*
+/public/assets/js/*
+!/public/assets/css/.gitkeep
+!/public/assets/js/.gitkeep
+
+# Infrastruktur & Tools (werden via scripts/Setup.php verwaltet)
+/tools/*.phar
+/.build/
+
+# Temporäre Zip-Archive & OS-Reste
+*.zip
+*.7z
+*.ink
+*.url
+
+# Private Scripte & Notizen (Sicherheit geht vor)
+/.debug/*
+Combine-*.ps1
+Mein*Code*.*
+Refactored_PHP_Code_Part*
+*Notizen*
+.*todo*
+ToDo*.md
+*Commits*
+*.docx
+*.txt
+*.psd
+*.c2paws
+*.xlsx
+
+.npmrc
+
+# AUSNAHMEN (Diese Dateien MÜSSEN im Repo bleiben)
+!composer.lock
+!package-lock.json
+
+
+# ==============================================================================
+# Backup
+# ==============================================================================
+*.bak
+*.backup
+*.old
+# Backup-Ordner-Muster
+*backup*
+*Backup*
+
+# ==============================================================================
+# CSPELL
+# ==============================================================================
+!cspell-project.txt
+!cspell-general.txt
+!cspell-denglisch.txt
+!cspell-proper-names.txt
+!cspell-technical.txt
+!cspell-folder-names.txt
+
+# ==============================================================================
+# TEST-FOLDER
+# ==============================================================================
+
+src/assets/img/**
+
+# src/assets/img/test/**
+public/assets/img/test/**
 
 ################################################################################
 # PROJEKT SPEZIFISCH: CONTENT & ASSETS
 ################################################################################
 
-# --- COMIC VERWALTUNG ---
-# Inhalt ignorieren, aber spezifische PHP-Dateien behalten
-public/comic/*
-!public/comic/index.php
-!public/comic/20170728.php
-!public/comic/20250312.php
-!public/comic/20250604.php
+*.local*
+
+rss.xml
+sitemap.xml
+
+src/assets/images/
+public/assets/images/
 
 # --- BILDER & MEDIEN (COMIC) ---
 # High-Res Bilder ignorieren, Systemdateien behalten
@@ -219,13 +320,6 @@ public/assets/images/comic/thumbnails/*.webp
 !public/assets/images/comic/thumbnails/index.php
 !public/assets/images/comic/thumbnails/.htaccess
 
-# --- CHARAKTERE ---
-# Ordner ignorieren, aber Basis-Dateien behalten
-public/charaktere/*
-!public/charaktere/index.php
-!public/charaktere/Trace_Legacy.php
-!public/charaktere/Flora_-_Regenwald-Tigerstamm.php
-
 # Spezifische Charakter-Bilder ignorieren
 public/assets/img/charaktere/characters/themaskedgods.png
 public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
@@ -240,22 +334,129 @@ public/assets/icons/nicht verwendet/*
 
 # --- GOOGLE & LINKS ---
 public/google*.html
-public/src/layout/js_backup/gtag.js
-public/_links/*
-public/_debug/*
+
+
+
+
+
+
+
 
 ################################################################################
-# NOTIZEN & PRIVATES (NIEMALS COMMITTEN)
+# PROJEKT SPEZIFISCH: CONFIG & DATA                                          OLD
 ################################################################################
-_Notizen/*
-*Notizen*
-.*todo*
-*Commite*
-Combine-*.ps1
-Mein*Code*.*
-# Archive
-*.zip
-*.7z
-*.rar
-ToDo*.md
-*.pdf
+# Generierte Konfigurationen ignorieren
+.old-5.0.0-alpha.23/config/config_generator_settings.json
+.old-5.0.0-alpha.23/config/config_rss.json
+
+# Temporäre Configs im Public Ordner
+.old-5.0.0-alpha.23/public/src/config/*
+.old-5.0.0-alpha.23/public/sitemap.xml
+.old-5.0.0-alpha.23/public/rss.xml
+.old-5.0.0-alpha.23/public/assets/Ordnerstruktur.txt
+.old-5.0.0-alpha.23/public/admin/json-vorlagen/*
+.old-5.0.0-alpha.23/public/admin/consolenanwendung/*
+
+# Data Ordner (Inhalt ignorieren, aber version.json behalten)
+.old-5.0.0-alpha.23/data/*
+!.old-5.0.0-alpha.23/data/version.json
+/.old-5.0.0-alpha.23/data/tmp/*
+
+################################################################################
+# PROJEKT SPEZIFISCH: CONTENT & ASSETS                                      OLD
+################################################################################
+
+# --- COMIC VERWALTUNG ---
+# Inhalt ignorieren, aber spezifische PHP-Dateien behalten
+.old-5.0.0-alpha.23/public/comic/*
+!.old-5.0.0-alpha.23/public/comic/index.php
+!.old-5.0.0-alpha.23/public/comic/20170728.php
+!.old-5.0.0-alpha.23/public/comic/20250312.php
+!.old-5.0.0-alpha.23/public/comic/20250604.php
+
+# --- BILDER & MEDIEN (COMIC) ---
+# High-Res Bilder ignorieren, Systemdateien behalten
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/in_translation.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/.htaccess
+# Fehlerseiten Bilder behalten
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/404.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/hires/403.*
+
+# Low-Res Bilder ignorieren
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/in_translation.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/.htaccess
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/404.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/403.*
+
+# Andere Auflösungen
+.old-5.0.0-alpha.23/public/assets/images/comic/lowres_png/*
+
+# Social Media Bilder
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/.htaccess
+
+# Thumbnails
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.jpg
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.png
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.gif
+.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.webp
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/placeholder.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/in_translation.*
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/index.php
+!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/.htaccess
+
+# --- CHARAKTERE ---
+# Ordner ignorieren, aber Basis-Dateien behalten
+.old-5.0.0-alpha.23/public/charaktere/*
+!.old-5.0.0-alpha.23/public/charaktere/index.php
+!.old-5.0.0-alpha.23/public/charaktere/Trace_Legacy.php
+!.old-5.0.0-alpha.23/public/charaktere/Flora_-_Regenwald-Tigerstamm.php
+
+# Spezifische Charakter-Bilder ignorieren
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/themaskedgods.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/TheMaskedGods2025.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters_webp/templarchart-Original.png
+.old-5.0.0-alpha.23/public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
+
+# --- SONSTIGE ASSETS ---
+.old-5.0.0-alpha.23/public/assets/img/github/twokinds.4lima.de.psd
+.old-5.0.0-alpha.23/public/assets/img/about/*
+.old-5.0.0-alpha.23/public/assets/icons/nicht verwendet/*
+
+# --- GOOGLE & LINKS ---
+.old-5.0.0-alpha.23/public/google*.html
+.old-5.0.0-alpha.23/public/src/layout/js_backup/gtag.js
+.old-5.0.0-alpha.23/public/_links/*
+.old-5.0.0-alpha.23/public/_debug/*
+
+#############################################
+
+.old-5.0.0-alpha.23/config/secrets/*
+
+# Sensible Daten & Konfiguration
+/.old-5.0.0-alpha.23/config/_dev.local.php
+
+/.old-5.0.0-alpha.23/public/assets/css/*.map
+/.old-5.0.0-alpha.23/public/assets/js/*.map
+
+# Generierte Frontend-Assets (Build-Artefakte)
+# Wir vertrauen unserem Build-Prozess (npm run make)
+/.old-5.0.0-alpha.23/public/assets/css/*
+/.old-5.0.0-alpha.23/public/assets/js/*
+!/.old-5.0.0-alpha.23/public/assets/css/.gitkeep
+!/.old-5.0.0-alpha.23/public/assets/js/.gitkeep

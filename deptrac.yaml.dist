@@ -1,0 +1,44 @@
+# Path: deptrac.yaml
+# @description Erzwingt die architektonische Integrität.
+
+deptrac:
+  paths:
+    - src
+  cache_file: .cache/deptrac/.deptrac.cache
+
+  layers:
+    - name: Contracts
+      collectors:
+        - type: directory
+          value: src/Contracts/.*
+    - name: Core
+      collectors:
+        - type: directory
+          value: src/Core/.*
+    - name: Infrastructure
+      collectors:
+        - type: directory
+          value: src/Infrastructure/.*
+    - name: Application
+      collectors:
+        - type: directory
+          value: src/Application/.*
+
+  ruleset:
+    # Contracts sind die Basis und dürfen von NIEMANDEM abhängen
+    Contracts: ~
+
+    # Der Core darf nur Contracts kennen (Interfaces)
+    Core:
+      - Contracts
+
+    # Infrastructure (DB, Mail, etc.) darf Core und Contracts nutzen
+    Infrastructure:
+      - Core
+      - Contracts
+
+    # Die Application-Schicht orchestriert alles
+    Application:
+      - Core
+      - Infrastructure
+      - Contracts

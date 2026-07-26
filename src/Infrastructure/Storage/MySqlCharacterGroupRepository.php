@@ -1,0 +1,69 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Storage;
+
+use App\Contracts\Storage\CharacterGroupRepositoryInterface;
+use App\Core\Entity\CharacterGroup;
+use App\Core\ValueObject\CharacterId;
+
+final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepositoryInterface
+{
+    use DynamicSqlTrait;
+
+    public function __construct(private \PDO $pdo)
+    {
+    }
+
+    public function save(CharacterGroup $group): void
+    {
+        $charIds = \array_map(fn (CharacterId $id) => $id->value, $group->characterIds);
+
+        $data = [
+            'name'          => $group->name,
+            'character_ids' => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
+            'sort_order'    => $group->sortOrder,
+            'manual_sort'   => (int) $group->manualSort,
+        ];
+
+        $this->executeUpsert('character_groups', $data, ['name']);
+    }
+
+    public function findByName(string $name): ?CharacterGroup
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM `character_groups` WHERE name = ? LIMIT 1');
+        $stmt->execute([$name]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ? $this->mapToEntity($row) : null;
+    }
+
+    public function findAll(): array
+    {
+        // WICHTIG: Hier greift jetzt die neue Sortierung!
+        $stmt = $this->pdo->query('SELECT * FROM `character_groups` ORDER BY sort_order ASC, name ASC');
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        return \array_map($this->mapToEntity(...), $rows);
+    }
+
+    public function delete(string $name): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM `character_groups` WHERE name = ?');
+        $stmt->execute([$name]);
+    }
+
+    private function mapToEntity(array $row): CharacterGroup
+    {
+        $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
+        $charIds    = \array_map(fn (string $id) => new CharacterId($id), $charIdsRaw);
+
+        return new CharacterGroup(
+            name: $row['name'],
+            characterIds: $charIds,
+            sortOrder: (int) ($row['sort_order'] ?? 0),
+            manualSort: (bool) ($row['manual_sort'] ?? false),
+        );
+    }
+}

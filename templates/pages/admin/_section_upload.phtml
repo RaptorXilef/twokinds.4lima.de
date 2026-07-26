@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * @var int $hiresMinWidth
+ * @var int $hiresMinHeight
+ */
+?>
+<section id="section-upload"
+         class="content-section">
+
+    <div class="filter-form"
+         style="margin-bottom: 20px;">
+        <legend>Upload-Schwellenwerte</legend>
+        <div class="filter-controls"
+             style="align-items: flex-end;">
+            <div>
+                <label>Min. Breite für High-Res (px)</label>
+                <input type="number"
+                       id="cfg-hires-width"
+                       value="<?php echo $hiresMinWidth; ?>">
+            </div>
+            <div>
+                <label>Min. Höhe für High-Res (px)</label>
+                <input type="number"
+                       id="cfg-hires-height"
+                       value="<?php echo $hiresMinHeight; ?>">
+            </div>
+            <div class="filter-actions">
+                <button type="button"
+                        class="button"
+                        id="btn-reset-thresholds"
+                        data-default-w="<?php echo $hiresMinWidth; ?>"
+                        data-default-h="<?php echo $hiresMinHeight; ?>"><i class="fa-solid fa-rotate-left"></i> Standard</button>
+            </div>
+        </div>
+        <p style="margin-top: 10px; font-size: 0.85em; color: var(--text-color-light);">
+            Bilder, die größer oder gleich diesen Werten sind, werden automatisch als Hires klassifiziert. Kleiner =
+            Lowres.
+        </p>
+    </div>
+
+    <div id="mass-drop-zone"
+         class="drag-drop-zone"
+         style="padding: 60px 20px; border: 3px dashed var(--link-color); background: var(--table-row-even);">
+        <i class="fa-solid fa-layer-group"
+           style="font-size: 3em; color: var(--link-color); margin-bottom: 15px;"></i>
+        <h3 style="margin:0;">Bilder hier ablegen</h3>
+        <p style="color: var(--text-color-light);">Du kannst Bilder nacheinander aus verschiedenen Ordnern reinziehen
+            (Queueing).</p>
+        <input type="file"
+               id="mass-upload-input"
+               multiple
+               accept="image/*"
+               style="display: none;">
+    </div>
+
+    <div class="sitemap-table-container">
+        <table class="admin-table"
+               id="upload-queue-table">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Comic ID</th>
+                    <th>Erkanntes Hires</th>
+                    <th>Erkanntes Lowres</th>
+                    <th style="width: 150px; text-align: center;">Status</th>
+                    <th style="width: 50px;">Entfernen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="queue-empty-msg">
+                    <td colspan="5"
+                        class="empty-table-message">Warteschlange ist leer. Ziehe Bilder in das Feld oben.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px; text-align: right;">
+        <button type="button"
+                class="button add"
+                id="btn-start-mass-upload"
+                disabled
+                style="padding: 12px 25px; font-size: 1.1em;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Alle hochladen & verarbeiten
+        </button>
+    </div>
+</section>

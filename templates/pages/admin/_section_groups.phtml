@@ -1,0 +1,168 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Core\Entity\Character;
+use App\Core\Entity\CharacterGroup;
+
+/**
+ * @var string                            $baseUrl
+ * @var Character[]      $characters
+ * @var CharacterGroup[] $groups
+ * @var array                             $assignedIds
+ */
+?>
+
+<!-- ========================================== -->
+<!-- SECTION: GRUPPEN (DRAG & DROP)             -->
+<!-- ========================================== -->
+<section id="section-groups"
+         class="content-section">
+    <div class="table-controls actions-bar">
+        <div class="top-actions">
+            <button type="button"
+                    class="button add"
+                    id="btn-add-group">
+                <i class="fa-solid fa-folder-plus"></i> Neue Gruppe
+            </button>
+            <button type="button"
+                    class="button edit"
+                    id="btn-save-groups">
+                <i class="fa-solid fa-save"></i> Sortierung Speichern
+            </button>
+        </div>
+    </div>
+
+    <style>
+    /* Verstecke das 'X' im Pool, zeige es in den Gruppen */
+    #char-pool .remove-char-from-group {
+        display: none;
+    }
+
+    .character-group .remove-char-from-group {
+        display: block;
+        color: var(--text-color-faded);
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .character-group .remove-char-from-group:hover {
+        color: #dc3545;
+    }
+
+    .group-drag-handle {
+        cursor: grab;
+        padding: 10px;
+        color: var(--text-color-faded);
+    }
+
+    .group-drag-handle:active {
+        cursor: grabbing;
+    }
+
+    </style>
+
+    <div style="display: flex; gap: 20px; align-items: flex-start;">
+        <!-- Pool: Alle Charaktere -->
+        <div class="character-group"
+             style="flex: 0 0 300px; background-color: var(--table-row-even);">
+            <div class="character-group-header"
+                 style="cursor: default; flex-direction: column; align-items: flex-start;">
+                <h3>Charakter-Pool</h3>
+                <button type="button"
+                        class="button"
+                        id="btn-toggle-pool"
+                        style="font-size: 0.8em; margin-top: 5px; width: 100%;">Nur Unzugeordnete zeigen
+                </button>
+            </div>
+            <div id="char-pool"
+                 class="character-list-container sortable-pool"
+                 style="min-height: 200px; padding: 10px;">
+                <?php foreach ($characters as $char) {
+                    $pic        = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/40x40?text=N/A';
+                    $isAssigned = \in_array($char->id->value, $assignedIds, true);
+                    ?>
+                    <!-- Wichtig: is-assigned Klasse für den Filter -->
+                    <div class="character-entry <?php echo $isAssigned ? 'is-assigned' : ''; ?>"
+                         data-id="<?php echo \htmlspecialchars($char->id->value); ?>"
+                         style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="<?php echo \htmlspecialchars($pic); ?>">
+                            <div class="character-info">
+                                <strong><?php echo \htmlspecialchars($char->name); ?></strong>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-times remove-char-from-group"></i>
+                    </div>
+                <?php } ?>
+            </div>
+        </div>
+
+        <!-- Die aktiven Gruppen (Dieser Wrapper ist nun selbst sortierbar!) -->
+        <div id="groups-wrapper"
+             style="flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            <?php foreach ($groups as $group) { ?>
+                <div class="character-group">
+                    <div class="character-group-header"
+                         style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-grip-vertical group-drag-handle"
+                           title="Gruppe verschieben"></i>
+                        <div style="flex: 1;">
+                            <h3 contenteditable="true"
+                                spellcheck="false"
+                                class="group-title-edit"
+                                style="outline: none; border-bottom: 1px dashed var(--border-medium); margin: 0;">
+                                <?php echo \htmlspecialchars($group->name); ?></h3>
+                            <label
+                                   style="font-size: 0.8em; color: var(--text-color-light); font-weight: normal; margin-top: 5px; display: block;">
+                                <input type="checkbox"
+                                       class="manual-sort-cb"
+                                       <?php echo $group->manualSort ? 'checked' : ''; ?>> Manuell sortieren
+                            </label>
+                        </div>
+                        <button type="button"
+                                class="button delete btn-delete-group"
+                                title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
+                    </div>
+                    <!-- Wir merken uns den Sort-Status im data-Attribut für JS -->
+                    <div class="character-list-container sortable-group"
+                         data-manual="<?php echo $group->manualSort ? 'true' : 'false'; ?>"
+                         style="min-height: 50px; padding: 10px;">
+                        <?php
+                            // Wenn manuell aus ist, sortieren wir die Liste für die Anzeige alphabetisch
+                            $renderChars = [];
+                foreach ($group->characterIds as $cidObj) {
+                    foreach ($characters as $c) {
+                        if ($c->id->value === $cidObj->value) {
+                            $renderChars[] = $c;
+
+                            break;
+                        }
+                    }
+                }
+                if (! $group->manualSort) {
+                    \usort($renderChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
+                }
+
+                foreach ($renderChars as $char) {
+                    $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/40x40?text=N/A';
+                    ?>
+                            <div class="character-entry"
+                                 data-id="<?php echo \htmlspecialchars($char->id->value); ?>"
+                                 style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <img src="<?php echo \htmlspecialchars($pic); ?>">
+                                    <div class="character-info">
+                                        <strong><?php echo \htmlspecialchars($char->name); ?></strong>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-times remove-char-from-group"
+                                   title="Aus Gruppe entfernen"></i>
+                            </div>
+                        <?php } ?>
+                    </div>
+                </div>
+            <?php } ?>
+        </div>
+    </div>
+</section>

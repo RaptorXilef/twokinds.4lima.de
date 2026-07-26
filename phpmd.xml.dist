@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<ruleset name="PHPMD Rules"
+    xmlns="http://pmd.sf.net/ruleset/1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd">
+    <description>Modern High-End PHPMD Ruleset (PHP 8.3-8.5+)</description>
+
+    <rule ref="rulesets/cleancode.xml">
+        <exclude name="StaticAccess" />
+        <exclude name="BooleanArgumentFlag" />
+        <exclude name="MissingImport" />
+    </rule>
+
+    <rule ref="rulesets/codesize.xml">
+        <exclude name="CyclomaticComplexity" />
+        <exclude name="NPathComplexity" />
+        <exclude name="ExcessiveClassComplexity" />
+        <exclude name="TooManyMethods" />
+        <exclude name="ExcessiveParameterList" />
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/ExcessiveParameterList">
+        <properties>
+            <property name="minimum" value="15" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/TooManyMethods">
+        <properties>
+            <property name="maxmethods" value="27" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/codesize.xml/CyclomaticComplexity">
+        <properties>
+            <property name="reportLevel" value="12" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/design.xml">
+        <exclude name="CouplingBetweenObjects" />
+    </rule>
+    <rule ref="rulesets/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="minimum" value="20" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/naming.xml">
+        <exclude name="ShortVariable" />
+        <exclude name="LongVariable" />
+    </rule>
+
+    <rule ref="rulesets/naming.xml/ShortVariable">
+        <properties>
+            <property name="minimum" value="3" />
+            <property name="exceptions" value="id,em,io,db,qb,or,le,ge,fs" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/naming.xml/LongVariable">
+        <properties>
+            <property name="maximum" value="37" />
+        </properties>
+    </rule>
+
+    <rule ref="rulesets/unusedcode.xml" />
+</ruleset>

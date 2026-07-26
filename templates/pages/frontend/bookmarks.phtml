@@ -1,0 +1,375 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Core\Entity\ComicPage;
+
+/**
+ * @var array            $settings
+ * @var array<ComicPage> $comics
+ */
+$baseUrl = \rtrim($settings['base_url'] ?? '', '/');
+
+// Wir bauen ein JS-Lexikon aus der Datenbank, um immer korrekte Pfade und Kapitel zu haben
+$comicDictionary = [];
+foreach ($comics as $c) {
+    $dateObj                        = \DateTimeImmutable::createFromFormat('Ymd', \substr($c->id->value, 0, 8));
+    $cb                             = $c->imageUpdatedAt ? '?c=' . $c->imageUpdatedAt : '';
+    $comicDictionary[$c->id->value] = [
+        'id'        => $c->id->value,
+        'title'     => $c->name !== '' ? $c->name : 'Kein Titel',
+        'type'      => $c->type,
+        'chapter'   => $c->chapterId ?: 'Unbekannt',
+        'date'      => $dateObj ? $dateObj->format('d.m.Y') : \substr($c->id->value, 0, 8),
+        'thumb'     => $baseUrl . '/assets/images/comic/thumbnails/' . $c->id->value . '.webp' . $cb,
+        'permalink' => $baseUrl . '/comic/' . $c->id->value,
+    ];
+}
+
+// Wandle die Cloud-Bookmarks in ein JS-Array um (nur die IDs)
+$cloudIds = [];
+if ($isLoggedIn) {
+    foreach ($cloudBookmarks as $bm) {
+        $cloudIds[] = $bm->comicId;
+    }
+}
+
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
+<!-- Dediziertes CSS für die Lesezeichen-Karten (verhindert Konflikte mit Archiv-CSS) -->
+<style>
+.bookmark-card {
+    position: relative;
+    background-color: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.bookmark-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.bookmark-card .delete-btn {
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.bookmark-card:hover .delete-btn {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .bookmark-card .delete-btn {
+        opacity: 1;
+        /* Auf Touch-Geräten immer sichtbar */
+    }
+}
+
+</style>
+
+<main class="content-area bookmarks-page">
+    <article style="width: 100%; max-width: 950px; margin: 0 auto;">
+        <header
+                style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 20px;">
+            <h1 class="page-header"
+                style="border: none; margin-bottom: 10px; font-size: 2.2em;">
+                <i class="fa-solid fa-bookmark"
+                   style="color: var(--link-color);"></i> Meine Lesezeichen
+                <span id="bookmark-count-badge" class="comic-count-badge">0</span>
+            </h1>
+            <p style="color: var(--text-color-faded); font-size: 1.1em; max-width: 600px; margin: 0 auto;">
+                Hier findest du alle Comicseiten, die du dir gemerkt hast.
+                <br>
+                <?php if ($isLoggedIn) { ?>
+                    <small style="color: var(--status-green-text);"><i class="fa-solid fa-cloud"></i> Deine Lesezeichen
+                        sind sicher in der Cloud gespeichert.</small>
+                <?php } else { ?>
+                    <small><i class="fa-solid fa-hard-drive"></i> Aktuell werden diese nur lokal in diesem Browser
+                        gespeichert.
+                        <a href="<?php echo $baseUrl; ?>/login" style="color: var(--link-color); font-weight: bold;">Logge dich ein</a>,
+                        um sie zu sichern!</small>
+                <?php } ?>
+            </p>
+        </header>
+
+        <!-- SYNC CONFLICT MODAL -->
+        <div id="sync-conflict-modal"
+             class="modal"
+             style="display: none; position: relative; z-index: 1000; margin-bottom: 30px;">
+            <div class="modal-content"
+                 style="max-width: 600px; margin: 0 auto; box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 2px solid var(--link-color);">
+                <div class="modal-header-wrapper"
+                     style="background: var(--link-color); color: white;">
+                    <h2 style="color: white;"><i class="fa-solid fa-code-merge"></i> Synchronisation nötig</h2>
+                </div>
+                <div class="modal-scroll-content">
+                    <p style="margin-bottom: 15px;">Dein lokaler Browser enthält andere Lesezeichen als dein
+                        Cloud-Konto. Wie möchtest du verfahren?</p>
+                    <ul style="margin-bottom: 20px; color: var(--text-color-faded);">
+                        <li><strong>In der Cloud:</strong> <span id="sync-cloud-count">0</span> Lesezeichen</li>
+                        <li><strong>In diesem Browser:</strong> <span id="sync-local-count">0</span> Lesezeichen</li>
+                    </ul>
+
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button type="button"
+                                class="button add"
+                                id="btn-sync-merge"
+                                style="padding: 12px; font-weight: bold; font-size: 1em;">
+                            <i class="fa-solid fa-object-group"></i> Alles zusammenführen (Empfohlen)
+                        </button>
+                        <button type="button"
+                                class="button"
+                                id="btn-sync-db"
+                                style="padding: 12px; font-weight: bold; font-size: 1em; background: var(--table-row-hover); color: var(--text-color);">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Cloud behalten (Browser überschreiben)
+                        </button>
+                        <button type="button"
+                                class="button button-orange"
+                                id="btn-sync-local"
+                                style="padding: 12px; font-weight: bold; font-size: 1em;">
+                            <i class="fa-solid fa-hard-drive"></i> Browser behalten (Cloud überschreiben)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KEINE LESEZEICHEN -->
+        <div id="no-bookmarks-msg"
+             class="no-bookmarks"
+             style="display: none;">
+            <i class="fa-regular fa-folder-open"
+               style="font-size: 3em; color: var(--border-medium); margin-bottom: 15px; display: block;"></i>
+            <p>Du hast noch keine Lesezeichen gespeichert.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Klicke auf einer Comicseite einfach oben in der Leiste auf den Button <strong>"Seite merken"</strong>,
+                um sie hier aufzulisten.
+            </p>
+            <a href="<?php echo $baseUrl; ?>/comic" class="button edit" style="display: inline-block; margin-top: 20px;">Zum aktuellen Comic</a>
+        </div>
+
+        <div id="bookmarks-content"
+             style="display: none;">
+            <!-- SORTIERUNG -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                <div
+                     style="background: var(--table-row-even); padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border-medium);">
+                    <label for="bookmark-sort"
+                           style="font-weight: bold; margin-right: 10px; font-size: 0.9em;"><i
+                           class="fa-solid fa-sort"></i> Sortieren nach:</label>
+                    <select id="bookmark-sort"
+                            style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-light); background: var(--content-bg); color: var(--text-color);">
+                        <option value="added_desc"
+                                selected>Zuletzt gemerkt</option>
+                        <option value="page_desc">Story-Timeline (Neueste Seite)</option>
+                        <option value="page_asc">Story-Timeline (Älteste Seite)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- RASTER -->
+            <div id="bookmarks-grid"
+                 style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                <!-- Via JS gefüllt -->
+            </div>
+
+            <!-- Kontroll-Elemente unten (Alle löschen) -->
+            <div id="bookmarks-controls"
+                 class="bookmarks-controls"
+                 style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-medium); text-align: center;">
+                <button type="button"
+                        id="btn-clear-all-bookmarks"
+                        class="button delete"
+                        style="padding: 10px 20px;">
+                    <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen
+                </button>
+            </div>
+        </div>
+
+    </article>
+</main>
+
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+document.addEventListener('DOMContentLoaded', () => {
+    // Die Datenbank aus PHP als intelligentes Wörterbuch
+    const serverComics = <?php echo \json_encode($comicDictionary, \JSON_UNESCAPED_UNICODE | \JSON_HEX_APOS | \JSON_HEX_QUOT); ?>;
+    const isLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
+    const cloudIds = <?php echo \json_encode($cloudIds, \JSON_UNESCAPED_UNICODE); ?>;
+
+    const grid = document.getElementById('bookmarks-grid');
+    const noMsg = document.getElementById('no-bookmarks-msg');
+    const contentWrapper = document.getElementById('bookmarks-content');
+    const countBadge = document.getElementById('bookmark-count-badge');
+    const btnClearAll = document.getElementById('btn-clear-all-bookmarks');
+    const sortSelect = document.getElementById('bookmark-sort');
+    const conflictModal = document.getElementById('sync-conflict-modal');
+
+    // Holt aktuelles lokales Array (ohne Date-Timestamps, nur IDs)
+    function getLocalIds() {
+        const map = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        return Object.keys(map);
+    }
+
+    // Ersetzt den Local Storage mit Cloud-Daten
+    function applyCloudToLocal(ids) {
+        const newMap = {};
+        const now = Date.now();
+        ids.forEach(id => {
+            newMap[id] = {
+                id: id,
+                added: now
+            };
+        });
+        localStorage.setItem('comicBookmarksMap', JSON.stringify(newMap));
+        renderBookmarks();
+    }
+
+    // API Sync Request
+    async function syncApi(resolution) {
+        const fd = new FormData();
+        fd.append('resolution', resolution);
+        fd.append('local_ids', JSON.stringify(getLocalIds()));
+        fd.append('csrf_token', '<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>');
+
+        try {
+            const res = await fetch('<?php echo $baseUrl; ?>/api/sync_bookmarks', {
+                method: 'POST',
+                body: fd
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                if (json.status === 'conflict') {
+                    // Zeige Konflikt-Dialog
+                    conflictModal.style.display = 'block';
+                    document.getElementById('sync-cloud-count').textContent = json.db_ids.length;
+                    document.getElementById('sync-local-count').textContent = json.local_ids.length;
+                } else if (json.status === 'resolved' || json.status === 'synced') {
+                    // Alles gut, übernehme die neuen Daten in den Browser
+                    applyCloudToLocal(json.final_ids);
+                }
+            }
+        } catch (err) {
+            console.error('Sync error', err);
+        }
+    }
+
+    // Wird vom Button im Modal aufgerufen
+    // CSP-konforme Event-Listener für das Sync-Modal
+    const resolveSync = async (resolution) => {
+        conflictModal.style.display = 'none';
+        await syncApi(resolution);
+    };
+
+    document.getElementById('btn-sync-merge')?.addEventListener('click', () => resolveSync('merge'));
+    document.getElementById('btn-sync-db')?.addEventListener('click', () => resolveSync('db_wins'));
+    document.getElementById('btn-sync-local')?.addEventListener('click', () => resolveSync('local_wins'));
+
+    // Toggle-Lösch-Funktion (API oder Lokal)
+    async function removeBookmark(id) {
+        if (isLoggedIn) {
+            const fd = new FormData();
+            fd.append('comic_id', id);
+            fd.append('bookmark_action', 'remove');
+            fd.append('csrf_token', '<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>');
+            await fetch('<?php echo $baseUrl; ?>/api/toggle_bookmark', {
+                method: 'POST',
+                body: fd
+            });
+        }
+        const map = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        delete map[id];
+        localStorage.setItem('comicBookmarksMap', JSON.stringify(map));
+        renderBookmarks();
+    }
+
+    function renderBookmarks() {
+        const map = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        let bookmarks = Object.values(map).filter(bm => serverComics[bm.id]); // Nur valide
+
+        countBadge.textContent = bookmarks.length;
+        if (bookmarks.length === 0) {
+            contentWrapper.style.display = 'none';
+            noMsg.style.display = 'block';
+            return;
+        }
+
+        contentWrapper.style.display = 'block';
+        noMsg.style.display = 'none';
+
+        const sortMode = sortSelect.value;
+        bookmarks.sort((a, b) => {
+            if (sortMode === 'added_desc') return (b.added || 0) - (a.added || 0);
+            if (sortMode === 'page_desc') return b.id.localeCompare(a.id); // Timeline: Neueste oben
+            if (sortMode === 'page_asc') return a.id.localeCompare(b.id); // Timeline: Älteste oben
+            return 0;
+        });
+
+        grid.innerHTML = '';
+        bookmarks.forEach(bm => {
+            const db = serverComics[bm.id];
+            const card = document.createElement('div');
+            card.className = 'bookmark-card';
+            card.innerHTML = `
+                <a href="${db.permalink}" style="display: block; width: 100%; aspect-ratio: 1 / 1.35; overflow: hidden; background: var(--page-bg);">
+                    <img src="${db.thumb}" alt="${db.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                </a>
+                <div style="padding: 12px 10px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        ${db.type.toLowerCase() !== 'comicseite' ? `<span style="font-size: 0.75em; font-weight: bold; background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border); padding: 2px 8px; border-radius: 12px; margin-bottom: 5px; display: inline-block; text-transform: uppercase;">${db.type}</span><br>` : ''}
+                        <div style="font-weight: bold; font-size: 0.95em; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color);">${db.title}</div>
+                        <div style="font-size: 0.85em; color: var(--text-color-light); margin-bottom: 8px;">Kapitel ${db.chapter} <span style="opacity: 0.5;">|</span> ${db.date}</div>
+                    </div>
+                </div>
+                <button class="delete-btn" style="position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid #bd2130; background: #dc3545; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            `;
+
+            card.querySelector('.delete-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                removeBookmark(bm.id);
+            });
+            grid.appendChild(card);
+        });
+    }
+
+    if (sortSelect) sortSelect.addEventListener('change', renderBookmarks);
+
+    if (btnClearAll) {
+        btnClearAll.addEventListener('click', async () => {
+            if (confirm('Möchtest du wirklich ALLE Lesezeichen unwiderruflich löschen?')) {
+                if (isLoggedIn) {
+                    const fd = new FormData();
+                    fd.append('resolution', 'local_wins');
+                    fd.append('local_ids', '[]'); // Leeres Array hochschieben = alles löschen
+                    fd.append('csrf_token', '<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>');
+                    await fetch('<?php echo $baseUrl; ?>/api/sync_bookmarks', {
+                        method: 'POST',
+                        body: fd
+                    });
+                }
+                localStorage.removeItem('comicBookmarksMap');
+                renderBookmarks();
+            }
+        });
+    }
+
+    // Beim Laden der Seite: Wenn eingeloggt, Sync anstoßen!
+    if (isLoggedIn) {
+        syncApi('check');
+    } else {
+        renderBookmarks();
+    }
+});
+
+</script>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

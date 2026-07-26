@@ -1,27 +1,69 @@
 {
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
   "version": "0.2",
-  "language": "en,de-de",
+  "language": "en,de",
   "useGitignore": true,
-  "words": [
-    "twokinds",
-    "fourlima",
-    "terser",
-    "cssnano",
-    "purgecss"
+  "import": ["@cspell/dict-de-de/cspell-ext.json"],
+  "dictionaryDefinitions": [
+    {
+      "name": "general-words",
+      "path": "./cspell-general.txt",
+      "addWords": true
+    },
+    {
+      "name": "project-words",
+      "path": "./cspell-project.txt",
+      "addWords": true
+    },
+    {
+      "name": "denglisch-words",
+      "path": "./cspell-denglisch.txt",
+      "addWords": true
+    },
+    {
+      "name": "proper-names",
+      "path": "./cspell-proper-names.txt",
+      "addWords": true
+    },
+    {
+      "name": "tech-terms",
+      "path": "./cspell-technical.txt",
+      "addWords": true
+    },
+    {
+      "name": "folder-names",
+      "path": "./cspell-folder-names.txt",
+      "addWords": true
+    }
+  ],
+  "dictionaries": [
+    "en_US",
+    "de-de",
+    "softwareTerms",
+    "php",
+    "node",
+    "html",
+    "css",
+    "bash",
+    "npm",
+    "misc",
+    "general-words",
+    "project-words",
+    "denglisch-words",
+    "proper-names",
+    "tech-terms",
+    "folder-names"
   ],
   "ignorePaths": [
     "node_modules/**",
     "vendor/**",
-    "public/assets/**"
-  ],
-  "files": [
-    "resources/js/**/*.js",
-    "resources/scss/**/*.scss",
-    "config/**/*.php",
-    "public/**/*.php",
-    "src/**/*.php",
-    "templates/**/*.php",
-    "tests/**/*.php",
-    "**/*.md"
+    "public/assets/**",
+    "CHANGELOG.md",
+    "package-lock.json",
+    ".gitignore",
+    "*.min.*",
+    "tools/**",
+    "docs/roadmaps/**",
+    "tests/**/*.php"
   ]
 }

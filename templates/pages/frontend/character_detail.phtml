@@ -1,0 +1,198 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Core\Entity\Character;
+
+/**
+ * @var Character $character
+ * @var array     $characterComics
+ * @var string    $pageTitle
+ * @var array     $settings
+ */
+$baseUrl         = \rtrim($settings['base_url'], '/');
+$placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
+
+// Das kleine Profilbild für den Header
+$profilePicUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+
+// Bestimme das Hauptbild für die große Ansicht links
+if ($character->mainPic) {
+    $picUrl = "{$baseUrl}/assets/images/characters/main/{$character->mainPic}";
+} else {
+    $picUrl = $profilePicUrl; // Fallback, falls kein großes Bild existiert
+}
+
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
+<main class="content-area">
+    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+
+        <!-- Header mit kleinem Avatar -->
+        <header
+                style="margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 15px; display: flex; align-items: center; gap: 20px;">
+            <img src="<?php echo \htmlspecialchars($profilePicUrl); ?>"
+                 alt="Avatar von <?php echo \htmlspecialchars($character->name); ?>"
+                 style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h1 class="page-header"
+                style="border: none; margin: 0; padding: 0;">
+                <?php echo \htmlspecialchars($character->name); ?>
+            </h1>
+        </header>
+
+        <!-- HAUPT-LAYOUT: Display Block statt Flex, damit Float funktioniert! -->
+        <section class="char-detail"
+                 style="display: block; border: none; padding: 0; margin-bottom: 40px;">
+
+            <!-- Linke Spalte: Profilbild & Swatch als Float -->
+            <div class="char-img"
+                 style="float: left; width: 175px; margin-right: 25px; margin-bottom: 15px; text-align: center;">
+                <img class="portrait"
+                     src="<?php echo \htmlspecialchars($picUrl); ?>"
+                     alt="<?php echo \htmlspecialchars($character->name); ?>"
+                     style="width: 100%; height: auto; border-radius: 8px; border: 2px solid var(--border-medium); box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px;">
+
+                <!-- Swatch -->
+                <?php if ($character->swatchPic) { ?>
+                    <img src="<?php echo $baseUrl; ?>/assets/images/characters/swatches/<?php echo \htmlspecialchars($character->swatchPic); ?>"
+                         alt="Color Swatch"
+                         style="width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border-medium); margin-bottom: 15px;"
+                         loading="lazy">
+                <?php } ?>
+            </div>
+
+            <!-- Rechte Spalte: Infos & Text umfließen das linke Bild -->
+            <div class="char-info"
+                 style="float: none; width: auto; display: block;">
+
+                <!-- Der volle Name als Untertitel, falls vorhanden -->
+                <?php if ($character->fullName) { ?>
+                    <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--text-color); font-size: 1.35em;">
+                        <?php echo \htmlspecialchars($character->fullName); ?>
+                    </h3>
+                <?php } ?>
+
+                <!-- Biografische Daten (Ohne Kasten, elegant als Liste) -->
+                <?php if ($character->altNames || $character->gender || $character->age || $character->rank || $character->species || $character->languages) { ?>
+                    <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8; font-size: 1em;">
+                        <?php if ($character->altNames) { ?>
+                            <li><strong>Alternative Namen:</strong> <?php echo \htmlspecialchars($character->altNames); ?></li>
+                        <?php } ?>
+
+                        <?php if ($character->gender) { ?>
+                            <li><strong>Geschlecht:</strong> <?php echo \htmlspecialchars($character->gender); ?></li>
+                        <?php } ?>
+
+                        <?php if ($character->age) {
+                            $displayAge = \htmlspecialchars($character->age);
+
+                            // Keidran Alter-Magie!
+                            $isKeidran = \stripos($character->species ?? '', 'k') !== false || \stripos($character->subspecies ?? '', 'k') !== false;
+
+                            if ($isKeidran && \preg_match('/(\d+)/', $character->age, $matches)) {
+                                $rawAge   = (int) $matches[1];
+                                $humanAge = \round($rawAge * 2.36); // Multiplikator für Keidran
+                                $displayAge .= " (~{$humanAge} äquivalent)";
+                            }
+                            ?>
+                            <li><strong>Alter:</strong> <?php echo $displayAge; ?></li>
+                        <?php } ?>
+
+                        <?php if ($character->rank) { ?>
+                            <li><strong>Klasse/Rang:</strong> <?php echo \htmlspecialchars($character->rank); ?></li>
+                        <?php } ?>
+
+                        <?php if ($character->species || $character->subspecies) {
+                            $sp             = $character->species ?: '';
+                            $sub            = $character->subspecies ?: '';
+                            $displaySpecies = \trim($sub . ' ' . $sp);
+                            ?>
+                            <li><strong>Spezies:</strong> <?php echo \htmlspecialchars($displaySpecies); ?></li>
+                        <?php } ?>
+
+                        <?php if ($character->languages) { ?>
+                            <li><strong>Sprachen:</strong> <?php echo \htmlspecialchars($character->languages); ?></li>
+                        <?php } ?>
+                    </ul>
+                <?php } ?>
+
+                <!-- Das HTML-Transkript / Die Biografie -->
+                 <!-- Unsichtbarer Speicher des Roh-HTMLs für das Melde-Modal -->
+                <textarea id="raw-char-description" style="display: none;" aria-hidden="true"><?php echo \htmlspecialchars($character->description ?? ''); ?></textarea>
+                <div class="character-description"
+                     style="line-height: 1.6; font-size: 1.05em; margin-bottom: 25px; margin-top: 15px;">
+                    <?php
+                    if ($character->description !== null && \trim($character->description) !== '') {
+                        echo $character->description;
+                    } else {
+                        echo '<p style="font-style: italic; color: var(--text-color-faded);">Noch keine Biografie in der Datenbank hinterlegt.</p>';
+                    }
+?>
+                </div>
+
+            </div>
+
+            <!-- Ref Sheets: Fließen elegant als Masonry-Grid (ohne Lücken) -->
+            <?php if (! empty($character->refSheets)) { ?>
+                <div style="column-width: 140px; column-gap: 15px; margin-top: 15px; width: 100%;">
+                    <?php foreach ($character->refSheets as $sheet) { ?>
+                        <a href="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>"
+                           target="_blank"
+                           title="Reference Sheet (Vollbild)"
+                           style="display: block; break-inside: avoid; margin-bottom: 15px; transition: transform 0.2s ease;">
+                            <img src="<?php echo $baseUrl; ?>/assets/images/characters/refsheets/<?php echo \htmlspecialchars($sheet); ?>"
+                                 alt="Ref Sheet"
+                                 style="display: block; width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border-medium); box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+                                 loading="lazy">
+                        </a>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+
+            <!-- Clearfix, damit die Section den gesamten Inhalt umschließt -->
+            <div style="clear: both;"></div>
+
+        </section>
+
+        <!-- Comic-Auftritte -->
+        <section>
+            <h2
+                style="font-size: 1.5em; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--border-light); padding-bottom: 5px;">
+                Alle Comic-Auftritte
+                <span class="comic-count-badge" style="font-size: 0.6em; background: var(--button-bg); color: var(--text-on-medium); padding: 4px 12px; border-radius: 12px;">
+                    <?php echo \count($characterComics); ?> Seiten
+                </span>
+            </h2>
+
+            <?php if (empty($characterComics)) { ?>
+                <div class="no-bookmarks"
+                     style="text-align: center; padding: 30px; background: var(--table-row-even); border-radius: 8px;">
+                    <p style="margin: 0; color: var(--text-color-light);">Dieser Charakter hat bisher keine markierten
+                        Comic-Auftritte.</p>
+                </div>
+            <?php } else { ?>
+                <div class="chapter-links tag-page-links">
+                    <?php foreach ($characterComics as $comic) {
+                        $comicId   = $comic->id->value;
+                        $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                        $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}";
+
+                        $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
+                        $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
+                        $pageName    = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
+                        $pageLink    = "{$baseUrl}/comic/{$comicId}";
+                        ?>
+                        <a href="<?php echo $pageLink; ?>" title="<?php echo \htmlspecialchars($pageName); ?>" class="loaded">
+                            <span><?php echo \htmlspecialchars($pageName); ?></span>
+                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
+                        </a>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+        </section>
+
+    </article>
+</main>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

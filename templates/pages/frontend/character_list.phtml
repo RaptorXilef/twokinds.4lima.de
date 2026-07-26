@@ -1,0 +1,30 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @var array  $characters
+ * @var array  $groups
+ * @var string $pageTitle
+ * @var array  $settings
+ */
+$baseUrl = \rtrim($settings['base_url'], '/');
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
+<main class="content-area">
+    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+        <header>
+            <h1 class="page-header">Charakter Übersicht</h1>
+        </header>
+        <p class="character-overview-intro">Eine alphabetische Übersicht aller Charaktere, eingeteilt in Gruppen.</p>
+
+        <!-- Charakter-Lego-Modul einbinden (Ohne Filter) -->
+        <?php
+        $limitToIds = null;
+include __DIR__ . '/../../components/frontend/_character_display.phtml';
+?>
+
+    </article>
+</main>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

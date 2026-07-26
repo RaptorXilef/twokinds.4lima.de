@@ -1,0 +1,155 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Erwartete Variablen:
+ * @var array      $characters (Alle Charaktere aus der DB)
+ * @var array      $groups (Alle Gruppen aus der DB)
+ * @var array|null $limitToIds (Array aus IDs, falls nur bestimmte gezeigt werden sollen, sonst null)
+ * @var string     $baseUrl
+ */
+$limitToIds ??= null;
+$placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
+
+// 1. Filtern und Mappen
+$charMap       = [];
+$filteredChars = [];
+foreach ($characters as $char) {
+    if ($limitToIds !== null && ! \in_array($char->id->value, $limitToIds, true)) {
+        continue; // Charakter ist auf dieser Comic-Seite nicht vorhanden
+    }
+    $charMap[$char->id->value] = $char;
+    $filteredChars[]           = $char;
+}
+
+// Wenn nach dem Filtern nichts übrig ist (z.B. Filler-Seite), Modul gar nicht erst anzeigen
+if (empty($filteredChars)) {
+    return;
+}
+
+// 2. Tags-Map erstellen (für die Alphabetische Ansicht)
+$tagsMap = [];
+foreach ($groups as $group) {
+    foreach ($group->characterIds as $cidObj) {
+        if ($limitToIds === null || \in_array($cidObj->value, $limitToIds, true)) {
+            $tagsMap[$cidObj->value][] = $group->name;
+        }
+    }
+}
+
+// 3. Alphabetische Liste sortieren
+$alphaChars = $filteredChars;
+\usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
+
+$isFilteredView = $limitToIds !== null;
+$headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere';
+?>
+
+<div class="comic-characters-container interactive" id="char-display-wrapper" data-active-view="grouped">
+
+    <div class="char-display-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0;"><?php echo $headerText; ?></h3>
+        <button type="button" id="toggle-char-view" class="button button-small" title="Ansicht umschalten">
+            <i class="fas fa-font"></i> <span id="toggle-view-text">Alphabetische Ansicht</span>
+        </button>
+    </div>
+
+    <!-- MODUS 1: GRUPPIERTE ANSICHT -->
+    <div class="char-view-section view-grouped">
+        <div class="character-list">
+            <?php foreach ($groups as $group) {
+                // Zuerst prüfen, ob wir in dieser Gruppe überhaupt gefilterte Charaktere haben
+                $charsInThisGroup = [];
+                foreach ($group->characterIds as $cidObj) {
+                    if (isset($charMap[$cidObj->value])) {
+                        $charsInThisGroup[] = $charMap[$cidObj->value];
+                    }
+                }
+                if (empty($charsInThisGroup)) {
+                    continue;
+                } // Leere Gruppe überspringen!
+                ?>
+                <div class="character-group">
+                    <h4><?php echo \htmlspecialchars($group->name); ?></h4>
+                    <div class="character-group-list">
+                    <?php foreach ($charsInThisGroup as $character) {
+                        $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+                        $link   = "{$baseUrl}/charaktere/" . \urlencode(\str_replace(' ', '_', $character->name));
+                        ?>
+                        <div class="character-item">
+                            <a href="<?php echo $link; ?>">
+                                <div class="character-avatar-container">
+                                    <img src="<?php echo \htmlspecialchars($picUrl); ?>"
+                                         alt="<?php echo \htmlspecialchars($character->name); ?>"
+                                         loading="lazy">
+                                </div>
+                                <p class="character-name"><?php echo \htmlspecialchars($character->name); ?></p>
+                            </a>
+                        </div>
+                    <?php } ?>
+                    </div>
+                </div>
+            <?php } ?>
+        </div>
+    </div>
+
+    <!-- MODUS 2: ALPHABETISCHE ANSICHT (TAGS) -->
+    <div class="char-view-section view-tags">
+        <div class="character-group">
+            <h4>A - Z</h4>
+            <div class="character-group-list">
+                <?php foreach ($alphaChars as $character) {
+                    $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+                    $link   = "{$baseUrl}/charaktere/" . \urlencode(\str_replace(' ', '_', $character->name));
+                    ?>
+                    <div class="character-item">
+                        <a href="<?php echo $link; ?>">
+                            <div class="character-avatar-container">
+                                <img src="<?php echo \htmlspecialchars($picUrl); ?>"
+                                     alt="<?php echo \htmlspecialchars($character->name); ?>"
+                                     loading="lazy">
+                            </div>
+                            <p class="character-name"><?php echo \htmlspecialchars($character->name); ?></p>
+
+                            <div class="character-tags">
+                                <?php if (isset($tagsMap[$character->id->value])) {
+                                    foreach ($tagsMap[$character->id->value] as $tag) { ?>
+                                        <span class="char-tag"><?php echo \htmlspecialchars($tag); ?></span>
+                                <?php }
+                                    } ?>
+                            </div>
+                        </a>
+                    </div>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+// Verhindert mehrfaches Anhängen des Events, falls das Modul öfter geladen würde
+if (!window.charToggleInitialized) {
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('char-display-wrapper');
+        const toggleBtn = document.getElementById('toggle-char-view');
+        const toggleText = document.getElementById('toggle-view-text');
+
+        if (toggleBtn && wrapper) {
+            toggleBtn.addEventListener('click', function() {
+                const currentView = wrapper.getAttribute('data-active-view');
+                const newView = currentView === 'tags' ? 'grouped' : 'tags';
+                wrapper.setAttribute('data-active-view', newView);
+
+                if (newView === 'grouped') {
+                    toggleText.textContent = 'Alphabetische Ansicht';
+                    toggleBtn.querySelector('i').className = 'fas fa-font';
+                } else {
+                    toggleText.textContent = 'Gruppierte Ansicht';
+                    toggleBtn.querySelector('i').className = 'fas fa-th-list';
+                }
+            });
+        }
+    });
+    window.charToggleInitialized = true;
+}
+</script>

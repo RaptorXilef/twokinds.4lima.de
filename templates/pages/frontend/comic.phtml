@@ -1,0 +1,158 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @var \App\Core\Entity\ComicPage      $comic
+ * @var \App\Core\Entity\ComicPage|null $prev
+ * @var \App\Core\Entity\ComicPage|null $next
+ * @var \App\Core\Entity\ComicPage      $first
+ * @var \App\Core\Entity\ComicPage      $latest
+ * @var bool                            $isLatest
+ * @var string                          $pageTitle
+ * @var string                          $displayDate
+ * @var array                           $settings
+ */
+$baseUrl       = \rtrim($settings['base_url'], '/');
+$cb            = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+$imageLowres   = "{$baseUrl}/assets/images/comic/lowres/{$comic->id->value}.webp{$cb}";
+$imageHires    = "{$baseUrl}/assets/images/comic/hires/{$comic->id->value}.webp{$cb}";
+$thumbnailPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comic->id->value}.webp{$cb}";
+
+$canonicalUrl = "{$baseUrl}/comic/{$comic->id->value}";
+
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
+<main class="content-area">
+    <article class="comic">
+        <header style="text-align: center; margin-bottom: 20px;">
+            <?php if ($comic->chapterId !== null && $comic->chapterId !== '') { ?>
+                <h2 class="tinyheader"
+                    style="color: var(--text-color-faded); margin-bottom: 5px; font-weight: bold; letter-spacing: 1px; font-size: 0.9em;">
+                    KAPITEL <?php echo \htmlspecialchars((string) $comic->chapterId); ?>
+                </h2>
+            <?php } ?>
+
+            <h1
+                style="font-size: 1.5em; margin: 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; color: var(--text-color);">
+                <?php if (\strtolower($comic->type) !== 'comicseite' && $comic->type !== '') { ?>
+                    <span style="font-size: 0.6em; background: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border); padding: 3px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">
+                        <?php echo \htmlspecialchars($comic->type); ?>
+                    </span>
+                <?php } ?>
+
+                <span>Seite vom <?php echo $displayDate; ?></span>
+
+                <?php if ($comic->name !== '') { ?>
+                    <span style="color: var(--text-color-light); opacity: 0.5;">|</span>
+                    <span style="color: var(--link-color);"><?php echo \htmlspecialchars($comic->name); ?></span>
+                <?php } ?>
+            </h1>
+        </header>
+
+        <!-- Haupt-Navigation Oben -->
+        <nav class="comicnav topnav">
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>" class="navarrow navbegin <?php echo ! $prev ? 'disabled' : ''; ?>" title="Erste Seite">
+                <span class="nav-wrapper">Erste</span>
+            </a>
+            <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>" class="navarrow navprev <?php echo ! $prev ? 'disabled' : ''; ?>" title="Vorherige Seite">
+                <span class="nav-wrapper">Zurück</span>
+            </a>
+            <a href="<?php echo $baseUrl; ?>/archiv" class="navarchive" title="Zum Archiv">Archiv</a>
+            <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>" class="navarrow navnext <?php echo ! $next ? 'disabled' : ''; ?>" title="Nächste Seite">
+                <span class="nav-wrapper">Weiter</span>
+            </a>
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>" class="navarrow navend <?php echo ! $next ? 'disabled' : ''; ?>" title="Neueste Seite">
+                <span class="nav-wrapper">Neueste</span>
+            </a>
+
+            <!-- ORIGINAL: Lesezeichen und Fehler-Melden Button im Top-Nav -->
+            <button type="button"
+                    id="add-bookmark"
+                    class="bookmark"
+                    title="Diese Seite mit Lesezeichen versehen"
+                    data-id="<?php echo $comic->id->value; ?>"
+                    data-logged-in="<?php echo $isLoggedIn ? 'true' : 'false'; ?>"
+                    data-csrf="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"> Seite merken
+            </button>
+
+            <button type="button"
+                    id="open-report-modal"
+                    class="navarrow nav-report-issue"
+                    title="Fehler auf dieser Seite melden">
+                <span class="nav-wrapper"><span class="nav-text" id="report-issue-text">Fehler</span></span>
+            </button>
+        </nav>
+
+        <!-- Das Comic-Bild -->
+        <div class="comic-image-container">
+            <a id="comic-image-link" href="<?php echo \htmlspecialchars($imageHires); ?>" target="_blank" rel="noopener noreferrer">
+                <img id="comic-image" class="comic-image" src="<?php echo \htmlspecialchars($imageLowres); ?>" alt="<?php echo \htmlspecialchars($comic->name); ?>" fetchpriority="high" data-id="<?php echo $comic->id->value; ?>" data-en-original="<?php echo \htmlspecialchars($comic->originalUrl); ?>">
+            </a>
+        </div>
+
+        <!-- Haupt-Navigation Unten -->
+        <nav class="comicnav bottomnav">
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>" class="navarrow navbegin <?php echo ! $prev ? 'disabled' : ''; ?>" title="Erste Seite">
+                <span class="nav-wrapper">Erste</span>
+            </a>
+            <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>" class="navarrow navprev <?php echo ! $prev ? 'disabled' : ''; ?>" title="Vorherige Seite">
+                <span class="nav-wrapper">Zurück</span>
+            </a>
+            <a href="<?php echo $baseUrl; ?>/archiv" class="navarchive" title="Zum Archiv">Archiv</a>
+            <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>" class="navarrow navnext <?php echo ! $next ? 'disabled' : ''; ?>" title="Nächste Seite">
+                <span class="nav-wrapper">Weiter</span>
+            </a>
+            <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>" class="navarrow navend <?php echo ! $next ? 'disabled' : ''; ?>" title="Neueste Seite">
+                <span class="nav-wrapper">Neueste</span>
+            </a>
+
+            <!-- ORIGINAL: EN/DE Umschalter im Bottom-Nav -->
+            <?php if ($comic->originalUrl !== '') { ?>
+                <button type="button"
+                        id="toggle-language-btn"
+                        class="navarrow nav-lang-toggle"
+                        title="Sprache umschalten"
+                        data-german-src="<?php echo \htmlspecialchars($imageLowres); ?>"
+                        data-german-href="<?php echo \htmlspecialchars($imageHires); ?>"
+                        data-english-filename="<?php echo \htmlspecialchars($comic->originalUrl); ?>">
+                    <span class="nav-wrapper"><span class="nav-text" id="lang-toggle-text">EN</span></span>
+                </button>
+            <?php } ?>
+        </nav>
+
+        <div class="below-nav">
+            <div class="permalink">
+                Permalink: <a href="<?php echo $canonicalUrl; ?>"><?php echo $canonicalUrl; ?></a>
+            </div>
+            <div class="nav-instruction">
+                <span class="nav-instruction-content jsdep">Du kannst auch wischen oder die Pfeiltasten verwenden.</span>
+            </div>
+        </div>
+
+        <!-- Transkript -->
+        <?php if ($comic->transcript !== null && $comic->transcript !== '') { ?>
+            <aside class="transcript">
+                <div class="transcript-header">
+                    <h3>Transkript</h3>
+                    <?php if ($comic->sketchUrl !== '') { ?>
+                        <a href="<?php echo \htmlspecialchars($comic->sketchUrl); ?>" target="_blank" rel="noopener noreferrer" class="button" style="font-size: 0.9em; margin-left: 15px;">Sketch ansehen</a>
+                    <?php } ?>
+                </div>
+                <div class="transcript-content">
+                    <?php echo $comic->transcript; ?>
+                </div>
+            </aside>
+        <?php } ?>
+
+        <!-- NEU: Charakter-Lego-Modul einbinden (Gefiltert auf Comic-ID) -->
+        <?php
+        $limitToIds = \array_map(fn ($id) => $id->value, $comic->characterIds);
+include __DIR__ . '/../../components/frontend/_character_display.phtml';
+?>
+
+    </article>
+</main>
+
+<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

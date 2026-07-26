@@ -1,224 +1,255 @@
 {
-  // =========================================================================
-  // SPRACH-SPEZIFISCHE FORMATIERER
-  // Erzwingt, dass das gesamte Team dieselben Tools verwendet.
-  // =========================================================================
-  "rewrap.wrappingColumn": 120,
-  "rewrap.doubleSentenceSpacing": false,
-  "rewrap.wholeComment": true,
-  "[php]": {
-    // Setzt "valeryanm.vscode-phpsab" als Standard-Formatierer FÜR DIESES PROJEKT
-    "editor.defaultFormatter": "valeryanm.vscode-phpsab",
-    // Erzwingt das Formatieren beim Speichern für PHP-Dateien
+    // =========================================================================
+    // EDITOR & FORMATTING CORE
+    // =========================================================================
     "editor.formatOnSave": true,
-    //"editor.formatOnPaste": true,
-    //"editor.formatOnType": true,
-    "editor.renderWhitespace": "all", // alternativ "boundary"
-    "proseWrap": "always",
-    "editor.wordWrap": "off",
-    "editor.wordWrapColumn": 120
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    //"editor.formatOnPaste": true,
-    //"editor.formatOnType": true,
-    "editor.renderWhitespace": "all"
-  },
-  "[scss]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    //"editor.formatOnPaste": true,
-    //"editor.formatOnType": true,
-    // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
     "editor.codeActionsOnSave": {
-      "source.fixAll.stylelint": "explicit"
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
     },
-    "editor.renderWhitespace": "all"
-  },
-  "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    //"editor.formatOnPaste": true,
-    //"editor.formatOnType": true,
-    // Erzwingt das automatische Beheben von SCSS-Fehlern beim Speichern
-    "editor.codeActionsOnSave": {
-      "source.fixAll.stylelint": "explicit"
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.rulers": [120],
+    "editor.bracketPairColorization.enabled": true,
+    "editor.linkedEditing": true,
+    "files.eol": "\n", // Unix-Zeilenenden für Git-Konsistenz
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000, // Wenn CPU Last zu hoch auf 3000 oder 5000 erhöhen
+
+    "gremlins.showInProblemPane": true,
+
+    // =========================================================================
+    // SPRACH-SPEZIFISCHE EINSTELLUNGEN
+    // =========================================================================
+
+    // Verhindert, dass VS Code Biome nach Teilbereichs-Formatierung fragt
+    "editor.formatOnType": false,
+    "editor.formatOnPaste": false,
+
+    // --- PHP & INTELEPHENSE ---
+    "[php]": {
+        //"editor.defaultFormatter": "bmewburn.vscode-intelephense-client", // Intelephense als Basis
+        "editor.defaultFormatter": "muuvmuuv.vscode-just-php-cs-fixer",
+        "editor.wordWrap": "off",
+        "editor.renderWhitespace": "boundary"
     },
-    "editor.renderWhitespace": "all"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    //"editor.formatOnPaste": true,
-    //"editor.formatOnType": true,
-    "editor.renderWhitespace": "all"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features",
-    "editor.formatOnSave": true,
-    //"editor.formatOnPaste": true,
-    //"editor.formatOnType": true,
-    "editor.renderWhitespace": "all"
-  },
-  "[xml]": {
-    "editor.defaultFormatter": "redhat.vscode-xml",
-    "editor.renderWhitespace": "all"
-  },
-  // =========================================================================
-  // PHP FORMATIERUNG & LINTING (valeryanm.vscode-phpsab)
-  // Das Herzstück unserer PHP-PSR-12-Regeln.
-  // =========================================================================
-  // Zeigt versteckte und unsichtbare Zeichen
-  "gremlins.showInProblemPane": true,
-  // Deaktiviert die Intelephense-Formatierung, um Konflikte zu vermeiden. (Wenn false)
-  // Aktuelll aktiviert um die Einrückungen von Kommentareen formatieren zu können
-  // (Rechtsklick->Dokument formatieren mit ...->PHP Intelephense)
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "intelephense.format.enable": true,
-  // LINTING (Fehler FINDEN mit phpcs)
-  "phpsab.snifferEnable": true,
-  // WICHTIG: Leer lassen oder auf null setzen, damit er die phpcs.xml.dist im Root findet!
-  // Alternativ explizit: "${workspaceFolder}/phpcs.xml.dist"
-  "phpsab.standard": "",
-  // WICHTIG: Dynamischer Pfad statt C:\xampp...
-  // Alternativ: Absoluter Pfad, da dieser bei dir nachweislich funktioniert
-  //  "phpsab.executablePathCS": "${workspaceFolder}/vendor/bin/phpcs.bat", // Autoerkennung anktiviert
-  // FORMATTING (Fehler BEHEBEN mit phpcbf)
-  "phpsab.fixerEnable": true,
-  "phpsab.fixer": "phpcbf",
-  "phpsab.fixerStandard": "", // Nutzt ebenfalls die phpcs.xml.dist
-  // PHP-spezifische Ergänzung für den Sniffer
-  "phpsab.autoRuleset": true,
-  // WICHTIG: Dynamischer Pfad statt C:\xampp...
-  //  "phpsab.executablePathCBF": "${workspaceFolder}/vendor/bin/phpcbf.bat", // Autoerkennung anktiviert
-  "phpsab.debug": false,
-  // Für phpsab ausgeschlossenee Ordner und Dateien
-  "phpsab.snifferArguments": [
-    // --ignore wird eigentlich jetzt über phpcs.xml.dist gesteuert,
-    // kann hier aber als Fallback bleiben.
-    "--ignore=vendor/*,node_modules/*,.Notizen/*,_Commites/*,.secrets/*,**/.vscode/**"
-  ],
-  // =========================================================================
-  // PROJEKT-SPEZIFISCHE EINSTELLUNGEN
-  // Regeln, die für alle Teammitglieder gelten sollen.
-  // =========================================================================
-  //"editor.wordWrap": "wordWrapColumn",
-  //"editor.wordWrapColumn": 120,
-  "editor.rulers": [
-    120
-  ],
-  "prettier.prettierPath": "./node_modules/prettier",
-  // Erzwingt Unix-Zeilenenden (LF) statt Windows (CRLF) für Git-Konsistenz
-  "files.eol": "\n",
-  // Erzwingt das Anzeigen von Leerzeichen-Veränderungen
-  "diffEditor.ignoreTrimWhitespace": false,
-  "diffEditor.codeLens": true,
-  "diffEditor.experimental.showMoves": true,
-  "diffEditor.maxComputationTime": 30000,
-  // Rechtschreibung
-  "cSpell.language": "en,de",
-  "cSpell.diagnosticLevel": "Hint",
-  "cSpell.words": [
-    "twokinds"
-  ],
-  // Definiert Projekt-spezifische TODO-Tags
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "todo-tree.general.tags": [
-    "BUG",
-    "HACK",
-    "FIXME",
-    "TODO",
-    "XXX",
-    "[ ]",
-    "[x]",
-    "VOR_RELEASE"
-  ],
-  // Definiert die Farben für diese Tags
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "todo-tree.highlights.useColourScheme": true,
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "todo-tree.highlights.backgroundColourScheme": [
-    "red",
-    "orange",
-    "yellow",
-    "green",
-    "blue",
-    "indigo",
-    "violet",
-    "purple"
-  ],
-  // Stellt sicher, dass 'vendor' und 'node_modules' ignoriert werden
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "todo-tree.filtering.excludeGlobs": [
-    "**/node_modules/*/**",
-    "**/vendor/*/**",
-    "**/*.pdf"
-  ],
-  // Alles beginnend mit todo-tree, muss möglicherweise in die Globale settings.json übertragen werden
-  "todo-tree.general.automaticGitRefreshInterval": 30,
-  "todo-tree.general.periodicRefreshInterval": 30,
-  "todo-tree.general.revealBehaviour": "leave focus in tree",
-  //  "todo-tree.general.rootFolder": "${workspaceFolder}", // Leer lassen = aktueller Workspace (besser als Hardcoded Pfad)
-  "todo-tree.general.showActivityBarBadge": true,
-  "todo-tree.general.statusBar": "total",
-  "todo-tree.general.showIconsInsteadOfTagsInStatusBar": true,
-  "todo-tree.filtering.ignoreGitSubmodules": true,
-  "todo-tree.tree.showCountsInTree": true,
-  "todo-tree.tree.buttons.export": true,
-  // Schließt Ordner aus der VS-Code-Suche aus
-  // Exclude files and folder
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
-    "**/.DS_Store": true,
-    "**/vendor/": true,
-    "**/node_modules/": true,
-    "**/_Commites/": true,
-    "**/.Notizen/": true,
-    // Optional: Cache Dateien ausblenden
-    ".phpcs.cache": true,
-    ".phpstan.cache": true,
-    ".phpunit.cache": true
-  },
-  // Schließt Ordner aus dem Datei-Watcher aus (spart Leistung)
-  // Watcher Exclude
-  "files.watcherExclude": {
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/node_modules/*/**": true,
-    "**/vendor/*/**": true,
-    "**/_Commites/*/**": true,
-    "**/.Notizen/*/**": true
-  },
-  // Optional
-  // Konsolen / Terminal
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "terminal.integrated.profiles.windows": {
-    "PowerShell 7 (pwsh)": {
-      "path": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
-      "icon": "terminal-powershell"
+    "[phtml]": {
+        //"editor.defaultFormatter": "bmewburn.vscode-intelephense-client", // Intelephense als Basis
+        "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+        "editor.wordWrap": "off",
+        "editor.renderWhitespace": "boundary",
+        "editor.formatOnSave": true
     },
-    "PowerShell": {
-      "source": "PowerShell",
-      "icon": "terminal-powershell"
+    "intelephense.format.enable": false, // CLI-Tools (PHP-CS-Fixer) haben Vorrang!
+    "php.suggest.basic": false,
+    "php-docblocker.gap": true,
+
+    // --- BIOME (JS, JSON, CSS/SCSS) ---
+    "[javascript]": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+        // WICHTIG: Mode auf "file" setzen, nicht "modifications"
+        "editor.formatOnSaveMode": "file"
     },
-    "Command Prompt": {
-      "path": [
-        "${env:windir}\\Sysnative\\cmd.exe",
-        "${env:windir}\\System32\\cmd.exe"
-      ],
-      "args": [],
-      "icon": "terminal-cmd"
+    "[json]": { "editor.defaultFormatter": "biomejs.biome" },
+    "[jsonc]": { "editor.defaultFormatter": "biomejs.biome" },
+    "[scss]": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.codeActionsOnSave": { "source.fixAll.stylelint": "explicit" }
     },
-    "Git Bash": {
-      "source": "Git Bash"
-    }
-  },
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "terminal.integrated.defaultProfile.windows": "PowerShell 7 (pwsh)",
-  // Muss möglicherweise in die Globale settings.json übertragen werden
-  "workbench.colorTheme": "Monokai Pirokai - Beach Sunset"
+
+    // --- HTML & MARKUPLINT ---
+    "[html]": {
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.codeActionsOnSave": { "source.fixAll.markuplint": "explicit" }
+    },
+
+    // --- MARKDOWN & REWRAP ---
+    "[markdown]": {
+        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+        "editor.wordWrap": "on"
+    },
+    "rewrap.wrappingColumn": 120,
+    "rewrap.wholeComment": true,
+
+    // =========================================================================
+    // EXPLORER, SEARCH & WATCHER (Performance & Ordnung)
+    // =========================================================================
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.DS_Store": true,
+        "**/node_modules": false, // Wir wollen sie sehen, aber...
+        "**/vendor": false, // ...unten in der Suche ausschließen
+        "**/.build": true,
+        "**/.cache": true,
+        "**/.debug": true,
+        "**/*.map": true,
+        ".phpcs.cache": true,
+        ".phpstan.cache": true,
+        ".phpunit.cache": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/vendor": true,
+        "**/.build": true,
+        "**/.cache": true
+    },
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/node_modules/**": true,
+        "**/vendor/**": true,
+        "**/.debug/**": true
+    },
+    "intelephense.diagnostics.undefinedTypes": true,
+    "intelephense.diagnostics.exclude": {
+        "undefinedTypes": ["**/.cache/**", "**/temp/**"],
+        "undefinedFunctions": ["**/.cache/**", "**/temp/**"],
+        "undefinedConstants": ["**/.cache/**", "**/temp/**"],
+        "undefinedProperties": ["**/.cache/**", "**/temp/**"],
+        "undefinedMethods": ["**/.cache/**", "**/temp/**"],
+        "unusedSymbols": ["**/.cache/**", "**/temp/**"]
+    },
+    "intelephense.environment.exclude": ["**/.cache/**", "**/temp/**"],
+    "intelephense.files.exclude": [
+        "**/.cache/**",
+        "**/.build/**",
+        "**/.php-cs-fixer.dist.php",
+        "**/.git/**",
+        "**/.svn/**",
+        "**/.hg/**",
+        "**/CVS/**",
+        "**/.DS_Store/**",
+        "**/node_modules/**",
+        "**/bower_components/**"
+    ],
+    // Das hier hilft, wenn Intelephense hängen bleibt
+    "intelephense.completion.fullyQualifyImportNames": true,
+
+    "draw.folder.structure.exclude": [
+        "**/node_modules",
+        "**/.git",
+        "**/dist",
+        "**/.next",
+        "**/out",
+        "**/.build",
+        "**/.cache",
+        "**/.debug",
+        "**/.github",
+        "**/.husky",
+        "**/.vscode",
+        "**/docs",
+        "**/scripts",
+        "**/tools",
+        "**/vendor"
+    ],
+
+    // =========================================================================
+    // TOOLS & WORKFLOW (Meine persönlichen Favoriten)
+    // =========================================================================
+
+    // --- DIFF EDITOR ---
+    "diffEditor.ignoreTrimWhitespace": true,
+    "diffEditor.experimental.showMoves": true,
+    "diffEditor.codeLens": true,
+    "diffEditor.maxComputationTime": 30000,
+
+    // --- TODO TREE ---
+    /*"better-todo-tree.general.tags": [
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "XXX",
+        "[ ]",
+        "[x]",
+        "VOR_RELEASE"
+    ],
+    "better-todo-tree.highlights.useColourScheme": true,
+    "better-todo-tree.highlights.backgroundColourScheme": [
+        "red",
+        "orange",
+        "yellow",
+        "green",
+        "blue",
+        "indigo",
+        "violet",
+        "purple"
+    ],*/
+    //"better-todo-tree.filtering.excludeGlobs": ["**/node_modules/**", "**/vendor/**", "**/*.pdf"],
+
+    // --- SPELL CHECK ---
+    "cSpell.language": "en,de",
+    "cSpell.diagnosticLevel": "Hint",
+
+    // --- TERMINAL ---
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+
+    // --- THEME ---
+    "errorLens.onInlayHints": true,
+
+    // --- Vira Theme ---
+    "files.insertFinalNewline": true,
+    "workbench.iconTheme": "vira-icons-carbon",
+    "workbench.productIconTheme": "viraUIIcons",
+    "workbench.colorTheme": "Vira Carbon High Contrast",
+    "workbench.colorCustomizations": {
+        "[Vira*]": {
+            "statusBar.debuggingBackground": "#FFFFFF33",
+            "statusBar.debuggingForeground": "#FFFFFF",
+            "toolbar.activeBackground": "#FFFFFF26",
+            "button.background": "#FFFFFF",
+            "button.hoverBackground": "#FFFFFFcc",
+            "extensionButton.separator": "#FFFFFF33",
+            "extensionButton.background": "#FFFFFF14",
+            "extensionButton.foreground": "#FFFFFF",
+            "extensionButton.hoverBackground": "#FFFFFF33",
+            "extensionButton.prominentForeground": "#FFFFFF",
+            "extensionButton.prominentBackground": "#FFFFFF14",
+            "extensionButton.prominentHoverBackground": "#FFFFFF33",
+            "activityBarBadge.background": "#FFFFFF",
+            "activityBar.activeBorder": "#FFFFFF",
+            "activityBarTop.activeBorder": "#FFFFFF",
+            "list.inactiveSelectionIconForeground": "#FFFFFF",
+            "list.activeSelectionForeground": "#FFFFFF",
+            "list.inactiveSelectionForeground": "#FFFFFF",
+            "list.highlightForeground": "#FFFFFF",
+            "sash.hoverBorder": "#FFFFFF80",
+            "list.activeSelectionIconForeground": "#FFFFFF",
+            "scrollbarSlider.activeBackground": "#FFFFFF80",
+            "editorSuggestWidget.highlightForeground": "#FFFFFF",
+            "textLink.foreground": "#FFFFFF",
+            "progressBar.background": "#FFFFFF",
+            "pickerGroup.foreground": "#FFFFFF",
+            "tab.activeBorder": "#FFFFFF",
+            "tab.activeBorderTop": "#FFFFFF00",
+            "tab.unfocusedActiveBorder": "#FFFFFF",
+            "tab.unfocusedActiveBorderTop": "#FFFFFF00",
+            "tab.activeModifiedBorder": "#FFFFFF00",
+            "notificationLink.foreground": "#FFFFFF",
+            "editorWidget.resizeBorder": "#FFFFFF",
+            "editorWidget.border": "#FFFFFF",
+            "settings.modifiedItemIndicator": "#FFFFFF",
+            "panelTitle.activeBorder": "#FFFFFF",
+            "breadcrumb.activeSelectionForeground": "#FFFFFF",
+            "menu.selectionForeground": "#FFFFFF",
+            "menubar.selectionForeground": "#FFFFFF",
+            "editor.findMatchBorder": "#FFFFFF",
+            "selection.background": "#FFFFFF40",
+            "statusBarItem.remoteBackground": "#FFFFFF14",
+            "statusBarItem.remoteHoverBackground": "#FFFFFF",
+            "statusBarItem.remoteForeground": "#FFFFFF",
+            "notebook.inactiveFocusedCellBorder": "#FFFFFF80",
+            "chat.slashCommandForeground": "#FFFFFF",
+            "chat.avatarForeground": "#FFFFFF",
+            "activityBarBadge.foreground": "#000000",
+            "button.foreground": "#000000",
+            "statusBarItem.remoteHoverForeground": "#000000"
+        }
+    },
+    "viraTheme.accent": "White"
+
+    // -- HINWEISE ---
+    // vscode://settings/php-cs-fixer.allow-risky muss auf true gesetzt werden! Also Haken rein!
 }

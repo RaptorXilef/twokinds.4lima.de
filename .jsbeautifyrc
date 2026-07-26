@@ -1,0 +1,15 @@
+{
+  "html": {
+    "indent_size": 4,
+    "indent_char": " ",
+    "indent_inner_html": false,
+    "indent_scripts": "keep",
+    "wrap_line_length": 120,
+    "wrap_attributes": "force-aligned",
+    "wrap_attributes_indent_size": 4,
+    "unformatted": ["pre", "code", "textarea", "a", "span"],
+    "end_with_newline": true,
+    "extra_liners": ["head", "body", "/html"],
+    "templating": ["php"]
+  }
+}

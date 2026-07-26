@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\DTO;
+
+use App\Application\Exception\ValidationException;
+use App\Application\Http\ServerRequest;
+
+final readonly class SubmitReportRequest
+{
+    private function __construct(
+        public ?string $comicId, // ? Optional
+        public string $reportType,
+        public string $description,
+        public string $transcriptSuggestion,
+        public string $transcriptOriginal,
+        public string $submitterName,
+        public bool $wantsCredit,
+        public string $debugInfo,
+        public string $ipAddress,
+    ) {
+    }
+
+    public static function fromRequest(ServerRequest $request): self
+    {
+        // JSON-Payload auslesen (wurde von der JsonBodyParserMiddleware in $request->input gelegt)
+        $input = ! empty($request->post) ? $request->post : $request->input;
+
+        if (! empty($input['report_honeypot'])) {
+            // Honeypot wurde ausgefüllt -> Bot-Verdacht!
+            // Wir werfen eine spezielle Exception, die die Action als "Erfolg" tarnt, um den Bot auszutricksen.
+            throw ValidationException::withMessage('HONEYPOT_TRIGGERED');
+        }
+
+        $comicId     = \trim((string) ($input['comic_id'] ?? '')) ?: null; // Leer zu null
+        $reportType  = \trim((string) ($input['report_type'] ?? ''));
+        $description = \trim((string) ($input['report_description'] ?? ''));
+        $suggestion  = \trim((string) ($input['report_transcript_suggestion'] ?? ''));
+        $wantsCredit = ! empty($input['wants_credit']); // NEU: Checkbox als boolean
+
+        if ($reportType === '') {
+            throw ValidationException::withMessage('Bitte wähle eine Fehler-Kategorie aus.');
+        }
+
+        if ($comicId === '' || $reportType === '') {
+            throw ValidationException::withMessage('Fehlende oder ungültige Pflichtfelder.');
+        }
+
+        if ($reportType === 'transcript' && $description === '' && $suggestion === '') {
+            throw ValidationException::withMessage('Bitte gib eine Beschreibung oder einen Transkript-Vorschlag an.');
+        }
+
+        if ($reportType !== 'transcript' && $description === '') {
+            throw ValidationException::withMessage('Bitte gib eine Fehlerbeschreibung an.');
+        }
+
+        return new self(
+            comicId: $comicId,
+            reportType: $reportType,
+            description: $description,
+            transcriptSuggestion: $suggestion,
+            transcriptOriginal: \trim((string) ($input['report_transcript_original'] ?? '')),
+            submitterName: \trim((string) ($input['submitter'] ?? 'Anonym')),
+            wantsCredit: $wantsCredit,
+            debugInfo: \trim((string) ($input['report_debug_info'] ?? '')),
+            ipAddress: $request->getIp(),
+        );
+    }
+}

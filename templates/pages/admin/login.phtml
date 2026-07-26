@@ -1,0 +1,145 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @var array                                      $settings
+ * @var string                                     $pageTitle
+ * @var \App\Contracts\System\AssetHelperInterface $asset
+ */
+$baseUrl = \rtrim($settings['base_url'], '/');
+?>
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds</title>
+    <link rel="stylesheet"
+          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
+    <meta name="csrf-token"
+          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+</head>
+
+<body class="page-login <?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+
+    <div class="main-container">
+        <header>
+            <div class="banner"
+                 id="banner-lights-off"></div>
+        </header>
+
+        <div class="content-area">
+            <aside class="sidebar">
+                <div class="sidebar-content">
+                    <nav id="menu"
+                         class="menu">
+                        <a href="<?php echo $baseUrl; ?>/">Zurück zur Webseite</a>
+                        <a id="toggle_lights" class="theme" href="#">
+                        <span class="themelabel">Theme</span>
+                        <span class="themename">LICHT AUS</span>
+                    </a>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="content">
+                <div class="admin-login-container">
+                    <h2>Systemzugang</h2>
+                    <p class="intro-text">Bitte melde dich an, um auf die Verwaltungsoberfläche zuzugreifen.</p>
+
+                    <div id="login-status-message"
+                         class="status-message"></div>
+
+                    <form id="admin-login-form"
+                          class="admin-form"
+                          method="POST">
+                        <div class="form-group">
+                            <label for="username">Benutzername</label>
+                            <input type="text"
+                                   id="username"
+                                   name="username"
+                                   required
+                                   autocomplete="username"
+                                   autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Passwort</label>
+                            <div class="password-wrapper">
+                                <input type="password"
+                                       id="password"
+                                       name="password"
+                                       required
+                                       autocomplete="current-password">
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                id="login-submit-btn">Anmelden</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginForm = document.getElementById('admin-login-form');
+        const statusMsg = document.getElementById('login-status-message');
+        const submitBtn = document.getElementById('login-submit-btn');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Prüfe...';
+
+                const formData = new window.FormData(
+                loginForm); // TODO window. entfernen wenn in eigener JS-Datei
+                // CSRF Token aus dem Meta-Tag holen
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                formData.append('csrf_token', csrfToken);
+
+                try {
+                    const response = await fetch('<?php echo $baseUrl; ?>/api/admin_login', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        statusMsg.className = 'status-message status-green visible';
+                        statusMsg.innerHTML = '<i class="fa-solid fa-check"></i> ' + data.message;
+                        setTimeout(() => {
+                            window.location.href = '<?php echo $baseUrl; ?>/' + data.redirect;
+                        }, 500);
+                    } else {
+                        statusMsg.className = 'status-message status-red visible';
+                        statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' +
+                            data.error;
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Anmelden';
+                        document.getElementById('password').value = '';
+                    }
+                } catch (error) {
+                    statusMsg.className = 'status-message status-red visible';
+                    statusMsg.textContent = 'Server-Verbindungsfehler.';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Anmelden';
+                }
+            });
+        }
+    });
+
+    </script>
+
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
+</body>
+
+</html>

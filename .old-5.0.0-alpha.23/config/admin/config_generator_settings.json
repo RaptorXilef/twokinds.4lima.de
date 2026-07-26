@@ -1,0 +1,70 @@
+{
+    "users": {
+        "Max Maywald": {
+            "socialmedia_generator": {
+                "format": "webp",
+                "quality": 85,
+                "lossless": false,
+                "resize_mode": "cover",
+                "crop_position": "center",
+                "force_white_bg": false,
+                "last_run_timestamp": 1765390383
+            }
+        },
+        "Felix Maywald": {
+            "generator_socialmedia": {
+                "format": "webp",
+                "quality": 85,
+                "lossless": false,
+                "resize_mode": "cover",
+                "crop_position": "top",
+                "force_white_bg": false,
+                "last_run_timestamp": 1765401744
+            },
+            "generator_thumbnail": {
+                "format": "webp",
+                "quality": 80,
+                "lossless": false,
+                "force_white_bg": false,
+                "last_run_timestamp": 1765590374
+            },
+            "generator_rss": {
+                "last_run_timestamp": 1767131679,
+                "entries_count": 50
+            },
+            "generator_comic": {
+                "last_run_timestamp": 1765582810,
+                "pages_created": 1
+            },
+            "generator_sitemap": {
+                "last_run_timestamp": 1767131672,
+                "entries_count": 1326
+            },
+            "data_editor_archiv": {
+                "last_run_timestamp": 1765575939
+            },
+            "data_editor_charaktere": {
+                "last_run_timestamp": 1765576577
+            },
+            "data_editor_comic": {
+                "last_run_timestamp": 1767397669
+            },
+            "data_editor_sitemap": {
+                "last_run_timestamp": 1765582194
+            },
+            "build_image_cache": {
+                "last_run_timestamp": 1765637867,
+                "total_files": 12277
+            },
+            "upload_image": {
+                "last_run_timestamp": 1765641242,
+                "auto_detect_hires": true,
+                "hires_threshold_width": 1800,
+                "hires_threshold_height": 1000
+            },
+            "reports_manager": {
+                "last_run_timestamp": 1767386835
+            }
+        }
+    }
+}

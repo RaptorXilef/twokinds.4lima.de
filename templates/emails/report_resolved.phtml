@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * @var string $username
+ * @var string $comicId
+ * @var string $pageUrl
+ */
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body style="font-family: sans-serif; line-height: 1.6; color: #333; background: #ececec; padding: 20px;">
+    <div
+         style="max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="color: #2c3e50;">Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
+
+        <p>Vielen Dank für deine Adleraugen! <i class="fa-solid fa-eye"></i></p>
+        <p>Du hast uns vor Kurzem einen Fehler auf <strong><?php echo \htmlspecialchars($comicId); ?></strong> gemeldet. Wir haben uns die Sache
+            angesehen, den Fehler korrigiert und deine Meldung als "erledigt" geschlossen.</p>
+
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="<?php echo \htmlspecialchars($pageUrl); ?>" style="display: inline-block; padding: 12px 24px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold;">Zur korrigierten Seite ansehen</a>
+        </p>
+
+        <p>Hilfe aus der Community wie deine macht diese Seite überhaupt erst möglich. Vielen Dank dafür!</p>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 0.85em; color: #888;">Du erhältst diese E-Mail, weil du in deinem Profil die Option
+            "Fehlerberichte (Reports)" aktiviert hast. Du kannst dies jederzeit abschalten.</p>
+    </div>
+</body>
+
+</html>

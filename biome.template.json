@@ -1,0 +1,78 @@
+{
+  "$schema": "https://biomejs.dev/schemas/latest/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!!*.md",
+      "!!public/assets",
+      "!!vendor",
+      "!!node_modules",
+      "!!**/*.min.js",
+      "!!**/*.min.css",
+      "!!.cache",
+      "!!.build",
+      "!!.debug",
+      "!!package-lock.json",
+      "!!composer.lock",
+      "!!_Notizen"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 4,
+    "lineEnding": "lf",
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": {
+        "useConst": "error"
+      },
+      "suspicious": {
+        "noVar": "error",
+        "noConsole": "error",
+        "noDebugger": "warn"
+      },
+      "correctness": {
+        "noUnusedVariables": "warn"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "es5",
+      "bracketSpacing": true
+    },
+    "globals": ["window", "document", "navigator", "process", "module"]
+  },
+  "overrides": [
+    {
+      "includes": ["*.json", "*.yml"],
+      "formatter": {
+        "indentWidth": 2
+      }
+    },
+    {
+      "includes": ["scripts/**/*.js"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ]
+}
