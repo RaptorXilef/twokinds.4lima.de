@@ -188,6 +188,8 @@ final readonly class FrontendController
                 'save_single_character'        => ['action' => 'api_save_single_character', 'input' => $input],
                 'save_single_comic'            => ['action' => 'api_save_single_comic', 'input' => $input],
                 'submit_report'                => ['action' => 'api_submit_report', 'input' => $input],
+                'sync_bookmarks'               => ['action' => 'api_sync_bookmarks', 'input' => $input],
+                'toggle_bookmark'              => ['action' => 'api_toggle_bookmark', 'input' => $input],
                 'undo_comic'                   => ['action' => 'api_undo_comic', 'input' => $input],
                 'update_report_status'         => ['action' => 'api_update_report_status', 'input' => $input],
                 'upload_comic_media'           => ['action' => 'api_upload_comic_media', 'input' => $input],

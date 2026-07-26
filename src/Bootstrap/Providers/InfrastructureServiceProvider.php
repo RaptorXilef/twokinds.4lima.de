@@ -12,6 +12,7 @@ use App\Contracts\Mail\MailLogInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Security\AuthSessionInterface;
 use App\Contracts\Security\RateLimiterInterface;
+use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
@@ -37,6 +38,7 @@ use App\Infrastructure\Mail\SmtpMailService;
 use App\Infrastructure\Security\RateLimiter;
 use App\Infrastructure\Storage\JsonHelper;
 use App\Infrastructure\Storage\LocalImageStorage;
+use App\Infrastructure\Storage\MySqlBookmarkRepository;
 use App\Infrastructure\Storage\MySqlChapterRepository;
 use App\Infrastructure\Storage\MySqlCharacterGroupRepository;
 use App\Infrastructure\Storage\MySqlCharacterRepository;
@@ -115,6 +117,11 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         $container->bind(MailServiceInterface::class, fn () => new MailQueueService(
             $container->get(MailQueueRepositoryInterface::class),
             $container->get('mail.smtp'),
+        ));
+
+        // Bookmarks / Lesezeichen
+        $container->bind(BookmarkRepositoryInterface::class, fn () => new MySqlBookmarkRepository(
+            $container->get(\PDO::class),
         ));
 
         // 4. Domain Repositories (TwoKinds MySQL Persistenz)
