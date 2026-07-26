@@ -211,15 +211,30 @@ if (! empty($settings['google_analytics_id'])) {
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div>
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Dein Name (Optional)</label>
+            <div class="form-group"
+                 style="margin-bottom: 15px;">
+                <label for="report_submitter">Dein Name / Pseudonym *</label>
+                <?php if (isset($isLoggedIn) && $isLoggedIn && ! empty($currentUserName)) { ?>
+                    <!-- Eingeloggt: Feld ist vorausgefüllt und gesperrt -->
                     <input type="text"
-                           id="report_name"
-                           name="report_name"
-                           placeholder="Wie sollen wir dich nennen?"
-                           style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
-                </div>
+                           id="report_submitter"
+                           name="submitter"
+                           value="<?php echo \htmlspecialchars($currentUserName); ?>"
+                           readonly
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
+                    <small style="color: var(--status-green-text); display: block; margin-top: 5px;">
+                        <i class="fa-solid fa-check-circle"></i> Angemeldet. Wenn in deinem Profil aktiviert, wirst du
+                        bei Behebung benachrichtigt.
+                    </small>
+                <?php } else { ?>
+                    <!-- Gast: Normales Feld -->
+                    <input type="text"
+                           id="report_submitter"
+                           name="submitter"
+                           required
+                           placeholder="Wie dürfen wir dich nennen?"
+                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                <?php } ?>
             </div>
 
             <div style="margin-bottom: 20px;">
