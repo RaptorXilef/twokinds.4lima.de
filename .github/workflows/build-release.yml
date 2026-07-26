@@ -67,7 +67,7 @@ jobs:
           zip -r twokinds-4lima-de-update-${{ env.VERSION }}.zip config/ public/ src/ templates/ vendor/ CHANGELOG.md README.md composer.json package.json update_manifest.json -x "src/assets/*" "public/assets/img/user_images/*" "public/assets/img/group_images/*" "public/assets/documents/*"
 
       - name: Upload Release Assets
-        uses: softprops/action-gh-release@v3.0.1
+        uses: softprops/action-gh-release@v3.0.2
           # https://github.com/marketplace/actions/gh-release
         with:
           files: |
