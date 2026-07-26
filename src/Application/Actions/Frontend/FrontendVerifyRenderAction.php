@@ -43,6 +43,8 @@ final readonly class FrontendVerifyRenderAction implements ViewActionInterface
                 $user->passwordHash,
                 'user', // Rolle wird von 'pending' auf 'user' gesetzt!
                 $user->createdAt,
+                $user->wantsNewsletter,
+                $user->wantsNewsletterTranscript,
             );
             $this->userRepository->save($updatedUser);
 

@@ -45,8 +45,9 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
 
         // Aktion: Newsletter
         if ($actionType === 'newsletter') {
-            $wantsNewsletter = ! empty($request->post['wants_newsletter']);
-            $updated         = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNewsletter);
+            $wantsNews  = ! empty($request->post['wants_newsletter']);
+            $wantsTrans = ! empty($request->post['wants_newsletter_transcript']);
+            $updated    = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans);
             $this->userRepository->save($updated);
 
             return JsonResponse::success(['message' => 'Newsletter-Einstellungen aktualisiert!']);
@@ -75,7 +76,7 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
                 return JsonResponse::error('Dieser Benutzername ist leider schon vergeben.', 400);
             }
 
-            $updated = new User($user->id, $newName, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $user->wantsNewsletter);
+            $updated = new User($user->id, $newName, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript);
             $this->userRepository->save($updated);
             $this->sessionManager->updateAdminUsername($newName); // Session updaten
 
@@ -95,7 +96,7 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
             }
 
             $newHash = \password_hash($newPass, \PASSWORD_DEFAULT);
-            $updated = new User($user->id, $user->username, $user->email, $newHash, $user->roleId, $user->createdAt, $user->wantsNewsletter);
+            $updated = new User($user->id, $user->username, $user->email, $newHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript);
             $this->userRepository->save($updated);
 
             // Session mit neuem Hash versehen, sonst fliegt man beim nächsten Klick raus

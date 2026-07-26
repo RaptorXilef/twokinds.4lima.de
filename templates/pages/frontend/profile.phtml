@@ -88,8 +88,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
         <div
              style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h3 style="margin-top:0; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Newsletter &
-                Updates</h3>
+            <h3 style="margin-top:0; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;"><i
+                   class="fa-solid fa-envelope"
+                   style="color: var(--text-color-faded);"></i> Benachrichtigungen</h3>
             <div class="msg-box"
                  id="msg-newsletter"
                  style="display:none; padding:10px; margin-bottom:15px; border-radius:4px; font-weight:bold; text-align:center;">
@@ -99,16 +100,40 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 <input type="hidden"
                        name="update_type"
                        value="newsletter">
-                <div style="margin-bottom: 20px;">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+
+                <div
+                     style="margin-bottom: 15px; padding: 15px; border-radius: 6px; background: var(--table-row-even); border: 1px solid var(--border-light);">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
                         <input type="checkbox"
                                name="wants_newsletter"
                                value="1"
-                               style="transform: scale(1.5);"
+                               style="transform: scale(1.5); margin-top: 5px;"
                                <?php echo $user->wantsNewsletter ? 'checked' : ''; ?>>
-                        <span>Ich möchte eine E-Mail bekommen, sobald eine neue Comic-Seite fertig übersetzt wurde!</span>
+                        <div>
+                            <strong style="display: block; margin-bottom: 5px; color: var(--text-color);">Vollständige
+                                Comic-Seiten</strong>
+                            <span style="font-size: 0.9em; color: var(--text-color-faded);">Benachrichtige mich, sobald eine neue Seite inklusive Bild mit deutscher Übersetzung fertig ist.</span>
+                        </div>
                     </label>
                 </div>
+
+                <div
+                     style="margin-bottom: 25px; padding: 15px; border-radius: 6px; background: var(--table-row-even); border: 1px solid var(--border-light);">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                        <input type="checkbox"
+                               name="wants_newsletter_transcript"
+                               value="1"
+                               style="transform: scale(1.5); margin-top: 5px;"
+                               <?php echo $user->wantsNewsletterTranscript ? 'checked' : ''; ?>>
+                        <div>
+                            <strong
+                                    style="display: block; margin-bottom: 5px; color: var(--text-color);">Vorab-Transkripte
+                                <span style="color: var(--status-red-text);">(Spoiler!)</span></strong>
+                            <span style="font-size: 0.9em; color: var(--text-color-faded);">Sende mir sofort eine E-Mail, wenn der deutsche Text einer neuen Seite verfügbar ist, auch wenn das Bild dazu noch fehlt.</span>
+                        </div>
+                    </label>
+                </div>
+
                 <button type="submit"
                         class="button add"
                         style="width:100%; padding: 10px; font-weight:bold;"><i class="fa-solid fa-save"></i>
@@ -152,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (formId === 'form-password') form.reset();
                     if (formId === 'form-username') {
                         setTimeout(() => window.location.reload(),
-                        1500); // Reload for new name in header
+                            1500); // Reload for new name in header
                     }
                 } else {
                     msg.style.backgroundColor = 'var(--status-red-bg)';

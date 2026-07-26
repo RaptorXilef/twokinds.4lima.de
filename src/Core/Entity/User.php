@@ -14,6 +14,7 @@ final readonly class User
         public string $roleId,
         public \DateTimeImmutable $createdAt,
         public bool $wantsNewsletter = false,
+        public bool $wantsNewsletterTranscript = false,
     ) {
     }
 }
