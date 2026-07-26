@@ -10,6 +10,8 @@ use App\Core\Entity\MailJob;
 
 final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInterface
 {
+    use DynamicSqlTrait;
+
     public function __construct(private \PDO $pdo, private JsonHelperInterface $jsonHelper)
     {
     }
@@ -18,7 +20,8 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
     {
         // Weil wir TemplateKey ausgebaut haben, job->template ist jetzt ein string!
         $templateStr = \is_string($job->template) ? $job->template : ($job->template->value ?? 'std');
-        $data        = [
+
+        $data = [
             'id'         => $job->id,
             'recipient'  => $job->recipient,
             'subject'    => $job->subject,
@@ -29,9 +32,8 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
             'created_at' => $job->createdAt->format('Y-m-d H:i:s'),
         ];
 
-        $sql = 'REPLACE INTO `mail_queue` (id, recipient, subject, template, data, attempts, priority, created_at)
-                VALUES (:id, :recipient, :subject, :template, :data, :attempts, :priority, :created_at)';
-        $this->pdo->prepare($sql)->execute($data);
+        // HIER IST DIE MAGIE: Der Trait baut das SQL völlig dynamisch!
+        $this->executeUpsert('mail_queue', $data, ['id']);
     }
 
     public function processBatch(int $limit, callable $processor, array $allowedTemplates = []): int
