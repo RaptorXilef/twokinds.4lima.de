@@ -16,12 +16,16 @@ final readonly class CharacterService
     public function __construct(
         private CharacterRepositoryInterface $characterRepo,
         private CharacterGroupRepositoryInterface $groupRepo,
+        private SiteGeneratorService $siteGenerator, // Generator eingefügt
     ) {
     }
 
     public function saveCharacter(Character $character): void
     {
         $this->characterRepo->save($character);
+
+        // Sitemap sofort aktualisieren
+        $this->siteGenerator->generateAll();
     }
 
     public function deleteCharacter(CharacterId $id): void
@@ -42,6 +46,9 @@ final readonly class CharacterService
                 $this->groupRepo->save(new CharacterGroup($group->name, $updatedIds));
             }
         }
+
+        // Sitemap sofort aktualisieren
+        $this->siteGenerator->generateAll();
     }
 
     public function saveGroup(CharacterGroup $group): void
