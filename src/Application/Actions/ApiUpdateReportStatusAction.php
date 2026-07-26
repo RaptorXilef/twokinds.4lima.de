@@ -47,13 +47,14 @@ final readonly class ApiUpdateReportStatusAction implements ActionInterface
 
             // 2. Auto-E-Mail versenden, wenn der Report auf "erledigt" gesetzt wurde
             if ($status === 'closed') {
-                // Linter-sicherer Abruf der benötigten Daten direkt aus der DB
-                $stmt = $this->pdo->prepare('SELECT comic_id, submitter FROM reports WHERE id = ?');
+
+                // Wir lesen user_id (statt submitter) aus.
+                $stmt = $this->pdo->prepare('SELECT comic_id, user_id FROM reports WHERE id = ?');
                 $stmt->execute([$id]);
                 $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-                if ($row && ! empty($row['submitter'])) {
-                    $user = $this->userRepository->findByUsername($row['submitter']);
+                if ($row && ! empty($row['user_id'])) {
+                    $user = $this->userRepository->findById($row['user_id']);
 
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
                     if ($user && $user->wantsNotificationReport) {

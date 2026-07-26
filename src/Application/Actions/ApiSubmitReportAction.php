@@ -10,7 +10,9 @@ use App\Application\DTO\SubmitReportRequest;
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Application\Session\SessionManager;
 use App\Core\Exception\RateLimitExceededException;
+use App\Core\Service\AuthService;
 use App\Core\Service\MediaService;
 use App\Core\Service\ReportService;
 
@@ -20,6 +22,8 @@ final readonly class ApiSubmitReportAction implements ActionInterface
     public function __construct(
         private ReportService $reportService,
         private MediaService $mediaService,
+        private AuthService $auth,           // für Session-Check
+        private SessionManager $sessionManager, // für ID
     ) {
     }
 
@@ -44,8 +48,12 @@ final readonly class ApiSubmitReportAction implements ActionInterface
                 }
             }
 
+            // NEU: Wenn eingeloggt, ID auslesen
+            $userId = $this->auth->isLoggedIn() ? $this->sessionManager->getUserId() : null;
+
             $report = $this->reportService->submitReport(
                 $dto->comicId,
+                $userId, // NEU: An Service übergeben!
                 $dto->ipAddress,
                 $dto->submitterName,
                 $dto->wantsCredit,
@@ -72,7 +80,7 @@ final readonly class ApiSubmitReportAction implements ActionInterface
 
         } catch (\Throwable $e) {
             // Log-Logik greift automatisch über den GlobalExceptionHandler, wir geben nur 500 zurück
-            return JsonResponse::error('Ein interner Serverfehler ist aufgetreten.', 500);
+            return JsonResponse::error('Ein interner Serverfehler ist aufgetreten: ' . $e->getMessage(), 500);
         }
     }
 }

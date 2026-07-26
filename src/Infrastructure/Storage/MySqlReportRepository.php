@@ -11,7 +11,7 @@ use App\Core\ValueObject\ReportId;
 
 final readonly class MySqlReportRepository implements ReportRepositoryInterface
 {
-    use DynamicSqlTrait; // Trait einbinden
+    use DynamicSqlTrait;
 
     public function __construct(private \PDO $pdo)
     {
@@ -23,6 +23,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         $data = [
             'id'                    => $report->id->value,
             'comic_id'              => $report->comicId?->value, // ? Optional
+            'user_id'               => $report->userId,
             'date'                  => $report->date->format('Y-m-d H:i:s'),
             'status'                => $report->status,
             'ip_hash'               => $report->ipHash,
@@ -71,6 +72,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         return new Report(
             id: new ReportId($row['id']),
             comicId: ! empty($row['comic_id']) ? new ComicId($row['comic_id']) : null,
+            userId: $row['user_id'] ?? null, // NEU
             date: new \DateTimeImmutable($row['date']),
             status: $row['status'],
             ipHash: $row['ip_hash'],

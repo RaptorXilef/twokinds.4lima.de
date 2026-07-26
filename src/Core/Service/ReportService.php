@@ -15,7 +15,7 @@ use App\Core\ValueObject\ReportId;
 final readonly class ReportService
 {
     private const int RATE_LIMIT_COUNT          = 5;
-    private const int RATE_LIMIT_WINDOW_SECONDS = 600; // 10 Minuten
+    private const int RATE_LIMIT_WINDOW_SECONDS = 600;
 
     public function __construct(
         private ReportRepositoryInterface $reportRepository,
@@ -25,6 +25,7 @@ final readonly class ReportService
 
     public function submitReport(
         ?string $comicIdStr, // ? Optional
+        ?string $userId, // NEU: Nimmt die ID vom Controller entgegen
         string $ipAddress,
         string $submitterName,
         bool $wantsCredit,
@@ -50,6 +51,7 @@ final readonly class ReportService
         $report = new Report(
             id: new ReportId(\uniqid('report_', true)),
             comicId: $comicIdStr ? new ComicId($comicIdStr) : null, // Check ob null
+            userId: $userId,
             date: $now,
             status: 'open',
             ipHash: $ipHash,
@@ -80,6 +82,7 @@ final readonly class ReportService
         $updatedReport = new Report(
             id: $report->id,
             comicId: $report->comicId,
+            userId: $report->userId,
             date: $report->date,
             status: $newStatus,
             ipHash: $report->ipHash,

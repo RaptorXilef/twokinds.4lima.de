@@ -12,6 +12,7 @@ final readonly class Report
     public function __construct(
         public ReportId $id,
         public ?ComicId $comicId, // Jetzt optional (?)
+        public ?string $userId, // Optionale User ID für angemeldete Nutzer
         public \DateTimeImmutable $date,
         public string $status,
         public string $ipHash, // Spamschutz aus alter JSON übernommen

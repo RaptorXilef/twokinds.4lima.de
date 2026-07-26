@@ -61,8 +61,8 @@ final readonly class SubmitReportRequest
             description: $description,
             transcriptSuggestion: $suggestion,
             transcriptOriginal: \trim((string) ($input['report_transcript_original'] ?? '')),
-            submitterName: \trim((string) ($input['report_name'] ?? 'Anonym')),
-            wantsCredit: $wantsCredit, // NEU
+            submitterName: \trim((string) ($input['submitter'] ?? 'Anonym')),
+            wantsCredit: $wantsCredit,
             debugInfo: \trim((string) ($input['report_debug_info'] ?? '')),
             ipAddress: $request->getIp(),
         );
