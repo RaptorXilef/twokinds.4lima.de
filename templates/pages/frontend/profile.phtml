@@ -134,6 +134,22 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     </label>
                 </div>
 
+                <div
+                     style="margin-bottom: 25px; padding: 15px; border-radius: 6px; background: var(--table-row-even); border: 1px solid var(--border-light);">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                        <input type="checkbox"
+                               name="wants_notification_report"
+                               value="1"
+                               style="transform: scale(1.5); margin-top: 5px;"
+                               <?php echo $user->wantsNotificationReport ? 'checked' : ''; ?>>
+                        <div>
+                            <strong style="display: block; margin-bottom: 5px; color: var(--text-color);">Fehlerberichte
+                                (Reports)</strong>
+                            <span style="font-size: 0.9em; color: var(--text-color-faded);">Sende mir eine kurze Info-E-Mail, sobald ein von mir gemeldeter Fehler auf der entsprechenden Seite behoben wurde.</span>
+                        </div>
+                    </label>
+                </div>
+
                 <button type="submit"
                         class="button add"
                         style="width:100%; padding: 10px; font-weight:bold;"><i class="fa-solid fa-save"></i>

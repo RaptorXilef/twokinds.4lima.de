@@ -47,10 +47,11 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
         if ($actionType === 'newsletter') {
             $wantsNews  = ! empty($request->post['wants_newsletter']);
             $wantsTrans = ! empty($request->post['wants_newsletter_transcript']);
-            $updated    = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans);
+            $wantsRep   = ! empty($request->post['wants_notification_report']);
+            $updated    = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans, $wantsRep);
             $this->userRepository->save($updated);
 
-            return JsonResponse::success(['message' => 'Newsletter-Einstellungen aktualisiert!']);
+            return JsonResponse::success(['message' => 'Benachrichtigungs-Einstellungen aktualisiert!']);
         }
 
         // Aktion: Benutzername ändern
@@ -76,7 +77,7 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
                 return JsonResponse::error('Dieser Benutzername ist leider schon vergeben.', 400);
             }
 
-            $updated = new User($user->id, $newName, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript);
+            $updated = new User($user->id, $newName, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript, $user->wantsNotificationReport);
             $this->userRepository->save($updated);
             $this->sessionManager->updateAdminUsername($newName); // Session updaten
 
@@ -96,7 +97,7 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
             }
 
             $newHash = \password_hash($newPass, \PASSWORD_DEFAULT);
-            $updated = new User($user->id, $user->username, $user->email, $newHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript);
+            $updated = new User($user->id, $user->username, $user->email, $newHash, $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript, $user->wantsNotificationReport);
             $this->userRepository->save($updated);
 
             // Session mit neuem Hash versehen, sonst fliegt man beim nächsten Klick raus

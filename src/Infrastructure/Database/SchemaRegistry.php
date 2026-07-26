@@ -28,12 +28,14 @@ final class SchemaRegistry
                 `role_id` VARCHAR(50) NOT NULL DEFAULT \'user\',
                 `wants_newsletter` TINYINT(1) NOT NULL DEFAULT 0,
                 `wants_newsletter_transcript` TINYINT(1) NOT NULL DEFAULT 0,
+                `wants_notification_report` TINYINT(1) NOT NULL DEFAULT 0,
                 `created_at` DATETIME NOT NULL,
                 UNIQUE KEY `idx_username` (`username`),
                 UNIQUE KEY `idx_email` (`email`),
                 INDEX `idx_role` (`role_id`),
                 INDEX `idx_newsletter` (`wants_newsletter`),
-                INDEX `idx_newsletter_transcript` (`wants_newsletter_transcript`)
+                INDEX `idx_newsletter_transcript` (`wants_newsletter_transcript`),
+                INDEX `idx_notification_report` (`wants_notification_report`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'user_bookmarks' => 'CREATE TABLE IF NOT EXISTS `user_bookmarks` (
@@ -141,7 +143,9 @@ final class SchemaRegistry
                 `template` VARCHAR(100) NOT NULL,
                 `data` JSON NOT NULL,
                 `attempts` INT DEFAULT 0,
-                `created_at` DATETIME NOT NULL
+                `priority` INT NOT NULL DEFAULT 10,
+                `created_at` DATETIME NOT NULL,
+                INDEX `idx_priority` (`priority`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'mail_logs' => 'CREATE TABLE IF NOT EXISTS `mail_logs` (

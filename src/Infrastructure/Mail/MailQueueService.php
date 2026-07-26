@@ -18,6 +18,14 @@ final readonly class MailQueueService implements MailServiceInterface
 
     public function sendTemplate(string $recipient, string $subject, string $template, array $data): bool|string
     {
+        // Prio-Mapping: Wichtige System-Mails drängeln sich nach vorne
+        $priority = 10; // Standard für Newsletter
+        if (\in_array($template, ['verify_account', 'forgot_password'], true)) {
+            $priority = 100;
+        } elseif ($template === 'report_resolved') {
+            $priority = 50;
+        }
+
         $job = new MailJob(
             \uniqid('mq_'),
             $recipient,
@@ -25,6 +33,7 @@ final readonly class MailQueueService implements MailServiceInterface
             $template, // String!
             $data,
             0,
+            $priority, // Prio übergeben
             new \DateTimeImmutable(),
         );
         $this->repository->enqueue($job);

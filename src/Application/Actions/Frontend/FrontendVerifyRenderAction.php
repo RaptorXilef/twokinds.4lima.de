@@ -45,6 +45,7 @@ final readonly class FrontendVerifyRenderAction implements ViewActionInterface
                 $user->createdAt,
                 $user->wantsNewsletter,
                 $user->wantsNewsletterTranscript,
+                $user->wantsNotificationReport,
             );
             $this->userRepository->save($updatedUser);
 

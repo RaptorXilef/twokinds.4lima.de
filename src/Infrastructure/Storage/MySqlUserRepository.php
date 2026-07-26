@@ -53,6 +53,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
             'role_id'                     => $user->roleId,
             'wants_newsletter'            => (int) $user->wantsNewsletter,
             'wants_newsletter_transcript' => (int) $user->wantsNewsletterTranscript,
+            'wants_notification_report'   => (int) $user->wantsNotificationReport,
             'created_at'                  => $user->createdAt->format('Y-m-d H:i:s'),
         ];
 
@@ -77,6 +78,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
             new \DateTimeImmutable($row['created_at']),
             (bool) ($row['wants_newsletter'] ?? false),
             (bool) ($row['wants_newsletter_transcript'] ?? false),
+            (bool) ($row['wants_notification_report'] ?? false), // NEU
         );
     }
 

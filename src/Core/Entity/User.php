@@ -15,6 +15,7 @@ final readonly class User
         public \DateTimeImmutable $createdAt,
         public bool $wantsNewsletter = false,
         public bool $wantsNewsletterTranscript = false,
+        public bool $wantsNotificationReport = false,
     ) {
     }
 }

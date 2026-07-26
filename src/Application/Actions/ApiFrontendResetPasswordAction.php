@@ -60,7 +60,7 @@ final readonly class ApiFrontendResetPasswordAction implements ActionInterface
             return JsonResponse::error('Benutzer nicht gefunden.', 400);
         }
 
-        $updatedUser = new User($user->id, $user->username, $user->email, \password_hash($password, \PASSWORD_DEFAULT), $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript);
+        $updatedUser = new User($user->id, $user->username, $user->email, \password_hash($password, \PASSWORD_DEFAULT), $user->roleId, $user->createdAt, $user->wantsNewsletter, $user->wantsNewsletterTranscript, $user->wantsNotificationReport);
         $this->userRepository->save($updatedUser);
 
         $this->rateLimiter->clearAttempts($ip);

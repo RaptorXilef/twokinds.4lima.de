@@ -25,11 +25,12 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
             'template'   => $templateStr,
             'data'       => \json_encode($job->data, \JSON_UNESCAPED_UNICODE),
             'attempts'   => $job->attempts,
+            'priority'   => $job->priority,
             'created_at' => $job->createdAt->format('Y-m-d H:i:s'),
         ];
 
-        $sql = 'REPLACE INTO `mail_queue` (id, recipient, subject, template, data, attempts, created_at)
-                VALUES (:id, :recipient, :subject, :template, :data, :attempts, :created_at)';
+        $sql = 'REPLACE INTO `mail_queue` (id, recipient, subject, template, data, attempts, priority, created_at)
+                VALUES (:id, :recipient, :subject, :template, :data, :attempts, :priority, :created_at)';
         $this->pdo->prepare($sql)->execute($data);
     }
 
@@ -53,11 +54,11 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
 
         try {
             // HIER IST DER FIX: prepare() und execute() statt exec()
-            $updateSql  = "UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY created_at ASC LIMIT {$limit}";
+            $updateSql  = "UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
             $stmtUpdate = $this->pdo->prepare($updateSql);
             $stmtUpdate->execute($params);
 
-            $selectSql  = "SELECT * FROM `mail_queue` WHERE attempts >= 100 {$templateFilterSql} ORDER BY created_at ASC";
+            $selectSql  = "SELECT * FROM `mail_queue` WHERE attempts >= 100 {$templateFilterSql} ORDER BY priority DESC, created_at ASC";
             $stmtSelect = $this->pdo->prepare($selectSql);
             $stmtSelect->execute($params);
             $items = $stmtSelect->fetchAll(\PDO::FETCH_ASSOC);

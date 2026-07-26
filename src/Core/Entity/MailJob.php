@@ -13,6 +13,7 @@ final readonly class MailJob
         public string $template, // <--- Kein TemplateKey mehr! Nur String.
         public array $data,
         public int $attempts,
+        public int $priority,
         public \DateTimeImmutable $createdAt,
     ) {
     }
