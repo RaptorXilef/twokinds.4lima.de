@@ -73,7 +73,7 @@
     "qa": "npm run chk:biome && npm run chk:css && npm run chk:html && npm run chk:spell && npm run chk:md && npm run test"
   },
   "devDependencies": {
-    "@axe-core/cli": "^4.11.2",
+    "@axe-core/cli": "^4.12.1",
     "@biomejs/biome": "2.4.13",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
@@ -81,6 +81,7 @@
     "@markuplint/html-spec": "^4.18.0",
     "@release-it/conventional-changelog": "^11.0.0",
     "@vitest/ui": "^4.1.5",
+    "chromedriver": "^151.0.1",
     "clean-css-cli": "^5.6.3",
     "conventional-changelog-cli": "^5.0.0",
     "conventional-changelog-conventionalcommits": "^9.3.1",
@@ -103,7 +104,10 @@
     "vitest": "^4.1.5"
   },
   "overrides": {
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "adm-zip": ">=0.6.0",
+    "brace-expansion": ">=2.0.1",
+    "js-yaml": ">=4.1.0"
   },
   "browserslist": [
     "> 0.5%",
