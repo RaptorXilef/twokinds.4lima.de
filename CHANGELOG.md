@@ -2,6 +2,36 @@
 
 
 
+## [6.1.0](https://github.com///compare/v6.0.0...v6.1.0) (2026-07-26)
+
+### 🚀 Features
+
+* **ui/frontend:** add cancel option to bookmark sync modal ([eb124e6](https://github.com///commit/eb124e680cbfd472f45c4cd99450661b3e19b5d8))
+
+### 🐛 Bug Fixes
+
+* **core/bookmarks:** disable cloud sync for system accounts ([c093826](https://github.com///commit/c093826c6e20a05fa05cc0c9f2f256a529367e21))
+* **core/seo:** resolve sitemap.xml url formatting and missing pages ([91eb22c](https://github.com///commit/91eb22c916a5292f061fe145dfa15f632d6b3b12))
+* **core/seo:** resolve sitemap.xml url formatting and missing pages ([89d3157](https://github.com///commit/89d3157491aa6e0bd129f64b5efdf03c7ecd344e))
+* **core/seo:** trigger sitemap generation on character updates ([fec1bc6](https://github.com///commit/fec1bc61d5520b2158681eb7bd51f18aa74d3d44))
+* **deps:** patch npm security vulnerabilities and update dev tools ([62a62c4](https://github.com///commit/62a62c4687222a5939e668432e06c69e88d2a0dc))
+
+### ⚙️ Refactoring
+
+* **core/domain:** introduce Username and EmailAddress Value Objects ([340b881](https://github.com///commit/340b88188100a4cb2a7b82d3c1aeafd33f38fb67))
+
+### 🧹 Chore / Maintenance
+
+* **deps:** bump actions/checkout from 7.0.0 to 7.0.1 ([122f06d](https://github.com///commit/122f06d3be692107f082330b48a26ab62a527853))
+* **deps:** bump actions/setup-node from 6.4.0 to 7.0.0 ([b9efa32](https://github.com///commit/b9efa321940cff43d69fc148692e17564415fba0))
+* **deps:** bump softprops/action-gh-release from 3.0.1 to 3.0.2 ([fd8ef61](https://github.com///commit/fd8ef616fc3621558ef6fef53b3db200b604c60c))
+* **deps:** bump the npm_and_yarn group across 1 directory with 3 updates ([954f220](https://github.com///commit/954f220dae23c1e31a3270e233f0b4fb4a7d9856))
+* **deps:** clean up deprecated npm dependencies ([02d4608](https://github.com///commit/02d46084796474044bd5c876b58092a44dbf00a5))
+
+# Changelog
+
+
+
 ## [6.0.0](https://github.com///compare/v5.0.0-alpha.23...v6.0.0) (2026-07-26)
 
 ### ⚠ BREAKING CHANGES
