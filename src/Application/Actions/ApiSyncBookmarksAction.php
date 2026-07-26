@@ -29,6 +29,10 @@ final readonly class ApiSyncBookmarksAction implements ActionInterface
         }
 
         $userId = $this->sessionManager->getUserId();
+        // Götter blocken (Sync sofort erfolgreich vortäuschen)
+        if (\str_starts_with($userId, 'sys_')) {
+            return JsonResponse::success(['status' => 'synced', 'final_ids' => []]);
+        }
 
         // Lokale Lesezeichen aus dem Browser (als JSON-Array gesendet)
         $localIdsRaw = $request->post['local_ids'] ?? '[]';

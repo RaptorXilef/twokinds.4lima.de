@@ -34,8 +34,11 @@ final readonly class RenderBookmarksAction implements ViewActionInterface
 
         if ($isLoggedIn) {
             $userId = $this->sessionManager->getUserId();
-            // Hole nur die Lesezeichen dieses Nutzers
-            $cloudBookmarks = $this->bookmarkRepo->findByUser($userId);
+            // Nur echte User-Accounts fragen die Datenbank!
+            if (! \str_starts_with($userId, 'sys_')) {
+                // Hole nur die Lesezeichen dieses Nutzers
+                $cloudBookmarks = $this->bookmarkRepo->findByUser($userId);
+            }
         }
 
         $this->renderer->render('frontend/bookmarks', [

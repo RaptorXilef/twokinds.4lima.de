@@ -28,7 +28,12 @@ final readonly class ApiToggleBookmarkAction implements ActionInterface
             return JsonResponse::error('Nicht eingeloggt.', 401);
         }
 
-        $userId  = $this->sessionManager->getUserId();
+        $userId = $this->sessionManager->getUserId();
+        // Götter blocken
+        if (\str_starts_with($userId, 'sys_')) {
+            return JsonResponse::error('System-Accounts unterstützen keine Cloud-Lesezeichen.', 403);
+        }
+
         $comicId = \trim((string) ($request->post['comic_id'] ?? ''));
         $action  = \trim((string) ($request->post['bookmark_action'] ?? '')); // 'add' oder 'remove'
 

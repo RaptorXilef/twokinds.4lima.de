@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Core\Entity\ComicPage;
+
 /**
- * @var \App\Core\Entity\ComicPage      $comic
- * @var \App\Core\Entity\ComicPage|null $prev
- * @var \App\Core\Entity\ComicPage|null $next
- * @var \App\Core\Entity\ComicPage      $first
- * @var \App\Core\Entity\ComicPage      $latest
- * @var bool                            $isLatest
- * @var string                          $pageTitle
- * @var string                          $displayDate
- * @var array                           $settings
+ * @var ComicPage      $comic
+ * @var ComicPage|null $prev
+ * @var ComicPage|null $next
+ * @var ComicPage      $first
+ * @var ComicPage      $latest
+ * @var bool           $isLatest
+ * @var string         $pageTitle
+ * @var string         $displayDate
+ * @var array          $settings
+ * @var bool           $canUseCloudSync
  */
 $baseUrl       = \rtrim($settings['base_url'], '/');
 $cb            = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
@@ -73,7 +76,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     class="bookmark"
                     title="Diese Seite mit Lesezeichen versehen"
                     data-id="<?php echo $comic->id->value; ?>"
-                    data-logged-in="<?php echo $isLoggedIn ? 'true' : 'false'; ?>"
+                    data-logged-in="<?php echo $canUseCloudSync ? 'true' : 'false'; ?>"
                     data-csrf="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"> Seite merken
             </button>
 

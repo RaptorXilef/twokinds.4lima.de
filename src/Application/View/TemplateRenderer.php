@@ -28,16 +28,17 @@ final readonly class TemplateRenderer
         $appRoot = \rtrim((string) $this->config->get('root_path'), '/\\');
 
         $systemVars = [
-            'appRoot'      => $appRoot,
-            'config'       => $this->config,
-            'imageStorage' => $this->imageStorage,
-            'jsonHelper'   => $this->jsonHelper,
-            'settings'     => $this->getGlobalSettings(),
-            'asset'        => $this->assetHelper, // (Steht als $asset im Template bereit)
-            // NEU: Auth-Status direkt in jedes Template injizieren!
-            'isLoggedIn'      => $this->sessionManager->getUserId() !== '',
+            'appRoot'         => $appRoot,
+            'config'          => $this->config,
+            'imageStorage'    => $this->imageStorage,
+            'jsonHelper'      => $this->jsonHelper,
+            'settings'        => $this->getGlobalSettings(),
+            'asset'           => $this->assetHelper, // (Steht als $asset im Template bereit)
+            'isLoggedIn'      => $this->sessionManager->getUserId() !== '', // Auth-Status direkt in jedes Template injizieren!
             'currentUserName' => $this->sessionManager->getAdminUser(),
             'currentUserRole' => $this->sessionManager->getAdminGroup(),
+            // Darf dieser User die Lesezeichen-Cloud nutzen? (Eingeloggt + Keine System-ID)
+            'canUseCloudSync' => $this->sessionManager->getUserId() !== '' && ! \str_starts_with($this->sessionManager->getUserId(), 'sys_'),
         ];
 
         // Lade alle Flashes automatisch in die View-Daten!

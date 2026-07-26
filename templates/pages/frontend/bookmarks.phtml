@@ -2,11 +2,20 @@
 
 declare(strict_types=1);
 
+use App\Contracts\System\AssetHelperInterface;
+use App\Core\Entity\Bookmark;
 use App\Core\Entity\ComicPage;
 
 /**
  * @var array            $settings
  * @var array<ComicPage> $comics
+ * @var bool             $isLoggedIn
+ * @var string           $currentUserName
+ * @var string           $currentUserRole
+ * @var bool             $canUseCloudSync
+ * @var Bookmark[] $cloudBookmarks
+ * @var AssetHelperInterface $asset
+ * @var string           $baseUrl
  */
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 
@@ -28,7 +37,7 @@ foreach ($comics as $c) {
 
 // Wandle die Cloud-Bookmarks in ein JS-Array um (nur die IDs)
 $cloudIds = [];
-if ($isLoggedIn) {
+if ($canUseCloudSync) {
     foreach ($cloudBookmarks as $bm) {
         $cloudIds[] = $bm->comicId;
     }
@@ -87,7 +96,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <p style="color: var(--text-color-faded); font-size: 1.1em; max-width: 600px; margin: 0 auto;">
                 Hier findest du alle Comicseiten, die du dir gemerkt hast.
                 <br>
-                <?php if ($isLoggedIn) { ?>
+                <?php if ($canUseCloudSync) { ?>
                     <small style="color: var(--status-green-text);"><i class="fa-solid fa-cloud"></i> Deine Lesezeichen
                         sind sicher in der Cloud gespeichert.</small>
                 <?php } else { ?>
@@ -208,7 +217,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 document.addEventListener('DOMContentLoaded', () => {
     // Die Datenbank aus PHP als intelligentes Wörterbuch
     const serverComics = <?php echo \json_encode($comicDictionary, \JSON_UNESCAPED_UNICODE | \JSON_HEX_APOS | \JSON_HEX_QUOT); ?>;
-    const isLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
+    const canUseCloudSync = <?php echo $canUseCloudSync ? 'true' : 'false'; ?>;
     const cloudIds = <?php echo \json_encode($cloudIds, \JSON_UNESCAPED_UNICODE); ?>;
 
     const grid = document.getElementById('bookmarks-grid');
@@ -287,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Toggle-Lösch-Funktion (API oder Lokal)
     async function removeBookmark(id) {
-        if (isLoggedIn) {
+        if (canUseCloudSync) {
             const fd = new FormData();
             fd.append('comic_id', id);
             fd.append('bookmark_action', 'remove');
@@ -359,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnClearAll) {
         btnClearAll.addEventListener('click', async () => {
             if (confirm('Möchtest du wirklich ALLE Lesezeichen unwiderruflich löschen?')) {
-                if (isLoggedIn) {
+                if (canUseCloudSync) {
                     const fd = new FormData();
                     fd.append('resolution', 'local_wins');
                     fd.append('local_ids', '[]'); // Leeres Array hochschieben = alles löschen
@@ -376,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Beim Laden der Seite: Wenn eingeloggt, Sync anstoßen!
-    if (isLoggedIn) {
+    if (canUseCloudSync) {
         syncApi('check');
     } else {
         renderBookmarks();
