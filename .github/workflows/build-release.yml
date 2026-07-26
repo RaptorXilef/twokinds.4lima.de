@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
           # https://github.com/marketplace/actions/checkout
 
       - name: Setup PHP Action
