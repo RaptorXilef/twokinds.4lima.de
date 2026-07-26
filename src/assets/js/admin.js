@@ -469,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data) {
             const titleEl = document.getElementById('modal-title-comic');
+
             if (titleEl) titleEl.textContent = `Comic bearbeiten: ${data.id}`;
 
             if (comicIdInput) {
@@ -504,8 +505,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         });
                 });
             }
+
+            // Buttons einblenden und mit Daten füttern
+            const btnNlTrans = document.getElementById('btn-nl-trans');
+            const btnNlFull = document.getElementById('btn-nl-full');
+            if (btnNlTrans && btnNlFull) {
+                btnNlTrans.style.display = 'inline-block';
+                btnNlFull.style.display = 'inline-block';
+
+                // NEU: Holt das Protokoll und die Domain (http://...local oder https://...de) automatisch
+                const pageUrl = `${window.location.origin}${baseUrl}/comic/${data.id}`;
+
+                btnNlTrans.dataset.page = data.id;
+                btnNlTrans.dataset.url = pageUrl;
+                btnNlFull.dataset.page = data.id;
+                btnNlFull.dataset.url = pageUrl;
+            }
         } else {
             const titleEl = document.getElementById('modal-title-comic');
+
             if (titleEl) titleEl.textContent = 'Neuen Comic anlegen';
 
             if (comicIdInput) comicIdInput.readOnly = false;
@@ -529,6 +547,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (typeof $.fn.trumbowyg !== 'undefined') {
                 $('#transcript').trumbowyg('empty');
+            }
+
+            // Buttons einblenden und mit Daten füttern
+            const btnNlTrans = document.getElementById('btn-nl-trans');
+            const btnNlFull = document.getElementById('btn-nl-full');
+            if (btnNlTrans && btnNlFull) {
+                btnNlTrans.style.display = 'none';
+                btnNlFull.style.display = 'none';
             }
         }
 
@@ -2302,6 +2328,59 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // --- NEWSLETTER MANUELL AUSLÖSEN ---
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-trigger-newsletter');
+        if (!btn) return;
+        e.preventDefault();
+
+        const type = btn.dataset.type;
+        const pageNumber = btn.dataset.page;
+        const comicName = 'TwoKinds'; // Falls wir später mehrere haben, könnte man das aus dem DOM lesen
+        const pageUrl = btn.dataset.url;
+
+        if (
+            !confirm(
+                `Bist du sicher, dass du den ${type}-Newsletter für Seite ${pageNumber} versenden möchtest?`
+            )
+        ) {
+            return;
+        }
+
+        const formData = new window.FormData();
+        formData.append('type', type);
+        formData.append('comic_name', comicName);
+        formData.append('page_number', pageNumber);
+        formData.append('page_url', pageUrl);
+        formData.append('csrf_token', csrfToken);
+
+        const origText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sende...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${baseUrl}/api/admin_trigger_newsletter`, {
+                method: 'POST',
+                body: formData,
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                showMsg(`<i class="fa-solid fa-check"></i> ${json.message}`, 'green');
+            } else {
+                showMsg(
+                    `<i class="fa-solid fa-triangle-exclamation"></i> Fehler: ${json.error}`,
+                    'red'
+                );
+            }
+        } catch {
+            showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
+        }
+        btn.innerHTML = origText;
+        btn.disabled = false;
+    });
+    // --- NEWSLETTER MANUELL AUSLÖSEN ENDE ---
 
     // --- LOGOUT ---
     document.getElementById('admin-logout-btn')?.addEventListener('click', (e) => {

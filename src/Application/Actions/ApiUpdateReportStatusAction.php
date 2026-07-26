@@ -8,18 +8,32 @@ use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Mail\MailServiceInterface;
+use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Service\AuthService;
 use App\Core\Service\ReportService;
 use App\Core\ValueObject\ReportId;
 
 #[ActionRoute('api_update_report_status')]
 final readonly class ApiUpdateReportStatusAction implements ActionInterface
 {
-    public function __construct(private ReportService $reportService)
-    {
+    public function __construct(
+        private AuthService $auth,
+        private ReportService $reportService,
+        private UserRepositoryInterface $userRepository,
+        private MailServiceInterface $mailService,
+        private ConfigInterface $config,
+        private \PDO $pdo,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->isLoggedIn()) {
+            return JsonResponse::error('Unautorisiert.', 401);
+        }
+
         try {
             $id     = \trim((string) ($request->post['report_id'] ?? ''));
             $status = \trim((string) ($request->post['status'] ?? ''));
@@ -28,7 +42,33 @@ final readonly class ApiUpdateReportStatusAction implements ActionInterface
                 return JsonResponse::error('Ungültige Daten übermittelt.', 400);
             }
 
+            // 1. Die harte Logik lagern wir wieder an deinen bewährten ReportService aus!
             $this->reportService->updateReportStatus(new ReportId($id), $status);
+
+            // 2. Auto-E-Mail versenden, wenn der Report auf "erledigt" gesetzt wurde
+            if ($status === 'closed') {
+                // Linter-sicherer Abruf der benötigten Daten direkt aus der DB
+                $stmt = $this->pdo->prepare('SELECT comic_id, submitter FROM reports WHERE id = ?');
+                $stmt->execute([$id]);
+                $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+                if ($row && ! empty($row['submitter'])) {
+                    $user = $this->userRepository->findByUsername($row['submitter']);
+
+                    // Nur senden, wenn User existiert und Benachrichtigungen wünscht
+                    if ($user && $user->wantsNotificationReport) {
+                        $pageUrl = ! empty($row['comic_id'])
+                            ? \rtrim($this->config->getBaseUrl(), '/') . '/comic/' . $row['comic_id']
+                            : \rtrim($this->config->getBaseUrl(), '/');
+
+                        $this->mailService->sendTemplate($user->email, 'Dein Fehlerbericht wurde bearbeitet!', 'report_resolved', [
+                            'username' => $user->username,
+                            'comicId'  => $row['comic_id'] ?: 'Allgemeine Webseite',
+                            'pageUrl'  => $pageUrl,
+                        ]);
+                    }
+                }
+            }
 
             return JsonResponse::success(['message' => 'Status erfolgreich aktualisiert.']);
         } catch (\Throwable $e) {

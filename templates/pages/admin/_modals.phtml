@@ -353,7 +353,32 @@ foreach ($alphaChars as $char) {
 
         </div>
         <div class="modal-footer-actions"
-             style="flex: 0 0 auto; position: relative; z-index: 10; background: var(--main-bg);">
+             style="flex: 0 0 auto; display: flex; justify-content: space-between; position: relative; z-index: 10; background: var(--main-bg);">
+
+            <!-- Newsletter Buttons (Links-Bündig) -->
+            <div class="modal-buttons"
+                 style="gap: 5px;">
+                <button type="button"
+                        class="button btn-trigger-newsletter"
+                        data-type="transcript"
+                        data-page=""
+                        data-url=""
+                        id="btn-nl-trans"
+                        style="display: none; background: #6c757d;">
+                    <i class="fa-solid fa-envelope"></i> Newsletter (Text)
+                </button>
+                <button type="button"
+                        class="button add btn-trigger-newsletter"
+                        data-type="full"
+                        data-page=""
+                        data-url=""
+                        id="btn-nl-full"
+                        style="display: none;">
+                    <i class="fa-solid fa-envelope"></i> Newsletter (Bild)
+                </button>
+            </div>
+
+            <!-- Die alten Buttons (Rechts-Bündig) -->
             <div class="modal-buttons">
                 <button type="button"
                         class="button btn-close-comic-modal">Abbrechen</button>
