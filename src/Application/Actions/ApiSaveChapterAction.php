@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Core\Entity\Chapter;
+use App\Core\Security\Sanitizer;
 
 #[ActionRoute('api_save_chapter')]
 final readonly class ApiSaveChapterAction implements ActionInterface
@@ -21,9 +22,9 @@ final readonly class ApiSaveChapterAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         try {
-            $id    = \trim((string) ($request->post['chapter_id'] ?? ''));
-            $title = \trim((string) ($request->post['title'] ?? ''));
-            $desc  = \trim((string) ($request->post['description'] ?? ''));
+            $id    = Sanitizer::string($request->post['chapter_id'] ?? '');
+            $title = Sanitizer::string($request->post['title'] ?? '');
+            $desc  = Sanitizer::html($request->post['description'] ?? ''); // HTML erlaubt
 
             if ($id === '' || $title === '') {
                 return JsonResponse::error('Kapitel-ID und Titel sind Pflichtfelder.', 400);

@@ -8,6 +8,7 @@ use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 
 #[ActionRoute('api_admin_login')]
@@ -20,7 +21,7 @@ final readonly class ApiAdminLoginAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $username = \trim((string) ($request->post['username'] ?? ''));
+        $username = Sanitizer::string($request->post['username'] ?? '');
         $password = (string) ($request->post['password'] ?? '');
         $ip       = $request->getIp();
 

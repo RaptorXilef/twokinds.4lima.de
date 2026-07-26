@@ -6,6 +6,7 @@ namespace App\Application\DTO;
 
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
+use App\Core\Security\Sanitizer;
 
 final readonly class SaveSingleCharacterRequest
 {
@@ -34,18 +35,18 @@ final readonly class SaveSingleCharacterRequest
         }
 
         return new self(
-            id: \trim((string) ($data['id'] ?? 'new')),
-            name: \trim((string) $data['name']),
-            picUrl: \trim((string) ($data['pic_url'] ?? '')) ?: null,
-            description: \trim((string) ($data['description'] ?? '')) ?: null,
-            fullName: \trim((string) ($data['full_name'] ?? '')) ?: null,
-            altNames: \trim((string) ($data['alt_names'] ?? '')) ?: null,
-            gender: \trim((string) ($data['gender'] ?? '')) ?: null,
-            age: \trim((string) ($data['age'] ?? '')) ?: null,
-            rank: \trim((string) ($data['rank'] ?? '')) ?: null,
-            species: \trim((string) ($data['species'] ?? '')) ?: null,
-            subspecies: \trim((string) ($data['subspecies'] ?? '')) ?: null,
-            languages: \trim((string) ($data['languages'] ?? '')) ?: null,
+            id: Sanitizer::string($data['id'] ?? 'new'),
+            name: Sanitizer::string($data['name']),
+            picUrl: Sanitizer::string($data['pic_url'] ?? '') ?: null,
+            description: Sanitizer::html($data['description'] ?? '') ?: null, // HTML erlaubt
+            fullName: Sanitizer::string($data['full_name'] ?? '') ?: null,
+            altNames: Sanitizer::string($data['alt_names'] ?? '') ?: null,
+            gender: Sanitizer::string($data['gender'] ?? '') ?: null,
+            age: Sanitizer::string($data['age'] ?? '') ?: null,
+            rank: Sanitizer::string($data['rank'] ?? '') ?: null,
+            species: Sanitizer::string($data['species'] ?? '') ?: null,
+            subspecies: Sanitizer::string($data['subspecies'] ?? '') ?: null,
+            languages: Sanitizer::string($data['languages'] ?? '') ?: null,
         );
     }
 }

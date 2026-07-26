@@ -13,6 +13,7 @@ use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
+use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\Service\MagicLinkService;
 
@@ -52,9 +53,9 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
             return JsonResponse::success(['message' => $successMsg, 'redirect' => 'login']);
         }
 
-        $username = \trim((string) ($request->post['username'] ?? ''));
-        $email    = \trim((string) ($request->post['email'] ?? ''));
-        $password = (string) ($request->post['password'] ?? '');
+        $username = Sanitizer::string($request->post['username'] ?? '');
+        $email    = Sanitizer::email($request->post['email'] ?? '');
+        $password = (string) ($request->post['password'] ?? ''); // Passwörter NIE bereinigen!
 
         if ($username === '' || $email === '' || $password === '') {
             $this->rateLimiter->recordFailedAttempt($ip);

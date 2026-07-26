@@ -6,6 +6,7 @@ namespace App\Application\DTO;
 
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
+use App\Core\Security\Sanitizer;
 
 final readonly class SubmitReportRequest
 {
@@ -56,14 +57,14 @@ final readonly class SubmitReportRequest
         }
 
         return new self(
-            comicId: $comicId,
-            reportType: $reportType,
-            description: $description,
-            transcriptSuggestion: $suggestion,
-            transcriptOriginal: \trim((string) ($input['report_transcript_original'] ?? '')),
-            submitterName: \trim((string) ($input['submitter'] ?? 'Anonym')),
+            comicId: Sanitizer::string($comicId),
+            reportType: Sanitizer::string($reportType),
+            description: Sanitizer::string($description),
+            transcriptSuggestion: Sanitizer::html($suggestion), // HTML erlaubt!
+            transcriptOriginal: Sanitizer::html($input['report_transcript_original'] ?? ''),
+            submitterName: Sanitizer::string($input['submitter'] ?? 'Anonym'),
             wantsCredit: $wantsCredit,
-            debugInfo: \trim((string) ($input['report_debug_info'] ?? '')),
+            debugInfo: Sanitizer::string($input['report_debug_info'] ?? ''),
             ipAddress: $request->getIp(),
         );
     }

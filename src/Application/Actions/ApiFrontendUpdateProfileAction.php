@@ -12,6 +12,7 @@ use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
+use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 
 #[ActionRoute('api_frontend_update_profile')]
@@ -56,7 +57,7 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
 
         // Aktion: Benutzername ändern
         if ($actionType === 'username') {
-            $newName = \trim((string) ($request->post['new_username'] ?? ''));
+            $newName = Sanitizer::string($request->post['new_username'] ?? '');
             if (\strlen($newName) < 3) {
                 return JsonResponse::error('Der Name muss mindestens 3 Zeichen lang sein.', 400);
             }

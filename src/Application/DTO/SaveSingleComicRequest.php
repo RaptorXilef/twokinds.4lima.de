@@ -6,6 +6,7 @@ namespace App\Application\DTO;
 
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
+use App\Core\Security\Sanitizer;
 
 final readonly class SaveSingleComicRequest
 {
@@ -26,29 +27,31 @@ final readonly class SaveSingleComicRequest
         // Wir nehmen die Daten jetzt aus einem ganz normalen POST-Request (kein JSON-String mehr!)
         $post = $request->post;
 
-        $id = \trim((string) ($post['comic_id'] ?? ''));
+        $id = Sanitizer::string($post['comic_id'] ?? '');
         if (! \preg_match('/^\d{8}$/', $id)) {
             throw ValidationException::withMessage('Ungültige oder fehlende Comic-ID.');
         }
 
-        $type       = \trim((string) ($post['type'] ?? 'Comicseite'));
-        $name       = \trim((string) ($post['name'] ?? ''));
-        $transcript = \trim((string) ($post['transcript'] ?? ''));
-        $chapterId  = \trim((string) ($post['chapter_id'] ?? ''));
+        $type       = Sanitizer::string($post['type'] ?? 'Comicseite');
+        $name       = Sanitizer::string($post['name'] ?? '');
+        $transcript = Sanitizer::html($post['transcript'] ?? ''); // HTML erlaubt!
+        $chapterId  = Sanitizer::string($post['chapter_id'] ?? '');
 
         // Checkboxen oder Multi-Selects senden Arrays
         $characterIds = (array) ($post['character_ids'] ?? []);
+        // Char-IDs säubern
+        $characterIds = \array_map(fn ($cid) => Sanitizer::string($cid), $characterIds);
 
         // Flexible URL-Behandlung für Originalbilder
-        $originalUrl = \trim((string) ($post['url_originalbild'] ?? ''));
+        $originalUrl = Sanitizer::string($post['url_originalbild'] ?? '');
         if ($originalUrl !== '' && ! \str_starts_with($originalUrl, 'http')) {
-            $originalUrl = 'https://cdn.twokinds.keenspot.com/comics/' . $originalUrl; // TODO URL in Config auslagern
+            $originalUrl = 'https://cdn.twokinds.keenspot.com/comics/' . $originalUrl; // TODO ggf. URL in Config auslagern
         }
 
         // Flexible URL-Behandlung für Skizzen
-        $sketchUrl = \trim((string) ($post['url_originalsketch'] ?? ''));
+        $sketchUrl = Sanitizer::string($post['url_originalsketch'] ?? '');
         if ($sketchUrl !== '' && ! \str_starts_with($sketchUrl, 'http')) {
-            $sketchUrl = 'https://twokindscomic.com/images/' . $sketchUrl; // TODO URL in Config auslagern
+            $sketchUrl = 'https://twokindscomic.com/images/' . $sketchUrl; // TODO ggf. URL in Config auslagern
         }
 
         return new self(
