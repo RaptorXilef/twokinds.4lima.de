@@ -72,7 +72,10 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     id="add-bookmark"
                     class="bookmark"
                     title="Diese Seite mit Lesezeichen versehen"
-                    data-id="<?php echo $comic->id->value; ?>"> Seite merken </button>
+                    data-id="<?php echo $comic->id->value; ?>"
+                    data-logged-in="<?php echo $isLoggedIn ? 'true' : 'false'; ?>"
+                    data-csrf="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"> Seite merken
+            </button>
 
             <button type="button"
                     id="open-report-modal"

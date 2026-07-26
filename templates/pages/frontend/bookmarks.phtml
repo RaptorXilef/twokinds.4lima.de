@@ -120,19 +120,19 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button type="button"
                                 class="button add"
-                                onclick="resolveSync('merge')"
+                                id="btn-sync-merge"
                                 style="padding: 12px; font-weight: bold; font-size: 1em;">
                             <i class="fa-solid fa-object-group"></i> Alles zusammenführen (Empfohlen)
                         </button>
                         <button type="button"
                                 class="button"
-                                onclick="resolveSync('db_wins')"
+                                id="btn-sync-db"
                                 style="padding: 12px; font-weight: bold; font-size: 1em; background: var(--table-row-hover); color: var(--text-color);">
                             <i class="fa-solid fa-cloud-arrow-down"></i> Cloud behalten (Browser überschreiben)
                         </button>
                         <button type="button"
                                 class="button button-orange"
-                                onclick="resolveSync('local_wins')"
+                                id="btn-sync-local"
                                 style="padding: 12px; font-weight: bold; font-size: 1em;">
                             <i class="fa-solid fa-hard-drive"></i> Browser behalten (Cloud überschreiben)
                         </button>
@@ -262,10 +262,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Wird vom Button im Modal aufgerufen
-    window.resolveSync = async function(resolution) {
+    // CSP-konforme Event-Listener für das Sync-Modal
+    const resolveSync = async (resolution) => {
         conflictModal.style.display = 'none';
         await syncApi(resolution);
     };
+
+    document.getElementById('btn-sync-merge')?.addEventListener('click', () => resolveSync('merge'));
+    document.getElementById('btn-sync-db')?.addEventListener('click', () => resolveSync('db_wins'));
+    document.getElementById('btn-sync-local')?.addEventListener('click', () => resolveSync('local_wins'));
 
     // Toggle-Lösch-Funktion (API oder Lokal)
     async function removeBookmark(id) {

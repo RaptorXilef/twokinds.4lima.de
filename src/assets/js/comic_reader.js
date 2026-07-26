@@ -71,6 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. LESEZEICHEN (LOCAL STORAGE) ---
     if (btnBookmark) {
         const comicId = btnBookmark.dataset.id;
+        const isLoggedIn = btnBookmark.dataset.loggedIn === 'true';
+        const csrfToken = btnBookmark.dataset.csrf || '';
 
         // Modernes Objekt-Format für LocalStorage (vorwärtskompatibel zu deinem alten Array-System)
         let bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
@@ -81,10 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
             btnBookmark.title = 'Lesezeichen entfernt';
         }
 
-        btnBookmark.addEventListener('click', () => {
+        btnBookmark.addEventListener('click', async () => {
             bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+            const isAdding = !bookmarks[comicId];
+            const action = isAdding ? 'add' : 'remove';
 
-            if (bookmarks[comicId]) {
+            // 1. Lokales Update (Sorgt für flüssiges UI, ohne auf den Server zu warten)
+            if (!isAdding) {
                 delete bookmarks[comicId];
                 btnBookmark.classList.remove('bookmarked');
                 btnBookmark.title = 'Diese Seite mit Lesezeichen versehen';
@@ -98,6 +103,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnBookmark.title = 'Lesezeichen entfernt';
             }
             localStorage.setItem('comicBookmarksMap', JSON.stringify(bookmarks));
+
+            // 2. Cloud Update (Async im Hintergrund)
+            if (isLoggedIn) {
+                const fd = new FormData();
+                fd.append('comic_id', comicId);
+                fd.append('bookmark_action', action);
+                fd.append('csrf_token', csrfToken);
+
+                try {
+                    await fetch(window.location.origin + '/api/toggle_bookmark', {
+                        method: 'POST',
+                        body: fd,
+                    });
+                } catch (e) {
+                    console.error('Bookmark sync failed', e);
+                }
+            }
         });
     }
 });
