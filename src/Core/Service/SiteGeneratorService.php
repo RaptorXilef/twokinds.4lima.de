@@ -6,14 +6,16 @@ namespace App\Core\Service;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ChapterRepositoryInterface;
+use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 
 final readonly class SiteGeneratorService
 {
     public function __construct(
         private ComicRepositoryInterface $comicRepo,
-        private ChapterRepositoryInterface $chapterRepo,
+        private ChapterRepositoryInterface $chapterRepo, // Kann für zukünftige Feeds nützlich sein
         private ConfigInterface $config,
+        private CharacterRepositoryInterface $characterRepo,
     ) {
     }
 
@@ -54,10 +56,11 @@ final readonly class SiteGeneratorService
         $this->addSitemapUrl($xml, $baseUrl . '/impressum', '0.3', 'yearly');
         $this->addSitemapUrl($xml, $baseUrl . '/datenschutz', '0.3', 'yearly');
 
-        // 4. Kapitel-Filter Seiten
-        $chapters = $this->chapterRepo->findAll();
-        foreach ($chapters as $chapter) {
-            $this->addSitemapUrl($xml, $baseUrl . '/archiv/' . $chapter->id, '0.8', 'weekly');
+        // 4. Alle individuellen Charakter-Seiten
+        $characters = $this->characterRepo->findAll();
+        foreach ($characters as $char) {
+            $charUrlName = \urlencode(\str_replace(' ', '_', $char->name));
+            $this->addSitemapUrl($xml, $baseUrl . '/charaktere/' . $charUrlName, '0.7', 'monthly');
         }
 
         // 5. Alle individuellen Comic-Seiten
@@ -107,7 +110,6 @@ final readonly class SiteGeneratorService
         $xml->writeElement('description', $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'));
         $xml->writeElement('language', 'de-de');
 
-        // Die beiden fehlenden Header für Feed-Reader
         $xml->writeElement('lastBuildDate', (new \DateTimeImmutable())->format(\DATE_RFC2822));
         $xml->writeElement('generator', 'Twokinds Admin Panel Generator');
 
@@ -122,6 +124,7 @@ final readonly class SiteGeneratorService
 
         // WICHTIG: Schlauer Filter mit Fallback auf die Festplatte
         $feedComics = [];
+
         foreach ($comics as $c) {
             if ($c->imageUpdatedAt !== null) {
                 $feedComics[] = $c;

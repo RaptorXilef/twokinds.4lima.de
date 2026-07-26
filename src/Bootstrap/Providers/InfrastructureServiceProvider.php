@@ -160,11 +160,12 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             $container->get(ConfigInterface::class),
         ));
 
-        // TODO Prüfen ob definition überhaupt nötig, oder ob Magisch geladen
+        // Sitemap und RSS
         $container->bind(SiteGeneratorService::class, fn () => new SiteGeneratorService(
             $container->get(ComicRepositoryInterface::class),
             $container->get(ChapterRepositoryInterface::class),
             $container->get(ConfigInterface::class),
+            $container->get(CharacterRepositoryInterface::class),
         ));
     }
 }
