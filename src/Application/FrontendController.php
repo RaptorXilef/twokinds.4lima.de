@@ -165,6 +165,7 @@ final readonly class FrontendController
             return match ($apiPath) {
                 'admin_login'                  => ['action' => 'api_admin_login', 'input' => $input],
                 'admin_logout'                 => ['action' => 'api_admin_logout', 'input' => $input],
+                'admin_trigger_newsletter'     => ['action' => 'api_admin_trigger_newsletter', 'input' => $input],
                 'crop_social_media'            => ['action' => 'api_crop_social_media', 'input' => $input],
                 'delete_chapter'               => ['action' => 'api_delete_chapter', 'input' => $input],
                 'delete_character'             => ['action' => 'api_delete_character', 'input' => $input],

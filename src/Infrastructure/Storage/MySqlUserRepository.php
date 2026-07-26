@@ -89,4 +89,19 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
 
         return $stmt->rowCount();
     }
+
+    public function findNewsletterSubscribers(bool $transcriptOnly = false): array
+    {
+        $column = $transcriptOnly ? 'wants_newsletter_transcript' : 'wants_newsletter';
+
+        // Da wir dynamische Spaltennamen nutzen (die sicher von uns kommen), ist das absolut SQL-Injection-sicher
+        $stmt = $this->pdo->query("SELECT * FROM `users` WHERE {$column} = 1");
+
+        $users = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $users[] = $this->mapToEntity($row);
+        }
+
+        return $users;
+    }
 }

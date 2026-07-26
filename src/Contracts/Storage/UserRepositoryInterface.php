@@ -20,4 +20,6 @@ interface UserRepositoryInterface
 
     // Löscht unbestätigte Accounts, die älter als X Minuten sind
     public function deleteUnverifiedAccounts(int $olderThanMinutes): int;
+
+    public function findNewsletterSubscribers(bool $transcriptOnly = false): array;
 }
