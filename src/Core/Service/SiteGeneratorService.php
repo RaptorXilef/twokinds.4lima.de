@@ -28,27 +28,39 @@ final readonly class SiteGeneratorService
 
     private function generateSitemap(): void
     {
-        $baseUrl   = $this->config->get('base_url');
+        $baseUrl   = \rtrim($this->config->get('base_url'), '/');
         $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
 
         $xml = new \XMLWriter();
         $xml->openMemory();
         $xml->setIndent(true);
         $xml->startDocument('1.0', 'UTF-8');
+
         $xml->startElement('urlset');
         $xml->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
 
-        // 1. Startseite (Höchste Priorität)
-        $this->addSitemapUrl($xml, $baseUrl . '/', '1.0', 'daily');
+        // 1. Die statischen Hauptseiten
+        $this->addSitemapUrl($xml, $baseUrl, '1.0', 'daily');
+        $this->addSitemapUrl($xml, $baseUrl . '/archiv', '0.9', 'weekly');
+        $this->addSitemapUrl($xml, $baseUrl . '/charaktere', '0.9', 'weekly');
 
-        // 2. Archiv / Kapitel (Hohe Priorität)
-        $this->addSitemapUrl($xml, $baseUrl . '/archive', '0.9', 'weekly');
+        // 2. Wichtige Neben-Seiten
+        $this->addSitemapUrl($xml, $baseUrl . '/projekt', '0.8', 'monthly');
+        $this->addSitemapUrl($xml, $baseUrl . '/lesezeichen', '0.8', 'monthly');
+
+        // 3. System- & Rechtliche Seiten (Niedrigere Priorität, aber wichtig für Indexierung)
+        $this->addSitemapUrl($xml, $baseUrl . '/login', '0.5', 'monthly');
+        $this->addSitemapUrl($xml, $baseUrl . '/registrieren', '0.5', 'monthly');
+        $this->addSitemapUrl($xml, $baseUrl . '/impressum', '0.3', 'yearly');
+        $this->addSitemapUrl($xml, $baseUrl . '/datenschutz', '0.3', 'yearly');
+
+        // 4. Kapitel-Filter Seiten
         $chapters = $this->chapterRepo->findAll();
         foreach ($chapters as $chapter) {
-            $this->addSitemapUrl($xml, $baseUrl . '/archive/' . $chapter->id, '0.8', 'weekly');
+            $this->addSitemapUrl($xml, $baseUrl . '/archiv/' . $chapter->id, '0.8', 'weekly');
         }
 
-        // 3. Comic Seiten (Standard Priorität)
+        // 5. Alle individuellen Comic-Seiten
         $comics = $this->comicRepo->findAll();
         foreach ($comics as $comic) {
             // Datum für <lastmod> aus der ID generieren (YYYYMMDD)
@@ -60,10 +72,16 @@ final readonly class SiteGeneratorService
                 $lastMod = (new \DateTimeImmutable())->setTimestamp($comic->imageUpdatedAt);
             }
 
-            $this->addSitemapUrl($xml, $baseUrl . '/comic/' . $comic->id->value, '0.6', 'monthly', $lastMod->format('Y-m-d'));
+            $this->addSitemapUrl(
+                $xml,
+                $baseUrl . '/comic/' . $comic->id->value,
+                '0.6',
+                'monthly',
+                $lastMod->format('Y-m-d'),
+            );
         }
 
-        $xml->endElement(); // urlset
+        $xml->endElement(); // urlset schließen
         $xml->endDocument();
 
         \file_put_contents($publicDir . '/sitemap.xml', $xml->outputMemory());
