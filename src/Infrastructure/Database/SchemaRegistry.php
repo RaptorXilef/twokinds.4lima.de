@@ -31,7 +31,9 @@ final class SchemaRegistry
                 `created_at` DATETIME NOT NULL,
                 UNIQUE KEY `idx_username` (`username`),
                 UNIQUE KEY `idx_email` (`email`),
-                INDEX `idx_role` (`role_id`)
+                INDEX `idx_role` (`role_id`),
+                INDEX `idx_newsletter` (`wants_newsletter`),
+                INDEX `idx_newsletter_transcript` (`wants_newsletter_transcript`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;',
 
             'user_bookmarks' => 'CREATE TABLE IF NOT EXISTS `user_bookmarks` (
