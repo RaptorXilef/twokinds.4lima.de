@@ -136,6 +136,14 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                                 style="padding: 12px; font-weight: bold; font-size: 1em;">
                             <i class="fa-solid fa-hard-drive"></i> Browser behalten (Cloud überschreiben)
                         </button>
+
+                        <!-- NEU: Der Nichts-tun-Button -->
+                        <button type="button"
+                                class="button"
+                                id="btn-sync-ignore"
+                                style="padding: 12px; font-weight: bold; font-size: 1em; background: transparent; border: 1px solid var(--border-medium); color: var(--text-color);">
+                            <i class="fa-solid fa-xmark"></i> Nichts tun (Ignorieren)
+                        </button>
                     </div>
                 </div>
             </div>
@@ -271,6 +279,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-sync-merge')?.addEventListener('click', () => resolveSync('merge'));
     document.getElementById('btn-sync-db')?.addEventListener('click', () => resolveSync('db_wins'));
     document.getElementById('btn-sync-local')?.addEventListener('click', () => resolveSync('local_wins'));
+
+    // Einfach nur das Modal verstecken, ohne die API anzurufen
+    document.getElementById('btn-sync-ignore')?.addEventListener('click', () => {
+        conflictModal.style.display = 'none';
+    });
 
     // Toggle-Lösch-Funktion (API oder Lokal)
     async function removeBookmark(id) {
