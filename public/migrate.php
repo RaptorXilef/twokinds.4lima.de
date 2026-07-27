@@ -11,7 +11,7 @@ declare(strict_types=1);
 echo "<div style='font-family: sans-serif; padding: 20px;'>";
 echo '<h1>🚀 Twokinds JSON zu MySQL Migration</h1>';
 
-// 1. Datenbank-Konfiguration laden (Aus storage.php!)
+// 1. Datenbank-Konfiguration laden (Aus storage.php)
 $baseDir = \dirname(__DIR__);
 // $configFile = $baseDir . '/config/storage.php';
 $configFile = $baseDir . '/config/config.local.php';
@@ -63,8 +63,12 @@ try {
 
     $chapterCount = 0;
     foreach ($chaptersData as $chapter) {
+        // Ignoriere den Platzhalter-Eintrag ohne ID
+        if (empty($chapter['chapterId'])) {
+            continue;
+        }
         $stmtChapter->execute([
-            ':id'          => $chapter['chapterId'],
+            ':id'          => (string) $chapter['chapterId'],
             ':title'       => $chapter['title'],
             ':description' => $chapter['description'] ?? '',
         ]);
@@ -110,7 +114,7 @@ try {
         foreach ($charData['groups'] as $groupName => $idsArray) {
             $stmtGroup->execute([
                 ':name'          => $groupName,
-                ':character_ids' => \json_encode($idsArray),
+                ':character_ids' => \json_encode(\array_values($idsArray)),
             ]);
             ++$groupCount;
         }
@@ -118,58 +122,57 @@ try {
     echo "<p>✓ <b>{$groupCount}</b> Charakter-Gruppen importiert.</p>";
 
     // ==========================================
-    // D) COMICS & VERKNÜPFUNGEN MIGRATION
+    // D) COMICS MIGRATION (Inkl. Character JSON)
     // ==========================================
     $comicData = \json_decode(\file_get_contents($paths['comics']), true);
+
+    // HIER ANGEPASST: character_ids ist nun eine JSON Spalte in der Comics-Tabelle!
     $stmtComic = $pdo->prepare('
-        INSERT INTO `comics` (`id`, `type`, `name`, `transcript`, `chapter_id`, `original_url`, `sketch_url`)
-        VALUES (:id, :type, :name, :transcript, :chapter_id, :original_url, :sketch_url)
+        INSERT INTO `comics` (`id`, `type`, `name`, `transcript`, `chapter_id`, `character_ids`, `original_url`, `sketch_url`)
+        VALUES (:id, :type, :name, :transcript, :chapter_id, :character_ids, :original_url, :sketch_url)
         ON DUPLICATE KEY UPDATE
             `type` = :type, `name` = :name, `transcript` = :transcript,
-            `chapter_id` = :chapter_id, `original_url` = :original_url, `sketch_url` = :sketch_url
-    ');
-
-    $stmtLink = $pdo->prepare('
-        INSERT IGNORE INTO `comic_characters` (`comic_id`, `character_id`)
-        VALUES (:comic_id, :character_id)
+            `chapter_id` = :chapter_id, `character_ids` = :character_ids, `original_url` = :original_url, `sketch_url` = :sketch_url
     ');
 
     $comicCount = 0;
-    $linkCount  = 0;
 
     if (isset($comicData['comics'])) {
         foreach ($comicData['comics'] as $comicId => $comic) {
+
+            // Verknüpfte Charaktere als JSON formatieren
+            $charIdsJson = '[]';
+            if (isset($comic['charaktere']) && \is_array($comic['charaktere'])) {
+                $charIdsJson = \json_encode(\array_values($comic['charaktere']));
+            }
+
+            // Sicherstellen, dass chapter_id nicht leer ist
+            $chapterId = isset($comic['chapter']) && $comic['chapter'] !== '' ? (string) $comic['chapter'] : null;
+
             $stmtComic->execute([
-                ':id'           => $comicId,
-                ':type'         => $comic['type'] ?? 'Comicseite',
-                ':name'         => $comic['name'] ?? '',
-                ':transcript'   => $comic['transcript'] ?? '',
-                ':chapter_id'   => $comic['chapter'] ?? '',
-                ':original_url' => $comic['url_originalbild'] ?? '',
-                ':sketch_url'   => $comic['url_originalsketch'] ?? '',
+                ':id'            => $comicId,
+                ':type'          => $comic['type'] ?? 'Comicseite',
+                ':name'          => $comic['name'] ?? '',
+                ':transcript'    => $comic['transcript'] ?? '',
+                ':chapter_id'    => $chapterId,
+                ':character_ids' => $charIdsJson,
+                ':original_url'  => $comic['url_originalbild'] ?? '',
+                ':sketch_url'    => $comic['url_originalsketch'] ?? '',
             ]);
             ++$comicCount;
-
-            if (isset($comic['charaktere']) && \is_array($comic['charaktere'])) {
-                foreach ($comic['charaktere'] as $cId) {
-                    $stmtLink->execute([
-                        ':comic_id'     => $comicId,
-                        ':character_id' => $cId,
-                    ]);
-                    ++$linkCount;
-                }
-            }
         }
     }
-    echo "<p>✓ <b>{$comicCount}</b> Comics und <b>{$linkCount}</b> Charakter-Zuweisungen importiert.</p>";
+    echo "<p>✓ <b>{$comicCount}</b> Comics erfolgreich importiert.</p>";
 
+    // Wenn bis hierhin kein Fehler aufgetreten ist: In die Datenbank schreiben!
     $pdo->commit();
     echo "<h2 style='color:green;'>🎉 Migration komplett abgeschlossen!</h2>";
-    echo '<p>Bitte lösche die Datei <code>migrate.php</code> und den Ordner <code>migration_data</code> jetzt wieder von deinem Server, um die Sicherheit zu gewährleisten.</p>';
+    echo '<p>Alle Daten sind nun sicher in der MySQL Datenbank. Du kannst die Datei <code>migrate.php</code> und den Ordner <code>migration_data</code> jetzt löschen.</p>';
 
 } catch (\Exception $e) {
+    // Bei einem Fehler machen wir alles rückgängig, damit die DB nicht halb-befüllt bleibt
     $pdo->rollBack();
-    exit("<h2 style='color:red;'>🔥 Migration fehlgeschlagen!</h2><p>Fehler-Details: " . $e->getMessage() . '</p>');
+    exit("<h2 style='color:red;'>🔥 Migration fehlgeschlagen!</h2><p>Fehler-Details: " . $e->getMessage() . '</p><p>In Zeile: ' . $e->getLine() . '</p>');
 }
 
 echo '</div>';
