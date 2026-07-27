@@ -6,15 +6,12 @@ namespace App\Core\ValueObject;
 
 final readonly class CharacterId
 {
-    public string $value;
-
-    public function __construct(string $value)
+    public function __construct(public string $value)
     {
-        $value = \trim($value);
-        if (! \preg_match('/^char_\d{4}$/', $value)) {
+        // Wir erlauben nun 'char_' gefolgt von BELIEBIG vielen Ziffern (\d+)
+        if (! \preg_match('/^char_\d+$/', $value)) {
             throw new \InvalidArgumentException("Ungültiges Character-ID Format. Erwartet char_XXXX, erhalten: {$value}");
         }
-        $this->value = $value;
     }
 
     public function __toString(): string
