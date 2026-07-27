@@ -2,6 +2,34 @@
 
 
 
+## [6.2.0](https://github.com///compare/v6.1.0...v6.2.0) (2026-07-27)
+
+### 🚀 Features
+
+* **admin/auth:** lay API foundation for advanced role and user management ([46f4bba](https://github.com///commit/46f4bba54cd69dc4c5adfc0d9165d59862fffe82))
+* **admin/ui:** implement JS logic and KGA permission tree for user management ([81aea37](https://github.com///commit/81aea3764cd7d4a19623a78e62525f2c80caa649))
+* **admin/ui:** implement user and role management dashboard ([5993045](https://github.com///commit/5993045b880ffff72610aec75e7947f31b553f7e))
+
+### 🐛 Bug Fixes
+
+* **admin/ui:** resolve Biome linter warnings in admin.js ([96a91d3](https://github.com///commit/96a91d374a097eae98920bbca072ccb15d1caf4a))
+* **admin/ui:** resolve undefined variables and docblock warnings in users section ([a9858fa](https://github.com///commit/a9858fa7185854863de9b4ebf882efd088dabd02))
+* **core/domain:** allow timestamp-based legacy character IDs ([2851a7c](https://github.com///commit/2851a7c214c396f4b9095bbb6692581906ae840d))
+* **tools:** align migration script with actual database schema ([0fa4f06](https://github.com///commit/0fa4f06fa0fa639d7f019667d0f1408580efe620))
+* **tools:** align migration script with storage configuration structure ([f583036](https://github.com///commit/f58303675ec9a5ae95252e07f8c462a54eee705b))
+* **ui/routing:** correct arguments for template renderer in 404 fallback ([ec15caa](https://github.com///commit/ec15caad516f7657544bc04c621c03712f444600))
+* **ui/routing:** use character IDs for URLs to prevent 404 errors ([6222caf](https://github.com///commit/6222caf64316e2b136d188b6c507701b3cdcde5b))
+
+### 🏗️ Build System
+
+* **server:** configure htaccess to allow migration script execution ([69b2dd6](https://github.com///commit/69b2dd6e71ab1867b04c894c6b4b006d68f329b2))
+* **tooling:** configure Biome to allow console.error and fix remaining lint warnings ([e7dd739](https://github.com///commit/e7dd73964aa4862a177b6e30d3895bfe2db42d42))
+* **tools:** implement fast, isolated data migration script ([cc52b4b](https://github.com///commit/cc52b4bb005dbcef3d7ee763f38fe8233a47771a))
+
+### 🧹 Chore / Maintenance
+
+* **admin/ui:** restore structured error logging for debugging ([025f425](https://github.com///commit/025f425240703089e7adc6db68b311a702968aac))
+
 ## [6.1.0](https://github.com///compare/v6.0.0...v6.1.0) (2026-07-26)
 
 ### 🚀 Features
