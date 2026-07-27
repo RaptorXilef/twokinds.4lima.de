@@ -55,7 +55,8 @@ final readonly class RenderCharacterDetailAction implements ViewActionInterface
         }
 
         if ($character === null) {
-            $this->renderer->render('frontend/404', ['pageTitle' => 'Charakter nicht gefunden'], 404);
+            \http_response_code(404);
+            $this->renderer->render('frontend/404', ['pageTitle' => 'Charakter nicht gefunden']);
 
             return null;
         }
