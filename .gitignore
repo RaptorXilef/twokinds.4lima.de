@@ -460,3 +460,4 @@ public/google*.html
 /.old-5.0.0-alpha.23/public/assets/js/*
 !/.old-5.0.0-alpha.23/public/assets/css/.gitkeep
 !/.old-5.0.0-alpha.23/public/assets/js/.gitkeep
+public/migration_data/*
