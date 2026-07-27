@@ -23,19 +23,14 @@ final readonly class RenderCharacterDetailAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $charNameRaw = $request->input['char_name'] ?? '';
-        // Der Name aus der URL hat Unterstriche statt Leerzeichen (z.B. "Trace_Legacy")
-        $characterName = \str_replace('_', ' ', $charNameRaw);
+        $idStr     = $request->input['id'] ?? '';
+        $character = null;
 
-        $allCharacters = $this->charRepo->findAll();
-        $character     = null;
-
-        // Charakter anhand des Namens suchen
-        foreach ($allCharacters as $c) {
-            if (\strcasecmp($c->name, $characterName) === 0) {
-                $character = $c;
-
-                break;
+        if ($idStr !== '') {
+            try {
+                $character = $this->charRepo->findById(new \App\Core\ValueObject\CharacterId($idStr));
+            } catch (\InvalidArgumentException) {
+                // Ungültiges ID-Format wird abgefangen
             }
         }
 

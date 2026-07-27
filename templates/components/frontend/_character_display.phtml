@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -45,11 +46,17 @@ $isFilteredView = $limitToIds !== null;
 $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charaktere';
 ?>
 
-<div class="comic-characters-container interactive" id="char-display-wrapper" data-active-view="grouped">
+<div class="comic-characters-container interactive"
+     id="char-display-wrapper"
+     data-active-view="grouped">
 
-    <div class="char-display-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="char-display-header"
+         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h3 style="margin: 0;"><?php echo $headerText; ?></h3>
-        <button type="button" id="toggle-char-view" class="button button-small" title="Ansicht umschalten">
+        <button type="button"
+                id="toggle-char-view"
+                class="button button-small"
+                title="Ansicht umschalten">
             <i class="fas fa-font"></i> <span id="toggle-view-text">Alphabetische Ansicht</span>
         </button>
     </div>
@@ -72,12 +79,12 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                 <div class="character-group">
                     <h4><?php echo \htmlspecialchars($group->name); ?></h4>
                     <div class="character-group-list">
-                    <?php foreach ($charsInThisGroup as $character) {
-                        $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
-                        $link   = "{$baseUrl}/charaktere/" . \urlencode(\str_replace(' ', '_', $character->name));
-                        ?>
-                        <div class="character-item">
-                            <a href="<?php echo $link; ?>">
+                        <?php foreach ($charsInThisGroup as $character) {
+                            $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
+                            $link   = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
+                            ?>
+                            <div class="character-item">
+                                <a href="<?php echo $link; ?>">
                                 <div class="character-avatar-container">
                                     <img src="<?php echo \htmlspecialchars($picUrl); ?>"
                                          alt="<?php echo \htmlspecialchars($character->name); ?>"
@@ -85,8 +92,8 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                                 </div>
                                 <p class="character-name"><?php echo \htmlspecialchars($character->name); ?></p>
                             </a>
-                        </div>
-                    <?php } ?>
+                            </div>
+                        <?php } ?>
                     </div>
                 </div>
             <?php } ?>
@@ -100,7 +107,7 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
             <div class="character-group-list">
                 <?php foreach ($alphaChars as $character) {
                     $picUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;
-                    $link   = "{$baseUrl}/charaktere/" . \urlencode(\str_replace(' ', '_', $character->name));
+                    $link   = "{$baseUrl}/charaktere/" . \urlencode($character->id->value);
                     ?>
                     <div class="character-item">
                         <a href="<?php echo $link; ?>">
@@ -152,4 +159,5 @@ if (!window.charToggleInitialized) {
     });
     window.charToggleInitialized = true;
 }
+
 </script>

@@ -106,8 +106,8 @@ final readonly class FrontendController
             return ['action' => 'render_character_list', 'input' => $input];
         }
 
-        if (\preg_match('#^charaktere/([a-zA-Z0-9_-]+)(?:\.php)?$#', $relativePath, $matches)) {
-            return ['action' => 'render_character_detail', 'input' => ['char_name' => $matches[1]]];
+        if (\preg_match('#^charaktere/([^/]+)(?:\.php)?$#', $relativePath, $matches)) {
+            return ['action' => 'render_character_detail', 'input' => ['id' => $matches[1]]];
         }
 
         if ($relativePath === 'projekt' || $relativePath === 'projekt.php') {
