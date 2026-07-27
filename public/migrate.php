@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// https://twokinds.4lima.local/migrate.php
+// https://twokinds.4lima.local/migrate.php?test=1
 
 // Fehleranzeige aktivieren, damit wir sofort sehen, falls etwas hakt
 \ini_set('display_errors', '1');

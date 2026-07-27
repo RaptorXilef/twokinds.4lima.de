@@ -142,6 +142,7 @@ LimitRequestBody 10485760
     # Fängt alles ab, was noch eine .php Endung hat, aber keine API ist
     RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
     RewriteCond %{REQUEST_URI} !^/index\.php$ [NC]
+    RewriteCond %{REQUEST_URI} !^/migrate\.php$ [NC]
     RewriteCond %{REQUEST_URI} !^/api/ [NC]
     RewriteRule ^ /%1 [R=301,L,NE]
 
