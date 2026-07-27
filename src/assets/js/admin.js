@@ -87,7 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnElement.style.pointerEvents = 'auto';
                 }
             }
-        } catch {
+        } catch (err) {
+            console.error(`[API Error] Request failed for endpoint '${endpoint}':`, err);
             showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
             // Button wieder freigeben bei Absturz (z.B. 500 Internal Server Error)
             if (btnElement) {
@@ -1128,7 +1129,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (modal) modal.style.display = 'none';
                     });
                 });
-            } catch {
+            } catch (err) {
+                console.error(`[Media Gallery] Failed to load folder '${folder}':`, err);
                 galGrid.innerHTML = '<p style="color:red;">Fehler beim Laden der Galerie.</p>';
             }
         });
@@ -1443,7 +1445,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnToggleDebug.style.display = 'inline-block';
                     btnToggleDebug.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
                 }
-            } catch {
+            } catch (err) {
+                console.warn(
+                    '[Report] Failed to parse telemetry JSON (might be legacy plain text):',
+                    err
+                );
                 // Falls es kein valides JSON ist (z.B. alter Report), zeige nur Rohtext
                 debugRendered.style.display = 'none';
                 if (debugRaw) debugRaw.style.display = 'block';
@@ -1778,6 +1784,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return testId; // Super, der Platz ist komplett frei!
                 }
             }
+            console.warn(`[Mass Upload] No free variant ID found for ${baseId} after trying a-z.`);
             return null; // Alle 26 Buchstaben belegt
         }
 
@@ -1888,7 +1895,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         data.status = `Fehler: ${json.error}`;
                     }
-                } catch {
+                } catch (err) {
+                    console.error(`[Mass Upload] Network error for comic ${id}:`, err);
                     data.status = 'Fehler: Netzwerk';
                 }
                 renderQueueTable();
@@ -1992,8 +2000,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Filter direkt anwenden, falls beim Laden schon Text im Suchfeld steht
                 applyMediaFilter();
-            } catch {
-                // silent
+            } catch (err) {
+                console.error('[Media Gallery] Failed to load media list:', err);
             }
         };
 
@@ -2081,7 +2089,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             'red'
                         );
                     }
-                } catch {
+                } catch (err) {
+                    console.error('[Media Upload] File upload failed:', err);
                     showMsg('<i class="fa-solid fa-bomb"></i> Fehler beim Upload', 'red');
                 }
                 mediaUploadInput.value = ''; // WICHTIG: Setzt das Input-Feld zurück
@@ -2374,7 +2383,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     'red'
                 );
             }
-        } catch {
+        } catch (err) {
+            console.error('[Newsletter] Trigger failed:', err);
             showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
         }
         btn.innerHTML = origText;
@@ -2523,7 +2533,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     );
                 }
             } catch (err) {
-                // console.error('Cropper Fetch Error:', err);
+                console.error('[Cropper] Fetch Error:', err);
                 showMsg(`<i class="fa-solid fa-bomb"></i> Fehler: ${err.message}`, 'red');
             }
 
@@ -2606,7 +2616,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(json.error);
                 }
             } catch (err) {
-                console.error(err);
+                console.error('[User Management] Fehler beim Speichern des Benutzers:', err);
                 alert('Fehler beim Speichern des Benutzers.');
             }
         });
@@ -2626,7 +2636,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             alert(json.error);
                         }
                     } catch (err) {
-                        console.error(err);
+                        console.error('[User Management] Fehler beim Löschen:', err);
                         alert('Fehler beim Löschen.');
                     }
                 }
@@ -2778,7 +2788,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(json.error);
                 }
             } catch (err) {
-                console.error(err);
+                console.error('[Role Management] Fehler beim Speichern der Rolle:', err);
                 alert('Fehler beim Speichern der Rolle.');
             }
         });
@@ -2802,7 +2812,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             alert(json.error);
                         }
                     } catch (err) {
-                        console.error(err);
+                        console.error('[Role Management] Fehler beim Löschen:', err);
                         alert('Fehler beim Löschen.');
                     }
                 }
