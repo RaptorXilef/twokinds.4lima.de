@@ -15,6 +15,10 @@ use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
+use App\Contracts\Storage\RoleRepositoryInterface;
+use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Security\PermissionRegistry;
+use App\Core\Service\AuthService;
 
 #[ActionRoute('render_admin_dashboard')]
 final readonly class AdminDashboardRenderAction implements ViewActionInterface
@@ -28,6 +32,9 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         private CharacterGroupRepositoryInterface $groupRepo,
         private ReportRepositoryInterface $reportRepo,
         private ConfigInterface $config,
+        private RoleRepositoryInterface $roleRepo,
+        private UserRepositoryInterface $userRepo,
+        private AuthService $auth,
     ) {
     }
 
@@ -77,6 +84,12 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         // (Wir behalten das $existingChapters Array für das Datalist-Dropdown bei Comics)
         $existingChapters = \array_map(fn ($c) => $c->id, $dbChapters);
 
+        $roles           = $this->roleRepo->loadAll();
+        $users           = $this->userRepo->findAll();
+        $permissionsTree = PermissionRegistry::getStructure();
+        $canManageUsers  = $this->auth->hasPermission('system.users.manage');
+        $canManageRoles  = $this->auth->hasPermission('system.roles.manage');
+
         $this->renderer->render('admin/dashboard', [
             'pageTitle'        => 'Admin Dashboard',
             'adminUser'        => $this->sessionManager->getAdminUser(),
@@ -92,6 +105,11 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             'allReports'       => $allReports,
             'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
             'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
+            'roles'            => $roles,
+            'users'            => $users,
+            'permissionsTree'  => $permissionsTree,
+            'canManageUsers'   => $canManageUsers,
+            'canManageRoles'   => $canManageRoles,
         ]);
 
         return null;

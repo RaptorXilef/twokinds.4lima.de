@@ -45,6 +45,17 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         return $row ? $this->mapToEntity($row) : null;
     }
 
+    public function findAll(): array
+    {
+        $stmt  = $this->pdo->query('SELECT * FROM `users` ORDER BY created_at DESC');
+        $users = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $users[] = $this->mapToEntity($row);
+        }
+
+        return $users;
+    }
+
     public function save(User $user): void
     {
         $data = [

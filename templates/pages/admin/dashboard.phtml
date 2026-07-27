@@ -131,6 +131,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
                         <span class="menu-label">System</span>
                         <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
+                        <a href="#section-users" class="tab-link" data-target="section-users">Benutzer & Rechte</a>
 
                         <span class="menu-label">Account</span>
                         <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a>
@@ -159,6 +160,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                 <?php include __DIR__ . '/_section_media.phtml'; ?>
 
                 <?php include __DIR__ . '/_section_reports.phtml'; ?>
+                <?php include __DIR__ . '/_section_users.phtml'; ?>
             </div>
         </div>
     </div>
