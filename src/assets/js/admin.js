@@ -1443,7 +1443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnToggleDebug.style.display = 'inline-block';
                     btnToggleDebug.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
                 }
-            } catch (e) {
+            } catch {
                 // Falls es kein valides JSON ist (z.B. alter Report), zeige nur Rohtext
                 debugRendered.style.display = 'none';
                 if (debugRaw) debugRaw.style.display = 'block';
@@ -2700,7 +2700,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('role_id').readOnly = !!payload; // ID bei bestehenden Rollen sperren!
             document.getElementById('role_name').value = payload ? payload.name : '';
 
-            if (payload && payload.permissions) {
+            if (payload?.permissions) {
                 document.getElementById('modal-title-role').textContent = 'Rolle bearbeiten';
 
                 if (payload.permissions.includes('*')) {

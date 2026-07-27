@@ -4,7 +4,12 @@
   "linter": {
     "rules": {
       "suspicious": {
-        "noConsole": "warn"
+        "noConsole": {
+          "level": "warn",
+          "options": {
+            "allow": ["error", "warn", "info"]
+          }
+        }
       }
     }
   },
