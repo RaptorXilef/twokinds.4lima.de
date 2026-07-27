@@ -2531,4 +2531,239 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSaveCrop.style.pointerEvents = 'auto';
         }
     });
+
+    // ==========================================
+    // BENUTZER & ROLLEN VERWALTUNG (KGA SYSTEM)
+    // ==========================================
+    const sectionUsers = document.getElementById('section-users');
+    if (sectionUsers) {
+        // --- 1. Tab-Steuerung (Benutzer vs. Rollen) ---
+        const tabBtns = sectionUsers.querySelectorAll('.media-tab-btn');
+        const views = sectionUsers.querySelectorAll('.media-view');
+
+        tabBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach((b) => b.classList.remove('active'));
+                views.forEach((v) => (v.style.display = 'none'));
+                btn.classList.add('active');
+                document.getElementById('media-view-' + btn.dataset.type).style.display = 'block';
+            });
+        });
+
+        // CSRF Token aus dem Header holen
+        const getCsrf = () =>
+            document.querySelector('meta[name="csrf-token"]')?.content || window.csrfToken || '';
+
+        // --- 2. USER MODAL LOGIK ---
+        const userModal = document.getElementById('user-modal');
+        const userForm = document.getElementById('user-form');
+
+        const openUserModal = (payload = null) => {
+            userForm.reset();
+            document.getElementById('user_id').value = payload ? payload.id : '';
+            document.getElementById('user_username').value = payload ? payload.username : '';
+            document.getElementById('user_email').value = payload ? payload.email : '';
+
+            if (payload) {
+                document.getElementById('user_role').value = payload.role_id;
+                document.getElementById('modal-title-user').textContent = 'Benutzer bearbeiten';
+                document.getElementById('user_password').required = false;
+            } else {
+                document.getElementById('modal-title-user').textContent = 'Neuen Benutzer anlegen';
+                document.getElementById('user_password').required = true;
+            }
+            userModal.style.display = 'flex';
+        };
+
+        document.getElementById('btn-add-user')?.addEventListener('click', () => openUserModal());
+        document
+            .querySelectorAll('.btn-edit-user')
+            .forEach((btn) =>
+                btn.addEventListener('click', () => openUserModal(JSON.parse(btn.dataset.payload)))
+            );
+        document
+            .querySelectorAll('.btn-close-user-modal')
+            .forEach((btn) =>
+                btn.addEventListener('click', () => (userModal.style.display = 'none'))
+            );
+
+        document.getElementById('btn-save-user')?.addEventListener('click', async () => {
+            const fd = new FormData(userForm);
+            fd.append('csrf_token', getCsrf());
+            try {
+                const res = await fetch('/api/save_user', { method: 'POST', body: fd });
+                const json = await res.json();
+                if (json.success) location.reload();
+                else alert(json.error);
+            } catch (e) {
+                alert('Fehler beim Speichern des Benutzers.');
+            }
+        });
+
+        document.querySelectorAll('.btn-delete-user').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                if (confirm('Möchtest du diesen Benutzer wirklich unwiderruflich löschen?')) {
+                    const fd = new FormData();
+                    fd.append('user_id', btn.dataset.id);
+                    fd.append('csrf_token', getCsrf());
+                    const res = await fetch('/api/delete_user', { method: 'POST', body: fd });
+                    const json = await res.json();
+                    if (json.success) location.reload();
+                    else alert(json.error);
+                }
+            });
+        });
+
+        // --- 3. ROLE MODAL & KGA PERMISSION TREE ---
+        const roleModal = document.getElementById('role-modal');
+        const roleForm = document.getElementById('role-form');
+        const allPermsCb = document.getElementById('role_all_perms');
+        const parentCbs = roleForm.querySelectorAll('.perm-parent');
+        const childCbs = roleForm.querySelectorAll('.perm-child');
+
+        // Hilfsfunktion: Prüft, ob der Gott-Modus visuell angehakt werden muss
+        const checkGodMode = () => {
+            if (!allPermsCb) return;
+            const allChecked = Array.from(roleForm.querySelectorAll('.perm-checkbox')).every(
+                (cb) => cb.checked
+            );
+            allPermsCb.checked = allChecked;
+        };
+
+        // Klick auf Gott-Modus (*)
+        if (allPermsCb) {
+            allPermsCb.addEventListener('change', (e) => {
+                parentCbs.forEach((cb) => (cb.checked = e.target.checked));
+                childCbs.forEach((cb) => (cb.checked = e.target.checked));
+            });
+        }
+
+        // Klick auf ein Hauptrecht (Parent)
+        parentCbs.forEach((parent) => {
+            parent.addEventListener('change', (e) => {
+                const children = roleForm.querySelectorAll(
+                    `.perm-child[data-parent="${parent.value}"]`
+                );
+                children.forEach((child) => (child.checked = e.target.checked));
+                checkGodMode();
+            });
+        });
+
+        // Klick auf ein Unterrecht (Child)
+        childCbs.forEach((child) => {
+            child.addEventListener('change', (e) => {
+                const parentCb = roleForm.querySelector(
+                    `.perm-parent[value="${child.dataset.parent}"]`
+                );
+                if (!e.target.checked) {
+                    if (parentCb) parentCb.checked = false;
+                    if (allPermsCb) allPermsCb.checked = false;
+                } else {
+                    const siblings = roleForm.querySelectorAll(
+                        `.perm-child[data-parent="${child.dataset.parent}"]`
+                    );
+                    const allSiblingsChecked = Array.from(siblings).every((s) => s.checked);
+                    if (allSiblingsChecked && parentCb) parentCb.checked = true;
+                    checkGodMode();
+                }
+            });
+        });
+
+        const openRoleModal = (payload = null) => {
+            roleForm.reset();
+            document.getElementById('role_id').value = payload ? payload.id : '';
+            document.getElementById('role_id').readOnly = !!payload; // ID bei bestehenden Rollen sperren!
+            document.getElementById('role_name').value = payload ? payload.name : '';
+
+            if (payload && payload.permissions) {
+                document.getElementById('modal-title-role').textContent = 'Rolle bearbeiten';
+
+                if (payload.permissions.includes('*')) {
+                    if (allPermsCb) allPermsCb.checked = true;
+                    parentCbs.forEach((cb) => (cb.checked = true));
+                    childCbs.forEach((cb) => (cb.checked = true));
+                } else {
+                    // Rechte anhaken
+                    payload.permissions.forEach((perm) => {
+                        const cb = roleForm.querySelector(`.perm-checkbox[value="${perm}"]`);
+                        if (cb) cb.checked = true;
+                    });
+
+                    // Visuelles Update: Wenn alle Kinder eines Parents an sind, Parent anhaken
+                    childCbs.forEach((child) => {
+                        if (child.checked) {
+                            const siblings = roleForm.querySelectorAll(
+                                `.perm-child[data-parent="${child.dataset.parent}"]`
+                            );
+                            const allChecked = Array.from(siblings).every((s) => s.checked);
+                            const pCb = roleForm.querySelector(
+                                `.perm-parent[value="${child.dataset.parent}"]`
+                            );
+                            if (allChecked && pCb) pCb.checked = true;
+                        }
+                    });
+                    checkGodMode();
+                }
+            } else {
+                document.getElementById('modal-title-role').textContent = 'Neue Rolle erstellen';
+            }
+            roleModal.style.display = 'flex';
+        };
+
+        document.getElementById('btn-add-role')?.addEventListener('click', () => openRoleModal());
+        document
+            .querySelectorAll('.btn-edit-role')
+            .forEach((btn) =>
+                btn.addEventListener('click', () => openRoleModal(JSON.parse(btn.dataset.payload)))
+            );
+        document
+            .querySelectorAll('.btn-close-role-modal')
+            .forEach((btn) =>
+                btn.addEventListener('click', () => (roleModal.style.display = 'none'))
+            );
+
+        document.getElementById('btn-save-role')?.addEventListener('click', async () => {
+            const perms = [];
+            if (allPermsCb && allPermsCb.checked) {
+                perms.push('*');
+            } else {
+                roleForm
+                    .querySelectorAll('.perm-checkbox:checked')
+                    .forEach((cb) => perms.push(cb.value));
+            }
+
+            const fd = new FormData();
+            fd.append('role_id', document.getElementById('role_id').value);
+            fd.append('name', document.getElementById('role_name').value);
+            fd.append('permissions', JSON.stringify(perms));
+            fd.append('csrf_token', getCsrf());
+
+            try {
+                const res = await fetch('/api/save_role', { method: 'POST', body: fd });
+                const json = await res.json();
+                if (json.success) location.reload();
+                else alert(json.error);
+            } catch (e) {
+                alert('Fehler beim Speichern der Rolle.');
+            }
+        });
+
+        document.querySelectorAll('.btn-delete-role').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                if (
+                    confirm(
+                        'ACHTUNG: Möchtest du diese Rechte-Gruppe wirklich löschen?\n\nNutzer, die in dieser Gruppe sind, verlieren sofort alle Zugriffsrechte!'
+                    )
+                ) {
+                    const fd = new FormData();
+                    fd.append('role_id', btn.dataset.id);
+                    fd.append('csrf_token', getCsrf());
+                    const res = await fetch('/api/delete_role', { method: 'POST', body: fd });
+                    const json = await res.json();
+                    if (json.success) location.reload();
+                    else alert(json.error);
+                }
+            });
+        });
+    }
 });
