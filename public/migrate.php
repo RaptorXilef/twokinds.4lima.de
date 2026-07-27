@@ -11,20 +11,22 @@ declare(strict_types=1);
 echo "<div style='font-family: sans-serif; padding: 20px;'>";
 echo '<h1>🚀 Twokinds JSON zu MySQL Migration</h1>';
 
-// 1. Datenbank-Konfiguration laden (Pfad geht aus dem public-Ordner hoch in config)
-$baseDir    = \dirname(__DIR__);
-$configFile = $baseDir . '/config/config.php';
+// 1. Datenbank-Konfiguration laden (Aus storage.php!)
+$baseDir = \dirname(__DIR__);
+// $configFile = $baseDir . '/config/storage.php';
+$configFile = $baseDir . '/config/config.local.php';
 
 if (! \file_exists($configFile)) {
-    exit("<b style='color:red;'>Fehler:</b> config.php nicht gefunden (Erwartet in: {$configFile}).");
+    exit("<b style='color:red;'>Fehler:</b> storage.php nicht gefunden (Erwartet in: {$configFile}).");
 }
 $config = require $configFile;
+$db     = $config['database'];
 
 try {
     $pdo = new \PDO(
-        "mysql:host={$config['db_host']};dbname={$config['db_name']};charset=utf8mb4",
-        $config['db_user'],
-        $config['db_pass'],
+        "mysql:host={$db['host']};port={$db['port']};dbname={$db['dbname']};charset={$db['charset']}",
+        $db['user'],
+        $db['pass'],
         [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION],
     );
     echo "<p style='color:green;'>✓ Datenbankverbindung erfolgreich hergestellt.</p>";
