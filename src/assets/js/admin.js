@@ -2543,10 +2543,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tabBtns.forEach((btn) => {
             btn.addEventListener('click', () => {
-                tabBtns.forEach((b) => b.classList.remove('active'));
-                views.forEach((v) => (v.style.display = 'none'));
+                tabBtns.forEach((b) => {
+                    b.classList.remove('active');
+                });
+                views.forEach((v) => {
+                    v.style.display = 'none';
+                });
                 btn.classList.add('active');
-                document.getElementById('media-view-' + btn.dataset.type).style.display = 'block';
+                const targetId = `media-view-${btn.dataset.type}`;
+                document.getElementById(targetId).style.display = 'block';
             });
         });
 
@@ -2575,17 +2580,19 @@ document.addEventListener('DOMContentLoaded', () => {
             userModal.style.display = 'flex';
         };
 
-        document.getElementById('btn-add-user')?.addEventListener('click', () => openUserModal());
-        document
-            .querySelectorAll('.btn-edit-user')
-            .forEach((btn) =>
-                btn.addEventListener('click', () => openUserModal(JSON.parse(btn.dataset.payload)))
-            );
-        document
-            .querySelectorAll('.btn-close-user-modal')
-            .forEach((btn) =>
-                btn.addEventListener('click', () => (userModal.style.display = 'none'))
-            );
+        document.getElementById('btn-add-user')?.addEventListener('click', () => {
+            openUserModal();
+        });
+        document.querySelectorAll('.btn-edit-user').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                openUserModal(JSON.parse(btn.dataset.payload));
+            });
+        });
+        document.querySelectorAll('.btn-close-user-modal').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                userModal.style.display = 'none';
+            });
+        });
 
         document.getElementById('btn-save-user')?.addEventListener('click', async () => {
             const fd = new FormData(userForm);
@@ -2593,9 +2600,13 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch('/api/save_user', { method: 'POST', body: fd });
                 const json = await res.json();
-                if (json.success) location.reload();
-                else alert(json.error);
-            } catch (e) {
+                if (json.success) {
+                    location.reload();
+                } else {
+                    alert(json.error);
+                }
+            } catch (err) {
+                console.error(err);
                 alert('Fehler beim Speichern des Benutzers.');
             }
         });
@@ -2606,10 +2617,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fd = new FormData();
                     fd.append('user_id', btn.dataset.id);
                     fd.append('csrf_token', getCsrf());
-                    const res = await fetch('/api/delete_user', { method: 'POST', body: fd });
-                    const json = await res.json();
-                    if (json.success) location.reload();
-                    else alert(json.error);
+                    try {
+                        const res = await fetch('/api/delete_user', { method: 'POST', body: fd });
+                        const json = await res.json();
+                        if (json.success) {
+                            location.reload();
+                        } else {
+                            alert(json.error);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Fehler beim Löschen.');
+                    }
                 }
             });
         });
@@ -2633,8 +2652,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Klick auf Gott-Modus (*)
         if (allPermsCb) {
             allPermsCb.addEventListener('change', (e) => {
-                parentCbs.forEach((cb) => (cb.checked = e.target.checked));
-                childCbs.forEach((cb) => (cb.checked = e.target.checked));
+                parentCbs.forEach((cb) => {
+                    cb.checked = e.target.checked;
+                });
+                childCbs.forEach((cb) => {
+                    cb.checked = e.target.checked;
+                });
             });
         }
 
@@ -2644,7 +2667,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const children = roleForm.querySelectorAll(
                     `.perm-child[data-parent="${parent.value}"]`
                 );
-                children.forEach((child) => (child.checked = e.target.checked));
+                children.forEach((child) => {
+                    child.checked = e.target.checked;
+                });
                 checkGodMode();
             });
         });
@@ -2680,8 +2705,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (payload.permissions.includes('*')) {
                     if (allPermsCb) allPermsCb.checked = true;
-                    parentCbs.forEach((cb) => (cb.checked = true));
-                    childCbs.forEach((cb) => (cb.checked = true));
+                    parentCbs.forEach((cb) => {
+                        cb.checked = true;
+                    });
+                    childCbs.forEach((cb) => {
+                        cb.checked = true;
+                    });
                 } else {
                     // Rechte anhaken
                     payload.permissions.forEach((perm) => {
@@ -2710,26 +2739,28 @@ document.addEventListener('DOMContentLoaded', () => {
             roleModal.style.display = 'flex';
         };
 
-        document.getElementById('btn-add-role')?.addEventListener('click', () => openRoleModal());
-        document
-            .querySelectorAll('.btn-edit-role')
-            .forEach((btn) =>
-                btn.addEventListener('click', () => openRoleModal(JSON.parse(btn.dataset.payload)))
-            );
-        document
-            .querySelectorAll('.btn-close-role-modal')
-            .forEach((btn) =>
-                btn.addEventListener('click', () => (roleModal.style.display = 'none'))
-            );
+        document.getElementById('btn-add-role')?.addEventListener('click', () => {
+            openRoleModal();
+        });
+        document.querySelectorAll('.btn-edit-role').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                openRoleModal(JSON.parse(btn.dataset.payload));
+            });
+        });
+        document.querySelectorAll('.btn-close-role-modal').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                roleModal.style.display = 'none';
+            });
+        });
 
         document.getElementById('btn-save-role')?.addEventListener('click', async () => {
             const perms = [];
-            if (allPermsCb && allPermsCb.checked) {
+            if (allPermsCb?.checked) {
                 perms.push('*');
             } else {
-                roleForm
-                    .querySelectorAll('.perm-checkbox:checked')
-                    .forEach((cb) => perms.push(cb.value));
+                roleForm.querySelectorAll('.perm-checkbox:checked').forEach((cb) => {
+                    perms.push(cb.value);
+                });
             }
 
             const fd = new FormData();
@@ -2741,9 +2772,13 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch('/api/save_role', { method: 'POST', body: fd });
                 const json = await res.json();
-                if (json.success) location.reload();
-                else alert(json.error);
-            } catch (e) {
+                if (json.success) {
+                    location.reload();
+                } else {
+                    alert(json.error);
+                }
+            } catch (err) {
+                console.error(err);
                 alert('Fehler beim Speichern der Rolle.');
             }
         });
@@ -2758,10 +2793,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fd = new FormData();
                     fd.append('role_id', btn.dataset.id);
                     fd.append('csrf_token', getCsrf());
-                    const res = await fetch('/api/delete_role', { method: 'POST', body: fd });
-                    const json = await res.json();
-                    if (json.success) location.reload();
-                    else alert(json.error);
+                    try {
+                        const res = await fetch('/api/delete_role', { method: 'POST', body: fd });
+                        const json = await res.json();
+                        if (json.success) {
+                            location.reload();
+                        } else {
+                            alert(json.error);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Fehler beim Löschen.');
+                    }
                 }
             });
         });
