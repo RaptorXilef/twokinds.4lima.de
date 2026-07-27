@@ -59,7 +59,7 @@ final readonly class SiteGeneratorService
         // 4. Alle individuellen Charakter-Seiten
         $characters = $this->characterRepo->findAll();
         foreach ($characters as $char) {
-            $charUrlName = \urlencode(\str_replace(' ', '_', $char->name));
+            $charUrlName = \urlencode($char->id->value);
             $this->addSitemapUrl($xml, $baseUrl . '/charaktere/' . $charUrlName, '0.7', 'monthly');
         }
 

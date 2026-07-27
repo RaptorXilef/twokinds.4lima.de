@@ -14,12 +14,13 @@ use App\Application\Contracts\ResponseInterface;
  */
 final readonly class RedirectResponse implements ResponseInterface
 {
-    public function __construct(public string $url)
+    public function __construct(public string $url, public int $statusCode = 302)
     {
     }
 
     public function send(): void
     {
+        \http_response_code($this->statusCode);
         \header('Location: ' . $this->url);
         exit;
     }

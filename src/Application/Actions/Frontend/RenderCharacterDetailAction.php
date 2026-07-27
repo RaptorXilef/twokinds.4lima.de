@@ -7,9 +7,11 @@ namespace App\Application\Actions\Frontend;
 use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
+use App\Application\Response\RedirectResponse;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\ValueObject\CharacterId;
 
 #[ActionRoute('render_character_detail')]
 final readonly class RenderCharacterDetailAction implements ViewActionInterface
@@ -23,19 +25,37 @@ final readonly class RenderCharacterDetailAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $idStr     = $request->input['id'] ?? '';
+        $idOrName = \urldecode($request->input['id'] ?? '');
+
+        if ($idOrName === '') {
+            return new RedirectResponse('/charaktere');
+        }
+
         $character = null;
 
-        if ($idStr !== '') {
+        // 1. Ist es eine moderne ID (char_XXXX)?
+        if (\preg_match('/^char_\d+$/', $idOrName)) {
             try {
-                $character = $this->charRepo->findById(new \App\Core\ValueObject\CharacterId($idStr));
+                $character = $this->charRepo->findById(new CharacterId($idOrName));
             } catch (\InvalidArgumentException) {
-                // Ungültiges ID-Format wird abgefangen
+            }
+        } else {
+            // 2. Es ist ein alter Name (Legacy Slug)! z.B. "Böse_Aura" oder "Eric_Adrian_Vaughan"
+            // Wir suchen den Charakter anhand des Namens aus der alten URL.
+            $characterName = \str_replace('_', ' ', $idOrName);
+            $allCharacters = $this->charRepo->findAll();
+
+            foreach ($allCharacters as $c) {
+                if (\strcasecmp($c->name, $characterName) === 0) {
+                    // GEFUNDEN! Wir leiten Google und den User PERMANENT (301) auf die neue URL um!
+                    // Dadurch geht kein SEO-Ranking verloren.
+                    return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
+                }
             }
         }
 
         if ($character === null) {
-            $this->renderer->render('frontend/404', ['pageTitle' => 'Charakter nicht gefunden']);
+            $this->renderer->render('frontend/404', ['pageTitle' => 'Charakter nicht gefunden'], 404);
 
             return null;
         }
