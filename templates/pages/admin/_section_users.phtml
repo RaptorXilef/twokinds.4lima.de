@@ -1,6 +1,19 @@
 <?php
 
-declare(strict_types=1); ?>
+declare(strict_types=1);
+
+use App\Core\Entity\Role;
+use App\Core\Entity\User;
+
+/**
+ * @var User[] $users
+ * @var Role[] $roles
+ * @var array  $permissionsTree
+ * @var bool   $canManageUsers
+ * @var bool   $canManageRoles
+ * @var string $currentUserId
+ */
+?>
 <section id="section-users"
          class="content-section">
 
@@ -76,7 +89,7 @@ declare(strict_types=1); ?>
                                                     class="button edit btn-edit-user"
                                                     data-payload='<?php echo $userData; ?>'
                                                     title="Bearbeiten"><i class="fa-solid fa-pen"></i></button>
-                                            <?php if ($u->id !== ($sessionManager->getUserId() ?? '')) { ?>
+                                            <?php if ($u->id !== $currentUserId) { ?>
                                                 <button type="button"
                                                         class="button delete btn-delete-user"
                                                         data-id="<?php echo \htmlspecialchars($u->id); ?>"

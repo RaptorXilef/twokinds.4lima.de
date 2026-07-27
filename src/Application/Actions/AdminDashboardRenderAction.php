@@ -93,6 +93,7 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         $this->renderer->render('admin/dashboard', [
             'pageTitle'        => 'Admin Dashboard',
             'adminUser'        => $this->sessionManager->getAdminUser(),
+            'currentUserId'    => $this->sessionManager->getUserId(),
             'comics'           => $comics,
             'dbChapters'       => $dbChapters,
             'characters'       => $characters,
