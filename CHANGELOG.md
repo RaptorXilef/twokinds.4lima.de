@@ -2,6 +2,24 @@
 
 
 
+## [6.3.0](https://github.com///compare/v6.2.1...v6.3.0) (2026-07-28)
+
+### 🚀 Features
+
+* **frontend/seo:** implement Open Graph and Twitter Card meta tags ([8caae16](https://github.com///commit/8caae1682c6998430f07c30158c999347714c7c9))
+* **frontend/seo:** use character images for social media sharing ([c2b6215](https://github.com///commit/c2b6215a588574642e80c064a78d0f2a131e5caf))
+* **frontend/ui:** implement dynamic character filtering system ([0a31199](https://github.com///commit/0a31199fe4e4fd07d6bbc43ea4427985422c75a3))
+* **frontend/ui:** set alphabetical character view as default and add image fallbacks ([4c43b8d](https://github.com///commit/4c43b8d90e731ba98bac76e67332bbb37aa62d80))
+
+### 🐛 Bug Fixes
+
+* **frontend/seo:** resolve undefined site_description and add missing thumbnail fallbacks ([d9817ef](https://github.com///commit/d9817efd941ac13d24e373355bbfdd0ca6171ce0))
+* **frontend/templates:** resolve linter warnings for undefined variables and classes ([d470ae3](https://github.com///commit/d470ae377f8bdb63dea20df113fcbbd23d25ae09))
+
+### 🏗️ Build System
+
+* **server:** deploy production htaccess with caching, compression, and routing ([9e6cafc](https://github.com///commit/9e6cafc57b1c28bbdb7bef59680e15f74699aa3a))
+
 ## [6.2.1](https://github.com///compare/v6.2.0...v6.2.1) (2026-07-28)
 
 ## [6.2.0](https://github.com///compare/v6.1.0...v6.2.0) (2026-07-27)
