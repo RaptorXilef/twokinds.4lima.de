@@ -11,7 +11,6 @@ use App\Application\Response\RedirectResponse;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
-use App\Core\ValueObject\CharacterId;
 
 #[ActionRoute('render_character_detail')]
 final readonly class RenderCharacterDetailAction implements ViewActionInterface
@@ -36,19 +35,31 @@ final readonly class RenderCharacterDetailAction implements ViewActionInterface
         // 1. Ist es eine moderne ID (char_XXXX)?
         if (\preg_match('/^char_\d+$/', $idOrName)) {
             try {
-                $character = $this->charRepo->findById(new CharacterId($idOrName));
+                $character = $this->charRepo->findById(new \App\Core\ValueObject\CharacterId($idOrName));
             } catch (\InvalidArgumentException) {
             }
         } else {
-            // 2. Es ist ein alter Name (Legacy Slug)! z.B. "Böse_Aura" oder "Eric_Adrian_Vaughan"
-            // Wir suchen den Charakter anhand des Namens aus der alten URL.
-            $characterName = \str_replace('_', ' ', $idOrName);
+            // 2. Es ist ein alter Name (Legacy Slug)!
+            $characterName = \trim(\str_replace('_', ' ', $idOrName));
             $allCharacters = $this->charRepo->findAll();
 
+            // Prio A: Exakter Treffer (ignoriert Groß-/Kleinschreibung)
             foreach ($allCharacters as $c) {
                 if (\strcasecmp($c->name, $characterName) === 0) {
-                    // GEFUNDEN! Wir leiten Google und den User PERMANENT (301) auf die neue URL um!
-                    // Dadurch geht kein SEO-Ranking verloren.
+                    return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
+                }
+            }
+
+            // Prio B: Beginnt mit dem Suchwort (z.B. "/Flora" findet "Flora - Regenwald-Tigerstamm")
+            foreach ($allCharacters as $c) {
+                if (\stripos($c->name, $characterName) === 0) {
+                    return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
+                }
+            }
+
+            // Prio C: Beinhaltet das Suchwort irgendwo
+            foreach ($allCharacters as $c) {
+                if (\stripos($c->name, $characterName) !== false) {
                     return new RedirectResponse('/charaktere/' . \urlencode($c->id->value), 301);
                 }
             }
