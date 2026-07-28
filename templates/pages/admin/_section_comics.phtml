@@ -18,16 +18,19 @@ use App\Core\Entity\ComicPage;
     <div class="table-controls actions-bar"
          style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 15px; align-items: center;">
         <div class="top-actions">
-            <button type="button"
-                    class="button add"
-                    id="btn-add-comic">
-                <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen
-            </button>
-            <button type="button"
-                    class="button button-orange"
-                    id="btn-restore-deleted-comic"
-                    title="Zuletzt gelöschten Comic wiederherstellen">
-                <i class="fa-solid fa-trash-arrow-up"></i> Papierkorb </button>
+            <?php if ($perms['comic_edit']) { ?>
+                <button type="button"
+                        class="button add"
+                        id="btn-add-comic">
+                    <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen </button>
+            <?php } ?>
+            <?php if ($perms['comic_del']) { ?>
+                <button type="button"
+                        class="button button-orange"
+                        id="btn-restore-deleted-comic"
+                        title="Zuletzt gelöschten Comic wiederherstellen">
+                    <i class="fa-solid fa-trash-arrow-up"></i> Papierkorb </button>
+            <?php } ?>
         </div>
         <div class="search-wrapper"
              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -153,24 +156,30 @@ use App\Core\Entity\ComicPage;
                             </td>
                             <td class="actions-cell">
                                 <form>
-                                    <button type="button"
-                                            class="button edit btn-edit-comic"
-                                            data-payload='<?php echo $comicData; ?>'
-                                            title="Bearbeiten">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </button>
-                                    <button type="button"
-                                            class="button button-orange btn-undo-comic"
-                                            data-id="<?php echo \htmlspecialchars($cId); ?>"
-                                            title="Letzte Änderung rückgängig / Wiederherstellen (Toggle)">
-                                        <i class="fa-solid fa-clock-rotate-left"></i>
-                                    </button>
-                                    <button type="button"
-                                            class="button delete btn-delete-comic"
-                                            data-id="<?php echo \htmlspecialchars($cId); ?>"
-                                            title="Löschen">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    <?php if ($perms['comic_del']) { ?>
+                                        <button type="button"
+                                                class="button button-orange btn-undo-comic"
+                                                data-id="<?php echo \htmlspecialchars($cId); ?>"
+                                                title="Rückgängig / Wiederherstellen (Toggle)">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                        </button>
+                                    <?php } ?>
+                                    <?php if ($perms['comic_edit']) { ?>
+                                        <button type="button"
+                                                class="button edit btn-edit-comic"
+                                                data-payload='<?php echo $comicData; ?>'
+                                                title="Bearbeiten">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                    <?php } ?>
+                                    <?php if ($perms['comic_del']) { ?>
+                                        <button type="button"
+                                                class="button delete btn-delete-comic"
+                                                data-id="<?php echo \htmlspecialchars($cId); ?>"
+                                                title="Löschen">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    <?php } ?>
                                 </form>
                             </td>
                         </tr>

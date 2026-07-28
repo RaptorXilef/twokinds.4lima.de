@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -56,11 +57,12 @@ foreach ($characters as $c) {
          class="content-section">
     <div class="table-controls actions-bar">
         <div class="top-actions">
-            <button type="button"
-                    class="button add"
-                    id="btn-add-char">
-                <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen
-            </button>
+            <?php if ($perms['char_edit']) { ?>
+                <button type="button"
+                        class="button add"
+                        id="btn-add-char">
+                    <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen </button>
+            <?php } ?>
         </div>
     </div>
 
@@ -118,19 +120,23 @@ foreach ($characters as $c) {
                             </td>
                             <td class="actions-cell">
                                 <form>
-                                    <button type="button"
-                                            class="button edit btn-edit-char"
-                                            data-payload='<?php echo $charData; ?>'
-                                            title="Bearbeiten">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </button>
-                                    <button type="button"
-                                            class="button delete btn-delete-char"
-                                            data-id="<?php echo \htmlspecialchars($cId); ?>"
-                                            data-name="<?php echo \htmlspecialchars($char->name); ?>"
-                                            title="Löschen">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    <?php if ($perms['char_edit']) { ?>
+                                        <button type="button"
+                                                class="button edit btn-edit-char"
+                                                data-payload='<?php echo $charData; ?>'
+                                                title="Bearbeiten">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                    <?php } ?>
+                                    <?php if ($perms['char_del']) { ?>
+                                        <button type="button"
+                                                class="button delete btn-delete-char"
+                                                data-id="<?php echo \htmlspecialchars($cId); ?>"
+                                                data-name="<?php echo \htmlspecialchars($char->name); ?>"
+                                                title="Löschen">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    <?php } ?>
                                 </form>
                             </td>
                         </tr>

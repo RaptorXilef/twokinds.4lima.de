@@ -382,9 +382,11 @@ foreach ($alphaChars as $char) {
             <div class="modal-buttons">
                 <button type="button"
                         class="button btn-close-comic-modal">Abbrechen</button>
-                <button type="button"
-                        class="button edit"
-                        id="btn-save-comic">Speichern (Live)</button>
+                <?php if ($perms['comic_edit']) { ?>
+                    <button type="button"
+                            class="button edit"
+                            id="btn-save-comic">Speichern (Live)</button>
+                <?php } ?>
             </div>
         </div>
     </div>
@@ -664,9 +666,11 @@ foreach ($alphaChars as $char) {
             <div class="modal-buttons">
                 <button type="button"
                         class="button btn-close-char-modal">Abbrechen</button>
-                <button type="button"
-                        class="button edit"
-                        id="btn-save-char">Speichern (Live)</button>
+                <?php if ($perms['char_edit']) { ?>
+                    <button type="button"
+                            class="button edit"
+                            id="btn-save-char">Speichern (Live)</button>
+                <?php } ?>
             </div>
         </div>
     </div>
@@ -746,9 +750,11 @@ foreach ($alphaChars as $char) {
             <div class="modal-buttons">
                 <button type="button"
                         class="button btn-close-chapter-modal">Abbrechen</button>
-                <button type="button"
-                        class="button edit"
-                        id="btn-save-chapter">Speichern (Live)</button>
+                <?php if ($perms['chap_edit']) { ?>
+                    <button type="button"
+                            class="button edit"
+                            id="btn-save-chapter">Speichern (Live)</button>
+                <?php } ?>
             </div>
         </div>
     </div>
@@ -893,14 +899,18 @@ foreach ($alphaChars as $char) {
         <div class="modal-footer-actions"
              style="flex: 0 0 auto; display: flex; justify-content: space-between; z-index: 10; background: var(--main-bg);">
             <div>
-                <button type="button"
-                        class="button delete"
-                        id="btn-rep-spam"
-                        style="background: #dc3545;"><i class="fa-solid fa-trash"></i> Als Spam markieren</button>
-                <button type="button"
-                        class="button edit"
-                        id="btn-rep-resolve"
-                        style="background: #28a745;"><i class="fa-solid fa-check"></i> Als Erledigt markieren</button>
+                <?php if ($perms['rep_del']) { ?>
+                    <button type="button"
+                            class="button delete"
+                            id="btn-rep-spam"
+                            style="background: #dc3545;"><i class="fa-solid fa-ban"></i> Spam</button>
+                <?php } ?>
+                <?php if ($perms['rep_resolve']) { ?>
+                    <button type="button"
+                            class="button edit"
+                            id="btn-rep-resolve"
+                            style="background: #28a745;"><i class="fa-solid fa-check"></i> Erledigt / Schließen</button>
+                <?php } ?>
             </div>
             <button type="button"
                     class="button btn-close-report-modal">Schließen</button>
