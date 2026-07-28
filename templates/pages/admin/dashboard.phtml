@@ -2,19 +2,26 @@
 
 declare(strict_types=1);
 
+use App\Contracts\System\AssetHelperInterface;
+use App\Core\Entity\Character;
+use App\Core\Entity\ComicPage;
+use App\Core\Entity\Report;
+
 /**
- * @var array                                      $settings
- * @var string                                     $pageTitle
- * @var string                                     $adminUser
- * @var \App\Core\Entity\ComicPage[]               $comics
- * @var \App\Core\Entity\Character[]               $characters
- * @var array                                      $groups
- * @var array                                      $assignedIds
- * @var \App\Core\Entity\Report[]                  $openReports
- * @var array                                      $existingRanks
- * @var array                                      $existingChapters
- * @var array                                      $availableImages
- * @var \App\Contracts\System\AssetHelperInterface $asset
+ * @var array                $settings
+ * @var string               $pageTitle
+ * @var string               $adminUser
+ * @var ComicPage[]          $comics
+ * @var Character[]          $characters
+ * @var array                $groups
+ * @var array                $assignedIds
+ * @var Report[]             $openReports
+ * @var array                $existingRanks
+ * @var array                $existingChapters
+ * @var array                $availableImages
+ * @var AssetHelperInterface $asset
+ * @var array                $perms
+ * @var bool                 $canManageUsers
  */
 $baseUrl = \rtrim($settings['base_url'], '/');
 ?>
