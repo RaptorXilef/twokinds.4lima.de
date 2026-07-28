@@ -2,6 +2,18 @@
 
 
 
+## [6.4.0](https://github.com///compare/v6.3.0...v6.4.0) (2026-07-28)
+
+### 🚀 Features
+
+* **admin/comic:** implement undo/redo toggle and undelete (trash) functionality ([43867c2](https://github.com///commit/43867c2a4ea524091b067441c765f0084f96730b))
+* **admin/security:** implement granular role-based access control (RBAC) ([8c8fddd](https://github.com///commit/8c8fddda9d4f9bc047799516b48b064cd5bec40a))
+* **admin/ui:** apply granular RBAC permissions to UI buttons ([a74b90e](https://github.com///commit/a74b90e6dfa89e8f7e8444083ff51ed1bee394c8))
+
+### 🐛 Bug Fixes
+
+* **admin/templates:** resolve linter warnings for permission variables ([202d081](https://github.com///commit/202d081cabf053e4b262800c52a5f7bebf3af4a3))
+
 ## [6.3.0](https://github.com///compare/v6.2.1...v6.3.0) (2026-07-28)
 
 ### 🚀 Features
