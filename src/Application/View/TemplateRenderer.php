@@ -58,6 +58,7 @@ final readonly class TemplateRenderer
         return [
             'base_url'            => $this->config->getBaseUrl(),
             'site_title'          => $this->config->get('site_title', 'Twokinds auf Deutsch'),
+            'site_description'    => $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'),
             'app_version'         => $this->systemInfo->getCurrentVersion(),
             'google_analytics_id' => $this->config->get('google_analytics_id', ''),
         ];

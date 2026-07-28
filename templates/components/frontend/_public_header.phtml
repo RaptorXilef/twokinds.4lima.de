@@ -18,8 +18,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
 // --- SOCIAL MEDIA META LOGIK ---
 $currentUrl = $baseUrl . ($_SERVER['REQUEST_URI'] ?? '');
-$metaTitle  = $pageTitle ?? $settings['site_title'];
-$metaDesc   = $siteDescription ?? $settings['site_description'];
+$metaTitle  = $pageTitle ?? ($settings['site_title'] ?? 'Twokinds auf Deutsch');
+$metaDesc   = $siteDescription ?? ($settings['site_description'] ?? 'Die deutsche Übersetzung des Webcomics Twokinds.');
 
 // Standard-Bild für alle Seiten (z.B. das Tages-Banner)
 $metaImage = $baseUrl . '/assets/images/layout/banner_2025-12-day.webp';
