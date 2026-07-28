@@ -7,30 +7,37 @@ use App\Core\Entity\Bookmark;
 use App\Core\Entity\ComicPage;
 
 /**
- * @var array            $settings
- * @var array<ComicPage> $comics
- * @var bool             $isLoggedIn
- * @var string           $currentUserName
- * @var string           $currentUserRole
- * @var bool             $canUseCloudSync
- * @var Bookmark[] $cloudBookmarks
+ * @var array                $settings
+ * @var array<ComicPage>     $comics
+ * @var bool                 $isLoggedIn
+ * @var string               $currentUserName
+ * @var string               $currentUserRole
+ * @var bool                 $canUseCloudSync
+ * @var Bookmark[]           $cloudBookmarks
  * @var AssetHelperInterface $asset
- * @var string           $baseUrl
+ * @var string               $baseUrl
  */
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 
 // Wir bauen ein JS-Lexikon aus der Datenbank, um immer korrekte Pfade und Kapitel zu haben
 $comicDictionary = [];
+
 foreach ($comics as $c) {
-    $dateObj                        = \DateTimeImmutable::createFromFormat('Ymd', \substr($c->id->value, 0, 8));
-    $cb                             = $c->imageUpdatedAt ? '?c=' . $c->imageUpdatedAt : '';
+    $dateObj = \DateTimeImmutable::createFromFormat('Ymd', \substr($c->id->value, 0, 8));
+    $cb      = $c->imageUpdatedAt ? '?c=' . $c->imageUpdatedAt : '';
+
+    $thumbDisk = "{$appRoot}/public/assets/images/comic/thumbnails/" . $c->id->value . '.webp';
+    $thumb     = \file_exists($thumbDisk)
+        ? $baseUrl . '/assets/images/comic/thumbnails/' . $c->id->value . '.webp' . $cb
+        : $baseUrl . '/assets/images/layout/thumbnails/in_translation.webp';
+
     $comicDictionary[$c->id->value] = [
         'id'        => $c->id->value,
         'title'     => $c->name !== '' ? $c->name : 'Kein Titel',
         'type'      => $c->type,
         'chapter'   => $c->chapterId ?: 'Unbekannt',
         'date'      => $dateObj ? $dateObj->format('d.m.Y') : \substr($c->id->value, 0, 8),
-        'thumb'     => $baseUrl . '/assets/images/comic/thumbnails/' . $c->id->value . '.webp' . $cb,
+        'thumb'     => $thumb,
         'permalink' => $baseUrl . '/comic/' . $c->id->value,
     ];
 }

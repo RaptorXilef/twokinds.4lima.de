@@ -16,13 +16,25 @@ use App\Core\Entity\ComicPage;
  * @var array          $settings
  * @var bool           $canUseCloudSync
  */
-$baseUrl       = \rtrim($settings['base_url'], '/');
-$cb            = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-$imageLowres   = "{$baseUrl}/assets/images/comic/lowres/{$comic->id->value}.webp{$cb}";
-$imageHires    = "{$baseUrl}/assets/images/comic/hires/{$comic->id->value}.webp{$cb}";
-$thumbnailPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comic->id->value}.webp{$cb}";
+$baseUrl     = \rtrim($settings['base_url'], '/');
+$comicId     = $comic->id->value;
+$cb          = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+$baseImgDir  = "{$appRoot}/public/assets/images/comic";
+$fallbackDir = "{$baseUrl}/assets/images/layout";
 
-$canonicalUrl = "{$baseUrl}/comic/{$comic->id->value}";
+$imageLowres = \file_exists("{$baseImgDir}/lowres/{$comicId}.webp")
+    ? "{$baseUrl}/assets/images/comic/lowres/{$comicId}.webp{$cb}"
+    : "{$fallbackDir}/lowres/in_translation.webp";
+
+$imageHires = \file_exists("{$baseImgDir}/hires/{$comicId}.webp")
+    ? "{$baseUrl}/assets/images/comic/hires/{$comicId}.webp{$cb}"
+    : "{$fallbackDir}/hires/in_translation.webp";
+
+$thumbnailPath = \file_exists("{$baseImgDir}/thumbnails/{$comicId}.webp")
+    ? "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}"
+    : "{$fallbackDir}/thumbnails/in_translation.webp";
+
+$canonicalUrl = "{$baseUrl}/comic/{$comicId}";
 
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>

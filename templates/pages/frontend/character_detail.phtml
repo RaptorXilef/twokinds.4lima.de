@@ -176,8 +176,10 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <?php foreach ($characterComics as $comic) {
                         $comicId   = $comic->id->value;
                         $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-                        $thumbPath = "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}";
-
+                        $thumbDisk = "{$appRoot}/public/assets/images/comic/thumbnails/{$comicId}.webp";
+                        $thumbPath = \file_exists($thumbDisk)
+                            ? "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}"
+                            : "{$baseUrl}/assets/images/layout/thumbnails/in_translation.webp";
                         $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
                         $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
                         $pageName    = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
