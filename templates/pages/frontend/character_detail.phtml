@@ -9,6 +9,7 @@ use App\Core\Entity\Character;
  * @var array     $characterComics
  * @var string    $pageTitle
  * @var array     $settings
+ * @var string    $appRoot
  */
 $baseUrl         = \rtrim($settings['base_url'], '/');
 $placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
@@ -118,7 +119,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 <?php } ?>
 
                 <!-- Das HTML-Transkript / Die Biografie -->
-                 <!-- Unsichtbarer Speicher des Roh-HTMLs für das Melde-Modal -->
+                <!-- Unsichtbarer Speicher des Roh-HTMLs für das Melde-Modal -->
                 <textarea id="raw-char-description" style="display: none;" aria-hidden="true"><?php echo \htmlspecialchars($character->description ?? ''); ?></textarea>
                 <div class="character-description"
                      style="line-height: 1.6; font-size: 1.05em; margin-bottom: 25px; margin-top: 15px;">

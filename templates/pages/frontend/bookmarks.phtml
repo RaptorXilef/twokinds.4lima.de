@@ -16,6 +16,7 @@ use App\Core\Entity\ComicPage;
  * @var Bookmark[]           $cloudBookmarks
  * @var AssetHelperInterface $asset
  * @var string               $baseUrl
+ * @var string               $appRoot
  */
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 
@@ -257,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // API Sync Request
     async function syncApi(resolution) {
-        const fd = new FormData();
+        const fd = new window.FormData();
         fd.append('resolution', resolution);
         fd.append('local_ids', JSON.stringify(getLocalIds()));
         fd.append('csrf_token', '<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>');
@@ -304,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle-Lösch-Funktion (API oder Lokal)
     async function removeBookmark(id) {
         if (canUseCloudSync) {
-            const fd = new FormData();
+            const fd = new window.FormData();
             fd.append('comic_id', id);
             fd.append('bookmark_action', 'remove');
             fd.append('csrf_token', '<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>');
@@ -376,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnClearAll.addEventListener('click', async () => {
             if (confirm('Möchtest du wirklich ALLE Lesezeichen unwiderruflich löschen?')) {
                 if (canUseCloudSync) {
-                    const fd = new FormData();
+                    const fd = new window.FormData();
                     fd.append('resolution', 'local_wins');
                     fd.append('local_ids', '[]'); // Leeres Array hochschieben = alles löschen
                     fd.append('csrf_token', '<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>');
