@@ -13,25 +13,40 @@ final class PermissionRegistry
                 'label'    => 'Admin-Bereich',
                 'key'      => 'admin.access',
                 'children' => [
-                    'dashboard' => ['label' => 'Dashboard ansehen', 'key' => 'dashboard.view'],
+                    'dashboard' => ['label' => 'Dashboard betreten', 'key' => 'dashboard.view'],
                 ],
             ],
             'comics' => [
                 'label'    => 'Comic-Verwaltung',
                 'key'      => 'comics.manage',
                 'children' => [
-                    'create' => ['label' => 'Comics hinzufügen', 'key' => 'comics.create'],
-                    'edit'   => ['label' => 'Comics bearbeiten', 'key' => 'comics.edit'],
-                    'delete' => ['label' => 'Comics löschen', 'key' => 'comics.delete'],
+                    'create_edit' => ['label' => 'Comics anlegen & bearbeiten', 'key' => 'comics.edit'],
+                    'delete'      => ['label' => 'Comics löschen & wiederherstellen', 'key' => 'comics.delete'],
                 ],
             ],
             'characters' => [
                 'label'    => 'Charakter-Verwaltung',
                 'key'      => 'characters.manage',
                 'children' => [
-                    'create' => ['label' => 'Charaktere hinzufügen', 'key' => 'characters.create'],
-                    'edit'   => ['label' => 'Charaktere bearbeiten', 'key' => 'characters.edit'],
-                    'delete' => ['label' => 'Charaktere löschen', 'key' => 'characters.delete'],
+                    'create_edit' => ['label' => 'Charaktere anlegen & bearbeiten', 'key' => 'characters.edit'],
+                    'delete'      => ['label' => 'Charaktere löschen', 'key' => 'characters.delete'],
+                    'groups'      => ['label' => 'Charakter-Gruppen sortieren', 'key' => 'groups.manage'],
+                ],
+            ],
+            'chapters' => [
+                'label'    => 'Archiv / Kapitel',
+                'key'      => 'chapters.manage',
+                'children' => [
+                    'create_edit' => ['label' => 'Kapitel anlegen & bearbeiten', 'key' => 'chapters.edit'],
+                    'delete'      => ['label' => 'Kapitel löschen', 'key' => 'chapters.delete'],
+                ],
+            ],
+            'media' => [
+                'label'    => 'Galerie / Bilder',
+                'key'      => 'media.manage',
+                'children' => [
+                    'upload' => ['label' => 'Bilder hochladen', 'key' => 'media.upload'],
+                    'delete' => ['label' => 'Bilder vom Server löschen', 'key' => 'media.delete'],
                 ],
             ],
             'reports' => [
@@ -39,7 +54,7 @@ final class PermissionRegistry
                 'key'      => 'reports.view',
                 'children' => [
                     'resolve' => ['label' => 'Berichte schließen/lösen', 'key' => 'reports.resolve'],
-                    'delete'  => ['label' => 'Berichte als Spam markieren/löschen', 'key' => 'reports.delete'],
+                    'delete'  => ['label' => 'Berichte als Spam markieren', 'key' => 'reports.delete'],
                 ],
             ],
             'system' => [
@@ -48,7 +63,6 @@ final class PermissionRegistry
                 'children' => [
                     'users' => ['label' => 'Benutzer verwalten', 'key' => 'system.users.manage'],
                     'roles' => ['label' => 'Rechte-Gruppen (Rollen) verwalten', 'key' => 'system.roles.manage'],
-                    'cache' => ['label' => 'Cache & System-Tools', 'key' => 'system.tools.execute'],
                 ],
             ],
         ];

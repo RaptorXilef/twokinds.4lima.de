@@ -38,6 +38,11 @@ final readonly class ApiDeleteUserAction implements ActionInterface
                 return JsonResponse::error('Du kannst dich nicht selbst löschen!', 403);
             }
 
+            $userToDelete = $this->userRepo->findById($id);
+            if ($userToDelete && $userToDelete->roleId === 'admin' && ! \str_starts_with($this->auth->getUserId(), 'sys_')) {
+                return JsonResponse::error('Nur der Systembetreuer darf Administratoren löschen.', 403);
+            }
+
             $this->userRepo->delete($id);
 
             return JsonResponse::success(['message' => 'Benutzer erfolgreich gelöscht.']);

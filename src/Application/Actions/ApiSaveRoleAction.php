@@ -45,6 +45,15 @@ final readonly class ApiSaveRoleAction implements ActionInterface
                 return JsonResponse::error('ID und Name sind Pflichtfelder.', 400);
             }
 
+            // ADMIN-SCHUTZ:
+            if ($id === 'admin' && ! \str_starts_with($this->auth->getUserId(), 'sys_')) {
+                return JsonResponse::error('Nur der System-Eigentümer (dev_admin) darf die Admin-Rolle bearbeiten!', 403);
+            }
+
+            if (\in_array($id, ['user', 'pending'], true) && $this->auth->getRole() !== 'admin') {
+                return JsonResponse::error('System-Rollen können nur von Administratoren bearbeitet werden.', 403);
+            }
+
             // Schutz vor Überschreiben von Systemrollen
             if (\in_array($id, ['admin', 'user', 'pending'], true) && $this->auth->getRole() !== 'admin') {
                 return JsonResponse::error('System-Rollen können nur von Haupt-Administratoren bearbeitet werden.', 403);

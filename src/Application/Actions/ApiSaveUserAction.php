@@ -41,8 +41,20 @@ final readonly class ApiSaveUserAction implements ActionInterface
                 return JsonResponse::error('ID, Name und E-Mail sind Pflichtfelder.', 400);
             }
 
-            $existingUser = $this->userRepo->findById($id);
-            $hash         = $existingUser ? $existingUser->passwordHash : '';
+            $isConfigAdmin = \str_starts_with($this->auth->getUserId(), 'sys_');
+            $existingUser  = $this->userRepo->findById($id);
+
+            // ADMIN-SCHUTZ:
+            if ($existingUser && $existingUser->roleId === 'admin' && ! $isConfigAdmin) {
+                if ($this->auth->getUserId() !== $id) {
+                    return JsonResponse::error('Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.', 403);
+                }
+                if ($roleId !== 'admin') {
+                    return JsonResponse::error('Du darfst dich nicht selbst degradieren.', 403);
+                }
+            }
+
+            $hash = $existingUser ? $existingUser->passwordHash : '';
 
             // Wenn ein neues Passwort eingegeben wurde
             if ($password !== '') {

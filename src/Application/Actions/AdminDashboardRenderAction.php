@@ -90,6 +90,22 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         $canManageUsers  = $this->auth->hasPermission('system.users.manage');
         $canManageRoles  = $this->auth->hasPermission('system.roles.manage');
 
+        // --- NEUE PERMISSIONS FÜR DIE UI ---
+        $perms = [
+            'chap_del'     => $this->auth->hasPermission('chapters.delete'),
+            'chap_edit'    => $this->auth->hasPermission('chapters.edit'),
+            'char_del'     => $this->auth->hasPermission('characters.delete'),
+            'char_edit'    => $this->auth->hasPermission('characters.edit'),
+            'comic_del'    => $this->auth->hasPermission('comics.delete'),
+            'comic_edit'   => $this->auth->hasPermission('comics.edit'),
+            'group_manage' => $this->auth->hasPermission('groups.manage'),
+            'media_del'    => $this->auth->hasPermission('media.delete'),
+            'media_up'     => $this->auth->hasPermission('media.upload'),
+            'rep_del'      => $this->auth->hasPermission('reports.delete'),
+            'rep_resolve'  => $this->auth->hasPermission('reports.resolve'),
+            'rep_view'     => $this->auth->hasPermission('reports.view'),
+        ];
+
         $this->renderer->render('admin/dashboard', [
             'pageTitle'        => 'Admin Dashboard',
             'adminUser'        => $this->sessionManager->getAdminUser(),
@@ -111,6 +127,7 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             'permissionsTree'  => $permissionsTree,
             'canManageUsers'   => $canManageUsers,
             'canManageRoles'   => $canManageRoles,
+            'perms'            => $perms,
         ]);
 
         return null;
