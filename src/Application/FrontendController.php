@@ -185,6 +185,7 @@ final readonly class FrontendController
                 'list_media'                   => ['action' => 'api_list_media', 'input' => $input],
                 'process_mail_queue'           => ['action' => 'api_process_mail_queue', 'input' => $input],
                 'projekt'                      => ['action' => 'page_project_info'],
+                'restore_deleted_comic'        => ['action' => 'api_restore_deleted_comic', 'input' => $input],
                 'save_chapter'                 => ['action' => 'api_save_chapter', 'input' => $input],
                 'save_character_groups'        => ['action' => 'api_save_character_groups', 'input' => $input],
                 'save_role'                    => ['action' => 'api_save_role', 'input' => $input],

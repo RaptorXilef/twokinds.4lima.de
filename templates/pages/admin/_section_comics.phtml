@@ -23,6 +23,11 @@ use App\Core\Entity\ComicPage;
                     id="btn-add-comic">
                 <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen
             </button>
+            <button type="button"
+                    class="button button-orange"
+                    id="btn-restore-deleted-comic"
+                    title="Zuletzt gelöschten Comic wiederherstellen">
+                <i class="fa-solid fa-trash-arrow-up"></i> Papierkorb </button>
         </div>
         <div class="search-wrapper"
              style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -149,16 +154,16 @@ use App\Core\Entity\ComicPage;
                             <td class="actions-cell">
                                 <form>
                                     <button type="button"
-                                            class="button button-orange btn-undo-comic"
-                                            data-id="<?php echo \htmlspecialchars($cId); ?>"
-                                            title="Letzte Änderung rückgängig machen">
-                                        <i class="fa-solid fa-rotate-left"></i>
-                                    </button>
-                                    <button type="button"
                                             class="button edit btn-edit-comic"
                                             data-payload='<?php echo $comicData; ?>'
                                             title="Bearbeiten">
                                         <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="button button-orange btn-undo-comic"
+                                            data-id="<?php echo \htmlspecialchars($cId); ?>"
+                                            title="Letzte Änderung rückgängig / Wiederherstellen (Toggle)">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
                                     </button>
                                     <button type="button"
                                             class="button delete btn-delete-comic"
@@ -178,4 +183,34 @@ use App\Core\Entity\ComicPage;
          style="display: flex; gap: 5px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
         <!-- Die Buttons werden hier per JS generiert -->
     </div>
+
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnRestore = document.getElementById('btn-restore-deleted-comic');
+        if (btnRestore) {
+            btnRestore.addEventListener('click', async () => {
+                if (!confirm('Möchtest du den zuletzt gelöschten Comic wiederherstellen?')) return;
+                const fd = new window.FormData();
+                fd.append('csrf_token', document.querySelector('meta[name="csrf-token"]').content);
+                try {
+                    const res = await fetch('<?php echo $baseUrl; ?>/api/restore_deleted_comic', {
+                        method: 'POST',
+                        body: fd
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert(data.error);
+                    }
+                } catch (e) {
+                    alert('Verbindungsfehler.');
+                }
+            });
+        }
+    });
+
+    </script>
+
 </section>

@@ -13,4 +13,6 @@ interface ComicRevisionRepositoryInterface
 
     // Holt die letzte Revision und löscht sie aus dem Log
     public function popLatestRevision(ComicId $id): ?array;
+
+    public function popLatestDeletedRevision(): ?array;
 }

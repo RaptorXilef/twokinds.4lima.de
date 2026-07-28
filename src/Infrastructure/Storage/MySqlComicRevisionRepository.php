@@ -83,4 +83,29 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
 
         return \json_decode($row['revision_data'], true);
     }
+
+    public function popLatestDeletedRevision(): ?array
+    {
+        // Sucht ein Backup, dessen comic_id in der Haupttabelle nicht mehr existiert
+        $stmt = $this->pdo->query('
+            SELECT r.id, r.comic_id, r.revision_data
+            FROM `comic_revisions` r
+            LEFT JOIN `comics` c ON r.comic_id = c.id
+            WHERE c.id IS NULL
+            ORDER BY r.created_at DESC
+            LIMIT 1
+        ');
+        $row = $stmt->fetch();
+        if (! $row) {
+            return null;
+        }
+
+        $delStmt = $this->pdo->prepare('DELETE FROM `comic_revisions` WHERE `id` = ?');
+        $delStmt->execute([$row['id']]);
+
+        $data             = \json_decode($row['revision_data'], true);
+        $data['comic_id'] = $row['comic_id']; // ID wieder ins Array mogeln
+
+        return $data;
+    }
 }

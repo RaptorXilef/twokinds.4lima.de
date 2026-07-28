@@ -25,6 +25,7 @@ return [
     'api_get_transcript'                  => 'App\\Application\\Actions\\ApiGetTranscriptAction',
     'api_list_comic_media'                => 'App\\Application\\Actions\\ApiListComicMediaAction',
     'api_list_media'                      => 'App\\Application\\Actions\\ApiMediaListAction',
+    'api_restore_deleted_comic'           => 'App\\Application\\Actions\\ApiRestoreDeletedComicAction',
     'api_save_chapter'                    => 'App\\Application\\Actions\\ApiSaveChapterAction',
     'api_save_character_groups'           => 'App\\Application\\Actions\\ApiSaveCharacterGroupsAction',
     'api_save_role'                       => 'App\\Application\\Actions\\ApiSaveRoleAction',
