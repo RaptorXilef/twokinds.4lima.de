@@ -15,6 +15,22 @@ use App\Contracts\System\AssetHelperInterface;
 
 // Den doppelten Slash verhindern
 $baseUrl = \rtrim($settings['base_url'], '/');
+
+// --- SOCIAL MEDIA META LOGIK ---
+$currentUrl = $baseUrl . ($_SERVER['REQUEST_URI'] ?? '');
+$metaTitle  = $pageTitle ?? $settings['site_title'];
+$metaDesc   = $siteDescription ?? $settings['site_description'];
+
+// Standard-Bild für alle Seiten (z.B. das Tages-Banner)
+$metaImage = $baseUrl . '/assets/images/layout/banner_2025-12-day.webp';
+$metaType  = 'website';
+
+// Wenn wir auf einer Comicseite sind, schnappen wir uns das zugeschnittene Social-Media-Bild!
+if (isset($isComicPage) && $isComicPage && isset($comic)) {
+    $metaType  = 'article';
+    $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+    $metaImage = "{$baseUrl}/assets/images/comic/socialmedia/{$comic->id->value}.jpg{$cb}";
+}
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -23,7 +39,33 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
-    <title><?php echo \htmlspecialchars($pageTitle ?? $settings['site_title']); ?></title>
+    <title><?php echo \htmlspecialchars($metaTitle); ?></title>
+    <meta name="description"
+          content="<?php echo \htmlspecialchars($metaDesc); ?>">
+
+    <!-- Open Graph / Facebook / Discord -->
+    <meta property="og:type"
+          content="<?php echo $metaType; ?>">
+    <meta property="og:url"
+          content="<?php echo \htmlspecialchars($currentUrl); ?>">
+    <meta property="og:title"
+          content="<?php echo \htmlspecialchars($metaTitle); ?>">
+    <meta property="og:description"
+          content="<?php echo \htmlspecialchars($metaDesc); ?>">
+    <meta property="og:image"
+          content="<?php echo \htmlspecialchars($metaImage); ?>">
+
+    <!-- Twitter -->
+    <meta name="twitter:card"
+          content="summary_large_image">
+    <meta name="twitter:url"
+          content="<?php echo \htmlspecialchars($currentUrl); ?>">
+    <meta name="twitter:title"
+          content="<?php echo \htmlspecialchars($metaTitle); ?>">
+    <meta name="twitter:description"
+          content="<?php echo \htmlspecialchars($metaDesc); ?>">
+    <meta name="twitter:image"
+          content="<?php echo \htmlspecialchars($metaImage); ?>">
 
     <!-- Automatisch cache-gebustetes CSS -->
     <link rel="stylesheet"
