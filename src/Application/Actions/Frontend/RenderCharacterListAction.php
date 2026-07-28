@@ -25,10 +25,59 @@ final readonly class RenderCharacterListAction implements ViewActionInterface
     {
         $characters = $this->charRepo->findAll();
         $groups     = $this->groupRepo->findAll();
-        // Auf neuen template-Pfad geändert:
+
+        // Dynamische Filter-Optionen generieren
+        $filterData = [
+            'gender'     => [],
+            'age'        => [],
+            'rank'       => [],
+            'species'    => [],
+            'subspecies' => [],
+            'languages'  => [],
+        ];
+
+        foreach ($characters as $c) {
+            if ($c->gender) {
+                $filterData['gender'][$c->gender] = true;
+            }
+            if ($c->age) {
+                $filterData['age'][$c->age] = true;
+            }
+            if ($c->species) {
+                $filterData['species'][$c->species] = true;
+            }
+            if ($c->subspecies) {
+                $filterData['subspecies'][$c->subspecies] = true;
+            }
+
+            // Komma-separierte Listen (Ränge, Sprachen) aufteilen
+            if ($c->rank) {
+                foreach (\array_map('trim', \explode(',', $c->rank)) as $r) {
+                    if ($r !== '') {
+                        $filterData['rank'][$r] = true;
+                    }
+                }
+            }
+            if ($c->languages) {
+                foreach (\array_map('trim', \explode(',', $c->languages)) as $l) {
+                    if ($l !== '') {
+                        $filterData['languages'][$l] = true;
+                    }
+                }
+            }
+        }
+
+        // Keys extrahieren und natürlich alphabetisch sortieren
+        foreach ($filterData as $key => $val) {
+            $keys = \array_keys($val);
+            \natcasesort($keys);
+            $filterData[$key] = \array_values($keys);
+        }
+
         $this->renderer->render('frontend/character_list', [
             'characters'      => $characters,
             'groups'          => $groups,
+            'filterData'      => $filterData, // Neue Variable ans Template übergeben
             'pageTitle'       => 'Charaktere',
             'siteDescription' => 'Lerne die Hauptcharaktere von TwoKinds kennen.',
         ]);

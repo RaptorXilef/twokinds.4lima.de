@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -18,9 +19,102 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         </header>
         <p class="character-overview-intro">Eine alphabetische Übersicht aller Charaktere, eingeteilt in Gruppen.</p>
 
-        <!-- Charakter-Lego-Modul einbinden (Ohne Filter) -->
-        <?php
-        $limitToIds = null;
+        <!-- START FILTER BEREICH -->
+        <div class="filter-form"
+             style="margin-bottom: 30px; background: var(--content-box-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <h3
+                style="margin-top: 0; margin-bottom: 15px; font-size: 1.2em; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
+                <i class="fa-solid fa-filter"
+                   style="color: var(--link-color);"></i> Charaktere filtern
+            </h3>
+            <div class="filter-controls"
+                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                <div style="grid-column: 1 / -1;">
+                    <label
+                           style="display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-color-faded);">Freitext-Suche</label>
+                    <input type="text"
+                           id="char-filter-search"
+                           placeholder="Name, Alias oder Biographie durchsuchen..."
+                           style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--content-bg); color: var(--text-color);">
+                </div>
+                <div>
+                    <label
+                           style="display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-color-faded);">Geschlecht</label>
+                    <select id="char-filter-gender"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--content-bg); color: var(--text-color);">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['gender'] as $v) {
+                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+                <div>
+                    <label
+                           style="display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-color-faded);">Alter</label>
+                    <select id="char-filter-age"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--content-bg); color: var(--text-color);">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['age'] as $v) {
+                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+                <div>
+                    <label
+                           style="display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-color-faded);">Spezies</label>
+                    <select id="char-filter-species"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--content-bg); color: var(--text-color);">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['species'] as $v) {
+                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+                <div>
+                    <label
+                           style="display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-color-faded);">Subspezies</label>
+                    <select id="char-filter-subspecies"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--content-bg); color: var(--text-color);">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['subspecies'] as $v) {
+                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+                <div>
+                    <label
+                           style="display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-color-faded);">Klasse/Rang</label>
+                    <select id="char-filter-rank"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--content-bg); color: var(--text-color);">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['rank'] as $v) {
+                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+                <div>
+                    <label
+                           style="display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: var(--text-color-faded);">Sprachen</label>
+                    <select id="char-filter-languages"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--content-bg); color: var(--text-color);">
+                        <option value="">Alle</option>
+                        <?php foreach ($filterData['languages'] as $v) {
+                            echo '<option value="' . \htmlspecialchars($v) . '">' . \htmlspecialchars($v) . '</option>';
+                        } ?>
+                    </select>
+                </div>
+            </div>
+            <div style="text-align: right; margin-top: 15px;">
+                <button type="button"
+                        id="char-filter-reset"
+                        class="button edit"
+                        style="padding: 8px 15px; font-size: 0.9em;"><i class="fa-solid fa-rotate-left"></i> Filter
+                    zurücksetzen</button>
+            </div>
+        </div>
+        <!-- ENDE FILTER BEREICH -->
+
+        <?php $limitToIds = null;
 include __DIR__ . '/../../components/frontend/_character_display.phtml';
 ?>
 
