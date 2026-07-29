@@ -2,6 +2,24 @@
 
 
 
+## [6.4.1](https://github.com///compare/v6.4.0...v6.4.1) (2026-07-29)
+
+### 🐛 Bug Fixes
+
+* **admin/js:** resolve Biome linter warnings and runtime DOM ID errors ([4898644](https://github.com///commit/4898644e0d5d0e072f0ae709e1ab268150cfa406))
+* **admin/js:** resolve DOM ID collisions and restore missing Tab-Logic ([20287a8](https://github.com///commit/20287a8383acaeb6787388673657dc6b7a50f24f))
+* **admin/js:** resolve missing character description in editor modal ([5ce35a9](https://github.com///commit/5ce35a995fbc797d0ae35f7c73f188470b589692))
+* **admin/js:** resolve unsaved changes prompt, SystemManager crash, and restore comic previews ([98a02c7](https://github.com///commit/98a02c7a8175138282a9486105109490155f1aa7))
+
+### ⚙️ Refactoring
+
+* **admin/js:** cleanup legacy admin.js and preserve non-modularized features ([1e83b66](https://github.com///commit/1e83b662ab107d6be6e026169a38a432e38e2ff9))
+* **admin/js:** implement ES6 ChapterEditor and GroupEditor modules ([07435bb](https://github.com///commit/07435bbc9f3a58da4915932932a1da14bd6959c6))
+* **admin/js:** implement ES6 CharacterEditor module ([8415b63](https://github.com///commit/8415b63e3f776178d06f79a5ea7d3964732a693c))
+* **admin/js:** implement ES6 ComicEditor module and bootstrapper ([579746e](https://github.com///commit/579746e3ea02697aa5517f6db4bccddd60d4aa75))
+* **admin/js:** implement ES6 ReportManager and SystemManager modules ([69788f4](https://github.com///commit/69788f429c94037487013163c0731e9273dc01d6))
+* **admin/js:** introduce modular ES6 architecture and core services ([2653320](https://github.com///commit/2653320bd1b898964a33f0ad92c07a0062da8005))
+
 ## [6.4.0](https://github.com///compare/v6.3.0...v6.4.0) (2026-07-28)
 
 ### 🚀 Features
