@@ -1,16 +1,31 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class CharacterEditor {
-    constructor(api, modalManager) {
+    /**
+     * @param {Api} api
+     * @param {ModalManager} modalManager
+     * @param {NotificationService} notifications
+     */
+    constructor(api, modalManager, notifications) {
         this.api = api;
         this.modalManager = modalManager;
+        this.notifications = notifications;
 
+        /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-characters');
+        /** @type {HTMLFormElement|null} */
         this.form = document.getElementById('char-form');
-        this.accumulatedRefFiles = new DataTransfer(); // FIX: Speicher für Ref-Sheets
+        /** @type {DataTransfer} */
+        this.accumulatedRefFiles = new DataTransfer();
 
         if (this.section || this.form) {
             this.bindEvents();
             this.bindImageSelection();
-            this.bindDropZones(); // FIX: Drag & Drop aktivieren
+            this.bindDropZones();
         }
     }
 
@@ -62,9 +77,9 @@ export class CharacterEditor {
         if (profileGrid) {
             profileGrid.addEventListener('click', (e) => {
                 if (e.target.tagName === 'IMG') {
-                    profileGrid.querySelectorAll('img').forEach((img) => {
-                        img.classList.remove('selected');
-                    });
+                    profileGrid
+                        .querySelectorAll('img')
+                        .forEach((img) => img.classList.remove('selected'));
                     e.target.classList.add('selected');
                     const picInput = this.form.querySelector('[name="pic_url"]');
                     if (picInput) picInput.value = e.target.dataset.filename;
@@ -77,9 +92,9 @@ export class CharacterEditor {
         if (mainGrid) {
             mainGrid.addEventListener('click', (e) => {
                 if (e.target.tagName === 'IMG') {
-                    mainGrid.querySelectorAll('img').forEach((img) => {
-                        img.classList.remove('selected');
-                    });
+                    mainGrid
+                        .querySelectorAll('img')
+                        .forEach((img) => img.classList.remove('selected'));
                     e.target.classList.add('selected');
                     const mainInput = this.form.querySelector('[name="main_pic_url"]');
                     if (mainInput) mainInput.value = e.target.dataset.filename;
@@ -226,9 +241,7 @@ export class CharacterEditor {
             zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
         }
 
-        Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => {
-            img.remove();
-        });
+        Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => img.remove());
 
         Array.from(this.accumulatedRefFiles.files).forEach((file) => {
             const reader = new FileReader();
@@ -285,9 +298,9 @@ export class CharacterEditor {
             window.$('#char_description').trumbowyg('empty');
         }
 
-        document.querySelectorAll('#profile-pic-grid img, #main-pic-grid img').forEach((img) => {
-            img.classList.remove('selected');
-        });
+        document
+            .querySelectorAll('#profile-pic-grid img, #main-pic-grid img')
+            .forEach((img) => img.classList.remove('selected'));
 
         const displayId = document.getElementById('char-display-id');
         if (displayId) displayId.textContent = 'ID: NEW';
@@ -295,7 +308,7 @@ export class CharacterEditor {
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Neuen Charakter erstellen';
 
-        this.resetAllDropZones(); // Reset
+        this.resetAllDropZones();
         sessionStorage.setItem('highlightEntityIdCancel', 'new');
 
         this.modalManager.open('char-modal');
@@ -327,9 +340,9 @@ export class CharacterEditor {
         }
 
         // Bilder im Raster markieren
-        document.querySelectorAll('#profile-pic-grid img, #main-pic-grid img').forEach((img) => {
-            img.classList.remove('selected');
-        });
+        document
+            .querySelectorAll('#profile-pic-grid img, #main-pic-grid img')
+            .forEach((img) => img.classList.remove('selected'));
 
         setVal('pic_url', payload.picUrl);
         if (payload.picUrl) {
@@ -353,7 +366,7 @@ export class CharacterEditor {
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
 
-        this.resetAllDropZones(); // FIX: Reset
+        this.resetAllDropZones();
         sessionStorage.setItem('highlightEntityIdCancel', payload.id);
 
         this.modalManager.open('char-modal');
@@ -377,7 +390,8 @@ export class CharacterEditor {
             const idInput = this.form.querySelector('[name="id"]');
             if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-            const result = await this.api.post('save_character', formData);
+            // FIX: Endpunkt war im alten Code 'save_single_character'
+            const result = await this.api.post('save_single_character', formData);
 
             if (result.success) {
                 this.notifications.show(result.message, 'success');

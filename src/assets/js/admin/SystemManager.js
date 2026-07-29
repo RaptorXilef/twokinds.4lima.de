@@ -1,7 +1,21 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class SystemManager {
-    constructor(api, modalManager) {
+    /**
+     * @param {Api} api
+     * @param {ModalManager} modalManager
+     * @param {NotificationService} notifications
+     */
+    constructor(api, modalManager, notifications) {
         this.api = api;
         this.modalManager = modalManager;
+        this.notifications = notifications;
+
+        /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-users');
 
         if (this.section) {

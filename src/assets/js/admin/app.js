@@ -32,21 +32,20 @@ document.addEventListener('DOMContentLoaded', () => {
         paginationContainerId: 'comic-pagination',
     });
 
-    // 3. Editor Module initialisieren
-    const comicEditor = new ComicEditor(api, modalManager);
-    new CharacterEditor(api, modalManager);
-    new ChapterEditor(api, modalManager);
-    new GroupEditor(api);
+    // 3. Editor Module initialisieren (Jetzt MIT notifications!)
+    const comicEditor = new ComicEditor(api, modalManager, notifications);
+    new CharacterEditor(api, modalManager, notifications);
+    new ChapterEditor(api, modalManager, notifications);
+    new GroupEditor(api, notifications);
 
-    // FIX: ComicEditor an ReportManager übergeben für das Transkript-Killer-Feature!
-    new ReportManager(api, modalManager, comicEditor);
-    new SystemManager(api, modalManager);
+    new ReportManager(api, modalManager, comicEditor, notifications);
+    new SystemManager(api, modalManager, notifications);
 
     // 4. Tool Module initialisieren
-    new MassUploadManager(api);
-    new CropperManager(api);
-    new MediaGallery(api, modalManager);
-    new NewsletterManager(api);
+    new MassUploadManager(api, notifications);
+    new CropperManager(api, notifications);
+    new MediaGallery(api, modalManager, notifications);
+    new NewsletterManager(api, notifications);
 
     // 5. System Logout
     document.getElementById('admin-logout-btn')?.addEventListener('click', async (e) => {

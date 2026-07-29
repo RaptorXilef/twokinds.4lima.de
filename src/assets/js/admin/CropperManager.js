@@ -1,11 +1,17 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class CropperManager {
-    constructor(api) {
+    /**
+     * @param {Api} api
+     * @param {NotificationService} notifications
+     */
+    constructor(api, notifications) {
         this.api = api;
+        this.notifications = notifications;
         this.cropperInstance = null;
-
-        const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
-        this.baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
-
         this.bindEvents();
     }
 
@@ -43,7 +49,7 @@ export class CropperManager {
             return;
         }
 
-        const imgUrl = `${this.baseUrl}/assets/images/comic/hires/${comicId}.webp?t=${Date.now()}`;
+        const imgUrl = `${this.api.baseUrl}/assets/images/comic/hires/${comicId}.webp?t=${Date.now()}`;
         const testImg = new Image();
 
         testImg.onload = () => {
@@ -118,7 +124,7 @@ export class CropperManager {
                 const timestamp = Date.now();
                 const prevSocial = document.getElementById('prev-comic-social');
                 if (prevSocial) {
-                    prevSocial.src = `${this.baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
+                    prevSocial.src = `${this.api.baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
                 }
 
                 // Miniaturansicht in der Tabelle updaten
@@ -128,7 +134,7 @@ export class CropperManager {
                 if (tableRow) {
                     const tableThumb = tableRow.querySelectorAll('img')[1];
                     if (tableThumb) {
-                        tableThumb.src = `${this.baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
+                        tableThumb.src = `${this.api.baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
                         tableThumb.style.display = 'inline-block';
                     }
                 }

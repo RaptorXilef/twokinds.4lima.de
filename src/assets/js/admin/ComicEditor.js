@@ -1,16 +1,29 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class ComicEditor {
-    constructor(api, modalManager) {
+    /**
+     * @param {Api} api
+     * @param {ModalManager} modalManager
+     * @param {NotificationService} notifications
+     */
+    constructor(api, modalManager, notifications) {
         // Dependency Injection
         this.api = api;
         this.modalManager = modalManager;
+        this.notifications = notifications;
 
-        // DOM Elemente
+        /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-comics');
+        /** @type {HTMLFormElement|null} */
         this.form = document.getElementById('comic-form');
 
         if (this.section) {
             this.bindEvents();
-            this.bindDropZones(); // FIX: Dropzones binden
+            this.bindDropZones();
         }
     }
 
@@ -293,7 +306,7 @@ export class ComicEditor {
         }
 
         this.resetCharacterSelection();
-        this.resetDropZones(); // FIX: Borders reset
+        this.resetDropZones();
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
@@ -315,7 +328,7 @@ export class ComicEditor {
         const idInput = this.form.querySelector('[name="comic_id"]');
         if (idInput) {
             idInput.readOnly = true; // Sperren beim Bearbeiten!
-            sessionStorage.setItem('highlightEntityIdCancel', payload.id); // FIX: Cancel Fallback
+            sessionStorage.setItem('highlightEntityIdCancel', payload.id);
         }
 
         setVal('type', payload.type || 'Comicseite');
@@ -330,7 +343,7 @@ export class ComicEditor {
         }
 
         this.applyCharacterSelection(payload.characters || []);
-        this.resetDropZones(); // FIX: Borders reset
+        this.resetDropZones();
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';

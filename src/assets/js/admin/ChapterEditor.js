@@ -1,8 +1,23 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class ChapterEditor {
-    constructor(api, modalManager) {
+    /**
+     * @param {Api} api
+     * @param {ModalManager} modalManager
+     * @param {NotificationService} notifications
+     */
+    constructor(api, modalManager, notifications) {
         this.api = api;
         this.modalManager = modalManager;
+        this.notifications = notifications;
+
+        /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-archive');
+        /** @type {HTMLFormElement|null} */
         this.form = document.getElementById('chapter-form');
 
         if (this.section || this.form) {

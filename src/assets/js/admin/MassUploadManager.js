@@ -1,16 +1,30 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class MassUploadManager {
-    constructor(api) {
+    /**
+     * @param {Api} api
+     * @param {NotificationService} notifications
+     */
+    constructor(api, notifications) {
         this.api = api;
+        this.notifications = notifications;
+
+        /** @type {HTMLElement|null} */
         this.massDropZone = document.getElementById('mass-drop-zone');
+        /** @type {HTMLElement|null} */
         this.queueTableBody = document.querySelector('#upload-queue-table tbody');
+        /** @type {HTMLButtonElement|null} */
         this.btnStartMassUpload = document.getElementById('btn-start-mass-upload');
+        /** @type {HTMLInputElement|null} */
         this.cfgWidth = document.getElementById('cfg-hires-width');
+        /** @type {HTMLInputElement|null} */
         this.cfgHeight = document.getElementById('cfg-hires-height');
 
+        /** @type {Map<string, {hires: File|null, lowres: File|null, status: string}>} */
         this.uploadQueue = new Map(); // Speichert { id: { hires: File, lowres: File } }
-
-        const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
-        this.baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
 
         if (this.massDropZone && this.queueTableBody) {
             this.initSettings();
@@ -89,7 +103,7 @@ export class MassUploadManager {
             const match = file.name.match(/^(\d{8})/);
             if (!match) {
                 this.notifications.show(
-                    `Datei "${file.name}" ignoriert (Keine 8-stellige ID am Anfang).`,
+                    `Datei "${file.name}" ignoriert (Keine 8-stellige ID).`,
                     'error'
                 );
                 continue;
@@ -115,7 +129,7 @@ export class MassUploadManager {
                 if ((isHires && existingEntry.hires) || (!isHires && existingEntry.lowres)) {
                     if (
                         confirm(
-                            `Für die ID "${baseId}" liegt lokal bereits ein ${fileTypeStr}-Bild in der Warteschlange.\nMöchtest du "${file.name}" als Variante (a, b, c...) hinzufügen?`
+                            `Für die ID "${baseId}" liegt lokal bereits ein ${fileTypeStr}-Bild in der Warteschlange.\nMöchtest du "${file.name}" als Variante hinzufügen?`
                         )
                     ) {
                         targetId = await this.findFreeVariantId(baseId, isHires);
@@ -131,7 +145,7 @@ export class MassUploadManager {
 
             // 2. Server Konflikte prüfen
             const folder = isHires ? 'hires' : 'lowres';
-            const serverUrl = `${this.baseUrl}/assets/images/comic/${folder}/${targetId}.webp`;
+            const serverUrl = `${this.api.baseUrl}/assets/images/comic/${folder}/${targetId}.webp`;
 
             const serverExists = await new Promise((resolve) => {
                 const img = new Image();
@@ -223,7 +237,6 @@ export class MassUploadManager {
 
         for (const letter of alphabet) {
             const testId = baseId + letter;
-
             if (this.uploadQueue.has(testId)) {
                 const testEntry = this.uploadQueue.get(testId);
                 if ((isHires && testEntry.hires) || (!isHires && testEntry.lowres)) continue;
@@ -233,7 +246,7 @@ export class MassUploadManager {
                 const img = new Image();
                 img.onload = () => resolve(true);
                 img.onerror = () => resolve(false);
-                img.src = `${this.baseUrl}/assets/images/comic/${folder}/${testId}.webp`;
+                img.src = `${this.api.baseUrl}/assets/images/comic/${folder}/${testId}.webp`;
             });
 
             if (!serverExists) return testId;

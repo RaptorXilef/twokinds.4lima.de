@@ -1,14 +1,30 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('./ComicEditor.js').ComicEditor} ComicEditor
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class ReportManager {
-    constructor(api, modalManager, comicEditor) {
+    /**
+     * @param {Api} api
+     * @param {ModalManager} modalManager
+     * @param {ComicEditor} comicEditor
+     * @param {NotificationService} notifications
+     */
+    constructor(api, modalManager, comicEditor, notifications) {
         this.api = api;
         this.modalManager = modalManager;
-        this.comicEditor = comicEditor; // FIX: Für das Übernehmen von Transkripten nötig
+        this.comicEditor = comicEditor;
+        this.notifications = notifications;
 
+        /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-reports');
+        /** @type {Object|null} */
         this.currentReportPayload = null;
 
         if (this.section) {
-            this.initTableLogic(); // FIX: Eigene Report Filter Logik
+            this.initTableLogic();
             this.bindEvents();
         }
     }
@@ -338,7 +354,7 @@ export class ReportManager {
 
         const formData = new window.FormData();
         formData.append('report_id', this.currentReportPayload.id);
-        formData.append('status', 'closed'); // FIX: Korrekter Request Parameter
+        formData.append('status', 'closed');
 
         const result = await this.api.post('update_report_status', formData);
 
@@ -366,7 +382,7 @@ export class ReportManager {
 
         const formData = new window.FormData();
         formData.append('report_id', this.currentReportPayload.id);
-        formData.append('status', 'spam'); // FIX: Korrekter Request Parameter
+        formData.append('status', 'spam');
 
         const result = await this.api.post('update_report_status', formData);
 

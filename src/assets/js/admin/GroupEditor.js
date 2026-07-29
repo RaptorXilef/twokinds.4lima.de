@@ -1,7 +1,20 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class GroupEditor {
-    constructor(api) {
-        this.api = api; // Braucht keinen ModalManager, da Gruppen meist In-Page bearbeitet werden
+    /**
+     * @param {Api} api
+     * @param {NotificationService} notifications
+     */
+    constructor(api, notifications) {
+        this.api = api;
+        this.notifications = notifications;
+
+        /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-groups');
+        /** @type {boolean} */
         this.poolViewAll = true;
 
         if (this.section) {
@@ -191,7 +204,6 @@ export class GroupEditor {
             if (result.success) {
                 window.isDirty = false;
                 this.notifications.show('Gruppen gespeichert!', 'success');
-                window.isDirty = false;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.notifications.show(result.error, 'error');

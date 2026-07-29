@@ -1,18 +1,33 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class MediaGallery {
-    constructor(api, modalManager) {
+    /**
+     * @param {Api} api
+     * @param {ModalManager} modalManager
+     * @param {NotificationService} notifications
+     */
+    constructor(api, modalManager, notifications) {
         this.api = api;
         this.modalManager = modalManager;
-        this.section = document.getElementById('section-media');
+        this.notifications = notifications;
 
+        /** @type {HTMLElement|null} */
+        this.section = document.getElementById('section-media');
+        /** @type {HTMLElement|null} */
         this.galChars = document.getElementById('media-gallery-characters');
+        /** @type {HTMLElement|null} */
         this.galComics = document.getElementById('media-gallery-comics');
+        /** @type {HTMLInputElement|null} */
         this.mediaSearchInput = document.getElementById('media-search');
 
+        /** @type {string} */
         this.currentMediaTab = 'characters';
+        /** @type {HTMLInputElement|null} */
         this.currentGalleryTargetInput = null;
-
-        const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
-        this.baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
 
         if (this.section) {
             this.bindSectionEvents();

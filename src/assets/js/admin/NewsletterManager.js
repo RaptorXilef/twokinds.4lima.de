@@ -1,6 +1,16 @@
+/**
+ * @typedef {import('./Api.js').Api} Api
+ * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ */
+
 export class NewsletterManager {
-    constructor(api) {
+    /**
+     * @param {Api} api
+     * @param {NotificationService} notifications
+     */
+    constructor(api, notifications) {
         this.api = api;
+        this.notifications = notifications;
         this.bindEvents();
     }
 
