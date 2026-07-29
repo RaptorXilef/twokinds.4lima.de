@@ -26,6 +26,7 @@ export class CharacterEditor {
             this.bindEvents();
             this.bindImageSelection();
             this.bindDropZones();
+            this.bindLivePreviews(); // FIX: Live-Previews reaktivieren!
         }
     }
 
@@ -77,12 +78,16 @@ export class CharacterEditor {
         if (profileGrid) {
             profileGrid.addEventListener('click', (e) => {
                 if (e.target.tagName === 'IMG') {
-                    profileGrid
-                        .querySelectorAll('img')
-                        .forEach((img) => img.classList.remove('selected'));
+                    // LINTER FIX: Block Statement {} um impliziten Return zu verhindern
+                    profileGrid.querySelectorAll('img').forEach((img) => {
+                        img.classList.remove('selected');
+                    });
                     e.target.classList.add('selected');
                     const picInput = this.form.querySelector('[name="pic_url"]');
-                    if (picInput) picInput.value = e.target.dataset.filename;
+                    if (picInput) {
+                        picInput.value = e.target.dataset.filename;
+                        picInput.dispatchEvent(new Event('input')); // Live Preview triggern
+                    }
                 }
             });
         }
@@ -92,15 +97,85 @@ export class CharacterEditor {
         if (mainGrid) {
             mainGrid.addEventListener('click', (e) => {
                 if (e.target.tagName === 'IMG') {
-                    mainGrid
-                        .querySelectorAll('img')
-                        .forEach((img) => img.classList.remove('selected'));
+                    // LINTER FIX: Block Statement {} um impliziten Return zu verhindern
+                    mainGrid.querySelectorAll('img').forEach((img) => {
+                        img.classList.remove('selected');
+                    });
                     e.target.classList.add('selected');
                     const mainInput = this.form.querySelector('[name="main_pic_url"]');
-                    if (mainInput) mainInput.value = e.target.dataset.filename;
+                    if (mainInput) {
+                        mainInput.value = e.target.dataset.filename;
+                        mainInput.dispatchEvent(new Event('input')); // Live Preview triggern
+                    }
                 }
             });
         }
+    }
+
+    // Live Previews durch Text-Eingaben
+    bindLivePreviews() {
+        const picUrlInput = this.form?.querySelector('[name="pic_url"]');
+        const charPreviewImg = document.getElementById('char-preview-img');
+        picUrlInput?.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (charPreviewImg) {
+                charPreviewImg.src = val
+                    ? `${this.api.baseUrl}/assets/images/characters/profiles/${val}`
+                    : 'https://placehold.co/120x120?text=Kein+Bild';
+            }
+        });
+
+        const mainPicInput = this.form?.querySelector('[name="main_pic_url"]');
+        const prevMain = document.getElementById('preview-img-main');
+        mainPicInput?.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (prevMain) {
+                if (val) {
+                    prevMain.src = `${this.api.baseUrl}/assets/images/characters/main/${val}`;
+                    prevMain.style.display = 'block';
+                } else {
+                    prevMain.style.display = 'none';
+                    prevMain.src = '';
+                }
+            }
+        });
+
+        const swatchPicInput = this.form?.querySelector('[name="swatch_pic_url"]');
+        const prevSwatch = document.getElementById('preview-img-swatch');
+        swatchPicInput?.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (prevSwatch) {
+                if (val) {
+                    prevSwatch.src = `${this.api.baseUrl}/assets/images/characters/swatches/${val}`;
+                    prevSwatch.style.display = 'block';
+                } else {
+                    prevSwatch.style.display = 'none';
+                    prevSwatch.src = '';
+                }
+            }
+        });
+
+        const refSheetsInput = this.form?.querySelector('[name="ref_sheets_urls"]');
+        const containerRefs = document.getElementById('preview-container-refs');
+        refSheetsInput?.addEventListener('input', (e) => {
+            if (containerRefs) {
+                containerRefs.innerHTML = '';
+                const vals = e.target.value
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                vals.forEach((sheet) => {
+                    const img = document.createElement('img');
+                    img.src = `${this.api.baseUrl}/assets/images/characters/refsheets/${sheet}`;
+                    img.style.maxWidth = '80px';
+                    img.style.maxHeight = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '4px';
+                    img.style.border = '1px solid var(--border-medium)';
+                    containerRefs.appendChild(img);
+                });
+            }
+        });
     }
 
     // Drag & Drop
@@ -241,7 +316,10 @@ export class CharacterEditor {
             zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
         }
 
-        Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => img.remove());
+        // LINTER FIX: Block Statement {} um impliziten Return zu verhindern
+        Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => {
+            img.remove();
+        });
 
         Array.from(this.accumulatedRefFiles.files).forEach((file) => {
             const reader = new FileReader();
@@ -289,18 +367,30 @@ export class CharacterEditor {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
         };
-        setVal('id', 'new');
-        setVal('pic_url', '');
-        setVal('main_pic_url', '');
 
-        // Richtige HTML ID für das Textfeld
+        setVal('id', 'new');
+
+        // Formular leeren und Live Previews resetten
+        setVal('pic_url', '');
+        this.form.querySelector('[name="pic_url"]')?.dispatchEvent(new Event('input'));
+
+        setVal('main_pic_url', '');
+        this.form.querySelector('[name="main_pic_url"]')?.dispatchEvent(new Event('input'));
+
+        setVal('swatch_pic_url', '');
+        this.form.querySelector('[name="swatch_pic_url"]')?.dispatchEvent(new Event('input'));
+
+        setVal('ref_sheets_urls', '');
+        this.form.querySelector('[name="ref_sheets_urls"]')?.dispatchEvent(new Event('input'));
+
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('empty');
         }
 
-        document
-            .querySelectorAll('#profile-pic-grid img, #main-pic-grid img')
-            .forEach((img) => img.classList.remove('selected'));
+        // LINTER FIX: Block Statement {}
+        document.querySelectorAll('#profile-pic-grid img, #main-pic-grid img').forEach((img) => {
+            img.classList.remove('selected');
+        });
 
         const displayId = document.getElementById('char-display-id');
         if (displayId) displayId.textContent = 'ID: NEW';
@@ -340,11 +430,13 @@ export class CharacterEditor {
         }
 
         // Bilder im Raster markieren
-        document
-            .querySelectorAll('#profile-pic-grid img, #main-pic-grid img')
-            .forEach((img) => img.classList.remove('selected'));
+        document.querySelectorAll('#profile-pic-grid img, #main-pic-grid img').forEach((img) => {
+            img.classList.remove('selected');
+        });
 
+        // Felder füllen UND input Event feuern, damit die Bilder geladen werden
         setVal('pic_url', payload.picUrl);
+        this.form.querySelector('[name="pic_url"]')?.dispatchEvent(new Event('input'));
         if (payload.picUrl) {
             const match = document.querySelector(
                 `#profile-pic-grid img[data-filename="${payload.picUrl}"]`
@@ -353,12 +445,22 @@ export class CharacterEditor {
         }
 
         setVal('main_pic_url', payload.mainPic);
+        this.form.querySelector('[name="main_pic_url"]')?.dispatchEvent(new Event('input'));
         if (payload.mainPic) {
             const match = document.querySelector(
                 `#main-pic-grid img[data-filename="${payload.mainPic}"]`
             );
             if (match) match.classList.add('selected');
         }
+
+        setVal('swatch_pic_url', payload.swatchPic);
+        this.form.querySelector('[name="swatch_pic_url"]')?.dispatchEvent(new Event('input'));
+
+        setVal(
+            'ref_sheets_urls',
+            payload.refSheets && payload.refSheets.length > 0 ? payload.refSheets.join(', ') : ''
+        );
+        this.form.querySelector('[name="ref_sheets_urls"]')?.dispatchEvent(new Event('input'));
 
         const displayId = document.getElementById('char-display-id');
         if (displayId) displayId.textContent = `ID: ${payload.id}`;
@@ -390,7 +492,6 @@ export class CharacterEditor {
             const idInput = this.form.querySelector('[name="id"]');
             if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-            // FIX: Endpunkt war im alten Code 'save_single_character'
             const result = await this.api.post('save_single_character', formData);
 
             if (result.success) {
