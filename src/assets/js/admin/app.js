@@ -4,6 +4,8 @@ import { CharacterEditor } from './CharacterEditor.js';
 import { ComicEditor } from './ComicEditor.js';
 import { GroupEditor } from './GroupEditor.js';
 import { ModalManager } from './ModalManager.js';
+import { ReportManager } from './ReportManager.js';
+import { SystemManager } from './SystemManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Core Services initialisieren
@@ -14,11 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     new ComicEditor(api, modalManager);
     new CharacterEditor(api, modalManager);
     new ChapterEditor(api, modalManager);
-    new GroupEditor(api); // (Braucht kein modalManager)
+    new GroupEditor(api);
+    new ReportManager(api, modalManager);
+    new SystemManager(api, modalManager);
 
-    // Platzhalter für die letzten Module:
-    // new ReportManager(api, modalManager);
-    // new SystemManager(api, modalManager); // Für User & Rollen
-
-    console.log('[AdminApp] ES6 Module erfolgreich geladen.');
+    console.log('[AdminApp] Alle ES6 Module erfolgreich geladen und bereit.');
 });
