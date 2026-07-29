@@ -2,6 +2,17 @@
 
 
 
+## [6.4.4](https://github.com///compare/v6.4.3...v6.4.4) (2026-07-29)
+
+### 🐛 Bug Fixes
+
+* **admin/js:** resolve biome linter warnings and restore character image live previews ([730a3b9](https://github.com///commit/730a3b972c8f575f5b5cefe33330a7a8bfff8e60))
+* **admin/js:** resolve dependency injection and API endpoint regressions ([84b626f](https://github.com///commit/84b626f833381c89321cc02ff45c1bdfd488d3e4))
+
+### 💎 Styling
+
+* **admin/js:** fix biome linter warnings ([9b6c90e](https://github.com///commit/9b6c90ea379d9fb4000ff9d67bccc2b2a664ea39))
+
 ## [6.4.3](https://github.com///compare/v6.4.2...v6.4.3) (2026-07-29)
 
 ### ⚙️ Refactoring
