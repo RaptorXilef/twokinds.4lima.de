@@ -10,6 +10,7 @@ export class ComicEditor {
 
         if (this.section) {
             this.bindEvents();
+            this.bindDropZones(); // FIX: Dropzones binden
         }
     }
 
@@ -96,6 +97,69 @@ export class ComicEditor {
         }
     }
 
+    // Drag&Drop Zonen
+    bindDropZones() {
+        this.setupDropZone('comic-drop-zone-hires', 'upload_hires', 'preview-name-hires');
+        this.setupDropZone('comic-drop-zone-lowres', 'upload_lowres', 'preview-name-lowres');
+    }
+
+    setupDropZone(zoneId, inputId, previewId) {
+        const dropZone = document.getElementById(zoneId);
+        const fileInput = document.getElementById(inputId);
+        const previewName = document.getElementById(previewId);
+
+        if (!dropZone || !fileInput) return;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--link-color)';
+            dropZone.style.backgroundColor = 'var(--table-row-hover)';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border-medium)';
+            dropZone.style.backgroundColor = 'var(--table-row-even)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--status-green-text)';
+            dropZone.style.backgroundColor = 'var(--status-green-bg)';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                window.isDirty = true;
+                if (previewName) previewName.textContent = `Ausgewählt: ${fileInput.files[0].name}`;
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files?.[0];
+            if (file) {
+                window.isDirty = true;
+                dropZone.style.borderColor = 'var(--status-green-text)';
+                dropZone.style.backgroundColor = 'var(--status-green-bg)';
+                if (previewName) previewName.textContent = `Ausgewählt: ${file.name}`;
+            }
+        });
+    }
+
+    resetDropZones() {
+        const resetEl = (idText, idZone) => {
+            const txt = document.getElementById(idText);
+            const zone = document.getElementById(idZone);
+            if (txt) txt.textContent = '';
+            if (zone) {
+                zone.style.borderColor = 'var(--border-medium)';
+                zone.style.backgroundColor = 'var(--table-row-even)';
+            }
+        };
+        resetEl('preview-name-hires', 'comic-drop-zone-hires');
+        resetEl('preview-name-lowres', 'comic-drop-zone-lowres');
+    }
+
     // --- BILD VORSCHAU HELPER ---
     loadPreviewWithProbe(imgElement, basePath, extensions, fallbackUrl) {
         if (!imgElement) return;
@@ -141,14 +205,11 @@ export class ComicEditor {
         const prevSketch = document.getElementById('prev-comic-sketch');
         const prevSocial = document.getElementById('prev-comic-social');
 
-        const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
-        const baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
-
         if (prevLocal) {
             if (localPreviewId.length >= 8) {
                 this.loadPreviewWithProbe(
                     prevLocal,
-                    `${baseUrl}/assets/images/comic/lowres/${localPreviewId}`,
+                    `${this.api.baseUrl}/assets/images/comic/lowres/${localPreviewId}`,
                     localExts,
                     fallback
                 );
@@ -198,7 +259,7 @@ export class ComicEditor {
             if (localPreviewId.length >= 8) {
                 this.loadPreviewWithProbe(
                     prevSocial,
-                    `${baseUrl}/assets/images/comic/socialmedia/${localPreviewId}`,
+                    `${this.api.baseUrl}/assets/images/comic/socialmedia/${localPreviewId}`,
                     ['jpg', 'jpeg', 'webp', 'png'],
                     'https://placehold.co/191x100?text=Fehlt'
                 );
@@ -221,7 +282,10 @@ export class ComicEditor {
         setVal('comic_id', '');
 
         const idInput = this.form.querySelector('[name="comic_id"]');
-        if (idInput) idInput.readOnly = false;
+        if (idInput) {
+            idInput.readOnly = false;
+            sessionStorage.setItem('highlightEntityIdCancel', '');
+        }
 
         // WYSIWYG leeren
         if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
@@ -229,6 +293,7 @@ export class ComicEditor {
         }
 
         this.resetCharacterSelection();
+        this.resetDropZones(); // FIX: Borders reset
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
@@ -248,7 +313,10 @@ export class ComicEditor {
         setVal('old_comic_id', payload.id);
         setVal('comic_id', payload.id);
         const idInput = this.form.querySelector('[name="comic_id"]');
-        if (idInput) idInput.readOnly = true; // Sperren beim Bearbeiten!
+        if (idInput) {
+            idInput.readOnly = true; // Sperren beim Bearbeiten!
+            sessionStorage.setItem('highlightEntityIdCancel', payload.id); // FIX: Cancel Fallback
+        }
 
         setVal('type', payload.type || 'Comicseite');
         setVal('name', payload.name);
@@ -262,6 +330,7 @@ export class ComicEditor {
         }
 
         this.applyCharacterSelection(payload.characters || []);
+        this.resetDropZones(); // FIX: Borders reset
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';
@@ -315,6 +384,9 @@ export class ComicEditor {
                 formData.set('transcript', window.$('#transcript').trumbowyg('html'));
             }
 
+            const idInput = this.form.querySelector('[name="comic_id"]');
+            if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
+
             const result = await this.api.post('save_single_comic', formData);
 
             if (result.success) {
@@ -357,6 +429,8 @@ export class ComicEditor {
             return;
         const formData = new window.FormData();
         formData.append('comic_id', id);
+        sessionStorage.setItem('highlightEntityId', id);
+
         const result = await this.api.post('undo_comic', formData);
         if (result.success) {
             window.isDirty = false;

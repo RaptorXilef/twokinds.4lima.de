@@ -25,6 +25,7 @@ export class ModalManager {
         if (modal) {
             modal.style.display = 'none';
         }
+        this.handleScrollHighlight();
     }
 
     /**
@@ -34,6 +35,26 @@ export class ModalManager {
         document.querySelectorAll('.modal').forEach((modal) => {
             modal.style.display = 'none';
         });
+        this.handleScrollHighlight();
+    }
+
+    // FIX: Row-Highlight & Scroll-To Logik nach Klick auf "Abbrechen"
+    handleScrollHighlight() {
+        const cancelId = sessionStorage.getItem('highlightEntityIdCancel');
+        if (cancelId) {
+            const targetBtn =
+                document.querySelector(`.btn-delete-comic[data-id="${cancelId}"]`) ??
+                document.querySelector(`.btn-delete-char[data-id="${cancelId}"]`);
+            const tr = targetBtn?.closest('tr');
+            if (tr) {
+                tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                tr.classList.add('row-highlight');
+                setTimeout(() => {
+                    tr.classList.remove('row-highlight');
+                }, 3000);
+            }
+            sessionStorage.removeItem('highlightEntityIdCancel');
+        }
     }
 
     /**
@@ -46,7 +67,7 @@ export class ModalManager {
                 e.preventDefault();
                 const modal = e.target.closest('.modal');
                 if (modal) {
-                    modal.style.display = 'none';
+                    this.close(modal.id);
                 }
             });
         });

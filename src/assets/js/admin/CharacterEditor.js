@@ -5,10 +5,12 @@ export class CharacterEditor {
 
         this.section = document.getElementById('section-characters');
         this.form = document.getElementById('char-form');
+        this.accumulatedRefFiles = new DataTransfer(); // FIX: Speicher für Ref-Sheets
 
         if (this.section || this.form) {
             this.bindEvents();
             this.bindImageSelection();
+            this.bindDropZones(); // FIX: Drag & Drop aktivieren
         }
     }
 
@@ -86,6 +88,187 @@ export class CharacterEditor {
         }
     }
 
+    // Drag & Drop
+    bindDropZones() {
+        this.setupCharDropZone(
+            'char-drop-zone',
+            'profile_image',
+            'char-preview-img',
+            'upload-preview-name'
+        );
+        this.setupCharDropZone('char-drop-zone-main', 'main_pic', 'preview-img-main');
+        this.setupCharDropZone('char-drop-zone-swatch', 'swatch_pic', 'preview-img-swatch');
+        this.setupRefSheetsDropZone();
+    }
+
+    setupCharDropZone(zoneId, inputId, previewImgId, previewTextId = null) {
+        const zone = document.getElementById(zoneId);
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewImgId);
+        const previewText = document.getElementById(previewTextId);
+
+        if (!zone || !input) return;
+
+        zone.addEventListener('click', () => input.click());
+
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'var(--link-color)';
+            zone.style.backgroundColor = 'var(--table-row-hover)';
+        });
+
+        zone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'var(--border-medium)';
+            zone.style.backgroundColor = 'var(--content-bg)';
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.style.borderColor = 'var(--status-green-text)';
+            zone.style.backgroundColor = 'var(--status-green-bg)';
+            if (e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                input.dispatchEvent(new Event('change'));
+            }
+        });
+
+        input.addEventListener('change', () => {
+            if (input.files?.[0]) {
+                window.isDirty = true;
+                zone.style.borderColor = 'var(--status-green-text)';
+                zone.style.backgroundColor = 'var(--status-green-bg)';
+
+                if (previewText) {
+                    previewText.textContent = `Bereit: ${input.files[0].name}`;
+                }
+
+                if (preview) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        preview.src = e.target.result;
+                        if (preview.style.display === 'none') preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+
+                if (inputId === 'profile_image') {
+                    const picUrlInput = document.getElementById('pic_url');
+                    if (picUrlInput) picUrlInput.value = '';
+                }
+            }
+        });
+    }
+
+    // Akkumulierung für Multi-Uploads (Ref-Sheets)
+    setupRefSheetsDropZone() {
+        const zoneRefs = document.getElementById('char-drop-zone-refs');
+        const inputRefs = document.getElementById('ref_sheets');
+        const containerRefs = document.getElementById('preview-container-refs');
+
+        if (!zoneRefs || !inputRefs || !containerRefs) return;
+
+        zoneRefs.addEventListener('click', () => inputRefs.click());
+
+        zoneRefs.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zoneRefs.style.borderColor = 'var(--link-color)';
+            zoneRefs.style.backgroundColor = 'var(--table-row-hover)';
+        });
+
+        zoneRefs.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            zoneRefs.style.borderColor = 'var(--border-medium)';
+            zoneRefs.style.backgroundColor = 'var(--content-bg)';
+        });
+
+        zoneRefs.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zoneRefs.style.borderColor = 'var(--status-green-text)';
+            zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
+            if (e.dataTransfer.files.length) {
+                Array.from(e.dataTransfer.files).forEach((file) => {
+                    this.accumulatedRefFiles.items.add(file);
+                });
+                inputRefs.files = this.accumulatedRefFiles.files;
+                this.updateRefPreviews(containerRefs, zoneRefs);
+            }
+        });
+
+        inputRefs.addEventListener('change', () => {
+            if (inputRefs.files.length > 0) {
+                Array.from(inputRefs.files).forEach((newFile) => {
+                    let exists = false;
+                    for (let i = 0; i < this.accumulatedRefFiles.files.length; i++) {
+                        if (
+                            this.accumulatedRefFiles.files[i].name === newFile.name &&
+                            this.accumulatedRefFiles.files[i].size === newFile.size
+                        ) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        this.accumulatedRefFiles.items.add(newFile);
+                    }
+                });
+
+                inputRefs.files = this.accumulatedRefFiles.files;
+                this.updateRefPreviews(containerRefs, zoneRefs);
+            }
+        });
+    }
+
+    updateRefPreviews(containerRefs, zoneRefs) {
+        window.isDirty = true;
+        if (zoneRefs) {
+            zoneRefs.style.borderColor = 'var(--status-green-text)';
+            zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
+        }
+
+        Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => {
+            img.remove();
+        });
+
+        Array.from(this.accumulatedRefFiles.files).forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'is-new';
+                img.style.maxWidth = '80px';
+                img.style.maxHeight = '80px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
+                img.style.border = '2px solid var(--status-green-text)';
+                containerRefs.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    resetAllDropZones() {
+        [
+            'char-drop-zone',
+            'char-drop-zone-main',
+            'char-drop-zone-swatch',
+            'char-drop-zone-refs',
+        ].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.borderColor = 'var(--border-medium)';
+                el.style.backgroundColor = 'var(--table-row-even)';
+            }
+        });
+        const previewNameEl = document.getElementById('upload-preview-name');
+        if (previewNameEl) previewNameEl.textContent = '';
+
+        const containerRefs = document.getElementById('preview-container-refs');
+        if (containerRefs) containerRefs.innerHTML = '';
+
+        this.accumulatedRefFiles = new DataTransfer();
+    }
+
     openAddModal() {
         if (this.form) this.form.reset();
 
@@ -97,7 +280,7 @@ export class CharacterEditor {
         setVal('pic_url', '');
         setVal('main_pic_url', '');
 
-        // FIX: Richtige HTML ID für das Textfeld
+        // Richtige HTML ID für das Textfeld
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('empty');
         }
@@ -111,6 +294,9 @@ export class CharacterEditor {
 
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Neuen Charakter erstellen';
+
+        this.resetAllDropZones(); // Reset
+        sessionStorage.setItem('highlightEntityIdCancel', 'new');
 
         this.modalManager.open('char-modal');
     }
@@ -135,7 +321,7 @@ export class CharacterEditor {
         setVal('subspecies', payload.subspecies);
         setVal('languages', payload.languages);
 
-        // FIX: Richtige HTML ID und payload.description
+        // Richtige HTML ID und payload.description
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('html', payload.description || '');
         }
@@ -166,6 +352,10 @@ export class CharacterEditor {
 
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
+
+        this.resetAllDropZones(); // FIX: Reset
+        sessionStorage.setItem('highlightEntityIdCancel', payload.id);
+
         this.modalManager.open('char-modal');
     }
 
@@ -179,10 +369,13 @@ export class CharacterEditor {
         try {
             const formData = new window.FormData(this.form);
 
-            // FIX: Richtige HTML ID für den Fallback-Speicher
+            // Richtige HTML ID für den Fallback-Speicher
             if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
                 formData.set('description', window.$('#char_description').trumbowyg('html'));
             }
+
+            const idInput = this.form.querySelector('[name="id"]');
+            if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
             const result = await this.api.post('save_character', formData);
 

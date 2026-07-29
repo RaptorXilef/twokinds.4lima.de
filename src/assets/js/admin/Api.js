@@ -2,6 +2,10 @@ export class Api {
     constructor() {
         this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
         this.statusContainer = document.getElementById('global-status-message');
+
+        // FIX: Dynamische BaseURL ermitteln, um API-Calls in Unterordnern nicht zu brechen
+        const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
+        this.baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
     }
 
     /**
@@ -16,7 +20,8 @@ export class Api {
         }
 
         try {
-            const response = await fetch(`/api/${endpoint}`, {
+            // FIX: this.baseUrl davor setzen!
+            const response = await fetch(`${this.baseUrl}/api/${endpoint}`, {
                 method: 'POST',
                 body: formData,
             });
@@ -46,7 +51,8 @@ export class Api {
     async get(endpoint, params = '') {
         const query = params ? `?${params.toString()}` : '';
         try {
-            const response = await fetch(`/api/${endpoint}${query}`);
+            // FIX: this.baseUrl davor setzen!
+            const response = await fetch(`${this.baseUrl}/api/${endpoint}${query}`);
             const text = await response.text();
             try {
                 return JSON.parse(text);

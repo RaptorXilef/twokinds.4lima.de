@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new GlobalUI();
     new TabManager();
 
-    // 2. Tabellen (Paginierung & Suche) initialisieren
+    // 2. Tabellen (Paginierung & Suche) initialisieren (nur für Comics, Reports verwalten sich selbst)
     new DataTable({
         tableBodySelector: '.comic-editor-table tbody',
         searchInputId: 'comic-search',
@@ -31,11 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 3. Editor Module initialisieren
-    new ComicEditor(api, modalManager);
+    const comicEditor = new ComicEditor(api, modalManager);
     new CharacterEditor(api, modalManager);
     new ChapterEditor(api, modalManager);
     new GroupEditor(api);
-    new ReportManager(api, modalManager);
+
+    // FIX: ComicEditor an ReportManager übergeben für das Transkript-Killer-Feature!
+    new ReportManager(api, modalManager, comicEditor);
     new SystemManager(api, modalManager);
 
     // 4. Tool Module initialisieren
@@ -51,5 +53,5 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     });
 
-    console.info('[AdminApp] ES6 Architektur erfolgreich hochgefahren. (0% Legacy Code)');
+    console.info('[AdminApp] ES6 Architektur erfolgreich hochgefahren.');
 });

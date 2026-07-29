@@ -1,13 +1,127 @@
 export class ReportManager {
-    constructor(api, modalManager) {
+    constructor(api, modalManager, comicEditor) {
         this.api = api;
         this.modalManager = modalManager;
+        this.comicEditor = comicEditor; // FIX: Für das Übernehmen von Transkripten nötig
+
         this.section = document.getElementById('section-reports');
-        this.currentReportId = null;
+        this.currentReportPayload = null;
 
         if (this.section) {
+            this.initTableLogic(); // FIX: Eigene Report Filter Logik
             this.bindEvents();
         }
+    }
+
+    // Filter & Paginierung für Reports, da DataTable generisch Comics macht
+    initTableLogic() {
+        this.searchInput = document.getElementById('report-search');
+        this.perPageSelect = document.getElementById('report-per-page');
+        this.statusSelect = document.getElementById('report-status-filter');
+        this.tableBody = document.querySelector('#reports-table tbody');
+        this.paginationContainer = document.getElementById('report-pagination');
+
+        if (!this.tableBody || !this.paginationContainer) return;
+
+        this.allRows = Array.from(this.tableBody.querySelectorAll('tr')).filter(
+            (row) => !row.classList.contains('empty-table-message')
+        );
+
+        this.repPage = 1;
+        this.repLimit = this.perPageSelect?.value || '15';
+        this.repSearch = '';
+        this.repStatus = this.statusSelect?.value || 'open';
+
+        this.searchInput?.addEventListener('input', (e) => {
+            this.repSearch = e.target.value;
+            this.repPage = 1;
+            this.renderTable();
+        });
+        this.perPageSelect?.addEventListener('change', (e) => {
+            this.repLimit = e.target.value;
+            this.repPage = 1;
+            this.renderTable();
+        });
+        this.statusSelect?.addEventListener('change', (e) => {
+            this.repStatus = e.target.value;
+            this.repPage = 1;
+            this.renderTable();
+        });
+
+        this.renderTable();
+    }
+
+    renderTable() {
+        const filteredRows = this.allRows.filter((row) => {
+            const matchesSearch = row.textContent
+                .toLowerCase()
+                .includes(this.repSearch.toLowerCase());
+            const matchesStatus = this.repStatus === 'all' || row.dataset.status === this.repStatus;
+            return matchesSearch && matchesStatus;
+        });
+
+        const totalItems = filteredRows.length;
+        const limit = this.repLimit === 'all' ? totalItems : parseInt(this.repLimit, 10);
+        const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 1;
+
+        if (this.repPage > totalPages) this.repPage = totalPages || 1;
+        const startIndex = limit === totalItems ? 0 : (this.repPage - 1) * limit;
+        const endIndex = startIndex + limit;
+
+        this.allRows.forEach((row) => (row.style.display = 'none'));
+        filteredRows.slice(startIndex, endIndex).forEach((row) => (row.style.display = ''));
+
+        let emptyMsg = this.tableBody.querySelector('.dyn-empty-msg');
+        if (filteredRows.length === 0) {
+            if (!emptyMsg) {
+                emptyMsg = document.createElement('tr');
+                emptyMsg.className = 'dyn-empty-msg empty-table-message';
+                emptyMsg.innerHTML =
+                    '<td colspan="6">Keine Reports für diese Filter gefunden.</td>';
+                this.tableBody.appendChild(emptyMsg);
+            }
+            emptyMsg.style.display = '';
+        } else if (emptyMsg) {
+            emptyMsg.style.display = 'none';
+        }
+
+        this.renderPaginationButtons(totalPages);
+    }
+
+    renderPaginationButtons(totalPages) {
+        this.paginationContainer.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const createBtn = (text, isDisabled, isActive, clickHandler) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `button ${isActive ? 'edit ' : ''}${isDisabled ? 'disabled' : ''}`;
+            btn.innerHTML = text;
+            if (isDisabled) btn.style.opacity = '0.5';
+            if (!isDisabled && clickHandler) btn.onclick = clickHandler;
+            return btn;
+        };
+
+        this.paginationContainer.appendChild(
+            createBtn('&laquo;', this.repPage === 1, false, () => {
+                this.repPage--;
+                this.renderTable();
+            })
+        );
+        for (let i = 1; i <= totalPages; i++) {
+            this.paginationContainer.appendChild(
+                createBtn(i.toString(), false, i === this.repPage, () => {
+                    this.repPage = i;
+                    this.renderTable();
+                })
+            );
+        }
+        this.paginationContainer.appendChild(
+            createBtn('&raquo;', this.repPage === totalPages, false, () => {
+                this.repPage++;
+                this.renderTable();
+            })
+        );
     }
 
     bindEvents() {
@@ -21,52 +135,192 @@ export class ReportManager {
         });
 
         // 2. Buttons im Modal (Erledigt & Spam)
-        const btnResolve = document.getElementById('btn-rep-resolve');
-        if (btnResolve) {
-            btnResolve.addEventListener('click', () => this.resolveReport(btnResolve));
+        document.addEventListener('click', (e) => {
+            const btnResolve = e.target.closest('#btn-rep-resolve');
+            const btnSpam = e.target.closest('#btn-rep-spam');
+            const btnToggleDebug = e.target.closest('#btn-toggle-debug-view');
+            const btnTransfer = e.target.closest('#btn-transfer-transcript');
+
+            if (btnResolve && this.currentReportPayload) this.resolveReport(btnResolve);
+            if (btnSpam && this.currentReportPayload) this.markAsSpam(btnSpam);
+
+            // FIX: Toggle JSON Ansicht
+            if (btnToggleDebug) {
+                const debugRaw = document.getElementById('rep-modal-debug');
+                const debugRendered = document.getElementById('rep-modal-debug-rendered');
+
+                if (debugRaw.style.display === 'none') {
+                    debugRaw.style.display = 'block';
+                    debugRendered.style.display = 'none';
+                    btnToggleDebug.innerHTML =
+                        '<i class="fa-solid fa-list-tree"></i> Formatiert anzeigen';
+                } else {
+                    debugRaw.style.display = 'none';
+                    debugRendered.style.display = 'block';
+                    btnToggleDebug.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
+                }
+            }
+
+            // Das Killer-Feature: Transkript übernehmen
+            if (btnTransfer && this.currentReportPayload && this.comicEditor) {
+                if (!this.currentReportPayload.comicId) {
+                    alert(
+                        'Automatisches Übernehmen ist aktuell nur für Comics verfügbar. Bitte kopiere den Text manuell.'
+                    );
+                    return;
+                }
+                const comicBtn = document.querySelector(
+                    `.btn-edit-comic[data-id="${this.currentReportPayload.comicId}"]`
+                );
+                if (comicBtn) {
+                    const comicData = JSON.parse(comicBtn.dataset.payload);
+                    comicData.transcript = this.currentReportPayload.suggestion;
+
+                    this.modalManager.close('report-detail-modal');
+                    this.comicEditor.openEditModal(comicData);
+                    this.api.showStatus(
+                        'Transkript-Vorschlag geladen. Bitte prüfen und speichern.',
+                        'success'
+                    );
+                } else {
+                    alert('Der Comic konnte in der aktuellen Ansicht nicht gefunden werden.');
+                }
+            }
+        });
+    }
+
+    // Helper-Funktion für saubere Diff-Ansichten
+    convertHtmlToText(html) {
+        if (!html) return '';
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        tempDiv.querySelectorAll('p, br').forEach((el) => {
+            el.after(document.createTextNode('\n'));
+        });
+        return (tempDiv.textContent || tempDiv.innerText || '').trim();
+    }
+
+    // Rekursive JSON Baumdarstellung für Telemetrie
+    renderJsonToHtml(obj) {
+        if (typeof obj !== 'object' || obj === null) {
+            const val = obj === null ? 'null' : obj;
+            if (typeof val === 'string' && val.startsWith('http')) {
+                return `<a href="${val}" target="_blank" style="text-decoration: underline; color: var(--link-color);">${val}</a>`;
+            }
+            return `<span style="color: var(--text-color);">${val}</span>`;
         }
 
-        const btnSpam = document.getElementById('btn-rep-spam');
-        if (btnSpam) {
-            btnSpam.addEventListener('click', () => this.markAsSpam(btnSpam));
+        let html =
+            '<ul style="list-style: none; padding-left: 20px; margin: 5px 0; border-left: 2px solid var(--border-medium);">';
+        for (const [key, value] of Object.entries(obj)) {
+            html += `<li style="margin-bottom: 6px;"><strong style="color: var(--text-color-faded);">${key}:</strong> ${this.renderJsonToHtml(value)}</li>`;
         }
+        html += '</ul>';
+        return html;
     }
 
     openReportModal(payload) {
-        this.currentReportId = payload.id;
+        this.currentReportPayload = payload;
 
-        // Metadaten ins Modal schreiben
-        const typeLabels = {
-            typo: 'Tippfehler / Text',
-            image: 'Bildfehler',
-            technical: 'Technischer Fehler',
-            other: 'Sonstiges',
-        };
-
-        const typeSpan = document.getElementById('rep-type');
-        if (typeSpan) typeSpan.textContent = typeLabels[payload.type] || payload.type;
-
-        const dateSpan = document.getElementById('rep-date');
-        if (dateSpan) dateSpan.textContent = payload.createdAt || 'Unbekannt';
-
-        const pageLink = document.getElementById('rep-page');
-        if (pageLink) {
-            pageLink.href = `/comic/${payload.comicId}`;
-            pageLink.textContent = `Comic ${payload.comicId} ansehen`;
+        // Link oder Text
+        const comicIdContainer = document.getElementById('rep-modal-comic-id');
+        if (payload.comicId) {
+            comicIdContainer.innerHTML = `<a href="${this.api.baseUrl}/comic/${payload.comicId}" target="_blank">${payload.comicId}</a>`;
+        } else {
+            comicIdContainer.innerHTML =
+                '<em style="color: var(--text-color-faded);">Allgemeine Website</em>';
         }
 
-        const desc = document.getElementById('rep-desc');
-        if (desc) desc.textContent = payload.description || 'Keine Beschreibung angegeben.';
+        document.getElementById('rep-modal-submitter').textContent = payload.submitter;
+        document.getElementById('rep-modal-date').textContent = payload.date;
+        document.getElementById('rep-modal-desc').textContent =
+            payload.description || 'Keine Beschreibung angegeben.';
 
-        this.modalManager.open('report-modal');
+        // Telemetrie JSON Logik
+        const debugRaw = document.getElementById('rep-modal-debug');
+        const debugRendered = document.getElementById('rep-modal-debug-rendered');
+        const btnToggleDebug = document.getElementById('btn-toggle-debug-view');
+
+        if (debugRaw) debugRaw.value = payload.debug || 'Keine Telemetrie vorhanden.';
+
+        if (debugRendered && payload.debug) {
+            try {
+                const parsed = JSON.parse(payload.debug);
+                debugRendered.innerHTML = this.renderJsonToHtml(parsed);
+                debugRendered.style.display = 'block';
+                if (debugRaw) debugRaw.style.display = 'none';
+                if (btnToggleDebug) {
+                    btnToggleDebug.style.display = 'inline-block';
+                    btnToggleDebug.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
+                }
+            } catch (err) {
+                debugRendered.style.display = 'none';
+                if (debugRaw) debugRaw.style.display = 'block';
+                if (btnToggleDebug) btnToggleDebug.style.display = 'none';
+            }
+        } else {
+            if (debugRendered) debugRendered.style.display = 'none';
+            if (btnToggleDebug) btnToggleDebug.style.display = 'none';
+            if (debugRaw) debugRaw.style.display = 'block';
+        }
+
+        // JS-Diff Logik
+        const transcriptSec = document.getElementById('rep-modal-transcript-section');
+        const diffBox = document.getElementById('rep-modal-diff');
+
+        if (payload.type === 'transcript') {
+            transcriptSec.style.display = 'block';
+            if (typeof window.Diff !== 'undefined' && window.Diff.diffLines) {
+                const oldTxt = this.convertHtmlToText(payload.original);
+                const newTxt = this.convertHtmlToText(payload.suggestion);
+                const diff = window.Diff.diffLines(oldTxt, newTxt, { newlineIsToken: true });
+
+                const fragment = document.createDocumentFragment();
+                diff.forEach((part) => {
+                    const node = document.createElement(
+                        part.added ? 'ins' : part.removed ? 'del' : 'span'
+                    );
+                    node.appendChild(document.createTextNode(part.value));
+                    fragment.appendChild(node);
+                });
+                diffBox.innerHTML = '';
+                diffBox.appendChild(fragment);
+            } else {
+                diffBox.innerHTML = `Diff-Bibliothek nicht geladen. Vorschlag:\n\n${payload.suggestion}`;
+            }
+        } else {
+            transcriptSec.style.display = 'none';
+        }
+
+        // Screenshot Logik
+        const screenshotSec = document.getElementById('rep-modal-screenshot-section');
+        const screenshotImg = document.getElementById('rep-modal-screenshot-img');
+        const screenshotLink = document.getElementById('rep-modal-screenshot-link');
+
+        if (payload.screenshotUrl) {
+            const fullUrl = `${this.api.baseUrl}/assets/images/reports/${payload.screenshotUrl}`;
+            screenshotImg.src = fullUrl;
+            screenshotLink.href = fullUrl;
+            screenshotSec.style.display = 'block';
+        } else {
+            screenshotSec.style.display = 'none';
+            screenshotImg.src = '';
+            screenshotLink.href = '#';
+        }
+
+        const btnResolve = document.getElementById('btn-rep-resolve');
+        const btnSpam = document.getElementById('btn-rep-spam');
+        if (btnResolve)
+            btnResolve.style.display = payload.status === 'open' ? 'inline-block' : 'none';
+        if (btnSpam) btnSpam.style.display = payload.status === 'open' ? 'inline-block' : 'none';
+
+        this.modalManager.open('report-detail-modal');
     }
 
     async resolveReport(btnElement) {
         if (
-            !this.currentReportId ||
-            !confirm(
-                'Möchtest du diesen Bericht als "Erledigt" markieren? Er verschwindet dann aus dieser Liste.'
-            )
+            !this.currentReportPayload ||
+            !confirm('Möchtest du diesen Bericht als "Erledigt" markieren?')
         )
             return;
 
@@ -75,9 +329,10 @@ export class ReportManager {
         btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
         const formData = new window.FormData();
-        formData.append('report_id', this.currentReportId);
+        formData.append('report_id', this.currentReportPayload.id);
+        formData.append('status', 'closed'); // FIX: Korrekter Request Parameter
 
-        const result = await this.api.post('resolve_report', formData);
+        const result = await this.api.post('update_report_status', formData);
 
         if (result.success) {
             this.api.showStatus(result.message, 'success');
@@ -91,7 +346,10 @@ export class ReportManager {
     }
 
     async markAsSpam(btnElement) {
-        if (!this.currentReportId || !confirm('Möchtest du diesen Bericht als SPAM löschen?'))
+        if (
+            !this.currentReportPayload ||
+            !confirm('Möchtest du diesen Bericht als SPAM markieren?')
+        )
             return;
 
         const originalText = btnElement.innerHTML;
@@ -99,12 +357,13 @@ export class ReportManager {
         btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
         const formData = new window.FormData();
-        formData.append('report_id', this.currentReportId);
+        formData.append('report_id', this.currentReportPayload.id);
+        formData.append('status', 'spam'); // FIX: Korrekter Request Parameter
 
-        const result = await this.api.post('delete_report', formData);
+        const result = await this.api.post('update_report_status', formData);
 
         if (result.success) {
-            this.api.showStatus('Bericht gelöscht.', 'success');
+            this.api.showStatus('Bericht markiert.', 'success');
             window.isDirty = false;
             setTimeout(() => window.location.reload(), 1000);
         } else {
