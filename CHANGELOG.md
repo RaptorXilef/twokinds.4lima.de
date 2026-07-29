@@ -2,6 +2,14 @@
 
 
 
+## [6.4.2](https://github.com///compare/v6.4.1...v6.4.2) (2026-07-29)
+
+### ⚙️ Refactoring
+
+* **admin/js:** complete JS modularization with MediaGallery and NewsletterManager ([2d46977](https://github.com///commit/2d46977c10c852be58fa3c8ce9a390e796091dcb))
+* **admin/js:** completely eradicate legacy admin.js monolith ([fe4f3bf](https://github.com///commit/fe4f3bf33cfe1a0cbfb49850230e096a79e164ae))
+* **admin/js:** modularize MassUpload and Cropper functionalities ([f911005](https://github.com///commit/f911005cd8279dde52c134571eb7dcc37d7a6d84))
+
 ## [6.4.1](https://github.com///compare/v6.4.0...v6.4.1) (2026-07-29)
 
 ### 🐛 Bug Fixes
