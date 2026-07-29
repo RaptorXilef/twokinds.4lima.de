@@ -1,0 +1,107 @@
+export class GlobalUI {
+    constructor() {
+        window.isDirty = false;
+
+        this.bindUnsavedChangesWarning();
+        this.bindImageFallback();
+        this.initWysiwyg();
+        this.initLightbox();
+        this.handleRowHighlighting();
+    }
+
+    bindUnsavedChangesWarning() {
+        window.addEventListener('beforeunload', (e) => {
+            if (window.isDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        document.addEventListener('input', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                window.isDirty = true;
+            }
+        });
+    }
+
+    bindImageFallback() {
+        document.addEventListener(
+            'error',
+            (e) => {
+                if (
+                    e.target &&
+                    e.target.tagName === 'IMG' &&
+                    e.target.classList.contains('hide-on-error')
+                ) {
+                    e.target.style.display = 'none';
+                }
+            },
+            true
+        );
+    }
+
+    initWysiwyg() {
+        if (typeof window.$ !== 'undefined' && typeof window.$.fn.trumbowyg !== 'undefined') {
+            window.$.trumbowyg.svgPath =
+                'https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg';
+            window
+                .$('.wysiwyg-editor')
+                .trumbowyg({
+                    lang: 'de',
+                    btns: [
+                        ['viewHTML'],
+                        ['undo', 'redo'],
+                        ['formatting'],
+                        ['strong', 'em', 'del'],
+                        ['link'],
+                        ['insertImage'],
+                        ['unorderedList', 'orderedList'],
+                        ['removeformat'],
+                    ],
+                })
+                .on('tbwchange', () => {
+                    window.isDirty = true;
+                });
+        }
+    }
+
+    initLightbox() {
+        const hoverOverlay = document.getElementById('image-hover-overlay');
+        const hoverOverlayImg = document.getElementById('hover-overlay-img');
+
+        document.addEventListener('click', (e) => {
+            const img = e.target.closest('.hover-zoom-trigger');
+            if (img && img.src && !img.src.includes('placehold.co')) {
+                if (hoverOverlayImg && hoverOverlay) {
+                    hoverOverlayImg.src = img.src;
+                    hoverOverlay.style.display = 'flex';
+                }
+            }
+        });
+
+        hoverOverlay?.addEventListener('click', () => {
+            hoverOverlay.style.display = 'none';
+            if (hoverOverlayImg) hoverOverlayImg.src = '';
+        });
+    }
+
+    handleRowHighlighting() {
+        const highlightId = sessionStorage.getItem('highlightEntityId');
+        if (!highlightId) return;
+
+        setTimeout(() => {
+            const targetBtn =
+                document.querySelector(`.btn-delete-comic[data-id="${highlightId}"]`) ??
+                document.querySelector(`.btn-delete-char[data-id="${highlightId}"]`);
+            const tr = targetBtn?.closest('tr');
+            if (tr) {
+                tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                tr.classList.add('row-highlight');
+                setTimeout(() => {
+                    tr.classList.remove('row-highlight');
+                }, 3000);
+            }
+        }, 300);
+        sessionStorage.removeItem('highlightEntityId');
+    }
+}
