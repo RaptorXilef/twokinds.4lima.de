@@ -97,8 +97,9 @@ export class CharacterEditor {
         setVal('pic_url', '');
         setVal('main_pic_url', '');
 
-        if (typeof window.$ !== 'undefined' && window.$('#biography').length) {
-            window.$('#biography').trumbowyg('empty');
+        // FIX: Richtige HTML ID für das Textfeld
+        if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
+            window.$('#char_description').trumbowyg('empty');
         }
 
         document.querySelectorAll('#profile-pic-grid img, #main-pic-grid img').forEach((img) => {
@@ -134,8 +135,9 @@ export class CharacterEditor {
         setVal('subspecies', payload.subspecies);
         setVal('languages', payload.languages);
 
-        if (typeof window.$ !== 'undefined' && window.$('#biography').length) {
-            window.$('#biography').trumbowyg('html', payload.biography || '');
+        // FIX: Richtige HTML ID und payload.description
+        if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
+            window.$('#char_description').trumbowyg('html', payload.description || '');
         }
 
         // Bilder im Raster markieren
@@ -177,9 +179,9 @@ export class CharacterEditor {
         try {
             const formData = new window.FormData(this.form);
 
-            // Trumbowyg Inhalt explizit abgreifen
-            if (typeof window.$ !== 'undefined' && window.$('#biography').length) {
-                formData.set('biography', window.$('#biography').trumbowyg('html'));
+            // FIX: Richtige HTML ID für den Fallback-Speicher
+            if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
+                formData.set('description', window.$('#char_description').trumbowyg('html'));
             }
 
             const result = await this.api.post('save_character', formData);
