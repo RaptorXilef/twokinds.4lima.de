@@ -10,6 +10,28 @@ export class SystemManager {
     }
 
     bindEvents() {
+        // --- 1. Tab-Steuerung (Benutzer vs. Rollen) ---
+        const tabBtns = this.section.querySelectorAll('.media-tab-btn');
+        const views = this.section.querySelectorAll('.media-view');
+
+        tabBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach((b) => {
+                    b.classList.remove('active');
+                    b.classList.add('edit');
+                });
+                views.forEach((v) => {
+                    v.style.display = 'none';
+                });
+                btn.classList.remove('edit');
+                btn.classList.add('active');
+
+                const targetId = `media-view-${btn.dataset.type}`;
+                const targetView = document.getElementById(targetId);
+                if (targetView) targetView.style.display = 'block';
+            });
+        });
+
         // --- BENUTZER ---
         const btnAddUser = document.getElementById('btn-add-user');
         if (btnAddUser) btnAddUser.addEventListener('click', () => this.openUserModal());

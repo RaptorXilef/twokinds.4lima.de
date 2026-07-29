@@ -619,9 +619,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentMediaTab = 'characters';
 
         // TABS UMSCHALTEN
-        document.querySelectorAll('.media-tab-btn').forEach((btn) => {
+        mediaSection.querySelectorAll('.media-tab-btn').forEach((btn) => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.media-tab-btn').forEach((b) => {
+                mediaSection.querySelectorAll('.media-tab-btn').forEach((b) => {
                     b.classList.remove('active');
                     b.classList.add('edit');
                 });

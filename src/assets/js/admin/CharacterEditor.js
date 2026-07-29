@@ -64,7 +64,7 @@ export class CharacterEditor {
                         img.classList.remove('selected');
                     });
                     e.target.classList.add('selected');
-                    const picInput = document.getElementById('pic_url');
+                    const picInput = this.form.querySelector('[name="pic_url"]');
                     if (picInput) picInput.value = e.target.dataset.filename;
                 }
             });
@@ -79,7 +79,7 @@ export class CharacterEditor {
                         img.classList.remove('selected');
                     });
                     e.target.classList.add('selected');
-                    const mainInput = document.getElementById('main_pic_url');
+                    const mainInput = this.form.querySelector('[name="main_pic_url"]');
                     if (mainInput) mainInput.value = e.target.dataset.filename;
                 }
             });
@@ -89,12 +89,11 @@ export class CharacterEditor {
     openAddModal() {
         if (this.form) this.form.reset();
 
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
+        const setVal = (nameAttr, val) => {
+            const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
         };
-        setVal('old_char_id', '');
-        setVal('char-form-action', 'save');
+        setVal('id', 'new');
         setVal('pic_url', '');
         setVal('main_pic_url', '');
 
@@ -102,40 +101,35 @@ export class CharacterEditor {
             window.$('#biography').trumbowyg('empty');
         }
 
-        // Bild-Selektionen zurücksetzen
         document.querySelectorAll('#profile-pic-grid img, #main-pic-grid img').forEach((img) => {
             img.classList.remove('selected');
         });
 
+        const displayId = document.getElementById('char-display-id');
+        if (displayId) displayId.textContent = 'ID: NEW';
+
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Neuen Charakter erstellen';
+
         this.modalManager.open('char-modal');
     }
 
     openEditModal(payload) {
         if (this.form) this.form.reset();
 
-        // Crash-Sicherer Wrapper
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
+        // 100% ID-Kollisionssicher durch Nutzung von name="..."
+        const setVal = (nameAttr, val) => {
+            const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val || '';
         };
 
-        setVal('old_char_id', payload.id);
-        setVal('char-form-action', 'save');
-
-        setVal('character_id', payload.id);
-        setVal('char_id', payload.id);
+        setVal('id', payload.id);
         setVal('name', payload.name);
-        setVal('char_name', payload.name);
-        setVal('fullName', payload.fullName);
         setVal('full_name', payload.fullName);
-        setVal('altNames', payload.altNames);
         setVal('alt_names', payload.altNames);
         setVal('gender', payload.gender);
         setVal('age', payload.age);
         setVal('rank', payload.rank);
-        setVal('char_rank', payload.rank);
         setVal('species', payload.species);
         setVal('subspecies', payload.subspecies);
         setVal('languages', payload.languages);
@@ -164,6 +158,9 @@ export class CharacterEditor {
             );
             if (match) match.classList.add('selected');
         }
+
+        const displayId = document.getElementById('char-display-id');
+        if (displayId) displayId.textContent = `ID: ${payload.id}`;
 
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Charakter bearbeiten';

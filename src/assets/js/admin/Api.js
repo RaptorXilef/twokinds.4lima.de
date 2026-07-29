@@ -24,7 +24,7 @@ export class Api {
             const text = await response.text();
             try {
                 return JSON.parse(text);
-            } catch (e) {
+            } catch (_err) {
                 console.error(`[API Error] POST /api/${endpoint} lieferte ungültiges JSON:`, text);
                 return {
                     success: false,
@@ -50,7 +50,7 @@ export class Api {
             const text = await response.text();
             try {
                 return JSON.parse(text);
-            } catch (e) {
+            } catch (_err) {
                 return { success: false, error: 'Serverfehler bei GET-Anfrage.' };
             }
         } catch (error) {

@@ -55,12 +55,11 @@ export class ChapterEditor {
     openAddModal() {
         if (this.form) this.form.reset();
 
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
+        const setVal = (nameAttr, val) => {
+            const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
         };
-        setVal('old_chapter_id', '');
-        setVal('chapter-form-action', 'save');
+        setVal('old_id', '');
 
         const titleEl = document.getElementById('modal-title-chapter');
         if (titleEl) titleEl.textContent = 'Neues Kapitel anlegen';
@@ -75,19 +74,15 @@ export class ChapterEditor {
     openEditModal(payload) {
         if (this.form) this.form.reset();
 
-        // Crash-sichere Zuweisung, egal wie die HTML ID heißt!
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
+        // 100% ID-Kollisionssicher durch Nutzung von name="..."
+        const setVal = (nameAttr, val) => {
+            const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val || '';
         };
 
-        setVal('old_chapter_id', payload.id);
-        setVal('chapter-form-action', 'save');
+        setVal('old_id', payload.id);
         setVal('chapter_id', payload.id);
-        setVal('chap_id', payload.id);
         setVal('title', payload.title);
-        setVal('chap_title', payload.title);
-        setVal('number', payload.number);
 
         if (typeof window.$ !== 'undefined' && window.$('#chap_description').length) {
             window.$('#chap_description').trumbowyg('html', payload.description || '');

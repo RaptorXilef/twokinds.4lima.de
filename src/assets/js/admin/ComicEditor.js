@@ -70,26 +70,29 @@ export class ComicEditor {
         });
 
         // --- LIVE PREVIEW EVENTS ---
-        const comicIdInput = document.getElementById('comic_id');
-        const origUrlInput = document.getElementById('url_originalbild');
-        const origSketchInput = document.getElementById('url_originalsketch');
-
         const triggerUpdate = () => this.updateComicPreviews();
 
-        if (comicIdInput) comicIdInput.addEventListener('input', triggerUpdate);
-        if (origUrlInput) origUrlInput.addEventListener('input', triggerUpdate);
-        if (origSketchInput) origSketchInput.addEventListener('input', triggerUpdate);
+        // Suchen der Felder isoliert in dieser Form
+        if (this.form) {
+            const comicIdInput = this.form.querySelector('[name="comic_id"]');
+            const origUrlInput = this.form.querySelector('[name="url_originalbild"]');
+            const origSketchInput = this.form.querySelector('[name="url_originalsketch"]');
 
-        if (comicIdInput) {
-            comicIdInput.addEventListener('blur', () => {
-                const val = comicIdInput.value.trim();
-                if (val.length === 8 && !comicIdInput.readOnly) {
-                    if (origUrlInput && origUrlInput.value === '') origUrlInput.value = val;
-                    if (origSketchInput && origSketchInput.value === '')
-                        origSketchInput.value = val;
-                    this.updateComicPreviews();
-                }
-            });
+            if (comicIdInput) comicIdInput.addEventListener('input', triggerUpdate);
+            if (origUrlInput) origUrlInput.addEventListener('input', triggerUpdate);
+            if (origSketchInput) origSketchInput.addEventListener('input', triggerUpdate);
+
+            if (comicIdInput) {
+                comicIdInput.addEventListener('blur', () => {
+                    const val = comicIdInput.value.trim();
+                    if (val.length === 8 && !comicIdInput.readOnly) {
+                        if (origUrlInput && origUrlInput.value === '') origUrlInput.value = val;
+                        if (origSketchInput && origSketchInput.value === '')
+                            origSketchInput.value = val;
+                        this.updateComicPreviews();
+                    }
+                });
+            }
         }
     }
 
@@ -116,10 +119,11 @@ export class ComicEditor {
     }
 
     updateComicPreviews() {
-        const comicIdInput = document.getElementById('comic_id');
-        const origUrlInput = document.getElementById('url_originalbild');
-        const origSketchInput = document.getElementById('url_originalsketch');
-        const oldIdInput = document.getElementById('old_comic_id');
+        if (!this.form) return;
+        const comicIdInput = this.form.querySelector('[name="comic_id"]');
+        const origUrlInput = this.form.querySelector('[name="url_originalbild"]');
+        const origSketchInput = this.form.querySelector('[name="url_originalsketch"]');
+        const oldIdInput = this.form.querySelector('[name="old_comic_id"]');
 
         const idVal = comicIdInput?.value.trim() ?? '';
         const oldIdVal = oldIdInput?.value.trim() ?? '';
@@ -206,15 +210,17 @@ export class ComicEditor {
 
     openAddModal() {
         if (this.form) this.form.reset();
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
+
+        const setVal = (nameAttr, val) => {
+            const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
         };
 
         setVal('old_comic_id', '');
-        setVal('form-action', 'save');
+        setVal('action', 'save');
         setVal('comic_id', '');
-        const idInput = document.getElementById('comic_id');
+
+        const idInput = this.form.querySelector('[name="comic_id"]');
         if (idInput) idInput.readOnly = false;
 
         // WYSIWYG leeren
@@ -233,14 +239,15 @@ export class ComicEditor {
 
     openEditModal(payload) {
         if (this.form) this.form.reset();
-        const setVal = (id, val) => {
-            const el = document.getElementById(id);
+
+        const setVal = (nameAttr, val) => {
+            const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val || '';
         };
 
         setVal('old_comic_id', payload.id);
         setVal('comic_id', payload.id);
-        const idInput = document.getElementById('comic_id');
+        const idInput = this.form.querySelector('[name="comic_id"]');
         if (idInput) idInput.readOnly = true; // Sperren beim Bearbeiten!
 
         setVal('type', payload.type || 'Comicseite');
