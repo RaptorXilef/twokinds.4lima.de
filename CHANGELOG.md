@@ -2,6 +2,12 @@
 
 
 
+## [6.4.3](https://github.com///compare/v6.4.2...v6.4.3) (2026-07-29)
+
+### ⚙️ Refactoring
+
+* **admin/js:** completely eradicate legacy admin.js monolith ([17767ee](https://github.com///commit/17767ee207870de8a447c19d86214babb74588e1)), closes [#btn-transfer-transcript](https://github.com///issues/btn-transfer-transcript)
+
 ## [6.4.2](https://github.com///compare/v6.4.1...v6.4.2) (2026-07-29)
 
 ### ⚙️ Refactoring
