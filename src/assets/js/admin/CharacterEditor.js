@@ -190,6 +190,7 @@ export class CharacterEditor {
             if (result.success) {
                 this.api.showStatus(result.message, 'success');
                 this.modalManager.close('char-modal');
+                window.isDirty = false;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.api.showStatus(result.error, 'error');

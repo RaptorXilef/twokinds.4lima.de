@@ -191,6 +191,7 @@ export class GroupEditor {
             if (result.success) {
                 window.isDirty = false;
                 this.api.showStatus('Gruppen gespeichert!', 'success');
+                window.isDirty = false;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.api.showStatus(result.error, 'error');

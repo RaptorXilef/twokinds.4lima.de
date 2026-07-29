@@ -81,6 +81,7 @@ export class ReportManager {
 
         if (result.success) {
             this.api.showStatus(result.message, 'success');
+            window.isDirty = false;
             setTimeout(() => window.location.reload(), 1000);
         } else {
             this.api.showStatus(result.error, 'error');
@@ -104,6 +105,7 @@ export class ReportManager {
 
         if (result.success) {
             this.api.showStatus('Bericht gelöscht.', 'success');
+            window.isDirty = false;
             setTimeout(() => window.location.reload(), 1000);
         } else {
             this.api.showStatus(result.error, 'error');

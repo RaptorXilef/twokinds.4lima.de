@@ -68,6 +68,140 @@ export class ComicEditor {
                 }
             }
         });
+
+        // --- LIVE PREVIEW EVENTS ---
+        const comicIdInput = document.getElementById('comic_id');
+        const origUrlInput = document.getElementById('url_originalbild');
+        const origSketchInput = document.getElementById('url_originalsketch');
+
+        const triggerUpdate = () => this.updateComicPreviews();
+
+        if (comicIdInput) comicIdInput.addEventListener('input', triggerUpdate);
+        if (origUrlInput) origUrlInput.addEventListener('input', triggerUpdate);
+        if (origSketchInput) origSketchInput.addEventListener('input', triggerUpdate);
+
+        if (comicIdInput) {
+            comicIdInput.addEventListener('blur', () => {
+                const val = comicIdInput.value.trim();
+                if (val.length === 8 && !comicIdInput.readOnly) {
+                    if (origUrlInput && origUrlInput.value === '') origUrlInput.value = val;
+                    if (origSketchInput && origSketchInput.value === '')
+                        origSketchInput.value = val;
+                    this.updateComicPreviews();
+                }
+            });
+        }
+    }
+
+    // --- BILD VORSCHAU HELPER ---
+    loadPreviewWithProbe(imgElement, basePath, extensions, fallbackUrl) {
+        if (!imgElement) return;
+        let i = 0;
+        imgElement.src = 'https://placehold.co/100x140?text=L%C3%A4dt...';
+
+        const testNext = () => {
+            if (i >= extensions.length) {
+                imgElement.src = fallbackUrl;
+                return;
+            }
+            const ext = extensions[i++];
+            const testImg = new Image();
+            testImg.onload = () => {
+                imgElement.src = testImg.src;
+            };
+            testImg.onerror = testNext;
+            testImg.src = `${basePath}.${ext}`;
+        };
+        testNext();
+    }
+
+    updateComicPreviews() {
+        const comicIdInput = document.getElementById('comic_id');
+        const origUrlInput = document.getElementById('url_originalbild');
+        const origSketchInput = document.getElementById('url_originalsketch');
+        const oldIdInput = document.getElementById('old_comic_id');
+
+        const idVal = comicIdInput?.value.trim() ?? '';
+        const oldIdVal = oldIdInput?.value.trim() ?? '';
+        const localPreviewId = oldIdVal !== '' ? oldIdVal : idVal;
+
+        const origVal = origUrlInput?.value.trim() ?? '';
+        const sketchVal = origSketchInput?.value.trim() ?? '';
+
+        const remoteExts = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
+        const localExts = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
+        const fallback = 'https://placehold.co/100x140?text=Fehlt';
+
+        const prevLocal = document.getElementById('prev-comic-local');
+        const prevOrig = document.getElementById('prev-comic-orig');
+        const prevSketch = document.getElementById('prev-comic-sketch');
+        const prevSocial = document.getElementById('prev-comic-social');
+
+        const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
+        const baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
+
+        if (prevLocal) {
+            if (localPreviewId.length >= 8) {
+                this.loadPreviewWithProbe(
+                    prevLocal,
+                    `${baseUrl}/assets/images/comic/lowres/${localPreviewId}`,
+                    localExts,
+                    fallback
+                );
+            } else {
+                prevLocal.src = fallback;
+            }
+        }
+
+        if (prevOrig) {
+            if (origVal !== '') {
+                if (origVal.startsWith('http')) prevOrig.src = origVal;
+                else if (origVal.includes('.'))
+                    prevOrig.src = `https://cdn.twokinds.keenspot.com/comics/${origVal}`;
+                else
+                    this.loadPreviewWithProbe(
+                        prevOrig,
+                        `https://cdn.twokinds.keenspot.com/comics/${origVal}`,
+                        remoteExts,
+                        fallback
+                    );
+            } else {
+                prevOrig.src = fallback;
+            }
+        }
+
+        if (prevSketch) {
+            if (sketchVal !== '') {
+                if (sketchVal.startsWith('http')) prevSketch.src = sketchVal;
+                else if (sketchVal.includes('.'))
+                    prevSketch.src = `https://twokindscomic.com/images/${sketchVal}`;
+                else {
+                    let baseSketch = sketchVal;
+                    if (!baseSketch.endsWith('_sketch')) baseSketch += '_sketch';
+                    this.loadPreviewWithProbe(
+                        prevSketch,
+                        `https://twokindscomic.com/images/${baseSketch}`,
+                        remoteExts,
+                        fallback
+                    );
+                }
+            } else {
+                prevSketch.src = fallback;
+            }
+        }
+
+        if (prevSocial) {
+            if (localPreviewId.length >= 8) {
+                this.loadPreviewWithProbe(
+                    prevSocial,
+                    `${baseUrl}/assets/images/comic/socialmedia/${localPreviewId}`,
+                    ['jpg', 'jpeg', 'webp', 'png'],
+                    'https://placehold.co/191x100?text=Fehlt'
+                );
+            } else {
+                prevSocial.src = 'https://placehold.co/191x100?text=Fehlt';
+            }
+        }
     }
 
     openAddModal() {
@@ -79,25 +213,21 @@ export class ComicEditor {
 
         setVal('old_comic_id', '');
         setVal('form-action', 'save');
+        setVal('comic_id', '');
+        const idInput = document.getElementById('comic_id');
+        if (idInput) idInput.readOnly = false;
 
         // WYSIWYG leeren
         if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
             window.$('#transcript').trumbowyg('empty');
         }
 
-        const setSrc = (id, src) => {
-            const el = document.getElementById(id);
-            if (el) el.src = src;
-        };
-        setSrc('prev-comic-local', 'https://placehold.co/100x160?text=Kein+Bild');
-        setSrc('prev-comic-orig', 'https://placehold.co/100x160?text=Kein+Bild');
-        setSrc('prev-comic-sketch', 'https://placehold.co/100x160?text=Kein+Bild');
-        setSrc('prev-comic-social', 'https://placehold.co/191x100?text=Kein+Bild');
-
         this.resetCharacterSelection();
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
+
+        this.updateComicPreviews();
         this.modalManager.open('comic-modal');
     }
 
@@ -110,6 +240,9 @@ export class ComicEditor {
 
         setVal('old_comic_id', payload.id);
         setVal('comic_id', payload.id);
+        const idInput = document.getElementById('comic_id');
+        if (idInput) idInput.readOnly = true; // Sperren beim Bearbeiten!
+
         setVal('type', payload.type || 'Comicseite');
         setVal('name', payload.name);
         setVal('chapter_id', payload.chapterId);
@@ -121,27 +254,12 @@ export class ComicEditor {
             window.$('#transcript').trumbowyg('html', payload.transcript || '');
         }
 
-        // Bilder Previews setzen
-        const cb = payload.imageUpdatedAt ? `?c=${payload.imageUpdatedAt}` : '';
-        const setSrc = (id, src) => {
-            const el = document.getElementById(id);
-            if (el) el.src = src;
-        };
-
-        setSrc('prev-comic-local', `/assets/images/comic/thumbnails/${payload.id}.webp${cb}`);
-        setSrc('prev-comic-social', `/assets/images/comic/socialmedia/${payload.id}.jpg${cb}`);
-
-        if (payload.originalUrl)
-            setSrc(
-                'prev-comic-orig',
-                `https://cdn.twokinds.keenspot.com/comics/${payload.originalUrl}`
-            );
-        if (payload.sketchUrl) setSrc('prev-comic-sketch', payload.sketchUrl);
-
         this.applyCharacterSelection(payload.characters || []);
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';
+
+        this.updateComicPreviews();
         this.modalManager.open('comic-modal');
     }
 
@@ -193,6 +311,7 @@ export class ComicEditor {
             const result = await this.api.post('save_single_comic', formData);
 
             if (result.success) {
+                window.isDirty = false;
                 this.api.showStatus(result.message, 'success');
                 this.modalManager.close('comic-modal');
                 setTimeout(() => window.location.reload(), 1000);
@@ -216,6 +335,7 @@ export class ComicEditor {
 
         const result = await this.api.post('delete_comic', formData);
         if (result.success) {
+            window.isDirty = false;
             this.api.showStatus(result.message, 'success');
             // Sofort ausblenden
             const row = btnElement.closest('tr');
@@ -232,6 +352,7 @@ export class ComicEditor {
         formData.append('comic_id', id);
         const result = await this.api.post('undo_comic', formData);
         if (result.success) {
+            window.isDirty = false;
             this.api.showStatus(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
@@ -243,6 +364,7 @@ export class ComicEditor {
         if (!confirm('Möchtest du den zuletzt gelöschten Comic wiederherstellen?')) return;
         const result = await this.api.post('restore_deleted_comic');
         if (result.success) {
+            window.isDirty = false;
             this.api.showStatus(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {

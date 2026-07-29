@@ -112,6 +112,7 @@ export class ChapterEditor {
             if (result.success) {
                 this.api.showStatus(result.message, 'success');
                 this.modalManager.close('chapter-modal');
+                window.isDirty = false;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.api.showStatus(result.error, 'error');
