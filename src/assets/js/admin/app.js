@@ -10,6 +10,7 @@ import { MassUploadManager } from './MassUploadManager.js';
 import { MediaGallery } from './MediaGallery.js';
 import { ModalManager } from './ModalManager.js';
 import { NewsletterManager } from './NewsletterManager.js';
+import { NotificationService } from './NotificationService.js';
 import { ReportManager } from './ReportManager.js';
 import { SystemManager } from './SystemManager.js';
 import { TabManager } from './TabManager.js';
@@ -17,6 +18,7 @@ import { TabManager } from './TabManager.js';
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Core Services & UI initialisieren
     const api = new Api();
+    const notifications = new NotificationService();
     const modalManager = new ModalManager();
 
     new GlobalUI();

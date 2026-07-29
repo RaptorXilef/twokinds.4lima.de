@@ -68,8 +68,12 @@ export class ReportManager {
         const startIndex = limit === totalItems ? 0 : (this.repPage - 1) * limit;
         const endIndex = startIndex + limit;
 
-        this.allRows.forEach((row) => (row.style.display = 'none'));
-        filteredRows.slice(startIndex, endIndex).forEach((row) => (row.style.display = ''));
+        this.allRows.forEach((row) => {
+            row.style.display = 'none';
+        });
+        filteredRows.slice(startIndex, endIndex).forEach((row) => {
+            row.style.display = '';
+        });
 
         let emptyMsg = this.tableBody.querySelector('.dyn-empty-msg');
         if (filteredRows.length === 0) {
@@ -178,7 +182,7 @@ export class ReportManager {
 
                     this.modalManager.close('report-detail-modal');
                     this.comicEditor.openEditModal(comicData);
-                    this.api.showStatus(
+                    this.notifications.show(
                         'Transkript-Vorschlag geladen. Bitte prüfen und speichern.',
                         'success'
                     );
@@ -254,6 +258,10 @@ export class ReportManager {
                     btnToggleDebug.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
                 }
             } catch (err) {
+                console.warn(
+                    '[ReportManager] Fehler beim Parsen der Telemetrie. Fallback auf Rohtext.',
+                    err
+                );
                 debugRendered.style.display = 'none';
                 if (debugRaw) debugRaw.style.display = 'block';
                 if (btnToggleDebug) btnToggleDebug.style.display = 'none';
@@ -335,11 +343,11 @@ export class ReportManager {
         const result = await this.api.post('update_report_status', formData);
 
         if (result.success) {
-            this.api.showStatus(result.message, 'success');
+            this.notifications.show(result.message, 'success');
             window.isDirty = false;
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
             btnElement.disabled = false;
             btnElement.innerHTML = originalText;
         }
@@ -363,11 +371,11 @@ export class ReportManager {
         const result = await this.api.post('update_report_status', formData);
 
         if (result.success) {
-            this.api.showStatus('Bericht markiert.', 'success');
+            this.notifications.show('Bericht markiert.', 'success');
             window.isDirty = false;
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
             btnElement.disabled = false;
             btnElement.innerHTML = originalText;
         }

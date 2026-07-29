@@ -41,9 +41,9 @@ export class NewsletterManager {
         try {
             const result = await this.api.post('admin_trigger_newsletter', formData);
             if (result.success) {
-                this.api.showStatus(result.message, 'success');
+                this.notifications.show(result.message, 'success');
             } else {
-                this.api.showStatus(result.error, 'error');
+                this.notifications.show(result.error, 'error');
             }
         } finally {
             btn.innerHTML = origText;

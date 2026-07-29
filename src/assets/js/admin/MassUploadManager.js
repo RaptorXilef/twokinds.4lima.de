@@ -88,7 +88,7 @@ export class MassUploadManager {
         for (const file of Array.from(files)) {
             const match = file.name.match(/^(\d{8})/);
             if (!match) {
-                this.api.showStatus(
+                this.notifications.show(
                     `Datei "${file.name}" ignoriert (Keine 8-stellige ID am Anfang).`,
                     'error'
                 );
@@ -330,7 +330,7 @@ export class MassUploadManager {
             }
             this.renderQueueTable();
         }
-        this.api.showStatus('Massenverarbeitung abgeschlossen!', 'success');
+        this.notifications.show('Massenverarbeitung abgeschlossen!', 'success');
         this.btnStartMassUpload.disabled = false;
     }
 }

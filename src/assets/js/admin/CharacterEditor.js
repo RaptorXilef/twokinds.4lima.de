@@ -380,12 +380,12 @@ export class CharacterEditor {
             const result = await this.api.post('save_character', formData);
 
             if (result.success) {
-                this.api.showStatus(result.message, 'success');
+                this.notifications.show(result.message, 'success');
                 this.modalManager.close('char-modal');
                 window.isDirty = false;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                this.api.showStatus(result.error, 'error');
+                this.notifications.show(result.error, 'error');
             }
         } finally {
             btnElement.disabled = false;
@@ -404,12 +404,12 @@ export class CharacterEditor {
 
         const result = await this.api.post('delete_character', formData);
         if (result.success) {
-            this.api.showStatus(result.message, 'success');
+            this.notifications.show(result.message, 'success');
             // Sofort DOM Element entfernen
             const row = btnElement.closest('tr');
             if (row) row.remove();
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
         }
     }
 }

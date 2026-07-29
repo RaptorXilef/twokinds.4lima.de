@@ -1,10 +1,10 @@
 export class Api {
     constructor() {
+        /** @type {string} */
         this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        this.statusContainer = document.getElementById('global-status-message');
 
-        // FIX: Dynamische BaseURL ermitteln, um API-Calls in Unterordnern nicht zu brechen
         const baseUrlMatch = window.location.pathname.match(/^(.*)\/admin/);
+        /** @type {string} */
         this.baseUrl = baseUrlMatch ? baseUrlMatch[1] : '';
     }
 
@@ -20,7 +20,6 @@ export class Api {
         }
 
         try {
-            // FIX: this.baseUrl davor setzen!
             const response = await fetch(`${this.baseUrl}/api/${endpoint}`, {
                 method: 'POST',
                 body: formData,
@@ -51,7 +50,6 @@ export class Api {
     async get(endpoint, params = '') {
         const query = params ? `?${params.toString()}` : '';
         try {
-            // FIX: this.baseUrl davor setzen!
             const response = await fetch(`${this.baseUrl}/api/${endpoint}${query}`);
             const text = await response.text();
             try {
@@ -62,39 +60,6 @@ export class Api {
         } catch (error) {
             console.error(`[API Error] GET /api/${endpoint} ist fehlgeschlagen:`, error);
             return { success: false, error: 'Verbindungsfehler zum Server.' };
-        }
-    }
-
-    /**
-     * Steuert die globale Status-Meldung oben im Dashboard.
-     * @param {string} message
-     * @param {string} type - 'success', 'error' oder 'info'
-     */
-    showStatus(message, type = 'success') {
-        if (!this.statusContainer) return;
-
-        // CSS-Klassen zurücksetzen
-        this.statusContainer.className = 'status-message visible';
-
-        let icon = '';
-        if (type === 'success') {
-            this.statusContainer.classList.add('status-green');
-            icon = 'fa-check';
-        } else if (type === 'error') {
-            this.statusContainer.classList.add('status-red');
-            icon = 'fa-triangle-exclamation';
-        } else {
-            this.statusContainer.classList.add('status-info');
-            icon = 'fa-info-circle';
-        }
-
-        this.statusContainer.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
-
-        // Erfolgsmeldungen nach 5 Sekunden automatisch ausblenden
-        if (type === 'success') {
-            setTimeout(() => {
-                this.statusContainer.classList.remove('visible');
-            }, 5000);
         }
     }
 }

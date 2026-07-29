@@ -105,7 +105,7 @@ export class MediaGallery {
 
             mediaUploadInput.addEventListener('change', async () => {
                 if (mediaUploadInput.files.length === 0) return;
-                this.api.showStatus('Lade Bilder hoch...', 'info');
+                this.notifications.show('Lade Bilder hoch...', 'info');
 
                 const fd = new window.FormData();
                 for (const file of mediaUploadInput.files) {
@@ -114,10 +114,10 @@ export class MediaGallery {
 
                 const json = await this.api.post('upload_media', fd);
                 if (json.success) {
-                    this.api.showStatus(json.message, 'success');
+                    this.notifications.show(json.message, 'success');
                     this.loadMedia();
                 } else {
-                    this.api.showStatus(json.error, 'error');
+                    this.notifications.show(json.error, 'error');
                 }
                 mediaUploadInput.value = '';
             });

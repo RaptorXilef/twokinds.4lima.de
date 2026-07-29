@@ -391,11 +391,11 @@ export class ComicEditor {
 
             if (result.success) {
                 window.isDirty = false;
-                this.api.showStatus(result.message, 'success');
+                this.notifications.show(result.message, 'success');
                 this.modalManager.close('comic-modal');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                this.api.showStatus(result.error, 'error');
+                this.notifications.show(result.error, 'error');
             }
         } finally {
             btnElement.disabled = false;
@@ -415,12 +415,12 @@ export class ComicEditor {
         const result = await this.api.post('delete_comic', formData);
         if (result.success) {
             window.isDirty = false;
-            this.api.showStatus(result.message, 'success');
+            this.notifications.show(result.message, 'success');
             // Sofort ausblenden
             const row = btnElement.closest('tr');
             if (row) row.remove();
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
         }
     }
 
@@ -434,10 +434,10 @@ export class ComicEditor {
         const result = await this.api.post('undo_comic', formData);
         if (result.success) {
             window.isDirty = false;
-            this.api.showStatus(result.message, 'success');
+            this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
         }
     }
 
@@ -446,10 +446,10 @@ export class ComicEditor {
         const result = await this.api.post('restore_deleted_comic');
         if (result.success) {
             window.isDirty = false;
-            this.api.showStatus(result.message, 'success');
+            this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
         }
     }
 }

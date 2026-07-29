@@ -71,7 +71,7 @@ export class GlobalUI {
 
         document.addEventListener('click', (e) => {
             const img = e.target.closest('.hover-zoom-trigger');
-            if (img && img.src && !img.src.includes('placehold.co')) {
+            if (img?.src && !img.src.includes('placehold.co')) {
                 if (hoverOverlayImg && hoverOverlay) {
                     hoverOverlayImg.src = img.src;
                     hoverOverlay.style.display = 'flex';

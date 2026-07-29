@@ -12,12 +12,12 @@ export class TabManager {
 
                 sessionStorage.setItem('activeAdminTab', target);
 
-                document
-                    .querySelectorAll('.content-section')
-                    .forEach((sec) => sec.classList.remove('active'));
-                document
-                    .querySelectorAll('#menu .tab-link')
-                    .forEach((l) => l.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach((sec) => {
+                    sec.classList.remove('active');
+                });
+                document.querySelectorAll('#menu .tab-link').forEach((l) => {
+                    l.classList.remove('active');
+                });
 
                 document.getElementById(target)?.classList.add('active');
                 e.currentTarget.classList.add('active');
@@ -28,10 +28,12 @@ export class TabManager {
     restoreActiveTab() {
         const activeTab = sessionStorage.getItem('activeAdminTab') ?? 'section-comics';
 
-        document
-            .querySelectorAll('.content-section')
-            .forEach((sec) => sec.classList.remove('active'));
-        document.querySelectorAll('#menu .tab-link').forEach((l) => l.classList.remove('active'));
+        document.querySelectorAll('.content-section').forEach((sec) => {
+            sec.classList.remove('active');
+        });
+        document.querySelectorAll('#menu .tab-link').forEach((l) => {
+            l.classList.remove('active');
+        });
 
         const targetSection = document.getElementById(activeTab);
         const targetLink = document.querySelector(`#menu .tab-link[data-target="${activeTab}"]`);

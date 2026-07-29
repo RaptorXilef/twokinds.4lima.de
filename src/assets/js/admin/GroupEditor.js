@@ -61,7 +61,7 @@ export class GroupEditor {
                         const sortableInstance = window.Sortable.get(container);
                         if (sortableInstance) sortableInstance.option('sort', isManual);
                     }
-                    this.api.showStatus(
+                    this.notifications.show(
                         'Sortier-Modus geändert. Nicht vergessen zu speichern.',
                         'info'
                     );
@@ -190,11 +190,11 @@ export class GroupEditor {
 
             if (result.success) {
                 window.isDirty = false;
-                this.api.showStatus('Gruppen gespeichert!', 'success');
+                this.notifications.show('Gruppen gespeichert!', 'success');
                 window.isDirty = false;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                this.api.showStatus(result.error, 'error');
+                this.notifications.show(result.error, 'error');
             }
         } finally {
             btnElement.disabled = false;

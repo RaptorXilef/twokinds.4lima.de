@@ -111,7 +111,7 @@ export class CropperManager {
             const result = await this.api.post('crop_social_media', fd);
 
             if (result.success) {
-                this.api.showStatus(result.message, 'success');
+                this.notifications.show(result.message, 'success');
                 this.closeCropper();
 
                 // Live-Vorschau updaten (Cache Buster)
@@ -133,7 +133,7 @@ export class CropperManager {
                     }
                 }
             } else {
-                this.api.showStatus(result.error, 'error');
+                this.notifications.show(result.error, 'error');
             }
         } finally {
             btnElement.innerHTML = originalText;

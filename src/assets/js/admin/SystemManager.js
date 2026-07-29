@@ -198,11 +198,11 @@ export class SystemManager {
 
             if (result.success) {
                 window.isDirty = false;
-                this.api.showStatus(result.message, 'success');
+                this.notifications.show(result.message, 'success');
                 this.modalManager.close('user-modal');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                this.api.showStatus(result.error, 'error');
+                this.notifications.show(result.error, 'error');
             }
         } finally {
             btnElement.disabled = false;
@@ -217,10 +217,10 @@ export class SystemManager {
         const result = await this.api.post('delete_user', formData);
         if (result.success) {
             window.isDirty = false;
-            this.api.showStatus(result.message, 'success');
+            this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
         }
     }
 
@@ -302,11 +302,11 @@ export class SystemManager {
 
             if (result.success) {
                 window.isDirty = false;
-                this.api.showStatus(result.message, 'success');
+                this.notifications.show(result.message, 'success');
                 this.modalManager.close('role-modal');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
-                this.api.showStatus(result.error, 'error');
+                this.notifications.show(result.error, 'error');
             }
         } finally {
             btnElement.disabled = false;
@@ -326,10 +326,10 @@ export class SystemManager {
         const result = await this.api.post('delete_role', formData);
         if (result.success) {
             window.isDirty = false;
-            this.api.showStatus(result.message, 'success');
+            this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            this.api.showStatus(result.error, 'error');
+            this.notifications.show(result.error, 'error');
         }
     }
 }
