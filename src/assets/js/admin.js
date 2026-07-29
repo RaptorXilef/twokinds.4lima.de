@@ -97,8 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- TAB LOGIK ---
     const activeTab = sessionStorage.getItem('activeAdminTab') ?? 'section-comics';
-    document.querySelectorAll('.content-section').forEach((sec) => sec.classList.remove('active'));
-    document.querySelectorAll('.tab-link').forEach((l) => l.classList.remove('active'));
+    document.querySelectorAll('.content-section').forEach((sec) => {
+        sec.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-link').forEach((l) => {
+        l.classList.remove('active');
+    });
 
     const targetSection = document.getElementById(activeTab);
     const targetLink = document.querySelector(`.tab-link[data-target="${activeTab}"]`);
@@ -109,10 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', function () {
             if (this.dataset.target) {
                 sessionStorage.setItem('activeAdminTab', this.dataset.target);
-                document
-                    .querySelectorAll('.content-section')
-                    .forEach((sec) => sec.classList.remove('active'));
-                document.querySelectorAll('.tab-link').forEach((l) => l.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach((sec) => {
+                    sec.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-link').forEach((l) => {
+                    l.classList.remove('active');
+                });
                 document.getElementById(this.dataset.target)?.classList.add('active');
                 this.classList.add('active');
             }
@@ -214,8 +220,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const startIndex = limit === totalItems ? 0 : (currentPage - 1) * limit;
             const endIndex = startIndex + limit;
 
-            allComicRows.forEach((row) => (row.style.display = 'none'));
-            filteredRows.slice(startIndex, endIndex).forEach((row) => (row.style.display = ''));
+            allComicRows.forEach((row) => {
+                row.style.display = 'none';
+            });
+            filteredRows.slice(startIndex, endIndex).forEach((row) => {
+                row.style.display = '';
+            });
 
             // Info, wenn Suche keine Treffer liefert
             let emptyMsg = comicTableBody.querySelector('.dyn-empty-msg');
@@ -756,10 +766,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         );
                     }
                 } catch (err) {
-                    console.error('[Media Upload] File upload failed:', err);
+                    console.info('[Media Upload] File upload failed:', err);
                     showMsg('<i class="fa-solid fa-bomb"></i> Fehler beim Upload', 'red');
                 }
-                mediaUploadInput.value = ''; // WICHTIG: Setzt das Input-Feld zurück
+                mediaUploadInput.value = '';
             });
         }
         window.loadMedia();
@@ -821,7 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (modal) modal.style.display = 'none';
                     });
                 });
-            } catch (err) {
+            } catch (_err) {
                 galGrid.innerHTML = '<p style="color:red;">Fehler beim Laden der Galerie.</p>';
             }
         });
@@ -875,7 +885,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `<i class="fa-solid fa-triangle-exclamation"></i> Fehler: ${json.error}`,
                     'red'
                 );
-        } catch (err) {
+        } catch (_err) {
             showMsg('<i class="fa-solid fa-bomb"></i> Netzwerkfehler.', 'red');
         }
         btn.innerHTML = origText;

@@ -20,5 +20,5 @@ document.addEventListener('DOMContentLoaded', () => {
     new ReportManager(api, modalManager);
     new SystemManager(api, modalManager);
 
-    console.log('[AdminApp] Alle ES6 Module erfolgreich geladen und bereit.');
+    console.info('[AdminApp] Alle ES6 Module erfolgreich geladen und bereit.');
 });

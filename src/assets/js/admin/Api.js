@@ -21,14 +21,19 @@ export class Api {
                 body: formData,
             });
 
-            const data = await response.json();
-            return data;
+            const text = await response.text();
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error(`[API Error] POST /api/${endpoint} lieferte ungültiges JSON:`, text);
+                return {
+                    success: false,
+                    error: 'Serverfehler: Die Antwort konnte nicht verarbeitet werden.',
+                };
+            }
         } catch (error) {
             console.error(`[API Error] POST /api/${endpoint} ist fehlgeschlagen:`, error);
-            return {
-                success: false,
-                error: 'Verbindungsfehler zum Server. Siehe Konsole für Details.',
-            };
+            return { success: false, error: 'Verbindungsfehler zum Server.' };
         }
     }
 
@@ -42,7 +47,12 @@ export class Api {
         const query = params ? `?${params.toString()}` : '';
         try {
             const response = await fetch(`/api/${endpoint}${query}`);
-            return await response.json();
+            const text = await response.text();
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                return { success: false, error: 'Serverfehler bei GET-Anfrage.' };
+            }
         } catch (error) {
             console.error(`[API Error] GET /api/${endpoint} ist fehlgeschlagen:`, error);
             return { success: false, error: 'Verbindungsfehler zum Server.' };
@@ -55,10 +65,7 @@ export class Api {
      * @param {string} type - 'success', 'error' oder 'info'
      */
     showStatus(message, type = 'success') {
-        if (!this.statusContainer) {
-            console.warn('[API] Status-Container nicht gefunden, Nachricht:', message);
-            return;
-        }
+        if (!this.statusContainer) return;
 
         // CSS-Klassen zurücksetzen
         this.statusContainer.className = 'status-message visible';

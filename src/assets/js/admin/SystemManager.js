@@ -80,7 +80,7 @@ export class SystemManager {
 
     async saveUser(btnElement) {
         const form = document.getElementById('user-form');
-        if (!form || !form.reportValidity()) return;
+        if (!form?.reportValidity()) return;
 
         const originalText = btnElement.innerHTML;
         btnElement.disabled = true;
@@ -145,7 +145,7 @@ export class SystemManager {
 
     async saveRole(btnElement) {
         const form = document.getElementById('role-form');
-        if (!form || !form.reportValidity()) return;
+        if (!form?.reportValidity()) return;
 
         const originalText = btnElement.innerHTML;
         btnElement.disabled = true;

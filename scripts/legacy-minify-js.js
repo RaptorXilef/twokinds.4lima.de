@@ -3,12 +3,23 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const config = [
-    { src: 'src/assets/js', dest: 'public/assets/js' },
-    // Hier man weitere Ordner hinzufügen, wie früher in PS1
-    // { src: 'src/js/admin', dest: 'public/assets/js/admin' }
+    // Alte, globale Dateien (werden zu .min.js)
+    {
+        src: 'src/assets/js',
+        dest: 'public/assets/js',
+        extension: '.min.js',
+        isModule: false,
+    },
+    // Unsere neuen ES6-Module (behalten .js, damit die imports funktionieren!)
+    {
+        src: 'src/assets/js/admin',
+        dest: 'public/assets/js/admin',
+        extension: '.js',
+        isModule: true,
+    },
 ];
 
-console.log('🚀 Starte Legacy-JS-Minifizierung...');
+console.log('🚀 Starte JS-Minifizierung (inklusive ES6-Module)...');
 
 for (const entry of config) {
     if (!fs.existsSync(entry.dest)) {
@@ -22,20 +33,24 @@ for (const entry of config) {
 
     const files = fs
         .readdirSync(entry.src)
+        // Wir ignorieren Dateien, die bereits .min.js heißen, um doppeltes Minifizieren zu verhindern
         .filter((f) => f.endsWith('.js') && !f.endsWith('.min.js'));
 
     for (const file of files) {
         const input = path.join(entry.src, file);
         const baseName = path.parse(file).name;
-        const output = path.join(entry.dest, `${baseName}.min.js`);
-        const mapName = `${baseName}.min.js.map`;
+        const output = path.join(entry.dest, `${baseName}${entry.extension}`);
+        const mapName = `${baseName}${entry.extension}.map`;
 
-        console.log(`  - Minifiziere: ${file}`);
+        console.log(`  - Minifiziere: ${entry.src}/${file} -> ${output}`);
 
         try {
+            // Das --module Flag sagt Terser, dass er Imports/Exports nicht kaputt machen darf
+            const moduleFlag = entry.isModule ? '--module' : '';
+
             // Terser Aufruf mit Source-Maps
             execSync(
-                `npx terser "${input}" --compress --mangle --source-map "filename='${mapName}',url='${mapName}'" --output "${output}"`
+                `npx terser "${input}" ${moduleFlag} --compress --mangle --source-map "filename='${mapName}',url='${mapName}'" --output "${output}"`
             );
         } catch (error) {
             console.error(`  ❌ Fehler bei ${file}:`, error.message);
@@ -43,4 +58,4 @@ for (const entry of config) {
     }
 }
 
-console.log('✅ Minifizierung abgeschlossen.');
+console.log('✅ Minifizierung erfolgreich abgeschlossen.');
