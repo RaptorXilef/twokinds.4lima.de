@@ -2,6 +2,16 @@
 
 
 
+## [6.4.6](https://github.com///compare/v6.4.5...v6.4.6) (2026-07-30)
+
+### 🐛 Bug Fixes
+
+* **admin/ui:** resolve AJAX 404 and CSP violations for lazy-loading and FOUC prevention ([1d3ae90](https://github.com///commit/1d3ae90be50b4661cb402e34192e8ea1b0545023))
+
+### ⚡ Performance
+
+* **admin:** eliminate FOUC and reduce dashboard load time from ~12s to ~0.1s ([9980260](https://github.com///commit/9980260c959c1ec9f65acbf0c657ac45d5ad2d33))
+
 ## [6.4.5](https://github.com///compare/v6.4.4...v6.4.5) (2026-07-30)
 
 ### 🐛 Bug Fixes
