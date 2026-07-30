@@ -1,16 +1,19 @@
 /**
  * @typedef {import('./Api.js').Api} Api
  * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('./UnsavedTracker.js').UnsavedTracker} UnsavedTracker
  */
 
 export class FormService {
     /**
      * @param {Api} api
      * @param {NotificationService} notifications
+     * @param {UnsavedTracker} [tracker]
      */
-    constructor(api, notifications) {
+    constructor(api, notifications, tracker = null) {
         this.api = api;
         this.notifications = notifications;
+        this.tracker = tracker;
     }
 
     /**
@@ -44,7 +47,7 @@ export class FormService {
 
             // 5. Auswerten
             if (result.success) {
-                window.isDirty = false;
+                if (this.tracker) this.tracker.markClean();
                 this.notifications.show(result.message || 'Erfolgreich gespeichert!', 'success');
                 return true;
             } else {

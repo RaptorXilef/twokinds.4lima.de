@@ -1,27 +1,10 @@
 export class GlobalUI {
-    constructor() {
-        window.isDirty = false;
-
-        this.bindUnsavedChangesWarning();
+    constructor(tracker) {
+        this.tracker = tracker;
         this.bindImageFallback();
         this.initWysiwyg();
         this.initLightbox();
         this.handleRowHighlighting();
-    }
-
-    bindUnsavedChangesWarning() {
-        window.addEventListener('beforeunload', (e) => {
-            if (window.isDirty) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
-
-        document.addEventListener('input', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                window.isDirty = true;
-            }
-        });
     }
 
     bindImageFallback() {
@@ -60,7 +43,7 @@ export class GlobalUI {
                     ],
                 })
                 .on('tbwchange', () => {
-                    window.isDirty = true;
+                    if (this.tracker) this.tracker.markDirty();
                 });
         }
     }

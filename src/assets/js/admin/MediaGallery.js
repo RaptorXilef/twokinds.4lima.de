@@ -1,19 +1,22 @@
+import { DragDropService } from './DragDropService.js';
+import { debounce } from './Utils.js';
+
 /**
  * @typedef {import('./Api.js').Api} Api
  * @typedef {import('./ModalManager.js').ModalManager} ModalManager
  * @typedef {import('./NotificationService.js').NotificationService} NotificationService
  */
-
 export class MediaGallery {
     /**
      * @param {Api} api
      * @param {ModalManager} modalManager
      * @param {NotificationService} notifications
      */
-    constructor(api, modalManager, notifications) {
+    constructor(api, modalManager, notifications, tracker) {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
+        this.tracker = tracker;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-media');
@@ -28,6 +31,9 @@ export class MediaGallery {
         this.currentMediaTab = 'characters';
         /** @type {HTMLInputElement|null} */
         this.currentGalleryTargetInput = null;
+
+        // PERFORMANCE BOOST: Debounced Live-Suche
+        this.applyFilterDebounced = debounce(() => this.applyFilter(), 250);
 
         if (this.section) {
             this.bindSectionEvents();
@@ -64,7 +70,8 @@ export class MediaGallery {
         });
 
         // Live Filter
-        this.mediaSearchInput?.addEventListener('input', () => this.applyFilter());
+        // Verwendet jetzt das Performance-schonende Debounce
+        this.mediaSearchInput?.addEventListener('input', this.applyFilterDebounced);
 
         // Löschen per Event Delegation
         this.section.addEventListener('click', async (e) => {
@@ -92,38 +99,15 @@ export class MediaGallery {
             this.loadMedia();
         });
 
-        // Drag & Drop Upload
-        const mediaDropZone = document.getElementById('media-drop-zone');
-        const mediaUploadInput = document.getElementById('media-upload-input');
-
-        if (mediaDropZone && mediaUploadInput) {
-            mediaDropZone.addEventListener('click', () => mediaUploadInput.click());
-
-            mediaDropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                mediaDropZone.style.backgroundColor = 'var(--table-row-hover)';
-            });
-
-            mediaDropZone.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                mediaDropZone.style.backgroundColor = 'var(--table-row-even)';
-            });
-
-            mediaDropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                mediaDropZone.style.backgroundColor = 'var(--table-row-even)';
-                if (e.dataTransfer.files.length) {
-                    mediaUploadInput.files = e.dataTransfer.files;
-                    mediaUploadInput.dispatchEvent(new Event('change'));
-                }
-            });
-
-            mediaUploadInput.addEventListener('change', async () => {
-                if (mediaUploadInput.files.length === 0) return;
+        // SCHRUMPFKUR DURCH DRAG DROP SERVICE
+        DragDropService.bind('media-drop-zone', 'media-upload-input', {
+            onChange: async (files) => {
+                DragDropService.reset('media-drop-zone');
+                if (files.length === 0) return;
                 this.notifications.show('Lade Bilder hoch...', 'info');
 
                 const fd = new window.FormData();
-                for (const file of mediaUploadInput.files) {
+                for (const file of files) {
                     fd.append('files[]', file);
                 }
 
@@ -134,9 +118,9 @@ export class MediaGallery {
                 } else {
                     this.notifications.show(json.error, 'error');
                 }
-                mediaUploadInput.value = '';
-            });
-        }
+                document.getElementById('media-upload-input').value = '';
+            },
+        });
     }
 
     applyFilter() {
@@ -246,7 +230,7 @@ export class MediaGallery {
 
                         galGrid.querySelectorAll('.gallery-item').forEach((item) => {
                             item.addEventListener('click', () => {
-                                window.isDirty = true;
+                                if (this.tracker) this.tracker.markDirty();
                                 if (this.currentGalleryTargetInput) {
                                     if (this.currentGalleryTargetInput.id === 'ref_sheets_urls') {
                                         const vals = this.currentGalleryTargetInput.value

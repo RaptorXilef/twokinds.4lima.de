@@ -1,3 +1,4 @@
+import { DragDropService } from './DragDropService.js';
 import { ReactiveState } from './ReactiveState.js';
 
 /**
@@ -14,11 +15,12 @@ export class CharacterEditor {
      * @param {NotificationService} notifications
      * @param {FormService} formService
      */
-    constructor(api, modalManager, notifications, formService) {
+    constructor(api, modalManager, notifications, formService, tracker) {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
         this.formService = formService;
+        this.tracker = tracker;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-characters');
@@ -36,7 +38,8 @@ export class CharacterEditor {
                 refSheets: '',
             },
             (property, value) => this.renderPreviews(property, value),
-            'admin_char_draft'
+            'admin_char_draft',
+            this.tracker
         );
 
         if (this.section || this.form) {
@@ -181,113 +184,59 @@ export class CharacterEditor {
 
     // Drag & Drop
     bindDropZones() {
-        this.setupCharDropZone(
-            'char-drop-zone',
-            'profile_image',
-            'char-preview-img',
-            'upload-preview-name'
-        );
-        this.setupCharDropZone('char-drop-zone-main', 'main_pic', 'preview-img-main');
-        this.setupCharDropZone('char-drop-zone-swatch', 'swatch_pic', 'preview-img-swatch');
-        this.setupRefSheetsDropZone();
-    }
-
-    setupCharDropZone(zoneId, inputId, previewImgId, previewTextId = null) {
-        const zone = document.getElementById(zoneId);
-        const input = document.getElementById(inputId);
-        const preview = document.getElementById(previewImgId);
-        const previewText = document.getElementById(previewTextId);
-
-        if (!zone || !input) return;
-
-        zone.addEventListener('click', () => input.click());
-
-        zone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            zone.style.borderColor = 'var(--link-color)';
-            zone.style.backgroundColor = 'var(--table-row-hover)';
+        DragDropService.bind('char-drop-zone', 'profile_image', {
+            tracker: this.tracker,
+            previewTextId: 'upload-preview-name',
+            onChange: (files) => {
+                const preview = document.getElementById('char-preview-img');
+                if (preview && files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        preview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+                const picUrlInput = document.getElementById('pic_url');
+                if (picUrlInput) picUrlInput.value = '';
+                this.state.picUrl = '';
+            },
         });
 
-        zone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            zone.style.borderColor = 'var(--border-medium)';
-            zone.style.backgroundColor = 'var(--content-bg)';
-        });
-
-        zone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            zone.style.borderColor = 'var(--status-green-text)';
-            zone.style.backgroundColor = 'var(--status-green-bg)';
-            if (e.dataTransfer.files.length) {
-                input.files = e.dataTransfer.files;
-                input.dispatchEvent(new Event('change'));
-            }
-        });
-
-        input.addEventListener('change', () => {
-            if (input.files?.[0]) {
-                window.isDirty = true;
-                zone.style.borderColor = 'var(--status-green-text)';
-                zone.style.backgroundColor = 'var(--status-green-bg)';
-
-                if (previewText) previewText.textContent = `Bereit: ${input.files[0].name}`;
-
-                if (preview) {
+        DragDropService.bind('char-drop-zone-main', 'main_pic', {
+            tracker: this.tracker,
+            onChange: (files) => {
+                const preview = document.getElementById('preview-img-main');
+                if (preview && files[0]) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         preview.src = e.target.result;
                         if (preview.style.display === 'none') preview.style.display = 'block';
                     };
-                    reader.readAsDataURL(input.files[0]);
+                    reader.readAsDataURL(files[0]);
                 }
+            },
+        });
 
-                if (inputId === 'profile_image') {
-                    const picUrlInput = document.getElementById('pic_url');
-                    if (picUrlInput) picUrlInput.value = '';
-                    this.state.picUrl = ''; // Löscht das alte Bild
+        DragDropService.bind('char-drop-zone-swatch', 'swatch_pic', {
+            tracker: this.tracker,
+            onChange: (files) => {
+                const preview = document.getElementById('preview-img-swatch');
+                if (preview && files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        preview.src = e.target.result;
+                        if (preview.style.display === 'none') preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(files[0]);
                 }
-            }
-        });
-    }
-
-    // Akkumulierung für Multi-Uploads (Ref-Sheets)
-    setupRefSheetsDropZone() {
-        const zoneRefs = document.getElementById('char-drop-zone-refs');
-        const inputRefs = document.getElementById('ref_sheets');
-        const containerRefs = document.getElementById('preview-container-refs');
-
-        if (!zoneRefs || !inputRefs || !containerRefs) return;
-
-        zoneRefs.addEventListener('click', () => inputRefs.click());
-
-        zoneRefs.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            zoneRefs.style.borderColor = 'var(--link-color)';
-            zoneRefs.style.backgroundColor = 'var(--table-row-hover)';
+            },
         });
 
-        zoneRefs.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            zoneRefs.style.borderColor = 'var(--border-medium)';
-            zoneRefs.style.backgroundColor = 'var(--content-bg)';
-        });
-
-        zoneRefs.addEventListener('drop', (e) => {
-            e.preventDefault();
-            zoneRefs.style.borderColor = 'var(--status-green-text)';
-            zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
-            if (e.dataTransfer.files.length) {
-                Array.from(e.dataTransfer.files).forEach((file) => {
-                    this.accumulatedRefFiles.items.add(file);
-                });
-                inputRefs.files = this.accumulatedRefFiles.files;
-                this.updateRefDropPreview(containerRefs, zoneRefs);
-            }
-        });
-
-        inputRefs.addEventListener('change', () => {
-            if (inputRefs.files.length > 0) {
-                Array.from(inputRefs.files).forEach((newFile) => {
+        // Akkumulierung für Multi-Uploads (Ref-Sheets)
+        DragDropService.bind('char-drop-zone-refs', 'ref_sheets', {
+            tracker: this.tracker,
+            onChange: (files) => {
+                Array.from(files).forEach((newFile) => {
                     let exists = false;
                     for (let i = 0; i < this.accumulatedRefFiles.files.length; i++) {
                         if (
@@ -298,27 +247,21 @@ export class CharacterEditor {
                             break;
                         }
                     }
-                    if (!exists) {
-                        this.accumulatedRefFiles.items.add(newFile);
-                    }
+                    if (!exists) this.accumulatedRefFiles.items.add(newFile);
                 });
-                inputRefs.files = this.accumulatedRefFiles.files;
-                this.updateRefDropPreview(containerRefs, zoneRefs);
-            }
+                document.getElementById('ref_sheets').files = this.accumulatedRefFiles.files;
+                this.updateRefDropPreview();
+            },
         });
     }
 
-    updateRefDropPreview(containerRefs, zoneRefs) {
-        window.isDirty = true;
-        if (zoneRefs) {
-            zoneRefs.style.borderColor = 'var(--status-green-text)';
-            zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
-        }
+    updateRefDropPreview() {
+        const containerRefs = document.getElementById('preview-container-refs');
+        if (!containerRefs) return;
 
         Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => {
             img.remove();
         });
-
         Array.from(this.accumulatedRefFiles.files).forEach((file) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -336,35 +279,13 @@ export class CharacterEditor {
         });
     }
 
-    resetAllDropZones() {
-        [
-            'char-drop-zone',
-            'char-drop-zone-main',
-            'char-drop-zone-swatch',
-            'char-drop-zone-refs',
-        ].forEach((id) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.borderColor = 'var(--border-medium)';
-                el.style.backgroundColor = 'var(--table-row-even)';
-            }
-        });
-        const previewNameEl = document.getElementById('upload-preview-name');
-        if (previewNameEl) previewNameEl.textContent = '';
-
-        const containerRefs = document.getElementById('preview-container-refs');
-        if (containerRefs) containerRefs.innerHTML = '';
-
-        this.accumulatedRefFiles = new DataTransfer();
-    }
-
     openAddModal() {
         if (this.form) this.form.reset();
 
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
-            if (stateProp) this.state[stateProp] = val; // Triggert Vorschau!
+            if (stateProp) this.state[stateProp] = val;
         };
 
         setValAndState('id', null, 'new');
@@ -387,9 +308,15 @@ export class CharacterEditor {
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Neuen Charakter erstellen';
 
-        this.resetAllDropZones();
-        sessionStorage.setItem('highlightEntityIdCancel', 'new');
+        DragDropService.reset('char-drop-zone', 'upload-preview-name');
+        DragDropService.reset('char-drop-zone-main');
+        DragDropService.reset('char-drop-zone-swatch');
+        DragDropService.reset('char-drop-zone-refs');
+        const containerRefs = document.getElementById('preview-container-refs');
+        if (containerRefs) containerRefs.innerHTML = '';
+        this.accumulatedRefFiles = new DataTransfer();
 
+        sessionStorage.setItem('highlightEntityIdCancel', 'new');
         this.modalManager.open('char-modal');
     }
 
@@ -453,9 +380,15 @@ export class CharacterEditor {
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
 
-        this.resetAllDropZones();
-        sessionStorage.setItem('highlightEntityIdCancel', payload.id);
+        DragDropService.reset('char-drop-zone', 'upload-preview-name');
+        DragDropService.reset('char-drop-zone-main');
+        DragDropService.reset('char-drop-zone-swatch');
+        DragDropService.reset('char-drop-zone-refs');
+        const containerRefs = document.getElementById('preview-container-refs');
+        if (containerRefs) containerRefs.innerHTML = '';
+        this.accumulatedRefFiles = new DataTransfer();
 
+        sessionStorage.setItem('highlightEntityIdCancel', payload.id);
         this.modalManager.open('char-modal');
     }
 
@@ -469,9 +402,6 @@ export class CharacterEditor {
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             customData.description = window.$('#char_description').trumbowyg('html');
         }
-
-        const idInput = this.form.querySelector('[name="id"]');
-        if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
         const success = await this.formService.submit(
             this.form,

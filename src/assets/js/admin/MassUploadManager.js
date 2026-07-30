@@ -1,16 +1,18 @@
+import { DragDropService } from './DragDropService.js';
+
 /**
  * @typedef {import('./Api.js').Api} Api
  * @typedef {import('./NotificationService.js').NotificationService} NotificationService
  */
-
 export class MassUploadManager {
     /**
      * @param {Api} api
      * @param {NotificationService} notifications
      */
-    constructor(api, notifications) {
+    constructor(api, notifications, tracker) {
         this.api = api;
         this.notifications = notifications;
+        this.tracker = tracker;
 
         /** @type {HTMLElement|null} */
         this.massDropZone = document.getElementById('mass-drop-zone');
@@ -59,29 +61,13 @@ export class MassUploadManager {
     }
 
     bindEvents() {
-        const massFileInput = document.getElementById('mass-upload-input');
-
-        this.massDropZone.addEventListener('click', () => massFileInput?.click());
-
-        this.massDropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            this.massDropZone.style.backgroundColor = 'var(--table-row-hover)';
-        });
-
-        this.massDropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            this.massDropZone.style.backgroundColor = 'var(--table-row-even)';
-        });
-
-        this.massDropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            this.massDropZone.style.backgroundColor = 'var(--table-row-even)';
-            this.processDroppedFiles(e.dataTransfer.files);
-        });
-
-        massFileInput?.addEventListener('change', () => {
-            this.processDroppedFiles(massFileInput.files);
-            massFileInput.value = '';
+        // PERFEKTE SCHRUMPFKUR DURCH DRAG & DROP SERVICE
+        DragDropService.bind('mass-drop-zone', 'mass-upload-input', {
+            onChange: (files) => {
+                DragDropService.reset('mass-drop-zone');
+                document.getElementById('mass-upload-input').value = '';
+                this.processDroppedFiles(files);
+            },
         });
 
         this.queueTableBody.addEventListener('click', (e) => {

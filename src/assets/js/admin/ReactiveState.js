@@ -5,7 +5,7 @@ export class ReactiveState {
      * @param {Function} onUpdate Callback, das bei jeder Änderung gefeuert wird: (property, newValue, state)
      * @param {string|null} cacheKey Einzigartiger Key für den LocalStorage Draft
      */
-    constructor(initialState, onUpdate, cacheKey = null) {
+    constructor(initialState, onUpdate, cacheKey = null, tracker = null) {
         this._cacheKey = cacheKey;
 
         // Versuche alte Drafts aus dem Cache wiederherzustellen
@@ -32,6 +32,10 @@ export class ReactiveState {
             set: (target, property, value) => {
                 if (target[property] !== value) {
                     target[property] = value;
+
+                    if (tracker && property !== 'clearCache') {
+                        tracker.markDirty();
+                    }
 
                     // Bei jeder Änderung speichern wir den State in den LocalStorage (außer es ist die clearCache Methode)
                     if (this._cacheKey && property !== 'clearCache') {

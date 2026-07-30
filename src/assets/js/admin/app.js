@@ -12,17 +12,32 @@ import { NotificationService } from './NotificationService.js';
 import { ReportManager } from './ReportManager.js';
 import { SystemManager } from './SystemManager.js';
 import { TabManager } from './TabManager.js';
+import { UnsavedTracker } from './UnsavedTracker.js';
+
+// Polyfill für requestIdleCallback in alten Safari Browsern
+window.requestIdleCallback =
+    window.requestIdleCallback ||
+    ((cb) => {
+        var start = Date.now();
+        return setTimeout(() => {
+            cb({
+                didTimeout: false,
+                timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
+            });
+        }, 1);
+    });
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Core Services (Sofort laden, da essenziell)
     const notifications = new NotificationService();
     new ErrorHandlerService(notifications); // Fängt globale Fehler ab
 
+    const tracker = new UnsavedTracker(); // NEU: Löst window.isDirty ab
     const api = new Api();
-    const formService = new FormService(api, notifications); // Der neue Form-Manager
+    const formService = new FormService(api, notifications, tracker); // Der neue Form-Manager
     const modalManager = new ModalManager();
 
-    new GlobalUI();
+    new GlobalUI(tracker);
     new TabManager();
 
     // 2. Tabellen (Paginierung & Suche) initialisieren (nur für Comics, Reports verwalten sich selbst)
@@ -34,10 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 3. Main Editors (Sofort laden für cross-tab dependencies wie Report->Comic)
-    const comicEditor = new ComicEditor(api, modalManager, notifications, formService);
-    new CharacterEditor(api, modalManager, notifications, formService);
+    const comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
+    new CharacterEditor(api, modalManager, notifications, formService, tracker);
     new ChapterEditor(api, modalManager, notifications, formService);
-    new GroupEditor(api, notifications);
+    new GroupEditor(api, notifications, tracker);
     new ReportManager(api, modalManager, comicEditor, notifications);
     new SystemManager(api, modalManager, notifications);
 
@@ -54,9 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { NewsletterManager } = await import('./NewsletterManager.js');
 
                 // Instanziieren, sobald der Download fertig ist
-                new MassUploadManager(api, notifications);
+                new MassUploadManager(api, notifications, tracker);
                 new CropperManager(api, notifications);
-                new MediaGallery(api, modalManager, notifications);
+                new MediaGallery(api, modalManager, notifications, tracker);
                 new NewsletterManager(api, notifications);
 
                 console.info('[AdminApp] Lazy-Load Module nachträglich geladen.');
@@ -74,5 +89,5 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     });
 
-    console.info('[AdminApp] ES6 Core Architektur erfolgreich hochgefahren.');
+    console.info('[AdminApp] Core Architektur erfolgreich hochgefahren.');
 });

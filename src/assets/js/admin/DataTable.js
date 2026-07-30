@@ -1,3 +1,5 @@
+import { debounce } from './Utils.js';
+
 export class DataTable {
     constructor(config) {
         this.tableBody = document.querySelector(config.tableBodySelector);
@@ -10,9 +12,8 @@ export class DataTable {
             !this.searchInput ||
             !this.perPageSelect ||
             !this.paginationContainer
-        ) {
+        )
             return;
-        }
 
         this.allRows = Array.from(this.tableBody.querySelectorAll('tr')).filter(
             (row) => !row.classList.contains('empty-table-message')
@@ -26,11 +27,15 @@ export class DataTable {
     }
 
     bindEvents() {
-        this.searchInput.addEventListener('input', (e) => {
-            this.currentSearchQuery = e.target.value;
-            this.currentPage = 1;
-            this.renderTable();
-        });
+        // PERFORMANCE BOOST: Tabelle wird nur gefiltert, wenn der Nutzer aufhört zu tippen
+        this.searchInput.addEventListener(
+            'input',
+            debounce((e) => {
+                this.currentSearchQuery = e.target.value;
+                this.currentPage = 1;
+                this.renderTable();
+            }, 250)
+        );
 
         this.perPageSelect.addEventListener('change', (e) => {
             this.itemsPerPage = e.target.value;

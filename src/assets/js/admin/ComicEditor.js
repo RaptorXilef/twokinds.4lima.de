@@ -1,3 +1,4 @@
+import { DragDropService } from './DragDropService.js';
 import { ReactiveState } from './ReactiveState.js';
 
 /**
@@ -14,11 +15,12 @@ export class ComicEditor {
      * @param {NotificationService} notifications
      * @param {FormService} formService
      */
-    constructor(api, modalManager, notifications, formService) {
+    constructor(api, modalManager, notifications, formService, tracker) {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
         this.formService = formService;
+        this.tracker = tracker;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-comics');
@@ -33,7 +35,8 @@ export class ComicEditor {
                 sketchUrl: '',
             },
             () => this.updateComicPreviews(),
-            'admin_comic_draft'
+            'admin_comic_draft',
+            this.tracker
         );
 
         if (this.section) {
@@ -93,7 +96,10 @@ export class ComicEditor {
                 const hiddenSelect = document.getElementById('hidden-comic-chars');
                 if (hiddenSelect) {
                     const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
-                    if (opt) opt.selected = charItem.classList.contains('selected');
+                    if (opt) {
+                        opt.selected = charItem.classList.contains('selected');
+                        this.tracker.markDirty();
+                    }
                 }
             }
         });
@@ -135,65 +141,14 @@ export class ComicEditor {
 
     // Drag&Drop Zonen
     bindDropZones() {
-        this.setupDropZone('comic-drop-zone-hires', 'upload_hires', 'preview-name-hires');
-        this.setupDropZone('comic-drop-zone-lowres', 'upload_lowres', 'preview-name-lowres');
-    }
-
-    setupDropZone(zoneId, inputId, previewId) {
-        const dropZone = document.getElementById(zoneId);
-        const fileInput = document.getElementById(inputId);
-        const previewName = document.getElementById(previewId);
-
-        if (!dropZone || !fileInput) return;
-
-        dropZone.addEventListener('click', () => fileInput.click());
-
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--link-color)';
-            dropZone.style.backgroundColor = 'var(--table-row-hover)';
+        DragDropService.bind('comic-drop-zone-hires', 'upload_hires', {
+            previewTextId: 'preview-name-hires',
+            tracker: this.tracker,
         });
-
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--border-medium)';
-            dropZone.style.backgroundColor = 'var(--table-row-even)';
+        DragDropService.bind('comic-drop-zone-lowres', 'upload_lowres', {
+            previewTextId: 'preview-name-lowres',
+            tracker: this.tracker,
         });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--status-green-text)';
-            dropZone.style.backgroundColor = 'var(--status-green-bg)';
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
-                window.isDirty = true;
-                if (previewName) previewName.textContent = `Ausgewählt: ${fileInput.files[0].name}`;
-            }
-        });
-
-        fileInput.addEventListener('change', () => {
-            const file = fileInput.files?.[0];
-            if (file) {
-                window.isDirty = true;
-                dropZone.style.borderColor = 'var(--status-green-text)';
-                dropZone.style.backgroundColor = 'var(--status-green-bg)';
-                if (previewName) previewName.textContent = `Ausgewählt: ${file.name}`;
-            }
-        });
-    }
-
-    resetDropZones() {
-        const resetEl = (idText, idZone) => {
-            const txt = document.getElementById(idText);
-            const zone = document.getElementById(idZone);
-            if (txt) txt.textContent = '';
-            if (zone) {
-                zone.style.borderColor = 'var(--border-medium)';
-                zone.style.backgroundColor = 'var(--table-row-even)';
-            }
-        };
-        resetEl('preview-name-hires', 'comic-drop-zone-hires');
-        resetEl('preview-name-lowres', 'comic-drop-zone-lowres');
     }
 
     // --- BILD VORSCHAU HELPER ---
@@ -306,7 +261,7 @@ export class ComicEditor {
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
-            if (stateProp) this.state[stateProp] = val; // Triggert Previews
+            if (stateProp) this.state[stateProp] = val;
         };
 
         setValAndState('old_comic_id', null, '');
@@ -326,7 +281,8 @@ export class ComicEditor {
         }
 
         this.resetCharacterSelection();
-        this.resetDropZones();
+        DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
+        DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
@@ -340,7 +296,7 @@ export class ComicEditor {
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val || '';
-            if (stateProp) this.state[stateProp] = val || ''; // Triggert Previews
+            if (stateProp) this.state[stateProp] = val || '';
         };
 
         setValAndState('old_comic_id', null, payload.id);
@@ -365,7 +321,8 @@ export class ComicEditor {
         }
 
         this.applyCharacterSelection(payload.characters || []);
-        this.resetDropZones();
+        DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
+        DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';
@@ -396,14 +353,12 @@ export class ComicEditor {
                 });
             if (hiddenSelect) {
                 const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
-                if (opt) {
-                    opt.selected = true;
-                }
+                if (opt) opt.selected = true;
             }
         });
     }
 
-    // ACHTUNG: Die Form-Service Magie
+    // Die Form-Service Magie
     async saveComic(btnElement) {
         if (!this.form) return;
 
@@ -411,9 +366,6 @@ export class ComicEditor {
         if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
             customData.transcript = window.$('#transcript').trumbowyg('html');
         }
-
-        const idInput = this.form.querySelector('[name="comic_id"]');
-        if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
         const success = await this.formService.submit(
             this.form,

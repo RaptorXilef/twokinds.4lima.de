@@ -8,9 +8,10 @@ export class GroupEditor {
      * @param {Api} api
      * @param {NotificationService} notifications
      */
-    constructor(api, notifications) {
+    constructor(api, notifications, tracker) {
         this.api = api;
         this.notifications = notifications;
+        this.tracker = tracker;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-groups');
@@ -40,7 +41,7 @@ export class GroupEditor {
             const btnDelete = e.target.closest('.btn-delete-group');
             if (btnDelete) {
                 e.preventDefault();
-                window.isDirty = true;
+                this.tracker.markDirty();
                 const groupEl = btnDelete.closest('.character-group');
                 if (groupEl) groupEl.remove();
             }
@@ -48,7 +49,7 @@ export class GroupEditor {
             const btnRemoveChar = e.target.closest('.remove-char-from-group');
             if (btnRemoveChar) {
                 e.preventDefault();
-                window.isDirty = true;
+                this.tracker.markDirty();
                 const entry = btnRemoveChar.closest('.character-entry');
                 if (entry) entry.remove();
             }
@@ -63,7 +64,7 @@ export class GroupEditor {
         // Checkbox für manuelles Sortieren -> LIVE UPDATE IN SORTABLE
         this.section.addEventListener('change', (e) => {
             if (e.target.classList.contains('manual-sort-cb')) {
-                window.isDirty = true;
+                this.tracker.markDirty();
                 const container = e.target
                     .closest('.character-group')
                     ?.querySelector('.sortable-group');
@@ -102,7 +103,7 @@ export class GroupEditor {
                 sort: false,
                 animation: 150,
                 onEnd: () => {
-                    window.isDirty = true;
+                    this.tracker.markDirty();
                 },
             });
             poolEl.dataset.sortableInitialized = 'true';
@@ -117,7 +118,7 @@ export class GroupEditor {
                     animation: 150,
                     sort: manual,
                     onEnd: () => {
-                        window.isDirty = true;
+                        this.tracker.markDirty();
                     },
                 });
                 groupEl.dataset.sortableInitialized = 'true';
@@ -131,7 +132,7 @@ export class GroupEditor {
                 animation: 150,
                 handle: '.group-drag-handle',
                 onEnd: () => {
-                    window.isDirty = true;
+                    this.tracker.markDirty();
                 },
             });
             wrapper.dataset.sortableInitialized = 'true';
@@ -139,7 +140,7 @@ export class GroupEditor {
     }
 
     addGroupHTML() {
-        window.isDirty = true;
+        this.tracker.markDirty();
         const wrapper = document.getElementById('groups-wrapper');
         if (!wrapper) return;
 
@@ -202,7 +203,7 @@ export class GroupEditor {
             const result = await this.api.post('save_character_groups', formData);
 
             if (result.success) {
-                window.isDirty = false;
+                this.tracker.markClean();
                 this.notifications.show('Gruppen gespeichert!', 'success');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
