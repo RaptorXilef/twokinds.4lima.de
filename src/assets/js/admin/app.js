@@ -15,7 +15,7 @@ import { ModalManager } from './ui/ModalManager.js';
 import { TabManager } from './ui/TabManager.js';
 
 // Polyfill für requestIdleCallback
-window.requestIdleCallback =
+const requestIdleCallbackPolyfill =
     window.requestIdleCallback ||
     ((cb) => {
         const start = Date.now();
@@ -26,11 +26,22 @@ window.requestIdleCallback =
             });
         }, 1);
     });
+window.requestIdleCallback = requestIdleCallbackPolyfill;
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Core Services (Sofort laden, da essenziell)
     const notifications = new NotificationService();
     new ErrorHandlerService(notifications); // Fängt globale Fehler ab
+
+    // PERF: Fange Nachrichten auf, die den "blitzschnellen Reload" überlebt haben!
+    const flash = sessionStorage.getItem('admin_flash_msg');
+    if (flash) {
+        try {
+            const f = JSON.parse(flash);
+            notifications.show(f.msg, f.type);
+        } catch (e) {}
+        sessionStorage.removeItem('admin_flash_msg');
+    }
 
     const tracker = new UnsavedTracker(); // Löst window.isDirty ab
     const api = new Api();

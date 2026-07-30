@@ -9,28 +9,40 @@ use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 
-final readonly class SiteGeneratorService
+final class SiteGeneratorService
 {
+    private bool $needsGeneration = false;
+
     public function __construct(
-        private ComicRepositoryInterface $comicRepo,
-        private ChapterRepositoryInterface $chapterRepo, // Kann für zukünftige Feeds nützlich sein
-        private ConfigInterface $config,
-        private CharacterRepositoryInterface $characterRepo,
+        private readonly ComicRepositoryInterface $comicRepo,
+        private readonly ChapterRepositoryInterface $chapterRepo, // Kann für zukünftige Feeds nützlich sein
+        private readonly ConfigInterface $config,
+        private readonly CharacterRepositoryInterface $characterRepo,
     ) {
     }
 
     /**
      * Führt alle Background-Generatoren aus.
+     *
+     * Wird vom ComicService aufgerufen. Wir merken uns nur, DASS generiert werden muss.
      */
     public function generateAll(): void
     {
-        $this->generateSitemap();
-        $this->generateRss();
+        $this->needsGeneration = true;
     }
 
-    private function generateSitemap(): void
+    // PERF: Dieser Destruktor feuert GANZ am Ende, NACHDEM der Browser längst seine Antwort hat!
+    public function __destruct()
     {
-        $baseUrl   = \rtrim($this->config->get('base_url'), '/');
+        if ($this->needsGeneration) {
+            $this->doGenerateSitemap();
+            $this->doGenerateRss();
+        }
+    }
+
+    private function doGenerateSitemap(): void
+    {
+        $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
         $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
 
         $xml = new \XMLWriter();
@@ -90,9 +102,9 @@ final readonly class SiteGeneratorService
         \file_put_contents($publicDir . '/sitemap.xml', $xml->outputMemory());
     }
 
-    private function generateRss(): void
+    private function doGenerateRss(): void
     {
-        $baseUrl   = $this->config->get('base_url');
+        $baseUrl   = $this->config->getBaseUrl();
         $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
 
         $xml = new \XMLWriter();
@@ -105,6 +117,7 @@ final readonly class SiteGeneratorService
         $xml->writeAttribute('version', '2.0');
 
         $xml->startElement('channel');
+
         $xml->writeElement('title', $this->config->get('site_title', 'Twokinds auf Deutsch'));
         $xml->writeElement('link', $baseUrl);
         $xml->writeElement('description', $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'));

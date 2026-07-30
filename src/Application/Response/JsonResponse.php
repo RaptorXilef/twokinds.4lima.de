@@ -27,10 +27,23 @@ final readonly class JsonResponse implements ResponseInterface
     {
         \http_response_code($this->statusCode);
         \header('Content-Type: application/json; charset=utf-8');
+
         echo \json_encode(
             $this->data,
             \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_HEX_TAG | \JSON_HEX_AMP | \JSON_HEX_APOS | \JSON_HEX_QUOT,
         );
+
+        // PERF: Wenn der Server FastCGI unterstützt (wie Lima-City), schließen wir die Verbindung
+        // zum Browser HIER sofort ab! Skripte laufen im Hintergrund ungestört weiter.
+        if (\function_exists('fastcgi_finish_request')) {
+            if (\session_status() === \PHP_SESSION_ACTIVE) {
+                \session_write_close();
+            }
+            \fastcgi_finish_request();
+
+            return;
+        }
+
         exit;
     }
 

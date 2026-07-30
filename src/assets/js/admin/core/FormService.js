@@ -24,7 +24,7 @@ export class FormService {
             const data = {};
 
             for (const [key, value] of formData.entries()) {
-                // FIX: Ignoriere alles, was kein reiner Text ist (Sicherheit gegen File-Objekte)
+                // Ignoriere alles, was kein reiner Text ist (Sicherheit gegen File-Objekte)
                 if (typeof value !== 'string') continue;
                 data[key] = value;
             }
@@ -65,12 +65,12 @@ export class FormService {
             const data = JSON.parse(cached);
 
             for (const key in data) {
-                // FIX: Jedes Feld im try-catch! Crasht eins, laden die anderen trotzdem weiter.
+                // Jedes Feld im try-catch! Crasht eins, laden die anderen trotzdem weiter.
                 try {
                     const input = form.querySelector(`[name="${key}"]`);
                     if (!input) continue;
 
-                    // FIX: Niemals versuchen, File-Inputs per Code zu setzen!
+                    // Niemals versuchen, File-Inputs per Code zu setzen!
                     if (input.type === 'file') continue;
 
                     if (
@@ -99,6 +99,7 @@ export class FormService {
         }
     }
 
+    // PERF: Wir haben reloadOnSuccess eingebaut!
     /**
      * Übernimmt die komplette Logik eines Form-Submits.
      * @param {HTMLFormElement} form Das abzusendende Formular
@@ -107,7 +108,7 @@ export class FormService {
      * @param {Object} [customData] Zusätzliche Key-Value Paare, die ins FormData sollen
      * @returns {Promise<boolean>} True bei Erfolg, False bei Validierungs- oder Server-Fehler
      */
-    async submit(form, btnElement, endpoint, customData = {}) {
+    async submit(form, btnElement, endpoint, customData = {}, reloadOnSuccess = false) {
         // 1. HTML5 Validierung (required, pattern, etc.)
         if (!form.reportValidity()) return false;
 
@@ -131,6 +132,20 @@ export class FormService {
             // 5. Auswerten
             if (result.success) {
                 if (this.tracker) this.tracker.markClean();
+
+                // SOFORTIGER Reload, aber Benachrichtigung für den nächsten Load sichern!
+                if (reloadOnSuccess) {
+                    sessionStorage.setItem(
+                        'admin_flash_msg',
+                        JSON.stringify({
+                            msg: result.message || 'Erfolgreich gespeichert!',
+                            type: 'success',
+                        })
+                    );
+                    window.location.reload();
+                    return new Promise(() => {}); // Blockiert das Skript endlos (damit das Modal nicht aufflackert)
+                }
+
                 this.notifications.show(result.message || 'Erfolgreich gespeichert!', 'success');
                 return true;
             } else {

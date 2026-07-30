@@ -448,17 +448,16 @@ export class CharacterEditor {
         const idInput = this.form.querySelector('[name="id"]');
         if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-        const success = await this.formService.submit(
+        this.formService.clearDraft(this.cacheKey);
+
+        // PERF: true übergeben für SOFORTIGEN Reload (ohne setTimeout!)
+        await this.formService.submit(
             this.form,
             btnElement,
             'save_single_character',
-            customData
+            customData,
+            true
         );
-        if (success) {
-            this.formService.clearDraft(this.cacheKey);
-            this.modalManager.close('char-modal');
-            setTimeout(() => window.location.reload(), 1000);
-        }
     }
 
     async deleteCharacter(id, name, btnElement) {

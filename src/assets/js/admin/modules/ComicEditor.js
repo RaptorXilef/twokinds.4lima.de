@@ -410,17 +410,10 @@ export class ComicEditor {
         const idInput = this.form.querySelector('[name="comic_id"]');
         if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-        const success = await this.formService.submit(
-            this.form,
-            btnElement,
-            'save_single_comic',
-            customData
-        );
-        if (success) {
-            this.formService.clearDraft(this.cacheKey); // Löscht den Form-Draft!
-            this.modalManager.close('comic-modal');
-            setTimeout(() => window.location.reload(), 1000);
-        }
+        this.formService.clearDraft(this.cacheKey);
+
+        // PERF: true übergeben für SOFORTIGEN Reload (ohne setTimeout!)
+        await this.formService.submit(this.form, btnElement, 'save_single_comic', customData, true);
     }
 
     async deleteComic(id, btnElement) {
