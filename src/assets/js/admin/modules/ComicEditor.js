@@ -273,8 +273,9 @@ export class ComicEditor {
                     'Es existiert ein ungespeicherter Entwurf. Möchtest du ihn wiederherstellen?'
                 )
             ) {
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('comic-modal');
+                this.formService.restoreDraft(this.form, this.cacheKey);
                 return; // Wenn ja, überspringe das Zurücksetzen der Felder
             } else {
                 this.formService.clearDraft(this.cacheKey);
@@ -324,8 +325,9 @@ export class ComicEditor {
                     'Es gibt noch ungespeicherte Änderungen! Möchtest du den abgebrochenen Entwurf laden?'
                 )
             ) {
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('comic-modal');
+                this.formService.restoreDraft(this.form, this.cacheKey);
                 return;
             } else {
                 this.formService.clearDraft(this.cacheKey);

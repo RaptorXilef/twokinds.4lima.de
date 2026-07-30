@@ -311,8 +311,9 @@ export class CharacterEditor {
                     'Es existiert ein ungespeicherter Entwurf für Charaktere. Möchtest du ihn wiederherstellen?'
                 )
             ) {
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('char-modal');
+                this.formService.restoreDraft(this.form, this.cacheKey);
                 return;
             } else {
                 this.formService.clearDraft(this.cacheKey);
@@ -361,8 +362,9 @@ export class CharacterEditor {
                     'Es gibt noch ungespeicherte Änderungen! Möchtest du den abgebrochenen Entwurf laden?'
                 )
             ) {
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('char-modal');
+                this.formService.restoreDraft(this.form, this.cacheKey);
                 return;
             } else {
                 this.formService.clearDraft(this.cacheKey);
