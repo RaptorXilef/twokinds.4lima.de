@@ -2,6 +2,16 @@
 
 
 
+## [6.4.8](https://github.com///compare/v6.4.7...v6.4.8) (2026-07-30)
+
+### ⚙️ Refactoring
+
+* **admin:** remove legacy inline scripts from PHTML templates ([aaad256](https://github.com///commit/aaad256010c437a85c3d32ae6c4177cd14aa2fe3))
+
+### 💎 Styling
+
+* **admin/js:** fix remaining biome linter warnings ([4301a66](https://github.com///commit/4301a66c4c64f5bf93ad52464ad75d9bc5a87201))
+
 ## [6.4.7](https://github.com///compare/v6.4.6...v6.4.7) (2026-07-30)
 
 ### 🐛 Bug Fixes
