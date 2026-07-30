@@ -265,8 +265,10 @@ if (! empty($settings['google_analytics_id'])) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/langs/de.min.js"></script>
 
 <!-- Automatisch cache-gebustetes JS -->
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-        src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
+<script type="module"
+        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+        src="<?php echo $asset->url('assets/js/frontend/app.js'); ?>"></script>
+
 <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
         src="<?php echo $asset->url('assets/js/comic_reader.js'); ?>"></script>
 

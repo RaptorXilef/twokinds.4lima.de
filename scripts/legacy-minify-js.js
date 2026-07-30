@@ -27,18 +27,25 @@ async function walkDir(dir, fileList = []) {
 }
 
 const config = [
-    // 1. Unsere neuen ES6-Module (Inklusive aller Unterordner wie core/, ui/ etc.)
+    // Unsere neuen ES6-Module (Inklusive aller Unterordner wie core/, ui/ etc.)
     {
         srcBase: 'src/assets/js/admin',
         destBase: 'public/assets/js/admin',
         isModule: true,
     },
-    // 2. Alte, globale Dateien (z.B. common.js, comic_reader.js)
+    // Der Frontend-Modul-Ordner
+    {
+        srcBase: 'src/assets/js/frontend',
+        destBase: 'public/assets/js/frontend',
+        isModule: true,
+    },
+    // Alte, globale Dateien (z.B. common.js, comic_reader.js)
     {
         srcBase: 'src/assets/js',
         destBase: 'public/assets/js',
         isModule: false,
-        excludeDir: 'src/assets/js/admin', // Damit wir den Admin-Ordner nicht doppelt verarbeiten!
+        // Schließt beide Modul-Ordner aus der globalen Verarbeitung aus
+        excludeDirs: ['src/assets/js/admin', 'src/assets/js/frontend'],
     },
 ];
 
@@ -97,9 +104,13 @@ async function runBuilder() {
         const allFiles = await walkDir(entry.srcBase);
 
         for (const file of allFiles) {
-            if (entry.excludeDir && file.startsWith(path.normalize(entry.excludeDir))) {
-                continue;
+            let isExcluded = false;
+            if (entry.excludeDirs) {
+                for (const exDir of entry.excludeDirs) {
+                    if (file.startsWith(path.normalize(exDir))) isExcluded = true;
+                }
             }
+            if (isExcluded) continue;
             // Wir fügen den Vorgang als unerfülltes Promise in unsere Task-Liste ein
             tasks.push(processFile(file, entry));
         }
