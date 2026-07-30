@@ -1,4 +1,4 @@
-import { ThemeManager } from '../frontend/ui/ThemeManager.js';
+import { ThemeManager } from '../shared/ui/ThemeManager.js';
 import { Api } from './core/Api.js';
 
 document.addEventListener('DOMContentLoaded', () => {

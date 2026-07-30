@@ -39,13 +39,18 @@ const config = [
         destBase: 'public/assets/js/frontend',
         isModule: true,
     },
-    // Alte, globale Dateien (z.B. common.js, comic_reader.js)
+    // Der übergreifende Shared-Ordner
+    {
+        srcBase: 'src/assets/js/shared',
+        destBase: 'public/assets/js/shared',
+        isModule: true,
+    },
     {
         srcBase: 'src/assets/js',
         destBase: 'public/assets/js',
         isModule: false,
-        // Schließt beide Modul-Ordner aus der globalen Verarbeitung aus
-        excludeDirs: ['src/assets/js/admin', 'src/assets/js/frontend'],
+        // Schließt alle drei Modul-Ordner aus der globalen Verarbeitung aus
+        excludeDirs: ['src/assets/js/admin', 'src/assets/js/frontend', 'src/assets/js/shared'],
     },
 ];
 
