@@ -112,7 +112,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
     <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
-    <script>
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     (function() {
         var t = localStorage.getItem('themePref');
         var d = window.matchMedia('(prefers-color-scheme: dark)').matches;

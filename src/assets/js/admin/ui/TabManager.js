@@ -14,7 +14,10 @@ export class TabManager {
             '<div style="padding: 100px; text-align: center; color: var(--text-color-faded);"><i class="fa-solid fa-spinner fa-spin fa-3x"></i><br><br><span style="display:block; margin-top:15px; font-weight:bold;">Lade Daten aus der Datenbank...</span></div>';
 
         try {
-            const res = await this.api.get('admin_dashboard', `ajax_tab=${tabName}`);
+            // FIX: Wir fetchen die aktuelle Seite (/admin) statt /api/admin_dashboard
+            const response = await fetch(`${window.location.pathname}?ajax_tab=${tabName}`);
+            const res = await response.json();
+
             if (res.success) {
                 section.innerHTML = res.html;
                 section.dataset.loaded = 'true';
@@ -23,11 +26,12 @@ export class TabManager {
                     new CustomEvent('tabLoaded', { detail: { tab: section.id } })
                 );
             } else {
-                section.innerHTML = `<div class="status-message status-red visible">${res.error}</div>`;
+                section.innerHTML = `<div class="status-message status-red visible">${res.error || 'Ladefehler'}</div>`;
             }
         } catch (e) {
+            console.error('[TabManager] Fehler beim Laden des Tabs:', e);
             section.innerHTML =
-                '<div class="status-message status-red visible">Fehler beim Laden des Tabs.</div>';
+                '<div class="status-message status-red visible">Fehler beim Laden des Tabs. Server nicht erreichbar.</div>';
         }
     }
 
