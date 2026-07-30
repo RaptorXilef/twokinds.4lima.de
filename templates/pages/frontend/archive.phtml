@@ -76,8 +76,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
     </article>
 </main>
 
-<!-- Das Archiv-Script einbinden -->
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-        src="<?php echo $baseUrl; ?>/assets/js/archive.js"></script>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

@@ -1,10 +1,11 @@
 import { FrontendApi } from './core/FrontendApi.js';
-import { ThemeManager } from './ui/ThemeManager.js';
-import { ImageFallback } from './ui/ImageFallback.js';
+import { ArchiveManager } from './modules/ArchiveManager.js';
 import { AuthManager } from './modules/AuthManager.js';
-import { ReportModal } from './modules/ReportModal.js';
 import { ComicReader } from './modules/ComicReader.js';
 import { CookieConsentManager } from './modules/CookieConsentManager.js';
+import { ReportModal } from './modules/ReportModal.js';
+import { ImageFallback } from './ui/ImageFallback.js';
+import { ThemeManager } from './ui/ThemeManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const api = new FrontendApi();
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new ReportModal(api);
     new ComicReader(api);
     new CookieConsentManager();
+    new ArchiveManager();
 
     console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren.');
 });
-

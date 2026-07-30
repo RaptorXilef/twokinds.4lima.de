@@ -1,3 +1,4 @@
+import { ThemeManager } from '../frontend/ui/ThemeManager.js';
 import { Api } from './core/Api.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -7,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Nutzt unsere saubere API-Klasse (inkl. Auto-BaseUrl und CSRF)
     const api = new Api();
+
+    // ThemeManager starten
+    new ThemeManager();
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {

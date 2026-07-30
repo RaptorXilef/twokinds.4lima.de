@@ -1,3 +1,4 @@
+import { ThemeManager } from '../frontend/ui/ThemeManager.js';
 import { Api } from './core/Api.js';
 import { ErrorHandlerService } from './core/ErrorHandlerService.js';
 import { FormService } from './core/FormService.js';
@@ -50,6 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const globalUI = new GlobalUI(tracker);
     new TabManager(api); // API in den TabManager geben!
+
+    // NEU: ThemeManager starten
+    new ThemeManager();
 
     // 2. Main Editors (Sofort laden für cross-tab dependencies wie Report->Comic)
     const comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
