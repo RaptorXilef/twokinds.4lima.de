@@ -2,6 +2,21 @@
 
 
 
+## [6.4.10](https://github.com///compare/v6.4.9...v6.4.10) (2026-07-30)
+
+### ⚙️ Refactoring
+
+* **frontend/js:** dismantle legacy common.js into modular ES6 architecture ([7c5f098](https://github.com///commit/7c5f0982a276abd5df50b404fbce8588db1764ec))
+* **frontend/js:** migrate comic_reader.js to ES6 ComicReader module ([4b3f5bf](https://github.com///commit/4b3f5bf0f7c64d3e61d7a63dfd5cfc2198c66d6c))
+* **frontend/js:** migrate cookie_consent.js to ES6 CookieConsentManager module ([1219f57](https://github.com///commit/1219f57fe0bec7970442c24a57c336bbc63a6fe3))
+* **frontend/js:** modernize theme toggle to a binary Dark/Light mode with icons ([80ae230](https://github.com///commit/80ae23027b1316d2d873d34b59ab01966f55c827))
+* **js:** establish shared module architecture to prevent cross-domain imports ([a24c862](https://github.com///commit/a24c862935d0ed054fcf34fd735fafea0d48485a))
+* **js:** share ThemeManager across admin/frontend and migrate archive.js ([08126a7](https://github.com///commit/08126a773ccc3a16ed2c8205372f213d3264ce2e))
+
+### 🏗️ Build System
+
+* **scripts:** clean public JS directory before minification ([e985879](https://github.com///commit/e985879c9a871582b0a09dbe402a0e5fca6aaf57))
+
 ## [6.4.9](https://github.com///compare/v6.4.8...v6.4.9) (2026-07-30)
 
 ### 🏗️ Build System
