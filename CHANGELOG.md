@@ -2,6 +2,17 @@
 
 
 
+## [6.4.7](https://github.com///compare/v6.4.6...v6.4.7) (2026-07-30)
+
+### 🐛 Bug Fixes
+
+* **admin/ui:** preserve DataTable pagination state across page reloads ([b13d164](https://github.com///commit/b13d16401a7b127207418009d4530bd12b6b44f7))
+
+### ⚡ Performance
+
+* **admin:** eliminate save latency by backgrounding XML generation and removing JS delays ([a2909e0](https://github.com///commit/a2909e041d54cbaa2ccdfc4ecf3cdb64ba05ffeb))
+* **api:** eliminate 3-5s save latency by parallelizing remote extension probing ([04f34f0](https://github.com///commit/04f34f01d3e9630be12a6f7ee517a51b205816a6))
+
 ## [6.4.6](https://github.com///compare/v6.4.5...v6.4.6) (2026-07-30)
 
 ### 🐛 Bug Fixes
