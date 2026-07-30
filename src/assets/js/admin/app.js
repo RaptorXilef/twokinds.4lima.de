@@ -4,6 +4,8 @@ import { CharacterEditor } from './CharacterEditor.js';
 import { ComicEditor } from './ComicEditor.js';
 import { CropperManager } from './CropperManager.js';
 import { DataTable } from './DataTable.js';
+import { ErrorHandlerService } from './ErrorHandlerService.js'; // NEU
+import { FormService } from './FormService.js'; // NEU
 import { GlobalUI } from './GlobalUI.js';
 import { GroupEditor } from './GroupEditor.js';
 import { MassUploadManager } from './MassUploadManager.js';
@@ -17,8 +19,11 @@ import { TabManager } from './TabManager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Core Services & UI initialisieren
-    const api = new Api();
     const notifications = new NotificationService();
+    new ErrorHandlerService(notifications); // Fängt globale Fehler ab
+
+    const api = new Api();
+    const formService = new FormService(api, notifications); // Der neue Form-Manager
     const modalManager = new ModalManager();
 
     new GlobalUI();
@@ -32,10 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
         paginationContainerId: 'comic-pagination',
     });
 
-    // 3. Editor Module initialisieren (Jetzt MIT notifications!)
+    // 3. Editor Module initialisieren (Wir geben jetzt formService weiter)
     const comicEditor = new ComicEditor(api, modalManager, notifications);
     new CharacterEditor(api, modalManager, notifications);
-    new ChapterEditor(api, modalManager, notifications);
+
+    // ChapterEditor kriegt als erstes Modul den neuen FormService!
+    new ChapterEditor(api, modalManager, notifications, formService);
+
     new GroupEditor(api, notifications);
 
     new ReportManager(api, modalManager, comicEditor, notifications);

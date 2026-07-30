@@ -2,6 +2,7 @@
  * @typedef {import('./Api.js').Api} Api
  * @typedef {import('./ModalManager.js').ModalManager} ModalManager
  * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('./FormService.js').FormService} FormService
  */
 
 export class ChapterEditor {
@@ -9,11 +10,13 @@ export class ChapterEditor {
      * @param {Api} api
      * @param {ModalManager} modalManager
      * @param {NotificationService} notifications
+     * @param {FormService} formService
      */
-    constructor(api, modalManager, notifications) {
+    constructor(api, modalManager, notifications, formService) {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
+        this.formService = formService; // NEU
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-archive');
@@ -108,29 +111,27 @@ export class ChapterEditor {
         this.modalManager.open('chapter-modal');
     }
 
+    // Save
     async saveChapter(btnElement) {
-        if (!this.form?.reportValidity()) return;
+        if (!this.form) return;
 
-        const originalText = btnElement.innerHTML;
-        btnElement.disabled = true;
-        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+        // Custom Data: Wir ziehen uns das HTML aus Trumbowyg manuell
+        const customData = {};
+        if (typeof window.$ !== 'undefined' && window.$('#chap_description').length) {
+            customData.description = window.$('#chap_description').trumbowyg('html');
+        }
 
-        try {
-            const formData = new window.FormData(this.form);
-            const result = await this.api.post('save_chapter', formData);
+        // FormService macht den Rest (Validierung, Button-Sperre, Ladespinner, API-Call, Notifications)
+        const success = await this.formService.submit(
+            this.form,
+            btnElement,
+            'save_chapter',
+            customData
+        );
 
-            if (result.success) {
-                this.notifications.show(result.message, 'success');
-                this.modalManager.close('chapter-modal');
-                window.isDirty = false;
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                this.notifications.show(result.error, 'error');
-            }
-        } finally {
-            // Egal was passiert, Button wird wieder freigegeben
-            btnElement.disabled = false;
-            btnElement.innerHTML = originalText;
+        if (success) {
+            this.modalManager.close('chapter-modal');
+            setTimeout(() => window.location.reload(), 1000);
         }
     }
 
@@ -154,3 +155,4 @@ export class ChapterEditor {
         }
     }
 }
+// ========== END FILE: [src\assets\js\admin\ChapterEditor.js] ==========
