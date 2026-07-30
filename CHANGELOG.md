@@ -2,6 +2,25 @@
 
 
 
+## [6.4.5](https://github.com///compare/v6.4.4...v6.4.5) (2026-07-30)
+
+### 🐛 Bug Fixes
+
+* **admin/js:** resolve DOMException crash during form draft restoration ([57e58de](https://github.com///commit/57e58de964b574b80e11da237853851365c4ca53))
+* **admin/js:** resolve DOMException during auto-save draft restoration ([fab046e](https://github.com///commit/fab046e761481c39f8bdf6150f805d0c5558bfd5))
+
+### ⚙️ Refactoring
+
+* **admin/js:** implement api standardization, auto-save caching and code splitting ([4be9fa0](https://github.com///commit/4be9fa033df5a139f86a44f53cae54533ed97125))
+* **admin/js:** implement core services for global error and form handling ([3df93f3](https://github.com///commit/3df93f3d20495862fbc74285d191311f74fb77ec))
+* **admin/js:** implement DragDropService, Debouncing, and DirtyStateTracker ([36842bd](https://github.com///commit/36842bda2c59121c51967e564ff7176ad3c50b88))
+* **admin/js:** implement reactive state management and FormService integration ([74ebd24](https://github.com///commit/74ebd245b63599803c07ea5fd441ba9d42661428))
+* **admin/js:** restructure architecture, fix linter warnings, and implement full form auto-save ([7939895](https://github.com///commit/7939895829015d2cc57e89c10f6cd2b5d9669935))
+
+### 🏗️ Build System
+
+* **scripts:** rewrite JS minifier to support recursive subdirectories ([0183983](https://github.com///commit/0183983a55c9220226a69f813083b7f4dfc4cf5d))
+
 ## [6.4.4](https://github.com///compare/v6.4.3...v6.4.4) (2026-07-29)
 
 ### 🐛 Bug Fixes
