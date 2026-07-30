@@ -43,10 +43,13 @@ export class ReportManager {
             (row) => !row.classList.contains('empty-table-message')
         );
 
+        this.stateKey = 'admin_dt_state_reports';
         this.repPage = 1;
         this.repLimit = this.perPageSelect?.value || '15';
         this.repSearch = '';
         this.repStatus = this.statusSelect?.value || 'open';
+
+        this.restoreTableState(); // Lade alten State!
 
         this.searchInput?.addEventListener('input', (e) => {
             this.repSearch = e.target.value;
@@ -65,6 +68,39 @@ export class ReportManager {
         });
 
         this.renderTable();
+    }
+
+    saveTableState() {
+        sessionStorage.setItem(
+            this.stateKey,
+            JSON.stringify({
+                page: this.repPage,
+                limit: this.repLimit,
+                query: this.repSearch,
+                status: this.repStatus,
+            })
+        );
+    }
+
+    restoreTableState() {
+        try {
+            const s = JSON.parse(sessionStorage.getItem(this.stateKey));
+            if (s) {
+                this.repPage = s.page || 1;
+                if (s.limit && this.perPageSelect) {
+                    this.repLimit = s.limit;
+                    this.perPageSelect.value = s.limit;
+                }
+                if (s.query !== undefined && this.searchInput) {
+                    this.repSearch = s.query;
+                    this.searchInput.value = s.query;
+                }
+                if (s.status && this.statusSelect) {
+                    this.repStatus = s.status;
+                    this.statusSelect.value = s.status;
+                }
+            }
+        } catch (e) {}
     }
 
     renderTable() {
@@ -106,6 +142,7 @@ export class ReportManager {
         }
 
         this.renderPaginationButtons(totalPages);
+        this.saveTableState(); // Speichere den Zustand bei jedem Rendern!
     }
 
     renderPaginationButtons(totalPages) {
@@ -164,7 +201,7 @@ export class ReportManager {
             if (btnResolve && this.currentReportPayload) this.resolveReport(btnResolve);
             if (btnSpam && this.currentReportPayload) this.markAsSpam(btnSpam);
 
-            // FIX: Toggle JSON Ansicht
+            // Toggle JSON Ansicht
             if (btnToggleDebug) {
                 const debugRaw = document.getElementById('rep-modal-debug');
                 const debugRendered = document.getElementById('rep-modal-debug-rendered');

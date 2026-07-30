@@ -18,12 +18,46 @@ export class DataTable {
         this.allRows = Array.from(this.tableBody.querySelectorAll('tr')).filter(
             (row) => !row.classList.contains('empty-table-message')
         );
+
+        // Eindeutiger Key für diesen Tab, um sich die Paginierung zu merken
+        const safeSelector = config.tableBodySelector.replace(/[^a-zA-Z0-9]/g, '_');
+        this.stateKey = `admin_dt_state_${safeSelector}`;
+
         this.currentPage = 1;
         this.itemsPerPage = this.perPageSelect.value;
         this.currentSearchQuery = '';
 
+        this.restoreState(); // Lade alte Seite!
         this.bindEvents();
         this.renderTable();
+    }
+
+    saveState() {
+        sessionStorage.setItem(
+            this.stateKey,
+            JSON.stringify({
+                page: this.currentPage,
+                limit: this.itemsPerPage,
+                query: this.currentSearchQuery,
+            })
+        );
+    }
+
+    restoreState() {
+        try {
+            const s = JSON.parse(sessionStorage.getItem(this.stateKey));
+            if (s) {
+                this.currentPage = s.page || 1;
+                if (s.limit && this.perPageSelect) {
+                    this.itemsPerPage = s.limit;
+                    this.perPageSelect.value = s.limit;
+                }
+                if (s.query !== undefined && this.searchInput) {
+                    this.currentSearchQuery = s.query;
+                    this.searchInput.value = s.query;
+                }
+            }
+        } catch (e) {}
     }
 
     bindEvents() {
@@ -138,6 +172,8 @@ export class DataTable {
         } else if (emptyMsg) {
             emptyMsg.style.display = 'none';
         }
+
         this.renderPaginationButtons(totalPages);
+        this.saveState(); // Speichere den Zustand bei jedem Rendern!
     }
 }

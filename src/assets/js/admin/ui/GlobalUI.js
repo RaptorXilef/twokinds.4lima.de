@@ -4,7 +4,6 @@ export class GlobalUI {
         this.bindImageFallback();
         this.initWysiwyg();
         this.initLightbox();
-        this.handleRowHighlighting();
     }
 
     bindImageFallback() {
@@ -72,19 +71,20 @@ export class GlobalUI {
         const highlightId = sessionStorage.getItem('highlightEntityId');
         if (!highlightId) return;
 
-        setTimeout(() => {
-            const targetBtn =
-                document.querySelector(`.btn-delete-comic[data-id="${highlightId}"]`) ??
-                document.querySelector(`.btn-delete-char[data-id="${highlightId}"]`);
-            const tr = targetBtn?.closest('tr');
-            if (tr) {
-                tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                tr.classList.add('row-highlight');
-                setTimeout(() => {
-                    tr.classList.remove('row-highlight');
-                }, 3000);
-            }
-        }, 300);
-        sessionStorage.removeItem('highlightEntityId');
+        const targetBtn =
+            document.querySelector(`.btn-delete-comic[data-id="${highlightId}"]`) ??
+            document.querySelector(`.btn-delete-char[data-id="${highlightId}"]`);
+        const tr = targetBtn?.closest('tr');
+
+        if (tr) {
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tr.classList.add('row-highlight');
+            setTimeout(() => {
+                tr.classList.remove('row-highlight');
+            }, 3000);
+
+            // FIX: Erst löschen, wenn es WIRKLICH auf dieser Seite zu sehen war!
+            sessionStorage.removeItem('highlightEntityId');
+        }
     }
 }

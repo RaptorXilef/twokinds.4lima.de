@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const formService = new FormService(api, notifications, tracker); // Der neue Form-Manager
     const modalManager = new ModalManager();
 
-    new GlobalUI(tracker);
-    new TabManager(api); // FIX: API in den TabManager geben!
+    const globalUI = new GlobalUI(tracker);
+    new TabManager(api); // API in den TabManager geben!
 
     // 2. Main Editors (Sofort laden für cross-tab dependencies wie Report->Comic)
     const comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
@@ -48,7 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportManager = new ReportManager(api, modalManager, comicEditor, notifications);
     new SystemManager(api, modalManager, notifications);
 
-    // NEU: Re-Initialize Module, wenn ihr HTML-Inhalt nachträglich via AJAX reingeladen wurde
+    // Initialer Check für statische Tabs (wie Charaktere)
+    setTimeout(() => globalUI.handleRowHighlighting(), 300);
+
+    // Re-Initialize Module, wenn ihr HTML-Inhalt nachträglich via AJAX reingeladen wurde
+    // Wird abgefeuert, sobald ein Lazy-Tab fertig geladen wurde
     document.addEventListener('tabLoaded', (e) => {
         if (e.detail.tab === 'section-comics') {
             // 3. Tabellen (Paginierung & Suche) initialisieren (nur für Comics, Reports verwalten sich selbst)
@@ -62,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.detail.tab === 'section-reports') {
             reportManager.initTableLogic();
         }
+
+        // Kurz warten bis der Browser die Tabelle gezeichnet hat, DANN scrollen
+        setTimeout(() => globalUI.handleRowHighlighting(), 100);
     });
 
     // 4. Lazy Loading für schwere, isolierte Module
