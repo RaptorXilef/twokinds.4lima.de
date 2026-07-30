@@ -1,6 +1,6 @@
 /**
- * @typedef {import('./Api.js').Api} Api
- * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('../core/Api.js').Api} Api
+ * @typedef {import('../core/NotificationService.js').NotificationService} NotificationService
  */
 
 export class NewsletterManager {

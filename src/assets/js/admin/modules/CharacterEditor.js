@@ -1,11 +1,12 @@
-import { DragDropService } from './DragDropService.js';
-import { ReactiveState } from './ReactiveState.js';
+import { createReactiveState } from '../core/ReactiveState.js';
+import { DragDropService } from '../ui/DragDropService.js';
 
 /**
- * @typedef {import('./Api.js').Api} Api
- * @typedef {import('./ModalManager.js').ModalManager} ModalManager
- * @typedef {import('./NotificationService.js').NotificationService} NotificationService
- * @typedef {import('./FormService.js').FormService} FormService
+ * @typedef {import('../core/Api.js').Api} Api
+ * @typedef {import('../ui/ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('../core/NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('../core/FormService.js').FormService} FormService
+ * @typedef {import('../core/UnsavedTracker.js').UnsavedTracker} UnsavedTracker
  */
 
 export class CharacterEditor {
@@ -14,6 +15,7 @@ export class CharacterEditor {
      * @param {ModalManager} modalManager
      * @param {NotificationService} notifications
      * @param {FormService} formService
+     * @param {UnsavedTracker} tracker
      */
     constructor(api, modalManager, notifications, formService, tracker) {
         this.api = api;
@@ -29,8 +31,14 @@ export class CharacterEditor {
         /** @type {DataTransfer} */
         this.accumulatedRefFiles = new DataTransfer();
 
+        this.cacheKey = 'admin_char_form_draft';
+        if (this.form) {
+            this.formService.enableAutoSave(this.form, this.cacheKey);
+        }
+
         // REAKTIVER STATE FÜR LIVE-PREVIEWS INKL. AUTO-SAVE
-        this.state = new ReactiveState(
+        // Wir nutzen hier keinen cacheKey mehr für den ReactiveState, das übernimmt jetzt der FormService komplett!
+        this.state = createReactiveState(
             {
                 picUrl: '',
                 mainPicUrl: '',
@@ -38,7 +46,7 @@ export class CharacterEditor {
                 refSheets: '',
             },
             (property, value) => this.renderPreviews(property, value),
-            'admin_char_draft',
+            null,
             this.tracker
         );
 
@@ -120,7 +128,9 @@ export class CharacterEditor {
     bindEvents() {
         // 1. "Neuen Charakter" Button
         const btnAdd = document.getElementById('btn-add-char');
-        if (btnAdd) btnAdd.addEventListener('click', () => this.openAddModal());
+        if (btnAdd) {
+            btnAdd.addEventListener('click', () => this.openAddModal());
+        }
 
         // 2. Event Delegation für die Tabelle (Bearbeiten, Löschen)
         if (this.section) {
@@ -279,8 +289,35 @@ export class CharacterEditor {
         });
     }
 
+    resetAllDropZones() {
+        DragDropService.reset('char-drop-zone', 'upload-preview-name');
+        DragDropService.reset('char-drop-zone-main');
+        DragDropService.reset('char-drop-zone-swatch');
+        DragDropService.reset('char-drop-zone-refs');
+
+        const containerRefs = document.getElementById('preview-container-refs');
+        if (containerRefs) containerRefs.innerHTML = '';
+
+        this.accumulatedRefFiles = new DataTransfer();
+    }
+
     openAddModal() {
         if (this.form) this.form.reset();
+
+        // Draft Recovery Check
+        if (this.formService.hasDraft(this.cacheKey)) {
+            if (
+                confirm(
+                    'Es existiert ein ungespeicherter Entwurf für Charaktere. Möchtest du ihn wiederherstellen?'
+                )
+            ) {
+                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.modalManager.open('char-modal');
+                return;
+            } else {
+                this.formService.clearDraft(this.cacheKey);
+            }
+        }
 
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
@@ -308,20 +345,29 @@ export class CharacterEditor {
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Neuen Charakter erstellen';
 
-        DragDropService.reset('char-drop-zone', 'upload-preview-name');
-        DragDropService.reset('char-drop-zone-main');
-        DragDropService.reset('char-drop-zone-swatch');
-        DragDropService.reset('char-drop-zone-refs');
-        const containerRefs = document.getElementById('preview-container-refs');
-        if (containerRefs) containerRefs.innerHTML = '';
-        this.accumulatedRefFiles = new DataTransfer();
-
+        this.resetAllDropZones();
         sessionStorage.setItem('highlightEntityIdCancel', 'new');
+
         this.modalManager.open('char-modal');
     }
 
     openEditModal(payload) {
         if (this.form) this.form.reset();
+
+        // Draft Recovery Check
+        if (this.formService.hasDraft(this.cacheKey)) {
+            if (
+                confirm(
+                    'Es gibt noch ungespeicherte Änderungen! Möchtest du den abgebrochenen Entwurf laden?'
+                )
+            ) {
+                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.modalManager.open('char-modal');
+                return;
+            } else {
+                this.formService.clearDraft(this.cacheKey);
+            }
+        }
 
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
@@ -380,15 +426,9 @@ export class CharacterEditor {
         const titleEl = document.getElementById('modal-title-char');
         if (titleEl) titleEl.textContent = 'Charakter bearbeiten';
 
-        DragDropService.reset('char-drop-zone', 'upload-preview-name');
-        DragDropService.reset('char-drop-zone-main');
-        DragDropService.reset('char-drop-zone-swatch');
-        DragDropService.reset('char-drop-zone-refs');
-        const containerRefs = document.getElementById('preview-container-refs');
-        if (containerRefs) containerRefs.innerHTML = '';
-        this.accumulatedRefFiles = new DataTransfer();
-
+        this.resetAllDropZones();
         sessionStorage.setItem('highlightEntityIdCancel', payload.id);
+
         this.modalManager.open('char-modal');
     }
 
@@ -403,6 +443,9 @@ export class CharacterEditor {
             customData.description = window.$('#char_description').trumbowyg('html');
         }
 
+        const idInput = this.form.querySelector('[name="id"]');
+        if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
+
         const success = await this.formService.submit(
             this.form,
             btnElement,
@@ -410,7 +453,7 @@ export class CharacterEditor {
             customData
         );
         if (success) {
-            this.state.clearCache(); // CACHE LÖSCHEN NACH ERFOLG!
+            this.formService.clearDraft(this.cacheKey);
             this.modalManager.close('char-modal');
             setTimeout(() => window.location.reload(), 1000);
         }

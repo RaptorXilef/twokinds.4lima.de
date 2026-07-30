@@ -1,8 +1,8 @@
 /**
- * @typedef {import('./Api.js').Api} Api
- * @typedef {import('./ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('../core/Api.js').Api} Api
+ * @typedef {import('../ui/ModalManager.js').ModalManager} ModalManager
  * @typedef {import('./ComicEditor.js').ComicEditor} ComicEditor
- * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('../core/NotificationService.js').NotificationService} NotificationService
  */
 
 export class ReportManager {

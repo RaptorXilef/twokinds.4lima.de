@@ -1,4 +1,4 @@
-import { debounce } from './Utils.js';
+import { debounce } from '../utils/Utils.js';
 
 export class DataTable {
     constructor(config) {

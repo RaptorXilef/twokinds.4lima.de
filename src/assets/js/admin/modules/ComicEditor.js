@@ -1,11 +1,12 @@
-import { DragDropService } from './DragDropService.js';
-import { ReactiveState } from './ReactiveState.js';
+import { createReactiveState } from '../core/ReactiveState.js';
+import { DragDropService } from '../ui/DragDropService.js';
 
 /**
- * @typedef {import('./Api.js').Api} Api
- * @typedef {import('./ModalManager.js').ModalManager} ModalManager
- * @typedef {import('./NotificationService.js').NotificationService} NotificationService
- * @typedef {import('./FormService.js').FormService} FormService
+ * @typedef {import('../core/Api.js').Api} Api
+ * @typedef {import('../ui/ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('../core/NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('../core/FormService.js').FormService} FormService
+ * @typedef {import('../core/UnsavedTracker.js').UnsavedTracker} UnsavedTracker
  */
 
 export class ComicEditor {
@@ -14,6 +15,7 @@ export class ComicEditor {
      * @param {ModalManager} modalManager
      * @param {NotificationService} notifications
      * @param {FormService} formService
+     * @param {UnsavedTracker} tracker
      */
     constructor(api, modalManager, notifications, formService, tracker) {
         this.api = api;
@@ -27,17 +29,23 @@ export class ComicEditor {
         /** @type {HTMLFormElement|null} */
         this.form = document.getElementById('comic-form');
 
-        // REAKTIVER STATE INKL. AUTO-SAVE
-        this.state = new ReactiveState(
+        // Auto-Save für das gesamte Formular aktivieren
+        this.cacheKey = 'admin_comic_form_draft';
+        if (this.form) {
+            this.formService.enableAutoSave(this.form, this.cacheKey);
+        }
+
+        // Geändert: createReactiveState aufrufen statt new ReactiveState
+        this.state = createReactiveState(
             {
                 comicId: '',
                 origUrl: '',
                 sketchUrl: '',
             },
             () => this.updateComicPreviews(),
-            'admin_comic_draft',
+            null,
             this.tracker
-        );
+        ); // Wir überlassen das Caching nun dem FormService
 
         if (this.section) {
             this.bindEvents();
@@ -258,6 +266,21 @@ export class ComicEditor {
     openAddModal() {
         if (this.form) this.form.reset();
 
+        // Draft Recovery
+        if (this.formService.hasDraft(this.cacheKey)) {
+            if (
+                confirm(
+                    'Es existiert ein ungespeicherter Entwurf. Möchtest du ihn wiederherstellen?'
+                )
+            ) {
+                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.modalManager.open('comic-modal');
+                return; // Wenn ja, überspringe das Zurücksetzen der Felder
+            } else {
+                this.formService.clearDraft(this.cacheKey);
+            }
+        }
+
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
@@ -292,6 +315,22 @@ export class ComicEditor {
 
     openEditModal(payload) {
         if (this.form) this.form.reset();
+
+        // Draft Recovery
+        if (this.formService.hasDraft(this.cacheKey)) {
+            // Optional: könnte sogar prüfen, ob payload.id === Draft-ID
+            if (
+                confirm(
+                    'Es gibt noch ungespeicherte Änderungen! Möchtest du den abgebrochenen Entwurf laden?'
+                )
+            ) {
+                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.modalManager.open('comic-modal');
+                return;
+            } else {
+                this.formService.clearDraft(this.cacheKey);
+            }
+        }
 
         const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
@@ -358,7 +397,6 @@ export class ComicEditor {
         });
     }
 
-    // Die Form-Service Magie
     async saveComic(btnElement) {
         if (!this.form) return;
 
@@ -367,6 +405,9 @@ export class ComicEditor {
             customData.transcript = window.$('#transcript').trumbowyg('html');
         }
 
+        const idInput = this.form.querySelector('[name="comic_id"]');
+        if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
+
         const success = await this.formService.submit(
             this.form,
             btnElement,
@@ -374,7 +415,7 @@ export class ComicEditor {
             customData
         );
         if (success) {
-            this.state.clearCache(); // CACHE LÖSCHEN NACH ERFOLG!
+            this.formService.clearDraft(this.cacheKey); // Löscht den Form-Draft!
             this.modalManager.close('comic-modal');
             setTimeout(() => window.location.reload(), 1000);
         }

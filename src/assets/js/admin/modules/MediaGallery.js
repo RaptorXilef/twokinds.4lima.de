@@ -1,10 +1,10 @@
-import { DragDropService } from './DragDropService.js';
-import { debounce } from './Utils.js';
+import { DragDropService } from '../ui/DragDropService.js';
+import { debounce } from '../utils/Utils.js';
 
 /**
- * @typedef {import('./Api.js').Api} Api
- * @typedef {import('./ModalManager.js').ModalManager} ModalManager
- * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('../core/Api.js').Api} Api
+ * @typedef {import('../ui/ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('../core/NotificationService.js').NotificationService} NotificationService
  */
 export class MediaGallery {
     /**

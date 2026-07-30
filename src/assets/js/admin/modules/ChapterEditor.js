@@ -1,8 +1,8 @@
 /**
- * @typedef {import('./Api.js').Api} Api
- * @typedef {import('./ModalManager.js').ModalManager} ModalManager
- * @typedef {import('./NotificationService.js').NotificationService} NotificationService
- * @typedef {import('./FormService.js').FormService} FormService
+ * @typedef {import('../core/Api.js').Api} Api
+ * @typedef {import('../ui/ModalManager.js').ModalManager} ModalManager
+ * @typedef {import('../core/NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('../core/FormService.js').FormService} FormService
  */
 
 export class ChapterEditor {

@@ -16,6 +16,66 @@ export class FormService {
         this.tracker = tracker;
     }
 
+    // Die Methoden für den Auto-Save:
+    enableAutoSave(form, cacheKey) {
+        if (!form) return;
+        const saveToLocal = () => {
+            const formData = new window.FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Trumbowyg manuell abgreifen
+            if (typeof window.$ !== 'undefined') {
+                window
+                    .$(form)
+                    .find('.wysiwyg-editor')
+                    .each(function () {
+                        data[this.name] = window.$(this).trumbowyg('html');
+                    });
+            }
+            localStorage.setItem(cacheKey, JSON.stringify(data));
+        };
+
+        form.addEventListener('input', saveToLocal);
+        form.addEventListener('change', saveToLocal);
+
+        if (typeof window.$ !== 'undefined') {
+            window.$(form).find('.wysiwyg-editor').on('tbwchange', saveToLocal);
+        }
+    }
+
+    hasDraft(cacheKey) {
+        return localStorage.getItem(cacheKey) !== null;
+    }
+
+    clearDraft(cacheKey) {
+        localStorage.removeItem(cacheKey);
+    }
+
+    restoreDraft(form, cacheKey) {
+        const cached = localStorage.getItem(cacheKey);
+        if (!cached || !form) return;
+        try {
+            const data = JSON.parse(cached);
+            for (const key in data) {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = data[key];
+                    if (
+                        input.tagName === 'TEXTAREA' &&
+                        input.classList.contains('wysiwyg-editor') &&
+                        typeof window.$ !== 'undefined'
+                    ) {
+                        window.$(input).trumbowyg('html', data[key]);
+                    }
+                    // Trigger events for reactive preview bindings
+                    input.dispatchEvent(new Event('input'));
+                }
+            }
+        } catch (e) {
+            console.error('Konnte Draft nicht wiederherstellen', e);
+        }
+    }
+
     /**
      * Übernimmt die komplette Logik eines Form-Submits.
      * @param {HTMLFormElement} form Das abzusendende Formular

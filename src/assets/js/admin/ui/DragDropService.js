@@ -1,8 +1,7 @@
 /**
- * @typedef {import('./UnsavedTracker.js').UnsavedTracker} UnsavedTracker
+ * @typedef {import('../core/UnsavedTracker.js').UnsavedTracker} UnsavedTracker
  */
-
-export class DragDropService {
+export const DragDropService = {
     /**
      * Bindet Drag & Drop Events an eine Zone und ein Input-Feld.
      * @param {string} zoneId HTML ID der Drop-Zone
@@ -12,7 +11,7 @@ export class DragDropService {
      * @param {string} [options.previewTextId] HTML ID für den Dateinamen-Text
      * @param {Function} [options.onChange] Custom Callback `(files) => {...}` beim Drop oder Klick
      */
-    static bind(zoneId, inputId, options = {}) {
+    bind(zoneId, inputId, options = {}) {
         const zone = document.getElementById(zoneId);
         const input = document.getElementById(inputId);
         if (!zone || !input) return;
@@ -55,7 +54,7 @@ export class DragDropService {
                 processFiles(e.dataTransfer.files);
                 if (!options.onChange) input.dispatchEvent(new Event('change'));
             } else {
-                DragDropService.reset(zoneId, options.previewTextId);
+                this.reset(zoneId, options.previewTextId);
             }
         });
 
@@ -64,12 +63,12 @@ export class DragDropService {
                 processFiles(input.files);
             }
         });
-    }
+    },
 
     /**
      * Setzt eine Drop-Zone optisch zurück.
      */
-    static reset(zoneId, previewTextId = null) {
+    reset(zoneId, previewTextId = null) {
         const zone = document.getElementById(zoneId);
         const text = previewTextId ? document.getElementById(previewTextId) : null;
         if (zone) {
@@ -77,5 +76,5 @@ export class DragDropService {
             zone.style.backgroundColor = 'var(--table-row-even)';
         }
         if (text) text.textContent = '';
-    }
-}
+    },
+};
