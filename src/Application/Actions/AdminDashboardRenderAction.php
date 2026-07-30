@@ -7,6 +7,7 @@ namespace App\Application\Actions;
 use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
+use App\Application\Response\JsonResponse;
 use App\Application\Session\SessionManager;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Config\ConfigInterface;
@@ -40,57 +41,22 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $comics      = $this->comicRepo->findAll();
-        $characters  = $this->charRepo->findAll();
-        $groups      = $this->groupRepo->findAll();
-        $allReports  = $this->reportRepo->findAll(); // <--- (Alle Reports laden)
-        $openReports = $this->reportRepo->findByStatus('open'); // für die rote Badge im Menü
+        $ajaxTab = $request->get['ajax_tab'] ?? null;
 
-        // 1. Zugeordnete Charaktere herausfinden (Für den Pool-Filter)
-        $assignedIds = [];
-        foreach ($groups as $group) {
-            foreach ($group->characterIds as $cid) {
-                $assignedIds[] = $cid->value;
-            }
-        }
-        // Wir übergeben einfach die Liste der zugeordneten IDs ans Template!
-        $assignedIds = \array_unique($assignedIds);
-
-        // 2. Einzigartige Ränge für das Dropdown ermitteln
-        $ranks = [];
-        foreach ($characters as $char) {
-            if ($char->rank !== null && $char->rank !== '') {
-                $ranks[] = $char->rank;
-            }
-        }
-        $existingRanks = \array_values(\array_unique($ranks));
-        \sort($existingRanks);
-
-        // 3. Verfügbare Profilbilder aus dem Ordner scannen
-        $imageDir        = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
-        $availableImages = [];
-        if (\is_dir($imageDir)) {
-            $files = \scandir($imageDir);
-            foreach ($files as $file) {
-                if ($file !== '.' && $file !== '..' && \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file)) {
-                    $availableImages[] = $file;
-                }
-            }
-        }
+        // Basis-Daten, die sehr schnell laden und global (z.B. für Modale) gebraucht werden
+        $characters = $this->charRepo->findAll();
+        $groups     = $this->groupRepo->findAll();
 
         // Wirkliche Kapitel aus der Datenbank laden
         $dbChapters = $this->chapterRepo->findAll();
 
         // (Wir behalten das $existingChapters Array für das Datalist-Dropdown bei Comics)
         $existingChapters = \array_map(fn ($c) => $c->id, $dbChapters);
+        $roles            = $this->roleRepo->loadAll();
 
-        $roles           = $this->roleRepo->loadAll();
-        $users           = $this->userRepo->findAll();
-        $permissionsTree = PermissionRegistry::getStructure();
-        $canManageUsers  = $this->auth->hasPermission('system.users.manage');
-        $canManageRoles  = $this->auth->hasPermission('system.roles.manage');
+        $canManageUsers = $this->auth->hasPermission('system.users.manage');
+        $canManageRoles = $this->auth->hasPermission('system.roles.manage');
 
-        // --- NEUE PERMISSIONS FÜR DIE UI ---
         $perms = [
             'chap_del'     => $this->auth->hasPermission('chapters.delete'),
             'chap_edit'    => $this->auth->hasPermission('chapters.edit'),
@@ -106,28 +72,83 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             'rep_view'     => $this->auth->hasPermission('reports.view'),
         ];
 
+        // --- AJAX HYDRATION MODUS ---
+        // Wenn JS einen spezifischen Tab anfordert, rendern wir NUR diesen Tab!
+        if ($ajaxTab) {
+            $data = [
+                'perms'            => $perms,
+                'baseUrl'          => \rtrim($this->config->getBaseUrl(), '/'),
+                'appRoot'          => \rtrim((string) $this->config->get('root_path'), '/\\'),
+                'characters'       => $characters,
+                'groups'           => $groups,
+                'existingChapters' => $existingChapters,
+                'dbChapters'       => $dbChapters,
+                'roles'            => $roles,
+                'canManageUsers'   => $canManageUsers,
+                'canManageRoles'   => $canManageRoles,
+                'currentUserId'    => $this->sessionManager->getUserId(),
+            ];
+
+            \ob_start();
+            if ($ajaxTab === 'comics') {
+                $data['comics'] = $this->comicRepo->findAll();
+                $this->renderer->render('admin/_section_comics', $data);
+            } elseif ($ajaxTab === 'reports') {
+                $data['allReports'] = $this->reportRepo->findAll();
+                $this->renderer->render('admin/_section_reports', $data);
+            } elseif ($ajaxTab === 'users') {
+                $data['users'] = $this->userRepo->findAll();
+                $this->renderer->render('admin/_section_users', $data);
+            }
+
+            return JsonResponse::success(['html' => \ob_get_clean()]);
+        }
+
+        // --- NORMALER PAGE LOAD MODUS (EXTREM SCHNELL) ---
+        $assignedIds = [];
+        foreach ($groups as $group) {
+            foreach ($group->characterIds as $cid) {
+                $assignedIds[] = $cid->value;
+            }
+        }
+        $assignedIds = \array_unique($assignedIds);
+
+        // Bilder-Scan für Charakter-Modal (Geht superschnell)
+        $imageDir        = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
+        $availableImages = [];
+        if (\is_dir($imageDir)) {
+            $files = \scandir($imageDir);
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..' && \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file)) {
+                    $availableImages[] = $file;
+                }
+            }
+        }
+
         $this->renderer->render('admin/dashboard', [
             'pageTitle'        => 'Admin Dashboard',
             'adminUser'        => $this->sessionManager->getAdminUser(),
             'currentUserId'    => $this->sessionManager->getUserId(),
-            'comics'           => $comics,
             'dbChapters'       => $dbChapters,
             'characters'       => $characters,
             'groups'           => $groups,
             'assignedIds'      => $assignedIds,
-            'openReports'      => $openReports,
-            'existingRanks'    => $existingRanks,
+            'existingRanks'    => [], // Nicht mehr zwingend nötig global
             'existingChapters' => $existingChapters,
             'availableImages'  => $availableImages,
-            'allReports'       => $allReports,
-            'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
-            'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
             'roles'            => $roles,
-            'users'            => $users,
-            'permissionsTree'  => $permissionsTree,
+            'permissionsTree'  => PermissionRegistry::getStructure(),
             'canManageUsers'   => $canManageUsers,
             'canManageRoles'   => $canManageRoles,
             'perms'            => $perms,
+            'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
+            'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
+
+            // WICHTIG: Die schweren Datenarrays bleiben LEER! Das spart 11.5 Sekunden Ladezeit.
+            'comics'      => [],
+            'allReports'  => [],
+            'users'       => [],
+            'openReports' => [],
         ]);
 
         return null;

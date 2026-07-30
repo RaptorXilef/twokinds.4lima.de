@@ -111,6 +111,16 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 </head>
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+    <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
+    <script>
+    (function() {
+        var t = localStorage.getItem('themePref');
+        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
+        else document.body.classList.remove('theme-night');
+    })();
+
+    </script>
 
     <div class="main-container">
         <header>
@@ -170,21 +180,31 @@ $baseUrl = \rtrim($settings['base_url'], '/');
             </aside>
 
             <div class="content">
-                <h1 class="page-header"><!--<i class="fa-solid fa-gauge">--></i> <?php echo \htmlspecialchars($pageTitle); ?></h1>
+                <h1 class="page-header">
+                    <!--<i class="fa-solid fa-gauge">-->
+                    <i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?>
+                </h1>
 
                 <div id="global-status-message"
                      class="status-message"></div>
 
-                <?php include __DIR__ . '/_section_comics.phtml'; ?>
+                <!-- DIESE 3 TABS WERDEN LAZY (AJAX) GELADEN -->
+                <section id="section-comics"
+                         class="content-section active"
+                         data-ajax-tab="comics"></section>
+                <section id="section-reports"
+                         class="content-section"
+                         data-ajax-tab="reports"></section>
+                <section id="section-users"
+                         class="content-section"
+                         data-ajax-tab="users"></section>
+
+                <!-- DIESE SIND LEICHT & SCHNELL UND WERDEN SOFORT GELADEN -->
                 <?php include __DIR__ . '/_section_upload.phtml'; ?>
                 <?php include __DIR__ . '/_section_archive.phtml'; ?>
                 <?php include __DIR__ . '/_section_characters.phtml'; ?>
                 <?php include __DIR__ . '/_section_groups.phtml'; ?>
-
                 <?php include __DIR__ . '/_section_media.phtml'; ?>
-
-                <?php include __DIR__ . '/_section_reports.phtml'; ?>
-                <?php include __DIR__ . '/_section_users.phtml'; ?>
             </div>
         </div>
     </div>

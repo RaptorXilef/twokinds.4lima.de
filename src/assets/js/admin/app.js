@@ -14,7 +14,7 @@ import { GlobalUI } from './ui/GlobalUI.js';
 import { ModalManager } from './ui/ModalManager.js';
 import { TabManager } from './ui/TabManager.js';
 
-// LINTER FIX: const statt var für Kompatibilität
+// Polyfill für requestIdleCallback
 window.requestIdleCallback =
     window.requestIdleCallback ||
     ((cb) => {
@@ -38,23 +38,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalManager = new ModalManager();
 
     new GlobalUI(tracker);
-    new TabManager();
+    new TabManager(api); // FIX: API in den TabManager geben!
 
-    // 2. Tabellen (Paginierung & Suche) initialisieren (nur für Comics, Reports verwalten sich selbst)
-    new DataTable({
-        tableBodySelector: '.comic-editor-table tbody',
-        searchInputId: 'comic-search',
-        perPageSelectId: 'comic-per-page',
-        paginationContainerId: 'comic-pagination',
-    });
-
-    // 3. Main Editors (Sofort laden für cross-tab dependencies wie Report->Comic)
+    // 2. Main Editors (Sofort laden für cross-tab dependencies wie Report->Comic)
     const comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
     new CharacterEditor(api, modalManager, notifications, formService, tracker);
     new ChapterEditor(api, modalManager, notifications, formService);
     new GroupEditor(api, notifications, tracker);
-    new ReportManager(api, modalManager, comicEditor, notifications);
+    const reportManager = new ReportManager(api, modalManager, comicEditor, notifications);
     new SystemManager(api, modalManager, notifications);
+
+    // NEU: Re-Initialize Module, wenn ihr HTML-Inhalt nachträglich via AJAX reingeladen wurde
+    document.addEventListener('tabLoaded', (e) => {
+        if (e.detail.tab === 'section-comics') {
+            // 3. Tabellen (Paginierung & Suche) initialisieren (nur für Comics, Reports verwalten sich selbst)
+            new DataTable({
+                tableBodySelector: '.comic-editor-table tbody',
+                searchInputId: 'comic-search',
+                perPageSelectId: 'comic-per-page',
+                paginationContainerId: 'comic-pagination',
+            });
+        }
+        if (e.detail.tab === 'section-reports') {
+            reportManager.initTableLogic();
+        }
+    });
 
     // 4. Lazy Loading für schwere, isolierte Module
     // Diese werden erst heruntergeladen und ausgeführt, NACHDEM das DOM voll da ist

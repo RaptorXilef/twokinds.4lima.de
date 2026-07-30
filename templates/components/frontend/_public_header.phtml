@@ -91,6 +91,15 @@ elseif (isset($character) && \is_object($character)) {
 </head>
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+    <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
+    <script>
+        (function() {
+            var t = localStorage.getItem('themePref');
+            var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
+            else document.body.classList.remove('theme-night');
+        })();
+    </script>
 
     <div class="main-container">
         <header>
