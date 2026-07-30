@@ -35,9 +35,9 @@ use App\Contracts\System\AssetHelperInterface;
 
 <!-- Gemeinsame JS-Dateien für das Frontend -->
 <!-- Automatisch cache-gebustetes JS -->
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/comic.min.js'); ?>"></script>
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/cookie_consent.min.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/comic.js'); ?>"></script>
+<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>" src="<?php echo $asset->url('assets/js/cookie_consent.js'); ?>"></script>
 
 </body>
 </html>

@@ -139,7 +139,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     </script>
 
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
+            src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
 </body>
 
 </html>

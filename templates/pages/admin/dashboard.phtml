@@ -193,7 +193,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
     <!-- MIN.JS UPDATES -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="<?php echo $asset->url('assets/js/common.min.js'); ?>"></script>
+            src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
 
     <!-- Neues ES6 Modul-System -->
     <script type="module"
