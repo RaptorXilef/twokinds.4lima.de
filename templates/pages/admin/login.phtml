@@ -25,6 +25,17 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
 <body class="page-login <?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
 
+    <!-- ZERO FOUC FIX MIT CSP NONCE -->
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    (function() {
+        var t = localStorage.getItem('themePref');
+        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
+        else document.body.classList.remove('theme-night');
+    })();
+
+    </script>
+
     <div class="main-container">
         <header>
             <div class="banner"
@@ -38,9 +49,9 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                          class="menu">
                         <a href="<?php echo $baseUrl; ?>/">Zurück zur Webseite</a>
                         <a id="toggle_lights" class="theme" href="#">
-                        <span class="themelabel">Theme</span>
-                        <span class="themename">LICHT AUS</span>
-                    </a>
+                            <span class="themelabel">Theme</span>
+                            <span class="themename">LICHT AUS</span>
+                        </a>
                     </nav>
                 </div>
             </aside>
@@ -85,58 +96,10 @@ $baseUrl = \rtrim($settings['base_url'], '/');
         </div>
     </div>
 
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    document.addEventListener('DOMContentLoaded', () => {
-        const loginForm = document.getElementById('admin-login-form');
-        const statusMsg = document.getElementById('login-status-message');
-        const submitBtn = document.getElementById('login-submit-btn');
-
-        if (loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Prüfe...';
-
-                const formData = new window.FormData(
-                loginForm); // TODO window. entfernen wenn in eigener JS-Datei
-                // CSRF Token aus dem Meta-Tag holen
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-                formData.append('csrf_token', csrfToken);
-
-                try {
-                    const response = await fetch('<?php echo $baseUrl; ?>/api/admin_login', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        statusMsg.className = 'status-message status-green visible';
-                        statusMsg.innerHTML = '<i class="fa-solid fa-check"></i> ' + data.message;
-                        setTimeout(() => {
-                            window.location.href = '<?php echo $baseUrl; ?>/' + data.redirect;
-                        }, 500);
-                    } else {
-                        statusMsg.className = 'status-message status-red visible';
-                        statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' +
-                            data.error;
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Anmelden';
-                        document.getElementById('password').value = '';
-                    }
-                } catch (error) {
-                    statusMsg.className = 'status-message status-red visible';
-                    statusMsg.textContent = 'Server-Verbindungsfehler.';
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Anmelden';
-                }
-            });
-        }
-    });
-
-    </script>
+    <!-- Das NEUE, modulare Script laden -->
+    <script type="module"
+            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $baseUrl; ?>/assets/js/admin/login.js"></script>
 
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
             src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>

@@ -23,14 +23,16 @@ use App\Core\Entity\ComicPage;
                 <button type="button"
                         class="button add"
                         id="btn-add-comic">
-                    <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen </button>
+                    <i class="fa-solid fa-plus"></i> Neuen Comic hinzufügen
+                </button>
             <?php } ?>
             <?php if ($perms['comic_del']) { ?>
                 <button type="button"
                         class="button button-orange"
                         id="btn-restore-deleted-comic"
                         title="Zuletzt gelöschten Comic wiederherstellen">
-                    <i class="fa-solid fa-trash-arrow-up"></i> Papierkorb </button>
+                    <i class="fa-solid fa-trash-arrow-up"></i> Papierkorb
+                </button>
             <?php } ?>
         </div>
         <div class="search-wrapper"
@@ -145,8 +147,8 @@ use App\Core\Entity\ComicPage;
                             <td>
                                 <?php if (empty($missing)) { ?>
                                     <span style="display: inline-block; padding: 2px 6px; font-size: 0.75em; background-color: #28a745; color: white; border-radius: 4px;">
-                                        <i class="fa-solid fa-check"></i> Komplett
-                                    </span>
+                            <i class="fa-solid fa-check"></i> Komplett
+                        </span>
                                 <?php } else { ?>
                                     <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                                         <?php foreach ($missing as $miss) { ?>
@@ -193,34 +195,4 @@ use App\Core\Entity\ComicPage;
          style="display: flex; gap: 5px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
         <!-- Die Buttons werden hier per JS generiert -->
     </div>
-
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    document.addEventListener('DOMContentLoaded', () => {
-        const btnRestore = document.getElementById('btn-restore-deleted-comic');
-        if (btnRestore) {
-            btnRestore.addEventListener('click', async () => {
-                if (!confirm('Möchtest du den zuletzt gelöschten Comic wiederherstellen?')) return;
-                const fd = new window.FormData();
-                fd.append('csrf_token', document.querySelector('meta[name="csrf-token"]').content);
-                try {
-                    const res = await fetch('<?php echo $baseUrl; ?>/api/restore_deleted_comic', {
-                        method: 'POST',
-                        body: fd
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        alert(data.message);
-                        window.location.reload();
-                    } else {
-                        alert(data.error);
-                    }
-                } catch (e) {
-                    alert('Verbindungsfehler.');
-                }
-            });
-        }
-    });
-
-    </script>
-
 </section>
