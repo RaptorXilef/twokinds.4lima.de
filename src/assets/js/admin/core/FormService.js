@@ -21,9 +21,16 @@ export class FormService {
         if (!form) return;
         const saveToLocal = () => {
             const formData = new window.FormData(form);
-            const data = Object.fromEntries(formData.entries());
+            const data = {};
 
-            // Trumbowyg manuell abgreifen
+            // FIX: File-Objekte herausfiltern! Sie können nicht als JSON gespeichert
+            // werden und führen beim Laden zu Abstürzen.
+            for (const [key, value] of formData.entries()) {
+                if (value instanceof File) continue;
+                data[key] = value;
+            }
+
+            // Trumbowyg HTML Inhalt manuell abgreifen
             if (typeof window.$ !== 'undefined') {
                 window
                     .$(form)
@@ -54,25 +61,34 @@ export class FormService {
     restoreDraft(form, cacheKey) {
         const cached = localStorage.getItem(cacheKey);
         if (!cached || !form) return;
+
         try {
             const data = JSON.parse(cached);
+
             for (const key in data) {
                 const input = form.querySelector(`[name="${key}"]`);
-                if (input) {
+                if (!input) continue;
+
+                // FIX: Niemals versuchen, File-Inputs per Code zu setzen!
+                if (input.type === 'file') continue;
+
+                if (
+                    input.tagName === 'TEXTAREA' &&
+                    input.classList.contains('wysiwyg-editor') &&
+                    typeof window.$ !== 'undefined'
+                ) {
+                    // WYSIWYG Editor setzen
+                    window.$(input).trumbowyg('html', data[key]);
+                } else {
+                    // Normale Inputs setzen
                     input.value = data[key];
-                    if (
-                        input.tagName === 'TEXTAREA' &&
-                        input.classList.contains('wysiwyg-editor') &&
-                        typeof window.$ !== 'undefined'
-                    ) {
-                        window.$(input).trumbowyg('html', data[key]);
-                    }
-                    // Trigger events for reactive preview bindings
-                    input.dispatchEvent(new Event('input'));
                 }
+
+                // Trigger events für die reaktive Live-Vorschau
+                input.dispatchEvent(new Event('input', { bubbles: true }));
             }
         } catch (e) {
-            console.error('Konnte Draft nicht wiederherstellen', e);
+            console.error('[FormService] Konnte Draft nicht wiederherstellen:', e);
         }
     }
 
