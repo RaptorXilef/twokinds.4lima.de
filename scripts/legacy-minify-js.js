@@ -98,6 +98,13 @@ async function runBuilder() {
     console.log('🚀 Starte JS-Minifizierung (Nativ, Asynchron & Parallel)...');
     console.time('⏱️ Build-Dauer');
 
+    // NEU: Den alten public-Ordner VOR dem Build restlos löschen!
+    const targetDir = 'public/assets/js';
+    if (existsSync(targetDir)) {
+        console.log(`🧹 Leere Zielverzeichnis: ${targetDir} ...`);
+        await fs.rm(targetDir, { recursive: true, force: true });
+    }
+
     const tasks = []; // Hier sammeln wir alle Verarbeitungs-Aufträge
 
     for (const entry of config) {
