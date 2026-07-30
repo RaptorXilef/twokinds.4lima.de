@@ -36,6 +36,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
             $originalUrl = $dto->originalUrl;
             $sketchUrl   = $dto->sketchUrl;
 
+            // Dateiendungen auflösen (Dank curl_multi nun blitzschnell)
             if ($originalUrl !== '' && ! \preg_match('/\.[a-z0-9]{3,4}$/i', $originalUrl)) {
                 $originalUrl .= '.' . $this->probeRemoteExtension($originalUrl);
             }
@@ -69,10 +70,10 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
             }
 
             // --- BILD UPLOAD LOGIK ---
-            $files       = $request->files;
-            $targetDir   = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
-            $hasNewImage = false;
+            $files     = $request->files;
+            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
 
+            $hasNewImage    = false;
             $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
             $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
 
@@ -116,7 +117,8 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 // 3. Thumbnails & Social Media Crop generieren
                 if ($baseProcessPath !== '') {
                     $this->mediaService->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$dto->id}.webp", 200);
-                    $this->mediaService->generateSquareCrop($baseProcessPath, "$targetDir/socialmedia/{$dto->id}.webp", 600);
+                    $socialPath = "$targetDir/socialmedia/{$dto->id}.jpg";
+                    $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
                 }
             }
 
@@ -134,7 +136,9 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
 
             $this->comicService->saveComic($comic);
 
-            return JsonResponse::success(['message' => "Comic {$dto->id} erfolgreich gespeichert."]);
+            return JsonResponse::success([
+                'message' => "Comic {$dto->id} erfolgreich gespeichert.",
+            ]);
 
         } catch (ValidationException|\InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
@@ -143,52 +147,103 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         }
     }
 
-    // Pinged den Server blitzschnell an (HEAD request) und prüft ZWINGEND auf Content-Type: image/*
+    /**
+     * Prüft rasend schnell über parallele Requests (curl_multi),
+     * welche Dateiendung auf dem Fremdserver existiert.
+     */
     private function probeRemoteExtension(string $baseUrl): string
     {
         // Fallback für lokale Server (wie XAMPP), bei denen cURL deaktiviert ist
-        if (! \function_exists('curl_init')) {
-            $context = \stream_context_create(['http' => ['method' => 'HEAD', 'timeout' => 2]]);
-            foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) {
-                // HIER IST DER FIX FÜR DEN 500 ERROR (true statt 1)
-                $headers = @\get_headers($baseUrl . '.' . $ext, true, $context);
-                if ($headers !== false) {
-                    $status = $headers[0] ?? '';
-                    if (\str_contains($status, '200')) {
-                        $contentType = $headers['Content-Type'] ?? ($headers['content-type'] ?? '');
-                        if (\is_array($contentType)) {
-                            $contentType = \end($contentType);
-                        }
-                        if (\is_string($contentType) && \str_starts_with($contentType, 'image/')) {
-                            return $ext;
-                        }
-                    }
+        if (! \function_exists('curl_multi_init')) {
+            return 'png'; // Absoluter Fallback, falls curl fehlt
+        }
+
+        $extensions  = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
+        $multiHandle = \curl_multi_init();
+        $curlHandles = [];
+
+        foreach ($extensions as $ext) {
+            $ch = \curl_init($baseUrl . '.' . $ext);
+            \curl_setopt_array($ch, [
+                \CURLOPT_NOBODY         => true, // Wir wollen das Bild nicht runterladen, nur den Header lesen!
+                \CURLOPT_TIMEOUT        => 2,
+                \CURLOPT_RETURNTRANSFER => true,
+                \CURLOPT_FOLLOWLOCATION => true,
+                \CURLOPT_SSL_VERIFYPEER => false,
+                \CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TwokindsAdminProbe/1.0',
+            ]);
+            \curl_multi_add_handle($multiHandle, $ch);
+            $curlHandles[$ext] = $ch;
+        }
+
+        $active   = null;
+        $foundExt = null;
+
+        // Führe alle Requests GLeichzeitig aus
+        do {
+            $status = \curl_multi_exec($multiHandle, $active);
+
+            // Prüfe permanent, ob schon einer FERTIG ist
+            while ($info = \curl_multi_info_read($multiHandle)) {
+                $ch          = $info['handle'];
+                $code        = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+                $contentType = \curl_getinfo($ch, \CURLINFO_CONTENT_TYPE) ?: '';
+
+                // Sobald der erste ein 200 OK und ein Bild liefert, brechen wir alles ab!
+                if ($code === 200 && \str_starts_with((string) $contentType, 'image/')) {
+                    $url      = \curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL);
+                    $foundExt = \strtolower(\pathinfo((string) $url, \PATHINFO_EXTENSION));
+
+                    break 2; // Beendet die komplette do-while Schleife SOFORT
                 }
             }
 
-            return 'png'; // Fallback
-        }
-
-        // Standard-Weg mit cURL (schneller & ressourcenschonender)
-        foreach (['png', 'jpg', 'gif', 'jpeg', 'webp'] as $ext) { // TODO ggf. ins Interface?
-            $ch = \curl_init($baseUrl . '.' . $ext);
-            \curl_setopt($ch, \CURLOPT_NOBODY, true); // Nur Header laden, spart Bandbreite
-            \curl_setopt($ch, \CURLOPT_TIMEOUT, 2);
-            \curl_setopt($ch, \CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TwokindsAdminProbe/1.0');
-            \curl_setopt($ch, \CURLOPT_RETURNTRANSFER, true);
-            \curl_setopt($ch, \CURLOPT_FOLLOWLOCATION, true);
-            \curl_exec($ch);
-
-            $code        = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
-            $contentType = \curl_getinfo($ch, \CURLINFO_CONTENT_TYPE);
-            \curl_close($ch);
-
-            // Keenspot Custom 404s geben 200 + text/html zurück. Wir MÜSSEN prüfen, ob es ein Bild ist!
-            if ($code === 200 && \is_string($contentType) && \str_starts_with($contentType, 'image/')) {
-                return $ext;
+            if ($active) {
+                \curl_multi_select($multiHandle, 0.05); // Schont die CPU während wir warten
             }
-        }
+        } while ($active && $status === \CURLM_OK);
 
-        return 'png'; // Fallback auf das wahrscheinlichste Format
+        // Aufräumen
+        foreach ($curlHandles as $ch) {
+            \curl_multi_remove_handle($multiHandle, $ch);
+            \curl_close($ch);
+        }
+        \curl_multi_close($multiHandle);
+
+        return $foundExt ?: 'png'; // Fallback
+    }
+
+    private function autoGenerateSocialMediaJpg(string $sourcePath, string $targetPath): void
+    {
+        $img = @\imagecreatefromstring(\file_get_contents($sourcePath));
+        if (! $img) {
+            return;
+        }
+        $width  = \imagesx($img);
+        $height = \imagesy($img);
+
+        $targetRatio = 1200 / 630;
+        $sourceRatio = $width / $height;
+        $cropW       = $width;
+        $cropH       = $height;
+
+        if ($sourceRatio > $targetRatio) {
+            $cropW = (int) ($height * $targetRatio);
+        } else {
+            $cropH = (int) ($width / $targetRatio);
+        }
+        $cropX = (int) (($width - $cropW) / 2);
+        $cropY = (int) (($height - $cropH) / 2);
+
+        $this->mediaService->generateManualCrop(
+            $sourcePath,
+            $targetPath,
+            $cropX,
+            $cropY,
+            $cropW,
+            $cropH,
+            1200,
+            630,
+        );
     }
 }
