@@ -1,94 +1,95 @@
 export class ThemeManager {
     constructor() {
-        this.themes = [
-            { id: 0, name: 'Default', class: null },
-            { id: 1, name: 'Lights On', class: null },
-            { id: 2, name: 'Lights Off', class: 'theme-night' },
-        ];
-        this.systemThemeId = 0;
-        this.systemLightThemeId = 1;
-        this.systemDarkThemeId = 2;
-        this.currentTheme = this.systemThemeId;
-
         this.body = document.body;
+        this.toggleBtn = document.querySelector('#toggle_lights');
         this.init();
     }
 
     init() {
         document.querySelectorAll('.jsdep').forEach((el) => el.classList.remove('jsdep'));
 
-        const toggleBtn = document.querySelector('#toggle_lights');
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', (e) => {
+        // Initialen Status ermitteln ('2' = Dark, alles andere = Light)
+        let isDark = false;
+        const pref = localStorage.getItem('themePref');
+
+        if (pref === '2') {
+            isDark = true;
+        } else if (pref === '1') {
+            isDark = false;
+        } else {
+            // Fallback: System-Einstellung des Betriebssystems
+            isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+        // Initiale UI setzen (ohne weichen Übergang)
+        this.applyTheme(isDark, false);
+
+        // Klick-Event für den Button
+        if (this.toggleBtn) {
+            // Wir überschreiben das alte CSS (flex-column) für eine schöne horizontale Icon-Darstellung
+            this.toggleBtn.style.flexFlow = 'row nowrap';
+            this.toggleBtn.style.alignItems = 'center';
+            this.toggleBtn.style.justifyContent = 'center';
+            this.toggleBtn.style.gap = '8px';
+            this.toggleBtn.style.padding = '10px 0';
+
+            this.toggleBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const themeToSelect = (this.currentTheme + 1) % this.themes.length;
-                this.setTheme(themeToSelect, true, true);
+                // Zustand umkehren
+                isDark = !this.body.classList.contains('theme-night');
+
+                // Speichern (1 = Light, 2 = Dark)
+                localStorage.setItem('themePref', isDark ? '2' : '1');
+
+                // MAGIE: Wir setzen zusätzlich das Cookie, damit PHP das ab sofort direkt lesen kann!
+                document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
+
+                // Theme mit Animation anwenden
+                this.applyTheme(isDark, true);
             });
         }
 
-        if (typeof window.localStorage !== 'undefined') {
-            if (typeof window.localStorage.themePref === 'undefined') {
-                this.setTheme(this.systemThemeId, false, false);
-            } else {
-                this.setTheme(parseInt(window.localStorage.themePref, 10), false, false);
-            }
-        } else {
-            this.body.classList.remove('preload');
-        }
-
+        // Auf System-Änderungen reagieren (nur wenn der Nutzer noch keine harte Wahl getroffen hat)
         if (window.matchMedia) {
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-                if (this.currentTheme === this.systemThemeId) {
-                    this.setTheme(this.systemThemeId, false, true);
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                if (!localStorage.getItem('themePref')) {
+                    this.applyTheme(e.matches, true);
                 }
             });
         }
     }
 
-    setTheme(themeId, storePref, doTransition) {
-        const theme = this.themes[themeId];
-        const isSystemTheme = themeId === this.systemThemeId;
-
-        this.body.classList.forEach((cls) => {
-            if (cls.startsWith('theme-')) this.body.classList.remove(cls);
-        });
-
+    applyTheme(isDark, doTransition) {
         if (doTransition) this.body.classList.add('transitioning');
 
-        if (isSystemTheme) {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                this.applyThemeClass(this.themes[this.systemDarkThemeId]);
-            } else {
-                this.applyThemeClass(this.themes[this.systemLightThemeId]);
-            }
+        if (isDark) {
+            this.body.classList.add('theme-night');
+            this.updateButtonUI(true);
+        } else {
+            this.body.classList.remove('theme-night');
+            this.updateButtonUI(false);
         }
-
-        if (theme.class !== null) {
-            this.body.classList.add(theme.class);
-        }
-
-        const nameLabel = document.querySelector('#toggle_lights .themename');
-        if (nameLabel) nameLabel.innerHTML = theme.name;
-
-        if (storePref && typeof window.localStorage !== 'undefined') {
-            if (!isSystemTheme) {
-                window.localStorage.setItem('themePref', themeId);
-            } else {
-                window.localStorage.removeItem('themePref');
-            }
-        }
-
-        this.currentTheme = themeId;
 
         if (doTransition) {
             window.setTimeout(() => {
                 this.body.classList.remove('transitioning');
                 this.body.classList.remove('preload');
             }, 300);
+        } else {
+            this.body.classList.remove('preload');
         }
     }
 
-    applyThemeClass(theme) {
-        if (theme.class !== null) this.body.classList.add(theme.class);
+    updateButtonUI(isDark) {
+        if (!this.toggleBtn) return;
+
+        // Wenn dunkel -> Zeige Sonne (Option für Hell). Wenn hell -> Zeige Mond (Option für Dunkel).
+        if (isDark) {
+            this.toggleBtn.innerHTML =
+                '<i class="fa-solid fa-sun" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Light Mode</span>';
+        } else {
+            this.toggleBtn.innerHTML =
+                '<i class="fa-solid fa-moon" style="font-size: 1.2em;"></i> <span class="themename" style="padding:0;">Dark Mode</span>';
+        }
     }
 }
