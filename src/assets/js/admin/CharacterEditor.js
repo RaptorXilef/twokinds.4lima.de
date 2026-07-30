@@ -27,7 +27,7 @@ export class CharacterEditor {
         /** @type {DataTransfer} */
         this.accumulatedRefFiles = new DataTransfer();
 
-        // REAKTIVER STATE FÜR LIVE-PREVIEWS
+        // REAKTIVER STATE FÜR LIVE-PREVIEWS INKL. AUTO-SAVE
         this.state = new ReactiveState(
             {
                 picUrl: '',
@@ -35,7 +35,8 @@ export class CharacterEditor {
                 swatchPicUrl: '',
                 refSheets: '',
             },
-            (property, value) => this.renderPreviews(property, value)
+            (property, value) => this.renderPreviews(property, value),
+            'admin_char_draft'
         );
 
         if (this.section || this.form) {
@@ -479,6 +480,7 @@ export class CharacterEditor {
             customData
         );
         if (success) {
+            this.state.clearCache(); // CACHE LÖSCHEN NACH ERFOLG!
             this.modalManager.close('char-modal');
             setTimeout(() => window.location.reload(), 1000);
         }

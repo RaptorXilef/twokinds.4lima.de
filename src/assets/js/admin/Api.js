@@ -9,7 +9,33 @@ export class Api {
     }
 
     /**
-     * Sendet einen POST-Request an die API. Hängt den CSRF-Token automatisch an.
+     * Zentraler privater Response-Parser (Verhindert JSON-Crashes bei 500er/404er HTML Seiten)
+     * @param {Response} response
+     * @returns {Promise<Object>}
+     */
+    async #handleResponse(response) {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+
+        if (!response.ok) {
+            if (isJson) {
+                const errData = await response.json();
+                return { success: false, error: errData.error || `HTTP Fehler ${response.status}` };
+            }
+            return { success: false, error: `Server-Verbindungsfehler (HTTP ${response.status}).` };
+        }
+
+        if (isJson) {
+            return await response.json();
+        }
+
+        return {
+            success: false,
+            error: 'Der Server hat ungültige Daten (Kein JSON) zurückgegeben.',
+        };
+    }
+
+    /**
+     * Sendet einen POST-Request an die API.
      * @param {string} endpoint - z.B. 'save_single_comic'
      * @param {FormData} formData
      * @returns {Promise<Object>}
@@ -24,20 +50,10 @@ export class Api {
                 method: 'POST',
                 body: formData,
             });
-
-            const text = await response.text();
-            try {
-                return JSON.parse(text);
-            } catch (_err) {
-                console.error(`[API Error] POST /api/${endpoint} lieferte ungültiges JSON:`, text);
-                return {
-                    success: false,
-                    error: 'Serverfehler: Die Antwort konnte nicht verarbeitet werden.',
-                };
-            }
+            return await this.#handleResponse(response);
         } catch (error) {
-            console.error(`[API Error] POST /api/${endpoint} ist fehlgeschlagen:`, error);
-            return { success: false, error: 'Verbindungsfehler zum Server.' };
+            console.error(`[API Error] POST /api/${endpoint} failed:`, error);
+            return { success: false, error: 'Netzwerkfehler. Server nicht erreichbar.' };
         }
     }
 
@@ -51,15 +67,10 @@ export class Api {
         const query = params ? `?${params.toString()}` : '';
         try {
             const response = await fetch(`${this.baseUrl}/api/${endpoint}${query}`);
-            const text = await response.text();
-            try {
-                return JSON.parse(text);
-            } catch (_err) {
-                return { success: false, error: 'Serverfehler bei GET-Anfrage.' };
-            }
+            return await this.#handleResponse(response);
         } catch (error) {
-            console.error(`[API Error] GET /api/${endpoint} ist fehlgeschlagen:`, error);
-            return { success: false, error: 'Verbindungsfehler zum Server.' };
+            console.error(`[API Error] GET /api/${endpoint} failed:`, error);
+            return { success: false, error: 'Netzwerkfehler. Server nicht erreichbar.' };
         }
     }
 }

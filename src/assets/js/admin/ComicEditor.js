@@ -25,14 +25,15 @@ export class ComicEditor {
         /** @type {HTMLFormElement|null} */
         this.form = document.getElementById('comic-form');
 
-        // REAKTIVER STATE
+        // REAKTIVER STATE INKL. AUTO-SAVE
         this.state = new ReactiveState(
             {
                 comicId: '',
                 origUrl: '',
                 sketchUrl: '',
             },
-            () => this.updateComicPreviews()
+            () => this.updateComicPreviews(),
+            'admin_comic_draft'
         );
 
         if (this.section) {
@@ -421,6 +422,7 @@ export class ComicEditor {
             customData
         );
         if (success) {
+            this.state.clearCache(); // CACHE LÖSCHEN NACH ERFOLG!
             this.modalManager.close('comic-modal');
             setTimeout(() => window.location.reload(), 1000);
         }
