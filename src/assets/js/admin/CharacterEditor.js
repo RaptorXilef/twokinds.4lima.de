@@ -1,7 +1,10 @@
+import { ReactiveState } from './ReactiveState.js';
+
 /**
  * @typedef {import('./Api.js').Api} Api
  * @typedef {import('./ModalManager.js').ModalManager} ModalManager
  * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('./FormService.js').FormService} FormService
  */
 
 export class CharacterEditor {
@@ -9,11 +12,13 @@ export class CharacterEditor {
      * @param {Api} api
      * @param {ModalManager} modalManager
      * @param {NotificationService} notifications
+     * @param {FormService} formService
      */
-    constructor(api, modalManager, notifications) {
+    constructor(api, modalManager, notifications, formService) {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
+        this.formService = formService;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-characters');
@@ -22,20 +27,96 @@ export class CharacterEditor {
         /** @type {DataTransfer} */
         this.accumulatedRefFiles = new DataTransfer();
 
+        // REAKTIVER STATE FÜR LIVE-PREVIEWS
+        this.state = new ReactiveState(
+            {
+                picUrl: '',
+                mainPicUrl: '',
+                swatchPicUrl: '',
+                refSheets: '',
+            },
+            (property, value) => this.renderPreviews(property, value)
+        );
+
         if (this.section || this.form) {
             this.bindEvents();
             this.bindImageSelection();
             this.bindDropZones();
-            this.bindLivePreviews(); // FIX: Live-Previews reaktivieren!
+            this.bindLiveStateInputs();
+        }
+    }
+
+    // Verbindet die HTML-Eingabefelder mit dem State
+    bindLiveStateInputs() {
+        const bindToState = (inputName, stateProp) => {
+            const input = this.form?.querySelector(`[name="${inputName}"]`);
+            if (input) {
+                input.addEventListener('input', (e) => {
+                    this.state[stateProp] = e.target.value.trim();
+                });
+            }
+        };
+
+        bindToState('pic_url', 'picUrl');
+        bindToState('main_pic_url', 'mainPicUrl');
+        bindToState('swatch_pic_url', 'swatchPicUrl');
+        bindToState('ref_sheets_urls', 'refSheets');
+    }
+
+    // Wird automatisch gefeuert, wenn sich this.state ändert!
+    renderPreviews(property, value) {
+        if (property === 'picUrl') {
+            const charPreviewImg = document.getElementById('char-preview-img');
+            if (charPreviewImg) {
+                charPreviewImg.src = value
+                    ? `${this.api.baseUrl}/assets/images/characters/profiles/${value}`
+                    : 'https://placehold.co/120x120?text=Kein+Bild';
+            }
+        }
+        if (property === 'mainPicUrl') {
+            const prevMain = document.getElementById('preview-img-main');
+            if (prevMain) {
+                prevMain.style.display = value ? 'block' : 'none';
+                prevMain.src = value
+                    ? `${this.api.baseUrl}/assets/images/characters/main/${value}`
+                    : '';
+            }
+        }
+        if (property === 'swatchPicUrl') {
+            const prevSwatch = document.getElementById('preview-img-swatch');
+            if (prevSwatch) {
+                prevSwatch.style.display = value ? 'block' : 'none';
+                prevSwatch.src = value
+                    ? `${this.api.baseUrl}/assets/images/characters/swatches/${value}`
+                    : '';
+            }
+        }
+        if (property === 'refSheets') {
+            const containerRefs = document.getElementById('preview-container-refs');
+            if (containerRefs) {
+                containerRefs.innerHTML = '';
+                const vals = value
+                    .split(',')
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                vals.forEach((sheet) => {
+                    const img = document.createElement('img');
+                    img.src = `${this.api.baseUrl}/assets/images/characters/refsheets/${sheet}`;
+                    img.style.maxWidth = '80px';
+                    img.style.maxHeight = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '4px';
+                    img.style.border = '1px solid var(--border-medium)';
+                    containerRefs.appendChild(img);
+                });
+            }
         }
     }
 
     bindEvents() {
         // 1. "Neuen Charakter" Button
         const btnAdd = document.getElementById('btn-add-char');
-        if (btnAdd) {
-            btnAdd.addEventListener('click', () => this.openAddModal());
-        }
+        if (btnAdd) btnAdd.addEventListener('click', () => this.openAddModal());
 
         // 2. Event Delegation für die Tabelle (Bearbeiten, Löschen)
         if (this.section) {
@@ -73,109 +154,28 @@ export class CharacterEditor {
     }
 
     bindImageSelection() {
-        // Profilbild Auswahl
-        const profileGrid = document.getElementById('profile-pic-grid');
-        if (profileGrid) {
-            profileGrid.addEventListener('click', (e) => {
-                if (e.target.tagName === 'IMG') {
-                    // LINTER FIX: Block Statement {} um impliziten Return zu verhindern
-                    profileGrid.querySelectorAll('img').forEach((img) => {
-                        img.classList.remove('selected');
-                    });
-                    e.target.classList.add('selected');
-                    const picInput = this.form.querySelector('[name="pic_url"]');
-                    if (picInput) {
-                        picInput.value = e.target.dataset.filename;
-                        picInput.dispatchEvent(new Event('input')); // Live Preview triggern
+        const handleGridClick = (gridId, inputName, stateProp) => {
+            const grid = document.getElementById(gridId);
+            if (grid) {
+                grid.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'IMG') {
+                        grid.querySelectorAll('img').forEach((img) => {
+                            img.classList.remove('selected');
+                        });
+                        e.target.classList.add('selected');
+
+                        const input = this.form.querySelector(`[name="${inputName}"]`);
+                        if (input) input.value = e.target.dataset.filename;
+
+                        // Setze den State -> Vorschau aktualisiert sich magisch
+                        this.state[stateProp] = e.target.dataset.filename;
                     }
-                }
-            });
-        }
-
-        // Hauptbild Auswahl
-        const mainGrid = document.getElementById('main-pic-grid');
-        if (mainGrid) {
-            mainGrid.addEventListener('click', (e) => {
-                if (e.target.tagName === 'IMG') {
-                    // LINTER FIX: Block Statement {} um impliziten Return zu verhindern
-                    mainGrid.querySelectorAll('img').forEach((img) => {
-                        img.classList.remove('selected');
-                    });
-                    e.target.classList.add('selected');
-                    const mainInput = this.form.querySelector('[name="main_pic_url"]');
-                    if (mainInput) {
-                        mainInput.value = e.target.dataset.filename;
-                        mainInput.dispatchEvent(new Event('input')); // Live Preview triggern
-                    }
-                }
-            });
-        }
-    }
-
-    // Live Previews durch Text-Eingaben
-    bindLivePreviews() {
-        const picUrlInput = this.form?.querySelector('[name="pic_url"]');
-        const charPreviewImg = document.getElementById('char-preview-img');
-        picUrlInput?.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            if (charPreviewImg) {
-                charPreviewImg.src = val
-                    ? `${this.api.baseUrl}/assets/images/characters/profiles/${val}`
-                    : 'https://placehold.co/120x120?text=Kein+Bild';
-            }
-        });
-
-        const mainPicInput = this.form?.querySelector('[name="main_pic_url"]');
-        const prevMain = document.getElementById('preview-img-main');
-        mainPicInput?.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            if (prevMain) {
-                if (val) {
-                    prevMain.src = `${this.api.baseUrl}/assets/images/characters/main/${val}`;
-                    prevMain.style.display = 'block';
-                } else {
-                    prevMain.style.display = 'none';
-                    prevMain.src = '';
-                }
-            }
-        });
-
-        const swatchPicInput = this.form?.querySelector('[name="swatch_pic_url"]');
-        const prevSwatch = document.getElementById('preview-img-swatch');
-        swatchPicInput?.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            if (prevSwatch) {
-                if (val) {
-                    prevSwatch.src = `${this.api.baseUrl}/assets/images/characters/swatches/${val}`;
-                    prevSwatch.style.display = 'block';
-                } else {
-                    prevSwatch.style.display = 'none';
-                    prevSwatch.src = '';
-                }
-            }
-        });
-
-        const refSheetsInput = this.form?.querySelector('[name="ref_sheets_urls"]');
-        const containerRefs = document.getElementById('preview-container-refs');
-        refSheetsInput?.addEventListener('input', (e) => {
-            if (containerRefs) {
-                containerRefs.innerHTML = '';
-                const vals = e.target.value
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean);
-                vals.forEach((sheet) => {
-                    const img = document.createElement('img');
-                    img.src = `${this.api.baseUrl}/assets/images/characters/refsheets/${sheet}`;
-                    img.style.maxWidth = '80px';
-                    img.style.maxHeight = '80px';
-                    img.style.objectFit = 'cover';
-                    img.style.borderRadius = '4px';
-                    img.style.border = '1px solid var(--border-medium)';
-                    containerRefs.appendChild(img);
                 });
             }
-        });
+        };
+
+        handleGridClick('profile-pic-grid', 'pic_url', 'picUrl');
+        handleGridClick('main-pic-grid', 'main_pic_url', 'mainPicUrl');
     }
 
     // Drag & Drop
@@ -229,9 +229,7 @@ export class CharacterEditor {
                 zone.style.borderColor = 'var(--status-green-text)';
                 zone.style.backgroundColor = 'var(--status-green-bg)';
 
-                if (previewText) {
-                    previewText.textContent = `Bereit: ${input.files[0].name}`;
-                }
+                if (previewText) previewText.textContent = `Bereit: ${input.files[0].name}`;
 
                 if (preview) {
                     const reader = new FileReader();
@@ -245,6 +243,7 @@ export class CharacterEditor {
                 if (inputId === 'profile_image') {
                     const picUrlInput = document.getElementById('pic_url');
                     if (picUrlInput) picUrlInput.value = '';
+                    this.state.picUrl = ''; // Löscht das alte Bild
                 }
             }
         });
@@ -281,7 +280,7 @@ export class CharacterEditor {
                     this.accumulatedRefFiles.items.add(file);
                 });
                 inputRefs.files = this.accumulatedRefFiles.files;
-                this.updateRefPreviews(containerRefs, zoneRefs);
+                this.updateRefDropPreview(containerRefs, zoneRefs);
             }
         });
 
@@ -302,21 +301,19 @@ export class CharacterEditor {
                         this.accumulatedRefFiles.items.add(newFile);
                     }
                 });
-
                 inputRefs.files = this.accumulatedRefFiles.files;
-                this.updateRefPreviews(containerRefs, zoneRefs);
+                this.updateRefDropPreview(containerRefs, zoneRefs);
             }
         });
     }
 
-    updateRefPreviews(containerRefs, zoneRefs) {
+    updateRefDropPreview(containerRefs, zoneRefs) {
         window.isDirty = true;
         if (zoneRefs) {
             zoneRefs.style.borderColor = 'var(--status-green-text)';
             zoneRefs.style.backgroundColor = 'var(--status-green-bg)';
         }
 
-        // LINTER FIX: Block Statement {} um impliziten Return zu verhindern
         Array.from(containerRefs.querySelectorAll('img.is-new')).forEach((img) => {
             img.remove();
         });
@@ -363,31 +360,22 @@ export class CharacterEditor {
     openAddModal() {
         if (this.form) this.form.reset();
 
-        const setVal = (nameAttr, val) => {
+        const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
+            if (stateProp) this.state[stateProp] = val; // Triggert Vorschau!
         };
 
-        setVal('id', 'new');
-
-        // Formular leeren und Live Previews resetten
-        setVal('pic_url', '');
-        this.form.querySelector('[name="pic_url"]')?.dispatchEvent(new Event('input'));
-
-        setVal('main_pic_url', '');
-        this.form.querySelector('[name="main_pic_url"]')?.dispatchEvent(new Event('input'));
-
-        setVal('swatch_pic_url', '');
-        this.form.querySelector('[name="swatch_pic_url"]')?.dispatchEvent(new Event('input'));
-
-        setVal('ref_sheets_urls', '');
-        this.form.querySelector('[name="ref_sheets_urls"]')?.dispatchEvent(new Event('input'));
+        setValAndState('id', null, 'new');
+        setValAndState('pic_url', 'picUrl', '');
+        setValAndState('main_pic_url', 'mainPicUrl', '');
+        setValAndState('swatch_pic_url', 'swatchPicUrl', '');
+        setValAndState('ref_sheets_urls', 'refSheets', '');
 
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
             window.$('#char_description').trumbowyg('empty');
         }
 
-        // LINTER FIX: Block Statement {}
         document.querySelectorAll('#profile-pic-grid img, #main-pic-grid img').forEach((img) => {
             img.classList.remove('selected');
         });
@@ -407,22 +395,22 @@ export class CharacterEditor {
     openEditModal(payload) {
         if (this.form) this.form.reset();
 
-        // 100% ID-Kollisionssicher durch Nutzung von name="..."
-        const setVal = (nameAttr, val) => {
+        const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val || '';
+            if (stateProp) this.state[stateProp] = val || ''; // Triggert Vorschau!
         };
 
-        setVal('id', payload.id);
-        setVal('name', payload.name);
-        setVal('full_name', payload.fullName);
-        setVal('alt_names', payload.altNames);
-        setVal('gender', payload.gender);
-        setVal('age', payload.age);
-        setVal('rank', payload.rank);
-        setVal('species', payload.species);
-        setVal('subspecies', payload.subspecies);
-        setVal('languages', payload.languages);
+        setValAndState('id', null, payload.id);
+        setValAndState('name', null, payload.name);
+        setValAndState('full_name', null, payload.fullName);
+        setValAndState('alt_names', null, payload.altNames);
+        setValAndState('gender', null, payload.gender);
+        setValAndState('age', null, payload.age);
+        setValAndState('rank', null, payload.rank);
+        setValAndState('species', null, payload.species);
+        setValAndState('subspecies', null, payload.subspecies);
+        setValAndState('languages', null, payload.languages);
 
         // Richtige HTML ID und payload.description
         if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
@@ -435,8 +423,7 @@ export class CharacterEditor {
         });
 
         // Felder füllen UND input Event feuern, damit die Bilder geladen werden
-        setVal('pic_url', payload.picUrl);
-        this.form.querySelector('[name="pic_url"]')?.dispatchEvent(new Event('input'));
+        setValAndState('pic_url', 'picUrl', payload.picUrl);
         if (payload.picUrl) {
             const match = document.querySelector(
                 `#profile-pic-grid img[data-filename="${payload.picUrl}"]`
@@ -444,8 +431,7 @@ export class CharacterEditor {
             if (match) match.classList.add('selected');
         }
 
-        setVal('main_pic_url', payload.mainPic);
-        this.form.querySelector('[name="main_pic_url"]')?.dispatchEvent(new Event('input'));
+        setValAndState('main_pic_url', 'mainPicUrl', payload.mainPic);
         if (payload.mainPic) {
             const match = document.querySelector(
                 `#main-pic-grid img[data-filename="${payload.mainPic}"]`
@@ -453,14 +439,12 @@ export class CharacterEditor {
             if (match) match.classList.add('selected');
         }
 
-        setVal('swatch_pic_url', payload.swatchPic);
-        this.form.querySelector('[name="swatch_pic_url"]')?.dispatchEvent(new Event('input'));
-
-        setVal(
+        setValAndState('swatch_pic_url', 'swatchPicUrl', payload.swatchPic);
+        setValAndState(
             'ref_sheets_urls',
+            'refSheets',
             payload.refSheets && payload.refSheets.length > 0 ? payload.refSheets.join(', ') : ''
         );
-        this.form.querySelector('[name="ref_sheets_urls"]')?.dispatchEvent(new Event('input'));
 
         const displayId = document.getElementById('char-display-id');
         if (displayId) displayId.textContent = `ID: ${payload.id}`;
@@ -474,37 +458,29 @@ export class CharacterEditor {
         this.modalManager.open('char-modal');
     }
 
+    // ACHTUNG: Die Form-Service Magie
     async saveCharacter(btnElement) {
-        if (!this.form?.reportValidity()) return;
+        if (!this.form) return;
 
-        const originalText = btnElement.innerHTML;
-        btnElement.disabled = true;
-        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+        const customData = {};
 
-        try {
-            const formData = new window.FormData(this.form);
+        // Richtige HTML ID für den Fallback-Speicher
+        if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
+            customData.description = window.$('#char_description').trumbowyg('html');
+        }
 
-            // Richtige HTML ID für den Fallback-Speicher
-            if (typeof window.$ !== 'undefined' && window.$('#char_description').length) {
-                formData.set('description', window.$('#char_description').trumbowyg('html'));
-            }
+        const idInput = this.form.querySelector('[name="id"]');
+        if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-            const idInput = this.form.querySelector('[name="id"]');
-            if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
-
-            const result = await this.api.post('save_single_character', formData);
-
-            if (result.success) {
-                this.notifications.show(result.message, 'success');
-                this.modalManager.close('char-modal');
-                window.isDirty = false;
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                this.notifications.show(result.error, 'error');
-            }
-        } finally {
-            btnElement.disabled = false;
-            btnElement.innerHTML = originalText;
+        const success = await this.formService.submit(
+            this.form,
+            btnElement,
+            'save_single_character',
+            customData
+        );
+        if (success) {
+            this.modalManager.close('char-modal');
+            setTimeout(() => window.location.reload(), 1000);
         }
     }
 

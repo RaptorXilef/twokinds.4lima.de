@@ -1,7 +1,10 @@
+import { ReactiveState } from './ReactiveState.js';
+
 /**
  * @typedef {import('./Api.js').Api} Api
  * @typedef {import('./ModalManager.js').ModalManager} ModalManager
  * @typedef {import('./NotificationService.js').NotificationService} NotificationService
+ * @typedef {import('./FormService.js').FormService} FormService
  */
 
 export class ComicEditor {
@@ -9,17 +12,28 @@ export class ComicEditor {
      * @param {Api} api
      * @param {ModalManager} modalManager
      * @param {NotificationService} notifications
+     * @param {FormService} formService
      */
-    constructor(api, modalManager, notifications) {
-        // Dependency Injection
+    constructor(api, modalManager, notifications, formService) {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
+        this.formService = formService;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-comics');
         /** @type {HTMLFormElement|null} */
         this.form = document.getElementById('comic-form');
+
+        // REAKTIVER STATE
+        this.state = new ReactiveState(
+            {
+                comicId: '',
+                origUrl: '',
+                sketchUrl: '',
+            },
+            () => this.updateComicPreviews()
+        );
 
         if (this.section) {
             this.bindEvents();
@@ -84,26 +98,34 @@ export class ComicEditor {
         });
 
         // --- LIVE PREVIEW EVENTS ---
-        const triggerUpdate = () => this.updateComicPreviews();
-
-        // Suchen der Felder isoliert in dieser Form
+        // Felder an den State binden
         if (this.form) {
-            const comicIdInput = this.form.querySelector('[name="comic_id"]');
-            const origUrlInput = this.form.querySelector('[name="url_originalbild"]');
-            const origSketchInput = this.form.querySelector('[name="url_originalsketch"]');
+            const bindToState = (inputName, stateProp) => {
+                const input = this.form.querySelector(`[name="${inputName}"]`);
+                if (input) {
+                    input.addEventListener('input', (e) => {
+                        this.state[stateProp] = e.target.value.trim();
+                    });
+                }
+                return input;
+            };
 
-            if (comicIdInput) comicIdInput.addEventListener('input', triggerUpdate);
-            if (origUrlInput) origUrlInput.addEventListener('input', triggerUpdate);
-            if (origSketchInput) origSketchInput.addEventListener('input', triggerUpdate);
+            const comicIdInput = bindToState('comic_id', 'comicId');
+            const origUrlInput = bindToState('url_originalbild', 'origUrl');
+            const origSketchInput = bindToState('url_originalsketch', 'sketchUrl');
 
             if (comicIdInput) {
                 comicIdInput.addEventListener('blur', () => {
                     const val = comicIdInput.value.trim();
                     if (val.length === 8 && !comicIdInput.readOnly) {
-                        if (origUrlInput && origUrlInput.value === '') origUrlInput.value = val;
-                        if (origSketchInput && origSketchInput.value === '')
+                        if (origUrlInput && origUrlInput.value === '') {
+                            origUrlInput.value = val;
+                            this.state.origUrl = val;
+                        }
+                        if (origSketchInput && origSketchInput.value === '') {
                             origSketchInput.value = val;
-                        this.updateComicPreviews();
+                            this.state.sketchUrl = val;
+                        }
                     }
                 });
             }
@@ -196,18 +218,13 @@ export class ComicEditor {
     }
 
     updateComicPreviews() {
-        if (!this.form) return;
-        const comicIdInput = this.form.querySelector('[name="comic_id"]');
-        const origUrlInput = this.form.querySelector('[name="url_originalbild"]');
-        const origSketchInput = this.form.querySelector('[name="url_originalsketch"]');
-        const oldIdInput = this.form.querySelector('[name="old_comic_id"]');
-
-        const idVal = comicIdInput?.value.trim() ?? '';
-        const oldIdVal = oldIdInput?.value.trim() ?? '';
+        // Liest direkt vom State!
+        const idVal = this.state.comicId;
+        const oldIdVal = this.form?.querySelector('[name="old_comic_id"]')?.value.trim() ?? '';
         const localPreviewId = oldIdVal !== '' ? oldIdVal : idVal;
 
-        const origVal = origUrlInput?.value.trim() ?? '';
-        const sketchVal = origSketchInput?.value.trim() ?? '';
+        const origVal = this.state.origUrl;
+        const sketchVal = this.state.sketchUrl;
 
         const remoteExts = ['png', 'jpg', 'gif', 'jpeg', 'webp'];
         const localExts = ['webp', 'png', 'jpg', 'jpeg', 'gif'];
@@ -285,14 +302,17 @@ export class ComicEditor {
     openAddModal() {
         if (this.form) this.form.reset();
 
-        const setVal = (nameAttr, val) => {
+        const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val;
+            if (stateProp) this.state[stateProp] = val; // Triggert Previews
         };
 
-        setVal('old_comic_id', '');
-        setVal('action', 'save');
-        setVal('comic_id', '');
+        setValAndState('old_comic_id', null, '');
+        setValAndState('action', null, 'save');
+        setValAndState('comic_id', 'comicId', '');
+        setValAndState('url_originalbild', 'origUrl', '');
+        setValAndState('url_originalsketch', 'sketchUrl', '');
 
         const idInput = this.form.querySelector('[name="comic_id"]');
         if (idInput) {
@@ -300,7 +320,6 @@ export class ComicEditor {
             sessionStorage.setItem('highlightEntityIdCancel', '');
         }
 
-        // WYSIWYG leeren
         if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
             window.$('#transcript').trumbowyg('empty');
         }
@@ -311,31 +330,33 @@ export class ComicEditor {
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
 
-        this.updateComicPreviews();
         this.modalManager.open('comic-modal');
     }
 
     openEditModal(payload) {
         if (this.form) this.form.reset();
 
-        const setVal = (nameAttr, val) => {
+        const setValAndState = (nameAttr, stateProp, val) => {
             const el = this.form.querySelector(`[name="${nameAttr}"]`);
             if (el) el.value = val || '';
+            if (stateProp) this.state[stateProp] = val || ''; // Triggert Previews
         };
 
-        setVal('old_comic_id', payload.id);
-        setVal('comic_id', payload.id);
+        setValAndState('old_comic_id', null, payload.id);
+        setValAndState('comic_id', 'comicId', payload.id);
+
         const idInput = this.form.querySelector('[name="comic_id"]');
         if (idInput) {
-            idInput.readOnly = true; // Sperren beim Bearbeiten!
+            idInput.readOnly = true;
             sessionStorage.setItem('highlightEntityIdCancel', payload.id);
         }
 
-        setVal('type', payload.type || 'Comicseite');
-        setVal('name', payload.name);
-        setVal('chapter_id', payload.chapterId);
-        setVal('url_originalbild', payload.originalUrl);
-        setVal('url_originalsketch', payload.sketchUrl);
+        setValAndState('type', null, payload.type || 'Comicseite');
+        setValAndState('name', null, payload.name);
+        setValAndState('chapter_id', null, payload.chapterId);
+
+        setValAndState('url_originalbild', 'origUrl', payload.originalUrl);
+        setValAndState('url_originalsketch', 'sketchUrl', payload.sketchUrl);
 
         // WYSIWYG füllen
         if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
@@ -348,7 +369,6 @@ export class ComicEditor {
         const titleEl = document.getElementById('modal-title-comic');
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';
 
-        this.updateComicPreviews();
         this.modalManager.open('comic-modal');
     }
 
@@ -382,37 +402,27 @@ export class ComicEditor {
         });
     }
 
+    // ACHTUNG: Die Form-Service Magie
     async saveComic(btnElement) {
-        if (!this.form?.reportValidity()) return;
+        if (!this.form) return;
 
-        const originalText = btnElement.innerHTML;
-        btnElement.disabled = true;
-        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+        const customData = {};
+        if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
+            customData.transcript = window.$('#transcript').trumbowyg('html');
+        }
 
-        try {
-            const formData = new window.FormData(this.form);
+        const idInput = this.form.querySelector('[name="comic_id"]');
+        if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-            // Trumbowyg Inhalt explizit abgreifen (da es manchmal nicht ins <textarea> synct)
-            if (typeof window.$ !== 'undefined' && window.$('#transcript').length) {
-                formData.set('transcript', window.$('#transcript').trumbowyg('html'));
-            }
-
-            const idInput = this.form.querySelector('[name="comic_id"]');
-            if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
-
-            const result = await this.api.post('save_single_comic', formData);
-
-            if (result.success) {
-                window.isDirty = false;
-                this.notifications.show(result.message, 'success');
-                this.modalManager.close('comic-modal');
-                setTimeout(() => window.location.reload(), 1000);
-            } else {
-                this.notifications.show(result.error, 'error');
-            }
-        } finally {
-            btnElement.disabled = false;
-            btnElement.innerHTML = originalText;
+        const success = await this.formService.submit(
+            this.form,
+            btnElement,
+            'save_single_comic',
+            customData
+        );
+        if (success) {
+            this.modalManager.close('comic-modal');
+            setTimeout(() => window.location.reload(), 1000);
         }
     }
 
@@ -427,9 +437,7 @@ export class ComicEditor {
 
         const result = await this.api.post('delete_comic', formData);
         if (result.success) {
-            window.isDirty = false;
             this.notifications.show(result.message, 'success');
-            // Sofort ausblenden
             const row = btnElement.closest('tr');
             if (row) row.remove();
         } else {
@@ -446,7 +454,6 @@ export class ComicEditor {
 
         const result = await this.api.post('undo_comic', formData);
         if (result.success) {
-            window.isDirty = false;
             this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
@@ -458,7 +465,6 @@ export class ComicEditor {
         if (!confirm('Möchtest du den zuletzt gelöschten Comic wiederherstellen?')) return;
         const result = await this.api.post('restore_deleted_comic');
         if (result.success) {
-            window.isDirty = false;
             this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
