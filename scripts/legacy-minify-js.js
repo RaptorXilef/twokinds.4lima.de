@@ -1,21 +1,24 @@
-import { execSync } from 'node:child_process';
-import fs from 'node:fs';
+import { existsSync } from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+import { minify } from 'terser';
 
 /**
- * Hilfsfunktion: Findet alle JS-Dateien rekursiv in einem Verzeichnis
+ * Asynchrone Hilfsfunktion: Findet alle JS-Dateien rekursiv in einem Verzeichnis
  * @param {string} dir Das zu durchsuchende Verzeichnis
  * @param {string[]} fileList Array, in dem die Pfade gesammelt werden
- * @returns {string[]}
+ * @returns {Promise<string[]>}
  */
-function walkDir(dir, fileList = []) {
-    if (!fs.existsSync(dir)) return fileList;
+async function walkDir(dir, fileList = []) {
+    if (!existsSync(dir)) return fileList;
 
-    const files = fs.readdirSync(dir);
+    const files = await fs.readdir(dir);
     for (const file of files) {
         const filePath = path.join(dir, file);
-        if (fs.statSync(filePath).isDirectory()) {
-            walkDir(filePath, fileList); // Rekursiver Aufruf für Unterordner
+        const stat = await fs.stat(filePath);
+
+        if (stat.isDirectory()) {
+            await walkDir(filePath, fileList);
         } else if (filePath.endsWith('.js') && !filePath.endsWith('.min.js')) {
             fileList.push(filePath);
         }
@@ -39,49 +42,75 @@ const config = [
     },
 ];
 
-console.log('🚀 Starte JS-Minifizierung (Rekursiv, keine .min.js Endungen)...');
+/**
+ * Der eigentliche Minification-Worker
+ */
+async function processFile(file, entry) {
+    const relativePath = path.relative(entry.srcBase, file);
+    const outputFilePath = path.join(entry.destBase, relativePath);
+    const outputDir = path.dirname(outputFilePath);
 
-for (const entry of config) {
-    if (!fs.existsSync(entry.srcBase)) {
-        console.warn(`⚠️ Warnung: Quellverzeichnis ${entry.srcBase} nicht gefunden. Überspringe...`);
-        continue;
-    }
+    // Ziel-Ordner asynchron anlegen
+    await fs.mkdir(outputDir, { recursive: true });
 
-    // Hole alle Dateien aus dem Ordner und seinen Unterordnern
-    const allFiles = walkDir(entry.srcBase);
+    const mapName = `${path.basename(outputFilePath)}.map`;
 
-    for (const file of allFiles) {
-        // Ignoriere Dateien, die in den excluded Unterordner fallen (z.B. admin)
-        if (entry.excludeDir && file.startsWith(path.normalize(entry.excludeDir))) {
-            continue;
+    try {
+        // 1. Datei asynchron einlesen
+        const code = await fs.readFile(file, 'utf8');
+
+        // 2. Im RAM über Terser API minifizieren (Macht npx & execSync obsolet!)
+        const result = await minify(code, {
+            module: entry.isModule,
+            compress: true,
+            mangle: true,
+            sourceMap: {
+                filename: mapName,
+                url: mapName,
+            },
+        });
+
+        // 3. Datei und Source-Map asynchron schreiben
+        await fs.writeFile(outputFilePath, result.code);
+        if (result.map) {
+            await fs.writeFile(`${outputFilePath}.map`, result.map);
         }
 
-        // Berechne den relativen Pfad (z.B. "core/Api.js"), um die Struktur in "public" exakt nachzubilden
-        const relativePath = path.relative(entry.srcBase, file);
-        const outputFilePath = path.join(entry.destBase, relativePath);
-        const outputDir = path.dirname(outputFilePath);
-
-        // Erstelle den Ziel-Unterordner in "public", falls er noch nicht existiert
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
-        }
-
-        const mapName = `${path.basename(outputFilePath)}.map`;
-
-        console.log(`  - Minifiziere: ${file} -> ${outputFilePath}`);
-
-        try {
-            // Das --module Flag schützt unsere Imports/Exports in den Admin-Dateien
-            const moduleFlag = entry.isModule ? '--module' : '';
-
-            // Terser Aufruf (ohne Umbenennung zu .min.js!)
-            execSync(
-                `npx terser "${file}" ${moduleFlag} --compress --mangle --source-map "filename='${mapName}',url='${mapName}'" --output "${outputFilePath}"`
-            );
-        } catch (error) {
-            console.error(`  ❌ Fehler bei ${file}:`, error.message);
-        }
+        console.log(`  ✅ Minifiziert: ${relativePath}`);
+    } catch (error) {
+        console.error(`  ❌ Fehler bei ${file}:`, error);
     }
 }
 
-console.log('✅ Minifizierung erfolgreich abgeschlossen.');
+async function runBuilder() {
+    console.log('🚀 Starte JS-Minifizierung (Nativ, Asynchron & Parallel)...');
+    console.time('⏱️ Build-Dauer');
+
+    const tasks = []; // Hier sammeln wir alle Verarbeitungs-Aufträge
+
+    for (const entry of config) {
+        if (!existsSync(entry.srcBase)) {
+            console.warn(`⚠️ Warnung: Quellverzeichnis ${entry.srcBase} nicht gefunden.`);
+            continue;
+        }
+
+        const allFiles = await walkDir(entry.srcBase);
+
+        for (const file of allFiles) {
+            if (entry.excludeDir && file.startsWith(path.normalize(entry.excludeDir))) {
+                continue;
+            }
+            // Wir fügen den Vorgang als unerfülltes Promise in unsere Task-Liste ein
+            tasks.push(processFile(file, entry));
+        }
+    }
+
+    // MAGIE: Wir führen alle gesammelten Tasks GLEICHZEITIG aus!
+    await Promise.all(tasks);
+
+    console.log(`🎉 Erfolgreich ${tasks.length} Dateien verarbeitet.`);
+    console.timeEnd('⏱️ Build-Dauer');
+}
+
+// Start!
+runBuilder();
