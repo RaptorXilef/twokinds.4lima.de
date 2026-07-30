@@ -57,7 +57,7 @@ export class DataTable {
                     this.searchInput.value = s.query;
                 }
             }
-        } catch (e) {}
+        } catch (_err) {} // LINTER FIX: Unused variable
     }
 
     bindEvents() {

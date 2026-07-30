@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const f = JSON.parse(flash);
             notifications.show(f.msg, f.type);
-        } catch (e) {}
+        } catch (_err) {} // LINTER FIX: Unused variable
         sessionStorage.removeItem('admin_flash_msg');
     }
 

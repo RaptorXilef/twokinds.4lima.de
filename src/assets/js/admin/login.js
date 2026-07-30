@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.success) {
                     statusMsg.className = 'status-message status-green visible';
-                    statusMsg.innerHTML = '<i class="fa-solid fa-check"></i> ' + (res.message || 'Eingeloggt!');
+                    statusMsg.innerHTML = `<i class="fa-solid fa-check"></i> ${res.message || 'Eingeloggt!'}`;
 
                     setTimeout(() => {
                         // redirect vom Server auslesen und BaseUrl davor setzen
@@ -32,12 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 500);
                 } else {
                     statusMsg.className = 'status-message status-red visible';
-                    statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + res.error;
+                    statusMsg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${res.error}`;
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Anmelden';
                     document.getElementById('password').value = '';
                 }
-            } catch (error) {
+            } catch (_err) {
                 statusMsg.style.display = 'block';
                 statusMsg.className = 'status-message status-red visible';
                 statusMsg.textContent = 'Server-Verbindungsfehler.';

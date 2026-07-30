@@ -100,7 +100,7 @@ export class ReportManager {
                     this.statusSelect.value = s.status;
                 }
             }
-        } catch (e) {}
+        } catch (_err) {} // LINTER FIX: Unused variable
     }
 
     renderTable() {
