@@ -2,6 +2,12 @@
 
 
 
+## [6.4.9](https://github.com///compare/v6.4.8...v6.4.9) (2026-07-30)
+
+### 🏗️ Build System
+
+* **scripts:** massively optimize JS minification using Terser native API and parallel processing ([ec5aa17](https://github.com///commit/ec5aa17f441025882f6cb6c6a0d168787640cf07))
+
 ## [6.4.8](https://github.com///compare/v6.4.7...v6.4.8) (2026-07-30)
 
 ### ⚙️ Refactoring
