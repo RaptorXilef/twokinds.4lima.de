@@ -265,19 +265,17 @@ if (! empty($settings['google_analytics_id'])) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/langs/de.min.js"></script>
 
 <!-- Automatisch cache-gebustetes JS -->
-<script type="module"
-        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-        src="<?php echo $asset->url('assets/js/frontend/app.js'); ?>"></script>
-
 <?php if (! empty($settings['google_analytics_id'])) { ?>
     <!-- Google Analytics Config wird an das JavaScript übergeben -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     window.GA_MEASUREMENT_ID = "<?php echo \htmlspecialchars($settings['google_analytics_id']); ?>";
 
     </script>
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="<?php echo $asset->url('assets/js/cookie_consent.js'); ?>"></script>
 <?php } ?>
+
+<script type="module"
+        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+        src="<?php echo $asset->url('assets/js/frontend/app.js'); ?>"></script>
 
 </body>
 
