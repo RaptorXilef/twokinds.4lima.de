@@ -2,6 +2,13 @@
 
 
 
+## [6.4.13](https://github.com///compare/v6.4.12...v6.4.13) (2026-07-31)
+
+### 🐛 Bug Fixes
+
+* **admin:** change transcript diffing from line-by-line to word-by-word ([c455bf9](https://github.com///commit/c455bf9f3fdab2adac7db82b007cbeba1879f5df))
+* **admin:** enable close button functionality in report modal ([63de34a](https://github.com///commit/63de34a9dfbe217bd850ec4dd02cc78a1869cd25))
+
 ## [6.4.12](https://github.com///compare/v6.4.11...v6.4.12) (2026-07-31)
 
 ### 🐛 Bug Fixes
