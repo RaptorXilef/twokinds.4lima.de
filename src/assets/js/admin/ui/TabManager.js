@@ -42,6 +42,7 @@ export class TabManager {
                 if (!target) return;
 
                 sessionStorage.setItem('activeAdminTab', target);
+                window.history.replaceState(null, null, `#${target}`); // URL-Hash anpassen
 
                 document.querySelectorAll('.content-section').forEach((sec) => {
                     sec.classList.remove('active');
@@ -53,7 +54,7 @@ export class TabManager {
                 const targetSection = document.getElementById(target);
                 if (targetSection) {
                     targetSection.classList.add('active');
-                    this.loadTab(targetSection); // Lazy-Load anwerfen!
+                    this.loadTab(targetSection);
                 }
                 e.currentTarget.classList.add('active');
             });
@@ -61,7 +62,19 @@ export class TabManager {
     }
 
     restoreActiveTab() {
-        const activeTab = sessionStorage.getItem('activeAdminTab') ?? 'section-comics';
+        let activeTab = sessionStorage.getItem('activeAdminTab') ?? 'section-comics';
+
+        // Hash prüfen. Wenn wir per URL direkt auf einen Tab zugreifen, gewinnt der Hash!
+        if (window.location.hash) {
+            const hashTab = window.location.hash.substring(1);
+            if (
+                document.getElementById(hashTab) &&
+                document.querySelector(`#menu .tab-link[data-target="${hashTab}"]`)
+            ) {
+                activeTab = hashTab;
+                sessionStorage.setItem('activeAdminTab', activeTab);
+            }
+        }
 
         document.querySelectorAll('.content-section').forEach((sec) => {
             sec.classList.remove('active');

@@ -31,11 +31,11 @@ export class ComicEditor {
 
         // Auto-Save für das gesamte Formular aktivieren
         this.cacheKey = 'admin_comic_form_draft';
+
         if (this.form) {
             this.formService.enableAutoSave(this.form, this.cacheKey);
         }
 
-        // Geändert: createReactiveState aufrufen statt new ReactiveState
         this.state = createReactiveState(
             {
                 comicId: '',
@@ -45,7 +45,7 @@ export class ComicEditor {
             () => this.updateComicPreviews(),
             null,
             this.tracker
-        ); // Wir überlassen das Caching nun dem FormService
+        );
 
         if (this.section) {
             this.bindEvents();
@@ -54,21 +54,22 @@ export class ComicEditor {
     }
 
     bindEvents() {
-        // 1. "Neuen Comic" Button
-        const btnAdd = document.getElementById('btn-add-comic');
-        if (btnAdd) btnAdd.addEventListener('click', () => this.openAddModal());
-
-        // 2. Papierkorb Button
-        const btnRestoreDeleted = document.getElementById('btn-restore-deleted-comic');
-        if (btnRestoreDeleted)
-            btnRestoreDeleted.addEventListener('click', () => this.restoreDeleted());
-
-        // 3. Event Delegation für die Tabelle (Bearbeiten, Löschen, Undo)
+        // 1. Delegierte Events für alles, was per AJAX geladen wird
         this.section.addEventListener('click', (e) => {
+            const btnAdd = e.target.closest('#btn-add-comic');
+            const btnRestore = e.target.closest('#btn-restore-deleted-comic');
             const btnEdit = e.target.closest('.btn-edit-comic');
             const btnDelete = e.target.closest('.btn-delete-comic');
             const btnUndo = e.target.closest('.btn-undo-comic');
 
+            if (btnAdd) {
+                e.preventDefault();
+                this.openAddModal();
+            }
+            if (btnRestore) {
+                e.preventDefault();
+                this.restoreDeleted();
+            }
             if (btnEdit) {
                 e.preventDefault();
                 this.openEditModal(JSON.parse(btnEdit.dataset.payload));
@@ -83,7 +84,7 @@ export class ComicEditor {
             }
         });
 
-        // Globale Delegation für Modal-Buttons
+        // 2. Events für Formulare und Modals (die statisch vorliegen)
         document.addEventListener('click', (e) => {
             const btnSave = e.target.closest('#btn-save-comic');
             const btnCancel = e.target.closest('.btn-close-comic-modal');
@@ -273,7 +274,7 @@ export class ComicEditor {
                     'Es existiert ein ungespeicherter Entwurf. Möchtest du ihn wiederherstellen?'
                 )
             ) {
-                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
+                // Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('comic-modal');
                 this.formService.restoreDraft(this.form, this.cacheKey);
                 return; // Wenn ja, überspringe das Zurücksetzen der Felder
@@ -325,7 +326,7 @@ export class ComicEditor {
                     'Es gibt noch ungespeicherte Änderungen! Möchtest du den abgebrochenen Entwurf laden?'
                 )
             ) {
-                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
+                // Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('comic-modal');
                 this.formService.restoreDraft(this.form, this.cacheKey);
                 return;
@@ -386,6 +387,7 @@ export class ComicEditor {
     applyCharacterSelection(characterIds) {
         this.resetCharacterSelection();
         const hiddenSelect = document.getElementById('hidden-comic-chars');
+
         characterIds.forEach((charId) => {
             document
                 .querySelectorAll(`.char-selection-item[data-char-id="${charId}"]`)
@@ -438,6 +440,7 @@ export class ComicEditor {
     async undoComic(id) {
         if (!confirm(`Soll der Comic ${id} auf die VORHERIGE Version zurückgesetzt werden?`))
             return;
+
         const formData = new window.FormData();
         formData.append('comic_id', id);
         sessionStorage.setItem('highlightEntityId', id);
@@ -453,6 +456,7 @@ export class ComicEditor {
 
     async restoreDeleted() {
         if (!confirm('Möchtest du den zuletzt gelöschten Comic wiederherstellen?')) return;
+
         const result = await this.api.post('restore_deleted_comic');
         if (result.success) {
             this.notifications.show(result.message, 'success');

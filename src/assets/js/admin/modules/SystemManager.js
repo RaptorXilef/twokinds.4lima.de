@@ -24,12 +24,14 @@ export class SystemManager {
     }
 
     bindEvents() {
-        // --- 1. Tab-Steuerung (Benutzer vs. Rollen) ---
-        const tabBtns = this.section.querySelectorAll('.media-tab-btn');
-        const views = this.section.querySelectorAll('.media-view');
+        // PERFEKTE EVENT DELEGATION: Fängt alles ab, auch nach dem AJAX-Load!
+        this.section.addEventListener('click', (e) => {
+            // 1. Sub-Tabs umschalten (Benutzer / Rollen)
+            const tabBtn = e.target.closest('.media-tab-btn');
+            if (tabBtn) {
+                const tabBtns = this.section.querySelectorAll('.media-tab-btn');
+                const views = this.section.querySelectorAll('.media-view');
 
-        tabBtns.forEach((btn) => {
-            btn.addEventListener('click', () => {
                 tabBtns.forEach((b) => {
                     b.classList.remove('active');
                     b.classList.add('edit');
@@ -37,32 +39,30 @@ export class SystemManager {
                 views.forEach((v) => {
                     v.style.display = 'none';
                 });
-                btn.classList.remove('edit');
-                btn.classList.add('active');
 
-                const targetId = `media-view-${btn.dataset.type}`;
-                const targetView = document.getElementById(targetId);
+                tabBtn.classList.remove('edit');
+                tabBtn.classList.add('active');
+                const targetView = document.getElementById(`media-view-${tabBtn.dataset.type}`);
                 if (targetView) targetView.style.display = 'block';
-            });
-        });
+                return; // Stoppt weitere Überprüfungen für diesen Klick
+            }
 
-        // --- BENUTZER ---
-        const btnAddUser = document.getElementById('btn-add-user');
-        if (btnAddUser) btnAddUser.addEventListener('click', () => this.openUserModal());
-
-        // --- ROLLEN ---
-        const btnAddRole = document.getElementById('btn-add-role');
-        if (btnAddRole) btnAddRole.addEventListener('click', () => this.openRoleModal());
-
-        // --- TABELLEN KLICKS (Delegation) ---
-        this.section.addEventListener('click', (e) => {
-            // User-Tabelle
+            // 2. Button-Klicks für Benutzer & Rollen
+            const btnAddUser = e.target.closest('#btn-add-user');
+            const btnAddRole = e.target.closest('#btn-add-role');
             const btnEditUser = e.target.closest('.btn-edit-user');
             const btnDelUser = e.target.closest('.btn-delete-user');
-
-            // Rollen-Tabelle
             const btnEditRole = e.target.closest('.btn-edit-role');
             const btnDelRole = e.target.closest('.btn-delete-role');
+
+            if (btnAddUser) {
+                e.preventDefault();
+                this.openUserModal();
+            }
+            if (btnAddRole) {
+                e.preventDefault();
+                this.openRoleModal();
+            }
 
             if (btnEditUser) {
                 e.preventDefault();
@@ -82,7 +82,7 @@ export class SystemManager {
             }
         });
 
-        // Event Delegation für alle Modal-Buttons in Systemverwaltung
+        // 3. Events für Modals (Liegen statisch im HTML, keine Delegation nötig)
         document.addEventListener('click', (e) => {
             const btnSaveUser = e.target.closest('#btn-save-user');
             const btnSaveRole = e.target.closest('#btn-save-role');
@@ -226,8 +226,10 @@ export class SystemManager {
 
     async deleteUser(id, name) {
         if (!confirm(`Möchtest du den Benutzer '${name}' wirklich löschen?`)) return;
+
         const formData = new window.FormData();
         formData.append('user_id', id);
+
         const result = await this.api.post('delete_user', formData);
         if (result.success) {
             window.isDirty = false;
@@ -253,6 +255,7 @@ export class SystemManager {
             const el = document.getElementById(id);
             if (el) el[prop] = val;
         };
+
         const titleEl = document.getElementById('modal-title-role');
 
         if (payload) {
@@ -335,8 +338,10 @@ export class SystemManager {
             )
         )
             return;
+
         const formData = new window.FormData();
         formData.append('role_id', id);
+
         const result = await this.api.post('delete_role', formData);
         if (result.success) {
             window.isDirty = false;
