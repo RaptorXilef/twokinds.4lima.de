@@ -331,12 +331,12 @@ export class ReportManager {
 
         if (payload.type === 'transcript') {
             transcriptSec.style.display = 'block';
-            if (typeof window.Diff !== 'undefined' && window.Diff.diffLines) {
+            if (typeof window.Diff !== 'undefined' && window.Diff.diffWordsWithSpace) {
                 const oldTxt = this.convertHtmlToText(payload.original);
                 const newTxt = this.convertHtmlToText(payload.suggestion);
-                const diff = window.Diff.diffLines(oldTxt, newTxt, { newlineIsToken: true });
-
+                const diff = window.Diff.diffWordsWithSpace(oldTxt, newTxt);
                 const fragment = document.createDocumentFragment();
+
                 diff.forEach((part) => {
                     const node = document.createElement(
                         part.added ? 'ins' : part.removed ? 'del' : 'span'
