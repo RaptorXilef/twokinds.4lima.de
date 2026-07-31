@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
@@ -8,49 +10,65 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <h1 class="page-header">Impressum</h1>
         </header>
 
-        <div class="imprint-container" style="background: var(--content-bg); border: 1px solid var(--border-medium); border-radius: 8px; padding: 25px; margin-bottom: 30px;">
+        <div class="imprint-container"
+             style="background: var(--content-bg); border: 1px solid var(--border-medium); border-radius: 8px; padding: 25px; margin-bottom: 30px;">
             <h3 style="margin-top: 0; color: var(--text-color);">Verantwortlich für den Inhalt:</h3>
             <p style="margin-bottom: 20px;">Felix Maywald (Übersetzer & Webseitenbetreiber)<br>Berlin<br>Deutschland</p>
 
             <h3 style="color: var(--text-color);">Kontakt:</h3>
             <ul style="margin-bottom: 20px; list-style-type: none; padding: 0;">
-                <li><i class="fa-brands fa-github"></i> <a href="https://github.com/RaptorXilef/twokinds.4lima.de" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                <li><i class="fa-brands fa-patreon"></i> <a href="https://www.patreon.com/raptorxilef" target="_blank" rel="noopener noreferrer">Patreon</a></li>
+                <li><i class="fa-brands fa-github"></i>
+                    <a href="https://github.com/RaptorXilef/twokinds.4lima.de" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </li>
+                <li><i class="fa-brands fa-patreon"></i>
+                    <a href="https://www.patreon.com/raptorxilef" target="_blank" rel="noopener noreferrer">Patreon</a>
+                </li>
                 <li style="margin-top: 10px;">
                     <strong>E-Mail:</strong>
-                    <span id="email-placeholder">
-                        <button id="impressum-email-button" type="button" class="button" style="padding: 4px 10px; font-size: 0.9em;"><i class="fa-solid fa-eye"></i> Anzeigen</button>
-                    </span>
+                    <button type="button"
+                            id="impressum-email-button"
+                            class="button"
+                            data-user="<?php echo \htmlspecialchars($settings['email_user'] ?? 'MCRaptorDragon'); ?>"
+                            data-domain="<?php echo \htmlspecialchars($settings['email_domain'] ?? 'gmail.com'); ?>">
+                        E-Mail Adresse anzeigen
+                    </button>
+                    <span id="email-placeholder"></span>
                 </li>
             </ul>
 
             <h3 style="color: var(--text-color);">Besondere Danksagung:</h3>
-            <p style="margin-bottom: 20px;">Ein herzlicher Dank gilt Viktor Matthys und Cornelius Lehners. Ihre Arbeit an der ursprünglichen Seite (www.twokinds.de) war die Inspiration für mein heutiges Projekt. Des Weiteren möchte ich mich bei Thomas Fischbach aufrichtig bedanken, dass er uns allen dieses wunderschöne Werk kostenfrei zur Verfügung stellt.</p>
+            <p style="margin-bottom: 20px;">Ein herzlicher Dank gilt Viktor Matthys und Cornelius Lehners. Ihre Arbeit
+                an der ursprünglichen Seite (www.twokinds.de) war die Inspiration für mein heutiges Projekt. Des
+                Weiteren möchte ich mich bei Thomas Fischbach aufrichtig bedanken, dass er uns allen dieses wunderschöne
+                Werk kostenfrei zur Verfügung stellt.</p>
 
-            <p style="margin-bottom: 20px;">Ein weiterer besonderer Dank geht an den Webhoster <a href="https://www.lima-city.de/" target="_blank" rel="noopener noreferrer">Lima City</a>. Sie stellen mir den Webspace für dieses Projekt kostenlos zur Verfügung, solange die Übersetzung weitergeführt wird. Dies ermöglicht es mir, die Webseite komplett ohne Werbung und finanzielle Hürden anzubieten. Zudem zeichnet sich Lima City durch einen sehr kompetenten und blitzschnell reagierenden Support aus. Vielen Dank!</p>
+            <p style="margin-bottom: 20px;">Ein weiterer besonderer Dank geht an den Webhoster
+                <a href="https://www.lima-city.de/" target="_blank" rel="noopener noreferrer">Lima City</a>. Sie stellen
+                mir den Webspace für dieses Projekt kostenlos zur Verfügung, solange die Übersetzung weitergeführt wird.
+                Dies ermöglicht es mir, die Webseite komplett ohne Werbung und finanzielle Hürden anzubieten. Zudem
+                zeichnet sich Lima City durch einen sehr kompetenten und blitzschnell reagierenden Support aus. Vielen
+                Dank!</p>
 
             <h3 style="color: var(--text-color);">Verwendungsrechte (Copyright & Lizenz):</h3>
-            <p>Sämtliche (nicht anders gekennzeichnete) auf dieser Seite zur Verfügung gestellten Comics oder Bilder wurden von Tom Fischbach gezeichnet und unter der <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 US Lizenz</a> veröffentlicht. Sie dürfen Toms (und meine) Arbeiten teilen und anpassen, solange Sie dies nicht-kommerziell tun, die Änderungen unter gleichen Bedingungen weitergeben und Tom Fischbach als Urheber und mich (Felix Maywald/RaptorXilef) als Übersetzer nennen.</p>
+            <p>Sämtliche (nicht anders gekennzeichnete) auf dieser Seite zur Verfügung gestellten Comics oder Bilder
+                wurden von Tom Fischbach gezeichnet und unter der
+                <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 US Lizenz</a>
+                veröffentlicht. Sie dürfen Toms (und meine) Arbeiten teilen und anpassen, solange Sie dies
+                nicht-kommerziell tun, die Änderungen unter gleichen Bedingungen weitergeben und Tom Fischbach als
+                Urheber und mich (Felix Maywald/RaptorXilef) als Übersetzer nennen.</p>
             <p style="margin-bottom: 20px;">
-                Der Quellcode dieser Webseite steht bis Version 5.0.0 unter der <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0 Lizenz</a>, ab Version 6.0.0 unter einer "Proprietären Lizenz" und kann auf <a href="https://github.com/RaptorXilef/twokinds.4lima.de" target="_blank">GitHub</a> eingesehen werden.
+                Der Quellcode dieser Webseite steht bis Version 5.0.0 unter der
+                <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0 Lizenz</a>,
+                ab Version 6.0.0 unter einer "Proprietären Lizenz" und kann auf
+                <a href="https://github.com/RaptorXilef/twokinds.4lima.de" target="_blank">GitHub</a> eingesehen werden.
             </p>
 
             <h3 style="color: var(--text-color);">Haftungsausschluss:</h3>
-            <p style="margin-bottom: 0;">Ich weise Sie darauf hin, dass ich keinen Einfluss auf die Inhalte externer Seiten habe, die hier verlinkt sind. Jegliche Haftung für Schäden durch die Nutzung dieser Seite wird abgelehnt. Eine permanente Verfügbarkeit der Seite kann nicht garantiert werden.</p>
+            <p style="margin-bottom: 0;">Ich weise Sie darauf hin, dass ich keinen Einfluss auf die Inhalte externer
+                Seiten habe, die hier verlinkt sind. Jegliche Haftung für Schäden durch die Nutzung dieser Seite wird
+                abgelehnt. Eine permanente Verfügbarkeit der Seite kann nicht garantiert werden.</p>
         </div>
     </article>
 </main>
 
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-document.addEventListener('DOMContentLoaded', () => {
-    const emailButton = document.getElementById('impressum-email-button');
-    if (emailButton) {
-        emailButton.addEventListener('click', () => {
-            const m = 'MCRaptorDragon';
-            const d = 'gmail.com';
-            document.getElementById('email-placeholder').innerHTML = `<a href="mailto:${m}@${d}" style="font-weight: bold;">${m}@${d}</a>`;
-        });
-    }
-});
-</script>
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

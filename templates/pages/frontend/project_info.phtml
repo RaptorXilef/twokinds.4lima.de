@@ -170,25 +170,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
     </article>
 </main>
 
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    document.addEventListener('DOMContentLoaded', () => {
-        const triggers = document.querySelectorAll('.accordion-trigger');
-        triggers.forEach(trigger => {
-            trigger.addEventListener('click', () => {
-                const content = trigger.nextElementSibling;
-                const icon = trigger.querySelector('.transition-icon');
-                if (content.style.display === 'none' || content.style.display === '') {
-                    content.style.display = 'block';
-                    icon.style.transform = 'rotate(180deg)';
-                    trigger.style.backgroundColor = 'var(--button-hover-bg)';
-                } else {
-                    content.style.display = 'none';
-                    icon.style.transform = 'rotate(0deg)';
-                    trigger.style.backgroundColor = 'var(--table-row-even)';
-                }
-            });
-        });
-    });
-</script>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
