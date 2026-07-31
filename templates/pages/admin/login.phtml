@@ -99,9 +99,6 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <script type="module"
             nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
             src="<?php echo $baseUrl; ?>/assets/js/admin/login.js"></script>
-
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="<?php echo $asset->url('assets/js/common.js'); ?>"></script>
 </body>
 
 </html>

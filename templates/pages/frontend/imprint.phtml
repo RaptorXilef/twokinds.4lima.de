@@ -28,7 +28,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <button type="button"
                             id="impressum-email-button"
                             class="button"
-                            data-user="<?php echo \htmlspecialchars($settings['email_user'] ?? 'MCRaptorDragon'); ?>"
+                            data-user="<?php echo \htmlspecialchars($settings['email_user'] ?? ''); ?>"
                             data-domain="<?php echo \htmlspecialchars($settings['email_domain'] ?? 'gmail.com'); ?>">
                         E-Mail Adresse anzeigen
                     </button>

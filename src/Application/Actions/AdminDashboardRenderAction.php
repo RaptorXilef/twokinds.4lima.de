@@ -84,6 +84,7 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
                 'existingChapters' => $existingChapters,
                 'dbChapters'       => $dbChapters,
                 'roles'            => $roles,
+                'permissionsTree'  => PermissionRegistry::getStructure(),
                 'canManageUsers'   => $canManageUsers,
                 'canManageRoles'   => $canManageRoles,
                 'currentUserId'    => $this->sessionManager->getUserId(),

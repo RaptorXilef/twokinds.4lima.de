@@ -47,4 +47,8 @@ return [
 
     // --- TRACKING & ANALYTICS ---
     'google_analytics_id' => 'G-7VE3ZEWZQ7', // Leer lassen (''), um Analytics und das Banner komplett zu deaktivieren
+
+    // --- IMPRESSUM SPAM-SCHUTZ ---
+    'email_user'   => '',
+    'email_domain' => '',
 ];

@@ -23,6 +23,9 @@ const ALWAYS_IGNORE_DIRS = [
     '.old-5.0.0-alpha.23',
 ];
 
+// Schließt ganz gezielt spezifische Pfade aus, lässt andere aber intakt
+const ALWAYS_IGNORE_PATHS = ['public/assets'];
+
 const ALWAYS_IGNORE_FILES = [
     '.lock',
     '-lock.json',
@@ -220,10 +223,19 @@ function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = 
         const stat = fs.statSync(fullPath);
 
         if (stat.isDirectory()) {
+            // Pfad für Windows/Mac/Linux plattformübergreifend normalisieren (\ zu /)
+            const normalizedRelPath = relPath.replace(/\\/g, '/').toLowerCase();
+
             const isExcluded =
+                // 1. Check: Reine Ordnernamen (wie bisher)
                 ALWAYS_IGNORE_DIRS.some(
                     (d) => file.toLowerCase().includes(d.toLowerCase()) || file.startsWith('.')
-                ) || exclDirs.some((d) => relPath.toLowerCase().includes(d.toLowerCase()));
+                ) ||
+                // 2. NEU Check: Komplette Pfade (z.B. public/assets)
+                ALWAYS_IGNORE_PATHS.some((p) => normalizedRelPath.includes(p.toLowerCase())) ||
+                // 3. Check: Config-spezifische Ausschlüsse
+                exclDirs.some((d) => normalizedRelPath.includes(d.toLowerCase()));
+
             if (!isExcluded) {
                 getFiles(fullPath, filter, exclDirs, exclFiles, includeRoot, currentFiles);
             }
