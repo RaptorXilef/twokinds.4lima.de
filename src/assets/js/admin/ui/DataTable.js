@@ -92,8 +92,17 @@ export class DataTable {
             return btn;
         };
 
+        // Erste Seite (<<)
         this.paginationContainer.appendChild(
             createBtn('&laquo;', this.currentPage === 1, false, () => {
+                this.currentPage = 1;
+                this.renderTable();
+            })
+        );
+
+        // Vorherige Seite (<)
+        this.paginationContainer.appendChild(
+            createBtn('&lsaquo;', this.currentPage === 1, false, () => {
                 this.currentPage--;
                 this.renderTable();
             })
@@ -109,8 +118,9 @@ export class DataTable {
                     this.renderTable();
                 })
             );
-            if (startPage > 2)
+            if (startPage > 2) {
                 this.paginationContainer.appendChild(createBtn('...', true, false, null));
+            }
         }
 
         for (let i = startPage; i <= endPage; i++) {
@@ -123,8 +133,9 @@ export class DataTable {
         }
 
         if (endPage < totalPages) {
-            if (endPage < totalPages - 1)
+            if (endPage < totalPages - 1) {
                 this.paginationContainer.appendChild(createBtn('...', true, false, null));
+            }
             this.paginationContainer.appendChild(
                 createBtn(totalPages.toString(), false, false, () => {
                     this.currentPage = totalPages;
@@ -133,12 +144,57 @@ export class DataTable {
             );
         }
 
+        // Nächste Seite (>)
         this.paginationContainer.appendChild(
-            createBtn('&raquo;', this.currentPage === totalPages, false, () => {
+            createBtn('&rsaquo;', this.currentPage === totalPages, false, () => {
                 this.currentPage++;
                 this.renderTable();
             })
         );
+
+        // Letzte Seite (>>)
+        this.paginationContainer.appendChild(
+            createBtn('&raquo;', this.currentPage === totalPages, false, () => {
+                this.currentPage = totalPages;
+                this.renderTable();
+            })
+        );
+
+        // Direktauswahl per Eingabefeld
+        const jumpWrapper = document.createElement('div');
+        jumpWrapper.style.display = 'flex';
+        jumpWrapper.style.alignItems = 'center';
+        jumpWrapper.style.marginLeft = '15px';
+        jumpWrapper.style.gap = '8px';
+
+        const jumpLabel = document.createElement('span');
+        jumpLabel.textContent = 'Seite:';
+        jumpLabel.style.fontSize = '0.9em';
+        jumpLabel.style.color = 'var(--text-color-faded)';
+
+        const jumpInput = document.createElement('input');
+        jumpInput.type = 'number';
+        jumpInput.min = 1;
+        jumpInput.max = totalPages;
+        jumpInput.value = this.currentPage;
+        jumpInput.style.width = '60px';
+        jumpInput.style.padding = '4px 8px';
+        jumpInput.style.border = '1px solid var(--border-medium)';
+        jumpInput.style.borderRadius = '4px';
+        jumpInput.style.background = 'var(--content-bg)';
+        jumpInput.style.color = 'var(--text-color)';
+
+        jumpInput.addEventListener('change', (e) => {
+            let page = parseInt(e.target.value, 10);
+            if (isNaN(page) || page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            this.currentPage = page;
+            this.renderTable();
+        });
+
+        jumpWrapper.appendChild(jumpLabel);
+        jumpWrapper.appendChild(jumpInput);
+        this.paginationContainer.appendChild(jumpWrapper);
     }
 
     renderTable() {
