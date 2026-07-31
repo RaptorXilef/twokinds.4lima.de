@@ -1,6 +1,7 @@
 import { ThemeManager } from '../shared/ui/ThemeManager.js';
 import { FrontendApi } from './core/FrontendApi.js';
 import { ArchiveManager } from './modules/ArchiveManager.js';
+import { AuthForms } from './modules/AuthForms.js';
 import { AuthManager } from './modules/AuthManager.js';
 import { BookmarksManager } from './modules/BookmarksManager.js';
 import { ComicReader } from './modules/ComicReader.js';
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new CookieConsentManager();
     new ArchiveManager();
     new BookmarksManager(api);
+    new AuthForms(api);
 
     console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren.');
 });
