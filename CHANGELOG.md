@@ -2,6 +2,12 @@
 
 
 
+## [6.5.0](https://github.com///compare/v6.4.13...v6.5.0) (2026-07-31)
+
+### 🚀 Features
+
+* **admin:** enhance table pagination with jump-to input and fast-travel buttons ([4c4bc26](https://github.com///commit/4c4bc2621c9cce836f6a50df5fda40f7cf9ecc5a))
+
 ## [6.4.13](https://github.com///compare/v6.4.12...v6.4.13) (2026-07-31)
 
 ### 🐛 Bug Fixes
