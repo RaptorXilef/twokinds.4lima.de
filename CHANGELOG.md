@@ -2,6 +2,14 @@
 
 
 
+## [6.4.11](https://github.com///compare/v6.4.10...v6.4.11) (2026-07-31)
+
+### ⚙️ Refactoring
+
+* **frontend/js:** centralize auth forms logic into ES6 AuthForms module ([7307d8c](https://github.com///commit/7307d8ccaff3bf5f2c5d52c061f54ffa993fcc28))
+* **frontend/js:** extract bookmarks inline logic to ES6 BookmarksManager ([9ca03ac](https://github.com///commit/9ca03acd1316ddba0c382a297ed76edc6f62eed6))
+* **frontend/js:** modularize profile management and character filtering ([8f7d0d1](https://github.com///commit/8f7d0d1e59ade2e0262e7dc6ef38a5a41b2867a5))
+
 ## [6.4.10](https://github.com///compare/v6.4.9...v6.4.10) (2026-07-30)
 
 ### ⚙️ Refactoring
