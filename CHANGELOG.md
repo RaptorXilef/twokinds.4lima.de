@@ -2,6 +2,18 @@
 
 
 
+## [6.4.12](https://github.com///compare/v6.4.11...v6.4.12) (2026-07-31)
+
+### 🐛 Bug Fixes
+
+* **admin/js:** resolve empty tabs issue and bind dynamic AJAX events correctly ([634d8e3](https://github.com///commit/634d8e31d0e05df1794ec9d5eeb0a9afc11a0ae0))
+* **admin:** remove redundant section tags hiding AJAX tab content ([33d53dd](https://github.com///commit/33d53dd80f94ab6816058c33516e61c5043bd2c3))
+* **admin:** resolve ajax 500 error and prepare email protection config ([7c3c591](https://github.com///commit/7c3c59141245adc40d8a0ead2382760939319152))
+
+### ⚙️ Refactoring
+
+* **frontend/js:** eliminate final inline scripts for accordion and email protection ([14263a2](https://github.com///commit/14263a27db66fe9d0d97ddd246656e7162864439))
+
 ## [6.4.11](https://github.com///compare/v6.4.10...v6.4.11) (2026-07-31)
 
 ### ⚙️ Refactoring
