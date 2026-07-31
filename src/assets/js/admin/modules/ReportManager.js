@@ -197,6 +197,13 @@ export class ReportManager {
             const btnSpam = e.target.closest('#btn-rep-spam');
             const btnToggleDebug = e.target.closest('#btn-toggle-debug-view');
             const btnTransfer = e.target.closest('#btn-transfer-transcript');
+            const btnClose = e.target.closest('.btn-close-report-modal');
+
+            // Close
+            if (btnClose) {
+                e.preventDefault();
+                this.modalManager.close('report-detail-modal');
+            }
 
             if (btnResolve && this.currentReportPayload) this.resolveReport(btnResolve);
             if (btnSpam && this.currentReportPayload) this.markAsSpam(btnSpam);
