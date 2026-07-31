@@ -134,126 +134,22 @@ $headerText     = $isFilteredView ? 'Charaktere auf dieser Seite' : 'Alle Charak
                          data-subspecies="<?php echo \htmlspecialchars($character->subspecies ?? ''); ?>"
                          data-languages="<?php echo \htmlspecialchars($character->languages ?? ''); ?>">
                         <a href = "<?php echo $link; ?>">
-<div class = "character-avatar-container">
-<img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
-</div>
-<p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
+                    <div class = "character-avatar-container">
+                    <img src = "<?php echo \htmlspecialchars($picUrl); ?>" alt = "<?php echo \htmlspecialchars($character->name); ?>" loading = "lazy">
+                    </div>
+                    <p class = "character-name"><?php echo \htmlspecialchars($character->name); ?></p>
 
-<div class = "character-tags">
-<?php if (isset($tagsMap[$character->id->value])) {
-    foreach ($tagsMap[$character->id->value] as $tag) { ?>
-<span class = "char-tag"><?php echo \htmlspecialchars($tag); ?></span>
-<?php }
-    } ?>
-</div>
-</a>
+                    <div class = "character-tags">
+                    <?php if (isset($tagsMap[$character->id->value])) {
+                        foreach ($tagsMap[$character->id->value] as $tag) { ?>
+                    <span class = "char-tag"><?php echo \htmlspecialchars($tag); ?></span>
+                    <?php }
+                        } ?>
+                    </div>
+                    </a>
                     </div>
                 <?php } ?>
             </div>
         </div>
     </div>
 </div>
-
-<script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-// Verhindert mehrfaches Anhängen des Events, falls das Modul öfter geladen würde
-if (!window.charToggleInitialized) {
-    document.addEventListener('DOMContentLoaded', function() {
-        // 1. Ansicht Umschalten
-        const wrapper = document.getElementById('char-display-wrapper');
-        const toggleBtn = document.getElementById('toggle-char-view');
-        const toggleText = document.getElementById('toggle-view-text');
-
-        if (toggleBtn && wrapper) {
-            toggleBtn.addEventListener('click', function() {
-                const currentView = wrapper.getAttribute('data-active-view');
-                const newView = currentView === 'tags' ? 'grouped' : 'tags';
-                wrapper.setAttribute('data-active-view', newView);
-
-                if (newView === 'tags') {
-                    toggleText.textContent = 'Gruppierte Ansicht';
-                    toggleBtn.querySelector('i').className = 'fas fa-th-list';
-                } else {
-                    toggleText.textContent = 'Alphabetische Ansicht';
-                    toggleBtn.querySelector('i').className = 'fas fa-font';
-                }
-            });
-        }
-
-        // 2. Filter-Logik (Vanilla JS, pfeilschnell)
-        const searchInput = document.getElementById('char-filter-search');
-        const emptyMsg = document.getElementById('char-filter-empty-msg');
-
-        if (searchInput) {
-            const filters = {
-                search: searchInput,
-                gender: document.getElementById('char-filter-gender'),
-                age: document.getElementById('char-filter-age'),
-                species: document.getElementById('char-filter-species'),
-                subspecies: document.getElementById('char-filter-subspecies'),
-                rank: document.getElementById('char-filter-rank'),
-                languages: document.getElementById('char-filter-languages')
-            };
-
-            const btnReset = document.getElementById('char-filter-reset');
-
-            function applyFilters() {
-                const sVal = filters.search.value.toLowerCase().trim();
-                const gVal = filters.gender.value;
-                const aVal = filters.age.value;
-                const spVal = filters.species.value;
-                const subVal = filters.subspecies.value;
-                const rVal = filters.rank.value;
-                const lVal = filters.languages.value;
-
-                let globalMatchCount = 0;
-
-                // Alle Charakter-Kacheln durchlaufen
-                document.querySelectorAll('.character-item').forEach(item => {
-                    let isMatch = true;
-
-                    if (sVal && !item.dataset.search.includes(sVal)) isMatch = false;
-                    if (gVal && item.dataset.gender !== gVal) isMatch = false;
-                    if (aVal && item.dataset.age !== aVal) isMatch = false;
-                    if (spVal && item.dataset.species !== spVal) isMatch = false;
-                    if (subVal && item.dataset.subspecies !== subVal) isMatch = false;
-
-                    // Bei comma-separated Feldern prüfen wir, ob das Wort vorkommt
-                    if (rVal && !item.dataset.rank.includes(rVal)) isMatch = false;
-                    if (lVal && !item.dataset.languages.includes(lVal)) isMatch = false;
-
-                    item.style.display = isMatch ? '' : 'none';
-                    if (isMatch) globalMatchCount++;
-                });
-
-                // Leere Gruppen (Überschriften) ausblenden
-                document.querySelectorAll('.character-group').forEach(group => {
-                    const items = Array.from(group.querySelectorAll('.character-item'));
-                    const hasVisible = items.some(el => el.style.display !== 'none');
-                    group.style.display = hasVisible ? '' : 'none';
-                });
-
-                // Nachricht anzeigen, wenn nichts gefunden wurde
-                if (emptyMsg) {
-                    emptyMsg.style.display = globalMatchCount === 0 ? 'block' : 'none';
-                }
-            }
-
-            // Event-Listener anhängen
-            Object.values(filters).forEach(input => {
-                if (input) input.addEventListener('input', applyFilters);
-            });
-
-            if (btnReset) {
-                btnReset.addEventListener('click', () => {
-                    Object.values(filters).forEach(input => {
-                        if (input) input.value = '';
-                    });
-                    applyFilters();
-                });
-            }
-        }
-    });
-    window.charToggleInitialized = true;
-}
-
-</script>
