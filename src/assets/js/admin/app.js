@@ -34,12 +34,16 @@ document.addEventListener('DOMContentLoaded', () => {
     new ErrorHandlerService(notifications); // Fängt globale Fehler ab
 
     // PERF: Fange Nachrichten auf, die den "blitzschnellen Reload" überlebt haben!
+    // Flash-Messages prüfen und absichern
     const flash = sessionStorage.getItem('admin_flash_msg');
     if (flash) {
         try {
             const f = JSON.parse(flash);
             notifications.show(f.msg, f.type);
-        } catch (_err) {} // LINTER FIX: Unused variable
+        } catch (err) {
+            // LINTER FIX: Unused variable
+            console.warn('[AdminApp] Flash-Message konnte nicht geparst werden:', err);
+        }
         sessionStorage.removeItem('admin_flash_msg');
     }
 
@@ -49,52 +53,89 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalManager = new ModalManager();
 
     const globalUI = new GlobalUI(tracker);
-    new TabManager(api); // API in den TabManager geben!
 
-    // ThemeManager starten
-    new ThemeManager();
+    try {
+        new TabManager(api);
+        new ThemeManager();
+    } catch (err) {
+        console.error('[AdminApp] Fehler bei der Core-UI Initialisierung:', err);
+    }
 
-    // Globale Editoren (100% Event Delegation -> Extrem robust, können sofort gestartet werden)
-    const comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
-    const reportManager = new ReportManager(api, modalManager, comicEditor, notifications);
-    new SystemManager(api, modalManager, notifications);
-    new ChapterEditor(api, modalManager, notifications, formService);
-    new CharacterEditor(api, modalManager, notifications, formService, tracker);
+    // Variablen für Editoren definieren, damit sie später im tabLoaded-Scope erreichbar sind
+    let comicEditor = null;
+    let reportManager = null;
+
+    // 2. Main Editors (Safeguard um die globale Initialisierung)
+    try {
+        comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
+        reportManager = new ReportManager(api, modalManager, comicEditor, notifications);
+        new SystemManager(api, modalManager, notifications);
+        new ChapterEditor(api, modalManager, notifications, formService);
+        new CharacterEditor(api, modalManager, notifications, formService, tracker);
+    } catch (err) {
+        console.error('[AdminApp] Kritischer Fehler bei der globalen Modul-Initialisierung:', err);
+        notifications.show(
+            'Ein Basis-Modul konnte nicht geladen werden. Funktionen könnten eingeschränkt sein.',
+            'error'
+        );
+    }
 
     // Tab-spezifische Instanz (Sortable.js braucht das DOM beim Laden)
     let groupEditor = null;
 
+    // 3. TabLoaded Event (Feuert, wenn AJAX HTML in eine Section eingefügt hat)
     document.addEventListener('tabLoaded', async (e) => {
         const tab = e.detail.tab;
+        const container = document.getElementById(tab);
 
-        if (tab === 'section-comics') {
-            new DataTable({
-                tableBodySelector: '.comic-editor-table tbody',
-                searchInputId: 'comic-search',
-                perPageSelectId: 'comic-per-page',
-                paginationContainerId: 'comic-pagination',
-            });
-        }
-        if (tab === 'section-reports') {
-            reportManager.initTableLogic();
-        }
-        if (tab === 'section-groups' && !groupEditor) {
-            const { GroupEditor } = await import('./modules/GroupEditor.js');
-            groupEditor = new GroupEditor(api, notifications, tracker);
-        }
-        if (tab === 'section-upload') {
-            const { MassUploadManager } = await import('./modules/MassUploadManager.js');
-            new MassUploadManager(api, notifications, tracker);
-        }
-        if (tab === 'section-media') {
-            const { MediaGallery } = await import('./modules/MediaGallery.js');
-            new MediaGallery(api, modalManager, notifications, tracker);
+        // SCHUTZ 1: Existiert der Container im DOM überhaupt noch?
+        if (!container) {
+            console.warn(
+                `[AdminApp] DOM-Element für Tab '${tab}' nicht gefunden! Event abgebrochen.`
+            );
+            return;
         }
 
-        setTimeout(() => globalUI.handleRowHighlighting(), 100);
+        // SCHUTZ 2: Gesamte Modul-Initialisierung absichern
+        try {
+            if (tab === 'section-comics') {
+                new DataTable({
+                    tableBodySelector: '.comic-editor-table tbody',
+                    searchInputId: 'comic-search',
+                    perPageSelectId: 'comic-per-page',
+                    paginationContainerId: 'comic-pagination',
+                });
+            }
+            if (tab === 'section-reports' && reportManager) {
+                reportManager.initTableLogic();
+            }
+            if (tab === 'section-groups') {
+                if (!groupEditor) {
+                    const { GroupEditor } = await import('./modules/GroupEditor.js');
+                    groupEditor = new GroupEditor(api, notifications, tracker);
+                }
+            }
+            if (tab === 'section-upload') {
+                const { MassUploadManager } = await import('./modules/MassUploadManager.js');
+                new MassUploadManager(api, notifications, tracker);
+            }
+            if (tab === 'section-media') {
+                const { MediaGallery } = await import('./modules/MediaGallery.js');
+                new MediaGallery(api, modalManager, notifications, tracker);
+            }
+
+            // Highlighting nach dem Rendern erneut triggern
+            setTimeout(() => globalUI.handleRowHighlighting(), 100);
+        } catch (err) {
+            console.error(`[AdminApp] Modul für Tab '${tab}' konnte nicht geladen werden:`, err);
+            notifications.show(
+                'Ein Modul konnte nicht geladen werden. Prüfe deine Verbindung und lade die Seite neu.',
+                'error'
+            );
+        }
     });
 
-    // 4. Lazy Loading für schwere, isolierte Module
+    // 4. Lazy Loading für isolierte Hintergrund-Module
     // Diese werden erst heruntergeladen und ausgeführt, NACHDEM das DOM voll da ist
     // und der Browser gerade "Zeit" hat (Idle). Das nennt sich "Safe Lazy-Loading".
     requestIdleCallback(
@@ -108,19 +149,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 new CropperManager(api, notifications);
                 new NewsletterManager(api, notifications);
                 console.info('[AdminApp] Lazy-Load Module nachträglich geladen.');
-            } catch (e) {
-                console.error('[AdminApp] Fehler beim Lazy Loading:', e);
+            } catch (err) {
+                console.error(
+                    '[AdminApp] Fehler beim verzögerten Laden der Hintergrund-Module:',
+                    err
+                );
             }
         },
         { timeout: 2000 }
     ); // Zwingt den Browser es spätestens nach 2s zu laden
 
     // 5. System Logout
-    document.getElementById('admin-logout-btn')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await api.post('admin_logout');
-        window.location.reload();
-    });
+    const btnLogout = document.getElementById('admin-logout-btn');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await api.post('admin_logout');
+                window.location.reload();
+            } catch (err) {
+                console.error('[AdminApp] Logout fehlgeschlagen:', err);
+                notifications.show('Abmeldung fehlgeschlagen. Server nicht erreichbar.', 'error');
+            }
+        });
+    }
 
-    console.info('[AdminApp] 100% AJAX Architektur erfolgreich hochgefahren.');
+    console.info('[AdminApp] 100% AJAX Architektur erfolgreich hochgefahren (Maximal gehärtet).');
 });
