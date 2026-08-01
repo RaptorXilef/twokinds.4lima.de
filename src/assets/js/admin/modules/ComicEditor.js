@@ -329,6 +329,7 @@ export class ComicEditor {
                 // Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('comic-modal');
                 this.formService.restoreDraft(this.form, this.cacheKey);
+                if (this.tracker) this.tracker.markDirty();
                 return;
             } else {
                 this.formService.clearDraft(this.cacheKey);
@@ -370,6 +371,7 @@ export class ComicEditor {
         if (titleEl) titleEl.textContent = 'Comic bearbeiten';
 
         this.modalManager.open('comic-modal');
+        if (this.tracker) this.tracker.markClean();
     }
 
     resetCharacterSelection() {

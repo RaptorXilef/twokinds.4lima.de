@@ -1,3 +1,5 @@
+import { debounce } from '../utils/Utils.js';
+
 /**
  * @typedef {import('./Api.js').Api} Api
  * @typedef {import('./NotificationService.js').NotificationService} NotificationService
@@ -19,7 +21,12 @@ export class FormService {
     // Die Methoden für den Auto-Save:
     enableAutoSave(form, cacheKey) {
         if (!form) return;
-        const saveToLocal = () => {
+
+        // DEBOUNCE WRAPPER (500ms)
+        const saveToLocal = debounce(() => {
+            // FIX: Verhindert, dass das programmatische Befüllen einen Geister-Entwurf speichert
+            if (this.tracker && !this.tracker.isDirty) return;
+
             const formData = new window.FormData(form);
             const data = {};
 
@@ -39,7 +46,7 @@ export class FormService {
                     });
             }
             localStorage.setItem(cacheKey, JSON.stringify(data));
-        };
+        }, 500);
 
         form.addEventListener('input', saveToLocal);
         form.addEventListener('change', saveToLocal);

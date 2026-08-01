@@ -313,6 +313,7 @@ export class CharacterEditor {
                 // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('char-modal');
                 this.formService.restoreDraft(this.form, this.cacheKey);
+                if (this.tracker) this.tracker.markDirty();
                 return;
             } else {
                 this.formService.clearDraft(this.cacheKey);
@@ -349,6 +350,7 @@ export class CharacterEditor {
         sessionStorage.setItem('highlightEntityIdCancel', 'new');
 
         this.modalManager.open('char-modal');
+        if (this.tracker) this.tracker.markClean();
     }
 
     openEditModal(payload) {
