@@ -2,6 +2,16 @@
 
 
 
+## [6.5.3](https://github.com///compare/v6.5.2...v6.5.3) (2026-08-01)
+
+### 🐛 Bug Fixes
+
+* **frontend:** harden local storage access and optimize filter performance ([661fc1b](https://github.com///commit/661fc1bb04616d75f42be29c45c387a0573871ef))
+
+### ⚙️ Refactoring
+
+* **frontend:** implement robust error boundaries and Biome-compliant debug logging ([8649074](https://github.com///commit/86490746893721ffc8487084940f9da11cb61be4))
+
 ## [6.5.2](https://github.com///compare/v6.5.1...v6.5.2) (2026-08-01)
 
 ### 🐛 Bug Fixes
