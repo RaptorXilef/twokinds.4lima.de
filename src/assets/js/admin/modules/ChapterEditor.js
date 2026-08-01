@@ -29,23 +29,21 @@ export class ChapterEditor {
     }
 
     bindEvents() {
-        // 1. "Neues Kapitel" Button
-        const btnAdd = document.getElementById('btn-add-chapter');
-        if (btnAdd) {
-            btnAdd.addEventListener('click', () => this.openAddModal());
-        }
-
-        // 2. Event Delegation für die Tabelle
+        // Event Delegation für die Tabelle
         if (this.section) {
             this.section.addEventListener('click', (e) => {
+                const btnAdd = e.target.closest('#btn-add-chapter');
                 const btnEdit = e.target.closest('.btn-edit-chapter');
                 const btnDelete = e.target.closest('.btn-delete-chapter');
 
+                if (btnAdd) {
+                    e.preventDefault();
+                    this.openAddModal();
+                }
                 if (btnEdit) {
                     e.preventDefault();
                     this.openEditModal(JSON.parse(btnEdit.dataset.payload));
                 }
-
                 if (btnDelete) {
                     e.preventDefault();
                     this.deleteChapter(btnDelete.dataset.id, btnDelete);
@@ -155,4 +153,3 @@ export class ChapterEditor {
         }
     }
 }
-// ========== END FILE: [src\assets\js\admin\ChapterEditor.js] ==========

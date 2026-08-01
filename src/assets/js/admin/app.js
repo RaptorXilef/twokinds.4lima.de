@@ -51,17 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const globalUI = new GlobalUI(tracker);
     new TabManager(api); // API in den TabManager geben!
 
-    // NEU: ThemeManager starten
+    // ThemeManager starten
     new ThemeManager();
 
-    // 2. Main Editors (Sofort laden für cross-tab dependencies wie Report->Comic)
+    // Globale Editoren (100% Event Delegation -> Extrem robust, können sofort gestartet werden)
     const comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
     const reportManager = new ReportManager(api, modalManager, comicEditor, notifications);
     new SystemManager(api, modalManager, notifications);
+    new ChapterEditor(api, modalManager, notifications, formService);
+    new CharacterEditor(api, modalManager, notifications, formService, tracker);
 
-    // Tab-spezifische Instanzen, die wir uns merken, um sie nicht doppelt zu laden
-    let charEditor = null;
-    let chapEditor = null;
+    // Tab-spezifische Instanz (Sortable.js braucht das DOM beim Laden)
     let groupEditor = null;
 
     document.addEventListener('tabLoaded', async (e) => {
@@ -77,18 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (tab === 'section-reports') {
             reportManager.initTableLogic();
-        }
-        if (tab === 'section-archive' && !chapEditor) {
-            chapEditor = new ChapterEditor(api, modalManager, notifications, formService);
-        }
-        if (tab === 'section-characters' && !charEditor) {
-            charEditor = new CharacterEditor(
-                api,
-                modalManager,
-                notifications,
-                formService,
-                tracker
-            );
         }
         if (tab === 'section-groups' && !groupEditor) {
             const { GroupEditor } = await import('./modules/GroupEditor.js');

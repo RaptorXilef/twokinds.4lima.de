@@ -126,18 +126,17 @@ export class CharacterEditor {
     }
 
     bindEvents() {
-        // 1. "Neuen Charakter" Button
-        const btnAdd = document.getElementById('btn-add-char');
-        if (btnAdd) {
-            btnAdd.addEventListener('click', () => this.openAddModal());
-        }
-
-        // 2. Event Delegation für die Tabelle (Bearbeiten, Löschen)
+        // Event Delegation für die Tabelle (Bearbeiten, Löschen)
         if (this.section) {
             this.section.addEventListener('click', (e) => {
+                const btnAdd = e.target.closest('#btn-add-char');
                 const btnEdit = e.target.closest('.btn-edit-char');
                 const btnDelete = e.target.closest('.btn-delete-char');
 
+                if (btnAdd) {
+                    e.preventDefault();
+                    this.openAddModal();
+                }
                 if (btnEdit) {
                     e.preventDefault();
                     this.openEditModal(JSON.parse(btnEdit.dataset.payload));
