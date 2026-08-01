@@ -84,7 +84,8 @@ export function renderPagination(container, currentPage, totalPages, onPageChang
 
     jumpInput.addEventListener('change', (e) => {
         let page = parseInt(e.target.value, 10);
-        if (isNaN(page) || page < 1) page = 1;
+        // Fix: Nutzt Number.isNaN für exakte Typenüberprüfung
+        if (Number.isNaN(page) || page < 1) page = 1;
         if (page > totalPages) page = totalPages;
         onPageChange(page);
     });

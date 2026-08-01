@@ -106,7 +106,8 @@ export class ComicReader {
         this.btnBookmark.addEventListener('click', async () => {
             try {
                 bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
-            } catch (err) {
+            } catch (_err) {
+                // ungenutzte Variable
                 bookmarks = {};
             }
 

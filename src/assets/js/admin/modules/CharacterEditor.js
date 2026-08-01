@@ -365,7 +365,8 @@ export class CharacterEditor {
     }
 
     openEditModal(payload) {
-        this.currentDraftKey = 'admin_char_form_draft_' + payload.id;
+        // Template Literal verwenden
+        this.currentDraftKey = `admin_char_form_draft_${payload.id}`;
         if (this.form) this.form.reset();
 
         // Draft Recovery Check

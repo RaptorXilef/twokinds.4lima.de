@@ -6,7 +6,10 @@ export class ThemeManager {
     }
 
     init() {
-        document.querySelectorAll('.jsdep').forEach((el) => el.classList.remove('jsdep'));
+        // Fix: Keine Rückgabe im forEach
+        document.querySelectorAll('.jsdep').forEach((el) => {
+            el.classList.remove('jsdep');
+        });
 
         // Initialen Status ermitteln ('2' = Dark, alles andere = Light)
         let isDark = false;
@@ -25,7 +28,7 @@ export class ThemeManager {
             isDark = false;
         } else {
             // Fallback: System-Einstellung des Betriebssystems
-            isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            isDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
         }
 
         // Initiale UI setzen (ohne weichen Übergang)
@@ -50,6 +53,7 @@ export class ThemeManager {
                     localStorage.setItem('themePref', isDark ? '2' : '1');
 
                     // MAGIE: Wir setzen zusätzlich das Cookie, damit PHP das ab sofort direkt lesen kann!
+                    // biome-ignore lint/suspicious/noDocumentCookie: PHP benötigt dieses Cookie für SSR Theme-Fallback
                     document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
                 } catch (err) {
                     console.error('[ThemeManager] Konnte Theme-Einstellung nicht speichern:', err);
@@ -66,7 +70,7 @@ export class ThemeManager {
                 let currentPref = null;
                 try {
                     currentPref = localStorage.getItem('themePref');
-                } catch (err) {
+                } catch (_err) {
                     // Ignorieren, da wir oben schon warnen
                 }
 

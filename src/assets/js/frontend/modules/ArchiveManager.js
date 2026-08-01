@@ -44,7 +44,7 @@ export class ArchiveManager {
             );
             try {
                 localStorage.removeItem(this.STORAGE_KEY);
-            } catch (removeErr) {
+            } catch (_err) {
                 // Ignore if storage is totally blocked
             }
         }

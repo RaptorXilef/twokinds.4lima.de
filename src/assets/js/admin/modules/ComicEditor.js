@@ -326,7 +326,8 @@ export class ComicEditor {
     }
 
     openEditModal(payload) {
-        this.currentDraftKey = 'admin_comic_form_draft_' + payload.id;
+        // Template Literal verwenden
+        this.currentDraftKey = `admin_comic_form_draft_${payload.id}`;
         if (this.form) this.form.reset();
 
         // Draft Recovery

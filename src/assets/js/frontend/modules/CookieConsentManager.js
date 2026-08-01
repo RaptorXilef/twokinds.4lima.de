@@ -124,6 +124,8 @@ export class CookieConsentManager {
     setConsent(preferences) {
         try {
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(preferences));
+
+            // biome-ignore lint/suspicious/noDocumentCookie: PHP benötigt dieses Cookie für Server-seitige Checks
             document.cookie = `twokinds_cookie_consent=${JSON.stringify(preferences)}; max-age=31536000; path=/; SameSite=Lax`;
 
             if (preferences[this.CATEGORIES.ANALYTICS]) {
@@ -152,6 +154,7 @@ export class CookieConsentManager {
         if (!window.dataLayer) window.dataLayer = [];
         if (typeof window.gtag !== 'function') {
             window.gtag = function () {
+                // biome-ignore lint/complexity/noArguments: Google Analytics API erfordert zwingend das raw "arguments" Objekt
                 window.dataLayer.push(arguments);
             };
         }

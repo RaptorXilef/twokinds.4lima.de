@@ -87,7 +87,7 @@ export class TabManager {
                 activeTab = hashTab;
                 try {
                     sessionStorage.setItem('activeAdminTab', activeTab);
-                } catch (err) {
+                } catch (_err) {
                     // Ignorieren
                 }
             }
