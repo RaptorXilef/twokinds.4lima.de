@@ -29,7 +29,7 @@ use App\Contracts\System\AssetHelperInterface;
             <p>Webspace kostenlos bereitgestellt durch:
                 <a href="https://www.lima-city.de/" target="_blank" rel="noopener noreferrer">Lima City</a>
             </p>
-            <!-- Dynamische, serverseitige Versionsnummer aus package.json -->
+            <!-- Dynamische, serverseitige Versionsnummer aus package.json und Fehler-Link -->
             <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version']); ?> | <a href="#" id="open-global-report">Fehler melden</a></div>
         </div>
         <div class="bottom-right">
@@ -71,12 +71,10 @@ if (! empty($settings['google_analytics_id'])) {
                            id="cookieAnalytics"> <strong>Google Analytics 4 (Anonymisiert & ohne Werbung)</strong>
                 </label>
                 <div class="description">Hilft mir (komplett anonymisiert) zu verstehen, wie viele Nutzer meine Seite
-                    besuchen und welche Funktionen und Übersetzungen am beliebtesten sind.
-                    Das hilft mir Funktionen zu verbessern und neue Funktionen einzubauen, die dir einen Mehrwert
-                    bieten.
-                    Wenn du mich dabei unterstützen möchtest, aktivieren diesen Cookie bitte!
-                    (Wird <b><u>nicht</u></b> verwendet im Werbung zu schalten!)
-                </div>
+                    besuchen und welche Funktionen und Übersetzungen am beliebtesten sind. Das hilft mir Funktionen zu
+                    verbessern und neue Funktionen einzubauen, die dir einen Mehrwert bieten. Wenn du mich dabei
+                    unterstützen möchtest, aktivieren diesen Cookie bitte! (Wird <b><u>nicht</u></b> verwendet im
+                    Werbung zu schalten!) </div>
             </div>
 
             <div class="cookie-buttons">
@@ -97,176 +95,186 @@ if (! empty($settings['google_analytics_id'])) {
     <!-- ENDE COOKIE CONSENT BANNER -->
 <?php } ?>
 
-<!-- GLOBAL REPORT MODAL -->
+<!-- GLOBAL REPORT MODAL (JETZT IM ADMIN-STYLE!) -->
 <div id="global-report-modal"
-     class="c-session-timeout"
-     style="display: none; align-items: flex-start; padding-top: 50px; z-index: 10000;">
-    <div class="c-session-timeout__content"
-         style="text-align: left; max-width: 600px; width: 100%;">
-        <div
-             style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-medium); padding-bottom: 10px; margin-bottom: 15px;">
+     class="modal"
+     style="z-index: 10000;">
+    <div class="modal-overlay"
+         id="close-report-overlay"></div>
+    <div class="modal-content"
+         style="max-width: 1080px; display: flex; flex-direction: column; max-height: 95vh; text-align: left;">
+
+        <div class="modal-header-wrapper"
+             style="flex: 0 0 auto;">
             <h2 style="margin: 0; font-size: 1.5em; color: var(--text-color);">Fehler melden</h2>
             <button type="button"
                     id="close-report-modal"
-                    style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: var(--text-color-faded);">&times;</button>
+                    class="modal-close">&times;</button>
         </div>
 
-        <div id="report-status-msg"
-             style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: center;">
-        </div>
+        <div class="modal-scroll-content"
+             style="flex: 1 1 auto; overflow-y: auto;">
+            <div id="report-status-msg"
+                 style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: center;">
+            </div>
 
-        <form id="global-report-form">
-            <!-- URL / Context Tracking (Wird immer angezeigt) -->
-            <input type="text"
-                   name="report_honeypot"
-                   style="display:none;"
-                   tabindex="-1"
-                   autocomplete="off">
-
-            <!-- URL / Context Tracking -->
-            <input type="hidden"
-                   name="report_debug_info"
-                   id="report_debug_info"
-                   value="">
-            <input type="text"
-                   name="report_honeypot"
-                   style="display:none;"
-                   tabindex="-1"
-                   autocomplete="off">
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Betroffene Seite (URL)</label>
-                <!-- Sichtbar für den Nutzer, wird aber nicht an die API gesendet (kein 'name' Attribut) -->
+            <form id="global-report-form"
+                  class="admin-form">
+                <!-- Honeypot zur SPAM-Abwehr -->
                 <input type="text"
-                       id="report_page_url_display"
-                       value=""
-                       readonly
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
-            </div>
-
-            <!-- Dieses Div wird per JS auf Nicht-Comic-Seiten versteckt -->
-            <div id="comic-id-section"
-                 style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Comic-ID</label>
-                <input type="text"
-                       id="report_comic_id"
-                       name="comic_id"
-                       readonly
-                       style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Art des Fehlers *</label>
-                <select id="report_type"
-                        name="report_type"
-                        required
-                        style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
-                    <option value="">-- Bitte wählen --</option>
-                    <option value="transcript"
-                            id="report_type_transcript"
-                            style="display: none;">Tippfehler / Transkript-Fehler</option>
-                    <option value="image">Bild wird nicht geladen / Bildfehler</option>
-                    <option value="other">Allgemeiner Website-Fehler / Sonstiges</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Fehlerbeschreibung *</label>
-                <textarea id="report_description" name="report_description" rows="4" placeholder="Beschreibe kurz, was nicht stimmt..." style="width: 100%; padding: 8px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color); resize: vertical;"></textarea>
-            </div>
-
-            <div id="transcript-edit-section"
-                 style="display: none; margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Transkript korrigieren</label>
-                <p style="font-size: 0.85em; color: var(--text-color-faded); margin-top: 0; margin-bottom: 10px;">Bitte
-                    korrigiere den Fehler direkt im Editor. Wir vergleichen deine Version später automatisch mit dem
-                    Original.</p>
+                       name="report_honeypot"
+                       style="display:none;"
+                       tabindex="-1"
+                       autocomplete="off">
+                <!-- Unsichtbare Telemetrie -->
                 <input type="hidden"
-                       id="report_transcript_original"
-                       name="report_transcript_original"
+                       name="report_debug_info"
+                       id="report_debug_info"
                        value="">
-                <textarea id="report_transcript_suggestion" name="report_transcript_suggestion" class="public-wysiwyg" rows="8"></textarea>
-            </div>
 
-            <!-- Screenshot Feld mit Drag & Drop -->
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Screenshot anhängen
-                    (Optional)</label>
-                <div id="report-drop-zone"
-                     style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even); transition: all 0.2s;">
-                    <i class="fa-solid fa-image"
-                       style="font-size: 2em; color: var(--text-color-light);"></i>
-                    <p style="margin: 5px 0 0; color: var(--text-color); font-weight: bold;">Bild hier ablegen oder
-                        klicken</p>
-                    <small style="color: var(--text-color-faded);">Hilft uns sehr bei Layout- oder
-                        Darstellungsfehlern!</small>
-                    <input type="file"
-                           id="report_screenshot"
-                           name="report_screenshot"
-                           accept="image/*"
-                           style="display: none;">
-                    <div id="report-screenshot-name"
-                         style="margin-top: 10px; font-weight: bold; color: var(--status-green-text); display: none;">
+                <div class="form-group"
+                     style="margin-bottom: 15px;">
+                    <label>Betroffene Seite (URL)</label>
+                    <!-- Optisches Feedback für Readonly -->
+                    <input type="text"
+                           id="report_page_url_display"
+                           value=""
+                           readonly
+                           style="background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
+                </div>
+
+                <!-- Versteckte ID für Comics -->
+                <div id="comic-id-section"
+                     class="form-group"
+                     style="margin-bottom: 15px; display: none;">
+                    <label>Comic-ID</label>
+                    <input type="text"
+                           id="report_comic_id"
+                           name="comic_id"
+                           readonly
+                           style="background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
+                </div>
+
+                <div class="form-group"
+                     style="margin-bottom: 15px;">
+                    <label>Art des Fehlers *</label>
+                    <select id="report_type"
+                            name="report_type"
+                            required>
+                        <option value="">-- Bitte wählen --</option>
+                        <option value="transcript"
+                                id="report_type_transcript"
+                                style="display: none;">Tippfehler / Transkript-Fehler</option>
+                        <option value="image">Bild wird nicht geladen / Bildfehler</option>
+                        <option value="other">Allgemeiner Website-Fehler / Sonstiges</option>
+                    </select>
+                </div>
+
+                <div class="form-group"
+                     style="margin-bottom: 15px;">
+                    <label>Fehlerbeschreibung *</label>
+                    <textarea id="report_description" name="report_description" rows="4" placeholder="Beschreibe kurz, was nicht stimmt..."></textarea>
+                </div>
+
+                <div id="transcript-edit-section"
+                     style="display: none; margin-bottom: 15px;">
+                    <label>Transkript korrigieren</label>
+                    <p style="font-size: 0.85em; color: var(--text-color-faded); margin-top: 0; margin-bottom: 10px;">
+                        Bitte korrigiere den Fehler direkt im Editor. Wir vergleichen deine Version später automatisch
+                        mit dem Original.</p>
+                    <input type="hidden"
+                           id="report_transcript_original"
+                           name="report_transcript_original"
+                           value="">
+                    <textarea id="report_transcript_suggestion" name="report_transcript_suggestion" class="public-wysiwyg" rows="8"></textarea>
+                </div>
+
+                <!-- Drag & Drop Zone -->
+                <div class="form-group"
+                     style="margin-bottom: 15px;">
+                    <label>Screenshot anhängen (Optional)</label>
+                    <div id="report-drop-zone"
+                         class="drag-drop-zone"
+                         style="padding: 15px; border: 2px dashed var(--border-medium); border-radius: 6px; text-align: center; cursor: pointer; background: var(--table-row-even); transition: all 0.2s;">
+                        <i class="fa-solid fa-image"
+                           style="font-size: 2em; color: var(--text-color-light);"></i>
+                        <p style="margin: 5px 0 0; color: var(--text-color); font-weight: bold;">Bild hier ablegen oder
+                            klicken</p>
+                        <small style="color: var(--text-color-faded);">Hilft uns sehr bei Layout- oder
+                            Darstellungsfehlern!</small>
+                        <input type="file"
+                               id="report_screenshot"
+                               name="report_screenshot"
+                               accept="image/*"
+                               style="display: none;">
+                        <div id="report-screenshot-name"
+                             style="margin-top: 10px; font-weight: bold; color: var(--status-green-text); display: none;">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group"
-                 style="margin-bottom: 15px;">
-                <label for="report_submitter">Dein Name / Pseudonym *</label>
-                <?php if (isset($isLoggedIn) && $isLoggedIn && ! empty($currentUserName)) { ?>
+                <div class="form-group"
+                     style="margin-bottom: 15px;">
+                    <label for="report_submitter">Dein Name / Pseudonym *</label>
+                    <?php if (isset($isLoggedIn) && $isLoggedIn && ! empty($currentUserName)) { ?>
                     <!-- Eingeloggt: Feld ist vorausgefüllt und gesperrt -->
-                    <input type="text"
-                           id="report_submitter"
-                           name="submitter"
-                           value="<?php echo \htmlspecialchars($currentUserName); ?>"
-                           readonly
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
-                    <small style="color: var(--status-green-text); display: block; margin-top: 5px;">
-                        <i class="fa-solid fa-check-circle"></i> Angemeldet. Wenn in deinem Profil aktiviert, wirst du
-                        bei Behebung benachrichtigt.
-                    </small>
-                <?php } else { ?>
+                        <input type="text"
+                               id="report_submitter"
+                               name="submitter"
+                               value="<?php echo \htmlspecialchars($currentUserName); ?>"
+                               readonly
+                               style="background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
+                        <small style="color: var(--status-green-text); display: block; margin-top: 5px;">
+                            <i class="fa-solid fa-check-circle"></i> Angemeldet. Wenn in deinem Profil aktiviert, wirst
+                            du bei Behebung benachrichtigt.
+                        </small>
+                    <?php } else { ?>
                     <!-- Gast: Normales Feld -->
-                    <input type="text"
-                           id="report_submitter"
-                           name="submitter"
-                           required
-                           placeholder="Wie dürfen wir dich nennen?"
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
-                <?php } ?>
-            </div>
+                        <input type="text"
+                               id="report_submitter"
+                               name="submitter"
+                               required
+                               placeholder="Wie dürfen wir dich nennen?">
+                    <?php } ?>
+                </div>
 
-            <div style="margin-bottom: 20px;">
-                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox"
-                           id="wants_credit"
-                           name="wants_credit"
-                           value="1"
-                           style="transform: scale(1.2);">
-                    <span>Ich möchte bei Behebung als Helfer genannt werden!</span>
-                </label>
-            </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: normal;">
+                        <input type="checkbox"
+                               id="wants_credit"
+                               name="wants_credit"
+                               value="1"
+                               style="width: auto; transform: scale(1.2);">
+                        <span>Ich möchte bei Behebung als Helfer genannt werden!</span>
+                    </label>
+                </div>
+            </form>
+        </div>
 
-            <div style="text-align: right;">
+        <div class="modal-footer-actions"
+             style="flex: 0 0 auto; display: flex; justify-content: flex-end; position: relative; z-index: 10; background: var(--content-bg);">
+            <div class="modal-buttons">
                 <button type="submit"
+                        form="global-report-form"
                         id="report-submit-btn"
-                        style="background: var(--link-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background 0.2s;">
+                        class="button edit">
                     <i class="fa-solid fa-paper-plane"></i> Fehler melden
                 </button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<!-- Gemeinsame JS-Dateien für das Frontend -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/langs/de.min.js"></script>
+<!-- Externe Libraries -->
+<script src="https://code.jquery.com/jquery-4.0.0.min.js"
+        integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao="
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/langs/de.min.js"></script>
 
-<!-- Automatisch cache-gebustetes JS -->
+<!-- Google Analytics -->
 <?php if (! empty($settings['google_analytics_id'])) { ?>
-    <!-- Google Analytics Config wird an das JavaScript übergeben -->
+    <!-- biome-ignore lint/suspicious/noInlineScript: GA Config needs inline execution -->
     <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     window.GA_MEASUREMENT_ID = "<?php echo \htmlspecialchars($settings['google_analytics_id']); ?>";
 
@@ -276,7 +284,6 @@ if (! empty($settings['google_analytics_id'])) {
 <script type="module"
         nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
         src="<?php echo $asset->url('assets/js/frontend/app.js'); ?>"></script>
-
 </body>
 
 </html>

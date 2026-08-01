@@ -19,19 +19,6 @@
 /// @link      https://github.com/RaptorXilef/twokinds.4lima.de
 ///
 
-///
-/// @since    5.0.0
-/// - Zusammenführung von Light/Dark Mode.
-/// - Erweiterung um .modal-advanced-layout (Sticky Header/Footer).
-/// - Integration von Image Preview und Character Grid Styles.
-/// - fix(Design): Original-Styles für Dialoge und Close-Buttons wiederhergestellt.
-/// - style(Report): Styles für Diff-Box und Code-Ansicht hinzugefügt.
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-/// - style(Report): Report-spezifische Grid-Styles und Diff-Viewer Container hinzugefügt.
-/// - fix(Design): .report-images-container wiederhergestellt.
-/// - style(Refactor): Selektoren gruppiert, um Redundanzen zu vermeiden (DRY).
-/// - style(Code): Gemeinsame Definition für Monospace-Elemente.
-///
 
 // Verwendete SCSS-Variablen:
 // - $font-mono: Monospace Schriftart für Code/Diffs
@@ -53,8 +40,8 @@
 // - --link-color: Akzentfarbe
 
 @use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
 
-/* --- Allgemeine Modal-Stile (Basis) --- */
 .modal {
     position: fixed;
     top: 0;
@@ -69,6 +56,10 @@
     padding: 20px;
     overflow: auto;
     background-color: rgb(0 0 0 / 0.6);
+
+    @include media-tablet {
+        padding: 10px;
+    }
 }
 
 .modal-overlay {
@@ -98,6 +89,11 @@
     box-shadow:
         0 4px 8px 0 rgb(0 0 0 / 0.2),
         0 6px 20px 0 rgb(0 0 0 / 0.19);
+
+    @include media-tablet {
+        max-height: 95vh;
+        font-size: 1em;
+    }
 }
 
 body.theme-night .modal-content {
@@ -120,11 +116,20 @@ body.theme-night .modal-content {
     padding: 20px 25px;
     background-color: var(--content-bg);
     border-bottom: 1px solid var(--border-medium);
-}
+    border-radius: 8px 8px 0 0;
 
-.modal-header-wrapper h2 {
-    margin: 0;
-    font-size: 1.5em;
+    h2 {
+        margin: 0;
+        font-size: 1.5em;
+    }
+
+    @include media-tablet {
+        padding: 15px;
+
+        h2 {
+            font-size: 1.2em;
+        }
+    }
 }
 
 body.theme-night .modal-header-wrapper {
@@ -136,31 +141,42 @@ body.theme-night .modal-header-wrapper {
     flex-grow: 1;
     padding: 25px;
     overflow-y: auto; // Hier findet das Scrollen statt
+
+    @include media-tablet {
+        padding: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    input[type="email"],
+    textarea,
+    select {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 8px;
+        color: var(--text-color);
+        background-color: var(--content-bg);
+        border: 1px solid var(--border-medium);
+        border-radius: 4px;
+        font-family: inherit;
+    }
 }
 
-.modal-scroll-content .form-group {
-    margin-bottom: 15px;
-}
-
-.modal-scroll-content label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.modal-scroll-content input,
-.modal-scroll-content textarea,
-.modal-scroll-content select {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 8px;
-    color: var(--text-color);
-    background-color: var(--content-bg);
-    border: 1px solid var(--border-medium);
-    border-radius: 4px;
-}
-
-body.theme-night .modal-scroll-content input,
+body.theme-night .modal-scroll-content input[type="text"],
+body.theme-night .modal-scroll-content input[type="number"],
+body.theme-night .modal-scroll-content input[type="password"],
+body.theme-night .modal-scroll-content input[type="email"],
 body.theme-night .modal-scroll-content textarea,
 body.theme-night .modal-scroll-content select {
     background-color: color-mix(in srgb, var(--page-bg), black 20%);
@@ -169,16 +185,29 @@ body.theme-night .modal-scroll-content select {
 
 .modal-footer-actions {
     z-index: 10;
-    flex-shrink: 0; // Darf nicht schrumpfen
+    flex-shrink: 0;
     padding: 15px 25px;
     background-color: var(--content-bg);
     border-top: 1px solid var(--border-medium);
-}
+    border-radius: 0 0 8px 8px;
 
-.modal-footer-actions .modal-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
+    .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    @include media-tablet {
+        padding: 15px;
+
+        .modal-buttons {
+            width: 100%;
+
+            button {
+                flex: 1;
+            }
+        }
+    }
 }
 
 body.theme-night .modal-footer-actions {
@@ -198,28 +227,32 @@ body.theme-night .modal-footer-actions {
     cursor: pointer;
     background: none;
     border: none;
+
+    @include media-tablet {
+        top: 5px;
+        right: 10px;
+    }
+
+    &:hover,
+    &:focus {
+        color: var(--text-on-medium);
+    }
 }
 
-.modal-close:hover,
-.modal-close:focus,
-.close-button:hover,
-.close-button:focus {
-    color: var(--text-on-medium);
+body.theme-night {
+
+    .modal-close,
+    .close-button {
+        color: rgb(255 255 255 / 0.6);
+
+        &:hover,
+        &:focus {
+            color: var(--text-color);
+        }
+    }
 }
 
-body.theme-night .modal-close,
-body.theme-night .close-button {
-    color: rgb(255 255 255 / 0.6);
-}
-
-body.theme-night .modal-close:hover,
-body.theme-night .modal-close:focus,
-body.theme-night .close-button:hover,
-body.theme-night .close-button:focus {
-    color: var(--text-color);
-}
-
-/* --- Image Preview Section (Toggle Buttons & Images) --- */
+/* ... der Rest (diff-viewer, character-grids etc.) bleibt gleich ... */
 #modal-image-preview-section {
     padding-top: 15px;
     margin-top: 20px;
@@ -381,7 +414,7 @@ body.theme-night .button-toggle-group .button-toggle.active {
     margin-top: 10px;
 }
 
-.report-images-container > div,
+.report-images-container>div,
 .image-preview-box {
     display: flex;
     flex: 1; // Beide Container wachsen gleichmäßig
