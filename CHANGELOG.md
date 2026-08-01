@@ -2,6 +2,21 @@
 
 
 
+## [6.5.4](https://github.com///compare/v6.5.3...v6.5.4) (2026-08-01)
+
+### 🐛 Bug Fixes
+
+* **admin:** guard JSON parsing of entity payloads on edit button click handlers ([f2af276](https://github.com///commit/f2af276fa21c8619760bd39a7b3f1e4316fbd6b0))
+
+### ⚙️ Refactoring
+
+* **admin:** harden local storage access and global UI initialization ([1a55a66](https://github.com///commit/1a55a669ed3dfa6daccbf588aa76a68e4e5cf140))
+* **frontend:** implement Biome-compliant error logging for network and storage operations ([e5d8414](https://github.com///commit/e5d84143cdb8b1f0fc47af77fb2a8395d2515179))
+
+### 💎 Styling
+
+* resolve all remaining Biome linter warnings across frontend and admin JS ([5075026](https://github.com///commit/50750265e09ac39279d600c06ba23d1514a1e313))
+
 ## [6.5.3](https://github.com///compare/v6.5.2...v6.5.3) (2026-08-01)
 
 ### 🐛 Bug Fixes
