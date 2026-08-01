@@ -37,8 +37,16 @@ export class ArchiveManager {
             } else {
                 localStorage.removeItem(this.STORAGE_KEY);
             }
-        } catch (_err) {
-            localStorage.removeItem(this.STORAGE_KEY);
+        } catch (err) {
+            console.warn(
+                '[ArchiveManager] Konnte Archiv-Status nicht wiederherstellen (Defektes JSON oder Storage blockiert):',
+                err
+            );
+            try {
+                localStorage.removeItem(this.STORAGE_KEY);
+            } catch (removeErr) {
+                // Ignore if storage is totally blocked
+            }
         }
 
         // Wenn es keinen Speicherstand gibt -> Erstes Kapitel aufklappen

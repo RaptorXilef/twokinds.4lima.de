@@ -104,7 +104,8 @@ export class AuthForms {
                         btn.innerHTML = defaultHtml;
                     }
                 }
-            } catch (_err) {
+            } catch (err) {
+                console.error(`[AuthForms] Netzwerk- oder Serverfehler bei ${endpoint}:`, err);
                 msg.style.display = 'block';
                 msg.style.backgroundColor = 'var(--status-red-bg)';
                 msg.style.color = 'var(--status-red-text)';

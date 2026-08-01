@@ -131,8 +131,8 @@ export class CookieConsentManager {
             } else {
                 this.disableGoogleAnalytics();
             }
-        } catch (e) {
-            console.error('[CookieConsentManager] Fehler beim Speichern des Consents:', e);
+        } catch (err) {
+            console.error('[CookieConsentManager] Fehler beim Speichern des Consents:', err);
         }
     }
 
@@ -140,7 +140,8 @@ export class CookieConsentManager {
         try {
             const stored = localStorage.getItem(this.STORAGE_KEY);
             return stored ? JSON.parse(stored) : null;
-        } catch (e) {
+        } catch (err) {
+            console.warn('[CookieConsentManager] Konnte LocalStorage nicht auslesen:', err);
             return null;
         }
     }

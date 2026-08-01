@@ -52,7 +52,8 @@ export class ProfileManager {
                     msg.style.border = '1px solid var(--status-red-border)';
                     msg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`;
                 }
-            } catch (_err) {
+            } catch (err) {
+                console.error('[ProfileManager] Unerwarteter Fehler beim Profil-Update:', err);
                 msg.style.display = 'block';
                 msg.style.backgroundColor = 'var(--status-red-bg)';
                 msg.style.color = 'var(--status-red-text)';
