@@ -31,9 +31,10 @@ export class CharacterEditor {
         /** @type {DataTransfer} */
         this.accumulatedRefFiles = new DataTransfer();
 
-        this.cacheKey = 'admin_char_form_draft';
+        this.currentDraftKey = null;
+
         if (this.form) {
-            this.formService.enableAutoSave(this.form, this.cacheKey);
+            this.formService.enableAutoSave(this.form, () => this.currentDraftKey);
         }
 
         // REAKTIVER STATE FÜR LIVE-PREVIEWS INKL. AUTO-SAVE
@@ -301,10 +302,11 @@ export class CharacterEditor {
     }
 
     openAddModal() {
+        this.currentDraftKey = 'admin_char_form_draft_new';
         if (this.form) this.form.reset();
 
         // Draft Recovery Check
-        if (this.formService.hasDraft(this.cacheKey)) {
+        if (this.formService.hasDraft(this.currentDraftKey)) {
             if (
                 confirm(
                     'Es existiert ein ungespeicherter Entwurf für Charaktere. Möchtest du ihn wiederherstellen?'
@@ -312,11 +314,11 @@ export class CharacterEditor {
             ) {
                 // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('char-modal');
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.formService.restoreDraft(this.form, this.currentDraftKey);
                 if (this.tracker) this.tracker.markDirty();
                 return;
             } else {
-                this.formService.clearDraft(this.cacheKey);
+                this.formService.clearDraft(this.currentDraftKey);
             }
         }
 
@@ -354,21 +356,23 @@ export class CharacterEditor {
     }
 
     openEditModal(payload) {
+        this.currentDraftKey = 'admin_char_form_draft_' + payload.id;
         if (this.form) this.form.reset();
 
         // Draft Recovery Check
-        if (this.formService.hasDraft(this.cacheKey)) {
+        if (this.formService.hasDraft(this.currentDraftKey)) {
             if (
                 confirm(
                     'Es gibt noch ungespeicherte Änderungen! Möchtest du den abgebrochenen Entwurf laden?'
                 )
             ) {
-                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
+                // Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('char-modal');
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.formService.restoreDraft(this.form, this.currentDraftKey);
+                if (this.tracker) this.tracker.markDirty();
                 return;
             } else {
-                this.formService.clearDraft(this.cacheKey);
+                this.formService.clearDraft(this.currentDraftKey);
             }
         }
 
@@ -433,6 +437,7 @@ export class CharacterEditor {
         sessionStorage.setItem('highlightEntityIdCancel', payload.id);
 
         this.modalManager.open('char-modal');
+        if (this.tracker) this.tracker.markClean();
     }
 
     // ACHTUNG: Die Form-Service Magie
@@ -449,7 +454,7 @@ export class CharacterEditor {
         const idInput = this.form.querySelector('[name="id"]');
         if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-        this.formService.clearDraft(this.cacheKey);
+        this.formService.clearDraft(this.currentDraftKey);
 
         // PERF: true übergeben für SOFORTIGEN Reload (ohne setTimeout!)
         await this.formService.submit(

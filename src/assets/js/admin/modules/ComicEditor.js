@@ -30,10 +30,11 @@ export class ComicEditor {
         this.form = document.getElementById('comic-form');
 
         // Auto-Save für das gesamte Formular aktivieren
-        this.cacheKey = 'admin_comic_form_draft';
+        this.currentDraftKey = null; // Speichert den aktuell bearbeiteten Comic-Key
 
         if (this.form) {
-            this.formService.enableAutoSave(this.form, this.cacheKey);
+            // Getter übergeben, damit immer der aktuelle Key geholt wird
+            this.formService.enableAutoSave(this.form, () => this.currentDraftKey);
         }
 
         this.state = createReactiveState(
@@ -107,7 +108,7 @@ export class ComicEditor {
                     const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
                     if (opt) {
                         opt.selected = charItem.classList.contains('selected');
-                        this.tracker.markDirty();
+                        if (this.tracker) this.tracker.markDirty();
                     }
                 }
             }
@@ -265,10 +266,11 @@ export class ComicEditor {
     }
 
     openAddModal() {
+        this.currentDraftKey = 'admin_comic_form_draft_new';
         if (this.form) this.form.reset();
 
         // Draft Recovery
-        if (this.formService.hasDraft(this.cacheKey)) {
+        if (this.formService.hasDraft(this.currentDraftKey)) {
             if (
                 confirm(
                     'Es existiert ein ungespeicherter Entwurf. Möchtest du ihn wiederherstellen?'
@@ -276,10 +278,11 @@ export class ComicEditor {
             ) {
                 // Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('comic-modal');
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.formService.restoreDraft(this.form, this.currentDraftKey);
+                if (this.tracker) this.tracker.markDirty();
                 return; // Wenn ja, überspringe das Zurücksetzen der Felder
             } else {
-                this.formService.clearDraft(this.cacheKey);
+                this.formService.clearDraft(this.currentDraftKey);
             }
         }
 
@@ -313,13 +316,15 @@ export class ComicEditor {
         if (titleEl) titleEl.textContent = 'Neuen Comic hinzufügen';
 
         this.modalManager.open('comic-modal');
+        if (this.tracker) this.tracker.markClean();
     }
 
     openEditModal(payload) {
+        this.currentDraftKey = 'admin_comic_form_draft_' + payload.id;
         if (this.form) this.form.reset();
 
         // Draft Recovery
-        if (this.formService.hasDraft(this.cacheKey)) {
+        if (this.formService.hasDraft(this.currentDraftKey)) {
             // Optional: könnte sogar prüfen, ob payload.id === Draft-ID
             if (
                 confirm(
@@ -328,11 +333,11 @@ export class ComicEditor {
             ) {
                 // Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('comic-modal');
-                this.formService.restoreDraft(this.form, this.cacheKey);
+                this.formService.restoreDraft(this.form, this.currentDraftKey);
                 if (this.tracker) this.tracker.markDirty();
                 return;
             } else {
-                this.formService.clearDraft(this.cacheKey);
+                this.formService.clearDraft(this.currentDraftKey);
             }
         }
 
@@ -414,7 +419,7 @@ export class ComicEditor {
         const idInput = this.form.querySelector('[name="comic_id"]');
         if (idInput) sessionStorage.setItem('highlightEntityId', idInput.value.trim());
 
-        this.formService.clearDraft(this.cacheKey);
+        this.formService.clearDraft(this.currentDraftKey);
 
         // PERF: true übergeben für SOFORTIGEN Reload (ohne setTimeout!)
         await this.formService.submit(this.form, btnElement, 'save_single_comic', customData, true);

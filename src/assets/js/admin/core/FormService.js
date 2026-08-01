@@ -19,21 +19,26 @@ export class FormService {
     }
 
     // Die Methoden für den Auto-Save:
-    enableAutoSave(form, cacheKey) {
+    enableAutoSave(form, cacheKeyOrGetter) {
         if (!form) return;
 
         // DEBOUNCE WRAPPER (500ms)
         const saveToLocal = debounce(() => {
-            // FIX: Verhindert, dass das programmatische Befüllen einen Geister-Entwurf speichert
+            // Verhindert Speichern von leeren/programmatischen Änderungen
             if (this.tracker && !this.tracker.isDirty) return;
+
+            // Holt sich den jeweils aktuellen Speicher-Key dynamisch
+            const key =
+                typeof cacheKeyOrGetter === 'function' ? cacheKeyOrGetter() : cacheKeyOrGetter;
+            if (!key) return;
 
             const formData = new window.FormData(form);
             const data = {};
 
-            for (const [key, value] of formData.entries()) {
+            for (const [k, value] of formData.entries()) {
                 // Ignoriere alles, was kein reiner Text ist (Sicherheit gegen File-Objekte)
                 if (typeof value !== 'string') continue;
-                data[key] = value;
+                data[k] = value;
             }
 
             // Trumbowyg HTML Inhalt manuell abgreifen
@@ -45,8 +50,8 @@ export class FormService {
                         data[this.name] = window.$(this).trumbowyg('html');
                     });
             }
-            localStorage.setItem(cacheKey, JSON.stringify(data));
-        }, 500);
+            localStorage.setItem(key, JSON.stringify(data));
+        }, 500); // 500ms Verzögerung für extreme Leistungssteigerung
 
         form.addEventListener('input', saveToLocal);
         form.addEventListener('change', saveToLocal);
