@@ -2,6 +2,17 @@
 
 
 
+## [6.5.5](https://github.com///compare/v6.5.4...v6.5.5) (2026-08-01)
+
+### 🐛 Bug Fixes
+
+* **frontend:** handle full absolute URLs for external comic assets to prevent broken links ([e0adaf5](https://github.com///commit/e0adaf5dd85f4bebffb12ab973ea8cb360271fc3))
+* **ui:** unify modal layouts across frontend and admin areas ([dc3bdff](https://github.com///commit/dc3bdff545c4f957b48996b2989b51f4925deaec))
+
+### 🧹 Chore / Maintenance
+
+* **deps:** bump external CDN libraries to latest versions to resolve console warnings ([befd980](https://github.com///commit/befd9806bc7374f1bc77fa412e1f7c3d94be2127))
+
 ## [6.5.4](https://github.com///compare/v6.5.3...v6.5.4) (2026-08-01)
 
 ### 🐛 Bug Fixes
