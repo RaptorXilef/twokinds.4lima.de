@@ -88,9 +88,12 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
                 'canManageUsers'   => $canManageUsers,
                 'canManageRoles'   => $canManageRoles,
                 'currentUserId'    => $this->sessionManager->getUserId(),
+                'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
+                'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
             ];
 
             \ob_start();
+
             if ($ajaxTab === 'comics') {
                 $data['comics'] = $this->comicRepo->findAll();
                 $this->renderer->render('admin/_section_comics', $data);
@@ -100,6 +103,23 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
             } elseif ($ajaxTab === 'users') {
                 $data['users'] = $this->userRepo->findAll();
                 $this->renderer->render('admin/_section_users', $data);
+            } elseif ($ajaxTab === 'upload') {
+                $this->renderer->render('admin/_section_upload', $data);
+            } elseif ($ajaxTab === 'archive') {
+                $this->renderer->render('admin/_section_archive', $data);
+            } elseif ($ajaxTab === 'characters') {
+                $this->renderer->render('admin/_section_characters', $data);
+            } elseif ($ajaxTab === 'groups') {
+                $assignedIds = [];
+                foreach ($groups as $group) {
+                    foreach ($group->characterIds as $cid) {
+                        $assignedIds[] = $cid->value;
+                    }
+                }
+                $data['assignedIds'] = \array_unique($assignedIds);
+                $this->renderer->render('admin/_section_groups', $data);
+            } elseif ($ajaxTab === 'media') {
+                $this->renderer->render('admin/_section_media', $data);
             }
 
             return JsonResponse::success(['html' => \ob_get_clean()]);

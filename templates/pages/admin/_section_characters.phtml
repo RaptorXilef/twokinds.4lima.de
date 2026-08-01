@@ -54,96 +54,93 @@ foreach ($characters as $c) {
 <!-- ========================================== -->
 <!-- SECTION: CHARAKTERE                        -->
 <!-- ========================================== -->
-<section id="section-characters"
-         class="content-section">
-    <div class="table-controls actions-bar">
-        <div class="top-actions">
-            <?php if ($perms['char_edit']) { ?>
-                <button type="button"
-                        class="button add"
-                        id="btn-add-char">
-                    <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen </button>
-            <?php } ?>
-        </div>
+<div class="table-controls actions-bar">
+    <div class="top-actions">
+        <?php if ($perms['char_edit']) { ?>
+            <button type="button"
+                    class="button add"
+                    id="btn-add-char">
+                <i class="fa-solid fa-plus"></i> Neuen Charakter erstellen </button>
+        <?php } ?>
     </div>
+</div>
 
-    <div class="sitemap-table-container">
-        <table class="admin-table">
-            <thead>
+<div class="sitemap-table-container">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width: 100px;">ID</th>
+                <th style="width: 80px;">Avatar</th>
+                <th>Name & Beschreibung</th>
+                <th style="width: 120px; text-align: right;">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($characters)) { ?>
                 <tr>
-                    <th style="width: 100px;">ID</th>
-                    <th style="width: 80px;">Avatar</th>
-                    <th>Name & Beschreibung</th>
-                    <th style="width: 120px; text-align: right;">Aktionen</th>
+                    <td colspan="4"
+                        class="empty-table-message">Keine Charaktere angelegt.</td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($characters)) { ?>
-                    <tr>
-                        <td colspan="4"
-                            class="empty-table-message">Keine Charaktere angelegt.</td>
-                    </tr>
-                <?php } else { ?>
-                    <?php foreach ($characters as $char) {
-                        $cId = $char->id->value;
-                        $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/100x100?text=N/A';
+            <?php } else { ?>
+                <?php foreach ($characters as $char) {
+                    $cId = $char->id->value;
+                    $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/100x100?text=N/A';
 
-                        $charData = \json_encode([
-                            'id'          => $cId,
-                            'name'        => $char->name,
-                            'fullName'    => $char->fullName ?? '',
-                            'picUrl'      => $char->picUrl ?? '',
-                            'description' => $char->description ?? '',
-                            'altNames'    => $char->altNames ?? '',
-                            'gender'      => $char->gender ?? '',
-                            'age'         => $char->age ?? '',
-                            'rank'        => $char->rank ?? '',
-                            'species'     => $char->species ?? '',
-                            'subspecies'  => $char->subspecies ?? '',
-                            'languages'   => $char->languages ?? '',
-                            'mainPic'     => $char->mainPic ?? '',
-                            'swatchPic'   => $char->swatchPic ?? '',
-                            'refSheets'   => $char->refSheets ?? [],
-                        ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
-                        ?>
-                        <tr>
-                            <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
-                            <td>
-                                <img src="<?php echo \htmlspecialchars($pic); ?>"
-                                     style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
-                            </td>
-                            <td>
-                                <strong><?php echo \htmlspecialchars($char->name); ?></strong>
-                                <?php if ($char->description) { ?>
-                                    <div class="description-preview"
-                                         style="max-height: 2.5em;"><?php echo \strip_tags($char->description); ?></div>
+                    $charData = \json_encode([
+                        'id'          => $cId,
+                        'name'        => $char->name,
+                        'fullName'    => $char->fullName ?? '',
+                        'picUrl'      => $char->picUrl ?? '',
+                        'description' => $char->description ?? '',
+                        'altNames'    => $char->altNames ?? '',
+                        'gender'      => $char->gender ?? '',
+                        'age'         => $char->age ?? '',
+                        'rank'        => $char->rank ?? '',
+                        'species'     => $char->species ?? '',
+                        'subspecies'  => $char->subspecies ?? '',
+                        'languages'   => $char->languages ?? '',
+                        'mainPic'     => $char->mainPic ?? '',
+                        'swatchPic'   => $char->swatchPic ?? '',
+                        'refSheets'   => $char->refSheets ?? [],
+                    ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
+                    ?>
+                    <tr>
+                        <td class="mono"><?php echo \htmlspecialchars($cId); ?></td>
+                        <td>
+                            <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                        </td>
+                        <td>
+                            <strong><?php echo \htmlspecialchars($char->name); ?></strong>
+                            <?php if ($char->description) { ?>
+                                <div class="description-preview"
+                                     style="max-height: 2.5em;"><?php echo \strip_tags($char->description); ?></div>
+                            <?php } ?>
+                        </td>
+                        <td class="actions-cell">
+                            <form>
+                                <?php if ($perms['char_edit']) { ?>
+                                    <button type="button"
+                                            class="button edit btn-edit-char"
+                                            data-payload='<?php echo $charData; ?>'
+                                            title="Bearbeiten">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
                                 <?php } ?>
-                            </td>
-                            <td class="actions-cell">
-                                <form>
-                                    <?php if ($perms['char_edit']) { ?>
-                                        <button type="button"
-                                                class="button edit btn-edit-char"
-                                                data-payload='<?php echo $charData; ?>'
-                                                title="Bearbeiten">
-                                            <i class="fa-solid fa-pen"></i>
-                                        </button>
-                                    <?php } ?>
-                                    <?php if ($perms['char_del']) { ?>
-                                        <button type="button"
-                                                class="button delete btn-delete-char"
-                                                data-id="<?php echo \htmlspecialchars($cId); ?>"
-                                                data-name="<?php echo \htmlspecialchars($char->name); ?>"
-                                                title="Löschen">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    <?php } ?>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php } ?>
+                                <?php if ($perms['char_del']) { ?>
+                                    <button type="button"
+                                            class="button delete btn-delete-char"
+                                            data-id="<?php echo \htmlspecialchars($cId); ?>"
+                                            data-name="<?php echo \htmlspecialchars($char->name); ?>"
+                                            title="Löschen">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                <?php } ?>
+                            </form>
+                        </td>
+                    </tr>
                 <?php } ?>
-            </tbody>
-        </table>
-    </div>
-</section>
+            <?php } ?>
+        </tbody>
+    </table>
+</div>

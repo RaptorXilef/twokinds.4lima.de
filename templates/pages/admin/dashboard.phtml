@@ -187,7 +187,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                 <div id="global-status-message"
                      class="status-message"></div>
 
-                <!-- DIESE 3 TABS WERDEN LAZY (AJAX) GELADEN -->
+                <!-- DIESE TABS WERDEN LAZY (AJAX) GELADEN -->
                 <section id="section-comics"
                          class="content-section active"
                          data-ajax-tab="comics"></section>
@@ -197,13 +197,22 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                 <section id="section-users"
                          class="content-section"
                          data-ajax-tab="users"></section>
+                <section id="section-upload"
+                         class="content-section"
+                         data-ajax-tab="upload"></section>
+                <section id="section-archive"
+                         class="content-section"
+                         data-ajax-tab="archive"></section>
+                <section id="section-characters"
+                         class="content-section"
+                         data-ajax-tab="characters"></section>
+                <section id="section-groups"
+                         class="content-section"
+                         data-ajax-tab="groups"></section>
+                <section id="section-media"
+                         class="content-section"
+                         data-ajax-tab="media"></section>
 
-                <!-- DIESE SIND LEICHT & SCHNELL UND WERDEN SOFORT GELADEN -->
-                <?php include __DIR__ . '/_section_upload.phtml'; ?>
-                <?php include __DIR__ . '/_section_archive.phtml'; ?>
-                <?php include __DIR__ . '/_section_characters.phtml'; ?>
-                <?php include __DIR__ . '/_section_groups.phtml'; ?>
-                <?php include __DIR__ . '/_section_media.phtml'; ?>
             </div>
         </div>
     </div>

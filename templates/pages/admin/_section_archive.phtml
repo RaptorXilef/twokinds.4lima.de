@@ -9,76 +9,73 @@ use App\Core\Entity\Chapter;
  * @var array     $perms
  */
 ?>
-<section id="section-archive"
-         class="content-section">
-    <div class="table-controls actions-bar">
-        <div class="top-actions">
-            <?php if ($perms['chap_edit']) { ?>
-                <button type="button"
-                        class="button add"
-                        id="btn-add-chapter">
-                    <i class="fa-solid fa-plus"></i> Neues Kapitel anlegen </button>
-            <?php } ?>
-        </div>
+<div class="table-controls actions-bar">
+    <div class="top-actions">
+        <?php if ($perms['chap_edit']) { ?>
+            <button type="button"
+                    class="button add"
+                    id="btn-add-chapter">
+                <i class="fa-solid fa-plus"></i> Neues Kapitel anlegen </button>
+        <?php } ?>
     </div>
+</div>
 
-    <div class="sitemap-table-container">
-        <table class="admin-table">
-            <thead>
+<div class="sitemap-table-container">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width: 80px;">Kapitel ID</th>
+                <th style="width: 250px;">Titel</th>
+                <th>Beschreibung</th>
+                <th style="width: 100px; text-align: right;">Aktion</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($dbChapters)) { ?>
                 <tr>
-                    <th style="width: 80px;">Kapitel ID</th>
-                    <th style="width: 250px;">Titel</th>
-                    <th>Beschreibung</th>
-                    <th style="width: 100px; text-align: right;">Aktion</th>
+                    <td colspan="4"
+                        class="empty-table-message">Es wurden noch keine Kapitel angelegt.</td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($dbChapters)) { ?>
+            <?php } else { ?>
+                <?php foreach ($dbChapters as $chap) {
+                    $payload = \json_encode([
+                        'id'          => $chap->id,
+                        'title'       => $chap->title,
+                        'description' => $chap->description,
+                    ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
+                ?>
                     <tr>
-                        <td colspan="4"
-                            class="empty-table-message">Es wurden noch keine Kapitel angelegt.</td>
+                        <td class="mono"><?php echo \htmlspecialchars($chap->id); ?></td>
+                        <td><strong><?php echo \htmlspecialchars($chap->title); ?></strong></td>
+                        <td>
+                            <div class="description-preview"
+                                 style="max-height: 2.5em; font-size: 0.85em;">
+                                <?php echo \htmlspecialchars(\strip_tags($chap->description)); ?>
+                            </div>
+                        </td>
+                        <td class="actions-cell">
+                            <form>
+                                <?php if ($perms['chap_edit']) { ?>
+                                    <button type="button"
+                                            class="button edit btn-edit-chapter"
+                                            data-payload='<?php echo $payload; ?>'
+                                            title="Bearbeiten">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                <?php } ?>
+                                <?php if ($perms['chap_del']) { ?>
+                                    <button type="button"
+                                            class="button delete btn-delete-chapter"
+                                            data-id="<?php echo \htmlspecialchars($chap->id); ?>"
+                                            title="Löschen">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                <?php } ?>
+                            </form>
+                        </td>
                     </tr>
-                <?php } else { ?>
-                    <?php foreach ($dbChapters as $chap) {
-                        $payload = \json_encode([
-                            'id'          => $chap->id,
-                            'title'       => $chap->title,
-                            'description' => $chap->description,
-                        ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
-                        ?>
-                        <tr>
-                            <td class="mono"><?php echo \htmlspecialchars($chap->id); ?></td>
-                            <td><strong><?php echo \htmlspecialchars($chap->title); ?></strong></td>
-                            <td>
-                                <div class="description-preview"
-                                     style="max-height: 2.5em; font-size: 0.85em;">
-                                    <?php echo \htmlspecialchars(\strip_tags($chap->description)); ?>
-                                </div>
-                            </td>
-                            <td class="actions-cell">
-                                <form>
-                                    <?php if ($perms['chap_edit']) { ?>
-                                        <button type="button"
-                                                class="button edit btn-edit-chapter"
-                                                data-payload='<?php echo $payload; ?>'
-                                                title="Bearbeiten">
-                                            <i class="fa-solid fa-pen"></i>
-                                        </button>
-                                    <?php } ?>
-                                    <?php if ($perms['chap_del']) { ?>
-                                        <button type="button"
-                                                class="button delete btn-delete-chapter"
-                                                data-id="<?php echo \htmlspecialchars($chap->id); ?>"
-                                                title="Löschen">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    <?php } ?>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php } ?>
                 <?php } ?>
-            </tbody>
-        </table>
-    </div>
-</section>
+            <?php } ?>
+        </tbody>
+    </table>
+</div>

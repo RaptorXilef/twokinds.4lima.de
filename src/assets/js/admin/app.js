@@ -7,7 +7,6 @@ import { UnsavedTracker } from './core/UnsavedTracker.js';
 import { ChapterEditor } from './modules/ChapterEditor.js';
 import { CharacterEditor } from './modules/CharacterEditor.js';
 import { ComicEditor } from './modules/ComicEditor.js';
-import { GroupEditor } from './modules/GroupEditor.js';
 import { ReportManager } from './modules/ReportManager.js';
 import { SystemManager } from './modules/SystemManager.js';
 import { DataTable } from './ui/DataTable.js';
@@ -57,20 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Main Editors (Sofort laden für cross-tab dependencies wie Report->Comic)
     const comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
-    new CharacterEditor(api, modalManager, notifications, formService, tracker);
-    new ChapterEditor(api, modalManager, notifications, formService);
-    new GroupEditor(api, notifications, tracker);
     const reportManager = new ReportManager(api, modalManager, comicEditor, notifications);
     new SystemManager(api, modalManager, notifications);
 
-    // Initialer Check für statische Tabs (wie Charaktere)
-    setTimeout(() => globalUI.handleRowHighlighting(), 300);
+    // Tab-spezifische Instanzen, die wir uns merken, um sie nicht doppelt zu laden
+    let charEditor = null;
+    let chapEditor = null;
+    let groupEditor = null;
 
-    // Re-Initialize Module, wenn ihr HTML-Inhalt nachträglich via AJAX reingeladen wurde
-    // Wird abgefeuert, sobald ein Lazy-Tab fertig geladen wurde
-    document.addEventListener('tabLoaded', (e) => {
-        if (e.detail.tab === 'section-comics') {
-            // 3. Tabellen (Paginierung & Suche) initialisieren (nur für Comics, Reports verwalten sich selbst)
+    document.addEventListener('tabLoaded', async (e) => {
+        const tab = e.detail.tab;
+
+        if (tab === 'section-comics') {
             new DataTable({
                 tableBodySelector: '.comic-editor-table tbody',
                 searchInputId: 'comic-search',
@@ -78,11 +75,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 paginationContainerId: 'comic-pagination',
             });
         }
-        if (e.detail.tab === 'section-reports') {
+        if (tab === 'section-reports') {
             reportManager.initTableLogic();
         }
+        if (tab === 'section-archive' && !chapEditor) {
+            chapEditor = new ChapterEditor(api, modalManager, notifications, formService);
+        }
+        if (tab === 'section-characters' && !charEditor) {
+            charEditor = new CharacterEditor(
+                api,
+                modalManager,
+                notifications,
+                formService,
+                tracker
+            );
+        }
+        if (tab === 'section-groups' && !groupEditor) {
+            const { GroupEditor } = await import('./modules/GroupEditor.js');
+            groupEditor = new GroupEditor(api, notifications, tracker);
+        }
+        if (tab === 'section-upload') {
+            const { MassUploadManager } = await import('./modules/MassUploadManager.js');
+            new MassUploadManager(api, notifications, tracker);
+        }
+        if (tab === 'section-media') {
+            const { MediaGallery } = await import('./modules/MediaGallery.js');
+            new MediaGallery(api, modalManager, notifications, tracker);
+        }
 
-        // Kurz warten bis der Browser die Tabelle gezeichnet hat, DANN scrollen
         setTimeout(() => globalUI.handleRowHighlighting(), 100);
     });
 
@@ -93,17 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
         async () => {
             try {
                 // Importiert die Klassen erst jetzt dynamisch über das Netzwerk
-                const { MassUploadManager } = await import('./modules/MassUploadManager.js');
                 const { CropperManager } = await import('./modules/CropperManager.js');
-                const { MediaGallery } = await import('./modules/MediaGallery.js');
                 const { NewsletterManager } = await import('./modules/NewsletterManager.js');
 
                 // Instanziieren, sobald der Download fertig ist
-                new MassUploadManager(api, notifications, tracker);
                 new CropperManager(api, notifications);
-                new MediaGallery(api, modalManager, notifications, tracker);
                 new NewsletterManager(api, notifications);
-
                 console.info('[AdminApp] Lazy-Load Module nachträglich geladen.');
             } catch (e) {
                 console.error('[AdminApp] Fehler beim Lazy Loading:', e);
@@ -119,5 +134,5 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     });
 
-    console.info('[AdminApp] Core Architektur erfolgreich hochgefahren.');
+    console.info('[AdminApp] 100% AJAX Architektur erfolgreich hochgefahren.');
 });
