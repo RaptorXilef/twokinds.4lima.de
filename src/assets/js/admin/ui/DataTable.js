@@ -34,14 +34,18 @@ export class DataTable {
     }
 
     saveState() {
-        sessionStorage.setItem(
-            this.stateKey,
-            JSON.stringify({
-                page: this.currentPage,
-                limit: this.itemsPerPage,
-                query: this.currentSearchQuery,
-            })
-        );
+        try {
+            sessionStorage.setItem(
+                this.stateKey,
+                JSON.stringify({
+                    page: this.currentPage,
+                    limit: this.itemsPerPage,
+                    query: this.currentSearchQuery,
+                })
+            );
+        } catch (err) {
+            console.error('[DataTable] Konnte Tabellen-Status nicht speichern:', err);
+        }
     }
 
     restoreState() {
@@ -58,7 +62,12 @@ export class DataTable {
                     this.searchInput.value = s.query;
                 }
             }
-        } catch (_err) {} // LINTER FIX: Unused variable
+        } catch (err) {
+            console.warn(
+                '[DataTable] Konnte Tabellen-Status nicht wiederherstellen (Defektes JSON oder Storage blockiert):',
+                err
+            );
+        }
     }
 
     bindEvents() {

@@ -9,8 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Nutzt unsere saubere API-Klasse (inkl. Auto-BaseUrl und CSRF)
     const api = new Api();
 
-    // ThemeManager starten
-    new ThemeManager();
+    try {
+        // ThemeManager starten
+        new ThemeManager();
+    } catch (err) {
+        console.error('[Login] Fehler beim Laden des ThemeManagers:', err);
+    }
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -41,10 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitBtn.textContent = 'Anmelden';
                     document.getElementById('password').value = '';
                 }
-            } catch (_err) {
+            } catch (err) {
+                // Biome-konformes Logging des tatsächlichen Fehlers!
+                console.error('[Login] Kritischer Fehler bei der Anmeldung:', err);
                 statusMsg.style.display = 'block';
                 statusMsg.className = 'status-message status-red visible';
-                statusMsg.textContent = 'Server-Verbindungsfehler.';
+                statusMsg.innerHTML = '<i class="fa-solid fa-bomb"></i> Server-Verbindungsfehler.';
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Anmelden';
             }

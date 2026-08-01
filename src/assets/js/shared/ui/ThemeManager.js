@@ -10,7 +10,14 @@ export class ThemeManager {
 
         // Initialen Status ermitteln ('2' = Dark, alles andere = Light)
         let isDark = false;
-        const pref = localStorage.getItem('themePref');
+        let pref = null;
+
+        // Storage-Zugriff absichern!
+        try {
+            pref = localStorage.getItem('themePref');
+        } catch (err) {
+            console.warn('[ThemeManager] LocalStorage blockiert. Fallback auf System-Theme.', err);
+        }
 
         if (pref === '2') {
             isDark = true;
@@ -38,11 +45,15 @@ export class ThemeManager {
                 // Zustand umkehren
                 isDark = !this.body.classList.contains('theme-night');
 
-                // Speichern (1 = Light, 2 = Dark)
-                localStorage.setItem('themePref', isDark ? '2' : '1');
+                try {
+                    // Speichern (1 = Light, 2 = Dark)
+                    localStorage.setItem('themePref', isDark ? '2' : '1');
 
-                // MAGIE: Wir setzen zusätzlich das Cookie, damit PHP das ab sofort direkt lesen kann!
-                document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
+                    // MAGIE: Wir setzen zusätzlich das Cookie, damit PHP das ab sofort direkt lesen kann!
+                    document.cookie = `themePref=${isDark ? '2' : '1'}; max-age=31536000; path=/; SameSite=Lax`;
+                } catch (err) {
+                    console.error('[ThemeManager] Konnte Theme-Einstellung nicht speichern:', err);
+                }
 
                 // Theme mit Animation anwenden
                 this.applyTheme(isDark, true);
@@ -52,7 +63,14 @@ export class ThemeManager {
         // Auf System-Änderungen reagieren (nur wenn der Nutzer noch keine harte Wahl getroffen hat)
         if (window.matchMedia) {
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                if (!localStorage.getItem('themePref')) {
+                let currentPref = null;
+                try {
+                    currentPref = localStorage.getItem('themePref');
+                } catch (err) {
+                    // Ignorieren, da wir oben schon warnen
+                }
+
+                if (!currentPref) {
                     this.applyTheme(e.matches, true);
                 }
             });

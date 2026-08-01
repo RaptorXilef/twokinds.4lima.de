@@ -48,5 +48,5 @@ document.addEventListener('DOMContentLoaded', () => {
         safeInit('ProfileManager', () => new ProfileManager(api));
     }
 
-    console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren (Maximal gehärtet).');
+    console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren.');
 });

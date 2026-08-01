@@ -14,7 +14,7 @@ export class TabManager {
             '<div style="padding: 100px; text-align: center; color: var(--text-color-faded);"><i class="fa-solid fa-spinner fa-spin fa-3x"></i><br><br><span style="display:block; margin-top:15px; font-weight:bold;">Lade Daten aus der Datenbank...</span></div>';
 
         try {
-            // FIX: Wir fetchen die aktuelle Seite (/admin) statt /api/admin_dashboard
+            // Wir fetchen die aktuelle Seite (/admin) statt /api/admin_dashboard
             const response = await fetch(`${window.location.pathname}?ajax_tab=${tabName}`);
             const res = await response.json();
 
@@ -26,12 +26,13 @@ export class TabManager {
                     new CustomEvent('tabLoaded', { detail: { tab: section.id } })
                 );
             } else {
+                console.error('[TabManager] Server meldet Ladefehler:', res.error);
                 section.innerHTML = `<div class="status-message status-red visible">${res.error || 'Ladefehler'}</div>`;
             }
-        } catch (e) {
-            console.error('[TabManager] Fehler beim Laden des Tabs:', e);
+        } catch (err) {
+            console.error('[TabManager] Kritischer Fehler beim Laden des Tabs:', err);
             section.innerHTML =
-                '<div class="status-message status-red visible">Fehler beim Laden des Tabs. Server nicht erreichbar.</div>';
+                '<div class="status-message status-red visible"><i class="fa-solid fa-bomb"></i> Fehler beim Laden des Tabs. Server nicht erreichbar.</div>';
         }
     }
 
@@ -41,7 +42,12 @@ export class TabManager {
                 const target = e.currentTarget.dataset.target;
                 if (!target) return;
 
-                sessionStorage.setItem('activeAdminTab', target);
+                try {
+                    sessionStorage.setItem('activeAdminTab', target);
+                } catch (err) {
+                    console.warn('[TabManager] Konnte aktiven Tab nicht speichern:', err);
+                }
+
                 window.history.replaceState(null, null, `#${target}`); // URL-Hash anpassen
 
                 document.querySelectorAll('.content-section').forEach((sec) => {
@@ -62,7 +68,14 @@ export class TabManager {
     }
 
     restoreActiveTab() {
-        let activeTab = sessionStorage.getItem('activeAdminTab') ?? 'section-comics';
+        let activeTab = 'section-comics';
+
+        try {
+            const saved = sessionStorage.getItem('activeAdminTab');
+            if (saved) activeTab = saved;
+        } catch (err) {
+            console.warn('[TabManager] Konnte aktiven Tab nicht lesen:', err);
+        }
 
         // Hash prüfen. Wenn wir per URL direkt auf einen Tab zugreifen, gewinnt der Hash!
         if (window.location.hash) {
@@ -72,7 +85,11 @@ export class TabManager {
                 document.querySelector(`#menu .tab-link[data-target="${hashTab}"]`)
             ) {
                 activeTab = hashTab;
-                sessionStorage.setItem('activeAdminTab', activeTab);
+                try {
+                    sessionStorage.setItem('activeAdminTab', activeTab);
+                } catch (err) {
+                    // Ignorieren
+                }
             }
         }
 

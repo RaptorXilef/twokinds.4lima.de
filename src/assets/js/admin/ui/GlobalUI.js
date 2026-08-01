@@ -23,27 +23,31 @@ export class GlobalUI {
     }
 
     initWysiwyg() {
-        if (typeof window.$ !== 'undefined' && typeof window.$.fn.trumbowyg !== 'undefined') {
-            window.$.trumbowyg.svgPath =
-                'https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg';
-            window
-                .$('.wysiwyg-editor')
-                .trumbowyg({
-                    lang: 'de',
-                    btns: [
-                        ['viewHTML'],
-                        ['undo', 'redo'],
-                        ['formatting'],
-                        ['strong', 'em', 'del'],
-                        ['link'],
-                        ['insertImage'],
-                        ['unorderedList', 'orderedList'],
-                        ['removeformat'],
-                    ],
-                })
-                .on('tbwchange', () => {
-                    if (this.tracker) this.tracker.markDirty();
-                });
+        try {
+            if (typeof window.$ !== 'undefined' && typeof window.$.fn.trumbowyg !== 'undefined') {
+                window.$.trumbowyg.svgPath =
+                    'https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/icons.svg';
+                window
+                    .$('.wysiwyg-editor')
+                    .trumbowyg({
+                        lang: 'de',
+                        btns: [
+                            ['viewHTML'],
+                            ['undo', 'redo'],
+                            ['formatting'],
+                            ['strong', 'em', 'del'],
+                            ['link'],
+                            ['insertImage'],
+                            ['unorderedList', 'orderedList'],
+                            ['removeformat'],
+                        ],
+                    })
+                    .on('tbwchange', () => {
+                        if (this.tracker) this.tracker.markDirty();
+                    });
+            }
+        } catch (err) {
+            console.error('[GlobalUI] Trumbowyg WYSIWYG konnte nicht initialisiert werden:', err);
         }
     }
 
@@ -68,7 +72,14 @@ export class GlobalUI {
     }
 
     handleRowHighlighting() {
-        const highlightId = sessionStorage.getItem('highlightEntityId');
+        let highlightId = null;
+        try {
+            highlightId = sessionStorage.getItem('highlightEntityId');
+        } catch (err) {
+            console.warn('[GlobalUI] Kann SessionStorage nicht lesen:', err);
+            return;
+        }
+
         if (!highlightId) return;
 
         const targetBtn =
@@ -83,8 +94,12 @@ export class GlobalUI {
                 tr.classList.remove('row-highlight');
             }, 3000);
 
-            // FIX: Erst löschen, wenn es WIRKLICH auf dieser Seite zu sehen war!
-            sessionStorage.removeItem('highlightEntityId');
+            try {
+                // Erst löschen, wenn es WIRKLICH auf dieser Seite zu sehen war!
+                sessionStorage.removeItem('highlightEntityId');
+            } catch (err) {
+                console.warn('[GlobalUI] Kann SessionStorage nicht bereinigen:', err);
+            }
         }
     }
 }

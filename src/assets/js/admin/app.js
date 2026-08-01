@@ -174,5 +174,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    console.info('[AdminApp] 100% AJAX Architektur erfolgreich hochgefahren (Maximal gehärtet).');
+    console.info('[AdminApp] AJAX Architektur erfolgreich hochgefahren.');
 });
