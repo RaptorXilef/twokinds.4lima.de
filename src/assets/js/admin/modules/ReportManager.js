@@ -1,3 +1,5 @@
+import { renderPagination } from '../ui/Pagination.js';
+
 /**
  * @typedef {import('../core/Api.js').Api} Api
  * @typedef {import('../ui/ModalManager.js').ModalManager} ModalManager
@@ -141,128 +143,12 @@ export class ReportManager {
             emptyMsg.style.display = 'none';
         }
 
-        this.renderPaginationButtons(totalPages);
-        this.saveTableState(); // Speichere den Zustand bei jedem Rendern!
-    }
-
-    renderPaginationButtons(totalPages) {
-        this.paginationContainer.innerHTML = '';
-        if (totalPages <= 1) return;
-
-        const createBtn = (text, isDisabled, isActive, clickHandler) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = `button ${isActive ? 'edit ' : ''}${isDisabled ? 'disabled' : ''}`;
-            btn.innerHTML = text;
-            if (isDisabled) btn.style.opacity = '0.5';
-            if (!isDisabled && clickHandler) btn.onclick = clickHandler;
-            return btn;
-        };
-
-        // Erste Seite (<<)
-        this.paginationContainer.appendChild(
-            createBtn('&laquo;', this.repPage === 1, false, () => {
-                this.repPage = 1;
-                this.renderTable();
-            })
-        );
-
-        // Vorherige Seite (<)
-        this.paginationContainer.appendChild(
-            createBtn('&lsaquo;', this.repPage === 1, false, () => {
-                this.repPage--;
-                this.renderTable();
-            })
-        );
-
-        // Pagination mit Abkürzungen (...)
-        const startPage = Math.max(1, this.repPage - 2);
-        const endPage = Math.min(totalPages, this.repPage + 2);
-
-        if (startPage > 1) {
-            this.paginationContainer.appendChild(
-                createBtn('1', false, false, () => {
-                    this.repPage = 1;
-                    this.renderTable();
-                })
-            );
-            if (startPage > 2) {
-                this.paginationContainer.appendChild(createBtn('...', true, false, null));
-            }
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            this.paginationContainer.appendChild(
-                createBtn(i.toString(), false, i === this.repPage, () => {
-                    this.repPage = i;
-                    this.renderTable();
-                })
-            );
-        }
-
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-                this.paginationContainer.appendChild(createBtn('...', true, false, null));
-            }
-            this.paginationContainer.appendChild(
-                createBtn(totalPages.toString(), false, false, () => {
-                    this.repPage = totalPages;
-                    this.renderTable();
-                })
-            );
-        }
-
-        // Nächste Seite (>)
-        this.paginationContainer.appendChild(
-            createBtn('&rsaquo;', this.repPage === totalPages, false, () => {
-                this.repPage++;
-                this.renderTable();
-            })
-        );
-
-        // Letzte Seite (>>)
-        this.paginationContainer.appendChild(
-            createBtn('&raquo;', this.repPage === totalPages, false, () => {
-                this.repPage = totalPages;
-                this.renderTable();
-            })
-        );
-
-        // Direktauswahl per Eingabefeld
-        const jumpWrapper = document.createElement('div');
-        jumpWrapper.style.display = 'flex';
-        jumpWrapper.style.alignItems = 'center';
-        jumpWrapper.style.marginLeft = '15px';
-        jumpWrapper.style.gap = '8px';
-
-        const jumpLabel = document.createElement('span');
-        jumpLabel.textContent = 'Seite:';
-        jumpLabel.style.fontSize = '0.9em';
-        jumpLabel.style.color = 'var(--text-color-faded)';
-
-        const jumpInput = document.createElement('input');
-        jumpInput.type = 'number';
-        jumpInput.min = 1;
-        jumpInput.max = totalPages;
-        jumpInput.value = this.repPage;
-        jumpInput.style.width = '60px';
-        jumpInput.style.padding = '4px 8px';
-        jumpInput.style.border = '1px solid var(--border-medium)';
-        jumpInput.style.borderRadius = '4px';
-        jumpInput.style.background = 'var(--content-bg)';
-        jumpInput.style.color = 'var(--text-color)';
-
-        jumpInput.addEventListener('change', (e) => {
-            let page = parseInt(e.target.value, 10);
-            if (isNaN(page) || page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
-            this.repPage = page;
+        renderPagination(this.paginationContainer, this.repPage, totalPages, (newPage) => {
+            this.repPage = newPage;
             this.renderTable();
         });
 
-        jumpWrapper.appendChild(jumpLabel);
-        jumpWrapper.appendChild(jumpInput);
-        this.paginationContainer.appendChild(jumpWrapper);
+        this.saveTableState(); // Speichere den Zustand bei jedem Rendern!
     }
 
     bindEvents() {

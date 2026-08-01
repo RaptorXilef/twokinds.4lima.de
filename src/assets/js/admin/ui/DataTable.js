@@ -1,4 +1,5 @@
 import { debounce } from '../utils/Utils.js';
+import { renderPagination } from './Pagination.js';
 
 export class DataTable {
     constructor(config) {
@@ -78,125 +79,6 @@ export class DataTable {
         });
     }
 
-    renderPaginationButtons(totalPages) {
-        this.paginationContainer.innerHTML = '';
-        if (totalPages <= 1) return;
-
-        const createBtn = (text, isDisabled, isActive, clickHandler) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = `button ${isActive ? 'edit ' : ''}${isDisabled ? 'disabled' : ''}`;
-            btn.innerHTML = text;
-            if (isDisabled) btn.style.opacity = '0.5';
-            if (!isDisabled && clickHandler) btn.onclick = clickHandler;
-            return btn;
-        };
-
-        // Erste Seite (<<)
-        this.paginationContainer.appendChild(
-            createBtn('&laquo;', this.currentPage === 1, false, () => {
-                this.currentPage = 1;
-                this.renderTable();
-            })
-        );
-
-        // Vorherige Seite (<)
-        this.paginationContainer.appendChild(
-            createBtn('&lsaquo;', this.currentPage === 1, false, () => {
-                this.currentPage--;
-                this.renderTable();
-            })
-        );
-
-        const startPage = Math.max(1, this.currentPage - 2);
-        const endPage = Math.min(totalPages, this.currentPage + 2);
-
-        if (startPage > 1) {
-            this.paginationContainer.appendChild(
-                createBtn('1', false, false, () => {
-                    this.currentPage = 1;
-                    this.renderTable();
-                })
-            );
-            if (startPage > 2) {
-                this.paginationContainer.appendChild(createBtn('...', true, false, null));
-            }
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            this.paginationContainer.appendChild(
-                createBtn(i.toString(), false, i === this.currentPage, () => {
-                    this.currentPage = i;
-                    this.renderTable();
-                })
-            );
-        }
-
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-                this.paginationContainer.appendChild(createBtn('...', true, false, null));
-            }
-            this.paginationContainer.appendChild(
-                createBtn(totalPages.toString(), false, false, () => {
-                    this.currentPage = totalPages;
-                    this.renderTable();
-                })
-            );
-        }
-
-        // Nächste Seite (>)
-        this.paginationContainer.appendChild(
-            createBtn('&rsaquo;', this.currentPage === totalPages, false, () => {
-                this.currentPage++;
-                this.renderTable();
-            })
-        );
-
-        // Letzte Seite (>>)
-        this.paginationContainer.appendChild(
-            createBtn('&raquo;', this.currentPage === totalPages, false, () => {
-                this.currentPage = totalPages;
-                this.renderTable();
-            })
-        );
-
-        // Direktauswahl per Eingabefeld
-        const jumpWrapper = document.createElement('div');
-        jumpWrapper.style.display = 'flex';
-        jumpWrapper.style.alignItems = 'center';
-        jumpWrapper.style.marginLeft = '15px';
-        jumpWrapper.style.gap = '8px';
-
-        const jumpLabel = document.createElement('span');
-        jumpLabel.textContent = 'Seite:';
-        jumpLabel.style.fontSize = '0.9em';
-        jumpLabel.style.color = 'var(--text-color-faded)';
-
-        const jumpInput = document.createElement('input');
-        jumpInput.type = 'number';
-        jumpInput.min = 1;
-        jumpInput.max = totalPages;
-        jumpInput.value = this.currentPage;
-        jumpInput.style.width = '60px';
-        jumpInput.style.padding = '4px 8px';
-        jumpInput.style.border = '1px solid var(--border-medium)';
-        jumpInput.style.borderRadius = '4px';
-        jumpInput.style.background = 'var(--content-bg)';
-        jumpInput.style.color = 'var(--text-color)';
-
-        jumpInput.addEventListener('change', (e) => {
-            let page = parseInt(e.target.value, 10);
-            if (isNaN(page) || page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
-            this.currentPage = page;
-            this.renderTable();
-        });
-
-        jumpWrapper.appendChild(jumpLabel);
-        jumpWrapper.appendChild(jumpInput);
-        this.paginationContainer.appendChild(jumpWrapper);
-    }
-
     renderTable() {
         const filteredRows = this.allRows.filter((row) =>
             row.textContent.toLowerCase().includes(this.currentSearchQuery.toLowerCase())
@@ -229,7 +111,11 @@ export class DataTable {
             emptyMsg.style.display = 'none';
         }
 
-        this.renderPaginationButtons(totalPages);
+        renderPagination(this.paginationContainer, this.currentPage, totalPages, (newPage) => {
+            this.currentPage = newPage;
+            this.renderTable();
+        });
+
         this.saveState(); // Speichere den Zustand bei jedem Rendern!
     }
 }
