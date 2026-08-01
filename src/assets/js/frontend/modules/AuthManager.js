@@ -10,9 +10,15 @@ export class AuthManager {
         if (btnLogout) {
             btnLogout.addEventListener('click', async (e) => {
                 e.preventDefault();
-                const json = await this.api.post('frontend_logout');
-                if (json.success) {
-                    window.location.href = this.api.baseUrl + '/';
+                try {
+                    const json = await this.api.post('frontend_logout');
+                    if (json.success) {
+                        window.location.href = this.api.baseUrl + '/';
+                    } else {
+                        console.warn('[AuthManager] Logout vom Server abgelehnt:', json.error);
+                    }
+                } catch (err) {
+                    console.error('[AuthManager] Unerwarteter Fehler beim Logout:', err);
                 }
             });
         }

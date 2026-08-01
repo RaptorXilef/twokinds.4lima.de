@@ -101,9 +101,16 @@ export class ArchiveManager {
             (c) => c.dataset.chId
         );
         const data = {
-            expireTime: Date.now() + 600000, // 10 Minuten in der Zukunft
+            expireTime: Date.now() + 600000,
             expandedChapters: expanded,
         };
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        } catch (err) {
+            console.error(
+                '[ArchiveManager] Fehler beim Speichern im LocalStorage (Speicher voll oder blockiert?):',
+                err
+            );
+        }
     }
 }

@@ -19,8 +19,10 @@ export class FrontendApi {
             if (isJson) {
                 return await response.json();
             }
+            console.error(`[FrontendApi] POST /api/${endpoint} lieferte kein gültiges JSON.`);
             return { success: false, error: 'Ungültige Server-Antwort.' };
         } catch (error) {
+            console.error(`[FrontendApi] Netzwerkfehler bei POST /api/${endpoint}:`, error);
             return { success: false, error: 'Netzwerkfehler.' };
         }
     }
@@ -31,8 +33,11 @@ export class FrontendApi {
             const response = await fetch(`${this.baseUrl}/api/${endpoint}${query}`);
             const isJson = response.headers.get('content-type')?.includes('application/json');
             if (isJson) return await response.json();
+
+            console.error(`[FrontendApi] GET /api/${endpoint} lieferte kein gültiges JSON.`);
             return { success: false, error: 'Ungültige Server-Antwort.' };
         } catch (error) {
+            console.error(`[FrontendApi] Netzwerkfehler bei GET /api/${endpoint}:`, error);
             return { success: false, error: 'Netzwerkfehler.' };
         }
     }

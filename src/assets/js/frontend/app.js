@@ -14,21 +14,39 @@ import { AccordionManager } from './ui/AccordionManager.js';
 import { ImageFallback } from './ui/ImageFallback.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const api = new FrontendApi();
+    let api;
+    try {
+        api = new FrontendApi();
+    } catch (err) {
+        console.error('[Frontend] Kritischer Fehler: API konnte nicht initialisiert werden.', err);
+    }
 
-    new ThemeManager();
-    new ImageFallback();
-    new AccordionManager();
-    new AuthManager(api);
-    new ReportModal(api);
-    new ComicReader(api);
-    new CookieConsentManager();
-    new ArchiveManager();
-    new BookmarksManager(api);
-    new AuthForms(api);
-    new ProfileManager(api);
-    new CharacterFilter();
-    new EmailProtector();
+    // Hilfsfunktion: Fängt Abstürze einzelner Module ab, ohne das ganze Frontend lahmzulegen
+    const safeInit = (name, initFn) => {
+        try {
+            initFn();
+        } catch (err) {
+            console.error(`[Frontend] Fehler beim Laden des Moduls: ${name}`, err);
+        }
+    };
 
-    console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren.');
+    safeInit('ThemeManager', () => new ThemeManager());
+    safeInit('ImageFallback', () => new ImageFallback());
+    safeInit('AccordionManager', () => new AccordionManager());
+    safeInit('CookieConsentManager', () => new CookieConsentManager());
+    safeInit('ArchiveManager', () => new ArchiveManager());
+    safeInit('CharacterFilter', () => new CharacterFilter());
+    safeInit('EmailProtector', () => new EmailProtector());
+
+    // API-abhängige Module nur laden, wenn die API existiert
+    if (api) {
+        safeInit('AuthManager', () => new AuthManager(api));
+        safeInit('ReportModal', () => new ReportModal(api));
+        safeInit('ComicReader', () => new ComicReader(api));
+        safeInit('BookmarksManager', () => new BookmarksManager(api));
+        safeInit('AuthForms', () => new AuthForms(api));
+        safeInit('ProfileManager', () => new ProfileManager(api));
+    }
+
+    console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren (Maximal gehärtet).');
 });
