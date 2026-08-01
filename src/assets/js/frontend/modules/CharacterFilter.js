@@ -9,6 +9,15 @@ export class CharacterFilter {
         this.initFilters();
     }
 
+    // --- Mini-Debounce ---
+    debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
     initToggle() {
         const toggleBtn = document.getElementById('toggle-char-view');
         const toggleText = document.getElementById('toggle-view-text');
@@ -48,10 +57,11 @@ export class CharacterFilter {
             languages: document.getElementById('char-filter-languages'),
         };
 
-        const applyFilters = () => this.applyFilters();
+        // Debounce mit 250ms Verzögerung!
+        const applyFiltersDebounced = this.debounce(() => this.applyFilters(), 250);
 
         Object.values(this.filters).forEach((input) => {
-            if (input) input.addEventListener('input', applyFilters);
+            if (input) input.addEventListener('input', applyFiltersDebounced);
         });
 
         if (this.btnReset) {
@@ -59,7 +69,7 @@ export class CharacterFilter {
                 Object.values(this.filters).forEach((input) => {
                     if (input) input.value = '';
                 });
-                applyFilters();
+                this.applyFilters(); // Hier direkt ausführen ohne Debounce
             });
         }
     }

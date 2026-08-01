@@ -39,9 +39,30 @@ export class BookmarksManager {
         }
     }
 
+    // --- HILFSFUNKTIONEN ---
+    getSafeStorage() {
+        try {
+            return JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        } catch (err) {
+            console.warn('[BookmarksManager] LocalStorage blockiert oder defekt.', err);
+            return {};
+        }
+    }
+
+    setSafeStorage(data) {
+        try {
+            localStorage.setItem('comicBookmarksMap', JSON.stringify(data));
+        } catch (err) {
+            console.error(
+                '[BookmarksManager] Konnte Lesezeichen nicht speichern (Speicher voll/blockiert).',
+                err
+            );
+        }
+    }
+
+    // --- METHODEN ---
     getLocalIds() {
-        const map = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
-        return Object.keys(map);
+        return Object.keys(this.getSafeStorage());
     }
 
     applyCloudToLocal(ids) {
@@ -50,30 +71,8 @@ export class BookmarksManager {
         ids.forEach((id) => {
             newMap[id] = { id: id, added: now };
         });
-        localStorage.setItem('comicBookmarksMap', JSON.stringify(newMap));
+        this.setSafeStorage(newMap);
         this.renderBookmarks();
-    }
-
-    async syncApi(resolution) {
-        const fd = new window.FormData();
-        fd.append('resolution', resolution);
-        fd.append('local_ids', JSON.stringify(this.getLocalIds()));
-
-        const json = await this.api.post('sync_bookmarks', fd);
-        if (json.success) {
-            if (json.status === 'conflict') {
-                this.conflictModal.style.display = 'block';
-                document.getElementById('sync-cloud-count').textContent = json.db_ids.length;
-                document.getElementById('sync-local-count').textContent = json.local_ids.length;
-            } else if (json.status === 'resolved' || json.status === 'synced') {
-                this.applyCloudToLocal(json.final_ids);
-            }
-        }
-    }
-
-    async resolveSync(resolution) {
-        this.conflictModal.style.display = 'none';
-        await this.syncApi(resolution);
     }
 
     async removeBookmark(id) {
@@ -83,9 +82,9 @@ export class BookmarksManager {
             fd.append('bookmark_action', 'remove');
             await this.api.post('toggle_bookmark', fd);
         }
-        const map = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        const map = this.getSafeStorage();
         delete map[id];
-        localStorage.setItem('comicBookmarksMap', JSON.stringify(map));
+        this.setSafeStorage(map);
         this.renderBookmarks();
     }
 

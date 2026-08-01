@@ -132,31 +132,61 @@ export class ReportModal {
                         '<i class="fa-solid fa-spinner fa-spin"></i> Lade aktuelles Transkript...',
                         'info'
                     );
-                    const json = await this.api.get('get_transcript', `id=${comicId}`);
-                    this.statusMsg.style.display = 'none';
 
-                    if (json.success) {
-                        if (originalInput) originalInput.value = json.transcript;
-                        if (typeof window.$ !== 'undefined')
-                            window.$('.public-wysiwyg').trumbowyg('html', json.transcript);
-                        if (transcriptSection) transcriptSection.style.display = 'block';
-                        if (descInput)
-                            descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
-                    } else {
-                        alert(json.error);
+                    try {
+                        const json = await this.api.get('get_transcript', `id=${comicId}`);
+                        this.statusMsg.style.display = 'none';
+
+                        if (json.success) {
+                            if (originalInput) originalInput.value = json.transcript;
+
+                            // FIX: Vollständige Überprüfung von Trumbowyg hinzugefügt
+                            if (
+                                typeof window.$ !== 'undefined' &&
+                                typeof window.$.fn.trumbowyg !== 'undefined'
+                            ) {
+                                window.$('.public-wysiwyg').trumbowyg('html', json.transcript);
+                            }
+
+                            if (transcriptSection) transcriptSection.style.display = 'block';
+                            if (descInput)
+                                descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
+                        } else {
+                            console.error(
+                                '[ReportModal] API-Fehler beim Laden des Transkripts:',
+                                json.error
+                            );
+                            alert(json.error);
+                            e.target.value = '';
+                        }
+                    } catch (err) {
+                        console.error(
+                            '[ReportModal] Kritischer Fehler beim Abrufen des Transkripts:',
+                            err
+                        );
+                        alert('Ein Netzwerkfehler ist aufgetreten.');
                         e.target.value = '';
                     }
                 } else {
+                    console.warn('[ReportModal] Systemfehler: Comic-ID fehlt für den Abruf.');
                     alert('Systemfehler: Comic-ID fehlt.');
                     e.target.value = '';
                 }
             } else if (charDescRaw) {
                 if (originalInput) originalInput.value = charDescRaw.value;
-                if (typeof window.$ !== 'undefined')
+
+                // FIX: Vollständige Überprüfung von Trumbowyg hinzugefügt
+                if (
+                    typeof window.$ !== 'undefined' &&
+                    typeof window.$.fn.trumbowyg !== 'undefined'
+                ) {
                     window.$('.public-wysiwyg').trumbowyg('html', charDescRaw.value);
+                }
+
                 if (transcriptSection) transcriptSection.style.display = 'block';
                 if (descInput) descInput.placeholder = 'Zusätzliche Anmerkungen (Optional)...';
             } else {
+                console.warn('[ReportModal] Systemfehler: Weder Comic noch Charakter gefunden.');
                 alert('Systemfehler: Keine Textquelle auf dieser Seite gefunden.');
                 e.target.value = '';
             }
@@ -216,38 +246,54 @@ export class ReportModal {
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sende...';
 
-        const formData = new window.FormData(this.form);
-        const json = await this.api.post('submit_report', formData);
+        try {
+            const formData = new window.FormData(this.form);
+            const json = await this.api.post('submit_report', formData);
 
-        if (json.success) {
-            this.showStatus(`<i class="fa-solid fa-check"></i> ${json.message}`, 'success');
-            this.form.reset();
-            if (typeof window.$ !== 'undefined') window.$('.public-wysiwyg').trumbowyg('empty');
+            if (json.success) {
+                this.showStatus(`<i class="fa-solid fa-check"></i> ${json.message}`, 'success');
+                this.form.reset();
 
-            const transcriptSection = document.getElementById('transcript-edit-section');
-            if (transcriptSection) transcriptSection.style.display = 'none';
+                // FIX: Vollständige Überprüfung von Trumbowyg hinzugefügt
+                if (
+                    typeof window.$ !== 'undefined' &&
+                    typeof window.$.fn.trumbowyg !== 'undefined'
+                ) {
+                    window.$('.public-wysiwyg').trumbowyg('empty');
+                }
 
-            const dropZone = document.getElementById('report-drop-zone');
-            if (dropZone) {
-                dropZone.style.borderColor = 'var(--border-medium)';
-                dropZone.style.backgroundColor = 'var(--table-row-even)';
+                const transcriptSection = document.getElementById('transcript-edit-section');
+                if (transcriptSection) transcriptSection.style.display = 'none';
+
+                const dropZone = document.getElementById('report-drop-zone');
+                if (dropZone) {
+                    dropZone.style.borderColor = 'var(--border-medium)';
+                    dropZone.style.backgroundColor = 'var(--table-row-even)';
+                }
+                const fileName = document.getElementById('report-screenshot-name');
+                if (fileName) fileName.style.display = 'none';
+
+                setTimeout(() => {
+                    this.modal.style.display = 'none';
+                    this.statusMsg.style.display = 'none';
+                }, 3000);
+            } else {
+                console.warn('[ReportModal] Report abgelehnt vom Server:', json.error);
+                this.showStatus(
+                    `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`,
+                    'error'
+                );
             }
-            const fileName = document.getElementById('report-screenshot-name');
-            if (fileName) fileName.style.display = 'none';
-
-            setTimeout(() => {
-                this.modal.style.display = 'none';
-                this.statusMsg.style.display = 'none';
-            }, 3000);
-        } else {
+        } catch (err) {
+            console.error('[ReportModal] Unerwarteter Fehler beim Senden des Reports:', err);
             this.showStatus(
-                `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`,
+                '<i class="fa-solid fa-bomb"></i> Fehler bei der Serververbindung.',
                 'error'
             );
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Fehler melden';
         }
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Fehler melden';
     }
 
     showStatus(html, type) {

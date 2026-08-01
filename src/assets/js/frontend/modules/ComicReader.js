@@ -40,22 +40,30 @@ export class ComicReader {
             let touchendX = 0;
             const swipeThreshold = 50;
 
-            this.comicImg.addEventListener('touchstart', (e) => {
-                touchstartX = e.changedTouches[0].screenX;
-            }, { passive: true });
+            this.comicImg.addEventListener(
+                'touchstart',
+                (e) => {
+                    touchstartX = e.changedTouches[0].screenX;
+                },
+                { passive: true }
+            );
 
-            this.comicImg.addEventListener('touchend', (e) => {
-                touchendX = e.changedTouches[0].screenX;
+            this.comicImg.addEventListener(
+                'touchend',
+                (e) => {
+                    touchendX = e.changedTouches[0].screenX;
 
-                // Nach links wischen = Nächste Seite
-                if (touchendX < touchstartX - swipeThreshold && this.navNext) {
-                    window.location.href = this.navNext.href;
-                }
-                // Nach rechts wischen = Vorherige Seite
-                if (touchendX > touchstartX + swipeThreshold && this.navPrev) {
-                    window.location.href = this.navPrev.href;
-                }
-            }, { passive: true });
+                    // Nach links wischen = Nächste Seite
+                    if (touchendX < touchstartX - swipeThreshold && this.navNext) {
+                        window.location.href = this.navNext.href;
+                    }
+                    // Nach rechts wischen = Vorherige Seite
+                    if (touchendX > touchstartX + swipeThreshold && this.navPrev) {
+                        window.location.href = this.navPrev.href;
+                    }
+                },
+                { passive: true }
+            );
         }
     }
 
@@ -81,20 +89,30 @@ export class ComicReader {
     bindBookmark() {
         const comicId = this.btnBookmark.dataset.id;
         const isLoggedIn = this.btnBookmark.dataset.loggedIn === 'true';
+        let bookmarks = {};
 
-        // Initialen Status aus LocalStorage prüfen
-        let bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        // Initiales Auslesen absichern
+        try {
+            bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        } catch (err) {
+            console.warn('[ComicReader] LocalStorage nicht verfügbar.', err);
+        }
+
         if (bookmarks[comicId]) {
             this.btnBookmark.classList.add('bookmarked');
             this.btnBookmark.title = 'Lesezeichen entfernt';
         }
 
         this.btnBookmark.addEventListener('click', async () => {
-            bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+            try {
+                bookmarks = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+            } catch (err) {
+                bookmarks = {};
+            }
+
             const isAdding = !bookmarks[comicId];
             const action = isAdding ? 'add' : 'remove';
 
-            // LocalStorage sofort updaten (optimistisches UI-Update)
             if (!isAdding) {
                 delete bookmarks[comicId];
                 this.btnBookmark.classList.remove('bookmarked');
@@ -104,7 +122,16 @@ export class ComicReader {
                 this.btnBookmark.classList.add('bookmarked');
                 this.btnBookmark.title = 'Lesezeichen entfernt';
             }
-            localStorage.setItem('comicBookmarksMap', JSON.stringify(bookmarks));
+
+            // Speichern absichern
+            try {
+                localStorage.setItem('comicBookmarksMap', JSON.stringify(bookmarks));
+            } catch (err) {
+                console.error(
+                    '[ComicReader] Lesezeichen konnte lokal nicht gespeichert werden.',
+                    err
+                );
+            }
 
             // Wenn eingeloggt, synchronisiere mit dem Server via unserer neuen FrontendApi
             if (isLoggedIn) {
@@ -114,7 +141,7 @@ export class ComicReader {
 
                 // Wir feuern den Request ab und müssen nicht mal aufs Result warten,
                 // da die UI bereits reagiert hat.
-                this.api.post('toggle_bookmark', formData).catch(e => {
+                this.api.post('toggle_bookmark', formData).catch((e) => {
                     console.error('[ComicReader] Fehler beim Sync des Lesezeichens:', e);
                 });
             }
