@@ -35,23 +35,43 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
     <link rel="stylesheet"
           href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
-    <!-- FontAwesome (falls du es nutzt) für Icons -->
+    <!-- FontAwesome für Icons (Stellt alle Vektor-Symbole wie Buttons, Warnhinweise und Menü-Icons bereit) -->
+    <!-- https://cdnjs.com/libraries/font-awesome -->
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css">
 
-    <!-- Trumbowyg Editor Styles -->
+    <!-- Trumbowyg Editor Styles (Das optische Design für unseren Text-Editor für Transkripte und Biografien) -->
+    <!-- https://cdnjs.com/libraries/Trumbowyg -->
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css">
-    <!-- Cropper.js Styles -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/ui/trumbowyg.min.css">
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/langs/de.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/7.0.0/diff.min.js"></script>
+    <!-- Cropper.js Styles (Das Layout für das Zuschneide-Werkzeug der Social-Media-Vorschaubilder) -->
+    <!-- https://cdnjs.com/libraries/cropperjs -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.0.0-alpha.2/cropper.min.css">
+
+    <!-- jQuery (Basis-Bibliothek zur DOM-Manipulation; wird zwingend vom Trumbowyg-Editor als Abhängigkeit benötigt) -->
+    <!-- https://releases.jquery.com/ -->
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"
+            integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao="
+            crossorigin="anonymous"></script>
+
+    <!-- Sortable.js (Ermöglicht das Drag & Drop zum Sortieren von Elementen, z.B. bei der Charakter-Gruppenverwaltung) -->
+    <!-- https://cdnjs.com/libraries/Sortable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.7/Sortable.min.js"></script>
+
+    <!-- Trumbowyg Editor Scripts (Die Kern-Logik für den leichten WYSIWYG Text-Editor inkl. deutschem Sprachpaket) -->
+    <!-- https://cdnjs.com/libraries/Trumbowyg -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/trumbowyg.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/langs/de.min.js"></script>
+
+    <!-- Cropper.js Script (Die Logik, mit der ich die hochauflösenden Bilder für Twitter/Facebook zuschneiden kann) -->
+    <!-- https://cdnjs.com/libraries/cropperjs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/2.1.1/cropper.min.js"></script>
+
+    <!-- jsdiff (Vergleicht zwei Texte miteinander und hebt Änderungen grün/rot hervor, genutzt bei den Transkript-Reports) -->
+    <!-- https://cdnjs.com/libraries/jsdiff -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
 
     <meta name="csrf-token"
           content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">

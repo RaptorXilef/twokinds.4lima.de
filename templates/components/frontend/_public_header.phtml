@@ -84,10 +84,15 @@ elseif (isset($character) && \is_object($character)) {
     <!-- Meta-Tags für Sicherheit & Analytics -->
     <meta name="csrf-token"
           content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    <!-- FontAwesome für Icons -->
+    <!-- https://cdnjs.com/libraries/font-awesome -->
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css">
+
+    <!-- Trumbowyg Editor Styles -->
+    <!-- https://cdnjs.com/libraries/Trumbowyg -->
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css">
+          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/ui/trumbowyg.min.css">
 </head>
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
