@@ -65,20 +65,30 @@ export class MassUploadManager {
         DragDropService.bind('mass-drop-zone', 'mass-upload-input', {
             onChange: (files) => {
                 DragDropService.reset('mass-drop-zone');
-                document.getElementById('mass-upload-input').value = '';
+                const input = document.getElementById('mass-upload-input');
+                if (input) input.value = '';
                 this.processDroppedFiles(files);
             },
         });
 
-        this.queueTableBody.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-remove-queue');
-            if (btn) {
-                this.uploadQueue.delete(btn.dataset.id);
-                this.renderQueueTable();
-            }
-        });
+        const section = document.getElementById('section-upload');
+        if (section) {
+            section.addEventListener('click', (e) => {
+                const btnRemove = e.target.closest('.btn-remove-queue');
+                const btnStart = e.target.closest('#btn-start-mass-upload');
 
-        this.btnStartMassUpload?.addEventListener('click', () => this.startMassUpload());
+                if (btnRemove) {
+                    e.preventDefault();
+                    this.uploadQueue.delete(btnRemove.dataset.id);
+                    this.renderQueueTable();
+                }
+                // Starte nur, wenn der Button nicht deaktiviert ist
+                if (btnStart && !btnStart.disabled) {
+                    e.preventDefault();
+                    this.startMassUpload();
+                }
+            });
+        }
     }
 
     async processDroppedFiles(files) {

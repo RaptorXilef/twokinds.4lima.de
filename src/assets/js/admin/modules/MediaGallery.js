@@ -45,17 +45,23 @@ export class MediaGallery {
     }
 
     bindSectionEvents() {
-        // Tab-Steuerung
-        this.section.querySelectorAll('.media-tab-btn').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
+        this.mediaSearchInput?.addEventListener('input', this.applyFilterDebounced);
+
+        // Alle Klicks delegieren (Tabs & Löschen-Buttons)
+        this.section.addEventListener('click', async (e) => {
+            const tabBtn = e.target.closest('.media-tab-btn');
+            const deleteBtn = e.target.closest('.btn-delete-gallery-item');
+
+            if (tabBtn) {
+                e.preventDefault();
                 this.section.querySelectorAll('.media-tab-btn').forEach((b) => {
                     b.classList.remove('active');
                     b.classList.add('edit');
                 });
-                e.target.classList.remove('edit');
-                e.target.classList.add('active');
+                tabBtn.classList.remove('edit');
+                tabBtn.classList.add('active');
 
-                this.currentMediaTab = e.target.dataset.type;
+                this.currentMediaTab = tabBtn.dataset.type;
                 const viewChars = document.getElementById('media-view-characters');
                 const viewComics = document.getElementById('media-view-comics');
 
@@ -66,51 +72,42 @@ export class MediaGallery {
                     viewComics.style.display = this.currentMediaTab === 'comics' ? 'block' : 'none';
 
                 this.loadMedia();
-            });
-        });
-
-        // Live Filter
-        // Verwendet jetzt das Performance-schonende Debounce
-        this.mediaSearchInput?.addEventListener('input', this.applyFilterDebounced);
-
-        // Löschen per Event Delegation
-        this.section.addEventListener('click', async (e) => {
-            const btn = e.target.closest('.btn-delete-gallery-item');
-            if (!btn) return;
-
-            const type = btn.dataset.type;
-            const id = btn.dataset.id;
-
-            if (type === 'character') {
-                if (!confirm(`Datei ${id} wirklich löschen?`)) return;
-                const fd = new window.FormData();
-                fd.append('filename', id);
-                await this.api.post('delete_media', fd);
-            } else if (type === 'comic') {
-                const check = prompt(
-                    `ACHTUNG: Dies löscht physisch ALLE Varianten der Comicseite ${id}.\nTippe "${id}" zum Bestätigen:`
-                );
-                if (check === id) {
-                    const fd = new window.FormData();
-                    fd.append('comic_id', id);
-                    await this.api.post('delete_comic_media', fd);
-                }
+                return;
             }
-            this.loadMedia();
+
+            if (deleteBtn) {
+                e.preventDefault();
+                const type = deleteBtn.dataset.type;
+                const id = deleteBtn.dataset.id;
+
+                if (type === 'character') {
+                    if (!confirm(`Datei ${id} wirklich löschen?`)) return;
+                    const fd = new window.FormData();
+                    fd.append('filename', id);
+                    await this.api.post('delete_media', fd);
+                } else if (type === 'comic') {
+                    const check = prompt(
+                        `ACHTUNG: Dies löscht physisch ALLE Varianten der Comicseite ${id}.\nTippe "${id}" zum Bestätigen:`
+                    );
+                    if (check === id) {
+                        const fd = new window.FormData();
+                        fd.append('comic_id', id);
+                        await this.api.post('delete_comic_media', fd);
+                    }
+                }
+                this.loadMedia();
+            }
         });
 
-        // SCHRUMPFKUR DURCH DRAG DROP SERVICE
         DragDropService.bind('media-drop-zone', 'media-upload-input', {
             onChange: async (files) => {
                 DragDropService.reset('media-drop-zone');
                 if (files.length === 0) return;
                 this.notifications.show('Lade Bilder hoch...', 'info');
-
                 const fd = new window.FormData();
                 for (const file of files) {
                     fd.append('files[]', file);
                 }
-
                 const json = await this.api.post('upload_media', fd);
                 if (json.success) {
                     this.notifications.show(json.message, 'success');
@@ -118,7 +115,8 @@ export class MediaGallery {
                 } else {
                     this.notifications.show(json.error, 'error');
                 }
-                document.getElementById('media-upload-input').value = '';
+                const uploadInput = document.getElementById('media-upload-input');
+                if (uploadInput) uploadInput.value = '';
             },
         });
     }

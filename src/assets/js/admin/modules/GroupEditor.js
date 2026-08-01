@@ -25,43 +25,43 @@ export class GroupEditor {
     }
 
     bindEvents() {
-        const btnAddGroup = document.getElementById('btn-add-group');
-        if (btnAddGroup) {
-            btnAddGroup.addEventListener('click', () => this.addGroupHTML());
-        }
+        if (!this.section) return;
 
-        // 1. Neue Gruppe speichern (Kleines Formular direkt auf der Seite)
-        const btnSaveGroups = document.getElementById('btn-save-groups');
-        if (btnSaveGroups) {
-            btnSaveGroups.addEventListener('click', () => this.saveGroups(btnSaveGroups));
-        }
-
-        // 2. Gruppe löschen (Event Delegation in der Gruppenliste)
+        // Alle Klicks (Buttons, Icons) zentral über die Section delegieren
         this.section.addEventListener('click', (e) => {
+            const btnAddGroup = e.target.closest('#btn-add-group');
+            const btnSaveGroups = e.target.closest('#btn-save-groups');
             const btnDelete = e.target.closest('.btn-delete-group');
+            const btnRemoveChar = e.target.closest('.remove-char-from-group');
+            const btnTogglePool = e.target.closest('#btn-toggle-pool');
+
+            if (btnAddGroup) {
+                e.preventDefault();
+                this.addGroupHTML();
+            }
+            if (btnSaveGroups) {
+                e.preventDefault();
+                this.saveGroups(btnSaveGroups);
+            }
             if (btnDelete) {
                 e.preventDefault();
                 this.tracker.markDirty();
                 const groupEl = btnDelete.closest('.character-group');
                 if (groupEl) groupEl.remove();
             }
-
-            const btnRemoveChar = e.target.closest('.remove-char-from-group');
             if (btnRemoveChar) {
                 e.preventDefault();
                 this.tracker.markDirty();
                 const entry = btnRemoveChar.closest('.character-entry');
                 if (entry) entry.remove();
             }
-
-            const btnTogglePool = e.target.closest('#btn-toggle-pool');
             if (btnTogglePool) {
                 e.preventDefault();
                 this.togglePool(btnTogglePool);
             }
         });
 
-        // Checkbox für manuelles Sortieren -> LIVE UPDATE IN SORTABLE
+        // Checkbox-Änderungen delegieren
         this.section.addEventListener('change', (e) => {
             if (e.target.classList.contains('manual-sort-cb')) {
                 this.tracker.markDirty();
