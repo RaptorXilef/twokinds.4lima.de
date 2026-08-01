@@ -2,6 +2,19 @@
 
 
 
+## [6.5.2](https://github.com///compare/v6.5.1...v6.5.2) (2026-08-01)
+
+### 🐛 Bug Fixes
+
+* **admin:** resolve ghost draft issue causing repetitive unsaved changes prompts ([e21ce95](https://github.com///commit/e21ce95300dd0ed3b09e988dc9eb97743f669b34))
+* **admin:** scope auto-save drafts to specific entities to prevent cross-contamination ([44f6234](https://github.com///commit/44f6234dd34de85a8232a03fa8bdb4a932041829))
+
+### ⚙️ Refactoring
+
+* **admin:** enforce 100% event delegation for core editors to maximize robustness ([f87dc26](https://github.com///commit/f87dc26918fdece620eab1067d993cba9ce339ef))
+* **admin:** harden app.js entry point against network latencies and missing DOM nodes ([b11f9f2](https://github.com///commit/b11f9f25e7f130524cfadf4270d0ebb13842b142))
+* **admin:** standardize event delegation across all remaining admin modules ([40e9785](https://github.com///commit/40e9785652d57d5e2735d213cd1ad39e5a76e66a))
+
 ## [6.5.1](https://github.com///compare/v6.5.0...v6.5.1) (2026-08-01)
 
 ### 🐛 Bug Fixes
