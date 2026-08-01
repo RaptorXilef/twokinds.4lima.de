@@ -2,6 +2,17 @@
 
 
 
+## [6.5.1](https://github.com///compare/v6.5.0...v6.5.1) (2026-08-01)
+
+### 🐛 Bug Fixes
+
+* **admin:** remove duplicate section wrapper in comics tab to fix visibility issue ([04d8492](https://github.com///commit/04d849210582c349e2d5e6498d33e3dc71543b92))
+
+### ⚙️ Refactoring
+
+* **admin:** extract duplicated pagination logic into standalone UI module ([1eda6f3](https://github.com///commit/1eda6f3ba51dab771a34c67c33413770ddd1a6b3))
+* **admin:** migrate all dashboard tabs to 100% AJAX lazy-loading architecture ([7c79f02](https://github.com///commit/7c79f021e2bdd9a30b2d13ff5748558f83eb31d7))
+
 ## [6.5.0](https://github.com///compare/v6.4.13...v6.5.0) (2026-07-31)
 
 ### 🚀 Features
