@@ -73,7 +73,14 @@ export class ComicReader {
         this.btnToggleLang.addEventListener('click', () => {
             if (langText.textContent === 'EN') {
                 const enOriginal = this.comicImg.dataset.enOriginal;
-                const enUrl = `https://cdn.twokinds.keenspot.com/comics/${enOriginal}`;
+
+                // Nimmt die Original-URL aus der Datenbank als neuen Normalzustand
+                let enUrl = enOriginal;
+
+                // FALLBACK: Wenn es ein alter Datenbank-Eintrag ist (ohne https://)
+                if (!enUrl.startsWith('http')) {
+                    enUrl = `https://cdn.twokinds.keenspot.com/comics/${enOriginal}`;
+                }
 
                 this.comicImg.src = enUrl;
                 if (this.comicLink) this.comicLink.href = enUrl;
