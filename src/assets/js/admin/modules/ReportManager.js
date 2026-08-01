@@ -73,15 +73,19 @@ export class ReportManager {
     }
 
     saveTableState() {
-        sessionStorage.setItem(
-            this.stateKey,
-            JSON.stringify({
-                page: this.repPage,
-                limit: this.repLimit,
-                query: this.repSearch,
-                status: this.repStatus,
-            })
-        );
+        try {
+            sessionStorage.setItem(
+                this.stateKey,
+                JSON.stringify({
+                    page: this.repPage,
+                    limit: this.repLimit,
+                    query: this.repSearch,
+                    status: this.repStatus,
+                })
+            );
+        } catch (err) {
+            console.warn('[ReportManager] Konnte Filter-Status nicht speichern:', err);
+        }
     }
 
     restoreTableState() {
@@ -102,7 +106,9 @@ export class ReportManager {
                     this.statusSelect.value = s.status;
                 }
             }
-        } catch (_err) {} // LINTER FIX: Unused variable
+        } catch (err) {
+            console.warn('[ReportManager] Konnte Filter-Status nicht wiederherstellen:', err);
+        }
     }
 
     renderTable() {
@@ -157,7 +163,13 @@ export class ReportManager {
             const btnView = e.target.closest('.btn-view-report');
             if (btnView) {
                 e.preventDefault();
-                this.openReportModal(JSON.parse(btnView.dataset.payload));
+                try {
+                    const payload = JSON.parse(btnView.dataset.payload);
+                    this.openReportModal(payload);
+                } catch (err) {
+                    console.error('[ReportManager] Fehler beim Parsen der Report-Daten:', err);
+                    this.notifications.show('Fehler beim Öffnen des Reports.', 'error');
+                }
             }
         });
 
@@ -207,15 +219,25 @@ export class ReportManager {
                     `.btn-edit-comic[data-id="${this.currentReportPayload.comicId}"]`
                 );
                 if (comicBtn) {
-                    const comicData = JSON.parse(comicBtn.dataset.payload);
-                    comicData.transcript = this.currentReportPayload.suggestion;
+                    try {
+                        const comicData = JSON.parse(comicBtn.dataset.payload);
+                        comicData.transcript = this.currentReportPayload.suggestion;
 
-                    this.modalManager.close('report-detail-modal');
-                    this.comicEditor.openEditModal(comicData);
-                    this.notifications.show(
-                        'Transkript-Vorschlag geladen. Bitte prüfen und speichern.',
-                        'success'
-                    );
+                        this.modalManager.close('report-detail-modal');
+                        this.comicEditor.openEditModal(comicData);
+                        this.notifications.show(
+                            'Transkript-Vorschlag geladen. Bitte prüfen und speichern.',
+                            'success'
+                        );
+                    } catch (err) {
+                        console.error(
+                            '[ReportManager] Fehler beim Parsen der Comic-Daten für Transfer:',
+                            err
+                        );
+                        alert(
+                            'Der Comic-Datensatz ist fehlerhaft und konnte nicht geladen werden.'
+                        );
+                    }
                 } else {
                     alert('Der Comic konnte in der aktuellen Ansicht nicht gefunden werden.');
                 }

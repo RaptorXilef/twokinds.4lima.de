@@ -73,7 +73,13 @@ export class ComicEditor {
             }
             if (btnEdit) {
                 e.preventDefault();
-                this.openEditModal(JSON.parse(btnEdit.dataset.payload));
+                try {
+                    const payload = JSON.parse(btnEdit.dataset.payload);
+                    this.openEditModal(payload);
+                } catch (err) {
+                    console.error('[ComicEditor] Fehler beim Parsen der Comic-Daten:', err);
+                    this.notifications.show('Fehler beim Öffnen des Comics.', 'error');
+                }
             }
             if (btnDelete) {
                 e.preventDefault();

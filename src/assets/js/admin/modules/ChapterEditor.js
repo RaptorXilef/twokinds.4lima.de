@@ -16,7 +16,7 @@ export class ChapterEditor {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
-        this.formService = formService; // NEU
+        this.formService = formService;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-archive');
@@ -42,7 +42,16 @@ export class ChapterEditor {
                 }
                 if (btnEdit) {
                     e.preventDefault();
-                    this.openEditModal(JSON.parse(btnEdit.dataset.payload));
+                    try {
+                        const payload = JSON.parse(btnEdit.dataset.payload);
+                        this.openEditModal(payload);
+                    } catch (err) {
+                        console.error('[ChapterEditor] Fehler beim Parsen der Kapitel-Daten:', err);
+                        this.notifications.show(
+                            'Fehler beim Öffnen des Kapitels (Ungültige Daten).',
+                            'error'
+                        );
+                    }
                 }
                 if (btnDelete) {
                     e.preventDefault();

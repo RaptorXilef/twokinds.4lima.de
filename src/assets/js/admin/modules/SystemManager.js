@@ -66,7 +66,13 @@ export class SystemManager {
 
             if (btnEditUser) {
                 e.preventDefault();
-                this.openUserModal(JSON.parse(btnEditUser.dataset.payload));
+                try {
+                    const payload = JSON.parse(btnEditUser.dataset.payload);
+                    this.openUserModal(payload);
+                } catch (err) {
+                    console.error('[SystemManager] Fehler beim Parsen der Benutzer-Daten:', err);
+                    this.notifications.show('Fehler beim Öffnen des Benutzers.', 'error');
+                }
             }
             if (btnDelUser) {
                 e.preventDefault();
@@ -74,7 +80,13 @@ export class SystemManager {
             }
             if (btnEditRole) {
                 e.preventDefault();
-                this.openRoleModal(JSON.parse(btnEditRole.dataset.payload));
+                try {
+                    const payload = JSON.parse(btnEditRole.dataset.payload);
+                    this.openRoleModal(payload);
+                } catch (err) {
+                    console.error('[SystemManager] Fehler beim Parsen der Rollen-Daten:', err);
+                    this.notifications.show('Fehler beim Öffnen der Rolle.', 'error');
+                }
             }
             if (btnDelRole) {
                 e.preventDefault();

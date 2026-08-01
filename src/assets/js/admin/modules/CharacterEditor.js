@@ -140,7 +140,16 @@ export class CharacterEditor {
                 }
                 if (btnEdit) {
                     e.preventDefault();
-                    this.openEditModal(JSON.parse(btnEdit.dataset.payload));
+                    try {
+                        const payload = JSON.parse(btnEdit.dataset.payload);
+                        this.openEditModal(payload);
+                    } catch (err) {
+                        console.error(
+                            '[CharacterEditor] Fehler beim Parsen der Charakter-Daten:',
+                            err
+                        );
+                        this.notifications.show('Fehler beim Öffnen des Charakters.', 'error');
+                    }
                 }
 
                 if (btnDelete) {
@@ -312,7 +321,7 @@ export class CharacterEditor {
                     'Es existiert ein ungespeicherter Entwurf für Charaktere. Möchtest du ihn wiederherstellen?'
                 )
             ) {
-                // FIX: Modal ZUERST öffnen, dann erst Formular füllen!
+                // Modal ZUERST öffnen, dann erst Formular füllen!
                 this.modalManager.open('char-modal');
                 this.formService.restoreDraft(this.form, this.currentDraftKey);
                 if (this.tracker) this.tracker.markDirty();
