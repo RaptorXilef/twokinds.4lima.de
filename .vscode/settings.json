@@ -54,10 +54,15 @@
     },
     "[json]": { "editor.defaultFormatter": "biomejs.biome" },
     "[jsonc]": { "editor.defaultFormatter": "biomejs.biome" },
+    // SCSS explizit an Prettier übergeben
     "[scss]": {
-        "editor.defaultFormatter": "biomejs.biome",
-        "editor.codeActionsOnSave": { "source.fixAll.stylelint": "explicit" }
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
     },
+    // "[scss]": {
+    //     "editor.defaultFormatter": "biomejs.biome",
+    //     "editor.codeActionsOnSave": { "source.fixAll.stylelint": "explicit" }
+    // },
 
     // --- HTML & MARKUPLINT ---
     "[html]": {
