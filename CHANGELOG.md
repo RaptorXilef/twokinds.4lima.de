@@ -2,6 +2,32 @@
 
 
 
+## [6.5.6](https://github.com///compare/v6.5.5...v6.5.6) (2026-08-02)
+
+### 🐛 Bug Fixes
+
+* **Admin-UI:** Resolve squished date columns and refactor table widths ([acb58dc](https://github.com///commit/acb58dcd74da608b718c5f699b2aa0a22306cc7b))
+* **Admin:** Resolve critical post-refactoring bugs ([7eadff3](https://github.com///commit/7eadff30d27a709d042edbb31edc040d244ab026))
+* **Admin:** Resolve Cropper.js initialization error ([94c1924](https://github.com///commit/94c192481f19ca7d956593dada41f8418be7b3dd))
+* **parser:** implement string-literal protection and prevent PHP short-tag corruption ([f3a9cdc](https://github.com///commit/f3a9cdc196b4ed0212d75fb30efea70854cf3fee))
+* **parser:** prevent CSS ID destruction and preserve PHP closing tags ([4ca4801](https://github.com///commit/4ca4801319e9a81ecbda7804632040e649bb7391)), closes [#element-id](https://github.com///issues/element-id) [#meine-id](https://github.com///issues/meine-id)
+* **parser:** resolve malformed HTML comments and refine token optimization ([beb551c](https://github.com///commit/beb551c8aac4248fa77bdf137f0398f788366bef))
+* **parser:** scope operator padding to PHP tags and implement block protection ([8a07488](https://github.com///commit/8a07488c60ebdb37896076852105c366a2876625))
+
+### ⚙️ Refactoring
+
+* **Admin-UI:** Complete inline-style removal for user and role management ([fea7adc](https://github.com///commit/fea7adc007e014b87ee061fe75ea5affb1b7e5a5))
+* **Admin-UI:** Eradicate inline styles from modals and establish SCSS utilities ([de97d88](https://github.com///commit/de97d88285236ca6fe9d2faba16a54ffc9f82be7))
+* **Admin-UI:** Fix media grid layout and extract admin footer component ([eac4209](https://github.com///commit/eac42098f439f4e1efcffc20e3e9bbf5273c9947))
+* **Admin-UI:** Purge final inline-styles and implement Admin footer ([fcd106a](https://github.com///commit/fcd106a9be5842fe81517bf150e47984f6127e98))
+* **Admin-UI:** Purge inline styles from remaining dashboard sections ([887428f](https://github.com///commit/887428f325ef43bfeb9dfa27ede0602eb7ae8dd7))
+* **Frontend:** Standardize authentication and profile views ([ecc795a](https://github.com///commit/ecc795aa8355a61dba0db284533d7c32211c973d))
+* **SCSS:** Implement semantic CSS Custom Properties ([e2349e0](https://github.com///commit/e2349e0e17478db850d3639e8672732b010dc0b2))
+
+### 🏗️ Build System
+
+* **scss:** integrate Prettier for SCSS formatting alongside Biome and Stylelint ([14a7076](https://github.com///commit/14a70760abf0e0f136abf6dbec0f449bb1b38f42))
+
 ## [6.5.5](https://github.com///compare/v6.5.4...v6.5.5) (2026-08-01)
 
 ### 🐛 Bug Fixes
