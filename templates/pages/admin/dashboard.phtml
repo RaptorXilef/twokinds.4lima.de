@@ -169,26 +169,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                 <section id="section-media"
                          class="content-section"
                          data-ajax-tab="media"></section>
-            </div>
-        </div>
 
-        <!-- ADMIN FOOTER -->
-        <footer>
-            <div class="bottom">
-                <div class="bottom-left"></div>
-                <div class="bottom-ctr">
-                    <p>Twokinds Admin-Panel</p>
-                    <p>Programmierung:
-                        <a href="https://github.com/RaptorXilef" target="_blank" rel="noopener noreferrer">Felix Maywald</a>
-                    </p>
-                    <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a></div>
-                </div>
-                <div class="bottom-right"></div>
-            </div>
-            <div class="footer-img"></div>
-        </footer>
-    </div>
-
+    <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
     <?php include __DIR__ . '/_modals.phtml'; ?>
 
     <!-- Neues ES6 Modul-System -->
