@@ -9,34 +9,33 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
     <article class="max-w-900 w-100 center-block">
         <header class="text-center mb-40 pb-20 border-bottom-2">
             <h1 class="page-header border-none mb-10 font-2x">Info-Hub & FAQ</h1>
-            <p class="text-faded font-lg max-w-600 center-block m-0"> Alles, was du über das deutsche
+            <p class="text-faded font-lg max-w-600 center-block m-0 text-center lh-1-6"> Alles, was du über das deutsche
                 TwoKinds-Übersetzungsprojekt wissen musst - kompakt an einem Ort. </p>
         </header>
 
         <!-- KACHEL-LAYOUT FÜR INFOS -->
         <div class="grid-auto-300 mb-50">
-
-        <!-- Kachel 1: Über uns -->
-            <section class="bg-even p-25 border-radius-8 border-medium">
+            <!-- Kachel 1: Über uns -->
+            <section class="bg-even p-25 border-radius-8 border-medium lh-1-6">
                 <h2 class="mt-0 font-1-5x d-flex align-center gap-10 text-color">
                     <i class="fa-solid fa-users text-link"></i> Das Projekt
                 </h2>
-                <p style="line-height: 1.6;"> Dies ist ein inoffizielles, von einem Fan (Felix Maywald / RaptorXilef)
-                    betriebenes Archiv für den Webcomic <strong>TwoKinds</strong> (von Tom Fischbach). Mein Ziel ist es,
-                    den Comic für deutschsprachige Leser zugänglich zu machen, da das englische Original mittlerweile
-                    tausende Seiten umfasst. </p>
-                <p style="line-height: 1.6;"> Ich übersetze, lektoriere und setze die deutschen Texte so nah wie möglich
-                    am Original in die Sprechblasen ein. Ich hoffe sehr, dass Tom vielleicht irgendwann einmal auf diese
-                    Übersetzung aufmerksam wird! :D </p>
+                <p> Dies ist ein inoffizielles, von einem Fan (Felix Maywald / RaptorXilef) betriebenes Archiv für den
+                    Webcomic <strong>TwoKinds</strong> (von Tom Fischbach). Mein Ziel ist es, den Comic für
+                    deutschsprachige Leser zugänglich zu machen, da das englische Original mittlerweile tausende Seiten
+                    umfasst. </p>
+                <p> Ich übersetze, lektoriere und setze die deutschen Texte so nah wie möglich am Original in die
+                    Sprechblasen ein. Ich hoffe sehr, dass Tom vielleicht irgendwann einmal auf diese Übersetzung
+                    aufmerksam wird! :D </p>
             </section>
 
             <!-- Kachel 2: RSS & Updates -->
-            <section class="bg-even p-25 border-radius-8 border-medium">
+            <section class="bg-even p-25 border-radius-8 border-medium lh-1-6">
                 <h2 class="mt-0 font-1-5x d-flex align-center gap-10 text-color">
                     <i class="fa-solid fa-rss text-rss"></i> Bleib auf dem Laufenden
                 </h2>
-                <p style="line-height: 1.6;"> Du willst keine neue übersetzte Seite verpassen? Nutze unseren RSS-Feed,
-                    um Updates direkt in deinen Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen! </p>
+                <p> Du willst keine neue übersetzte Seite verpassen? Nutze unseren RSS-Feed, um Updates direkt in deinen
+                    Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen! </p>
                 <div class="mt-20">
                     <a href="<?php echo $baseUrl; ?>/rss.xml" target="_blank" class="button edit d-flex align-center gap-8 p-10 font-bold w-auto" style="display: inline-flex;">
 <i class="fa-solid fa-square-rss"></i> RSS-Feed abonnieren </a>
@@ -47,8 +46,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         <!-- HINTERGRUNDWISSEN (AKKORDEON) -->
         <section class="mb-50">
             <h2 class="font-1-8x border-bottom pb-10 mb-25"> Hintergrundwissen </h2>
-            <div class="accordion-container d-flex flex-column gap-10">
-                <!-- Comic -->
+            <div class="accordion-container d-flex flex-column gap-10 lh-1-6">
                 <div class="accordion-item bg-content border-medium border-radius-4"
                      style="overflow: hidden;">
                     <button
@@ -137,29 +135,26 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         <section>
             <h2 class="font-1-8x border-bottom pb-10 mb-25"> Häufige Fragen (FAQ) </h2>
             <div class="d-flex flex-column gap-20">
-                <div class="bg-content p-20 border-radius-4"
+                <div class="bg-content p-20 border-radius-4 lh-1-6"
                      style="border-left: 4px solid var(--link-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 class="mt-0 mb-10 font-1-2x">Wann kommen neue Seiten?</h3>
-                    <p class="m-0 text-light"
-                       style="line-height: 1.5;"> Das englische Original wird von Tom aktuell unregelmäßig geupdatet.
+                    <p class="m-0 text-light"> Das englische Original wird von Tom aktuell unregelmäßig geupdatet.
                         Sobald neue Seiten erscheinen, versuche ich (Felix), diese innerhalb weniger Tage ins Deutsche
                         zu übersetzen. Da ich dies ehrenamtlich in meiner Freizeit mache, kann es bei beruflichen
                         Verpflichtungen auch mal länger dauern. Ich bitte da um Verständnis! </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4"
+                <div class="bg-content p-20 border-radius-4 lh-1-6"
                      style="border-left: 4px solid var(--link-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 class="mt-0 mb-10 font-1-2x">Ich habe einen Übersetzungsfehler gefunden!</h3>
-                    <p class="m-0 text-light"
-                       style="line-height: 1.5;"> Fehler passieren auch den Besten! Du kannst sie aber ganz einfach
-                        melden: Klicke dazu auf jeder Comic- oder Charakterseite auf "Fehler melden". Dort kannst du den
-                        Text direkt im Browser für mich korrigieren. Sollte ich deine Korrektur übernehmen, nenne ich
-                        gern deinen Namen als Unterstützer. </p>
+                    <p class="m-0 text-light"> Fehler passieren auch den Besten! Du kannst sie aber ganz einfach melden:
+                        Klicke dazu auf jeder Comic- oder Charakterseite auf "Fehler melden". Dort kannst du den Text
+                        direkt im Browser für mich korrigieren. Sollte ich deine Korrektur übernehmen, nenne ich gern
+                        deinen Namen als Unterstützer. </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4"
+                <div class="bg-content p-20 border-radius-4 lh-1-6"
                      style="border-left: 4px solid var(--link-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 class="mt-0 mb-10 font-1-2x">Unterstützt ihr Tom Fischbach?</h3>
-                    <p class="m-0 text-light"
-                       style="line-height: 1.5;"> Ich (Felix) verdiene mit dieser Seite kein Geld und schalte keine
+                    <p class="m-0 text-light"> Ich (Felix) verdiene mit dieser Seite kein Geld und schalte keine
                         Werbung. Wenn dir die Übersetzung gefällt, kannst du <em>mich</em> gern über
                         <a href="https://www.patreon.com/raptorxilef" target="_blank" class="text-link">Patreon</a> oder
                         <a href="https://paypal.me/RaptorXilef" target="_blank" class="text-link">PayPal</a>
@@ -170,21 +165,18 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
                         <a href="https://keenspotshop.com/collections/twokinds?srsltid=AfmBOoohf9j7Mg0Qq2AUIYrN1ygOvia8rDHGRrxr4u4mEqVjXYLeJegf" target="_blank" class="text-link">Keenspot-Store!</a>!
                     </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4"
+                <div class="bg-content p-20 border-radius-4 lh-1-6"
                      style="border-left: 4px solid var(--link-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 class="mt-0 mb-10 font-1-2x">Würde Tom etwas für mich zeichnen oder Fanart annehmen?</h3>
-                    <p class="m-0 text-light"
-                       style="line-height: 1.5;"> Tom hat leider keine Zeit, persönliche Kunst-Anfragen
-                        entgegenzunehmen. Wenn du ihm Fanart zeigen möchtest, lade sie am besten bei DeviantArt oder
-                        Twitter hoch und markiere ihn. Er stöbert dort gern, wenn er Zeit hat! Außerdem kannst du als
-                        Unterstützer auf Patreon mit Voten, welche Skizzen coloriert werden sollen und Ideen für Skizzen
-                        beitragen. </p>
+                    <p class="m-0 text-light"> Tom hat leider keine Zeit, persönliche Kunst-Anfragen entgegenzunehmen.
+                        Wenn du ihm Fanart zeigen möchtest, lade sie am besten bei DeviantArt oder Twitter hoch und
+                        markiere ihn. Er stöbert dort gern, wenn er Zeit hat! Außerdem kannst du als Unterstützer auf
+                        Patreon mit Voten, welche Skizzen coloriert werden sollen und Ideen für Skizzen beitragen. </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4"
+                <div class="bg-content p-20 border-radius-4 lh-1-6"
                      style="border-left: 4px solid var(--link-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
                     <h3 class="mt-0 mb-10 font-1-2x">Darf ich Toms Arbeit verwenden oder anpassen?</h3>
-                    <p class="m-0 text-light"
-                       style="line-height: 1.5;"> Ja! Toms Werk (und auch meine Webseite/Übersetzung) stehen unter einer
+                    <p class="m-0 text-light"> Ja! Toms Werk (und auch meine Webseite/Übersetzung) stehen unter einer
                         Creative Commons (CC BY-NC-SA) Lizenz. Das bedeutet, du darfst Bilder für nicht-kommerzielle
                         Zwecke verändern, teilen oder für Fan-Fiction nutzen, solange du Tom (und bei deutschen Bildern
                         diese Seite/ mich als RaptorXilef) als Quelle nennst. Genauere Infos findest du in meinem
