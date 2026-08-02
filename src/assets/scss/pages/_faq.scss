@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// FAQ Page (Accordion Styles)
 /// Styling für die häufig gestellten Fragen.
@@ -11,22 +9,6 @@
 /*!
  * @file       resources/scss/pages/_faq.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - refactor(FAQ): Migration aus _misc.scss und Angleichung an UI-Sichtbarkeit.
-/// - fix(Style): Hintergrundfarben für bessere Kontraste optimiert.
-/// - style: Linker Akzent-Border für aktive Antworten hinzugefügt.
-/// - fix(Syntax): Überflüssige schließende Klammer entfernt.
-///
 
 // Verwendete SCSS-Variablen:
 // (Keine spezifischen SCSS-Vars in diesem Block)
@@ -140,4 +122,27 @@ body.theme-night .faq-question {
         padding-bottom: 15px;
         margin-bottom: 0;
     }
+}
+
+/* VORHANDENES BEIBEHALTEN, FOLGENDES HINZUFÜGEN: */
+.accordion-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: var(--table-row-even);
+    border: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--text-color);
+}
+.accordion-content {
+    display: none;
+    padding: 20px;
+    border-top: 1px solid var(--border-medium);
+}
+body.theme-night .accordion-content {
+    border-top-color: var(--border-light);
 }

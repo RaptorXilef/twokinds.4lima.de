@@ -22,16 +22,13 @@ $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 
 // Wir bauen ein JS-Lexikon aus der Datenbank, um immer korrekte Pfade und Kapitel zu haben
 $comicDictionary = [];
-
 foreach ($comics as $c) {
-    $dateObj = \DateTimeImmutable::createFromFormat('Ymd', \substr($c->id->value, 0, 8));
-    $cb      = $c->imageUpdatedAt ? '?c=' . $c->imageUpdatedAt : '';
-
+    $dateObj   = \DateTimeImmutable::createFromFormat('Ymd', \substr($c->id->value, 0, 8));
+    $cb        = $c->imageUpdatedAt ? '?c=' . $c->imageUpdatedAt : '';
     $thumbDisk = "{$appRoot}/public/assets/images/comic/thumbnails/" . $c->id->value . '.webp';
     $thumb     = \file_exists($thumbDisk)
         ? $baseUrl . '/assets/images/comic/thumbnails/' . $c->id->value . '.webp' . $cb
         : $baseUrl . '/assets/images/layout/thumbnails/in_translation.webp';
-
     $comicDictionary[$c->id->value] = [
         'id'        => $c->id->value,
         'title'     => $c->name !== '' ? $c->name : 'Kein Titel',
@@ -50,117 +47,65 @@ if ($canUseCloudSync) {
         $cloudIds[] = $bm->comicId;
     }
 }
-
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
-?>
-
-<!-- Dediziertes CSS für die Lesezeichen-Karten (verhindert Konflikte mit Archiv-CSS) -->
-<style>
-.bookmark-card {
-    position: relative;
-    background-color: var(--content-box-bg);
-    border: 1px solid var(--border-medium);
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-}
-
-.bookmark-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-
-.bookmark-card .delete-btn {
-    opacity: 0;
-    transition: all 0.2s ease;
-}
-
-.bookmark-card:hover .delete-btn {
-    opacity: 1;
-}
-
-@media (max-width: 768px) {
-    .bookmark-card .delete-btn {
-        opacity: 1;
-        /* Auf Touch-Geräten immer sichtbar */
-    }
-}
-
-</style>
-
+include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area bookmarks-page">
-    <article style="width: 100%; max-width: 950px; margin: 0 auto;">
-        <header
-                style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--border-medium); padding-bottom: 20px;">
-            <h1 class="page-header"
-                style="border: none; margin-bottom: 10px; font-size: 2.2em;">
-                <i class="fa-solid fa-bookmark"
-                   style="color: var(--link-color);"></i> Meine Lesezeichen
+    <article class="max-w-950 w-100 center-block">
+        <header class="text-center mb-30 pb-20 border-bottom-2">
+            <h1 class="page-header border-none mb-10 font-2x">
+                <i class="fa-solid fa-bookmark text-link"></i> Meine Lesezeichen
                 <span id="bookmark-count-badge" class="comic-count-badge">0</span>
             </h1>
-            <p style="color: var(--text-color-faded); font-size: 1.1em; max-width: 600px; margin: 0 auto;">
-                Hier findest du alle Comicseiten, die du dir gemerkt hast.
-                <br>
+            <p class="text-faded font-lg max-w-600 center-block m-0"> Hier findest du alle Comicseiten, die du dir
+                gemerkt hast. <br>
                 <?php if ($canUseCloudSync) { ?>
-                    <small style="color: var(--status-green-text);"><i class="fa-solid fa-cloud"></i> Deine Lesezeichen
-                        sind sicher in der Cloud gespeichert.</small>
+                    <small class="text-success"><i class="fa-solid fa-cloud"></i> Deine Lesezeichen sind sicher in der
+                        Cloud gespeichert.</small>
                 <?php } else { ?>
                     <small><i class="fa-solid fa-hard-drive"></i> Aktuell werden diese nur lokal in diesem Browser
-                        gespeichert.
-                        <a href="<?php echo $baseUrl; ?>/login" style="color: var(--link-color); font-weight: bold;">Logge dich ein</a>,
-                        um sie zu sichern!</small>
+                        gespeichert. <a href="<?php echo $baseUrl; ?>/login" class="text-link font-bold">Logge dich ein</a>, um sie zu
+                        sichern!</small>
                 <?php } ?>
             </p>
         </header>
 
         <!-- SYNC CONFLICT MODAL -->
         <div id="sync-conflict-modal"
-             class="modal"
-             style="display: none; position: relative; z-index: 1000; margin-bottom: 30px;">
-            <div class="modal-content"
-                 style="max-width: 600px; margin: 0 auto; box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 2px solid var(--link-color);">
+             class="modal">
+            <div class="modal-content modal-sm">
                 <div class="modal-header-wrapper"
                      style="background: var(--link-color); color: white;">
-                    <h2 style="color: white;"><i class="fa-solid fa-code-merge"></i> Synchronisation nötig</h2>
+                    <h2 style="color: white; margin:0;"><i class="fa-solid fa-code-merge"></i> Synchronisation nötig
+                    </h2>
                 </div>
                 <div class="modal-scroll-content">
-                    <p style="margin-bottom: 15px;">Dein lokaler Browser enthält andere Lesezeichen als dein
-                        Cloud-Konto. Wie möchtest du verfahren?</p>
-                    <ul style="margin-bottom: 20px; color: var(--text-color-faded);">
+                    <p class="mb-15">Dein lokaler Browser enthält andere Lesezeichen als dein Cloud-Konto. Wie möchtest
+                        du verfahren?</p>
+                    <ul class="text-faded mb-20">
                         <li><strong>In der Cloud:</strong> <span id="sync-cloud-count">0</span> Lesezeichen</li>
                         <li><strong>In diesem Browser:</strong> <span id="sync-local-count">0</span> Lesezeichen</li>
                     </ul>
-
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="d-flex flex-column gap-10">
                         <button type="button"
-                                class="button add"
-                                id="btn-sync-merge"
-                                style="padding: 12px; font-weight: bold; font-size: 1em;">
-                            <i class="fa-solid fa-object-group"></i> Alles zusammenführen (Empfohlen)
-                        </button>
+                                class="button add p-10 font-bold"
+                                id="btn-sync-merge">
+                            <i class="fa-solid fa-object-group"></i> Alles zusammenführen (Empfohlen) </button>
                         <button type="button"
-                                class="button"
-                                id="btn-sync-db"
-                                style="padding: 12px; font-weight: bold; font-size: 1em; background: var(--table-row-hover); color: var(--text-color);">
+                                class="button bg-even p-10 font-bold"
+                                style="color: var(--text-color);"
+                                id="btn-sync-db">
                             <i class="fa-solid fa-cloud-arrow-down"></i> Cloud behalten (Browser überschreiben)
                         </button>
                         <button type="button"
-                                class="button button-orange"
-                                id="btn-sync-local"
-                                style="padding: 12px; font-weight: bold; font-size: 1em;">
-                            <i class="fa-solid fa-hard-drive"></i> Browser behalten (Cloud überschreiben)
-                        </button>
+                                class="button button-orange p-10 font-bold"
+                                id="btn-sync-local">
+                            <i class="fa-solid fa-hard-drive"></i> Browser behalten (Cloud überschreiben) </button>
 
-                        <!-- NEU: Der Nichts-tun-Button -->
+                        <!-- Der Nichts-tun-Button -->
                         <button type="button"
-                                class="button"
-                                id="btn-sync-ignore"
-                                style="padding: 12px; font-weight: bold; font-size: 1em; background: transparent; border: 1px solid var(--border-medium); color: var(--text-color);">
-                            <i class="fa-solid fa-xmark"></i> Nichts tun (Ignorieren)
-                        </button>
+                                class="button p-10 font-bold"
+                                style="background: transparent; border: 1px solid var(--border-medium); color: var(--text-color);"
+                                id="btn-sync-ignore">
+                            <i class="fa-solid fa-xmark"></i> Nichts tun (Ignorieren) </button>
                     </div>
                 </div>
             </div>
@@ -168,29 +113,23 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
         <!-- KEINE LESEZEICHEN -->
         <div id="no-bookmarks-msg"
-             class="no-bookmarks"
-             style="display: none;">
-            <i class="fa-regular fa-folder-open"
-               style="font-size: 3em; color: var(--border-medium); margin-bottom: 15px; display: block;"></i>
+             class="no-bookmarks hidden">
+            <i class="fa-regular fa-folder-open icon-lg text-faded mb-15 d-block"
+               style="font-size: 3em;"></i>
             <p>Du hast noch keine Lesezeichen gespeichert.</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">
-                Klicke auf einer Comicseite einfach oben in der Leiste auf den Button <strong>"Seite merken"</strong>,
-                um sie hier aufzulisten.
+            <p class="mt-10 font-small"> Klicke auf einer Comicseite einfach oben in der Leiste auf den Button
+                <strong>"Seite merken"</strong>, um sie hier aufzulisten.
             </p>
-            <a href="<?php echo $baseUrl; ?>/comic" class="button edit" style="display: inline-block; margin-top: 20px;">Zum aktuellen Comic</a>
+            <a href="<?php echo $baseUrl; ?>/comic" class="button edit mt-20" style="display: inline-block;">Zum aktuellen Comic</a>
         </div>
-
         <div id="bookmarks-content"
-             style="display: none;">
-            <!-- SORTIERUNG -->
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-                <div
-                     style="background: var(--table-row-even); padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border-medium);">
+             class="hidden">
+            <div class="d-flex justify-end mb-20">
+                <div class="bg-even p-10 border-medium border-radius-6">
                     <label for="bookmark-sort"
-                           style="font-weight: bold; margin-right: 10px; font-size: 0.9em;"><i
-                           class="fa-solid fa-sort"></i> Sortieren nach:</label>
+                           class="font-bold mr-10 font-small"><i class="fa-solid fa-sort"></i> Sortieren nach:</label>
                     <select id="bookmark-sort"
-                            style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-light); background: var(--content-bg); color: var(--text-color);">
+                            class="bg-content border-light border-radius-4 p-5 text-color">
                         <option value="added_desc"
                                 selected>Zuletzt gemerkt</option>
                         <option value="page_desc">Story-Timeline (Neueste Seite)</option>
@@ -201,23 +140,19 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
             <!-- RASTER -->
             <div id="bookmarks-grid"
-                 style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                 class="grid-auto-200">
                 <!-- Via JS gefüllt -->
             </div>
 
             <!-- Kontroll-Elemente unten (Alle löschen) -->
             <div id="bookmarks-controls"
-                 class="bookmarks-controls"
-                 style="margin-top: 40px; padding-top: 20px; border-top: 1px dashed var(--border-medium); text-align: center;">
+                 class="bookmarks-controls mt-40 pt-20 border-top-dashed text-center">
                 <button type="button"
                         id="btn-clear-all-bookmarks"
-                        class="button delete"
-                        style="padding: 10px 20px;">
-                    <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen
-                </button>
+                        class="button delete p-10">
+                    <i class="fa-solid fa-trash-can"></i> Alle Lesezeichen löschen </button>
             </div>
         </div>
-
     </article>
 </main>
 
@@ -233,5 +168,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 
 </script>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

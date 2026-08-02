@@ -125,17 +125,17 @@ export class BookmarksManager {
                 : '';
 
             card.innerHTML = `
-                <a href="${db.permalink}" style="display: block; width: 100%; aspect-ratio: 1 / 1.35; overflow: hidden; background: var(--page-bg);">
-                    <img src="${db.thumb}" alt="${db.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">
+                <a href="${db.permalink}" class="bookmark-thumb-link">
+                    <img src="${db.thumb}" alt="${db.title}" loading="lazy" class="bookmark-thumb-img">
                 </a>
-                <div style="padding: 12px 10px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="bookmark-card-body">
                     <div>
                         ${typeBadge}
-                        <div style="font-weight: bold; font-size: 0.95em; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-color);">${db.title}</div>
-                        <div style="font-size: 0.85em; color: var(--text-color-light); margin-bottom: 8px;">Kapitel ${db.chapter} <span style="opacity: 0.5;">|</span> ${db.date}</div>
+                        <div class="bookmark-title">${db.title}</div>
+                        <div class="bookmark-meta">Kapitel ${db.chapter} <span style="opacity: 0.5;">|</span> ${db.date}</div>
                     </div>
                 </div>
-                <button class="delete-btn" style="position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-medium); background: rgba(255,255,255,0.9); color: var(--status-red-text); cursor: pointer;" title="Lesezeichen löschen">
+                <button class="bookmark-delete-btn delete-btn" title="Lesezeichen löschen">
                     <i class="fa-solid fa-times"></i>
                 </button>
             `;

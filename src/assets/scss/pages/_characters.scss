@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// Bookmarks und Charakter-Details.
 ///
@@ -10,35 +8,6 @@
 /*!
  * @file       resources/scss/pages/_characters.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Refactoring.
-/// - fix(CSS): word-break deprecated property ersetzt.
-/// - style(Linter): Selector Order korrigiert.
-/// - style(Linter): Spezifität für Dark Mode Overrides durch Nesting korrigiert.
-/// - style(Linter): Theme-Overrides in .char-detail ans Ende verschoben.
-/// - style(Linter): Dateistruktur umgestellt (.bookmarks-page vor .char-detail), um absteigende Spezifität zu verhindern.
-/// - refactor(CSS): Vollständige Trennung von Basis-Styles und Theme-Overrides.
-/// - chore(Linter): False-Positive bei Dark-Mode Spezifität global für den Theme-Block ignoriert.
-/// - refactor(SCSS): .tag-page-links entfernt (jetzt in components/_thumbnail-grid.scss).
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-/// - fix: Fehlende Klasse .charaktere-overview für die Hauptübersicht hinzugefügt.
-/// - fix: Clearfix für .char-detail hinzugefügt, um kollabierende Border zu verhindern.
-/// - fix: Abstände für h3 innerhalb von .charaktere-overview korrigiert.
-/// - fix: Clearfix für .char-detail hinzugefügt, um kollabierende Border zu verhindern.
-/// - fix: Abstände für h3 innerhalb von .charaktere-overview korrigiert.
-/// - fix(Villains): Layout für Bösewichte auf Full-Width Block-Design umgestellt (Bild über Text).
-/// - refactor(DRY): Redundante Thumbnail-Overlay Styles entfernt (jetzt zentral in components/_thumbnail-grid.scss).
-///
 
 // Verwendete SCSS-Variablen:
 // - $base-url: Basis-URL für Assets
@@ -112,7 +81,8 @@
     flex: 0 0 auto;
     width: 27px;
     height: 36px;
-    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png') 0 0 no-repeat;
+    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png') 0 0
+        no-repeat;
     background-size: contain;
 }
 
@@ -591,5 +561,34 @@ body.theme-night .comic-characters-container {
 
     i {
         margin-right: 6px;
+    }
+}
+
+.avatar-lg {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border-medium);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.masonry-grid-140 {
+    column-width: 140px;
+    column-gap: 15px;
+    margin-top: 15px;
+    width: 100%;
+}
+.masonry-item {
+    display: block;
+    break-inside: avoid;
+    margin-bottom: 15px;
+    transition: transform 0.2s ease;
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+        border: 1px solid var(--border-medium);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 }

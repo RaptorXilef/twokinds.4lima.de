@@ -1,32 +1,41 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @var array  $settings
+ * @var string $pageTitle
+ */
 $baseUrl   = \rtrim($settings['base_url'] ?? '', '/');
 $imagePath = "{$baseUrl}/assets/images/layout/lowres/403.webp";
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
-?>
+include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area">
-    <article style="width: 100%; max-width: 900px; margin: 0 auto; text-align: center;">
+    <article class="max-w-900 w-100 center-block text-center">
         <header>
             <h1 class="page-header"><?php echo \htmlspecialchars($pageTitle); ?></h1>
         </header>
-
-        <div style="margin: 20px 0;">
-            <img class="comic-image" src="<?php echo \htmlspecialchars($imagePath); ?>" alt="Fehlerbild: Zugriff verweigert">
+        <div class="my-20">
+            <img class="comic-image"
+                 src="<?php echo \htmlspecialchars($imagePath); ?>"
+                 alt="Fehlerbild: Zugriff verweigert">
         </div>
-
-        <hr style="margin: 30px 0;">
-
-        <aside class="transcript" style="text-align: left;">
+        <hr class="my-30 border-medium">
+        <aside class="transcript text-left">
             <div class="transcript-header">
                 <h3>Was ist passiert?</h3>
             </div>
             <div class="transcript-content">
-                <p>Hoppla! Es scheint, als hättest du versucht, einen Bereich zu betreten, für den du keine Zutrittsberechtigung hast. Stell es dir wie eine verschlossene Tür vor, für die nur bestimmte Personen einen Schlüssel haben.</p>
+                <p>Hoppla! Es scheint, als hättest du versucht, einen Bereich zu betreten, für den du keine
+                    Zutrittsberechtigung hast. Stell es dir wie eine verschlossene Tür vor, für die nur bestimmte
+                    Personen einen Schlüssel haben.</p>
                 <p><strong>Mögliche Gründe dafür könnten sein:</strong></p>
-                <ul style="margin-left: 20px;">
-                    <li>Du hast versucht, auf eine geschützte Systemdatei oder einen versteckten Ordner zuzugreifen.</li>
+                <ul class="list-disc">
+                    <li>Du hast versucht, auf eine geschützte Systemdatei oder einen versteckten Ordner zuzugreifen.
+                    </li>
                     <li>Die Berechtigungen für diese Ressource sind serverseitig absichtlich eingeschränkt.</li>
                 </ul>
-                <p style="margin-top: 15px;">Am besten kehrst du einfach zur <a href="<?php echo $baseUrl; ?>/">Startseite</a> zurück und setzt deine Reise von dort aus fort!</p>
+                <p class="mt-15">Am besten kehrst du einfach zur <a href="<?php echo $baseUrl; ?>/">Startseite</a> zurück und setzt
+                    deine Reise von dort aus fort!</p>
             </div>
         </aside>
     </article>

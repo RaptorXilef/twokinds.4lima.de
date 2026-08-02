@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -8,38 +9,36 @@ declare(strict_types=1);
 $baseUrl      = \rtrim($settings['base_url'], '/');
 $imagePath    = "{$baseUrl}/assets/images/layout/lowres/404.webp";
 $fallbackPath = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
-
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
-?>
-
+include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area">
-    <article style="width: 100%; max-width: 900px; margin: 0 auto; text-align: center;">
+    <article class="max-w-900 w-100 center-block text-center">
         <header>
             <h1 class="page-header"><?php echo \htmlspecialchars($pageTitle); ?></h1>
         </header>
-
-        <div style="margin: 20px 0;">
-            <img class="comic-image" src="<?php echo \htmlspecialchars($imagePath); ?>" alt="Fehlerbild: Seite nicht gefunden">
+        <div class="my-20">
+            <img class="comic-image"
+                 src="<?php echo \htmlspecialchars($imagePath); ?>"
+                 alt="Fehlerbild: Seite nicht gefunden">
         </div>
-
-        <hr style="margin: 30px 0;">
-
-        <aside class="transcript" style="text-align: left;">
+        <hr class="my-30 border-medium">
+        <aside class="transcript text-left">
             <div class="transcript-header">
                 <h3>Wo sind wir denn hier gelandet?</h3>
             </div>
             <div class="transcript-content">
-                <p>Du bist einem Link gefolgt oder hast eine Adresse eingegeben, die ins Leere führt. Vielleicht hat sich ein Tippfehler eingeschlichen, oder die Seite wurde verschoben oder entfernt.</p>
-                <p><strong>Keine Sorge, hier sind ein paar Vorschläge, um wieder auf den richtigen Weg zu kommen:</strong></p>
-                <ul style="margin-left: 20px;">
+                <p>Du bist einem Link gefolgt oder hast eine Adresse eingegeben, die ins Leere führt. Vielleicht hat
+                    sich ein Tippfehler eingeschlichen, oder die Seite wurde verschoben oder entfernt.</p>
+                <p><strong>Keine Sorge, hier sind ein paar Vorschläge, um wieder auf den richtigen Weg zu
+                        kommen:</strong></p>
+                <ul class="list-disc">
                     <li>Überprüfe die URL auf Tippfehler.</li>
                     <li>Gehe zurück zur <a href="<?php echo $baseUrl; ?>/">Startseite</a>, um den neuesten Comic zu sehen.</li>
                     <li>Besuche das <a href="<?php echo $baseUrl; ?>/archiv">Archiv</a>, um einen bestimmten Comic zu finden.</li>
                 </ul>
-                <p style="margin-top: 15px;">Wenn du glaubst, dass hier ein Fehler auf der Webseite vorliegt, würde ich mich freuen, wenn du ihn meldest!</p>
+                <p class="mt-15">Wenn du glaubst, dass hier ein Fehler auf der Webseite vorliegt, würde ich mich freuen,
+                    wenn du ihn meldest!</p>
             </div>
         </aside>
     </article>
 </main>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

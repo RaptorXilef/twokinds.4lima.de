@@ -7,45 +7,36 @@ declare(strict_types=1);
  * @var string $pageTitle
  * @var array  $settings
  * @var string $appRoot
- * */
+ */
 $baseUrl         = \rtrim($settings['base_url'], '/');
 $placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
-
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
-?>
-
+include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area">
-    <article style="width: 100%; max-width: 900px; margin: 0 auto;">
+    <article class="max-w-900 w-100 center-block">
         <header>
             <h1 class="page-header">TwoKinds Archiv</h1>
         </header>
-
         <div class="instructions jsdep">Klicken Sie auf eine Kapitelüberschrift, um das Kapitel zu erweitern.</div>
-
         <?php if (empty($groupedComics)) { ?>
-            <p style="text-align: center; margin: 40px 0;">Es sind noch keine Comics im Archiv vorhanden.</p>
+            <p class="text-center my-40">Es sind noch keine Comics im Archiv vorhanden.</p>
         <?php } else { ?>
             <?php foreach ($groupedComics as $chapterId => $chapterComics) {
                 // Hole Titel und Beschreibung aus der Datenbank, falls vorhanden
                 $chapTitle = 'Dieses Kapitel wird im Moment bearbeitet.';
                 $chapDesc  = 'Die Informationen zu diesem Kapitel werden noch erstellt.';
-
                 if (isset($chapterDetails[$chapterId])) {
                     $chapTitle = $chapterDetails[$chapterId]->title;
                     if ($chapterDetails[$chapterId]->description !== '') {
                         $chapDesc = $chapterDetails[$chapterId]->description;
                     }
-                }
-                ?>
+                } ?>
                 <section class="chapter collapsible-section"
                          data-ch-id="<?php echo \htmlspecialchars((string) $chapterId); ?>">
                     <h2 class="collapsible-header">
                         <?php echo \htmlspecialchars($chapTitle); ?>
                         <span class="arrow-left jsdep"></span>
                     </h2>
-
                     <p><?php echo $chapDesc; ?></p>
-
                     <div class="collapsible-content">
                         <aside class="chapter-links">
                             <?php \usort($chapterComics, fn ($a, $b) => $a->id->value <=> $b->id->value);
@@ -58,9 +49,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         : "{$baseUrl}/assets/images/layout/thumbnails/in_translation.webp";
                     $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
                     $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
-                    $tooltipText = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
-                    ?>
-                                <a href="<?php echo $baseUrl; ?>/comic/<?php echo $comicId; ?>" title="<?php echo \htmlspecialchars($tooltipText); ?>">
+                    $tooltipText = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : ''); ?>
+                                <a href="<?php echo $baseUrl; ?>/comic/<?php echo $comicId; ?>"
+                                   title="<?php echo \htmlspecialchars($tooltipText); ?>">
                                     <span><?php echo \htmlspecialchars($tooltipText); ?></span>
                                     <!-- Lazy Loading & Fallback via archive.js (data-src) -->
                                     <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
@@ -75,5 +66,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         <?php } ?>
     </article>
 </main>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
