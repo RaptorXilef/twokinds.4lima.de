@@ -785,3 +785,44 @@ body.theme-night .row-highlight {
     color: var(--link-color);
     margin-bottom: 10px;
 }
+
+/* Zusätzliche Utilities für die Benutzerverwaltung */
+.ml-10 {
+    margin-left: 10px;
+}
+.ml-30 {
+    margin-left: 30px;
+}
+.gap-8 {
+    gap: 8px;
+}
+.font-lg {
+    font-size: 1.1em;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+.border-light {
+    border: 1px solid var(--border-light);
+}
+.border-bottom-dashed {
+    border-bottom: 1px dashed var(--border-light);
+}
+.checkbox-lg {
+    transform: scale(1.3);
+    margin: 0;
+}
+
+/* Badges für Tabellen */
+.badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+.badge-system {
+    color: var(--status-red-text);
+    border: 1px solid var(--status-red-border);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.7em;
+}

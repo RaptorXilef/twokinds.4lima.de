@@ -14,9 +14,7 @@ use App\Core\Entity\User;
  * @var string $currentUserId
  */
 ?>
-
-<div
-     style="margin-bottom: 20px; display: flex; gap: 10px; border-bottom: 2px solid var(--border-medium); padding-bottom: 15px;">
+<div class="d-flex gap-10 mb-20 pb-15 border-bottom-2">
     <button class="button media-tab-btn active"
             data-type="user-list-view">Benutzer</button>
     <button class="button edit media-tab-btn"
@@ -32,15 +30,13 @@ use App\Core\Entity\User;
                 <button type="button"
                         class="button add"
                         id="btn-add-user">
-                    <i class="fa-solid fa-user-plus"></i> Neuen Benutzer anlegen
-                </button>
+                    <i class="fa-solid fa-user-plus"></i> Neuen Benutzer anlegen </button>
             </div>
         <?php } else { ?>
             <div class="status-message status-orange visible"><i class="fa-solid fa-lock"></i> Dir fehlt die
                 Berechtigung, Benutzer zu verwalten.</div>
         <?php } ?>
     </div>
-
     <div class="sitemap-table-container">
         <table class="admin-table">
             <thead>
@@ -70,14 +66,13 @@ use App\Core\Entity\User;
                         <tr>
                             <td>
                                 <strong><?php echo \htmlspecialchars($u->username->value); ?></strong>
-                                <div class="mono"
-                                     style="font-size: 0.8em; color: var(--text-color-light);"><?php echo \htmlspecialchars($u->id); ?></div>
+                                <div class="mono font-small text-light"><?php echo \htmlspecialchars($u->id); ?></div>
                             </td>
                             <td><?php echo \htmlspecialchars($u->email->value); ?></td>
                             <td>
-                                <span style="padding: 2px 6px; background: var(--table-header-bg); border: 1px solid var(--border-medium); border-radius: 4px; font-size: 0.85em;">
-                                        <?php echo \htmlspecialchars($roles[$u->roleId]->name ?? $u->roleId); ?>
-                                    </span>
+                                <span class="badge bg-even border-medium">
+<?php echo \htmlspecialchars($roles[$u->roleId]->name ?? $u->roleId); ?>
+</span>
                             </td>
                             <td><?php echo $u->createdAt->format('d.m.Y H:i'); ?></td>
                             <td class="actions-cell">
@@ -106,23 +101,20 @@ use App\Core\Entity\User;
 
 <!-- ANSICHT 2: ROLLEN -->
 <div id="media-view-role-list-view"
-     class="media-view"
-     style="display: none;">
+     class="media-view hidden">
     <div class="table-controls actions-bar">
         <?php if ($canManageRoles) { ?>
             <div class="top-actions">
                 <button type="button"
                         class="button add"
                         id="btn-add-role">
-                    <i class="fa-solid fa-shield-plus"></i> Neue Rolle erstellen
-                </button>
+                    <i class="fa-solid fa-shield-plus"></i> Neue Rolle erstellen </button>
             </div>
         <?php } else { ?>
             <div class="status-message status-orange visible"><i class="fa-solid fa-lock"></i> Dir fehlt die
                 Berechtigung, Rollen zu verwalten.</div>
         <?php } ?>
     </div>
-
     <div class="sitemap-table-container">
         <table class="admin-table">
             <thead>
@@ -146,7 +138,7 @@ use App\Core\Entity\User;
                         <td>
                             <strong><?php echo \htmlspecialchars($role->name); ?></strong>
                             <?php if ($isSystemRole) { ?>
-                                <span style="margin-left: 10px; font-size: 0.7em; color: var(--status-red-text); border: 1px solid var(--status-red-border); padding: 1px 4px; border-radius: 3px;">System-Rolle</span>
+                                <span class="badge-system ml-10">System-Rolle</span>
                             <?php } ?>
                         </td>
                         <td class="actions-cell">
@@ -176,8 +168,7 @@ use App\Core\Entity\User;
 <div id="user-modal"
      class="modal">
     <div class="modal-overlay btn-close-user-modal"></div>
-    <div class="modal-content"
-         style="max-width: 600px;">
+    <div class="modal-content modal-sm">
         <div class="modal-header-wrapper">
             <h2 id="modal-title-user">Benutzer bearbeiten</h2>
             <button class="modal-close btn-close-user-modal">&times;</button>
@@ -204,8 +195,8 @@ use App\Core\Entity\User;
                            required>
                 </div>
                 <div class="form-group">
-                    <label>Passwort <small style="font-weight:normal; color: var(--text-color-faded);">(Leer lassen, um
-                            aktuelles zu behalten)</small></label>
+                    <label>Passwort <small class="font-normal text-faded">(Leer lassen, um aktuelles zu
+                            behalten)</small></label>
                     <input type="password"
                            id="user_password"
                            name="password"
@@ -237,8 +228,7 @@ use App\Core\Entity\User;
 <div id="role-modal"
      class="modal">
     <div class="modal-overlay btn-close-role-modal"></div>
-    <div class="modal-content"
-         style="max-width: 800px; max-height: 95vh;">
+    <div class="modal-content modal-md modal-flex">
         <div class="modal-header-wrapper">
             <h2 id="modal-title-role">Rolle bearbeiten</h2>
             <button class="modal-close btn-close-role-modal">&times;</button>
@@ -246,7 +236,7 @@ use App\Core\Entity\User;
         <div class="modal-scroll-content">
             <form id="role-form"
                   class="admin-form">
-                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 20px;">
+                <div class="grid-1-2-cols mb-20">
                     <div class="form-group">
                         <label>Rollen-ID <small>(z.B. redakteur)</small></label>
                         <input type="text"
@@ -262,52 +252,40 @@ use App\Core\Entity\User;
                                required>
                     </div>
                 </div>
-
-                <div
-                     style="background: var(--table-row-even); border: 1px solid var(--border-medium); border-radius: 6px; padding: 20px;">
-                    <h3
-                        style="margin-top: 0; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <div class="bg-even border-medium border-radius-6 p-20">
+                    <h3 class="mt-0 mb-15 d-flex justify-between align-center">
                         <span><i class="fa-solid fa-sitemap"></i> Berechtigungs-Baum</span>
-                        <label
-                               style="font-size: 0.8em; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        <label class="font-small font-normal cursor-pointer d-flex align-center gap-5">
                             <input type="checkbox"
                                    id="role_all_perms"
                                    value="*"> <strong>Vollzugriff (Gott-Modus)</strong>
                         </label>
                     </h3>
-                    <p style="font-size: 0.9em; margin-bottom: 20px; color: var(--text-color-faded);">
-                        Wenn du ein Hauptrecht aktivierst (z.B. "Comic-Verwaltung"), erbt die Gruppe automatisch alle
-                        darunterliegenden Rechte. Du kannst jedoch spezielle Unterrechte explizit durch Abwählen
-                        entziehen.
-                    </p>
-
+                    <p class="font-small text-faded mb-20"> Wenn du ein Hauptrecht aktivierst (z.B. "Comic-Verwaltung"),
+                        erbt die Gruppe automatisch alle darunterliegenden Rechte. Du kannst jedoch spezielle
+                        Unterrechte explizit durch Abwählen entziehen. </p>
                     <div id="permissions-tree-container"
-                         style="display: flex; flex-direction: column; gap: 15px;">
+                         class="d-flex flex-column gap-15">
                         <?php foreach ($permissionsTree as $groupKey => $groupNode) { ?>
-                            <div class="perm-group"
-                                 style="background: var(--content-bg); border: 1px solid var(--border-light); padding: 15px; border-radius: 4px;">
+                            <div class="perm-group bg-content border-light p-15 border-radius-4">
                                 <label
-                                       style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.1em; margin-bottom: 10px; border-bottom: 1px dashed var(--border-light); padding-bottom: 10px;">
+                                       class="d-flex align-center gap-10 cursor-pointer font-lg mb-10 pb-10 border-bottom-dashed">
                                     <input type="checkbox"
-                                           class="perm-checkbox perm-parent"
-                                           value="<?php echo \htmlspecialchars($groupNode['key']); ?>"
-                                           style="transform: scale(1.3);">
+                                           class="perm-checkbox perm-parent checkbox-lg"
+                                           value="<?php echo \htmlspecialchars($groupNode['key']); ?>">
                                     <strong><?php echo \htmlspecialchars($groupNode['label']); ?></strong>
-                                    <span style="font-size: 0.7em; color: var(--text-color-faded);" class="mono"><?php echo \htmlspecialchars($groupNode['key']); ?></span>
+                                    <span class="font-small text-faded mono"><?php echo \htmlspecialchars($groupNode['key']); ?></span>
                                 </label>
-
                                 <?php if (isset($groupNode['children'])) { ?>
-                                    <div class="perm-children"
-                                         style="margin-left: 30px; display: flex; flex-direction: column; gap: 8px;">
+                                    <div class="perm-children d-flex flex-column gap-8 ml-30">
                                         <?php foreach ($groupNode['children'] as $childKey => $childNode) { ?>
-                                            <label
-                                                   style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
+                                            <label class="d-flex align-center gap-8 cursor-pointer font-normal">
                                                 <input type="checkbox"
                                                        class="perm-checkbox perm-child"
                                                        value="<?php echo \htmlspecialchars($childNode['key']); ?>"
                                                        data-parent="<?php echo \htmlspecialchars($groupNode['key']); ?>">
                                                 <span><?php echo \htmlspecialchars($childNode['label']); ?></span>
-                                                <span style="font-size: 0.75em; color: var(--text-color-faded);" class="mono"><?php echo \htmlspecialchars($childNode['key']); ?></span>
+                                                <span class="font-small text-faded mono"><?php echo \htmlspecialchars($childNode['key']); ?></span>
                                             </label>
                                         <?php } ?>
                                     </div>
