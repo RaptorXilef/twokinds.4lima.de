@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// Modals und Dialoge.
 ///
@@ -10,15 +8,6 @@
 /*!
  * @file       resources/scss/components/_modals.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
 
 // Verwendete SCSS-Variablen:
 // - $font-mono: Monospace Schriftart für Code/Diffs
@@ -156,10 +145,10 @@ body.theme-night .modal-header-wrapper {
         font-weight: bold;
     }
 
-    input[type="text"],
-    input[type="number"],
-    input[type="password"],
-    input[type="email"],
+    input[type='text'],
+    input[type='number'],
+    input[type='password'],
+    input[type='email'],
     textarea,
     select {
         box-sizing: border-box;
@@ -173,10 +162,10 @@ body.theme-night .modal-header-wrapper {
     }
 }
 
-body.theme-night .modal-scroll-content input[type="text"],
-body.theme-night .modal-scroll-content input[type="number"],
-body.theme-night .modal-scroll-content input[type="password"],
-body.theme-night .modal-scroll-content input[type="email"],
+body.theme-night .modal-scroll-content input[type='text'],
+body.theme-night .modal-scroll-content input[type='number'],
+body.theme-night .modal-scroll-content input[type='password'],
+body.theme-night .modal-scroll-content input[type='email'],
 body.theme-night .modal-scroll-content textarea,
 body.theme-night .modal-scroll-content select {
     background-color: color-mix(in srgb, var(--page-bg), black 20%);
@@ -240,7 +229,6 @@ body.theme-night .modal-footer-actions {
 }
 
 body.theme-night {
-
     .modal-close,
     .close-button {
         color: rgb(255 255 255 / 0.6);
@@ -414,7 +402,7 @@ body.theme-night .button-toggle-group .button-toggle.active {
     margin-top: 10px;
 }
 
-.report-images-container>div,
+.report-images-container > div,
 .image-preview-box {
     display: flex;
     flex: 1; // Beide Container wachsen gleichmäßig
@@ -638,4 +626,138 @@ body.theme-night .dialog .dialog-title {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+}
+
+/* ==========================================================================
+   MODAL SIZES & BEHAVIOR
+   ========================================================================== */
+.modal-content.modal-lg {
+    max-width: 1080px;
+}
+.modal-content.modal-md {
+    max-width: 800px;
+}
+.modal-content.modal-sm {
+    max-width: 600px;
+}
+.modal-content.modal-flex {
+    display: flex;
+    flex-direction: column;
+    max-height: 95vh;
+}
+
+/* ==========================================================================
+   IMAGE PREVIEW BOXES & CROPPER (aus PHTML extrahiert)
+   ========================================================================== */
+.preview-box {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+
+    strong {
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .preview-box-inner {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+            width: 100%;
+            height: 160px;
+            max-height: 160px;
+            object-fit: contain;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+        }
+    }
+
+    .social-preview {
+        border-radius: 4px;
+        overflow: hidden;
+        background-color: var(--content-bg);
+        border: 1px solid var(--border-medium);
+
+        img {
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+}
+
+.hover-zoom-trigger {
+    cursor: zoom-in;
+    border-radius: 4px;
+    border: 1px solid var(--border-medium);
+    object-fit: contain;
+    background-color: var(--content-bg);
+}
+
+#image-hover-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-out;
+
+    img {
+        max-width: 90vw;
+        max-height: 95vh;
+        border-radius: 8px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        border: 2px solid var(--border-medium);
+        background-color: var(--content-bg);
+    }
+}
+
+.cropper-container {
+    flex: 1;
+    background-color: var(--table-row-even);
+    border: 2px dashed var(--border-medium);
+    border-radius: 4px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        max-width: 100%;
+        max-height: 500px;
+        display: none;
+    }
+}
+
+.char-preview-wrapper {
+    flex: 0 0 120px;
+    text-align: center;
+
+    img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid var(--border-medium);
+        background-color: var(--content-bg);
+    }
+
+    .char-id-display {
+        margin-top: 10px;
+        font-weight: bold;
+        color: var(--text-color-faded);
+    }
 }

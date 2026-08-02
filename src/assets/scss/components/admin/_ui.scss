@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// Admin UI Elemente & Utilities.
 ///
@@ -10,20 +8,6 @@
 /*!
  * @file       resources/scss/components/admin/_ui.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-///
 
 // Verwendete SCSS-Variablen:
 // (Keine spezifischen SCSS-Vars in diesem Block)
@@ -429,7 +413,9 @@ body.theme-night .transcript-display-box {
 }
 
 body.theme-night .status-list {
-    background-color: rgb(0 0 0 / 0.2); // Leicht abgedunkelter Hintergrund im Dark Mode
+    background-color: rgb(
+        0 0 0 / 0.2
+    ); // Leicht abgedunkelter Hintergrund im Dark Mode
 }
 
 .status-item {
@@ -570,4 +556,175 @@ body.theme-night .row-highlight {
 
 .mb-15 {
     margin-bottom: 15px;
+}
+
+/* ==========================================================================
+   UTILITY CLASSES (Für Layouts ohne Inline-Styles)
+   ========================================================================== */
+.d-flex {
+    display: flex;
+}
+.flex-column {
+    flex-direction: column;
+}
+.align-center {
+    align-items: center;
+}
+.align-start {
+    align-items: flex-start;
+}
+.justify-between {
+    justify-content: space-between;
+}
+.justify-center {
+    justify-content: center;
+}
+.flex-1 {
+    flex: 1;
+}
+.flex-wrap {
+    flex-wrap: wrap;
+}
+.gap-5 {
+    gap: 5px;
+}
+.gap-10 {
+    gap: 10px;
+}
+.gap-15 {
+    gap: 15px;
+}
+.gap-20 {
+    gap: 20px;
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+.mt-5 {
+    margin-top: 5px;
+}
+.mt-10 {
+    margin-top: 10px;
+}
+.mt-15 {
+    margin-top: 15px;
+}
+.mt-20 {
+    margin-top: 20px;
+}
+.mb-0 {
+    margin-bottom: 0;
+}
+.mb-5 {
+    margin-bottom: 5px;
+}
+.mb-10 {
+    margin-bottom: 10px;
+}
+// .mb-15 existiert bereits weiter oben in der _ui.scss!
+.mb-20 {
+    margin-bottom: 20px;
+}
+.p-5 {
+    padding: 5px;
+}
+.p-10 {
+    padding: 10px;
+}
+.p-15 {
+    padding: 15px;
+}
+.p-20 {
+    padding: 20px;
+}
+
+.grid-2-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.grid-2-1-cols {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+}
+.grid-1-2-cols {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 15px;
+}
+.grid-4-custom {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.5fr;
+    gap: 15px;
+}
+
+.w-100 {
+    width: 100%;
+}
+.w-auto {
+    width: auto;
+}
+.h-100 {
+    height: 100%;
+}
+.max-h-250 {
+    max-height: 250px;
+}
+.scroll-y {
+    overflow-y: auto;
+}
+.hidden {
+    display: none !important;
+}
+
+.text-faded {
+    color: var(--text-color-faded);
+}
+.text-light {
+    color: var(--text-color-light);
+}
+.text-danger {
+    color: var(--status-red-text);
+}
+.text-success {
+    color: var(--status-green-text);
+}
+.text-link {
+    color: var(--link-color);
+}
+.font-normal {
+    font-weight: normal;
+}
+.font-bold {
+    font-weight: bold;
+}
+.font-small {
+    font-size: 0.8em;
+}
+.icon-lg {
+    font-size: 2em;
+}
+
+.bg-even {
+    background-color: var(--table-row-even);
+}
+.bg-content {
+    background-color: var(--content-bg);
+}
+.border-radius-4 {
+    border-radius: 4px;
+}
+.border-radius-6 {
+    border-radius: 6px;
+}
+.border-radius-8 {
+    border-radius: 8px;
+}
+.border-medium {
+    border: 1px solid var(--border-medium);
+}
+.border-dashed {
+    border: 2px dashed var(--border-medium);
 }

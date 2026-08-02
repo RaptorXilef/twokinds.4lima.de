@@ -295,3 +295,44 @@ body.theme-night .button-toggle-group .button-toggle {
     opacity: 0.7;
     filter: grayscale(1);
 }
+
+/* ==========================================================================
+   WYSIWYG & DROPZONE TWEAKS (aus PHTML extrahiert)
+   ========================================================================== */
+.trumbowyg-button-pane button {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    line-height: normal !important;
+}
+.trumbowyg-box {
+    margin-top: 0 !important;
+}
+
+.drop-zone-sm {
+    padding: 20px;
+    p {
+        margin: 5px 0 0;
+        color: var(--text-color);
+        font-weight: bold;
+    }
+    small {
+        color: var(--text-color-light);
+        display: block;
+    }
+
+    i {
+        font-size: 2em;
+        color: var(--text-color-light);
+    }
+    &.zone-hires i {
+        color: var(--link-color);
+    }
+    &.zone-lowres i {
+        color: var(--text-color-faded);
+    }
+}
