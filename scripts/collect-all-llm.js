@@ -121,52 +121,63 @@ function optimizeTokens(content, fileExtension) {
     const isPhpOrPhtml = ext === '.php' || ext === '.phtml';
     const isJsOrScss = ext === '.js' || ext === '.scss';
 
+    // =========================================================================
+    // FIX: STRING PROTECTOR (Verhindert, dass Regex Texte zerstört)
+    // =========================================================================
+    const stringMap = new Map();
+    let stringId = 0;
+
+    // Zieht alle Strings (", ', `) ab und ersetzt sie durch einen Platzhalter.
+    // So werden Multiline-Strings, URLs und "=" innerhalb von Texten geschützt.
+    let optimizedContent = content.replace(/(["'`])(?:\\.|(?!\1)[^\\])*\1/g, (match) => {
+        const id = `___STR_PLACEHOLDER_${stringId++}___`;
+        stringMap.set(id, match);
+        return id;
+    });
+
     // 1. Schritt: Alle Kommentare restlos entfernen
     if (isJsOrScss || isPhpOrPhtml) {
         // Multi-line Kommentare /* ... */ entfernen
-        content = content.replace(/\/\*[\s\S]*?\*\//g, '');
+        optimizedContent = optimizedContent.replace(/\/\*[\s\S]*?\*\//g, '');
 
         // Single-line Kommentare // ... entfernen
-        // FIX: [^:"'] schützt http://, https:// sowie URLs in Quotes wie href="//..." oder import '//...'
-        content = content.replace(/(^|[^:"'])\/\/.*$/gm, (_match, prefix) => {
-            return prefix; // Behalte das Zeichen vor dem //
+        optimizedContent = optimizedContent.replace(/(^|[^:"'])\/\/.*$/gm, (_match, prefix) => {
+            return prefix;
         });
 
-        // Speziell für PHP/PHTML: HTML, # Kommentare und SQL-Kommentare entfernen
         if (isPhpOrPhtml) {
-            // FIX: HTML-Kommentare vollständig und zuerst entfernen, damit sie nicht zerrissen werden
-            content = content.replace(/<!--[\s\S]*?-->/g, '');
+            optimizedContent = optimizedContent.replace(/<!--[\s\S]*?-->/g, '');
 
-            // (?!\[) stellt sicher, dass PHP 8 Attribute wie #[ActionRoute] NICHT gelöscht werden
-            content = content.replace(/(^|[^"'])#(?!\[).*$/gm, (_match, prefix) => {
-                return prefix;
-            });
+            optimizedContent = optimizedContent.replace(
+                /(^|[^"'])#(?!\[).*$/gm,
+                (_match, prefix) => {
+                    return prefix;
+                }
+            );
 
-            // FIX: SQL "-- " Kommentare entfernen.
-            // Der negative Lookbehind (?<!\!) verhindert, dass Rest-HTML-Fragmente wie "!--" getroffen werden.
-            content = content.replace(/(?<!!)--\s.*$/gm, '');
+            optimizedContent = optimizedContent.replace(/(?<!!)--\s.*$/gm, '');
         }
     }
 
-    // Extra-Schritt für PHP/PHTML/JS/SCSS: Operatoren sauber mit exakt einem Leerzeichen umschließen
-    // WICHTIG: Längste Operatoren (wie === und !==) müssen zuerst stehen, damit sie nicht zerrissen werden!
-    content = content.replace(/\s*(===|!==|<=|>=|=>|==|!=|\+=|-=|=)\s*/g, ' $1 ');
+    // Extra-Schritt: Operatoren sauber mit exakt einem Leerzeichen umschließen
+    // FIX: (?<!<\?) schützt das PHP Short-Tag "<?=" davor, in "<? =" zerissen zu werden!
+    optimizedContent = optimizedContent.replace(
+        /(?<!<\?)\s*(===|!==|<=|>=|=>|==|!=|\+=|-=|=)\s*/g,
+        ' $1 '
+    );
 
     // 2. Schritt: Whitespace & Zeilenumbrüche minimieren
+    const lines = optimizedContent.split(/\r?\n/);
+    const optimizedLines = [];
 
     // PHTML OPTIMIERUNG
     if (ext === '.phtml') {
-        const lines = content.split(/\r?\n/);
-        const optimizedLines = [];
-
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
             if (line.length === 0) continue;
 
             if (optimizedLines.length > 0) {
                 const lastLine = optimizedLines[optimizedLines.length - 1];
-                // Zusammenhängen wenn: Aktuelle Zeile ist kein neues Tag ('<')
-                // ODER vorherige Zeile wurde nicht sauber mit '>' (HTML) oder '?>' (PHP) beendet
                 if (
                     !line.startsWith('<') ||
                     (!lastLine.endsWith('>') && !lastLine.endsWith('?>'))
@@ -177,42 +188,47 @@ function optimizeTokens(content, fileExtension) {
             }
             optimizedLines.push(line);
         }
-        return optimizedLines.join('\n');
     }
+    // JS, PHP, SCSS OPTIMIERUNG
+    else {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line.length === 0) continue;
 
-    // Für JS, PHP und SCSS gehen wir zeilenweise vor, um die Struktur präzise zu stauchen
-    const lines = content.split(/\r?\n/);
-    const optimizedLines = [];
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (line.length === 0) continue;
-
-        // Sicherheitsmaßnahme für PHP-Tags und Deklarationen
-        if (ext === '.php' && (/^<\?php/i.test(line) || /^declare\s*\(/i.test(line))) {
-            optimizedLines.push(line);
-            continue;
-        }
-
-        // Zeilen zusammenhängen, wenn die vorherige Zeile kein kritischer Stopper war
-        if (
-            optimizedLines.length > 0 &&
-            !(ext === '.php' && /^<\?php/i.test(optimizedLines[optimizedLines.length - 1]))
-        ) {
-            const lastLine = optimizedLines[optimizedLines.length - 1];
-
-            // Ein kleines Leerzeichen spendieren, falls Wortgrenzen aufeinandertreffen
-            if (/[a-zA-Z0-9_\]]$/.test(lastLine) && /^[a-zA-Z0-9_$]/.test(line)) {
-                optimizedLines[optimizedLines.length - 1] += ` ${line}`;
-            } else {
-                optimizedLines[optimizedLines.length - 1] += line;
+            if (ext === '.php' && (/^<\?php/i.test(line) || /^declare\s*\(/i.test(line))) {
+                optimizedLines.push(line);
+                continue;
             }
-        } else {
-            optimizedLines.push(line);
+
+            if (
+                optimizedLines.length > 0 &&
+                !(ext === '.php' && /^<\?php/i.test(optimizedLines[optimizedLines.length - 1]))
+            ) {
+                const lastLine = optimizedLines[optimizedLines.length - 1];
+
+                if (/[a-zA-Z0-9_\]]$/.test(lastLine) && /^[a-zA-Z0-9_$]/.test(line)) {
+                    optimizedLines[optimizedLines.length - 1] += ` ${line}`;
+                } else {
+                    optimizedLines[optimizedLines.length - 1] += line;
+                }
+            } else {
+                optimizedLines.push(line);
+            }
         }
     }
 
-    return optimizedLines.join('\n');
+    // Code wieder zusammensetzen
+    let joinedResult = optimizedLines.join('\n');
+
+    // =========================================================================
+    // FIX: STRINGS WIEDERHERSTELLEN
+    // =========================================================================
+    stringMap.forEach((originalString, placeholderKey) => {
+        // Wir nutzen split.join statt replace, da replace bei Sonderzeichen (z.B. $1) in Strings kaputt geht
+        joinedResult = joinedResult.split(placeholderKey).join(originalString);
+    });
+
+    return joinedResult;
 }
 
 /**
@@ -227,17 +243,13 @@ function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = 
         const stat = fs.statSync(fullPath);
 
         if (stat.isDirectory()) {
-            // Pfad für Windows/Mac/Linux plattformübergreifend normalisieren (\ zu /)
             const normalizedRelPath = relPath.replace(/\\/g, '/').toLowerCase();
 
             const isExcluded =
-                // 1. Check: Reine Ordnernamen (wie bisher)
                 ALWAYS_IGNORE_DIRS.some(
                     (d) => file.toLowerCase().includes(d.toLowerCase()) || file.startsWith('.')
                 ) ||
-                // 2. NEU Check: Komplette Pfade (z.B. public/assets)
                 ALWAYS_IGNORE_PATHS.some((p) => normalizedRelPath.includes(p.toLowerCase())) ||
-                // 3. Check: Config-spezifische Ausschlüsse
                 exclDirs.some((d) => normalizedRelPath.includes(d.toLowerCase()));
 
             if (!isExcluded) {
@@ -277,7 +289,6 @@ function startStructureMirror() {
     console.log(`\n${c.cyan}🚀 Starte Erstellung der gespiegelten Token-Struktur...`);
     console.log(`${c.yellow}Target: .debug/${version}/${timestampDirName}_minimized/${c.reset}`);
 
-    // Alle relevanten Dateitypen einsammeln
     const foundFiles = getFiles(basePath, /\.(js|php|phtml|scss)$/, [], [], globalIncludeRootFiles);
 
     if (foundFiles.length === 0) {
@@ -289,18 +300,13 @@ function startStructureMirror() {
     for (const file of foundFiles) {
         try {
             const rawContent = fs.readFileSync(file.fullPath, 'utf-8');
-
-            // Komplette Bereinigung aller Alt-Kommentare inkl. alter Path-Kommentare
             let optimizedContent = optimizeTokens(rawContent, file.ext);
 
-            // Setze IMMER den neuen, korrekten Pfad-Kommentar an die Spitze
-            // FIX: PHTML bekommt <!-- --> um rohen Text im HTML-Dokument zu vermeiden
             let commentPrefix = `// Path: ${file.relPath}\n`;
             if (file.ext.toLowerCase() === '.phtml') {
                 commentPrefix = `<!-- Path: ${file.relPath} -->\n`;
             }
 
-            // FIX: Beachtet vorausgehende Leerzeichen vor dem <?php Tag
             if (file.ext.toLowerCase() === '.php' && /^\s*<\?php/i.test(optimizedContent)) {
                 optimizedContent = optimizedContent.replace(
                     /^\s*<\?php/i,
@@ -310,11 +316,9 @@ function startStructureMirror() {
                 optimizedContent = commentPrefix + optimizedContent;
             }
 
-            // Zielpfad innerhalb des neuen Zeitstempel-Ordners berechnen
             const fileOutputDir = path.join(targetDir, path.dirname(file.relPath));
             const fileOutputPath = path.join(targetDir, file.relPath);
 
-            // Verzeichnisstruktur bei Bedarf replizieren
             if (!fs.existsSync(fileOutputDir)) fs.mkdirSync(fileOutputDir, { recursive: true });
 
             fs.writeFileSync(fileOutputPath, optimizedContent, 'utf-8');
@@ -360,8 +364,6 @@ function startFileCollection(configKey, silent = false) {
     for (const file of foundFiles) {
         try {
             const rawContent = fs.readFileSync(file.fullPath, 'utf-8');
-
-            // Optimierung ohne jegliche Alt-Kommentare
             const optimizedContent = optimizeTokens(rawContent, file.ext);
 
             combinedContent += `// ========== START FILE: [${file.relPath}] ==========\n`;
