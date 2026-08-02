@@ -11,11 +11,11 @@ $imagePath    = "{$baseUrl}/assets/images/layout/lowres/404.webp";
 $fallbackPath = 'https://placehold.co/800x600/cccccc/333333?text=Seite+nicht+gefunden';
 include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area">
-    <article class="max-w-900 w-100 center-block text-center">
-        <header>
+    <article class="max-w-900 w-100 center-block">
+        <header class="text-center">
             <h1 class="page-header"><?php echo \htmlspecialchars($pageTitle); ?></h1>
         </header>
-        <div class="my-20">
+        <div class="my-20 text-center">
             <img class="comic-image"
                  src="<?php echo \htmlspecialchars($imagePath); ?>"
                  alt="Fehlerbild: Seite nicht gefunden">

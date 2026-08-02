@@ -462,3 +462,43 @@ body.theme-night .checkbox-item {
 .bookmark-delete-btn:hover {
     background: var(--status-red-bg);
 }
+
+/* ==========================================================================
+   FRONTEND BUGFIX UTILITIES
+   ========================================================================== */
+.text-left {
+    text-align: left;
+}
+.p-25 {
+    padding: 25px;
+}
+.px-20 {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.py-15 {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.font-1-1x {
+    font-size: 1.1em;
+}
+.text-color {
+    color: var(--text-color);
+}
+.text-rss {
+    color: #f26522;
+}
+
+.border-bottom-light {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.badge-pill {
+    font-size: 0.6em;
+    background: var(--button-bg);
+    color: var(--text-on-medium);
+    padding: 4px 12px;
+    border-radius: 12px;
+}

@@ -10,11 +10,11 @@ $baseUrl   = \rtrim($settings['base_url'] ?? '', '/');
 $imagePath = "{$baseUrl}/assets/images/layout/lowres/403.webp";
 include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area">
-    <article class="max-w-900 w-100 center-block text-center">
-        <header>
+    <article class="max-w-900 w-100 center-block">
+        <header class="text-center">
             <h1 class="page-header"><?php echo \htmlspecialchars($pageTitle); ?></h1>
         </header>
-        <div class="my-20">
+        <div class="my-20 text-center">
             <img class="comic-image"
                  src="<?php echo \htmlspecialchars($imagePath); ?>"
                  alt="Fehlerbild: Zugriff verweigert">
