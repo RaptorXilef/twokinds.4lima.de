@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// Admin Tabellen und Datendarstellung.
 ///
@@ -9,22 +7,6 @@
 /*!
  * @file       resources/scss/components/admin/_tables.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
-/// - style(Refactor): Nesting-Tiefe reduziert (Phase 2 Flattening).
-/// - style(SCSS): .actions-cell und .comic-thumbnail auf Root-Level gehoben.
-/// - style(Admin): .pagination-wrapper und .pagination-info hinzugefügt.
-///
 
 // Verwendete SCSS-Variablen:
 // (Keine spezifischen SCSS-Vars in diesem Block)
@@ -56,22 +38,18 @@
     justify-content: space-between;
     margin-bottom: 15px;
 }
-
 .table-controls.actions-bar {
     gap: 15px;
     margin-bottom: 10px;
 }
-
 .table-controls .top-actions {
     display: flex;
     gap: 5px;
 }
-
 .table-controls .marker-legend-group {
     flex-grow: 1;
     justify-content: flex-end;
 }
-
 .marker-legend-group {
     display: flex;
     flex-wrap: wrap;
@@ -86,12 +64,12 @@
     border-radius: 4px;
 }
 
+// ? BUGFIX: table-layout auf auto geändert, damit die Tabellen flexibel skalieren
 .admin-table {
     width: 100%;
-    table-layout: fixed; // Zwingend für feste Spaltenbreiten
+    table-layout: auto;
     border-collapse: collapse;
 }
-
 .admin-table th,
 .admin-table td {
     padding: 8px;
@@ -101,7 +79,6 @@
     overflow-wrap: break-word;
     border-bottom: 1px solid var(--border-medium);
 }
-
 .admin-table th {
     position: sticky;
     top: 0;
@@ -120,21 +97,74 @@
 .admin-table tbody tr:hover {
     background-color: var(--table-row-hover);
 }
-
 body.theme-night .admin-table tbody tr:hover {
     background-color: var(--button-bg);
 }
-
 body.theme-night .admin-table {
     border-color: var(--border-dark);
 }
-
 body.theme-night .admin-table th,
 body.theme-night .admin-table td {
     border-color: var(--border-dark);
 }
 
-// Helper classes (Auf Root-Level gehoben)
+/* Semantische Klassen für Spaltenbreiten (Ersetzt Inline-Styles) */
+.col-id {
+    width: 80px;
+    white-space: nowrap;
+}
+.col-id-long {
+    width: 120px;
+    white-space: nowrap;
+}
+.col-avatar {
+    width: 80px;
+    text-align: center;
+}
+.col-date {
+    width: 150px;
+    white-space: nowrap;
+} // BUGFIX: Verhindert das Stauchen des Datums!
+.col-status {
+    width: 100px;
+    text-align: center;
+}
+.col-actions {
+    width: 120px;
+    text-align: right;
+    white-space: nowrap;
+}
+.col-actions-small {
+    width: 80px;
+    text-align: center;
+    white-space: nowrap;
+}
+.col-user {
+    width: 20%;
+    min-width: 150px;
+}
+.col-email {
+    width: 25%;
+    min-width: 180px;
+}
+.col-role {
+    width: 150px;
+}
+.col-title {
+    width: 25%;
+    min-width: 200px;
+}
+.col-type {
+    width: 120px;
+}
+.col-desc {
+    width: auto;
+}
+.col-main {
+    width: auto;
+}
+
+// Helper classes
 .comic-thumbnail {
     display: block;
     max-width: 100px;
@@ -143,14 +173,12 @@ body.theme-night .admin-table td {
     border: 1px solid var(--border-medium);
     border-radius: 4px;
 }
-
 .comic-type-display {
     display: block;
     font-size: 0.8em;
     font-style: italic;
     color: var(--text-color-medium);
 }
-
 .description-preview {
     max-height: 12em;
     padding: 5px;
@@ -160,149 +188,56 @@ body.theme-night .admin-table td {
     border: 1px solid var(--border-light);
     border-radius: 3px;
 }
-
 body.theme-night .description-preview {
     border-color: var(--border-dark);
 }
-
 .missing-info {
-    background-color: rgb(248 215 218 / 0.2); // !important
-    border: 2px solid #dc3545; // !important
+    background-color: rgba(248, 215, 218, 0.2);
+    border: 2px solid #dc3545;
 }
-
 .actions-cell {
-    vertical-align: middle; // Buttons oben ausrichten bei mehrzeiligem Text
+    vertical-align: middle;
     text-align: right;
     white-space: normal;
 }
-
 .actions-cell form {
     display: flex;
-    flex-wrap: wrap; // Umbruch erlauben
-    gap: 5px; // Abstand zwischen Buttons
-    justify-content: flex-end; // Rechtsbündig starten
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-end;
     width: 100%;
 }
-
 .actions-cell button {
     flex: 1 1 auto;
     justify-content: center;
-    min-width: 25px; // Damit Icon-Buttons nicht zu klein werden
-    margin: 0; // Reset // !important
+    min-width: 25px;
+    margin: 0;
     text-align: center;
 }
-
 .actions-cell button:disabled {
     cursor: not-allowed;
     opacity: 0.3;
 }
-
 .empty-table-message {
-    padding: 20px; // !important
+    padding: 20px;
     font-style: italic;
     color: var(--text-color-medium);
     text-align: center;
 }
 
-/* --- Sub-Classes for specific Tables --- */
+/*
+// ! Ungenutzt (Ersetzt durch obige semantische Klassen .col-*):
+// ! .admin-table.comic-editor-table th:nth-child(x) ...
+// ! .admin-table.reports-table th:nth-child(x) ...
+// ! .admin-table.sitemap-editor-table th:nth-child(x) ...
+// ! .admin-table.archive-editor-table th:nth-child(x) ...
+*/
 
-// Comic Editor
-.admin-table.comic-editor-table th:nth-child(1),
-.admin-table.comic-editor-table td:nth-child(1) {
-    width: 70px; // ID
-}
-
-.admin-table.comic-editor-table th:nth-child(2),
-.admin-table.comic-editor-table td:nth-child(2) {
-    width: 100px; // Vorschau
-}
-
-.admin-table.comic-editor-table th:nth-child(3),
-.admin-table.comic-editor-table td:nth-child(3) {
-    width: 100px; // Name
-}
-
-.admin-table.comic-editor-table th:nth-child(4),
-.admin-table.comic-editor-table td:nth-child(4) {
-    width: 300px; // Transkript
-}
-
-.admin-table.comic-editor-table th:nth-child(5),
-.admin-table.comic-editor-table td:nth-child(5) {
-    width: 50px; // Status
-}
-
-.admin-table.comic-editor-table th:nth-child(6),
-.admin-table.comic-editor-table td:nth-child(6) {
-    width: 70px; // Aktionen
-    text-align: right;
-}
-
-.admin-table.comic-editor-table td:last-child {
-    text-align: right;
-}
-
-// Reports
-.admin-table.reports-table th:nth-child(1),
-.admin-table.reports-table td:nth-child(1) {
-    width: 80px;
-    word-break: break-word;
-} // Datum
-
-.admin-table.reports-table th:nth-child(2),
-.admin-table.reports-table td:nth-child(2) {
-    width: 80px;
-    word-break: break-all;
-} // Comic-ID
-
-.admin-table.reports-table th:nth-child(3),
-.admin-table.reports-table td:nth-child(3) {
-    width: 80px;
-    word-break: break-word;
-} // Typ
-
-.admin-table.reports-table th:nth-child(4),
-.admin-table.reports-table td:nth-child(4) {
-    width: 80px;
-} // Einsender
-
-.admin-table.reports-table th:nth-child(5),
-.admin-table.reports-table td:nth-child(5) {
-    width: auto;
-} // Beschreibung (Flex)
-
-.admin-table.reports-table th:nth-child(6),
-.admin-table.reports-table td:nth-child(6) {
-    width: 80px;
-} // Aktionen
-
-// Sitemap Editor
-.admin-table.sitemap-editor-table th:nth-child(1),
-.admin-table.sitemap-editor-table td:nth-child(1) {
-    width: 65%;
-} // Pfad/Name/ID
-
-.admin-table.sitemap-editor-table th:nth-child(2),
-.admin-table.sitemap-editor-table td:nth-child(2) {
-    width: 10%;
-} // Priorität
-
-.admin-table.sitemap-editor-table th:nth-child(3),
-.admin-table.sitemap-editor-table td:nth-child(3) {
-    width: 15%;
-} // Frequenz
-
-.admin-table.sitemap-editor-table th:nth-child(4),
-.admin-table.sitemap-editor-table td:nth-child(4) {
-    width: 10%;
-    text-align: right;
-} // Aktionen
-
-// Inputs in der Tabelle anpassen (Flattened)
+/* Inputs für Sitemap-Editor (falls weiterhin benötigt) */
 .admin-table.sitemap-editor-table input[type='text'],
 .admin-table.sitemap-editor-table input[type='number'],
 .admin-table.sitemap-editor-table select {
-    box-sizing: border-box; // Wichtig für width 100%
+    box-sizing: border-box;
     width: 100%;
     padding: 6px;
     color: var(--text-color);
@@ -310,50 +245,23 @@ body.theme-night .description-preview {
     border: 1px solid var(--border-medium);
     border-radius: 3px;
 }
-
 .admin-table.sitemap-editor-table input:disabled,
 .admin-table.sitemap-editor-table select:disabled {
     cursor: not-allowed;
     background-color: var(--table-header-bg);
     opacity: 0.7;
 }
-
 body.theme-night .admin-table.sitemap-editor-table input[type='text'],
 body.theme-night .admin-table.sitemap-editor-table input[type='number'],
 body.theme-night .admin-table.sitemap-editor-table select {
     background-color: color-mix(in srgb, var(--page-bg), black 20%);
     border-color: var(--border-light);
 }
-
 body.theme-night .admin-table.sitemap-editor-table input:disabled,
 body.theme-night .admin-table.sitemap-editor-table select:disabled {
-    background-color: rgb(255 255 255 / 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
-// Archiv-Spezifisch (Flattened)
-.admin-table.archive-editor-table th:nth-child(1),
-.admin-table.archive-editor-table td:nth-child(1) {
-    width: 30px; // ID kurz
-    text-align: center;
-}
-
-.admin-table.archive-editor-table th:nth-child(2),
-.admin-table.archive-editor-table td:nth-child(2) {
-    width: 170px; // Titel
-    font-weight: bold;
-}
-
-.admin-table.archive-editor-table th:nth-child(3),
-.admin-table.archive-editor-table td:nth-child(3) {
-    width: auto; // Beschreibung Flex
-}
-
-.admin-table.archive-editor-table th:nth-child(4),
-.admin-table.archive-editor-table td:nth-child(4) {
-    width: 75px; // Aktionen
-}
-
-/* --- Pagination --- */
 .pagination {
     display: flex;
     flex-wrap: wrap;
@@ -362,93 +270,6 @@ body.theme-night .admin-table.sitemap-editor-table select:disabled {
     justify-content: center;
     margin: 20px 0;
 }
-
-.pagination a,
-.pagination span {
-    padding: 8px 12px;
-    color: var(--link-color);
-    text-decoration: none;
-    cursor: pointer;
-    background-color: var(--content-bg);
-    border: 1px solid var(--border-medium);
-    border-radius: 4px;
-}
-
-// Transparentes Design im Dark Mode
-body.theme-night .pagination a,
-body.theme-night .pagination span {
-    color: var(--text-color);
-    background-color: transparent;
-    border-color: var(--border-light);
-}
-
-.pagination a:hover:not(.current-page),
-.pagination span:hover:not(.current-page) {
-    background-color: var(--button-hover-bg);
-}
-
-body.theme-night .pagination a:hover:not(.current-page),
-body.theme-night .pagination span:hover:not(.current-page) {
-    background-color: rgb(255 255 255 / 0.1);
-}
-
-.pagination span.current-page {
-    color: #fff;
-    cursor: default;
-    background-color: var(--link-color);
-    border-color: var(--link-color);
-}
-
-body.theme-night .pagination span.current-page {
-    color: #fff;
-    cursor: default;
-    background-color: var(--link-color);
-    border-color: var(--link-color);
-}
-
-.legend-pagination-info {
-    flex-basis: 100%;
-    margin-top: 5px;
-    text-align: right;
-}
-
-.legend-pagination-info small {
-    color: var(--text-color-light);
-}
-
-.pagination-info-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 10px;
-}
-
-.pagination-info-container small {
-    color: var(--text-color-light);
-}
-
-/* --- Pagination --- */
-
-.pagination-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 25px 0;
-}
-
-.pagination-info {
-    margin-bottom: 10px;
-    font-size: 0.85em;
-    font-style: italic;
-    color: var(--text-color-light);
-}
-
-.pagination {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    justify-content: center;
-}
-
 .pagination a,
 .pagination span {
     padding: 8px 12px;
@@ -468,26 +289,47 @@ body.theme-night .pagination span {
     background-color: transparent;
     border-color: var(--border-light);
 }
-
 .pagination a:hover:not(.current-page),
 .pagination span:hover:not(.current-page) {
     background-color: var(--button-hover-bg);
 }
-
 body.theme-night .pagination a:hover:not(.current-page),
 body.theme-night .pagination span:hover:not(.current-page) {
-    background-color: rgb(255 255 255 / 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
 }
-
 .pagination span.current-page {
     color: #fff;
     cursor: default;
     background-color: var(--link-color);
     border-color: var(--link-color);
 }
+.legend-pagination-info {
+    flex-basis: 100%;
+    margin-top: 5px;
+    text-align: right;
+}
+.legend-pagination-info small {
+    color: var(--text-color-light);
+}
+.pagination-info-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+.pagination-info-container small {
+    color: var(--text-color-light);
+}
 
-body.theme-night .pagination span.current-page {
-    color: #fff;
-    background-color: var(--link-color);
-    border-color: var(--link-color);
+/* --- Pagination --- */
+.pagination-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 25px 0;
+}
+.pagination-info {
+    margin-bottom: 10px;
+    font-size: 0.85em;
+    font-style: italic;
+    color: var(--text-color-light);
 }

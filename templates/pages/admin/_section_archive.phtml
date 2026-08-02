@@ -24,10 +24,10 @@ use App\Core\Entity\Chapter;
     <table class="admin-table">
         <thead>
             <tr>
-                <th style="width: 80px;">Kapitel ID</th>
-                <th style="width: 250px;">Titel</th>
-                <th>Beschreibung</th>
-                <th style="width: 100px; text-align: right;">Aktion</th>
+                <th class="col-id">Kapitel ID</th>
+                <th class="col-title">Titel</th>
+                <th class="col-desc">Beschreibung</th>
+                <th class="col-actions">Aktion</th>
             </tr>
         </thead>
         <tbody>
@@ -43,7 +43,7 @@ use App\Core\Entity\Chapter;
                         'title'       => $chap->title,
                         'description' => $chap->description,
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
-                ?>
+                    ?>
                     <tr>
                         <td class="mono"><?php echo \htmlspecialchars($chap->id); ?></td>
                         <td><strong><?php echo \htmlspecialchars($chap->title); ?></strong></td>
