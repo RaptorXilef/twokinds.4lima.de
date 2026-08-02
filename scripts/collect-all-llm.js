@@ -122,13 +122,12 @@ function optimizeTokens(content, fileExtension) {
     const isJsOrScss = ext === '.js' || ext === '.scss';
 
     // =========================================================================
-    // FIX: STRING PROTECTOR (Verhindert, dass Regex Texte zerstört)
+    // STRING PROTECTOR (Verhindert, dass Regex Texte zerstört)
     // =========================================================================
     const stringMap = new Map();
     let stringId = 0;
 
     // Zieht alle Strings (", ', `) ab und ersetzt sie durch einen Platzhalter.
-    // So werden Multiline-Strings, URLs und "=" innerhalb von Texten geschützt.
     let optimizedContent = content.replace(/(["'`])(?:\\.|(?!\1)[^\\])*\1/g, (match) => {
         const id = `___STR_PLACEHOLDER_${stringId++}___`;
         stringMap.set(id, match);
@@ -141,26 +140,36 @@ function optimizeTokens(content, fileExtension) {
         optimizedContent = optimizedContent.replace(/\/\*[\s\S]*?\*\//g, '');
 
         // Single-line Kommentare // ... entfernen
-        optimizedContent = optimizedContent.replace(/(^|[^:"'])\/\/.*$/gm, (_match, prefix) => {
-            return prefix;
-        });
+        // FIX: Hält an, wenn ein PHP-Closing-Tag (?>) auf derselben Zeile kommt!
+        optimizedContent = optimizedContent.replace(
+            /(^|[^:"'])\/\/(?:(?!\?>).)*(?=\?>|$)/gm,
+            (_match, prefix) => {
+                return prefix;
+            }
+        );
 
         if (isPhpOrPhtml) {
+            // HTML-Kommentare sicher entfernen
             optimizedContent = optimizedContent.replace(/<!--[\s\S]*?-->/g, '');
 
-            optimizedContent = optimizedContent.replace(
-                /(^|[^"'])#(?!\[).*$/gm,
-                (_match, prefix) => {
-                    return prefix;
-                }
-            );
-
+            // SQL / CSS-ähnliche Kommentare (-- )
             optimizedContent = optimizedContent.replace(/(?<!!)--\s.*$/gm, '');
+
+            // FIX: # Kommentare NUR in reinen .php Dateien löschen.
+            // In .phtml zerstören sie sonst CSS-IDs (z.B. <style> #id { ... } </style>)
+            if (ext === '.php') {
+                optimizedContent = optimizedContent.replace(
+                    /(^|[^"'])#(?!\[)(?:(?!\?>).)*(?=\?>|$)/gm,
+                    (_match, prefix) => {
+                        return prefix;
+                    }
+                );
+            }
         }
     }
 
     // Extra-Schritt: Operatoren sauber mit exakt einem Leerzeichen umschließen
-    // FIX: (?<!<\?) schützt das PHP Short-Tag "<?=" davor, in "<? =" zerissen zu werden!
+    // (?<!<\?) schützt das PHP Short-Tag "<?=" davor, in "<? =" zerissen zu werden
     optimizedContent = optimizedContent.replace(
         /(?<!<\?)\s*(===|!==|<=|>=|=>|==|!=|\+=|-=|=)\s*/g,
         ' $1 '
@@ -221,7 +230,7 @@ function optimizeTokens(content, fileExtension) {
     let joinedResult = optimizedLines.join('\n');
 
     // =========================================================================
-    // FIX: STRINGS WIEDERHERSTELLEN
+    // STRINGS WIEDERHERSTELLEN
     // =========================================================================
     stringMap.forEach((originalString, placeholderKey) => {
         // Wir nutzen split.join statt replace, da replace bei Sonderzeichen (z.B. $1) in Strings kaputt geht
