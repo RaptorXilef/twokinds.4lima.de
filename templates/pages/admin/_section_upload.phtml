@@ -27,14 +27,12 @@ declare(strict_types=1);
                     id="btn-reset-thresholds"
                     data-default-w="<?php echo $hiresMinWidth; ?>"
                     data-default-h="<?php echo $hiresMinHeight; ?>">
-                <i class="fa-solid fa-rotate-left"></i> Standard
-            </button>
+                <i class="fa-solid fa-rotate-left"></i> Standard </button>
         </div>
     </div>
     <p class="mt-10 font-small text-light"> Bilder, die größer oder gleich diesen Werten sind, werden automatisch als
         Hires klassifiziert. Kleiner = Lowres. </p>
 </div>
-
 <div id="mass-drop-zone"
      class="drag-drop-zone bg-even border-radius-8 text-center">
     <i class="fa-solid fa-layer-group media-drop-zone-icon"></i>
@@ -46,7 +44,6 @@ declare(strict_types=1);
            accept="image/*"
            class="hidden">
 </div>
-
 <div class="sitemap-table-container">
     <table class="admin-table"
            id="upload-queue-table">
@@ -67,12 +64,10 @@ declare(strict_types=1);
         </tbody>
     </table>
 </div>
-
 <div class="text-right mt-20">
     <button type="button"
-            class="button add p-15 font-bold"
+            class="button add p-15 font-bold font-xl"
             id="btn-start-mass-upload"
-            disabled
-            style="font-size: 1.1em;">
+            disabled>
         <i class="fa-solid fa-cloud-arrow-up"></i> Alle hochladen & verarbeiten </button>
 </div>

@@ -6,12 +6,11 @@
         <button class="button edit media-tab-btn"
                 data-type="comics">Comic-Seiten (Medien)</button>
     </div>
-    <div class="search-wrapper flex-1 d-flex justify-end"
-         style="min-width: 250px;">
+    <div class="search-wrapper flex-1 d-flex justify-end min-w-250">
         <input type="text"
                id="media-search"
                placeholder="Bilder durchsuchen (Name oder ID)..."
-               style="width: 100%; max-width: 350px;">
+               class="w-100 max-w-350">
     </div>
 </div>
 
@@ -30,17 +29,16 @@
                class="hidden">
     </div>
     <div id="media-gallery-characters"
-         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;"></div>
+         class="grid-auto-150"></div>
 </div>
 
 <!-- ANSICHT 2: Comics -->
 <div id="media-view-comics"
      class="media-view hidden">
-    <div class="p-15 border-radius-6 mb-20"
-         style="background: var(--status-orange-bg); color: var(--status-orange-text);">
+    <div class="p-15 border-radius-6 mb-20 bg-warning text-warning">
         <i class="fa-solid fa-triangle-exclamation"></i> <strong>Achtung:</strong> Das Löschen hier entfernt die Bilder
         physisch vom Server. Der Eintrag in der Comic-Datenbank bleibt erhalten!
     </div>
     <div id="media-gallery-comics"
-         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;"></div>
+         class="grid-auto-180"></div>
 </div>

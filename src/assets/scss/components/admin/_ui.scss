@@ -826,3 +826,19 @@ body.theme-night .row-highlight {
     border-radius: 3px;
     font-size: 0.7em;
 }
+
+/* Letzte Layout-Helfer für Admin-Grids & Inputs */
+.grid-auto-300 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+.min-w-250 {
+    min-width: 250px;
+}
+.max-w-350 {
+    max-width: 350px;
+}
+.font-xl {
+    font-size: 1.1em;
+}
