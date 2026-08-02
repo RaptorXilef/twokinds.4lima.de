@@ -127,18 +127,24 @@ function optimizeTokens(content, fileExtension) {
         content = content.replace(/\/\*[\s\S]*?\*\//g, '');
 
         // Single-line Kommentare // ... entfernen
-        content = content.replace(/(^|[^:])\/\/.*$/gm, (_match, prefix) => {
+        // FIX: [^:"'] schützt http://, https:// sowie URLs in Quotes wie href="//..." oder import '//...'
+        content = content.replace(/(^|[^:"'])\/\/.*$/gm, (_match, prefix) => {
             return prefix; // Behalte das Zeichen vor dem //
         });
 
-        // Speziell für PHP/PHTML: # Kommentare und SQL-Kommentare entfernen
+        // Speziell für PHP/PHTML: HTML, # Kommentare und SQL-Kommentare entfernen
         if (isPhpOrPhtml) {
+            // FIX: HTML-Kommentare vollständig und zuerst entfernen, damit sie nicht zerrissen werden
+            content = content.replace(/<!--[\s\S]*?-->/g, '');
+
             // (?!\[) stellt sicher, dass PHP 8 Attribute wie #[ActionRoute] NICHT gelöscht werden
             content = content.replace(/(^|[^"'])#(?!\[).*$/gm, (_match, prefix) => {
                 return prefix;
             });
-            // SQL "-- " Kommentare entfernen, damit Zeilen sicher kombiniert werden können
-            content = content.replace(/--\s.*$/gm, '');
+
+            // FIX: SQL "-- " Kommentare entfernen.
+            // Der negative Lookbehind (?<!\!) verhindert, dass Rest-HTML-Fragmente wie "!--" getroffen werden.
+            content = content.replace(/(?<!!)--\s.*$/gm, '');
         }
     }
 
@@ -196,8 +202,6 @@ function optimizeTokens(content, fileExtension) {
             const lastLine = optimizedLines[optimizedLines.length - 1];
 
             // Ein kleines Leerzeichen spendieren, falls Wortgrenzen aufeinandertreffen
-            // Erweitert: '\]' im ersten Regex erlaubt nahtloses Anschließen von PHP-Attributen
-            // Erweitert: '$' im zweiten Regex berücksichtigt PHP-Variablen
             if (/[a-zA-Z0-9_\]]$/.test(lastLine) && /^[a-zA-Z0-9_$]/.test(line)) {
                 optimizedLines[optimizedLines.length - 1] += ` ${line}`;
             } else {
@@ -290,11 +294,17 @@ function startStructureMirror() {
             let optimizedContent = optimizeTokens(rawContent, file.ext);
 
             // Setze IMMER den neuen, korrekten Pfad-Kommentar an die Spitze
-            const commentPrefix = `// Path: ${file.relPath}\n`;
-            if (file.ext.toLowerCase() === '.php' && /^<\?php/i.test(optimizedContent)) {
+            // FIX: PHTML bekommt <!-- --> um rohen Text im HTML-Dokument zu vermeiden
+            let commentPrefix = `// Path: ${file.relPath}\n`;
+            if (file.ext.toLowerCase() === '.phtml') {
+                commentPrefix = `<!-- Path: ${file.relPath} -->\n`;
+            }
+
+            // FIX: Beachtet vorausgehende Leerzeichen vor dem <?php Tag
+            if (file.ext.toLowerCase() === '.php' && /^\s*<\?php/i.test(optimizedContent)) {
                 optimizedContent = optimizedContent.replace(
-                    /^<\?php/i,
-                    `<?php\n${commentPrefix.trim()}`
+                    /^\s*<\?php/i,
+                    (match) => `${match}\n${commentPrefix.trim()}`
                 );
             } else {
                 optimizedContent = commentPrefix + optimizedContent;
