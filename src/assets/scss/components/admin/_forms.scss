@@ -1,54 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
-///
-/// Admin Formularelemente und Filter.
-///
-/// Styling für Filterformulare, Suchfelder, Drag & Drop Upload Zonen und Toggle-Buttons.
-///
-
-/*!
- * @file       resources/scss/components/admin/_forms.scss
- */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Aus _admin.scss extrahiert (Phase 1 Refactoring).
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-/// - style(SCSS): .search-wrapper und .button-toggle-group optimiert.
-/// - fix(Admin): Styling für Inputs und Selects in .filter-controls hinzugefügt.
-/// - refactor(scss): Alle !important entfernt (Grundlage für Kaskaden-Reset).
-/// - style(Admin): Filter-Inputs flexibel gestaltet, um den horizontalen Platz optimal auszunutzen.
-///
-
-// Verwendete SCSS-Variablen:
-// (Keine spezifischen SCSS-Vars in diesem Block)
-
-// Verwendete CSS-Variablen (Custom Properties):
-// - --table-row-even: Hintergrund für Filter-Formular
-// - --border-light: Helle Rahmenfarbe
-// - --border-medium: Mittlere Rahmenfarbe
-// - --border-dark: Dunkle Rahmenfarbe
-// - --sidebar-bg: Hintergrund im Dark Mode
-// - --button-bg: Button Hintergrund / Border im Dark Mode
-// - --button-hover-bg: Button Hover Hintergrund
-// - --text-color: Standard Textfarbe
-// - --text-color-light: Helle Textfarbe (Labels)
-// - --text-color-medium: Mittlere Textfarbe (Icons/Placeholder)
-// - --text-on-medium: Textfarbe auf Buttons
-// - --content-bg: Hintergrund für Inputs/Upload-Zone
-// - --status-red-text: Farbe für Lösch-Button Hover
-// - --table-row-hover: Hintergrund bei Hover (Upload/Toggle)
-// - --link-color: Akzentfarbe
-// - --page-bg: Seitenhintergrund (für Mix)
-
 @use '../../abstracts/variables' as *;
 
 // Filter Form Container
@@ -60,10 +9,7 @@
     border-radius: 5px;
 }
 
-body.theme-night .filter-form {
-    background-color: var(--sidebar-bg);
-    border-color: var(--button-bg);
-}
+// ! Ungenutzt: body.theme-night .filter-form (durch var(--table-row-even) etc. im Hauptselektor abgedeckt)
 
 .filter-form legend {
     margin-bottom: 10px;
@@ -99,10 +45,6 @@ body.theme-night .filter-form {
     color: var(--text-color-light);
 }
 
-body.theme-night .filter-controls label {
-    color: var(--text-color-light);
-}
-
 // Konsistentes Design für Inputs und Selects in Filtern
 .filter-controls input[type='text'],
 .filter-controls input[type='number'],
@@ -113,21 +55,14 @@ body.theme-night .filter-controls label {
     font-family: inherit;
     font-size: 0.9em;
     color: var(--text-color);
-    background-color: var(--content-bg);
-    border: 1px solid var(--border-medium);
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 4px;
 }
 
 .filter-controls select {
     appearance: auto;
     cursor: pointer;
-}
-
-body.theme-night .filter-controls input,
-body.theme-night .filter-controls select {
-    // background-color: var(--content-bg);
-    background-color: color-mix(in srgb, var(--page-bg), black 20%);
-    border-color: var(--border-light);
 }
 
 // Spezifisch für das neue Comic-Editor Layout (Zentriert, Input breit)
@@ -150,14 +85,9 @@ body.theme-night .filter-controls select {
     padding: 8px 35px 8px 8px; // Rechts Platz für den Button lassen!
     margin: 0; // Wichtig für exakte Ausrichtung
     color: var(--text-color);
-    background-color: var(--content-bg);
-    border: 1px solid var(--border-medium);
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 4px;
-}
-
-body.theme-night .search-wrapper input {
-    background-color: color-mix(in srgb, var(--page-bg), black 20%);
-    border-color: var(--border-light);
 }
 
 .search-wrapper button#clear-search-btn {
@@ -181,7 +111,7 @@ body.theme-night .search-wrapper input {
 
 .search-wrapper button#clear-search-btn:hover {
     color: var(--status-red-text); // Rot beim Hover
-    background-color: rgb(0 0 0 / 0.05); // Leichter Hover-Effekt
+    background-color: rgba(0, 0, 0, 0.05); // Leichter Hover-Effekt
 }
 
 .honeypot-field {
@@ -238,7 +168,7 @@ body.theme-night .search-wrapper input {
     background-color: var(--button-bg);
     border: 1px solid var(--border-dark); // Kontur für Button-Look
     border-radius: 5px;
-    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1); // Schatten für Tiefe
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); // Schatten für Tiefe
     transition:
         transform 0.1s,
         background-color 0.2s;
@@ -246,12 +176,12 @@ body.theme-night .search-wrapper input {
 
 .drag-drop-zone label.button:hover {
     background-color: var(--button-hover-bg);
-    box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px); // Kleiner Hebe-Effekt
 }
 
 .drag-drop-zone label.button:active {
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     transform: translateY(0);
 }
 
@@ -321,8 +251,8 @@ body.theme-night .button-toggle-group .button-toggle {
     padding: 12px;
     font-size: 1em;
     color: var(--text-color);
-    background-color: var(--content-area-bg);
-    border: 1px solid var(--border-medium);
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 4px;
     transition:
         border-color 0.2s,
@@ -333,14 +263,7 @@ body.theme-night .button-toggle-group .button-toggle {
 .admin-form input[type='password']:focus {
     outline: none;
     border-color: var(--link-color);
-    box-shadow: 0 0 0 3px rgb(0 123 255 / 0.1);
-}
-
-body.theme-night .admin-form input[type='text'],
-body.theme-night .admin-form input[type='password'] {
-    // background-color: var(--content-bg);
-    background-color: color-mix(in srgb, var(--page-bg), black 20%);
-    border-color: var(--border-light);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 .admin-form button {
@@ -368,7 +291,7 @@ body.theme-night .admin-form input[type='password'] {
 .modal-content input:disabled,
 .modal-content textarea:disabled {
     cursor: not-allowed;
-    background-color: var(--table-header-bg);
+    background-color: var(--input-disabled-bg);
     opacity: 0.7;
     filter: grayscale(1);
 }

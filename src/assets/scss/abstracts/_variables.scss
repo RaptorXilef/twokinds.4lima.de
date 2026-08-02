@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// CSS Custom Properties & Sass Variables
 ///
@@ -12,19 +10,6 @@
 /*!
  * @file       resources/scss/abstracts/_variables.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Refactoring auf 7-1 Pattern und Einführung von CSS Custom Properties für Theming.
-///
 
 // --- SASS Variablen (Statisch, Pre-Compile) ---
 $font-stack: 'Open Sans', 'Lucida Grande', arial, sans-serif;
@@ -39,7 +24,7 @@ $breakpoint-mobile: 768px;
 
 // --- CSS Custom Properties (Dynamisches Theming) ---
 :root {
-    // Backgrounds
+    // Base Layout
     --page-bg: #81dbfe;
     --content-area-bg: #fff;
     --content-bg: #fafafa;
@@ -47,7 +32,7 @@ $breakpoint-mobile: 768px;
     --sidebar-bg: #d1e5d4;
     --header-bg: #ddead7;
 
-    // Text
+    // Typography
     --text-color: #333;
     --text-color-light: #555;
     --text-color-medium: #666;
@@ -66,21 +51,40 @@ $breakpoint-mobile: 768px;
     --border-dark: #888;
     --border-black: #000;
 
-    // Characters
-    --characters-area-bg: #e0ffe485;
+    // Characters & Menu
+    --characters-area-bg: rgba(224, 255, 228, 0.52);
 
     // Navigation & Buttons
     --menu-bg: #effff2;
     --menu-hover-bg: #fff;
+
+    // Standard Buttons
     --button-bg: #d1e5d4;
     --button-hover-bg: #b1cab5;
     --button-disabled-bg: #e0e0e0;
+
+    // Action Buttons
+    --button-edit-bg: #007bff;
+    --button-edit-hover: #0056b3;
+    --button-edit-border: transparent;
+    --button-add-bg: #087c0e;
+    --button-add-hover: #055a09;
+    --button-add-border: transparent;
+    --button-add2-bg: #13a51a;
+    --button-add2-hover: #055a09;
+    --button-add2-border: transparent;
+    --button-delete-bg: #dc3545;
+    --button-delete-hover: #c82333;
+    --button-delete-border: transparent;
+
+    // Navigation
     --comic-nav-bg: #c8e0c8;
     --comic-nav-hover-bg: #aac8aa;
     --comic-nav-archive-bg: #5d7b5d;
     --comic-nav-archive-hover-bg: #789e78;
 
     // Theme Specifics
+    // Misc
     --theme-label-bg: #7ba181;
     --new-tag-bg: #7ba181;
     --maintbanner-bg: #f5d568;
@@ -112,7 +116,12 @@ $breakpoint-mobile: 768px;
     --table-row-even: #e9ecef; // Abgedunkelt für Sichtbarkeit
     --table-row-hover: #e2e6ea;
 
-    // Cookie Banner (Light)
+    // Forms & Inputs (Neu hinzugefügt für Form-Refactoring)
+    --input-bg: var(--content-bg);
+    --input-border: var(--border-medium);
+    --input-disabled-bg: var(--table-header-bg);
+
+    // Cookies
     --cookie-bg: #f5f5f5;
     --cookie-text: #333;
     --cookie-heading: #000;
@@ -162,9 +171,24 @@ body.theme-night {
     // Navigation & Buttons
     --menu-bg: #2a6177;
     --menu-hover-bg: #48778a;
+
     --button-bg: #2a6177;
     --button-hover-bg: #48778a;
-    --button-disabled-bg: rgb(42 97 119 / 0.6);
+    --button-disabled-bg: rgba(42, 97, 119, 0.6);
+
+    --button-edit-bg: #004085;
+    --button-edit-hover: #0056b3;
+    --button-edit-border: #0056b3;
+    --button-add-bg: #186f1c;
+    --button-add-hover: #348d38;
+    --button-add-border: #348d38;
+    --button-add2-bg: #244025;
+    --button-add2-hover: #49844c;
+    --button-add2-border: #49844c;
+    --button-delete-bg: #5a1e1e;
+    --button-delete-hover: #dc3545;
+    --button-delete-border: #5a1e1e;
+
     --comic-nav-bg: #00334c;
     --comic-nav-hover-bg: #003f58;
     --comic-nav-archive-bg: #2a6177;
@@ -195,6 +219,11 @@ body.theme-night {
     --table-header-bg: #48778a;
     --table-row-even: #00334c;
     --table-row-hover: #2a6177;
+
+    // Input background berechnet auf Basis von page-bg (wie vorher hartcodiert)
+    --input-bg: color-mix(in srgb, var(--page-bg), black 20%);
+    --input-border: var(--border-light);
+    --input-disabled-bg: rgba(255, 255, 255, 0.05);
 
     // Cookie Banner (Dark)
     --cookie-bg: #00334c;

@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: CC BY-NC-SA 4.0
-
 ///
 /// Buttons und Interaktionselemente.
 ///
@@ -9,21 +7,6 @@
 /*!
  * @file       resources/scss/components/_buttons.scss
  */
-/// @link      twokinds.4lima.de
-///
-/// @copyright (c) 2025 Felix Maywald. CC BY-NC-SA 4.0
-/// @license   https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/LICENSE
-///
-/// @author    Felix Maywald (@RaptorXilef)
-/// @link      https://github.com/RaptorXilef/twokinds.4lima.de
-///
-
-///
-/// @since    5.0.0
-/// - Zentralisierte Button-Styles.
-/// - style(Linter): Selektor-Reihenfolge für Dark Mode Overrides korrigiert.
-/// - style(Refactor): Nesting reduziert (Phase 2 Flattening).
-///
 
 // Verwendete SCSS-Variablen:
 // - $base-url: Basis-URL für Assets (Bilder/SVGs)
@@ -63,10 +46,7 @@
     cursor: not-allowed;
     background-color: var(--button-disabled-bg);
     opacity: 0.5;
-}
-
-body.theme-night .main-container button:disabled {
-    opacity: 0.7;
+    // ! Dark-Mode-Opacity Hack entfernt, da die neue RGBA-Variable `--button-disabled-bg` das sauber über Alpha regelt.
 }
 
 /* --- Globale Aktions-Buttons (Edit/Add/Delete) --- */
@@ -75,10 +55,11 @@ body.theme-night .main-container button:disabled {
 .main-container .button.edit,
 .button.edit {
     color: #fff;
-    background-color: var(--link-color);
+    background-color: var(--button-edit-bg);
+    border: 1px solid var(--button-edit-border);
 
     &:hover {
-        background-color: #0056b3;
+        background-color: var(--button-edit-hover);
     }
 }
 
@@ -86,59 +67,40 @@ body.theme-night .main-container button:disabled {
 .main-container .button.add,
 .button.add {
     color: #fff;
-    background-color: #087c0e;
+    background-color: var(--button-add-bg);
+    border: 1px solid var(--button-add-border);
 
     &:hover {
-        background-color: #055a09;
+        background-color: var(--button-add-hover);
     }
 }
 
-// Hinzufügen (Grün)
 .main-container .button.add2,
 .button.add2 {
     color: #fff;
-    background-color: #13a51a;
+    background-color: var(--button-add2-bg);
+    border: 1px solid var(--button-add2-border);
 
     &:hover {
-        background-color: #055a09;
+        background-color: var(--button-add2-hover);
     }
 }
 
-// Löschen (Rot) - Bereits vorhanden, hier zur Vollständigkeit
+// Löschen (Rot)
 .main-container .button.delete,
 .button.delete,
 .menu .logout-link {
     color: #fff;
-    background-color: #dc3545;
+    background-color: var(--button-delete-bg);
+    border: 1px solid var(--button-delete-border);
 
     &:hover {
-        background-color: #c82333;
+        background-color: var(--button-delete-hover);
     }
 }
 
 .menu .logout-link {
     font-weight: 700;
-}
-
-// Dark Mode Overrides
-body.theme-night {
-    .button.edit {
-        background-color: #004085;
-        border: 1px solid #0056b3;
-    }
-
-    .button.add {
-        background-color: #186f1c;
-        border: 1px solid #348d38;
-
-        /*        background-color: #1e4620;
-        border: 1px solid #2e7d32; */
-    }
-
-    .button.add2 {
-        background-color: #244025;
-        border: 1px solid #49844c;
-    }
 }
 
 // Dropdown Arrows
@@ -147,7 +109,9 @@ body.theme-night {
     display: inline-block;
     width: 1em;
     height: 0.6em;
-    background: transparent url('#{$base-url}/assets/images/layout/ui/dropdown.svg?c=20251024') 50% 50% no-repeat;
+    background: transparent
+        url('#{$base-url}/assets/images/layout/ui/dropdown.svg?c=20251024') 50%
+        50% no-repeat;
     background-size: contain;
 
     &.animate {
@@ -160,6 +124,7 @@ body.theme-night {
 }
 
 // Theme Overrides (Arrows)
+// ! Der Dropdown-Pfeil hat aktuell noch harte Images. Idealerweise löse ich das in Zukunft über SVG-Masken/CSS, aber für den Moment belassen wir es beim Dark-Mode Bild-Swap.
 body.theme-night .main-container .arrow-down,
 body.theme-night .main-container .arrow-left {
     background-image: url('#{$base-url}/assets/images/layout/ui/dropdown_dark.svg?c=20251024');
@@ -167,29 +132,30 @@ body.theme-night .main-container .arrow-left {
 
 // Spezifische Button-Klassen (Admin / Reports)
 .button-green {
-    color: white; // !important
-    background-color: var(--status-green-text); // !important
+    color: white;
+    background-color: var(--status-green-text);
 
     &:hover {
-        background-color: var(--button-green-hover, #218838); // !important
+        background-color: var(--button-green-hover, #218838);
     }
 }
 
-// FIX: Dark Mode Farbe für grünen Button
 body.theme-night .button-green {
-    color: #e8f5e9; // !important // !important
-    background-color: #1e4620; // Dunkelgrün // !important
+    color: #e8f5e9;
+    background-color: #1e4620;
     border: 1px solid #2e7d32;
 
     &:hover {
-        background-color: #2e7d32; // !important
+        background-color: #2e7d32;
     }
 }
 
 /* --- Ergänzung für den Pause-Button (Generator) --- */
 .button-orange {
     color: #000;
-    background-color: var(--status-orange-border); // Nutzt das kräftigere Orange des Rahmens
+    background-color: var(
+        --status-orange-border
+    ); // Nutzt das kräftigere Orange des Rahmens
 
     &:hover {
         color: #fff;
