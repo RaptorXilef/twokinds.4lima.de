@@ -6,11 +6,9 @@ declare(strict_types=1);
  * @var int $hiresMinHeight
  */
 ?>
-<div class="filter-form"
-     style="margin-bottom: 20px;">
+<div class="filter-form mb-20">
     <legend>Upload-Schwellenwerte</legend>
-    <div class="filter-controls"
-         style="align-items: flex-end;">
+    <div class="filter-controls align-end">
         <div>
             <label>Min. Breite für High-Res (px)</label>
             <input type="number"
@@ -28,28 +26,25 @@ declare(strict_types=1);
                     class="button"
                     id="btn-reset-thresholds"
                     data-default-w="<?php echo $hiresMinWidth; ?>"
-                    data-default-h="<?php echo $hiresMinHeight; ?>"><i class="fa-solid fa-rotate-left"></i> Standard</button>
+                    data-default-h="<?php echo $hiresMinHeight; ?>">
+                <i class="fa-solid fa-rotate-left"></i> Standard
+            </button>
         </div>
     </div>
-    <p style="margin-top: 10px; font-size: 0.85em; color: var(--text-color-light);">
-        Bilder, die größer oder gleich diesen Werten sind, werden automatisch als Hires klassifiziert. Kleiner =
-        Lowres.
-    </p>
+    <p class="mt-10 font-small text-light"> Bilder, die größer oder gleich diesen Werten sind, werden automatisch als
+        Hires klassifiziert. Kleiner = Lowres. </p>
 </div>
 
 <div id="mass-drop-zone"
-     class="drag-drop-zone"
-     style="padding: 60px 20px; border: 3px dashed var(--link-color); background: var(--table-row-even);">
-    <i class="fa-solid fa-layer-group"
-       style="font-size: 3em; color: var(--link-color); margin-bottom: 15px;"></i>
-    <h3 style="margin:0;">Bilder hier ablegen</h3>
-    <p style="color: var(--text-color-light);">Du kannst Bilder nacheinander aus verschiedenen Ordnern reinziehen
-        (Queueing).</p>
+     class="drag-drop-zone bg-even border-radius-8 text-center">
+    <i class="fa-solid fa-layer-group media-drop-zone-icon"></i>
+    <h3 class="mt-0 mb-0">Bilder hier ablegen</h3>
+    <p class="text-light">Du kannst Bilder nacheinander aus verschiedenen Ordnern reinziehen (Queueing).</p>
     <input type="file"
            id="mass-upload-input"
            multiple
            accept="image/*"
-           style="display: none;">
+           class="hidden">
 </div>
 
 <div class="sitemap-table-container">
@@ -73,12 +68,11 @@ declare(strict_types=1);
     </table>
 </div>
 
-<div style="margin-top: 20px; text-align: right;">
+<div class="text-right mt-20">
     <button type="button"
-            class="button add"
+            class="button add p-15 font-bold"
             id="btn-start-mass-upload"
             disabled
-            style="padding: 12px 25px; font-size: 1.1em;">
-        <i class="fa-solid fa-cloud-arrow-up"></i> Alle hochladen & verarbeiten
-    </button>
+            style="font-size: 1.1em;">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Alle hochladen & verarbeiten </button>
 </div>

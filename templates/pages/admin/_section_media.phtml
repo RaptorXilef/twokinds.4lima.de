@@ -1,14 +1,13 @@
 <!-- Sub-Navigation & Suche für die Media-Galerie -->
-<div
-     style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; border-bottom: 2px solid var(--border-medium); padding-bottom: 15px; align-items: center; justify-content: space-between;">
-    <div style="display: flex; gap: 10px;">
+<div class="d-flex flex-wrap gap-15 align-center justify-between mb-20 pb-15 border-bottom-2">
+    <div class="d-flex gap-10">
         <button class="button media-tab-btn active"
                 data-type="characters">Charaktere & Profile</button>
         <button class="button edit media-tab-btn"
                 data-type="comics">Comic-Seiten (Medien)</button>
     </div>
-    <div class="search-wrapper"
-         style="flex: 1; min-width: 250px; display: flex; justify-content: flex-end;">
+    <div class="search-wrapper flex-1 d-flex justify-end"
+         style="min-width: 250px;">
         <input type="text"
                id="media-search"
                placeholder="Bilder durchsuchen (Name oder ID)..."
@@ -20,18 +19,15 @@
 <div id="media-view-characters"
      class="media-view">
     <div id="media-drop-zone"
-         class="drag-drop-zone"
-         style="margin-bottom: 20px; padding: 30px 20px; border: 3px dashed var(--link-color); background: var(--table-row-even); text-align: center; cursor: pointer; border-radius: 8px;">
-        <i class="fa-solid fa-cloud-arrow-up"
-           style="font-size: 3em; color: var(--link-color); margin-bottom: 10px;"></i>
-        <h3 style="margin:0;">Charakter-Bilder hier ablegen</h3>
-        <p style="color: var(--text-color-light);">Oder klicken, um Dateien auszuwählen (werden automatisch als WebP
-            gespeichert).</p>
+         class="drag-drop-zone bg-even border-radius-8 mb-20 text-center">
+        <i class="fa-solid fa-cloud-arrow-up media-drop-zone-icon"></i>
+        <h3 class="mb-0 mt-0">Charakter-Bilder hier ablegen</h3>
+        <p class="text-light">Oder klicken, um Dateien auszuwählen (werden automatisch als WebP gespeichert).</p>
         <input type="file"
                id="media-upload-input"
                accept="image/*"
                multiple
-               style="display: none;">
+               class="hidden">
     </div>
     <div id="media-gallery-characters"
          style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;"></div>
@@ -39,10 +35,9 @@
 
 <!-- ANSICHT 2: Comics -->
 <div id="media-view-comics"
-     class="media-view"
-     style="display: none;">
-    <div
-         style="padding: 15px; background: var(--status-orange-bg); color: var(--status-orange-text); border-radius: 6px; margin-bottom: 20px;">
+     class="media-view hidden">
+    <div class="p-15 border-radius-6 mb-20"
+         style="background: var(--status-orange-bg); color: var(--status-orange-text);">
         <i class="fa-solid fa-triangle-exclamation"></i> <strong>Achtung:</strong> Das Löschen hier entfernt die Bilder
         physisch vom Server. Der Eintrag in der Comic-Datenbank bleibt erhalten!
     </div>

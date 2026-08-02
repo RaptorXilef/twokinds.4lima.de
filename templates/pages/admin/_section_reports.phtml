@@ -9,20 +9,16 @@ use App\Core\Entity\Report;
  * @var Report[] $allReports
  */
 ?>
-<div class="table-controls actions-bar"
-     style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 15px; align-items: center;">
-    <div class="search-wrapper"
-         style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <select id="report-status-filter"
-                style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--table-row-even); color: var(--text-color);">
+<div class="table-controls actions-bar d-flex flex-wrap justify-end gap-15 align-center">
+    <div class="search-wrapper d-flex gap-10 align-center flex-wrap">
+        <select id="report-status-filter">
             <option value="all">Alle Status anzeigen</option>
             <option value="open"
                     selected>Nur Offene</option>
             <option value="closed">Erledigte</option>
             <option value="spam">Spam</option>
         </select>
-        <select id="report-per-page"
-                style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--table-row-even); color: var(--text-color);">
+        <select id="report-per-page">
             <option value="5">5 Einträge</option>
             <option value="15"
                     selected>15 Einträge</option>
@@ -35,7 +31,6 @@ use App\Core\Entity\Report;
                style="min-width: 250px;">
     </div>
 </div>
-
 <div class="sitemap-table-container">
     <table class="admin-table report-editor-table"
            id="reports-table">
@@ -72,7 +67,6 @@ use App\Core\Entity\Report;
 
                     // FIX: ComicID kann null sein!
                     $comicIdStr = $rep->comicId ? $rep->comicId->value : '';
-
                     $reportData = \json_encode([
                         'id'            => $rep->id->value,
                         'comicId'       => $comicIdStr,
@@ -92,10 +86,10 @@ use App\Core\Entity\Report;
                         <td class="mono">
                             <?php if ($comicIdStr !== '') { ?>
                                 <a href="<?php echo $baseUrl; ?>/comic/<?php echo \htmlspecialchars($comicIdStr); ?>" target="_blank">
-<?php echo \htmlspecialchars($comicIdStr); ?>
-</a>
+                                    <?php echo \htmlspecialchars($comicIdStr); ?>
+                                </a>
                             <?php } else { ?>
-                                <span style="color: var(--text-color-faded); font-style: italic;">Allgemein</span>
+                                <span class="text-faded" style="font-style: italic;">Allgemein</span>
                             <?php } ?>
                         </td>
                         <td><strong><?php echo \htmlspecialchars(\ucfirst($rep->type)); ?></strong></td>
@@ -107,9 +101,9 @@ use App\Core\Entity\Report;
                             </div>
                         </td>
                         <td>
-                            <span style="display: inline-block; padding: 2px 6px; font-size: 0.85em; font-weight: bold; border-radius: 4px; background: <?php echo $statusColor; ?>; color: #000;">
-<?php echo $statusText; ?>
-</span>
+                            <span style="display: inline-block; padding: 2px 6px; font-size: 0.85em; font-weight: bold; border-radius: 4px; background: <?php echo $statusColor; ?>; color: #fff;">
+                                <?php echo $statusText; ?>
+                            </span>
                         </td>
                         <td class="actions-cell">
                             <button type="button"
@@ -126,4 +120,4 @@ use App\Core\Entity\Report;
     </table>
 </div>
 <div id="report-pagination"
-     style="display: flex; gap: 5px; justify-content: center; margin-top: 20px; flex-wrap: wrap;"></div>
+     class="pagination-wrapper"></div>

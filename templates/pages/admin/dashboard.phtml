@@ -75,59 +75,6 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
     <meta name="csrf-token"
           content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    <style>
-    .content-section {
-        display: none;
-    }
-
-    .content-section.active {
-        display: block;
-    }
-
-    /* Glow Animation für editierte Zeilen */
-    @keyframes row-glow {
-        0% {
-            box-shadow: inset 0 0 15px var(--link-color);
-            background-color: rgba(41, 128, 185, 0.15);
-        }
-
-        100% {
-            box-shadow: inset 0 0 0 transparent;
-            background-color: transparent;
-        }
-    }
-
-    .row-highlight {
-        animation: row-glow 3s ease-out;
-    }
-
-    /* --- Flexbox Trap Fix --- */
-    .content {
-        min-width: 0;
-    }
-
-    .sitemap-table-container {
-        width: 100%;
-        overflow-x: auto;
-        /* Greift nur noch bei extrem kleinen Handys */
-        border-radius: 6px;
-    }
-
-    .comic-editor-table {
-        table-layout: fixed;
-        width: 100%;
-        /* Passt sich jetzt zu 100% genau in den Content ein */
-    }
-
-    .comic-editor-table td {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        word-break: break-word;
-        /* "break-word" ist eleganter als "break-all", da es normale Wörter ganz lässt */
-        white-space: normal;
-    }
-
-    </style>
 </head>
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
@@ -141,69 +88,61 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     })();
 
     </script>
-
     <div class="main-container">
         <header>
             <div class="banner"
                  id="banner-lights-off"></div>
         </header>
-
         <div class="content-area">
             <aside class="sidebar">
                 <div class="sidebar-content">
                     <div class="session-timer">
                         <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
                     </div>
-
                     <nav id="menu"
                          class="menu">
-                        <span class = "menu-label">Verwaltung</span>
+                        <span class="menu-label">Verwaltung</span>
                         <?php if ($perms['comic_edit'] || $perms['comic_del']) { ?>
-                            <a href = "#section-comics" class = "tab-link active" data-target = "section-comics">Comics</a>
+                            <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
                         <?php } ?>
                         <?php if ($perms['media_up']) { ?>
-                            <a href = "#section-upload" class = "tab-link" data-target = "section-upload">Massen-Upload</a>
+                            <a href="#section-upload" class="tab-link" data-target="section-upload">Massen-Upload</a>
                         <?php } ?>
                         <?php if ($perms['chap_edit'] || $perms['chap_del']) { ?>
-                            <a href = "#section-archive" class = "tab-link" data-target = "section-archive">Archiv / Kapitel</a>
+                            <a href="#section-archive" class="tab-link" data-target="section-archive">Archiv / Kapitel</a>
                         <?php } ?>
                         <?php if ($perms['char_edit'] || $perms['char_del']) { ?>
-                            <a href = "#section-characters" class = "tab-link" data-target = "section-characters">Charaktere</a>
+                            <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
                         <?php } ?>
                         <?php if ($perms['group_manage']) { ?>
-                            <a href = "#section-groups" class = "tab-link" data-target = "section-groups">Gruppen</a>
+                            <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
                         <?php } ?>
                         <?php if ($perms['media_up'] || $perms['media_del']) { ?>
-                            <a href = "#section-media" class = "tab-link" data-target = "section-media">Galerie</a>
+                            <a href="#section-media" class="tab-link" data-target="section-media">Galerie</a>
                         <?php } ?>
-
                         <?php if ($perms['rep_view'] || $canManageUsers) { ?>
-                            <span class = "menu-label">System</span>
+                            <span class="menu-label">System</span>
                             <?php if ($perms['rep_view']) { ?>
-                                <a href = "#section-reports" class = "tab-link" data-target = "section-reports">Reports</a>
+                                <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
                             <?php } ?>
                             <?php if ($canManageUsers) { ?>
-                                <a href = "#section-users" class = "tab-link" data-target = "section-users">Benutzer & Rechte</a>
+                                <a href="#section-users" class="tab-link" data-target="section-users">Benutzer & Rechte</a>
                             <?php } ?>
                         <?php } ?>
-
                         <span class="menu-label">Account</span>
-                        <a href = "<?php echo $baseUrl; ?>/" target = "_blank">Zur Webseite</a>
-                        <a href = "#" id="admin-logout-btn" class = "logout-link"><i class = "fa-solid fa-sign-out-alt"></i> Abmelden</a>
-
+                        <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a>
+                        <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
                         <a id="toggle_lights" class="theme" href="#" title="Design umschalten">
                             <!-- JS lädt hier sofort das richtige Icon rein -->
-                        </a>
+</a>
                     </nav>
                 </div>
             </aside>
-
             <div class="content">
                 <h1 class="page-header">
                     <!--<i class="fa-solid fa-gauge">-->
                     <i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?>
                 </h1>
-
                 <div id="global-status-message"
                      class="status-message"></div>
 
@@ -232,11 +171,9 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                 <section id="section-media"
                          class="content-section"
                          data-ajax-tab="media"></section>
-
             </div>
         </div>
     </div>
-
     <?php include __DIR__ . '/_modals.phtml'; ?>
 
     <!-- Neues ES6 Modul-System -->

@@ -728,3 +728,60 @@ body.theme-night .row-highlight {
 .border-dashed {
     border: 2px dashed var(--border-medium);
 }
+
+.align-end {
+    align-items: flex-end;
+}
+.justify-end {
+    justify-content: flex-end;
+}
+.text-center {
+    text-align: center;
+}
+.text-right {
+    text-align: right;
+}
+.pb-5 {
+    padding-bottom: 5px;
+}
+.pb-15 {
+    padding-bottom: 15px;
+}
+.border-bottom {
+    border-bottom: 1px solid var(--border-medium);
+}
+.border-bottom-2 {
+    border-bottom: 2px solid var(--border-medium);
+}
+.w-300 {
+    flex: 0 0 300px;
+    width: 300px;
+}
+
+/* ==========================================================================
+   SPECIFIC ADMIN COMPONENTS (Groups & Media)
+   ========================================================================== */
+.remove-char-from-group {
+    display: block;
+    color: var(--text-color-faded);
+    cursor: pointer;
+    padding: 5px;
+    &:hover {
+        color: var(--status-red-text);
+    }
+}
+
+.group-drag-handle {
+    cursor: grab;
+    padding: 10px;
+    color: var(--text-color-faded);
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.media-drop-zone-icon {
+    font-size: 3em;
+    color: var(--link-color);
+    margin-bottom: 10px;
+}
