@@ -122,7 +122,7 @@ function optimizeTokens(content, fileExtension) {
     const isJsOrScss = ext === '.js' || ext === '.scss';
 
     // =========================================================================
-    // STRING PROTECTOR (Verhindert, dass Regex Texte zerstört)
+    // 1. SCHUTZMECHANISMEN (Strings & sensible Blöcke in den Tresor)
     // =========================================================================
     const stringMap = new Map();
     let stringId = 0;
@@ -134,19 +134,31 @@ function optimizeTokens(content, fileExtension) {
         return id;
     });
 
-    // 1. Schritt: Alle Kommentare restlos entfernen
-    if (isJsOrScss || isPhpOrPhtml) {
-        // Multi-line Kommentare /* ... */ entfernen
-        optimizedContent = optimizedContent.replace(/\/\*[\s\S]*?\*\//g, '');
+    const blockMap = new Map();
+    let blockId = 0;
 
-        // Single-line Kommentare // ... entfernen
-        // FIX: Hält an, wenn ein PHP-Closing-Tag (?>) auf derselben Zeile kommt!
+    // FIX: Schützt <script>, <style>, <pre> und <textarea> vor der Zeilenzerstörung
+    if (isPhpOrPhtml) {
         optimizedContent = optimizedContent.replace(
-            /(^|[^:"'])\/\/(?:(?!\?>).)*(?=\?>|$)/gm,
-            (_match, prefix) => {
-                return prefix;
+            /<(script|style|pre|textarea)[\s\S]*?>[\s\S]*?<\/\1>/gi,
+            (match) => {
+                const id = `___BLOCK_PLACEHOLDER_${blockId++}___`;
+                blockMap.set(id, match);
+                return id;
             }
         );
+    }
+
+    // =========================================================================
+    // 2. KOMMENTARE ENTFERNEN
+    // =========================================================================
+    if (isJsOrScss || isPhpOrPhtml) {
+        // Multi-line Kommentare /* ... */
+        optimizedContent = optimizedContent.replace(/\/\*[\s\S]*?\*\//g, '');
+
+        // Single-line Kommentare // ...
+        // FIX: (?<!\\) ignoriert Regex escaped slashes wie \/\/
+        optimizedContent = optimizedContent.replace(/(?<!\\)\/\/(?:(?!\?>).)*(?=\?>|$)/gm, '');
 
         if (isPhpOrPhtml) {
             // HTML-Kommentare sicher entfernen
@@ -168,18 +180,31 @@ function optimizeTokens(content, fileExtension) {
         }
     }
 
-    // Extra-Schritt: Operatoren sauber mit exakt einem Leerzeichen umschließen
-    // (?<!<\?) schützt das PHP Short-Tag "<?=" davor, in "<? =" zerissen zu werden
-    optimizedContent = optimizedContent.replace(
-        /(?<!<\?)\s*(===|!==|<=|>=|=>|==|!=|\+=|-=|=)\s*/g,
-        ' $1 '
-    );
+    // =========================================================================
+    // 3. OPERATOR-PADDING (Der "=" Fix für HTML-Attribute)
+    // =========================================================================
+    const operatorRegex = /(?<!<\?)\s*(===|!==|<=|>=|=>|==|!=|\+=|-=|=)\s*/g;
 
-    // 2. Schritt: Whitespace & Zeilenumbrüche minimieren
+    if (ext === '.js' || ext === '.scss') {
+        // JS und SCSS können global padded werden
+        optimizedContent = optimizedContent.replace(operatorRegex, ' $1 ');
+    } else if (ext === '.php' || ext === '.phtml') {
+        // FIX: In PHP/PHTML wird das Padding NUR NOCH innerhalb von <?php ... ?> angewendet!
+        // HTML Attribute (href=) bleiben somit zu 100% unangetastet.
+        optimizedContent = optimizedContent.replace(
+            /(<\?[pP][hH][pP]|<\?=)([\s\S]*?)(?:\?>|$)/g,
+            (match, openTag, phpCode) => {
+                return openTag + phpCode.replace(operatorRegex, ' $1 ');
+            }
+        );
+    }
+
+    // =========================================================================
+    // 4. ZEILEN & WHITESPACE MINIMIEREN
+    // =========================================================================
     const lines = optimizedContent.split(/\r?\n/);
     const optimizedLines = [];
 
-    // PHTML OPTIMIERUNG
     if (ext === '.phtml') {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
@@ -197,9 +222,7 @@ function optimizeTokens(content, fileExtension) {
             }
             optimizedLines.push(line);
         }
-    }
-    // JS, PHP, SCSS OPTIMIERUNG
-    else {
+    } else {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
             if (line.length === 0) continue;
@@ -226,23 +249,26 @@ function optimizeTokens(content, fileExtension) {
         }
     }
 
-    // Code wieder zusammensetzen
     let joinedResult = optimizedLines.join('\n');
 
     // =========================================================================
-    // STRINGS WIEDERHERSTELLEN
+    // 5. TRESOR WIEDERHERSTELLEN (Blöcke & Strings)
     // =========================================================================
+    blockMap.forEach((originalBlock, placeholderKey) => {
+        joinedResult = joinedResult.split(placeholderKey).join(originalBlock);
+    });
+
     stringMap.forEach((originalString, placeholderKey) => {
-        // Wir nutzen split.join statt replace, da replace bei Sonderzeichen (z.B. $1) in Strings kaputt geht
         joinedResult = joinedResult.split(placeholderKey).join(originalString);
     });
 
     return joinedResult;
 }
 
-/**
- * Durchsucht rekursiv Verzeichnisse
- */
+// =============================================================================
+// FILE SYSTEM & CLI LOGIC (Unverändert)
+// =============================================================================
+
 function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = []) {
     const files = fs.readdirSync(dir);
 
