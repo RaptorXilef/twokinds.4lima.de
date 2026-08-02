@@ -33,6 +33,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
+
+    <!-- CSS -->
     <link rel="stylesheet"
           href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
     <!-- FontAwesome für Icons (Stellt alle Vektor-Symbole wie Buttons, Warnhinweise und Menü-Icons bereit) -->
@@ -52,10 +54,7 @@ $baseUrl = \rtrim($settings['base_url'], '/');
 
     <!-- jQuery (Basis-Bibliothek zur DOM-Manipulation; wird zwingend vom Trumbowyg-Editor als Abhängigkeit benötigt) -->
     <!-- https://releases.jquery.com/ -->
-    <script src="https://code.jquery.com/jquery-4.0.0.min.js"
-            integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao="
-            crossorigin="anonymous"></script>
-
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     <!-- Sortable.js (Ermöglicht das Drag & Drop zum Sortieren von Elementen, z.B. bei der Charakter-Gruppenverwaltung) -->
     <!-- https://cdnjs.com/libraries/Sortable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.7/Sortable.min.js"></script>
@@ -132,9 +131,8 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                         <span class="menu-label">Account</span>
                         <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a>
                         <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
-                        <a id="toggle_lights" class="theme" href="#" title="Design umschalten">
-                            <!-- JS lädt hier sofort das richtige Icon rein -->
-</a>
+                        <a id="toggle_lights" class="theme" href="#" title="Design umschalten"></a>
+                        <!-- JS lädt hier sofort das richtige Icon rein -->
                     </nav>
                 </div>
             </aside>
@@ -180,7 +178,6 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <script type="module"
             nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
             src="<?php echo $baseUrl; ?>/assets/js/admin/app.js"></script>
-
 </body>
 
 </html>

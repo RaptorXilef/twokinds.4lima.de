@@ -144,3 +144,10 @@ body.theme-night .content td {
     padding: 0;
     margin-bottom: 30px;
 }
+
+.content-section {
+    display: none;
+    &.active {
+        display: block;
+    }
+}

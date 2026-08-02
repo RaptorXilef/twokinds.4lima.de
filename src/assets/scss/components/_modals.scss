@@ -761,3 +761,8 @@ body.theme-night .dialog .dialog-title {
         color: var(--text-color-faded);
     }
 }
+
+.modal-header-wrapper .modal-close {
+    position: static;
+    margin-left: auto;
+}
