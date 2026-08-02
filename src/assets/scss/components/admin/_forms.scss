@@ -1,3 +1,34 @@
+///
+/// Admin Formularelemente und Filter.
+///
+/// Styling für Filterformulare, Suchfelder, Drag & Drop Upload Zonen und Toggle-Buttons.
+///
+
+/*!
+ * @file       resources/scss/components/admin/_forms.scss
+ */
+
+// Verwendete SCSS-Variablen:
+// (Keine spezifischen SCSS-Vars in diesem Block)
+
+// Verwendete CSS-Variablen (Custom Properties):
+// - --table-row-even: Hintergrund für Filter-Formular
+// - --border-light: Helle Rahmenfarbe
+// - --border-medium: Mittlere Rahmenfarbe
+// - --border-dark: Dunkle Rahmenfarbe
+// - --sidebar-bg: Hintergrund im Dark Mode
+// - --button-bg: Button Hintergrund / Border im Dark Mode
+// - --button-hover-bg: Button Hover Hintergrund
+// - --text-color: Standard Textfarbe
+// - --text-color-light: Helle Textfarbe (Labels)
+// - --text-color-medium: Mittlere Textfarbe (Icons/Placeholder)
+// - --text-on-medium: Textfarbe auf Buttons
+// - --content-bg: Hintergrund für Inputs/Upload-Zone
+// - --status-red-text: Farbe für Lösch-Button Hover
+// - --table-row-hover: Hintergrund bei Hover (Upload/Toggle)
+// - --link-color: Akzentfarbe
+// - --page-bg: Seitenhintergrund (für Mix)
+
 @use '../../abstracts/variables' as *;
 
 // Filter Form Container
@@ -253,7 +284,8 @@ body.theme-night .button-toggle-group .button-toggle {
 }
 
 .admin-form input[type='text'],
-.admin-form input[type='password'] {
+.admin-form input[type='password'],
+.admin-form input[type='email'] {
     box-sizing: border-box;
     width: 100%;
     padding: 12px;
@@ -268,7 +300,8 @@ body.theme-night .button-toggle-group .button-toggle {
 }
 
 .admin-form input[type='text']:focus,
-.admin-form input[type='password']:focus {
+.admin-form input[type='password']:focus,
+.admin-form input[type='email']:focus {
     outline: none;
     border-color: var(--link-color);
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);

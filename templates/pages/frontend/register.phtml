@@ -2,73 +2,56 @@
 
 declare(strict_types=1);
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
-?>
+include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area">
-    <article style="width: 100%; max-width: 500px; margin: 0 auto; padding: 20px;">
-        <header style="text-align: center; margin-bottom: 30px;">
-            <h1 class="page-header"
-                style="border: none; margin-bottom: 10px;">Konto erstellen</h1>
-            <p style="color: var(--text-color-faded);">Speichere deine Lesezeichen sicher in der Cloud.</p>
+    <article class="auth-container">
+        <header>
+            <h1 class="page-header">Konto erstellen</h1>
+            <p>Speichere deine Lesezeichen sicher in der Cloud.</p>
         </header>
-
-        <div
-             style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div class="content-box-shadow">
             <div id="reg-status-msg"
-                 style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center;">
-            </div>
-
+                 class="msg-box"></div>
             <form id="frontend-reg-form"
                   class="admin-form">
                 <!-- HONEYPOT FÜR BOTS (Unsichtbar für Menschen) -->
-                <div style="display: none;">
+                <div class="honeypot-field">
                     <label>Middle Name</label>
                     <input type="text"
                            name="middle_name"
                            tabindex="-1"
                            autocomplete="off">
                 </div>
-
-                <div class="form-group"
-                     style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Benutzername</label>
+                <div class="form-group mb-15">
+                    <label>Benutzername</label>
                     <input type="text"
                            name="username"
                            required
                            minlength="3"
-                           placeholder="Sichtbar für andere"
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           placeholder="Sichtbar für andere">
                 </div>
-                <div class="form-group"
-                     style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">E-Mail Adresse</label>
+                <div class="form-group mb-15">
+                    <label>E-Mail Adresse</label>
                     <input type="email"
                            name="email"
                            required
-                           placeholder="Für Login und Benachrichtigungen"
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           placeholder="Für Login und Benachrichtigungen">
                 </div>
-                <div class="form-group"
-                     style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Passwort (min. 8
-                        Zeichen)</label>
+                <div class="form-group mb-20">
+                    <label>Passwort (min. 8 Zeichen)</label>
                     <input type="password"
                            name="password"
                            required
-                           minlength="8"
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           minlength="8">
                 </div>
                 <button type="submit"
                         id="reg-submit-btn"
-                        class="button add"
-                        style="width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold;">Registrieren</button>
+                        class="button add">Registrieren</button>
             </form>
-
-            <div style="text-align: center; margin-top: 20px; font-size: 0.9em;">
-                Bereits ein Konto? <a href="<?php echo $baseUrl; ?>/login" style="font-weight: bold;">Hier einloggen</a>
+            <div class="form-links">
+                <span>Bereits ein Konto? <a href="<?php echo $baseUrl; ?>/login" class="text-link">Hier einloggen</a></span>
             </div>
         </div>
     </article>
 </main>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

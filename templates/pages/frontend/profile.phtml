@@ -10,154 +10,114 @@ $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 <main class="content-area">
-    <article style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <header style="text-align: center; margin-bottom: 30px;">
-            <h1 class="page-header"
-                style="border: none; margin-bottom: 10px;">
-                <i class="fa-solid fa-user-gear"
-                   style="color: var(--link-color);"></i> Profil verwalten
-            </h1>
-            <p style="color: var(--text-color-faded);">E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
+    <article class="profile-container">
+        <header>
+            <h1 class="page-header"><i class="fa-solid fa-user-gear text-link"></i> Profil verwalten</h1>
+            <p>E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
         </header>
 
-        <div
-             style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;">
-            <h3 style="margin-top:0; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Benutzername
-            </h3>
-            <div class="msg-box"
-                 id="msg-username"
-                 style="display:none; padding:10px; margin-bottom:15px; border-radius:4px; font-weight:bold; text-align:center;">
-            </div>
-
+        <div class="content-box-shadow">
+            <h3 class="section-title">Benutzername</h3>
+            <div id="msg-username"
+                 class="msg-box"></div>
             <form id="form-username"
                   class="admin-form">
                 <input type="hidden"
                        name="update_type"
                        value="username">
-                <div class="form-group"
-                     style="margin-bottom: 15px;">
+                <div class="form-group mb-15">
                     <input type="text"
                            name="new_username"
                            required
                            minlength="3"
-                           value="<?php echo \htmlspecialchars($user->username->value); ?>"
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           value="<?php echo \htmlspecialchars($user->username->value); ?>">
                 </div>
                 <button type="submit"
-                        class="button edit"
-                        style="width:100%; padding: 10px; font-weight:bold;">Namen ändern</button>
+                        class="button edit">Namen ändern</button>
             </form>
         </div>
 
-        <div
-             style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;">
-            <h3 style="margin-top:0; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Passwort
-                ändern</h3>
-            <div class="msg-box"
-                 id="msg-password"
-                 style="display:none; padding:10px; margin-bottom:15px; border-radius:4px; font-weight:bold; text-align:center;">
-            </div>
-
+        <div class="content-box-shadow">
+            <h3 class="section-title">Passwort ändern</h3>
+            <div id="msg-password"
+                 class="msg-box"></div>
             <form id="form-password"
                   class="admin-form">
                 <input type="hidden"
                        name="update_type"
                        value="password">
-                <div class="form-group"
-                     style="margin-bottom: 15px;">
+                <div class="form-group mb-15">
                     <input type="password"
                            name="old_password"
                            required
-                           placeholder="Altes Passwort"
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           placeholder="Altes Passwort">
                 </div>
-                <div class="form-group"
-                     style="margin-bottom: 15px;">
+                <div class="form-group mb-15">
                     <input type="password"
                            name="new_password"
                            required
                            minlength="8"
-                           placeholder="Neues Passwort (min. 8 Zeichen)"
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           placeholder="Neues Passwort (min. 8 Zeichen)">
                 </div>
                 <button type="submit"
-                        class="button edit"
-                        style="width:100%; padding: 10px; font-weight:bold;">Passwort speichern</button>
+                        class="button edit">Passwort speichern</button>
             </form>
         </div>
 
-        <div
-             style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h3 style="margin-top:0; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;"><i
-                   class="fa-solid fa-envelope"
-                   style="color: var(--text-color-faded);"></i> Benachrichtigungen</h3>
-            <div class="msg-box"
-                 id="msg-newsletter"
-                 style="display:none; padding:10px; margin-bottom:15px; border-radius:4px; font-weight:bold; text-align:center;">
-            </div>
-
+        <div class="content-box-shadow">
+            <h3 class="section-title"><i class="fa-solid fa-envelope text-faded"></i> Benachrichtigungen</h3>
+            <div id="msg-newsletter"
+                 class="msg-box"></div>
             <form id="form-newsletter">
                 <input type="hidden"
                        name="update_type"
                        value="newsletter">
 
-                <div
-                     style="margin-bottom: 15px; padding: 15px; border-radius: 6px; background: var(--table-row-even); border: 1px solid var(--border-light);">
-                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <div class="checkbox-item">
+                    <label>
                         <input type="checkbox"
                                name="wants_newsletter"
                                value="1"
-                               style="transform: scale(1.5); margin-top: 5px;"
                                <?php echo $user->wantsNewsletter ? 'checked' : ''; ?>>
                         <div>
-                            <strong style="display: block; margin-bottom: 5px; color: var(--text-color);">Vollständige
-                                Comic-Seiten</strong>
-                            <span style="font-size: 0.9em; color: var(--text-color-faded);">Benachrichtige mich, sobald eine neue Seite inklusive Bild mit deutscher Übersetzung fertig ist.</span>
+                            <strong>Vollständige Comic-Seiten</strong>
+                            <span>Benachrichtige mich, sobald eine neue Seite inklusive Bild mit deutscher Übersetzung fertig ist.</span>
                         </div>
                     </label>
                 </div>
 
-                <div
-                     style="margin-bottom: 25px; padding: 15px; border-radius: 6px; background: var(--table-row-even); border: 1px solid var(--border-light);">
-                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <div class="checkbox-item">
+                    <label>
                         <input type="checkbox"
                                name="wants_newsletter_transcript"
                                value="1"
-                               style="transform: scale(1.5); margin-top: 5px;"
                                <?php echo $user->wantsNewsletterTranscript ? 'checked' : ''; ?>>
                         <div>
-                            <strong
-                                    style="display: block; margin-bottom: 5px; color: var(--text-color);">Vorab-Transkripte
-                                <span style="color: var(--status-red-text);">(Spoiler!)</span></strong>
-                            <span style="font-size: 0.9em; color: var(--text-color-faded);">Sende mir sofort eine E-Mail, wenn der deutsche Text einer neuen Seite verfügbar ist, auch wenn das Bild dazu noch fehlt.</span>
+                            <strong>Vorab-Transkripte <span class="text-danger">(Spoiler!)</span></strong>
+                            <span>Sende mir sofort eine E-Mail, wenn der deutsche Text einer neuen Seite verfügbar ist, auch wenn das Bild dazu noch fehlt.</span>
                         </div>
                     </label>
                 </div>
 
-                <div
-                     style="margin-bottom: 25px; padding: 15px; border-radius: 6px; background: var(--table-row-even); border: 1px solid var(--border-light);">
-                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                <div class="checkbox-item">
+                    <label>
                         <input type="checkbox"
                                name="wants_notification_report"
                                value="1"
-                               style="transform: scale(1.5); margin-top: 5px;"
                                <?php echo $user->wantsNotificationReport ? 'checked' : ''; ?>>
                         <div>
-                            <strong style="display: block; margin-bottom: 5px; color: var(--text-color);">Fehlerberichte
-                                (Reports)</strong>
-                            <span style="font-size: 0.9em; color: var(--text-color-faded);">Sende mir eine kurze Info-E-Mail, sobald ein von mir gemeldeter Fehler auf der entsprechenden Seite behoben wurde.</span>
+                            <strong>Fehlerberichte (Reports)</strong>
+                            <span>Sende mir eine kurze Info-E-Mail, sobald ein von mir gemeldeter Fehler auf der entsprechenden Seite behoben wurde.</span>
                         </div>
                     </label>
                 </div>
 
                 <button type="submit"
-                        class="button add"
-                        style="width:100%; padding: 10px; font-weight:bold;"><i class="fa-solid fa-save"></i>
-                    Einstellungen speichern</button>
+                        class="button add w-100 p-10 font-bold"><i class="fa-solid fa-save"></i> Einstellungen
+                    speichern</button>
             </form>
         </div>
 
     </article>
 </main>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

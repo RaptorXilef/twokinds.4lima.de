@@ -5,74 +5,57 @@ $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 <main class="content-area">
-    <article style="width: 100%; max-width: 500px; margin: 0 auto; padding: 20px;">
-        <header style="text-align: center; margin-bottom: 30px;">
-            <h1 class="page-header"
-                style="border: none; margin-bottom: 10px;">Willkommen zurück!</h1>
-            <p style="color: var(--text-color-faded);">Logge dich ein, um deine Lesezeichen zu synchronisieren.</p>
+    <article class="auth-container">
+        <header>
+            <h1 class="page-header">Willkommen zurück!</h1>
+            <p>Logge dich ein, um deine Lesezeichen zu synchronisieren.</p>
         </header>
 
         <!-- Flash-Messages (z.B. für Bestätigungslink-Erfolg) -->
         <?php if (! empty($flashes['success'])) { ?>
-            <div
-                 style="padding: 15px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center; background-color: var(--status-green-bg); color: var(--status-green-text); border: 1px solid var(--status-green-border);">
+            <div class="status-message status-green visible mb-20">
                 <i class="fa-solid fa-check"></i> <?php echo \htmlspecialchars($flashes['success'][0]); ?>
             </div>
         <?php } ?>
         <?php if (! empty($flashes['error'])) { ?>
-            <div
-                 style="padding: 15px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center; background-color: var(--status-red-bg); color: var(--status-red-text); border: 1px solid var(--status-red-border);">
+            <div class="status-message status-red visible mb-20">
                 <i class="fa-solid fa-triangle-exclamation"></i> <?php echo \htmlspecialchars($flashes['error'][0]); ?>
             </div>
         <?php } ?>
         <?php if (! empty($flashes['info'])) { ?>
-            <div
-                 style="padding: 15px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center; background-color: var(--status-info-bg); color: var(--status-info-text); border: 1px solid var(--status-info-border);">
+            <div class="status-message status-info visible mb-20">
                 <i class="fa-solid fa-circle-info"></i> <?php echo \htmlspecialchars($flashes['info'][0]); ?>
             </div>
         <?php } ?>
-
-        <div
-             style="background: var(--content-box-bg); padding: 30px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div class="content-box-shadow">
             <div id="login-status-msg"
-                 style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-weight: bold; text-align: center;">
-            </div>
-
+                 class="msg-box"></div>
             <form id="frontend-login-form"
                   class="admin-form">
-                <div class="form-group"
-                     style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Benutzername oder
-                        E-Mail</label>
+                <div class="form-group mb-15">
+                    <label>Benutzername oder E-Mail</label>
                     <input type="text"
                            name="username"
-                           required
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           required>
                 </div>
-                <div class="form-group"
-                     style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Passwort</label>
+                <div class="form-group mb-20">
+                    <label>Passwort</label>
                     <input type="password"
                            name="password"
-                           required
-                           style="width: 100%; padding: 10px; border: 1px solid var(--border-medium); border-radius: 4px; background: var(--content-bg); color: var(--text-color);">
+                           required>
                 </div>
                 <button type="submit"
                         id="login-submit-btn"
-                        class="button edit"
-                        style="width: 100%; padding: 12px; font-size: 1.1em; font-weight: bold;">Einloggen</button>
+                        class="button edit">Einloggen</button>
             </form>
-
-            <div
-                 style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 20px; font-size: 0.9em;">
-                <div style="width: 100%; display: flex; justify-content: space-between;">
-                    <a href="<?php echo $baseUrl; ?>/passwort-vergessen" style="color: var(--text-color-faded);">Passwort vergessen?</a>
-                    <a href="<?php echo $baseUrl; ?>/bestaetigungsmail-anfordern" style="color: var(--text-color-faded);">Aktivierungs-Mail fehlt?</a>
+            <div class="form-links">
+                <div class="form-links-row">
+                    <a href="<?php echo $baseUrl; ?>/passwort-vergessen">Passwort vergessen?</a>
+                    <a href="<?php echo $baseUrl; ?>/bestaetigungsmail-anfordern">Aktivierungs-Mail fehlt?</a>
                 </div>
-                <span style="margin-top: 10px;">Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" style="font-weight: bold; color: var(--link-color);">Jetzt registrieren</a></span>
+                <span class="mt-10">Noch kein Konto? <a href="<?php echo $baseUrl; ?>/registrieren" class="text-link">Jetzt registrieren</a></span>
             </div>
         </div>
     </article>
 </main>
-
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
