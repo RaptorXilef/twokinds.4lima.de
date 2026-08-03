@@ -179,6 +179,7 @@ final readonly class FrontendController
                 'delete_media'                 => ['action' => 'api_delete_media', 'input' => $input],
                 'delete_role'                  => ['action' => 'api_delete_role', 'input' => $input],
                 'delete_user'                  => ['action' => 'api_delete_user', 'input' => $input],
+                'frontend_delete_account'      => ['action' => 'api_frontend_delete_account', 'input' => $input],
                 'frontend_forgot_password'     => ['action' => 'api_frontend_forgot_password', 'input' => $input],
                 'frontend_logout'              => ['action' => 'api_frontend_logout', 'input' => $input],
                 'frontend_register'            => ['action' => 'api_frontend_register', 'input' => $input],

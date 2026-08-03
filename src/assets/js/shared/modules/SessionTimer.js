@@ -1,9 +1,10 @@
 export class SessionTimer {
-    constructor(api, maxIdleSeconds = 1800) {
+    constructor(api, elementId, notifications = null, maxIdleSeconds = 1800) {
         this.api = api;
+        this.notifications = notifications; // Wird nur im Admin-Bereich übergeben
         this.maxIdleSeconds = maxIdleSeconds;
         this.idleSeconds = 0;
-        this.timerElement = document.getElementById('frontend-session-timer');
+        this.timerElement = document.getElementById('admin-session-timer');
 
         if (this.timerElement) {
             this.init();
@@ -11,9 +12,14 @@ export class SessionTimer {
     }
 
     init() {
+        // UI jede Sekunde aktualisieren
         this.intervalId = setInterval(() => this.tick(), 1000);
+
+        // Die Funktion zum Zurücksetzen wird gedrosselt (Throttle),
+        // sodass sie bei Dauer-Aktivität maximal alle 10 Sekunden feuert.
         this.throttledReset = this.throttle(() => this.resetTimer(), 10000);
 
+        // const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
         const activityEvents = ['click', 'keydown', 'touchstart', 'scroll'];
         activityEvents.forEach((event) => {
             document.addEventListener(event, this.throttledReset, { passive: true });
@@ -30,11 +36,14 @@ export class SessionTimer {
             clearInterval(this.intervalId);
             this.timerElement.innerHTML =
                 '<i class="fa-solid fa-hourglass-end" style="color: var(--status-red-text);"></i> <span style="color: var(--status-red-text);">Abgelaufen</span>';
-
-            alert(
-                'Deine Sitzung ist aus Sicherheitsgründen abgelaufen. Bitte logge dich erneut ein.'
+            this.notifications.show(
+                'Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich neu ein.',
+                'error'
             );
-            window.location.reload();
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
         }
     }
 
@@ -42,13 +51,16 @@ export class SessionTimer {
         const remaining = Math.max(0, this.maxIdleSeconds - this.idleSeconds);
         const minutes = Math.floor(remaining / 60);
         const seconds = remaining % 60;
+
         const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
         let colorClass = '';
         if (remaining <= 300) {
+            // Unter 5 Minuten -> Orange
             colorClass = 'color: var(--status-orange-text); font-weight: bold;';
         }
         if (remaining <= 60) {
+            // Unter 1 Minute -> Rot
             colorClass = 'color: var(--status-red-text); font-weight: bold;';
         }
 
@@ -56,7 +68,9 @@ export class SessionTimer {
     }
 
     async resetTimer() {
+        // Wenn die Zeit bereits abgelaufen ist, nicht mehr anfunken
         if (this.idleSeconds >= this.maxIdleSeconds) return;
+
         this.idleSeconds = 0;
         this.updateUI();
 

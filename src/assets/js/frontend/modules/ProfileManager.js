@@ -13,28 +13,43 @@ export class ProfileManager {
         this.bindForm('form-username', 'msg-username', true, false);
         this.bindForm('form-password', 'msg-password', false, true);
         this.bindForm('form-newsletter', 'msg-newsletter', false, false);
-        this.bindForm('form-email', 'msg-email', false, true); // <--- NEU
+        this.bindForm('form-email', 'msg-email', false, true);
+        this.bindForm('form-delete-account', 'msg-delete-account', false, false, true); // True = ist Lösch-Formular
     }
 
-    bindForm(formId, msgId, reloadOnSuccess = false, resetOnSuccess = false) {
+    bindForm(formId, msgId, reloadOnSuccess = false, resetOnSuccess = false, isDelete = false) {
         const form = document.getElementById(formId);
         const msg = document.getElementById(msgId);
         if (!form || !msg) return;
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            if (isDelete) {
+                if (
+                    !confirm(
+                        'ACHTUNG: Möchtest du dein Konto und alle deine Lesezeichen WIRKLICH unwiderruflich löschen?'
+                    )
+                ) {
+                    return;
+                }
+            }
+
             const btn = form.querySelector('button[type="submit"]');
             const origText = btn ? btn.innerHTML : '';
 
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lade...';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verarbeite...';
             }
 
             const formData = new window.FormData(form);
 
             try {
-                const json = await this.api.post('frontend_update_profile', formData);
+                // Bei Delete greifen wir auf die neue API-Route zu
+                const endpoint = isDelete ? 'frontend_delete_account' : 'frontend_update_profile';
+                const json = await this.api.post(endpoint, formData);
+
                 msg.style.display = 'block';
 
                 if (json.success) {
@@ -44,7 +59,14 @@ export class ProfileManager {
                     msg.innerHTML = `<i class="fa-solid fa-check"></i> ${json.message}`;
 
                     if (resetOnSuccess) form.reset();
-                    if (reloadOnSuccess) {
+
+                    if (isDelete && json.redirect !== undefined) {
+                        // Bei Kontolöschung sofort auf die Startseite zurückwerfen
+                        setTimeout(
+                            () => (window.location.href = this.api.baseUrl + '/' + json.redirect),
+                            1500
+                        );
+                    } else if (reloadOnSuccess) {
                         setTimeout(() => window.location.reload(), 1500);
                     }
                 } else {
@@ -54,14 +76,15 @@ export class ProfileManager {
                     msg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`;
                 }
             } catch (err) {
-                console.error('[ProfileManager] Unerwarteter Fehler beim Profil-Update:', err);
+                console.error('[ProfileManager] Unerwarteter Fehler beim API-Call:', err);
                 msg.style.display = 'block';
                 msg.style.backgroundColor = 'var(--status-red-bg)';
                 msg.style.color = 'var(--status-red-text)';
                 msg.innerHTML = 'Verbindungsfehler. Server nicht erreichbar.';
             }
 
-            if (btn) {
+            // Button nur bei Fehlschlag wieder aktivieren (bei Erfolg wird ja weitergeleitet/reloaded)
+            if (btn && (!json || !json.success)) {
                 btn.disabled = false;
                 btn.innerHTML = origText;
             }

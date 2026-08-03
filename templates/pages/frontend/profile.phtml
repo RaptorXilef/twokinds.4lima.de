@@ -158,6 +158,29 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             </form>
         </div>
 
+        <div class="content-box-shadow"
+             style="border-color: var(--status-red-border); background: var(--status-red-bg);">
+            <h3 class="section-title text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Gefahrenzone: Konto
+                löschen</h3>
+            <p class="text-danger mb-20 font-bold">Das Löschen deines Kontos ist unwiderruflich! Alle in der Cloud
+                gespeicherten Lesezeichen gehen sofort und für immer verloren.</p>
+
+            <div id="msg-delete-account"
+                 class="msg-box"></div>
+            <form id="form-delete-account"
+                  class="admin-form">
+                <div class="form-group mb-15">
+                    <input type="password"
+                           name="password"
+                           required
+                           placeholder="Zur Bestätigung aktuelles Passwort eingeben">
+                </div>
+                <button type="submit"
+                        class="button delete"><i class="fa-solid fa-skull-crossbones"></i> Ja, Konto unwiderruflich
+                    löschen</button>
+            </form>
+        </div>
+
     </article>
 </main>
 

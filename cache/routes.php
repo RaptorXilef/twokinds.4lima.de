@@ -16,6 +16,7 @@ return [
     'api_delete_media'                    => 'App\\Application\\Actions\\ApiDeleteMediaAction',
     'api_delete_role'                     => 'App\\Application\\Actions\\ApiDeleteRoleAction',
     'api_delete_user'                     => 'App\\Application\\Actions\\ApiDeleteUserAction',
+    'api_frontend_delete_account'         => 'App\\Application\\Actions\\ApiFrontendDeleteAccountAction',
     'api_frontend_forgot_password'        => 'App\\Application\\Actions\\ApiFrontendForgotPasswordAction',
     'api_frontend_logout'                 => 'App\\Application\\Actions\\ApiFrontendLogoutAction',
     'api_frontend_register'               => 'App\\Application\\Actions\\ApiFrontendRegisterAction',
