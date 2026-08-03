@@ -58,21 +58,23 @@
     }
 
     /* Markenfarben */
-    &.icon-patreon {
-        color: #000;
+    &.icon-patreon,
+    &.icon-github {
+        color: #000; /* Schwarz im Light Mode */
     }
 
     &.icon-paypal {
-        color: #0079c1;
+        color: #0079c1; /* Offizielles PayPal Blau */
     }
 
     &.icon-rss {
-        color: #f26522;
+        color: #f26522; /* Offizielles RSS Orange */
     }
 }
 
-/* Patreon im Dark Mode invertieren */
-body.theme-night .social-icon.icon-patreon {
+/* Patreon & GitHub im Dark Mode invertieren */
+body.theme-night .social-icon.icon-patreon,
+body.theme-night .social-icon.icon-github {
     color: #fff;
 }
 

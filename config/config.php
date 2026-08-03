@@ -53,7 +53,9 @@ return [
     'email_domain' => '',
 
     // Social Media Links
-    'social_patreon'  => 'https://www.patreon.com/',
-    'social_inkbunny' => 'https://inkbunny.net/',
-    'social_paypal'   => 'https://paypal.me/',
+    'social_patreon'  => 'https://www.patreon.com/RaptorXilef',
+    'social_inkbunny' => 'https://inkbunny.net/RaptorXilefSFW',
+    'social_paypal'   => 'https://paypal.me/RaptorXilef',
+    'social_github'   => 'https://github.com/RaptorXilef/twokinds.4lima.de',
+    'social_twokinds' => 'https://twokinds.keenspot.com/',
 ];

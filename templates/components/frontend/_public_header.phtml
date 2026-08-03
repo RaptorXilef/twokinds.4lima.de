@@ -123,29 +123,43 @@ elseif (isset($character) && \is_object($character)) {
                         <!-- Patreon Link -->
                         <?php if (! empty($settings['social_patreon'])) { ?>
                             <a href="<?php echo \htmlspecialchars($settings['social_patreon']); ?>" target="_blank" rel="noopener noreferrer" title="Patreon">
-                        <i class="fa-brands fa-patreon social-icon icon-patreon"></i>
-                    </a>
+                                <i class="fa-brands fa-patreon social-icon icon-patreon"></i>
+                            </a>
                         <?php } ?>
 
-                        <!-- InkBunny Link (Als Bild) -->
-                        <?php if (! empty($settings['social_inkbunny'])) { ?>
-                            <a href="<?php echo \htmlspecialchars($settings['social_inkbunny']); ?>" target="_blank" rel="noopener noreferrer" title="Mein InkBunny">
-                        <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/inkbunny.png" alt="InkBunny" width="26" height="26">
-                    </a>
+                        <!-- GitHub Link -->
+                        <?php if (! empty($settings['social_github'])) { ?>
+                            <a href="<?php echo \htmlspecialchars($settings['social_github']); ?>" target="_blank" rel="noopener noreferrer" title="GitHub Repository">
+                                <i class="fa-brands fa-github social-icon icon-github"></i>
+                            </a>
                         <?php } ?>
 
                         <!-- PayPal Link -->
                         <?php if (! empty($settings['social_paypal'])) { ?>
                             <a href="<?php echo \htmlspecialchars($settings['social_paypal']); ?>" target="_blank" rel="noopener noreferrer" title="Mein Paypal">
-                        <i class="fa-brands fa-paypal social-icon icon-paypal"></i>
-                    </a>
+                                <i class="fa-brands fa-paypal social-icon icon-paypal"></i>
+                            </a>
                         <?php } ?>
 
                         <!-- RSS Kopier-Link (Bleibt immer da, da es interne Logik ist) -->
                         <a href="<?php echo $baseUrl; ?>/rss.xml" class="js-copy-rss" data-url="<?php echo $baseUrl; ?>/rss.xml" title="RSS-Feed URL kopieren">
                         <i class="fa-solid fa-rss social-icon icon-rss"></i>
-                        <span class="copy-feedback">Link kopiert!</span>
-                    </a>
+                            <span class="copy-feedback">Link kopiert!</span>
+                        </a>
+
+                        <!-- InkBunny Link (Als Bild) -->
+                        <?php if (! empty($settings['social_inkbunny'])) { ?>
+                            <a href="<?php echo \htmlspecialchars($settings['social_inkbunny']); ?>" target="_blank" rel="noopener noreferrer" title="Mein InkBunny">
+                                <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/inkbunny.png" alt="InkBunny" width="26" height="26">
+                            </a>
+                        <?php } ?>
+
+                        <!-- TwoKinds Original Link -->
+                        <?php if (! empty($settings['social_twokinds'])) { ?>
+                            <a href="<?php echo \htmlspecialchars($settings['social_twokinds']); ?>" target="_blank" rel="noopener noreferrer" title="Original TwoKinds Comic">
+                                <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/twokinds.png" alt="TwoKinds Original" width="26" height="26" style="border-radius: 4px;">
+                            </a>
+                        <?php } ?>
                     </div>
 
                     <nav id="menu"

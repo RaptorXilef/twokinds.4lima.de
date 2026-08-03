@@ -70,6 +70,8 @@ final readonly class TemplateRenderer
             'social_patreon'  => $this->config->get('social_patreon', ''),
             'social_inkbunny' => $this->config->get('social_inkbunny', ''),
             'social_paypal'   => $this->config->get('social_paypal', ''),
+            'social_github'   => $this->config->get('social_github', ''),
+            'social_twokinds' => $this->config->get('social_twokinds', ''),
         ];
     }
 }
