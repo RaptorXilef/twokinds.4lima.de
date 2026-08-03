@@ -47,6 +47,7 @@ return [
     'render_frontend_register'            => 'App\\Application\\Actions\\Frontend\\FrontendRegisterRenderAction',
     'render_frontend_resend_verification' => 'App\\Application\\Actions\\Frontend\\FrontendResendVerificationRenderAction',
     'render_frontend_reset_password'      => 'App\\Application\\Actions\\Frontend\\FrontendResetPasswordRenderAction',
+    'render_frontend_verify_email'        => 'App\\Application\\Actions\\Frontend\\FrontendVerifyNewEmailRenderAction',
     'render_frontend_verify'              => 'App\\Application\\Actions\\Frontend\\FrontendVerifyRenderAction',
     'render_archive'                      => 'App\\Application\\Actions\\Frontend\\RenderArchiveAction',
     'render_bookmarks'                    => 'App\\Application\\Actions\\Frontend\\RenderBookmarksAction',

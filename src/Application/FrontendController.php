@@ -145,6 +145,11 @@ final readonly class FrontendController
             return ['action' => 'render_frontend_verify', 'input' => $input];
         }
 
+        // Route für den Klick auf den E-Mail-Ändern Link
+        if ($relativePath === 'email-bestaetigen' || $relativePath === 'email-bestaetigen.php') {
+            return ['action' => 'render_frontend_verify_email', 'input' => $input];
+        }
+
         if ($relativePath === 'profil' || $relativePath === 'profil.php') {
             return ['action' => 'render_frontend_profile', 'input' => $input];
         }

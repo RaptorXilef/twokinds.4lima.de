@@ -10,10 +10,12 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
+use App\Core\Service\MagicLinkService;
 use App\Core\ValueObject\Username;
 
 #[ActionRoute('api_frontend_update_profile')]
@@ -24,6 +26,8 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
         private SessionManager $sessionManager,
         private UserRepositoryInterface $userRepository,
         private ConfigInterface $config,
+        private MailServiceInterface $mailService,
+        private MagicLinkService $magicLinkService,
     ) {
     }
 
@@ -103,9 +107,34 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
             $this->userRepository->save($updated);
 
             // Session mit neuem Hash versehen, sonst fliegt man beim nächsten Klick raus
-            $this->sessionManager->setAuthSession($user->id, $user->roleId, $user->username, $newHash);
+            $this->sessionManager->setAuthSession($user->id, $user->roleId, $user->username->value, $newHash);
 
             return JsonResponse::success(['message' => 'Passwort erfolgreich geändert!']);
+        }
+
+        // E-Mail Logik
+        if ($actionType === 'email') {
+            $newEmailStr = Sanitizer::email($request->post['new_email'] ?? '');
+            if ($newEmailStr === '') {
+                return JsonResponse::error('Bitte eine gültige E-Mail-Adresse eingeben.', 400);
+            }
+            if ($newEmailStr === $user->email->value) {
+                return JsonResponse::error('Das ist bereits deine aktuelle E-Mail-Adresse.', 400);
+            }
+            if ($this->userRepository->findByEmail($newEmailStr)) {
+                return JsonResponse::error('Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.', 400);
+            }
+
+            $tokenData = $this->magicLinkService->createToken($newEmailStr);
+            $verifyUrl = \rtrim($this->config->getBaseUrl(), '/') . '/email-bestaetigen?token=' . $tokenData['token'];
+
+            $this->mailService->sendTemplate($newEmailStr, 'Neue E-Mail-Adresse bestätigen', 'verify_new_email', [
+                'verifyUrl' => $verifyUrl,
+                'username'  => $user->username->value,
+            ]);
+            $this->mailService->processQueue(5, ['verify_new_email']);
+
+            return JsonResponse::success(['message' => 'Bestätigungslink gesendet! Bitte prüfe den Posteingang deiner NEUEN E-Mail-Adresse.']);
         }
 
         return JsonResponse::error('Ungültige Aktion.', 400);

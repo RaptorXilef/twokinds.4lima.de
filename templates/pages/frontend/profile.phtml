@@ -9,12 +9,45 @@ declare(strict_types=1);
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
+
 <main class="content-area">
     <article class="profile-container">
         <header>
             <h1 class="page-header"><i class="fa-solid fa-user-gear text-link"></i> Profil verwalten</h1>
-            <p>E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
+            <p>Aktuelle E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
         </header>
+
+        <!-- Zeige System-Nachrichten an (Z.B. Erfolgreich bestätigt) -->
+        <?php if (! empty($flashes['success'])) { ?>
+            <div class="status-message status-green visible mb-20">
+                <i class="fa-solid fa-check"></i> <?php echo \htmlspecialchars($flashes['success'][0]); ?>
+            </div>
+        <?php } ?>
+        <?php if (! empty($flashes['error'])) { ?>
+            <div class="status-message status-red visible mb-20">
+                <i class="fa-solid fa-triangle-exclamation"></i> <?php echo \htmlspecialchars($flashes['error'][0]); ?>
+            </div>
+        <?php } ?>
+
+        <div class="content-box-shadow">
+            <h3 class="section-title">E-Mail Adresse ändern</h3>
+            <div id="msg-email"
+                 class="msg-box"></div>
+            <form id="form-email"
+                  class="admin-form">
+                <input type="hidden"
+                       name="update_type"
+                       value="email">
+                <div class="form-group mb-15">
+                    <input type="email"
+                           name="new_email"
+                           required
+                           placeholder="Neue E-Mail Adresse">
+                </div>
+                <button type="submit"
+                        class="button edit">Bestätigungslink an neue E-Mail senden</button>
+            </form>
+        </div>
 
         <div class="content-box-shadow">
             <h3 class="section-title">Benutzername</h3>
@@ -120,4 +153,5 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
     </article>
 </main>
+
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

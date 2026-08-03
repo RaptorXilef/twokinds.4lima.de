@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1); ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+    body {
+        font-family: sans-serif;
+        line-height: 1.6;
+        color: #333;
+    }
+
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #28a745;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+        margin: 20px 0;
+    }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Hallo <?php echo \htmlspecialchars($username); ?>!</h2>
+        <p>Du hast eine Änderung deiner E-Mail-Adresse auf <strong>Twokinds auf Deutsch</strong> angefordert.</p>
+        <p>Bitte bestätige deine NEUE E-Mail-Adresse, indem du auf den folgenden Button klickst:</p>
+        <p style="text-align: center;">
+            <a href="<?php echo \htmlspecialchars($verifyUrl); ?>" class="button">E-Mail-Adresse bestätigen</a>
+        </p>
+        <p>Der Link ist aus Sicherheitsgründen für <strong>15 Minuten</strong> gültig. Bitte stelle sicher, dass du in
+            demselben Browser auf der Webseite eingeloggt bist, wenn du den Link öffnest.</p>
+    </div>
+</body>
+
+</html>

@@ -13,6 +13,7 @@ export class ProfileManager {
         this.bindForm('form-username', 'msg-username', true, false);
         this.bindForm('form-password', 'msg-password', false, true);
         this.bindForm('form-newsletter', 'msg-newsletter', false, false);
+        this.bindForm('form-email', 'msg-email', false, true); // <--- NEU
     }
 
     bindForm(formId, msgId, reloadOnSuccess = false, resetOnSuccess = false) {
