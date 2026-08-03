@@ -412,7 +412,49 @@ body.theme-night .checkbox-item {
     gap: 20px;
 }
 
-/* Bookmarks JS Template Classes */
+/* ==========================================================================
+   Bookmarks JS Template Classes
+   ========================================================================== */
+.bookmark-card {
+    position: relative;
+    background-color: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .delete-btn {
+        opacity: 0;
+        transition:
+            opacity 0.2s ease,
+            background-color 0.2s ease;
+        z-index: 10;
+    }
+
+    &:hover .delete-btn {
+        opacity: 1;
+    }
+
+    @include media-tablet {
+        .delete-btn {
+            opacity: 1; /* Auf Touch-Geräten immer sichtbar */
+        }
+    }
+}
+body.theme-night .bookmark-card {
+    border-color: var(--border-light);
+}
+
 .bookmark-thumb-link {
     display: block;
     width: 100%;
@@ -458,6 +500,9 @@ body.theme-night .checkbox-item {
     background: rgba(255, 255, 255, 0.9);
     color: var(--status-red-text);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .bookmark-delete-btn:hover {
     background: var(--status-red-bg);
