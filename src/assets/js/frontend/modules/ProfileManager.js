@@ -45,25 +45,31 @@ export class ProfileManager {
 
             const formData = new window.FormData(form);
 
+            // FIX: Die Variable muss VOR dem try-Block existieren,
+            // damit sie unten beim Button-Reset noch bekannt ist!
+            let responseJson = null;
+
             try {
                 // Bei Delete greifen wir auf die neue API-Route zu
                 const endpoint = isDelete ? 'frontend_delete_account' : 'frontend_update_profile';
-                const json = await this.api.post(endpoint, formData);
+                responseJson = await this.api.post(endpoint, formData);
 
                 msg.style.display = 'block';
 
-                if (json.success) {
+                if (responseJson.success) {
                     msg.style.backgroundColor = 'var(--status-green-bg)';
                     msg.style.color = 'var(--status-green-text)';
                     msg.style.border = '1px solid var(--status-green-border)';
-                    msg.innerHTML = `<i class="fa-solid fa-check"></i> ${json.message}`;
+                    msg.innerHTML = `<i class="fa-solid fa-check"></i> ${responseJson.message}`;
 
                     if (resetOnSuccess) form.reset();
 
-                    if (isDelete && json.redirect !== undefined) {
+                    if (isDelete && responseJson.redirect !== undefined) {
                         // Bei Kontolöschung sofort auf die Startseite zurückwerfen
                         setTimeout(
-                            () => (window.location.href = this.api.baseUrl + '/' + json.redirect),
+                            () =>
+                                (window.location.href =
+                                    this.api.baseUrl + '/' + responseJson.redirect),
                             1500
                         );
                     } else if (reloadOnSuccess) {
@@ -73,7 +79,7 @@ export class ProfileManager {
                     msg.style.backgroundColor = 'var(--status-red-bg)';
                     msg.style.color = 'var(--status-red-text)';
                     msg.style.border = '1px solid var(--status-red-border)';
-                    msg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${json.error}`;
+                    msg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${responseJson.error}`;
                 }
             } catch (err) {
                 console.error('[ProfileManager] Unerwarteter Fehler beim API-Call:', err);
@@ -83,8 +89,8 @@ export class ProfileManager {
                 msg.innerHTML = 'Verbindungsfehler. Server nicht erreichbar.';
             }
 
-            // Button nur bei Fehlschlag wieder aktivieren (bei Erfolg wird ja weitergeleitet/reloaded)
-            if (btn && (!json || !json.success)) {
+            // Button nur bei Fehlschlag wieder aktivieren
+            if (btn && (!responseJson || !responseJson.success)) {
                 btn.disabled = false;
                 btn.innerHTML = origText;
             }
