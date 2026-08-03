@@ -61,8 +61,8 @@ include __DIR__ . '/../../components/admin/_admin_header.phtml';
 
     <!-- Das NEUE, modulare Script laden -->
     <script type="module"
-            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="<?php echo $baseUrl; ?>/assets/js/admin/login.js"></script>
+        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+        src="<?php echo $asset->url('assets/js/admin/login.js'); ?>"></script>
     </body>
 
     </html>

@@ -33,6 +33,9 @@ final class LocalAssetHelper implements AssetHelperInterface
         $publicDir    = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
         $physicalPath = $publicDir . '/' . $assetPath;
 
+        // Wichtig: Stat-Cache leeren, damit Änderungen per FTP an JS/CSS sofort erkannt werden!
+        \clearstatcache(true, $physicalPath);
+
         // 3. Datei prüfen und Zeitstempel lesen
         if (\file_exists($physicalPath)) {
             $mtime                        = (string) \filemtime($physicalPath);

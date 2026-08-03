@@ -20,6 +20,12 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
         callable $next,
     ): mixed {
         if (! \headers_sent()) {
+            // Verhindert das Caching der HTML-Seite durch den Browser. Zwingend nötig für korrekte
+            // CSRF-Tokens und damit der Browser immer die neusten ?v= Datei-Versionen für CSS/JS lädt!
+            \header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            \header('Pragma: no-cache');
+            \header('Expires: 0');
+
             // Basis Security Header
             \header('X-Frame-Options: SAMEORIGIN');
             \header('X-Content-Type-Options: nosniff');
@@ -31,9 +37,9 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             if (\session_status() === \PHP_SESSION_NONE) {
                 \session_start();
             }
-            $nonce = $_SESSION['csrf_token'] ?? \bin2hex(\random_bytes(16));
 
             // Host für lokale Whitelist prüfen
+            $nonce   = $_SESSION['csrf_token'] ?? \bin2hex(\random_bytes(16));
             $host    = $request->server['HTTP_HOST'] ?? '';
             $isLocal = \str_ends_with($host, '.local')
                 || $host === 'localhost'
