@@ -14,12 +14,23 @@ declare(strict_types=1);
 
 return [
     // --- WARTUNGSMODUS (MAINTENANCE) ---
-    'maintenance_mode'       => false, // true = Sperrt das Frontend
-    'maintenance_mode_admin' => false, // true = Sperrt zusätzlich das gesamte Admin-Dashboard
+    // Sperrt ausschließlich das öffentliche Frontend für Besucher.
+    // Das Admin-Panel unter /admin bleibt weiterhin erreichbar.
+    'maintenance_mode' => false,
+
+    // Sperrt ausschließlich das Backend (Admin-Panel).
+    // Das Frontend bleibt für Leser erreichbar. Setze beide auf "true", um alles zu sperren.
+    'maintenance_mode_admin' => false,
 
     // --- UMGEBUNGSSTEUERUNG ---
-    'test_mode'      => false, // true = Sandbox-Modus (PayPal & Mails blockiert) | false = Produktion
-    'admin_dev_mode' => false, // true = Hebelt Admin-Login aus (Nur für lokale Entwicklung!)
+    // Sandbox-Modus: Wenn auf "true", werden keine echten E-Mails via SMTP versendet,
+    // sondern nur im "mail_logs" der Datenbank als "Testmodus" protokolliert. Schützt vor versehentlichem Spam.
+    'test_mode' => false,
+
+    // Entwicklermodus: Wenn auf "true", hebelt dies die komplette Rechteprüfung (PermissionRegistry) aus.
+    // Jeder eingeloggte Nutzer im Adminbereich hat dann sofort "Gott-Modus" (vollen Zugriff auf alles).
+    // Nur lokal nutzen!
+    'admin_dev_mode' => false,
 
     // --- ADMINBEREICH ---
     // Wie oft rückgängig möglich?

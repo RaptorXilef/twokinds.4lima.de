@@ -23,7 +23,7 @@ if (\file_exists($configFile)) {
 
 // 3. Fallback Logo-Pfad (Prüft, ob ein spezifisches Logo da ist)
 $logoPath       = $baseUrl . 'appleicon.png'; // Fallback auf den TK-Button, den du im SCSS referenziert hast
-$localLogoCheck = __DIR__ . 'appleicon.png';
+$localLogoCheck = __DIR__ . '/appleicon.png'; // führenden / nicht vergessen!
 $hasLogo        = \file_exists($localLogoCheck);
 
 // 4. HTTP-Statuscode setzen, damit Suchmaschinen wissen, dass die Seite nur temporär offline ist
