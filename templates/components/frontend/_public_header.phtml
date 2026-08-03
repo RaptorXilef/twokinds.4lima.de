@@ -125,6 +125,16 @@ elseif (isset($character) && \is_object($character)) {
                         <img class="patreon-dark-icon social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/patreon_dark.png" alt="Patreon Dark" width="32" height="32">
                     </a>
                     </div>
+                    <!-- RSS Button mit Copy-Feedback -->
+                    <button type="button"
+                            class="social-icon js-copy-rss d-inline-flex align-center justify-center"
+                            data-url="<?php echo $baseUrl; ?>/rss.xml"
+                            style="background: none; border: none; padding: 0; cursor: pointer; position: relative;"
+                            title="RSS-Feed Link kopieren">
+                        <i class="fa-solid fa-square-rss"
+                           style="font-size: 32px; color: #f26522; line-height: 1; border-radius: 4px; overflow: hidden; background: #fff;"></i>
+                        <span class="copy-feedback">Link kopiert!</span>
+                    </button>
 
                     <nav id="menu"
                          class="menu">

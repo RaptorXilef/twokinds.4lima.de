@@ -10,6 +10,7 @@ import { CookieConsentManager } from './modules/CookieConsentManager.js';
 import { EmailProtector } from './modules/EmailProtector.js';
 import { ProfileManager } from './modules/ProfileManager.js';
 import { ReportModal } from './modules/ReportModal.js';
+import { RssCopier } from './modules/RssCopier.js';
 import { AccordionManager } from './ui/AccordionManager.js';
 import { ImageFallback } from './ui/ImageFallback.js';
 
@@ -37,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     safeInit('ArchiveManager', () => new ArchiveManager());
     safeInit('CharacterFilter', () => new CharacterFilter());
     safeInit('EmailProtector', () => new EmailProtector());
+    safeInit('RssCopier', () => new RssCopier());
 
     // API-abhängige Module nur laden, wenn die API existiert
     if (api) {

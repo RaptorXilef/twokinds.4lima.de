@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Contracts\System\AssetHelperInterface;
+
 /**
- * @var array                                      $settings
- * @var \App\Contracts\System\AssetHelperInterface $asset
+ * @var array                $settings
+ * @var AssetHelperInterface $asset
+ * @var string               $pageTitle
  */
 $baseUrl       = \rtrim($settings['base_url'] ?? '', '/');
 $felixImageUrl = $asset->url('assets/images/about/Felix.webp');
@@ -14,15 +17,16 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 <main class="content-area">
     <article class="max-w-900 w-100 center-block legal-content">
         <header class="mb-40 pb-20 border-bottom-2 text-left">
-            <h1 class="page-header border-none mb-10 font-2x">Info-Hub & FAQ</h1>
-            <p class="text-faded font-lg m-0"> Alles, was du über das deutsche TwoKinds-Übersetzungsprojekt wissen musst
-                - kompakt an einem Ort. </p>
+            <h1 class="page-header border-none p-0 m-0 mb-10 font-2x">Info-Hub & FAQ</h1>
+            <p class="text-faded font-lg m-0 mt-10 lh-1-6">
+                Alles, was du über das deutsche TwoKinds-Übersetzungsprojekt wissen musst - kompakt an einem Ort.
+            </p>
         </header>
 
         <!-- KACHEL-LAYOUT FÜR INFOS -->
         <div class="grid-auto-300 mb-50">
             <!-- Kachel 1: Über uns -->
-            <section class="bg-even p-25 border-radius-8 border-medium">
+            <section class="bg-even p-25 border-radius-8 border-medium lh-1-6">
                 <h2 class="mt-0 font-1-5x d-flex align-center gap-10 text-color">
                     <i class="fa-solid fa-users text-link"></i> Das Projekt
                 </h2>
@@ -36,16 +40,23 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             </section>
 
             <!-- Kachel 2: RSS & Updates -->
-            <section class="bg-even p-25 border-radius-8 border-medium">
+            <section class="bg-even p-25 border-radius-8 border-medium lh-1-6">
                 <h2 class="mt-0 font-1-5x d-flex align-center gap-10 text-color">
                     <i class="fa-solid fa-rss text-rss"></i> Bleib auf dem Laufenden
                 </h2>
                 <p> Du willst keine neue übersetzte Seite verpassen? Nutze unseren RSS-Feed, um Updates direkt in deinen
-                    Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen! </p>
-                <div class="mt-20">
-                    <a href="<?php echo $baseUrl; ?>/rss.xml" target="_blank" class="button edit d-inline-flex align-center gap-8 p-10 font-bold w-auto">
-                        <i class="fa-solid fa-square-rss"></i> RSS-Feed abonnieren
-                    </a>
+                    Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen! Klicke auf den Button, um die
+                    Feed-URL zu kopieren.</p>
+
+                <!-- RSS Button kopiert URL und zeigt Feedback an -->
+                <div class="mt-20"
+                     style="position: relative; display: inline-block;">
+                    <button type="button"
+                            class="button edit d-inline-flex align-center gap-8 p-10 font-bold w-auto js-copy-rss"
+                            data-url="<?php echo $baseUrl; ?>/rss.xml">
+                        <i class="fa-solid fa-square-rss"></i> RSS-Feed URL kopieren
+                    </button>
+                    <span class="copy-feedback">Link kopiert!</span>
                 </div>
             </section>
         </div>
@@ -53,7 +64,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         <!-- HINTERGRUNDWISSEN (AKKORDEON) -->
         <section class="mb-50">
             <h2 class="font-1-8x border-bottom pb-10 mb-25"> Hintergrundwissen </h2>
-            <div class="accordion-container d-flex flex-column gap-10">
+            <div class="accordion-container d-flex flex-column gap-10 lh-1-6">
                 <div class="accordion-item bg-content border-medium border-radius-4 overflow-hidden">
                     <button
                             class="accordion-trigger w-100 d-flex justify-between align-center py-15 px-20 bg-even border-none cursor-pointer font-1-1x font-bold text-color">
@@ -71,11 +82,11 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                             eigentlich der Feind seiner Art ist.</p>
                         <h4 class="mt-15">Die drei Haupt-Rassen:</h4>
                         <ul class="list-disc mt-5">
-                            <li><strong>Menschen:</strong> Primitiv, aber hochintelligent und technologisch überlegen.
-                                Sie nutzen oft Magie (Templer) und halten Keidran als Sklaven.</li>
-                            <li><strong>Keidran:</strong> Hunde- und katzenartige Tiermenschen (Tiger, Wölfe, Füchse).
-                                Sie sind eine kurzlebige, intensive Rasse, stark von Urinstinkten geleitet und sehr
-                                territorial.</li>
+                            <li class="mb-5"><strong>Menschen:</strong> Primitiv, aber hochintelligent und technologisch
+                                überlegen. Sie nutzen oft Magie (Templer) und halten Keidran als Sklaven.</li>
+                            <li class="mb-5"><strong>Keidran:</strong> Hunde- und katzenartige Tiermenschen (Tiger,
+                                Wölfe, Füchse). Sie sind eine kurzlebige, intensive Rasse, stark von Urinstinkten
+                                geleitet und sehr territorial.</li>
                             <li><strong>Basitins:</strong> Eine isolierte Rasse von langohrigen, braunpelzigen
                                 Tiermenschen. Sie leben auf einer Insel, verhalten sich militärisch extrem diszipliniert
                                 und gehorchen Befehlen blind.</li>
@@ -139,21 +150,21 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         <section>
             <h2 class="font-1-8x border-bottom pb-10 mb-25"> Häufige Fragen (FAQ) </h2>
             <div class="d-flex flex-column gap-20">
-                <div class="bg-content p-20 border-radius-4 faq-box">
+                <div class="bg-content p-20 border-radius-4 lh-1-6 faq-box">
                     <h3 class="mt-0 mb-10 font-1-2x">Wann kommen neue Seiten?</h3>
                     <p class="m-0 text-light"> Das englische Original wird von Tom aktuell unregelmäßig geupdatet.
                         Sobald neue Seiten erscheinen, versuche ich (Felix), diese innerhalb weniger Tage ins Deutsche
                         zu übersetzen. Da ich dies ehrenamtlich in meiner Freizeit mache, kann es bei beruflichen
                         Verpflichtungen auch mal länger dauern. Ich bitte da um Verständnis! </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4 faq-box">
+                <div class="bg-content p-20 border-radius-4 lh-1-6 faq-box">
                     <h3 class="mt-0 mb-10 font-1-2x">Ich habe einen Übersetzungsfehler gefunden!</h3>
                     <p class="m-0 text-light"> Fehler passieren auch den Besten! Du kannst sie aber ganz einfach melden:
                         Klicke dazu auf jeder Comic- oder Charakterseite auf "Fehler melden". Dort kannst du den Text
                         direkt im Browser für mich korrigieren. Sollte ich deine Korrektur übernehmen, nenne ich gern
                         deinen Namen als Unterstützer. </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4 faq-box">
+                <div class="bg-content p-20 border-radius-4 lh-1-6 faq-box">
                     <h3 class="mt-0 mb-10 font-1-2x">Unterstützt ihr Tom Fischbach?</h3>
                     <p class="m-0 text-light"> Ich (Felix) verdiene mit dieser Seite kein Geld und schalte keine
                         Werbung. Wenn dir die Übersetzung gefällt, kannst du <em>mich</em> gern über
@@ -163,23 +174,24 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                         seinen
                         <a href="https://www.patreon.com/twokinds" target="_blank" class="text-link">Patreon-Account</a>
                         oder kaufe seine Werke im
-                        <a href="https://keenspotshop.com/collections/twokinds?srsltid=AfmBOoohf9j7Mg0Qq2AUIYrN1ygOvia8rDHGRrxr4u4mEqVjXYLeJegf" target="_blank" class="text-link">Keenspot-Store!</a>!
+                        <a href="https://keenspotshop.com/collections/twokinds?srsltid=AfmBOoohf9j7Mg0Qq2AUIYrN1ygOvia8rDHGRrxr4u4mEqVjXYLeJegf" target="_blank" class="text-link">Keenspot-Store!</a>
                     </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4 faq-box">
+                <div class="bg-content p-20 border-radius-4 lh-1-6 faq-box">
                     <h3 class="mt-0 mb-10 font-1-2x">Würde Tom etwas für mich zeichnen oder Fanart annehmen?</h3>
                     <p class="m-0 text-light"> Tom hat leider keine Zeit, persönliche Kunst-Anfragen entgegenzunehmen.
                         Wenn du ihm Fanart zeigen möchtest, lade sie am besten bei DeviantArt oder Twitter hoch und
                         markiere ihn. Er stöbert dort gern, wenn er Zeit hat! Außerdem kannst du als Unterstützer auf
                         Patreon mit Voten, welche Skizzen coloriert werden sollen und Ideen für Skizzen beitragen. </p>
                 </div>
-                <div class="bg-content p-20 border-radius-4 faq-box">
+                <div class="bg-content p-20 border-radius-4 lh-1-6 faq-box">
                     <h3 class="mt-0 mb-10 font-1-2x">Darf ich Toms Arbeit verwenden oder anpassen?</h3>
                     <p class="m-0 text-light"> Ja! Toms Werk (und auch meine Webseite/Übersetzung) stehen unter einer
                         Creative Commons (CC BY-NC-SA) Lizenz. Das bedeutet, du darfst Bilder für nicht-kommerzielle
                         Zwecke verändern, teilen oder für Fan-Fiction nutzen, solange du Tom (und bei deutschen Bildern
                         diese Seite/ mich als RaptorXilef) als Quelle nennst. Genauere Infos findest du in meinem
-                        <a href="<?php echo $baseUrl; ?>/impressum" class="text-link">Impressum</a>. </p>
+                        <a href="<?php echo $baseUrl; ?>/impressum" class="text-link">Impressum</a>.
+                    </p>
                 </div>
             </div>
         </section>

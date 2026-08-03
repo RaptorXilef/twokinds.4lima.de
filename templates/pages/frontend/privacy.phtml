@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 $baseUrl = \rtrim($settings['base_url'] ?? '', '/');
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
@@ -12,39 +13,41 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
         <div class="bg-content border-medium border-radius-8 p-25 mb-30">
             <h3 class="mt-0 text-color section-title border-none">1. Einleitung und Verantwortlicher</h3>
-            <p>Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und den Zweck der Verarbeitung von
-                personenbezogenen Daten innerhalb unseres Onlineangebotes auf. Verantwortlicher für die
-                Datenverarbeitung ist Felix Maywald (siehe <a href="<?php echo $baseUrl; ?>/impressum">Impressum</a>).</p>
+            <p class="lh-1-6 mb-15">Diese Datenschutzerklärung klärt Sie über die Art, den Umfang und den Zweck der
+                Verarbeitung von personenbezogenen Daten innerhalb unseres Onlineangebotes auf. Verantwortlicher für die
+                Datenverarbeitung ist Felix Maywald (siehe
+                <a href="<?php echo $baseUrl; ?>/impressum" class="text-link">Impressum</a>).</p>
 
             <h3 class="text-color section-title border-none">2. Server-Log-Dateien</h3>
-            <p>Beim Aufruf dieser Website erfasst der Webserver automatisch technische Informationen (Browsertyp,
-                Betriebssystem, Referrer-URL, IP-Adresse, Uhrzeit), um die Stabilität und Sicherheit des Systems zu
-                gewährleisten (berechtigtes Interesse gem. Art. 6 Abs. 1 lit. f DSGVO). Diese Logs werden nach kurzer
-                Zeit automatisch gelöscht.</p>
+            <p class="lh-1-6 mb-15">Beim Aufruf dieser Website erfasst der Webserver automatisch technische
+                Informationen (Browsertyp, Betriebssystem, Referrer-URL, IP-Adresse, Uhrzeit), um die Stabilität und
+                Sicherheit des Systems zu gewährleisten (berechtigtes Interesse gem. Art. 6 Abs. 1 lit. f DSGVO). Diese
+                Logs werden nach kurzer Zeit automatisch gelöscht.</p>
 
             <h3 class="text-color section-title border-none">3. Fehler- und Telemetriemeldungen</h3>
-            <p>Wenn Sie das Formular "Fehler melden" nutzen, erheben wir Ihren optionalen Namen sowie Fehlerdetails. Zur
-                schnellen technischen Analyse werden unsichtbar Informationen über Ihr aktuelles System
-                (Bildschirmgröße, Dark/Light-Mode, Browser-Agent) an unseren Server übermittelt. Diese Daten werden
-                ausschließlich zur Behebung des Bugs genutzt und nicht an Dritte weitergegeben.</p>
+            <p class="lh-1-6 mb-15">Wenn Sie das Formular "Fehler melden" nutzen, erheben wir Ihren optionalen Namen
+                sowie Fehlerdetails. Zur schnellen technischen Analyse werden unsichtbar Informationen über Ihr
+                aktuelles System (Bildschirmgröße, Dark/Light-Mode, Browser-Agent) an unseren Server übermittelt. Diese
+                Daten werden ausschließlich zur Behebung des Bugs genutzt und nicht an Dritte weitergegeben.</p>
 
             <h3 class="text-color section-title border-none">4. Einsatz von Cookies und Speicherdiensten (Local Storage)
             </h3>
-            <p>Wir verzichten größtenteils auf nervige Cookies. Für den Komfort nutzen wir stattdessen den lokalen
-                Speicher Ihres Browsers (Local Storage), der Ihre Daten nicht an den Server sendet. Dies geschieht
-                ausschließlich für:</p>
-            <ul>
-                <li>Die Speicherung Ihres gewählten <strong>Dark/Light Themes</strong>.</li>
-                <li>Die lokale Sicherung Ihrer <strong>Lesezeichen</strong> für Comics.</li>
-                <li>Ihre Entscheidung zum Cookie-Banner.</li>
-                <li>Das Auf/Zuklappen von Kapiteln im Archiv.</li>
+            <p class="lh-1-6 mb-15">Wir verzichten größtenteils auf nervige Cookies. Für den Komfort nutzen wir
+                stattdessen den lokalen Speicher Ihres Browsers (Local Storage), der Ihre Daten nicht an den Server
+                sendet. Dies geschieht ausschließlich für:</p>
+            <ul class="list-disc lh-1-6 mb-15">
+                <li class="mb-5">Die Speicherung Ihres gewählten <strong>Dark/Light Themes</strong>.</li>
+                <li class="mb-5">Die lokale Sicherung Ihrer <strong>Lesezeichen</strong> für Comics.</li>
+                <li class="mb-5">Ihre Entscheidung zum Cookie-Banner.</li>
+                <li class="mb-5">Das Auf/Zuklappen von Kapiteln im Archiv.</li>
             </ul>
 
             <h3 class="text-color section-title border-none">5. Analyse-Cookies (Google Analytics)</h3>
-            <p>Diese Website nutzt Funktionen des Webanalysedienstes Google Analytics (Google Ireland Limited),
-                <strong>aber nur, wenn Sie dem im Cookie-Banner explizit zugestimmt haben</strong> (Art. 6 Abs. 1 lit. a
-                DSGVO). Google Analytics verwendet Cookies zur Auswertung Ihrer Seitennutzung. Wir haben die
-                IP-Anonymisierung aktiviert, sodass Ihre IP-Adresse vor der Übertragung in die USA gekürzt wird.</p>
+            <p class="lh-1-6 mb-15">Diese Website nutzt Funktionen des Webanalysedienstes Google Analytics (Google
+                Ireland Limited), <strong>aber nur, wenn Sie dem im Cookie-Banner explizit zugestimmt haben</strong>
+                (Art. 6 Abs. 1 lit. a DSGVO). Google Analytics verwendet Cookies zur Auswertung Ihrer Seitennutzung. Wir
+                haben die IP-Anonymisierung aktiviert, sodass Ihre IP-Adresse vor der Übertragung in die USA gekürzt
+                wird.</p>
             <div class="my-20">
                 <button id="btn-open-cookie-banner"
                         class="button edit">
@@ -53,9 +56,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             </div>
 
             <h3 class="text-color section-title border-none">6. Ihre Rechte</h3>
-            <p style="margin-bottom: 0;">Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger
-                und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Zudem steht Ihnen ein Recht auf
-                Löschung oder Sperrung zu.</p>
+            <p class="lh-1-6 m-0">Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und
+                Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Zudem steht Ihnen ein Recht auf Löschung
+                oder Sperrung zu.</p>
         </div>
     </article>
 </main>
