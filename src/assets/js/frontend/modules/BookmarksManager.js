@@ -33,8 +33,10 @@ export class BookmarksManager {
         this.bindEvents();
 
         if (this.canUseCloudSync) {
+            // Wenn der Nutzer eingeloggt ist, prüfe auf Sync-Konflikte
             this.syncApi('check');
         } else {
+            // Ansonsten zeige sofort die lokalen Lesezeichen an
             this.renderBookmarks();
         }
     }
@@ -68,11 +70,71 @@ export class BookmarksManager {
     applyCloudToLocal(ids) {
         const newMap = {};
         const now = Date.now();
+        const oldMap = this.getSafeStorage();
+
+        // Wir erhalten die reinen IDs vom Server. Um die Sortierung beizubehalten,
+        // übernehmen wir (falls vorhanden) den alten Zeitstempel aus dem LocalStorage.
         ids.forEach((id) => {
-            newMap[id] = { id: id, added: now };
+            if (oldMap[id]) {
+                newMap[id] = oldMap[id];
+            } else {
+                newMap[id] = { id: id, added: now };
+            }
         });
+
         this.setSafeStorage(newMap);
         this.renderBookmarks();
+    }
+
+    async syncApi(resolution) {
+        try {
+            const localIds = this.getLocalIds();
+            const fd = new window.FormData();
+            fd.append('local_ids', JSON.stringify(localIds));
+            fd.append('resolution', resolution); // 'check', 'merge', 'local_wins', 'db_wins'
+
+            const result = await this.api.post('sync_bookmarks', fd);
+
+            if (result.success) {
+                if (result.status === 'synced' || result.status === 'resolved') {
+                    // Sync war erfolgreich (oder wurde gelöst), wende Server-Daten auf Browser an
+                    this.applyCloudToLocal(result.final_ids);
+                    if (this.conflictModal) this.conflictModal.style.display = 'none';
+                } else if (result.status === 'conflict') {
+                    // Konflikt erkannt -> Zeige das Auswahlfenster
+                    document.getElementById('sync-cloud-count').textContent = result.db_ids.length;
+                    document.getElementById('sync-local-count').textContent =
+                        result.local_ids.length;
+                    if (this.conflictModal) this.conflictModal.style.display = 'flex';
+                }
+            } else {
+                console.error('[BookmarksManager] Sync API Fehler:', result.error);
+                this.renderBookmarks(); // Fallback
+            }
+        } catch (err) {
+            console.error('[BookmarksManager] Sync fehlgeschlagen:', err);
+            this.renderBookmarks(); // Fallback auf rein lokales Rendern
+        }
+    }
+
+    resolveSync(resolution) {
+        const btnId =
+            'btn-sync-' +
+            (resolution === 'db_wins' ? 'db' : resolution === 'local_wins' ? 'local' : 'merge');
+        const btn = document.getElementById(btnId);
+
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verarbeite...';
+            btn.disabled = true;
+        }
+
+        this.syncApi(resolution).finally(() => {
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
     }
 
     async removeBookmark(id) {
@@ -89,19 +151,20 @@ export class BookmarksManager {
     }
 
     renderBookmarks() {
-        const map = JSON.parse(localStorage.getItem('comicBookmarksMap') || '{}');
+        const map = this.getSafeStorage();
         const bookmarks = Object.values(map).filter((bm) => this.serverComics[bm.id]);
 
-        this.countBadge.textContent = bookmarks.length;
+        if (this.countBadge) this.countBadge.textContent = bookmarks.length;
 
         if (bookmarks.length === 0) {
-            this.contentWrapper.style.display = 'none';
-            this.noMsg.style.display = 'block';
+            if (this.contentWrapper) this.contentWrapper.style.display = 'none';
+            if (this.noMsg) this.noMsg.style.display = 'block';
             return;
         }
 
-        this.contentWrapper.style.display = 'block';
-        this.noMsg.style.display = 'none';
+        if (this.contentWrapper) this.contentWrapper.style.display = 'block';
+        if (this.noMsg) this.noMsg.style.display = 'none';
+        if (this.conflictModal) this.conflictModal.style.display = 'none';
 
         const sortMode = this.sortSelect ? this.sortSelect.value : 'added_desc';
 
@@ -111,6 +174,8 @@ export class BookmarksManager {
             if (sortMode === 'page_asc') return a.id.localeCompare(b.id);
             return 0;
         });
+
+        if (!this.grid) return;
 
         this.grid.innerHTML = '';
 
@@ -144,6 +209,7 @@ export class BookmarksManager {
                 e.preventDefault();
                 this.removeBookmark(bm.id);
             });
+
             this.grid.appendChild(card);
         });
     }
@@ -153,6 +219,7 @@ export class BookmarksManager {
             this.sortSelect.addEventListener('change', () => this.renderBookmarks());
         }
 
+        // Modal-Buttons zur Konfliktlösung
         document
             .getElementById('btn-sync-merge')
             ?.addEventListener('click', () => this.resolveSync('merge'));
@@ -162,8 +229,10 @@ export class BookmarksManager {
         document
             .getElementById('btn-sync-local')
             ?.addEventListener('click', () => this.resolveSync('local_wins'));
+
         document.getElementById('btn-sync-ignore')?.addEventListener('click', () => {
-            this.conflictModal.style.display = 'none';
+            if (this.conflictModal) this.conflictModal.style.display = 'none';
+            this.renderBookmarks(); // Bei 'Ignorieren' einfach den lokalen Status rendern
         });
 
         if (this.btnClearAll) {
