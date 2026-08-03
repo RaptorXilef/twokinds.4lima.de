@@ -2,6 +2,31 @@
 
 
 
+## [6.6.0](https://github.com///compare/v6.5.8...v6.6.0) (2026-08-03)
+
+### 🚀 Features
+
+* add password confirmation fields for registration and admin user creation ([3b200ea](https://github.com///commit/3b200ea870768cd97eee3b488e9dc006974902b9))
+* **Admin-UI:** Implement auto-renewing session timer with activity tracking ([956aea4](https://github.com///commit/956aea4a22eb79011ea5e750abfa8a0f546046d4))
+* **admin/groups:** introduce pulsating sticky save button and fix modal event conflicts ([71fbedc](https://github.com///commit/71fbedca983cfaaf1f8c3de88e9256fbae740e51))
+* **core/assets:** implement dynamic ES6 Import Map to fix sub-module browser caching ([a826b59](https://github.com///commit/a826b594b6179a18b6bf4c9faf2e02982dcafddd))
+* frontend and admin module unification, bugfixes, and account deletion ([372d609](https://github.com///commit/372d609a38244e0b0340b590e95d7e2565c36ff6))
+* frontend UX improvements and critical admin security fix ([9b29f7a](https://github.com///commit/9b29f7a5cc119ac70aa8010232b95b27b216eb7b))
+* **frontend/profile:** implement secure email change workflow ([97cede9](https://github.com///commit/97cede90e85a3dfefd46a5ca69fbee2570cbdb3f))
+
+### 🐛 Bug Fixes
+
+* **admin/core:** resolve rogue beforeunload unsaved changes prompt on entity creation ([a5bdf7b](https://github.com///commit/a5bdf7b9db9764b453914eae7680adb2f954b7f2))
+* **admin/users:** fix 400 bad request on new user creation ([0f04df0](https://github.com///commit/0f04df07e9f0f149fb224c98593bd0b8f3beb79c))
+* **core/assets:** resolve aggressive browser caching for CSS and JS assets ([385a55e](https://github.com///commit/385a55e0eeeba7ac47410c54e829ebdb962a051d))
+* frontend session timer not counting down ([87d5f1d](https://github.com///commit/87d5f1da5f4f7a70fc573f9c2caa3da9d5a172c2))
+* **frontend/bookmarks:** resolve missing sync methods causing JS exception and broken layout ([338d080](https://github.com///commit/338d080749868ba8b33cfa20cebc94c0fa9de114))
+* **frontend/profile:** resolve JS scope reference error during account deletion ([069d1f6](https://github.com///commit/069d1f690b8dbac938e7137060ca66cdd594b79b))
+
+### ⚙️ Refactoring
+
+* **Architecture:** Extract header components and refine session timer ([0f88f0b](https://github.com///commit/0f88f0b92f4e26b5473ba6fb4be7a7d171e1a790))
+
 ## [6.5.8](https://github.com///compare/v6.5.7...v6.5.8) (2026-08-03)
 
 ### 🚀 Features
