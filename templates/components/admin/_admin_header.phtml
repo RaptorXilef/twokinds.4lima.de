@@ -69,6 +69,19 @@ use App\Contracts\System\AssetHelperInterface;
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
 </head>
 
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+
+    <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    (function() {
+        var t = localStorage.getItem('themePref');
+        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
+        else document.body.classList.remove('theme-night');
+    })();
+
+    </script>
+
     <div class="main-container">
         <header>
             <div class="banner"

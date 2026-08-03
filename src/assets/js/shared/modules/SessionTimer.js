@@ -4,7 +4,7 @@ export class SessionTimer {
         this.notifications = notifications; // Wird nur im Admin-Bereich übergeben
         this.maxIdleSeconds = maxIdleSeconds;
         this.idleSeconds = 0;
-        this.timerElement = document.getElementById('admin-session-timer');
+        this.timerElement = document.getElementById(elementId);
 
         if (this.timerElement) {
             this.init();

@@ -1,3 +1,4 @@
+// NEU: Der korrekte Import für den Timer aus dem Shared-Ordner
 import { SessionTimer } from '../shared/modules/SessionTimer.js';
 import { ThemeManager } from '../shared/ui/ThemeManager.js';
 import { FrontendApi } from './core/FrontendApi.js';
@@ -49,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
         safeInit('BookmarksManager', () => new BookmarksManager(api));
         safeInit('AuthForms', () => new AuthForms(api));
         safeInit('ProfileManager', () => new ProfileManager(api));
+
+        // Initialisierung des Timers für das Frontend
         safeInit('SessionTimer', () => new SessionTimer(api, 'frontend-session-timer'));
     }
 
