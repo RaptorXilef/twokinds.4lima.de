@@ -215,34 +215,36 @@ export class ReportManager {
                     );
                     return;
                 }
-                const comicBtn = document.querySelector(
-                    `.btn-edit-comic[data-id="${this.currentReportPayload.comicId}"]`
-                );
-                if (comicBtn) {
-                    try {
-                        const comicData = JSON.parse(comicBtn.dataset.payload);
-                        comicData.transcript = this.currentReportPayload.suggestion;
 
-                        this.modalManager.close('report-detail-modal');
-                        this.comicEditor.openEditModal(comicData);
-                        this.notifications.show(
-                            'Transkript-Vorschlag geladen. Bitte prüfen und speichern.',
-                            'success'
-                        );
-                    } catch (err) {
-                        console.error(
-                            '[ReportManager] Fehler beim Parsen der Comic-Daten für Transfer:',
-                            err
-                        );
-                        alert(
-                            'Der Comic-Datensatz ist fehlerhaft und konnte nicht geladen werden.'
-                        );
-                    }
-                } else {
-                    alert(
-                        'Der Comic konnte in der aktuellen Tabellen-Ansicht nicht gefunden werden.\n\nTipp: Falls der Comic auf einer anderen Seite liegt (Pagination), stelle den Filter bei den Comics kurz auf "Alle" und versuche es erneut!'
-                    );
-                }
+                const btnOriginalText = btnTransfer.innerHTML;
+                btnTransfer.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Lade Comic...';
+                btnTransfer.disabled = true;
+
+                this.api
+                    .get('get_comic', `id=${this.currentReportPayload.comicId}`)
+                    .then((json) => {
+                        if (json.success) {
+                            const comicData = json.comic;
+                            // Das vorgeschlagene Transkript einfügen
+                            comicData.transcript = this.currentReportPayload.suggestion;
+                            this.modalManager.close('report-detail-modal');
+                            this.comicEditor.openEditModal(comicData);
+                            this.notifications.show(
+                                'Transkript-Vorschlag geladen. Bitte prüfen und speichern.',
+                                'success'
+                            );
+                        } else {
+                            alert('Fehler beim Laden des Comics: ' + json.error);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('[ReportManager] Fehler beim API-Transfer:', err);
+                        alert('Der Comic konnte nicht geladen werden (Netzwerkfehler).');
+                    })
+                    .finally(() => {
+                        btnTransfer.innerHTML = btnOriginalText;
+                        btnTransfer.disabled = false;
+                    });
             }
         });
     }

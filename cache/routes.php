@@ -22,6 +22,7 @@ return [
     'api_frontend_resend_verification'    => 'App\\Application\\Actions\\ApiFrontendResendVerificationAction',
     'api_frontend_reset_password'         => 'App\\Application\\Actions\\ApiFrontendResetPasswordAction',
     'api_frontend_update_profile'         => 'App\\Application\\Actions\\ApiFrontendUpdateProfileAction',
+    'api_get_comic'                       => 'App\\Application\\Actions\\ApiGetComicAction',
     'api_get_transcript'                  => 'App\\Application\\Actions\\ApiGetTranscriptAction',
     'api_list_comic_media'                => 'App\\Application\\Actions\\ApiListComicMediaAction',
     'api_list_media'                      => 'App\\Application\\Actions\\ApiMediaListAction',
