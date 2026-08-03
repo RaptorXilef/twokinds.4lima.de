@@ -111,10 +111,14 @@ footer {
         position: relative;
         height: 100%;
         z-index: 1;
-        margin: 0 -4px; /* Zieht die Charaktere leicht ineinander für den Gruppen-Effekt */
+        margin: 0 -5px; /* Zieht die Charaktere leicht ineinander für den Gruppen-Effekt */
+
+        /* NEU: Skaliert von der unteren Kante aus, damit sie nicht hochfliegen! */
+        transform-origin: bottom center;
         transition:
             transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-            filter 0.2s;
+            filter 0.2s,
+            z-index 0.2s;
 
         img {
             display: block;
@@ -124,10 +128,10 @@ footer {
             filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.15));
         }
 
-        /* Der Hover-Effekt: Charakter drängt sich nach vorne, hüpft und leuchtet */
+        /* Der Hover-Effekt: Charakter drängt sich nach vorne, wächst um 3% (~2.6 Pixel) und leuchtet */
         &:hover {
             z-index: 10;
-            transform: translateY(-6px) scale(1.08);
+            transform: scale(1.15); /* translateY() wurde entfernt! */
             filter: brightness(1.15);
         }
     }
@@ -139,7 +143,7 @@ body.theme-night .footer-chars-container a {
         filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));
     }
     &:hover {
-        filter: brightness(1.25);
+        filter: brightness(1.15);
     }
 }
 

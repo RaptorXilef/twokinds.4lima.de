@@ -1,0 +1,162 @@
+<?php
+
+declare(strict_types=1); ?>
+
+<!-- GLOBAL REPORT MODAL -->
+<div id="global-report-modal"
+     class="modal"
+     style="z-index: 10000;">
+    <div class="modal-overlay"
+         id="close-report-overlay"></div>
+    <div class="modal-content modal-lg modal-flex text-left">
+        <div class="modal-header-wrapper"
+             style="flex: 0 0 auto;">
+            <h2 class="m-0 font-1-5x text-color">Fehler melden</h2>
+            <button type="button"
+                    id="close-report-modal"
+                    class="modal-close">&times;</button>
+        </div>
+        <div class="modal-scroll-content scroll-y"
+             style="flex: 1 1 auto;">
+            <div id="report-status-msg"
+                 class="msg-box"></div>
+
+            <form id="global-report-form"
+                  class="admin-form">
+                <!-- Honeypot zur SPAM-Abwehr -->
+                <input type="text"
+                       name="report_honeypot"
+                       class="hidden"
+                       tabindex="-1"
+                       autocomplete="off">
+                <!-- Unsichtbare Telemetrie -->
+                <input type="hidden"
+                       name="report_debug_info"
+                       id="report_debug_info"
+                       value="">
+
+                <div class="form-group mb-15">
+                    <label>Betroffene Seite (URL)</label>
+                    <!-- Optisches Feedback für Readonly -->
+                    <input type="text"
+                           id="report_page_url_display"
+                           value=""
+                           readonly
+                           class="disabled-input text-faded bg-even">
+                </div>
+
+                <!-- Versteckte ID für Comics -->
+                <div id="comic-id-section"
+                     class="form-group mb-15 hidden">
+                    <label>Comic-ID</label>
+                    <input type="text"
+                           id="report_comic_id"
+                           name="comic_id"
+                           readonly
+                           class="disabled-input text-faded bg-even">
+                </div>
+
+                <div class="form-group mb-15">
+                    <label>Art des Fehlers *</label>
+                    <select id="report_type"
+                            name="report_type"
+                            required>
+                        <option value=""></option>
+                        <option value="transcript"
+                                id="report_type_transcript"
+                                class="hidden">Tippfehler / Transkript-Fehler</option>
+                        <option value="image">Bild wird nicht geladen / Bildfehler</option>
+                        <option value="other">Allgemeiner Website-Fehler / Sonstiges</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-15">
+                    <label>Fehlerbeschreibung *</label>
+                    <textarea id="report_description" name="report_description" rows="4" placeholder="Beschreibe kurz, was nicht stimmt..."></textarea>
+                </div>
+
+                <div id="transcript-edit-section"
+                     class="mb-15 hidden">
+                    <label>Transkript korrigieren</label>
+                    <p class="font-small text-faded mt-0 mb-10">
+                        Bitte korrigiere den Fehler direkt im Editor. Wir vergleichen deine Version später automatisch
+                        mit dem Original.
+                    </p>
+                    <input type="hidden"
+                           id="report_transcript_original"
+                           name="report_transcript_original"
+                           value="">
+                    <textarea id="report_transcript_suggestion" name="report_transcript_suggestion" class="public-wysiwyg" rows="8"></textarea>
+                </div>
+
+                <!-- Drag & Drop Zone -->
+                <div class="form-group mb-15">
+                    <label>Screenshot anhängen (Optional)</label>
+                    <div id="report-drop-zone"
+                         class="drag-drop-zone drop-zone-sm bg-even border-dashed border-radius-6 mb-0">
+                        <i class="fa-solid fa-image"></i>
+                        <p>Bild hier ablegen oder klicken</p>
+                        <small>Hilft uns sehr bei Layout- oder Darstellungsfehlern!</small>
+                        <input type="file"
+                               id="report_screenshot"
+                               name="report_screenshot"
+                               accept="image/*"
+                               class="hidden">
+                        <div id="report-screenshot-name"
+                             class="mt-10 font-bold text-success hidden"></div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-15">
+                    <label for="report_submitter">Dein Name / Pseudonym *</label>
+                    <?php if (isset($isLoggedIn) && $isLoggedIn && ! empty($currentUserName)) { ?>
+                        <!-- Eingeloggt: Feld ist vorausgefüllt und gesperrt -->
+                        <input type="text"
+                               id="report_submitter"
+                               name="submitter"
+                               value="<?php echo \htmlspecialchars($currentUserName); ?>"
+                               readonly
+                               class="disabled-input text-faded bg-even">
+                        <small class="text-success d-block mt-5">
+                            <i class="fa-solid fa-check-circle"></i> Angemeldet. Wenn in deinem Profil aktiviert, wirst
+                            du bei Behebung benachrichtigt.
+                        </small>
+                    <?php } else { ?>
+                        <!-- Gast: Normales Feld -->
+                        <input type="text"
+                               id="report_submitter"
+                               name="submitter"
+                               required
+                               placeholder="Wie dürfen wir dich nennen?">
+                    <?php } ?>
+                </div>
+
+                <div class="mb-20">
+                    <label class="d-flex align-center gap-10 cursor-pointer font-normal">
+                        <input type="checkbox"
+                               id="wants_credit"
+                               name="wants_credit"
+                               value="1"
+                               class="checkbox-lg w-auto">
+                        <span>Ich möchte bei Behebung als Helfer genannt werden!</span>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="submit"
+                        form="global-report-form"
+                        id="report-submit-btn"
+                        class="button edit">
+                    <i class="fa-solid fa-paper-plane"></i> Fehler melden
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Externe Libraries -->
+<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/langs/de.min.js"></script>
