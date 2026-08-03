@@ -26,34 +26,63 @@ final readonly class FrontendController
 
     public function handleRequest(ServerRequest $request): void
     {
+        // 1. Zuerst die Route bestimmen, damit wir wissen, um welche Aktion es geht!
+        $route         = $this->determineRoute($request);
+        $actionKey     = $route['action'];
+        $resolvedInput = $route['input'];
+        $request       = $request->withInput($resolvedInput);
+
         // --- WARTUNGSMODUS PRÜFUNG ---
         $maintenanceMode  = (bool) $this->config->get('maintenance_mode', false);
         $maintenanceAdmin = (bool) $this->config->get('maintenance_mode_admin', false);
 
-        $path        = $request->getPath();
-        $isAdminPath = \str_starts_with($path, '/admin') || \str_contains($path, 'admin/login');
+        // Frontend-Aktionen definieren
+        $isFrontendAction = \str_starts_with($actionKey, 'render_frontend_')
+            || \str_starts_with($actionKey, 'api_frontend_')
+            || \in_array($actionKey, [
+                'render_archive', 'render_bookmarks', 'render_character_detail', 'render_character_list',
+                'render_comic', 'render_403', 'render_404', 'page_imprint', 'page_privacy', 'page_project_info',
+                'api_get_comic', 'api_get_transcript', 'api_submit_report', 'api_sync_bookmarks', 'api_toggle_bookmark',
+            ], true);
+
+        // Admin-Aktionen definieren
+        $isAdminAction = \str_starts_with($actionKey, 'render_admin_')
+            || \str_starts_with($actionKey, 'api_admin_')
+            || \str_starts_with($actionKey, 'api_delete_')
+            || \str_starts_with($actionKey, 'api_save_')
+            || \str_starts_with($actionKey, 'api_upload_')
+            || \str_starts_with($actionKey, 'api_list_')
+            || \in_array($actionKey, [
+                'api_crop_social_media', 'api_restore_deleted_comic', 'api_undo_comic', 'api_update_report_status',
+            ], true);
+
+        // Neutrale Routen wie 'api_keep_alive' oder 'api_process_mail_queue' werden ignoriert
 
         $isLocked = false;
 
-        // Strikt getrennte Logik
-        if ($isAdminPath && $maintenanceAdmin) {
-            $isLocked = true; // Adminbereich ist gesperrt
-        } elseif (! $isAdminPath && $maintenanceMode) {
-            $isLocked = true; // Frontend ist gesperrt
+        // Strikt getrennte Logik basierend auf der Aktion
+        if ($isAdminAction && $maintenanceAdmin) {
+            $isLocked = true; // Adminbereich komplett gesperrt
+        } elseif ($isFrontendAction && $maintenanceMode) {
+            // Admins dürfen das Frontend trotz Wartungsmodus sehen und testen!
+            if ($this->sessionManager->getAdminGroup() !== 'admin') {
+                $isLocked = true; // Frontend für normale Nutzer gesperrt
+            }
         }
 
         if ($isLocked) {
+            if (\str_starts_with($actionKey, 'api_')) {
+                // API-Aufrufe bekommen eine saubere JSON-Antwort statt HTML
+                \http_response_code(503);
+                \header('Content-Type: application/json; charset=utf-8');
+                echo \json_encode(['success' => false, 'error' => 'System wird gewartet. Bitte versuche es in Kürze erneut.']);
+                exit;
+            }
+            // Normale Seitenaufrufe laden die maintenance.php
             require_once \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/maintenance.php';
             exit;
+
         }
-        // -----------------------------
-
-        $route         = $this->determineRoute($request);
-        $actionKey     = $route['action'];
-        $resolvedInput = $route['input'];
-
-        // Füge die aufgelösten URL-Parameter (z.B. Comic-ID) dem Request hinzu
-        $request = $request->withInput($resolvedInput);
 
         $pipeline = new MiddlewarePipeline();
         $pipeline->add($this->securityHeaders);
@@ -69,6 +98,7 @@ final readonly class FrontendController
             'api_get_transcript',
             'api_submit_report',
         ];
+
         $isProtectedApi = \str_starts_with($actionKey, 'api_') && ! \in_array($actionKey, $publicApiRoutes, true);
 
         $isProtectedAdmin = \str_starts_with($actionKey, 'render_admin_') && $actionKey !== 'render_admin_login';
@@ -159,6 +189,7 @@ final readonly class FrontendController
         if ($relativePath === 'passwort-vergessen' || $relativePath === 'passwort-vergessen.php') {
             return ['action' => 'render_frontend_forgot_password', 'input' => $input];
         }
+
         if ($relativePath === 'passwort-reset' || $relativePath === 'passwort-reset.php') {
             return ['action' => 'render_frontend_reset_password', 'input' => $input];
         }
