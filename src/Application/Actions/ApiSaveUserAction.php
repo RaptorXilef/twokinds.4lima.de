@@ -37,14 +37,20 @@ final readonly class ApiSaveUserAction implements ActionInterface
             $roleId      = Sanitizer::string($request->post['role_id'] ?? 'user');
             $password    = (string) ($request->post['password'] ?? '');
 
-            if ($id === '' || $usernameStr === '' || $emailStr === '') {
-                return JsonResponse::error('ID, Name und E-Mail sind Pflichtfelder.', 400);
+            // ID wird nicht mehr als Pflichtfeld beim POST erwartet (wichtig für NEUE Benutzer)
+            if ($usernameStr === '' || $emailStr === '') {
+                return JsonResponse::error('Name und E-Mail sind Pflichtfelder.', 400);
+            }
+
+            // Generiere eine neue ID, wenn der Benutzer neu angelegt wird
+            if ($id === '' || $id === 'new') {
+                $id = $this->auth->generateId('usr_');
             }
 
             $isConfigAdmin = \str_starts_with($this->auth->getUserId(), 'sys_');
             $existingUser  = $this->userRepo->findById($id);
 
-            // ADMIN-SCHUTZ:
+            // Admin-Schutz: Verhindere, dass normale Admins andere Administratoren bearbeiten/degradieren
             if ($existingUser && $existingUser->roleId === 'admin' && ! $isConfigAdmin) {
                 if ($this->auth->getUserId() !== $id) {
                     return JsonResponse::error('Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.', 403);
@@ -56,7 +62,7 @@ final readonly class ApiSaveUserAction implements ActionInterface
 
             $hash = $existingUser ? $existingUser->passwordHash : '';
 
-            // Wenn ein neues Passwort eingegeben wurde
+            // Passwort-Logik
             if ($password !== '') {
                 if (\strlen($password) < 8) {
                     return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
@@ -66,16 +72,18 @@ final readonly class ApiSaveUserAction implements ActionInterface
                 return JsonResponse::error('Bei neuen Benutzern muss ein Passwort vergeben werden.', 400);
             }
 
-            // Duplikats-Prüfung
+            // Prüfe auf Namens- und E-Mail-Duplikate
             $checkName = $this->userRepo->findByUsername($usernameStr);
             if ($checkName && $checkName->id !== $id) {
                 return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
             }
+
             $checkEmail = $this->userRepo->findByEmail($emailStr);
             if ($checkEmail && $checkEmail->id !== $id) {
                 return JsonResponse::error('Diese E-Mail wird bereits verwendet.', 400);
             }
 
+            // Neues Benutzer-Objekt aufbauen
             $user = new User(
                 $id,
                 new Username($usernameStr),
@@ -88,9 +96,12 @@ final readonly class ApiSaveUserAction implements ActionInterface
                 $existingUser ? $existingUser->wantsNotificationReport : false,
             );
 
+            // Speichern
             $this->userRepo->save($user);
 
-            return JsonResponse::success(['message' => "Benutzer '{$usernameStr}' erfolgreich gespeichert."]);
+            return JsonResponse::success([
+                'message' => "Benutzer '{$usernameStr}' erfolgreich gespeichert.",
+            ]);
         } catch (\InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (\Throwable $e) {
