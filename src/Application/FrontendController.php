@@ -26,6 +26,27 @@ final readonly class FrontendController
 
     public function handleRequest(ServerRequest $request): void
     {
+        // --- WARTUNGSMODUS PRÜFUNG ---
+        $maintenanceMode  = (bool) $this->config->get('maintenance_mode', false);
+        $maintenanceAdmin = (bool) $this->config->get('maintenance_mode_admin', false);
+
+        if ($maintenanceMode || $maintenanceAdmin) {
+            $path        = $request->getPath();
+            $isAdminPath = \str_starts_with($path, '/admin') || \str_contains($path, 'admin/login');
+
+            // Wenn Admin-Wartung aktiv ist ODER (normaler Wartungsmodus aktiv und wir sind NICHT im Admin-Bereich)
+            if ($maintenanceAdmin || (! $isAdminPath && $maintenanceMode)) {
+                // Erlaube Admins den Zugriff auf das Admin-Panel trotz Wartung, wenn nur das Frontend zu ist
+                $isAllowedAdmin = $isAdminPath && $this->sessionManager->getAdminGroup() === 'admin';
+
+                if (! $isAllowedAdmin) {
+                    require_once \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/maintenance.php';
+                    exit;
+                }
+            }
+        }
+        // -----------------------------
+
         $route         = $this->determineRoute($request);
         $actionKey     = $route['action'];
         $resolvedInput = $route['input'];

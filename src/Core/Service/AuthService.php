@@ -133,10 +133,14 @@ final readonly class AuthService
 
     public function hasPermission(string $permission): bool
     {
+        // Wenn admin_dev_mode aktiv ist, hat jeder vollen Zugriff
+        if ($this->config->get('admin_dev_mode', false)) {
+            return true;
+        }
+
         $uid = $this->sessionManager->getUserId();
 
-        // System-Accounts und lokaler Dev-Mode dürfen alles
-        if (\str_starts_with($uid, 'sys_') || $this->config->get('admin_dev_mode')) {
+        if (\str_starts_with($uid, 'sys_')) {
             return true;
         }
 
