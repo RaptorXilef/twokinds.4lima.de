@@ -506,3 +506,38 @@ body.theme-night .checkbox-item {
 .lh-1-6 {
     line-height: 1.6;
 }
+
+/* Formatierung für lange Lesetexte (Datenschutz, Impressum, FAQ) */
+.legal-content {
+    p,
+    li {
+        line-height: 1.6;
+    }
+    p {
+        margin-bottom: 15px;
+    }
+    ul {
+        list-style-type: disc;
+        padding-left: 20px;
+        margin-bottom: 15px;
+    }
+    li {
+        margin-bottom: 5px;
+    }
+}
+
+/* Letzte Layout-Helfer für Project-Info */
+.d-inline-flex {
+    display: inline-flex;
+}
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.faq-box {
+    border-left: 4px solid var(--link-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+body.theme-night .faq-box {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
