@@ -2,6 +2,18 @@
 
 
 
+## [6.5.7](https://github.com///compare/v6.5.6...v6.5.7) (2026-08-03)
+
+### 🐛 Bug Fixes
+
+* **Frontend-UI:** Restore line-height and text alignment in legal/info pages ([4dd1007](https://github.com///commit/4dd1007a8f8932e51774b7f34555b8e74a6b4188))
+* **Frontend-UI:** Restore line-heights and text alignments in legal pages ([2b35c57](https://github.com///commit/2b35c572336b5c8191345e167a4d72ff532588c4))
+* **Frontend-UI:** Restore missing layout constraints and padding sizes ([f21c7f9](https://github.com///commit/f21c7f9e765628f26273f28ab437e163c70d7c6b))
+
+### ⚙️ Refactoring
+
+* **Frontend:** Finalize inline-style purging for content views ([4f3a0f6](https://github.com///commit/4f3a0f60d618c9e311db3adb55be48c8ec46e114))
+
 ## [6.5.6](https://github.com///compare/v6.5.5...v6.5.6) (2026-08-02)
 
 ### 🐛 Bug Fixes
