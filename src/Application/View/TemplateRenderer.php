@@ -61,6 +61,15 @@ final readonly class TemplateRenderer
             'site_description'    => $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'),
             'app_version'         => $this->systemInfo->getCurrentVersion(),
             'google_analytics_id' => $this->config->get('google_analytics_id', ''),
+
+            // Diese Variablenn für das Impressum!
+            'email_user'   => $this->config->get('email_user', ''),
+            'email_domain' => $this->config->get('email_domain', ''),
+
+            // Social Links für den Header
+            'social_patreon'  => $this->config->get('social_patreon', ''),
+            'social_inkbunny' => $this->config->get('social_inkbunny', ''),
+            'social_paypal'   => $this->config->get('social_paypal', ''),
         ];
     }
 }

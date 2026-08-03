@@ -121,25 +121,31 @@ elseif (isset($character) && \is_object($character)) {
                 <div class="sidebar-content">
                     <div class="social-icons-container">
                         <!-- Patreon Link -->
-                        <a href="https://www.patreon.com/RaptorXilef" target="_blank" rel="noopener noreferrer" title="Patreon">
-                            <i class="fa-brands fa-patreon social-icon icon-patreon"></i>
-                        </a>
+                        <?php if (! empty($settings['social_patreon'])) { ?>
+                            <a href="<?php echo \htmlspecialchars($settings['social_patreon']); ?>" target="_blank" rel="noopener noreferrer" title="Patreon">
+                        <i class="fa-brands fa-patreon social-icon icon-patreon"></i>
+                    </a>
+                        <?php } ?>
 
                         <!-- InkBunny Link (Als Bild) -->
-                        <a href="https://inkbunny.net/RaptorXilefSFW" target="_blank" rel="noopener noreferrer" title="Mein InkBunny">
-                            <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/inkbunny.png" alt="InkBunny" width="26" height="26">
-                        </a>
+                        <?php if (! empty($settings['social_inkbunny'])) { ?>
+                            <a href="<?php echo \htmlspecialchars($settings['social_inkbunny']); ?>" target="_blank" rel="noopener noreferrer" title="Mein InkBunny">
+                        <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/inkbunny.png" alt="InkBunny" width="26" height="26">
+                    </a>
+                        <?php } ?>
 
                         <!-- PayPal Link -->
-                        <a href="https://paypal.me/RaptorXilef" target="_blank" rel="noopener noreferrer" title="Mein Paypal">
-                            <i class="fa-brands fa-paypal social-icon icon-paypal"></i>
-                        </a>
+                        <?php if (! empty($settings['social_paypal'])) { ?>
+                            <a href="<?php echo \htmlspecialchars($settings['social_paypal']); ?>" target="_blank" rel="noopener noreferrer" title="Mein Paypal">
+                        <i class="fa-brands fa-paypal social-icon icon-paypal"></i>
+                    </a>
+                        <?php } ?>
 
-                        <!-- RSS Kopier-Link -->
+                        <!-- RSS Kopier-Link (Bleibt immer da, da es interne Logik ist) -->
                         <a href="<?php echo $baseUrl; ?>/rss.xml" class="js-copy-rss" data-url="<?php echo $baseUrl; ?>/rss.xml" title="RSS-Feed URL kopieren">
-                            <i class="fa-solid fa-rss social-icon icon-rss"></i>
-                            <span class="copy-feedback">Link kopiert!</span>
-                        </a>
+                        <i class="fa-solid fa-rss social-icon icon-rss"></i>
+                        <span class="copy-feedback">Link kopiert!</span>
+                    </a>
                     </div>
 
                     <nav id="menu"

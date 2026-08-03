@@ -35,7 +35,8 @@
 /* --- Social Icons --- */
 .social-icons-container {
     display: flex;
-    gap: 8px; /* VORHER: 10px */
+    flex-wrap: wrap; /* NEU: Lässt Icons in die nächste Zeile fließen */
+    gap: 8px;
     justify-content: center;
     margin-bottom: 12px;
 

@@ -51,4 +51,9 @@ return [
     // --- IMPRESSUM SPAM-SCHUTZ ---
     'email_user'   => '',
     'email_domain' => '',
+
+    // Social Media Links
+    'social_patreon'  => 'https://www.patreon.com/',
+    'social_inkbunny' => 'https://inkbunny.net/',
+    'social_paypal'   => 'https://paypal.me/',
 ];
