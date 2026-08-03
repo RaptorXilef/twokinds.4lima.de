@@ -30,7 +30,7 @@ use App\Contracts\System\AssetHelperInterface;
                 <a href="https://www.lima-city.de/" target="_blank" rel="noopener noreferrer">Lima City</a>
             </p>
             <!-- Dynamische, serverseitige Versionsnummer aus package.json und Fehler-Link -->
-            <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version']); ?> | <a href="#" id="open-global-report">Fehler melden</a></div>
+            <div class="website-version">v<?php echo \htmlspecialchars($settings['app_version'] ?? 'x'); ?> | <a href="#" id="open-global-report">Fehler melden</a></div>
         </div>
         <div class="bottom-right">
             <!-- Platzhalter für Twitter Box etc. -->
@@ -38,34 +38,32 @@ use App\Contracts\System\AssetHelperInterface;
     </div>
 
     <div class="footer-img">
-            <!-- NEU: Das Charakter-Click-Map Gimmick -->
-            <div class="footer-click-map">
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0016" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0017" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0009" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0007" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0018" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0011" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0001" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0003" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0005" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0004" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0006" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0010" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0012" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0014" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0047" aria-label="Charakter ansehen"></a>
-                <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0015" aria-label="Charakter ansehen"></a>
-            </div>
+        <!-- Das dynamische Footer-Gimmick (Crowd) -->
+        <div class="footer-chars-container">
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0016" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/karen.webp" alt="Karen"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0017" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/maren.webp" alt="Maren"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0009" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/raine.webp" alt="Raine"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0007" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/sythe.webp" alt="Sythe"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0018" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/red.webp" alt="Red"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0011" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/kathrin.webp" alt="Kathrin"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0001" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/trace.webp" alt="Trace"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0003" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/flora.webp" alt="Flora"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0005" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/natani.webp" alt="Natani"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0004" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/keith.webp" alt="Keith"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0006" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/zen.webp" alt="Zen"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0010" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/eric.webp" alt="Eric"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0012" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/mike.webp" alt="Mike"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0014" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/evals.webp" alt="Evals"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0047" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/lynn.webp" alt="Lynn"></a>
+            <a href="<?php echo $baseUrl ?? ''; ?>/charaktere/char_0015" title="Charakter ansehen"><img src="<?php echo $baseUrl ?? ''; ?>/assets/images/layout/footer/madelyn.webp" alt="Madelyn"></a>
         </div>
-    </footer>
+    </div>
 </footer>
 </div> <!-- Schließt .main-container aus dem Header -->
 
 
-<?php
-if (! empty($settings['google_analytics_id'])) {
-    ?>
+<?php if (! empty($settings['google_analytics_id'])) { ?>
+
     <!-- COOKIE CONSENT BANNER -->
     <div id="cookie-consent-banner"
          class="cookie-banner"
@@ -74,7 +72,6 @@ if (! empty($settings['google_analytics_id'])) {
             <h3>Bitte hilf mir das Projekt weiterzuentwickeln.</h3>
             <p>Ich nutze Cookies und ähnliche Technologien (wie Local Storage), um dir das beste Leseerlebnis zu bieten
                 und anonyme Statistiken zur Webseitennutzung zu erfassen, um diese stetig weiter zu verbessern.</p>
-
             <div class="cookie-category">
                 <label>
                     <input type="checkbox"
@@ -85,7 +82,6 @@ if (! empty($settings['google_analytics_id'])) {
                 <div class="description">Diese Technologien sind essentiell (z. B. Speichern des verwendeten Designs
                     (Dark/Light-Mode) oder deiner Lesezeichen) und können nicht abgewählt werden.</div>
             </div>
-
             <div class="cookie-category">
                 <label>
                     <input type="checkbox"
@@ -97,7 +93,6 @@ if (! empty($settings['google_analytics_id'])) {
                     unterstützen möchtest, aktivieren diesen Cookie bitte! (Wird <b><u>nicht</u></b> verwendet im
                     Werbung zu schalten!) </div>
             </div>
-
             <div class="cookie-buttons">
                 <button id="accept-all-cookies"
                         class="button">Alle akzeptieren</button>
@@ -106,7 +101,6 @@ if (! empty($settings['google_analytics_id'])) {
                 <button id="reject-all-cookies"
                         class="button delete">Nur Notwendige</button>
             </div>
-
             <div style="margin-top: 15px; font-size: 0.85em; text-align: center;">
                 <a href="<?php echo $baseUrl; ?>/datenschutz" style="color: var(--cookie-link);">Datenschutzerklärung</a> |
                 <a href="<?php echo $baseUrl; ?>/impressum" style="color: var(--cookie-link);">Impressum</a>
@@ -122,9 +116,8 @@ if (! empty($settings['google_analytics_id'])) {
      style="z-index: 10000;">
     <div class="modal-overlay"
          id="close-report-overlay"></div>
-    <div class="modal-content"
-         style="max-width: 1080px; display: flex; flex-direction: column; max-height: 95vh; text-align: left;">
-
+    <div class="modal-content modal-lg modal-flex"
+         style="text-align: left;">
         <div class="modal-header-wrapper"
              style="flex: 0 0 auto;">
             <h2 style="margin: 0; font-size: 1.5em; color: var(--text-color);">Fehler melden</h2>
@@ -132,13 +125,11 @@ if (! empty($settings['google_analytics_id'])) {
                     id="close-report-modal"
                     class="modal-close">&times;</button>
         </div>
-
         <div class="modal-scroll-content"
              style="flex: 1 1 auto; overflow-y: auto;">
             <div id="report-status-msg"
                  style="display: none; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: center;">
             </div>
-
             <form id="global-report-form"
                   class="admin-form">
                 <!-- Honeypot zur SPAM-Abwehr -->
@@ -175,14 +166,13 @@ if (! empty($settings['google_analytics_id'])) {
                            readonly
                            style="background: var(--table-row-even); color: var(--text-color-faded); cursor: not-allowed;">
                 </div>
-
                 <div class="form-group"
                      style="margin-bottom: 15px;">
                     <label>Art des Fehlers *</label>
                     <select id="report_type"
                             name="report_type"
                             required>
-                        <option value="">-- Bitte wählen --</option>
+                        <option value=""></option>
                         <option value="transcript"
                                 id="report_type_transcript"
                                 style="display: none;">Tippfehler / Transkript-Fehler</option>
@@ -190,13 +180,11 @@ if (! empty($settings['google_analytics_id'])) {
                         <option value="other">Allgemeiner Website-Fehler / Sonstiges</option>
                     </select>
                 </div>
-
                 <div class="form-group"
                      style="margin-bottom: 15px;">
                     <label>Fehlerbeschreibung *</label>
                     <textarea id="report_description" name="report_description" rows="4" placeholder="Beschreibe kurz, was nicht stimmt..."></textarea>
                 </div>
-
                 <div id="transcript-edit-section"
                      style="display: none; margin-bottom: 15px;">
                     <label>Transkript korrigieren</label>
@@ -233,7 +221,6 @@ if (! empty($settings['google_analytics_id'])) {
                         </div>
                     </div>
                 </div>
-
                 <div class="form-group"
                      style="margin-bottom: 15px;">
                     <label for="report_submitter">Dein Name / Pseudonym *</label>
@@ -258,7 +245,6 @@ if (! empty($settings['google_analytics_id'])) {
                                placeholder="Wie dürfen wir dich nennen?">
                     <?php } ?>
                 </div>
-
                 <div style="margin-bottom: 20px;">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: normal;">
                         <input type="checkbox"
@@ -271,7 +257,6 @@ if (! empty($settings['google_analytics_id'])) {
                 </div>
             </form>
         </div>
-
         <div class="modal-footer-actions"
              style="flex: 0 0 auto; display: flex; justify-content: flex-end; position: relative; z-index: 10; background: var(--content-bg);">
             <div class="modal-buttons">
@@ -287,9 +272,7 @@ if (! empty($settings['google_analytics_id'])) {
 </div>
 
 <!-- Externe Libraries -->
-<script src="https://code.jquery.com/jquery-4.0.0.min.js"
-        integrity="sha256-OaVG6prZf4v69dPg6PhVattBXkcOWQB62pdZ3ORyrao="
-        crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/trumbowyg.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/langs/de.min.js"></script>
 
@@ -301,7 +284,6 @@ if (! empty($settings['google_analytics_id'])) {
 
     </script>
 <?php } ?>
-
 <script type="module"
         nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
         src="<?php echo $asset->url('assets/js/frontend/app.js'); ?>"></script>
