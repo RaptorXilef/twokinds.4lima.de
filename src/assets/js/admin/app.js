@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const f = JSON.parse(flash);
             notifications.show(f.msg, f.type);
         } catch (err) {
-            // LINTER FIX: Unused variable
             console.warn('[AdminApp] Flash-Message konnte nicht geparst werden:', err);
         }
         sessionStorage.removeItem('admin_flash_msg');
@@ -70,8 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Main Editors (Safeguard um die globale Initialisierung)
     try {
         comicEditor = new ComicEditor(api, modalManager, notifications, formService, tracker);
-        reportManager = new ReportManager(api, modalManager, comicEditor, notifications);
-        new SystemManager(api, modalManager, notifications);
+        // Tracker hinzugefügt
+        reportManager = new ReportManager(api, modalManager, comicEditor, notifications, tracker);
+        // Tracker hinzugefügt
+        new SystemManager(api, modalManager, notifications, tracker);
         new ChapterEditor(api, modalManager, notifications, formService);
         new CharacterEditor(api, modalManager, notifications, formService, tracker);
     } catch (err) {

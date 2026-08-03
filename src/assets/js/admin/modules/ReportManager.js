@@ -14,11 +14,12 @@ export class ReportManager {
      * @param {ComicEditor} comicEditor
      * @param {NotificationService} notifications
      */
-    constructor(api, modalManager, comicEditor, notifications) {
+    constructor(api, modalManager, comicEditor, notifications, tracker) {
         this.api = api;
         this.modalManager = modalManager;
         this.comicEditor = comicEditor;
         this.notifications = notifications;
+        this.tracker = tracker;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-reports');
@@ -58,11 +59,13 @@ export class ReportManager {
             this.repPage = 1;
             this.renderTable();
         });
+
         this.perPageSelect?.addEventListener('change', (e) => {
             this.repLimit = e.target.value;
             this.repPage = 1;
             this.renderTable();
         });
+
         this.statusSelect?.addEventListener('change', (e) => {
             this.repStatus = e.target.value;
             this.repPage = 1;
@@ -125,12 +128,14 @@ export class ReportManager {
         const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 1;
 
         if (this.repPage > totalPages) this.repPage = totalPages || 1;
+
         const startIndex = limit === totalItems ? 0 : (this.repPage - 1) * limit;
         const endIndex = startIndex + limit;
 
         this.allRows.forEach((row) => {
             row.style.display = 'none';
         });
+
         filteredRows.slice(startIndex, endIndex).forEach((row) => {
             row.style.display = '';
         });
@@ -309,6 +314,7 @@ export class ReportManager {
                 debugRendered.innerHTML = this.renderJsonToHtml(parsed);
                 debugRendered.style.display = 'block';
                 if (debugRaw) debugRaw.style.display = 'none';
+
                 if (btnToggleDebug) {
                     btnToggleDebug.style.display = 'inline-block';
                     btnToggleDebug.innerHTML = '<i class="fa-solid fa-code"></i> Rohdaten anzeigen';
@@ -334,10 +340,12 @@ export class ReportManager {
 
         if (payload.type === 'transcript') {
             transcriptSec.style.display = 'block';
+
             if (typeof window.Diff !== 'undefined' && window.Diff.diffWordsWithSpace) {
                 const oldTxt = this.convertHtmlToText(payload.original);
                 const newTxt = this.convertHtmlToText(payload.suggestion);
                 const diff = window.Diff.diffWordsWithSpace(oldTxt, newTxt);
+
                 const fragment = document.createDocumentFragment();
 
                 diff.forEach((part) => {
@@ -347,6 +355,7 @@ export class ReportManager {
                     node.appendChild(document.createTextNode(part.value));
                     fragment.appendChild(node);
                 });
+
                 diffBox.innerHTML = '';
                 diffBox.appendChild(fragment);
             } else {
@@ -374,6 +383,7 @@ export class ReportManager {
 
         const btnResolve = document.getElementById('btn-rep-resolve');
         const btnSpam = document.getElementById('btn-rep-spam');
+
         if (btnResolve)
             btnResolve.style.display = payload.status === 'open' ? 'inline-block' : 'none';
         if (btnSpam) btnSpam.style.display = payload.status === 'open' ? 'inline-block' : 'none';
@@ -400,7 +410,7 @@ export class ReportManager {
 
         if (result.success) {
             this.notifications.show(result.message, 'success');
-            window.isDirty = false;
+            if (this.tracker) this.tracker.markClean(); // Bugfix
             setTimeout(() => window.location.reload(), 1000);
         } else {
             this.notifications.show(result.error, 'error');
@@ -428,7 +438,7 @@ export class ReportManager {
 
         if (result.success) {
             this.notifications.show('Bericht markiert.', 'success');
-            window.isDirty = false;
+            if (this.tracker) this.tracker.markClean(); // Bugfix
             setTimeout(() => window.location.reload(), 1000);
         } else {
             this.notifications.show(result.error, 'error');

@@ -10,10 +10,11 @@ export class SystemManager {
      * @param {ModalManager} modalManager
      * @param {NotificationService} notifications
      */
-    constructor(api, modalManager, notifications) {
+    constructor(api, modalManager, notifications, tracker) {
         this.api = api;
         this.modalManager = modalManager;
         this.notifications = notifications;
+        this.tracker = tracker;
 
         /** @type {HTMLElement|null} */
         this.section = document.getElementById('section-users');
@@ -180,6 +181,7 @@ export class SystemManager {
             const el = document.getElementById(id);
             if (el) el.value = val || '';
         };
+
         const setProp = (id, prop, val) => {
             const el = document.getElementById(id);
             if (el) el[prop] = val;
@@ -207,6 +209,7 @@ export class SystemManager {
             setProp('user_pass', 'required', true);
             setProp('user_password', 'required', true);
         }
+
         this.modalManager.open('user-modal');
     }
 
@@ -223,7 +226,7 @@ export class SystemManager {
             const result = await this.api.post('save_user', formData);
 
             if (result.success) {
-                window.isDirty = false;
+                if (this.tracker) this.tracker.markClean(); // Bugfix
                 this.notifications.show(result.message, 'success');
                 this.modalManager.close('user-modal');
                 setTimeout(() => window.location.reload(), 1000);
@@ -243,8 +246,9 @@ export class SystemManager {
         formData.append('user_id', id);
 
         const result = await this.api.post('delete_user', formData);
+
         if (result.success) {
-            window.isDirty = false;
+            if (this.tracker) this.tracker.markClean(); // Bugfix
             this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
@@ -263,6 +267,7 @@ export class SystemManager {
             const el = document.getElementById(id);
             if (el) el.value = val || '';
         };
+
         const setProp = (id, prop, val) => {
             const el = document.getElementById(id);
             if (el) el[prop] = val;
@@ -303,6 +308,7 @@ export class SystemManager {
             setVal('role_id', '');
             setProp('role_id', 'readOnly', false);
         }
+
         this.modalManager.open('role-modal');
     }
 
@@ -330,7 +336,7 @@ export class SystemManager {
             const result = await this.api.post('save_role', formData);
 
             if (result.success) {
-                window.isDirty = false;
+                if (this.tracker) this.tracker.markClean(); // Bugfix
                 this.notifications.show(result.message, 'success');
                 this.modalManager.close('role-modal');
                 setTimeout(() => window.location.reload(), 1000);
@@ -355,8 +361,9 @@ export class SystemManager {
         formData.append('role_id', id);
 
         const result = await this.api.post('delete_role', formData);
+
         if (result.success) {
-            window.isDirty = false;
+            if (this.tracker) this.tracker.markClean(); // Bugfix
             this.notifications.show(result.message, 'success');
             setTimeout(() => window.location.reload(), 1000);
         } else {
