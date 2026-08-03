@@ -2,6 +2,39 @@
 
 
 
+## [6.5.8](https://github.com///compare/v6.5.7...v6.5.8) (2026-08-03)
+
+### 🚀 Features
+
+* **Admin-UI:** Replace DOM scraping with robust API fetch for transcript transfer ([61b14fa](https://github.com///commit/61b14fad784e4c5494f3f41e3e784660c2b6852e))
+* **Frontend-UI:** Add GitHub and TwoKinds-Original to social menu ([bd866b3](https://github.com///commit/bd866b32bcb0f9629ab7617dee9eb9f72dd16cd3))
+* **Frontend-UI:** Implement interactive character easter egg in footer ([af6db4f](https://github.com///commit/af6db4f7237db7a716bda9faf46457ac69975c44))
+* **Frontend-UI:** Upgrade footer easter egg to dynamic crowd effect ([9862546](https://github.com///commit/9862546ec3753598040d3c2ad7a93a58c02aadb0))
+* **Frontend:** Implement dynamic social menu and fix imprint email button ([1e5288b](https://github.com///commit/1e5288b0ec4da1278b6934f7ce42d4255a52a3c5))
+* **Frontend:** Implement universal RSS clipboard copying and fix layout bugs ([c86cb08](https://github.com///commit/c86cb08ffd9711bc37076601f32bf04fdfb7cfab))
+
+### 🐛 Bug Fixes
+
+* **Admin-UI:** Resolve report transcript transfer bug and modal styling ([678b9ab](https://github.com///commit/678b9abaff949bc21654818c6f121f9604834787))
+* **Frontend-UI:** Restore consistent 4-icon social menu layout ([3b5cf57](https://github.com///commit/3b5cf57e9dd728941c0c4d29fad72c966a2c26f2))
+* **Frontend-UI:** Restore missing bookmark card layout and hover animations ([72184d2](https://github.com///commit/72184d236c340cd6f65a3a6e5f5b62bb7f666202))
+* **Frontend:** Refine social icons sizing and text alignments ([e731229](https://github.com///commit/e731229f2211a9cbbc2b2a61d83925a337753b70))
+
+### ⚙️ Refactoring
+
+* **Frontend-UI:** Extract social menu styles and refine brand colors ([ea66273](https://github.com///commit/ea662733c7a39ab0b8bf8cdecfa3286ad473546d))
+* **Frontend-UI:** Modernize social menu icons with FontAwesome ([3b9f9a8](https://github.com///commit/3b9f9a8e7d832af368936b2093d69b4157f730d5))
+* **Frontend-UI:** Refine footer character animation and extract cookie banner ([ed5a613](https://github.com///commit/ed5a613f7a9082a2de386d57013f8c1e2fac7547))
+* **Git:** Restructure and clean up .gitignore for improved readability ([aebb0f1](https://github.com///commit/aebb0f1fff3ed2ef7b7e5979648dfc7303fde542))
+
+### 💎 Styling
+
+* **Frontend-UI:** Optimize footer character assets and hover scaling ([8a01054](https://github.com///commit/8a0105440c022d497240530c70e04442fe61e097))
+
+### 🧹 Chore / Maintenance
+
+* **Git:** Update .gitignore rules for assets and remove legacy backup ([b8a07ae](https://github.com///commit/b8a07ae0709c8744a21229d53c04fdcf6d0bf6b8))
+
 ## [6.5.7](https://github.com///compare/v6.5.6...v6.5.7) (2026-08-03)
 
 ### 🐛 Bug Fixes
