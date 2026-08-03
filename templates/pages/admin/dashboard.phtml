@@ -24,166 +24,53 @@ use App\Core\Entity\Report;
  * @var bool                 $canManageUsers
  */
 $baseUrl = \rtrim($settings['base_url'], '/');
+
+// Lagert Head, Body-Start und Banner aus
+include __DIR__ . '/../../components/admin/_admin_header.phtml';
+// Lagert die komplette Sidebar (Menü) aus
+include __DIR__ . '/../../components/admin/_admin_menu.phtml';
 ?>
-<!DOCTYPE html>
-<html lang="de">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet"
-          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
-    <!-- FontAwesome für Icons (Stellt alle Vektor-Symbole wie Buttons, Warnhinweise und Menü-Icons bereit) -->
-    <!-- https://cdnjs.com/libraries/font-awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css">
-
-    <!-- Trumbowyg Editor Styles (Das optische Design für unseren Text-Editor für Transkripte und Biografien) -->
-    <!-- https://cdnjs.com/libraries/Trumbowyg -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/ui/trumbowyg.min.css">
-
-    <!-- Cropper.js Styles (Das Layout für das Zuschneide-Werkzeug der Social-Media-Vorschaubilder) -->
-    <!-- https://cdnjs.com/libraries/cropperjs -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-
-    <!-- jQuery (Basis-Bibliothek zur DOM-Manipulation; wird zwingend vom Trumbowyg-Editor als Abhängigkeit benötigt) -->
-    <!-- https://releases.jquery.com/ -->
-    <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
-    <!-- Sortable.js (Ermöglicht das Drag & Drop zum Sortieren von Elementen, z.B. bei der Charakter-Gruppenverwaltung) -->
-    <!-- https://cdnjs.com/libraries/Sortable -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.7/Sortable.min.js"></script>
-
-    <!-- Trumbowyg Editor Scripts (Die Kern-Logik für den leichten WYSIWYG Text-Editor inkl. deutschem Sprachpaket) -->
-    <!-- https://cdnjs.com/libraries/Trumbowyg -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/trumbowyg.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/langs/de.min.js"></script>
-
-    <!-- Cropper.js Script (Die Logik, mit der ich die hochauflösenden Bilder für Twitter/Facebook zuschneiden kann) -->
-    <!-- https://cdnjs.com/libraries/cropperjs -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
-
-    <!-- jsdiff (Vergleicht zwei Texte miteinander und hebt Änderungen grün/rot hervor, genutzt bei den Transkript-Reports) -->
-    <!-- https://cdnjs.com/libraries/jsdiff -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
-
-    <meta name="csrf-token"
-          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-</head>
-
-<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
-    <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    (function() {
-        var t = localStorage.getItem('themePref');
-        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
-        else document.body.classList.remove('theme-night');
-    })();
-
-    </script>
-    <div class="main-container">
-        <header>
-            <div class="banner"
-                 id="banner-lights-off"></div>
-        </header>
-        <div class="content-area">
-            <aside class="sidebar">
-                <div class="sidebar-content">
-                    <div class="session-timer">
-                        <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
-                    </div>
-                    <nav id="menu"
-                         class="menu">
-                        <span class="menu-label">Verwaltung</span>
-                        <?php if ($perms['comic_edit'] || $perms['comic_del']) { ?>
-                            <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
-                        <?php } ?>
-                        <?php if ($perms['media_up']) { ?>
-                            <a href="#section-upload" class="tab-link" data-target="section-upload">Massen-Upload</a>
-                        <?php } ?>
-                        <?php if ($perms['chap_edit'] || $perms['chap_del']) { ?>
-                            <a href="#section-archive" class="tab-link" data-target="section-archive">Archiv / Kapitel</a>
-                        <?php } ?>
-                        <?php if ($perms['char_edit'] || $perms['char_del']) { ?>
-                            <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
-                        <?php } ?>
-                        <?php if ($perms['group_manage']) { ?>
-                            <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
-                        <?php } ?>
-                        <?php if ($perms['media_up'] || $perms['media_del']) { ?>
-                            <a href="#section-media" class="tab-link" data-target="section-media">Galerie</a>
-                        <?php } ?>
-                        <?php if ($perms['rep_view'] || $canManageUsers) { ?>
-                            <span class="menu-label">System</span>
-                            <?php if ($perms['rep_view']) { ?>
-                                <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
-                            <?php } ?>
-                            <?php if ($canManageUsers) { ?>
-                                <a href="#section-users" class="tab-link" data-target="section-users">Benutzer & Rechte</a>
-                            <?php } ?>
-                        <?php } ?>
-                        <span class="menu-label">Account</span>
-                        <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a>
-
-                        <!-- Der Session Timer -->
-                        <div id="admin-session-timer"
-                             style="text-align: center; padding: 6px; margin: 10px auto; font-family: var(--font-mono); font-size: 1.1em; background-color: var(--table-row-even); border-radius: 4px; width: 160px; box-sizing: border-box;">
-                            <i class="fa-solid fa-clock"></i> 30:00
-                        </div>
-
-                        <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
-                        <a id="toggle_lights" class="theme" href="#" title="Design umschalten"></a>
-                        <!-- JS lädt hier sofort das richtige Icon rein -->
-                    </nav>
-                </div>
-            </aside>
-            <div class="content">
-                <h1 class="page-header">
+<div class="content">
+    <h1 class="page-header">
                     <!--<i class="fa-solid fa-gauge">-->
-                    <i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?>
-                </h1>
-                <div id="global-status-message"
-                     class="status-message"></div>
+        <i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?>
+    </h1>
+    <div id="global-status-message"
+         class="status-message"></div>
 
                 <!-- DIESE TABS WERDEN LAZY (AJAX) GELADEN -->
-                <section id="section-comics"
-                         class="content-section active"
-                         data-ajax-tab="comics"></section>
-                <section id="section-reports"
-                         class="content-section"
-                         data-ajax-tab="reports"></section>
-                <section id="section-users"
-                         class="content-section"
-                         data-ajax-tab="users"></section>
-                <section id="section-upload"
-                         class="content-section"
-                         data-ajax-tab="upload"></section>
-                <section id="section-archive"
-                         class="content-section"
-                         data-ajax-tab="archive"></section>
-                <section id="section-characters"
-                         class="content-section"
-                         data-ajax-tab="characters"></section>
-                <section id="section-groups"
-                         class="content-section"
-                         data-ajax-tab="groups"></section>
-                <section id="section-media"
-                         class="content-section"
-                         data-ajax-tab="media"></section>
+    <section id="section-comics"
+             class="content-section active"
+             data-ajax-tab="comics"></section>
+    <section id="section-reports"
+             class="content-section"
+             data-ajax-tab="reports"></section>
+    <section id="section-users"
+             class="content-section"
+             data-ajax-tab="users"></section>
+    <section id="section-upload"
+             class="content-section"
+             data-ajax-tab="upload"></section>
+    <section id="section-archive"
+             class="content-section"
+             data-ajax-tab="archive"></section>
+    <section id="section-characters"
+             class="content-section"
+             data-ajax-tab="characters"></section>
+    <section id="section-groups"
+             class="content-section"
+             data-ajax-tab="groups"></section>
+    <section id="section-media"
+             class="content-section"
+             data-ajax-tab="media"></section>
 
-                <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
-                <?php include __DIR__ . '/_modals.phtml'; ?>
+    <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
+    <?php include __DIR__ . '/_modals.phtml'; ?>
 
                 <!-- Neues ES6 Modul-System -->
-                <script type="module"
-                        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-                        src="<?php echo $baseUrl; ?>/assets/js/admin/app.js"></script>
-</body>
+    <script type="module"
+            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $baseUrl; ?>/assets/js/admin/app.js"></script>
+    </body>
 
-</html>
+    </html>

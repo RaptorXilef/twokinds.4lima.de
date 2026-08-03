@@ -1,0 +1,63 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @var string $adminUser
+ */
+?>
+
+<aside class="sidebar">
+    <div class="sidebar-content">
+        <div class="session-timer">
+            <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
+        </div>
+        <nav id="menu"
+             class="menu">
+            <span class="menu-label">Verwaltung</span>
+            <?php if (! empty($perms['comic_edit']) || ! empty($perms['comic_del'])) { ?>
+                <a href="#section-comics" class="tab-link active" data-target="section-comics">Comics</a>
+            <?php } ?>
+            <?php if (! empty($perms['media_up'])) { ?>
+                <a href="#section-upload" class="tab-link" data-target="section-upload">Massen-Upload</a>
+            <?php } ?>
+            <?php if (! empty($perms['chap_edit']) || ! empty($perms['chap_del'])) { ?>
+                <a href="#section-archive" class="tab-link" data-target="section-archive">Archiv / Kapitel</a>
+            <?php } ?>
+            <?php if (! empty($perms['char_edit']) || ! empty($perms['char_del'])) { ?>
+                <a href="#section-characters" class="tab-link" data-target="section-characters">Charaktere</a>
+            <?php } ?>
+            <?php if (! empty($perms['group_manage'])) { ?>
+                <a href="#section-groups" class="tab-link" data-target="section-groups">Gruppen</a>
+            <?php } ?>
+            <?php if (! empty($perms['media_up']) || ! empty($perms['media_del'])) { ?>
+                <a href="#section-media" class="tab-link" data-target="section-media">Galerie</a>
+            <?php } ?>
+
+            <?php if (! empty($perms['rep_view']) || ! empty($canManageUsers)) { ?>
+                <span class="menu-label">System</span>
+                <?php if (! empty($perms['rep_view'])) { ?>
+                    <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
+                <?php } ?>
+                <?php if (! empty($canManageUsers)) { ?>
+                    <a href="#section-users" class="tab-link" data-target="section-users">Benutzer & Rechte</a>
+                <?php } ?>
+            <?php } ?>
+
+            <span class="menu-label">Account</span>
+            <a href="<?php echo $baseUrl ?? '/'; ?>/" target="_blank">Zur Webseite</a>
+
+            <!-- Session Timer -->
+            <div id="admin-session-timer"
+                 style="text-align: center; padding: 6px; margin: 10px auto; font-family: var(--font-mono); font-size: 1.1em; background-color: var(--table-row-even); border-radius: 4px; width: 160px; box-sizing: border-box;">
+                <i class="fa-solid fa-clock"></i> 30:00
+            </div>
+
+            <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
+            <a id="toggle_lights" class="theme" href="#" title="Design umschalten">
+                <!-- JS lädt hier sofort das richtige Icon rein -->
+            </a>
+
+        </nav>
+    </div>
+</aside>

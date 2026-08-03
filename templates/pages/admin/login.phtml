@@ -2,87 +2,60 @@
 
 declare(strict_types=1);
 
+use App\Contracts\System\AssetHelperInterface;
+
 /**
- * @var array                                      $settings
- * @var string                                     $pageTitle
- * @var \App\Contracts\System\AssetHelperInterface $asset
+ * @var array                $settings
+ * @var string               $pageTitle
+ * @var AssetHelperInterface $asset
  */
-$baseUrl = \rtrim($settings['base_url'], '/');
+$baseUrl   = \rtrim($settings['base_url'], '/');
+$bodyClass = 'page-login';
+
+include __DIR__ . '/../../components/admin/_admin_header.phtml';
 ?>
-<!DOCTYPE html>
-<html lang="de">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds</title>
-    <link rel="stylesheet"
-          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
-    <meta name="csrf-token"
-          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-</head>
-
-<body class="page-login <?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
-
-    <!-- ZERO FOUC FIX MIT CSP NONCE -->
-    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    (function() {
-        var t = localStorage.getItem('themePref');
-        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
-        else document.body.classList.remove('theme-night');
-    })();
-
-    </script>
-    <div class="main-container">
-        <header>
-            <div class="banner"
-                 id="banner-lights-off"></div>
-        </header>
-        <div class="content-area">
-            <aside class="sidebar">
-                <div class="sidebar-content">
-                    <nav id="menu"
-                         class="menu">
-                        <a href="<?php echo $baseUrl; ?>/">Zurück zur Webseite</a>
-                        <a id="toggle_lights" class="theme" href="#" title="Design umschalten"></a>
-                        <!-- JS lädt hier sofort das richtige Icon rein -->
-                    </nav>
+<aside class="sidebar">
+    <div class="sidebar-content">
+        <nav id="menu"
+             class="menu">
+            <a href="<?php echo $baseUrl; ?>/">Zurück zur Webseite</a>
+            <a id="toggle_lights" class="theme" href="#" title="Design umschalten"></a>
+            <!-- JS lädt hier sofort das richtige Icon rein -->
+        </nav>
+    </div>
+</aside>
+<div class="content">
+    <div class="admin-login-container">
+        <h2>Systemzugang</h2>
+        <p class="intro-text">Bitte melde dich an, um auf die Verwaltungsoberfläche zuzugreifen.</p>
+        <div id="login-status-message"
+             class="status-message"></div>
+        <form id="admin-login-form"
+              class="admin-form"
+              method="POST">
+            <div class="form-group">
+                <label for="username">Benutzername</label>
+                <input type="text"
+                       id="username"
+                       name="username"
+                       required
+                       autocomplete="username"
+                       autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Passwort</label>
+                <div class="password-wrapper">
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           required
+                           autocomplete="current-password">
                 </div>
-            </aside>
-            <div class="content">
-                <div class="admin-login-container">
-                    <h2>Systemzugang</h2>
-                    <p class="intro-text">Bitte melde dich an, um auf die Verwaltungsoberfläche zuzugreifen.</p>
-                    <div id="login-status-message"
-                         class="status-message"></div>
-                    <form id="admin-login-form"
-                          class="admin-form"
-                          method="POST">
-                        <div class="form-group">
-                            <label for="username">Benutzername</label>
-                            <input type="text"
-                                   id="username"
-                                   name="username"
-                                   required
-                                   autocomplete="username"
-                                   autofocus>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Passwort</label>
-                            <div class="password-wrapper">
-                                <input type="password"
-                                       id="password"
-                                       name="password"
-                                       required
-                                       autocomplete="current-password">
-                            </div>
-                        </div>
-                        <button type="submit"
-                                id="login-submit-btn">Anmelden</button>
-                    </form>
-                </div>
+            </div>
+            <button type="submit"
+                    id="login-submit-btn">Anmelden</button>
+        </form>
+    </div>
 
     <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
 
@@ -90,6 +63,6 @@ $baseUrl = \rtrim($settings['base_url'], '/');
     <script type="module"
             nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
             src="<?php echo $baseUrl; ?>/assets/js/admin/login.js"></script>
-</body>
+    </body>
 
-</html>
+    </html>

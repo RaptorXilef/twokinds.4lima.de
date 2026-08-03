@@ -17,10 +17,11 @@ export class SessionTimer {
         this.intervalId = setInterval(() => this.tick(), 1000);
 
         // Die Funktion zum Zurücksetzen wird gedrosselt (Throttle),
-        // sodass sie bei Dauer-Aktivität maximal alle 5 Sekunden feuert.
-        this.throttledReset = this.throttle(() => this.resetTimer(), 5000);
+        // sodass sie bei Dauer-Aktivität maximal alle 10 Sekunden feuert.
+        this.throttledReset = this.throttle(() => this.resetTimer(), 10000);
 
-        const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
+        // const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
+        const activityEvents = ['click', 'keydown', 'touchstart'];
         activityEvents.forEach((event) => {
             document.addEventListener(event, this.throttledReset, { passive: true });
         });

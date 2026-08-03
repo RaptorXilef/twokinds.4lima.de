@@ -1,0 +1,80 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Contracts\System\AssetHelperInterface;
+
+/**
+ * @var AssetHelperInterface $asset
+ * @var string|null          $pageTitle
+ */
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet"
+          href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
+    <!-- FontAwesome für Icons (Stellt alle Vektor-Symbole wie Buttons, Warnhinweise und Menü-Icons bereit) -->
+    <!-- https://cdnjs.com/libraries/font-awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css">
+
+    <!-- Trumbowyg Editor Styles (Das optische Design für unseren Text-Editor für Transkripte und Biografien) -->
+    <!-- https://cdnjs.com/libraries/Trumbowyg -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/ui/trumbowyg.min.css">
+
+    <!-- Cropper.js Styles (Das Layout für das Zuschneide-Werkzeug der Social-Media-Vorschaubilder) -->
+    <!-- https://cdnjs.com/libraries/cropperjs -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+    <!-- jQuery (Basis-Bibliothek zur DOM-Manipulation; wird zwingend vom Trumbowyg-Editor als Abhängigkeit benötigt) -->
+    <!-- https://releases.jquery.com/ -->
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+    <!-- Sortable.js (Ermöglicht das Drag & Drop zum Sortieren von Elementen, z.B. bei der Charakter-Gruppenverwaltung) -->
+    <!-- https://cdnjs.com/libraries/Sortable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.7/Sortable.min.js"></script>
+
+    <!-- Trumbowyg Editor Scripts (Die Kern-Logik für den leichten WYSIWYG Text-Editor inkl. deutschem Sprachpaket) -->
+    <!-- https://cdnjs.com/libraries/Trumbowyg -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/trumbowyg.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.31.0/langs/de.min.js"></script>
+
+    <!-- Cropper.js Script (Die Logik, mit der ich die hochauflösenden Bilder für Twitter/Facebook zuschneiden kann) -->
+    <!-- https://cdnjs.com/libraries/cropperjs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+    <!-- jsdiff (Vergleicht zwei Texte miteinander und hebt Änderungen grün/rot hervor, genutzt bei den Transkript-Reports) -->
+    <!-- https://cdnjs.com/libraries/jsdiff -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
+
+    <meta name="csrf-token"
+          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+</head>
+
+<body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
+    <!-- ZERO FOUC FIX: Theme sofort anwenden bevor der DOM gezeichnet wird -->
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    (function() {
+        var t = localStorage.getItem('themePref');
+        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
+        else document.body.classList.remove('theme-night');
+    })();
+
+    </script>
+    <div class="main-container">
+        <header>
+            <div class="banner"
+                 id="banner-lights-off"></div>
+        </header>
+        <div class="content-area">
