@@ -34,6 +34,7 @@ const ALWAYS_IGNORE_FILES = [
     'min.css',
     '_dev.local.php',
     '.local.*',
+    'config.local.php',
 ];
 
 // =============================================================================

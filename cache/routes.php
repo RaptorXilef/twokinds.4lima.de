@@ -24,6 +24,7 @@ return [
     'api_frontend_update_profile'         => 'App\\Application\\Actions\\ApiFrontendUpdateProfileAction',
     'api_get_comic'                       => 'App\\Application\\Actions\\ApiGetComicAction',
     'api_get_transcript'                  => 'App\\Application\\Actions\\ApiGetTranscriptAction',
+    'api_keep_alive'                      => 'App\\Application\\Actions\\ApiKeepAliveAction',
     'api_list_comic_media'                => 'App\\Application\\Actions\\ApiListComicMediaAction',
     'api_list_media'                      => 'App\\Application\\Actions\\ApiMediaListAction',
     'api_restore_deleted_comic'           => 'App\\Application\\Actions\\ApiRestoreDeletedComicAction',

@@ -182,6 +182,7 @@ final readonly class FrontendController
                 'frontend_update_profile'      => ['action' => 'api_frontend_update_profile', 'input' => $input],
                 'get_comic'                    => ['action' => 'api_get_comic', 'input' => $input],
                 'get_transcript'               => ['action' => 'api_get_transcript', 'input' => $input],
+                'keep_alive'                   => ['action' => 'api_keep_alive', 'input' => $input],
                 'list_comic_media'             => ['action' => 'api_list_comic_media', 'input' => $input],
                 'list_media'                   => ['action' => 'api_list_media', 'input' => $input],
                 'process_mail_queue'           => ['action' => 'api_process_mail_queue', 'input' => $input],

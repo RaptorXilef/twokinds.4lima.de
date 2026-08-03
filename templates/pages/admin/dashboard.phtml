@@ -130,6 +130,13 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                         <?php } ?>
                         <span class="menu-label">Account</span>
                         <a href="<?php echo $baseUrl; ?>/" target="_blank">Zur Webseite</a>
+
+                        <!-- Der Session Timer -->
+                        <div id="admin-session-timer"
+                             style="text-align: center; padding: 6px; margin: 10px auto; font-family: var(--font-mono); font-size: 1.1em; background-color: var(--table-row-even); border-radius: 4px; width: 160px; box-sizing: border-box;">
+                            <i class="fa-solid fa-clock"></i> 30:00
+                        </div>
+
                         <a href="#" id="admin-logout-btn" class="logout-link"><i class="fa-solid fa-sign-out-alt"></i> Abmelden</a>
                         <a id="toggle_lights" class="theme" href="#" title="Design umschalten"></a>
                         <!-- JS lädt hier sofort das richtige Icon rein -->
@@ -170,13 +177,13 @@ $baseUrl = \rtrim($settings['base_url'], '/');
                          class="content-section"
                          data-ajax-tab="media"></section>
 
-    <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
-    <?php include __DIR__ . '/_modals.phtml'; ?>
+                <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
+                <?php include __DIR__ . '/_modals.phtml'; ?>
 
-    <!-- Neues ES6 Modul-System -->
-    <script type="module"
-            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-            src="<?php echo $baseUrl; ?>/assets/js/admin/app.js"></script>
+                <!-- Neues ES6 Modul-System -->
+                <script type="module"
+                        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+                        src="<?php echo $baseUrl; ?>/assets/js/admin/app.js"></script>
 </body>
 
 </html>

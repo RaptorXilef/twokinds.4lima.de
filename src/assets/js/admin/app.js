@@ -8,6 +8,7 @@ import { ChapterEditor } from './modules/ChapterEditor.js';
 import { CharacterEditor } from './modules/CharacterEditor.js';
 import { ComicEditor } from './modules/ComicEditor.js';
 import { ReportManager } from './modules/ReportManager.js';
+import { SessionTimer } from './modules/SessionTimer.js';
 import { SystemManager } from './modules/SystemManager.js';
 import { DataTable } from './ui/DataTable.js';
 import { GlobalUI } from './ui/GlobalUI.js';
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         new TabManager(api);
         new ThemeManager();
+        new SessionTimer(api, notifications);
     } catch (err) {
         console.error('[AdminApp] Fehler bei der Core-UI Initialisierung:', err);
     }
