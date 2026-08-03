@@ -239,7 +239,9 @@ export class ReportManager {
                         );
                     }
                 } else {
-                    alert('Der Comic konnte in der aktuellen Ansicht nicht gefunden werden.');
+                    alert(
+                        'Der Comic konnte in der aktuellen Tabellen-Ansicht nicht gefunden werden.\n\nTipp: Falls der Comic auf einer anderen Seite liegt (Pagination), stelle den Filter bei den Comics kurz auf "Alle" und versuche es erneut!'
+                    );
                 }
             }
         });

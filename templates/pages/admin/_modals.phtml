@@ -264,7 +264,7 @@ foreach ($alphaChars as $char) {
 
         <div class="modal-footer-actions">
 
-        <!-- Newsletter Buttons (Links-Bündig) -->
+            <!-- Newsletter Buttons (Links-Bündig) -->
             <div class="modal-buttons gap-5">
                 <button type="button"
                         class="button btn-trigger-newsletter hidden"
@@ -773,7 +773,7 @@ foreach ($alphaChars as $char) {
         </div>
 
         <div class="modal-footer-actions">
-            <div>
+            <div class="modal-buttons w-100 justify-end">
                 <?php if ($perms['rep_del']) { ?>
                     <button type="button"
                             class="button delete"
@@ -784,9 +784,9 @@ foreach ($alphaChars as $char) {
                             class="button add"
                             id="btn-rep-resolve">Als Erledigt markieren</button>
                 <?php } ?>
+                <button type="button"
+                        class="button btn-close-report-modal">Schließen</button>
             </div>
-            <button type="button"
-                    class="button btn-close-report-modal">Schließen</button>
         </div>
     </div>
 </div>

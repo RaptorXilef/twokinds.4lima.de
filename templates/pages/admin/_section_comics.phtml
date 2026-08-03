@@ -169,6 +169,7 @@ use App\Core\Entity\ComicPage;
                                 <?php if ($perms['comic_edit']) { ?>
                                     <button type="button"
                                             class="button edit btn-edit-comic"
+                                            data-id="<?php echo \htmlspecialchars($cId); ?>"
                                             data-payload='<?php echo $comicData; ?>'
                                             title="Bearbeiten">
                                         <i class="fa-solid fa-pen"></i>
