@@ -21,20 +21,24 @@ use App\Core\Entity\CharacterGroup;
         <button type="button"
                 class="button add"
                 id="btn-add-group">
-            <i class="fa-solid fa-folder-plus"></i> Neue Gruppe </button>
+            <i class="fa-solid fa-folder-plus"></i> Neue Gruppe
+        </button>
         <button type="button"
                 class="button edit"
                 id="btn-save-groups">
-            <i class="fa-solid fa-save"></i> Sortierung Speichern </button>
+            <i class="fa-solid fa-save"></i> Sortierung Speichern
+        </button>
     </div>
 </div>
+
 <div class="d-flex gap-20 align-start">
     <div class="character-group bg-even w-300">
         <div class="character-group-header flex-column align-start cursor-default">
             <h3>Charakter-Pool</h3>
             <button type="button"
                     class="button w-100 mt-5 font-small"
-                    id="btn-toggle-pool">Nur Unzugeordnete zeigen </button>
+                    id="btn-toggle-pool">Nur Unzugeordnete zeigen
+            </button>
         </div>
         <div id="char-pool"
              class="character-list-container sortable-pool p-10 min-h-200">
@@ -69,12 +73,17 @@ use App\Core\Entity\CharacterGroup;
                         <h3 contenteditable="true"
                             spellcheck="false"
                             class="group-title-edit mb-0 border-bottom border-dashed outline-none">
-                            <?php echo \htmlspecialchars($group->name); ?></h3>
+                            <?php echo \htmlspecialchars($group->name); ?>
+                        </h3>
                         <label class="font-small text-light font-normal mt-5 d-flex align-center gap-5">
                             <input type="checkbox"
                                    class="manual-sort-cb"
-                                   <?php echo $group->manualSort ? 'checked' : ''; ?>> Manuell sortieren </label>
+                                   <?php echo $group->manualSort ? 'checked' : ''; ?>> Manuell sortieren
+                        </label>
                     </div>
+                    <button type="button"
+                            class="button add btn-add-char-to-group"
+                            title="Charaktere hinzufügen"><i class="fa-solid fa-user-plus"></i></button>
                     <button type="button"
                             class="button delete btn-delete-group"
                             title="Gruppe löschen"><i class="fa-solid fa-times"></i></button>
@@ -113,5 +122,41 @@ use App\Core\Entity\CharacterGroup;
                 </div>
             </div>
         <?php } ?>
+    </div>
+</div>
+
+<!-- Modal zum Hinzufügen von Charakteren -->
+<div id="group-add-char-modal"
+     class="modal"
+     style="z-index: 1050;">
+    <div class="modal-overlay btn-close-group-char-modal"></div>
+    <div class="modal-content modal-md modal-flex">
+        <div class="modal-header-wrapper">
+            <h2 id="group-add-char-modal-title">Charaktere hinzufügen</h2>
+            <button class="modal-close btn-close-group-char-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <div class="d-flex justify-between align-center mb-15">
+                <button type="button"
+                        class="button edit"
+                        id="btn-group-modal-toggle-view">
+                    <i class="fa-solid fa-filter"></i>
+                    <span id="group-modal-view-text">Zeige: Alle (außer bereits in Gruppe)</span>
+                </button>
+            </div>
+            <div id="group-modal-char-grid"
+                 class="char-selection-grid">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-group-char-modal">Abbrechen</button>
+                <button type="button"
+                        class="button add"
+                        id="btn-group-modal-confirm">Hinzufügen</button>
+            </div>
+        </div>
     </div>
 </div>

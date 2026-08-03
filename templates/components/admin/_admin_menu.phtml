@@ -12,6 +12,7 @@ declare(strict_types=1);
         <div class="session-timer">
             <i class="fa-solid fa-user-shield"></i> <strong><?php echo \htmlspecialchars($adminUser); ?></strong>
         </div>
+
         <nav id="menu"
              class="menu">
             <span class="menu-label">Verwaltung</span>
@@ -49,7 +50,7 @@ declare(strict_types=1);
 
             <!-- Session Timer -->
             <div id="admin-session-timer"
-                 style="text-align: center; padding: 6px; margin: 10px auto; font-family: var(--font-mono); font-size: 1.1em; background-color: var(--table-row-even); border-radius: 4px; width: 160px; box-sizing: border-box;">
+                 class="session-timer">
                 <i class="fa-solid fa-clock"></i> 30:00
             </div>
 
