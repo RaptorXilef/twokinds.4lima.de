@@ -19,6 +19,9 @@ final readonly class ApiDeleteMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('media.delete')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
         $filename  = \basename((string) ($request->post['filename'] ?? ''));
         $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
         $filePath  = "$targetDir/$filename";

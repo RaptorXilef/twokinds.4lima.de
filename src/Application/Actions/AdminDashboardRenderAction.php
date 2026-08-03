@@ -8,6 +8,7 @@ use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Config\ConfigInterface;
@@ -41,6 +42,11 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        // ABSOLUTER SICHERHEITS-CHECK: Hat der Nutzer überhaupt etwas im Dashboard verloren?
+        if (! $this->auth->hasPermission('dashboard.view') && ! $this->auth->hasPermission('admin.access') && $this->sessionManager->getAdminGroup() !== 'admin') {
+            return new RedirectResponse($this->config->getBaseUrl() . '/403');
+        }
+
         $ajaxTab = $request->get['ajax_tab'] ?? null;
 
         // Basis-Daten, die sehr schnell laden und global (z.B. für Modale) gebraucht werden

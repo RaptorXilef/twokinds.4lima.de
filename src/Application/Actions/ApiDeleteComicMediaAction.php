@@ -19,6 +19,9 @@ final readonly class ApiDeleteComicMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('media.delete') && ! $this->auth->hasPermission('comics.delete')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
         $id = \basename((string) ($request->post['comic_id'] ?? ''));
         if ($id === '') {
             return JsonResponse::error('Keine ID übergeben.', 400);

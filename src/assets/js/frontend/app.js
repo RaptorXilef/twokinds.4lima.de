@@ -11,6 +11,7 @@ import { EmailProtector } from './modules/EmailProtector.js';
 import { ProfileManager } from './modules/ProfileManager.js';
 import { ReportModal } from './modules/ReportModal.js';
 import { RssCopier } from './modules/RssCopier.js';
+import { SessionTimer } from './modules/SessionTimer.js';
 import { AccordionManager } from './ui/AccordionManager.js';
 import { ImageFallback } from './ui/ImageFallback.js';
 
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         safeInit('BookmarksManager', () => new BookmarksManager(api));
         safeInit('AuthForms', () => new AuthForms(api));
         safeInit('ProfileManager', () => new ProfileManager(api));
+        safeInit('SessionTimer', () => new SessionTimer(api));
     }
 
     console.info('[Frontend] ES6 Core Architektur erfolgreich hochgefahren.');

@@ -92,11 +92,15 @@ final readonly class ApiFrontendUpdateProfileAction implements ActionInterface
 
         // Aktion: Passwort ändern
         if ($actionType === 'password') {
-            $oldPass = (string) ($request->post['old_password'] ?? '');
-            $newPass = (string) ($request->post['new_password'] ?? '');
+            $oldPass        = (string) ($request->post['old_password'] ?? '');
+            $newPass        = (string) ($request->post['new_password'] ?? '');
+            $newPassConfirm = (string) ($request->post['new_password_confirm'] ?? '');
 
             if (! \password_verify($oldPass, $user->passwordHash)) {
                 return JsonResponse::error('Das alte Passwort ist nicht korrekt.', 400);
+            }
+            if ($newPass !== $newPassConfirm) {
+                return JsonResponse::error('Die neuen Passwörter stimmen nicht überein.', 400);
             }
             if (\strlen($newPass) < 8) {
                 return JsonResponse::error('Das neue Passwort muss mindestens 8 Zeichen lang sein.', 400);

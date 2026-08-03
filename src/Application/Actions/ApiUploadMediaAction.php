@@ -22,6 +22,9 @@ final readonly class ApiUploadMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('media.upload')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
         $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
 
         if (! \is_dir($targetDir)) {

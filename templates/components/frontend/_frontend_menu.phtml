@@ -75,6 +75,13 @@ use App\Contracts\System\AssetHelperInterface;
                 <?php if ($currentUserRole === 'admin') { ?>
                     <a href="<?php echo $baseUrl; ?>/admin"><i class="fa-solid fa-shield-halved" style="margin-right: 5px;"></i> Admin-Panel</a>
                 <?php } ?>
+
+                <div id="frontend-session-timer"
+                     class="session-timer"
+                     style="margin-top: 15px; margin-bottom: 5px;">
+                    <i class="fa-solid fa-clock"></i> 30:00
+                </div>
+
                 <a href="#" id="btn-frontend-logout" style="color: var(--status-red-text);"><i class="fa-solid fa-sign-out-alt" style="margin-right: 5px;"></i> Abmelden</a>
             <?php } else { ?>
                 <a href="<?php echo $baseUrl; ?>/login"><i class="fa-solid fa-sign-in-alt" style="margin-right: 5px;"></i> Einloggen</a>

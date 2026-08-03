@@ -50,13 +50,13 @@ if ($canUseCloudSync) {
 include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area bookmarks-page">
     <article class="max-w-950 w-100 center-block">
-        <header class="text-center mb-30 pb-20 border-bottom-2">
-            <h1 class="page-header border-none mb-10 font-2x">
+        <header class="mb-30 pb-20 border-bottom-2 text-left">
+            <h1 class="page-header border-none m-0 p-0 mb-10 font-2x d-flex align-center gap-10">
                 <i class="fa-solid fa-bookmark text-link"></i> Meine Lesezeichen
                 <span id="bookmark-count-badge" class="comic-count-badge">0</span>
             </h1>
-            <p class="text-faded font-lg max-w-600 center-block m-0"> Hier findest du alle Comicseiten, die du dir
-                gemerkt hast. <br>
+            <p class="text-faded font-lg m-0 mt-10 lh-1-6">
+                Hier findest du alle Comicseiten, die du dir gemerkt hast. <br>
                 <?php if ($canUseCloudSync) { ?>
                     <small class="text-success"><i class="fa-solid fa-cloud"></i> Deine Lesezeichen sind sicher in der
                         Cloud gespeichert.</small>
@@ -159,12 +159,12 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <!-- ZERO INLINE SCRIPT DATA TRANSPORT -->
 <script type="application/json"
         id="bookmarks-init-data">
-    <?php
-    echo \json_encode([
-        'serverComics'    => $comicDictionary,
-        'canUseCloudSync' => $canUseCloudSync,
-        'cloudIds'        => $cloudIds,
-    ], \JSON_UNESCAPED_UNICODE | \JSON_HEX_APOS | \JSON_HEX_QUOT);
+<?php
+echo \json_encode([
+    'serverComics'    => $comicDictionary,
+    'canUseCloudSync' => $canUseCloudSync,
+    'cloudIds'        => $cloudIds,
+], \JSON_UNESCAPED_UNICODE | \JSON_HEX_APOS | \JSON_HEX_QUOT);
 ?>
 
 </script>
