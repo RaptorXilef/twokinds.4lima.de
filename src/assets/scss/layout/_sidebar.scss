@@ -35,7 +35,7 @@
 /* --- Social Icons --- */
 .social-icons-container {
     display: flex;
-    gap: 10px;
+    gap: 8px; /* VORHER: 10px */
     justify-content: center;
     margin-bottom: 12px;
 
@@ -46,10 +46,10 @@
 }
 
 .social-icon {
-    font-size: 32px;
+    font-size: 26px; /* VORHER: 32px */
     line-height: 1;
     border-radius: 4px;
-    display: block; /* Wichtig für das InkBunny-Bild */
+    display: block;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     &:hover {
@@ -58,15 +58,15 @@
 
     /* Markenfarben */
     &.icon-patreon {
-        color: #000; /* Schwarz im Light Mode */
+        color: #000;
     }
 
     &.icon-paypal {
-        color: #0079c1; /* Offizielles PayPal Blau */
+        color: #0079c1;
     }
 
     &.icon-rss {
-        color: #f26522; /* Offizielles RSS Orange */
+        color: #f26522;
     }
 }
 

@@ -6,8 +6,8 @@ use App\Contracts\System\AssetHelperInterface;
 
 /**
  * @var array                $settings
- * @var AssetHelperInterface $asset
  * @var string               $pageTitle
+ * @var AssetHelperInterface $asset
  */
 $baseUrl       = \rtrim($settings['base_url'] ?? '', '/');
 $felixImageUrl = $asset->url('assets/images/about/Felix.webp');
@@ -45,8 +45,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <i class="fa-solid fa-rss text-rss"></i> Bleib auf dem Laufenden
                 </h2>
                 <p> Du willst keine neue übersetzte Seite verpassen? Nutze unseren RSS-Feed, um Updates direkt in deinen
-                    Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen! Klicke auf den Button, um die
-                    Feed-URL zu kopieren.</p>
+                    Feedreader (z. B. Feedly oder Thunderbird) geliefert zu bekommen! </p>
 
                 <!-- RSS Button kopiert URL und zeigt Feedback an -->
                 <div class="mt-20"
@@ -54,7 +53,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <button type="button"
                             class="button edit d-inline-flex align-center gap-8 p-10 font-bold w-auto js-copy-rss"
                             data-url="<?php echo $baseUrl; ?>/rss.xml">
-                        <i class="fa-solid fa-square-rss"></i> RSS-Feed URL kopieren
+                        <i class="fa-solid fa-square-rss"></i> RSS-Feed abonnieren
                     </button>
                     <span class="copy-feedback">Link kopiert!</span>
                 </div>
