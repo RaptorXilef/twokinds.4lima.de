@@ -197,17 +197,17 @@ export class SystemManager {
             setVal('user_email', payload.email);
             setVal('user_role', payload.role_id || payload.roleId);
 
-            setProp('user_pass', 'placeholder', 'Leer lassen, um nicht zu ändern');
             setProp('user_password', 'placeholder', 'Leer lassen, um nicht zu ändern');
-            setProp('user_pass', 'required', false);
+            setProp('user_password_confirm', 'placeholder', 'Leer lassen, um nicht zu ändern');
             setProp('user_password', 'required', false);
+            setProp('user_password_confirm', 'required', false);
         } else {
             if (titleEl) titleEl.textContent = 'Neuen Benutzer anlegen';
             setVal('user_id', '');
-            setProp('user_pass', 'placeholder', 'Passwort');
             setProp('user_password', 'placeholder', 'Passwort');
-            setProp('user_pass', 'required', true);
+            setProp('user_password_confirm', 'placeholder', 'Passwort wiederholen');
             setProp('user_password', 'required', true);
+            setProp('user_password_confirm', 'required', true);
         }
 
         this.modalManager.open('user-modal');

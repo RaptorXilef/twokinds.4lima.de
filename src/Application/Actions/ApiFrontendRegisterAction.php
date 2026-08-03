@@ -45,9 +45,9 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         $mailConfig = $this->config->getMailSettings();
         $fromEmail  = $mailConfig['from'] ?? 'no-reply@twokinds.4lima.de';
         $successMsg = 'Fast geschafft! Ich habe dir einen Bestätigungslink gesendet.<br><br>' .
-                      '&bull; Du hast <strong>15 Minuten</strong> Zeit, um auf den Link in der E-Mail zu klicken.<br>' .
-                      '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
-                      '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
+            '&bull; Du hast <strong>15 Minuten</strong> Zeit, um auf den Link in der E-Mail zu klicken.<br>' .
+            '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
+            '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
 
         // 2. Honeypot Check (Bot-Trap)
         if (! empty($request->post['middle_name'])) {
@@ -55,14 +55,22 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
             return JsonResponse::success(['message' => $successMsg, 'redirect' => 'login']);
         }
 
-        $username = Sanitizer::string($request->post['username'] ?? '');
-        $email    = Sanitizer::email($request->post['email'] ?? '');
-        $password = (string) ($request->post['password'] ?? ''); // Passwörter NIE bereinigen!
+        $username        = Sanitizer::string($request->post['username'] ?? '');
+        $email           = Sanitizer::email($request->post['email'] ?? '');
+        $password        = (string) ($request->post['password'] ?? ''); // Passwörter NIE bereinigen!
+        $passwordConfirm = (string) ($request->post['password_confirm'] ?? '');
 
-        if ($username === '' || $email === '' || $password === '') {
+        if ($username === '' || $email === '' || $password === '' || $passwordConfirm === '') {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Bitte alle Pflichtfelder ausfüllen.', 400);
+        }
+
+        // Passwort Abgleich
+        if ($password !== $passwordConfirm) {
+            $this->rateLimiter->recordFailedAttempt($ip);
+
+            return JsonResponse::error('Die Passwörter stimmen nicht überein.', 400);
         }
 
         if (! \filter_var($email, \FILTER_VALIDATE_EMAIL)) {

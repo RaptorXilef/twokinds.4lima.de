@@ -31,11 +31,12 @@ final readonly class ApiSaveUserAction implements ActionInterface
         }
 
         try {
-            $id          = Sanitizer::string($request->post['user_id'] ?? '');
-            $usernameStr = Sanitizer::string($request->post['username'] ?? '');
-            $emailStr    = Sanitizer::email($request->post['email'] ?? '');
-            $roleId      = Sanitizer::string($request->post['role_id'] ?? 'user');
-            $password    = (string) ($request->post['password'] ?? '');
+            $id              = Sanitizer::string($request->post['user_id'] ?? '');
+            $usernameStr     = Sanitizer::string($request->post['username'] ?? '');
+            $emailStr        = Sanitizer::email($request->post['email'] ?? '');
+            $roleId          = Sanitizer::string($request->post['role_id'] ?? 'user');
+            $password        = (string) ($request->post['password'] ?? '');
+            $passwordConfirm = (string) ($request->post['password_confirm'] ?? '');
 
             // ID wird nicht mehr als Pflichtfeld beim POST erwartet (wichtig für NEUE Benutzer)
             if ($usernameStr === '' || $emailStr === '') {
@@ -64,6 +65,11 @@ final readonly class ApiSaveUserAction implements ActionInterface
 
             // Passwort-Logik
             if ($password !== '') {
+                // Abgleich
+                if ($password !== $passwordConfirm) {
+                    return JsonResponse::error('Die Passwörter stimmen nicht überein.', 400);
+                }
+
                 if (\strlen($password) < 8) {
                     return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
                 }
