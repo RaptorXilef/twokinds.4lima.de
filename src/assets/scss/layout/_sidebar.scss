@@ -38,17 +38,44 @@
     gap: 10px;
     justify-content: center;
     margin-bottom: 12px;
+
+    /* Nötig für die Copy-Sprechblase beim RSS-Button */
+    .js-copy-rss {
+        position: relative;
+    }
 }
 
 .social-icon {
-    border-radius: 5px;
+    font-size: 32px;
+    line-height: 1;
+    border-radius: 4px;
+    display: block; /* Wichtig für das InkBunny-Bild */
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     &:hover {
         transform: scale(1.15);
     }
+
+    /* Markenfarben */
+    &.icon-patreon {
+        color: #000; /* Schwarz im Light Mode */
+    }
+
+    &.icon-paypal {
+        color: #0079c1; /* Offizielles PayPal Blau */
+    }
+
+    &.icon-rss {
+        color: #f26522; /* Offizielles RSS Orange */
+    }
 }
 
+/* Patreon im Dark Mode invertieren */
+body.theme-night .social-icon.icon-patreon {
+    color: #fff;
+}
+
+/* Entfernt
 .patreon-icon-wrapper {
     display: inline-block;
 
@@ -70,6 +97,7 @@ body.theme-night .patreon-icon-wrapper {
         display: inline-block;
     }
 }
+*/
 
 /* --- Navigation Menu --- */
 .menu {
