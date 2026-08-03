@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://twokinds.4lima.de"><img src="https://github.com/RaptorXilef/twokinds.4lima.de/blob/main/resources/github-images/twokinds.4lima.de.png" alt="Projekt Logo"></a>
+  <a href="https://twokinds.4lima.de"><img src="https://raw.githubusercontent.com/RaptorXilef/twokinds.4lima.de/refs/heads/main/public/assets/images/layout/banner_night.webp" alt="Projekt Logo"></a>
 </p>
 
-<h1 align="center">Twokinds Deutsch – Comic-Webseite</h1>
+<h1 align="center">Twokinds Deutsch - Comic-Webseite</h1>
 
 <p align="center">
   <!-- [Version Badge (Beispiel, bitte anpassen)](https://shields.io/badges/git-hub-release) -->
@@ -16,7 +16,7 @@
 </p><p align="center">
   <a href="https://github.com/RaptorXilef/twokinds.4lima.de/milestones"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress/RaptorXilef/twokinds.4lima.de/3"><img alt="GitHub milestone details" src="https://img.shields.io/github/milestones/progress-percent/RaptorXilef/twokinds.4lima.de/3"></a>
   <!--<img src="https://img.shields.io/github/checks-status/RaptorXilef/twokinds.4lima.de/main" alt="Checks Status">-->
-  <br><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"><img src="https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png" alt="CC BY-NC-SA 4.0"></a><br>
+  <br>
   </p>
   <br><br>
 
@@ -25,11 +25,12 @@
 
 ## Inhaltsverzeichnis
 
+- [Inhaltsverzeichnis](#inhaltsverzeichnis)
 - [Über das Projekt](#über-das-projekt)
 - [Funktionen](#funktionen)
 - [Installation](#installation)
 - [Nutzung](#nutzung)
-- [Projektstruktur](#projektstruktur)
+- [Projektstruktur (Beispiele)](#projektstruktur-beispiele)
 - [Anpassung](#anpassung)
 - [Beitrag leisten](#beitrag-leisten)
 - [Lizenz](#lizenz)
@@ -57,17 +58,19 @@ Grundsätzlich ist dieses Repository als Entwicklungsumgebung und Backup der Web
 
 Um das Projekt lokal einzurichten, folge diesen Schritten:
 
-1.  **Webserver mit PHP:** Stelle sicher, dass du einen Webserver (z.B. Apache, Nginx) mit PHP (Version 7.4 oder höher empfohlen) installiert hast.
-2.  **Projekt klonen:**
+1. **Webserver mit PHP:** Stelle sicher, dass du einen Webserver (z.B. Apache, Nginx) mit PHP (Version 7.4 oder höher empfohlen) installiert hast.
+2. **Projekt klonen:**
+
     ```bash
     git clone [https://github.com/RaptorXilef/twokinds.4lima.de.git](https://github.com/RaptorXilef/twokinds.4lima.de.git)
     cd twokinds.4lima.de
     ```
-3.  **Dateien platzieren:** Platziere alle Projektdateien im Root-Verzeichnis deines Webservers (z.B. `htdocs` für Apache).
-4.  **Konfigurationsdateien:**
+
+3. **Dateien platzieren:** Platziere alle Projektdateien im Root-Verzeichnis deines Webservers (z.B. `htdocs` für Apache).
+4. **Konfigurationsdateien:**
     - Stelle sicher, dass die Dateien `src/config/comic_var.json`, `src/config/rss_config.json`, `src/config/archive_chapters.json` und `src/config/sitemap.json` existieren und korrekt formatiert sind. Beispiel-Dateien sollten im Repository vorhanden sein.
     - Passe die `<Name>.json` bei Bedarf an deine Daten oder Sprache an.
-5.  **Berechtigungen:** Stelle sicher, dass der Webserver Schreibberechtigungen für das Root-Verzeichnis hat, damit die `<Name>.xml` und `<Name>.php` generiert werden können.
+5. **Berechtigungen:** Stelle sicher, dass der Webserver Schreibberechtigungen für das Root-Verzeichnis hat, damit die `<Name>.xml` und `<Name>.php` generiert werden können.
 
 ## Nutzung
 
@@ -116,15 +119,15 @@ Nach der Installation kannst du die Webseite über deinen Browser aufrufen (z.B.
 
 - **Comic-Daten:** Bearbeite `admin/data_editor_comic.php` oder manuell `src/config/comic_var.json`, um neue Comic-Seiten hinzuzufügen oder bestehende Metadaten zu ändern. Jede Comic-Seite sollte eine entsprechende PHP-Datei im `comic/`-Verzeichnis haben (z.B. `20250604.php`), die den `comic_page_renderer.php` inkludiert.
 - **RSS-Feed:** `admin/generator_rss.php` oder passe `src/config/rss_config.json` manuell an, um den Titel, die Beschreibung, den Autor und die maximale Anzahl der RSS-Einträge zu konfigurieren.
-- **Design:** Modifiziere `src/layout/css/main.css` und `src/layout/css/main_dark.css` für Designänderungen (wenn aktiviert) Standartmäßig laden die Originalen css von https://twokinds.keenspot.com.
+- **Design:** Modifiziere `src/layout/css/main.css` und `src/layout/css/main_dark.css` für Designänderungen (wenn aktiviert) Standartmäßig laden die Originalen css von <https://twokinds.keenspot.com>.
 - **JavaScript-Logik:** `src/layout/js/comic.js` enthält die clientseitige Logik für Lesezeichen und Navigation.
 
 ## Beitrag leisten
 
 Beiträge sind herzlich willkommen! Wenn du Fehler findest oder Verbesserungen vorschlagen möchtest, kannst du:
 
-1.  Ein Issue eröffnen, um Fehler zu melden oder neue Funktionen vorzuschlagen.
-2.  Einen Pull Request erstellen mit deinen Änderungen. Bitte folge dabei den bestehenden Code-Konventionen.
+1. Ein Issue eröffnen, um Fehler zu melden oder neue Funktionen vorzuschlagen.
+2. Einen Pull Request erstellen mit deinen Änderungen. Bitte folge dabei den bestehenden Code-Konventionen.
 
 ## Lizenz
 

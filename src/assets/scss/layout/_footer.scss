@@ -111,7 +111,7 @@ footer {
         position: relative;
         height: 100%;
         z-index: 1;
-        margin: 0 -5px; /* Zieht die Charaktere leicht ineinander für den Gruppen-Effekt */
+        margin: 0 -4.5px; /* Zieht die Charaktere leicht ineinander für den Gruppen-Effekt */
 
         /* NEU: Skaliert von der unteren Kante aus, damit sie nicht hochfliegen! */
         transform-origin: bottom center;
@@ -131,8 +131,8 @@ footer {
         /* Der Hover-Effekt: Charakter drängt sich nach vorne, wächst um 3% (~2.6 Pixel) und leuchtet */
         &:hover {
             z-index: 10;
-            transform: scale(1.15); /* translateY() wurde entfernt! */
-            filter: brightness(1.15);
+            transform: scale(1.1); /* translateY() wurde entfernt! */
+            filter: brightness(1.1);
         }
     }
 }
@@ -143,7 +143,7 @@ body.theme-night .footer-chars-container a {
         filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));
     }
     &:hover {
-        filter: brightness(1.15);
+        filter: brightness(1.1);
     }
 }
 
