@@ -121,24 +121,23 @@ elseif (isset($character) && \is_object($character)) {
                 <div class="sidebar-content">
                     <div class="social-icons-container">
                         <!-- Patreon Link -->
-                        <a href="https://www.patreon.com/RaptorXilef" target="_blank" rel="noopener noreferrer" class="patreon-icon-wrapper" title="Patreon">
-                            <img class="patreon-light-icon social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/patreon.png" alt="Patreon" width="32" height="32">
-                            <img class="patreon-dark-icon social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/patreon_dark.png" alt="Patreon Dark" width="32" height="32">
+                        <a href="https://www.patreon.com/RaptorXilef" target="_blank" rel="noopener noreferrer" title="Patreon">
+                            <i class="fa-brands fa-patreon social-icon" style="font-size: 32px; color: #FF424D; line-height: 1;"></i>
                         </a>
 
-                        <!-- InkBunny Link -->
+                        <!-- InkBunny Link (Kein FontAwesome Icon verfügbar, daher als Bild) -->
                         <a href="https://inkbunny.net/RaptorXilefSFW" target="_blank" rel="noopener noreferrer" title="Mein InkBunny">
-                            <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/inkbunny.png" alt="InkBunny" width="32" height="32">
+                            <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/inkbunny.png" alt="InkBunny" width="32" height="32" style="border-radius: 4px; display: block;">
                         </a>
 
                         <!-- PayPal Link -->
                         <a href="https://paypal.me/RaptorXilef" target="_blank" rel="noopener noreferrer" title="Mein Paypal">
-                            <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/paypal.png" alt="PayPal" width="32" height="32">
+                            <i class="fa-brands fa-paypal social-icon" style="font-size: 32px; color: #0079C1; line-height: 1;"></i>
                         </a>
 
                         <!-- RSS Kopier-Link -->
                         <a href="<?php echo $baseUrl; ?>/rss.xml" class="js-copy-rss" data-url="<?php echo $baseUrl; ?>/rss.xml" title="RSS-Feed URL kopieren" style="position: relative;">
-                            <img class="social-icon" src="<?php echo $baseUrl; ?>/assets/images/layout/ui/rss-feed.png" alt="RSS" width="32" height="32">
+                            <i class="fa-solid fa-square-rss social-icon" style="font-size: 32px; color: #f26522; line-height: 1;"></i>
                             <span class="copy-feedback">Link kopiert!</span>
                         </a>
                     </div>
