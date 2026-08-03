@@ -33,6 +33,19 @@ export class GroupEditor {
         }
     }
 
+    // Wrapper um den Tracker, um den Sticky-Button zu steuern
+    markDirty() {
+        this.tracker.markDirty();
+        const sticky = document.getElementById('sticky-save-container');
+        if (sticky) sticky.classList.add('visible');
+    }
+
+    markClean() {
+        this.tracker.markClean();
+        const sticky = document.getElementById('sticky-save-container');
+        if (sticky) sticky.classList.remove('visible');
+    }
+
     bindEvents() {
         if (!this.section) return;
 
@@ -40,6 +53,7 @@ export class GroupEditor {
         this.section.addEventListener('click', (e) => {
             const btnAddGroup = e.target.closest('#btn-add-group');
             const btnSaveGroups = e.target.closest('#btn-save-groups');
+            const btnSaveSticky = e.target.closest('#btn-save-groups-sticky');
             const btnDelete = e.target.closest('.btn-delete-group');
             const btnRemoveChar = e.target.closest('.remove-char-from-group');
             const btnTogglePool = e.target.closest('#btn-toggle-pool');
@@ -49,20 +63,20 @@ export class GroupEditor {
                 e.preventDefault();
                 this.addGroupHTML();
             }
-            if (btnSaveGroups) {
+            if (btnSaveGroups || btnSaveSticky) {
                 e.preventDefault();
-                this.saveGroups(btnSaveGroups);
+                this.saveGroups(btnSaveGroups || btnSaveSticky);
             }
             if (btnDelete) {
                 e.preventDefault();
-                this.tracker.markDirty();
+                this.markDirty();
                 const groupEl = btnDelete.closest('.character-group');
                 if (groupEl) groupEl.remove();
                 this.updatePoolAssignedState();
             }
             if (btnRemoveChar) {
                 e.preventDefault();
-                this.tracker.markDirty();
+                this.markDirty();
                 const entry = btnRemoveChar.closest('.character-entry');
                 if (entry) entry.remove();
                 this.updatePoolAssignedState();
@@ -80,7 +94,7 @@ export class GroupEditor {
         // Checkbox-Änderungen delegieren
         this.section.addEventListener('change', (e) => {
             if (e.target.classList.contains('manual-sort-cb')) {
-                this.tracker.markDirty();
+                this.markDirty();
                 const container = e.target
                     .closest('.character-group')
                     ?.querySelector('.sortable-group');
@@ -115,6 +129,27 @@ export class GroupEditor {
                 }
             });
         }
+
+        // CRITICAL FIX: Event-Delegation für das Grid! Isoliert den Klick vor anderen Modulen (wie ComicEditor).
+        const grid = document.getElementById('group-modal-char-grid');
+        if (grid) {
+            grid.addEventListener('click', (e) => {
+                const item = e.target.closest('.char-selection-item');
+                if (!item) return;
+
+                // Verhindert, dass der globale Klick-Listener im ComicEditor diesen Klick abfängt und überschreibt!
+                e.stopPropagation();
+
+                const id = item.dataset.id;
+                if (this.modalState.selected.has(id)) {
+                    this.modalState.selected.delete(id);
+                    item.classList.remove('selected');
+                } else {
+                    this.modalState.selected.add(id);
+                    item.classList.add('selected');
+                }
+            });
+        }
     }
 
     togglePool(btn) {
@@ -134,7 +169,7 @@ export class GroupEditor {
                 sort: false,
                 animation: 150,
                 onEnd: () => {
-                    this.tracker.markDirty();
+                    this.markDirty();
                     this.updatePoolAssignedState();
                 },
             });
@@ -150,7 +185,7 @@ export class GroupEditor {
                     animation: 150,
                     sort: manual,
                     onEnd: () => {
-                        this.tracker.markDirty();
+                        this.markDirty();
                         this.updatePoolAssignedState();
                     },
                 });
@@ -165,7 +200,7 @@ export class GroupEditor {
                 animation: 150,
                 handle: '.group-drag-handle',
                 onEnd: () => {
-                    this.tracker.markDirty();
+                    this.markDirty();
                 },
             });
             wrapper.dataset.sortableInitialized = 'true';
@@ -173,7 +208,7 @@ export class GroupEditor {
     }
 
     addGroupHTML() {
-        this.tracker.markDirty();
+        this.markDirty();
         const wrapper = document.getElementById('groups-wrapper');
         if (!wrapper) return;
 
@@ -210,9 +245,21 @@ export class GroupEditor {
     }
 
     async saveGroups(btnElement) {
+        // Sperre auch den anderen Button visuell, je nachdem welcher geklickt wurde
+        const otherBtn =
+            btnElement.id === 'btn-save-groups'
+                ? document.getElementById('btn-save-groups-sticky')
+                : document.getElementById('btn-save-groups');
+
         const originalText = btnElement.innerHTML;
+        const otherOriginalText = otherBtn ? otherBtn.innerHTML : '';
+
         btnElement.disabled = true;
         btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+        if (otherBtn) {
+            otherBtn.disabled = true;
+            otherBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Speichere...';
+        }
 
         try {
             const groupElements = document.querySelectorAll('#groups-wrapper .character-group');
@@ -239,7 +286,7 @@ export class GroupEditor {
             const result = await this.api.post('save_character_groups', formData);
 
             if (result.success) {
-                this.tracker.markClean();
+                this.markClean();
                 this.notifications.show('Gruppen gespeichert!', 'success');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
@@ -248,6 +295,10 @@ export class GroupEditor {
         } finally {
             btnElement.disabled = false;
             btnElement.innerHTML = originalText;
+            if (otherBtn) {
+                otherBtn.disabled = false;
+                otherBtn.innerHTML = otherOriginalText;
+            }
         }
     }
 
@@ -288,8 +339,6 @@ export class GroupEditor {
         const grid = document.getElementById('group-modal-char-grid');
         if (!grid) return;
 
-        grid.innerHTML = '';
-
         // Filtere alle, die bereits in DIESER speziellen Gruppe sind heraus
         let charsToShow = this.allChars.filter((c) => !this.modalState.inThis.includes(c.id));
 
@@ -304,25 +353,18 @@ export class GroupEditor {
             grid.innerHTML =
                 '<p class="text-faded w-100 text-center" style="grid-column: 1/-1;">Keine passenden Charaktere gefunden.</p>';
         } else {
-            charsToShow.forEach((c) => {
-                const div = document.createElement('div');
-                div.className = `char-selection-item ${this.modalState.selected.has(c.id) ? 'selected' : ''}`;
-                div.dataset.id = c.id;
-                div.innerHTML = `
+            // Nur HTML ausgeben. Der Click-Listener ist jetzt per Delegation in bindEvents gekapselt!
+            const html = charsToShow
+                .map(
+                    (c) => `
+                <div class="char-selection-item ${this.modalState.selected.has(c.id) ? 'selected' : ''}" data-id="${c.id}">
                     <img src="${c.pic}" loading="lazy" alt="Char">
                     <span>${c.name}</span>
-                `;
-                div.addEventListener('click', () => {
-                    if (this.modalState.selected.has(c.id)) {
-                        this.modalState.selected.delete(c.id);
-                        div.classList.remove('selected');
-                    } else {
-                        this.modalState.selected.add(c.id);
-                        div.classList.add('selected');
-                    }
-                });
-                grid.appendChild(div);
-            });
+                </div>
+            `
+                )
+                .join('');
+            grid.innerHTML = html;
         }
 
         const toggleBtnText = document.getElementById('group-modal-view-text');
@@ -355,7 +397,7 @@ export class GroupEditor {
             this.modalState.targetGroupList.appendChild(entry);
         });
 
-        this.tracker.markDirty();
+        this.markDirty(); // Tracker markieren und Sticky Button auslösen
         this.updatePoolAssignedState();
         document.getElementById('group-add-char-modal').style.display = 'none';
     }
