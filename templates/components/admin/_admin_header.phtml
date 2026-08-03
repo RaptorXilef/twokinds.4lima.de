@@ -19,9 +19,20 @@ use App\Contracts\System\AssetHelperInterface;
           content="width=device-width, initial-scale=1.0">
     <title><?php echo \htmlspecialchars($pageTitle); ?> - Twokinds Admin</title>
 
+    <!-- Meta-Tags für Sicherheit -->
+    <meta name="csrf-token"
+          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+
+    <!-- Import Map für ES6 Cache-Busting -->
+    <script type="importmap"
+            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+        <?php echo $asset->getImportMap('assets/js'); ?>
+    </script>
+
     <!-- CSS -->
     <link rel="stylesheet"
           href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
+
     <!-- FontAwesome für Icons (Stellt alle Vektor-Symbole wie Buttons, Warnhinweise und Menü-Icons bereit) -->
     <!-- https://cdnjs.com/libraries/font-awesome -->
     <link rel="stylesheet"
@@ -56,9 +67,6 @@ use App\Contracts\System\AssetHelperInterface;
     <!-- jsdiff (Vergleicht zwei Texte miteinander und hebt Änderungen grün/rot hervor, genutzt bei den Transkript-Reports) -->
     <!-- https://cdnjs.com/libraries/jsdiff -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/8.0.3/diff.min.js"></script>
-
-    <meta name="csrf-token"
-          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
 </head>
 
 <body class="<?php echo isset($_COOKIE['themePref']) && $_COOKIE['themePref'] === '2' ? 'theme-night' : ''; ?>">
@@ -72,6 +80,7 @@ use App\Contracts\System\AssetHelperInterface;
     })();
 
     </script>
+
     <div class="main-container">
         <header>
             <div class="banner"

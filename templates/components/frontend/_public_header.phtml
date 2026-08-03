@@ -77,13 +77,29 @@ if (isset($isComicPage) && $isComicPage && isset($comic)) {
     <meta name="twitter:image"
           content="<?php echo \htmlspecialchars($metaImage); ?>">
 
+    <!-- Meta-Tags für Sicherheit & Analytics -->
+    <meta name="csrf-token"
+          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+
+    <!-- Import Map für ES6 Cache-Busting -->
+    <script type="importmap"
+            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+        <?php echo $asset->getImportMap('assets/js'); ?>
+    </script>
+
+    <script nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    (function() {
+        var t = localStorage.getItem('themePref');
+        var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (t === '2' || (t !== '1' && d)) document.body.classList.add('theme-night');
+        else document.body.classList.remove('theme-night');
+    })();
+    </script>
+
     <!-- Automatisch cache-gebustetes CSS -->
     <link rel="stylesheet"
           href="<?php echo $asset->url('assets/css/main.min.css'); ?>">
 
-    <!-- Meta-Tags für Sicherheit & Analytics -->
-    <meta name="csrf-token"
-          content="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
     <!-- FontAwesome für Icons -->
     <!-- https://cdnjs.com/libraries/font-awesome -->
     <link rel="stylesheet"

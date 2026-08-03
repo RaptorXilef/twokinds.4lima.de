@@ -49,4 +49,39 @@ final class LocalAssetHelper implements AssetHelperInterface
 
         return $fullUrl;
     }
+
+    // NEU: Durchsucht den JS-Ordner und erstellt die dynamische Mapping-Logik
+    public function getImportMap(string $baseDir = 'assets/js'): string
+    {
+        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
+        $scanDir   = $publicDir . '/' . \ltrim($baseDir, '/');
+        $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
+        $map       = ['imports' => []];
+
+        if (! \is_dir($scanDir)) {
+            return '{"imports":{}}';
+        }
+
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($scanDir));
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'js') {
+                $physicalPath = $file->getPathname();
+                \clearstatcache(true, $physicalPath);
+                $mtime = (string) $file->getMTime();
+
+                // Berechne den genauen URL-Pfad (z.B. /assets/js/frontend/modules/ArchiveManager.js)
+                $relativePath = \str_replace('\\', '/', \str_replace($publicDir, '', $physicalPath));
+                $relativePath = '/' . \ltrim($relativePath, '/');
+
+                $fullUrl = $baseUrl . $relativePath;
+
+                // Trägt ein: "Originale URL" -> "URL mit Versionsstempel"
+                $map['imports'][$fullUrl] = $fullUrl . '?v=' . $mtime;
+            }
+        }
+
+        // Als sauberes JSON ausgeben
+        return \json_encode($map, \JSON_UNESCAPED_SLASHES);
+    }
 }

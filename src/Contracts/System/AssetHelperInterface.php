@@ -11,4 +11,7 @@ interface AssetHelperInterface
      * Erwartet einen relativen Pfad aus dem public/ Verzeichnis, z.B. 'assets/css/main.min.css'
      */
     public function url(string $assetPath): string;
+
+    // Generiert die Import-Map für ES6 Module
+    public function getImportMap(string $baseDir = 'assets/js'): string;
 }
