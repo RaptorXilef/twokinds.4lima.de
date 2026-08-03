@@ -45,12 +45,47 @@ ehthumbs_vista.db
 # GENERELLE BACKUPS & TEMPORÄRE DATEIEN
 # ==============================================================================
 *.log
+logs/
 *.tmp
 *.temp
 * - Kopie*
 .testfiles/
-/data/tmp/*
+/data/tmp/
+
+# ==============================================================================
+# Backup
+# ==============================================================================
 /storage/backups/
+
+*.bak
+*.backup
+*.old
+# Backup-Ordner-Muster
+*backup*
+*Backup*
+
+# ==============================================================================
+# Temporäre Zip-Archive & OS-Reste
+# ==============================================================================
+*.zip
+*.7z
+*.ink
+*.url
+
+# Private Scripte & Notizen (Sicherheit geht vor)
+
+Combine-*.ps1
+Mein*Code*.*
+Refactored_PHP_Code_Part*
+*Notizen*
+.*todo*
+ToDo*.md
+*Commits*
+*.docx
+*.txt
+*.psd
+*.c2paws
+*.xlsx
 
 # ==============================================================================
 # SICHERHEIT & LOKALE KONFIGURATION
@@ -73,6 +108,7 @@ ehthumbs_vista.db
 # Composer dependencies
 # ==============================================================================
 /vendor/
+!composer.lock
 
 # Composer:
 # composer.lock sollte in ANWENDUNGEN normalerweise committed werden,
@@ -84,15 +120,24 @@ ehthumbs_vista.db
 #/composer.lock
 /composer.phar
 
-# Builds, Logs und Cache
+# ------------------------------------------------------------------------------
+# Anwendungs-Log-Dateien (Sicherheit, Debugging)
+# Application log files (security, debugging)
+# ------------------------------------------------------------------------------
+
+# Builds
 /build/
-/log/
-/logs/
+/.build/
 
-# Cache & Logs
+# Tools (werden via scripts/Setup.php verwaltet)
+/tools/*.phar
+
+# Debug
+.debug/*
+
+
+# Cache
 /.cache/
-!.gitkeep
-
 .cache/php-cs-fixer/cache.json
 
 /.phpstan.cache/
@@ -104,13 +149,13 @@ ehthumbs_vista.db
 /phpunit.xml
 # Alternativ: phpunit.xml.dist versionieren, phpunit.xml ignorieren (für lokale Overrides)
 
-.lighthouseci/*
+.lighthouseci/
 
 .deptrac.cache
 
 # Code Coverage Reports
-/coverage/
-/html-coverage/
+/coverage/*
+/html-coverage/*
 
 # ==============================================================================
 # DATENBANK DUMPS (Lokal)
@@ -123,6 +168,7 @@ ehthumbs_vista.db
 # FRONTEND (Node, npm, yarn)
 # ==============================================================================
 /node_modules/
+!package-lock.json
 npm-debug.log*
 yarn-error.log
 yarn.lock
@@ -156,23 +202,6 @@ yarn.lock
 # *.min.js
 # *.min.js.map
 
-# ------------------------------------------------------------------------------
-# Passwörter und Geheimnisse
-# Geheime Konfiguration (enthält Passwörter/Schlüssel)
-# Secret configuration (contains passwords/keys)
-# ------------------------------------------------------------------------------
-/config/secrets.php
-/storage/*.json
-
-# Geheimnisse
-/public/dev/
-
-# ------------------------------------------------------------------------------
-# Anwendungs-Log-Dateien (Sicherheit, Debugging)
-# Application log files (security, debugging)
-# ------------------------------------------------------------------------------
-logs/
-
 # ==============================================================================
 # REMOVE & DEPRECATED
 # ==============================================================================
@@ -181,68 +210,27 @@ logs/
 *_DEPRECATED*
 *_REMOVE*
 
-
-# ==============================================================================
-# PROJEKT SPEZIFISCH
-# ==============================================================================
+# ------------------------------------------------------------------------------
+# Passwörter und Geheimnisse
+# Geheime Konfiguration (enthält Passwörter/Schlüssel)
+# Secret configuration (contains passwords/keys)
+# ------------------------------------------------------------------------------
 
 # Projekt-spezifische Secrets
 config/secrets/*
+/config/secrets.php
+
+# Geheimnisse
+/public/dev/
 
 # Sensible Daten & Konfiguration
 /config/_dev.local.php
+*.local*
 
-/public/assets/css/*.map
-/public/assets/js/*.map
+!.gitkeep
 
-# Generierte Frontend-Assets (Build-Artefakte)
-# Wir vertrauen unserem Build-Prozess (npm run make)
-/public/assets/css/*
-/public/assets/js/*
-!/public/assets/css/.gitkeep
-!/public/assets/js/.gitkeep
-
-# Infrastruktur & Tools (werden via scripts/Setup.php verwaltet)
-/tools/*.phar
-/.build/
-
-# Temporäre Zip-Archive & OS-Reste
-*.zip
-*.7z
-*.ink
-*.url
-
-# Private Scripte & Notizen (Sicherheit geht vor)
-/.debug/*
-Combine-*.ps1
-Mein*Code*.*
-Refactored_PHP_Code_Part*
-*Notizen*
-.*todo*
-ToDo*.md
-*Commits*
-*.docx
-*.txt
-*.psd
-*.c2paws
-*.xlsx
-
-.npmrc
-
-# AUSNAHMEN (Diese Dateien MÜSSEN im Repo bleiben)
-!composer.lock
-!package-lock.json
-
-
-# ==============================================================================
-# Backup
-# ==============================================================================
-*.bak
-*.backup
-*.old
-# Backup-Ordner-Muster
-*backup*
-*Backup*
+# --- GOOGLE & LINKS ---
+public/google*.html
 
 # ==============================================================================
 # CSPELL
@@ -255,209 +243,72 @@ ToDo*.md
 !cspell-folder-names.txt
 
 # ==============================================================================
-# TEST-FOLDER
+# PROJEKT SPEZIFISCH
 # ==============================================================================
 
-src/assets/img/**
+# --- BACKUPS ---
+.old-5.0.0-alpha.23_/
 
-# src/assets/img/test/**
-public/assets/img/test/**
+# -- Dateien ---
+rss.xml
+sitemap.xml
+
+# DEV
+public/migration_data/*
+
 
 ################################################################################
 # PROJEKT SPEZIFISCH: CONTENT & ASSETS
 ################################################################################
 
-*.local*
-
-rss.xml
-sitemap.xml
-
 src/assets/images/
-public/assets/images/
 
-# --- BILDER & MEDIEN (COMIC) ---
-# High-Res Bilder ignorieren, Systemdateien behalten
-public/assets/images/comic/hires/*.jpg
-public/assets/images/comic/hires/*.png
-public/assets/images/comic/hires/*.gif
-public/assets/images/comic/hires/*.webp
-!public/assets/images/comic/hires/in_translation.*
-!public/assets/images/comic/hires/index.php
-!public/assets/images/comic/hires/.htaccess
-# Fehlerseiten Bilder behalten
-!public/assets/images/comic/hires/404.*
-!public/assets/images/comic/hires/403.*
-
-# Low-Res Bilder ignorieren
-public/assets/images/comic/lowres/*.jpg
-public/assets/images/comic/lowres/*.png
-public/assets/images/comic/lowres/*.gif
-public/assets/images/comic/lowres/*.webp
-!public/assets/images/comic/lowres/in_translation.*
-!public/assets/images/comic/lowres/index.php
-!public/assets/images/comic/lowres/.htaccess
-!public/assets/images/comic/lowres/404.*
-!public/assets/images/comic/lowres/403.*
-
-# Andere Auflösungen
-public/assets/images/comic/lowres_png/*
-
-# Social Media Bilder
-public/assets/images/comic/socialmedia/*.jpg
-public/assets/images/comic/socialmedia/*.png
-public/assets/images/comic/socialmedia/*.gif
-public/assets/images/comic/socialmedia/*.webp
-!public/assets/images/comic/socialmedia/index.php
-!public/assets/images/comic/socialmedia/.htaccess
-
-# Thumbnails
-public/assets/images/comic/thumbnails/*.jpg
-public/assets/images/comic/thumbnails/*.png
-public/assets/images/comic/thumbnails/*.gif
-public/assets/images/comic/thumbnails/*.webp
-!public/assets/images/comic/thumbnails/placeholder.*
-!public/assets/images/comic/thumbnails/in_translation.*
-!public/assets/images/comic/thumbnails/index.php
-!public/assets/images/comic/thumbnails/.htaccess
-
-# Spezifische Charakter-Bilder ignorieren
-public/assets/img/charaktere/characters/themaskedgods.png
-public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
-public/assets/img/charaktere/characters/TheMaskedGods2025.png
-public/assets/img/charaktere/characters_webp/templarchart-Original.png
-public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
-
-# --- SONSTIGE ASSETS ---
-public/assets/img/github/twokinds.4lima.de.psd
-public/assets/img/about/*
-public/assets/icons/nicht verwendet/*
-
-# --- GOOGLE & LINKS ---
-public/google*.html
+public/assets/*
+public/assets/images/comic/
 
 
 
+# TODO Wenn übersetzt auf GitHub syncronisieren
+public/assets/images/characters/refsheets/
+
+# ==============================================================================
+# AUßNAHMEN
+# ==============================================================================
+
+public/assets/css/*
+!public/assets/css/.gitkeep
+
+!public/assets/fonts/
+
+public/assets/js/*
+!public/assets/js/.gitkeep
 
 
+!public/assets/images/
+!public/assets/images/admin/
+!public/assets/images/admin/ui/
+!public/assets/images/admin/ui/*.webp
 
-
-
-################################################################################
-# PROJEKT SPEZIFISCH: CONFIG & DATA                                          OLD
-################################################################################
-# Generierte Konfigurationen ignorieren
-.old-5.0.0-alpha.23/config/config_generator_settings.json
-.old-5.0.0-alpha.23/config/config_rss.json
-
-# Temporäre Configs im Public Ordner
-.old-5.0.0-alpha.23/public/src/config/*
-.old-5.0.0-alpha.23/public/sitemap.xml
-.old-5.0.0-alpha.23/public/rss.xml
-.old-5.0.0-alpha.23/public/assets/Ordnerstruktur.txt
-.old-5.0.0-alpha.23/public/admin/json-vorlagen/*
-.old-5.0.0-alpha.23/public/admin/consolenanwendung/*
-
-# Data Ordner (Inhalt ignorieren, aber version.json behalten)
-.old-5.0.0-alpha.23/data/*
-!.old-5.0.0-alpha.23/data/version.json
-/.old-5.0.0-alpha.23/data/tmp/*
-
-################################################################################
-# PROJEKT SPEZIFISCH: CONTENT & ASSETS                                      OLD
-################################################################################
-
-# --- COMIC VERWALTUNG ---
-# Inhalt ignorieren, aber spezifische PHP-Dateien behalten
-.old-5.0.0-alpha.23/public/comic/*
-!.old-5.0.0-alpha.23/public/comic/index.php
-!.old-5.0.0-alpha.23/public/comic/20170728.php
-!.old-5.0.0-alpha.23/public/comic/20250312.php
-!.old-5.0.0-alpha.23/public/comic/20250604.php
-
-# --- BILDER & MEDIEN (COMIC) ---
-# High-Res Bilder ignorieren, Systemdateien behalten
-.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.jpg
-.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.png
-.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.gif
-.old-5.0.0-alpha.23/public/assets/images/comic/hires/*.webp
-!.old-5.0.0-alpha.23/public/assets/images/comic/hires/in_translation.*
-!.old-5.0.0-alpha.23/public/assets/images/comic/hires/index.php
-!.old-5.0.0-alpha.23/public/assets/images/comic/hires/.htaccess
-# Fehlerseiten Bilder behalten
-!.old-5.0.0-alpha.23/public/assets/images/comic/hires/404.*
-!.old-5.0.0-alpha.23/public/assets/images/comic/hires/403.*
-
-# Low-Res Bilder ignorieren
-.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.jpg
-.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.png
-.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.gif
-.old-5.0.0-alpha.23/public/assets/images/comic/lowres/*.webp
-!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/in_translation.*
-!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/index.php
-!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/.htaccess
-!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/404.*
-!.old-5.0.0-alpha.23/public/assets/images/comic/lowres/403.*
-
-# Andere Auflösungen
-.old-5.0.0-alpha.23/public/assets/images/comic/lowres_png/*
-
-# Social Media Bilder
-.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.jpg
-.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.png
-.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.gif
-.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/*.webp
-!.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/index.php
-!.old-5.0.0-alpha.23/public/assets/images/comic/socialmedia/.htaccess
-
-# Thumbnails
-.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.jpg
-.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.png
-.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.gif
-.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/*.webp
-!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/placeholder.*
-!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/in_translation.*
-!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/index.php
-!.old-5.0.0-alpha.23/public/assets/images/comic/thumbnails/.htaccess
-
-# --- CHARAKTERE ---
-# Ordner ignorieren, aber Basis-Dateien behalten
-.old-5.0.0-alpha.23/public/charaktere/*
-!.old-5.0.0-alpha.23/public/charaktere/index.php
-!.old-5.0.0-alpha.23/public/charaktere/Trace_Legacy.php
-!.old-5.0.0-alpha.23/public/charaktere/Flora_-_Regenwald-Tigerstamm.php
-
-# Spezifische Charakter-Bilder ignorieren
-.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/themaskedgods.png
-.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/TheMaskedGods2025-2.png
-.old-5.0.0-alpha.23/public/assets/img/charaktere/characters/TheMaskedGods2025.png
-.old-5.0.0-alpha.23/public/assets/img/charaktere/characters_webp/templarchart-Original.png
-.old-5.0.0-alpha.23/public/assets/img/charaktere/characters_webp/TheMaskedGods2025-Original.webp
-
-# --- SONSTIGE ASSETS ---
-.old-5.0.0-alpha.23/public/assets/img/github/twokinds.4lima.de.psd
-.old-5.0.0-alpha.23/public/assets/img/about/*
-.old-5.0.0-alpha.23/public/assets/icons/nicht verwendet/*
-
-# --- GOOGLE & LINKS ---
-.old-5.0.0-alpha.23/public/google*.html
-.old-5.0.0-alpha.23/public/src/layout/js_backup/gtag.js
-.old-5.0.0-alpha.23/public/_links/*
-.old-5.0.0-alpha.23/public/_debug/*
-
-#############################################
-
-.old-5.0.0-alpha.23/config/secrets/*
-
-# Sensible Daten & Konfiguration
-/.old-5.0.0-alpha.23/config/_dev.local.php
-
-/.old-5.0.0-alpha.23/public/assets/css/*.map
-/.old-5.0.0-alpha.23/public/assets/js/*.map
-
-# Generierte Frontend-Assets (Build-Artefakte)
-# Wir vertrauen unserem Build-Prozess (npm run make)
-/.old-5.0.0-alpha.23/public/assets/css/*
-/.old-5.0.0-alpha.23/public/assets/js/*
-!/.old-5.0.0-alpha.23/public/assets/css/.gitkeep
-!/.old-5.0.0-alpha.23/public/assets/js/.gitkeep
-public/migration_data/*
+!public/assets/images/characters/
+public/assets/images/characters/faces/*
+!public/assets/images/characters/faces/*.gif
+public/assets/images/characters/main/*
+!public/assets/images/characters/main/*.webp
+public/assets/images/characters/profiles/*
+!public/assets/images/characters/profiles/*.webp
+public/assets/images/characters/swatches/*
+!public/assets/images/characters/swatches/.gif
+public/assets/images/layout/footer/*
+!public/assets/images/layout/footer/*.webp
+public/assets/images/layout/hires/*
+!public/assets/images/layout/hires/*.webp
+public/assets/images/layout/lowres/*
+!public/assets/images/layout/lowres/*.webp
+public/assets/images/layout/navigation/*
+!public/assets/images/layout/navigation/*.webp
+!public/assets/images/layout/navigation/*
+!public/assets/images/layout/ui/*
+!public/assets/images/layout/banner_day.webp
+!public/assets/images/layout/banner_night.webp
+public/assets/images/reports/*
+!public/assets/images/reports/.gitkeep

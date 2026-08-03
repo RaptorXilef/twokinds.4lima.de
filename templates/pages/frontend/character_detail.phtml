@@ -12,7 +12,7 @@ use App\Core\Entity\Character;
  * @var string    $appRoot
  */
 $baseUrl         = \rtrim($settings['base_url'], '/');
-$placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.jpg";
+$placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.webp";
 
 // Das kleine Profilbild für den Header
 $profilePicUrl = $character->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$character->picUrl}" : $placeholderPath;

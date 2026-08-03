@@ -86,7 +86,7 @@ export class ArchiveManager {
                     img.addEventListener('error', () => {
                         img.src =
                             window.location.origin +
-                            '/assets/images/layout/thumbnails/placeholder.jpg';
+                            '/assets/images/layout/thumbnails/placeholder.webp';
                         img.closest('a').classList.add('loaded');
                     });
                     if (img.dataset.src) img.src = img.dataset.src;

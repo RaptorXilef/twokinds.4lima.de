@@ -1,1 +1,0 @@
-<?php require_once __DIR__ . '/../../src/renderer/renderer_comic_page.php'; ?>
