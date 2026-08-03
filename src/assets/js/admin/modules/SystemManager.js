@@ -192,7 +192,6 @@ export class SystemManager {
         if (payload) {
             if (titleEl) titleEl.textContent = 'Benutzer bearbeiten';
             setVal('user_id', payload.id);
-            setVal('user_name', payload.name);
             setVal('user_username', payload.username || payload.name);
             setVal('user_email', payload.email);
             setVal('user_role', payload.role_id || payload.roleId);
@@ -204,6 +203,7 @@ export class SystemManager {
         } else {
             if (titleEl) titleEl.textContent = 'Neuen Benutzer anlegen';
             setVal('user_id', '');
+
             setProp('user_password', 'placeholder', 'Passwort');
             setProp('user_password_confirm', 'placeholder', 'Passwort wiederholen');
             setProp('user_password', 'required', true);

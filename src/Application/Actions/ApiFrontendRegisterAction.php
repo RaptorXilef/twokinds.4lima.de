@@ -44,6 +44,7 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
         // Lese die E-Mail-Config aus und baue die ausführliche Meldung
         $mailConfig = $this->config->getMailSettings();
         $fromEmail  = $mailConfig['from'] ?? 'no-reply@twokinds.4lima.de';
+
         $successMsg = 'Fast geschafft! Ich habe dir einen Bestätigungslink gesendet.<br><br>' .
             '&bull; Du hast <strong>15 Minuten</strong> Zeit, um auf den Link in der E-Mail zu klicken.<br>' .
             '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
@@ -106,6 +107,13 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
 
             return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
         }
+
+        if ($this->userRepository->findByEmail($email)) {
+            $this->rateLimiter->recordFailedAttempt($ip);
+
+            return JsonResponse::error('Diese E-Mail-Adresse wird bereits verwendet.', 400);
+        }
+
         // Admin-Namen vor Registrierung schützen! ENDE
 
         // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
@@ -116,25 +124,6 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
             return JsonResponse::error('Die E-Mail-Domain scheint keine E-Mails empfangen zu können.', 400);
         }
 
-        if (\strlen($password) < 8) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
-        }
-
-        if ($this->userRepository->findByUsername($username)) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
-        }
-
-        if ($this->userRepository->findByEmail($email)) {
-            $this->rateLimiter->recordFailedAttempt($ip);
-
-            return JsonResponse::error('Diese E-Mail-Adresse wird bereits verwendet.', 400);
-        }
-
-        // User anlegen
         $newId = $this->auth->generateId('usr_');
         $hash  = \password_hash($password, \PASSWORD_DEFAULT);
 
@@ -147,18 +136,10 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
             'pending',
             new \DateTimeImmutable(),
             false,
+            false,
+            false,
         );
-        $this->userRepository->save($user);
 
-        // Rolle auf 'pending' gesetzt
-        $user = new User(
-            $newId,
-            new Username($username),
-            new EmailAddress($email),
-            $hash,
-            'pending',
-            new \DateTimeImmutable(),
-        );
         $this->userRepository->save($user);
 
         // Bestätigungs-E-Mail senden
