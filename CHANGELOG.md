@@ -1,6 +1,22 @@
 # Changelog
 
+## [6.7.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.7.0...v6.7.1) (2026-08-04)
 
+### 🐛 Bug Fixes
+
+* enforce strict kebab-case for character assets to prevent linux deployment errors ([de6c06e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/de6c06e092a8d30ab7e86cbc05b7a64ea8eb2513))
+* **parser:** preserve whitespace after CSS functions and percentages ([52b7d06](https://github.com/RaptorXilef/twokinds.4lima.de/commit/52b7d063f2d8d63deb2710f36c049b43d1f64a37))
+* resolve lingering path and syntax errors from asset restructuring ([52868a3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/52868a3a1f66fb2ea2e4780261c45359293fa3d5))
+* session timer throws type error on frontend expiration ([f138672](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f1386729b641ec07a8be357f349a3fb84e2a2d2c))
+
+### ⚙️ Refactoring
+
+* restructure asset tree and implement auto-slugging for uploads ([0b94619](https://github.com/RaptorXilef/twokinds.4lima.de/commit/0b94619119797d37d315d472a45886c3767fc22d))
+
+### 🏗️ Build System
+
+* **deps:** bump undici in the npm_and_yarn group across 1 directory ([6cf721f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6cf721f960b979808ff49235c65f90ea4243198b))
+* migrate release-it pipeline to ES modules and update changelog generator dependencies ([d32b13c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d32b13c04711af774469b4d2c6c5c06699b1b99c))
 
 ## [6.7.0](https://github.com///compare/v6.6.0...v6.7.0) (2026-08-04)
 
