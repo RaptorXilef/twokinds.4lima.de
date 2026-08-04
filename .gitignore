@@ -193,6 +193,7 @@ public/assets/js/*
 !public/assets/images/characters/avatars/
 public/assets/images/characters/avatars/*
 !public/assets/images/characters/avatars/*.gif
+!public/assets/images/characters/avatars/*.gitkeep
 !public/assets/images/characters/palettes/
 public/assets/images/characters/palettes/*
 !public/assets/images/characters/palettes/*.gif
@@ -218,6 +219,7 @@ public/assets/images/reports/*
 !public/assets/images/system/
 public/assets/images/system/*
 !public/assets/images/system/*.webp
+!public/assets/images/system/*.gitkeep
 
 # Theme (nur webp erlauben)
 !public/assets/images/theme/

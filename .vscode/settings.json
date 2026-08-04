@@ -259,7 +259,11 @@
             "statusBarItem.remoteHoverForeground": "#000000"
         }
     },
-    "viraTheme.accent": "White"
+    "viraTheme.accent": "White",
+    
+    // Deaktiviere Autoupdate um die Installation von 1.131.0 zu verhindern!
+    "update.enableWindowsBackgroundUpdates": false,
+    "update.mode": "manual"
 
     // -- HINWEISE ---
     // vscode://settings/php-cs-fixer.allow-risky muss auf true gesetzt werden! Also Haken rein!
