@@ -80,8 +80,8 @@ use App\Core\Entity\ComicPage;
                 <?php foreach ($comics as $comic) {
                     $cId        = $comic->id->value;
                     $cb         = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-                    $thumbPath  = "{$baseUrl}/assets/images/comic/thumbnails/{$cId}.webp{$cb}";
-                    $socialPath = "{$baseUrl}/assets/images/comic/socialmedia/{$cId}.jpg{$cb}";
+                    $thumbPath  = "{$baseUrl}/assets/images/comics/thumbnails/{$cId}.webp{$cb}";
+                    $socialPath = "{$baseUrl}/assets/images/comics/social/{$cId}.jpg{$cb}";
 
                     // Alle Daten für JS bereitstellen
                     $charIds   = \array_map(fn ($id) => $id->value, $comic->characterIds);

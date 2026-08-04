@@ -15,7 +15,7 @@ final readonly class LocalImageStorage implements ImageStorageInterface
 
     public function uploadImage(string $folder, string $id, array $file): bool
     {
-        // Zielordner: z.B. /public/assets/images/comic/hires
+        // Zielordner: z.B. /public/assets/images/comics/hires
         $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/' . \trim($folder, '/');
 
         if (! \is_dir($publicDir)) {

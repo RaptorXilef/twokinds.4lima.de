@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @var string $appRoot
  */
 $baseUrl         = \rtrim($settings['base_url'], '/');
-$placeholderPath = "{$baseUrl}/assets/images/layout/thumbnails/placeholder.webp";
+$placeholderPath = "{$baseUrl}/assets/images/system/placeholder.webp";
 include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 <main class="content-area">
     <article class="max-w-900 w-100 center-block">
@@ -43,10 +43,10 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
                 foreach ($chapterComics as $comic) {
                     $comicId   = $comic->id->value;
                     $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-                    $thumbDisk = "{$appRoot}/public/assets/images/comic/thumbnails/{$comicId}.webp";
+                    $thumbDisk = "{$appRoot}/public/assets/images/comics/thumbnails/{$comicId}.webp";
                     $thumbPath = \file_exists($thumbDisk)
-                        ? "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}"
-                        : "{$baseUrl}/assets/images/layout/thumbnails/in_translation.webp";
+                        ? "{$baseUrl}/assets/images/comics/thumbnails/{$comicId}.webp{$cb}"
+                        : "{$baseUrl}/assets/images/system/in-translation.webp";
                     $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
                     $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
                     $tooltipText = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : ''); ?>

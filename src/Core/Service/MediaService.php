@@ -136,8 +136,8 @@ final readonly class MediaService
      */
     public function renameComicMedia(string $oldId, string $newId): void
     {
-        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
-        $folders   = ['hires', 'lowres', 'thumbnails', 'socialmedia'];
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
+        $folders   = ['hires', 'lowres', 'thumbnails', 'social'];
 
         foreach ($folders as $folder) {
             $oldFile = "$targetDir/$folder/$oldId.webp";

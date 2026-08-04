@@ -76,7 +76,7 @@ Um das Projekt lokal einzurichten, folge diesen Schritten:
 
 Nach der Installation kannst du die Webseite über deinen Browser aufrufen (z.B. `http://localhost/`).
 
-- **Comic-Seiten:** Navigiere zu den Comic-Seiten über die URL-Struktur (z.B. `http://localhost/comic/YYYYMMDD.php`).
+- **Comic-Seiten:** Navigiere zu den Comic-Seiten über die URL-Struktur (z.B. `http://localhost/comics/YYYYMMDD.php`).
 - **Lesezeichen:** Besuche `http://localhost/lesezeichen.php`, um deine gespeicherten Lesezeichen zu verwalten.
 - **Adminbereich:** Gehe zu `http://localhost/admin`, um die dortigen Tools zu nutzen. Beim ersten Aufruf des Adminbereichs kannst du ein Nutzernamen und Passwort festlegen.
 
@@ -90,7 +90,7 @@ Nach der Installation kannst du die Webseite über deinen Browser aufrufen (z.B.
 │   └── rss_generator.php      # PHP-Skript zum Generieren des RSS-Feeds
 ├── assets/                    # Statische Assets wie Icons und Bilder
 │   └── icons/
-├── comic/                     # Enthält die einzelnen Comic-PHP-Dateien (z.B. 20250604.php)
+├── comics/                     # Enthält die einzelnen Comic-PHP-Dateien (z.B. 20250604.php)
 ├── src/
 │   ├── components/            # Wiederverwendbare PHP-Komponenten
 │   │   ├── comic_page_renderer.php # Zentraler Renderer für Comic-Seiten
@@ -117,7 +117,7 @@ Nach der Installation kannst du die Webseite über deinen Browser aufrufen (z.B.
 
 ## Anpassung
 
-- **Comic-Daten:** Bearbeite `admin/data_editor_comic.php` oder manuell `src/config/comic_var.json`, um neue Comic-Seiten hinzuzufügen oder bestehende Metadaten zu ändern. Jede Comic-Seite sollte eine entsprechende PHP-Datei im `comic/`-Verzeichnis haben (z.B. `20250604.php`), die den `comic_page_renderer.php` inkludiert.
+- **Comic-Daten:** Bearbeite `admin/data_editor_comic.php` oder manuell `src/config/comic_var.json`, um neue Comic-Seiten hinzuzufügen oder bestehende Metadaten zu ändern. Jede Comic-Seite sollte eine entsprechende PHP-Datei im `comics/`-Verzeichnis haben (z.B. `20250604.php`), die den `comic_page_renderer.php` inkludiert.
 - **RSS-Feed:** `admin/generator_rss.php` oder passe `src/config/rss_config.json` manuell an, um den Titel, die Beschreibung, den Autor und die maximale Anzahl der RSS-Einträge zu konfigurieren.
 - **Design:** Modifiziere `src/layout/css/main.css` und `src/layout/css/main_dark.css` für Designänderungen (wenn aktiviert) Standartmäßig laden die Originalen css von <https://twokinds.keenspot.com>.
 - **JavaScript-Logik:** `src/layout/js/comic.js` enthält die clientseitige Logik für Lesezeichen und Navigation.

@@ -52,4 +52,19 @@ final class Sanitizer
 
         return \trim($sanitizer->sanitize($inputStr));
     }
+
+    public static function slugify(string $filename): string
+    {
+        $info = \pathinfo($filename);
+        $name = $info['filename'];
+        $ext = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
+
+        $name = \mb_strtolower($name, 'UTF-8');
+        $name = \str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $name);
+
+        $name = \preg_replace('/[^a-z0-9]+/', '-', $name);
+        $name = \trim(\preg_replace('/-+/', '-', (string)$name), '-');
+
+        return $name . $ext;
+    }
 }

@@ -91,7 +91,7 @@ export class CharacterEditor {
             if (prevMain) {
                 prevMain.style.display = value ? 'block' : 'none';
                 prevMain.src = value
-                    ? `${this.api.baseUrl}/assets/images/characters/main/${value}`
+                    ? `${this.api.baseUrl}/assets/images/characters/portraits/${value}`
                     : '';
             }
         }
@@ -100,7 +100,7 @@ export class CharacterEditor {
             if (prevSwatch) {
                 prevSwatch.style.display = value ? 'block' : 'none';
                 prevSwatch.src = value
-                    ? `${this.api.baseUrl}/assets/images/characters/swatches/${value}`
+                    ? `${this.api.baseUrl}/assets/images/characters/palettes/${value}`
                     : '';
             }
         }

@@ -83,7 +83,6 @@ ToDo*.md
 !/.env.example
 config/secrets/*
 /config/secrets.php
-/public/dev/
 /config/_dev.local.php
 *.local*
 
@@ -156,6 +155,9 @@ public/google*.html
 # ==============================================================================
 # 7. PROJEKTSPEZIFISCH: ASSETS & BILDER
 # ==============================================================================
+# Development Notes
+!public/dev/.php
+
 # Quell-Bilder (src) ignorieren
 src/assets/images/
 
@@ -184,44 +186,59 @@ public/assets/js/*
 # --- IMAGES ---
 !public/assets/images/
 
-# Comic-Bilder komplett ignorieren
-public/assets/images/comic/
+# Admin Bilder
+
+# Characters (komplexe Ausnahmen)
+!public/assets/images/characters/
+!public/assets/images/characters/avatars/
+public/assets/images/characters/avatars/*
+!public/assets/images/characters/avatars/*.gif
+!public/assets/images/characters/palettes/
+public/assets/images/characters/palettes/*
+!public/assets/images/characters/palettes/*.gif
+!public/assets/images/characters/portraits/
+public/assets/images/characters/portraits/*
+!public/assets/images/characters/portraits/*.webp
+!public/assets/images/characters/profiles/
+public/assets/images/characters/profiles/*
+!public/assets/images/characters/profiles/*.webp
 
 # (TODO: Wenn übersetzt auf GitHub synchronisieren)
 public/assets/images/characters/refsheets/
 
-# Admin Bilder (nur webp erlauben)
-!public/assets/images/admin/
-!public/assets/images/admin/ui/
-public/assets/images/admin/ui/*
-!public/assets/images/admin/ui/*.webp
-
-# Characters (komplexe Ausnahmen)
-!public/assets/images/characters/
-public/assets/images/characters/faces/*
-!public/assets/images/characters/faces/*.gif
-public/assets/images/characters/main/*
-!public/assets/images/characters/main/*.webp
-public/assets/images/characters/profiles/*
-!public/assets/images/characters/profiles/*.webp
-public/assets/images/characters/swatches/*
-!public/assets/images/characters/swatches/*.gif
-
-# Layout & UI (nur webp erlauben)
-!public/assets/images/layout/
-public/assets/images/layout/footer/*
-!public/assets/images/layout/footer/*.webp
-public/assets/images/layout/hires/*
-!public/assets/images/layout/hires/*.webp
-public/assets/images/layout/lowres/*
-!public/assets/images/layout/lowres/*.webp
-public/assets/images/layout/navigation/*
-!public/assets/images/layout/navigation/*.webp
-!public/assets/images/layout/ui/*
-!public/assets/images/layout/banner_day.webp
-!public/assets/images/layout/banner_night.webp
+# Comic-Bilder komplett ignorieren
+public/assets/images/comics/
 
 # Reports
 !public/assets/images/reports/
 public/assets/images/reports/*
 !public/assets/images/reports/.gitkeep
+
+# System
+!public/assets/images/system/
+public/assets/images/system/*
+!public/assets/images/system/*.webp
+
+# Theme (nur webp erlauben)
+!public/assets/images/theme/
+public/assets/images/theme/*
+!public/assets/images/theme/*.webp
+
+!public/assets/images/theme/banners/
+public/assets/images/theme/banners/*
+!public/assets/images/theme/banners/*.webp
+
+!public/assets/images/theme/footer-chars/
+public/assets/images/theme/footer-chars/*
+!public/assets/images/theme/footer-chars/*.webp
+
+!public/assets/images/theme/icons/
+public/assets/images/theme/icons/*
+!public/assets/images/theme/icons/*.png
+!public/assets/images/theme/icons/*.svg
+!public/assets/images/theme/icons/*.webp
+
+!public/assets/images/theme/nav/
+public/assets/images/theme/nav/*
+!public/assets/images/theme/nav/*.png
+!public/assets/images/theme/nav/*.webp

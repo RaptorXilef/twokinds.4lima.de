@@ -141,7 +141,7 @@ export class MassUploadManager {
 
             // 2. Server Konflikte prüfen
             const folder = isHires ? 'hires' : 'lowres';
-            const serverUrl = `${this.api.baseUrl}/assets/images/comic/${folder}/${targetId}.webp`;
+            const serverUrl = `${this.api.baseUrl}/assets/images/comics/${folder}/${targetId}.webp`;
 
             const serverExists = await new Promise((resolve) => {
                 const img = new Image();
@@ -242,7 +242,7 @@ export class MassUploadManager {
                 const img = new Image();
                 img.onload = () => resolve(true);
                 img.onerror = () => resolve(false);
-                img.src = `${this.api.baseUrl}/assets/images/comic/${folder}/${testId}.webp`;
+                img.src = `${this.api.baseUrl}/assets/images/comics/${folder}/${testId}.webp`;
             });
 
             if (!serverExists) return testId;

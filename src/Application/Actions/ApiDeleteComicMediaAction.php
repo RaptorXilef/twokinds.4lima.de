@@ -30,8 +30,8 @@ final readonly class ApiDeleteComicMediaAction implements ActionInterface
             return JsonResponse::error('Keine ID übergeben.', 400);
         }
 
-        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
-        $folders   = ['hires', 'lowres', 'thumbnails', 'socialmedia'];
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
+        $folders   = ['hires', 'lowres', 'thumbnails', 'social'];
 
         $deleted = 0;
         foreach ($folders as $folder) {

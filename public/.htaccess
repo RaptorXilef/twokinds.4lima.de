@@ -152,6 +152,9 @@ LimitRequestBody 10485760
     RewriteCond %{REQUEST_URI} !^/index\.php$ [NC]
     # ToDo migrate auf dem LiveServer entfernen, wenn migration abgeschlossen ist
     RewriteCond %{REQUEST_URI} !^/migrate\.php$ [NC]
+    RewriteCond %{REQUEST_URI} !^/image_migration\.php$ [NC]
+    RewriteCond %{REQUEST_URI} !^/image_fixer\.php$ [NC]
+    # TODO ENTFERNEN ENDE
     RewriteCond %{REQUEST_URI} !^/api/ [NC]
     RewriteRule ^ /%1 [R=301,L,NE]
 
@@ -159,7 +162,7 @@ LimitRequestBody 10485760
     # Verhindert, dass andere Webseiten deine Bilder direkt einbinden und Traffic klauen
     RewriteCond %{HTTP_REFERER} !^$
     RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?twokinds\.4lima\.(de|local) [NC]
-    RewriteCond %{REQUEST_URI} ^/assets/images/comic/ [NC]
+    RewriteCond %{REQUEST_URI} ^/assets/images/comics/ [NC]
     RewriteRule \.(jpg|jpeg|png|gif|webp|avif)$ - [NC,F,L]
 
     # 5.5: THE FRONT CONTROLLER (Das Herzstück der Architektur)

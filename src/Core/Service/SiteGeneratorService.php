@@ -143,7 +143,7 @@ final class SiteGeneratorService
                 $feedComics[] = $c;
             } else {
                 // Fallback: Wenn in der DB kein Zeitstempel steht, prüfe ob die Datei physisch existiert
-                if (\file_exists($publicDir . '/assets/images/comic/lowres/' . $c->id->value . '.webp')) {
+                if (\file_exists($publicDir . '/assets/images/comics/lowres/' . $c->id->value . '.webp')) {
                     $feedComics[] = $c;
                 }
             }
@@ -168,7 +168,7 @@ final class SiteGeneratorService
             $xml->writeElement('guid', $url);
 
             // Exakter Nachbau deines alten HTML-Formats für die Feed-Reader
-            $imgSrc = $baseUrl . '/assets/images/comic/lowres/' . $comic->id->value . '.webp';
+            $imgSrc = $baseUrl . '/assets/images/comics/lowres/' . $comic->id->value . '.webp';
             $desc   = '<p><img src="' . $imgSrc . '" alt="' . \htmlspecialchars($title, \ENT_QUOTES) . '" style="max-width: 100%; height: auto;" /></p>';
 
             if ($comic->transcript !== '') {

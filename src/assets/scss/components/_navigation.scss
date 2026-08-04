@@ -99,7 +99,8 @@ body.theme-night .comicnav button {
     overflow: hidden;
     text-indent: -100em;
     white-space: nowrap;
-    background: url('#{$base-url}/assets/images/layout/ui/bookmark.png?c=20251024') 0 0 no-repeat;
+    background: url('#{$base-url}/assets/images/theme/icons/bookmark.png?c=20260804')
+        0 0 no-repeat;
     background-size: contain;
     border-radius: 0;
     transform: translateY(-36px);
@@ -113,7 +114,8 @@ body.theme-night .comicnav button {
 }
 
 .comicnav button.bookmark.bookmarked {
-    background: url('#{$base-url}/assets/images/layout/ui/bookmark_active.png?c=20251024') 0 0 no-repeat;
+    background: url('#{$base-url}/assets/images/theme/icons/bookmark-active.png?c=20260804')
+        0 0 no-repeat;
     background-size: contain;
 }
 
@@ -156,41 +158,44 @@ body.theme-night .comicnav button.bookmark.bookmarked {
 
 .comicnav .navbegin .nav-wrapper {
     padding-left: 35px;
-    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin.png?c=20250916') 0 50% no-repeat;
+    background: url('#{$base-url}/assets/images/theme/nav/begin.png?c=20250916')
+        0 50% no-repeat;
 }
 
 .comicnav .navprev .nav-wrapper {
     padding-left: 26px;
-    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left.png?c=20250916') 0 50% no-repeat;
+    background: url('#{$base-url}/assets/images/theme/nav/arrow-left.png?c=20250916')
+        0 50% no-repeat;
 }
 
 .comicnav .navnext .nav-wrapper {
     padding-right: 26px;
-    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right.png?c=20250916') 100% 50%
-        no-repeat;
+    background: url('#{$base-url}/assets/images/theme/nav/arrow-right.png?c=20250916')
+        100% 50% no-repeat;
 }
 
 .comicnav .navend .nav-wrapper {
     padding-right: 35px;
-    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end.png?c=20250916') 100% 50% no-repeat;
+    background: url('#{$base-url}/assets/images/theme/nav/end.png?c=20250916')
+        100% 50% no-repeat;
 }
 
 // --- Icons (Dark Mode) ---
 
 body.theme-night .comicnav .navbegin .nav-wrapper {
-    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-begin-dark.png?c=20250916');
+    background-image: url('#{$base-url}/assets/images/theme/nav/begin-dark.png?c=20250916');
 }
 
 body.theme-night .comicnav .navprev .nav-wrapper {
-    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-left-dark.png?c=20250916');
+    background-image: url('#{$base-url}/assets/images/theme/nav/arrow-left-dark.png?c=20250916');
 }
 
 body.theme-night .comicnav .navnext .nav-wrapper {
-    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-arrow-right-dark.png?c=20250916');
+    background-image: url('#{$base-url}/assets/images/theme/nav/arrow-right-dark.png?c=20250916');
 }
 
 body.theme-night .comicnav .navend .nav-wrapper {
-    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-end-dark.png?c=20250916');
+    background-image: url('#{$base-url}/assets/images/theme/nav/end-dark.png?c=20250916');
 }
 
 // --- Report Issue Button ---
@@ -201,12 +206,13 @@ body.theme-night .comicnav .navend .nav-wrapper {
 
 .comicnav .nav-report-issue .nav-wrapper {
     padding-left: 28px;
-    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue.png?c=20251029') 0 50% no-repeat;
+    background: url('#{$base-url}/assets/images/theme/nav/issue.png?c=20251029')
+        0 50% no-repeat;
     background-size: 20px;
 }
 
 body.theme-night .comicnav .nav-report-issue .nav-wrapper {
-    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-issue-dark.png?c=20251029');
+    background-image: url('#{$base-url}/assets/images/theme/nav/issue-dark.png?c=20251029');
 }
 
 // --- Archive Button ---
@@ -245,11 +251,12 @@ body.theme-night .comicnav .navarchive {
 
 .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
     padding-left: 55px;
-    background: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en.png?c=20250916') 0 50% no-repeat;
+    background: url('#{$base-url}/assets/images/theme/nav/de-en.png?c=20250916')
+        0 50% no-repeat;
 }
 
 body.theme-night .comicnav.bottomnav .nav-lang-toggle .nav-wrapper {
-    background-image: url('#{$base-url}/assets/images/layout/navigation/comic-nav-de-en-dark.png?c=20250916');
+    background-image: url('#{$base-url}/assets/images/theme/nav/de-en-dark.png?c=20250916');
 }
 
 // Helper Class

@@ -53,7 +53,7 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
             }
 
             $files     = $request->files;
-            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
+            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
 
             $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
             $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
@@ -63,7 +63,7 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
             }
 
             // Ordnerstruktur sicherstellen
-            foreach (['hires', 'lowres', 'thumbnails', 'socialmedia'] as $sub) {
+            foreach (['hires', 'lowres', 'thumbnails', 'social'] as $sub) {
                 $path = "$targetDir/$sub";
                 if (! \is_dir($path)) {
                     @\mkdir($path, 0o755, true);
@@ -94,7 +94,7 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
                 // SOCIAL MEDIA: Als .jpg speichern.
                 // Wir nutzen hier vorübergehend noch einen simplen Center-Crop für den automatischen Massenupload,
                 // aber mit dem neuen 1200x630 (1.91:1) Breitbild-Verhältnis!
-                $socialPath = "$targetDir/socialmedia/{$comicIdStr}.jpg";
+                $socialPath = "$targetDir/social/{$comicIdStr}.jpg";
 
                 // Temporärer Auto-Crop (bis der User es manuell im Cropper ändert)
                 // Dies erfordert, dass dein MediaService->generateSquareCrop theoretisch auch Rechtecke kann,

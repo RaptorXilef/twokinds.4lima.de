@@ -290,7 +290,7 @@ export class ReportManager {
         // Link oder Text
         const comicIdContainer = document.getElementById('rep-modal-comic-id');
         if (payload.comicId) {
-            comicIdContainer.innerHTML = `<a href="${this.api.baseUrl}/comic/${payload.comicId}" target="_blank">${payload.comicId}</a>`;
+            comicIdContainer.innerHTML = `<a href="${this.api.baseUrl}/comics/${payload.comicId}" target="_blank">${payload.comicId}</a>`;
         } else {
             comicIdContainer.innerHTML =
                 '<em style="color: var(--text-color-faded);">Allgemeine Website</em>';

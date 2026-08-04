@@ -22,7 +22,7 @@ final readonly class FeedService
     {
         $comics    = $this->comicRepo->findAll(); // Sortierung DESC passiert im Repo
         $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
-        $lowResUrl = $baseUrl . '/assets/images/comic/lowres';
+        $lowResUrl = $baseUrl . '/assets/images/comics/lowres';
 
         $xml     = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"></rss>');
         $channel = $xml->addChild('channel');

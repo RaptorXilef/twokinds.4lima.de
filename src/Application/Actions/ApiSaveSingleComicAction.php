@@ -77,7 +77,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
 
             // --- BILD UPLOAD LOGIK ---
             $files     = $request->files;
-            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
+            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
 
             $hasNewImage    = false;
             $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
@@ -87,7 +87,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 $hasNewImage = true;
 
                 // Ordner-Struktur sicherstellen
-                foreach (['hires', 'lowres', 'thumbnails', 'socialmedia'] as $sub) {
+                foreach (['hires', 'lowres', 'thumbnails', 'social'] as $sub) {
                     $path = "$targetDir/$sub";
                     if (! \is_dir($path)) {
                         @\mkdir($path, 0o755, true);
@@ -123,7 +123,7 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
                 // 3. Thumbnails & Social Media Crop generieren
                 if ($baseProcessPath !== '') {
                     $this->mediaService->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$dto->id}.webp", 200);
-                    $socialPath = "$targetDir/socialmedia/{$dto->id}.jpg";
+                    $socialPath = "$targetDir/social/{$dto->id}.jpg";
                     $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
                 }
             }

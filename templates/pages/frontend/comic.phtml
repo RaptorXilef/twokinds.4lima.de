@@ -21,20 +21,20 @@ use App\Core\Entity\ComicPage;
 $baseUrl     = \rtrim($settings['base_url'], '/');
 $comicId     = $comic->id->value;
 $cb          = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-$baseImgDir  = "{$appRoot}/public/assets/images/comic";
-$fallbackDir = "{$baseUrl}/assets/images/layout";
+$baseImgDir  = "{$appRoot}/public/assets/images/comics";
+$fallbackDir = "{$baseUrl}/assets/images/system";
 
 // Bilder-Pfade
 $imageLowres = \file_exists("{$baseImgDir}/lowres/{$comicId}.webp")
-    ? "{$baseUrl}/assets/images/comic/lowres/{$comicId}.webp{$cb}"
-    : "{$fallbackDir}/lowres/in_translation.webp";
+    ? "{$baseUrl}/assets/images/comics/lowres/{$comicId}.webp{$cb}"
+    : "{$fallbackDir}/in-translation.webp";
 $imageHires = \file_exists("{$baseImgDir}/hires/{$comicId}.webp")
-    ? "{$baseUrl}/assets/images/comic/hires/{$comicId}.webp{$cb}"
-    : "{$fallbackDir}/hires/in_translation.webp";
+    ? "{$baseUrl}/assets/images/comics/hires/{$comicId}.webp{$cb}"
+    : "{$fallbackDir}/in-translation-hires.webp";
 $thumbnailPath = \file_exists("{$baseImgDir}/thumbnails/{$comicId}.webp")
-    ? "{$baseUrl}/assets/images/comic/thumbnails/{$comicId}.webp{$cb}"
+    ? "{$baseUrl}/assets/images/comics/thumbnails/{$comicId}.webp{$cb}"
     : "{$fallbackDir}/thumbnails/in_translation.webp";
-$canonicalUrl = "{$baseUrl}/comic/{$comicId}";
+$canonicalUrl = "{$baseUrl}/comics/{$comicId}";
 
 // Fallback-Verarbeitung für Sketches aus alten DB-Einträgen
 $sketchLink = $comic->sketchUrl;

@@ -13,6 +13,7 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Core\Entity\Character;
+use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Core\Service\MediaService;
@@ -60,14 +61,14 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             $baseTargetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters';
 
             // Verzeichnisse sicherstellen
-            foreach (['profiles', 'main', 'swatches', 'refsheets'] as $sub) {
+            foreach (['profiles', 'portraits', 'palettes', 'refsheets'] as $sub) {
                 $dir = $baseTargetDir . '/' . $sub;
                 if (! \is_dir($dir)) {
                     @\mkdir($dir, 0o755, true);
                 }
             }
 
-            $safeName = \preg_replace('/[^a-zA-Z0-9_-]/', '', \str_replace(' ', '_', $dto->name));
+            $safeName = \pathinfo(Sanitizer::slugify($dto->name), \PATHINFO_FILENAME);
             if ($safeName === '') {
                 $safeName = $charIdStr;
             }
@@ -116,7 +117,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 if ($request->files['main_pic']['error'] === \UPLOAD_ERR_OK) {
                     $file     = $request->files['main_pic'];
                     $fileName = $safeName . '_main.webp';
-                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/main/' . $fileName, 2000)) {
+                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/portraits/' . $fileName, 2000)) {
                         $mainPic = $fileName;
                     } else {
                         $warnings[] = 'Hauptbild: Konnte vom Server nicht verarbeitet werden.';
@@ -133,7 +134,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 if ($request->files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
                     $file     = $request->files['swatch_pic'];
                     $fileName = $safeName . '_swatch.webp';
-                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/swatches/' . $fileName, 1500)) {
+                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/palettes/' . $fileName, 1500)) {
                         $swatchPic = $fileName;
                     } else {
                         $warnings[] = 'Farbpalette: Konnte vom Server nicht verarbeitet werden.';

@@ -26,7 +26,7 @@ final readonly class ApiListComicMediaAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $baseDir  = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
+        $baseDir  = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
         $thumbDir = $baseDir . '/thumbnails';
 
         if (! \is_dir($thumbDir)) {
@@ -43,9 +43,9 @@ final readonly class ApiListComicMediaAction implements ActionInterface
                 // Wir schicken dem Frontend Infos, welche Versionen existieren
                 'has_hires'  => \file_exists("$baseDir/hires/$file"),
                 'has_lowres' => \file_exists("$baseDir/lowres/$file"),
-                'has_social' => \file_exists("$baseDir/socialmedia/$file"),
+                'has_social' => \file_exists("$baseDir/social/$file"),
                 'has_thumb'  => \file_exists("$baseDir/thumbnails/$file"),
-                'url'        => "/assets/images/comic/thumbnails/{$file}",
+                'url'        => "/assets/images/comics/thumbnails/{$file}",
             ];
         }
 

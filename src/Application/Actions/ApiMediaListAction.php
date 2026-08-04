@@ -27,7 +27,7 @@ final readonly class ApiMediaListAction implements ActionInterface
         }
 
         $folder  = $request->get['folder'] ?? 'profiles';
-        $allowed = ['profiles', 'main', 'swatches', 'refsheets'];
+        $allowed = ['profiles', 'portraits', 'palettes', 'refsheets'];
 
         if (! \in_array($folder, $allowed, true)) {
             $folder = 'profiles';

@@ -44,10 +44,10 @@ final readonly class ApiCropSocialMediaAction implements ActionInterface
                 return JsonResponse::error('Ungültige Schnitt-Parameter.', 400);
             }
 
-            $targetDir  = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comic';
+            $targetDir  = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
             $sourcePath = "$targetDir/hires/$comicId.webp";
             // WICHTIG: JPG für maximale Kompatibilität!
-            $targetPath = "$targetDir/socialmedia/$comicId.jpg";
+            $targetPath = "$targetDir/social/$comicId.jpg";
 
             if (! \file_exists($sourcePath)) {
                 return JsonResponse::error('Hires-Quellbild für den Zuschnitt nicht gefunden.', 404);

@@ -9,6 +9,7 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
+use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\Service\MediaService;
 
@@ -47,9 +48,11 @@ final readonly class ApiUploadMediaAction implements ActionInterface
                 $originalName = $files['name'][$i];
 
                 // Dateinamen bereinigen
-                $nameWithoutExt = \pathinfo($originalName, \PATHINFO_FILENAME);
-                $safeName       = \preg_replace('/[^a-zA-Z0-9_\-]/', '_', $nameWithoutExt);
-                $targetPath     = $targetDir . '/' . $safeName . '.webp';
+                // Kebab-Case Formatierung anwenden
+                $slugifiedName  = Sanitizer::slugify($originalName);
+                $nameWithoutExt = \pathinfo($slugifiedName, \PATHINFO_FILENAME);
+
+                $targetPath = $targetDir . '/' . $nameWithoutExt . '.webp';
 
                 // In WebP umwandeln (Max 1000px für Profile)
                 if ($this->mediaService->generateScaledImage($tmpName, $targetPath, 1000)) {

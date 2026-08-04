@@ -84,9 +84,7 @@ export class ArchiveManager {
                 linkContainer.querySelectorAll('img').forEach((img) => {
                     img.addEventListener('load', () => img.closest('a').classList.add('loaded'));
                     img.addEventListener('error', () => {
-                        img.src =
-                            window.location.origin +
-                            '/assets/images/layout/thumbnails/placeholder.webp';
+                        img.src = window.location.origin + '/assets/images/system/placeholder.webp';
                         img.closest('a').classList.add('loaded');
                     });
                     if (img.dataset.src) img.src = img.dataset.src;

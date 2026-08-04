@@ -67,7 +67,7 @@ final readonly class ApiUpdateReportStatusAction implements ActionInterface
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
                     if ($user && $user->wantsNotificationReport) {
                         $pageUrl = ! empty($row['comic_id'])
-                            ? \rtrim($this->config->getBaseUrl(), '/') . '/comic/' . $row['comic_id']
+                            ? \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $row['comic_id']
                             : \rtrim($this->config->getBaseUrl(), '/');
 
                         $this->mailService->sendTemplate($user->email->value, 'Dein Fehlerbericht wurde bearbeitet!', 'report_resolved', [

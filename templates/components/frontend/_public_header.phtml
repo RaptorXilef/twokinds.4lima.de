@@ -22,21 +22,21 @@ $metaTitle  = $pageTitle ?? ($settings['site_title'] ?? 'Twokinds auf Deutsch');
 $metaDesc   = $siteDescription ?? ($settings['site_description'] ?? 'Die deutsche Übersetzung des Webcomics Twokinds.');
 
 // Standard-Bild für alle Seiten (z.B. das Tages-Banner)
-$metaImage = $baseUrl . '/assets/images/layout/banner_night.webp';
+$metaImage = $baseUrl . '/assets/images/theme/banners/night.webp';
 $metaType  = 'website';
 
 // 1. Sind wir auf einer Comicseite? -> Zugeschnittenes Social-Media-Bild!
 if (isset($isComicPage) && $isComicPage && isset($comic)) {
     $metaType  = 'article';
     $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-    $metaImage = "{$baseUrl}/assets/images/comic/socialmedia/{$comic->id->value}.jpg{$cb}";
+    $metaImage = "{$baseUrl}/assets/images/comics/social/{$comic->id->value}.jpg{$cb}";
 
 // 2. Sind wir auf einer Charakter-Detailseite? -> Charakter-Artwork!
 } elseif (isset($character) && \is_object($character)) {
     $metaType = 'profile';
     // Bevorzuge das große Hauptbild, falle sonst auf das kleine Avatar-Bild zurück
     if (! empty($character->mainPic)) {
-        $metaImage = "{$baseUrl}/assets/images/characters/main/" . $character->mainPic;
+        $metaImage = "{$baseUrl}/assets/images/characters/portraits/" . $character->mainPic;
     } elseif (! empty($character->picUrl)) {
         $metaImage = "{$baseUrl}/assets/images/characters/profiles/" . $character->picUrl;
     }

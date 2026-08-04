@@ -211,7 +211,7 @@ export class ComicEditor {
             if (localPreviewId.length >= 8) {
                 this.loadPreviewWithProbe(
                     prevLocal,
-                    `${this.api.baseUrl}/assets/images/comic/lowres/${localPreviewId}`,
+                    `${this.api.baseUrl}/assets/images/comics/lowres/${localPreviewId}`,
                     localExts,
                     fallback
                 );
@@ -261,7 +261,7 @@ export class ComicEditor {
             if (localPreviewId.length >= 8) {
                 this.loadPreviewWithProbe(
                     prevSocial,
-                    `${this.api.baseUrl}/assets/images/comic/socialmedia/${localPreviewId}`,
+                    `${this.api.baseUrl}/assets/images/comics/social/${localPreviewId}`,
                     ['jpg', 'jpeg', 'webp', 'png'],
                     'https://placehold.co/191x100?text=Fehlt'
                 );

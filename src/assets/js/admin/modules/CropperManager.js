@@ -49,7 +49,7 @@ export class CropperManager {
             return;
         }
 
-        const imgUrl = `${this.api.baseUrl}/assets/images/comic/hires/${comicId}.webp?t=${Date.now()}`;
+        const imgUrl = `${this.api.baseUrl}/assets/images/comics/hires/${comicId}.webp?t=${Date.now()}`;
         const testImg = new Image();
 
         testImg.onload = () => {
@@ -124,7 +124,7 @@ export class CropperManager {
                 const timestamp = Date.now();
                 const prevSocial = document.getElementById('prev-comic-social');
                 if (prevSocial) {
-                    prevSocial.src = `${this.api.baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
+                    prevSocial.src = `${this.api.baseUrl}/assets/images/comics/social/${comicId}.jpg?t=${timestamp}`;
                 }
 
                 // Miniaturansicht in der Tabelle updaten
@@ -134,7 +134,7 @@ export class CropperManager {
                 if (tableRow) {
                     const tableThumb = tableRow.querySelectorAll('img')[1];
                     if (tableThumb) {
-                        tableThumb.src = `${this.api.baseUrl}/assets/images/comic/socialmedia/${comicId}.jpg?t=${timestamp}`;
+                        tableThumb.src = `${this.api.baseUrl}/assets/images/comics/social/${comicId}.jpg?t=${timestamp}`;
                         tableThumb.style.display = 'inline-block';
                     }
                 }
