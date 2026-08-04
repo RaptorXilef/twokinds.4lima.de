@@ -2,6 +2,23 @@
 
 
 
+## [6.7.0](https://github.com///compare/v6.6.0...v6.7.0) (2026-08-04)
+
+### 🚀 Features
+
+* implement maintenance mode flags and admin dev mode bypass ([b7551ae](https://github.com///commit/b7551aefeba879f56906788104e36f37519d8511))
+
+### 🐛 Bug Fixes
+
+* correct maintenance mode routing logic and logo path ([b2c00b1](https://github.com///commit/b2c00b12d6440c736694c893863ae5cce0451536))
+* correctly route api calls during maintenance mode and return valid JSON ([c07fc7b](https://github.com///commit/c07fc7ba6f03507276f3ef33786ad0815ad89d06))
+* resolve linter warnings and implement missing RBAC authorization checks ([0e1727e](https://github.com///commit/0e1727ee592dd31ce5502f98efe8964a53894267))
+* secure administrative read-only API endpoints with RBAC checks ([5be2607](https://github.com///commit/5be260761191d72abb8a48a4334964de8843b280))
+
+### ⚙️ Refactoring
+
+* clean up duplicate logic, unclosed php tags, and dead DOM references ([ebf5965](https://github.com///commit/ebf5965a807c99da72fea98e8a13d906f8819219))
+
 ## [6.6.0](https://github.com///compare/v6.5.8...v6.6.0) (2026-08-03)
 
 ### 🚀 Features
