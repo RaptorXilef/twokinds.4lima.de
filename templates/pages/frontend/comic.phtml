@@ -33,8 +33,8 @@ $imageHires = \file_exists("{$baseImgDir}/hires/{$comicId}.webp")
     : "{$fallbackDir}/in-translation-hires.webp";
 $thumbnailPath = \file_exists("{$baseImgDir}/thumbnails/{$comicId}.webp")
     ? "{$baseUrl}/assets/images/comics/thumbnails/{$comicId}.webp{$cb}"
-    : "{$fallbackDir}/thumbnails/in_translation.webp";
-$canonicalUrl = "{$baseUrl}/comics/{$comicId}";
+    : "{$fallbackDir}/in-translation-thumbnail.webp";
+$canonicalUrl = "{$baseUrl}/comic/{$comicId}";
 
 // Fallback-Verarbeitung für Sketches aus alten DB-Einträgen
 $sketchLink = $comic->sketchUrl;
@@ -52,8 +52,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
             <h1 class="font-1-5x m-0 d-flex align-center justify-center flex-wrap gap-10 text-color">
                 <?php if (\strtolower($comic->type) !== 'comicseite' && $comic->type !== '') { ?>
                     <span class="badge-info">
-<?php echo \htmlspecialchars($comic->type); ?>
-</span>
+                        <?php echo \htmlspecialchars($comic->type); ?>
+                    </span>
                 <?php } ?>
                 <span>Seite vom <?php echo $displayDate; ?></span>
                 <?php if ($comic->name !== '') { ?>
@@ -66,18 +66,18 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         <!-- TOP NAVIGATION -->
         <nav class="comicnav topnav">
             <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>" class="navarrow navbegin <?php echo ! $prev ? 'disabled' : ''; ?>" title="Erste Seite">
-<span class="nav-wrapper">Erste</span>
-</a>
+                <span class="nav-wrapper">Erste</span>
+            </a>
             <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>" class="navarrow navprev <?php echo ! $prev ? 'disabled' : ''; ?>" title="Vorherige Seite">
-<span class="nav-wrapper">Zurück</span>
-</a>
+                <span class="nav-wrapper">Zurück</span>
+            </a>
             <a href="<?php echo $baseUrl; ?>/archiv" class="navarchive" title="Zum Archiv">Archiv</a>
             <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>" class="navarrow navnext <?php echo ! $next ? 'disabled' : ''; ?>" title="Nächste Seite">
-<span class="nav-wrapper">Weiter</span>
-</a>
+                <span class="nav-wrapper">Weiter</span>
+            </a>
             <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>" class="navarrow navend <?php echo ! $next ? 'disabled' : ''; ?>" title="Neueste Seite">
-<span class="nav-wrapper">Neueste</span>
-</a>
+                <span class="nav-wrapper">Neueste</span>
+            </a>
 
             <!-- Lesezeichen -->
             <button type="button"
@@ -100,25 +100,25 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         <div class="comic-image-container">
             <a id="comic-image-link" href="<?php echo \htmlspecialchars($imageHires); ?>" target="_blank" rel="noopener noreferrer">
                 <!-- data-en-original beinhaltet jetzt standardmäßig die VOLLE URL, oder die Dateiendung als Fallback! -->
-<img id="comic-image" class="comic-image" src="<?php echo \htmlspecialchars($imageLowres); ?>" alt="<?php echo \htmlspecialchars($comic->name); ?>" fetchpriority="high" data-id="<?php echo $comic->id->value; ?>" data-en-original="<?php echo \htmlspecialchars($comic->originalUrl); ?>">
-</a>
+                <img id="comic-image" class="comic-image" src="<?php echo \htmlspecialchars($imageLowres); ?>" alt="<?php echo \htmlspecialchars($comic->name); ?>" fetchpriority="high" data-id="<?php echo $comic->id->value; ?>" data-en-original="<?php echo \htmlspecialchars($comic->originalUrl); ?>">
+            </a>
         </div>
 
         <!-- BOTTOM NAVIGATION -->
         <nav class="comicnav bottomnav">
             <a href="<?php echo $baseUrl; ?>/comic/<?php echo $first->id->value; ?>" class="navarrow navbegin <?php echo ! $prev ? 'disabled' : ''; ?>" title="Erste Seite">
-<span class="nav-wrapper">Erste</span>
-</a>
+                <span class="nav-wrapper">Erste</span>
+            </a>
             <a href="<?php echo $prev ? $baseUrl . '/comic/' . $prev->id->value : '#'; ?>" class="navarrow navprev <?php echo ! $prev ? 'disabled' : ''; ?>" title="Vorherige Seite">
-<span class="nav-wrapper">Zurück</span>
-</a>
+                <span class="nav-wrapper">Zurück</span>
+            </a>
             <a href="<?php echo $baseUrl; ?>/archiv" class="navarchive" title="Zum Archiv">Archiv</a>
             <a href="<?php echo $next ? $baseUrl . '/comic/' . $next->id->value : '#'; ?>" class="navarrow navnext <?php echo ! $next ? 'disabled' : ''; ?>" title="Nächste Seite">
-<span class="nav-wrapper">Weiter</span>
-</a>
+                <span class="nav-wrapper">Weiter</span>
+            </a>
             <a href="<?php echo $baseUrl; ?>/comic/<?php echo $latest->id->value; ?>" class="navarrow navend <?php echo ! $next ? 'disabled' : ''; ?>" title="Neueste Seite">
-<span class="nav-wrapper">Neueste</span>
-</a>
+                <span class="nav-wrapper">Neueste</span>
+            </a>
 
             <!-- Sprache wechseln -->
             <?php if ($comic->originalUrl !== '') { ?>

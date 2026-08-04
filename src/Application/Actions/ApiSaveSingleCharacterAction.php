@@ -88,7 +88,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] !== \UPLOAD_ERR_NO_FILE) {
                 if ($request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
                     $file     = $request->files['profile_image'];
-                    $fileName = $safeName . '_profile.webp'; // IMMER webp!
+                    $fileName = $safeName . '-profile.webp'; // IMMER webp!
                     if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/profiles/' . $fileName, 1000)) {
                         $picUrl = $fileName;
                     } else {
@@ -116,7 +116,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             if (isset($request->files['main_pic']) && $request->files['main_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
                 if ($request->files['main_pic']['error'] === \UPLOAD_ERR_OK) {
                     $file     = $request->files['main_pic'];
-                    $fileName = $safeName . '_main.webp';
+                    $fileName = $safeName . '-portrait.webp';
                     if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/portraits/' . $fileName, 2000)) {
                         $mainPic = $fileName;
                     } else {
@@ -133,7 +133,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             if (isset($request->files['swatch_pic']) && $request->files['swatch_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
                 if ($request->files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
                     $file     = $request->files['swatch_pic'];
-                    $fileName = $safeName . '_swatch.webp';
+                    $fileName = $safeName . '-palette.webp';
                     if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/palettes/' . $fileName, 1500)) {
                         $swatchPic = $fileName;
                     } else {
@@ -157,7 +157,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
                 $refFiles = $request->files['ref_sheets'];
                 for ($i = 0; $i < \count($refFiles['name']); ++$i) {
                     if ($refFiles['error'][$i] === \UPLOAD_ERR_OK) {
-                        $fileName = $safeName . '_ref_' . \uniqid() . '.webp';
+                        $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
                         if ($this->mediaService->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
                             $refSheets[] = $fileName;
                         } else {
