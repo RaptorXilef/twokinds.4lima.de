@@ -36,10 +36,16 @@ export class SessionTimer {
             clearInterval(this.intervalId);
             this.timerElement.innerHTML =
                 '<i class="fa-solid fa-hourglass-end" style="color: var(--status-red-text);"></i> <span style="color: var(--status-red-text);">Abgelaufen</span>';
-            this.notifications.show(
-                'Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich neu ein.',
-                'error'
-            );
+
+            // Prüfung ob Notifications existieren, sonst Fallback
+            if (this.notifications) {
+                this.notifications.show(
+                    'Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich neu ein.',
+                    'error'
+                );
+            } else {
+                alert('Ihre Sitzung ist abgelaufen. Bitte loggen Sie sich neu ein.');
+            }
 
             setTimeout(() => {
                 window.location.reload();
