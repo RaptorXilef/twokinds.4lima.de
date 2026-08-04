@@ -8,17 +8,24 @@ use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
 
 #[ActionRoute('api_restore_deleted_comic')]
 final readonly class ApiRestoreDeletedComicAction implements ActionInterface
 {
-    public function __construct(private ComicService $comicService)
-    {
+    public function __construct(
+        private ComicService $comicService,
+        private AuthService $auth,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('comics.delete')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $restored = $this->comicService->restoreDeletedComic();
 

@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Core\Entity\CharacterGroup;
+use App\Core\Service\AuthService;
 use App\Core\ValueObject\CharacterId;
 
 #[ActionRoute('api_save_character_groups')]
@@ -17,11 +18,16 @@ final readonly class ApiSaveCharacterGroupsAction implements ActionInterface
 {
     public function __construct(
         private CharacterGroupRepositoryInterface $groupRepo,
+        private AuthService $auth,
     ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('groups.manage')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $jsonData    = $request->post['groups_data'] ?? '[]';
             $inputGroups = \json_decode($jsonData, true, 512, \JSON_THROW_ON_ERROR);

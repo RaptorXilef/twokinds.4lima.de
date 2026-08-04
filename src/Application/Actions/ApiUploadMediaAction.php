@@ -9,6 +9,7 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
+use App\Core\Service\AuthService;
 use App\Core\Service\MediaService;
 
 #[ActionRoute('api_upload_media')]
@@ -17,6 +18,7 @@ final readonly class ApiUploadMediaAction implements ActionInterface
     public function __construct(
         private ConfigInterface $config,
         private MediaService $mediaService,
+        private AuthService $auth,
     ) {
     }
 

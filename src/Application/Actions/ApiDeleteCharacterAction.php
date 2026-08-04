@@ -9,18 +9,25 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Core\ValueObject\CharacterId;
 
 #[ActionRoute('api_delete_character')]
 final readonly class ApiDeleteCharacterAction implements ActionInterface
 {
-    public function __construct(private CharacterService $characterService)
-    {
+    public function __construct(
+        private CharacterService $characterService,
+        private AuthService $auth,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('characters.delete')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $id = \trim((string) ($request->post['character_id'] ?? ''));
             if ($id === '') {

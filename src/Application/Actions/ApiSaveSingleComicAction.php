@@ -12,6 +12,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Core\Entity\ComicPage;
+use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
 use App\Core\Service\MediaService;
 use App\Core\ValueObject\CharacterId;
@@ -24,11 +25,16 @@ final readonly class ApiSaveSingleComicAction implements ActionInterface
         private ComicService $comicService,
         private MediaService $mediaService,
         private ConfigInterface $config,
+        private AuthService $auth,
     ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('comics.edit')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $dto = SaveSingleComicRequest::fromRequest($request);
 

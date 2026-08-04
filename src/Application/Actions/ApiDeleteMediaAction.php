@@ -9,12 +9,15 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
+use App\Core\Service\AuthService;
 
 #[ActionRoute('api_delete_media')]
 final readonly class ApiDeleteMediaAction implements ActionInterface
 {
-    public function __construct(private ConfigInterface $config)
-    {
+    public function __construct(
+        private ConfigInterface $config,
+        private AuthService $auth,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed

@@ -239,7 +239,7 @@ export class ReportManager {
                                 'success'
                             );
                         } else {
-                            alert('Fehler beim Laden des Comics: ' + json.error);
+                            alert(`Fehler beim Laden des Comics: ${json.error}`);
                         }
                     })
                     .catch((err) => {

@@ -11,16 +11,23 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Core\Entity\Chapter;
 use App\Core\Security\Sanitizer;
+use App\Core\Service\AuthService;
 
 #[ActionRoute('api_save_chapter')]
 final readonly class ApiSaveChapterAction implements ActionInterface
 {
-    public function __construct(private ChapterRepositoryInterface $chapterRepo)
-    {
+    public function __construct(
+        private ChapterRepositoryInterface $chapterRepo,
+        private AuthService $auth,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('chapters.edit')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $id    = Sanitizer::string($request->post['chapter_id'] ?? '');
             $title = Sanitizer::string($request->post['title'] ?? '');

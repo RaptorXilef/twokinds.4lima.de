@@ -9,18 +9,25 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
 use App\Core\ValueObject\ComicId;
 
 #[ActionRoute('api_delete_comic')]
 final readonly class ApiDeleteComicAction implements ActionInterface
 {
-    public function __construct(private ComicService $comicService)
-    {
+    public function __construct(
+        private ComicService $comicService,
+        private AuthService $auth,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('comics.delete')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $id = \trim((string) ($request->post['comic_id'] ?? ''));
             if ($id === '') {

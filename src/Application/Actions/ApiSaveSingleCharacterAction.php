@@ -13,6 +13,7 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Core\Entity\Character;
+use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Core\Service\MediaService;
 use App\Core\ValueObject\CharacterId;
@@ -25,11 +26,16 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
         private CharacterRepositoryInterface $charRepo,
         private ConfigInterface $config,
         private MediaService $mediaService,
+        private AuthService $auth,
     ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('characters.edit')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $dto = SaveSingleCharacterRequest::fromRequest($request);
 

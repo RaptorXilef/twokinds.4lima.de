@@ -38,6 +38,14 @@ final readonly class ApiUpdateReportStatusAction implements ActionInterface
             $id     = \trim((string) ($request->post['report_id'] ?? ''));
             $status = \trim((string) ($request->post['status'] ?? ''));
 
+            // Präzise Rechteprüfung je nach Aktion
+            if ($status === 'spam' && ! $this->auth->hasPermission('reports.delete')) {
+                return JsonResponse::error('Zugriff verweigert. Fehlendes Recht: reports.delete', 403);
+            }
+            if (\in_array($status, ['open', 'closed'], true) && ! $this->auth->hasPermission('reports.resolve')) {
+                return JsonResponse::error('Zugriff verweigert. Fehlendes Recht: reports.resolve', 403);
+            }
+
             if ($id === '' || ! \in_array($status, ['open', 'closed', 'spam'], true)) {
                 return JsonResponse::error('Ungültige Daten übermittelt.', 400);
             }

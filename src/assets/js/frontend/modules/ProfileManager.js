@@ -68,8 +68,7 @@ export class ProfileManager {
                         // Bei Kontolöschung sofort auf die Startseite zurückwerfen
                         setTimeout(
                             () =>
-                                (window.location.href =
-                                    this.api.baseUrl + '/' + responseJson.redirect),
+                                (window.location.href = `${this.api.baseUrl}/${responseJson.redirect}`),
                             1500
                         );
                     } else if (reloadOnSuccess) {
@@ -90,7 +89,7 @@ export class ProfileManager {
             }
 
             // Button nur bei Fehlschlag wieder aktivieren
-            if (btn && (!responseJson || !responseJson.success)) {
+            if (btn && !responseJson?.success) {
                 btn.disabled = false;
                 btn.innerHTML = origText;
             }

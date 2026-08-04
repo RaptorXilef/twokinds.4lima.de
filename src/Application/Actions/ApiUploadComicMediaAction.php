@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\Service\AuthService;
 use App\Core\Service\MediaService;
 use App\Core\Service\SiteGeneratorService;
 use App\Core\ValueObject\ComicId;
@@ -22,11 +23,16 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
         private MediaService $mediaService,
         private SiteGeneratorService $siteGenerator,
         private ConfigInterface $config,
+        private AuthService $auth,
     ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('comics.edit')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         try {
             $comicIdStr = \trim((string) ($request->post['comic_id'] ?? ''));
             if ($comicIdStr === '') {

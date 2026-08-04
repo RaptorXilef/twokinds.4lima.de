@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Service\AuthService;
 
 #[ActionRoute('api_admin_trigger_newsletter')]
 final readonly class ApiAdminTriggerNewsletterAction implements ActionInterface
@@ -17,11 +18,16 @@ final readonly class ApiAdminTriggerNewsletterAction implements ActionInterface
     public function __construct(
         private UserRepositoryInterface $userRepository,
         private MailServiceInterface $mailService,
+        private AuthService $auth,
     ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('comics.edit')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         // Parameter aus dem Admin-Frontend abgreifen
         $type       = $request->post['type'] ?? 'full'; // 'full' oder 'transcript'
         $comicName  = \trim((string) ($request->post['comic_name'] ?? 'TwoKinds'));
