@@ -9,6 +9,7 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\Service\AuthService;
 use App\Core\ValueObject\ComicId;
 
 #[ActionRoute('api_get_comic')]
@@ -16,11 +17,16 @@ final readonly class ApiGetComicAction implements ActionInterface
 {
     public function __construct(
         private ComicRepositoryInterface $comicRepo,
+        private AuthService $auth,
     ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('comics.edit') && ! $this->auth->hasPermission('reports.resolve')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         $idStr = \trim((string) ($request->get['id'] ?? ''));
         if ($idStr === '') {
             return JsonResponse::error('Keine Comic-ID angegeben.', 400);

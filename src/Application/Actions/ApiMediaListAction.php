@@ -9,16 +9,23 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
+use App\Core\Service\AuthService;
 
 #[ActionRoute('api_list_media')]
 final readonly class ApiMediaListAction implements ActionInterface
 {
-    public function __construct(private ConfigInterface $config)
-    {
+    public function __construct(
+        private ConfigInterface $config,
+        private AuthService $auth,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
     {
+        if (! $this->auth->hasPermission('media.upload') && ! $this->auth->hasPermission('media.delete') && ! $this->auth->hasPermission('characters.edit')) {
+            return JsonResponse::error('Zugriff verweigert.', 403);
+        }
+
         $folder  = $request->get['folder'] ?? 'profiles';
         $allowed = ['profiles', 'main', 'swatches', 'refsheets'];
 
