@@ -138,7 +138,7 @@ function optimizeTokens(content, fileExtension) {
     const blockMap = new Map();
     let blockId = 0;
 
-    // FIX: Schützt <script>, <style>, <pre> und <textarea> vor der Zeilenzerstörung
+    // Schützt <script>, <style>, <pre> und <textarea> vor der Zeilenzerstörung
     if (isPhpOrPhtml) {
         optimizedContent = optimizedContent.replace(
             /<(script|style|pre|textarea)[\s\S]*?>[\s\S]*?<\/\1>/gi,
@@ -166,7 +166,7 @@ function optimizeTokens(content, fileExtension) {
             optimizedContent = optimizedContent.replace(/<!--[\s\S]*?-->/g, '');
 
             // SQL / CSS-ähnliche Kommentare (-- )
-            optimizedContent = optimizedContent.replace(/(?<!!)--\s.*$/gm, '');
+            optimizedContent = optimizedContent.replace(/(?<!\!)--\s.*$/gm, '');
 
             // FIX: # Kommentare NUR in reinen .php Dateien löschen.
             // In .phtml zerstören sie sonst CSS-IDs (z.B. <style> #id { ... } </style>)
@@ -239,7 +239,8 @@ function optimizeTokens(content, fileExtension) {
             ) {
                 const lastLine = optimizedLines[optimizedLines.length - 1];
 
-                if (/[a-zA-Z0-9_\]]$/.test(lastLine) && /^[a-zA-Z0-9_$]/.test(line)) {
+                // FIX: \) und % am Ende sowie \- am Anfang hinzugefügt, um CSS-Funktionen (url, rgba) und Prozentwerte sicher vom Rest zu trennen
+                if (/[a-zA-Z0-9_\]\)%]$/.test(lastLine) && /^[a-zA-Z0-9_$\-]/.test(line)) {
                     optimizedLines[optimizedLines.length - 1] += ` ${line}`;
                 } else {
                     optimizedLines[optimizedLines.length - 1] += line;
