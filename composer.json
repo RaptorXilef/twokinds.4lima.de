@@ -21,7 +21,8 @@
     "ext-pdo_mysql": "*",
     "ext-gd": "*",
     "ext-hash": "*",
-    "ext-openssl": "*"
+    "ext-openssl": "*",
+    "symfony/html-sanitizer": "^8.1"
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^1.2",

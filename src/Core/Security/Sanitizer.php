@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Security;
 
+use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
+
 final class Sanitizer
 {
     /**
@@ -27,12 +30,26 @@ final class Sanitizer
      */
     public static function html(mixed $input): string
     {
-        $allowedTags = [
-            'p', 'br', 'b', 'i', 'strong', 'em', 's', 'del', 'u',
-            'a', 'img', 'ul', 'ol', 'li', 'span', 'div',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote',
-        ];
+        $inputStr = (string) $input;
 
-        return \trim(\strip_tags((string) $input, $allowedTags));
+        if (\trim($inputStr) === '') {
+            return '';
+        }
+
+        $config = (new HtmlSanitizerConfig())
+            // Erlaubt grundlegende sichere Elemente (p, br, b, i, strong, em, div, span, h1-h6, ul, li...)
+            ->allowSafeElements()
+            // Links absichern: Nur http/https erlauben, target und rel für externe Links zulassen
+            ->allowElement('a', ['href', 'title', 'target', 'rel'])
+            // Bilder absichern: Nur saubere Quellen und Layout-Attribute zulassen
+            ->allowElement('img', ['src', 'alt', 'title', 'width', 'height'])
+            // Erlaubt Klassen und Inline-Styles, die oft vom WYSIWYG-Editor genutzt werden (z.B. für Textausrichtung).
+            // Der Sanitizer blockiert dabei automatisch bösartige CSS-Ausdrücke.
+            ->allowAttribute('class', '*')
+            ->allowAttribute('style', '*');
+
+        $sanitizer = new HtmlSanitizer($config);
+
+        return \trim($sanitizer->sanitize($inputStr));
     }
 }
