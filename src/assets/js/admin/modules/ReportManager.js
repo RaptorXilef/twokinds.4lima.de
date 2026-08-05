@@ -327,6 +327,18 @@ export class ReportManager {
             submitterIdEl.textContent = payload.userId ? payload.userId : 'Gast / Unbekannt';
         }
 
+        // Credit Status
+        const wantsCreditEl = document.getElementById('rep-modal-wants-credit');
+        if (wantsCreditEl) {
+            if (payload.wantsCredit) {
+                wantsCreditEl.textContent = 'Gewünscht';
+                wantsCreditEl.style.backgroundColor = '#28a745'; // Grün
+            } else {
+                wantsCreditEl.textContent = 'Nicht gewünscht';
+                wantsCreditEl.style.backgroundColor = '#6c757d'; // Grau
+            }
+        }
+
         if (debugRaw) debugRaw.value = payload.debug || 'Keine Telemetrie vorhanden.';
 
         if (debugRendered && payload.debug) {

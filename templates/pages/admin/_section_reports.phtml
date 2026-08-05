@@ -72,6 +72,7 @@ use App\Core\Entity\Report;
                         'avatarUrl'     => $rep->submitterAvatarUrl,
                         'date'          => $rep->date->format('d.m.Y H:i'),
                         'submitter'     => $rep->submitterName,
+                        'wantsCredit'   => (bool) $rep->wantsCredit,
                         'type'          => $rep->type,
                         'description'   => $rep->description,
                         'suggestion'    => $rep->transcriptSuggestion,

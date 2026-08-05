@@ -18,6 +18,7 @@ declare(strict_types=1); ?>
         </div>
         <div class="modal-scroll-content scroll-y"
              style="flex: 1 1 auto;">
+
             <div id="report-status-msg"
                  class="msg-box"></div>
 
@@ -107,9 +108,11 @@ declare(strict_types=1); ?>
                     </div>
                 </div>
 
-                <div class="form-group mb-15">
-                    <label for="report_submitter">Dein Name / Pseudonym *</label>
-                    <?php if (isset($isLoggedIn) && $isLoggedIn && ! empty($currentUserName)) { ?>
+                <!-- User-Bedingte Felder -->
+                <?php if (isset($isLoggedIn) && $isLoggedIn && ! empty($currentUserName)) { ?>
+                    <div class="form-group mb-15">
+                        <label for="report_submitter">Dein Name / Pseudonym *</label>
+
                         <!-- Eingeloggt: Feld ist vorausgefüllt und gesperrt -->
                         <input type="text"
                                id="report_submitter"
@@ -121,26 +124,30 @@ declare(strict_types=1); ?>
                             <i class="fa-solid fa-check-circle"></i> Angemeldet. Wenn in deinem Profil aktiviert, wirst
                             du bei Behebung benachrichtigt.
                         </small>
-                    <?php } else { ?>
-                        <!-- Gast: Normales Feld -->
-                        <input type="text"
-                               id="report_submitter"
-                               name="submitter"
-                               required
-                               placeholder="Wie dürfen wir dich nennen?">
-                    <?php } ?>
-                </div>
+                    </div>
 
-                <div class="mb-20">
-                    <label class="d-flex align-center gap-10 cursor-pointer font-normal">
-                        <input type="checkbox"
-                               id="wants_credit"
-                               name="wants_credit"
-                               value="1"
-                               class="checkbox-lg w-auto">
-                        <span>Ich möchte bei Behebung als Helfer genannt werden!</span>
-                    </label>
-                </div>
+                    <div class="mb-20">
+                        <label class="d-flex align-center gap-10 cursor-pointer font-normal">
+                            <input type="checkbox"
+                                   id="wants_credit"
+                                   name="wants_credit"
+                                   value="1"
+                                   class="checkbox-lg w-auto">
+                            <span>Ich möchte bei Behebung als Helfer genannt werden!</span>
+                        </label>
+                    </div>
+                <?php } else { ?>
+                    <div class="bg-even border-medium border-radius-6 p-15 mb-20 text-center">
+                        <p class="m-0 text-color">
+                            <i class="fa-solid fa-circle-info text-link"></i> Du meldest diesen Fehler anonym als Gast.
+                        </p>
+                        <p class="mt-5 mb-0 font-small text-faded">
+                            Tipp: Wenn du dich <a href="<?php echo $baseUrl ?? '/'; ?>/login" class="text-link font-bold">einloggst</a>,
+                            kannst du bei Behebung als Helfer erwähnt und per E-Mail benachrichtigt werden!
+                        </p>
+                    </div>
+                <?php } ?>
+
             </form>
         </div>
         <div class="modal-footer-actions">
