@@ -29,6 +29,10 @@ return [
                 'class' => 'App\\Application\\Actions\\Api\\Admin\\MediaListAction',
                 'auth'  => true,
             ],
+            '/api/preview_mail' => [
+                'class' => 'App\\Application\\Actions\\Api\\Admin\\PreviewMailAction',
+                'auth'  => true,
+            ],
             '/api/get_comic' => [
                 'class' => 'App\\Application\\Actions\\Api\\Shared\\GetComicAction',
                 'auth'  => true,

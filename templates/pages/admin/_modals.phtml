@@ -891,3 +891,26 @@ foreach ($alphaUsers as $u) {
         </div>
     </div>
 </div>
+
+
+<!-- ======================================================================= -->
+<!-- E-Mail Vorschau Modal -->
+<!-- ======================================================================= -->
+<div id="mail-preview-modal" class="modal z-1070">
+    <div class="modal-overlay btn-close-mail-modal"></div>
+    <div class="modal-content modal-lg modal-flex">
+        <div class="modal-header-wrapper">
+            <h2>E-Mail Vorschau</h2>
+            <button class="modal-close btn-close-mail-modal">&times;</button>
+        </div>
+        <!-- p-0 entfernt das Padding für Iframe Vollbild -->
+        <div class="modal-scroll-content d-flex flex-column p-0 overflow-hidden" style="background: #ececec;">
+            <iframe id="mail-preview-frame" style="width: 100%; height: 65vh; border: none; background: #ececec;"></iframe>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons w-100 justify-end">
+                <button type="button" class="button btn-close-mail-modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>

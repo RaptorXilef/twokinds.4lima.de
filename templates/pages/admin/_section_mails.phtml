@@ -1,0 +1,143 @@
+<?php declare(strict_types=1); ?>
+
+<div class="d-flex gap-10 mb-20 pb-15 border-bottom-2">
+    <button class="button media-tab-btn active" data-type="mail-queue-view">Warteschlange</button>
+    <button class="button edit media-tab-btn" data-type="mail-log-view">Verlauf</button>
+</div>
+
+<!-- TAB: WARTESCHLANGE -->
+<div id="media-view-mail-queue-view" class="media-view">
+
+    <div class="notification-box mb-20 text-left">
+        <h4 class="mt-0"><i class="fa-solid fa-clock"></i> Automatischer E-Mail-Versand per CronJob</h4>
+        <p>Richte diesen Link in deinem Webhosting/Server als CronJob ein (z.B. alle 5 Minuten), um liegengebliebene oder zeitversetzte E-Mails automatisch abzuarbeiten:</p>
+        <code style="display:block; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 4px; margin-top: 10px;">
+            <?php echo $baseUrl; ?>/api/process_mail_queue?token=<?php echo \htmlspecialchars($config->get('cron_secret', '')); ?>
+        </code>
+    </div>
+
+    <div class="table-controls actions-bar d-flex flex-wrap justify-end gap-15 align-center">
+        <div class="search-wrapper d-flex gap-10 align-center flex-wrap">
+            <select id="mail-queue-per-page" class="dt-per-page-select">
+                <option value="15" selected>15 Einträge</option>
+                <option value="50">50 Einträge</option>
+                <option value="all">Alle</option>
+            </select>
+            <input type="text" id="mail-queue-search" placeholder="Warteschlange durchsuchen..." class="min-w-250">
+        </div>
+    </div>
+
+    <div class="sitemap-table-container">
+        <table class="admin-table" id="mail-queue-table">
+            <thead>
+                <tr>
+                    <th class="col-date">Erstellt am</th>
+                    <th class="col-email">Empfänger</th>
+                    <th class="col-title">Betreff & Template</th>
+                    <th class="col-status">Prio / Versuche</th>
+                    <th class="col-actions">Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($mailQueue)) { ?>
+                    <tr>
+                        <td colspan="5" class="empty-table-message">Die Warteschlange ist aktuell leer.</td>
+                    </tr>
+                <?php } else { ?>
+                    <?php foreach ($mailQueue as $mail) { ?>
+                        <tr>
+                            <td><?php echo (new \DateTimeImmutable($mail['created_at']))->format('d.m.Y H:i:s'); ?></td>
+                            <td><strong><?php echo \htmlspecialchars($mail['recipient']); ?></strong></td>
+                            <td>
+                                <strong><?php echo \htmlspecialchars($mail['subject']); ?></strong><br>
+                                <span class="badge bg-even border-medium mt-5"><?php echo \htmlspecialchars($mail['template']); ?></span>
+                            </td>
+                            <td>
+                                <span class="badge bg-even border-medium">Prio: <?php echo (int) $mail['priority']; ?></span><br>
+                                <span class="font-small text-faded">Versuche: <?php echo (int) $mail['attempts']; ?></span>
+                            </td>
+                            <td class="actions-cell">
+                                <form>
+                                    <button type="button" class="button add btn-send-mail" data-id="<?php echo \htmlspecialchars($mail['id']); ?>" title="Jetzt sofort versenden">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </button>
+                                    <button type="button" class="button edit btn-preview-mail" data-id="<?php echo \htmlspecialchars($mail['id']); ?>" title="Vorschau anzeigen">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+    <div id="mail-queue-pagination" class="pagination-wrapper"></div>
+</div>
+
+<!-- TAB: VERLAUF (LOGS) -->
+<div id="media-view-mail-log-view" class="media-view hidden">
+
+    <div class="table-controls actions-bar d-flex flex-wrap justify-end gap-15 align-center">
+        <div class="search-wrapper d-flex gap-10 align-center flex-wrap">
+            <select id="mail-log-per-page" class="dt-per-page-select">
+                <option value="15">15 Einträge</option>
+                <option value="50" selected>50 Einträge</option>
+                <option value="all">Alle</option>
+            </select>
+            <input type="text" id="mail-log-search" placeholder="Verlauf durchsuchen..." class="min-w-250">
+        </div>
+    </div>
+
+    <div class="sitemap-table-container">
+        <table class="admin-table" id="mail-log-table">
+            <thead>
+                <tr>
+                    <th class="col-date">Versendet am</th>
+                    <th class="col-email">Empfänger</th>
+                    <th class="col-title">Betreff & Template</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-actions">Aktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($mailLogs)) { ?>
+                    <tr>
+                        <td colspan="5" class="empty-table-message">Es gibt noch keine Einträge im Verlauf.</td>
+                    </tr>
+                <?php } else { ?>
+                    <?php foreach ($mailLogs as $log) {
+                        $isSuccess   = $log['status'] === 'Erfolg';
+                        $statusClass = $isSuccess ? 'complete' : 'missing';
+                        ?>
+                        <tr>
+                            <td><?php echo (new \DateTimeImmutable($log['timestamp']))->format('d.m.Y H:i:s'); ?></td>
+                            <td><strong><?php echo \htmlspecialchars($log['recipient']); ?></strong></td>
+                            <td>
+                                <strong><?php echo \htmlspecialchars($log['subject']); ?></strong><br>
+                                <span class="badge bg-even border-medium mt-5"><?php echo \htmlspecialchars($log['template']); ?></span>
+                            </td>
+                            <td>
+                                <span class="status-badge <?php echo $statusClass; ?>">
+                                    <?php echo $isSuccess ? '<i class="fa-solid fa-check"></i> ' : '<i class="fa-solid fa-xmark"></i> '; ?>
+                                    <?php echo \htmlspecialchars($log['status']); ?>
+                                </span>
+                            </td>
+                            <td class="actions-cell">
+                                <form>
+                                    <button type="button" class="button add btn-resend-mail" data-id="<?php echo \htmlspecialchars($log['id']); ?>" title="Erneut in die Warteschlange einreihen">
+                                        <i class="fa-solid fa-rotate-right"></i>
+                                    </button>
+                                    <button type="button" class="button edit btn-preview-mail" data-id="<?php echo \htmlspecialchars($log['id']); ?>" title="Vorschau anzeigen">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+    <div id="mail-log-pagination" class="pagination-wrapper"></div>
+</div>
