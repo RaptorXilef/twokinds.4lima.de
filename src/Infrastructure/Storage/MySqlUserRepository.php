@@ -97,7 +97,11 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmtClean = $this->pdo->prepare($sql);
         $stmtClean->execute([$id, $id]);
 
-        // 3. User löschen
+        // 3. Reports anonymisieren (DSGVO & Datenhygiene)
+        $stmtReports = $this->pdo->prepare("UPDATE `reports` SET `user_id` = NULL, `submitter_name` = 'Gelöschter Nutzer' WHERE `user_id` = ?");
+        $stmtReports->execute([$id]);
+
+        // 4. User löschen
         $stmt = $this->pdo->prepare('DELETE FROM `users` WHERE id = ?');
         $stmt->execute([$id]);
     }
