@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.11.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.10.0...v6.11.0) (2026-08-05)
+
+### 🚀 Features
+
+* **admin:** display immutable user ID in report detail modal ([74b2dd5](https://github.com/RaptorXilef/twokinds.4lima.de/commit/74b2dd56b9690bf34b30ed4d76e637c6303d010c))
+* **reports:** streamline guest reporting and display credit preferences in admin modal ([fd69f3f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fd69f3fca95410e50ece5b43bc7929d3ed658a3e))
+
+### 🐛 Bug Fixes
+
+* **admin:** resolve report modal layout issues and enforce report anonymization on user deletion ([baa7007](https://github.com/RaptorXilef/twokinds.4lima.de/commit/baa7007ff8d196a635035167343f3f17317176be))
+
+### 💎 Styling
+
+* **admin:** refactor templates to replace inline CSS with semantic SCSS utility classes ([c19a1e3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c19a1e3df724489e997f27fd0fde8832ba2c23a2))
+
 ## [6.10.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.9.0...v6.10.0) (2026-08-05)
 
 ### 🚀 Features
