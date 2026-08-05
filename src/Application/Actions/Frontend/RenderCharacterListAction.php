@@ -52,14 +52,14 @@ final readonly class RenderCharacterListAction implements ViewActionInterface
 
             // Komma-separierte Listen (Ränge, Sprachen) aufteilen
             if ($c->rank) {
-                foreach (\array_map('trim', \explode(',', $c->rank)) as $r) {
+                foreach (\array_map(trim(...), \explode(',', $c->rank)) as $r) {
                     if ($r !== '') {
                         $filterData['rank'][$r] = true;
                     }
                 }
             }
             if ($c->languages) {
-                foreach (\array_map('trim', \explode(',', $c->languages)) as $l) {
+                foreach (\array_map(trim(...), \explode(',', $c->languages)) as $l) {
                     if ($l !== '') {
                         $filterData['languages'][$l] = true;
                     }

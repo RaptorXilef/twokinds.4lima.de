@@ -25,7 +25,7 @@ final class EventDispatcher implements EventDispatcherInterface
 
     public function dispatch(object $event): void
     {
-        $eventClass = \get_class($event);
+        $eventClass = $event::class;
 
         // Prüfen, ob jemand auf dieses spezielle Event lauscht
         foreach ($this->listeners[$eventClass] ?? [] as $listener) {

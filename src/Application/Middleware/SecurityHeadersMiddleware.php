@@ -132,7 +132,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             // CSP Array zu einem sauberen String kompilieren
             $cspHeader = '';
             foreach ($csp as $directive => $sources) {
-                $sourceString = empty($sources) ? '' : ' ' . \implode(' ', $sources);
+                $sourceString = $sources === [] ? '' : ' ' . \implode(' ', $sources);
                 $cspHeader .= $directive . $sourceString . '; ';
             }
 

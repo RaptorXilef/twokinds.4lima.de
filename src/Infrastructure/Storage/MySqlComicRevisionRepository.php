@@ -9,6 +9,7 @@ use App\Contracts\Storage\ComicRevisionRepositoryInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\CharacterId;
+use App\Core\ValueObject\ComicId;
 
 final readonly class MySqlComicRevisionRepository implements ComicRevisionRepositoryInterface
 {
@@ -28,7 +29,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             'name'             => $oldState->name,
             'transcript'       => $oldState->transcript,
             'chapter_id'       => $oldState->chapterId,
-            'character_ids'    => \array_map(fn (CharacterId $id) => $id->value, $oldState->characterIds),
+            'character_ids'    => \array_map(fn (CharacterId $id): string => $id->value, $oldState->characterIds),
             'original_url'     => $oldState->originalUrl,
             'sketch_url'       => $oldState->sketchUrl,
             'image_updated_at' => $oldState->imageUpdatedAt,
@@ -67,7 +68,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         }
     }
 
-    public function popLatestRevision(\App\Core\ValueObject\ComicId $id): ?array
+    public function popLatestRevision(ComicId $id): ?array
     {
         $stmt = $this->pdo->prepare('SELECT `id`, `revision_data` FROM `comic_revisions` WHERE `comic_id` = ? ORDER BY `created_at` DESC LIMIT 1');
         $stmt->execute([$id->value]);

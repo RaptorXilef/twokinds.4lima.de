@@ -43,11 +43,9 @@ final class JsonHelper implements JsonHelperInterface
                 \JSON_THROW_ON_ERROR,
             );
         } catch (\JsonException $e) {
-            throw new \RuntimeException(
-                'Kritischer Fehler: JSON-Datenstruktur ist korrupt (' .
-                    $e->getMessage() .
-                    '). System-Halt zum Schutz vor Datenverlust.',
-            );
+            throw new \RuntimeException('Kritischer Fehler: JSON-Datenstruktur ist korrupt (' .
+                $e->getMessage() .
+                '). System-Halt zum Schutz vor Datenverlust.', $e->getCode(), $e);
         }
     }
 

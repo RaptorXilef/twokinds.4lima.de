@@ -142,7 +142,7 @@ final readonly class FrontendController
             $relativePath = \trim((string) $path, '/');
         }
 
-        if ($relativePath === '' || $relativePath === 'index.php' || $relativePath === 'comic') {
+        if (\in_array($relativePath, ['', 'index.php', 'comic'], true)) {
             return ['action' => 'render_comic', 'input' => $input];
         }
 
@@ -174,7 +174,7 @@ final readonly class FrontendController
             return ['action' => 'page_imprint', 'input' => $input];
         }
 
-        if ($relativePath === 'datenschutz' || $relativePath === 'datenschutz.php' || $relativePath === 'datenschutzerklaerung.php') {
+        if (\in_array($relativePath, ['datenschutz', 'datenschutz.php', 'datenschutzerklaerung.php'], true)) {
             return ['action' => 'page_privacy', 'input' => $input];
         }
 

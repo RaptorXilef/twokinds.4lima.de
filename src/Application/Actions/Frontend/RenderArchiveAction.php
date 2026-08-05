@@ -41,7 +41,7 @@ final readonly class RenderArchiveAction implements ViewActionInterface
         }
 
         // 2. Normale Kapitel sortieren (Aufsteigend: 0, 1, 2...)
-        \uksort($groupedComics, function (string|int $a, string|int $b) {
+        \uksort($groupedComics, function (string|int $a, string|int $b): int {
             $numA = \is_numeric($a) ? (float) $a : null;
             $numB = \is_numeric($b) ? (float) $b : null;
 
@@ -59,7 +59,7 @@ final readonly class RenderArchiveAction implements ViewActionInterface
         });
 
         // 3. Den Stapel ohne Kapitel GANZ SICHER ans Ende hängen!
-        if (! empty($unassignedComics)) {
+        if ($unassignedComics !== []) {
             $groupedComics['Kein Kapitel'] = $unassignedComics;
         }
 

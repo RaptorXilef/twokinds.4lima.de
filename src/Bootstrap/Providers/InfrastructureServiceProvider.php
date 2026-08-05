@@ -59,109 +59,109 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
     public function register(ContainerInterface $container): void
     {
         // 1. Core / System (Datenbank, Uhrzeit, Logging)
-        $container->bind(\PDO::class, fn (): ?\PDO => PdoFactory::create(
+        $container->bind(\PDO::class, fn (): \PDO => PdoFactory::create(
             $container->get(ConfigInterface::class),
         ));
 
-        $container->bind(ClockInterface::class, fn () => new SystemClock());
+        $container->bind(ClockInterface::class, fn (): SystemClock => new SystemClock());
 
-        $container->bind(JsonHelperInterface::class, fn () => new JsonHelper());
+        $container->bind(JsonHelperInterface::class, fn (): JsonHelper => new JsonHelper());
 
-        $container->bind(ImageStorageInterface::class, fn () => new LocalImageStorage(
+        $container->bind(ImageStorageInterface::class, fn (): LocalImageStorage => new LocalImageStorage(
             $container->get(ConfigInterface::class),
         ));
 
-        $container->bind(ErrorLoggerInterface::class, fn () => new ErrorLogger(
+        $container->bind(ErrorLoggerInterface::class, fn (): ErrorLogger => new ErrorLogger(
             $container->get(ConfigInterface::class),
         ));
 
         // 2. Security & Session
-        $container->bind(AuthSessionInterface::class, fn () => clone $container->get(SessionManager::class));
+        $container->bind(AuthSessionInterface::class, fn (): object => clone $container->get(SessionManager::class));
 
-        $container->bind(RoleRepositoryInterface::class, fn () => new MySqlRoleRepository(
+        $container->bind(RoleRepositoryInterface::class, fn (): MySqlRoleRepository => new MySqlRoleRepository(
             $container->get(\PDO::class),
             $container->get(JsonHelperInterface::class),
         ));
 
-        $container->bind(UserRepositoryInterface::class, fn () => new MySqlUserRepository(
+        $container->bind(UserRepositoryInterface::class, fn (): MySqlUserRepository => new MySqlUserRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(LoginAttemptRepositoryInterface::class, fn () => new MySqlLoginAttemptRepository(
+        $container->bind(LoginAttemptRepositoryInterface::class, fn (): MySqlLoginAttemptRepository => new MySqlLoginAttemptRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(RateLimiterInterface::class, fn () => new RateLimiter(
+        $container->bind(RateLimiterInterface::class, fn (): RateLimiter => new RateLimiter(
             $container->get(ClockInterface::class),
             $container->get(LoginAttemptRepositoryInterface::class),
         ));
 
         // 3. E-Mail
-        $container->bind(MagicLinkRepositoryInterface::class, fn () => new MySqlMagicLinkRepository(
+        $container->bind(MagicLinkRepositoryInterface::class, fn (): MySqlMagicLinkRepository => new MySqlMagicLinkRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(MailQueueRepositoryInterface::class, fn () => new MySqlMailQueueRepository(
+        $container->bind(MailQueueRepositoryInterface::class, fn (): MySqlMailQueueRepository => new MySqlMailQueueRepository(
             $container->get(\PDO::class),
             $container->get(JsonHelperInterface::class),
         ));
 
         // Mail Services (SMTP als interne Instanz, MailQueue als das Interface für den Rest der App)
-        $container->bind('mail.smtp', fn () => new SmtpMailService(
+        $container->bind('mail.smtp', fn (): SmtpMailService => new SmtpMailService(
             $container->get(\PDO::class),
             $container->get(ConfigInterface::class),
         ));
 
-        $container->bind(MailLogInterface::class, fn () => $container->get('mail.smtp'));
+        $container->bind(MailLogInterface::class, fn (): mixed => $container->get('mail.smtp'));
 
-        $container->bind(MailServiceInterface::class, fn () => new MailQueueService(
+        $container->bind(MailServiceInterface::class, fn (): MailQueueService => new MailQueueService(
             $container->get(MailQueueRepositoryInterface::class),
             $container->get('mail.smtp'),
         ));
 
         // Bookmarks / Lesezeichen
-        $container->bind(BookmarkRepositoryInterface::class, fn () => new MySqlBookmarkRepository(
+        $container->bind(BookmarkRepositoryInterface::class, fn (): MySqlBookmarkRepository => new MySqlBookmarkRepository(
             $container->get(\PDO::class),
         ));
 
         // 4. Domain Repositories (TwoKinds MySQL Persistenz)
-        $container->bind(ComicRepositoryInterface::class, fn () => new MySqlComicRepository(
+        $container->bind(ComicRepositoryInterface::class, fn (): MySqlComicRepository => new MySqlComicRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(ComicRevisionRepositoryInterface::class, fn () => new MySqlComicRevisionRepository(
+        $container->bind(ComicRevisionRepositoryInterface::class, fn (): MySqlComicRevisionRepository => new MySqlComicRevisionRepository(
             $container->get(\PDO::class),
             $container->get(ClockInterface::class),
             $container->get(ConfigInterface::class),
         ));
 
-        $container->bind(CharacterRepositoryInterface::class, fn () => new MySqlCharacterRepository(
+        $container->bind(CharacterRepositoryInterface::class, fn (): MySqlCharacterRepository => new MySqlCharacterRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(CharacterGroupRepositoryInterface::class, fn () => new MySqlCharacterGroupRepository(
+        $container->bind(CharacterGroupRepositoryInterface::class, fn (): MySqlCharacterGroupRepository => new MySqlCharacterGroupRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(ReportRepositoryInterface::class, fn () => new MySqlReportRepository(
+        $container->bind(ReportRepositoryInterface::class, fn (): MySqlReportRepository => new MySqlReportRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(ChapterRepositoryInterface::class, fn () => new MySqlChapterRepository(
+        $container->bind(ChapterRepositoryInterface::class, fn (): MySqlChapterRepository => new MySqlChapterRepository(
             $container->get(\PDO::class),
         ));
 
-        $container->bind(SystemInfoInterface::class, fn () => new SystemInfoService(
+        $container->bind(SystemInfoInterface::class, fn (): SystemInfoService => new SystemInfoService(
             $container->get(ConfigInterface::class),
             $container->get(JsonHelperInterface::class),
         ));
 
-        $container->bind(AssetHelperInterface::class, fn () => new LocalAssetHelper(
+        $container->bind(AssetHelperInterface::class, fn (): LocalAssetHelper => new LocalAssetHelper(
             $container->get(ConfigInterface::class),
         ));
 
         // Sitemap und RSS
-        $container->bind(SiteGeneratorService::class, fn () => new SiteGeneratorService(
+        $container->bind(SiteGeneratorService::class, fn (): SiteGeneratorService => new SiteGeneratorService(
             $container->get(ComicRepositoryInterface::class),
             $container->get(ChapterRepositoryInterface::class),
             $container->get(ConfigInterface::class),

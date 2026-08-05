@@ -150,12 +150,13 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             if (isset($request->post['ref_sheets_urls'])) {
                 $refSheets = [];
                 if ($refSheetsUrlsRaw !== '') {
-                    $refSheets = \array_values(\array_filter(\array_map(fn ($s) => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsRaw))));
+                    $refSheets = \array_values(\array_filter(\array_map(fn ($s): string => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsRaw))));
                 }
             }
             if (isset($request->files['ref_sheets']) && \is_array($request->files['ref_sheets']['name'])) {
                 $refFiles = $request->files['ref_sheets'];
-                for ($i = 0; $i < \count($refFiles['name']); ++$i) {
+                $counter  = \count($refFiles['name']);
+                for ($i = 0; $i < $counter; ++$i) {
                     if ($refFiles['error'][$i] === \UPLOAD_ERR_OK) {
                         $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
                         if ($this->mediaService->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
@@ -190,7 +191,7 @@ final readonly class ApiSaveSingleCharacterAction implements ActionInterface
             $this->characterService->saveCharacter($character);
 
             $msg = "Charakter '{$dto->name}' erfolgreich gespeichert.";
-            if (! empty($warnings)) {
+            if ($warnings !== []) {
                 $msg .= "<br><br><strong style='color:#856404;'><i class='fa-solid fa-triangle-exclamation'></i> Warnungen:</strong><br>- " . \implode('<br>- ', $warnings);
             }
 

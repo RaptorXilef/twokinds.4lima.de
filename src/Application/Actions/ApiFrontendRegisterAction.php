@@ -118,7 +118,7 @@ final readonly class ApiFrontendRegisterAction implements ActionInterface
 
         // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
         $domain = \substr(\strrchr($email, '@'), 1);
-        if ($domain === false || (! \checkdnsrr($domain, 'MX') && ! \checkdnsrr($domain, 'A'))) {
+        if (! \checkdnsrr($domain, 'MX') && ! \checkdnsrr($domain, 'A')) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Die E-Mail-Domain scheint keine E-Mails empfangen zu können.', 400);

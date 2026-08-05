@@ -9,6 +9,7 @@ use App\Contracts\Security\AuthSessionInterface;
 use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 
 final readonly class AuthService
 {
@@ -56,7 +57,7 @@ final readonly class AuthService
         }
 
         // 3. Passwort prüfen
-        if ($user && \password_verify($password, $user->passwordHash)) {
+        if ($user instanceof User && \password_verify($password, $user->passwordHash)) {
             // Wenn der User nicht verifiziert ist, abbrechen!
             if ($user->roleId === 'pending') {
                 $this->rateLimiter->recordFailedAttempt($ip);

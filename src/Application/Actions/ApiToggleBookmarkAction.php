@@ -42,7 +42,7 @@ final readonly class ApiToggleBookmarkAction implements ActionInterface
             return JsonResponse::error('Ungültige Daten manipuliert.', 400);
         }
 
-        if ($comicId === '' || ! \in_array($action, ['add', 'remove'], true)) {
+        if (! \in_array($action, ['add', 'remove'], true)) {
             return JsonResponse::error('Ungültige Daten.', 400);
         }
 

@@ -11,6 +11,7 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 use App\Core\Service\AuthService;
 use App\Core\Service\ReportService;
 use App\Core\ValueObject\ReportId;
@@ -65,10 +66,10 @@ final readonly class ApiUpdateReportStatusAction implements ActionInterface
                     $user = $this->userRepository->findById($row['user_id']);
 
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
-                    if ($user && $user->wantsNotificationReport) {
-                        $pageUrl = ! empty($row['comic_id'])
-                            ? \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $row['comic_id']
-                            : \rtrim($this->config->getBaseUrl(), '/');
+                    if ($user instanceof User && $user->wantsNotificationReport) {
+                        $pageUrl = empty($row['comic_id'])
+                            ? \rtrim($this->config->getBaseUrl(), '/')
+                            : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $row['comic_id'];
 
                         $this->mailService->sendTemplate($user->email->value, 'Dein Fehlerbericht wurde bearbeitet!', 'report_resolved', [
                             'username' => $user->username->value,

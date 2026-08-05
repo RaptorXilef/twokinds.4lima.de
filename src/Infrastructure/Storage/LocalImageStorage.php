@@ -52,6 +52,6 @@ final readonly class LocalImageStorage implements ImageStorageInterface
             }
         }
 
-        return $fallbackIcon !== '' ? $fallbackIcon : '';
+        return $fallbackIcon;
     }
 }

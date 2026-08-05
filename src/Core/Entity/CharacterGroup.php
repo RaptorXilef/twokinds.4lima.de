@@ -6,18 +6,18 @@ namespace App\Core\Entity;
 
 use App\Core\ValueObject\CharacterId;
 
-final class CharacterGroup
+final readonly class CharacterGroup
 {
     /**
      * @var CharacterId[]
      */
-    public readonly array $characterIds;
+    public array $characterIds;
 
     public function __construct(
-        public readonly string $name,
+        public string $name,
         array $characterIds,
-        public readonly int $sortOrder = 0,
-        public readonly bool $manualSort = false,
+        public int $sortOrder = 0,
+        public bool $manualSort = false,
     ) {
         // Strikte Typisierung für das Array erzwingen
         foreach ($characterIds as $charId) {

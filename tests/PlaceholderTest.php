@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Dient als Initial-Test, damit CI-Pipelines nicht aufgrund fehlender Tests fehlschlagen.
  */
-class PlaceholderTest extends TestCase
+final class PlaceholderTest extends TestCase
 {
     /**
      * Prüft, ob das Test-Framework grundsätzlich funktioniert.

@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Service\AuthService;
+use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
 
 #[ActionRoute('api_get_comic')]
@@ -39,7 +40,7 @@ final readonly class ApiGetComicAction implements ActionInterface
             }
 
             // Für den Editor das Char-Array in einfache Strings umwandeln
-            $charIds = \array_map(fn ($id) => $id->value, $comic->characterIds);
+            $charIds = \array_map(fn (CharacterId $id): string => $id->value, $comic->characterIds);
 
             $comicData = [
                 'id'          => $comic->id->value,
@@ -53,7 +54,7 @@ final readonly class ApiGetComicAction implements ActionInterface
             ];
 
             return JsonResponse::success(['comic' => $comicData]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException) {
             return JsonResponse::error('Ungültige Comic-ID.', 400);
         } catch (\Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);

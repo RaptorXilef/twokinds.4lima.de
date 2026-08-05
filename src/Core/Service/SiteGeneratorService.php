@@ -150,7 +150,7 @@ final class SiteGeneratorService
         }
 
         // Die neuesten zuerst (anhand der ID sortieren, da YYYYMMDD)
-        \usort($feedComics, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
+        \usort($feedComics, fn ($a, $b): int => \strcmp($b->id->value, $a->id->value));
 
         // Max Items aus der Config ziehen (Default 25, falls Eintrag fehlt)
         $maxItems   = (int) $this->config->get('rss_max_items', 25);

@@ -33,7 +33,7 @@ final readonly class ApiSaveCharacterGroupsAction implements ActionInterface
             $inputGroups = \json_decode($jsonData, true, 512, \JSON_THROW_ON_ERROR);
 
             $existingGroups = $this->groupRepo->findAll();
-            $existingNames  = \array_map(fn ($g) => $g->name, $existingGroups);
+            $existingNames  = \array_map(fn (CharacterGroup $g): string => $g->name, $existingGroups);
             $newNames       = [];
 
             $sortOrder = 0; // Hochzählen für die Drag&Drop Reihenfolge

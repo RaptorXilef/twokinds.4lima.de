@@ -50,7 +50,7 @@ final readonly class ApiListComicMediaAction implements ActionInterface
         }
 
         // Sortiere nach ID absteigend (neueste Comics zuerst)
-        \usort($result, fn ($a, $b) => \strcmp($b['id'], $a['id']));
+        \usort($result, fn (array $a, array $b): int => \strcmp($b['id'], $a['id']));
 
         return JsonResponse::success(['files' => $result]);
     }

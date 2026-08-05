@@ -16,7 +16,7 @@ final readonly class MailQueueService implements MailServiceInterface
     ) {
     }
 
-    public function sendTemplate(string $recipient, string $subject, string $template, array $data): bool|string
+    public function sendTemplate(string $recipient, string $subject, string $template, array $data): bool
     {
         // Prio-Mapping: Wichtige System-Mails drängeln sich nach vorne
         $priority = 10; // Standard für Newsletter

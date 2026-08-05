@@ -52,7 +52,7 @@ final readonly class ApiSaveUserAction implements ActionInterface
             $existingUser  = $this->userRepo->findById($id);
 
             // Admin-Schutz: Verhindere, dass normale Admins andere Administratoren bearbeiten/degradieren
-            if ($existingUser && $existingUser->roleId === 'admin' && ! $isConfigAdmin) {
+            if ($existingUser instanceof User && $existingUser->roleId === 'admin' && ! $isConfigAdmin) {
                 if ($this->auth->getUserId() !== $id) {
                     return JsonResponse::error('Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.', 403);
                 }
@@ -80,12 +80,12 @@ final readonly class ApiSaveUserAction implements ActionInterface
 
             // Prüfe auf Namens- und E-Mail-Duplikate
             $checkName = $this->userRepo->findByUsername($usernameStr);
-            if ($checkName && $checkName->id !== $id) {
+            if ($checkName instanceof User && $checkName->id !== $id) {
                 return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
             }
 
             $checkEmail = $this->userRepo->findByEmail($emailStr);
-            if ($checkEmail && $checkEmail->id !== $id) {
+            if ($checkEmail instanceof User && $checkEmail->id !== $id) {
                 return JsonResponse::error('Diese E-Mail wird bereits verwendet.', 400);
             }
 
@@ -97,9 +97,9 @@ final readonly class ApiSaveUserAction implements ActionInterface
                 $hash,
                 $roleId,
                 $existingUser ? $existingUser->createdAt : new \DateTimeImmutable(),
-                $existingUser ? $existingUser->wantsNewsletter : false,
-                $existingUser ? $existingUser->wantsNewsletterTranscript : false,
-                $existingUser ? $existingUser->wantsNotificationReport : false,
+                $existingUser instanceof User && $existingUser->wantsNewsletter,
+                $existingUser instanceof User && $existingUser->wantsNewsletterTranscript,
+                $existingUser instanceof User && $existingUser->wantsNotificationReport,
             );
 
             // Speichern

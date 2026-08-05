@@ -31,7 +31,7 @@ final readonly class GlobalExceptionHandler
      */
     public function register(): void
     {
-        \set_exception_handler([$this, 'handleException']);
+        \set_exception_handler($this->handleException(...));
 
         // Verwandelt auch klassische PHP-Warnungen/Fehler in Exceptions, damit sie geloggt werden
         \set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
@@ -88,7 +88,7 @@ final readonly class GlobalExceptionHandler
         $errorMessage = 'Das System hat einen unerwarteten Fehler festgestellt. Keine Sorge, die Administratoren wurden automatisch benachrichtigt um das Problem zu beheben.';
 
         if ($isDev) {
-            $errorTitle   = \sprintf('Dev-Mode: %s', \get_class($exception));
+            $errorTitle   = \sprintf('Dev-Mode: %s', $exception::class);
             $errorMessage = \sprintf(
                 "<strong>Fehler:</strong> %s<br><br><strong>Datei:</strong> %s:%d<br><br><strong>Stacktrace:</strong><pre style='background:#f4f4f4; padding:10px; overflow-x:auto; font-size:12px;'>%s</pre>",
                 \htmlspecialchars($exception->getMessage()),

@@ -26,7 +26,7 @@ final readonly class SubmitReportRequest
     public static function fromRequest(ServerRequest $request): self
     {
         // JSON-Payload auslesen (wurde von der JsonBodyParserMiddleware in $request->input gelegt)
-        $input = ! empty($request->post) ? $request->post : $request->input;
+        $input = $request->post === [] ? $request->input : $request->post;
 
         if (! empty($input['report_honeypot'])) {
             // Honeypot wurde ausgefüllt -> Bot-Verdacht!
@@ -42,10 +42,6 @@ final readonly class SubmitReportRequest
 
         if ($reportType === '') {
             throw ValidationException::withMessage('Bitte wähle eine Fehler-Kategorie aus.');
-        }
-
-        if ($comicId === '' || $reportType === '') {
-            throw ValidationException::withMessage('Fehlende oder ungültige Pflichtfelder.');
         }
 
         if ($reportType === 'transcript' && $description === '' && $suggestion === '') {

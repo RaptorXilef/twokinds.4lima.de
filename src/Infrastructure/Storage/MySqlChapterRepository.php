@@ -31,7 +31,7 @@ final readonly class MySqlChapterRepository implements ChapterRepositoryInterfac
         $stmt = $this->pdo->query('SELECT * FROM `chapters` ORDER BY CAST(id AS UNSIGNED) ASC, id ASC');
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return \array_map(fn ($r) => new Chapter(
+        return \array_map(fn (array $r): Chapter => new Chapter(
             $r['id'],
             $r['title'],
             $r['description'] ?? '',

@@ -71,7 +71,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
     {
         return new Report(
             id: new ReportId($row['id']),
-            comicId: ! empty($row['comic_id']) ? new ComicId($row['comic_id']) : null,
+            comicId: empty($row['comic_id']) ? null : new ComicId($row['comic_id']),
             userId: $row['user_id'] ?? null, // NEU
             date: new \DateTimeImmutable($row['date']),
             status: $row['status'],

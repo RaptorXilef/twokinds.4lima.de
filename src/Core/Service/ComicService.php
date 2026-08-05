@@ -127,7 +127,7 @@ final readonly class ComicService
             return;
         }
 
-        if ($this->comicRepository->findById($newId) !== null) {
+        if ($this->comicRepository->findById($newId) instanceof ComicPage) {
             throw new \DomainException("Die neue Comic-ID {$newId->value} existiert bereits und kann nicht überschrieben werden!");
         }
 

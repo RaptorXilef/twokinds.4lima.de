@@ -41,7 +41,7 @@ final readonly class ApiAdminTriggerNewsletterAction implements ActionInterface
         $isTranscript = $type === 'transcript';
         $subscribers  = $this->userRepository->findNewsletterSubscribers($isTranscript);
 
-        if (empty($subscribers)) {
+        if ($subscribers === []) {
             return JsonResponse::success(['message' => 'Niemand hat diesen Newsletter abonniert. Es wurden keine E-Mails versendet.']);
         }
 

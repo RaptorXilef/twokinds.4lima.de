@@ -29,7 +29,7 @@ final class PdoFactory
             throw new \RuntimeException('Kritischer Fehler: Die Datenbank ist in der config/storage.php nicht aktiviert (enabled = false) oder nicht konfiguriert.');
         }
 
-        $portStr   = ! empty($db['port']) ? ";port={$db['port']}" : '';
+        $portStr   = empty($db['port']) ? '' : ";port={$db['port']}";
         $dsnWithDb = "mysql:host={$db['host']}{$portStr};dbname={$db['dbname']};charset={$db['charset']}";
 
         $pdo = null;
@@ -63,10 +63,10 @@ final class PdoFactory
                     $pdo->exec($sql);
                     $pdo->exec("USE `{$db['dbname']}`");
                 } catch (\PDOException $e2) {
-                    throw new \RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage());
+                    throw new \RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage(), $e->getCode(), $e);
                 }
             } else {
-                throw new \RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage());
+                throw new \RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage(), $e->getCode(), $e);
             }
         }
 
@@ -97,7 +97,7 @@ final class PdoFactory
                 try {
                     $pdo->exec($sql); // CREATE TABLE IF NOT EXISTS ist sicher mehrfach auszuführen
                 } catch (\PDOException $ex) {
-                    throw new \RuntimeException("MySQL Auto-Install Fehler (Tabelle {$tableName} konnte nicht angelegt werden): " . $ex->getMessage());
+                    throw new \RuntimeException("MySQL Auto-Install Fehler (Tabelle {$tableName} konnte nicht angelegt werden): " . $ex->getMessage(), $ex->getCode(), $ex);
                 }
             }
         }

@@ -37,9 +37,7 @@ final class MiddlewarePipeline
         for ($i = \count($this->middlewares) - 1; $i >= 0; --$i) {
             $middleware = $this->middlewares[$i];
 
-            $next = function (ServerRequest $req) use ($middleware, $next): mixed {
-                return $middleware->process($req, $next);
-            };
+            $next = fn (ServerRequest $req): mixed => $middleware->process($req, $next);
         }
 
         // Startschuss: Der Request betritt die äußerste Schicht

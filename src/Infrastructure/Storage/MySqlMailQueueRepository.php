@@ -48,7 +48,7 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         $params            = [];
 
         // Newsletter herausfiltern oder gezielt zulassen
-        if (! empty($allowedTemplates)) {
+        if ($allowedTemplates !== []) {
             $inQuery           = \implode(',', \array_fill(0, \count($allowedTemplates), '?'));
             $templateFilterSql = " AND template IN ($inQuery)";
             $params            = $allowedTemplates;

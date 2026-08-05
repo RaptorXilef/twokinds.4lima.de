@@ -41,7 +41,7 @@ $paths = [
     'comics'     => __DIR__ . '/migration_data/comic_var.json',
 ];
 
-foreach ($paths as $name => $path) {
+foreach ($paths as $path) {
     if (! \file_exists($path)) {
         exit("<b style='color:red;'>Fehler:</b> Die Datei <code>{$path}</code> wurde nicht gefunden!");
     }

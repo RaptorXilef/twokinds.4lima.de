@@ -35,7 +35,7 @@ final readonly class FrontendVerifyRenderAction implements ViewActionInterface
         }
 
         $user = $this->userRepository->findByEmail($email);
-        if ($user && $user->roleId === 'pending') {
+        if ($user instanceof User && $user->roleId === 'pending') {
             $updatedUser = new User(
                 $user->id,
                 $user->username,

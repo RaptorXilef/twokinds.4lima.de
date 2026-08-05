@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\ValueObject;
 
-final readonly class EmailAddress
+final readonly class EmailAddress implements \Stringable
 {
     public string $value;
 

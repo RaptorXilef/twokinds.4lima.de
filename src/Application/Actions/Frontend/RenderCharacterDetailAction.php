@@ -11,6 +11,8 @@ use App\Application\Response\RedirectResponse;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\Entity\Character;
+use App\Core\ValueObject\CharacterId;
 
 #[ActionRoute('render_character_detail')]
 final readonly class RenderCharacterDetailAction implements ViewActionInterface
@@ -35,7 +37,7 @@ final readonly class RenderCharacterDetailAction implements ViewActionInterface
         // 1. Ist es eine moderne ID (char_XXXX)?
         if (\preg_match('/^char_\d+$/', $idOrName)) {
             try {
-                $character = $this->charRepo->findById(new \App\Core\ValueObject\CharacterId($idOrName));
+                $character = $this->charRepo->findById(new CharacterId($idOrName));
             } catch (\InvalidArgumentException) {
             }
         } else {
@@ -65,7 +67,7 @@ final readonly class RenderCharacterDetailAction implements ViewActionInterface
             }
         }
 
-        if ($character === null) {
+        if (! $character instanceof Character) {
             \http_response_code(404);
             $this->renderer->render('frontend/404', ['pageTitle' => 'Charakter nicht gefunden']);
 
@@ -87,7 +89,7 @@ final readonly class RenderCharacterDetailAction implements ViewActionInterface
         }
 
         // Chronologisch aufsteigend sortieren (Älteste Auftritte zuerst)
-        \usort($characterComics, fn ($a, $b) => $a->id->value <=> $b->id->value);
+        \usort($characterComics, fn ($a, $b): int => $a->id->value <=> $b->id->value);
 
         $this->renderer->render('frontend/character_detail', [
             'character'       => $character,

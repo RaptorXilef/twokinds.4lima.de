@@ -12,6 +12,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 use App\Core\Service\MagicLinkService;
 
 #[ActionRoute('api_frontend_resend_verification')]
@@ -56,7 +57,7 @@ final readonly class ApiFrontendResendVerificationAction implements ActionInterf
         $user = $this->userRepository->findByEmail($email);
 
         // E-Mail nur senden, wenn User existiert UND noch auf 'pending' steht!
-        if ($user && $user->roleId === 'pending') {
+        if ($user instanceof User && $user->roleId === 'pending') {
             $tokenData = $this->magicLinkService->createToken($email);
             $verifyUrl = \rtrim($this->config->getBaseUrl(), '/') . '/verifizieren?token=' . $tokenData['token'];
 

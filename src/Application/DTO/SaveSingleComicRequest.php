@@ -40,7 +40,7 @@ final readonly class SaveSingleComicRequest
         // Checkboxen oder Multi-Selects senden Arrays
         $characterIds = (array) ($post['character_ids'] ?? []);
         // Char-IDs säubern
-        $characterIds = \array_map(fn ($cid) => Sanitizer::string($cid), $characterIds);
+        $characterIds = \array_map(Sanitizer::string(...), $characterIds);
 
         // Flexible URL-Behandlung für Originalbilder
         $originalUrl = Sanitizer::string($post['url_originalbild'] ?? '');

@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Storage\BookmarkRepositoryInterface;
+use App\Core\Entity\Bookmark;
 use App\Core\Service\AuthService;
 
 #[ActionRoute('api_sync_bookmarks')]
@@ -57,7 +58,7 @@ final readonly class ApiSyncBookmarksAction implements ActionInterface
 
         // Cloud-Daten abrufen
         $dbBookmarks = $this->bookmarkRepo->findByUser($userId);
-        $dbIds       = \array_map(fn ($b) => $b->comicId, $dbBookmarks);
+        $dbIds       = \array_map(fn (Bookmark $b): string => $b->comicId, $dbBookmarks);
 
         // Sortieren zum einfachen Vergleichen
         $sortedLocal = $localIds;

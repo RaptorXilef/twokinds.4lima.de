@@ -38,7 +38,7 @@ final readonly class CsrfMiddleware implements MiddlewareInterface
                 $postData = $request->post;
                 unset($postData['csrf_token'], $postData['action']); // Interne Felder entfernen
 
-                if (! empty($postData)) {
+                if ($postData !== []) {
                     $this->sessionManager->setFormData($postData);
                 }
 

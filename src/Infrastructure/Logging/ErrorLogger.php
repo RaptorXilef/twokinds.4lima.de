@@ -44,7 +44,7 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
         $message = \sprintf(
             "[%s] [%s] %s in %s:%d\nStack Trace:\n%s\n%s\n",
             $timestamp,
-            \get_class($throwable),
+            $throwable::class,
             $throwable->getMessage(),
             $throwable->getFile(),
             $throwable->getLine(),

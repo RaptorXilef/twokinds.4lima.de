@@ -38,7 +38,7 @@ final readonly class CharacterService
         foreach ($groups as $group) {
             $updatedIds = \array_filter(
                 $group->characterIds,
-                fn (CharacterId $charId) => $charId->value !== $id->value,
+                fn (CharacterId $charId): bool => $charId->value !== $id->value,
             );
 
             // Nur speichern, wenn sich etwas geändert hat
@@ -55,7 +55,7 @@ final readonly class CharacterService
     {
         // Validierung: Existieren alle zugewiesenen Charaktere wirklich?
         foreach ($group->characterIds as $charId) {
-            if ($this->characterRepo->findById($charId) === null) {
+            if (! $this->characterRepo->findById($charId) instanceof Character) {
                 throw new EntityNotFoundException("Charakter mit ID {$charId->value} existiert nicht und kann nicht der Gruppe hinzugefügt werden.");
             }
         }

@@ -19,7 +19,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
 
     public function save(ComicPage $comic): void
     {
-        $charIds = \array_map(fn (CharacterId $id) => $id->value, $comic->characterIds);
+        $charIds = \array_map(fn (CharacterId $id): string => $id->value, $comic->characterIds);
 
         $data = [
             'id'               => $comic->id->value,
@@ -63,7 +63,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
     private function mapToEntity(array $row): ComicPage
     {
         $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
-        $charIds    = \array_map(fn (string $id) => new CharacterId($id), $charIdsRaw);
+        $charIds    = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
 
         return new ComicPage(
             id: new ComicId($row['id']),

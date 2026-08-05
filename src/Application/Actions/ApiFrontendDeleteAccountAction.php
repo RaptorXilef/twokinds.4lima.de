@@ -11,6 +11,7 @@ use App\Application\Response\JsonResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 use App\Core\Service\AuthService;
 
 #[ActionRoute('api_frontend_delete_account')]
@@ -38,7 +39,7 @@ final readonly class ApiFrontendDeleteAccountAction implements ActionInterface
         $password = (string) ($request->post['password'] ?? '');
         $user     = $this->userRepo->findById($userId);
 
-        if (! $user || ! \password_verify($password, $user->passwordHash)) {
+        if (! $user instanceof User || ! \password_verify($password, $user->passwordHash)) {
             return JsonResponse::error('Das eingegebene Passwort ist nicht korrekt.', 400);
         }
 

@@ -18,7 +18,7 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
 
     public function save(CharacterGroup $group): void
     {
-        $charIds = \array_map(fn (CharacterId $id) => $id->value, $group->characterIds);
+        $charIds = \array_map(fn (CharacterId $id): string => $id->value, $group->characterIds);
 
         $data = [
             'name'          => $group->name,
@@ -57,7 +57,7 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
     private function mapToEntity(array $row): CharacterGroup
     {
         $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
-        $charIds    = \array_map(fn (string $id) => new CharacterId($id), $charIdsRaw);
+        $charIds    = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
 
         return new CharacterGroup(
             name: $row['name'],

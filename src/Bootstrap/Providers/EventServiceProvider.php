@@ -16,7 +16,7 @@ final class EventServiceProvider
     public function register(ContainerInterface $container): void
     {
         // Bindet den konkreten Event-Dispatcher an das Interface
-        $container->bind(EventDispatcherInterface::class, fn () => new EventDispatcher());
+        $container->bind(EventDispatcherInterface::class, fn (): EventDispatcher => new EventDispatcher());
 
         /*
          * Sobald wir Events haben (z.B. ComicPublishedEvent),

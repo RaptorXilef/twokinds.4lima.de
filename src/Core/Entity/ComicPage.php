@@ -7,23 +7,23 @@ namespace App\Core\Entity;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
 
-final class ComicPage
+final readonly class ComicPage
 {
     /**
      * @var CharacterId[]
      */
-    public readonly array $characterIds;
+    public array $characterIds;
 
     public function __construct(
-        public readonly ComicId $id,
-        public readonly string $type,
-        public readonly string $name,
-        public readonly ?string $transcript,
-        public readonly ?string $chapterId,
+        public ComicId $id,
+        public string $type,
+        public string $name,
+        public ?string $transcript,
+        public ?string $chapterId,
         array $characterIds,
-        public readonly string $originalUrl,
-        public readonly string $sketchUrl,
-        public readonly ?int $imageUpdatedAt = null, // Ersetzt die image_cache.json
+        public string $originalUrl,
+        public string $sketchUrl,
+        public ?int $imageUpdatedAt = null, // Ersetzt die image_cache.json
     ) {
         foreach ($characterIds as $charId) {
             if (! $charId instanceof CharacterId) {

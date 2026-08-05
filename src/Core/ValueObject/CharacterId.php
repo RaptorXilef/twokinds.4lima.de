@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\ValueObject;
 
-final readonly class CharacterId
+final readonly class CharacterId implements \Stringable
 {
     public function __construct(public string $value)
     {

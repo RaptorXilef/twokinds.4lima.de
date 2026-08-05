@@ -51,9 +51,8 @@ final readonly class MediaService
         \imagecopyresampled($targetImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
         $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality', 85);
-        $success = \imagewebp($targetImage, $targetPath, $quality);
 
-        return $success;
+        return \imagewebp($targetImage, $targetPath, $quality);
     }
 
     /**
@@ -88,9 +87,8 @@ final readonly class MediaService
         \imagecopyresampled($targetImage, $image, 0, 0, $srcX, $srcY, $size, $size, $minSize, $minSize);
 
         $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
-        $success = \imagewebp($targetImage, $targetPath, $quality);
 
-        return $success;
+        return \imagewebp($targetImage, $targetPath, $quality);
     }
 
     /**

@@ -15,22 +15,22 @@ trait DynamicSqlTrait
      */
     protected function executeUpsert(string $table, array $data, array $excludeUpdate = ['id']): bool
     {
-        if (empty($data)) {
+        if ($data === []) {
             return false;
         }
 
         $columns = \array_keys($data);
 
         // 1. INSERT-Teil aufbauen (`col1`, `col2`) VALUES (:col1, :col2)
-        $colString = \implode(', ', \array_map(fn (string $c) => "`$c`", $columns));
-        $valString = \implode(', ', \array_map(fn (string $c) => ":$c", $columns));
+        $colString = \implode(', ', \array_map(fn (string $c): string => "`$c`", $columns));
+        $valString = \implode(', ', \array_map(fn (string $c): string => ":$c", $columns));
 
         // 2. UPDATE-Teil aufbauen, exklusive der geschützten Spalten
-        $updateCols = \array_filter($columns, fn (string $c) => ! \in_array($c, $excludeUpdate, true));
-        $updString  = \implode(', ', \array_map(fn (string $c) => "`$c` = VALUES(`$c`)", $updateCols));
+        $updateCols = \array_filter($columns, fn (string $c): bool => ! \in_array($c, $excludeUpdate, true));
+        $updString  = \implode(', ', \array_map(fn (string $c): string => "`$c` = VALUES(`$c`)", $updateCols));
 
         $sql = "INSERT INTO `$table` ($colString) VALUES ($valString)";
-        if (! empty($updString)) {
+        if ($updString !== '' && $updString !== '0') {
             $sql .= " ON DUPLICATE KEY UPDATE $updString";
         }
 

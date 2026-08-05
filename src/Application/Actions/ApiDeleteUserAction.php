@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 
@@ -41,7 +42,7 @@ final readonly class ApiDeleteUserAction implements ActionInterface
             }
 
             $userToDelete = $this->userRepo->findById($id);
-            if ($userToDelete && $userToDelete->roleId === 'admin' && ! \str_starts_with($this->auth->getUserId(), 'sys_')) {
+            if ($userToDelete instanceof User && $userToDelete->roleId === 'admin' && ! \str_starts_with($this->auth->getUserId(), 'sys_')) {
                 return JsonResponse::error('Nur der Systembetreuer darf Administratoren löschen.', 403);
             }
 

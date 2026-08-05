@@ -30,7 +30,7 @@ final readonly class RenderComicAction implements ActionInterface
         // Hole alle Comics (werden vom Repo standardmäßig DESC sortiert)
         $allComics = $this->comicRepo->findAll();
 
-        if (empty($allComics)) {
+        if ($allComics === []) {
             $this->renderer->render('frontend/404', ['pageTitle' => 'Keine Comics gefunden.']);
 
             return null;

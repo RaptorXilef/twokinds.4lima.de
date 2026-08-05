@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
 use App\Core\Service\MediaService;
 use App\Core\Service\SiteGeneratorService;
@@ -106,7 +107,7 @@ final readonly class ApiUploadComicMediaAction implements ActionInterface
 
             // Zeitstempel für RSS / Cachebusting aktualisieren (NUR WENN COMIC EXISTIERT!)
             if ($comic) {
-                $updatedComic = new \App\Core\Entity\ComicPage(
+                $updatedComic = new ComicPage(
                     id: $comic->id,
                     type: $comic->type,
                     name: $comic->name,
