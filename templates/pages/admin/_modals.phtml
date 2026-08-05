@@ -746,30 +746,48 @@ foreach ($alphaUsers as $u) {
             <button class="modal-close btn-close-report-modal">&times;</button>
         </div>
         <div class="modal-scroll-content">
-            <div class="report-info-grid">
-                <div><strong>Comic ID:</strong> <span id="rep-modal-comic-id" class="mono"></span></div>
-                <div>
-                    <strong>Melder:</strong>
-                    <div class="d-flex align-center gap-10 mt-5">
-                        <img id="rep-modal-avatar-img"
-                             src=""
-                             style="width:30px; height:30px; border-radius:50%; object-fit:cover;"
-                             alt="Avatar">
-                        <span id="rep-modal-submitter"></span>
+
+        <?php // TODO Inline CSS in SCSS überführen!?>
+            <!-- Prominente Melder-Box -->
+            <div class="d-flex flex-wrap gap-20 mb-30 p-20 bg-even border-medium border-radius-6 align-center">
+                <!-- Melder (Links/Prominent) -->
+                <div class="d-flex align-center gap-15 flex-1 min-w-250">
+                    <img id="rep-modal-avatar-img"
+                         src=""
+                         style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-medium); box-shadow: 0 4px 10px rgba(0,0,0,0.15);"
+                         alt="Avatar">
+                    <div>
+                        <div class="font-small text-faded text-uppercase font-bold letter-spacing-1 mb-5">Gemeldet von
+                        </div>
+                        <strong id="rep-modal-submitter"
+                                class="font-1-5x text-color"></strong>
                     </div>
                 </div>
-                <div><strong>Datum:</strong> <span id="rep-modal-date"></span></div>
+
+                <!-- Metadaten (Rechts) -->
+                <div class="d-flex flex-column gap-10 text-right"
+                     style="flex: 0 0 auto;">
+                    <div class="bg-content p-5 px-20 border-medium border-radius-4">
+                        <span class="text-faded mr-10 font-small text-uppercase">Comic ID:</span>
+                        <span id="rep-modal-comic-id" class="mono font-bold text-color font-1-1x"></span>
+                    </div>
+                    <div class="bg-content p-5 px-20 border-medium border-radius-4">
+                        <span class="text-faded mr-10 font-small text-uppercase">Datum:</span>
+                        <span id="rep-modal-date" class="font-bold text-color font-1-1x"></span>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group mb-20">
-                <label>Beschreibung des Nutzers:</label>
+            <!-- Beschreibung -->
+            <div class="form-group mb-30">
+                <label class="font-1-1x mb-10 border-bottom-light pb-5 d-block">Beschreibung des Nutzers:</label>
                 <div id="rep-modal-desc"
-                     class="bg-content border-medium border-radius-4 p-15"
+                     class="bg-content border-medium border-radius-6 p-20 font-1-1x lh-1-6"
                      style="white-space: pre-wrap;"></div>
             </div>
 
             <div id="rep-modal-transcript-section"
-                 class="hidden mb-20">
+                 class="hidden mb-30">
                 <label>Transkript-Abgleich (Diff):</label>
                 <div class="diff-box bg-content border-medium border-radius-4 p-15"
                      id="rep-modal-diff"></div>

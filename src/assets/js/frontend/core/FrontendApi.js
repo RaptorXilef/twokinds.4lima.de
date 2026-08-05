@@ -13,16 +13,28 @@ export class FrontendApi {
             const response = await fetch(`${this.baseUrl}/api/${endpoint}`, {
                 method: 'POST',
                 body: formData,
+                headers: {
+                    Accept: 'application/json', // Zwingt den ExceptionHandler, JSON zu werfen!
+                },
             });
 
             const isJson = response.headers.get('content-type')?.includes('application/json');
             if (isJson) {
                 return await response.json();
             }
-            console.error(`[FrontendApi] POST /api/${endpoint} lieferte kein gültiges JSON.`);
-            return { success: false, error: 'Ungültige Server-Antwort.' };
+
+            // Fallback für PHP Fatal Errors
+            const text = await response.text();
+            console.error(
+                `[FrontendApi] Server lieferte kein JSON. Antwort:`,
+                text.substring(0, 250)
+            );
+            return {
+                success: false,
+                error: 'Ein interner Serverfehler ist aufgetreten. Bitte Entwickler-Konsole prüfen.',
+            };
         } catch (error) {
-            console.error(`[FrontendApi] Netzwerkfehler bei POST /api/${endpoint}:`, error);
+            console.warn(`[FrontendApi] Netzwerkfehler bei POST /api/${endpoint}:`, error.message);
             return { success: false, error: 'Netzwerkfehler.' };
         }
     }
@@ -30,14 +42,28 @@ export class FrontendApi {
     async get(endpoint, params = '') {
         const query = params ? `?${params.toString()}` : '';
         try {
-            const response = await fetch(`${this.baseUrl}/api/${endpoint}${query}`);
+            const response = await fetch(`${this.baseUrl}/api/${endpoint}${query}`, {
+                headers: {
+                    Accept: 'application/json',
+                },
+            });
+
             const isJson = response.headers.get('content-type')?.includes('application/json');
             if (isJson) return await response.json();
 
             console.error(`[FrontendApi] GET /api/${endpoint} lieferte kein gültiges JSON.`);
             return { success: false, error: 'Ungültige Server-Antwort.' };
         } catch (error) {
-            console.error(`[FrontendApi] Netzwerkfehler bei GET /api/${endpoint}:`, error);
+            // "NetworkError" ignorieren, passiert oft bei Tab-Reloads während eines fetch
+            if (
+                error.name !== 'TypeError' &&
+                error.message !== 'NetworkError when attempting to fetch resource.'
+            ) {
+                console.warn(
+                    `[FrontendApi] Netzwerkfehler bei GET /api/${endpoint}:`,
+                    error.message
+                );
+            }
             return { success: false, error: 'Netzwerkfehler.' };
         }
     }
