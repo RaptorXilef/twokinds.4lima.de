@@ -33,7 +33,7 @@ export class RssCopier {
                     this.showFeedback(btn);
                 } catch (err) {
                     console.error('[RssCopier] Konnte RSS-Link nicht kopieren:', err);
-                    alert('Kopieren fehlgeschlagen: ' + url);
+                    alert(`Kopieren·fehlgeschlagen:·${url}`);
                 }
             });
         });

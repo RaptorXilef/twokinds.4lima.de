@@ -209,7 +209,7 @@ function optimizeTokens(content, fileExtension) {
                     !line.startsWith('<') ||
                     (!lastLine.endsWith('>') && !lastLine.endsWith('?>'))
                 ) {
-                    optimizedLines[optimizedLines.length - 1] += ' ' + line;
+                    optimizedLines[optimizedLines.length - 1] += ` ${line}`;
                     continue;
                 }
             }

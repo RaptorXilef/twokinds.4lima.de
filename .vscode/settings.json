@@ -260,7 +260,7 @@
         }
     },
     "viraTheme.accent": "White",
-    
+
     // Deaktiviere Autoupdate um die Installation von 1.131.0 zu verhindern!
     "update.enableWindowsBackgroundUpdates": false,
     "update.mode": "manual"
