@@ -22,14 +22,32 @@ export class BackupManager {
             const btnRestoreOpen = e.target.closest('.btn-restore-backup');
             const btnDelete = e.target.closest('.btn-delete-backup');
 
-            if (btnCreateOpen) { e.preventDefault(); this.openCreateModal(); }
-            if (btnCloseModal) { e.preventDefault(); this.modalManager.close('backup-create-modal'); this.modalManager.close('backup-restore-modal'); }
-            if (btnSubmitCreate) { e.preventDefault(); this.createBackup(btnSubmitCreate); }
-            if (btnSubmitRestore) { e.preventDefault(); this.restoreBackup(btnSubmitRestore); }
-            if (btnDelete) { e.preventDefault(); this.deleteBackup(btnDelete.dataset.filename); }
+            if (btnCreateOpen) {
+                e.preventDefault();
+                this.openCreateModal();
+            }
+            if (btnCloseModal) {
+                e.preventDefault();
+                this.modalManager.close('backup-create-modal');
+                this.modalManager.close('backup-restore-modal');
+            }
+            if (btnSubmitCreate) {
+                e.preventDefault();
+                this.createBackup(btnSubmitCreate);
+            }
+            if (btnSubmitRestore) {
+                e.preventDefault();
+                this.restoreBackup(btnSubmitRestore);
+            }
+            if (btnDelete) {
+                e.preventDefault();
+                this.deleteBackup(btnDelete.dataset.filename);
+            }
             if (btnRestoreOpen) {
                 e.preventDefault();
-                try { this.openRestoreModal(JSON.parse(btnRestoreOpen.dataset.payload)); } catch (err) {}
+                try {
+                    this.openRestoreModal(JSON.parse(btnRestoreOpen.dataset.payload));
+                } catch (_err) {}
             }
         });
     }
@@ -48,14 +66,16 @@ export class BackupManager {
     renderTable(backups) {
         this.tableBody.innerHTML = '';
         if (backups.length === 0) {
-            this.tableBody.innerHTML = '<tr><td colspan="5" class="empty-table-message">Keine Backups gefunden.</td></tr>';
+            this.tableBody.innerHTML =
+                '<tr><td colspan="5" class="empty-table-message">Keine Backups gefunden.</td></tr>';
             return;
         }
 
-        backups.forEach(b => {
+        backups.forEach((b) => {
             const dateStr = new Date(b.date * 1000).toLocaleString('de-DE');
-            const sizeStr = (b.size / 1024 / 1024).toFixed(2) + ' MB';
-            const typeStr = b.type === 'full' ? 'Komplett' : `Tabelle: ${b.type.replace('table_', '')}`;
+            const sizeStr = `${(b.size / 1024 / 1024).toFixed(2)} MB`;
+            const typeStr =
+                b.type === 'full' ? 'Komplett' : `Tabelle: ${b.type.replace('table_', '')}`;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -78,7 +98,9 @@ export class BackupManager {
     openCreateModal() {
         const select = document.getElementById('backup-create-table-select');
         select.innerHTML = '<option value="all">Komplette Datenbank (Alle Tabellen)</option>';
-        this.allTables.forEach(t => select.innerHTML += `<option value="${t}">Nur Tabelle: ${t}</option>`);
+        this.allTables.forEach((t) => {
+            select.innerHTML += `<option value="${t}">Nur Tabelle: ${t}</option>`;
+        });
         this.modalManager.open('backup-create-modal');
     }
 
@@ -87,7 +109,9 @@ export class BackupManager {
         document.getElementById('restore-filename-display').value = backupData.filename;
         const select = document.getElementById('backup-restore-table-select');
         select.innerHTML = '<option value="all">Alle im Backup enthaltenen Tabellen</option>';
-        backupData.tables.forEach(t => select.innerHTML += `<option value="${t}">Nur Tabelle: ${t}</option>`);
+        backupData.tables.forEach((t) => {
+            select.innerHTML += `<option value="${t}">Nur Tabelle: ${t}</option>`;
+        });
         this.modalManager.open('backup-restore-modal');
     }
 
@@ -98,7 +122,8 @@ export class BackupManager {
         btn.disabled = true;
 
         const res = await this.api.post('create_backup', fd);
-        btn.innerHTML = origText; btn.disabled = false;
+        btn.innerHTML = origText;
+        btn.disabled = false;
 
         if (res.success) {
             this.notifications.show(res.message, 'success');
@@ -110,7 +135,12 @@ export class BackupManager {
     async restoreBackup(btn) {
         const fd = new FormData(document.getElementById('backup-restore-form'));
         if (fd.get('mode') === '2') {
-            if (!confirm('ACHTUNG! "Exakte Kopie": Daten in der DB, die im Backup fehlen, werden UNWIDERRUFLICH GELÖSCHT! Fortfahren?')) return;
+            if (
+                !confirm(
+                    'ACHTUNG! "Exakte Kopie": Daten in der DB, die im Backup fehlen, werden UNWIDERRUFLICH GELÖSCHT! Fortfahren?'
+                )
+            )
+                return;
         } else {
             if (!confirm('Soll das Backup jetzt wiederhergestellt werden?')) return;
         }
@@ -120,7 +150,8 @@ export class BackupManager {
         btn.disabled = true;
 
         const res = await this.api.post('restore_backup', fd);
-        btn.innerHTML = origText; btn.disabled = false;
+        btn.innerHTML = origText;
+        btn.disabled = false;
 
         if (res.success) {
             this.notifications.show(res.message, 'success');
@@ -133,7 +164,9 @@ export class BackupManager {
         const fd = new FormData();
         fd.append('filename', filename);
         const res = await this.api.post('delete_backup', fd);
-        if (res.success) { this.notifications.show(res.message, 'success'); this.loadBackups(); }
-        else this.notifications.show(res.error, 'error');
+        if (res.success) {
+            this.notifications.show(res.message, 'success');
+            this.loadBackups();
+        } else this.notifications.show(res.error, 'error');
     }
 }
