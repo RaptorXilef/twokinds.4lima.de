@@ -14,4 +14,9 @@ interface MailQueueRepositoryInterface
     public function processBatch(int $limit, callable $processor, array $allowedTemplates = []): int;
 
     public function import(array $data): void;
+
+    // Für das Dashboard und die E-Mail Vorschau
+    public function findAllQueue(): array;
+
+    public function findById(string $id): ?array;
 }

@@ -13,10 +13,12 @@ use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Mail\MailLogInterface;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
@@ -39,6 +41,8 @@ final readonly class DashboardAction implements ViewActionInterface
         private RoleRepositoryInterface $roleRepo,
         private UserRepositoryInterface $userRepo,
         private AuthService $auth,
+        private MailQueueRepositoryInterface $mailQueueRepo,
+        private MailLogInterface $mailLogRepo,
     ) {
     }
 
@@ -79,6 +83,7 @@ final readonly class DashboardAction implements ViewActionInterface
             'rep_del'       => $this->auth->hasPermission('reports.delete'),
             'rep_resolve'   => $this->auth->hasPermission('reports.resolve'),
             'rep_view'      => $this->auth->hasPermission('reports.view'),
+            'system_manage' => $this->auth->hasPermission('system.manage'),
         ];
 
         // --- AJAX HYDRATION MODUS ---
@@ -131,6 +136,10 @@ final readonly class DashboardAction implements ViewActionInterface
                 $this->renderer->render('admin/_section_media', $data);
             } elseif ($ajaxTab === 'backup') {
                 $this->renderer->render('admin/_section_backup', $data);
+            } elseif ($ajaxTab === 'mails') { // NEUER TAB-RENDERER FÜR E-MAILS
+                $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
+                $data['mailLogs']  = $this->mailLogRepo->loadLogs();
+                $this->renderer->render('admin/_section_mails', $data);
             }
 
             return JsonResponse::success(['html' => \ob_get_clean()]);

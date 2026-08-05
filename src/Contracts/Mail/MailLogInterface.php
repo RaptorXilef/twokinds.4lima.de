@@ -11,4 +11,7 @@ interface MailLogInterface
     public function saveLogs(array $logs, bool $forceSql = false): void;
 
     public function importLogs(array $data, bool $forceSql = false): void;
+
+    // Für die E-Mail Vorschau
+    public function findById(string $id): ?array;
 }

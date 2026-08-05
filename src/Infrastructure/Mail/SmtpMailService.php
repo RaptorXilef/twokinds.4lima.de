@@ -189,4 +189,13 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
     public function importLogs(array $data, bool $forceSql = false): void
     {
     }
+
+    public function findById(string $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM `mail_logs` WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
 }

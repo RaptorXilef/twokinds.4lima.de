@@ -90,4 +90,20 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
     public function import(array $data): void
     {
     }
+
+    public function findAllQueue(): array
+    {
+        $stmt = $this->pdo->query('SELECT * FROM `mail_queue` ORDER BY created_at DESC');
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function findById(string $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM `mail_queue` WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
 }
