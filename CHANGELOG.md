@@ -1,5 +1,29 @@
 # Changelog
 
+## [6.10.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.9.0...v6.10.0) (2026-08-05)
+
+### 🚀 Features
+
+* **admin:** integrate user avatars into reports and automate comic helper assignments ([3a7d41c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3a7d41c6da2f0c56417b430ea7fd074734200bea))
+* **community:** implement user avatars, extended profiles, and helper references ([22d4e00](https://github.com/RaptorXilef/twokinds.4lima.de/commit/22d4e00fac8f4f4c84d6b202fdaaa53e70c4d6ae))
+* **frontend:** implement public contributor profiles and comic page attributions ([5cedeae](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5cedeaee6992ea6c477f274c214f6d9410d5023f))
+
+### 🐛 Bug Fixes
+
+* **frontend:** resolve layout displacement, bio indentation, and textarea dimensions ([8d50816](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8d50816210b6e4981ddd9938cfc140d4e9298a5f))
+* **profile:** implement robust drag-and-drop avatar upload zone ([d067a60](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d067a60717a99819b0b1716edd0779ba2f3ed45a))
+* **ui/security:** resolve Cropper CSP block, repair report table layout, and fix comic helper assignment ([0fd5245](https://github.com/RaptorXilef/twokinds.4lima.de/commit/0fd5245c149456251601dc8c21755c798e4dfbe2))
+
+### ⚙️ Refactoring
+
+* **frontend:** decouple user profiles from username and introduce immutable routing ([27c9304](https://github.com/RaptorXilef/twokinds.4lima.de/commit/27c9304810ed5135e6c089709d8158c15b086417))
+
+### 💎 Styling
+
+* **frontend:** decouple inline CSS from templates and unify contributor UI design ([3b35122](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3b35122ef4be260ba9c0bc9f9f4eaea297b62c07))
+* **frontend:** resolve docblock type hinting warnings and align controller interfaces ([9d95fd9](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9d95fd9f12777e480401d686585b8492da3e7df1))
+* **ui:** redesign report modal layout and fix avatar upload HTTP 500 errors ([fdbe3e7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fdbe3e7bcea6a181162082c16d1fb96ed85012b6))
+
 ## [6.9.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.8.0...v6.9.0) (2026-08-05)
 
 ### 🚀 Features
