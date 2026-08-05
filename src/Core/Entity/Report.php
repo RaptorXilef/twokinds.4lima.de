@@ -24,6 +24,7 @@ final readonly class Report
         public string $transcriptSuggestion,
         public string $transcriptOriginal,
         public string $debugInfo,
+        public ?string $submitterAvatarUrl = null,
     ) {
         if (! \in_array($status, ['open', 'closed', 'spam'], true)) {
             throw new \InvalidArgumentException("Ungültiger Report-Status: {$status}");

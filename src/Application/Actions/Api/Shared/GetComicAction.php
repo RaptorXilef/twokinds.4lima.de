@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Shared;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -53,6 +51,7 @@ final readonly class GetComicAction implements ActionInterface
                 'transcript'  => $comic->transcript ?? '',
                 'chapterId'   => $comic->chapterId ?? '',
                 'characters'  => $charIds,
+                'helpers'     => $comic->helperIds ?? [],
                 'originalUrl' => $comic->originalUrl,
                 'sketchUrl'   => $comic->sketchUrl,
             ];

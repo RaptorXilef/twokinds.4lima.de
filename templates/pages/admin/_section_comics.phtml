@@ -94,6 +94,7 @@ use App\Core\Entity\ComicPage;
                         'sketchUrl'   => $comic->sketchUrl,
                         'transcript'  => $comic->transcript ?? '',
                         'characters'  => $charIds,
+                        'helpers'     => $comic->helperIds ?? [],
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
 
                     // Fehlende Dinge ermitteln

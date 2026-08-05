@@ -67,9 +67,15 @@ use App\Core\Entity\Report;
 
                     // ComicID kann null sein!
                     $comicIdStr = $rep->comicId ? $rep->comicId->value : '';
+                    $avatarImg  = $rep->submitterAvatarUrl
+                        ? "{$baseUrl}/assets/images/avatars/{$rep->submitterAvatarUrl}"
+                        : 'https://placehold.co/30x30?text=N/A';
+
                     $reportData = \json_encode([
                         'id'            => $rep->id->value,
                         'comicId'       => $comicIdStr,
+                        'userId'        => $rep->userId,
+                        'avatarUrl'     => $rep->submitterAvatarUrl,
                         'date'          => $rep->date->format('d.m.Y H:i'),
                         'submitter'     => $rep->submitterName,
                         'type'          => $rep->type,
@@ -86,19 +92,32 @@ use App\Core\Entity\Report;
                         <td class="mono">
                             <?php if ($comicIdStr !== '') { ?>
                                 <a href="<?php echo $baseUrl; ?>/comic/<?php echo \htmlspecialchars($comicIdStr); ?>" target="_blank">
-                                    <?php echo \htmlspecialchars($comicIdStr); ?>
-                                </a>
+                        <?php echo \htmlspecialchars($comicIdStr); ?>
+                    </a>
                             <?php } else { ?>
                                 <span class="text-faded" style="font-style: italic;">Allgemein</span>
                             <?php } ?>
                         </td>
                         <td><strong><?php echo \htmlspecialchars(\ucfirst($rep->type)); ?></strong></td>
                         <td>
-                            <strong><?php echo \htmlspecialchars($rep->submitterName); ?></strong>
-                            <div class="description-preview"
-                                 style="max-height: 2.5em; font-size: 0.85em;">
-                                <?php echo \htmlspecialchars(\strip_tags($rep->description ?: $rep->transcriptSuggestion)); ?>
+                            <!-- Avatar Anzeige in der Tabelle -->
+                            <div class="d-flex align-center gap-10">
+                                <img src="<?php echo \htmlspecialchars($avatarImg); ?>"
+                                     style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;">
+                                <div class="flex-1">
+                                    <strong><?php echo \htmlspecialchars($rep->submitterName); ?></strong>
+                                    <div class="description-preview"
+                                         style="max-height: 2.5em; font-size: 0.85em;">
+                                        <?php echo \htmlspecialchars(\strip_tags($rep->description ?: $rep->transcriptSuggestion)); ?>
+                                    </div>
+                                </div>
                             </div>
+                        </td>
+                        <strong><?php echo \htmlspecialchars($rep->submitterName); ?></strong>
+                        <div class="description-preview"
+                             style="max-height: 2.5em; font-size: 0.85em;">
+                            <?php echo \htmlspecialchars(\strip_tags($rep->description ?: $rep->transcriptSuggestion)); ?>
+                        </div>
                         </td>
                         <td>
                             <span style="display: inline-block; padding: 2px 6px; font-size: 0.85em; font-weight: bold; border-radius: 4px; background: <?php echo $statusColor; ?>; color: #fff;">

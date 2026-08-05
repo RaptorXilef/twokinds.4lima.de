@@ -96,6 +96,7 @@ export class ComicEditor {
             const btnSave = e.target.closest('#btn-save-comic');
             const btnCancel = e.target.closest('.btn-close-comic-modal');
             const charItem = e.target.closest('.char-selection-item:not(.gallery-item)');
+            const helperItem = e.target.closest('.helper-selection-item:not(.gallery-item)');
 
             if (btnSave) {
                 e.preventDefault();
@@ -114,6 +115,19 @@ export class ComicEditor {
                     const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
                     if (opt) {
                         opt.selected = charItem.classList.contains('selected');
+                        if (this.tracker) this.tracker.markDirty();
+                    }
+                }
+            }
+
+            if (helperItem && this.form) {
+                helperItem.classList.toggle('selected');
+                const helperId = helperItem.dataset.helperId;
+                const hiddenSelect = document.getElementById('hidden-comic-helpers');
+                if (hiddenSelect) {
+                    const opt = hiddenSelect.querySelector(`option[value="${helperId}"]`);
+                    if (opt) {
+                        opt.selected = helperItem.classList.contains('selected');
                         if (this.tracker) this.tracker.markDirty();
                     }
                 }
@@ -315,6 +329,7 @@ export class ComicEditor {
         }
 
         this.resetCharacterSelection();
+        this.resetHelperSelection();
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
@@ -376,6 +391,7 @@ export class ComicEditor {
         }
 
         this.applyCharacterSelection(payload.characters || []);
+        this.applyHelperSelection(payload.helpers || []);
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
@@ -387,10 +403,24 @@ export class ComicEditor {
     }
 
     resetCharacterSelection() {
-        document.querySelectorAll('.char-selection-item').forEach((item) => {
+        document
+            .querySelectorAll('.char-selection-item:not(.helper-selection-item)')
+            .forEach((item) => {
+                item.classList.remove('selected');
+            });
+        const hiddenSelect = document.getElementById('hidden-comic-chars');
+        if (hiddenSelect) {
+            Array.from(hiddenSelect.options).forEach((opt) => {
+                opt.selected = false;
+            });
+        }
+    }
+
+    resetHelperSelection() {
+        document.querySelectorAll('.helper-selection-item').forEach((item) => {
             item.classList.remove('selected');
         });
-        const hiddenSelect = document.getElementById('hidden-comic-chars');
+        const hiddenSelect = document.getElementById('hidden-comic-helpers');
         if (hiddenSelect) {
             Array.from(hiddenSelect.options).forEach((opt) => {
                 opt.selected = false;
@@ -401,15 +431,32 @@ export class ComicEditor {
     applyCharacterSelection(characterIds) {
         this.resetCharacterSelection();
         const hiddenSelect = document.getElementById('hidden-comic-chars');
-
         characterIds.forEach((charId) => {
             document
-                .querySelectorAll(`.char-selection-item[data-char-id="${charId}"]`)
+                .querySelectorAll(
+                    `.char-selection-item:not(.helper-selection-item)[data-char-id="${charId}"]`
+                )
                 .forEach((item) => {
                     item.classList.add('selected');
                 });
             if (hiddenSelect) {
                 const opt = hiddenSelect.querySelector(`option[value="${charId}"]`);
+                if (opt) opt.selected = true;
+            }
+        });
+    }
+
+    applyHelperSelection(helperIds) {
+        this.resetHelperSelection();
+        const hiddenSelect = document.getElementById('hidden-comic-helpers');
+        helperIds.forEach((id) => {
+            document
+                .querySelectorAll(`.helper-selection-item[data-helper-id="${id}"]`)
+                .forEach((item) => {
+                    item.classList.add('selected');
+                });
+            if (hiddenSelect) {
+                const opt = hiddenSelect.querySelector(`option[value="${id}"]`);
                 if (opt) opt.selected = true;
             }
         });

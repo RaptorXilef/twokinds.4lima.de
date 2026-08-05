@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -177,6 +175,7 @@ final readonly class DashboardAction implements ViewActionInterface
             'perms'            => $perms,
             'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
             'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
+            'allUsers'         => $this->userRepo->findAll(),
 
             // WICHTIG: Die schweren Datenarrays bleiben LEER! Das spart 11.5 Sekunden Ladezeit.
             'comics'      => [],

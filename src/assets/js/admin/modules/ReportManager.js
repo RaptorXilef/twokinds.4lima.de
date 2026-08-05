@@ -232,10 +232,19 @@ export class ReportManager {
                             const comicData = json.comic;
                             // Das vorgeschlagene Transkript einfügen
                             comicData.transcript = this.currentReportPayload.suggestion;
+
+                            // MAGIC BUTTON FUNKTION: Helfer automatisch anhängen!
+                            if (this.currentReportPayload.userId) {
+                                if (!comicData.helpers) comicData.helpers = [];
+                                if (!comicData.helpers.includes(this.currentReportPayload.userId)) {
+                                    comicData.helpers.push(this.currentReportPayload.userId);
+                                }
+                            }
+
                             this.modalManager.close('report-detail-modal');
                             this.comicEditor.openEditModal(comicData);
                             this.notifications.show(
-                                'Transkript-Vorschlag geladen. Bitte prüfen und speichern.',
+                                'Transkript-Vorschlag geladen. Melder wurde als Helfer ausgewählt!',
                                 'success'
                             );
                         } else {
@@ -294,6 +303,13 @@ export class ReportManager {
         } else {
             comicIdContainer.innerHTML =
                 '<em style="color: var(--text-color-faded);">Allgemeine Website</em>';
+        }
+
+        const repAvatarImg = document.getElementById('rep-modal-avatar-img');
+        if (repAvatarImg) {
+            repAvatarImg.src = payload.avatarUrl
+                ? `${this.api.baseUrl}/assets/images/avatars/${payload.avatarUrl}`
+                : 'https://placehold.co/60x60?text=N/A';
         }
 
         document.getElementById('rep-modal-submitter').textContent = payload.submitter;

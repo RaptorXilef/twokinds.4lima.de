@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\DTO\SaveSingleComicRequest;
 use App\Application\Exception\ValidationException;
@@ -139,6 +137,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
                 transcript: $dto->transcript,
                 chapterId: $dto->chapterId,
                 characterIds: $charIds,
+                helperIds: $dto->helperIds,
                 originalUrl: $originalUrl,
                 sketchUrl: $sketchUrl,
                 imageUpdatedAt: $hasNewImage ? \time() : null, // ComicService behält alten Timestamp, wenn null übergeben wird

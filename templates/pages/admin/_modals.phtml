@@ -257,6 +257,39 @@ foreach ($alphaChars as $char) {
                                 </div>
                             <?php } ?>
                         </div>
+
+                        <!-- HELFER AUSWAHL -->
+                        <div class="d-flex justify-between align-center mb-10 mt-20 border-top-dashed pt-10">
+                            <label class="mb-0">Mitwirkende Helfer (Übersetzung, Lektorat etc.)</label>
+                        </div>
+                        <select name="helper_ids[]"
+                                id="hidden-comic-helpers"
+                                multiple
+                                class="hidden">
+                            <?php foreach ($allUsers ?? [] as $u) { ?>
+                                <option value="<?php echo \htmlspecialchars($u->id); ?>"></option>
+                            <?php } ?>
+                        </select>
+                        <div class="bg-even border-medium border-radius-4 p-10">
+                            <div id="view-helpers"
+                                 class="char-selection-grid scroll-y max-h-250">
+                                <?php
+                                $alphaUsers = $allUsers ?? [];
+\usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
+foreach ($alphaUsers as $u) {
+    $pic = $u->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}" : 'https://placehold.co/60x60?text=N/A';
+    ?>
+                                    <div class="char-selection-item helper-selection-item"
+                                         data-helper-id="<?php echo \htmlspecialchars($u->id); ?>">
+                                        <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                             loading="lazy"
+                                             alt="Avatar">
+                                        <span><?php echo \htmlspecialchars($u->username->value); ?></span>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </form>
@@ -715,7 +748,16 @@ foreach ($alphaChars as $char) {
         <div class="modal-scroll-content">
             <div class="report-info-grid">
                 <div><strong>Comic ID:</strong> <span id="rep-modal-comic-id" class="mono"></span></div>
-                <div><strong>Melder:</strong> <span id="rep-modal-submitter"></span></div>
+                <div>
+                    <strong>Melder:</strong>
+                    <div class="d-flex align-center gap-10 mt-5">
+                        <img id="rep-modal-avatar-img"
+                             src=""
+                             style="width:30px; height:30px; border-radius:50%; object-fit:cover;"
+                             alt="Avatar">
+                        <span id="rep-modal-submitter"></span>
+                    </div>
+                </div>
                 <div><strong>Datum:</strong> <span id="rep-modal-date"></span></div>
             </div>
 

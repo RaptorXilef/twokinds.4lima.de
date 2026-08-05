@@ -41,9 +41,10 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         $this->executeUpsert('reports', $data, ['id', 'comic_id', 'date', 'ip_hash', 'submitter_name', 'type']);
     }
 
+    // TODO MYSQL prüfen
     public function findById(ReportId $id): ?Report
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `reports` WHERE id = ? LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `reports` r LEFT JOIN `users` u ON r.user_id = u.id WHERE r.id = ? LIMIT 1');
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -52,7 +53,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
 
     public function findAll(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM `reports` ORDER BY date DESC');
+        $stmt = $this->pdo->query('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `reports` r LEFT JOIN `users` u ON r.user_id = u.id ORDER BY r.date DESC');
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         return \array_map($this->mapToEntity(...), $rows);
@@ -60,7 +61,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
 
     public function findByStatus(string $status): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `reports` WHERE status = ? ORDER BY date DESC');
+        $stmt = $this->pdo->prepare('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `reports` r LEFT JOIN `users` u ON r.user_id = u.id WHERE r.status = ? ORDER BY r.date DESC');
         $stmt->execute([$status]);
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -72,7 +73,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         return new Report(
             id: new ReportId($row['id']),
             comicId: empty($row['comic_id']) ? null : new ComicId($row['comic_id']),
-            userId: $row['user_id'] ?? null, // NEU
+            userId: $row['user_id'] ?? null,
             date: new \DateTimeImmutable($row['date']),
             status: $row['status'],
             ipHash: $row['ip_hash'],
@@ -84,6 +85,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
             transcriptSuggestion: $row['transcript_suggestion'] ?? '',
             transcriptOriginal: $row['transcript_original'] ?? '',
             debugInfo: $row['debug_info'] ?? '',
+            submitterAvatarUrl: $row['submitter_avatar_url'] ?? null,
         );
     }
 
