@@ -9,12 +9,12 @@ use App\Core\Entity\User;
  * @var array       $settings
  * @var string      $baseUrl
  * @var string      $appRoot
- * @var User        $helperUser
+ * @var User        $publicUser
  * @var ComicPage[] $helperComics
  * @var ComicPage[] $bookmarks
  */
 $baseUrl   = \rtrim($settings['base_url'], '/');
-$avatarUrl = $helperUser->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$helperUser->avatarUrl}" : 'https://placehold.co/400x400?text=Kein+Bild';
+$avatarUrl = $publicUser->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$publicUser->avatarUrl}" : 'https://placehold.co/400x400?text=Kein+Bild';
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 <main class="content-area">
@@ -26,31 +26,33 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         <!-- Header -->
         <header class="d-flex align-center gap-20 mb-30 pb-20 border-bottom-2 flex-wrap">
             <img src="<?php echo \htmlspecialchars($avatarUrl); ?>"
-                 alt="Avatar von <?php echo \htmlspecialchars($helperUser->username->value); ?>"
+                 alt="Avatar von <?php echo \htmlspecialchars($publicUser->username->value); ?>"
                  style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
             <div class="flex-1">
                 <h1 class="page-header border-none m-0 p-0 mb-10 font-2x">
-                    <?php echo \htmlspecialchars($helperUser->username->value); ?>
+                    <?php echo \htmlspecialchars($publicUser->username->value); ?>
                 </h1>
-                <span class="badge-info bg-even text-color border-medium px-10 py-5 font-small"><i class="fa-solid fa-star text-link"></i> Mitwirkende/r Helfer/in</span>
+                <?php if (\count($helperComics) > 0) { ?>
+                    <span class="badge-info bg-even text-color border-medium px-10 py-5 font-small"><i class="fa-solid fa-star text-link"></i> Mitwirkende/r Helfer/in</span>
+                <?php } ?>
             </div>
         </header>
 
         <!-- Biografie & Links -->
-        <?php if ($helperUser->bio || ! empty($helperUser->socialLinks)) { ?>
+        <?php if ($publicUser->bio || ! empty($publicUser->socialLinks)) { ?>
             <section class="bg-content p-25 border-radius-8 border-medium mb-40 lh-1-6">
 
-                <?php if ($helperUser->bio) { ?>
+                <?php if ($publicUser->bio) { ?>
                     <h3 class="mt-0 mb-15 font-1-2x text-color border-bottom-light pb-5">Über mich</h3>
                     <div class="font-lg mb-20 text-light"
-                         style="white-space: pre-wrap; word-wrap: break-word;"><?php echo \htmlspecialchars($helperUser->bio); ?></div>
+                         style="white-space: pre-wrap; word-wrap: break-word;"><?php echo \htmlspecialchars($publicUser->bio); ?></div>
                 <?php } ?>
 
-                <?php if (! empty($helperUser->socialLinks)) { ?>
+                <?php if (! empty($publicUser->socialLinks)) { ?>
                     <h3 class="mt-0 mb-15 font-1-2x text-color border-bottom-light pb-5">Links & Social Media</h3>
                     <div class="d-flex flex-wrap gap-10">
                         <?php
-                        foreach ($helperUser->socialLinks as $link) {
+                        foreach ($publicUser->socialLinks as $link) {
                             $host = \parse_url($link, \PHP_URL_HOST) ?? $link;
                             $host = \str_replace('www.', '', $host);
                             ?>
@@ -96,7 +98,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         </section>
 
         <!-- Favoriten (Lesezeichen) -->
-        <?php if ($helperUser->publicBookmarks) { ?>
+        <?php if ($publicUser->publicBookmarks) { ?>
             <section class="mb-30">
                 <h2 class="font-1-5x mb-20 pb-10 d-flex justify-between align-end border-bottom-light">
                     Favoriten (Lesezeichen) <span class="comic-count-badge badge-pill"><?php echo \count($bookmarks); ?> Seiten</span>

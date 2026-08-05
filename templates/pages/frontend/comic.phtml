@@ -167,18 +167,23 @@ include __DIR__ . '/../../components/frontend/_character_display.phtml'; ?>
         <!-- HELFER SEKTION -->
         <?php if (! empty($helpers)) { ?>
             <div class="comic-characters-container interactive mt-20">
-                <div class="char-display-header mb-15" style="border-bottom: 1px solid var(--border-medium); padding-bottom: 10px;">
-                    <h3 class="m-0 font-1-1x text-faded text-center w-100" style="grid-column: 1 / -1;">
-                        <i class="fa-solid fa-hands-helping text-link"></i> Vielen Dank an die Mitwirkenden dieser Seite:
+                <div class="char-display-header mb-15"
+                     style="border-bottom: 1px solid var(--border-medium); padding-bottom: 10px;">
+                    <h3 class="m-0 font-1-1x text-faded text-center w-100"
+                        style="grid-column: 1 / -1;">
+                        <i class="fa-solid fa-hands-helping text-link"></i> Vielen Dank an die Mitwirkenden dieser
+                        Seite:
                     </h3>
                 </div>
-                <div class="char-selection-grid" style="justify-content: center; display: flex; flex-wrap: wrap; gap: 15px;">
+                <div class="char-selection-grid"
+                     style="justify-content: center; display: flex; flex-wrap: wrap; gap: 15px;">
                     <?php
-                    foreach ($helpers as $helper) {
-                        $pic = $helper->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$helper->avatarUrl}" : 'https://placehold.co/80x80?text=N/A';
-                        ?>
-                        <div class="char-selection-item" style="border: none; background: transparent; padding: 5px;">
-                            <a href="<?php echo $baseUrl; ?>/helfer/<?php echo \urlencode($helper->username->value); ?>"
+            foreach ($helpers as $helper) {
+                $pic = $helper->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$helper->avatarUrl}" : 'https://placehold.co/80x80?text=N/A';
+                ?>
+                        <div class="char-selection-item"
+                             style="border: none; background: transparent; padding: 5px;">
+                            <a href="<?php echo $baseUrl; ?>/user/<?php echo \htmlspecialchars($helper->id); ?>"
                                class="text-color text-center"
                                style="text-decoration: none; transition: transform 0.2s;"
                                onmouseover="this.style.transform='scale(1.1)'"

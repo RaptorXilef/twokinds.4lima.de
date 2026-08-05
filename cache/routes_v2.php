@@ -279,8 +279,8 @@ return [
                 'class' => 'App\\Application\\Actions\\Frontend\\ComicAction',
                 'auth'  => false,
             ],
-            '#^/helfer/(?P<username>[^/]+)$#' => [
-                'class' => 'App\\Application\\Actions\\Frontend\\HelperDetailAction',
+            '#^/user/(?P<id>[^/]+)$#' => [
+                'class' => 'App\\Application\\Actions\\Frontend\\UserDetailAction',
                 'auth'  => false,
             ],
         ],

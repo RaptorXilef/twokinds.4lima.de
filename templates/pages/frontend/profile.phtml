@@ -22,7 +22,10 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
     <article class="profile-container">
         <header>
             <h1 class="page-header"><i class="fa-solid fa-user-gear text-link"></i> Profil verwalten</h1>
-            <p>Aktuelle E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
+            <p class="mb-5">Aktuelle E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
+            <!-- PERMALINK -->
+            <p class="m-0 font-small text-light">Dein öffentlicher Profil-Link:<br>
+            <a href="<?php echo $baseUrl; ?>/user/<?php echo $user->id; ?>" target="_blank" class="text-link" style="word-break: break-all;"><?php echo $baseUrl; ?>/user/<?php echo $user->id; ?></a></p>
         </header>
 
         <!-- Zeige System-Nachrichten an (Z.B. Erfolgreich bestätigt) -->

@@ -13,8 +13,8 @@ use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 
-#[Route('GET', '/helfer/{username}')]
-final readonly class HelperDetailAction implements ActionInterface
+#[Route('GET', '/user/{id}')]
+final readonly class UserDetailAction implements ActionInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepo,
@@ -26,15 +26,16 @@ final readonly class HelperDetailAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $username = \urldecode($request->input['username'] ?? '');
-        if ($username === '') {
+        $id = \trim($request->input['id'] ?? '');
+        if ($id === '') {
             return new RedirectResponse('/');
         }
 
-        $user = $this->userRepo->findByUsername($username);
+        // Wir suchen jetzt nach der fixen ID, nicht mehr nach dem Namen!
+        $user = $this->userRepo->findById($id);
         if (! $user) {
             \http_response_code(404);
-            $this->renderer->render('frontend/404', ['pageTitle' => 'Helfer nicht gefunden']);
+            $this->renderer->render('frontend/404', ['pageTitle' => 'Benutzer nicht gefunden']);
 
             return null;
         }
@@ -44,14 +45,12 @@ final readonly class HelperDetailAction implements ActionInterface
         $helperComics = [];
         $bookmarks    = [];
 
-        // Suche alle Comics, bei denen der User mitgeholfen hat
         foreach ($allComics as $comic) {
             if (\in_array($user->id, $comic->helperIds, true)) {
                 $helperComics[] = $comic;
             }
         }
 
-        // Falls Lesezeichen öffentlich sind, bereite sie vor
         if ($user->publicBookmarks) {
             $bms        = $this->bookmarkRepo->findByUser($user->id);
             $bmComicIds = \array_map(fn ($b) => $b->comicId, $bms);
@@ -63,13 +62,13 @@ final readonly class HelperDetailAction implements ActionInterface
             }
         }
 
-        // Sortiere absteigend (neueste zuerst)
         \usort($helperComics, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
         \usort($bookmarks, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
 
-        $this->renderer->render('frontend/helper_detail', [
+        // Wir rufen das neue Template "user_detail" auf
+        $this->renderer->render('frontend/user_detail', [
             'pageTitle'    => 'Profil von ' . $user->username->value,
-            'helperUser'   => $user,
+            'publicUser'   => $user, // Umbenannt, um nicht mit dem eingeloggten $user zu kollidieren
             'helperComics' => $helperComics,
             'bookmarks'    => $bookmarks,
         ]);
