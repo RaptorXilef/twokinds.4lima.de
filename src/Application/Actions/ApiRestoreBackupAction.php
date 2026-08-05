@@ -33,9 +33,15 @@ final readonly class ApiRestoreBackupAction implements ActionInterface
                 return JsonResponse::error('Ungültige Parameter.', 400);
             }
 
+            // MAGIC: Wir erstellen ein vollautomatisches Sicherheits-Backup VOR der Wiederherstellung
+            $safetyBackupFile = $this->backupService->createBackup(null);
+
+            // Jetzt führen wir die eigentlich gewünschte Wiederherstellung durch
             $this->backupService->restoreBackup($filename, $mode, $table);
 
-            return JsonResponse::success(['message' => 'Backup erfolgreich wiederhergestellt!']);
+            return JsonResponse::success([
+                'message' => "Sicherheits-Backup angelegt ($safetyBackupFile) & Wiederherstellung war erfolgreich!",
+            ]);
         } catch (\Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
