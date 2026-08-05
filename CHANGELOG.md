@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.8.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.7.2...v6.8.0) (2026-08-05)
+
+### 🚀 Features
+
+* **backup:** implement automated database backup and migration system ([91932dd](https://github.com/RaptorXilef/twokinds.4lima.de/commit/91932dd87705f7dcd077c404d8079483bc91349d))
+
 ## [6.7.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.7.1...v6.7.2) (2026-08-05)
 
 ### 🐛 Bug Fixes
