@@ -18,256 +18,254 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-<main class="content-area">
-    <article class="profile-container">
-        <header>
-            <h1 class="page-header"><i class="fa-solid fa-user-gear text-link"></i> Profil verwalten</h1>
-            <p class="mb-5">Aktuelle E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
-            <!-- PERMALINK -->
-            <p class="m-0 font-small text-light">Dein öffentlicher Profil-Link:<br>
-                <a href="<?php echo $baseUrl; ?>/user/<?php echo $user->id; ?>" target="_blank" class="text-link word-break-all"><?php echo $baseUrl; ?>/user/<?php echo $user->id; ?></a>
-            </p>
-        </header>
+<article class="profile-container">
+    <header>
+        <h1 class="page-header"><i class="fa-solid fa-user-gear text-link"></i> Profil verwalten</h1>
+        <p class="mb-5">Aktuelle E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
+        <!-- PERMALINK -->
+        <p class="m-0 font-small text-light">Dein öffentlicher Profil-Link:<br>
+            <a href="<?php echo $baseUrl; ?>/user/<?php echo $user->id; ?>" target="_blank" class="text-link word-break-all"><?php echo $baseUrl; ?>/user/<?php echo $user->id; ?></a>
+        </p>
+    </header>
 
-        <!-- Zeige System-Nachrichten an -->
-        <?php if (! empty($flashes['success'])) { ?>
-            <div class="status-message status-green visible mb-20">
-                <i class="fa-solid fa-check"></i> <?php echo \htmlspecialchars($flashes['success'][0]); ?>
-            </div>
-        <?php } ?>
-        <?php if (! empty($flashes['error'])) { ?>
-            <div class="status-message status-red visible mb-20">
-                <i class="fa-solid fa-triangle-exclamation"></i> <?php echo \htmlspecialchars($flashes['error'][0]); ?>
-            </div>
-        <?php } ?>
+    <!-- Zeige System-Nachrichten an -->
+    <?php if (! empty($flashes['success'])) { ?>
+        <div class="status-message status-green visible mb-20">
+            <i class="fa-solid fa-check"></i> <?php echo \htmlspecialchars($flashes['success'][0]); ?>
+        </div>
+    <?php } ?>
+    <?php if (! empty($flashes['error'])) { ?>
+        <div class="status-message status-red visible mb-20">
+            <i class="fa-solid fa-triangle-exclamation"></i> <?php echo \htmlspecialchars($flashes['error'][0]); ?>
+        </div>
+    <?php } ?>
 
-        <!-- Avatar Sektion -->
-        <div class="content-box-shadow text-center">
-            <h3 class="section-title">Profilbild</h3>
-            <div class="mb-15">
-                <img id="current-avatar"
-                     src="<?php echo \htmlspecialchars($avatarUrl); ?>"
-                     alt="Avatar"
-                     class="profile-avatar-upload">
-            </div>
-
-            <div id="avatar-drop-zone"
-                 class="drag-drop-zone drop-zone-sm bg-even border-dashed border-radius-6 mb-0 cursor-pointer avatar-drop-zone">
-                <i class="fa-solid fa-camera icon-lg text-link mb-5"></i>
-                <p class="mt-0 mb-5 font-bold text-color">Neues Bild hier ablegen oder klicken</p>
-                <small class="text-faded">Quadratischer Zuschnitt erfolgt im nächsten Schritt.</small>
-                <input type="file"
-                       id="avatar-upload-input"
-                       accept="image/*"
-                       class="hidden">
-            </div>
-
-            <div id="msg-avatar"
-                 class="msg-box mt-10"></div>
+    <!-- Avatar Sektion -->
+    <div class="content-box-shadow text-center">
+        <h3 class="section-title">Profilbild</h3>
+        <div class="mb-15">
+            <img id="current-avatar"
+                 src="<?php echo \htmlspecialchars($avatarUrl); ?>"
+                 alt="Avatar"
+                 class="profile-avatar-upload">
         </div>
 
-        <!-- Profil Details Sektion -->
-        <div class="content-box-shadow">
-            <h3 class="section-title">Öffentliches Profil & Links</h3>
-            <div id="msg-details"
-                 class="msg-box"></div>
-            <form id="form-profile-details"
-                  class="admin-form">
-                <input type="hidden"
-                       name="update_type"
-                       value="profile_details">
-                <div class="form-group mb-15">
-                    <label>Über mich (Kurze Biografie)</label>
-                    <textarea name="bio" rows="4" placeholder="Schreibe etwas über dich..."><?php echo \htmlspecialchars($user->bio ?? ''); ?></textarea>
-                </div>
+        <div id="avatar-drop-zone"
+             class="drag-drop-zone drop-zone-sm bg-even border-dashed border-radius-6 mb-0 cursor-pointer avatar-drop-zone">
+            <i class="fa-solid fa-camera icon-lg text-link mb-5"></i>
+            <p class="mt-0 mb-5 font-bold text-color">Neues Bild hier ablegen oder klicken</p>
+            <small class="text-faded">Quadratischer Zuschnitt erfolgt im nächsten Schritt.</small>
+            <input type="file"
+                   id="avatar-upload-input"
+                   accept="image/*"
+                   class="hidden">
+        </div>
 
-                <div class="form-group mb-15">
-                    <label>Social Media & Website Links (Max. 5)</label>
-                    <div id="social-links-container"
-                         class="d-flex flex-column gap-8">
-                        <?php
-                        $links = $user->socialLinks;
+        <div id="msg-avatar"
+             class="msg-box mt-10"></div>
+    </div>
+
+    <!-- Profil Details Sektion -->
+    <div class="content-box-shadow">
+        <h3 class="section-title">Öffentliches Profil & Links</h3>
+        <div id="msg-details"
+             class="msg-box"></div>
+        <form id="form-profile-details"
+              class="admin-form">
+            <input type="hidden"
+                   name="update_type"
+                   value="profile_details">
+            <div class="form-group mb-15">
+                <label>Über mich (Kurze Biografie)</label>
+                <textarea name="bio" placeholder="Schreibe etwas über dich..." class="profile-bio-textarea"><?php echo \htmlspecialchars($user->bio ?? ''); ?></textarea>
+            </div>
+
+            <div class="form-group mb-15">
+                <label>Social Media & Website Links (Max. 5)</label>
+                <div id="social-links-container"
+                     class="d-flex flex-column gap-8">
+                    <?php
+                    $links = $user->socialLinks;
 for ($i = 0; $i < 5; ++$i) {
     $val = $links[$i] ?? '';
     ?>
-                            <input type="url"
-                                   name="social_links[]"
-                                   placeholder="https://..."
-                                   value="<?php echo \htmlspecialchars($val); ?>">
-                        <?php } ?>
+                        <input type="url"
+                               name="social_links[]"
+                               placeholder="https://..."
+                               value="<?php echo \htmlspecialchars($val); ?>">
+                    <?php } ?>
+                </div>
+            </div>
+
+            <div class="checkbox-item mt-20 mb-20">
+                <label>
+                    <input type="checkbox"
+                           name="public_bookmarks"
+                           value="1"
+                           <?php echo $user->publicBookmarks ? 'checked' : ''; ?>>
+                    <div>
+                        <strong>Lesezeichen öffentlich zeigen</strong>
+                        <span>Andere Nutzer können auf deinem Profil sehen, welche Seiten du dir gemerkt hast (Deine Favoriten).</span>
                     </div>
-                </div>
+                </label>
+            </div>
+            <button type="submit"
+                    class="button edit w-100">Profil-Details speichern</button>
+        </form>
+    </div>
 
-                <div class="checkbox-item mt-20 mb-20">
-                    <label>
-                        <input type="checkbox"
-                               name="public_bookmarks"
-                               value="1"
-                               <?php echo $user->publicBookmarks ? 'checked' : ''; ?>>
-                        <div>
-                            <strong>Lesezeichen öffentlich zeigen</strong>
-                            <span>Andere Nutzer können auf deinem Profil sehen, welche Seiten du dir gemerkt hast (Deine Favoriten).</span>
-                        </div>
-                    </label>
-                </div>
-                <button type="submit"
-                        class="button edit w-100">Profil-Details speichern</button>
-            </form>
-        </div>
+    <div class="content-box-shadow">
+        <h3 class="section-title">E-Mail Adresse ändern</h3>
+        <div id="msg-email"
+             class="msg-box"></div>
+        <form id="form-email"
+              class="admin-form">
+            <input type="hidden"
+                   name="update_type"
+                   value="email">
+            <div class="form-group mb-15">
+                <input type="email"
+                       name="new_email"
+                       required
+                       placeholder="Neue E-Mail Adresse">
+            </div>
+            <button type="submit"
+                    class="button edit">Bestätigungslink an neue E-Mail senden</button>
+        </form>
+    </div>
 
-        <div class="content-box-shadow">
-            <h3 class="section-title">E-Mail Adresse ändern</h3>
-            <div id="msg-email"
-                 class="msg-box"></div>
-            <form id="form-email"
-                  class="admin-form">
-                <input type="hidden"
-                       name="update_type"
-                       value="email">
-                <div class="form-group mb-15">
-                    <input type="email"
-                           name="new_email"
-                           required
-                           placeholder="Neue E-Mail Adresse">
-                </div>
-                <button type="submit"
-                        class="button edit">Bestätigungslink an neue E-Mail senden</button>
-            </form>
-        </div>
+    <div class="content-box-shadow">
+        <h3 class="section-title">Benutzername</h3>
+        <div id="msg-username"
+             class="msg-box"></div>
+        <form id="form-username"
+              class="admin-form">
+            <input type="hidden"
+                   name="update_type"
+                   value="username">
+            <div class="form-group mb-15">
+                <input type="text"
+                       name="new_username"
+                       required
+                       minlength="3"
+                       value="<?php echo \htmlspecialchars($user->username->value); ?>">
+            </div>
+            <button type="submit"
+                    class="button edit">Namen ändern</button>
+        </form>
+    </div>
 
-        <div class="content-box-shadow">
-            <h3 class="section-title">Benutzername</h3>
-            <div id="msg-username"
-                 class="msg-box"></div>
-            <form id="form-username"
-                  class="admin-form">
-                <input type="hidden"
-                       name="update_type"
-                       value="username">
-                <div class="form-group mb-15">
-                    <input type="text"
-                           name="new_username"
-                           required
-                           minlength="3"
-                           value="<?php echo \htmlspecialchars($user->username->value); ?>">
-                </div>
-                <button type="submit"
-                        class="button edit">Namen ändern</button>
-            </form>
-        </div>
+    <div class="content-box-shadow">
+        <h3 class="section-title">Passwort ändern</h3>
+        <div id="msg-password"
+             class="msg-box"></div>
+        <form id="form-password"
+              class="admin-form">
+            <input type="hidden"
+                   name="update_type"
+                   value="password">
+            <div class="form-group mb-15">
+                <input type="password"
+                       name="old_password"
+                       required
+                       placeholder="Altes Passwort">
+            </div>
+            <div class="form-group mb-15">
+                <input type="password"
+                       name="new_password"
+                       required
+                       minlength="8"
+                       placeholder="Neues Passwort (min. 8 Zeichen)">
+            </div>
+            <div class="form-group mb-15">
+                <input type="password"
+                       name="new_password_confirm"
+                       required
+                       minlength="8"
+                       placeholder="Neues Passwort wiederholen">
+            </div>
+            <button type="submit"
+                    class="button edit">Passwort speichern</button>
+        </form>
+    </div>
 
-        <div class="content-box-shadow">
-            <h3 class="section-title">Passwort ändern</h3>
-            <div id="msg-password"
-                 class="msg-box"></div>
-            <form id="form-password"
-                  class="admin-form">
-                <input type="hidden"
-                       name="update_type"
-                       value="password">
-                <div class="form-group mb-15">
-                    <input type="password"
-                           name="old_password"
-                           required
-                           placeholder="Altes Passwort">
-                </div>
-                <div class="form-group mb-15">
-                    <input type="password"
-                           name="new_password"
-                           required
-                           minlength="8"
-                           placeholder="Neues Passwort (min. 8 Zeichen)">
-                </div>
-                <div class="form-group mb-15">
-                    <input type="password"
-                           name="new_password_confirm"
-                           required
-                           minlength="8"
-                           placeholder="Neues Passwort wiederholen">
-                </div>
-                <button type="submit"
-                        class="button edit">Passwort speichern</button>
-            </form>
-        </div>
+    <div class="content-box-shadow">
+        <h3 class="section-title"><i class="fa-solid fa-envelope text-faded"></i> Benachrichtigungen</h3>
+        <div id="msg-newsletter"
+             class="msg-box"></div>
+        <form id="form-newsletter">
+            <input type="hidden"
+                   name="update_type"
+                   value="newsletter">
 
-        <div class="content-box-shadow">
-            <h3 class="section-title"><i class="fa-solid fa-envelope text-faded"></i> Benachrichtigungen</h3>
-            <div id="msg-newsletter"
-                 class="msg-box"></div>
-            <form id="form-newsletter">
-                <input type="hidden"
-                       name="update_type"
-                       value="newsletter">
+            <div class="checkbox-item">
+                <label>
+                    <input type="checkbox"
+                           name="wants_newsletter"
+                           value="1"
+                           <?php echo $user->wantsNewsletter ? 'checked' : ''; ?>>
+                    <div>
+                        <strong>Vollständige Comic-Seiten</strong>
+                        <span>Benachrichtige mich, sobald eine neue Seite inklusive Bild mit deutscher Übersetzung fertig ist.</span>
+                    </div>
+                </label>
+            </div>
 
-                <div class="checkbox-item">
-                    <label>
-                        <input type="checkbox"
-                               name="wants_newsletter"
-                               value="1"
-                               <?php echo $user->wantsNewsletter ? 'checked' : ''; ?>>
-                        <div>
-                            <strong>Vollständige Comic-Seiten</strong>
-                            <span>Benachrichtige mich, sobald eine neue Seite inklusive Bild mit deutscher Übersetzung fertig ist.</span>
-                        </div>
-                    </label>
-                </div>
+            <div class="checkbox-item">
+                <label>
+                    <input type="checkbox"
+                           name="wants_newsletter_transcript"
+                           value="1"
+                           <?php echo $user->wantsNewsletterTranscript ? 'checked' : ''; ?>>
+                    <div>
+                        <strong>Vorab-Transkripte <span class="text-danger">(Spoiler!)</span></strong>
+                        <span>Sende mir sofort eine E-Mail, wenn der deutsche Text einer neuen Seite verfügbar ist, auch wenn das Bild dazu noch fehlt.</span>
+                    </div>
+                </label>
+            </div>
 
-                <div class="checkbox-item">
-                    <label>
-                        <input type="checkbox"
-                               name="wants_newsletter_transcript"
-                               value="1"
-                               <?php echo $user->wantsNewsletterTranscript ? 'checked' : ''; ?>>
-                        <div>
-                            <strong>Vorab-Transkripte <span class="text-danger">(Spoiler!)</span></strong>
-                            <span>Sende mir sofort eine E-Mail, wenn der deutsche Text einer neuen Seite verfügbar ist, auch wenn das Bild dazu noch fehlt.</span>
-                        </div>
-                    </label>
-                </div>
+            <div class="checkbox-item">
+                <label>
+                    <input type="checkbox"
+                           name="wants_notification_report"
+                           value="1"
+                           <?php echo $user->wantsNotificationReport ? 'checked' : ''; ?>>
+                    <div>
+                        <strong>Fehlerberichte (Reports)</strong>
+                        <span>Sende mir eine kurze Info-E-Mail, sobald ein von mir gemeldeter Fehler auf der entsprechenden Seite behoben wurde.</span>
+                    </div>
+                </label>
+            </div>
 
-                <div class="checkbox-item">
-                    <label>
-                        <input type="checkbox"
-                               name="wants_notification_report"
-                               value="1"
-                               <?php echo $user->wantsNotificationReport ? 'checked' : ''; ?>>
-                        <div>
-                            <strong>Fehlerberichte (Reports)</strong>
-                            <span>Sende mir eine kurze Info-E-Mail, sobald ein von mir gemeldeter Fehler auf der entsprechenden Seite behoben wurde.</span>
-                        </div>
-                    </label>
-                </div>
+            <button type="submit"
+                    class="button add w-100 p-10 font-bold"><i class="fa-solid fa-save"></i> Einstellungen
+                speichern</button>
+        </form>
+    </div>
 
-                <button type="submit"
-                        class="button add w-100 p-10 font-bold"><i class="fa-solid fa-save"></i> Einstellungen
-                    speichern</button>
-            </form>
-        </div>
+    <div class="content-box-shadow bg-danger-zone">
+        <h3 class="section-title text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Gefahrenzone: Konto
+            löschen</h3>
+        <p class="text-danger mb-20 font-bold">Das Löschen deines Kontos ist unwiderruflich! Lesezeichen,
+            Helfer-Einträge und dein Profil werden für immer gelöscht.</p>
 
-        <div class="content-box-shadow bg-danger-zone">
-            <h3 class="section-title text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Gefahrenzone: Konto
-                löschen</h3>
-            <p class="text-danger mb-20 font-bold">Das Löschen deines Kontos ist unwiderruflich! Lesezeichen,
-                Helfer-Einträge und dein Profil werden für immer gelöscht.</p>
+        <div id="msg-delete-account"
+             class="msg-box"></div>
+        <form id="form-delete-account"
+              class="admin-form">
+            <div class="form-group mb-15">
+                <input type="password"
+                       name="password"
+                       required
+                       placeholder="Zur Bestätigung aktuelles Passwort eingeben">
+            </div>
+            <button type="submit"
+                    class="button delete"><i class="fa-solid fa-skull-crossbones"></i> Ja, Konto unwiderruflich
+                löschen</button>
+        </form>
+    </div>
 
-            <div id="msg-delete-account"
-                 class="msg-box"></div>
-            <form id="form-delete-account"
-                  class="admin-form">
-                <div class="form-group mb-15">
-                    <input type="password"
-                           name="password"
-                           required
-                           placeholder="Zur Bestätigung aktuelles Passwort eingeben">
-                </div>
-                <button type="submit"
-                        class="button delete"><i class="fa-solid fa-skull-crossbones"></i> Ja, Konto unwiderruflich
-                    löschen</button>
-            </form>
-        </div>
-
-    </article>
-</main>
+</article>
 
 <!-- Cropper Modal -->
 <div id="avatar-cropper-modal"

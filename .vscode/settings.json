@@ -260,7 +260,7 @@
         }
     },
     "viraTheme.accent": "White",
-    
+
     // Anzahl Zeilen im TERMINAL
     "terminal.integrated.scrollback": 10000,
 
