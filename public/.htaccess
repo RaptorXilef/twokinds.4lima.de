@@ -151,10 +151,11 @@ LimitRequestBody 10485760
     RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
     RewriteCond %{REQUEST_URI} !^/index\.php$ [NC]
     # ToDo migrate auf dem LiveServer entfernen, wenn migration abgeschlossen ist
-    # RewriteCond %{REQUEST_URI} !^/migrate\.php$ [NC]
-    # RewriteCond %{REQUEST_URI} !^/image_migration\.php$ [NC]
-    # RewriteCond %{REQUEST_URI} !^/image_fixer\.php$ [NC]
-    # RewriteCond %{REQUEST_URI} !^/final_cleanup\.php$ [NC]
+    # RewriteCond %{REQUEST_URI} !^/dev/migrate\.php$ [NC]
+    # RewriteCond %{REQUEST_URI} !^/dev/image_migration\.php$ [NC]
+    # RewriteCond %{REQUEST_URI} !^/dev/image_fixer\.php$ [NC]
+    # RewriteCond %{REQUEST_URI} !^/dev/final_cleanup\.php$ [NC]
+    # RewriteCond %{REQUEST_URI} !^/dev/route_migration\.php$ [NC]
     # TODO ENTFERNEN ENDE
     RewriteCond %{REQUEST_URI} !^/api/ [NC]
     RewriteRule ^ /%1 [R=301,L,NE]
