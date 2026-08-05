@@ -30,6 +30,7 @@ use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
+use App\Core\Service\BackupService;
 use App\Core\Service\SiteGeneratorService;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
@@ -151,6 +152,14 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             $container->get(\PDO::class),
         ));
 
+        // Backup
+        $container->bind(BackupService::class, fn (): BackupService => new BackupService(
+            $container->get(\PDO::class),
+            $container->get(ConfigInterface::class),
+            $container->get(JsonHelperInterface::class),
+        ));
+
+        // Andere
         $container->bind(SystemInfoInterface::class, fn (): SystemInfoService => new SystemInfoService(
             $container->get(ConfigInterface::class),
             $container->get(JsonHelperInterface::class),

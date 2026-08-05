@@ -64,38 +64,39 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
         $canManageRoles = $this->auth->hasPermission('system.roles.manage');
 
         $perms = [
-            'chap_del'     => $this->auth->hasPermission('chapters.delete'),
-            'chap_edit'    => $this->auth->hasPermission('chapters.edit'),
-            'char_del'     => $this->auth->hasPermission('characters.delete'),
-            'char_edit'    => $this->auth->hasPermission('characters.edit'),
-            'comic_del'    => $this->auth->hasPermission('comics.delete'),
-            'comic_edit'   => $this->auth->hasPermission('comics.edit'),
-            'group_manage' => $this->auth->hasPermission('groups.manage'),
-            'media_del'    => $this->auth->hasPermission('media.delete'),
-            'media_up'     => $this->auth->hasPermission('media.upload'),
-            'rep_del'      => $this->auth->hasPermission('reports.delete'),
-            'rep_resolve'  => $this->auth->hasPermission('reports.resolve'),
-            'rep_view'     => $this->auth->hasPermission('reports.view'),
+            'backup_manage' => $this->auth->hasPermission('system.backup.manage'),
+            'chap_del'      => $this->auth->hasPermission('chapters.delete'),
+            'chap_edit'     => $this->auth->hasPermission('chapters.edit'),
+            'char_del'      => $this->auth->hasPermission('characters.delete'),
+            'char_edit'     => $this->auth->hasPermission('characters.edit'),
+            'comic_del'     => $this->auth->hasPermission('comics.delete'),
+            'comic_edit'    => $this->auth->hasPermission('comics.edit'),
+            'group_manage'  => $this->auth->hasPermission('groups.manage'),
+            'media_del'     => $this->auth->hasPermission('media.delete'),
+            'media_up'      => $this->auth->hasPermission('media.upload'),
+            'rep_del'       => $this->auth->hasPermission('reports.delete'),
+            'rep_resolve'   => $this->auth->hasPermission('reports.resolve'),
+            'rep_view'      => $this->auth->hasPermission('reports.view'),
         ];
 
         // --- AJAX HYDRATION MODUS ---
         // Wenn JS einen spezifischen Tab anfordert, rendern wir NUR diesen Tab!
         if ($ajaxTab) {
             $data = [
-                'perms'            => $perms,
-                'baseUrl'          => \rtrim($this->config->getBaseUrl(), '/'),
                 'appRoot'          => \rtrim((string) $this->config->get('root_path'), '/\\'),
-                'characters'       => $characters,
-                'groups'           => $groups,
-                'existingChapters' => $existingChapters,
-                'dbChapters'       => $dbChapters,
-                'roles'            => $roles,
-                'permissionsTree'  => PermissionRegistry::getStructure(),
-                'canManageUsers'   => $canManageUsers,
+                'baseUrl'          => \rtrim($this->config->getBaseUrl(), '/'),
                 'canManageRoles'   => $canManageRoles,
+                'canManageUsers'   => $canManageUsers,
+                'characters'       => $characters,
                 'currentUserId'    => $this->sessionManager->getUserId(),
-                'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
+                'dbChapters'       => $dbChapters,
+                'existingChapters' => $existingChapters,
+                'groups'           => $groups,
                 'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
+                'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
+                'permissionsTree'  => PermissionRegistry::getStructure(),
+                'perms'            => $perms,
+                'roles'            => $roles,
             ];
 
             \ob_start();
@@ -126,6 +127,8 @@ final readonly class AdminDashboardRenderAction implements ViewActionInterface
                 $this->renderer->render('admin/_section_groups', $data);
             } elseif ($ajaxTab === 'media') {
                 $this->renderer->render('admin/_section_media', $data);
+            } elseif ($ajaxTab === 'backup') {
+                $this->renderer->render('admin/_section_backup', $data);
             }
 
             return JsonResponse::success(['html' => \ob_get_clean()]);

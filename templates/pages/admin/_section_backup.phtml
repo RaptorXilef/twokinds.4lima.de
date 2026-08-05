@@ -1,0 +1,163 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Contracts\Config\ConfigInterface;
+
+/**
+ * @var string          $baseUrl
+ * @var ConfigInterface $config
+ */
+?>
+
+<div class="table-controls actions-bar">
+    <div class="top-actions">
+        <button type="button"
+                class="button add"
+                id="btn-open-create-backup">
+            <i class="fa-solid fa-download"></i> Neues Backup erstellen
+        </button>
+    </div>
+</div>
+
+<div class="notification-box mb-20 text-left">
+    <h4 class="mt-0"><i class="fa-solid fa-clock"></i> Automatisches Backup per CronJob</h4>
+    <p>Richte diesen Link in deinem Webhosting/Server als CronJob ein (z.B. alle 48 Stunden):</p>
+    <code style="display:block; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 4px; margin-top: 10px;">
+        <?php echo $baseUrl; ?>/api/cron_backup?token=<?php echo \htmlspecialchars($config->get('cron_secret', '')); ?>
+    </code>
+</div>
+
+<div class="sitemap-table-container">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th class="col-date">Datum</th>
+                <th class="col-main">Dateiname</th>
+                <th class="col-type">Typ</th>
+                <th class="col-id">Größe</th>
+                <th class="col-actions"
+                    style="width: 150px;">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody id="backup-table-body">
+            <tr>
+                <td colspan="5"
+                    class="empty-table-message"><i class="fa-solid fa-spinner fa-spin"></i> Lade Backups...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modals for Backup -->
+<div id="backup-create-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-backup-modal"></div>
+    <div class="modal-content modal-md">
+        <div class="modal-header-wrapper">
+            <h2>Backup erstellen</h2>
+            <button class="modal-close btn-close-backup-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <form id="backup-create-form"
+                  class="admin-form">
+                <div class="form-group mb-0">
+                    <label>Welchen Bereich sichern?</label>
+                    <select name="table"
+                            id="backup-create-table-select">
+                        <option value="all">Komplette Datenbank (Alle Tabellen)</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-backup-modal">Abbrechen</button>
+                <button type="button"
+                        class="button edit"
+                        id="btn-submit-create-backup">Backup starten</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="backup-restore-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-backup-modal"></div>
+    <div class="modal-content modal-lg">
+        <div class="modal-header-wrapper">
+            <h2>Daten aus Backup wiederherstellen</h2>
+            <button class="modal-close btn-close-backup-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <form id="backup-restore-form"
+                  class="admin-form">
+                <input type="hidden"
+                       name="filename"
+                       id="restore-filename"
+                       value="">
+                <div class="form-group mb-20">
+                    <label>Gewähltes Backup:</label>
+                    <input type="text"
+                           id="restore-filename-display"
+                           readonly
+                           class="disabled-input">
+                </div>
+                <div class="form-group mb-20">
+                    <label>Welche Tabelle(n) wiederherstellen?</label>
+                    <select name="table"
+                            id="backup-restore-table-select">
+                        <option value="all">Alle im Backup enthaltenen Tabellen</option>
+                    </select>
+                </div>
+                <div class="bg-even border-medium border-radius-6 p-20">
+                    <h3 class="mt-0 mb-15">Wiederherstellungs-Modus</h3>
+                    <label
+                           class="d-flex align-start gap-10 mb-15 cursor-pointer bg-content p-15 border-radius-4 border-light">
+                        <input type="radio"
+                               name="mode"
+                               value="1"
+                               checked
+                               class="checkbox-lg mt-5">
+                        <div>
+                            <strong>1. Migrieren (Standard)</strong><br>
+                            <span class="font-small text-faded">Aktualisiert geänderte Datensätze und fügt neue (fehlende) hinzu. Was aktuell in der Datenbank ist, aber im Backup fehlt, bleibt unangetastet.</span>
+                        </div>
+                    </label>
+                    <label
+                           class="d-flex align-start gap-10 mb-15 cursor-pointer bg-content p-15 border-radius-4 border-light">
+                        <input type="radio"
+                               name="mode"
+                               value="2"
+                               class="checkbox-lg mt-5">
+                        <div>
+                            <strong class="text-danger">2. Exakte Kopie (Überschreiben)</strong><br>
+                            <span class="font-small text-faded">Stellt den exakten Stand des Backups her. Alles was in der Datenbank ist, aber im Backup fehlt, wird <b>gelöscht</b>!</span>
+                        </div>
+                    </label>
+                    <label
+                           class="d-flex align-start gap-10 cursor-pointer bg-content p-15 border-radius-4 border-light">
+                        <input type="radio"
+                               name="mode"
+                               value="3"
+                               class="checkbox-lg mt-5">
+                        <div>
+                            <strong>3. Nur Ergänzen (Lücken füllen)</strong><br>
+                            <span class="font-small text-faded">Fügt nur Einträge hinzu, die komplett fehlen. Bestehende werden NICHT überschrieben.</span>
+                        </div>
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-backup-modal">Abbrechen</button>
+                <button type="button"
+                        class="button add"
+                        id="btn-submit-restore-backup"><i class="fa-solid fa-upload"></i> Wiederherstellen</button>
+            </div>
+        </div>
+    </div>
+</div>

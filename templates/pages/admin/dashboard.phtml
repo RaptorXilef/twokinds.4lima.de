@@ -32,13 +32,13 @@ include __DIR__ . '/../../components/admin/_admin_menu.phtml';
 ?>
 <div class="content">
     <h1 class="page-header">
-                    <!--<i class="fa-solid fa-gauge">-->
+        <!--<i class="fa-solid fa-gauge">-->
         <i class="fa-solid fa-gauge"></i> <?php echo \htmlspecialchars($pageTitle); ?>
     </h1>
     <div id="global-status-message"
          class="status-message"></div>
 
-                <!-- DIESE TABS WERDEN LAZY (AJAX) GELADEN -->
+    <!-- DIESE TABS WERDEN LAZY (AJAX) GELADEN -->
     <section id="section-comics"
              class="content-section active"
              data-ajax-tab="comics"></section>
@@ -63,14 +63,17 @@ include __DIR__ . '/../../components/admin/_admin_menu.phtml';
     <section id="section-media"
              class="content-section"
              data-ajax-tab="media"></section>
+    <section id="section-backup"
+             class="content-section"
+             data-ajax-tab="backup"></section>
 
     <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
     <?php include __DIR__ . '/_modals.phtml'; ?>
 
-                <!-- Neues ES6 Modul-System -->
+    <!-- Neues ES6 Modul-System -->
     <script type="module"
-        nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
-        src="<?php echo $asset->url('assets/js/admin/app.js'); ?>"></script>
+            nonce="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"
+            src="<?php echo $asset->url('assets/js/admin/app.js'); ?>"></script>
     </body>
 
     </html>

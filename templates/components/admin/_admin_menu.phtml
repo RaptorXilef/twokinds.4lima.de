@@ -35,7 +35,7 @@ declare(strict_types=1);
                 <a href="#section-media" class="tab-link" data-target="section-media">Galerie</a>
             <?php } ?>
 
-            <?php if (! empty($perms['rep_view']) || ! empty($canManageUsers)) { ?>
+            <?php if (! empty($perms['rep_view']) || ! empty($canManageUsers) || ! empty($perms['backup_manage'])) { ?>
                 <span class="menu-label">System</span>
                 <?php if (! empty($perms['rep_view'])) { ?>
                     <a href="#section-reports" class="tab-link" data-target="section-reports">Reports</a>
@@ -43,7 +43,11 @@ declare(strict_types=1);
                 <?php if (! empty($canManageUsers)) { ?>
                     <a href="#section-users" class="tab-link" data-target="section-users">Benutzer & Rechte</a>
                 <?php } ?>
+                <?php if (! empty($perms['backup_manage'])) { ?>
+                    <a href="#section-backup" class="tab-link" data-target="section-backup">Backups</a>
+                <?php } ?>
             <?php } ?>
+
 
             <span class="menu-label">Account</span>
             <a href="<?php echo $baseUrl ?? '/'; ?>/" target="_blank">Zur Webseite</a>

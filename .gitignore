@@ -46,8 +46,6 @@ logs/
 *.bak
 *.backup
 *.old
-*backup*
-*Backup*
 *.zip
 *.7z
 *.ink
@@ -164,6 +162,9 @@ src/assets/images/
 # Quell-Design
 src/assets/scss/*.css
 src/assets/scss/*.map
+
+# Backups
+backup_*.json
 
 # ------------------------------------------------------------------------------
 # PUBLIC ASSETS RULESET

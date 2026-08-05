@@ -65,6 +65,10 @@ final class PermissionRegistry
                     'roles' => ['label' => 'Rechte-Gruppen (Rollen) verwalten', 'key' => 'system.roles.manage'],
                 ],
             ],
+            'backup' => [
+                'label' => 'Backups & Migration',
+                'key'   => 'system.backup.manage',
+            ],
         ];
     }
 }
