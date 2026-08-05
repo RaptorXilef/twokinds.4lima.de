@@ -124,8 +124,8 @@ use App\Core\Entity\CharacterGroup;
                                placeholder="z.B. 21">
                         <datalist id="chapter-datalist">
                             <?php foreach ($existingChapters ?? [] as $ch) { ?>
-                                <option value="<?php echo \htmlspecialchars((string) $ch); ?>">
-                                <?php } ?>
+                                <option value="<?php echo \htmlspecialchars((string) $ch); ?>"></option>
+                            <?php } ?>
                         </datalist>
                     </div>
                 </div>
@@ -680,8 +680,7 @@ foreach ($alphaUsers as $u) {
 <!-- OVERWRITE MODAL -->
 <!-- ======================================================================= -->
 <div id="overwrite-modal"
-     class="modal"
-     style="z-index: 1060;">
+     class="modal z-1060">
     <div class="modal-overlay"></div>
     <div class="modal-content modal-lg modal-flex">
         <div class="modal-header-wrapper">
@@ -696,16 +695,14 @@ foreach ($alphaUsers as $u) {
                     <img id="overwrite-new-img"
                          src=""
                          alt="Neu"
-                         class="w-100 border-medium border-radius-4 bg-content"
-                         style="max-height: 350px; object-fit: contain;">
+                         class="w-100 border-medium border-radius-4 bg-content overwrite-preview-img">
                 </div>
                 <div class="flex-1 p-15 bg-even border-radius-8">
                     <h3 class="mt-0">Auf dem Server</h3>
                     <img id="overwrite-server-img"
                          src=""
                          alt="Server"
-                         class="w-100 border-medium border-radius-4 bg-content"
-                         style="max-height: 350px; object-fit: contain;">
+                         class="w-100 border-medium border-radius-4 bg-content overwrite-preview-img">
                 </div>
             </div>
         </div>
@@ -747,15 +744,13 @@ foreach ($alphaUsers as $u) {
         </div>
         <div class="modal-scroll-content">
 
-            <?php // TODO Inline CSS in SCSS überführen!
-            ?>
             <!-- Prominente Melder-Box -->
             <div class="d-flex flex-wrap gap-20 mb-30 p-20 bg-even border-medium border-radius-6 align-center">
                 <!-- Melder (Links/Prominent) -->
                 <div class="d-flex align-center gap-15 flex-1 min-w-250">
                     <img id="rep-modal-avatar-img"
                          src=""
-                         style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-medium); box-shadow: 0 4px 10px rgba(0,0,0,0.15);"
+                         class="report-modal-avatar"
                          alt="Avatar">
                     <div>
                         <div class="font-small text-faded text-uppercase font-bold letter-spacing-1 mb-5">Gemeldet von
@@ -769,8 +764,7 @@ foreach ($alphaUsers as $u) {
                 </div>
 
                 <!-- Metadaten (Rechts) -->
-                <div class="d-flex flex-column gap-10 text-right"
-                     style="flex: 0 0 auto;">
+                <div class="d-flex flex-column gap-10 text-right flex-none">
                     <div class="bg-content p-5 px-20 border-medium border-radius-4">
                         <span class="text-faded mr-10 font-small text-uppercase">Comic ID:</span>
                         <span id="rep-modal-comic-id" class="mono font-bold text-color font-1-1x"></span>
@@ -786,8 +780,7 @@ foreach ($alphaUsers as $u) {
             <div class="form-group mb-30">
                 <label class="font-1-1x mb-10 border-bottom-light pb-5 d-block">Beschreibung des Nutzers:</label>
                 <div id="rep-modal-desc"
-                     class="bg-content border-medium border-radius-6 p-20 font-1-1x lh-1-6"
-                     style="white-space: pre-wrap;"></div>
+                     class="bg-content border-medium border-radius-6 p-20 font-1-1x lh-1-6 report-desc-text"></div>
             </div>
 
             <div id="rep-modal-transcript-section"
@@ -810,7 +803,7 @@ foreach ($alphaUsers as $u) {
                 <label>Angehängter Screenshot:</label>
                 <div class="mt-5">
                     <a id="rep-modal-screenshot-link" href="#" target="_blank" title="In Originalgröße öffnen">
-                        <img id="rep-modal-screenshot-img" src="" alt="User Screenshot" class="w-100 border-medium border-radius-4 bg-content" style="max-height: 400px; object-fit: contain;">
+                        <img id="rep-modal-screenshot-img" src="" alt="User Screenshot" class="w-100 border-medium border-radius-4 bg-content report-screenshot-img">
                     </a>
                 </div>
             </div>
@@ -828,8 +821,7 @@ foreach ($alphaUsers as $u) {
 
                 <!-- Die gerenderte Baumansicht -->
                 <div id="rep-modal-debug-rendered"
-                     class="bg-even border-medium border-radius-4 p-10 hidden scroll-y"
-                     style="line-height: 1.5;"></div>
+                     class="bg-even border-medium border-radius-4 p-10 hidden scroll-y debug-rendered-box"></div>
                 <textarea id="rep-modal-debug" rows="6" readonly class="w-100 bg-content border-medium border-radius-4 p-10"></textarea>
             </div>
 
@@ -859,25 +851,23 @@ foreach ($alphaUsers as $u) {
 <!-- CROPPER MODAL -->
 <!-- ======================================================================= -->
 <div id="cropper-modal"
-     class="modal"
-     style="z-index: 1070;">
+     class="modal z-1070">
     <div class="modal-overlay btn-close-cropper-modal"></div>
     <div class="modal-content modal-lg modal-flex">
         <div class="modal-header-wrapper">
             <h2>Social-Media Thumbnail zuschneiden</h2>
             <button class="modal-close btn-close-cropper-modal">&times;</button>
         </div>
-        <div class="modal-scroll-content d-flex flex-column"
-             style="overflow: hidden;">
-            <p class="text-light mb-15">
-                Ziehe den Rahmen auf den perfekten Ausschnitt. Er bleibt immer quadratisch (1:1), optimal für Social
-                Media.
-            </p>
+        <div class="modal-scroll-content d-flex flex-column overflow-hidden">
+            <p class="text-light mb-15">Ziehe den Rahmen auf den perfekten Ausschnitt. Er bleibt immer quadratisch
+                (1:1), optimal für Social Media.</p>
+
             <!-- Hier kommt das Bild rein -->
             <div class="cropper-container">
                 <img id="cropper-image"
                      src=""
-                     alt="Cropper">
+                     alt="Cropper"
+                     class="cropper-hidden-img">
             </div>
             <!-- Versteckte Felder für die API -->
             <input type="hidden"

@@ -968,3 +968,58 @@ body.theme-night .row-highlight {
         box-shadow: 0 0 0 0 rgb(0 123 255 / 0);
     }
 }
+
+// =========================================
+// Modals & Overlays (Ergänzung)
+// =========================================
+.z-1050 {
+    z-index: 1050;
+}
+
+.z-1060 {
+    z-index: 1060;
+}
+
+.z-1070 {
+    z-index: 1070;
+}
+
+.overwrite-preview-img {
+    max-height: 350px;
+    object-fit: contain;
+}
+
+.cropper-hidden-img {
+    display: none;
+    max-width: 100%;
+}
+
+.report-modal-avatar {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 3px solid var(--border-medium);
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.15);
+}
+
+.report-screenshot-img {
+    max-height: 400px;
+    object-fit: contain;
+}
+
+.report-desc-text {
+    white-space: pre-wrap;
+}
+
+.debug-rendered-box {
+    line-height: 1.5;
+}
+
+.flex-none {
+    flex: 0 0 auto;
+}
+
+.font-italic {
+    font-style: italic;
+}

@@ -373,3 +373,84 @@ body.theme-night .pagination span:hover:not(.current-page) {
     font-style: italic;
     color: var(--text-color-light);
 }
+
+// =========================================
+// Tables & Badges (Ergänzung)
+// =========================================
+.dt-per-page-select {
+    padding: 6px 10px;
+    color: var(--text-color);
+    background: var(--table-row-even);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+.comic-social-thumb {
+    display: inline-block;
+    width: 100%;
+    max-width: 100px;
+    height: auto;
+    margin-top: 5px;
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 0.75em;
+    font-weight: bold;
+    line-height: 1;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.status-badge.complete {
+    background-color: #28a745;
+}
+
+.status-badge.missing {
+    background-color: #dc3545;
+}
+
+.report-status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.report-status-badge[data-status='open'] {
+    color: #000;
+    background-color: #ffc107;
+}
+
+.report-status-badge[data-status='closed'] {
+    background-color: #28a745;
+}
+
+.report-status-badge[data-status='spam'] {
+    background-color: #dc3545;
+}
+
+.report-table-avatar {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.report-desc-preview {
+    max-height: 2.5em;
+    font-size: 0.85em;
+    overflow: auto;
+    scrollbar-width: thin;
+    border: 1px solid var(--border-light);
+    border-radius: 3px;
+}
+
+body.theme-night .report-desc-preview {
+    border-color: var(--border-dark);
+}

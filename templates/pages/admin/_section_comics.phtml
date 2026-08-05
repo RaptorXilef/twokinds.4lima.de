@@ -15,8 +15,7 @@ use App\Core\Entity\ComicPage;
 <!-- SECTION: COMICS                            -->
 <!-- ========================================== -->
 
-<div class="table-controls actions-bar"
-     style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 15px; align-items: center;">
+<div class="table-controls actions-bar d-flex flex-wrap justify-between gap-15 align-center">
     <div class="top-actions">
         <?php if ($perms['comic_edit']) { ?>
             <button type="button"
@@ -34,10 +33,9 @@ use App\Core\Entity\ComicPage;
             </button>
         <?php } ?>
     </div>
-    <div class="search-wrapper"
-         style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <div class="search-wrapper d-flex gap-10 align-center flex-wrap">
         <select id="comic-per-page"
-                style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border-medium); background: var(--table-row-even); color: var(--text-color);">
+                class="dt-per-page-select">
             <option value="5">5 Einträge</option>
             <option value="10">10 Einträge</option>
             <option value="15"
@@ -54,7 +52,7 @@ use App\Core\Entity\ComicPage;
         <input type="text"
                id="comic-search"
                placeholder="Comics durchsuchen (ID, Name, Transkript)..."
-               style="min-width: 250px;">
+               class="min-w-250">
     </div>
 </div>
 
@@ -126,10 +124,9 @@ use App\Core\Entity\ComicPage;
                                  loading="lazy">
                             <!-- Social Media Preview (Mini) -->
                             <img src="<?php echo \htmlspecialchars($socialPath); ?>"
-                                 class="hover-zoom-trigger hide-on-error"
+                                 class="hover-zoom-trigger hide-on-error comic-social-thumb"
                                  loading="lazy"
-                                 title="Social Media Thumbnail (Klicken zum Vergrößern)"
-                                 style="width: 100%; max-width: 100px; height: auto; margin-top: 5px; border: 1px solid var(--border-medium); border-radius: 4px; display: inline-block;">
+                                 title="Social Media Thumbnail (Klicken zum Vergrößern)">
                         </td>
                         <td>
                             <span class="comic-type-display"><?php echo \htmlspecialchars($comic->type); ?></span>
@@ -146,13 +143,11 @@ use App\Core\Entity\ComicPage;
                         <!-- Die Status-Spalte -->
                         <td>
                             <?php if (empty($missing)) { ?>
-                                <span style="display: inline-block; padding: 2px 6px; font-size: 0.75em; background-color: #28a745; color: white; border-radius: 4px;">
-                            <i class="fa-solid fa-check"></i> Komplett
-                        </span>
+                                <span class="status-badge complete"><i class="fa-solid fa-check"></i> Komplett</span>
                             <?php } else { ?>
-                                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                <div class="d-flex flex-wrap gap-5">
                                     <?php foreach ($missing as $miss) { ?>
-                                        <span style="display: inline-block; padding: 2px 6px; font-size: 0.75em; background-color: #dc3545; color: white; border-radius: 4px; line-height: 1;">Fehlt: <?php echo $miss; ?></span>
+                                        <span class="status-badge missing">Fehlt: <?php echo $miss; ?></span>
                                     <?php } ?>
                                 </div>
                             <?php } ?>
@@ -193,6 +188,6 @@ use App\Core\Entity\ComicPage;
     </table>
 </div>
 <div id="comic-pagination"
-     style="display: flex; gap: 5px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+     class="pagination-container d-flex gap-5 justify-center mt-20 flex-wrap">
     <!-- Die Buttons werden hier per JS generiert -->
-</div>
+    </div>
