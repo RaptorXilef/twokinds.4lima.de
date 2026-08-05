@@ -100,6 +100,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                 ],
                 'connect-src' => [
                     "'self'",
+                    'blob:',
                     'https://*.google-analytics.com',
                     'https://cdn.jsdelivr.net',
                     'https://cdn.twokinds.keenspot.com',

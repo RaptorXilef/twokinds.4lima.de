@@ -95,8 +95,10 @@ export class ComicEditor {
         document.addEventListener('click', (e) => {
             const btnSave = e.target.closest('#btn-save-comic');
             const btnCancel = e.target.closest('.btn-close-comic-modal');
-            const charItem = e.target.closest('.char-selection-item:not(.gallery-item)');
-            const helperItem = e.target.closest('.helper-selection-item:not(.gallery-item)');
+
+            // WICHTIG: Strikte Trennung der Klassen!
+            const charItem = e.target.closest('.char-selection-item:not(.helper-selection-item)');
+            const helperItem = e.target.closest('.helper-selection-item');
 
             if (btnSave) {
                 e.preventDefault();
@@ -107,6 +109,7 @@ export class ComicEditor {
                 this.modalManager.close('comic-modal');
             }
 
+            // Klick auf normales Charakter-Icon
             if (charItem && this.form) {
                 charItem.classList.toggle('selected');
                 const charId = charItem.dataset.charId;
@@ -120,6 +123,7 @@ export class ComicEditor {
                 }
             }
 
+            // Klick auf Helfer-Icon
             if (helperItem && this.form) {
                 helperItem.classList.toggle('selected');
                 const helperId = helperItem.dataset.helperId;

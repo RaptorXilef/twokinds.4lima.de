@@ -99,6 +99,8 @@ use App\Core\Entity\Report;
                             <?php } ?>
                         </td>
                         <td><strong><?php echo \htmlspecialchars(\ucfirst($rep->type)); ?></strong></td>
+
+                        <!-- Melder & Avatar -->
                         <td>
                             <!-- Avatar Anzeige in der Tabelle -->
                             <div class="d-flex align-center gap-10">
@@ -113,12 +115,7 @@ use App\Core\Entity\Report;
                                 </div>
                             </div>
                         </td>
-                        <strong><?php echo \htmlspecialchars($rep->submitterName); ?></strong>
-                        <div class="description-preview"
-                             style="max-height: 2.5em; font-size: 0.85em;">
-                            <?php echo \htmlspecialchars(\strip_tags($rep->description ?: $rep->transcriptSuggestion)); ?>
-                        </div>
-                        </td>
+
                         <td>
                             <span style="display: inline-block; padding: 2px 6px; font-size: 0.85em; font-weight: bold; border-radius: 4px; background: <?php echo $statusColor; ?>; color: #fff;">
                                 <?php echo $statusText; ?>
