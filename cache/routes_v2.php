@@ -263,6 +263,10 @@ return [
                 'class' => 'App\\Application\\Actions\\Api\\Frontend\\UpdateProfileAction',
                 'auth'  => true,
             ],
+            '/api/upload_avatar' => [
+                'class' => 'App\\Application\\Actions\\Api\\Frontend\\UploadAvatarAction',
+                'auth'  => true,
+            ],
         ],
     ],
     'dynamic' => [

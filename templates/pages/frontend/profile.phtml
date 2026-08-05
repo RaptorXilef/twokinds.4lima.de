@@ -1,14 +1,22 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Core\Entity\User;
+
 /**
- * @var array                 $settings
- * @var string                $pageTitle
- * @var \App\Core\Entity\User $user
+ * @var array  $settings
+ * @var string $pageTitle
+ * @var User   $user
  */
-$baseUrl = \rtrim($settings['base_url'] ?? '', '/');
+$baseUrl   = \rtrim($settings['base_url'] ?? '', '/');
+$avatarUrl = $user->avatarUrl ? $baseUrl . '/assets/images/avatars/' . $user->avatarUrl : 'https://placehold.co/400x400?text=Kein+Bild';
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
+
+<!-- Cropper CSS -->
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
 <main class="content-area">
     <article class="profile-container">
@@ -28,6 +36,77 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 <i class="fa-solid fa-triangle-exclamation"></i> <?php echo \htmlspecialchars($flashes['error'][0]); ?>
             </div>
         <?php } ?>
+
+        <!-- Avatar Sektion -->
+        <div class="content-box-shadow text-center">
+            <h3 class="section-title">Profilbild</h3>
+            <div class="mb-15">
+                <img id="current-avatar"
+                     src="<?php echo \htmlspecialchars($avatarUrl); ?>"
+                     alt="Avatar"
+                     style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            </div>
+            <input type="file"
+                   id="avatar-upload-input"
+                   accept="image/*"
+                   class="hidden">
+            <button type="button"
+                    class="button edit"
+                    onclick="document.getElementById('avatar-upload-input').click()">
+                <i class="fa-solid fa-camera"></i> Neues Bild hochladen
+            </button>
+            <div id="msg-avatar"
+                 class="msg-box mt-10"></div>
+        </div>
+
+        <!-- Profil Details Sektion -->
+        <div class="content-box-shadow">
+            <h3 class="section-title">Öffentliches Profil & Links</h3>
+            <div id="msg-details"
+                 class="msg-box"></div>
+            <form id="form-profile-details"
+                  class="admin-form">
+                <input type="hidden"
+                       name="update_type"
+                       value="profile_details">
+                <div class="form-group mb-15">
+                    <label>Über mich (Kurze Biografie)</label>
+                    <textarea name="bio" rows="4" placeholder="Schreibe etwas über dich..."><?php echo \htmlspecialchars($user->bio ?? ''); ?></textarea>
+                </div>
+
+                <div class="form-group mb-15">
+                    <label>Social Media & Website Links (Max. 5)</label>
+                    <div id="social-links-container"
+                         style="display:flex; flex-direction:column; gap:8px;">
+                        <?php
+                        $links = $user->socialLinks;
+for ($i = 0; $i < 5; ++$i) {
+    $val = $links[$i] ?? '';
+    ?>
+                            <input type="url"
+                                   name="social_links[]"
+                                   placeholder="https://..."
+                                   value="<?php echo \htmlspecialchars($val); ?>">
+                        <?php } ?>
+                    </div>
+                </div>
+
+                <div class="checkbox-item mt-20 mb-20">
+                    <label>
+                        <input type="checkbox"
+                               name="public_bookmarks"
+                               value="1"
+                               <?php echo $user->publicBookmarks ? 'checked' : ''; ?>>
+                        <div>
+                            <strong>Lesezeichen öffentlich zeigen</strong>
+                            <span>Andere Nutzer können auf deinem Profil sehen, welche Seiten du dir gemerkt hast (Deine Favoriten).</span>
+                        </div>
+                    </label>
+                </div>
+                <button type="submit"
+                        class="button edit w-100">Profil-Details speichern</button>
+            </form>
+        </div>
 
         <div class="content-box-shadow">
             <h3 class="section-title">E-Mail Adresse ändern</h3>
@@ -162,8 +241,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
              style="border-color: var(--status-red-border); background: var(--status-red-bg);">
             <h3 class="section-title text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Gefahrenzone: Konto
                 löschen</h3>
-            <p class="text-danger mb-20 font-bold">Das Löschen deines Kontos ist unwiderruflich! Alle in der Cloud
-                gespeicherten Lesezeichen gehen sofort und für immer verloren.</p>
+            <p class="text-danger mb-20 font-bold">Das Löschen deines Kontos ist unwiderruflich! Lesezeichen,
+                Helfer-Einträge und dein Profil werden für immer gelöscht.</p>
 
             <div id="msg-delete-account"
                  class="msg-box"></div>
@@ -183,5 +262,35 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
     </article>
 </main>
+
+<!-- Cropper Modal -->
+<div id="avatar-cropper-modal"
+     class="modal"
+     style="z-index: 1050;">
+    <div class="modal-overlay btn-close-cropper-modal"></div>
+    <div class="modal-content modal-md">
+        <div class="modal-header-wrapper">
+            <h2>Bild zuschneiden</h2>
+            <button class="modal-close btn-close-cropper-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content text-center">
+            <div style="max-height: 400px; overflow: hidden; background: #000;">
+                <img id="cropper-image"
+                     src=""
+                     style="max-width: 100%; display:none;">
+            </div>
+        </div>
+        <div class="modal-footer-actions">
+            <button type="button"
+                    class="button btn-close-cropper-modal">Abbrechen</button>
+            <button type="button"
+                    class="button add"
+                    id="btn-crop-save"><i class="fa-solid fa-cut"></i> Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cropper JS Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

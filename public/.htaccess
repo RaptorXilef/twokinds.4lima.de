@@ -156,6 +156,7 @@ LimitRequestBody 10485760
     # RewriteCond %{REQUEST_URI} !^/dev/image_fixer\.php$ [NC]
     # RewriteCond %{REQUEST_URI} !^/dev/final_cleanup\.php$ [NC]
     # RewriteCond %{REQUEST_URI} !^/dev/route_migration\.php$ [NC]
+    # RewriteCond %{REQUEST_URI} !^/dev/db_update\.php$ [NC]
     # TODO ENTFERNEN ENDE
     RewriteCond %{REQUEST_URI} !^/api/ [NC]
     RewriteRule ^ /%1 [R=301,L,NE]

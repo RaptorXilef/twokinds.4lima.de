@@ -16,7 +16,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
     public function __construct(
         private \PDO $pdo,
         private ClockInterface $clock,
-        private ConfigInterface $config, // Config hinzugefügt
+        private ConfigInterface $config,
     ) {
     }
 
@@ -30,6 +30,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             'transcript'       => $oldState->transcript,
             'chapter_id'       => $oldState->chapterId,
             'character_ids'    => \array_map(fn (CharacterId $id): string => $id->value, $oldState->characterIds),
+            'helper_ids'       => $oldState->helperIds, // NEU: Helfer im Snapshot mitsichern
             'original_url'     => $oldState->originalUrl,
             'sketch_url'       => $oldState->sketchUrl,
             'image_updated_at' => $oldState->imageUpdatedAt,
@@ -97,6 +98,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             LIMIT 1
         ');
         $row = $stmt->fetch();
+
         if (! $row) {
             return null;
         }

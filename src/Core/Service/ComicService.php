@@ -40,6 +40,7 @@ final readonly class ComicService
                     transcript: $comic->transcript,
                     chapterId: $comic->chapterId,
                     characterIds: $comic->characterIds,
+                    helperIds: $comic->helperIds,
                     originalUrl: $comic->originalUrl,
                     sketchUrl: $comic->sketchUrl,
                     imageUpdatedAt: $existing->imageUpdatedAt,
@@ -68,6 +69,7 @@ final readonly class ComicService
             transcript: $comic->transcript,
             chapterId: $comic->chapterId,
             characterIds: $comic->characterIds,
+            helperIds: $comic->helperIds,
             originalUrl: $comic->originalUrl,
             sketchUrl: $comic->sketchUrl,
             imageUpdatedAt: $this->clock->now()->getTimestamp(),
@@ -83,6 +85,7 @@ final readonly class ComicService
             // VOR dem Löschen ein letztes Backup für den Papierkorb anlegen!
             $this->revisionRepository->createSnapshot($existing);
         }
+
         $this->comicRepository->delete($id);
         $this->siteGenerator->generateAll();
     }
@@ -110,6 +113,7 @@ final readonly class ComicService
             transcript: $revisionData['transcript'] ?? null,
             chapterId: $revisionData['chapter_id'] ?? null,
             characterIds: $charIds,
+            helperIds: $revisionData['helper_ids'] ?? [],
             originalUrl: $revisionData['original_url'] ?? '',
             sketchUrl: $revisionData['sketch_url'] ?? '',
             imageUpdatedAt: $revisionData['image_updated_at'] ?? null,
@@ -137,6 +141,7 @@ final readonly class ComicService
     public function restoreDeletedComic(): array
     {
         $revisionData = $this->revisionRepository->popLatestDeletedRevision();
+
         if ($revisionData === null) {
             throw new \DomainException('Kein gelöschter Comic im Papierkorb gefunden.');
         }
@@ -158,6 +163,7 @@ final readonly class ComicService
             transcript: $revisionData['transcript'] ?? null,
             chapterId: $revisionData['chapter_id'] ?? null,
             characterIds: $charIds,
+            helperIds: $revisionData['helper_ids'] ?? [],
             originalUrl: $revisionData['original_url'] ?? '',
             sketchUrl: $revisionData['sketch_url'] ?? '',
             imageUpdatedAt: $revisionData['image_updated_at'] ?? null,

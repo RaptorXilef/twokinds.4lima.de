@@ -67,6 +67,10 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
             'wants_newsletter'            => (int) $user->wantsNewsletter,
             'wants_newsletter_transcript' => (int) $user->wantsNewsletterTranscript,
             'wants_notification_report'   => (int) $user->wantsNotificationReport,
+            'avatar_url'                  => $user->avatarUrl,
+            'bio'                         => $user->bio,
+            'social_links'                => \json_encode($user->socialLinks, \JSON_UNESCAPED_UNICODE),
+            'public_bookmarks'            => (int) $user->publicBookmarks,
             'created_at'                  => $user->createdAt->format('Y-m-d H:i:s'),
         ];
 
@@ -76,6 +80,24 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
 
     public function delete(string $id): void
     {
+        // 1. Physisches Avatar-Bild löschen
+        $user = $this->findById($id);
+        if ($user !== null && $user->avatarUrl !== null) {
+            $avatarPath = \dirname(__DIR__, 3) . '/public/assets/images/avatars/' . $user->avatarUrl;
+            if (\file_exists($avatarPath)) {
+                @\unlink($avatarPath);
+            }
+        }
+
+        // TODO Prüfen ob das besser gelöst werden kann, z.B. direkter Abruf aus SQLSCHEMA
+        // 2. Kaskadierendes Löschen der User-ID aus ALLEN Comics (Die JSON Magie)
+        $sql = "UPDATE `comics`
+                SET `helper_ids` = JSON_REMOVE(`helper_ids`, JSON_UNQUOTE(JSON_SEARCH(`helper_ids`, 'one', ?)))
+                WHERE JSON_SEARCH(`helper_ids`, 'one', ?) IS NOT NULL";
+        $stmtClean = $this->pdo->prepare($sql);
+        $stmtClean->execute([$id, $id]);
+
+        // 3. User löschen
         $stmt = $this->pdo->prepare('DELETE FROM `users` WHERE id = ?');
         $stmt->execute([$id]);
     }
@@ -91,7 +113,11 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
             new \DateTimeImmutable($row['created_at']),
             (bool) ($row['wants_newsletter'] ?? false),
             (bool) ($row['wants_newsletter_transcript'] ?? false),
-            (bool) ($row['wants_notification_report'] ?? false), // NEU
+            (bool) ($row['wants_notification_report'] ?? false),
+            $row['avatar_url'] ?? null,
+            $row['bio'] ?? null,
+            \json_decode($row['social_links'] ?? '[]', true) ?? [],
+            (bool) ($row['public_bookmarks'] ?? false),
         );
     }
 

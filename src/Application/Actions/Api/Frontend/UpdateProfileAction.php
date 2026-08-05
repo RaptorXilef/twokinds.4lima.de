@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Frontend;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -143,6 +141,43 @@ final readonly class UpdateProfileAction implements ActionInterface
             $this->mailService->processQueue(5, ['verify_new_email']);
 
             return JsonResponse::success(['message' => 'Bestätigungslink gesendet! Bitte prüfe den Posteingang deiner NEUEN E-Mail-Adresse.']);
+        }
+
+        if ($actionType === 'profile_details') {
+            $bio = Sanitizer::html($request->post['bio'] ?? '');
+
+            // Social Links verarbeiten (max 5)
+            $socialLinksRaw = $request->post['social_links'] ?? [];
+            $socialLinks    = [];
+            if (\is_array($socialLinksRaw)) {
+                foreach ($socialLinksRaw as $link) {
+                    $cleanLink = \filter_var(\trim($link), \FILTER_SANITIZE_URL);
+                    if (\filter_var($cleanLink, \FILTER_VALIDATE_URL) && \count($socialLinks) < 5) {
+                        $socialLinks[] = $cleanLink;
+                    }
+                }
+            }
+
+            $publicBookmarks = ! empty($request->post['public_bookmarks']);
+
+            $updated = new User(
+                $user->id,
+                $user->username,
+                $user->email,
+                $user->passwordHash,
+                $user->roleId,
+                $user->createdAt,
+                $user->wantsNewsletter,
+                $user->wantsNewsletterTranscript,
+                $user->wantsNotificationReport,
+                $user->avatarUrl,
+                $bio,
+                $socialLinks,
+                $publicBookmarks,
+            );
+            $this->userRepository->save($updated);
+
+            return JsonResponse::success(['message' => 'Profil-Details erfolgreich aktualisiert!']);
         }
 
         return JsonResponse::error('Ungültige Aktion.', 400);

@@ -19,6 +19,10 @@ final readonly class User
         public bool $wantsNewsletter = false,
         public bool $wantsNewsletterTranscript = false,
         public bool $wantsNotificationReport = false,
+        public ?string $avatarUrl = null,
+        public ?string $bio = null,
+        public array $socialLinks = [],
+        public bool $publicBookmarks = false,
     ) {
     }
 }

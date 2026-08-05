@@ -2,6 +2,7 @@ export class ProfileManager {
     /** @param {import('../core/FrontendApi.js').FrontendApi} api */
     constructor(api) {
         this.api = api;
+        this.cropperInstance = null;
 
         // Wenn das Profil-Formular nicht existiert, direkt abbrechen
         if (!document.getElementById('form-username')) return;
@@ -10,11 +11,99 @@ export class ProfileManager {
     }
 
     init() {
+        this.bindForm('form-profile-details', 'msg-details', true, false);
         this.bindForm('form-username', 'msg-username', true, false);
         this.bindForm('form-password', 'msg-password', false, true);
         this.bindForm('form-newsletter', 'msg-newsletter', false, false);
         this.bindForm('form-email', 'msg-email', false, true);
         this.bindForm('form-delete-account', 'msg-delete-account', false, false, true); // True = ist Lösch-Formular
+
+        this.bindAvatarUpload();
+    }
+
+    bindAvatarUpload() {
+        const fileInput = document.getElementById('avatar-upload-input');
+        const modal = document.getElementById('avatar-cropper-modal');
+        const cropperImg = document.getElementById('cropper-image');
+        const btnSave = document.getElementById('btn-crop-save');
+        const msgAvatar = document.getElementById('msg-avatar');
+
+        if (!fileInput || !modal) return;
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files?.[0]) {
+                // FIX: Optional chaining
+                const url = URL.createObjectURL(e.target.files[0]);
+                cropperImg.src = url;
+                cropperImg.style.display = 'block';
+                modal.style.display = 'flex';
+
+                if (this.cropperInstance) this.cropperInstance.destroy();
+
+                setTimeout(() => {
+                    this.cropperInstance = new window.Cropper(cropperImg, {
+                        aspectRatio: 1, // 1:1 Quadrat/Kreis
+                        viewMode: 1,
+                        background: false,
+                        autoCropArea: 0.9,
+                        dragMode: 'move',
+                    });
+                }, 100);
+            }
+        });
+
+        document.querySelectorAll('.btn-close-cropper-modal').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.style.display = 'none';
+                if (this.cropperInstance) this.cropperInstance.destroy();
+                fileInput.value = '';
+            });
+        });
+
+        btnSave.addEventListener('click', () => {
+            if (!this.cropperInstance) return;
+
+            const origText = btnSave.innerHTML;
+            btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verarbeite...';
+            btnSave.disabled = true;
+
+            this.cropperInstance
+                .getCroppedCanvas({
+                    width: 400,
+                    height: 400,
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                })
+                .toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('avatar_file', blob, 'avatar.png');
+
+                    try {
+                        const res = await this.api.post('upload_avatar', formData);
+                        modal.style.display = 'none';
+                        msgAvatar.style.display = 'block';
+
+                        if (res.success) {
+                            msgAvatar.className = 'msg-box status-message status-green visible';
+                            msgAvatar.innerHTML = `<i class="fa-solid fa-check"></i> ${res.message}`;
+                            document.getElementById('current-avatar').src = res.new_avatar_url;
+                        } else {
+                            msgAvatar.className = 'msg-box status-message status-red visible';
+                            msgAvatar.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${res.error}`;
+                        }
+                    } catch {
+                        // FIX: Unused error variable removed
+                        msgAvatar.className = 'msg-box status-message status-red visible';
+                        msgAvatar.innerHTML = 'Verbindungsfehler.';
+                    } finally {
+                        btnSave.innerHTML = origText;
+                        btnSave.disabled = false;
+                        if (this.cropperInstance) this.cropperInstance.destroy();
+                        fileInput.value = '';
+                    }
+                }, 'image/png');
+        });
     }
 
     bindForm(formId, msgId, reloadOnSuccess = false, resetOnSuccess = false, isDelete = false) {
@@ -24,16 +113,7 @@ export class ProfileManager {
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            if (isDelete) {
-                if (
-                    !confirm(
-                        'ACHTUNG: Möchtest du dein Konto und alle deine Lesezeichen WIRKLICH unwiderruflich löschen?'
-                    )
-                ) {
-                    return;
-                }
-            }
+            if (isDelete && !confirm('ACHTUNG: Möchtest du dein Konto WIRKLICH löschen?')) return;
 
             const btn = form.querySelector('button[type="submit"]');
             const origText = btn ? btn.innerHTML : '';
@@ -57,9 +137,7 @@ export class ProfileManager {
                 msg.style.display = 'block';
 
                 if (responseJson.success) {
-                    msg.style.backgroundColor = 'var(--status-green-bg)';
-                    msg.style.color = 'var(--status-green-text)';
-                    msg.style.border = '1px solid var(--status-green-border)';
+                    msg.className = 'msg-box status-message status-green visible';
                     msg.innerHTML = `<i class="fa-solid fa-check"></i> ${responseJson.message}`;
 
                     if (resetOnSuccess) form.reset();
@@ -72,24 +150,20 @@ export class ProfileManager {
                             1500
                         );
                     } else if (reloadOnSuccess) {
-                        setTimeout(() => window.location.reload(), 1500);
+                        setTimeout(() => window.location.reload(), 1000);
                     }
                 } else {
-                    msg.style.backgroundColor = 'var(--status-red-bg)';
-                    msg.style.color = 'var(--status-red-text)';
-                    msg.style.border = '1px solid var(--status-red-border)';
+                    msg.className = 'msg-box status-message status-red visible';
                     msg.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${responseJson.error}`;
                 }
             } catch (err) {
                 console.error('[ProfileManager] Unerwarteter Fehler beim API-Call:', err);
-                msg.style.display = 'block';
-                msg.style.backgroundColor = 'var(--status-red-bg)';
-                msg.style.color = 'var(--status-red-text)';
-                msg.innerHTML = 'Verbindungsfehler. Server nicht erreichbar.';
+                msg.className = 'msg-box status-message status-red visible';
+                msg.innerHTML = 'Verbindungsfehler.';
             }
 
             // Button nur bei Fehlschlag wieder aktivieren
-            if (btn && !responseJson?.success) {
+            if (btn && (!responseJson?.success || (!reloadOnSuccess && !isDelete))) {
                 btn.disabled = false;
                 btn.innerHTML = origText;
             }
