@@ -38,6 +38,35 @@ export class MailManager {
 
     bindEvents() {
         this.section.addEventListener('click', (e) => {
+            // --- Tab-Switching Logik ---
+            const tabBtn = e.target.closest('.media-tab-btn');
+            if (tabBtn) {
+                e.preventDefault();
+
+                // 1. Alle Tab-Buttons zurücksetzen
+                this.section.querySelectorAll('.media-tab-btn').forEach((b) => {
+                    b.classList.remove('active');
+                    b.classList.add('edit');
+                });
+
+                // 2. Geklickten Button aktivieren
+                tabBtn.classList.remove('edit');
+                tabBtn.classList.add('active');
+
+                // 3. Alle Ansichten (Tabellen) ausblenden
+                this.section.querySelectorAll('.media-view').forEach((v) => {
+                    v.classList.add('hidden');
+                });
+
+                // 4. Ziel-Ansicht einblenden
+                const targetView = document.getElementById(`media-view-${tabBtn.dataset.type}`);
+                if (targetView) {
+                    targetView.classList.remove('hidden');
+                }
+                return; // Wichtig, damit die restliche Klick-Logik übersprungen wird
+            }
+
+            // E-Mail Aktionen (Vorschau, Senden, Erneut Senden)
             const btnPreview = e.target.closest('.btn-preview-mail');
             const btnSend = e.target.closest('.btn-send-mail');
             const btnResend = e.target.closest('.btn-resend-mail');
