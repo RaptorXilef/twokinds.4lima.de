@@ -279,6 +279,10 @@ return [
                 'class' => 'App\\Application\\Actions\\Frontend\\ComicAction',
                 'auth'  => false,
             ],
+            '#^/helfer/(?P<username>[^/]+)$#' => [
+                'class' => 'App\\Application\\Actions\\Frontend\\HelperDetailAction',
+                'auth'  => false,
+            ],
         ],
     ],
 ];

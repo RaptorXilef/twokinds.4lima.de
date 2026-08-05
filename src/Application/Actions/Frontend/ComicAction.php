@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\Route;
-
-use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Contracts\Storage\UserRepositoryInterface;
 
 #[Route('GET', '/')]
 #[Route('GET', '/comic')]
@@ -23,6 +22,7 @@ final readonly class ComicAction implements ActionInterface
         private ComicRepositoryInterface $comicRepo,
         private CharacterRepositoryInterface $charRepo,
         private CharacterGroupRepositoryInterface $groupRepo,
+        private UserRepositoryInterface $userRepo,
         private TemplateRenderer $renderer,
     ) {
     }
@@ -87,6 +87,15 @@ final readonly class ComicAction implements ActionInterface
         $characters = $this->charRepo->findAll();
         $groups     = $this->groupRepo->findAll();
 
+        // Helfer-Objekte aus den IDs laden
+        $helpers = [];
+        foreach ($comic->helperIds as $hid) {
+            $u = $this->userRepo->findById($hid);
+            if ($u) {
+                $helpers[] = $u;
+            }
+        }
+
         $this->renderer->render('frontend/comic', [
             'comic'       => $comic,
             'prev'        => $prev,
@@ -99,6 +108,7 @@ final readonly class ComicAction implements ActionInterface
             'displayDate' => $displayDate,
             'characters'  => $characters,
             'groups'      => $groups,
+            'helpers'     => $helpers,
         ]);
 
         return null;
