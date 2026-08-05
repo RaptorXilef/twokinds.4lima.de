@@ -23,11 +23,9 @@ class PlaceholderTest extends TestCase
 {
     /**
      * Prüft, ob das Test-Framework grundsätzlich funktioniert.
-     *
-     * @return void
      */
     public function testEnvironmentWorks(): void
     {
-        $this->assertTrue(true);
+        self::assertTrue(true);
     }
 }
