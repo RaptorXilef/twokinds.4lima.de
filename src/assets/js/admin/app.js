@@ -126,6 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { MediaGallery } = await import('./modules/MediaGallery.js');
                 new MediaGallery(api, modalManager, notifications, tracker);
             }
+            if (tab === 'section-mails') {
+                const { MailManager } = await import('./modules/MailManager.js');
+                new MailManager(api, modalManager, notifications, tracker);
+            }
             if (tab === 'section-backup') {
                 const { BackupManager } = await import('./modules/BackupManager.js');
                 new BackupManager(api, modalManager, notifications);

@@ -175,6 +175,10 @@ return [
                 'class' => 'App\\Application\\Actions\\Api\\Admin\\LogoutAction',
                 'auth'  => true,
             ],
+            '/api/requeue_mail' => [
+                'class' => 'App\\Application\\Actions\\Api\\Admin\\RequeueMailAction',
+                'auth'  => true,
+            ],
             '/api/restore_backup' => [
                 'class' => 'App\\Application\\Actions\\Api\\Admin\\RestoreBackupAction',
                 'auth'  => true,
@@ -205,6 +209,10 @@ return [
             ],
             '/api/save_user' => [
                 'class' => 'App\\Application\\Actions\\Api\\Admin\\SaveUserAction',
+                'auth'  => true,
+            ],
+            '/api/send_queued_mail' => [
+                'class' => 'App\\Application\\Actions\\Api\\Admin\\SendQueuedMailAction',
                 'auth'  => true,
             ],
             '/api/admin_trigger_newsletter' => [
