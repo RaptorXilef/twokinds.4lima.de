@@ -46,15 +46,19 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                      alt="Avatar"
                      style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
             </div>
-            <input type="file"
-                   id="avatar-upload-input"
-                   accept="image/*"
-                   class="hidden">
-            <button type="button"
-                    class="button edit"
-                    onclick="document.getElementById('avatar-upload-input').click()">
-                <i class="fa-solid fa-camera"></i> Neues Bild hochladen
-            </button>
+
+            <div id="avatar-drop-zone"
+                 class="drag-drop-zone drop-zone-sm bg-even border-dashed border-radius-6 mb-0 cursor-pointer"
+                 style="max-width: 400px; margin: 0 auto;">
+                <i class="fa-solid fa-camera icon-lg text-link mb-5"></i>
+                <p class="mt-0 mb-5 font-bold text-color">Neues Bild hier ablegen oder klicken</p>
+                <small class="text-faded">Quadratischer Zuschnitt erfolgt im nächsten Schritt.</small>
+                <input type="file"
+                       id="avatar-upload-input"
+                       accept="image/*"
+                       class="hidden">
+            </div>
+
             <div id="msg-avatar"
                  class="msg-box mt-10"></div>
         </div>

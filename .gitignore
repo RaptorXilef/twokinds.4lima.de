@@ -189,6 +189,11 @@ public/assets/js/*
 
 # Admin Bilder
 
+# Profilbilder
+!public/assets/images/avatars/
+public/assets/images/avatars/*
+!public/assets/images/avatars/.gitkeep
+
 # Characters (komplexe Ausnahmen)
 !public/assets/images/characters/
 !public/assets/images/characters/avatars/

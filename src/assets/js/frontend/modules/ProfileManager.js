@@ -27,9 +27,39 @@ export class ProfileManager {
         const cropperImg = document.getElementById('cropper-image');
         const btnSave = document.getElementById('btn-crop-save');
         const msgAvatar = document.getElementById('msg-avatar');
+        const dropZone = document.getElementById('avatar-drop-zone');
 
         if (!fileInput || !modal) return;
 
+        // Drag & Drop Area Events
+        if (dropZone) {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--link-color)';
+                dropZone.style.backgroundColor = 'var(--table-row-hover)';
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--border-medium)';
+                dropZone.style.backgroundColor = 'var(--table-row-even)';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = 'var(--border-medium)';
+                dropZone.style.backgroundColor = 'var(--table-row-even)';
+
+                if (e.dataTransfer.files?.[0]) {
+                    fileInput.files = e.dataTransfer.files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
+        // Bild-Auswahl (Datei ausgewählt oder gedroppt)
         fileInput.addEventListener('change', (e) => {
             if (e.target.files?.[0]) {
                 // FIX: Optional chaining
@@ -93,7 +123,6 @@ export class ProfileManager {
                             msgAvatar.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${res.error}`;
                         }
                     } catch {
-                        // FIX: Unused error variable removed
                         msgAvatar.className = 'msg-box status-message status-red visible';
                         msgAvatar.innerHTML = 'Verbindungsfehler.';
                     } finally {
