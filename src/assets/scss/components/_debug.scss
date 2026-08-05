@@ -13,22 +13,22 @@
  */
 
 .c-debug-box {
-    background: #1a1a1a;
-    color: #00ff00;
     padding: 15px;
-    border: 2px dashed #00ff00;
     margin: 20px 0;
     font-family: monospace;
     font-size: 13px;
     line-height: 1.6;
+    color: #0f0;
+    background: #1a1a1a;
+    border: 2px dashed #0f0;
     border-radius: 8px;
 
     &__title {
-        color: #fff;
-        border-bottom: 1px solid #555;
         display: block;
         margin-bottom: 10px;
         font-weight: bold;
+        color: #fff;
+        border-bottom: 1px solid #555;
     }
 
     &__item {
@@ -39,44 +39,46 @@
 
     &__status {
         &--success {
-            color: #00ff00;
+            color: #0f0;
         }
+
         &--error {
-            color: #ff3333;
+            color: #f33;
         }
+
         &--muted {
             color: #aaa; // Die Klasse für "--- LEER ---"
         }
     }
 
     &__separator {
+        margin: 10px 0;
         border: 0;
         border-top: 1px solid #333;
-        margin: 10px 0;
     }
 
     &__preview {
-        margin-top: 15px;
         padding-top: 10px;
+        margin-top: 15px;
         border-top: 1px solid #333;
 
         &-title {
-            color: #fff;
             font-weight: bold;
+            color: #fff;
         }
 
         &-img {
             max-width: 100%;
-            border: 1px solid #555;
             margin-top: 10px;
             background: #000;
+            border: 1px solid #555;
         }
     }
 
     &__error-msg {
-        color: #ff3333;
-        font-weight: bold;
-        font-size: 14px;
         display: block;
+        font-size: 14px;
+        font-weight: bold;
+        color: #f33;
     }
 }

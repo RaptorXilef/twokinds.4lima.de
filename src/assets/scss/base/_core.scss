@@ -37,24 +37,24 @@ dd {
 
 ul[class],
 ol[class] {
-    list-style: none;
     padding: 0;
+    list-style: none;
 }
 
 html {
     scroll-behavior: smooth; // UX: Sanftes Scrollen für Anker
-    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 body {
     min-height: 100vh;
-    text-rendering: optimizeSpeed;
-    line-height: 1.5;
-    background-color: var(--color-surface, #fff);
-    color: var(--color-surface-text, #000);
+    overflow-x: hidden; // Verhindert horizontalen Scroll durch Layout-Fehler
     font-family: var(--font-main, sans-serif);
     font-size: 1rem;
-    overflow-x: hidden; // Verhindert horizontalen Scroll durch Layout-Fehler
+    line-height: 1.5;
+    color: var(--color-surface-text, #000);
+    background-color: var(--color-surface, #fff);
+    text-rendering: optimizespeed;
 }
 
 // ==========================================================================
@@ -67,25 +67,27 @@ h3,
 h4,
 h5,
 h6 {
-    line-height: 1.2;
-    font-weight: 700;
-    color: var(--color-primary, #007bff);
     margin-bottom: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-primary, #007bff);
 }
 
 h1 {
     font-size: 2.5rem;
 }
+
 h2 {
     font-size: 2rem;
 }
+
 h3 {
     font-size: 1.75rem;
 }
 
 p {
-    margin-bottom: 1.25rem;
     max-width: 75ch; // Readability: Optimale Zeilenlänge (ca. 65-75 Zeichen)
+    margin-bottom: 1.25rem;
 }
 
 // ==========================================================================
@@ -110,8 +112,8 @@ a {
 
 img,
 picture {
-    max-width: 100%;
     display: block; // Verhindert Ghost-Margins am unteren Rand
+    max-width: 100%;
     height: auto;
 }
 
@@ -130,7 +132,7 @@ select {
     padding: 0;
     margin: -1px;
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+    clip: rect(0, 0, 0, 0);
 }

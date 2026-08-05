@@ -126,23 +126,25 @@ body.theme-night .faq-question {
 
 /* VORHANDENES BEIBEHALTEN, FOLGENDES HINZUFÜGEN: */
 .accordion-trigger {
-    width: 100%;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
     padding: 15px 20px;
-    background: var(--table-row-even);
-    border: none;
-    cursor: pointer;
     font-size: 1.1em;
     font-weight: bold;
     color: var(--text-color);
+    cursor: pointer;
+    background: var(--table-row-even);
+    border: none;
 }
+
 .accordion-content {
     display: none;
     padding: 20px;
     border-top: 1px solid var(--border-medium);
 }
+
 body.theme-night .accordion-content {
     border-top-color: var(--border-light);
 }

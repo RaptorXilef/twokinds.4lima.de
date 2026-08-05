@@ -26,7 +26,8 @@
     flex-flow: row nowrap;
     gap: 10px;
     width: 1039px;
-    //min-height: 350px;
+
+    // min-height: 350px;
     padding: 8px;
     margin: auto;
     margin-bottom: 10px;
@@ -75,7 +76,7 @@ body.theme-night .bottom {
 }
 
 footer {
-    padding: /*20px*/ 0px 10px;
+    padding: /*20px*/ 0 10px;
     font-size: 0.85em;
     line-height: 1.6;
     color: var(--text-color);
@@ -84,6 +85,7 @@ footer {
     a {
         font-weight: bold;
         color: var(--link-color);
+
         &:hover {
             color: var(--link-color);
         }
@@ -94,23 +96,23 @@ footer {
    NEUES FOOTER GIMMICK: Crowd-Effekt
    ========================================================================== */
 .footer-img {
-    width: 100%;
-    margin-top: 5px;
     display: flex;
     justify-content: center;
+    width: 100%;
+    margin-top: 5px;
 }
 
 .footer-chars-container {
     display: flex;
-    justify-content: center;
     align-items: flex-end; /* Alle sitzen unten bündig auf einer Linie */
+    justify-content: center;
     height: 89px; /* Maximale Höhe des Footers */
 
     a {
-        display: block;
         position: relative;
-        height: 100%;
         z-index: 1;
+        display: block;
+        height: 100%;
         margin: 0 -4.5px; /* Zieht die Charaktere leicht ineinander für den Gruppen-Effekt */
 
         /* NEU: Skaliert von der unteren Kante aus, damit sie nicht hochfliegen! */
@@ -122,17 +124,18 @@ footer {
 
         img {
             display: block;
-            height: 100%;
             width: auto;
+            height: 100%;
+
             /* Ein zarter Schatten trennt überlappende Charaktere optisch voneinander */
-            filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.15));
+            filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.15));
         }
 
         /* Der Hover-Effekt: Charakter drängt sich nach vorne, wächst um 3% (~2.6 Pixel) und leuchtet */
         &:hover {
             z-index: 10;
-            transform: scale(1.1); /* translateY() wurde entfernt! */
             filter: brightness(1.1);
+            transform: scale(1.1); /* translateY() wurde entfernt! */
         }
     }
 }
@@ -140,8 +143,9 @@ footer {
 /* Angepasste Schatten & Helligkeit für den Dark Mode */
 body.theme-night .footer-chars-container a {
     img {
-        filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));
+        filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.5));
     }
+
     &:hover {
         filter: brightness(1.1);
     }

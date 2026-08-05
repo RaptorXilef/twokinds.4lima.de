@@ -46,6 +46,7 @@
     cursor: not-allowed;
     background-color: var(--button-disabled-bg);
     opacity: 0.5;
+
     // ! Dark-Mode-Opacity Hack entfernt, da die neue RGBA-Variable `--button-disabled-bg` das sauber über Alpha regelt.
 }
 

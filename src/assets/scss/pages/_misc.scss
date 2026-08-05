@@ -202,15 +202,18 @@ body.theme-night {
    ========================================================================== */
 .auth-container {
     max-width: 500px;
-    margin: 0 auto;
     padding: 20px;
+    margin: 0 auto;
+
     header {
-        text-align: center;
         margin-bottom: 30px;
+        text-align: center;
+
         h1 {
             margin-bottom: 10px;
             border: none;
         }
+
         p {
             color: var(--text-color-faded);
         }
@@ -219,15 +222,18 @@ body.theme-night {
 
 .profile-container {
     max-width: 600px;
-    margin: 0 auto;
     padding: 20px;
+    margin: 0 auto;
+
     header {
-        text-align: center;
         margin-bottom: 30px;
+        text-align: center;
+
         h1 {
             margin-bottom: 10px;
             border: none;
         }
+
         p {
             color: var(--text-color-faded);
         }
@@ -235,84 +241,93 @@ body.theme-night {
 }
 
 .content-box-shadow {
-    background: var(--content-box-bg);
     padding: 30px;
-    border-radius: 8px;
-    border: 1px solid var(--border-medium);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    background: var(--content-box-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
 }
+
 body.theme-night .content-box-shadow {
     border-color: var(--border-light);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.3);
 }
 
 .section-title {
-    margin-top: 0;
-    border-bottom: 1px solid var(--border-light);
     padding-bottom: 10px;
+    margin-top: 0;
     margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .msg-box {
     display: none;
     padding: 10px;
     margin-bottom: 15px;
-    border-radius: 4px;
     font-weight: bold;
     text-align: center;
+    border-radius: 4px;
 }
 
 .form-links {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.9em;
     display: flex;
     flex-direction: column;
     gap: 10px;
     align-items: center;
+    margin-top: 20px;
+    font-size: 0.9em;
+    text-align: center;
+
     a {
         font-weight: bold;
     }
 }
+
 .form-links-row {
-    width: 100%;
     display: flex;
     justify-content: space-between;
+    width: 100%;
+
     a {
-        color: var(--text-color-faded);
         font-weight: normal;
+        color: var(--text-color-faded);
     }
 }
 
 .checkbox-item {
-    margin-bottom: 25px;
     padding: 15px;
-    border-radius: 6px;
+    margin-bottom: 25px;
     background: var(--table-row-even);
     border: 1px solid var(--border-light);
+    border-radius: 6px;
+
     label {
         display: flex;
-        align-items: flex-start;
         gap: 10px;
+        align-items: flex-start;
         cursor: pointer;
     }
+
     input[type='checkbox'] {
-        transform: scale(1.5);
         margin-top: 5px;
+        transform: scale(1.5);
     }
+
     strong {
         display: block;
         margin-bottom: 5px;
         color: var(--text-color);
     }
+
     span {
         font-size: 0.9em;
         color: var(--text-color-faded);
     }
 }
+
 body.theme-night .checkbox-item {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgb(0 0 0 / 0.2);
 }
 
 /* ==========================================================================
@@ -321,26 +336,32 @@ body.theme-night .checkbox-item {
 .max-w-600 {
     max-width: 600px;
 }
+
 .max-w-900 {
     max-width: 900px;
 }
+
 .max-w-950 {
     max-width: 950px;
 }
+
 .center-block {
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
 }
 
 .font-1-2x {
     font-size: 1.2em;
 }
+
 .font-1-5x {
     font-size: 1.5em;
 }
+
 .font-1-8x {
     font-size: 1.8em;
 }
+
 .font-2x {
     font-size: 2.2em;
 }
@@ -349,32 +370,41 @@ body.theme-night .checkbox-item {
     margin-top: 20px;
     margin-bottom: 20px;
 }
+
 .my-30 {
     margin-top: 30px;
     margin-bottom: 30px;
 }
+
 .my-40 {
     margin-top: 40px;
     margin-bottom: 40px;
 }
+
 .mb-30 {
     margin-bottom: 30px;
 }
+
 .mb-40 {
     margin-bottom: 40px;
 }
+
 .mb-50 {
     margin-bottom: 50px;
 }
+
 .p-0 {
     padding: 0;
 }
+
 .m-0 {
     margin: 0;
 }
+
 .pt-10 {
     padding-top: 10px;
 }
+
 .pb-20 {
     padding-bottom: 20px;
 }
@@ -382,28 +412,30 @@ body.theme-night .checkbox-item {
 .border-none {
     border: none !important;
 }
+
 .text-uppercase {
     text-transform: uppercase;
 }
+
 .letter-spacing-1 {
     letter-spacing: 1px;
 }
 
 .list-disc {
-    list-style-type: disc;
     padding-left: 20px;
+    list-style-type: disc;
 }
 
 .badge-info {
-    font-size: 0.6em;
-    background: var(--status-info-bg);
-    color: var(--status-info-text);
-    border: 1px solid var(--status-info-border);
     padding: 3px 8px;
-    border-radius: 12px;
+    font-size: 0.6em;
+    font-weight: bold;
+    color: var(--status-info-text);
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-weight: bold;
+    background: var(--status-info-bg);
+    border: 1px solid var(--status-info-border);
+    border-radius: 12px;
 }
 
 .grid-auto-200 {
@@ -417,28 +449,28 @@ body.theme-night .checkbox-item {
    ========================================================================== */
 .bookmark-card {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background-color: var(--content-box-bg);
     border: 1px solid var(--border-medium);
     border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
     transition:
         transform 0.2s,
         box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
 
     &:hover {
+        box-shadow: 0 6px 15px rgb(0 0 0 / 0.15);
         transform: translateY(-4px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
     }
 
     .delete-btn {
+        z-index: 10;
         opacity: 0;
         transition:
             opacity 0.2s ease,
             background-color 0.2s ease;
-        z-index: 10;
     }
 
     &:hover .delete-btn {
@@ -451,6 +483,7 @@ body.theme-night .checkbox-item {
         }
     }
 }
+
 body.theme-night .bookmark-card {
     border-color: var(--border-light);
 }
@@ -462,48 +495,54 @@ body.theme-night .bookmark-card {
     overflow: hidden;
     background: var(--page-bg);
 }
+
 .bookmark-thumb-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
+
 .bookmark-card-body {
-    padding: 12px 10px;
-    text-align: center;
-    flex-grow: 1;
     display: flex;
+    flex-grow: 1;
     flex-direction: column;
     justify-content: space-between;
+    padding: 12px 10px;
+    text-align: center;
 }
+
 .bookmark-title {
-    font-weight: bold;
-    font-size: 0.95em;
     margin-bottom: 4px;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 0.95em;
+    font-weight: bold;
     color: var(--text-color);
+    white-space: nowrap;
 }
+
 .bookmark-meta {
+    margin-bottom: 8px;
     font-size: 0.85em;
     color: var(--text-color-light);
-    margin-bottom: 8px;
 }
+
 .bookmark-delete-btn {
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid var(--border-medium);
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--status-red-text);
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--status-red-text);
+    cursor: pointer;
+    background: rgb(255 255 255 / 0.9);
+    border: 1px solid var(--border-medium);
+    border-radius: 50%;
 }
+
 .bookmark-delete-btn:hover {
     background: var(--status-red-bg);
 }
@@ -514,13 +553,16 @@ body.theme-night .bookmark-card {
 .text-left {
     text-align: left;
 }
+
 .p-25 {
     padding: 25px;
 }
+
 .px-20 {
-    padding-left: 20px;
     padding-right: 20px;
+    padding-left: 20px;
 }
+
 .py-15 {
     padding-top: 15px;
     padding-bottom: 15px;
@@ -529,9 +571,11 @@ body.theme-night .bookmark-card {
 .font-1-1x {
     font-size: 1.1em;
 }
+
 .text-color {
     color: var(--text-color);
 }
+
 .text-rss {
     color: #f26522;
 }
@@ -541,10 +585,10 @@ body.theme-night .bookmark-card {
 }
 
 .badge-pill {
-    font-size: 0.6em;
-    background: var(--button-bg);
-    color: var(--text-on-medium);
     padding: 4px 12px;
+    font-size: 0.6em;
+    color: var(--text-on-medium);
+    background: var(--button-bg);
     border-radius: 12px;
 }
 
@@ -558,14 +602,17 @@ body.theme-night .bookmark-card {
     li {
         line-height: 1.6;
     }
+
     p {
         margin-bottom: 15px;
     }
+
     ul {
-        list-style-type: disc;
         padding-left: 20px;
         margin-bottom: 15px;
+        list-style-type: disc;
     }
+
     li {
         margin-bottom: 5px;
     }
@@ -575,14 +622,16 @@ body.theme-night .bookmark-card {
 .d-inline-flex {
     display: inline-flex;
 }
+
 .overflow-hidden {
     overflow: hidden;
 }
 
 .faq-box {
     border-left: 4px solid var(--link-color);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.05);
 }
+
 body.theme-night .faq-box {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
 }

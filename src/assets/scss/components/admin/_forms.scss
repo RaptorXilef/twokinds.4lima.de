@@ -113,10 +113,10 @@
 
 .search-wrapper select {
     padding: 6px 10px;
-    border-radius: 4px;
-    border: 1px solid var(--input-border);
-    background-color: var(--input-bg);
     color: var(--text-color);
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
 }
 
 .search-wrapper input {
@@ -150,7 +150,7 @@
 
 .search-wrapper button#clear-search-btn:hover {
     color: var(--status-red-text); // Rot beim Hover
-    background-color: rgba(0, 0, 0, 0.05); // Leichter Hover-Effekt
+    background-color: rgb(0 0 0 / 0.05); // Leichter Hover-Effekt
 }
 
 .honeypot-field {
@@ -207,7 +207,7 @@
     background-color: var(--button-bg);
     border: 1px solid var(--border-dark); // Kontur für Button-Look
     border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); // Schatten für Tiefe
+    box-shadow: 0 2px 5px rgb(0 0 0 / 0.1); // Schatten für Tiefe
     transition:
         transform 0.1s,
         background-color 0.2s;
@@ -215,12 +215,12 @@
 
 .drag-drop-zone label.button:hover {
     background-color: var(--button-hover-bg);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.15);
     transform: translateY(-2px); // Kleiner Hebe-Effekt
 }
 
 .drag-drop-zone label.button:active {
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
     transform: translateY(0);
 }
 
@@ -304,7 +304,7 @@ body.theme-night .button-toggle-group .button-toggle {
 .admin-form input[type='email']:focus {
     outline: none;
     border-color: var(--link-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    box-shadow: 0 0 0 3px rgb(0 123 255 / 0.1);
 }
 
 .admin-form button {
@@ -341,38 +341,43 @@ body.theme-night .button-toggle-group .button-toggle {
    WYSIWYG & DROPZONE TWEAKS (aus PHTML extrahiert)
    ========================================================================== */
 .trumbowyg-button-pane button {
-    padding: 0 !important;
-    margin: 0 !important;
     min-width: 0 !important;
     min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: normal !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    line-height: normal !important;
 }
+
 .trumbowyg-box {
     margin-top: 0 !important;
 }
 
 .drop-zone-sm {
     padding: 20px;
+
     p {
         margin: 5px 0 0;
-        color: var(--text-color);
         font-weight: bold;
+        color: var(--text-color);
     }
+
     small {
-        color: var(--text-color-light);
         display: block;
+        color: var(--text-color-light);
     }
 
     i {
         font-size: 2em;
         color: var(--text-color-light);
     }
+
     &.zone-hires i {
         color: var(--link-color);
     }
+
     &.zone-lowres i {
         color: var(--text-color-faded);
     }

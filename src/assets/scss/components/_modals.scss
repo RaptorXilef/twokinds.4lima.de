@@ -154,11 +154,11 @@ body.theme-night .modal-header-wrapper {
         box-sizing: border-box;
         width: 100%;
         padding: 8px;
+        font-family: inherit;
         color: var(--text-color);
         background-color: var(--content-bg);
         border: 1px solid var(--border-medium);
         border-radius: 4px;
-        font-family: inherit;
     }
 }
 
@@ -187,8 +187,8 @@ body.theme-night .modal-scroll-content select {
 
         /* Leicht abgerundete Buttons exklusiv für Modals */
         .button {
-            border-radius: 6px;
             padding: 8px 16px;
+            border-radius: 6px;
         }
     }
 
@@ -640,12 +640,15 @@ body.theme-night .dialog .dialog-title {
 .modal-content.modal-lg {
     max-width: 1080px;
 }
+
 .modal-content.modal-md {
     max-width: 800px;
 }
+
 .modal-content.modal-sm {
     max-width: 600px;
 }
+
 .modal-content.modal-flex {
     display: flex;
     flex-direction: column;
@@ -658,20 +661,20 @@ body.theme-night .dialog .dialog-title {
 .preview-box {
     display: flex;
     flex-direction: column;
+    padding: 10px;
+    text-align: center;
     background-color: var(--table-row-even);
     border: 1px solid var(--border-medium);
     border-radius: 6px;
-    padding: 10px;
-    text-align: center;
 
     strong {
-        margin-bottom: 10px;
         display: block;
+        margin-bottom: 10px;
     }
 
     .preview-box-inner {
-        flex: 1;
         display: flex;
+        flex: 1;
         align-items: center;
         justify-content: center;
 
@@ -679,19 +682,19 @@ body.theme-night .dialog .dialog-title {
             width: 100%;
             height: 160px;
             max-height: 160px;
-            object-fit: contain;
-            margin: 0;
             padding: 0;
-            border: none;
+            margin: 0;
+            object-fit: contain;
             background: transparent;
+            border: none;
         }
     }
 
     .social-preview {
-        border-radius: 4px;
         overflow: hidden;
         background-color: var(--content-bg);
         border: 1px solid var(--border-medium);
+        border-radius: 4px;
 
         img {
             height: 100%;
@@ -702,49 +705,49 @@ body.theme-night .dialog .dialog-title {
 
 .hover-zoom-trigger {
     cursor: zoom-in;
-    border-radius: 4px;
-    border: 1px solid var(--border-medium);
     object-fit: contain;
     background-color: var(--content-bg);
+    border: 1px solid var(--border-medium);
+    border-radius: 4px;
 }
 
 #image-hover-overlay {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
     cursor: zoom-out;
+    background: rgb(0 0 0 / 0.85);
 
     img {
         max-width: 90vw;
         max-height: 95vh;
-        border-radius: 8px;
-        box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-        border: 2px solid var(--border-medium);
         background-color: var(--content-bg);
+        border: 2px solid var(--border-medium);
+        border-radius: 8px;
+        box-shadow: 0 0 30px rgb(0 0 0 / 0.8);
     }
 }
 
 .cropper-container {
+    display: flex;
     flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
     background-color: var(--table-row-even);
     border: 2px dashed var(--border-medium);
     border-radius: 4px;
-    min-height: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 
     img {
+        display: none;
         max-width: 100%;
         max-height: 500px;
-        display: none;
     }
 }
 
@@ -756,9 +759,9 @@ body.theme-night .dialog .dialog-title {
         width: 120px;
         height: 120px;
         object-fit: cover;
-        border-radius: 50%;
-        border: 3px solid var(--border-medium);
         background-color: var(--content-bg);
+        border: 3px solid var(--border-medium);
+        border-radius: 50%;
     }
 
     .char-id-display {

@@ -34,7 +34,6 @@
         $red: color.channel($background, 'red', $space: rgb);
         $green: color.channel($background, 'green', $space: rgb);
         $blue: color.channel($background, 'blue', $space: rgb);
-
         $luma: (0.2126 * $red) + (0.7152 * $green) + (0.0722 * $blue);
     }
 
@@ -56,13 +55,13 @@ $theme-map: (
     ),
     'success': (
         'base': #28a745,
-        'text': #ffffff,
+        'text': #fff,
     ),
     'danger': (
         'base': #dc3545,
     ),
     'surface': (
-        'base': #ffffff,
+        'base': #fff,
         'subtle': #f8f9fa,
         'border': #dee2e6,
     ),
