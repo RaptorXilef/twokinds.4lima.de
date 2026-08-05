@@ -321,6 +321,11 @@ export class ReportManager {
         const debugRaw = document.getElementById('rep-modal-debug');
         const debugRendered = document.getElementById('rep-modal-debug-rendered');
         const btnToggleDebug = document.getElementById('btn-toggle-debug-view');
+        const submitterIdEl = document.getElementById('rep-modal-submitter-id');
+
+        if (submitterIdEl) {
+            submitterIdEl.textContent = payload.userId ? payload.userId : 'Gast / Unbekannt';
+        }
 
         if (debugRaw) debugRaw.value = payload.debug || 'Keine Telemetrie vorhanden.';
 
