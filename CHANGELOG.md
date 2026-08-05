@@ -1,5 +1,25 @@
 # Changelog
 
+## [6.9.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.8.0...v6.9.0) (2026-08-05)
+
+### 🚀 Features
+
+* **backup:** enforce automatic safety backups prior to database restoration ([c73dc2a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c73dc2a5b8ffc23cf663739ef61a8f088b856ae4))
+
+### 🐛 Bug Fixes
+
+* **routing:** restore missing Route attribute and refresh composer autoload map ([a2af0c2](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a2af0c2aaf5fa89cca8ec8c3fc14f626eba45396))
+
+### ⚙️ Refactoring
+
+* **architecture:** reorganize action controllers into domain-specific modules ([b424352](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b424352bf711096489834ec0ddd8187f0ba37511))
+* **routing:** implement domain-driven attribute routing with dynamic parameters ([cc13323](https://github.com/RaptorXilef/twokinds.4lima.de/commit/cc1332358c5f58daa1c90a067fea450e4f424c7c))
+* **routing:** implement dynamic API routing and eliminate DRY violations ([d9deba1](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d9deba1e75d93f938873bf590933d0e8f36c387c))
+
+### 💎 Styling
+
+* **admin:** fix BiomeJS linting warnings in BackupManager and cleanup obsolete router files ([e3a7627](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e3a76275436ae6f25f3c9c9c0199611609626b71))
+
 ## [6.8.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.7.2...v6.8.0) (2026-08-05)
 
 ### 🚀 Features
