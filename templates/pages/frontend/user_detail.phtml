@@ -20,14 +20,11 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 <main class="content-area">
     <article class="max-w-900 w-100 center-block">
 
-        <?php // TODO Inline CSS in SCSS überführen oder SCSS nutzen!
-        ?>
-
         <!-- Header -->
-        <header class="d-flex align-center gap-20 mb-30 pb-20 border-bottom-2 flex-wrap">
+        <header class="profile-header d-flex align-center gap-20 mb-30 pb-20 border-bottom-2 flex-wrap">
             <img src="<?php echo \htmlspecialchars($avatarUrl); ?>"
                  alt="Avatar von <?php echo \htmlspecialchars($publicUser->username->value); ?>"
-                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                 class="profile-avatar">
             <div class="flex-1">
                 <h1 class="page-header border-none m-0 p-0 mb-10 font-2x">
                     <?php echo \htmlspecialchars($publicUser->username->value); ?>
@@ -44,8 +41,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
                 <?php if ($publicUser->bio) { ?>
                     <h3 class="mt-0 mb-15 font-1-2x text-color border-bottom-light pb-5">Über mich</h3>
-                    <div class="font-lg mb-20 text-light"
-                         style="white-space: pre-wrap; word-wrap: break-word;"><?php echo \htmlspecialchars($publicUser->bio); ?></div>
+                    <div class="font-lg mb-20 text-light profile-bio">
+                        <?php echo \htmlspecialchars($publicUser->bio); ?>
+                    </div>
                 <?php } ?>
 
                 <?php if (! empty($publicUser->socialLinks)) { ?>
@@ -56,7 +54,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                             $host = \parse_url($link, \PHP_URL_HOST) ?? $link;
                             $host = \str_replace('www.', '', $host);
                             ?>
-                            <a href="<?php echo \htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer" class="button bg-even text-color border-light d-flex align-center gap-8 py-10 px-15 transition" style="text-decoration: none;">
+                            <a href="<?php echo \htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer" class="button social-link-btn d-flex align-center gap-8 py-10 px-15 transition">
                                 <i class="fa-solid fa-link text-faded"></i> <?php echo \htmlspecialchars($host); ?>
                             </a>
                         <?php } ?>

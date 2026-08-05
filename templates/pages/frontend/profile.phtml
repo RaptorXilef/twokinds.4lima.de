@@ -25,10 +25,11 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <p class="mb-5">Aktuelle E-Mail: <?php echo \htmlspecialchars($user->email->value); ?></p>
             <!-- PERMALINK -->
             <p class="m-0 font-small text-light">Dein öffentlicher Profil-Link:<br>
-            <a href="<?php echo $baseUrl; ?>/user/<?php echo $user->id; ?>" target="_blank" class="text-link" style="word-break: break-all;"><?php echo $baseUrl; ?>/user/<?php echo $user->id; ?></a></p>
+                <a href="<?php echo $baseUrl; ?>/user/<?php echo $user->id; ?>" target="_blank" class="text-link word-break-all"><?php echo $baseUrl; ?>/user/<?php echo $user->id; ?></a>
+            </p>
         </header>
 
-        <!-- Zeige System-Nachrichten an (Z.B. Erfolgreich bestätigt) -->
+        <!-- Zeige System-Nachrichten an -->
         <?php if (! empty($flashes['success'])) { ?>
             <div class="status-message status-green visible mb-20">
                 <i class="fa-solid fa-check"></i> <?php echo \htmlspecialchars($flashes['success'][0]); ?>
@@ -47,12 +48,11 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 <img id="current-avatar"
                      src="<?php echo \htmlspecialchars($avatarUrl); ?>"
                      alt="Avatar"
-                     style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid var(--border-medium); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                     class="profile-avatar-upload">
             </div>
 
             <div id="avatar-drop-zone"
-                 class="drag-drop-zone drop-zone-sm bg-even border-dashed border-radius-6 mb-0 cursor-pointer"
-                 style="max-width: 400px; margin: 0 auto;">
+                 class="drag-drop-zone drop-zone-sm bg-even border-dashed border-radius-6 mb-0 cursor-pointer avatar-drop-zone">
                 <i class="fa-solid fa-camera icon-lg text-link mb-5"></i>
                 <p class="mt-0 mb-5 font-bold text-color">Neues Bild hier ablegen oder klicken</p>
                 <small class="text-faded">Quadratischer Zuschnitt erfolgt im nächsten Schritt.</small>
@@ -84,7 +84,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                 <div class="form-group mb-15">
                     <label>Social Media & Website Links (Max. 5)</label>
                     <div id="social-links-container"
-                         style="display:flex; flex-direction:column; gap:8px;">
+                         class="d-flex flex-column gap-8">
                         <?php
                         $links = $user->socialLinks;
 for ($i = 0; $i < 5; ++$i) {
@@ -244,8 +244,7 @@ for ($i = 0; $i < 5; ++$i) {
             </form>
         </div>
 
-        <div class="content-box-shadow"
-             style="border-color: var(--status-red-border); background: var(--status-red-bg);">
+        <div class="content-box-shadow bg-danger-zone">
             <h3 class="section-title text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Gefahrenzone: Konto
                 löschen</h3>
             <p class="text-danger mb-20 font-bold">Das Löschen deines Kontos ist unwiderruflich! Lesezeichen,
@@ -272,8 +271,7 @@ for ($i = 0; $i < 5; ++$i) {
 
 <!-- Cropper Modal -->
 <div id="avatar-cropper-modal"
-     class="modal"
-     style="z-index: 1050;">
+     class="modal cropper-overlay">
     <div class="modal-overlay btn-close-cropper-modal"></div>
     <div class="modal-content modal-md">
         <div class="modal-header-wrapper">
@@ -281,10 +279,10 @@ for ($i = 0; $i < 5; ++$i) {
             <button class="modal-close btn-close-cropper-modal">&times;</button>
         </div>
         <div class="modal-scroll-content text-center">
-            <div style="max-height: 400px; overflow: hidden; background: #000;">
+            <div class="cropper-canvas-box">
                 <img id="cropper-image"
                      src=""
-                     style="max-width: 100%; display:none;">
+                     class="hidden-img">
             </div>
         </div>
         <div class="modal-footer-actions">
