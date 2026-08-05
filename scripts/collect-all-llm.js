@@ -23,7 +23,6 @@ const ALWAYS_IGNORE_DIRS = [
     '.old-5.0.0-alpha.23',
 ];
 
-// Schließt ganz gezielt spezifische Pfade aus, lässt andere aber intakt
 const ALWAYS_IGNORE_PATHS = ['public/assets'];
 
 const ALWAYS_IGNORE_FILES = [
@@ -34,7 +33,6 @@ const ALWAYS_IGNORE_FILES = [
     'min.css',
     '_dev.local.php',
     '.local.*',
-    'config.local.php',
 ];
 
 // =============================================================================
@@ -68,7 +66,6 @@ try {
     console.warn(`${c.yellow}⚠️ package.json nicht gefunden oder fehlerhaft.${c.reset}`);
 }
 
-// Dynamischer Zielordner basierend auf der Version
 const debugFolder = path.join(basePath, '.debug', version);
 
 // --- 2. Filter-Konfigurationen ---
@@ -112,11 +109,6 @@ const configs = {
 
 // --- 3. Token-Optimierungs-Logik ---
 
-/**
- * Optimiert den Code-Inhalt basierend auf dem Dateityp
- * @param {string} content - Der rohe Code
- * @param {string} fileExtension - Die Dateiendung (z.B. '.php')
- */
 function optimizeTokens(content, fileExtension) {
     const ext = fileExtension.toLowerCase();
     const isPhpOrPhtml = ext === '.php' || ext === '.phtml';
@@ -166,7 +158,7 @@ function optimizeTokens(content, fileExtension) {
             optimizedContent = optimizedContent.replace(/<!--[\s\S]*?-->/g, '');
 
             // SQL / CSS-ähnliche Kommentare (-- )
-            optimizedContent = optimizedContent.replace(/(?<!\!)--\s.*$/gm, '');
+            optimizedContent = optimizedContent.replace(/(?<!!)--\s.*$/gm, '');
 
             // FIX: # Kommentare NUR in reinen .php Dateien löschen.
             // In .phtml zerstören sie sonst CSS-IDs (z.B. <style> #id { ... } </style>)
@@ -194,7 +186,7 @@ function optimizeTokens(content, fileExtension) {
         // HTML Attribute (href=) bleiben somit zu 100% unangetastet.
         optimizedContent = optimizedContent.replace(
             /(<\?[pP][hH][pP]|<\?=)([\s\S]*?)(?:\?>|$)/g,
-            (match, openTag, phpCode) => {
+            (_match, openTag, phpCode) => {
                 return openTag + phpCode.replace(operatorRegex, ' $1 ');
             }
         );
@@ -239,8 +231,8 @@ function optimizeTokens(content, fileExtension) {
             ) {
                 const lastLine = optimizedLines[optimizedLines.length - 1];
 
-                // FIX: \) und % am Ende sowie \- am Anfang hinzugefügt, um CSS-Funktionen (url, rgba) und Prozentwerte sicher vom Rest zu trennen
-                if (/[a-zA-Z0-9_\]\)%]$/.test(lastLine) && /^[a-zA-Z0-9_$\-]/.test(line)) {
+                // \) und % am Ende sowie \- am Anfang für CSS-Funktionen (url, rgba) und Prozentwerte
+                if (/[a-zA-Z0-9_\])%]$/.test(lastLine) && /^[a-zA-Z0-9_$-]/.test(line)) {
                     optimizedLines[optimizedLines.length - 1] += ` ${line}`;
                 } else {
                     optimizedLines[optimizedLines.length - 1] += line;

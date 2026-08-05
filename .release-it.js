@@ -67,7 +67,9 @@ export default {
         },
     },
     git: {
+        // biome-ignore lint/suspicious/noTemplateCurlyInString: release-it needs this as a raw string for internal parsing
         commitMessage: 'chore(release): v${version}',
+        // biome-ignore lint/suspicious/noTemplateCurlyInString: release-it needs this as a raw string for internal parsing
         tagName: 'v${version}',
         requireCleanWorkingDir: true,
     },
