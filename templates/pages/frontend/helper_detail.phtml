@@ -1,12 +1,27 @@
 <?php
 
 declare(strict_types=1);
+
+use App\Core\Entity\ComicPage;
+use App\Core\Entity\User;
+
+/**
+ * @var array       $settings
+ * @var string      $baseUrl
+ * @var string      $appRoot
+ * @var User        $helperUser
+ * @var ComicPage[] $helperComics
+ * @var ComicPage[] $bookmarks
+ */
 $baseUrl   = \rtrim($settings['base_url'], '/');
 $avatarUrl = $helperUser->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$helperUser->avatarUrl}" : 'https://placehold.co/400x400?text=Kein+Bild';
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
 <main class="content-area">
     <article class="max-w-900 w-100 center-block">
+
+        <?php // TODO Inline CSS in SCSS überführen oder SCSS nutzen!
+        ?>
 
         <!-- Header -->
         <header class="d-flex align-center gap-20 mb-30 pb-20 border-bottom-2 flex-wrap">
@@ -36,7 +51,6 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     <div class="d-flex flex-wrap gap-10">
                         <?php
                         foreach ($helperUser->socialLinks as $link) {
-                            // Wir holen uns den reinen Domainnamen für den Button-Text (z.B. "patreon.com")
                             $host = \parse_url($link, \PHP_URL_HOST) ?? $link;
                             $host = \str_replace('www.', '', $host);
                             ?>
