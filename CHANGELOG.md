@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.7.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.7.1...v6.7.2) (2026-08-05)
+
+### 🐛 Bug Fixes
+
+* **stylelint:** resolve all SCSS errors and formatting violations ([51bde71](https://github.com/RaptorXilef/twokinds.4lima.de/commit/51bde7183dbff9d125ed6ed5a9f4810a69c55438))
+
+### ⚙️ Refactoring
+
+* **rector:** modernize code base and enforce PHP 8.2+ type safety ([142f537](https://github.com/RaptorXilef/twokinds.4lima.de/commit/142f537a84977dff7499d61fd30fc042c343bfec))
+* **style:** replace string concatenation with template literals ([16574cb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/16574cb5b56d8c818e4cfc59384ab673ded1283e))
+
+### 💎 Styling
+
+* **parser:** prefix unused regex callback parameter to satisfy linter ([5f008a5](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5f008a5f292aa3d38728dcaf9c39604823706778))
+* **php-cs-fixer:** apply code style fixes across PHP files ([7f067e7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7f067e717707c09fbb3ba91133c476081271ab02))
+
 ## [6.7.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.7.0...v6.7.1) (2026-08-04)
 
 ### 🐛 Bug Fixes
