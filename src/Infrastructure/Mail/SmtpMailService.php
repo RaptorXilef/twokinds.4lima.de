@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Mail;
 
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\Mail\DirectMailServiceInterface;
 use App\Contracts\Mail\MailLogInterface;
 use App\Contracts\Mail\MailServiceInterface;
 
-final readonly class SmtpMailService implements MailLogInterface, MailServiceInterface
+final readonly class SmtpMailService implements MailLogInterface, MailServiceInterface, DirectMailServiceInterface
 {
     public function __construct(
         private \PDO $pdo,

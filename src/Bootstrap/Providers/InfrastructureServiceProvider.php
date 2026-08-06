@@ -8,6 +8,7 @@ use App\Application\Session\SessionManager;
 use App\Contracts\Bootstrap\ServiceProviderInterface;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
+use App\Contracts\Mail\DirectMailServiceInterface;
 use App\Contracts\Mail\MailLogInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Security\AuthSessionInterface;
@@ -120,6 +121,12 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             $container->get(MailQueueRepositoryInterface::class),
             $container->get('mail.smtp'),
         ));
+
+        // Direkter Mailer für Sofort-Versand ohne Warteschlange
+        $container->bind(
+            DirectMailServiceInterface::class,
+            fn (): SmtpMailService => $container->get('mail.smtp'),
+        );
 
         // Bookmarks / Lesezeichen
         $container->bind(BookmarkRepositoryInterface::class, fn (): MySqlBookmarkRepository => new MySqlBookmarkRepository(

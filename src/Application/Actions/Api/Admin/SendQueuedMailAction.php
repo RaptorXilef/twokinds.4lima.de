@@ -9,10 +9,10 @@ use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Contracts\Mail\DirectMailServiceInterface;
 use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Core\Service\AuthService;
-use App\Infrastructure\Mail\SmtpMailService; // Wir holen den echten SMTP Service
 
 #[Route('POST', '/api/send_queued_mail')]
 #[RequiresAuth]
@@ -20,7 +20,7 @@ final readonly class SendQueuedMailAction implements ActionInterface
 {
     public function __construct(
         private MailQueueRepositoryInterface $queueRepo,
-        private SmtpMailService $mailService, // Konkrete Klasse statt Interface
+        private DirectMailServiceInterface $mailService,
         private AuthService $auth,
         private JsonHelperInterface $jsonHelper,
         private \PDO $pdo,
