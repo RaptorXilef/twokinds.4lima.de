@@ -54,4 +54,40 @@ final readonly class LocalImageStorage implements ImageStorageInterface
 
         return $fallbackIcon;
     }
+
+    public function deleteComicMedia(string $comicId): int
+    {
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
+        $folders = ['hires', 'lowres', 'thumbnails', 'social'];
+        $deleted = 0;
+
+        foreach ($folders as $folder) {
+            foreach (['webp', 'jpg'] as $ext) {
+                $file = "$targetDir/$folder/$comicId.$ext";
+                if (\file_exists($file)) {
+                    @\unlink($file);
+                    ++$deleted;
+                }
+            }
+        }
+
+        return $deleted;
+    }
+
+    public function deleteCharacterMedia(string $folder, string $filename): bool
+    {
+        $allowed = ['profiles', 'portraits', 'palettes', 'refsheets'];
+        if (! \in_array($folder, $allowed, true)) {
+            $folder = 'profiles';
+        }
+
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/' . $folder;
+        $filePath = "$targetDir/$filename";
+
+        if ($filename !== '' && \file_exists($filePath)) {
+            return @\unlink($filePath);
+        }
+
+        return false;
+    }
 }

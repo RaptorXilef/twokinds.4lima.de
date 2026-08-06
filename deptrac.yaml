@@ -32,6 +32,8 @@ deptrac:
           value: src/Core/Utils/.*
         - type: directory
           value: src/Core/Security/.*
+        - type: directory
+          value: src/Core/Exception/.*
 
     - name: Infrastructure # Externe Implementierungen (MySQL-Repository, Mailer, API-Clients)
       collectors:
