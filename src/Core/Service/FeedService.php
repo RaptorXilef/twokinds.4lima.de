@@ -6,12 +6,14 @@ namespace App\Core\Service;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Contracts\Utils\ClockInterface;
 
 final readonly class FeedService
 {
     public function __construct(
         private ComicRepositoryInterface $comicRepo,
         private ConfigInterface $config,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -26,11 +28,12 @@ final readonly class FeedService
 
         $xml     = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"></rss>');
         $channel = $xml->addChild('channel');
+
         $channel->addChild('title', 'Twokinds auf Deutsch');
         $channel->addChild('link', $baseUrl);
         $channel->addChild('description', 'Die deutsche Übersetzung des Webcomics Twokinds.');
         $channel->addChild('language', 'de-de');
-        $channel->addChild('lastBuildDate', \date(\DATE_RSS));
+        $channel->addChild('lastBuildDate', $this->clock->now()->format(\DATE_RSS));
 
         $atomLink = $channel->addChild('atom:link', '', 'http://www.w3.org/2005/Atom');
         $atomLink->addAttribute('href', $baseUrl . '/rss.xml');
@@ -69,7 +72,10 @@ final readonly class FeedService
             $no   = $node->ownerDocument;
             $node->appendChild($no->createElement('description', \htmlspecialchars($descContent)));
 
-            $item->addChild('pubDate', \date('r', $comic->imageUpdatedAt ?? \time()));
+            $timestamp = $comic->imageUpdatedAt ?? $this->clock->now()->getTimestamp();
+            $dt        = (new \DateTimeImmutable())->setTimestamp($timestamp);
+            $item->addChild('pubDate', $dt->format('r'));
+
             ++$count;
         }
 

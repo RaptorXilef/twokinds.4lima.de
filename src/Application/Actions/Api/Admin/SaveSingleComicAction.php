@@ -14,6 +14,7 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Contracts\System\RemoteResourceProberInterface;
+use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
@@ -30,6 +31,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
         private ConfigInterface $config,
         private AuthService $auth,
         private RemoteResourceProberInterface $prober,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -81,8 +83,9 @@ final readonly class SaveSingleComicAction implements ActionInterface
             }
 
             // --- BILD UPLOAD LOGIK ---
-            $files          = $request->files;
-            $hasNewImage    = false;
+            $files       = $request->files;
+            $hasNewImage = false;
+
             $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
             $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
 
@@ -105,7 +108,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
                 userIds: $dto->userIds,
                 originalUrl: $originalUrl,
                 sketchUrl: $sketchUrl,
-                imageUpdatedAt: $hasNewImage ? \time() : null, // ComicService behält alten Timestamp, wenn null übergeben wird
+                imageUpdatedAt: $hasNewImage ? $this->clock->now()->getTimestamp() : null,
             );
 
             $this->comicService->saveComic($comic);

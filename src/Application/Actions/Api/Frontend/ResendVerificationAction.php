@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Actions\Api\Frontend;
 
 use App\Application\Attribute\Route;
-
-use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -39,10 +37,11 @@ final readonly class ResendVerificationAction implements ActionInterface
         // Lese die E-Mail-Config aus und baue die ausführliche Meldung
         $mailConfig = $this->config->getMailSettings();
         $fromEmail  = $mailConfig['from'] ?? 'no-reply@twokinds.4lima.de';
+
         $successMsg = 'Falls ein unbestätigtes Konto existiert, wurde eine neue E-Mail an dich versendet.<br><br>' .
-                      '&bull; Der Link ist <strong>15 Minuten</strong> gültig.<br>' .
-                      '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
-                      '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
+            '&bull; Der Link ist <strong>15 Minuten</strong> gültig.<br>' .
+            '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
+            '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
 
         // Honeypot
         if (! empty($request->post['middle_name'])) {
@@ -70,9 +69,6 @@ final readonly class ResendVerificationAction implements ActionInterface
 
             // Sofortiger Versand
             $this->mailService->processQueue(5, ['verify_account']);
-        } else {
-            // Anti user-enumeration: Künstliche Pause
-            \usleep(\random_int(100000, 300000));
         }
 
         // Immer Erfolgsmeldung zeigen (aus Sicherheitsgründen)

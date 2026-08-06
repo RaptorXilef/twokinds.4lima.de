@@ -13,6 +13,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Contracts\System\SiteGeneratorInterface;
+use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
 use App\Core\ValueObject\ComicId;
@@ -27,6 +28,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
         private SiteGeneratorInterface $siteGenerator,
         private ConfigInterface $config,
         private AuthService $auth,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -79,7 +81,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
                     characterIds: $comic->characterIds,
                     originalUrl: $comic->originalUrl,
                     sketchUrl: $comic->sketchUrl,
-                    imageUpdatedAt: \time(),
+                    imageUpdatedAt: $this->clock->now()->getTimestamp(),
                 );
                 $this->comicRepo->save($updatedComic);
                 $this->siteGenerator->generateAll();

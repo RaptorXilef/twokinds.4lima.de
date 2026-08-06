@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Session;
 
 use App\Contracts\Security\AuthSessionInterface;
+use App\Contracts\Utils\ClockInterface;
 
 /**
  * Kapselt alle Zugriffe auf den globalen $_SESSION State.
@@ -19,7 +20,7 @@ final class SessionManager implements AuthSessionInterface
     // ÄNDERUNG: Reduziert auf 30 Min. (Bietet 10 Min Puffer für den 20-Minuten JS-Timer)
     private const int IDLE_TIMEOUT = 1800;  // 30 Minuten Inaktivität
 
-    public function __construct()
+    public function __construct(private readonly ClockInterface $clock)
     {
         if (\session_status() === \PHP_SESSION_NONE) {
             \session_start();
@@ -33,7 +34,7 @@ final class SessionManager implements AuthSessionInterface
      */
     private function enforceServerSideTimeout(): void
     {
-        $now = \time();
+        $now = $this->clock->now()->getTimestamp();
 
         if (! isset($_SESSION['session_created'])) {
             $_SESSION['session_created'] = $now;
@@ -51,7 +52,6 @@ final class SessionManager implements AuthSessionInterface
             // Gast-Sessions (für das CSRF Token auf der Loginseite) lassen wir am Leben.
             if ($isAuthenticated) {
                 $this->destroy();
-                \session_start();
             }
             $_SESSION['session_created'] = $now;
             $_SESSION['last_activity']   = $now;
@@ -62,7 +62,6 @@ final class SessionManager implements AuthSessionInterface
         // Absolute Timeout: Session existiert insgesamt zu lange
         if (($now - $_SESSION['session_created']) > self::MAX_LIFETIME) {
             $this->destroy();
-            \session_start();
             $_SESSION['session_created'] = $now;
             $_SESSION['last_activity']   = $now;
 
@@ -154,10 +153,20 @@ final class SessionManager implements AuthSessionInterface
         $_SESSION = [];
         if (\ini_get('session.use_cookies')) {
             $p = \session_get_cookie_params();
-            \setcookie(\session_name(), '', ['expires' => \time() - 42000, 'path' => $p['path'], 'domain' => $p['domain'], 'secure' => $p['secure'], 'httponly' => $p['httponly']]);
+            \setcookie(\session_name(), '', [
+                'expires'  => $this->clock->now()->getTimestamp() - 42000,
+                'path'     => $p['path'],
+                'domain'   => $p['domain'],
+                'secure'   => $p['secure'],
+                'httponly' => $p['httponly'],
+                'samesite' => $p['samesite'] ?? 'Lax',
+            ]);
         }
         \session_destroy();
-        \session_start();
+
+        if (\session_status() === \PHP_SESSION_NONE) {
+            \session_start();
+        }
     }
 
     public function setAuthSession(string $userId, string $groupId, string $label, ?string $hash = null): void
