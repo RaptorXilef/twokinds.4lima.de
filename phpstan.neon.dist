@@ -28,6 +28,7 @@ parameters:
 
     scanDirectories:
         - src
+
     bootstrapFiles:
         - vendor/autoload.php
 
@@ -36,9 +37,9 @@ parameters:
         analyse:
             - vendor
             - node_modules
-            - public/dist (?)
+            - public/dist
             - "**/.debug/**"
-            - public/dev (?)
+            - public/dev
 
     # Wir simulieren eine PHP 8.4 Umgebung (80400), damit PHPStan
     # neue Features (wie Property Hooks) bereits jetzt versteht.
@@ -66,9 +67,28 @@ parameters:
         - message: '#Call to method .* of internal class Pest\\.* from outside its root namespace Pest#'
           path: tests/*
 
-        # Optional: falls phpstan-strict-rules das Konstrukt empty() ankreidet
-        # - message: '#Construct empty\(\) is not allowed#'
+        # Wir ignorieren die strict-rules empty() Meldungen, da sie für die Architektur irrelevant sind
+        # TODO Später auskommentieren, wenn Architekturupdate abgeschlossen ist
+        - '#Construct empty\(\) is not allowed#'
 
+    # =========================================================================
+    # ARCHITEKTUR: VERBOTENE KLASSEN
+    # =========================================================================
+    disallowedClasses:
+        - class:
+              - "PDO"
+              - "PDOException"
+              - "PDOStatement"
+          message: "Verstoß gegen Clean Architecture: Die native PDO-Klasse darf ausschließlich im Infrastructure-Layer oder Container verwendet werden!"
+          allowIn:
+              - src/Infrastructure/*
+              - src/Infrastructure/**/*.php
+              - src/Bootstrap/*
+              - src/Bootstrap/**/*.php
+
+    # =========================================================================
+    # ARCHITEKTUR: VERBOTENE FUNKTIONEN
+    # =========================================================================
     disallowedFunctionCalls:
         # 1. Dateisystem-Operationen (I/O)
         - function:
@@ -79,10 +99,16 @@ parameters:
               - "copy"
               - "move_uploaded_file"
               - "file_put_contents"
+              - "file_get_contents"
+              - "fopen"
+              - "fwrite"
+              - "fclose"
           message: "Verstoß gegen Clean Architecture: Dateisystem-Operationen (I/O) sind hier verboten. Lagere dies in das Infrastructure-Layer aus."
           allowIn:
               - src/Infrastructure/*
+              - src/Infrastructure/**/*.php
               - src/Bootstrap/*
+              - src/Bootstrap/**/*.php
               - public/dev/*
 
         # 2. Netzwerk-Operationen (cURL)
@@ -94,9 +120,13 @@ parameters:
               - "curl_multi_init"
               - "curl_multi_add_handle"
               - "curl_multi_exec"
+              - "curl_getinfo"
+              - "curl_close"
+              - "curl_multi_close"
           message: "Verstoß gegen Clean Architecture: Netzwerk-Operationen (cURL) sind hier verboten. Nutze einen API-Client im Infrastructure-Layer."
           allowIn:
               - src/Infrastructure/*
+              - src/Infrastructure/**/*.php
 
         # 3. Bildverarbeitung (GD Library)
         - function:
@@ -112,6 +142,7 @@ parameters:
           message: "Verstoß gegen Clean Architecture: Direkte Bildverarbeitung ist hier verboten. Nutze das MediaServiceInterface."
           allowIn:
               - src/Infrastructure/Media/*
+              - src/Infrastructure/Media/**/*.php
 
         # 4. Verbot von direkten HTTP- und Session-Manipulationen
         - function:
@@ -126,11 +157,13 @@ parameters:
           message: "Verstoß gegen Clean Architecture: Direkte HTTP- oder Session-Manipulation ist verboten. Nutze Response-Objekte oder den SessionManager."
           allowIn:
               - src/Application/Response/*
+              - src/Application/Response/**/*.php
               - src/Application/Session/SessionManager.php
               - src/Application/Middleware/SecurityHeadersMiddleware.php
               - src/Application/Exception/GlobalExceptionHandler.php
               - src/Application/FrontendController.php
               - src/Bootstrap/*
+              - src/Bootstrap/**/*.php
               - public/*
 
         # 5. Verbot von Debug- und Kill-Funktionen
@@ -145,6 +178,7 @@ parameters:
               - public/dev/*
               - public/index.php
               - src/Application/Response/*
+              - src/Application/Response/**/*.php
               - src/Application/Exception/GlobalExceptionHandler.php
               - src/Application/FrontendController.php
 
@@ -162,13 +196,19 @@ parameters:
               - "mail"
           message: "Verstoß gegen Clean Architecture: Nutze das MailServiceInterface für E-Mails."
 
-        # 8. Verbot von nativem MySQLi (Wir nutzen ausschließlich PDO in der Infrastructure)
+        # 8. Verbot von nativem MySQLi
         - function:
               - "mysqli_connect"
               - "mysqli_query"
           message: "Verstoß gegen Clean Architecture: Datenbank-Operationen laufen ausschließlich über PDO im Infrastructure-Layer."
 
-        # 9. ENDBOSS: Verbot von Zeit-Funktionen (Testbarkeit erzwingen)
+        # 9. Verbot von nativen Env-Zugriffen
+        - function:
+              - "getenv"
+              - "putenv"
+          message: "Verstoß gegen Clean Architecture: Nutze das ConfigInterface, anstatt Umgebungsvariablen direkt zu lesen."
+
+        # 10. ENDBOSS: Verbot von Zeit-Funktionen (Testbarkeit erzwingen)
         - function:
               - "time"
               - "date"
@@ -179,11 +219,15 @@ parameters:
           message: "Verstoß gegen Clean Architecture: Nutze das ClockInterface anstelle von nativen Zeit-Funktionen, um den Code testbar zu halten."
           allowIn:
               - src/Infrastructure/*
+              - src/Infrastructure/**/*.php
               - src/Bootstrap/*
+              - src/Bootstrap/**/*.php
               - public/*
 
+    # =========================================================================
+    # ARCHITEKTUR: VERBOTENE SUPERGLOBALS
+    # =========================================================================
     disallowedSuperglobals:
-        # Verbot ALLER Superglobals außerhalb der vorgesehenen Request/Session-Kapselung
         - superglobal:
               - "$_FILES"
               - "$_POST"
@@ -199,5 +243,6 @@ parameters:
               - src/Application/Session/SessionManager.php
               - src/Application/Exception/GlobalExceptionHandler.php
               - src/Application/Middleware/*
+              - src/Application/Middleware/**/*.php
               - src/Bootstrap/app.php
               - public/*
