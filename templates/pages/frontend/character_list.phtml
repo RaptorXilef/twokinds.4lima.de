@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @var array  $filterData
  */
 $baseUrl = \rtrim($settings['base_url'], '/');
-include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
 <main class="content-area">
     <article class="max-w-900 w-100 center-block">
         <header>
@@ -93,7 +93,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         <!-- ENDE FILTER BEREICH -->
 
         <?php $limitToIds = null;
-include __DIR__ . '/../../components/frontend/_character_display.phtml'; ?>
+include __DIR__ . '/../../partials/frontend/_character_display.phtml'; ?>
     </article>
 </main>
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>

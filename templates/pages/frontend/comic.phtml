@@ -45,7 +45,7 @@ if ($sketchLink !== '' && ! \str_starts_with($sketchLink, 'http')) {
     $sketchLink = 'https://twokindscomic.com/images/' . $sketchLink;
 }
 
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml';
 ?>
 
 <main class="content-area">
@@ -172,7 +172,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
         <!-- CHARAKTER VORSCHAU -->
         <?php $limitToIds = \array_map(fn ($id) => $id->value, $comic->characterIds);
-include __DIR__ . '/../../components/frontend/_character_display.phtml'; ?>
+include __DIR__ . '/../../partials/frontend/_character_display.phtml'; ?>
 
         <!-- HELFER/User SEKTION -->
         <?php if (! empty($comicUsers)) { ?>
@@ -210,4 +210,4 @@ include __DIR__ . '/../../components/frontend/_character_display.phtml'; ?>
     </article>
 </main>
 
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>

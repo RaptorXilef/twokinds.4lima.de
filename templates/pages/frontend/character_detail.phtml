@@ -23,7 +23,7 @@ if ($character->mainPic) {
 } else {
     $picUrl = $profilePicUrl; // Fallback, falls kein großes Bild existiert
 }
-include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
 <main class="content-area">
     <article class="max-w-900 w-100 center-block">
         <!-- Header mit kleinem Avatar -->
@@ -153,4 +153,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         </section>
     </article>
 </main>
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>

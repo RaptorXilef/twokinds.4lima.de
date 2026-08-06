@@ -64,10 +64,10 @@ use App\Contracts\System\AssetHelperInterface;
 
 <?php if (! empty($settings['google_analytics_id'])) {
     // Isolierten Cookie-Banner laden
-    include __DIR__ . '/_cookie_consent.phtml';
+    include __DIR__ . '/../../partials/frontend/_cookie_consent.phtml';
 } ?>
 
-<?php include __DIR__ . '/_global_report_modal.phtml'; ?>
+<?php include __DIR__ . '/../../partials/frontend/_global_report_modal.phtml'; ?>
 
 <!-- Google Analytics -->
 <?php if (! empty($settings['google_analytics_id'])) { ?>

@@ -26,9 +26,9 @@ use App\Core\Entity\Report;
 $baseUrl = \rtrim($settings['base_url'], '/');
 
 // Lagert Head, Body-Start und Banner aus
-include __DIR__ . '/../../components/admin/_admin_header.phtml';
+include __DIR__ . '/../../layouts/admin/_admin_header.phtml';
 // Lagert die komplette Sidebar (Menü) aus
-include __DIR__ . '/../../components/admin/_admin_menu.phtml';
+include __DIR__ . '/../../layouts/admin/_admin_menu.phtml';
 ?>
 <div class="content">
     <h1 class="page-header">
@@ -70,7 +70,7 @@ include __DIR__ . '/../../components/admin/_admin_menu.phtml';
              class="content-section"
              data-ajax-tab="backup"></section>
 
-    <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
+    <?php include __DIR__ . '/../../layouts/admin/_admin_footer.phtml'; ?>
     <?php include __DIR__ . '/../../partials/admin/_modals.phtml'; ?>
 
     <!-- Neues ES6 Modul-System -->

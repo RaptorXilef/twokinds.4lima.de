@@ -47,7 +47,7 @@ if ($canUseCloudSync) {
         $cloudIds[] = $bm->comicId;
     }
 }
-include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
 <main class="content-area bookmarks-page">
     <article class="max-w-950 w-100 center-block">
         <header class="mb-30 pb-20 border-bottom-2 text-left">
@@ -168,4 +168,4 @@ echo \json_encode([
 ?>
 
 </script>
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>

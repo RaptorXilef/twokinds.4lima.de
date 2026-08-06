@@ -12,7 +12,7 @@ use App\Contracts\System\AssetHelperInterface;
 $baseUrl   = \rtrim($settings['base_url'], '/');
 $bodyClass = 'page-login';
 
-include __DIR__ . '/../../components/admin/_admin_header.phtml';
+include __DIR__ . '/../../layouts/admin/_admin_header.phtml';
 ?>
 <aside class="sidebar">
     <div class="sidebar-content">
@@ -57,7 +57,7 @@ include __DIR__ . '/../../components/admin/_admin_header.phtml';
         </form>
     </div>
 
-    <?php include __DIR__ . '/../../components/admin/_admin_footer.phtml'; ?>
+    <?php include __DIR__ . '/../../layouts/admin/_admin_footer.phtml'; ?>
 
     <!-- Das NEUE, modulare Script laden -->
     <script type="module"

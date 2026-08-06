@@ -11,7 +11,7 @@ use App\Core\Entity\User;
  */
 $baseUrl   = \rtrim($settings['base_url'] ?? '', '/');
 $avatarUrl = $user->avatarUrl ? $baseUrl . '/assets/images/avatars/' . $user->avatarUrl : 'https://placehold.co/400x400?text=Kein+Bild';
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml';
 ?>
 
 <!-- Cropper CSS -->
@@ -296,4 +296,4 @@ for ($i = 0; $i < 5; ++$i) {
 <!-- Cropper JS Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>

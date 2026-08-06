@@ -16,7 +16,7 @@ use App\Core\Entity\User;
 $baseUrl   = \rtrim($settings['base_url'], '/');
 $avatarUrl = $publicUser->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$publicUser->avatarUrl}" : 'https://placehold.co/400x400?text=Kein+Bild';
 
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml';
 ?>
 
 <article class="max-w-900 w-100 center-block">
@@ -130,4 +130,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
 
 </article>
 
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>

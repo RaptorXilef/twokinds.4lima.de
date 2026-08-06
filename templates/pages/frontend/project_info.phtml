@@ -12,7 +12,7 @@ use App\Contracts\System\AssetHelperInterface;
 $baseUrl       = \rtrim($settings['base_url'] ?? '', '/');
 $felixImageUrl = $asset->url('assets/images/about/Felix.webp');
 $tomImageUrl   = $asset->url('assets/images/about/Tom.webp');
-include __DIR__ . '/../../components/frontend/_public_header.phtml';
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml';
 ?>
 <main class="content-area">
     <article class="max-w-900 w-100 center-block legal-content">
@@ -196,4 +196,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
         </section>
     </article>
 </main>
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>

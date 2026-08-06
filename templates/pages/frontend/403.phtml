@@ -8,7 +8,7 @@ declare(strict_types=1);
  */
 $baseUrl   = \rtrim($settings['base_url'] ?? '', '/');
 $imagePath = "{$baseUrl}/assets/images/system/403.webp";
-include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
+include __DIR__ . '/../../layouts/frontend/_public_header.phtml'; ?>
 <main class="content-area">
     <article class="max-w-900 w-100 center-block">
         <header class="text-center">
@@ -40,4 +40,4 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         </aside>
     </article>
 </main>
-<?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>
+<?php include __DIR__ . '/../../layouts/frontend/_public_footer.phtml'; ?>
