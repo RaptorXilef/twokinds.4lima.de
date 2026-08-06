@@ -9,10 +9,10 @@ use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
-use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Core\Service\AuthService;
+use App\Infrastructure\Mail\SmtpMailService; // Wir holen den echten SMTP Service
 
 #[Route('POST', '/api/send_queued_mail')]
 #[RequiresAuth]
@@ -20,7 +20,7 @@ final readonly class SendQueuedMailAction implements ActionInterface
 {
     public function __construct(
         private MailQueueRepositoryInterface $queueRepo,
-        private MailServiceInterface $mailService,
+        private SmtpMailService $mailService, // Konkrete Klasse statt Interface
         private AuthService $auth,
         private JsonHelperInterface $jsonHelper,
         private \PDO $pdo,
@@ -45,7 +45,7 @@ final readonly class SendQueuedMailAction implements ActionInterface
 
         $data = \is_string($mail['data']) ? $this->jsonHelper->decode($mail['data']) : $mail['data'];
 
-        // Versendet die Mail direkt und loggt sie in mail_logs (via SmtpMailService)
+        // Versendet die Mail direkt und loggt sie in mail_logs (Da wir SmtpMailService nutzen)
         $result = $this->mailService->sendTemplate($mail['recipient'], $mail['subject'], $mail['template'], $data);
 
         if ($result === true) {

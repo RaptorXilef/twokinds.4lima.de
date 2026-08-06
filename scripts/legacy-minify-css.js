@@ -6,7 +6,7 @@ import path from 'node:path';
 // und legen die .min.css im selben Ordner ab.
 const config = [
     { src: 'public/assets/css', dest: 'public/assets/css' },
-    // Hier kannst du weitere Ordner hinzufügen
+    // Hier kann ich weitere Ordner hinzufügen
 ];
 
 console.log('🚀 Starte Legacy-CSS-Minifizierung...');
@@ -37,9 +37,12 @@ for (const entry of config) {
             // Aufruf von clean-css-cli mit Source-Maps und Optimierungs-Level 2
             execSync(`npx cleancss -O2 --source-map --output "${output}" "${input}"`);
 
-            // NEU: Lösche die unminifizierte Originaldatei nach erfolgreichem Build
-            fs.unlinkSync(input);
-            console.log(`    🗑️ Originaldatei gelöscht: ${file}`);
+            // Wir löschen die Originaldatei nicht mehr, damit die Source-Map
+            // im Browser weiterhin funktioniert und keine 404 Fehler in der Konsole wirft!
+
+            // Lösche die unminifizierte Originaldatei nach erfolgreichem Build
+            // fs.unlinkSync(input);
+            // console.log(`    🗑️ Originaldatei gelöscht: ${file}`);
         } catch (error) {
             console.error(`  ❌ Fehler bei ${file}:`, error.message);
         }

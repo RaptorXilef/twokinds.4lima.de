@@ -98,8 +98,9 @@ export class MailManager {
             doc.close();
         };
 
+        // Fix: Quirks-Modus verhindern durch sauberes HTML-Grundgerüst
         setIframeContent(
-            '<div style="font-family:sans-serif; padding: 20px; text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>Lade Vorschau...</div>'
+            '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif; padding: 20px; text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>Lade Vorschau...</body></html>'
         );
 
         this.modalManager.open('mail-preview-modal');
@@ -109,7 +110,7 @@ export class MailManager {
             setIframeContent(res.html);
         } else {
             setIframeContent(
-                `<div style="font-family:sans-serif; color:red; padding: 20px;">Fehler: ${res.error}</div>`
+                `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif; color:red; padding: 20px;">Fehler: ${res.error}</body></html>`
             );
             this.notifications.show(res.error, 'error');
         }
