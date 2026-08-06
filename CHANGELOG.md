@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.13.3](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.2...v6.13.3) (2026-08-06)
+
+### 🐛 Bug Fixes
+
+* /refactor(architecture): fix deptrac exceptions & extract file deletion ([2d60b56](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2d60b56d9f41ea503042a79c883bc6f7970f3ba9))
+
+### ⚙️ Refactoring
+
+* **application:** abstract character media and mass upload processing ([54e105b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/54e105b080116afc2beb56f03bd4f2a8614de2e2))
+* **application:** abstract comic media upload and file handling ([65ef739](https://github.com/RaptorXilef/twokinds.4lima.de/commit/65ef739d480b7cdc530d7b11b163a71ed764c73c))
+* **application:** decouple infrastructure logic from comic controllers ([7b1d925](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7b1d92520fb4c80c49b3b77421ae34f43fa35e8f))
+
 ## [6.13.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.1...v6.13.2) (2026-08-06)
 
 ### ⚙️ Refactoring
