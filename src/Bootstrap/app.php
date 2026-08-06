@@ -118,6 +118,7 @@ foreach (\glob($appRoot . '/config/*.default.php') as $defaultFile) {
 $hardConfigs = [
     $appRoot . '/config/config.php',
     $appRoot . '/config/email.php',
+    $appRoot . '/config/backup.php',
     $appRoot . '/config/storage.php',
     $appRoot . '/config/secrets.php',
     $appRoot . '/config/config.local.php', // Lokaler Override gewinnt IMMER
