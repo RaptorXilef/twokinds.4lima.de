@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.12.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.11.0...v6.12.0) (2026-08-06)
+
+### 🚀 Features
+
+* **admin:** add mail management templates and preview modal ([fe6026b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fe6026b04c3f06e30e008c4c1fd3bd4e2ef53a12))
+* **admin:** add mail queue and log repositories, prepare preview API ([9c08a9f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9c08a9f346cd92a73c013fe7cc6c7087df207879))
+* **admin:** implement mail manager js and API actions for sending/requeuing ([5254a9e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5254a9e58489b8f21183e0359153fc3d1b9e612f))
+
+### 🐛 Bug Fixes
+
+* **admin:** add missing mails section container to dashboard ([a816428](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a816428d41f9220286dd1a4567012d15517ed418))
+* **admin:** add tab switching logic to MailManager ([4ffeb57](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4ffeb574bcabc6a3d875f175e55473da6f5fc74d))
+* **admin:** generate fresh tokens on email requeue and prevent srcdoc map errors ([af5c96f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/af5c96f719e2c30ef785cee1b0c0fdafc25907a9))
+* **admin:** resolve iframe quirks mode and silent mail queue logic error ([0f444b3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/0f444b3d8a33aa70e98b73ae2cd90a456162aa5d))
+* **build:** correct sourcemap paths in css minifier script ([1899099](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1899099b68beec563d4e00d42c1ad1d52bbf604a))
+
 ## [6.11.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.10.0...v6.11.0) (2026-08-05)
 
 ### 🚀 Features
