@@ -13,12 +13,12 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
+use App\Contracts\System\MediaServiceInterface;
 use App\Core\Entity\Character;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Core\ValueObject\CharacterId;
-use App\Infrastructure\Media\GdMediaService;
 
 #[Route('POST', '/api/save_single_character')]
 #[RequiresAuth]
@@ -28,7 +28,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
         private CharacterService $characterService,
         private CharacterRepositoryInterface $charRepo,
         private ConfigInterface $config,
-        private GdMediaService $mediaService,
+        private MediaServiceInterface $mediaService,
         private AuthService $auth,
     ) {
     }

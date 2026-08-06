@@ -32,9 +32,9 @@ use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Contracts\System\RemoteResourceProberInterface;
+use App\Contracts\System\SiteGeneratorInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
-use App\Core\Service\SiteGeneratorService;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
 use App\Infrastructure\Mail\MailQueueService;
@@ -57,6 +57,7 @@ use App\Infrastructure\Storage\MySqlRoleRepository;
 use App\Infrastructure\Storage\MySqlUserRepository;
 use App\Infrastructure\System\CurlRemoteResourceProber;
 use App\Infrastructure\System\LocalAssetHelper;
+use App\Infrastructure\System\StaticSiteGenerator;
 use App\Infrastructure\System\SystemBackupService;
 use App\Infrastructure\System\SystemInfoService;
 use App\Infrastructure\Utils\SystemClock;
@@ -188,7 +189,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         ));
 
         // Sitemap und RSS
-        $container->bind(SiteGeneratorService::class, fn (): SiteGeneratorService => new SiteGeneratorService(
+        $container->bind(SiteGeneratorInterface::class, fn (): StaticSiteGenerator => new StaticSiteGenerator(
             $container->get(ComicRepositoryInterface::class),
             $container->get(ChapterRepositoryInterface::class),
             $container->get(ConfigInterface::class),

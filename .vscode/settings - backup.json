@@ -2,7 +2,7 @@
     // =========================================================================
     // EDITOR & FORMATTING CORE
     // =========================================================================
-    "editor.formatOnSave": false,
+    "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.fixAll": "explicit",
         "source.organizeImports": "explicit"
@@ -39,7 +39,7 @@
         "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
         "editor.wordWrap": "off",
         "editor.renderWhitespace": "boundary",
-        "editor.formatOnSave": false
+        "editor.formatOnSave": true
     },
     "intelephense.format.enable": false, // CLI-Tools (PHP-CS-Fixer) haben Vorrang!
     "php.suggest.basic": false,
@@ -48,13 +48,13 @@
     // --- BIOME (JS, JSON, CSS/SCSS) ---
     "[javascript]": {
         "editor.defaultFormatter": "biomejs.biome",
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         // WICHTIG: Mode auf "file" setzen, nicht "modifications"
         "editor.formatOnSaveMode": "file"
     },
     "[js]": {
         "editor.defaultFormatter": "biomejs.biome",
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         // WICHTIG: Mode auf "file" setzen, nicht "modifications"
         "editor.formatOnSaveMode": "file"
     },
@@ -63,7 +63,7 @@
     // SCSS explizit an Prettier übergeben
     "[scss]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": false
+        "editor.formatOnSave": true
     },
     // "[scss]": {
     //     "editor.defaultFormatter": "biomejs.biome",

@@ -10,9 +10,9 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\MediaServiceInterface;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
-use App\Infrastructure\Media\GdMediaService;
 
 #[Route('POST', '/api/upload_media')]
 #[RequiresAuth]
@@ -20,7 +20,7 @@ final readonly class UploadMediaAction implements ActionInterface
 {
     public function __construct(
         private ConfigInterface $config,
-        private GdMediaService $mediaService,
+        private MediaServiceInterface $mediaService,
         private AuthService $auth,
     ) {
     }

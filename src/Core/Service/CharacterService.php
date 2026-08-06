@@ -6,6 +6,7 @@ namespace App\Core\Service;
 
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
+use App\Contracts\System\SiteGeneratorInterface;
 use App\Core\Entity\Character;
 use App\Core\Entity\CharacterGroup;
 use App\Core\Exception\EntityNotFoundException;
@@ -16,7 +17,7 @@ final readonly class CharacterService
     public function __construct(
         private CharacterRepositoryInterface $characterRepo,
         private CharacterGroupRepositoryInterface $groupRepo,
-        private SiteGeneratorService $siteGenerator, // Generator eingefügt
+        private SiteGeneratorInterface $siteGenerator
     ) {
     }
 

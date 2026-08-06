@@ -6,6 +6,7 @@ namespace App\Core\Service;
 
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\ComicRevisionRepositoryInterface;
+use App\Contracts\System\SiteGeneratorInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Exception\EntityNotFoundException;
@@ -18,7 +19,7 @@ final readonly class ComicService
         private ComicRepositoryInterface $comicRepository,
         private ComicRevisionRepositoryInterface $revisionRepository,
         private ClockInterface $clock,
-        private SiteGeneratorService $siteGenerator,
+        private SiteGeneratorInterface $siteGenerator,
     ) {
     }
 

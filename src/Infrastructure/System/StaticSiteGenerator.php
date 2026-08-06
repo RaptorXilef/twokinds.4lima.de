@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Service;
+namespace App\Infrastructure\System;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Contracts\System\SiteGeneratorInterface;
 
-final class SiteGeneratorService
+final class StaticSiteGenerator implements SiteGeneratorInterface
 {
     private bool $needsGeneration = false;
 
