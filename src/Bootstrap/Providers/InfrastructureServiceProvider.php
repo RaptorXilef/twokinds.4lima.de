@@ -25,12 +25,12 @@ use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Contracts\System\AssetHelperInterface;
+use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
-use App\Core\Service\BackupService;
 use App\Core\Service\SiteGeneratorService;
 use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
@@ -52,6 +52,7 @@ use App\Infrastructure\Storage\MySqlReportRepository;
 use App\Infrastructure\Storage\MySqlRoleRepository;
 use App\Infrastructure\Storage\MySqlUserRepository;
 use App\Infrastructure\System\LocalAssetHelper;
+use App\Infrastructure\System\SystemBackupService;
 use App\Infrastructure\System\SystemInfoService;
 use App\Infrastructure\Utils\SystemClock;
 
@@ -152,8 +153,8 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             $container->get(\PDO::class),
         ));
 
-        // Backup
-        $container->bind(BackupService::class, fn (): BackupService => new BackupService(
+        // Backup Service als Infrastruktur-Dienst gebunden
+        $container->bind(BackupServiceInterface::class, fn (): SystemBackupService => new SystemBackupService(
             $container->get(\PDO::class),
             $container->get(ConfigInterface::class),
             $container->get(JsonHelperInterface::class),
