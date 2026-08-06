@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.13.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.1...v6.13.2) (2026-08-06)
+
+### ⚙️ Refactoring
+
+* **admin/modals:** split monolithic modals file into manageable partials ([7c2870d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7c2870dd996055645e5f09b8e41927916e50aecf))
+* **templates:** structure views into pages, partials and layouts ([c802040](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c802040c713968ccb72a5a3fe662d8506b803eaa))
+
+### 💎 Styling
+
+* **templates:** fix refine UI directory structure ([1c7609a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/1c7609a06392980436797dd9bfc82fa0cd00659a))
+
 ## [6.13.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.0...v6.13.1) (2026-08-06)
 
 ### ⚙️ Refactoring
