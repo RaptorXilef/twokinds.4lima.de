@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use App\Contracts\System\BackupServiceInterface;
 use App\Core\Service\AuthService;
-use App\Core\Service\BackupService;
 
 #[Route('POST', '/api/restore_backup')]
 #[RequiresAuth]
 final readonly class RestoreBackupAction implements ActionInterface
 {
-    public function __construct(private BackupService $backupService, private AuthService $auth)
+    public function __construct(private BackupServiceInterface $backupService, private AuthService $auth)
     {
     }
 
@@ -33,6 +31,9 @@ final readonly class RestoreBackupAction implements ActionInterface
             $mode     = (int) ($request->post['mode'] ?? 1);
             $table    = ! empty($request->post['table']) && $request->post['table'] !== 'all' ? $request->post['table'] : null;
 
+            // Neues optionales Passwort abfangen
+            $password = $request->post['password'] ?? null;
+
             if ($filename === '' || ! \in_array($mode, [1, 2, 3], true)) {
                 return JsonResponse::error('Ungültige Parameter.', 400);
             }
@@ -41,7 +42,8 @@ final readonly class RestoreBackupAction implements ActionInterface
             $safetyBackupFile = $this->backupService->createBackup(null);
 
             // Jetzt führen wir die eigentlich gewünschte Wiederherstellung durch
-            $this->backupService->restoreBackup($filename, $mode, $table);
+            // Passwort an den Service übergeben
+            $this->backupService->restoreBackup($filename, $mode, $table, $password);
 
             return JsonResponse::success([
                 'message' => "Sicherheits-Backup angelegt ($safetyBackupFile) & Wiederherstellung war erfolgreich!",

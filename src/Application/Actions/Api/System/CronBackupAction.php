@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace App\Application\Actions\Api\System;
 
 use App\Application\Attribute\Route;
-
-use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
-use App\Core\Service\BackupService;
+use App\Contracts\System\BackupServiceInterface;
 
 #[Route('GET', '/api/cron_backup')]
 final readonly class CronBackupAction implements ActionInterface
 {
-    public function __construct(private BackupService $backupService, private ConfigInterface $config)
+    public function __construct(private BackupServiceInterface $backupService, private ConfigInterface $config)
     {
     }
 

@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Service;
+namespace App\Infrastructure\System;
 
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\JsonHelperInterface;
 
-final readonly class BackupService
+final readonly class SystemBackupService implements BackupServiceInterface
 {
     private string $backupDir;
 
@@ -77,7 +78,7 @@ final readonly class BackupService
         return $filename;
     }
 
-    public function restoreBackup(string $filename, int $mode, ?string $tableName = null): void
+    public function restoreBackup(string $filename, int $mode, ?string $tableName = null, ?string $customPassword = null): void
     {
         $filepath = $this->backupDir . '/' . \basename($filename);
         if (! \file_exists($filepath)) {
@@ -90,10 +91,14 @@ final readonly class BackupService
                 throw new \RuntimeException('Konnte ZIP-Backup nicht öffnen.');
             }
 
-            $backupCfg = (array) $this->config->get('backup', []);
-            $password  = (string) ($backupCfg['zip_password'] ?? '');
-            if ($password !== '') {
-                $zip->setPassword($password);
+            // Nutze Formular-Passwort, ansonsten Fallback auf Config
+            $backupCfg      = (array) $this->config->get('backup', []);
+            $configPassword = (string) ($backupCfg['zip_password'] ?? '');
+
+            if ($customPassword !== null && $customPassword !== '') {
+                $zip->setPassword($customPassword);
+            } elseif ($configPassword !== '') {
+                $zip->setPassword($configPassword);
             }
 
             // Holt die Datei direkt in den Arbeitsspeicher (Entschlüsselt automatisch, wenn PW stimmt)
@@ -101,7 +106,7 @@ final readonly class BackupService
             $zip->close();
 
             if ($json === false) {
-                throw new \RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort in der config.php?');
+                throw new \RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort? Bitte gib das korrekte Passwort für dieses alte Backup ein.');
             }
             $data = $this->jsonHelper->decode($json);
         } else {
@@ -203,7 +208,6 @@ final readonly class BackupService
         }
     }
 
-    // TODO Prüfen ob hier Elemente eher in die Infrastruktur gehören!
     public function listBackups(): array
     {
         if (! \is_dir($this->backupDir)) {
@@ -267,18 +271,9 @@ final readonly class BackupService
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
 
-    private function getPrimaryKeys(string $table): array
-    {
-        $stmt = $this->pdo->query("SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'");
-
-        return \array_map(fn ($k) => $k['Column_name'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
-    }
-
     // =========================================================================
     // Off-Site FTP Upload & Local Cleanup
     // =========================================================================
-
-    // TODO Prüfen ob hier Elemente eher in die Infrastruktur gehören!
     private function uploadToFtp(string $filepath, string $filename): void
     {
         $backupCfg = (array) $this->config->get('backup', []);
@@ -288,18 +283,15 @@ final readonly class BackupService
             return;
         }
 
-        $host = $ftpCfg['host'];
-        $port = (int) ($ftpCfg['port'] ?? 21);
-        $user = $ftpCfg['user'] ?? '';
-        $pass = $ftpCfg['pass'] ?? '';
-        $path = \rtrim($ftpCfg['path'] ?? '', '/\\') . '/';
-        $ssl  = ! empty($ftpCfg['ssl']);
-
-        // Großzügiger Timeout (60 Sekunden), damit schlafende HDDs (z.B. FritzNAS) Zeit zum Aufwachen haben
+        $host    = $ftpCfg['host'];
+        $port    = (int) ($ftpCfg['port'] ?? 21);
+        $user    = $ftpCfg['user'] ?? '';
+        $pass    = $ftpCfg['pass'] ?? '';
+        $path    = \rtrim($ftpCfg['path'] ?? '', '/\\') . '/';
+        $ssl     = ! empty($ftpCfg['ssl']);
         $timeout = 60;
 
         try {
-            // Verbindungsaufbau (SSL/FTPS falls aktiviert)
             $connId = $ssl ? @\ftp_ssl_connect($host, $port, $timeout) : @\ftp_connect($host, $port, $timeout);
             if (! $connId) {
                 throw new \RuntimeException("Verbindung fehlgeschlagen (Timeout nach {$timeout}s).");
@@ -329,7 +321,7 @@ final readonly class BackupService
 
             // Upload
             if (! @\ftp_put($connId, $filename, $filepath, \FTP_BINARY)) {
-                throw new \RuntimeException('Upload der Datei verweigert.');
+                throw new \RuntimeException('Upload verweigert.');
             }
 
             @\ftp_close($connId);
@@ -340,7 +332,6 @@ final readonly class BackupService
         }
     }
 
-    // TODO Prüfen ob hier Elemente eher in die Infrastruktur gehören!
     private function cleanupOldBackups(): void
     {
         $backupCfg = (array) $this->config->get('backup', []);
