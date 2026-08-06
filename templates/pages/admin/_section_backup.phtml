@@ -91,6 +91,12 @@ use App\Contracts\Config\ConfigInterface;
             <button class="modal-close btn-close-backup-modal">&times;</button>
         </div>
         <div class="modal-scroll-content">
+
+            <!-- Hier landet die Fehlermeldung, wenn etwas schiefgeht -->
+            <div id="restore-modal-msg"
+                 class="status-message mb-15"
+                 style="display:none;"></div>
+
             <form id="backup-restore-form"
                   class="admin-form">
                 <input type="hidden"

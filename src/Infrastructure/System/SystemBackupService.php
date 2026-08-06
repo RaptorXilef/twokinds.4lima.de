@@ -183,7 +183,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
             $this->pdo->rollBack();
             $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
 
-            throw clone $e;
+            throw $e;
         }
     }
 

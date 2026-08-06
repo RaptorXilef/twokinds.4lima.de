@@ -133,7 +133,16 @@ export class BackupManager {
     }
 
     async restoreBackup(btn) {
-        const fd = new FormData(document.getElementById('backup-restore-form'));
+        const form = document.getElementById('backup-restore-form');
+        const fd = new FormData(form);
+        const msgBox = document.getElementById('restore-modal-msg');
+
+        // Fehler-Box vor neuem Versuch zurücksetzen
+        if (msgBox) {
+            msgBox.style.display = 'none';
+            msgBox.innerHTML = '';
+        }
+
         if (fd.get('mode') === '2') {
             if (
                 !confirm(
@@ -150,13 +159,26 @@ export class BackupManager {
         btn.disabled = true;
 
         const res = await this.api.post('restore_backup', fd);
+
         btn.innerHTML = origText;
         btn.disabled = false;
 
         if (res.success) {
+            // Bei Erfolg: Modal schließen, Formular leeren und Erfolgsmeldung im Dashboard zeigen
             this.notifications.show(res.message, 'success');
             this.modalManager.close('backup-restore-modal');
-        } else this.notifications.show(res.error, 'error');
+            form.reset();
+        } else {
+            // Bei Fehler: Modal offen lassen und Fehler im Modal anzeigen
+            if (msgBox) {
+                msgBox.className = 'status-message status-red visible mb-15';
+                msgBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${res.error}`;
+                msgBox.style.display = 'block';
+            } else {
+                // Fallback, falls das HTML-Feld fehlen sollte
+                this.notifications.show(res.error, 'error');
+            }
+        }
     }
 
     async deleteBackup(filename) {
