@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.13.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.0...v6.13.1) (2026-08-06)
+
+### ⚙️ Refactoring
+
+* **mail:** resolve DDD architecture violation in SendQueuedMailAction ([311373f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/311373f429b81bddda4e39cf361a1a593e8c6a10))
+
 ## [6.13.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.12.0...v6.13.0) (2026-08-06)
 
 ### 🚀 Features
