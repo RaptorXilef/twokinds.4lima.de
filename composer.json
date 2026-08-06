@@ -41,7 +41,8 @@
     "rector/rector": "^2.4",
     "slevomat/coding-standard": "^8.28",
     "squizlabs/php_codesniffer": "^4.0",
-    "phpmd/phpmd": "^3.0"
+    "phpmd/phpmd": "^3.0",
+    "spaze/phpstan-disallowed-calls": "^4.14"
   },
   "autoload": {
     "psr-4": {
