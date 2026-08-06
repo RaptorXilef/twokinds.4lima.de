@@ -107,6 +107,7 @@ parameters:
           allowIn:
               - src/Infrastructure/*
               - src/Infrastructure/**/*.php
+              - src/Application/Middleware/JsonBodyParserMiddleware.php
               - src/Bootstrap/*
               - src/Bootstrap/**/*.php
               - public/dev/*

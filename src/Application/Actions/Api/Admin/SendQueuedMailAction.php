@@ -23,7 +23,6 @@ final readonly class SendQueuedMailAction implements ActionInterface
         private DirectMailServiceInterface $mailService,
         private AuthService $auth,
         private JsonHelperInterface $jsonHelper,
-        private \PDO $pdo,
     ) {
     }
 
@@ -50,7 +49,7 @@ final readonly class SendQueuedMailAction implements ActionInterface
 
         if ($result === true) {
             // Nach erfolgreichem Versand aus der Queue entfernen
-            $this->pdo->prepare('DELETE FROM `mail_queue` WHERE id = ?')->execute([$id]);
+            $this->queueRepo->delete($id);
 
             return JsonResponse::success(['message' => 'E-Mail wurde erfolgreich versendet!']);
         }
