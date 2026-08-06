@@ -18,9 +18,6 @@ final readonly class Error404Action implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        \http_response_code(404);
-
-        // Auf neuen template-Pfad geändert:
         return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Fehler 404 - Seite nicht gefunden'], 404);
     }
 }

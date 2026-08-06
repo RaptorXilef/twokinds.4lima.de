@@ -112,7 +112,7 @@ parameters:
             allowIn:
                 - src/Infrastructure/Media/*
 
-        # 4. Verbot von direkten HTTP- und Session-Manipulationen
+# 4. Verbot von direkten HTTP- und Session-Manipulationen
         -
             function:
                 - 'header'
@@ -125,12 +125,12 @@ parameters:
                 - 'set_time_limit'
             message: 'Verstoß gegen Clean Architecture: Direkte HTTP- oder Session-Manipulation ist verboten. Nutze Response-Objekte oder den SessionManager.'
             allowIn:
-                - src/Application/Response/*
-                - src/Application/Session/SessionManager.php
-                - src/Application/Middleware/SecurityHeadersMiddleware.php
-                - src/Application/Exception/GlobalExceptionHandler.php
-                - src/Application/FrontendController.php
-                - src/Bootstrap/*
+                - */Application/Response/*
+                - */Application/Session/SessionManager.php
+                - */Application/Middleware/SecurityHeadersMiddleware.php
+                - */Application/Exception/GlobalExceptionHandler.php
+                - */Application/FrontendController.php
+                - */Bootstrap/*
                 - public/*
 
         # 5. Verbot von Debug- und Kill-Funktionen
@@ -145,7 +145,9 @@ parameters:
             allowIn:
                 - public/dev/*
                 - public/index.php
-                - src/Application/Response/*
+                - */Application/Response/*
+                - */Application/Exception/GlobalExceptionHandler.php
+                - */Application/FrontendController.php
 
         # 6. Verbot von System/Exec Funktionen (Sicherheitsrisiko)
         -
@@ -157,20 +159,22 @@ parameters:
                 - 'eval'
             message: 'Sicherheitsrisiko: System- und Eval-Aufrufe sind streng verboten!'
 
-    disallowedSuperglobals:
-        # 4. Verbot von direkten Superglobals
+        # 7. Verbot der nativen Mail-Funktion
         -
-            superglobal:
-                - '$_FILES'
-                - '$_POST'
-                - '$_GET'
-            message: 'Direkter Zugriff auf Superglobals ist verboten. Nutze das injizierte ServerRequest-Objekt ($request->post, $request->files, etc.).'
-            allowIn:
-                - src/Application/Http/ServerRequest.php
-                - public/index.php
-                - src/Application/Middleware/*
+            function:
+                - 'mail'
+            message: 'Verstoß gegen Clean Architecture: Nutze das MailServiceInterface für E-Mails.'
 
-        # 5. Absolutes Verbot ALLER Superglobals
+        # 8. Verbot von nativem MySQLi (Wir nutzen ausschließlich PDO in der Infrastructure)
+        -
+            function:
+                - 'mysqli_connect'
+                - 'mysqli_query'
+            message: 'Verstoß gegen Clean Architecture: Datenbank-Operationen laufen ausschließlich über PDO im Infrastructure-Layer.'
+
+
+    disallowedSuperglobals:
+        # Verbot ALLER Superglobals außerhalb der vorgesehenen Request/Session-Kapselung
         -
             superglobal:
                 - '$_FILES'
@@ -183,8 +187,9 @@ parameters:
                 - '$_ENV'
             message: 'Direkter Zugriff auf Superglobals ist verboten. Nutze das injizierte ServerRequest-Objekt oder den SessionManager.'
             allowIn:
-                - src/Application/Http/ServerRequest.php
-                - src/Application/Session/SessionManager.php
-                - src/Application/Exception/GlobalExceptionHandler.php
-                - src/Bootstrap/app.php
+                - */Application/Http/ServerRequest.php
+                - */Application/Session/SessionManager.php
+                - */Application/Exception/GlobalExceptionHandler.php
+                - */Application/Middleware/*
+                - */Bootstrap/app.php
                 - public/*
