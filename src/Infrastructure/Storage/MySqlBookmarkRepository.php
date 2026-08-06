@@ -6,10 +6,12 @@ namespace App\Infrastructure\Storage;
 
 use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Core\Entity\Bookmark;
+use App\Infrastructure\Database\Table;
 
 final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterface
 {
     use DynamicSqlTrait;
+    use EntityHydratorTrait;
 
     public function __construct(private \PDO $pdo)
     {
@@ -17,16 +19,12 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
 
     public function findByUser(string $userId): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `user_bookmarks` WHERE user_id = ? ORDER BY added_at DESC');
+        $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::USER_BOOKMARKS . '` WHERE user_id = ? ORDER BY added_at DESC');
         $stmt->execute([$userId]);
 
         $bookmarks = [];
         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
-            $bookmarks[] = new Bookmark(
-                $row['user_id'],
-                $row['comic_id'],
-                new \DateTimeImmutable($row['added_at']),
-            );
+            $bookmarks[] = $this->hydrateEntity(Bookmark::class, $row);
         }
 
         return $bookmarks;
@@ -40,12 +38,12 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
             'added_at' => \date('Y-m-d H:i:s'),
         ];
         // Nutzt REPLACE / INSERT IGNORE Logik
-        $this->executeUpsert('user_bookmarks', $data, ['user_id', 'comic_id']);
+        $this->executeUpsert(Table::USER_BOOKMARKS, $data, ['user_id', 'comic_id']);
     }
 
     public function remove(string $userId, string $comicId): void
     {
-        $stmt = $this->pdo->prepare('DELETE FROM `user_bookmarks` WHERE user_id = ? AND comic_id = ?');
+        $stmt = $this->pdo->prepare('DELETE FROM `' . Table::USER_BOOKMARKS . '` WHERE user_id = ? AND comic_id = ?');
         $stmt->execute([$userId, $comicId]);
     }
 
@@ -55,15 +53,15 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
 
         try {
             // Erst alle löschen
-            $stmtDel = $this->pdo->prepare('DELETE FROM `user_bookmarks` WHERE user_id = ?');
+            $stmtDel = $this->pdo->prepare('DELETE FROM `' . Table::USER_BOOKMARKS . '` WHERE user_id = ?');
             $stmtDel->execute([$userId]);
 
             // Dann die neuen sauber einfügen
-            $stmtInsert = $this->pdo->prepare('INSERT INTO `user_bookmarks` (user_id, comic_id, added_at) VALUES (?, ?, ?)');
+            $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::USER_BOOKMARKS . '` (user_id, comic_id, added_at) VALUES (?, ?, ?)');
             $now        = \date('Y-m-d H:i:s');
+            $uniqueIds  = \array_unique($comicIds);
 
             // Duplikate vermeiden
-            $uniqueIds = \array_unique($comicIds);
             foreach ($uniqueIds as $cid) {
                 $stmtInsert->execute([$userId, $cid, $now]);
             }

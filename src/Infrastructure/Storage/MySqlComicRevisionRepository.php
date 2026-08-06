@@ -10,6 +10,7 @@ use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
+use App\Infrastructure\Database\Table;
 
 final readonly class MySqlComicRevisionRepository implements ComicRevisionRepositoryInterface
 {
@@ -37,7 +38,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         ];
 
         // 1. Neuen Snapshot einfügen
-        $stmtInsert = $this->pdo->prepare('INSERT INTO `comic_revisions` (`comic_id`, `revision_data`, `created_at`) VALUES (?, ?, ?)');
+        $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::COMIC_REVISIONS . '` (`comic_id`, `revision_data`, `created_at`) VALUES (?, ?, ?)');
         $stmtInsert->execute([
             $comicIdStr,
             \json_encode($snapshotData, \JSON_UNESCAPED_UNICODE),
@@ -50,11 +51,11 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         if ($limit > 0) {
             // MySQL Workaround: Man kann nicht DELETE und SELECT auf dieselbe Tabelle ohne Subquery-Alias machen
             $stmtCleanup = $this->pdo->prepare('
-                DELETE FROM `comic_revisions`
+                DELETE FROM `' . Table::COMIC_REVISIONS . '`
                 WHERE `comic_id` = :cid
                 AND `id` NOT IN (
                     SELECT id FROM (
-                        SELECT id FROM `comic_revisions`
+                        SELECT id FROM `' . Table::COMIC_REVISIONS . '`
                         WHERE `comic_id` = :cid2
                         ORDER BY `created_at` DESC
                         LIMIT :limit
@@ -71,7 +72,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
 
     public function popLatestRevision(ComicId $id): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT `id`, `revision_data` FROM `comic_revisions` WHERE `comic_id` = ? ORDER BY `created_at` DESC LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT `id`, `revision_data` FROM `' . Table::COMIC_REVISIONS . '` WHERE `comic_id` = ? ORDER BY `created_at` DESC LIMIT 1');
         $stmt->execute([$id->value]);
         $row = $stmt->fetch();
 
@@ -80,7 +81,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         }
 
         // Snapshot löschen, damit man mehrfach zurückgehen kann (Strg+Z, Strg+Z...)
-        $delStmt = $this->pdo->prepare('DELETE FROM `comic_revisions` WHERE `id` = ?');
+        $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
         $delStmt->execute([$row['id']]);
 
         return \json_decode($row['revision_data'], true);
@@ -91,8 +92,8 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         // Sucht ein Backup, dessen comic_id in der Haupttabelle nicht mehr existiert
         $stmt = $this->pdo->query('
             SELECT r.id, r.comic_id, r.revision_data
-            FROM `comic_revisions` r
-            LEFT JOIN `comics` c ON r.comic_id = c.id
+            FROM `' . Table::COMIC_REVISIONS . '` r
+            LEFT JOIN `' . Table::COMICS . '` c ON r.comic_id = c.id
             WHERE c.id IS NULL
             ORDER BY r.created_at DESC
             LIMIT 1
@@ -103,11 +104,11 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             return null;
         }
 
-        $delStmt = $this->pdo->prepare('DELETE FROM `comic_revisions` WHERE `id` = ?');
+        $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
         $delStmt->execute([$row['id']]);
 
         $data             = \json_decode($row['revision_data'], true);
-        $data['comic_id'] = $row['comic_id']; // ID wieder ins Array mogeln
+        $data['comic_id'] = $row['comic_id'];
 
         return $data;
     }

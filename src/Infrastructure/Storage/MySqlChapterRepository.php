@@ -6,10 +6,12 @@ namespace App\Infrastructure\Storage;
 
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Core\Entity\Chapter;
+use App\Infrastructure\Database\Table;
 
 final readonly class MySqlChapterRepository implements ChapterRepositoryInterface
 {
     use DynamicSqlTrait;
+    use EntityHydratorTrait;
 
     public function __construct(private \PDO $pdo)
     {
@@ -17,30 +19,22 @@ final readonly class MySqlChapterRepository implements ChapterRepositoryInterfac
 
     public function save(Chapter $chapter): void
     {
-        $data = [
-            'id'          => $chapter->id,
-            'title'       => $chapter->title,
-            'description' => $chapter->description,
-        ];
-        $this->executeUpsert('chapters', $data, ['id']);
+        $data = $this->extractEntity($chapter);
+        $this->executeUpsert(Table::CHAPTERS, $data, ['id']);
     }
 
     public function findAll(): array
     {
         // Sortiert numerische IDs korrekt (1, 2, 10) und Text-IDs ans Ende
-        $stmt = $this->pdo->query('SELECT * FROM `chapters` ORDER BY CAST(id AS UNSIGNED) ASC, id ASC');
+        $stmt = $this->pdo->query('SELECT * FROM `' . Table::CHAPTERS . '` ORDER BY CAST(id AS UNSIGNED) ASC, id ASC');
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return \array_map(fn (array $r): Chapter => new Chapter(
-            $r['id'],
-            $r['title'],
-            $r['description'] ?? '',
-        ), $rows);
+        return \array_map(fn (array $r): Chapter => $this->hydrateEntity(Chapter::class, $r), $rows);
     }
 
     public function delete(string $id): void
     {
-        $stmt = $this->pdo->prepare('DELETE FROM `chapters` WHERE id = ?');
+        $stmt = $this->pdo->prepare('DELETE FROM `' . Table::CHAPTERS . '` WHERE id = ?');
         $stmt->execute([$id]);
     }
 }

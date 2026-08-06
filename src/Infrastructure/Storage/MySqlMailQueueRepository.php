@@ -7,10 +7,12 @@ namespace App\Infrastructure\Storage;
 use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Core\Entity\MailJob;
+use App\Infrastructure\Database\Table;
 
 final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInterface
 {
     use DynamicSqlTrait;
+    use EntityHydratorTrait;
 
     public function __construct(private \PDO $pdo, private JsonHelperInterface $jsonHelper)
     {
@@ -18,22 +20,15 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
 
     public function enqueue(MailJob $job): void
     {
-        // Weil wir TemplateKey ausgebaut haben, job->template ist jetzt ein string!
+        // template kann in der DB nur ein String sein
         $templateStr = \is_string($job->template) ? $job->template : ($job->template->value ?? 'std');
 
-        $data = [
-            'id'         => $job->id,
-            'recipient'  => $job->recipient,
-            'subject'    => $job->subject,
-            'template'   => $templateStr,
-            'data'       => \json_encode($job->data, \JSON_UNESCAPED_UNICODE),
-            'attempts'   => $job->attempts,
-            'priority'   => $job->priority,
-            'created_at' => $job->createdAt->format('Y-m-d H:i:s'),
-        ];
+        $data = $this->extractEntity($job, [
+            'template' => $templateStr,
+        ]);
 
         // HIER IST DIE MAGIE: Der Trait baut das SQL völlig dynamisch!
-        $this->executeUpsert('mail_queue', $data, ['id']);
+        $this->executeUpsert(Table::MAIL_QUEUE, $data, ['id']);
     }
 
     public function processBatch(int $limit, callable $processor, array $allowedTemplates = []): int
@@ -55,11 +50,11 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         }
 
         try {
-            $updateSql  = "UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
+            $updateSql  = 'UPDATE `' . Table::MAIL_QUEUE . "` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
             $stmtUpdate = $this->pdo->prepare($updateSql);
             $stmtUpdate->execute($params);
 
-            $selectSql  = "SELECT * FROM `mail_queue` WHERE attempts >= 100 {$templateFilterSql} ORDER BY priority DESC, created_at ASC";
+            $selectSql  = 'SELECT * FROM `' . Table::MAIL_QUEUE . "` WHERE attempts >= 100 {$templateFilterSql} ORDER BY priority DESC, created_at ASC";
             $stmtSelect = $this->pdo->prepare($selectSql);
             $stmtSelect->execute($params);
             $items = $stmtSelect->fetchAll(\PDO::FETCH_ASSOC);
@@ -75,7 +70,7 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
                     if ($origAttempts >= 3) {
                         $this->delete($item['id']);
                     } else {
-                        $this->pdo->prepare('UPDATE `mail_queue` SET attempts = ? WHERE id = ?')->execute([$origAttempts, $item['id']]);
+                        $this->pdo->prepare('UPDATE `' . Table::MAIL_QUEUE . '` SET attempts = ? WHERE id = ?')->execute([$origAttempts, $item['id']]);
                     }
                 }
             }
@@ -92,14 +87,14 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
 
     public function findAllQueue(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM `mail_queue` ORDER BY created_at DESC');
+        $stmt = $this->pdo->query('SELECT * FROM `' . Table::MAIL_QUEUE . '` ORDER BY created_at DESC');
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function findById(string $id): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `mail_queue` WHERE id = ? LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::MAIL_QUEUE . '` WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -108,6 +103,6 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
 
     public function delete(string $id): void
     {
-        $this->pdo->prepare('DELETE FROM `mail_queue` WHERE id = ?')->execute([$id]);
+        $this->pdo->prepare('DELETE FROM `' . Table::MAIL_QUEUE . '` WHERE id = ?')->execute([$id]);
     }
 }

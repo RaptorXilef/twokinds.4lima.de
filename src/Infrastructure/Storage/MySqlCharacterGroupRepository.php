@@ -7,10 +7,12 @@ namespace App\Infrastructure\Storage;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Core\Entity\CharacterGroup;
 use App\Core\ValueObject\CharacterId;
+use App\Infrastructure\Database\Table;
 
 final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepositoryInterface
 {
     use DynamicSqlTrait;
+    use EntityHydratorTrait;
 
     public function __construct(private \PDO $pdo)
     {
@@ -20,19 +22,16 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
     {
         $charIds = \array_map(fn (CharacterId $id): string => $id->value, $group->characterIds);
 
-        $data = [
-            'name'          => $group->name,
+        $data = $this->extractEntity($group, [
             'character_ids' => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
-            'sort_order'    => $group->sortOrder,
-            'manual_sort'   => (int) $group->manualSort,
-        ];
+        ]);
 
-        $this->executeUpsert('character_groups', $data, ['name']);
+        $this->executeUpsert(Table::CHARACTER_GROUPS, $data, ['name']);
     }
 
     public function findByName(string $name): ?CharacterGroup
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `character_groups` WHERE name = ? LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::CHARACTER_GROUPS . '` WHERE name = ? LIMIT 1');
         $stmt->execute([$name]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -42,7 +41,7 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
     public function findAll(): array
     {
         // WICHTIG: Hier greift jetzt die neue Sortierung!
-        $stmt = $this->pdo->query('SELECT * FROM `character_groups` ORDER BY sort_order ASC, name ASC');
+        $stmt = $this->pdo->query('SELECT * FROM `' . Table::CHARACTER_GROUPS . '` ORDER BY sort_order ASC, name ASC');
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         return \array_map($this->mapToEntity(...), $rows);
@@ -50,7 +49,7 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
 
     public function delete(string $name): void
     {
-        $stmt = $this->pdo->prepare('DELETE FROM `character_groups` WHERE name = ?');
+        $stmt = $this->pdo->prepare('DELETE FROM `' . Table::CHARACTER_GROUPS . '` WHERE name = ?');
         $stmt->execute([$name]);
     }
 
@@ -59,11 +58,8 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
         $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
         $charIds    = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
 
-        return new CharacterGroup(
-            name: $row['name'],
-            characterIds: $charIds,
-            sortOrder: (int) ($row['sort_order'] ?? 0),
-            manualSort: (bool) ($row['manual_sort'] ?? false),
-        );
+        return $this->hydrateEntity(CharacterGroup::class, $row, [
+            'characterIds' => $charIds,
+        ]);
     }
 }
