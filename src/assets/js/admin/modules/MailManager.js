@@ -88,19 +88,29 @@ export class MailManager {
 
     async openPreview(id) {
         const iframe = document.getElementById('mail-preview-frame');
-        if (iframe) {
-            iframe.srcdoc =
-                '<div style="font-family:sans-serif; padding: 20px; text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>Lade Vorschau...</div>';
-        }
+
+        // Hilfsfunktion zum sicheren Befüllen des Iframes ohne srcdoc
+        const setIframeContent = (html) => {
+            if (!iframe) return;
+            const doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+        };
+
+        setIframeContent(
+            '<div style="font-family:sans-serif; padding: 20px; text-align:center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><br><br>Lade Vorschau...</div>'
+        );
+
         this.modalManager.open('mail-preview-modal');
 
         const res = await this.api.get('preview_mail', `id=${id}`);
-        if (res.success && iframe) {
-            iframe.srcdoc = res.html;
+        if (res.success) {
+            setIframeContent(res.html);
         } else {
-            if (iframe) {
-                iframe.srcdoc = `<div style="font-family:sans-serif; color:red; padding: 20px;">Fehler: ${res.error}</div>`;
-            }
+            setIframeContent(
+                `<div style="font-family:sans-serif; color:red; padding: 20px;">Fehler: ${res.error}</div>`
+            );
             this.notifications.show(res.error, 'error');
         }
     }
