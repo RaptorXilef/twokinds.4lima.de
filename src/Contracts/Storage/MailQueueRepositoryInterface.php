@@ -19,4 +19,6 @@ interface MailQueueRepositoryInterface
     public function findAllQueue(): array;
 
     public function findById(string $id): ?array;
+
+    public function delete(string $id): void;
 }

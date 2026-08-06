@@ -55,7 +55,6 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         }
 
         try {
-            // HIER IST DER FIX: prepare() und execute() statt exec()
             $updateSql  = "UPDATE `mail_queue` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
             $stmtUpdate = $this->pdo->prepare($updateSql);
             $stmtUpdate->execute($params);
@@ -68,13 +67,13 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
             foreach ($items as $item) {
                 try {
                     $processor($item['recipient'], $item['subject'], $item['template'], $this->jsonHelper->decode((string) $item['data']));
-                    $this->pdo->prepare('DELETE FROM `mail_queue` WHERE id = ?')->execute([$item['id']]);
+                    $this->delete($item['id']);
                     ++$sentCount;
                 } catch (\Throwable $t) {
                     \error_log("MailQueue Error [ID {$item['id']}]: " . $t->getMessage());
                     $origAttempts = $item['attempts'] - 100 + 1;
                     if ($origAttempts >= 3) {
-                        $this->pdo->prepare('DELETE FROM `mail_queue` WHERE id = ?')->execute([$item['id']]);
+                        $this->delete($item['id']);
                     } else {
                         $this->pdo->prepare('UPDATE `mail_queue` SET attempts = ? WHERE id = ?')->execute([$origAttempts, $item['id']]);
                     }
@@ -105,5 +104,10 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         return $row ?: null;
+    }
+
+    public function delete(string $id): void
+    {
+        $this->pdo->prepare('DELETE FROM `mail_queue` WHERE id = ?')->execute([$id]);
     }
 }
