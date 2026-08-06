@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\FileDownloadResponse;
@@ -28,6 +26,7 @@ final readonly class DownloadBackupAction implements ActionInterface
         if (! $this->auth->hasPermission('system.backup.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
+
         $filename = \basename($request->get['file'] ?? '');
         if ($filename === '') {
             return JsonResponse::error('Keine Datei angegeben.', 400);
@@ -38,6 +37,8 @@ final readonly class DownloadBackupAction implements ActionInterface
             return JsonResponse::error('Datei nicht gefunden.', 404);
         }
 
-        return new FileDownloadResponse(\file_get_contents($filepath), $filename, 'application/json');
+        $mimeType = \str_ends_with($filename, '.zip') ? 'application/zip' : 'application/json';
+
+        return new FileDownloadResponse(\file_get_contents($filepath), $filename, $mimeType);
     }
 }

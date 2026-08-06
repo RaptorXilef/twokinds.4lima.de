@@ -38,17 +38,41 @@ final readonly class BackupService
             $backupData['tables'][$table] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         }
 
-        $filename = 'backup_' . \date('Ymd_His') . '_' . $backupData['type'] . '.json';
+        // Wir nutzen kein PRETTY_PRINT mehr, um die Dateigröße im ZIP maximal klein zu halten
+        $json = \json_encode($backupData, \JSON_UNESCAPED_UNICODE);
+        if ($json === false) {
+            throw new \RuntimeException('JSON encode Fehler beim Backup.');
+        }
+
+        $type     = $backupData['type'];
+        $filename = 'backup_' . \date('Ymd_His') . '_' . $type . '.zip';
         $filepath = $this->backupDir . '/' . $filename;
 
-        $json = \json_encode($backupData, \JSON_UNESCAPED_UNICODE | \JSON_PRETTY_PRINT);
-        if ($json === false) {
-            throw new \RuntimeException('JSON encode Fehler.');
+        // Phase 2: ZIP Kompression & Verschlüsselung
+        $zip = new \ZipArchive();
+        if ($zip->open($filepath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new \RuntimeException("Konnte ZIP-Datei nicht erstellen: $filepath");
         }
 
-        if (@\file_put_contents($filepath, $json) === false) {
-            throw new \RuntimeException("Konnte Backup-Datei nicht schreiben: $filepath");
+        $zip->addFromString('data.json', $json);
+
+        // Meta-Daten unverschlüsselt in den ZIP-Kommentar schreiben (Für blitzschnelles Auflisten im Dashboard)
+        $meta = ['type' => $type, 'tables' => \array_keys($backupData['tables'])];
+        $zip->setArchiveComment(\json_encode($meta));
+
+        // Passwortschutz anwenden, falls konfiguriert
+        $backupCfg = (array) $this->config->get('backup', []);
+        $password  = (string) ($backupCfg['zip_password'] ?? '');
+        if ($password !== '') {
+            $zip->setPassword($password);
+            $zip->setEncryptionName('data.json', \ZipArchive::EM_AES_256);
         }
+
+        $zip->close();
+
+        // Phase 3 & 4: Externe Kopie hochladen und lokalen Ordner aufräumen
+        $this->uploadToFtp($filepath, $filename);
+        $this->cleanupOldBackups();
 
         return $filename;
     }
@@ -60,7 +84,31 @@ final readonly class BackupService
             throw new \RuntimeException('Backup-Datei nicht gefunden.');
         }
 
-        $data = $this->jsonHelper->read($filepath);
+        if (\str_ends_with($filename, '.zip')) {
+            $zip = new \ZipArchive();
+            if ($zip->open($filepath) !== true) {
+                throw new \RuntimeException('Konnte ZIP-Backup nicht öffnen.');
+            }
+
+            $backupCfg = (array) $this->config->get('backup', []);
+            $password  = (string) ($backupCfg['zip_password'] ?? '');
+            if ($password !== '') {
+                $zip->setPassword($password);
+            }
+
+            // Holt die Datei direkt in den Arbeitsspeicher (Entschlüsselt automatisch, wenn PW stimmt)
+            $json = $zip->getFromName('data.json');
+            $zip->close();
+
+            if ($json === false) {
+                throw new \RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort in der config.php?');
+            }
+            $data = $this->jsonHelper->decode($json);
+        } else {
+            // Legacy Unterstützung für alte unverschlüsselte JSON-Backups
+            $data = $this->jsonHelper->read($filepath);
+        }
+
         if (! isset($data['tables'])) {
             throw new \RuntimeException('Ungültiges Backup-Format.');
         }
@@ -84,7 +132,7 @@ final readonly class BackupService
 
                 if (empty($rows)) {
                     if ($mode === 2) {
-                        // 2.2 Exakte Kopie (Wenn Backup leer ist, Tabelle leeren)
+                        // Exakte Kopie (Wenn Backup leer ist, Tabelle leeren)
                         $this->pdo->exec("TRUNCATE TABLE `$table`");
                     }
 
@@ -93,7 +141,7 @@ final readonly class BackupService
 
                 $primaryKeys = $this->getPrimaryKeys($table);
 
-                // 2.2 Daten, die im Backup fehlen, auf dem Server löschen
+                // Daten, die im Backup fehlen, auf dem Server löschen
                 if ($mode === 2) {
                     $this->deleteMissingRecords($table, $rows, $primaryKeys);
                 }
@@ -103,22 +151,21 @@ final readonly class BackupService
                 $placeholders = \implode(', ', \array_map(fn ($c) => ":$c", $columns));
 
                 if ($mode === 3) {
-                    // 2.3 Nur fehlende ergänzen (Lücken füllen)
+                    // Nur fehlende ergänzen
                     $sql  = "INSERT IGNORE INTO `$table` ($colNames) VALUES ($placeholders)";
                     $stmt = $this->pdo->prepare($sql);
                     foreach ($rows as $row) {
                         $stmt->execute($row);
                     }
                 } else {
-                    // 2.1 Migrieren (Standard) ODER 2.2 Exakte Kopie (Hier wird Insert/Update gemacht)
+                    // Migrieren (Einfügen + Update)
                     $updateCols = [];
                     foreach ($columns as $c) {
                         $updateCols[] = "`$c` = VALUES(`$c`)";
                     }
                     $updateSql = \implode(', ', $updateCols);
                     $sql       = "INSERT INTO `$table` ($colNames) VALUES ($placeholders) ON DUPLICATE KEY UPDATE $updateSql";
-
-                    $stmt = $this->pdo->prepare($sql);
+                    $stmt      = $this->pdo->prepare($sql);
                     foreach ($rows as $row) {
                         $stmt->execute($row);
                     }
@@ -146,6 +193,7 @@ final readonly class BackupService
 
                 return;
             }
+
             $inStr = \str_repeat('?,', \count($keptIds) - 1) . '?';
             $stmt  = $this->pdo->prepare("DELETE FROM `$table` WHERE `$pk` NOT IN ($inStr)");
             $stmt->execute(\array_values($keptIds));
@@ -155,6 +203,7 @@ final readonly class BackupService
         }
     }
 
+    // TODO Prüfen ob hier Elemente eher in die Infrastruktur gehören!
     public function listBackups(): array
     {
         if (! \is_dir($this->backupDir)) {
@@ -165,13 +214,33 @@ final readonly class BackupService
         $backups = [];
 
         foreach ($files as $file) {
-            if (\str_ends_with($file, '.json')) {
-                $path      = $this->backupDir . '/' . $file;
+            $path = $this->backupDir . '/' . $file;
+            $size = \filesize($path);
+            $date = \filemtime($path);
+
+            if (\str_ends_with($file, '.zip')) {
+                $zip = new \ZipArchive();
+                if ($zip->open($path) === true) {
+                    // Liest NUR den unverschlüsselten Meta-Kommentar
+                    $comment = $zip->getArchiveComment();
+                    $zip->close();
+
+                    $meta      = $comment ? \json_decode($comment, true) : [];
+                    $backups[] = [
+                        'filename' => $file,
+                        'size'     => $size,
+                        'date'     => $date,
+                        'type'     => $meta['type'] ?? 'Unbekannt',
+                        'tables'   => $meta['tables'] ?? [],
+                    ];
+                }
+            } elseif (\str_ends_with($file, '.json')) {
+                // Legacy .json Dateien
                 $data      = $this->jsonHelper->read($path);
                 $backups[] = [
                     'filename' => $file,
-                    'size'     => \filesize($path),
-                    'date'     => \filemtime($path),
+                    'size'     => $size,
+                    'date'     => $date,
                     'type'     => $data['type'] ?? 'unknown',
                     'tables'   => isset($data['tables']) ? \array_keys($data['tables']) : [],
                 ];
@@ -203,5 +272,87 @@ final readonly class BackupService
         $stmt = $this->pdo->query("SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'");
 
         return \array_map(fn ($k) => $k['Column_name'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
+    // =========================================================================
+    // Off-Site FTP Upload & Local Cleanup
+    // =========================================================================
+
+    // TODO Prüfen ob hier Elemente eher in die Infrastruktur gehören!
+    private function uploadToFtp(string $filepath, string $filename): void
+    {
+        $backupCfg = (array) $this->config->get('backup', []);
+        $ftpCfg    = $backupCfg['ftp'] ?? [];
+
+        if (empty($ftpCfg['enabled']) || empty($ftpCfg['host'])) {
+            return;
+        }
+
+        $host = $ftpCfg['host'];
+        $port = (int) ($ftpCfg['port'] ?? 21);
+        $user = $ftpCfg['user'] ?? '';
+        $pass = $ftpCfg['pass'] ?? '';
+        $path = \rtrim($ftpCfg['path'] ?? '', '/\\') . '/';
+        $ssl  = ! empty($ftpCfg['ssl']);
+
+        try {
+            // Verbindungsaufbau (SSL/FTPS falls aktiviert)
+            $connId = $ssl ? @\ftp_ssl_connect($host, $port, 15) : @\ftp_connect($host, $port, 15);
+            if (! $connId) {
+                throw new \RuntimeException('Verbindung fehlgeschlagen.');
+            }
+
+            if (! @\ftp_login($connId, $user, $pass)) {
+                throw new \RuntimeException('Login fehlgeschlagen.');
+            }
+
+            // Passive mode ist essentiell für Router/Firewalls (wie die FritzBox!)
+            @\ftp_pasv($connId, true);
+
+            // Verzeichnisse iterativ erstellen, falls sie nicht existieren
+            $parts = \explode('/', \trim($path, '/'));
+            foreach ($parts as $part) {
+                if ($part === '') {
+                    continue;
+                }
+                if (! @\ftp_chdir($connId, $part)) {
+                    @\ftp_mkdir($connId, $part);
+                    @\ftp_chdir($connId, $part);
+                }
+            }
+
+            // Upload
+            if (! @\ftp_put($connId, $filename, $filepath, \FTP_BINARY)) {
+                throw new \RuntimeException('Upload der Datei verweigert.');
+            }
+
+            @\ftp_close($connId);
+        } catch (\Throwable $e) {
+            // Wir lassen den Haupt-Cronjob nicht crashen, nur weil der FTP-Server zickt.
+            // Stattdessen loggen wir es stillschweigend.
+            \error_log('Off-Site Backup (FTP) fehlgeschlagen: ' . $e->getMessage());
+        }
+    }
+
+    private function cleanupOldBackups(): void
+    {
+        $backupCfg = (array) $this->config->get('backup', []);
+        $days      = (int) ($backupCfg['retention_days'] ?? 365);
+
+        if ($days <= 0) {
+            return; // 0 = Niemals löschen
+        }
+
+        $threshold = \time() - ($days * 86400); // 86400 Sekunden = 1 Tag
+        $files     = \array_diff(\scandir($this->backupDir), ['.', '..', '.htaccess']);
+
+        foreach ($files as $file) {
+            if (\str_ends_with($file, '.zip') || \str_ends_with($file, '.json')) {
+                $path = $this->backupDir . '/' . $file;
+                if (\filemtime($path) < $threshold) {
+                    @\unlink($path);
+                }
+            }
+        }
     }
 }
