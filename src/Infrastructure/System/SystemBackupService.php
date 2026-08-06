@@ -272,9 +272,17 @@ final readonly class SystemBackupService implements BackupServiceInterface
         return $stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
 
+    private function getPrimaryKeys(string $table): array
+    {
+        $stmt = $this->pdo->query("SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'");
+
+        return \array_map(fn ($k) => $k['Column_name'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
+    }
+
     // =========================================================================
     // Off-Site FTP Upload & Local Cleanup
     // =========================================================================
+
     private function uploadToFtp(string $filepath, string $filename): void
     {
         $backupCfg = (array) $this->config->get('backup', []);
@@ -284,15 +292,18 @@ final readonly class SystemBackupService implements BackupServiceInterface
             return;
         }
 
-        $host    = $ftpCfg['host'];
-        $port    = (int) ($ftpCfg['port'] ?? 21);
-        $user    = $ftpCfg['user'] ?? '';
-        $pass    = $ftpCfg['pass'] ?? '';
-        $path    = \rtrim($ftpCfg['path'] ?? '', '/\\') . '/';
-        $ssl     = ! empty($ftpCfg['ssl']);
+        $host = $ftpCfg['host'];
+        $port = (int) ($ftpCfg['port'] ?? 21);
+        $user = $ftpCfg['user'] ?? '';
+        $pass = $ftpCfg['pass'] ?? '';
+        $path = \rtrim($ftpCfg['path'] ?? '', '/\\') . '/';
+        $ssl  = ! empty($ftpCfg['ssl']);
+
+        // Großzügiger Timeout (60 Sekunden), damit schlafende HDDs (z.B. FritzNAS) Zeit zum Aufwachen haben
         $timeout = 60;
 
         try {
+            // Verbindungsaufbau (SSL/FTPS falls aktiviert)
             $connId = $ssl ? @\ftp_ssl_connect($host, $port, $timeout) : @\ftp_connect($host, $port, $timeout);
             if (! $connId) {
                 throw new \RuntimeException("Verbindung fehlgeschlagen (Timeout nach {$timeout}s).");
