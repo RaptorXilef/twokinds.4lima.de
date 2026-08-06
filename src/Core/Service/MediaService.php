@@ -226,10 +226,47 @@ final readonly class MediaService
             $success = \imagewebp($finalImage, $targetPath, $quality);
         }
 
-        \imagedestroy($sourceImage);
+        \imagedestroy($sourceImage); // TODO Prüfen ob imagedestroy in PHP 8.3 weg kann!
         \imagedestroy($croppedImage);
         \imagedestroy($finalImage);
 
         return $success;
+    }
+
+    public function autoGenerateSocialMediaJpg(string $sourcePath, string $targetPath): void
+    {
+        $img = @\imagecreatefromstring(\file_get_contents($sourcePath));
+        if (! $img) {
+            return;
+        }
+
+        $width  = \imagesx($img);
+        $height = \imagesy($img);
+
+        $targetRatio = 1200 / 630;
+        $sourceRatio = $width / $height;
+
+        $cropW = $width;
+        $cropH = $height;
+
+        if ($sourceRatio > $targetRatio) {
+            $cropW = (int) ($height * $targetRatio);
+        } else {
+            $cropH = (int) ($width / $targetRatio);
+        }
+
+        $cropX = (int) (($width - $cropW) / 2);
+        $cropY = (int) (($height - $cropH) / 2);
+
+        $this->generateManualCrop(
+            $sourcePath,
+            $targetPath,
+            $cropX,
+            $cropY,
+            $cropW,
+            $cropH,
+            1200,
+            630,
+        );
     }
 }

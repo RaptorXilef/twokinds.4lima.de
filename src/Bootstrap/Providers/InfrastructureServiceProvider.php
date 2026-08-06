@@ -30,6 +30,7 @@ use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
+use App\Contracts\System\RemoteResourceProberInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
 use App\Core\Service\SiteGeneratorService;
@@ -52,6 +53,7 @@ use App\Infrastructure\Storage\MySqlMailQueueRepository;
 use App\Infrastructure\Storage\MySqlReportRepository;
 use App\Infrastructure\Storage\MySqlRoleRepository;
 use App\Infrastructure\Storage\MySqlUserRepository;
+use App\Infrastructure\System\CurlRemoteResourceProber;
 use App\Infrastructure\System\LocalAssetHelper;
 use App\Infrastructure\System\SystemBackupService;
 use App\Infrastructure\System\SystemInfoService;
@@ -168,6 +170,8 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         ));
 
         // Andere
+        $container->bind(RemoteResourceProberInterface::class, fn (): CurlRemoteResourceProber => new CurlRemoteResourceProber());
+
         $container->bind(SystemInfoInterface::class, fn (): SystemInfoService => new SystemInfoService(
             $container->get(ConfigInterface::class),
             $container->get(JsonHelperInterface::class),

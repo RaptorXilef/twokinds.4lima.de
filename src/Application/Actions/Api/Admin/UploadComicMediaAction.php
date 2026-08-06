@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -106,7 +104,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
                 // andernfalls bauen wir hier kurz einen simplen GD-Aufruf für den Auto-Zuschnitt.
                 // Da wir aber ohnehin den manuellen Cropper nutzen, können wir es hier einfach vorerst auf Thumbnail-Basis belassen
                 // oder einen statischen Zuschnitt machen.
-                $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
+                $this->mediaService->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
             }
 
             // Zeitstempel für RSS / Cachebusting aktualisieren (NUR WENN COMIC EXISTIERT!)
@@ -130,46 +128,5 @@ final readonly class UploadComicMediaAction implements ActionInterface
         } catch (\Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
-    }
-
-    private function autoGenerateSocialMediaJpg(string $sourcePath, string $targetPath): void
-    {
-        // Ein schneller, dreckiger Auto-Center-Crop auf 1200x630, der später vom manuellen Cropper überschrieben werden kann.
-        $img = @\imagecreatefromstring(\file_get_contents($sourcePath));
-        if (! $img) {
-            return;
-        }
-
-        $width  = \imagesx($img);
-        $height = \imagesy($img);
-
-        // Wir wollen ein Verhältnis von 1.91:1 (z.B. 1200 / 630)
-        $targetRatio = 1200 / 630;
-        $sourceRatio = $width / $height;
-
-        $cropW = $width;
-        $cropH = $height;
-
-        if ($sourceRatio > $targetRatio) {
-            // Bild ist zu breit
-            $cropW = (int) ($height * $targetRatio);
-        } else {
-            // Bild ist zu hoch (z.B. eine Comicseite)
-            $cropH = (int) ($width / $targetRatio);
-        }
-
-        $cropX = (int) (($width - $cropW) / 2);
-        $cropY = (int) (($height - $cropH) / 2);
-
-        $this->mediaService->generateManualCrop(
-            $sourcePath,
-            $targetPath,
-            $cropX,
-            $cropY,
-            $cropW,
-            $cropH,
-            1200,
-            630,
-        );
     }
 }
