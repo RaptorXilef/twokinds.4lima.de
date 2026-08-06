@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\ActionRoute;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
@@ -70,13 +69,11 @@ final readonly class ArchiveAction implements ViewActionInterface
             $chapterDetails[$chapter->id] = $chapter;
         }
 
-        $this->renderer->render('pages/frontend/archive', [
+        return $this->renderer->render('pages/frontend/archive', [
             'groupedComics'   => $groupedComics,
             'chapterDetails'  => $chapterDetails,
             'pageTitle'       => 'Archiv',
             'siteDescription' => 'Das vollständige Archiv der deutschen Übersetzung.',
         ]);
-
-        return null;
     }
 }

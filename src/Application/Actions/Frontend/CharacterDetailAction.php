@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\ActionRoute;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
@@ -69,10 +68,7 @@ final readonly class CharacterDetailAction implements ViewActionInterface
         }
 
         if (! $character instanceof Character) {
-            \http_response_code(404);
-            $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Charakter nicht gefunden']);
-
-            return null;
+            return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Charakter nicht gefunden'], 404);
         }
 
         // Alle Comics holen und nach Auftritten filtern
@@ -92,13 +88,11 @@ final readonly class CharacterDetailAction implements ViewActionInterface
         // Chronologisch aufsteigend sortieren (Älteste Auftritte zuerst)
         \usort($characterComics, fn ($a, $b): int => $a->id->value <=> $b->id->value);
 
-        $this->renderer->render('pages/frontend/character_detail', [
+        return $this->renderer->render('pages/frontend/character_detail', [
             'character'       => $character,
             'characterComics' => $characterComics,
             'pageTitle'       => $character->name,
             'siteDescription' => 'Alle Informationen und Comic-Auftritte von ' . $character->name,
         ]);
-
-        return null;
     }
 }

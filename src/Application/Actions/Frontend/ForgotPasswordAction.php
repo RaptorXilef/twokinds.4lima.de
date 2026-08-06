@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\ActionRoute;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
@@ -19,8 +18,6 @@ final readonly class ForgotPasswordAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $this->renderer->render('pages/frontend/forgot_password', ['pageTitle' => 'Passwort vergessen']);
-
-        return null;
+        return $this->renderer->render('pages/frontend/forgot_password', ['pageTitle' => 'Passwort vergessen']);
     }
 }

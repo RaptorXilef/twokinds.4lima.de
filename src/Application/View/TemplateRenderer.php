@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\View;
 
+use App\Application\Response\HtmlResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\AssetHelperInterface;
@@ -23,7 +24,7 @@ final readonly class TemplateRenderer
     ) {
     }
 
-    public function render(string $templatePath, array $data = []): void
+    public function render(string $templatePath, array $data = [], int $statusCode = 200): HtmlResponse
     {
         $appRoot = \rtrim((string) $this->config->get('root_path'), '/\\');
 
@@ -50,8 +51,12 @@ final readonly class TemplateRenderer
         // 2. Nutzerdaten bereitstellen (EXTR_SKIP verhindert das Überschreiben der Systemvariablen!)
         \extract($data, \EXTR_SKIP);
 
-        // GEÄNDERT: Wir entfernen das hartgecodete "pages/" aus dem Pfad
+        \ob_start();
+
         include $appRoot . "/templates/{$templatePath}.phtml";
+        $html = (string) \ob_get_clean();
+
+        return new HtmlResponse($html, $statusCode);
     }
 
     private function getGlobalSettings(): array

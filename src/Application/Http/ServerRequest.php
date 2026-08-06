@@ -18,6 +18,7 @@ final readonly class ServerRequest
         public array $files = [],
         public array $server = [],
         public array $input = [], // Parsed JSON Body
+        public array $cookie = [],
     ) {
     }
 
@@ -57,8 +58,9 @@ final readonly class ServerRequest
         return 'unknown';
     }
 
+    // Methode anpassen für Fluid-Interface:
     public function withInput(array $input): self
     {
-        return new self($this->get, $this->post, $this->files, $this->server, $input);
+        return new self($this->get, $this->post, $this->files, $this->server, $input, $this->cookie);
     }
 }

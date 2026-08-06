@@ -49,7 +49,7 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
         }
 
         // --- 1. DATENSCHUTZ-FIX: Consent-Prüfung ---
-        $consentCookie = $_COOKIE['twokinds_cookie_consent'] ?? null;
+        $consentCookie = $request->cookie['twokinds_cookie_consent'] ?? null;
         if (! $consentCookie) {
             return; // Kein Consent-Cookie vorhanden -> Nichts tracken
         }
@@ -74,10 +74,10 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
 
         // --- 2. BUGFIX: GA4 Session-ID ---
         // GA4 erwartet als session_id in der Regel den UNIX-Timestamp des Sitzungsstarts
-        if (! isset($_SESSION['ga4_session_id'])) {
-            $_SESSION['ga4_session_id'] = \time();
+        if ($this->sessionManager->getFormData()['ga4_session_id'] ?? null === null) {
+            $this->sessionManager->setFormData(['ga4_session_id' => \time()]);
         }
-        $sessionId = $_SESSION['ga4_session_id'];
+        $sessionId = $this->sessionManager->getFormData()['ga4_session_id'];
         // ---------------------------------
 
         $baseUrl = $this->config->getBaseUrl() !== ''
@@ -106,7 +106,7 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
             $this->sessionManager->getAnalyticsId(),
             (string) $sessionId,
             $pageLocation,
-            $pageTitle
+            $pageTitle,
         );
     }
 }

@@ -136,7 +136,7 @@ final readonly class DashboardAction implements ViewActionInterface
                 $this->renderer->render('partials/admin/_section_media', $data);
             } elseif ($ajaxTab === 'backup') {
                 $this->renderer->render('partials/admin/_section_backup', $data);
-            } elseif ($ajaxTab === 'mails') { // NEUER TAB-RENDERER FÜR E-MAILS
+            } elseif ($ajaxTab === 'mails') { // TAB-RENDERER FÜR E-MAILS
                 $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
                 $data['mailLogs']  = $this->mailLogRepo->loadLogs();
                 $this->renderer->render('partials/admin/_section_mails', $data);
@@ -166,7 +166,7 @@ final readonly class DashboardAction implements ViewActionInterface
             }
         }
 
-        $this->renderer->render('pages/admin/dashboard', [
+        return $this->renderer->render('pages/admin/dashboard', [
             'pageTitle'        => 'Admin Dashboard',
             'adminUser'        => $this->sessionManager->getAdminUser(),
             'currentUserId'    => $this->sessionManager->getUserId(),
@@ -174,7 +174,7 @@ final readonly class DashboardAction implements ViewActionInterface
             'characters'       => $characters,
             'groups'           => $groups,
             'assignedIds'      => $assignedIds,
-            'existingRanks'    => [], // Nicht mehr zwingend nötig global
+            'existingRanks'    => [],
             'existingChapters' => $existingChapters,
             'availableImages'  => $availableImages,
             'roles'            => $roles,
@@ -192,7 +192,5 @@ final readonly class DashboardAction implements ViewActionInterface
             'users'       => [],
             'openReports' => [],
         ]);
-
-        return null;
     }
 }

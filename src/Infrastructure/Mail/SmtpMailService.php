@@ -82,7 +82,8 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
             return 'Server meldet sich nicht (Timeout)';
         }
 
-        $smtpEhloHost = \parse_url($this->config->getBaseUrl())['host'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
+        $smtpEhloHost = \parse_url($this->config->getBaseUrl())['host']
+            ?? ($this->config->get('server_host', 'localhost') ?? 'localhost');
         \fwrite($socket, 'EHLO ' . $smtpEhloHost . "\r\n");
         if (! $this->checkResponse($socket, '250')) {
             return 'EHLO abgelehnt';

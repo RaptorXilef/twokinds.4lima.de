@@ -83,9 +83,6 @@ final readonly class AuthService
     public function logout(): void
     {
         $this->sessionManager->destroy();
-        if (\session_status() === \PHP_SESSION_NONE) {
-            \session_start();
-        }
         $this->sessionManager->rotateCsrfToken();
     }
 

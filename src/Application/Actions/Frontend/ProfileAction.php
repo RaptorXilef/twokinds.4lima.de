@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\ActionRoute;
 use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
@@ -43,11 +42,6 @@ final readonly class ProfileAction implements ViewActionInterface
             return new RedirectResponse('/lesezeichen');
         }
 
-        $this->renderer->render('pages/frontend/profile', [
-            'pageTitle' => 'Mein Profil',
-            'user'      => $user,
-        ]);
-
-        return null;
+        return $this->renderer->render('pages/frontend/profile', ['pageTitle' => 'Mein Profil', 'user' => $user]);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Application\Middleware;
 
 use App\Application\Contracts\MiddlewareInterface;
 use App\Application\Http\ServerRequest;
+use App\Application\Session\SessionManager;
 
 /**
  * Global Security Headers.
@@ -15,6 +16,11 @@ use App\Application\Http\ServerRequest;
  */
 final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
 {
+    public function __construct(
+        private SessionManager $sessionManager,
+    ) {
+    }
+
     public function process(
         ServerRequest $request,
         callable $next,
@@ -33,13 +39,8 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             \header('Referrer-Policy: strict-origin-when-cross-origin');
             \header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
 
-            // Session starten/auslesen für den Nonce (CSRF Token)
-            if (\session_status() === \PHP_SESSION_NONE) {
-                \session_start();
-            }
-
             // Host für lokale Whitelist prüfen
-            $nonce   = $_SESSION['csrf_token'] ?? \bin2hex(\random_bytes(16));
+            $nonce   = $this->sessionManager->getCsrfToken() ?? \bin2hex(\random_bytes(16));
             $host    = $request->server['HTTP_HOST'] ?? '';
             $isLocal = \str_ends_with($host, '.local')
                 || $host === 'localhost'

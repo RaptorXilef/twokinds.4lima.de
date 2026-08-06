@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\ActionRoute;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
@@ -19,10 +18,7 @@ final readonly class ResendVerificationAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $this->renderer->render('pages/frontend/resend_verification', [
-            'pageTitle' => 'Bestätigungsmail erneut anfordern',
-        ]);
+        return $this->renderer->render('pages/frontend/resend_verification', ['pageTitle' => 'Bestätigungsmail erneut anfordern']);
 
-        return null;
     }
 }

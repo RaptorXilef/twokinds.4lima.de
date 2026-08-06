@@ -112,6 +112,51 @@ parameters:
             allowIn:
                 - src/Infrastructure/Media/*
 
+        # 4. Verbot von direkten HTTP- und Session-Manipulationen
+        -
+            function:
+                - 'header'
+                - 'http_response_code'
+                - 'setcookie'
+                - 'session_start'
+                - 'session_destroy'
+                - 'session_regenerate_id'
+                - 'session_write_close'
+                - 'set_time_limit'
+            message: 'Verstoß gegen Clean Architecture: Direkte HTTP- oder Session-Manipulation ist verboten. Nutze Response-Objekte oder den SessionManager.'
+            allowIn:
+                - src/Application/Response/*
+                - src/Application/Session/SessionManager.php
+                - src/Application/Middleware/SecurityHeadersMiddleware.php
+                - src/Application/Exception/GlobalExceptionHandler.php
+                - src/Application/FrontendController.php
+                - src/Bootstrap/*
+                - public/*
+
+        # 5. Verbot von Debug- und Kill-Funktionen
+        -
+            function:
+                - 'die'
+                - 'exit'
+                - 'var_dump'
+                - 'print_r'
+                - 'phpinfo'
+            message: 'Verstoß gegen Clean Architecture: Nutze Exceptions für Abbrüche und Logger für Debugging.'
+            allowIn:
+                - public/dev/*
+                - public/index.php
+                - src/Application/Response/*
+
+        # 6. Verbot von System/Exec Funktionen (Sicherheitsrisiko)
+        -
+            function:
+                - 'exec'
+                - 'passthru'
+                - 'shell_exec'
+                - 'system'
+                - 'eval'
+            message: 'Sicherheitsrisiko: System- und Eval-Aufrufe sind streng verboten!'
+
     disallowedSuperglobals:
         # 4. Verbot von direkten Superglobals
         -
@@ -124,3 +169,22 @@ parameters:
                 - src/Application/Http/ServerRequest.php
                 - public/index.php
                 - src/Application/Middleware/*
+
+        # 5. Absolutes Verbot ALLER Superglobals
+        -
+            superglobal:
+                - '$_FILES'
+                - '$_POST'
+                - '$_GET'
+                - '$_REQUEST'
+                - '$_SESSION'
+                - '$_COOKIE'
+                - '$_SERVER'
+                - '$_ENV'
+            message: 'Direkter Zugriff auf Superglobals ist verboten. Nutze das injizierte ServerRequest-Objekt oder den SessionManager.'
+            allowIn:
+                - src/Application/Http/ServerRequest.php
+                - src/Application/Session/SessionManager.php
+                - src/Application/Exception/GlobalExceptionHandler.php
+                - src/Bootstrap/app.php
+                - public/*

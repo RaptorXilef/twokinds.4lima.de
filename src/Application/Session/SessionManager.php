@@ -157,6 +157,7 @@ final class SessionManager implements AuthSessionInterface
             \setcookie(\session_name(), '', ['expires' => \time() - 42000, 'path' => $p['path'], 'domain' => $p['domain'], 'secure' => $p['secure'], 'httponly' => $p['httponly']]);
         }
         \session_destroy();
+        \session_start();
     }
 
     public function setAuthSession(string $userId, string $groupId, string $label, ?string $hash = null): void
