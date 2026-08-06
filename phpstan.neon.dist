@@ -78,9 +78,9 @@ parameters:
                 - 'file_put_contents'
             message: 'Verstoß gegen Clean Architecture: Dateisystem-Operationen (I/O) sind hier verboten. Lagere dies in das Infrastructure-Layer aus.'
             allowIn:
-                - src/Infrastructure/*
-                - src/Bootstrap/*
-                - public/dev/*
+                - **/Infrastructure/**
+                - **/Bootstrap/**
+                - **/public/dev/**
 
         # 2. Netzwerk-Operationen (cURL)
         -
@@ -94,7 +94,7 @@ parameters:
                 - 'curl_multi_exec'
             message: 'Verstoß gegen Clean Architecture: Netzwerk-Operationen (cURL) sind hier verboten. Nutze einen API-Client im Infrastructure-Layer.'
             allowIn:
-                - src/Infrastructure/*
+                - **/Infrastructure/**
 
         # 3. Bildverarbeitung (GD Library)
         -
@@ -110,9 +110,9 @@ parameters:
                 - 'imagejpeg'
             message: 'Verstoß gegen Clean Architecture: Direkte Bildverarbeitung ist hier verboten. Nutze das MediaServiceInterface.'
             allowIn:
-                - src/Infrastructure/Media/*
+                - **/Infrastructure/Media/**
 
-# 4. Verbot von direkten HTTP- und Session-Manipulationen
+        # 4. Verbot von direkten HTTP- und Session-Manipulationen
         -
             function:
                 - 'header'
@@ -125,13 +125,13 @@ parameters:
                 - 'set_time_limit'
             message: 'Verstoß gegen Clean Architecture: Direkte HTTP- oder Session-Manipulation ist verboten. Nutze Response-Objekte oder den SessionManager.'
             allowIn:
-                - */Application/Response/*
-                - */Application/Session/SessionManager.php
-                - */Application/Middleware/SecurityHeadersMiddleware.php
-                - */Application/Exception/GlobalExceptionHandler.php
-                - */Application/FrontendController.php
-                - */Bootstrap/*
-                - public/*
+                - **/Application/Response/**
+                - **/Application/Session/SessionManager.php
+                - **/Application/Middleware/SecurityHeadersMiddleware.php
+                - **/Application/Exception/GlobalExceptionHandler.php
+                - **/Application/FrontendController.php
+                - **/Bootstrap/**
+                - **/public/**
 
         # 5. Verbot von Debug- und Kill-Funktionen
         -
@@ -143,11 +143,11 @@ parameters:
                 - 'phpinfo'
             message: 'Verstoß gegen Clean Architecture: Nutze Exceptions für Abbrüche und Logger für Debugging.'
             allowIn:
-                - public/dev/*
-                - public/index.php
-                - */Application/Response/*
-                - */Application/Exception/GlobalExceptionHandler.php
-                - */Application/FrontendController.php
+                - **/public/dev/**
+                - **/public/index.php
+                - **/Application/Response/**
+                - **/Application/Exception/GlobalExceptionHandler.php
+                - **/Application/FrontendController.php
 
         # 6. Verbot von System/Exec Funktionen (Sicherheitsrisiko)
         -
@@ -172,6 +172,20 @@ parameters:
                 - 'mysqli_query'
             message: 'Verstoß gegen Clean Architecture: Datenbank-Operationen laufen ausschließlich über PDO im Infrastructure-Layer.'
 
+        # 9. ENDBOSS: Verbot von Zeit-Funktionen (Testbarkeit erzwingen)
+        -
+            function:
+                - 'time'
+                - 'date'
+                - 'strtotime'
+                - 'microtime'
+                - 'sleep'
+                - 'usleep'
+            message: 'Verstoß gegen Clean Architecture: Nutze das ClockInterface anstelle von nativen Zeit-Funktionen, um den Code testbar zu halten.'
+            allowIn:
+                - **/Infrastructure/**
+                - **/Bootstrap/**
+                - **/public/**
 
     disallowedSuperglobals:
         # Verbot ALLER Superglobals außerhalb der vorgesehenen Request/Session-Kapselung
@@ -187,9 +201,9 @@ parameters:
                 - '$_ENV'
             message: 'Direkter Zugriff auf Superglobals ist verboten. Nutze das injizierte ServerRequest-Objekt oder den SessionManager.'
             allowIn:
-                - */Application/Http/ServerRequest.php
-                - */Application/Session/SessionManager.php
-                - */Application/Exception/GlobalExceptionHandler.php
-                - */Application/Middleware/*
-                - */Bootstrap/app.php
-                - public/*
+                - **/Application/Http/ServerRequest.php
+                - **/Application/Session/SessionManager.php
+                - **/Application/Exception/GlobalExceptionHandler.php
+                - **/Application/Middleware/**
+                - **/Bootstrap/app.php
+                - **/public/**
