@@ -6,7 +6,6 @@ namespace App\Infrastructure\Media;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
-use App\Core\Security\Sanitizer;
 
 final readonly class GdMediaService implements MediaServiceInterface
 {
@@ -142,6 +141,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         foreach ($folders as $folder) {
             $oldFile = "$targetDir/$folder/$oldId.webp";
             $newFile = "$targetDir/$folder/$newId.webp";
+
             if (\file_exists($oldFile)) {
                 @\rename($oldFile, $newFile);
             }
@@ -321,9 +321,10 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         for ($i = 0; $i < $count; ++$i) {
             if ($files['error'][$i] === \UPLOAD_ERR_OK) {
-                $tmpName        = $files['tmp_name'][$i];
-                $originalName   = $files['name'][$i];
-                $slugifiedName  = Sanitizer::slugify($originalName);
+                $tmpName      = $files['tmp_name'][$i];
+                $originalName = $files['name'][$i];
+
+                $slugifiedName  = $this->slugify($originalName);
                 $nameWithoutExt = \pathinfo($slugifiedName, \PATHINFO_FILENAME);
                 $targetPath     = $targetDir . '/' . $nameWithoutExt . '.webp';
 
@@ -405,6 +406,7 @@ final readonly class GdMediaService implements MediaServiceInterface
     {
         $tmpFile = $file['tmp_name'] ?? '';
         $info    = @\getimagesize($tmpFile);
+
         if (! $info) {
             throw new \InvalidArgumentException('Die hochgeladene Datei ist kein gültiges Bild.');
         }
@@ -431,6 +433,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         \imagesavealpha($targetImage, true);
         $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
         \imagefilledrectangle($targetImage, 0, 0, $finalSize, $finalSize, $transparent);
+
         \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
 
         if ($oldAvatarUrl !== null && \file_exists($targetDir . '/' . $oldAvatarUrl)) {
@@ -460,5 +463,20 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         return null;
+    }
+
+    // Weitgehend Identisch zu Sanitizer
+    private function slugify(string $filename): string
+    {
+        $info = \pathinfo($filename);
+        $name = $info['filename'];
+        $ext  = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
+
+        $name = \mb_strtolower($name, 'UTF-8');
+        $name = \str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $name);
+        $name = \preg_replace('/[^a-z0-9]+/', '-', $name);
+        $name = \trim(\preg_replace('/-+/', '-', (string) $name), '-');
+
+        return $name . $ext;
     }
 }
