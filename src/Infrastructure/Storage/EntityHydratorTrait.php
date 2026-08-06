@@ -8,8 +8,9 @@ trait EntityHydratorTrait
 {
     /**
      * Extrahiert ein Objekt (Entity) automatisch in ein Array für die Datenbank (snake_case).
+     * @param array $overrides Manuelle Werte für Spalten, die vom Standard abweichen (z.B. komplexe JSON Arrays).
      */
-    protected function extractEntity(object $entity): array
+    protected function extractEntity(object $entity, array $overrides = []): array
     {
         $reflection = new \ReflectionClass($entity);
         $data       = [];
@@ -19,8 +20,17 @@ trait EntityHydratorTrait
                 continue;
             }
 
-            $value    = $property->getValue($entity);
-            $dbColumn = \strtolower(\preg_replace('/(?<!^)[A-Z]/', '_$0', $property->getName()) ?? '');
+            $propName = $property->getName();
+            $dbColumn = \strtolower(\preg_replace('/(?<!^)[A-Z]/', '_$0', $propName) ?? '');
+
+            // Manuelle Überschreibungen (Overrides) haben Vorrang! (Bezieht sich auf den DB-Spaltennamen)
+            if (\array_key_exists($dbColumn, $overrides)) {
+                $data[$dbColumn] = $overrides[$dbColumn];
+
+                continue;
+            }
+
+            $value = $property->getValue($entity);
 
             if ($value instanceof \DateTimeInterface) {
                 $data[$dbColumn] = $value->format('Y-m-d H:i:s');
@@ -38,6 +48,13 @@ trait EntityHydratorTrait
             }
         }
 
+        // Füge Overrides hinzu, die an keinem Property hängen
+        foreach ($overrides as $key => $val) {
+            if (! \array_key_exists($key, $data)) {
+                $data[$key] = $val;
+            }
+        }
+
         return $data;
     }
 
@@ -45,9 +62,10 @@ trait EntityHydratorTrait
      * Baut aus einem Datenbank-Row (snake_case) vollautomatisch dein Objekt zusammen.
      * @template T of object
      * @param  class-string<T> $className
+     * @param  array           $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
      * @return T
      */
-    protected function hydrateEntity(string $className, array $row): object
+    protected function hydrateEntity(string $className, array $row, array $overrides = []): object
     {
         $reflection  = new \ReflectionClass($className);
         $constructor = $reflection->getConstructor();
@@ -61,6 +79,13 @@ trait EntityHydratorTrait
             $propName = $parameter->getName();
             // camelCase zu snake_case konvertieren für DB Lookup
             $dbColumn = \strtolower(\preg_replace('/(?<!^)[A-Z]/', '_$0', $propName) ?? '');
+
+            // Overrides haben höchste Priorität! (Bezieht sich auf den PHP Property-Namen)
+            if (\array_key_exists($propName, $overrides)) {
+                $args[] = $overrides[$propName];
+
+                continue;
+            }
 
             $type     = $parameter->getType();
             $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : null;

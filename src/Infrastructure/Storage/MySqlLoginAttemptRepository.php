@@ -6,11 +6,12 @@ namespace App\Infrastructure\Storage;
 
 use App\Contracts\Storage\LoginAttemptRepositoryInterface;
 use App\Core\Entity\LoginAttempt;
-use App\Core\ValueObject\IpAddress;
+use App\Infrastructure\Database\Table;
 
 final readonly class MySqlLoginAttemptRepository implements LoginAttemptRepositoryInterface
 {
     use DynamicSqlTrait;
+    use EntityHydratorTrait;
 
     public function __construct(
         private \PDO $pdo,
@@ -19,16 +20,17 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
 
     public function findByIp(string $ip): ?LoginAttempt
     {
-        $stmt = $this->pdo->prepare('SELECT attempts, last_attempt FROM `login_attempts` WHERE ip_address = ?');
+        $stmt = $this->pdo->prepare('SELECT ip_address, attempts, last_attempt FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE ip_address = ?');
         $stmt->execute([$ip]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($row) {
-            return new LoginAttempt(
-                new IpAddress($ip === 'unknown' || $ip === '' ? '0.0.0.0' : $ip),
-                (int) $row['attempts'],
-                new \DateTimeImmutable($row['last_attempt']),
-            );
+            // Falls der IP string kaputt war, greift der Konstruktor-Schutz unserer Entität. Wir fangen das ab.
+            if ($row['ip_address'] === '' || $row['ip_address'] === 'unknown') {
+                $row['ip_address'] = '0.0.0.0';
+            }
+
+            return $this->hydrateEntity(LoginAttempt::class, $row);
         }
 
         return null;
@@ -36,22 +38,17 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
 
     public function save(LoginAttempt $attempt): void
     {
-        $data = [
-            'ip_address'   => $attempt->ipAddress->value,
-            'attempts'     => $attempt->attempts,
-            'last_attempt' => $attempt->lastAttempt->format('Y-m-d H:i:s'),
-        ];
-
-        $this->executeUpsert('login_attempts', $data, ['ip_address']);
+        $data = $this->extractEntity($attempt);
+        $this->executeUpsert(Table::LOGIN_ATTEMPTS, $data, ['ip_address']);
     }
 
     public function deleteByIp(string $ip): void
     {
-        $this->pdo->prepare('DELETE FROM `login_attempts` WHERE ip_address = ?')->execute([$ip]);
+        $this->pdo->prepare('DELETE FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE ip_address = ?')->execute([$ip]);
     }
 
     public function deleteOlderThan(int $minutes): void
     {
-        $this->pdo->prepare('DELETE FROM `login_attempts` WHERE last_attempt < DATE_SUB(NOW(), INTERVAL ? MINUTE)')->execute([$minutes]);
+        $this->pdo->prepare('DELETE FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE last_attempt < DATE_SUB(NOW(), INTERVAL ? MINUTE)')->execute([$minutes]);
     }
 }

@@ -8,10 +8,12 @@ use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
+use App\Infrastructure\Database\Table;
 
 final readonly class MySqlComicRepository implements ComicRepositoryInterface
 {
     use DynamicSqlTrait;
+    use EntityHydratorTrait;
 
     public function __construct(private \PDO $pdo)
     {
@@ -19,37 +21,33 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
 
     public function save(ComicPage $comic): void
     {
+        // Da 'characterIds' ein Array aus Objekten ist, nutzen wir den Override, um es zu einem JSON-String aus reinen IDs zu machen.
         $charIds = \array_map(fn (CharacterId $id): string => $id->value, $comic->characterIds);
 
-        $data = [
-            'id'               => $comic->id->value,
-            'type'             => $comic->type,
-            'name'             => $comic->name,
-            'transcript'       => $comic->transcript,
-            'chapter_id'       => $comic->chapterId,
-            'character_ids'    => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
-            'user_ids'         => \json_encode($comic->userIds, \JSON_UNESCAPED_UNICODE),
-            'original_url'     => $comic->originalUrl,
-            'sketch_url'       => $comic->sketchUrl,
-            'image_updated_at' => $comic->imageUpdatedAt,
-        ];
+        $data = $this->extractEntity($comic, [
+            'character_ids' => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
+        ]);
 
         // Die ID soll bei einem Update natürlich nicht überschrieben werden
-        $this->executeUpsert('comics', $data, ['id']);
+        $this->executeUpsert(Table::COMICS, $data, ['id']);
     }
 
     public function findById(ComicId $id): ?ComicPage
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM `comics` WHERE id = ? LIMIT 1');
+        $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::COMICS . '` WHERE id = ? LIMIT 1');
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        return $row ? $this->mapToEntity($row) : null;
+        if (! $row) {
+            return null;
+        }
+
+        return $this->mapToEntity($row);
     }
 
     public function findAll(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM `comics` ORDER BY id DESC');
+        $stmt = $this->pdo->query('SELECT * FROM `' . Table::COMICS . '` ORDER BY id DESC');
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         return \array_map($this->mapToEntity(...), $rows);
@@ -57,29 +55,19 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
 
     public function delete(ComicId $id): void
     {
-        $stmt = $this->pdo->prepare('DELETE FROM `comics` WHERE id = ?');
+        $stmt = $this->pdo->prepare('DELETE FROM `' . Table::COMICS . '` WHERE id = ?');
         $stmt->execute([$id->value]);
     }
 
     private function mapToEntity(array $row): ComicPage
     {
+        // Da die Property 'characterIds' CharacterId-Objekte erwartet, parsen wir sie manuell und geben sie als Override mit.
         $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
         $charIds    = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
 
-        $userIdsRaw = \json_decode($row['user_ids'] ?? '[]', true) ?? [];
-
-        return new ComicPage(
-            id: new ComicId($row['id']),
-            type: $row['type'],
-            name: $row['name'],
-            transcript: $row['transcript'],
-            chapterId: $row['chapter_id'],
-            characterIds: $charIds,
-            userIds: $userIdsRaw,
-            originalUrl: $row['original_url'] ?? '',
-            sketchUrl: $row['sketch_url'] ?? '',
-            imageUpdatedAt: $row['image_updated_at'] !== null ? (int) $row['image_updated_at'] : null,
-        );
+        return $this->hydrateEntity(ComicPage::class, $row, [
+            'characterIds' => $charIds,
+        ]);
     }
 
     public function renameComicId(ComicId $oldId, ComicId $newId): void
@@ -87,13 +75,13 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
         $this->pdo->beginTransaction();
 
         try {
-            $stmt1 = $this->pdo->prepare('UPDATE `comics` SET `id` = ? WHERE `id` = ?');
+            $stmt1 = $this->pdo->prepare('UPDATE `' . Table::COMICS . '` SET `id` = ? WHERE `id` = ?');
             $stmt1->execute([$newId->value, $oldId->value]);
 
-            $stmt2 = $this->pdo->prepare('UPDATE `comic_revisions` SET `comic_id` = ? WHERE `comic_id` = ?');
+            $stmt2 = $this->pdo->prepare('UPDATE `' . Table::COMIC_REVISIONS . '` SET `comic_id` = ? WHERE `comic_id` = ?');
             $stmt2->execute([$newId->value, $oldId->value]);
 
-            $stmt3 = $this->pdo->prepare('UPDATE `reports` SET `comic_id` = ? WHERE `comic_id` = ?');
+            $stmt3 = $this->pdo->prepare('UPDATE `' . Table::REPORTS . '` SET `comic_id` = ? WHERE `comic_id` = ?');
             $stmt3->execute([$newId->value, $oldId->value]);
 
             $this->pdo->commit();
