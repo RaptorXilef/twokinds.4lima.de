@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Service;
+namespace App\Infrastructure\Media;
 
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\MediaServiceInterface;
 
-final readonly class MediaService
+final readonly class GdMediaService implements MediaServiceInterface
 {
     public function __construct(private ConfigInterface $config)
     {

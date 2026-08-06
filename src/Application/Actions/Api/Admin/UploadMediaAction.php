@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
-use App\Core\Service\MediaService;
+use App\Infrastructure\Media\GdMediaService;
 
 #[Route('POST', '/api/upload_media')]
 #[RequiresAuth]
@@ -22,7 +20,7 @@ final readonly class UploadMediaAction implements ActionInterface
 {
     public function __construct(
         private ConfigInterface $config,
-        private MediaService $mediaService,
+        private GdMediaService $mediaService,
         private AuthService $auth,
     ) {
     }

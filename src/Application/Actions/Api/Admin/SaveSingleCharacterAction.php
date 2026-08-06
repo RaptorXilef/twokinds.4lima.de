@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\DTO\SaveSingleCharacterRequest;
 use App\Application\Exception\ValidationException;
@@ -19,8 +17,8 @@ use App\Core\Entity\Character;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
-use App\Core\Service\MediaService;
 use App\Core\ValueObject\CharacterId;
+use App\Infrastructure\Media\GdMediaService;
 
 #[Route('POST', '/api/save_single_character')]
 #[RequiresAuth]
@@ -30,7 +28,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
         private CharacterService $characterService,
         private CharacterRepositoryInterface $charRepo,
         private ConfigInterface $config,
-        private MediaService $mediaService,
+        private GdMediaService $mediaService,
         private AuthService $auth,
     ) {
     }

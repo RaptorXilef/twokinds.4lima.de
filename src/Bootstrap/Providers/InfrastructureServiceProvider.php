@@ -30,6 +30,7 @@ use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
+use App\Contracts\System\MediaServiceInterface;
 use App\Contracts\System\RemoteResourceProberInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
@@ -38,6 +39,7 @@ use App\Infrastructure\Database\PdoFactory;
 use App\Infrastructure\Logging\ErrorLogger;
 use App\Infrastructure\Mail\MailQueueService;
 use App\Infrastructure\Mail\SmtpMailService;
+use App\Infrastructure\Media\GdMediaService;
 use App\Infrastructure\Security\RateLimiter;
 use App\Infrastructure\Storage\JsonHelper;
 use App\Infrastructure\Storage\LocalImageStorage;
@@ -170,6 +172,10 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         ));
 
         // Andere
+        $container->bind(MediaServiceInterface::class, fn (): GdMediaService => new GdMediaService(
+            $container->get(ConfigInterface::class),
+        ));
+
         $container->bind(RemoteResourceProberInterface::class, fn (): CurlRemoteResourceProber => new CurlRemoteResourceProber());
 
         $container->bind(SystemInfoInterface::class, fn (): SystemInfoService => new SystemInfoService(

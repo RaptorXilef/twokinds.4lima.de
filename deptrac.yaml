@@ -1,9 +1,10 @@
-# Path: deptrac.yaml
+# deptrac.yaml
 # @description Erzwingt die architektonische Integrität des universellen OOP/DTO Blueprints.
 
 deptrac:
   paths:
     - src
+  ignore_uncovered_internal_classes: true
   cache_file: .cache/deptrac/.deptrac.cache
 
   layers:

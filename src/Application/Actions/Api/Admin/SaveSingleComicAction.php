@@ -16,9 +16,9 @@ use App\Contracts\System\RemoteResourceProberInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
-use App\Core\Service\MediaService;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
+use App\Infrastructure\Media\GdMediaService;
 
 #[Route('POST', '/api/save_single_comic')]
 #[RequiresAuth]
@@ -26,7 +26,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
 {
     public function __construct(
         private ComicService $comicService,
-        private MediaService $mediaService,
+        private GdMediaService $mediaService,
         private ConfigInterface $config,
         private AuthService $auth,
         private RemoteResourceProberInterface $prober,

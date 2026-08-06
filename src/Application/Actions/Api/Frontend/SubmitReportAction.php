@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Actions\Api\Frontend;
 
 use App\Application\Attribute\Route;
-
-use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\DTO\SubmitReportRequest;
 use App\Application\Exception\ValidationException;
@@ -15,15 +13,15 @@ use App\Application\Response\JsonResponse;
 use App\Application\Session\SessionManager;
 use App\Core\Exception\RateLimitExceededException;
 use App\Core\Service\AuthService;
-use App\Core\Service\MediaService;
 use App\Core\Service\ReportService;
+use App\Infrastructure\Media\GdMediaService;
 
 #[Route('POST', '/api/submit_report')]
 final readonly class SubmitReportAction implements ActionInterface
 {
     public function __construct(
         private ReportService $reportService,
-        private MediaService $mediaService,
+        private GdMediaService $mediaService,
         private AuthService $auth,           // für Session-Check
         private SessionManager $sessionManager, // für ID
     ) {

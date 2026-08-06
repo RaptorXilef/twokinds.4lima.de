@@ -13,9 +13,9 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
-use App\Core\Service\MediaService;
 use App\Core\Service\SiteGeneratorService;
 use App\Core\ValueObject\ComicId;
+use App\Infrastructure\Media\GdMediaService;
 
 #[Route('POST', '/api/upload_comic_media')]
 #[RequiresAuth]
@@ -23,7 +23,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
 {
     public function __construct(
         private ComicRepositoryInterface $comicRepo,
-        private MediaService $mediaService,
+        private GdMediaService $mediaService,
         private SiteGeneratorService $siteGenerator,
         private ConfigInterface $config,
         private AuthService $auth,
