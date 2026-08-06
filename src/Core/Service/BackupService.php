@@ -295,16 +295,22 @@ final readonly class BackupService
         $path = \rtrim($ftpCfg['path'] ?? '', '/\\') . '/';
         $ssl  = ! empty($ftpCfg['ssl']);
 
+        // Großzügiger Timeout (60 Sekunden), damit schlafende HDDs (z.B. FritzNAS) Zeit zum Aufwachen haben
+        $timeout = 60;
+
         try {
             // Verbindungsaufbau (SSL/FTPS falls aktiviert)
-            $connId = $ssl ? @\ftp_ssl_connect($host, $port, 15) : @\ftp_connect($host, $port, 15);
+            $connId = $ssl ? @\ftp_ssl_connect($host, $port, $timeout) : @\ftp_connect($host, $port, $timeout);
             if (! $connId) {
-                throw new \RuntimeException('Verbindung fehlgeschlagen.');
+                throw new \RuntimeException("Verbindung fehlgeschlagen (Timeout nach {$timeout}s).");
             }
 
             if (! @\ftp_login($connId, $user, $pass)) {
                 throw new \RuntimeException('Login fehlgeschlagen.');
             }
+
+            // Sicherstellen, dass die Verbindung während großer Uploads oder Wartezeiten nicht abbricht
+            @\ftp_set_option($connId, \FTP_TIMEOUT_SEC, $timeout);
 
             // Passive mode ist essentiell für Router/Firewalls (wie die FritzBox!)
             @\ftp_pasv($connId, true);
@@ -334,6 +340,7 @@ final readonly class BackupService
         }
     }
 
+    // TODO Prüfen ob hier Elemente eher in die Infrastruktur gehören!
     private function cleanupOldBackups(): void
     {
         $backupCfg = (array) $this->config->get('backup', []);
