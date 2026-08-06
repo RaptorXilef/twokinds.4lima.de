@@ -42,4 +42,8 @@ interface MediaServiceInterface
      * Gibt ein Array mit den neuen Dateinamen und eventuellen Warnungen zurück.
      */
     public function processCharacterImages(string $safeName, array $files): array;
+
+    public function processAvatarUpload(string $userId, ?string $oldAvatarUrl, array $file): string;
+
+    public function saveReportScreenshot(array $file): ?string;
 }

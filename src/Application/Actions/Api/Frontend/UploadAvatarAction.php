@@ -12,6 +12,7 @@ use App\Application\Response\JsonResponse;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Contracts\System\MediaServiceInterface;
 use App\Core\Entity\User;
 
 #[Route('POST', '/api/upload_avatar')]
@@ -22,6 +23,7 @@ final readonly class UploadAvatarAction implements ActionInterface
         private SessionManager $sessionManager,
         private UserRepositoryInterface $userRepository,
         private ConfigInterface $config,
+        private MediaServiceInterface $mediaService,
     ) {
     }
 
@@ -42,55 +44,9 @@ final readonly class UploadAvatarAction implements ActionInterface
                 return JsonResponse::error('Keine Datei oder fehlerhafter Upload.', 400);
             }
 
-            $tmpFile = $request->files['avatar_file']['tmp_name'];
-            $info    = @\getimagesize($tmpFile);
-            if (! $info) {
-                return JsonResponse::error('Die hochgeladene Datei ist kein gültiges Bild.', 400);
-            }
+            // Gesamte GD/Verzeichnis Logik delegiert!
+            $newFilename = $this->mediaService->processAvatarUpload($userId, $user->avatarUrl, $request->files['avatar_file']);
 
-            // Zielordner anlegen falls nicht vorhanden
-            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/avatars';
-            if (! \is_dir($targetDir)) {
-                @\mkdir($targetDir, 0o755, true);
-            }
-
-            // Neues Bild erstellen und in 400x400 erzwingen (falls Cropper leicht abweicht)
-            $srcImage = match ($info[2]) {
-                \IMAGETYPE_JPEG => @\imagecreatefromjpeg($tmpFile),
-                \IMAGETYPE_PNG  => @\imagecreatefrompng($tmpFile),
-                \IMAGETYPE_WEBP => @\imagecreatefromwebp($tmpFile),
-                default         => false,
-            };
-
-            if (! $srcImage) {
-                return JsonResponse::error('Nicht unterstütztes Bildformat.', 400);
-            }
-
-            $finalSize   = 400;
-            $targetImage = \imagecreatetruecolor($finalSize, $finalSize);
-
-            // Transparenz für WebP erhalten (falls Quellbild PNG mit transparentem Hintergrund war)
-            \imagealphablending($targetImage, false);
-            \imagesavealpha($targetImage, true);
-            $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
-            \imagefilledrectangle($targetImage, 0, 0, $finalSize, $finalSize, $transparent);
-
-            \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
-
-            // Alten Avatar löschen, falls existent
-            if ($user->avatarUrl !== null && \file_exists($targetDir . '/' . $user->avatarUrl)) {
-                @\unlink($targetDir . '/' . $user->avatarUrl);
-            }
-
-            // Neue Datei generieren & speichern
-            $newFilename = $userId . '_' . \time() . '.webp';
-            $success     = \imagewebp($targetImage, $targetDir . '/' . $newFilename, 75); // 75% Qualität für extrem kleine Dateigröße
-
-            if (! $success) {
-                return JsonResponse::error('Fehler beim Konvertieren und Speichern des Bildes.', 500);
-            }
-
-            // User updaten
             $updatedUser = new User(
                 $user->id,
                 $user->username,
@@ -101,7 +57,7 @@ final readonly class UploadAvatarAction implements ActionInterface
                 $user->wantsNewsletter,
                 $user->wantsNewsletterTranscript,
                 $user->wantsNotificationReport,
-                $newFilename,
+                $newFilename, // Das neue Bild eintragen
                 $user->bio,
                 $user->socialLinks,
                 $user->publicBookmarks,
@@ -113,6 +69,8 @@ final readonly class UploadAvatarAction implements ActionInterface
                 'new_avatar_url' => $this->config->getBaseUrl() . '/assets/images/avatars/' . $newFilename,
             ]);
 
+        } catch (\InvalidArgumentException $e) {
+            return JsonResponse::error($e->getMessage(), 400);
         } catch (\Throwable $e) {
             \error_log('Avatar Upload Fatal Error: ' . $e->getMessage());
 

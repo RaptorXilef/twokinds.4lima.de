@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
-use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\ImageStorageInterface;
 use App\Core\Service\AuthService;
 
 #[Route('GET', '/api/list_comic_media')]
@@ -19,8 +17,8 @@ use App\Core\Service\AuthService;
 final readonly class ListComicMediaAction implements ActionInterface
 {
     public function __construct(
-        private ConfigInterface $config,
         private AuthService $auth,
+        private ImageStorageInterface $imageStorage,
     ) {
     }
 
@@ -30,31 +28,7 @@ final readonly class ListComicMediaAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $baseDir  = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
-        $thumbDir = $baseDir . '/thumbnails';
-
-        if (! \is_dir($thumbDir)) {
-            return JsonResponse::success(['files' => []]);
-        }
-
-        $files  = \array_diff(\scandir($thumbDir), ['.', '..']);
-        $result = [];
-
-        foreach ($files as $file) {
-            $id       = \pathinfo($file, \PATHINFO_FILENAME);
-            $result[] = [
-                'id' => $id,
-                // Wir schicken dem Frontend Infos, welche Versionen existieren
-                'has_hires'  => \file_exists("$baseDir/hires/$file"),
-                'has_lowres' => \file_exists("$baseDir/lowres/$file"),
-                'has_social' => \file_exists("$baseDir/social/$file"),
-                'has_thumb'  => \file_exists("$baseDir/thumbnails/$file"),
-                'url'        => "/assets/images/comics/thumbnails/{$file}",
-            ];
-        }
-
-        // Sortiere nach ID absteigend (neueste Comics zuerst)
-        \usort($result, fn (array $a, array $b): int => \strcmp($b['id'], $a['id']));
+        $result = $this->imageStorage->listComicMediaFiles(); // <-- Dependency per Konstruktor injecten!
 
         return JsonResponse::success(['files' => $result]);
     }

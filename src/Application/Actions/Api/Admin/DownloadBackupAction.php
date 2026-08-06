@@ -10,15 +10,17 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\FileDownloadResponse;
 use App\Application\Response\JsonResponse;
-use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\BackupServiceInterface;
 use App\Core\Service\AuthService;
 
 #[Route('GET', '/api/download_backup')]
 #[RequiresAuth]
 final readonly class DownloadBackupAction implements ActionInterface
 {
-    public function __construct(private AuthService $auth, private ConfigInterface $config)
-    {
+    public function __construct(
+        private AuthService $auth,
+        private BackupServiceInterface $backupService,
+    ) {
     }
 
     public function execute(ServerRequest $request): mixed
@@ -32,13 +34,15 @@ final readonly class DownloadBackupAction implements ActionInterface
             return JsonResponse::error('Keine Datei angegeben.', 400);
         }
 
-        $filepath = \rtrim((string) $this->config->get('root_path'), '/\\') . '/var/backups/' . $filename;
-        if (! \file_exists($filepath)) {
+        // Delegiert!
+        $content = $this->backupService->getBackupContent($filename);
+
+        if ($content === null) {
             return JsonResponse::error('Datei nicht gefunden.', 404);
         }
 
         $mimeType = \str_ends_with($filename, '.zip') ? 'application/zip' : 'application/json';
 
-        return new FileDownloadResponse(\file_get_contents($filepath), $filename, $mimeType);
+        return new FileDownloadResponse($content, $filename, $mimeType);
     }
 }

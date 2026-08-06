@@ -365,4 +365,16 @@ final readonly class SystemBackupService implements BackupServiceInterface
             }
         }
     }
+
+    public function getBackupContent(string $filename): ?string
+    {
+        $filepath = $this->backupDir . '/' . \basename($filename);
+        if (\file_exists($filepath)) {
+            $content = \file_get_contents($filepath);
+
+            return $content !== false ? $content : null;
+        }
+
+        return null;
+    }
 }

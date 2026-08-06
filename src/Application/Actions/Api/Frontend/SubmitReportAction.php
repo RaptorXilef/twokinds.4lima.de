@@ -35,17 +35,8 @@ final readonly class SubmitReportAction implements ActionInterface
             // --- Screenshot Verarbeitung (Max 1500px, WEBP) ---
             $screenshotUrl = null;
             if (isset($request->files['report_screenshot']) && $request->files['report_screenshot']['error'] === \UPLOAD_ERR_OK) {
-                $file      = $request->files['report_screenshot'];
-                $targetDir = __DIR__ . '/../../../public/assets/images/reports';
-
-                if (! \is_dir($targetDir)) {
-                    \mkdir($targetDir, 0o777, true);
-                }
-
-                $fileName = 'rep_' . \uniqid() . '.webp';
-                if ($this->mediaService->generateScaledImage($file['tmp_name'], $targetDir . '/' . $fileName, 1500)) {
-                    $screenshotUrl = $fileName;
-                }
+                // Logik an Infrastruktur abgegeben
+                $screenshotUrl = $this->mediaService->saveReportScreenshot($request->files['report_screenshot']);
             }
 
             // NEU: Wenn eingeloggt, ID auslesen

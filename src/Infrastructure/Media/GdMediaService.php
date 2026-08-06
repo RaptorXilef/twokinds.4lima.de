@@ -394,4 +394,65 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         return $result;
     }
+
+    public function processAvatarUpload(string $userId, ?string $oldAvatarUrl, array $file): string
+    {
+        $tmpFile = $file['tmp_name'] ?? '';
+        $info    = @\getimagesize($tmpFile);
+        if (! $info) {
+            throw new \InvalidArgumentException('Die hochgeladene Datei ist kein gültiges Bild.');
+        }
+
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/avatars';
+        if (! \is_dir($targetDir)) {
+            @\mkdir($targetDir, 0o755, true);
+        }
+
+        $srcImage = match ($info[2]) {
+            \IMAGETYPE_JPEG => @\imagecreatefromjpeg($tmpFile),
+            \IMAGETYPE_PNG  => @\imagecreatefrompng($tmpFile),
+            \IMAGETYPE_WEBP => @\imagecreatefromwebp($tmpFile),
+            default         => false,
+        };
+
+        if (! $srcImage) {
+            throw new \InvalidArgumentException('Nicht unterstütztes Bildformat.');
+        }
+
+        $finalSize   = 400;
+        $targetImage = \imagecreatetruecolor($finalSize, $finalSize);
+        \imagealphablending($targetImage, false);
+        \imagesavealpha($targetImage, true);
+        $transparent = \imagecolorallocatealpha($targetImage, 255, 255, 255, 127);
+        \imagefilledrectangle($targetImage, 0, 0, $finalSize, $finalSize, $transparent);
+        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
+
+        if ($oldAvatarUrl !== null && \file_exists($targetDir . '/' . $oldAvatarUrl)) {
+            @\unlink($targetDir . '/' . $oldAvatarUrl);
+        }
+
+        $newFilename = $userId . '_' . \time() . '.webp';
+        $success     = \imagewebp($targetImage, $targetDir . '/' . $newFilename, 75);
+
+        if (! $success) {
+            throw new \RuntimeException('Fehler beim Konvertieren und Speichern des Bildes.');
+        }
+
+        return $newFilename;
+    }
+
+    public function saveReportScreenshot(array $file): ?string
+    {
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/reports';
+        if (! \is_dir($targetDir)) {
+            @\mkdir($targetDir, 0o777, true);
+        }
+
+        $fileName = 'rep_' . \uniqid('', true) . '.webp';
+        if ($this->generateScaledImage($file['tmp_name'], $targetDir . '/' . $fileName, 1500)) {
+            return $fileName;
+        }
+
+        return null;
+    }
 }

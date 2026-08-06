@@ -15,4 +15,6 @@ interface BackupServiceInterface
     public function deleteBackup(string $filename): void;
 
     public function getAllTables(): array;
+
+    public function getBackupContent(string $filename): ?string;
 }

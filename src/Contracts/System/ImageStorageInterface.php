@@ -13,4 +13,8 @@ interface ImageStorageInterface
     public function deleteComicMedia(string $comicId): int;
 
     public function deleteCharacterMedia(string $folder, string $filename): bool;
+
+    public function listCharacterMediaFiles(string $folder): array;
+
+    public function listComicMediaFiles(): array;
 }
