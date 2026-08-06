@@ -161,6 +161,12 @@ final readonly class GdMediaService implements MediaServiceInterface
         int $finalWidth = 1200,
         int $finalHeight = 630,
     ): bool {
+        // Ordnererstellung in die Infrastruktur verlagert
+        $dir = \dirname($targetPath);
+        if (! \is_dir($dir)) {
+            @\mkdir($dir, 0o755, true);
+        }
+
         $info = @\getimagesize($sourcePath);
         if (! $info) {
             return false;

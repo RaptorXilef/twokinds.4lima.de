@@ -55,12 +55,6 @@ final readonly class CropSocialMediaAction implements ActionInterface
                 return JsonResponse::error('Hires-Quellbild für den Zuschnitt nicht gefunden.', 404);
             }
 
-            // Ordnerstruktur sicherstellen, falls er durch Cache-Löschung fehlt
-            $socialDir = \dirname($targetPath);
-            if (! \is_dir($socialDir)) {
-                @\mkdir($socialDir, 0o755, true);
-            }
-
             $success = $this->mediaService->generateManualCrop(
                 $sourcePath,
                 $targetPath,

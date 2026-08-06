@@ -25,6 +25,7 @@ use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Contracts\System\AnalyticsClientInterface;
 use App\Contracts\System\AssetHelperInterface;
 use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\ErrorLoggerInterface;
@@ -32,6 +33,7 @@ use App\Contracts\System\ImageStorageInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Contracts\System\RemoteResourceProberInterface;
+use App\Contracts\System\RouteCacheInterface;
 use App\Contracts\System\SiteGeneratorInterface;
 use App\Contracts\System\SystemInfoInterface;
 use App\Contracts\Utils\ClockInterface;
@@ -56,6 +58,8 @@ use App\Infrastructure\Storage\MySqlReportRepository;
 use App\Infrastructure\Storage\MySqlRoleRepository;
 use App\Infrastructure\Storage\MySqlUserRepository;
 use App\Infrastructure\System\CurlRemoteResourceProber;
+use App\Infrastructure\System\FileRouteCache;
+use App\Infrastructure\System\GoogleAnalyticsClient;
 use App\Infrastructure\System\LocalAssetHelper;
 use App\Infrastructure\System\StaticSiteGenerator;
 use App\Infrastructure\System\SystemBackupService;
@@ -185,6 +189,14 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         ));
 
         $container->bind(AssetHelperInterface::class, fn (): LocalAssetHelper => new LocalAssetHelper(
+            $container->get(ConfigInterface::class),
+        ));
+
+        $container->bind(AnalyticsClientInterface::class, fn (): GoogleAnalyticsClient => new GoogleAnalyticsClient(
+            $container->get(ConfigInterface::class),
+        ));
+
+        $container->bind(RouteCacheInterface::class, fn (): FileRouteCache => new FileRouteCache(
             $container->get(ConfigInterface::class),
         ));
 

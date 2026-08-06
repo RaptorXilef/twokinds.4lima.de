@@ -7,38 +7,36 @@ namespace App\Application\Routing;
 use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\RouteCacheInterface;
 
 final class ActionRegistry
 {
     private array $routes = ['exact' => [], 'dynamic' => []];
 
-    public function __construct(private readonly ConfigInterface $config)
-    {
+    public function __construct(
+        private readonly ConfigInterface $config,
+        private readonly RouteCacheInterface $cache,
+    ) {
         $this->loadRoutes();
     }
 
     private function loadRoutes(): void
     {
-        $cacheFile = $this->config->getStoragePath('cache/routes_v2.php');
+        $this->cache->clearOld();
 
-        // Altes Cache-File löschen falls vorhanden
-        @\unlink($this->config->getStoragePath('cache/routes.php'));
+        if (! $this->config->get('admin_dev_mode', false)) {
+            $cached = $this->cache->load();
+            if ($cached !== null) {
+                $this->routes = $cached;
 
-        if (\file_exists($cacheFile) && ! $this->config->get('admin_dev_mode', false)) {
-            $this->routes = require $cacheFile;
-
-            return;
+                return;
+            }
         }
 
         $baseDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/src/Application/Actions';
         $this->scanDirectoryRecursively($baseDir);
 
-        $cacheDir = \dirname($cacheFile);
-        if (! \is_dir($cacheDir)) {
-            @\mkdir($cacheDir, 0o755, true);
-        }
-
-        \file_put_contents($cacheFile, '<?php return ' . \var_export($this->routes, true) . ';', \LOCK_EX);
+        $this->cache->save($this->routes);
     }
 
     private function scanDirectoryRecursively(string $dir): void

@@ -8,6 +8,7 @@ use App\Application\Contracts\MiddlewareInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
+use App\Contracts\System\AnalyticsClientInterface;
 
 /**
  * Sendet Serverseitige Events an Google Analytics (GA4).
@@ -20,6 +21,7 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
     public function __construct(
         private ConfigInterface $config,
         private SessionManager $sessionManager,
+        private AnalyticsClientInterface $analyticsClient,
     ) {
     }
 
@@ -100,19 +102,11 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
             ],
         ];
 
-        $ch = \curl_init('https://www.google-analytics.com/mp/collect?measurement_id=' . \urlencode($gaId) . '&api_secret=' . \urlencode($apiSecret));
-        if ($ch === false) {
-            return;
-        }
-
-        \curl_setopt_array($ch, [
-            \CURLOPT_PROTOCOLS      => \CURLPROTO_HTTPS,
-            \CURLOPT_RETURNTRANSFER => true,
-            \CURLOPT_POST           => true,
-            \CURLOPT_POSTFIELDS     => \json_encode($payload),
-            \CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
-            \CURLOPT_TIMEOUT_MS     => 250,
-        ]);
-        \curl_exec($ch);
+        $this->analyticsClient->trackPageView(
+            $this->sessionManager->getAnalyticsId(),
+            (string) $sessionId,
+            $pageLocation,
+            $pageTitle
+        );
     }
 }
