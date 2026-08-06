@@ -35,7 +35,7 @@ parameters:
         analyse:
             - vendor
             - node_modules
-            - public/dist
+            - public/dist (?)
             - '**/.debug/**'
 
     # Wir simulieren eine PHP 8.4 Umgebung (80400), damit PHPStan
