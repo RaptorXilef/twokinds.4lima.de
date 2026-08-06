@@ -1,0 +1,122 @@
+<!-- ======================================================================= -->
+<!-- REPORT DETAIL MODAL -->
+<!-- ======================================================================= -->
+<div id="report-detail-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-report-modal"></div>
+    <div class="modal-content modal-lg modal-flex">
+        <div class="modal-header-wrapper">
+            <h2>Meldung überprüfen</h2>
+            <button class="modal-close btn-close-report-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+
+            <!-- Prominente Melder-Box -->
+            <div class="d-flex flex-wrap gap-20 mb-30 p-20 bg-even border-medium border-radius-6 align-center">
+                <!-- Melder (Links) -->
+                <div class="d-flex align-center gap-15 flex-1 min-w-250">
+                    <img id="rep-modal-avatar-img"
+                         src=""
+                         class="report-modal-avatar"
+                         alt="Avatar">
+                    <div>
+                        <div class="font-small text-faded text-uppercase font-bold letter-spacing-1 mb-5">Gemeldet von
+                        </div>
+                        <div id="rep-modal-submitter"
+                             class="font-1-5x text-color font-bold"></div>
+                        <!-- User ID Anzeige -->
+                        <div id="rep-modal-submitter-id"
+                             class="font-small text-faded mono mt-5"></div>
+                    </div>
+                </div>
+
+                <!-- Helfer-Status (Mitte) -->
+                <div class="flex-1 text-center min-w-150">
+                    <div class="font-small text-faded text-uppercase font-bold letter-spacing-1 mb-5">Nennung als Helfer
+                    </div>
+                    <span id="rep-modal-wants-credit" class="report-status-badge"></span>
+                </div>
+
+                <!-- Metadaten (Rechts) -->
+                <div class="d-flex flex-column gap-10 text-right flex-none">
+                    <div class="bg-content p-5 px-20 border-medium border-radius-4">
+                        <span class="text-faded mr-10 font-small text-uppercase">Comic ID:</span>
+                        <span id="rep-modal-comic-id" class="mono font-bold text-color font-1-1x"></span>
+                    </div>
+                    <div class="bg-content p-5 px-20 border-medium border-radius-4">
+                        <span class="text-faded mr-10 font-small text-uppercase">Datum:</span>
+                        <span id="rep-modal-date" class="font-bold text-color font-1-1x"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Beschreibung -->
+            <div class="form-group mb-30">
+                <label class="font-1-1x mb-10 border-bottom-light pb-5 d-block">Beschreibung des Nutzers:</label>
+                <div id="rep-modal-desc"
+                     class="bg-content border-medium border-radius-6 p-20 font-1-1x lh-1-6 report-desc-text"></div>
+            </div>
+
+            <div id="rep-modal-transcript-section"
+                 class="hidden mb-30">
+                <label>Transkript-Abgleich (Diff):</label>
+                <div class="diff-box bg-content border-medium border-radius-4 p-15"
+                     id="rep-modal-diff"></div>
+                <div class="mt-10 text-right">
+                    <button type="button"
+                            class="button add"
+                            id="btn-transfer-transcript">
+                        <i class="fa-solid fa-file-import"></i> Im Comic-Editor öffnen & einfügen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Screenshot Bereich -->
+            <div id="rep-modal-screenshot-section"
+                 class="mb-15 hidden">
+                <label>Angehängter Screenshot:</label>
+                <div class="mt-5">
+                    <a id="rep-modal-screenshot-link" href="#" target="_blank" title="In Originalgröße öffnen">
+                        <img id="rep-modal-screenshot-img" src="" alt="User Screenshot" class="w-100 border-medium border-radius-4 bg-content report-screenshot-img">
+                    </a>
+                </div>
+            </div>
+
+            <!-- Telemetrie / Debug -->
+            <div class="mb-15">
+                <div class="d-flex justify-between align-center mb-5">
+                    <label class="mb-0">Telemetrie & Debug-Infos:</label>
+                    <button type="button"
+                            id="btn-toggle-debug-view"
+                            class="button edit font-small p-5 hidden">
+                        <i class="fa-solid fa-code"></i> Rohdaten anzeigen
+                    </button>
+                </div>
+
+                <!-- Die gerenderte Baumansicht -->
+                <div id="rep-modal-debug-rendered"
+                     class="bg-even border-medium border-radius-4 p-10 hidden scroll-y debug-rendered-box"></div>
+                <textarea id="rep-modal-debug" rows="6" readonly class="w-100 bg-content border-medium border-radius-4 p-10"></textarea>
+            </div>
+
+            <!-- Die rohe Text-Ansicht (Fallback) -->
+        </div>
+
+        <div class="modal-footer-actions">
+            <div class="modal-buttons w-100 justify-end">
+                <?php if ($perms['rep_del']) { ?>
+                    <button type="button"
+                            class="button delete"
+                            id="btn-rep-spam">Spam / Ablehnen</button>
+                <?php } ?>
+                <?php if ($perms['rep_resolve']) { ?>
+                    <button type="button"
+                            class="button add"
+                            id="btn-rep-resolve">Als Erledigt markieren</button>
+                <?php } ?>
+                <button type="button"
+                        class="button btn-close-report-modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+</div>

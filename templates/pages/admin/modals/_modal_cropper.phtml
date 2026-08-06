@@ -1,0 +1,37 @@
+<!-- ======================================================================= -->
+<!-- CROPPER MODAL -->
+<!-- ======================================================================= -->
+<div id="cropper-modal"
+     class="modal z-1070">
+    <div class="modal-overlay btn-close-cropper-modal"></div>
+    <div class="modal-content modal-lg modal-flex">
+        <div class="modal-header-wrapper">
+            <h2>Social-Media Thumbnail zuschneiden</h2>
+            <button class="modal-close btn-close-cropper-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content d-flex flex-column overflow-hidden">
+            <p class="text-light mb-15">Ziehe den Rahmen auf den perfekten Ausschnitt. Er bleibt immer quadratisch
+                (1:1), optimal für Social Media.</p>
+
+            <!-- Hier kommt das Bild rein -->
+            <div class="cropper-container">
+                <img id="cropper-image"
+                     src=""
+                     alt="Cropper"
+                     class="cropper-hidden-img">
+            </div>
+            <!-- Versteckte Felder für die API -->
+            <input type="hidden"
+                   id="crop_comic_id">
+        </div>
+        <div class="modal-footer-actions">
+            <button type="button"
+                    class="button btn-close-cropper-modal">Abbrechen</button>
+            <button type="button"
+                    class="button edit"
+                    id="btn-save-crop">
+                <i class="fa-solid fa-crop-simple"></i> Zuschneiden & Speichern
+            </button>
+        </div>
+    </div>
+</div>

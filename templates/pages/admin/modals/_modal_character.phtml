@@ -1,0 +1,269 @@
+<!-- ======================================================================= -->
+<!-- CHARACTER MODAL -->
+<!-- ======================================================================= -->
+<div id="char-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-char-modal"></div>
+    <div class="modal-content modal-lg modal-flex">
+        <div class="modal-header-wrapper">
+            <h2 id="modal-title-char">Charakter bearbeiten</h2>
+            <button class="modal-close btn-close-char-modal">&times;</button>
+        </div>
+
+        <div class="modal-scroll-content">
+            <!-- Linke Spalte: Vorschaubild -->
+            <div class="d-flex align-start gap-20 mb-15">
+                <div class="char-preview-wrapper">
+                    <img id="char-preview-img"
+                         src="https://placehold.co/120x120?text=Kein+Bild"
+                         alt="Preview">
+                    <div id="char-display-id"
+                         class="char-id-display">ID: NEW</div>
+                </div>
+
+                <!-- Rechte Spalte: Formular -->
+                <div class="flex-1">
+                    <form id="char-form"
+                          class="admin-form"
+                          enctype="multipart/form-data">
+                        <!-- BESEITIGT DEN "NEW" BUG: name="id" anstatt "character_id" -->
+                        <input type="hidden"
+                               id="character_id"
+                               name="id"
+                               value="new">
+
+                        <div class="grid-2-cols mb-15">
+                            <div class="form-group mb-0">
+                                <label for="name">Anzeige Name * (Pflicht)</label>
+                                <input type="text"
+                                       id="name"
+                                       name="name"
+                                       required
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="full_name">Voller Name</label>
+                                <input type="text"
+                                       id="full_name"
+                                       name="full_name"
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="alt_names">Alternative Namen</label>
+                                <input type="text"
+                                       id="alt_names"
+                                       name="alt_names"
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="gender">Geschlecht</label>
+                                <select id="gender"
+                                        name="gender"
+                                        class="bg-content w-100">
+                                    <option value="">Keine Angabe</option>
+                                    <option value="Männlich">Männlich</option>
+                                    <option value="Weiblich">Weiblich</option>
+                                    <option value="Neutrum">Neutrum</option>
+                                    <option value="Androgyn">Androgyn</option>
+                                </select>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="age">Alter</label>
+                                <input type="text"
+                                       id="age"
+                                       name="age"
+                                       pattern="^[0-9~]+|n/a|N/A$"
+                                       title="Nur Zahlen, die Tilde (~) oder n/a"
+                                       placeholder="z.B. 24, ~11, n/a"
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="char_rank">Klasse / Rang (Mehrfach mgl.)</label>
+                                <input type="text"
+                                       id="char_rank"
+                                       name="rank"
+                                       list="dl-ranks"
+                                       placeholder="z.B. Magier, Templer"
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="species">Spezies</label>
+                                <input type="text"
+                                       id="species"
+                                       name="species"
+                                       list="dl-species"
+                                       placeholder="z.B. Keidran, Mensch"
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="subspecies">Subspezies</label>
+                                <input type="text"
+                                       id="subspecies"
+                                       name="subspecies"
+                                       list="dl-subspecies"
+                                       placeholder="z.B. Tiger, Wolf"
+                                       class="bg-content">
+                            </div>
+                            <div class="form-group mb-0"
+                                 style="grid-column: span 2;">
+                                <label for="languages">Sprachen (Kommagetrennt)</label>
+                                <input type="text"
+                                       id="languages"
+                                       name="languages"
+                                       list="dl-languages"
+                                       placeholder="z.B. Keidran, Mensch"
+                                       class="bg-content">
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-15">
+                            <label>Profilbild Upload & Auswahl</label>
+                            <div class="d-flex flex-column">
+                                <div id="char-drop-zone"
+                                     class="drag-drop-zone drop-zone-sm bg-even border-dashed border-radius-6 mb-0">
+                                    <i class="fa-solid fa-user-circle"></i>
+                                    <p class="text-light">Neues Bild hier ablegen oder klicken</p>
+                                    <input type="file"
+                                           id="profile_image"
+                                           name="profile_image"
+                                           accept="image/*"
+                                           class="hidden">
+                                    <div id="upload-preview-name"
+                                         class="mt-5 font-bold text-link"></div>
+                                </div>
+                                <div class="d-flex flex-column gap-5 mt-10">
+                                    <button type="button"
+                                            class="button btn-open-gallery-dynamic w-100"
+                                            data-target="pic_url"
+                                            data-folder="profiles">
+                                        <i class="fa-solid fa-images"></i> Aus Galerie wählen
+                                    </button>
+                                    <input type="text"
+                                           id="pic_url"
+                                           name="pic_url"
+                                           placeholder="Oder Dateiname manuell eintippen (z.B. trace.webp)"
+                                           class="w-100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zusatzbilder für das Frontend mit Drag & Drop -->
+                        <div class="bg-even border-medium border-radius-6 p-15 mb-15">
+                            <h4 class="mt-0 mb-15">Zusätzliche Medien</h4>
+                            <div class="grid-2-cols mb-15">
+                                <div class="d-flex flex-column">
+                                    <div id="char-drop-zone-main"
+                                         class="drag-drop-zone drop-zone-sm bg-content border-dashed border-radius-6 mb-0">
+                                        <i class="fa-solid fa-image"></i>
+                                        <p>Hauptbild (Groß)</p>
+                                        <input type="file"
+                                               id="main_pic"
+                                               name="main_pic"
+                                               accept="image/*"
+                                               class="hidden">
+                                        <img id="preview-img-main"
+                                             src=""
+                                             class="mt-10 border-light border-radius-4 hidden"
+                                             alt="Main Pic"
+                                             style="max-height: 120px;">
+                                    </div>
+                                    <div class="d-flex flex-column gap-5 mt-10">
+                                        <button type="button"
+                                                class="button btn-open-gallery-dynamic w-100"
+                                                data-target="main_pic_url"
+                                                data-folder="main">
+                                            <i class="fa-solid fa-images"></i> Aus Galerie
+                                        </button>
+                                        <input type="text"
+                                               id="main_pic_url"
+                                               name="main_pic_url"
+                                               placeholder="Manueller Dateiname...">
+                                    </div>
+                                </div>
+
+                                <!-- Swatch -->
+                                <div class="d-flex flex-column">
+                                    <div id="char-drop-zone-swatch"
+                                         class="drag-drop-zone drop-zone-sm bg-content border-dashed border-radius-6 mb-0">
+                                        <i class="fa-solid fa-palette"></i>
+                                        <p>Farbpalette</p>
+                                        <input type="file"
+                                               id="swatch_pic"
+                                               name="swatch_pic"
+                                               accept="image/*"
+                                               class="hidden">
+                                        <img id="preview-img-swatch"
+                                             src=""
+                                             class="mt-10 border-light border-radius-4 hidden"
+                                             alt="Swatch"
+                                             style="max-height: 120px;">
+                                    </div>
+                                    <div class="d-flex flex-column gap-5 mt-10">
+                                        <button type="button"
+                                                class="button btn-open-gallery-dynamic w-100"
+                                                data-target="swatch_pic_url"
+                                                data-folder="palettes">
+                                            <i class="fa-solid fa-images"></i> Aus Galerie
+                                        </button>
+                                        <input type="text"
+                                               id="swatch_pic_url"
+                                               name="swatch_pic_url"
+                                               placeholder="Manueller Dateiname...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ref Sheets -->
+                            <div class="d-flex flex-column">
+                                <div id="char-drop-zone-refs"
+                                     class="drag-drop-zone drop-zone-sm bg-content border-dashed border-radius-6 mb-0">
+                                    <i class="fa-solid fa-images"></i>
+                                    <p>Reference Sheets</p>
+                                    <small>Mehrere Dateien möglich.</small>
+                                    <input type="file"
+                                           id="ref_sheets"
+                                           name="ref_sheets[]"
+                                           accept="image/*"
+                                           multiple
+                                           class="hidden">
+                                    <div id="preview-container-refs"
+                                         class="d-flex flex-wrap justify-center gap-10 mt-15"></div>
+                                </div>
+                                <div class="d-flex flex-column gap-5 mt-10">
+                                    <button type="button"
+                                            class="button btn-open-gallery-dynamic w-100"
+                                            data-target="ref_sheets_urls"
+                                            data-folder="refsheets">
+                                        <i class="fa-solid fa-images"></i> Bilder aus Galerie wählen
+                                    </button>
+                                    <input type="text"
+                                           id="ref_sheets_urls"
+                                           name="ref_sheets_urls"
+                                           placeholder="Dateinamen (kommagetrennt)...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Beschreibung / HTML Text -->
+                        <div class="form-group">
+                            <label for="char_description">Beschreibung (HTML)</label>
+                            <textarea id="char_description" name="description" class="wysiwyg-editor" rows="4"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-char-modal">Abbrechen</button>
+                <?php if ($perms['char_edit']) { ?>
+                    <button type="button"
+                            class="button edit"
+                            id="btn-save-char">Speichern (Live)</button>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>

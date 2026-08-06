@@ -1,0 +1,55 @@
+<!-- ======================================================================= -->
+<!-- CHAPTER MODAL -->
+<!-- ======================================================================= -->
+<div id="chapter-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-chapter-modal"></div>
+    <div class="modal-content modal-lg modal-flex">
+        <div class="modal-header-wrapper">
+            <h2 id="modal-title-chapter">Kapitel bearbeiten</h2>
+            <button class="modal-close btn-close-chapter-modal">&times;</button>
+        </div>
+        <div class="modal-scroll-content">
+            <form id="chapter-form"
+                  class="admin-form">
+                <input type="hidden"
+                       id="chap_old_id"
+                       name="old_id"
+                       value="">
+                <div class="grid-1-2-cols mb-15">
+                    <div class="form-group mb-0">
+                        <label for="chapter_id">Kapitel ID / Nummer *</label>
+                        <input type="text"
+                               id="chapter_id"
+                               name="chapter_id"
+                               required
+                               placeholder="z.B. 21 oder Prolog">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="chap_title">Titel des Kapitels *</label>
+                        <input type="text"
+                               id="chap_title"
+                               name="title"
+                               required
+                               placeholder="z.B. Die große Reise">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="chap_description">Zusammenfassung / Beschreibung (HTML)</label>
+                    <textarea id="chap_description" name="description" class="wysiwyg-editor" rows="4"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-actions">
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-chapter-modal">Abbrechen</button>
+                <?php if ($perms['chap_edit']) { ?>
+                    <button type="button"
+                            class="button edit"
+                            id="btn-save-chapter">Speichern (Live)</button>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+<!-- ======================================================================= -->
+<!-- OVERWRITE MODAL -->
+<!-- ======================================================================= -->
+<div id="overwrite-modal"
+     class="modal z-1060">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-lg modal-flex">
+        <div class="modal-header-wrapper">
+            <h2 class="text-danger mb-0"><i class="fa-solid fa-triangle-exclamation"></i> Bild existiert bereits!</h2>
+        </div>
+        <div class="modal-scroll-content">
+            <p>Für die ID <strong id="overwrite-id-display"
+                        class="mono"></strong> existiert auf dem Server bereits ein Bild. Was möchtest du tun?</p>
+            <div class="d-flex gap-20 text-center mt-20">
+                <div class="flex-1 p-15 bg-even border-radius-8">
+                    <h3 class="mt-0 text-success">Neues Bild (Lokal)</h3>
+                    <img id="overwrite-new-img"
+                         src=""
+                         alt="Neu"
+                         class="w-100 border-medium border-radius-4 bg-content overwrite-preview-img">
+                </div>
+                <div class="flex-1 p-15 bg-even border-radius-8">
+                    <h3 class="mt-0">Auf dem Server</h3>
+                    <img id="overwrite-server-img"
+                         src=""
+                         alt="Server"
+                         class="w-100 border-medium border-radius-4 bg-content overwrite-preview-img">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer-actions d-flex justify-between flex-wrap gap-10">
+            <button type="button"
+                    class="button"
+                    id="btn-overwrite-skip">Server-Bild behalten (Überspringen)</button>
+            <div class="d-flex gap-10">
+                <button type="button"
+                        class="button button-orange"
+                        id="btn-overwrite-variant">Als Variante (a,b,c) anfügen</button>
+                <button type="button"
+                        class="button delete"
+                        id="btn-overwrite-confirm"><i class="fa-solid fa-bolt"></i> Überschreiben</button>
+            </div>
+        </div>
+    </div>
+</div>

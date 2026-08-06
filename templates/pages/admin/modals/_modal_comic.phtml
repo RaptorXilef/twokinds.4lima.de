@@ -1,0 +1,321 @@
+<!-- ======================================================================= -->
+<!-- COMIC MODAL -->
+<!-- ======================================================================= -->
+<div id="comic-modal"
+     class="modal">
+    <div class="modal-overlay btn-close-comic-modal"></div>
+    <div class="modal-content modal-lg modal-flex">
+        <div class="modal-header-wrapper">
+            <h2 id="modal-title-comic">Comic bearbeiten</h2>
+            <button class="modal-close btn-close-comic-modal">&times;</button>
+        </div>
+
+        <div class="modal-scroll-content">
+            <div class="grid-4-custom mb-20">
+                <div class="preview-box">
+                    <strong>Lokal (Thumbnail)</strong>
+                    <div class="preview-box-inner">
+                        <img id="prev-comic-local"
+                             src="https://placehold.co/100x160?text=Kein+Bild"
+                             class="hover-zoom-trigger"
+                             alt="Lokal">
+                    </div>
+                </div>
+                <div class="preview-box">
+                    <strong>Original (Keenspot)</strong>
+                    <div class="preview-box-inner">
+                        <img id="prev-comic-orig"
+                             src="https://placehold.co/100x160?text=Kein+Bild"
+                             class="hover-zoom-trigger"
+                             alt="Original">
+                    </div>
+                </div>
+                <div class="preview-box">
+                    <strong>Sketch (Keenspot)</strong>
+                    <div class="preview-box-inner">
+                        <img id="prev-comic-sketch"
+                             src="https://placehold.co/100x160?text=Kein+Bild"
+                             class="hover-zoom-trigger"
+                             alt="Sketch">
+                    </div>
+                </div>
+                <div class="preview-box">
+                    <strong>Social Media (1.91:1)</strong>
+                    <div class="preview-box-inner social-preview">
+                        <img id="prev-comic-social"
+                             src="https://placehold.co/191x100?text=Kein+Bild"
+                             class="hover-zoom-trigger"
+                             alt="Social Media">
+                    </div>
+                    <button type="button"
+                            class="button w-100 mt-10 p-5 font-small"
+                            id="btn-open-cropper">
+                        <i class="fa-solid fa-crop"></i> Bild anpassen
+                    </button>
+                </div>
+            </div>
+
+            <form id="comic-form"
+                  class="admin-form"
+                  enctype="multipart/form-data">
+                <input type="hidden"
+                       id="form-action"
+                       name="action"
+                       value="save">
+                <input type="hidden"
+                       id="old_comic_id"
+                       name="old_comic_id"
+                       value="">
+
+                <div class="grid-2-cols mb-15">
+                    <div class="form-group mb-0">
+                        <label for="comic_id">Comic ID (YYYYMMDD) *</label>
+                        <input type="text"
+                               id="comic_id"
+                               name="comic_id"
+                               required
+                               pattern="\d{8}"
+                               placeholder="z.B. 20251024">
+                        <small class="text-faded">Füllt URLs beim Verlassen des Feldes automatisch aus.</small>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label for="type">Typ</label>
+                        <select id="type"
+                                name="type">
+                            <option value="Comicseite">Comicseite</option>
+                            <option value="Filler">Filler</option>
+                            <option value="Art">Art</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid-2-1-cols mb-15">
+                    <div class="form-group mb-0">
+                        <label for="name">Titel / Name</label>
+                        <input type="text"
+                               id="name"
+                               name="name"
+                               placeholder="Name des Comics">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="chapter_id">Kapitel ID</label>
+                        <input type="text"
+                               id="chapter_id"
+                               name="chapter_id"
+                               list="chapter-datalist"
+                               placeholder="z.B. 21">
+                        <datalist id="chapter-datalist">
+                            <?php foreach ($existingChapters ?? [] as $ch) { ?>
+                                <option value="<?php echo \htmlspecialchars((string) $ch); ?>"></option>
+                            <?php } ?>
+                        </datalist>
+                    </div>
+                </div>
+
+                <!-- Keenspot Base URL Logik ist im Backend verbaut! -->
+                <div class="grid-2-cols mb-15">
+                    <div class="form-group mb-0">
+                        <label for="url_originalbild">Original URL (Bild)</label>
+                        <input type="text"
+                               id="url_originalbild"
+                               name="url_originalbild"
+                               placeholder="Dateiname (z.B. 12345.png) oder volle https:// URL">
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label for="url_originalsketch">Original URL (Sketch)</label>
+                        <input type="text"
+                               id="url_originalsketch"
+                               name="url_originalsketch"
+                               placeholder="Dateiname oder volle https:// URL">
+                    </div>
+                </div>
+
+                <!-- Drag n Drop Upload Felder für Comic-Seiten -->
+                <div class="form-group mb-20">
+                    <label>Bild(er) hochladen (Drag & Drop oder Klick)</label>
+                    <div class="grid-2-cols">
+                        <div id="comic-drop-zone-hires"
+                             class="drag-drop-zone drop-zone-sm zone-hires bg-even border-dashed border-radius-6 mb-0">
+                            <i class="fa-solid fa-file-image"></i>
+                            <p>Hires (Pflicht)</p>
+                            <small>Wird automatisch skaliert</small>
+                            <input type="file"
+                                   id="upload_hires"
+                                   name="upload_hires"
+                                   accept="image/*"
+                                   class="hidden">
+                            <div id="preview-name-hires"
+                                 class="mt-5 font-bold text-success"></div>
+                        </div>
+
+                        <div id="comic-drop-zone-lowres"
+                             class="drag-drop-zone drop-zone-sm zone-lowres bg-even border-dashed border-radius-6 mb-0">
+                            <i class="fa-solid fa-compress"></i>
+                            <p>Lowres (Optional)</p>
+                            <small>Überschreibt Auto-Skalierung</small>
+                            <input type="file"
+                                   id="upload_lowres"
+                                   name="upload_lowres"
+                                   accept="image/*"
+                                   class="hidden">
+                            <div id="preview-name-lowres"
+                                 class="mt-5 font-bold text-success"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trumbowyg Textfeld -->
+                <div class="form-group">
+                    <label for="transcript">Transkript (HTML)</label>
+                    <textarea id="transcript" name="transcript" class="wysiwyg-editor" rows="5"></textarea>
+                </div>
+
+                <!-- Charakter-Auswahl -->
+                <div class="form-group mt-15">
+                    <div class="d-flex justify-between align-center mb-10">
+                        <label class="mb-0">Auf der Seite vorkommende Charaktere</label>
+                        <button type="button"
+                                class="button"
+                                id="btn-toggle-char-view">
+                            <i class="fa-solid fa-layer-group"></i> Gruppiert anzeigen
+                        </button>
+                    </div>
+
+                    <!-- Das versteckte Select-Feld sammelt die echten Daten für den Request -->
+                    <select name="character_ids[]"
+                            id="hidden-comic-chars"
+                            multiple
+                            class="hidden">
+                        <?php foreach ($characters as $char) { ?>
+                            <option value="<?php echo \htmlspecialchars($char->id->value); ?>"></option>
+                        <?php } ?>
+                    </select>
+
+                    <div class="bg-even border-medium border-radius-4 p-10">
+
+                        <!-- Ansicht 1: Alphabetisch -->
+                        <div id="view-chars-alpha"
+                             class="char-selection-grid scroll-y max-h-250">
+                            <?php $alphaChars = $characters;
+                            \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
+
+                            foreach ($alphaChars as $char) {
+                                $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A'; ?>
+                                <div class="char-selection-item"
+                                     data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                                    <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                         loading="lazy"
+                                         alt="Char">
+                                    <span><?php echo \htmlspecialchars($char->name); ?></span>
+                                </div>
+                            <?php } ?>
+                        </div>
+
+                        <!-- Ansicht 2: Gruppiert -->
+                        <div id="view-chars-grouped"
+                             class="hidden scroll-y max-h-250">
+                            <?php foreach ($groups as $group) { ?>
+                                <h4 class="mt-10 mb-5 border-bottom border-medium pb-5"><?php echo \htmlspecialchars($group->name); ?></h4>
+                                <div class="char-selection-grid mb-15">
+                                    <?php foreach ($group->characterIds as $cidObj) {
+                                        $char = null;
+                                        foreach ($characters as $c) {
+                                            if ($c->id->value === $cidObj->value) {
+                                                $char = $c;
+
+                                                break;
+                                            }
+                                        }
+                                        if (! $char) {
+                                            continue;
+                                        }
+                                        $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A'; ?>
+                                        <div class="char-selection-item"
+                                             data-char-id="<?php echo \htmlspecialchars($char->id->value); ?>">
+                                            <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                                 loading="lazy"
+                                                 alt="Char">
+                                            <span><?php echo \htmlspecialchars($char->name); ?></span>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                            <?php } ?>
+                        </div>
+
+                    </div>
+                    <!-- HELFER / User AUSWAHL -->
+                    <!-- GEÄNDERT: helper -> user -->
+                    <div class="d-flex justify-between align-center mb-10 mt-20 border-top-dashed pt-10">
+                        <label class="mb-0">Mitwirkende Nutzer (Übersetzung, Lektorat etc.)</label>
+                    </div>
+
+                    <select name="user_ids[]"
+                            id="hidden-comic-users"
+                            multiple
+                            class="hidden">
+                        <?php foreach ($allUsers ?? [] as $u) { ?>
+                            <option value="<?php echo \htmlspecialchars($u->id); ?>"></option>
+                        <?php } ?>
+                    </select>
+
+                    <div class="bg-even border-medium border-radius-4 p-10">
+                        <div id="view-users"
+                             class="char-selection-grid scroll-y max-h-250">
+                            <?php
+                                                    $alphaUsers = $allUsers ?? [];
+                            \usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
+                            foreach ($alphaUsers as $u) {
+                                $pic = $u->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}" : 'https://placehold.co/60x60?text=N/A';
+                                ?>
+                                <div class="char-selection-item user-selection-item"
+                                     data-user-id="<?php echo \htmlspecialchars($u->id); ?>">
+                                    <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                         loading="lazy"
+                                         alt="Avatar">
+                                    <span><?php echo \htmlspecialchars($u->username->value); ?></span>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer-actions">
+
+            <!-- Newsletter Buttons (Links-Bündig) -->
+            <div class="modal-buttons gap-5">
+                <button type="button"
+                        class="button btn-trigger-newsletter hidden"
+                        data-type="transcript"
+                        data-page=""
+                        data-url=""
+                        id="btn-nl-trans">
+                    <i class="fa-solid fa-envelope"></i> Newsletter (Text)
+                </button>
+                <button type="button"
+                        class="button add btn-trigger-newsletter hidden"
+                        data-type="full"
+                        data-page=""
+                        data-url=""
+                        id="btn-nl-full">
+                    <i class="fa-solid fa-envelope"></i> Newsletter (Bild)
+                </button>
+            </div>
+
+            <!-- Die alten Buttons (Rechts-Bündig) -->
+            <div class="modal-buttons">
+                <button type="button"
+                        class="button btn-close-comic-modal">Abbrechen</button>
+                <?php if ($perms['comic_edit']) { ?>
+                    <button type="button"
+                            class="button edit"
+                            id="btn-save-comic">Speichern (Live)</button>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>
