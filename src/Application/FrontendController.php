@@ -9,6 +9,8 @@ use App\Application\Http\ServerRequest;
 use App\Application\Middleware\AuthMiddleware;
 use App\Application\Middleware\MiddlewarePipeline;
 use App\Application\Middleware\SecurityHeadersMiddleware;
+use App\Application\Response\HtmlResponse;
+use App\Application\Response\JsonResponse;
 use App\Application\Routing\UniversalActionFactory;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
@@ -29,6 +31,7 @@ final readonly class FrontendController
         $basePath = \parse_url($this->config->getBaseUrl(), \PHP_URL_PATH) ?? '/';
 
         $relativePath = '/';
+
         if (\str_starts_with((string) $path, $basePath)) {
             $relativePath = '/' . \ltrim(\substr((string) $path, \strlen($basePath)), '/');
         } else {
@@ -47,7 +50,7 @@ final readonly class FrontendController
 
         if ($matched === null) {
             $matched = $this->actionFactory->getRegistry()->match('GET', '/404');
-            \http_response_code(404);
+            // 404 Action kümmert sich um den Status-Code, kein nacktes http_response_code(404) mehr!
         }
 
         $className = $matched['class'];
@@ -76,13 +79,18 @@ final readonly class FrontendController
 
         if ($isLocked && ! \in_array($className, $safeDuringMaintenance, true)) {
             if (\str_starts_with($className, 'App\\Application\\Actions\\Api\\')) {
-                \http_response_code(503);
-                \header('Content-Type: application/json; charset=utf-8');
-                echo \json_encode(['success' => false, 'error' => 'System wird gewartet.']);
-                exit;
+                JsonResponse::error('System wird gewartet.', 503)->send();
+
+                return;
             }
+
+            \ob_start();
             require_once \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/maintenance.php';
-            exit;
+            $html = \ob_get_clean();
+
+            (new HtmlResponse((string) $html, 503))->send();
+
+            return;
         }
 
         $pipeline = new MiddlewarePipeline();

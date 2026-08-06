@@ -9,6 +9,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\AnalyticsClientInterface;
+use App\Contracts\Utils\ClockInterface;
 
 /**
  * Sendet Serverseitige Events an Google Analytics (GA4).
@@ -22,6 +23,7 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
         private ConfigInterface $config,
         private SessionManager $sessionManager,
         private AnalyticsClientInterface $analyticsClient,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -72,11 +74,11 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
             $this->sessionManager->setAnalyticsId(\bin2hex(\random_bytes(16)));
         }
 
-        // --- 2. BUGFIX: GA4 Session-ID ---
-        // GA4 erwartet als session_id in der Regel den UNIX-Timestamp des Sitzungsstarts
-        if ($this->sessionManager->getFormData()['ga4_session_id'] ?? null === null) {
-            $this->sessionManager->setFormData(['ga4_session_id' => \time()]);
+        // --- 2. GA4 Session-ID ---
+        if (($this->sessionManager->getFormData()['ga4_session_id'] ?? null) === null) {
+            $this->sessionManager->setFormData(['ga4_session_id' => $this->clock->now()->getTimestamp()]);
         }
+
         $sessionId = $this->sessionManager->getFormData()['ga4_session_id'];
         // ---------------------------------
 
@@ -86,21 +88,6 @@ final readonly class AnalyticsMiddleware implements MiddlewareInterface
 
         $pageLocation = $baseUrl . ($request->server['REQUEST_URI'] ?? '');
         $pageTitle    = \ucfirst(\basename($scriptName, '.php'));
-
-        $payload = [
-            'client_id' => $this->sessionManager->getAnalyticsId(),
-            'events'    => [
-                [
-                    'name'   => 'page_view',
-                    'params' => [
-                        'page_location'        => $pageLocation,
-                        'page_title'           => $pageTitle,
-                        'session_id'           => $sessionId, // verknüpft die Klicks zu EINER Sitzung
-                        'engagement_time_msec' => 1,
-                    ],
-                ],
-            ],
-        ];
 
         $this->analyticsClient->trackPageView(
             $this->sessionManager->getAnalyticsId(),

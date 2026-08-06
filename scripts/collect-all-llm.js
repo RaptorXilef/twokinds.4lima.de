@@ -23,7 +23,7 @@ const ALWAYS_IGNORE_DIRS = [
     '.old-5.0.0-alpha.23',
 ];
 
-const ALWAYS_IGNORE_PATHS = ['public/assets'];
+const ALWAYS_IGNORE_PATHS = ['public/assets','public/dev'];
 
 const ALWAYS_IGNORE_FILES = [
     '.lock',
