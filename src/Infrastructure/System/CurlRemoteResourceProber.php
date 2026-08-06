@@ -56,7 +56,6 @@ final readonly class CurlRemoteResourceProber implements RemoteResourceProberInt
 
         foreach ($curlHandles as $ch) {
             \curl_multi_remove_handle($multiHandle, $ch);
-            \curl_close($ch); // TODO Prüfen ob curl_close in PHP 8.3 entfernt werden kann
         }
         \curl_multi_close($multiHandle);
 

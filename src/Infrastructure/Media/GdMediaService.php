@@ -181,7 +181,6 @@ final readonly class GdMediaService implements MediaServiceInterface
         $cropHeight = \min($cropHeight, $srcH - $cropY);
 
         if ($cropWidth <= 0 || $cropHeight <= 0) {
-            \imagedestroy($sourceImage);
 
             return false;
         }
@@ -195,7 +194,6 @@ final readonly class GdMediaService implements MediaServiceInterface
         ]);
 
         if (! $croppedImage) {
-            \imagedestroy($sourceImage);
 
             return false;
         }
@@ -226,10 +224,6 @@ final readonly class GdMediaService implements MediaServiceInterface
             $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
             $success = \imagewebp($finalImage, $targetPath, $quality);
         }
-
-        \imagedestroy($sourceImage); // TODO Prüfen ob imagedestroy in PHP 8.3 weg kann!
-        \imagedestroy($croppedImage);
-        \imagedestroy($finalImage);
 
         return $success;
     }
@@ -269,5 +263,42 @@ final readonly class GdMediaService implements MediaServiceInterface
             1200,
             630,
         );
+    }
+
+    public function processAndStoreComicMedia(string $comicId, ?string $tmpHires, ?string $tmpLowres): void
+    {
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
+
+        foreach (['hires', 'lowres', 'thumbnails', 'social'] as $sub) {
+            $path = "$targetDir/$sub";
+            if (! \is_dir($path)) {
+                @\mkdir($path, 0o755, true);
+            }
+        }
+
+        $baseProcessPath = '';
+        $hiresPath = "$targetDir/hires/{$comicId}.webp";
+
+        if ($tmpHires !== null && $tmpHires !== '') {
+            $this->generateScaledImage($tmpHires, $hiresPath, 4000);
+            $baseProcessPath = $hiresPath;
+        }
+
+        if ($tmpLowres !== null && $tmpLowres !== '') {
+            $lowresPath = "$targetDir/lowres/{$comicId}.webp";
+            $this->generateScaledImage($tmpLowres, $lowresPath, 1500);
+            $baseProcessPath = $lowresPath;
+        } elseif ($tmpHires !== null && $tmpHires !== '' && \file_exists($hiresPath)) {
+            $lowresPath = "$targetDir/lowres/{$comicId}.webp";
+            $this->generateScaledImage($hiresPath, $lowresPath, 1080);
+            $baseProcessPath = $lowresPath;
+        }
+
+        if ($baseProcessPath !== '') {
+            $this->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$comicId}.webp", 200);
+
+            $socialPath = "$targetDir/social/{$comicId}.jpg";
+            $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
+        }
     }
 }

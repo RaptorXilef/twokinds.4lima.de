@@ -81,58 +81,18 @@ final readonly class SaveSingleComicAction implements ActionInterface
             }
 
             // --- BILD UPLOAD LOGIK ---
-            $files     = $request->files;
-            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
-
+            $files          = $request->files;
             $hasNewImage    = false;
             $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
             $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
 
             if ($hiresUploaded || $lowresUploaded) {
                 $hasNewImage = true;
+                $tmpHires    = $hiresUploaded ? $files['upload_hires']['tmp_name'] : null;
+                $tmpLowres   = $lowresUploaded ? $files['upload_lowres']['tmp_name'] : null;
 
-                // Ordner-Struktur sicherstellen
-                foreach (['hires', 'lowres', 'thumbnails', 'social'] as $sub) {
-                    $path = "$targetDir/$sub";
-                    if (! \is_dir($path)) {
-                        @\mkdir($path, 0o755, true);
-                    }
-                }
-
-                $baseProcessPath = '';
-                $hiresPath       = "$targetDir/hires/{$dto->id}.webp";
-
-                // 1. Hires verarbeiten
-                if ($hiresUploaded) {
-                    $tmpHires = $files['upload_hires']['tmp_name'];
-                    // Speichert Hires als WebP (mit Safenet-Breite von max 4000px)
-                    $this->mediaService->generateScaledImage($tmpHires, $hiresPath, 4000);
-                    $baseProcessPath = $hiresPath;
-                }
-
-                // 2. Lowres verarbeiten
-                if ($lowresUploaded) {
-                    $tmpLowres  = $files['upload_lowres']['tmp_name'];
-                    $lowresPath = "$targetDir/lowres/{$dto->id}.webp";
-                    // Manuelles Lowres einfach in WebP umwandeln
-                    $this->mediaService->generateScaledImage($tmpLowres, $lowresPath, 1500);
-                    $baseProcessPath = $lowresPath;
-                } elseif ($hiresUploaded && \file_exists($hiresPath)) { // Extra Check zur Sicherheit
-                    // Kein manuelles Lowres da -> Wir generieren es automatisch aus dem Hires!
-                    $lowresPath = "$targetDir/lowres/{$dto->id}.webp";
-                    // Skalieren auf max 1080px Breite
-                    $this->mediaService->generateScaledImage($hiresPath, $lowresPath, 1080);
-                    $baseProcessPath = $lowresPath;
-                }
-
-                // 3. Thumbnails & Social Media Crop generieren
-                if ($baseProcessPath !== '') {
-                    $this->mediaService->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$dto->id}.webp", 200);
-
-                    $socialPath = "$targetDir/social/{$dto->id}.jpg";
-                    // Methoden-Aufruf auf den Service umgeleitet
-                    $this->mediaService->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
-                }
+                // Gesamte Datei-System und Skalierungslogik an Infrastruktur delegiert!
+                $this->mediaService->processAndStoreComicMedia($dto->id, $tmpHires, $tmpLowres);
             }
 
             $comic = new ComicPage(

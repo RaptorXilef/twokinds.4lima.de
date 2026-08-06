@@ -24,4 +24,10 @@ interface MediaServiceInterface
     ): bool;
 
     public function autoGenerateSocialMediaJpg(string $sourcePath, string $targetPath): void;
+
+    /**
+     * Verarbeitet hochgeladene Comic-Bilder (Hires/Lowres), skaliert sie,
+     * generiert Thumbnails & Social-Media Bilder und speichert sie am korrekten Ort.
+     */
+    public function processAndStoreComicMedia(string $comicId, ?string $tmpHires, ?string $tmpLowres): void;
 }

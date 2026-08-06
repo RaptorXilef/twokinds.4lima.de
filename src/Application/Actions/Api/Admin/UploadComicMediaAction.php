@@ -55,9 +55,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
                 ], 404);
             }
 
-            $files     = $request->files;
-            $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
-
+            $files          = $request->files;
             $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
             $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
 
@@ -65,49 +63,12 @@ final readonly class UploadComicMediaAction implements ActionInterface
                 return JsonResponse::error('Keine gültigen Bilder hochgeladen.', 400);
             }
 
-            // Ordnerstruktur sicherstellen
-            foreach (['hires', 'lowres', 'thumbnails', 'social'] as $sub) {
-                $path = "$targetDir/$sub";
-                if (! \is_dir($path)) {
-                    @\mkdir($path, 0o755, true);
-                }
-            }
+            $tmpHires  = $hiresUploaded ? $files['upload_hires']['tmp_name'] : null;
+            $tmpLowres = $lowresUploaded ? $files['upload_lowres']['tmp_name'] : null;
 
-            $baseProcessPath = '';
-            $hiresPath       = "$targetDir/hires/{$comicIdStr}.webp";
+            // Gesamte Datei-System und Skalierungslogik an Infrastruktur delegiert!
+            $this->mediaService->processAndStoreComicMedia($comicIdStr, $tmpHires, $tmpLowres);
 
-            if ($hiresUploaded) {
-                $this->mediaService->generateScaledImage($files['upload_hires']['tmp_name'], $hiresPath, 4000);
-                $baseProcessPath = $hiresPath;
-            }
-
-            if ($lowresUploaded) {
-                $lowresPath = "$targetDir/lowres/{$comicIdStr}.webp";
-                $this->mediaService->generateScaledImage($files['upload_lowres']['tmp_name'], $lowresPath, 1500);
-                $baseProcessPath = $lowresPath;
-            } elseif ($hiresUploaded && \file_exists($hiresPath)) {
-                $lowresPath = "$targetDir/lowres/{$comicIdStr}.webp";
-                $this->mediaService->generateScaledImage($hiresPath, $lowresPath, 1080);
-                $baseProcessPath = $lowresPath;
-            }
-
-            if ($baseProcessPath !== '') {
-                $this->mediaService->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$comicIdStr}.webp", 200);
-
-                // SOCIAL MEDIA: Als .jpg speichern.
-                // Wir nutzen hier vorübergehend noch einen simplen Center-Crop für den automatischen Massenupload,
-                // aber mit dem neuen 1200x630 (1.91:1) Breitbild-Verhältnis!
-                $socialPath = "$targetDir/social/{$comicIdStr}.jpg";
-
-                // Temporärer Auto-Crop (bis der User es manuell im Cropper ändert)
-                // Dies erfordert, dass dein MediaService->generateSquareCrop theoretisch auch Rechtecke kann,
-                // andernfalls bauen wir hier kurz einen simplen GD-Aufruf für den Auto-Zuschnitt.
-                // Da wir aber ohnehin den manuellen Cropper nutzen, können wir es hier einfach vorerst auf Thumbnail-Basis belassen
-                // oder einen statischen Zuschnitt machen.
-                $this->mediaService->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
-            }
-
-            // Zeitstempel für RSS / Cachebusting aktualisieren (NUR WENN COMIC EXISTIERT!)
             if ($comic) {
                 $updatedComic = new ComicPage(
                     id: $comic->id,
