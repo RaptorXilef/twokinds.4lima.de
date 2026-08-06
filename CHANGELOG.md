@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.13.5](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.4...v6.13.5) (2026-08-06)
+
+### 🐛 Bug Fixes
+
+* **qa:** make missing exclude path optional in phpstan config ([2d34705](https://github.com/RaptorXilef/twokinds.4lima.de/commit/2d34705ff53fd2066f6718224a7d74c5c0b8d984))
+
+### ⚙️ Refactoring
+
+* **application:** isolate remaining I/O and GD operations into infrastructure ([5c3cc92](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5c3cc9247c6e3f4df5cd38ec5142c66faf68861f))
+
 ## [6.13.4](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.3...v6.13.4) (2026-08-06)
 
 ### 🏗️ Build System

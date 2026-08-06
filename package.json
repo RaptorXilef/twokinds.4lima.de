@@ -1,6 +1,6 @@
 {
   "name": "@raptorxilef/twokinds.4lima.de",
-  "version": "6.13.4",
+  "version": "6.13.5",
   "description": "OOP/DDD-basiertes System zur Verwaltung und Anzeige der übersetzten Comicseiten von TwoKinds",
   "type": "module",
   "author": "Felix Maywald <RaptorXilef>",
