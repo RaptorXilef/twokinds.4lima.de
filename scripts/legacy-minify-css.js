@@ -6,36 +6,48 @@ import path from 'node:path';
 // und legen die .min.css im selben Ordner ab.
 const config = [
     { src: 'public/assets/css', dest: 'public/assets/css' },
-    // Hier kann ich weitere Ordner hinzufügen
+    // Hier kannst du weitere Ordner hinzufügen
 ];
 
 console.log('🚀 Starte Legacy-CSS-Minifizierung...');
 
 for (const entry of config) {
-    if (!fs.existsSync(entry.dest)) {
-        fs.mkdirSync(entry.dest, { recursive: true });
+    // Wandle die Pfade in absolute Pfade um, damit wir problemlos das
+    // Arbeitsverzeichnis (cwd) für den execSync Aufruf ändern können.
+    const absoluteSrc = path.resolve(entry.src);
+    const absoluteDest = path.resolve(entry.dest);
+
+    if (!fs.existsSync(absoluteDest)) {
+        fs.mkdirSync(absoluteDest, { recursive: true });
     }
 
-    if (!fs.existsSync(entry.src)) {
+    if (!fs.existsSync(absoluteSrc)) {
         console.warn(`⚠️ Warnung: Quellverzeichnis ${entry.src} nicht gefunden. Überspringe...`);
         continue;
     }
 
     // Finde alle .css Dateien, aber ignoriere bereits minifizierte .min.css
     const files = fs
-        .readdirSync(entry.src)
+        .readdirSync(absoluteSrc)
         .filter((f) => f.endsWith('.css') && !f.endsWith('.min.css'));
 
     for (const file of files) {
-        const input = path.join(entry.src, file);
+        // file ist jetzt NUR noch der Dateiname (z.B. "main.css")
         const baseName = path.parse(file).name;
-        const output = path.join(entry.dest, `${baseName}.min.css`);
+        const outputFile = `${baseName}.min.css`;
+
+        // Der absolute Pfad, wo die minifizierte Datei landen soll
+        const absoluteOutput = path.join(absoluteDest, outputFile);
 
         console.log(`  - Minifiziere: ${file}`);
 
         try {
-            // Aufruf von clean-css-cli mit Source-Maps und Optimierungs-Level 2
-            execSync(`npx cleancss -O2 --source-map --output "${output}" "${input}"`);
+            // FIX: Wir setzen cwd (Current Working Directory) auf den Quellordner.
+            // Dadurch übergeben wir cleancss nur "main.css".
+            // In die .map Datei wird so auch korrekt nur "main.css" geschrieben!
+            execSync(`npx cleancss -O2 --source-map --output "${absoluteOutput}" "${file}"`, {
+                cwd: absoluteSrc,
+            });
 
             // Wir löschen die Originaldatei nicht mehr, damit die Source-Map
             // im Browser weiterhin funktioniert und keine 404 Fehler in der Konsole wirft!
