@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.13.4](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.3...v6.13.4) (2026-08-06)
+
+### 🏗️ Build System
+
+* **qa:** integrate phpstan-disallowed-calls to enforce architecture ([bf89b14](https://github.com/RaptorXilef/twokinds.4lima.de/commit/bf89b14401e7f78a8783ba3ae4b8f292a24d5530))
+
 ## [6.13.3](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.2...v6.13.3) (2026-08-06)
 
 ### 🐛 Bug Fixes
