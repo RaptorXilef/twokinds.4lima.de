@@ -106,23 +106,23 @@ final readonly class DashboardAction implements ViewActionInterface
                 'roles'            => $roles,
             ];
 
-            \ob_start();
+            $htmlContent = ''; // Leerer String als Basis
 
             if ($ajaxTab === 'comics') {
                 $data['comics'] = $this->comicRepo->findAll();
-                $this->renderer->render('partials/admin/_section_comics', $data);
+                $htmlContent    = $this->renderer->render('partials/admin/_section_comics', $data)->html;
             } elseif ($ajaxTab === 'reports') {
                 $data['allReports'] = $this->reportRepo->findAll();
-                $this->renderer->render('partials/admin/_section_reports', $data);
+                $htmlContent        = $this->renderer->render('partials/admin/_section_reports', $data)->html;
             } elseif ($ajaxTab === 'users') {
                 $data['users'] = $this->userRepo->findAll();
-                $this->renderer->render('partials/admin/_section_users', $data);
+                $htmlContent   = $this->renderer->render('partials/admin/_section_users', $data)->html;
             } elseif ($ajaxTab === 'upload') {
-                $this->renderer->render('partials/admin/_section_upload', $data);
+                $htmlContent = $this->renderer->render('partials/admin/_section_upload', $data)->html;
             } elseif ($ajaxTab === 'archive') {
-                $this->renderer->render('partials/admin/_section_archive', $data);
+                $htmlContent = $this->renderer->render('partials/admin/_section_archive', $data)->html;
             } elseif ($ajaxTab === 'characters') {
-                $this->renderer->render('partials/admin/_section_characters', $data);
+                $htmlContent = $this->renderer->render('partials/admin/_section_characters', $data)->html;
             } elseif ($ajaxTab === 'groups') {
                 $assignedIds = [];
                 foreach ($groups as $group) {
@@ -131,18 +131,18 @@ final readonly class DashboardAction implements ViewActionInterface
                     }
                 }
                 $data['assignedIds'] = \array_unique($assignedIds);
-                $this->renderer->render('partials/admin/_section_groups', $data);
+                $htmlContent         = $this->renderer->render('partials/admin/_section_groups', $data)->html;
             } elseif ($ajaxTab === 'media') {
-                $this->renderer->render('partials/admin/_section_media', $data);
+                $htmlContent = $this->renderer->render('partials/admin/_section_media', $data)->html;
             } elseif ($ajaxTab === 'backup') {
-                $this->renderer->render('partials/admin/_section_backup', $data);
+                $htmlContent = $this->renderer->render('partials/admin/_section_backup', $data)->html;
             } elseif ($ajaxTab === 'mails') { // TAB-RENDERER FÜR E-MAILS
                 $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
                 $data['mailLogs']  = $this->mailLogRepo->loadLogs();
-                $this->renderer->render('partials/admin/_section_mails', $data);
+                $htmlContent       = $this->renderer->render('partials/admin/_section_mails', $data)->html;
             }
 
-            return JsonResponse::success(['html' => \ob_get_clean()]);
+            return JsonResponse::success(['html' => $htmlContent]);
         }
 
         // --- NORMALER PAGE LOAD MODUS (EXTREM SCHNELL) ---
