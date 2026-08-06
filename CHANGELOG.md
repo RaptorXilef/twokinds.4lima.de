@@ -1,5 +1,30 @@
 # Changelog
 
+## [6.13.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.12.0...v6.13.0) (2026-08-06)
+
+### 🚀 Features
+
+* **backup:** implement AES-256 ZIP encryption, FTP off-site upload, and retention policies ([b98453b](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b98453b8e56771b48b7235253052d99b2a20f92d))
+* **config:** add backup configuration block for retention, encryption and off-site FTP ([a7970ab](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a7970ab4fb3616a5c5d7775cae5bd16620bf95aa))
+
+### 🐛 Bug Fixes
+
+* **backup:** increase FTP connection timeout for sleeping NAS drives ([e9a14d3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e9a14d3c2c3bd4e5dd6995910e3d4cc65bab099c))
+* **backup:** resolve PDO clone error and improve restore modal UX ([9636f24](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9636f24092ade4be289e8376540f1ed91dee6eb0))
+* **backup:** restore missing getPrimaryKeys method in SystemBackupService ([8160e32](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8160e324b5ad8f9ecfba0f65b3c548e4eb34dc42))
+* **core:** resolve PHP 8 deprecation error regarding optional parameter order in ComicPage ([98289c4](https://github.com/RaptorXilef/twokinds.4lima.de/commit/98289c4319bca89139a86800a6486f32080a7e53))
+* **database:** update SchemaRegistry to include latest columns ([e4faf02](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e4faf0273867b546d77ae7d32dbd709a8d876574))
+* **di:** provide complete InfrastructureServiceProvider to resolve BackupServiceInterface missing binding ([ef129b5](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ef129b5c39cbe5e0dcf46ec89ceb588b99d5e3a8))
+
+### ⚙️ Refactoring
+
+* **backup:** move backup service to infrastructure and support legacy passwords ([4deef99](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4deef9942650ff1b894fde8befa0622f56f4f6d2))
+* **comics:** rename helper_ids to user_ids for ubiquitous language consistency ([247339c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/247339c127e0c024cbc9dda2faab0e47bbc418a0))
+
+### 📚 Dokumentation
+
+* **backup:** add comprehensive documentation for the backup system ([ce736f6](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ce736f6033a366c892b586e84ce9248aa8cd510b))
+
 ## [6.12.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.11.0...v6.12.0) (2026-08-06)
 
 ### 🚀 Features
