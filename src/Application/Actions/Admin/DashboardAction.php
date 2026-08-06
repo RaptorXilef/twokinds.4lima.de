@@ -110,19 +110,19 @@ final readonly class DashboardAction implements ViewActionInterface
 
             if ($ajaxTab === 'comics') {
                 $data['comics'] = $this->comicRepo->findAll();
-                $this->renderer->render('admin/_section_comics', $data);
+                $this->renderer->render('partials/admin/_section_comics', $data);
             } elseif ($ajaxTab === 'reports') {
                 $data['allReports'] = $this->reportRepo->findAll();
-                $this->renderer->render('admin/_section_reports', $data);
+                $this->renderer->render('partials/admin/_section_reports', $data);
             } elseif ($ajaxTab === 'users') {
                 $data['users'] = $this->userRepo->findAll();
-                $this->renderer->render('admin/_section_users', $data);
+                $this->renderer->render('partials/admin/_section_users', $data);
             } elseif ($ajaxTab === 'upload') {
-                $this->renderer->render('admin/_section_upload', $data);
+                $this->renderer->render('partials/admin/_section_upload', $data);
             } elseif ($ajaxTab === 'archive') {
-                $this->renderer->render('admin/_section_archive', $data);
+                $this->renderer->render('partials/admin/_section_archive', $data);
             } elseif ($ajaxTab === 'characters') {
-                $this->renderer->render('admin/_section_characters', $data);
+                $this->renderer->render('partials/admin/_section_characters', $data);
             } elseif ($ajaxTab === 'groups') {
                 $assignedIds = [];
                 foreach ($groups as $group) {
@@ -131,15 +131,15 @@ final readonly class DashboardAction implements ViewActionInterface
                     }
                 }
                 $data['assignedIds'] = \array_unique($assignedIds);
-                $this->renderer->render('admin/_section_groups', $data);
+                $this->renderer->render('partials/admin/_section_groups', $data);
             } elseif ($ajaxTab === 'media') {
-                $this->renderer->render('admin/_section_media', $data);
+                $this->renderer->render('partials/admin/_section_media', $data);
             } elseif ($ajaxTab === 'backup') {
-                $this->renderer->render('admin/_section_backup', $data);
+                $this->renderer->render('partials/admin/_section_backup', $data);
             } elseif ($ajaxTab === 'mails') { // NEUER TAB-RENDERER FÜR E-MAILS
                 $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
                 $data['mailLogs']  = $this->mailLogRepo->loadLogs();
-                $this->renderer->render('admin/_section_mails', $data);
+                $this->renderer->render('partials/admin/_section_mails', $data);
             }
 
             return JsonResponse::success(['html' => \ob_get_clean()]);
@@ -166,7 +166,7 @@ final readonly class DashboardAction implements ViewActionInterface
             }
         }
 
-        $this->renderer->render('admin/dashboard', [
+        $this->renderer->render('pages/admin/dashboard', [
             'pageTitle'        => 'Admin Dashboard',
             'adminUser'        => $this->sessionManager->getAdminUser(),
             'currentUserId'    => $this->sessionManager->getUserId(),

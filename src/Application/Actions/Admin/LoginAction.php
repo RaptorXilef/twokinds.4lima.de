@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Admin;
 
-use App\Application\Attribute\Route;
-
 use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
@@ -33,7 +32,7 @@ final readonly class LoginAction implements ViewActionInterface
             return new RedirectResponse($baseUrl . '/admin');
         }
 
-        $this->renderer->render('admin/login', [
+        $this->renderer->render('pages/admin/login', [
             'pageTitle' => 'Admin Login',
         ]);
 

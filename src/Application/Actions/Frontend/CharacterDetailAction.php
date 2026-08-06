@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\Route;
-
 use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
@@ -71,7 +70,7 @@ final readonly class CharacterDetailAction implements ViewActionInterface
 
         if (! $character instanceof Character) {
             \http_response_code(404);
-            $this->renderer->render('frontend/404', ['pageTitle' => 'Charakter nicht gefunden']);
+            $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Charakter nicht gefunden']);
 
             return null;
         }
@@ -93,7 +92,7 @@ final readonly class CharacterDetailAction implements ViewActionInterface
         // Chronologisch aufsteigend sortieren (Älteste Auftritte zuerst)
         \usort($characterComics, fn ($a, $b): int => $a->id->value <=> $b->id->value);
 
-        $this->renderer->render('frontend/character_detail', [
+        $this->renderer->render('pages/frontend/character_detail', [
             'character'       => $character,
             'characterComics' => $characterComics,
             'pageTitle'       => $character->name,

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\Route;
-
 use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
@@ -25,7 +24,7 @@ final readonly class RegisterAction implements ViewActionInterface
         if ($this->auth->isLoggedIn()) {
             return new RedirectResponse('/lesezeichen');
         }
-        $this->renderer->render('frontend/register', ['pageTitle' => 'Konto erstellen']);
+        $this->renderer->render('pages/frontend/register', ['pageTitle' => 'Konto erstellen']);
 
         return null;
     }

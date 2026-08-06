@@ -35,7 +35,7 @@ final readonly class UserDetailAction implements ActionInterface
         $user = $this->userRepo->findById($id);
         if (! $user) {
             \http_response_code(404);
-            $this->renderer->render('frontend/404', ['pageTitle' => 'Benutzer nicht gefunden']);
+            $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Benutzer nicht gefunden']);
 
             return null;
         }
@@ -66,7 +66,7 @@ final readonly class UserDetailAction implements ActionInterface
         \usort($bookmarks, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
 
         // Wir rufen das neue Template "user_detail" auf
-        $this->renderer->render('frontend/user_detail', [
+        $this->renderer->render('pages/frontend/user_detail', [
             'pageTitle'  => 'Profil von ' . $user->username->value,
             'publicUser' => $user,
             'userComics' => $userComics,

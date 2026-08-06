@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\Route;
-
 use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
@@ -24,7 +23,7 @@ final readonly class ResetPasswordAction implements ViewActionInterface
         $token = $request->get['token'] ?? '';
         $email = $this->magicLinkService->peekToken($token);
 
-        $this->renderer->render('frontend/reset_password', [
+        $this->renderer->render('pages/frontend/reset_password', [
             'pageTitle'    => 'Neues Passwort festlegen',
             'isValidToken' => $email !== null,
             'token'        => $token,

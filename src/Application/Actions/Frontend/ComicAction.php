@@ -35,7 +35,7 @@ final readonly class ComicAction implements ActionInterface
         $allComics = $this->comicRepo->findAll();
 
         if ($allComics === []) {
-            $this->renderer->render('frontend/404', ['pageTitle' => 'Keine Comics gefunden.']);
+            $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Keine Comics gefunden.']);
 
             return null;
         }
@@ -59,7 +59,7 @@ final readonly class ComicAction implements ActionInterface
         }
 
         if (! $comic) {
-            $this->renderer->render('frontend/404', ['pageTitle' => 'Comic nicht gefunden.']);
+            $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Comic nicht gefunden.']);
 
             return null;
         }
@@ -96,7 +96,7 @@ final readonly class ComicAction implements ActionInterface
             }
         }
 
-        $this->renderer->render('frontend/comic', [
+        $this->renderer->render('pages/frontend/comic', [
             'comic'       => $comic,
             'prev'        => $prev,
             'next'        => $next,

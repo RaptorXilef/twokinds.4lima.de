@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\Route;
-
 use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
@@ -20,7 +19,7 @@ final readonly class PrivacyAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $this->renderer->render('frontend/privacy', ['pageTitle' => 'Datenschutzerklärung']);
+        $this->renderer->render('pages/frontend/privacy', ['pageTitle' => 'Datenschutzerklärung']);
 
         return null;
     }

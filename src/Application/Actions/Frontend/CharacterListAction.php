@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\Route;
-
 use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
@@ -76,7 +75,7 @@ final readonly class CharacterListAction implements ViewActionInterface
             $filterData[$key] = \array_values($keys);
         }
 
-        $this->renderer->render('frontend/character_list', [
+        $this->renderer->render('pages/frontend/character_list', [
             'characters'      => $characters,
             'groups'          => $groups,
             'filterData'      => $filterData, // Neue Variable ans Template übergeben

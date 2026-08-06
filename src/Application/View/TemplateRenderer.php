@@ -50,7 +50,8 @@ final readonly class TemplateRenderer
         // 2. Nutzerdaten bereitstellen (EXTR_SKIP verhindert das Überschreiben der Systemvariablen!)
         \extract($data, \EXTR_SKIP);
 
-        include $appRoot . "/templates/pages/{$templatePath}.phtml";
+        // GEÄNDERT: Wir entfernen das hartgecodete "pages/" aus dem Pfad
+        include $appRoot . "/templates/{$templatePath}.phtml";
     }
 
     private function getGlobalSettings(): array

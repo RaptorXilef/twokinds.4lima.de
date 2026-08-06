@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Application\Attribute\Route;
-
 use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ViewActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
@@ -43,7 +42,7 @@ final readonly class BookmarksAction implements ViewActionInterface
             }
         }
 
-        $this->renderer->render('frontend/bookmarks', [
+        $this->renderer->render('pages/frontend/bookmarks', [
             'pageTitle'       => 'Meine Lesezeichen',
             'siteDescription' => 'Deine gespeicherten TwoKinds Lesezeichen auf einen Blick.',
             'comics'          => $allComics,
