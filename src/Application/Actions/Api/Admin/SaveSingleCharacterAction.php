@@ -59,117 +59,57 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             $swatchPic = $existing ? $existing->swatchPic : null;
             $refSheets = $existing ? $existing->refSheets : [];
 
-            $warnings      = [];
-            $baseTargetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters';
-
-            // Verzeichnisse sicherstellen
-            foreach (['profiles', 'portraits', 'palettes', 'refsheets'] as $sub) {
-                $dir = $baseTargetDir . '/' . $sub;
-                if (! \is_dir($dir)) {
-                    @\mkdir($dir, 0o755, true);
-                }
-            }
-
+            $warnings = [];
             $safeName = \pathinfo(Sanitizer::slugify($dto->name), \PATHINFO_FILENAME);
             if ($safeName === '') {
                 $safeName = $charIdStr;
             }
 
-            // Text-Eingaben auslesen
-            $mainPicUrl       = \trim((string) ($request->post['main_pic_url'] ?? ''));
-            $swatchPicUrl     = \trim((string) ($request->post['swatch_pic_url'] ?? ''));
-            $refSheetsUrlsRaw = \trim((string) ($request->post['ref_sheets_urls'] ?? ''));
+            // Alles an die Infrastruktur delegieren!
+            $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);
+            $warnings       = $processedMedia['warnings'];
 
-            $fullName  = \trim((string) ($request->post['full_name'] ?? '')) ?: null;
-            $gender    = \trim((string) ($request->post['gender'] ?? '')) ?: null;
-            $age       = \trim((string) ($request->post['age'] ?? '')) ?: null;
-            $species   = \trim((string) ($request->post['species'] ?? '')) ?: null;
-            $languages = \trim((string) ($request->post['languages'] ?? '')) ?: null;
-
-            // 1. Profilbild (Klein) - auf max 1000px skaliert
-            if (isset($request->files['profile_image']) && $request->files['profile_image']['error'] !== \UPLOAD_ERR_NO_FILE) {
-                if ($request->files['profile_image']['error'] === \UPLOAD_ERR_OK) {
-                    $file     = $request->files['profile_image'];
-                    $fileName = $safeName . '-profile.webp'; // IMMER webp!
-                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/profiles/' . $fileName, 1000)) {
-                        $picUrl = $fileName;
-                    } else {
-                        $warnings[] = 'Profilbild: Konnte vom Server nicht verarbeitet werden.';
-                    }
-                } else {
-                    $warnings[] = 'Profilbild: PHP Upload-Fehler (Code: ' . $request->files['profile_image']['error'] . ')';
-                }
+            // Profilbild zuweisen
+            if ($processedMedia['profile'] !== null) {
+                $picUrl = $processedMedia['profile'];
             } elseif ($picUrl !== null && $picUrl !== '') {
                 $picUrl = \str_replace(' ', '_', $picUrl);
+                // Simple Endungs-Ergänzung falls nicht vorhanden
                 if (! \preg_match('/\.[a-z0-9]+$/i', $picUrl)) {
-                    foreach (['webp', 'png', 'jpg', 'jpeg', 'gif'] as $ext) {
-                        if (\file_exists($baseTargetDir . '/profiles/' . $picUrl . '.' . $ext)) {
-                            $picUrl .= '.' . $ext;
-
-                            break;
-                        }
-                    }
+                    $picUrl .= '.webp'; // Standard-Fallback annehmen
                 }
             } else {
                 $picUrl = null;
             }
 
-            // 2. Hauptbild (Groß) - auf max 2000px skaliert
-            if (isset($request->files['main_pic']) && $request->files['main_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
-                if ($request->files['main_pic']['error'] === \UPLOAD_ERR_OK) {
-                    $file     = $request->files['main_pic'];
-                    $fileName = $safeName . '-portrait.webp';
-                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/portraits/' . $fileName, 2000)) {
-                        $mainPic = $fileName;
-                    } else {
-                        $warnings[] = 'Hauptbild: Konnte vom Server nicht verarbeitet werden.';
-                    }
-                } else {
-                    $warnings[] = 'Hauptbild: PHP Upload-Fehler (Code: ' . $request->files['main_pic']['error'] . ')';
-                }
+            // Hauptbild
+            if ($processedMedia['main'] !== null) {
+                $mainPic = $processedMedia['main'];
             } elseif (isset($request->post['main_pic_url'])) {
-                $mainPic = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
+                $mainPicUrl = \trim((string) ($request->post['main_pic_url'] ?? ''));
+                $mainPic    = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
             }
 
-            // 3. Farbpalette (Swatch) - auf max 1500px skaliert
-            if (isset($request->files['swatch_pic']) && $request->files['swatch_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
-                if ($request->files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
-                    $file     = $request->files['swatch_pic'];
-                    $fileName = $safeName . '-palette.webp';
-                    if ($this->mediaService->generateScaledImage($file['tmp_name'], $baseTargetDir . '/palettes/' . $fileName, 1500)) {
-                        $swatchPic = $fileName;
-                    } else {
-                        $warnings[] = 'Farbpalette: Konnte vom Server nicht verarbeitet werden.';
-                    }
-                } else {
-                    $warnings[] = 'Farbpalette: PHP Upload-Fehler (Code: ' . $request->files['swatch_pic']['error'] . ')';
-                }
+            // Swatch
+            if ($processedMedia['swatch'] !== null) {
+                $swatchPic = $processedMedia['swatch'];
             } elseif (isset($request->post['swatch_pic_url'])) {
-                $swatchPic = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
+                $swatchPicUrl = \trim((string) ($request->post['swatch_pic_url'] ?? ''));
+                $swatchPic    = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
             }
 
-            // 4. Reference Sheets (Array) - auf max 3000px skaliert
+            // Manuelle URLs für Reference Sheets
             if (isset($request->post['ref_sheets_urls'])) {
-                $refSheets = [];
+                $refSheetsUrlsRaw = \trim((string) ($request->post['ref_sheets_urls'] ?? ''));
+                $refSheets        = [];
                 if ($refSheetsUrlsRaw !== '') {
                     $refSheets = \array_values(\array_filter(\array_map(fn ($s): string => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsRaw))));
                 }
             }
-            if (isset($request->files['ref_sheets']) && \is_array($request->files['ref_sheets']['name'])) {
-                $refFiles = $request->files['ref_sheets'];
-                $counter  = \count($refFiles['name']);
-                for ($i = 0; $i < $counter; ++$i) {
-                    if ($refFiles['error'][$i] === \UPLOAD_ERR_OK) {
-                        $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
-                        if ($this->mediaService->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
-                            $refSheets[] = $fileName;
-                        } else {
-                            $warnings[] = "Ref-Sheet '{$refFiles['name'][$i]}': Bildverarbeitung fehlgeschlagen.";
-                        }
-                    } elseif ($refFiles['error'][$i] !== \UPLOAD_ERR_NO_FILE) {
-                        $warnings[] = "Ref-Sheet '{$refFiles['name'][$i]}': PHP Upload-Fehler (Code: " . $refFiles['error'][$i] . ')';
-                    }
-                }
+
+            // Neu hochgeladene Refs hinzufügen
+            if (! empty($processedMedia['refs'])) {
+                $refSheets = \array_merge($refSheets, $processedMedia['refs']);
             }
 
             $character = new Character(

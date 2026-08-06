@@ -9,9 +9,7 @@ use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
-use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
-use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 
 #[Route('POST', '/api/upload_media')]
@@ -19,7 +17,6 @@ use App\Core\Service\AuthService;
 final readonly class UploadMediaAction implements ActionInterface
 {
     public function __construct(
-        private ConfigInterface $config,
         private MediaServiceInterface $mediaService,
         private AuthService $auth,
     ) {
@@ -30,38 +27,13 @@ final readonly class UploadMediaAction implements ActionInterface
         if (! $this->auth->hasPermission('media.upload')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
-        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
-
-        if (! \is_dir($targetDir)) {
-            @\mkdir($targetDir, 0o755, true);
-        }
 
         if (! isset($_FILES['files']) || ! \is_array($_FILES['files']['name'])) {
             return JsonResponse::error('Keine Dateien hochgeladen.', 400);
         }
 
-        $files          = $_FILES['files'];
-        $count          = \count($files['name']);
-        $processedCount = 0;
-
-        for ($i = 0; $i < $count; ++$i) {
-            if ($files['error'][$i] === \UPLOAD_ERR_OK) {
-                $tmpName      = $files['tmp_name'][$i];
-                $originalName = $files['name'][$i];
-
-                // Dateinamen bereinigen
-                // Kebab-Case Formatierung anwenden
-                $slugifiedName  = Sanitizer::slugify($originalName);
-                $nameWithoutExt = \pathinfo($slugifiedName, \PATHINFO_FILENAME);
-
-                $targetPath = $targetDir . '/' . $nameWithoutExt . '.webp';
-
-                // In WebP umwandeln (Max 1000px für Profile)
-                if ($this->mediaService->generateScaledImage($tmpName, $targetPath, 1000)) {
-                    ++$processedCount;
-                }
-            }
-        }
+        // Infrastruktur erledigt den kompletten Upload, Ordner-Check und Skalierung!
+        $processedCount = $this->mediaService->processMassProfileUpload($_FILES['files']);
 
         return JsonResponse::success(['message' => "{$processedCount} Bild(er) erfolgreich verarbeitet und hochgeladen!"]);
     }

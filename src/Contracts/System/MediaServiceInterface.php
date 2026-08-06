@@ -30,4 +30,16 @@ interface MediaServiceInterface
      * generiert Thumbnails & Social-Media Bilder und speichert sie am korrekten Ort.
      */
     public function processAndStoreComicMedia(string $comicId, ?string $tmpHires, ?string $tmpLowres): void;
+
+    /**
+     * Verarbeitet den Massen-Upload von Profilbildern (Galerie).
+     * Gibt die Anzahl der erfolgreich verarbeiteten Bilder zurück.
+     */
+    public function processMassProfileUpload(array $files): int;
+
+    /**
+     * Verarbeitet hochgeladene Bilder für einen einzelnen Charakter.
+     * Gibt ein Array mit den neuen Dateinamen und eventuellen Warnungen zurück.
+     */
+    public function processCharacterImages(string $safeName, array $files): array;
 }

@@ -6,6 +6,7 @@ namespace App\Infrastructure\Media;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
+use App\Core\Security\Sanitizer;
 
 final readonly class GdMediaService implements MediaServiceInterface
 {
@@ -277,7 +278,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $baseProcessPath = '';
-        $hiresPath = "$targetDir/hires/{$comicId}.webp";
+        $hiresPath       = "$targetDir/hires/{$comicId}.webp";
 
         if ($tmpHires !== null && $tmpHires !== '') {
             $this->generateScaledImage($tmpHires, $hiresPath, 4000);
@@ -300,5 +301,97 @@ final readonly class GdMediaService implements MediaServiceInterface
             $socialPath = "$targetDir/social/{$comicId}.jpg";
             $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
         }
+    }
+
+    public function processMassProfileUpload(array $files): int
+    {
+        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
+        if (! \is_dir($targetDir)) {
+            @\mkdir($targetDir, 0o755, true);
+        }
+
+        $processedCount = 0;
+        $count          = \count($files['name'] ?? []);
+
+        for ($i = 0; $i < $count; ++$i) {
+            if ($files['error'][$i] === \UPLOAD_ERR_OK) {
+                $tmpName        = $files['tmp_name'][$i];
+                $originalName   = $files['name'][$i];
+                $slugifiedName  = Sanitizer::slugify($originalName);
+                $nameWithoutExt = \pathinfo($slugifiedName, \PATHINFO_FILENAME);
+                $targetPath     = $targetDir . '/' . $nameWithoutExt . '.webp';
+
+                if ($this->generateScaledImage($tmpName, $targetPath, 1000)) {
+                    ++$processedCount;
+                }
+            }
+        }
+
+        return $processedCount;
+    }
+
+    public function processCharacterImages(string $safeName, array $files): array
+    {
+        $baseTargetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters';
+
+        foreach (['profiles', 'portraits', 'palettes', 'refsheets'] as $sub) {
+            $dir = $baseTargetDir . '/' . $sub;
+            if (! \is_dir($dir)) {
+                @\mkdir($dir, 0o755, true);
+            }
+        }
+
+        $result = ['profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => []];
+
+        // Profilbild
+        if (isset($files['profile_image']) && $files['profile_image']['error'] !== \UPLOAD_ERR_NO_FILE) {
+            if ($files['profile_image']['error'] === \UPLOAD_ERR_OK) {
+                $fileName = $safeName . '-profile.webp';
+                if ($this->generateScaledImage($files['profile_image']['tmp_name'], $baseTargetDir . '/profiles/' . $fileName, 1000)) {
+                    $result['profile'] = $fileName;
+                } else {
+                    $result['warnings'][] = 'Profilbild: Konnte vom Server nicht verarbeitet werden.';
+                }
+            } else {
+                $result['warnings'][] = 'Profilbild: PHP Upload-Fehler (Code: ' . $files['profile_image']['error'] . ')';
+            }
+        }
+
+        // Hauptbild (Portrait)
+        if (isset($files['main_pic']) && $files['main_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
+            if ($files['main_pic']['error'] === \UPLOAD_ERR_OK) {
+                $fileName = $safeName . '-portrait.webp';
+                if ($this->generateScaledImage($files['main_pic']['tmp_name'], $baseTargetDir . '/portraits/' . $fileName, 2000)) {
+                    $result['main'] = $fileName;
+                } else {
+                    $result['warnings'][] = 'Hauptbild: Fehler bei Verarbeitung.';
+                }
+            }
+        }
+
+        // Farbpalette
+        if (isset($files['swatch_pic']) && $files['swatch_pic']['error'] !== \UPLOAD_ERR_NO_FILE) {
+            if ($files['swatch_pic']['error'] === \UPLOAD_ERR_OK) {
+                $fileName = $safeName . '-palette.webp';
+                if ($this->generateScaledImage($files['swatch_pic']['tmp_name'], $baseTargetDir . '/palettes/' . $fileName, 1500)) {
+                    $result['swatch'] = $fileName;
+                }
+            }
+        }
+
+        // Reference Sheets
+        if (isset($files['ref_sheets']) && \is_array($files['ref_sheets']['name'])) {
+            $refFiles = $files['ref_sheets'];
+            for ($i = 0, $c = \count($refFiles['name']); $i < $c; ++$i) {
+                if ($refFiles['error'][$i] === \UPLOAD_ERR_OK) {
+                    $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
+                    if ($this->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
+                        $result['refs'][] = $fileName;
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 }
