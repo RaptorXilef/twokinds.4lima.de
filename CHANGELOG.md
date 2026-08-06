@@ -1,5 +1,31 @@
 # Changelog
 
+## [6.14.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.5...v6.14.0) (2026-08-06)
+
+### 🚀 Features
+
+* **infrastructure:** add delete method to mail queue repository ([4e0d682](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4e0d682686372d101cb98708ae07267508cc5c46))
+
+### 🐛 Bug Fixes
+
+* **application:** resolve empty ajax tabs in admin dashboard ([e9d81e2](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e9d81e28ef4685d53c8ef7ca816e49e92f02bb69))
+* **config:** correct phpstan disallowed-calls path matching ([605ce01](https://github.com/RaptorXilef/twokinds.4lima.de/commit/605ce01f4d3b225b8ddab9a03fc4c7a7d556c53f))
+* **core:** fix phpstan windows paths ([6a4d076](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6a4d07600acb405c8fae462033419601525f3f4c))
+* **infrastructure:** resolve Deptrac violation in GdMediaService ([d819a72](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d819a72349b519276617e61586e38b22cb329f6f))
+
+### ⚙️ Refactoring
+
+* **application:** establish strict HTTP response layer and eliminate superglobals ([c7f9316](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c7f93160668e0386923e18c5555cef1bc23eb570))
+* **application:** fix direct HTTP calls and time functions ([99d38ff](https://github.com/RaptorXilef/twokinds.4lima.de/commit/99d38fff42212d1c127adfd98fd30bc120f7a396))
+* **application:** remove PDO dependency from Actions ([487deb6](https://github.com/RaptorXilef/twokinds.4lima.de/commit/487deb6267ddff649e8f4e172c0924eac303ae79))
+* **architecture:** isolate routing cache, analytics and crop I/O ([9b2401a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9b2401a3fa989e8b37a0261182631444b02f369c))
+* **core/application:** remove time() calls and fix session double-start ([6ee2547](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6ee25471c945a04eb19d23a59c9e75be970aa8f1))
+
+### 🏗️ Build System
+
+* **phpstan:** fix path matching and add advanced architecture rules ([6c0b0cb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6c0b0cbb2ea6eab6bad3236818c42f82a6e5b69c))
+* **qa:** refine phpstan architecture rules and clean up final view controllers ([31426ed](https://github.com/RaptorXilef/twokinds.4lima.de/commit/31426eda32b46450b0223d4c7840a416d4c22950))
+
 ## [6.13.5](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.4...v6.13.5) (2026-08-06)
 
 ### 🐛 Bug Fixes
