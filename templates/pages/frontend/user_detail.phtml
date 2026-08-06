@@ -10,13 +10,15 @@ use App\Core\Entity\User;
  * @var string      $baseUrl
  * @var string      $appRoot
  * @var User        $publicUser
- * @var ComicPage[] $helperComics
+ * @var ComicPage[] $userComics
  * @var ComicPage[] $bookmarks
  */
 $baseUrl   = \rtrim($settings['base_url'], '/');
 $avatarUrl = $publicUser->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$publicUser->avatarUrl}" : 'https://placehold.co/400x400?text=Kein+Bild';
+
 include __DIR__ . '/../../components/frontend/_public_header.phtml';
 ?>
+
 <article class="max-w-900 w-100 center-block">
 
     <!-- Header -->
@@ -28,8 +30,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <h1 class="page-header border-none m-0 p-0 mb-10 font-2x">
                 <?php echo \htmlspecialchars($publicUser->username->value); ?>
             </h1>
-            <?php if (\count($helperComics) > 0) { ?>
-                <span class="badge-info bg-even text-color border-medium px-10 py-5 font-small"><i class="fa-solid fa-star text-link"></i> Mitwirkende/r Helfer/in</span>
+            <?php if (\count($userComics) > 0) { ?>
+                <span class="badge-info bg-even text-color border-medium px-10 py-5 font-small"><i class="fa-solid fa-star text-link"></i> Mitwirkende/r Nutzer/in</span>
             <?php } ?>
         </div>
     </header>
@@ -48,14 +50,13 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <?php if (! empty($publicUser->socialLinks)) { ?>
                 <h3 class="mt-0 mb-15 font-1-2x text-color border-bottom-light pb-5">Links & Social Media</h3>
                 <div class="d-flex flex-wrap gap-10">
-                    <?php
-                    foreach ($publicUser->socialLinks as $link) {
+                    <?php foreach ($publicUser->socialLinks as $link) {
                         $host = \parse_url($link, \PHP_URL_HOST) ?? $link;
                         $host = \str_replace('www.', '', $host);
                         ?>
                         <a href="<?php echo \htmlspecialchars($link); ?>" target="_blank" rel="noopener noreferrer" class="button social-link-btn d-flex align-center gap-8 py-10 px-15 transition">
-                                <i class="fa-solid fa-link text-faded"></i> <?php echo \htmlspecialchars($host); ?>
-                            </a>
+                            <i class="fa-solid fa-link text-faded"></i> <?php echo \htmlspecialchars($host); ?>
+                        </a>
                     <?php } ?>
                 </div>
             <?php } ?>
@@ -66,16 +67,16 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
     <!-- Portfolio (Mitgewirkt an) -->
     <section class="mb-50">
         <h2 class="font-1-5x mb-20 pb-10 d-flex justify-between align-end border-bottom-light">
-            Mitgewirkt an <span class="comic-count-badge badge-pill"><?php echo \count($helperComics); ?> Seiten</span>
+            Mitgewirkt an <span class="comic-count-badge badge-pill"><?php echo \count($userComics); ?> Seiten</span>
         </h2>
-        <?php if (empty($helperComics)) { ?>
+
+        <?php if (empty($userComics)) { ?>
             <div class="no-bookmarks bg-even border-radius-8 p-30 text-center">
                 <p class="m-0 text-light">Dieser Nutzer hat bisher noch an keiner Comicseite mitgewirkt.</p>
             </div>
         <?php } else { ?>
             <div class="chapter-links tag-page-links">
-                <?php
-                foreach ($helperComics as $comic) {
+                <?php foreach ($userComics as $comic) {
                     $comicId   = $comic->id->value;
                     $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
                     $thumbDisk = "{$appRoot}/public/assets/images/comics/thumbnails/{$comicId}.webp";
@@ -86,9 +87,9 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
                     $pageName    = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
                     ?>
                     <a href="<?php echo $baseUrl; ?>/comic/<?php echo $comicId; ?>" title="<?php echo \htmlspecialchars($pageName); ?>" class="loaded">
-                            <span><?php echo \htmlspecialchars($pageName); ?></span>
-                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
-                        </a>
+                        <span><?php echo \htmlspecialchars($pageName); ?></span>
+                        <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
+                    </a>
                 <?php } ?>
             </div>
         <?php } ?>
@@ -100,27 +101,27 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml';
             <h2 class="font-1-5x mb-20 pb-10 d-flex justify-between align-end border-bottom-light">
                 Favoriten (Lesezeichen) <span class="comic-count-badge badge-pill"><?php echo \count($bookmarks); ?> Seiten</span>
             </h2>
+
             <?php if (empty($bookmarks)) { ?>
                 <div class="no-bookmarks bg-even border-radius-8 p-30 text-center">
                     <p class="m-0 text-light">Dieser Nutzer hat aktuell keine Favoriten gespeichert.</p>
                 </div>
             <?php } else { ?>
                 <div class="chapter-links tag-page-links">
-                    <?php
-                        foreach ($bookmarks as $comic) {
-                            $comicId   = $comic->id->value;
-                            $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
-                            $thumbDisk = "{$appRoot}/public/assets/images/comics/thumbnails/{$comicId}.webp";
-                            $thumbPath = \file_exists($thumbDisk) ? "{$baseUrl}/assets/images/comics/thumbnails/{$comicId}.webp{$cb}" : "{$baseUrl}/assets/images/system/in-translation.webp";
+                    <?php foreach ($bookmarks as $comic) {
+                        $comicId   = $comic->id->value;
+                        $cb        = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+                        $thumbDisk = "{$appRoot}/public/assets/images/comics/thumbnails/{$comicId}.webp";
+                        $thumbPath = \file_exists($thumbDisk) ? "{$baseUrl}/assets/images/comics/thumbnails/{$comicId}.webp{$cb}" : "{$baseUrl}/assets/images/system/in-translation.webp";
 
-                            $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
-                            $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
-                            $pageName    = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
-                            ?>
+                        $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', \substr($comicId, 0, 8));
+                        $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $comicId;
+                        $pageName    = "Seite vom {$displayDate}" . ($comic->name !== '' ? ": {$comic->name}" : '');
+                        ?>
                         <a href="<?php echo $baseUrl; ?>/comic/<?php echo $comicId; ?>" title="<?php echo \htmlspecialchars($pageName); ?>" class="loaded">
-                                <span><?php echo \htmlspecialchars($pageName); ?></span>
-                                <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
-                            </a>
+                            <span><?php echo \htmlspecialchars($pageName); ?></span>
+                            <img src="<?php echo \htmlspecialchars($thumbPath); ?>" alt="<?php echo \htmlspecialchars($pageName); ?>" loading="lazy">
+                        </a>
                     <?php } ?>
                 </div>
             <?php } ?>

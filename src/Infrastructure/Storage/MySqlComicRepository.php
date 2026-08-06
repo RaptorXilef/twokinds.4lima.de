@@ -28,7 +28,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
             'transcript'       => $comic->transcript,
             'chapter_id'       => $comic->chapterId,
             'character_ids'    => \json_encode($charIds, \JSON_UNESCAPED_UNICODE),
-            'helper_ids'       => \json_encode($comic->helperIds, \JSON_UNESCAPED_UNICODE),
+            'user_ids'         => \json_encode($comic->userIds, \JSON_UNESCAPED_UNICODE),
             'original_url'     => $comic->originalUrl,
             'sketch_url'       => $comic->sketchUrl,
             'image_updated_at' => $comic->imageUpdatedAt,
@@ -66,7 +66,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
         $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
         $charIds    = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
 
-        $helperIdsRaw = \json_decode($row['helper_ids'] ?? '[]', true) ?? [];
+        $userIdsRaw = \json_decode($row['user_ids'] ?? '[]', true) ?? [];
 
         return new ComicPage(
             id: new ComicId($row['id']),
@@ -75,7 +75,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
             transcript: $row['transcript'],
             chapterId: $row['chapter_id'],
             characterIds: $charIds,
-            helperIds: $helperIdsRaw,
+            userIds: $userIdsRaw,
             originalUrl: $row['original_url'] ?? '',
             sketchUrl: $row['sketch_url'] ?? '',
             imageUpdatedAt: $row['image_updated_at'] !== null ? (int) $row['image_updated_at'] : null,

@@ -87,12 +87,12 @@ final readonly class ComicAction implements ActionInterface
         $characters = $this->charRepo->findAll();
         $groups     = $this->groupRepo->findAll();
 
-        // Helfer-Objekte aus den IDs laden
-        $helpers = [];
-        foreach ($comic->helperIds as $hid) {
-            $u = $this->userRepo->findById($hid);
+        // Helfer-Objekte (User) aus den IDs laden
+        $comicUsers = [];
+        foreach ($comic->userIds as $uid) {
+            $u = $this->userRepo->findById($uid);
             if ($u) {
-                $helpers[] = $u;
+                $comicUsers[] = $u;
             }
         }
 
@@ -108,7 +108,7 @@ final readonly class ComicAction implements ActionInterface
             'displayDate' => $displayDate,
             'characters'  => $characters,
             'groups'      => $groups,
-            'helpers'     => $helpers,
+            'comicUsers'  => $comicUsers,
         ]);
 
         return null;

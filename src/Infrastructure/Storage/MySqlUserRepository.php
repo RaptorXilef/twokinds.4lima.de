@@ -92,8 +92,8 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         // TODO Prüfen ob das besser gelöst werden kann, z.B. direkter Abruf aus SQLSCHEMA
         // 2. Kaskadierendes Löschen der User-ID aus ALLEN Comics (Die JSON Magie)
         $sql = "UPDATE `comics`
-                SET `helper_ids` = JSON_REMOVE(`helper_ids`, JSON_UNQUOTE(JSON_SEARCH(`helper_ids`, 'one', ?)))
-                WHERE JSON_SEARCH(`helper_ids`, 'one', ?) IS NOT NULL";
+                SET `user_ids` = JSON_REMOVE(`user_ids`, JSON_UNQUOTE(JSON_SEARCH(`user_ids`, 'one', ?)))
+                WHERE JSON_SEARCH(`user_ids`, 'one', ?) IS NOT NULL";
         $stmtClean = $this->pdo->prepare($sql);
         $stmtClean->execute([$id, $id]);
 

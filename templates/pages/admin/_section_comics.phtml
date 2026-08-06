@@ -92,7 +92,7 @@ use App\Core\Entity\ComicPage;
                         'sketchUrl'   => $comic->sketchUrl,
                         'transcript'  => $comic->transcript ?? '',
                         'characters'  => $charIds,
-                        'helpers'     => $comic->helperIds ?? [],
+                        'users'       => $comic->userIds ?? [],
                     ], \JSON_HEX_APOS | \JSON_HEX_QUOT);
 
                     // Fehlende Dinge ermitteln
@@ -187,7 +187,8 @@ use App\Core\Entity\ComicPage;
         </tbody>
     </table>
 </div>
+
 <div id="comic-pagination"
      class="pagination-container d-flex gap-5 justify-center mt-20 flex-wrap">
     <!-- Die Buttons werden hier per JS generiert -->
-    </div>
+</div>

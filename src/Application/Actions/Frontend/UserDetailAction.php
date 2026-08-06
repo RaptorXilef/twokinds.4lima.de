@@ -42,12 +42,12 @@ final readonly class UserDetailAction implements ActionInterface
 
         $allComics = $this->comicRepo->findAll();
 
-        $helperComics = [];
-        $bookmarks    = [];
+        $userComics = [];
+        $bookmarks  = [];
 
         foreach ($allComics as $comic) {
-            if (\in_array($user->id, $comic->helperIds, true)) {
-                $helperComics[] = $comic;
+            if (\in_array($user->id, $comic->userIds, true)) {
+                $userComics[] = $comic;
             }
         }
 
@@ -62,15 +62,15 @@ final readonly class UserDetailAction implements ActionInterface
             }
         }
 
-        \usort($helperComics, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
+        \usort($userComics, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
         \usort($bookmarks, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
 
         // Wir rufen das neue Template "user_detail" auf
         $this->renderer->render('frontend/user_detail', [
-            'pageTitle'    => 'Profil von ' . $user->username->value,
-            'publicUser'   => $user, // Umbenannt, um nicht mit dem eingeloggten $user zu kollidieren
-            'helperComics' => $helperComics,
-            'bookmarks'    => $bookmarks,
+            'pageTitle'  => 'Profil von ' . $user->username->value,
+            'publicUser' => $user,
+            'userComics' => $userComics,
+            'bookmarks'  => $bookmarks,
         ]);
 
         return null;

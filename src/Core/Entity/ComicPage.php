@@ -23,7 +23,7 @@ final readonly class ComicPage
         array $characterIds,
         public string $originalUrl,
         public string $sketchUrl,
-        public array $helperIds = [],
+        public array $userIds = [],
         public ?int $imageUpdatedAt = null, // Ersetzt die image_cache.json
     ) {
         foreach ($characterIds as $charId) {

@@ -51,7 +51,7 @@ final readonly class GetComicAction implements ActionInterface
                 'transcript'  => $comic->transcript ?? '',
                 'chapterId'   => $comic->chapterId ?? '',
                 'characters'  => $charIds,
-                'helpers'     => $comic->helperIds ?? [],
+                'users'       => $comic->userIds ?? [],
                 'originalUrl' => $comic->originalUrl,
                 'sketchUrl'   => $comic->sketchUrl,
             ];

@@ -125,6 +125,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
                 // 3. Thumbnails & Social Media Crop generieren
                 if ($baseProcessPath !== '') {
                     $this->mediaService->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$dto->id}.webp", 200);
+
                     $socialPath = "$targetDir/social/{$dto->id}.jpg";
                     $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
                 }
@@ -137,7 +138,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
                 transcript: $dto->transcript,
                 chapterId: $dto->chapterId,
                 characterIds: $charIds,
-                helperIds: $dto->helperIds,
+                userIds: $dto->userIds,
                 originalUrl: $originalUrl,
                 sketchUrl: $sketchUrl,
                 imageUpdatedAt: $hasNewImage ? \time() : null, // ComicService behält alten Timestamp, wenn null übergeben wird
@@ -228,19 +229,22 @@ final readonly class SaveSingleComicAction implements ActionInterface
         if (! $img) {
             return;
         }
+
         $width  = \imagesx($img);
         $height = \imagesy($img);
 
         $targetRatio = 1200 / 630;
         $sourceRatio = $width / $height;
-        $cropW       = $width;
-        $cropH       = $height;
+
+        $cropW = $width;
+        $cropH = $height;
 
         if ($sourceRatio > $targetRatio) {
             $cropW = (int) ($height * $targetRatio);
         } else {
             $cropH = (int) ($width / $targetRatio);
         }
+
         $cropX = (int) (($width - $cropW) / 2);
         $cropY = (int) (($height - $cropH) / 2);
 

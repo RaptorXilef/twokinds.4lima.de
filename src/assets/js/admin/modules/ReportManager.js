@@ -47,6 +47,7 @@ export class ReportManager {
         );
 
         this.stateKey = 'admin_dt_state_reports';
+
         this.repPage = 1;
         this.repLimit = this.perPageSelect?.value || '15';
         this.repSearch = '';
@@ -235,16 +236,16 @@ export class ReportManager {
 
                             // MAGIC BUTTON FUNKTION: Helfer automatisch anhängen!
                             if (this.currentReportPayload.userId) {
-                                if (!comicData.helpers) comicData.helpers = [];
-                                if (!comicData.helpers.includes(this.currentReportPayload.userId)) {
-                                    comicData.helpers.push(this.currentReportPayload.userId);
+                                if (!comicData.users) comicData.users = [];
+                                if (!comicData.users.includes(this.currentReportPayload.userId)) {
+                                    comicData.users.push(this.currentReportPayload.userId);
                                 }
                             }
 
                             this.modalManager.close('report-detail-modal');
                             this.comicEditor.openEditModal(comicData);
                             this.notifications.show(
-                                'Transkript-Vorschlag geladen. Melder wurde als Helfer ausgewählt!',
+                                'Transkript-Vorschlag geladen. Melder wurde als mitwirkender Nutzer ausgewählt!',
                                 'success'
                             );
                         } else {
@@ -443,7 +444,7 @@ export class ReportManager {
 
         if (result.success) {
             this.notifications.show(result.message, 'success');
-            if (this.tracker) this.tracker.markClean(); // Bugfix
+            if (this.tracker) this.tracker.markClean();
             setTimeout(() => window.location.reload(), 1000);
         } else {
             this.notifications.show(result.error, 'error');
@@ -471,7 +472,7 @@ export class ReportManager {
 
         if (result.success) {
             this.notifications.show('Bericht markiert.', 'success');
-            if (this.tracker) this.tracker.markClean(); // Bugfix
+            if (this.tracker) this.tracker.markClean();
             setTimeout(() => window.location.reload(), 1000);
         } else {
             this.notifications.show(result.error, 'error');

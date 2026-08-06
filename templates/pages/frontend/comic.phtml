@@ -18,9 +18,11 @@ use App\Core\Entity\ComicPage;
  * @var bool           $canUseCloudSync
  * @var string         $appRoot
  */
-$baseUrl     = \rtrim($settings['base_url'], '/');
-$comicId     = $comic->id->value;
-$cb          = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+$baseUrl = \rtrim($settings['base_url'], '/');
+
+$comicId = $comic->id->value;
+$cb      = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+
 $baseImgDir  = "{$appRoot}/public/assets/images/comics";
 $fallbackDir = "{$baseUrl}/assets/images/system";
 
@@ -34,6 +36,7 @@ $imageHires = \file_exists("{$baseImgDir}/hires/{$comicId}.webp")
 $thumbnailPath = \file_exists("{$baseImgDir}/thumbnails/{$comicId}.webp")
     ? "{$baseUrl}/assets/images/comics/thumbnails/{$comicId}.webp{$cb}"
     : "{$fallbackDir}/in-translation-thumbnail.webp";
+
 $canonicalUrl = "{$baseUrl}/comic/{$comicId}";
 
 // Fallback-Verarbeitung für Sketches aus alten DB-Einträgen
@@ -41,12 +44,16 @@ $sketchLink = $comic->sketchUrl;
 if ($sketchLink !== '' && ! \str_starts_with($sketchLink, 'http')) {
     $sketchLink = 'https://twokindscomic.com/images/' . $sketchLink;
 }
-include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
+
+include __DIR__ . '/../../components/frontend/_public_header.phtml';
+?>
+
 <main class="content-area">
     <article class="comic">
         <header class="text-center mb-20">
             <?php if ($comic->chapterId !== null && $comic->chapterId !== '') { ?>
-                <h2 class="tinyheader text-faded mb-5 font-bold letter-spacing-1"> KAPITEL <?php echo \htmlspecialchars((string) $comic->chapterId); ?>
+                <h2 class="tinyheader text-faded mb-5 font-bold letter-spacing-1">
+                    KAPITEL <?php echo \htmlspecialchars((string) $comic->chapterId); ?>
                 </h2>
             <?php } ?>
             <h1 class="font-1-5x m-0 d-flex align-center justify-center flex-wrap gap-10 text-color">
@@ -86,7 +93,10 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
                     title="Diese Seite mit Lesezeichen versehen"
                     data-id="<?php echo $comic->id->value; ?>"
                     data-logged-in="<?php echo $canUseCloudSync ? 'true' : 'false'; ?>"
-                    data-csrf="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>"> Seite merken </button>
+                    data-csrf="<?php echo \htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+                Seite merken
+            </button>
+
             <!-- Report Button -->
             <button type="button"
                     id="open-report-modal"
@@ -136,7 +146,8 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
 
         <!-- Zusatz-Infos (Permalink, Instruction) -->
         <div class="below-nav">
-            <div class="permalink"> Permalink: <a href="<?php echo $canonicalUrl; ?>"><?php echo $canonicalUrl; ?></a>
+            <div class="permalink">
+                Permalink: <a href="<?php echo $canonicalUrl; ?>"><?php echo $canonicalUrl; ?></a>
             </div>
             <div class="nav-instruction">
                 <span class="nav-instruction-content jsdep">Du kannst auch wischen oder die Pfeiltasten verwenden.</span>
@@ -148,7 +159,7 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
             <aside class="transcript">
                 <div class="transcript-header">
                     <h3>Transkript</h3>
-                    <!-- NEU: Nutzt die dynamische Fallback-Variable $sketchLink -->
+                    <!-- Nutzt die dynamische Fallback-Variable $sketchLink -->
                     <?php if ($sketchLink !== '') { ?>
                         <a href="<?php echo \htmlspecialchars($sketchLink); ?>" target="_blank" rel="noopener noreferrer" class="button ml-15 font-small">Sketch ansehen</a>
                     <?php } ?>
@@ -163,30 +174,29 @@ include __DIR__ . '/../../components/frontend/_public_header.phtml'; ?>
         <?php $limitToIds = \array_map(fn ($id) => $id->value, $comic->characterIds);
 include __DIR__ . '/../../components/frontend/_character_display.phtml'; ?>
 
-        <!-- HELFER SEKTION -->
-        <?php if (! empty($helpers)) { ?>
+        <!-- HELFER/User SEKTION -->
+        <?php if (! empty($comicUsers)) { ?>
             <div class="comic-characters-container interactive mt-20">
                 <div class="char-display-header mb-15 pb-10 border-bottom-light">
                     <h3 class="m-0 font-1-1x text-faded text-center w-100"
                         style="grid-column: 1 / -1;">
-                        <i class="fa-solid fa-hands-helping text-link"></i> Vielen Dank an die Mitwirkenden dieser
-                        Seite:
+                        <i class="fa-solid fa-hands-helping text-link"></i> Vielen Dank an die Nutzer dieser Seite:
                     </h3>
                 </div>
 
-                <!-- HELFER - HIER WIRD DAS DESIGN DER CHARAKTERE GENUTZT -->
+                <!-- HELFER/User - HIER WIRD DAS DESIGN DER CHARAKTERE GENUTZT -->
                 <div class="character-list">
                     <div class="character-group">
                         <div class="character-group-list">
-                            <?php foreach ($helpers as $helper) {
-                                $pic = $helper->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$helper->avatarUrl}" : 'https://placehold.co/80x80?text=N/A';
+                            <?php foreach ($comicUsers as $userItem) {
+                                $pic = $userItem->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$userItem->avatarUrl}" : 'https://placehold.co/80x80?text=N/A';
                                 ?>
-                                <div class="character-item helper-item">
-                                    <a href="<?php echo $baseUrl; ?>/user/<?php echo \htmlspecialchars($helper->id); ?>">
+                                <div class="character-item user-item">
+                                    <a href="<?php echo $baseUrl; ?>/user/<?php echo \htmlspecialchars($userItem->id); ?>">
                                         <div class="character-avatar-container">
                                             <img src="<?php echo \htmlspecialchars($pic); ?>" loading="lazy" alt="Avatar">
                                         </div>
-                                        <p class="character-name"><?php echo \htmlspecialchars($helper->username->value); ?></p>
+                                        <p class="character-name"><?php echo \htmlspecialchars($userItem->username->value); ?></p>
                                     </a>
                                 </div>
                             <?php } ?>
@@ -199,4 +209,5 @@ include __DIR__ . '/../../components/frontend/_character_display.phtml'; ?>
 
     </article>
 </main>
+
 <?php include __DIR__ . '/../../components/frontend/_public_footer.phtml'; ?>

@@ -71,7 +71,7 @@ final class SchemaRegistry
                 `transcript` TEXT,
                 `chapter_id` VARCHAR(50),
                 `character_ids` JSON,
-                `helper_ids` JSON DEFAULT NULL,
+                `user_ids` JSON DEFAULT NULL,
                 `original_url` VARCHAR(255),
                 `sketch_url` VARCHAR(255),
                 `image_updated_at` INT NULL,

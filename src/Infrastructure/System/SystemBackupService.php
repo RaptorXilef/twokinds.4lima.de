@@ -118,6 +118,9 @@ final readonly class SystemBackupService implements BackupServiceInterface
             throw new \RuntimeException('Ungültiges Backup-Format.');
         }
 
+        // Lade alle existierenden Tabellen einmal vorab, um den SHOW TABLES Bug in PDO zu vermeiden
+        $allExistingTables = $this->getAllTables();
+
         $this->pdo->beginTransaction();
 
         try {
@@ -128,10 +131,8 @@ final readonly class SystemBackupService implements BackupServiceInterface
                     continue; // Nur die gewählte Tabelle wiederherstellen
                 }
 
-                // Prüfen ob Tabelle noch existiert
-                $checkTable = $this->pdo->prepare('SHOW TABLES LIKE ?');
-                $checkTable->execute([$table]);
-                if ($checkTable->rowCount() === 0) {
+                // Sicherer Check ohne ? Placeholder bei SHOW Kommandos
+                if (! \in_array($table, $allExistingTables, true)) {
                     continue;
                 }
 

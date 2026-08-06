@@ -30,7 +30,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             'transcript'       => $oldState->transcript,
             'chapter_id'       => $oldState->chapterId,
             'character_ids'    => \array_map(fn (CharacterId $id): string => $id->value, $oldState->characterIds),
-            'helper_ids'       => $oldState->helperIds, // NEU: Helfer im Snapshot mitsichern
+            'user_ids'         => $oldState->userIds,
             'original_url'     => $oldState->originalUrl,
             'sketch_url'       => $oldState->sketchUrl,
             'image_updated_at' => $oldState->imageUpdatedAt,

@@ -96,6 +96,7 @@ use App\Core\Entity\CharacterGroup;
                                placeholder="z.B. 20251024">
                         <small class="text-faded">Füllt URLs beim Verlassen des Feldes automatisch aus.</small>
                     </div>
+
                     <div class="form-group mb-0">
                         <label for="type">Typ</label>
                         <select id="type"
@@ -139,6 +140,7 @@ use App\Core\Entity\CharacterGroup;
                                name="url_originalbild"
                                placeholder="Dateiname (z.B. 12345.png) oder volle https:// URL">
                     </div>
+
                     <div class="form-group mb-0">
                         <label for="url_originalsketch">Original URL (Sketch)</label>
                         <input type="text"
@@ -165,6 +167,7 @@ use App\Core\Entity\CharacterGroup;
                             <div id="preview-name-hires"
                                  class="mt-5 font-bold text-success"></div>
                         </div>
+
                         <div id="comic-drop-zone-lowres"
                              class="drag-drop-zone drop-zone-sm zone-lowres bg-even border-dashed border-radius-6 mb-0">
                             <i class="fa-solid fa-compress"></i>
@@ -215,6 +218,7 @@ use App\Core\Entity\CharacterGroup;
                              class="char-selection-grid scroll-y max-h-250">
                             <?php $alphaChars = $characters;
 \usort($alphaChars, fn ($a, $b) => \strcasecmp($a->name, $b->name));
+
 foreach ($alphaChars as $char) {
     $pic = $char->picUrl ? "{$baseUrl}/assets/images/characters/profiles/{$char->picUrl}" : 'https://placehold.co/60x60?text=N/A'; ?>
                                 <div class="char-selection-item"
@@ -258,39 +262,42 @@ foreach ($alphaChars as $char) {
                             <?php } ?>
                         </div>
 
-                        <!-- HELFER AUSWAHL -->
-                        <div class="d-flex justify-between align-center mb-10 mt-20 border-top-dashed pt-10">
-                            <label class="mb-0">Mitwirkende Helfer (Übersetzung, Lektorat etc.)</label>
-                        </div>
-                        <select name="helper_ids[]"
-                                id="hidden-comic-helpers"
-                                multiple
-                                class="hidden">
-                            <?php foreach ($allUsers ?? [] as $u) { ?>
-                                <option value="<?php echo \htmlspecialchars($u->id); ?>"></option>
-                            <?php } ?>
-                        </select>
-                        <div class="bg-even border-medium border-radius-4 p-10">
-                            <div id="view-helpers"
-                                 class="char-selection-grid scroll-y max-h-250">
-                                <?php
-                                $alphaUsers = $allUsers ?? [];
+                    </div>
+                    <!-- HELFER / User AUSWAHL -->
+                    <!-- GEÄNDERT: helper -> user -->
+                    <div class="d-flex justify-between align-center mb-10 mt-20 border-top-dashed pt-10">
+                        <label class="mb-0">Mitwirkende Nutzer (Übersetzung, Lektorat etc.)</label>
+                    </div>
+
+                    <select name="user_ids[]"
+                            id="hidden-comic-users"
+                            multiple
+                            class="hidden">
+                        <?php foreach ($allUsers ?? [] as $u) { ?>
+                            <option value="<?php echo \htmlspecialchars($u->id); ?>"></option>
+                        <?php } ?>
+                    </select>
+
+                    <div class="bg-even border-medium border-radius-4 p-10">
+                        <div id="view-users"
+                             class="char-selection-grid scroll-y max-h-250">
+                            <?php
+                                                    $alphaUsers = $allUsers ?? [];
 \usort($alphaUsers, fn ($a, $b) => \strcasecmp($a->username->value, $b->username->value));
 foreach ($alphaUsers as $u) {
     $pic = $u->avatarUrl ? "{$baseUrl}/assets/images/avatars/{$u->avatarUrl}" : 'https://placehold.co/60x60?text=N/A';
     ?>
-                                    <div class="char-selection-item helper-selection-item"
-                                         data-helper-id="<?php echo \htmlspecialchars($u->id); ?>">
-                                        <img src="<?php echo \htmlspecialchars($pic); ?>"
-                                             loading="lazy"
-                                             alt="Avatar">
-                                        <span><?php echo \htmlspecialchars($u->username->value); ?></span>
-                                    </div>
-                                <?php } ?>
-                            </div>
+                                <div class="char-selection-item user-selection-item"
+                                     data-user-id="<?php echo \htmlspecialchars($u->id); ?>">
+                                    <img src="<?php echo \htmlspecialchars($pic); ?>"
+                                         loading="lazy"
+                                         alt="Avatar">
+                                    <span><?php echo \htmlspecialchars($u->username->value); ?></span>
+                                </div>
+                            <?php } ?>
                         </div>
-
                     </div>
+
                 </div>
             </form>
         </div>
@@ -896,7 +903,8 @@ foreach ($alphaUsers as $u) {
 <!-- ======================================================================= -->
 <!-- E-Mail Vorschau Modal -->
 <!-- ======================================================================= -->
-<div id="mail-preview-modal" class="modal z-1070">
+<div id="mail-preview-modal"
+     class="modal z-1070">
     <div class="modal-overlay btn-close-mail-modal"></div>
     <div class="modal-content modal-lg modal-flex">
         <div class="modal-header-wrapper">
@@ -904,12 +912,15 @@ foreach ($alphaUsers as $u) {
             <button class="modal-close btn-close-mail-modal">&times;</button>
         </div>
         <!-- p-0 entfernt das Padding für Iframe Vollbild -->
-        <div class="modal-scroll-content d-flex flex-column p-0 overflow-hidden" style="background: #ececec;">
-            <iframe id="mail-preview-frame" style="width: 100%; height: 65vh; border: none; background: #ececec;"></iframe>
+        <div class="modal-scroll-content d-flex flex-column p-0 overflow-hidden"
+             style="background: #ececec;">
+            <iframe id="mail-preview-frame"
+                    style="width: 100%; height: 65vh; border: none; background: #ececec;"></iframe>
         </div>
         <div class="modal-footer-actions">
             <div class="modal-buttons w-100 justify-end">
-                <button type="button" class="button btn-close-mail-modal">Schließen</button>
+                <button type="button"
+                        class="button btn-close-mail-modal">Schließen</button>
             </div>
         </div>
     </div>

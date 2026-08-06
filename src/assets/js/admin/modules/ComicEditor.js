@@ -97,8 +97,8 @@ export class ComicEditor {
             const btnCancel = e.target.closest('.btn-close-comic-modal');
 
             // WICHTIG: Strikte Trennung der Klassen!
-            const charItem = e.target.closest('.char-selection-item:not(.helper-selection-item)');
-            const helperItem = e.target.closest('.helper-selection-item');
+            const charItem = e.target.closest('.char-selection-item:not(.user-selection-item)');
+            const userItem = e.target.closest('.user-selection-item');
 
             if (btnSave) {
                 e.preventDefault();
@@ -123,15 +123,15 @@ export class ComicEditor {
                 }
             }
 
-            // Klick auf Helfer-Icon
-            if (helperItem && this.form) {
-                helperItem.classList.toggle('selected');
-                const helperId = helperItem.dataset.helperId;
-                const hiddenSelect = document.getElementById('hidden-comic-helpers');
+            // Klick auf Helfer-Icon (User)
+            if (userItem && this.form) {
+                userItem.classList.toggle('selected');
+                const userId = userItem.dataset.userId;
+                const hiddenSelect = document.getElementById('hidden-comic-users');
                 if (hiddenSelect) {
-                    const opt = hiddenSelect.querySelector(`option[value="${helperId}"]`);
+                    const opt = hiddenSelect.querySelector(`option[value="${userId}"]`);
                     if (opt) {
-                        opt.selected = helperItem.classList.contains('selected');
+                        opt.selected = userItem.classList.contains('selected');
                         if (this.tracker) this.tracker.markDirty();
                     }
                 }
@@ -291,6 +291,7 @@ export class ComicEditor {
 
     openAddModal() {
         this.currentDraftKey = 'admin_comic_form_draft_new';
+
         if (this.form) this.form.reset();
 
         // Draft Recovery
@@ -333,7 +334,8 @@ export class ComicEditor {
         }
 
         this.resetCharacterSelection();
-        this.resetHelperSelection();
+        this.resetUserSelection();
+
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
@@ -347,6 +349,7 @@ export class ComicEditor {
     openEditModal(payload) {
         // Template Literal verwenden
         this.currentDraftKey = `admin_comic_form_draft_${payload.id}`;
+
         if (this.form) this.form.reset();
 
         // Draft Recovery
@@ -395,7 +398,8 @@ export class ComicEditor {
         }
 
         this.applyCharacterSelection(payload.characters || []);
-        this.applyHelperSelection(payload.helpers || []);
+        this.applyUserSelection(payload.users || []);
+
         DragDropService.reset('comic-drop-zone-hires', 'preview-name-hires');
         DragDropService.reset('comic-drop-zone-lowres', 'preview-name-lowres');
 
@@ -408,7 +412,7 @@ export class ComicEditor {
 
     resetCharacterSelection() {
         document
-            .querySelectorAll('.char-selection-item:not(.helper-selection-item)')
+            .querySelectorAll('.char-selection-item:not(.user-selection-item)')
             .forEach((item) => {
                 item.classList.remove('selected');
             });
@@ -420,11 +424,11 @@ export class ComicEditor {
         }
     }
 
-    resetHelperSelection() {
-        document.querySelectorAll('.helper-selection-item').forEach((item) => {
+    resetUserSelection() {
+        document.querySelectorAll('.user-selection-item').forEach((item) => {
             item.classList.remove('selected');
         });
-        const hiddenSelect = document.getElementById('hidden-comic-helpers');
+        const hiddenSelect = document.getElementById('hidden-comic-users');
         if (hiddenSelect) {
             Array.from(hiddenSelect.options).forEach((opt) => {
                 opt.selected = false;
@@ -435,10 +439,11 @@ export class ComicEditor {
     applyCharacterSelection(characterIds) {
         this.resetCharacterSelection();
         const hiddenSelect = document.getElementById('hidden-comic-chars');
+
         characterIds.forEach((charId) => {
             document
                 .querySelectorAll(
-                    `.char-selection-item:not(.helper-selection-item)[data-char-id="${charId}"]`
+                    `.char-selection-item:not(.user-selection-item)[data-char-id="${charId}"]`
                 )
                 .forEach((item) => {
                     item.classList.add('selected');
@@ -450,12 +455,13 @@ export class ComicEditor {
         });
     }
 
-    applyHelperSelection(helperIds) {
-        this.resetHelperSelection();
-        const hiddenSelect = document.getElementById('hidden-comic-helpers');
-        helperIds.forEach((id) => {
+    applyUserSelection(userIds) {
+        this.resetUserSelection();
+        const hiddenSelect = document.getElementById('hidden-comic-users');
+
+        userIds.forEach((id) => {
             document
-                .querySelectorAll(`.helper-selection-item[data-helper-id="${id}"]`)
+                .querySelectorAll(`.user-selection-item[data-user-id="${id}"]`)
                 .forEach((item) => {
                     item.classList.add('selected');
                 });

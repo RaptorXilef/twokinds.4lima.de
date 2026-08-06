@@ -17,7 +17,7 @@ final readonly class SaveSingleComicRequest
         public string $transcript,
         public ?string $chapterId,
         public array $characterIds,
-        public array $helperIds,
+        public array $userIds,
         public string $originalUrl,
         public string $sketchUrl,
     ) {
@@ -43,8 +43,8 @@ final readonly class SaveSingleComicRequest
         // Char-IDs säubern
         $characterIds = \array_map(Sanitizer::string(...), $characterIds);
 
-        $helperIds = (array) ($post['helper_ids'] ?? []);
-        $helperIds = \array_map(Sanitizer::string(...), $helperIds);
+        $userIds = (array) ($post['user_ids'] ?? []);
+        $userIds = \array_map(Sanitizer::string(...), $userIds);
 
         // Flexible URL-Behandlung für Originalbilder
         $originalUrl = Sanitizer::string($post['url_originalbild'] ?? '');
@@ -65,7 +65,7 @@ final readonly class SaveSingleComicRequest
             transcript: $transcript,
             chapterId: $chapterId === '' ? null : $chapterId,
             characterIds: $characterIds,
-            helperIds: $helperIds,
+            userIds: $userIds,
             originalUrl: $originalUrl,
             sketchUrl: $sketchUrl,
         );
