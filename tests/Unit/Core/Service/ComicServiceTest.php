@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use App\Contracts\Storage\ComicRepositoryInterface;
@@ -8,27 +9,35 @@ use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Service\ComicService;
 use App\Core\ValueObject\ComicId;
+use PHPUnit\Framework\MockObject\MockObject;
 
-covers(ComicService::class);
+/**
+ * @property MockObject&ComicRepositoryInterface $comicRepoMock
+ * @property MockObject&ComicRevisionRepositoryInterface $revisionRepoMock
+ * @property MockObject&ClockInterface $clockMock
+ * @property MockObject&SiteGeneratorInterface $siteGenMock
+ * @property ComicService $service
+ */
+\covers(ComicService::class);
 
-beforeEach(function () {
-    $this->comicRepoMock = $this->createMock(ComicRepositoryInterface::class);
+\beforeEach(function (): void {
+    $this->comicRepoMock    = $this->createMock(ComicRepositoryInterface::class);
     $this->revisionRepoMock = $this->createMock(ComicRevisionRepositoryInterface::class);
-    $this->clockMock = $this->createMock(ClockInterface::class);
-    $this->siteGenMock = $this->createMock(SiteGeneratorInterface::class);
+    $this->clockMock        = $this->createMock(ClockInterface::class);
+    $this->siteGenMock      = $this->createMock(SiteGeneratorInterface::class);
 
     $this->service = new ComicService(
         $this->comicRepoMock,
         $this->revisionRepoMock,
         $this->clockMock,
-        $this->siteGenMock
+        $this->siteGenMock,
     );
 });
 
-it('saves a new comic without creating a revision', function () {
+\it('saves a new comic without creating a revision', function (): void {
     // Arrange
     $comicId = new ComicId('20260807');
-    $comic = new ComicPage($comicId, 'Comicseite', 'Test', null, null, [], '', '');
+    $comic   = new ComicPage($comicId, 'Comicseite', 'Test', null, null, [], '', '');
 
     // Comic existiert noch nicht
     $this->comicRepoMock->expects($this->once())
@@ -52,11 +61,11 @@ it('saves a new comic without creating a revision', function () {
     $this->service->saveComic($comic);
 });
 
-it('creates a revision when saving an existing comic', function () {
+\it('creates a revision when saving an existing comic', function (): void {
     // Arrange
-    $comicId = new ComicId('20260807');
+    $comicId       = new ComicId('20260807');
     $existingComic = new ComicPage($comicId, 'Comicseite', 'Old Name', null, null, [], '', '');
-    $updatedComic = new ComicPage($comicId, 'Comicseite', 'New Name', null, null, [], '', '');
+    $updatedComic  = new ComicPage($comicId, 'Comicseite', 'New Name', null, null, [], '', '');
 
     // Comic existiert bereits
     $this->comicRepoMock->expects($this->once())
