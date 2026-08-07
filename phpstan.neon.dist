@@ -64,8 +64,8 @@ parameters:
 
     ignoreErrors:
         # Pest nutzt interne Methoden für seine API, das ist beabsichtigt.
-        - message: '#Call to method .* of internal class Pest\\.* from outside its root namespace Pest#'
-          path: tests/*
+        #- message: '#Call to method .* of internal class Pest\\.* from outside its root namespace Pest#'
+        #  path: tests/*
 
         # Wir ignorieren die strict-rules empty() Meldungen, da sie für die Architektur irrelevant sind
         # TODO Später auskommentieren, wenn Architekturupdate abgeschlossen ist

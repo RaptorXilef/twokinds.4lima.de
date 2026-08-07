@@ -132,7 +132,7 @@ final readonly class AuthService
     public function hasPermission(string $permission): bool
     {
         // Wenn admin_dev_mode aktiv ist, hat jeder vollen Zugriff
-        if ($this->config->get('admin_dev_mode', false)) {
+        if ($this->config->get('admin_dev_mode', false) === true) {
             return true;
         }
 

@@ -13,6 +13,7 @@ final class PermissionCompiler
      */
     public function compile(array $structure, array $groupPermissions): array
     {
+        /** @var array<string, bool> $flat */
         $flat = [];
         // Wir starten mit false (Default Deny)
         $this->walk($structure, $groupPermissions, false, $flat);
