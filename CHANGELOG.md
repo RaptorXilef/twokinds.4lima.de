@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.15.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.14.1...v6.15.0) (2026-08-07)
+
+### 🚀 Features
+
+* /test(core): Setup Pest architecture and core service unit tests ([f0af4f0](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f0af4f0f4675eedd44738be39ef64c32bbc9885d))
+
+### 🐛 Bug Fixes
+
+* **tests:** Resolve protected createMock scope issue in factory functions ([7f13103](https://github.com/RaptorXilef/twokinds.4lima.de/commit/7f13103ba9ac1f00649b8658161c0f4df87a32e5))
+* **tests:** Restore strict phpunit config and fix coverage metadata ([f0bf7b2](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f0bf7b2722260cac8ad74895d805cf355daacac8))
+
+### ⚙️ Refactoring
+
+* **tests:** Implement anonymous setup objects for DRY test isolation ([25e6536](https://github.com/RaptorXilef/twokinds.4lima.de/commit/25e6536cca6f9a3c5942b9c9848ec9943979c813))
+
+### 💎 Styling
+
+* **tests:** Add PHPDoc property annotations for IDE and static analysis support ([4785e6e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4785e6ef64c53f8f2b64c393696d3c03c05facd5))
+
 ## [6.14.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.14.0...v6.14.1) (2026-08-07)
 
 ### 🐛 Bug Fixes
