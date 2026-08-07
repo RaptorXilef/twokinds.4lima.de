@@ -93,6 +93,7 @@ final readonly class ComicService
 
     public function restoreLatestRevision(ComicId $id): void
     {
+        /** @var array<string, mixed>|null $revisionData */
         $revisionData = $this->revisionRepository->popLatestRevision($id);
 
         if ($revisionData === null) {
@@ -125,6 +126,7 @@ final readonly class ComicService
      */
     public function restoreDeletedComic(): array
     {
+        /** @var array<string, mixed>|null $revisionData */
         $revisionData = $this->revisionRepository->popLatestDeletedRevision();
 
         if ($revisionData === null) {
@@ -136,6 +138,7 @@ final readonly class ComicService
 
         $restoredComic = $this->hydrateRevisionData($id, $revisionData);
 
+        // Wir legen ihn wieder regulär an
         $this->comicRepository->save($restoredComic);
         $this->siteGenerator->generateAll();
 
