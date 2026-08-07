@@ -75,5 +75,7 @@ use App\Core\ValueObject\Username;
 })->throws(\InvalidArgumentException::class, 'mindestens 3 Zeichen')->covers(Username::class);
 
 \it('rejects a Username with invalid characters', function (): void {
-    new Username('Hacker<script>');
+    // '@' und '!' werden von strip_tags nicht entfernt,
+    // verstoßen aber gegen die Regex!
+    new Username('Hacker@123!');
 })->throws(\InvalidArgumentException::class, 'enthält ungültige Zeichen')->covers(Username::class);
