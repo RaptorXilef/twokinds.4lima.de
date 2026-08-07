@@ -1,17 +1,23 @@
 <?php
+
 declare(strict_types=1);
 
 /*
 |--------------------------------------------------------------------------
 | Test Case Configuration
 |--------------------------------------------------------------------------
-| Hier weisen wir allen Unit-Tests globale Eigenschaften zu.
+| Architektur-spezifische Gruppierungen für gezielte Test-Ausführungen.
 */
 
-uses()
+\uses()
     ->group('unit')
     ->in('Unit');
 
-uses()
+\uses()
     ->group('feature')
     ->in('Feature');
+
+// DDD Layer Groups
+\uses()->group('core')->in('Unit/Core');
+\uses()->group('application')->in('Unit/Application');
+\uses()->group('infrastructure')->in('Unit/Infrastructure');

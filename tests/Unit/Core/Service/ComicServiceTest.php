@@ -9,6 +9,8 @@ use App\Core\Entity\ComicPage;
 use App\Core\Service\ComicService;
 use App\Core\ValueObject\ComicId;
 
+covers(ComicService::class);
+
 beforeEach(function () {
     $this->comicRepoMock = $this->createMock(ComicRepositoryInterface::class);
     $this->revisionRepoMock = $this->createMock(ComicRevisionRepositoryInterface::class);

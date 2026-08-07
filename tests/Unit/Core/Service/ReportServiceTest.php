@@ -7,6 +7,8 @@ use App\Core\Entity\Report;
 use App\Core\Exception\RateLimitExceededException;
 use App\Core\Service\ReportService;
 
+covers(ReportService::class);
+
 beforeEach(function () {
     // Mocks initialisieren
     $this->reportRepoMock = $this->createMock(ReportRepositoryInterface::class);
