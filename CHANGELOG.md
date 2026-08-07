@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.16.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.15.1...v6.16.0) (2026-08-07)
+
+### 🚀 Features
+
+* **parser:** add optional preservation of annotated DocBlocks ([123c268](https://github.com/RaptorXilef/twokinds.4lima.de/commit/123c268928d76dafa5d5475743f17f056ed8c710))
+
+### 🐛 Bug Fixes
+
+* **core:** Eliminate final PHPStan Level 9 mixed type errors ([b2f71cf](https://github.com/RaptorXilef/twokinds.4lima.de/commit/b2f71cf1960fc77c6c63f8866fe9d5744a52ec0d))
+* **core:** Resolve final array shape mismatches in ComicService ([497e87c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/497e87ca075b7109e5c38354117587fec6f9cf5e))
+* **core:** Resolve final PHPStan level 6 strictness errors in Domain Layer ([da678cb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/da678cbdb5a3cc4d455b9466eb433ec9a7dbef7e))
+* **core:** Resolve PHPStan Level 9 maximum strictness errors ([0e61462](https://github.com/RaptorXilef/twokinds.4lima.de/commit/0e614623703f8e62ec144710db48913bd755715d))
+* **core:** Resolve remaining PHPStan Level 9 strict type errors ([04bf9e3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/04bf9e3d742ee26e33b473c50aef359e89192014))
+
+### 💎 Styling
+
+* **core:** Resolve PHPStan level 6 strict type errors in domain layer ([4515dcf](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4515dcf5013cecfca7a8f3fbf18c5962abd11f7f))
+* **parser:** improve DocBlock readability and modernize string concatenation ([8b2b11c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8b2b11ce44bf5b39194f6c22074876d407af3833))
+
 ## [6.15.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.15.0...v6.15.1) (2026-08-07)
 
 ### 🐛 Bug Fixes
