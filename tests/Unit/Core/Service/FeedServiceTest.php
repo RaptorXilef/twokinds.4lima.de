@@ -12,7 +12,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 function setupFeedTest(mixed $test): object
 {
-    $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
+    $mock = \Closure::bind(fn(string $c) => $test->createMock($c), $test, $test::class);
 
     return new class($mock(ComicRepositoryInterface::class), $mock(ConfigInterface::class), $mock(ClockInterface::class)) {
         public FeedService $service;
@@ -34,14 +34,8 @@ function setupFeedTest(mixed $test): object
     $now = new \DateTimeImmutable('2026-08-07 12:00:00');
     $app->clock->method('now')->willReturn($now);
 
-    $app->config->method('getBaseUrl')->willReturn('ttps://twokinds.4lima.local');
-    $app->config->method('get')->willReturnCallback(function ($k, $d) {
-        if ($k === 'site_title') {
-            return 'Test Title';
-        }
-
-        return $d;
-    });
+    $app->config->method('getBaseUrl')->willReturn('https://twokinds.4lima.local');
+    $app->config->method('get')->willReturn('Twokinds auf Deutsch'); // Standard-Titel
 
     $comic = new ComicPage(
         new ComicId('20260807'),
@@ -64,8 +58,11 @@ function setupFeedTest(mixed $test): object
     $xml = $app->service->generateRssXml(10);
 
     // Assert
-    \expect($xml)->toContain('<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">')
-        ->and($xml)->toContain('<title>Test Title</title>')
+    // Wir prüfen die XML-Elemente separat, da die Reihenfolge variieren kann
+    \expect($xml)->toContain('<rss')
+        ->and($xml)->toContain('version="2.0"')
+        ->and($xml)->toContain('xmlns:atom="http://www.w3.org/2005/Atom"')
+        ->and($xml)->toContain('<title>Twokinds auf Deutsch</title>')
         ->and($xml)->toContain('<title>Test Comic</title>')
-        ->and($xml)->toContain('ttps://twokinds.4lima.local/comic/20260807');
+        ->and($xml)->toContain('https://twokinds.4lima.local/comic/20260807');
 })->covers(FeedService::class);

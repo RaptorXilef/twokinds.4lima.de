@@ -13,8 +13,9 @@ use App\Core\Security\Sanitizer;
 })->covers(Sanitizer::class);
 
 \it('sanitizes emails correctly', function (): void {
-    $input = '  TEST@example.com!  ';
-    \expect(Sanitizer::email($input))->toBe('TEST@example.com');
+    // Klammern und Leerzeichen sind illegal und werden entfernt
+    $input = '  T E S T (at) example.com  ';
+    \expect(Sanitizer::email($input))->toBe('TESTatexample.com');
 })->covers(Sanitizer::class);
 
 \it('sanitizes HTML securely via HtmlSanitizer', function (): void {
