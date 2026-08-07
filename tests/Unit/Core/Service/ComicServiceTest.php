@@ -12,75 +12,91 @@ use App\Core\ValueObject\ComicId;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
- * @property MockObject&ComicRepositoryInterface $comicRepoMock
- * @property MockObject&ComicRevisionRepositoryInterface $revisionRepoMock
- * @property MockObject&ClockInterface $clockMock
- * @property MockObject&SiteGeneratorInterface $siteGenMock
- * @property ComicService $service
+ * ZENTRALER SETUP: Hier wird der Service und alle Mocks exakt EINMAL instanziiert.
  */
-\covers(ComicService::class);
+function setupComicTest(mixed $test): object
+{
+    return new class($test) {
+        public MockObject&ComicRepositoryInterface $comicRepo;
 
-\beforeEach(function (): void {
-    $this->comicRepoMock    = $this->createMock(ComicRepositoryInterface::class);
-    $this->revisionRepoMock = $this->createMock(ComicRevisionRepositoryInterface::class);
-    $this->clockMock        = $this->createMock(ClockInterface::class);
-    $this->siteGenMock      = $this->createMock(SiteGeneratorInterface::class);
+        public MockObject&ComicRevisionRepositoryInterface $revisionRepo;
 
-    $this->service = new ComicService(
-        $this->comicRepoMock,
-        $this->revisionRepoMock,
-        $this->clockMock,
-        $this->siteGenMock,
-    );
-});
+        public MockObject&ClockInterface $clock;
+
+        public MockObject&SiteGeneratorInterface $siteGen;
+
+        public ComicService $service;
+
+        public function __construct(mixed $test)
+        {
+            $this->comicRepo    = $test->createMock(ComicRepositoryInterface::class);
+            $this->revisionRepo = $test->createMock(ComicRevisionRepositoryInterface::class);
+            $this->clock        = $test->createMock(ClockInterface::class);
+            $this->siteGen      = $test->createMock(SiteGeneratorInterface::class);
+
+            $this->service = new ComicService(
+                $this->comicRepo,
+                $this->revisionRepo,
+                $this->clock,
+                $this->siteGen,
+            );
+        }
+    };
+}
 
 \it('saves a new comic without creating a revision', function (): void {
+    $app = \setupComicTest($this);
+
     // Arrange
     $comicId = new ComicId('20260807');
     $comic   = new ComicPage($comicId, 'Comicseite', 'Test', null, null, [], '', '');
 
     // Comic existiert noch nicht
-    $this->comicRepoMock->expects($this->once())
+    $app->comicRepo->expects($this->once())
         ->method('findById')
         ->willReturn(null);
 
     // Es darf KEIN Snapshot erstellt werden
-    $this->revisionRepoMock->expects($this->never())
+    $app->revisionRepo->expects($this->never())
         ->method('createSnapshot');
 
     // Comic muss gespeichert werden
-    $this->comicRepoMock->expects($this->once())
+    $app->comicRepo->expects($this->once())
         ->method('save')
         ->with($comic);
 
     // SiteGenerator muss getriggert werden
-    $this->siteGenMock->expects($this->once())
+    $app->siteGen->expects($this->once())
         ->method('generateAll');
 
     // Act
-    $this->service->saveComic($comic);
-});
+    $app->service->saveComic($comic);
+
+})->covers(ComicService::class);
 
 \it('creates a revision when saving an existing comic', function (): void {
+    $app = \setupComicTest($this);
+
     // Arrange
     $comicId       = new ComicId('20260807');
     $existingComic = new ComicPage($comicId, 'Comicseite', 'Old Name', null, null, [], '', '');
     $updatedComic  = new ComicPage($comicId, 'Comicseite', 'New Name', null, null, [], '', '');
 
     // Comic existiert bereits
-    $this->comicRepoMock->expects($this->once())
+    $app->comicRepo->expects($this->once())
         ->method('findById')
         ->willReturn($existingComic);
 
     // Es MUSS ein Snapshot vom ALTZUSTAND erstellt werden
-    $this->revisionRepoMock->expects($this->once())
+    $app->revisionRepo->expects($this->once())
         ->method('createSnapshot')
         ->with($existingComic);
 
-    $this->comicRepoMock->expects($this->once())
+    $app->comicRepo->expects($this->once())
         ->method('save')
         ->with($updatedComic);
 
     // Act
-    $this->service->saveComic($updatedComic);
-});
+    $app->service->saveComic($updatedComic);
+
+})->covers(ComicService::class);

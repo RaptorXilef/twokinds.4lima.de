@@ -9,37 +9,44 @@ use App\Core\Exception\RateLimitExceededException;
 use App\Core\Service\ReportService;
 use PHPUnit\Framework\MockObject\MockObject;
 
-/**
- * @property MockObject&ReportRepositoryInterface $reportRepoMock
- * @property MockObject&ClockInterface $clockMock
- * @property ReportService $service
- */
-\covers(ReportService::class);
+function setupReportTest(mixed $test): object
+{
+    return new class($test) {
+        public MockObject&ReportRepositoryInterface $reportRepo;
 
-\beforeEach(function (): void {
-    // Mocks initialisieren
-    $this->reportRepoMock = $this->createMock(ReportRepositoryInterface::class);
-    $this->clockMock      = $this->createMock(ClockInterface::class);
+        public MockObject&ClockInterface $clock;
 
-    // Service mit gemockten Abhängigkeiten instanziieren
-    $this->service = new ReportService(
-        $this->reportRepoMock,
-        $this->clockMock,
-    );
-});
+        public ReportService $service;
+
+        public function __construct(mixed $test)
+        {
+            // Mocks initialisieren
+            $this->reportRepo = $test->createMock(ReportRepositoryInterface::class);
+            $this->clock      = $test->createMock(ClockInterface::class);
+
+            // Service mit gemockten Abhängigkeiten instanziieren
+            $this->service = new ReportService(
+                $this->reportRepo,
+                $this->clock,
+            );
+        }
+    };
+}
 
 \it('throws RateLimitExceededException if user submits too many reports', function (): void {
+    $app = \setupReportTest($this);
+
     // Arrange
     $now = new \DateTimeImmutable('2026-08-07 12:00:00');
-    $this->clockMock->method('now')->willReturn($now);
+    $app->clock->method('now')->willReturn($now);
 
     // Wir simulieren, dass diese IP bereits 5 Reports gesendet hat (Limit)
-    $this->reportRepoMock->expects($this->once())
+    $app->reportRepo->expects($this->once())
         ->method('countRecentByIpHash')
         ->willReturn(5);
 
     // Act & Assert
-    $this->service->submitReport(
+    $app->service->submitReport(
         '20240101',
         'usr_123',
         '127.0.0.1',
@@ -52,24 +59,26 @@ use PHPUnit\Framework\MockObject\MockObject;
         '',
         '',
     );
-})->throws(RateLimitExceededException::class);
+})->throws(RateLimitExceededException::class)->covers(ReportService::class);
 
 \it('successfully creates and saves a report if rate limit is not reached', function (): void {
+    $app = \setupReportTest($this);
+
     // Arrange
     $now = new \DateTimeImmutable('2026-08-07 12:00:00');
-    $this->clockMock->method('now')->willReturn($now);
+    $app->clock->method('now')->willReturn($now);
 
-    $this->reportRepoMock->expects($this->once())
+    $app->reportRepo->expects($this->once())
         ->method('countRecentByIpHash')
         ->willReturn(0); // Keine vorherigen Reports
 
     // Wir erwarten, dass save() genau einmal mit einer Report-Entität aufgerufen wird
-    $this->reportRepoMock->expects($this->once())
+    $app->reportRepo->expects($this->once())
         ->method('save')
         ->with($this->isInstanceOf(Report::class));
 
     // Act
-    $report = $this->service->submitReport(
+    $report = $app->service->submitReport(
         '20240101a',
         null,
         '192.168.1.1',
@@ -88,4 +97,4 @@ use PHPUnit\Framework\MockObject\MockObject;
         ->and($report->comicId?->value)->toBe('20240101a')
         ->and($report->ipHash)->toBe(\hash('sha256', '192.168.1.1'))
         ->and($report->status)->toBe('open');
-});
+})->covers(ReportService::class);
