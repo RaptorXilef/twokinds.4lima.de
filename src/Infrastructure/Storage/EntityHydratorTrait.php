@@ -104,14 +104,18 @@ trait EntityHydratorTrait
 
             $rawValue = $row[$dbColumn];
 
-            // NULL Handling
+            // NULL Handling: Wenn die DB NULL liefert, das Feld aber einen Default-Wert (z.B. []) hat
+            // und strikt KEIN null erlaubt, verwenden wir den Default-Wert.
             if ($rawValue === null) {
-                $args[] = null;
+                if ($type !== null && ! $type->allowsNull() && $parameter->isDefaultValueAvailable()) {
+                    $args[] = $parameter->getDefaultValue();
+                } else {
+                    $args[] = null;
+                }
 
                 continue;
             }
 
-            // Typen-Transformation
             if ($typeName === \DateTimeImmutable::class || $typeName === \DateTime::class || $typeName === \DateTimeInterface::class) {
                 $args[] = new \DateTimeImmutable($rawValue);
             } elseif ($typeName === 'array') {
