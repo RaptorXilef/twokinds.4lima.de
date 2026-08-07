@@ -56,6 +56,7 @@ const __dirname = path.dirname(__filename);
 const basePath = path.resolve(__dirname, '..');
 
 let globalIncludeRootFiles = false;
+let globalKeepDocBlocks = false; // Toggle für DocBlocks
 
 // Version aus package.json lesen
 let version = 'unknown';
@@ -143,10 +144,24 @@ function optimizeTokens(content, fileExtension) {
     }
 
     // =========================================================================
-    // 2. KOMMENTARE ENTFERNEN
+    // 2. KOMMENTARE ENTFERNEN (und DocBlocks verarbeiten)
     // =========================================================================
     if (isJsOrScss || isPhpOrPhtml) {
-        // Multi-line Kommentare /* ... */
+        // Wenn aktiviert, behalte DocBlocks (/** ... */) die ein '@' enthalten
+        if (globalKeepDocBlocks) {
+            optimizedContent = optimizedContent.replace(/\/\*\*[\s\S]*?\*\//g, (match) => {
+                // Nur wenn ein Annotation-Tag existiert ab in den schützenden Tresor
+                if (match.includes('@')) {
+                    const id = `___BLOCK_PLACEHOLDER_${blockId++}___`;
+                    blockMap.set(id, match);
+                    return id;
+                }
+                // Ansonsten lassen wir es stehen, damit der nächste Schritt es löscht
+                return match;
+            });
+        }
+
+        // Multi-line Kommentare /* ... */ (löscht alles was nicht im Tresor ist)
         optimizedContent = optimizedContent.replace(/\/\*[\s\S]*?\*\//g, '');
 
         // Single-line Kommentare // ...
@@ -160,7 +175,7 @@ function optimizeTokens(content, fileExtension) {
             // SQL / CSS-ähnliche Kommentare (-- )
             optimizedContent = optimizedContent.replace(/(?<!!)--\s.*$/gm, '');
 
-            // FIX: # Kommentare NUR in reinen .php Dateien löschen.
+            // # Kommentare NUR in reinen .php Dateien löschen.
             // In .phtml zerstören sie sonst CSS-IDs (z.B. <style> #id { ... } </style>)
             if (ext === '.php') {
                 optimizedContent = optimizedContent.replace(
@@ -182,7 +197,7 @@ function optimizeTokens(content, fileExtension) {
         // JS und SCSS können global padded werden
         optimizedContent = optimizedContent.replace(operatorRegex, ' $1 ');
     } else if (ext === '.php' || ext === '.phtml') {
-        // FIX: In PHP/PHTML wird das Padding NUR NOCH innerhalb von <?php ... ?> angewendet!
+        // In PHP/PHTML wird das Padding NUR NOCH innerhalb von <?php ... ?> angewendet!
         // HTML Attribute (href=) bleiben somit zu 100% unangetastet.
         optimizedContent = optimizedContent.replace(
             /(<\?[pP][hH][pP]|<\?=)([\s\S]*?)(?:\?>|$)/g,
@@ -260,7 +275,7 @@ function optimizeTokens(content, fileExtension) {
 }
 
 // =============================================================================
-// FILE SYSTEM & CLI LOGIC (Unverändert)
+// FILE SYSTEM & CLI LOGIC
 // =============================================================================
 
 function getFiles(dir, filter, exclDirs, exclFiles, includeRoot, currentFiles = []) {
@@ -313,10 +328,14 @@ function getTimestampString() {
  */
 function startStructureMirror() {
     const timestampDirName = getTimestampString();
-    const targetDir = path.join(debugFolder, `${timestampDirName}_minimized`);
+
+    // Namenszusatz hinzufügen, wenn DocBlocks aktiviert sind
+    const docSuffix = globalKeepDocBlocks ? '_docblock' : '';
+    const targetDirName = `${timestampDirName}_minimized${docSuffix}`;
+    const targetDir = path.join(debugFolder, targetDirName);
 
     console.log(`\n${c.cyan}🚀 Starte Erstellung der gespiegelten Token-Struktur...`);
-    console.log(`${c.yellow}Target: .debug/${version}/${timestampDirName}_minimized/${c.reset}`);
+    console.log(`${c.yellow}Target: .debug/${version}/${targetDirName}/${c.reset}`);
 
     const foundFiles = getFiles(basePath, /\.(js|php|phtml|scss)$/, [], [], globalIncludeRootFiles);
 
@@ -359,14 +378,17 @@ function startStructureMirror() {
     }
 
     console.log(
-        `${c.green}✅ Erfolg: Struktur gespiegelt! ${c.bright}${count} Dateien${c.reset} exportiert nach ${c.yellow}.debug/${version}/${timestampDirName}_minimized/${c.reset}`
+        `${c.green}✅ Erfolg: Struktur gespiegelt! ${c.bright}${count} Dateien${c.reset} exportiert nach ${c.yellow}.debug/${version}/${targetDirName}/${c.reset}`
     );
 }
 
 function startFileCollection(configKey, silent = false) {
     const conf = configs[configKey];
     const timestamp = getTimestampString();
-    const outputName = `${conf.name}_${timestamp}_minimized${conf.ext}`;
+
+    // Namenszusatz hinzufügen, wenn DocBlocks aktiviert sind
+    const docSuffix = globalKeepDocBlocks ? '_docblock' : '';
+    const outputName = `${conf.name}_${timestamp}_minimized${docSuffix}${conf.ext}`;
     const outputPath = path.join(debugFolder, outputName);
 
     if (!fs.existsSync(debugFolder)) fs.mkdirSync(debugFolder, { recursive: true });
@@ -426,6 +448,10 @@ function showHelp() {
         },
         { Argument: '--all', Beschreibung: 'Führt Punkt 1-4 automatisch aus' },
         { Argument: '--root', Beschreibung: 'Bezieht Dateien im Root-Verzeichnis mit ein' },
+        {
+            Argument: '--docblocks',
+            Beschreibung: 'Behält DocBlocks mit @-Tags bei (hängt _docblock an den Dateinamen)',
+        },
         { Argument: '--help', Beschreibung: 'Zeigt diese Hilfe an' },
     ]);
     console.log(`${c.gray}Info: Im CI-Modus (mit Argumenten) läuft das Skript stumm.${c.reset}\n`);
@@ -440,6 +466,7 @@ if (args.length > 0) {
         process.exit(0);
     }
     if (args.includes('--root')) globalIncludeRootFiles = true;
+    if (args.includes('--docblocks')) globalKeepDocBlocks = true; // CLI
 
     if (args.includes('--all')) {
         for (const k of ['JS', 'PHP', 'PHTML', 'SCSS']) {
@@ -462,6 +489,10 @@ if (args.length > 0) {
             ? `${c.green}${c.bright}AN${c.reset}`
             : `${c.red}${c.bright}AUS${c.reset}`;
 
+        const docBlockStatus = globalKeepDocBlocks
+            ? `${c.green}${c.bright}AN${c.reset}`
+            : `${c.red}${c.bright}AUS${c.reset}`;
+
         console.clear();
         console.log(`${c.cyan}===============================================`);
         console.log(`${c.cyan}    ${c.bright}DATEI-ZUSAMMENFASSUNG (TOKEN OPTIMIERT)${c.reset}`);
@@ -480,6 +511,9 @@ if (args.length > 0) {
         );
         console.log(`${c.gray}-----------------------------------------------${c.reset}`);
         console.log(`${c.bright} T)${c.reset} Toggle Root-Files: [${rootStatus}]`);
+        console.log(
+            `${c.bright} D)${c.reset} Toggle DocBlocks (@param, etc.): [${docBlockStatus}]`
+        );
         console.log(`${c.bright} A)${c.reset} ${c.yellow}ALLE nacheinander (1-4)${c.reset}`);
         console.log(`${c.bright} H)${c.reset} Hilfe / CI Info`);
         console.log(`${c.bright} Q)${c.reset} Beenden`);
@@ -496,6 +530,11 @@ if (args.length > 0) {
             }
             if (choice === 'T') {
                 globalIncludeRootFiles = !globalIncludeRootFiles;
+                showMenu();
+                return;
+            }
+            if (choice === 'D') {
+                globalKeepDocBlocks = !globalKeepDocBlocks;
                 showMenu();
                 return;
             }
