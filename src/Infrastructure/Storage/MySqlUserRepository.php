@@ -66,7 +66,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
     {
         // 1. Physisches Avatar-Bild löschen
         $user = $this->findById($id);
-        if ($user !== null && $user->avatarUrl !== null) {
+        if ($user instanceof User && $user->avatarUrl !== null) {
             $avatarPath = \dirname(__DIR__, 3) . '/public/assets/images/avatars/' . $user->avatarUrl;
             if (\file_exists($avatarPath)) {
                 @\unlink($avatarPath);

@@ -41,9 +41,9 @@ final readonly class ComicService
                     transcript: $comic->transcript,
                     chapterId: $comic->chapterId,
                     characterIds: $comic->characterIds,
-                    userIds: $comic->userIds,
                     originalUrl: $comic->originalUrl,
                     sketchUrl: $comic->sketchUrl,
+                    userIds: $comic->userIds,
                     imageUpdatedAt: $existing->imageUpdatedAt,
                 );
             }
@@ -70,9 +70,9 @@ final readonly class ComicService
             transcript: $comic->transcript,
             chapterId: $comic->chapterId,
             characterIds: $comic->characterIds,
-            userIds: $comic->userIds,
             originalUrl: $comic->originalUrl,
             sketchUrl: $comic->sketchUrl,
+            userIds: $comic->userIds,
             imageUpdatedAt: $this->clock->now()->getTimestamp(),
         );
 
@@ -114,9 +114,9 @@ final readonly class ComicService
             transcript: $revisionData['transcript'] ?? null,
             chapterId: $revisionData['chapter_id'] ?? null,
             characterIds: $charIds,
-            userIds: $revisionData['user_ids'] ?? [],
             originalUrl: $revisionData['original_url'] ?? '',
             sketchUrl: $revisionData['sketch_url'] ?? '',
+            userIds: $revisionData['user_ids'] ?? [],
             imageUpdatedAt: $revisionData['image_updated_at'] ?? null,
         );
 
@@ -164,9 +164,9 @@ final readonly class ComicService
             transcript: $revisionData['transcript'] ?? null,
             chapterId: $revisionData['chapter_id'] ?? null,
             characterIds: $charIds,
-            userIds: $revisionData['user_ids'] ?? [],
             originalUrl: $revisionData['original_url'] ?? '',
             sketchUrl: $revisionData['sketch_url'] ?? '',
+            userIds: $revisionData['user_ids'] ?? [],
             imageUpdatedAt: $revisionData['image_updated_at'] ?? null,
         );
 

@@ -116,7 +116,7 @@ trait EntityHydratorTrait
                 continue;
             }
 
-            if ($typeName === \DateTimeImmutable::class || $typeName === \DateTime::class || $typeName === \DateTimeInterface::class) {
+            if (in_array($typeName, [\DateTimeImmutable::class, \DateTime::class, \DateTimeInterface::class], true)) {
                 $args[] = new \DateTimeImmutable($rawValue);
             } elseif ($typeName === 'array') {
                 $args[] = \json_decode((string) $rawValue, true) ?? [];

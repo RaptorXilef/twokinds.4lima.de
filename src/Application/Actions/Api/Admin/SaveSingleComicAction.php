@@ -105,9 +105,9 @@ final readonly class SaveSingleComicAction implements ActionInterface
                 transcript: $dto->transcript,
                 chapterId: $dto->chapterId,
                 characterIds: $charIds,
-                userIds: $dto->userIds,
                 originalUrl: $originalUrl,
                 sketchUrl: $sketchUrl,
+                userIds: $dto->userIds,
                 imageUpdatedAt: $hasNewImage ? $this->clock->now()->getTimestamp() : null,
             );
 

@@ -45,7 +45,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
 
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return \array_map(fn (array $row) => $this->hydrateEntity(Report::class, $row), $rows);
+        return \array_map(fn (array $row): object => $this->hydrateEntity(Report::class, $row), $rows);
     }
 
     public function findByStatus(string $status): array
@@ -55,7 +55,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
 
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return \array_map(fn (array $row) => $this->hydrateEntity(Report::class, $row), $rows);
+        return \array_map(fn (array $row): object => $this->hydrateEntity(Report::class, $row), $rows);
     }
 
     public function countRecentByIpHash(string $ipHash, \DateTimeImmutable $since): int

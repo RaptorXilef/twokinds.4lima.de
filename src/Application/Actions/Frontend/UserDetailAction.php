@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
+use App\Core\Entity\Bookmark;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
@@ -50,7 +51,7 @@ final readonly class UserDetailAction implements ActionInterface
 
         if ($user->publicBookmarks) {
             $bms        = $this->bookmarkRepo->findByUser($user->id);
-            $bmComicIds = \array_map(fn ($b) => $b->comicId, $bms);
+            $bmComicIds = \array_map(fn (Bookmark $b): string => $b->comicId, $bms);
 
             foreach ($allComics as $comic) {
                 if (\in_array($comic->id->value, $bmComicIds, true)) {
@@ -59,8 +60,8 @@ final readonly class UserDetailAction implements ActionInterface
             }
         }
 
-        \usort($userComics, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
-        \usort($bookmarks, fn ($a, $b) => \strcmp($b->id->value, $a->id->value));
+        \usort($userComics, fn ($a, $b): int => \strcmp($b->id->value, $a->id->value));
+        \usort($bookmarks, fn ($a, $b): int => \strcmp($b->id->value, $a->id->value));
 
         // Wir rufen das neue Template "user_detail" auf
         return $this->renderer->render('pages/frontend/user_detail', [

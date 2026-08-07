@@ -54,7 +54,7 @@ final class ActionRegistry
 
                 if (\class_exists($className)) {
                     $reflection   = new \ReflectionClass($className);
-                    $requiresAuth = ! empty($reflection->getAttributes(RequiresAuth::class));
+                    $requiresAuth = $reflection->getAttributes(RequiresAuth::class) !== [];
 
                     foreach ($reflection->getAttributes(Route::class) as $attribute) {
                         $route = $attribute->newInstance();
@@ -88,7 +88,7 @@ final class ActionRegistry
         // Dynamic Parameter Match (Regex)
         foreach ($this->routes['dynamic'][$method] ?? [] as $regex => $r) {
             if (\preg_match($regex, $path, $matches)) {
-                $params = \array_filter($matches, fn ($k) => \is_string($k), \ARRAY_FILTER_USE_KEY);
+                $params = \array_filter($matches, \is_string(...), \ARRAY_FILTER_USE_KEY);
 
                 return ['class' => $r['class'], 'params' => $params, 'requiresAuth' => $r['auth']];
             }

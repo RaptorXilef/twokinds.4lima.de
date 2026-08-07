@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
+use App\Core\Entity\Report;
 use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
@@ -61,13 +62,13 @@ final readonly class UpdateReportStatusAction implements ActionInterface
             if ($status === 'closed') {
                 $report = $this->reportRepository->findById($reportIdObj);
 
-                if ($report && $report->userId !== null) {
+                if ($report instanceof Report && $report->userId !== null) {
                     $user = $this->userRepository->findById($report->userId);
 
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
                     if ($user instanceof User && $user->wantsNotificationReport) {
                         $comicIdVal = $report->comicId?->value;
-                        $pageUrl    = empty($comicIdVal)
+                        $pageUrl    = in_array($comicIdVal, [null, '', '0'], true)
                             ? \rtrim($this->config->getBaseUrl(), '/')
                             : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;
 

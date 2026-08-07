@@ -39,7 +39,7 @@ final readonly class RestoreBackupAction implements ActionInterface
             }
 
             // MAGIC: Wir erstellen ein vollautomatisches Sicherheits-Backup VOR der Wiederherstellung
-            $safetyBackupFile = $this->backupService->createBackup(null);
+            $safetyBackupFile = $this->backupService->createBackup();
 
             // Jetzt führen wir die eigentlich gewünschte Wiederherstellung durch
             // Passwort an den Service übergeben

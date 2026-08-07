@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application;
 
+use App\Application\Actions\Api\Admin\LoginAction;
+use App\Application\Actions\Api\System\CronBackupAction;
+use App\Application\Actions\Api\System\ProcessMailQueueAction;
+use App\Application\Actions\Frontend\Error404Action;
 use App\Application\Contracts\ResponseInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Middleware\AuthMiddleware;
@@ -65,9 +69,9 @@ final readonly class FrontendController
             || \str_starts_with($className, 'App\\Application\\Actions\\Api\\Frontend\\');
 
         $safeDuringMaintenance = [
-            'App\Application\Actions\Api\Admin\LoginAction',
-            'App\Application\Actions\Api\System\CronBackupAction',
-            'App\Application\Actions\Api\System\ProcessMailQueueAction',
+            LoginAction::class,
+            CronBackupAction::class,
+            ProcessMailQueueAction::class,
         ];
 
         $isLocked = false;
@@ -107,7 +111,7 @@ final readonly class FrontendController
                 return $action->execute($req);
             }
 
-            return $this->actionFactory->create('App\\Application\\Actions\\Frontend\\Error404Action')->execute($req);
+            return $this->actionFactory->create(Error404Action::class)->execute($req);
         });
 
         if ($response instanceof ResponseInterface) {

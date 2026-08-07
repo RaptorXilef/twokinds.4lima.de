@@ -153,8 +153,8 @@ final readonly class SystemBackupService implements BackupServiceInterface
                 }
 
                 $columns      = \array_keys($rows[0]);
-                $colNames     = \implode(', ', \array_map(fn ($c) => "`$c`", $columns));
-                $placeholders = \implode(', ', \array_map(fn ($c) => ":$c", $columns));
+                $colNames     = \implode(', ', \array_map(fn (int|string $c): string => "`$c`", $columns));
+                $placeholders = \implode(', ', \array_map(fn (int|string $c): string => ":$c", $columns));
 
                 if ($mode === 3) {
                     // Nur fehlende ergänzen
@@ -192,9 +192,9 @@ final readonly class SystemBackupService implements BackupServiceInterface
     {
         if (\count($primaryKeys) === 1) {
             $pk      = $primaryKeys[0];
-            $keptIds = \array_map(fn ($r) => (string) $r[$pk], $rows);
+            $keptIds = \array_map(fn (array $r): string => (string) $r[$pk], $rows);
 
-            if (empty($keptIds)) {
+            if ($keptIds === []) {
                 $this->pdo->exec("TRUNCATE TABLE `$table`");
 
                 return;
@@ -252,7 +252,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
             }
         }
 
-        \usort($backups, fn ($a, $b) => $b['date'] <=> $a['date']);
+        \usort($backups, fn (array $a, array $b): int => $b['date'] <=> $a['date']);
 
         return $backups;
     }
@@ -276,7 +276,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     {
         $stmt = $this->pdo->query("SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'");
 
-        return \array_map(fn ($k) => $k['Column_name'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
+        return \array_map(fn (array $k) => $k['Column_name'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     // =========================================================================

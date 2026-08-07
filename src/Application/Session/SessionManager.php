@@ -13,14 +13,14 @@ use App\Contracts\Utils\ClockInterface;
  *
  * SPDX-License-Identifier: LicenseRef-Proprietary
  */
-final class SessionManager implements AuthSessionInterface
+final readonly class SessionManager implements AuthSessionInterface
 {
     private const int MAX_LIFETIME = 43200; // 12 Stunden absolutes Maximum
     // private const int IDLE_TIMEOUT = 7200;  // 2 Stunden Inaktivität führt zum Logout
     // ÄNDERUNG: Reduziert auf 30 Min. (Bietet 10 Min Puffer für den 20-Minuten JS-Timer)
     private const int IDLE_TIMEOUT = 1800;  // 30 Minuten Inaktivität
 
-    public function __construct(private readonly ClockInterface $clock)
+    public function __construct(private ClockInterface $clock)
     {
         if (\session_status() === \PHP_SESSION_NONE) {
             \session_start();
