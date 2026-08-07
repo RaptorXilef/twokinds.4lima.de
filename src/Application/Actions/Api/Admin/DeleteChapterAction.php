@@ -30,7 +30,7 @@ final readonly class DeleteChapterAction implements ActionInterface
 
         try {
             $idRaw = $request->post['chapter_id'] ?? '';
-            $id    = \is_string($idRaw) || \is_numeric($idRaw) ? \trim((string) $idRaw) : '';
+            $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
             if ($id === '') {
                 return JsonResponse::error('Keine ID übermittelt.', 400);

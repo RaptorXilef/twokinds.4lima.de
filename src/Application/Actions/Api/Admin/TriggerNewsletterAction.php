@@ -11,6 +11,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 use App\Core\Service\AuthService;
 
 #[Route('POST', '/api/admin_trigger_newsletter')]
@@ -31,17 +32,26 @@ final readonly class TriggerNewsletterAction implements ActionInterface
         }
 
         // Parameter aus dem Admin-Frontend abgreifen
-        $type       = $request->post['type'] ?? 'full'; // 'full' oder 'transcript'
-        $comicName  = \trim((string) ($request->post['comic_name'] ?? 'TwoKinds'));
-        $pageNumber = \trim((string) ($request->post['page_number'] ?? ''));
-        $pageUrl    = \trim((string) ($request->post['page_url'] ?? ''));
+        $typeRaw = $request->post['type'] ?? 'full'; // 'full' oder 'transcript'
+        $type    = \is_string($typeRaw) ? $typeRaw : 'full';
+
+        $comicNameRaw = $request->post['comic_name'] ?? 'TwoKinds';
+        $comicName    = \is_scalar($comicNameRaw) ? \trim((string) $comicNameRaw) : 'TwoKinds';
+
+        $pageNumberRaw = $request->post['page_number'] ?? '';
+        $pageNumber    = \is_scalar($pageNumberRaw) ? \trim((string) $pageNumberRaw) : '';
+
+        $pageUrlRaw = $request->post['page_url'] ?? '';
+        $pageUrl    = \is_scalar($pageUrlRaw) ? \trim((string) $pageUrlRaw) : '';
 
         if ($pageUrl === '' || $pageNumber === '') {
             return JsonResponse::error('Seiten-URL und Seitenzahl müssen angegeben werden.', 400);
         }
 
         $isTranscript = $type === 'transcript';
-        $subscribers  = $this->userRepository->findNewsletterSubscribers($isTranscript);
+
+        /** @var array<int, User> $subscribers */
+        $subscribers = $this->userRepository->findNewsletterSubscribers($isTranscript);
 
         if ($subscribers === []) {
             return JsonResponse::success(['message' => 'Niemand hat diesen Newsletter abonniert. Es wurden keine E-Mails versendet.']);

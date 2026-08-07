@@ -107,8 +107,8 @@
     "//test:legacy-coverage": "XDEBUG_MODE=coverage phpunit --coverage-html .build/reports/phpunit-html",
 
     "// --- PHASE 3: FIXING & FORMATTING ---": "Aktive Code-Manipulation",
-    "fix:cs": "phpcbf",
     "fix:style": "php-cs-fixer fix --allow-risky=yes",
+    "fix:cs": "phpcbf",
     "fix:modern": "rector process",
 
     "// --- PHASE 4: CI / AUTOMATION ---": "Spezifische Reports für Pipelines",

@@ -33,12 +33,16 @@ final readonly class SaveUserAction implements ActionInterface
         }
 
         try {
-            $id              = Sanitizer::string($request->post['user_id'] ?? '');
-            $usernameStr     = Sanitizer::string($request->post['username'] ?? '');
-            $emailStr        = Sanitizer::email($request->post['email'] ?? '');
-            $roleId          = Sanitizer::string($request->post['role_id'] ?? 'user');
-            $password        = (string) ($request->post['password'] ?? '');
-            $passwordConfirm = (string) ($request->post['password_confirm'] ?? '');
+            $id          = Sanitizer::string($request->post['user_id'] ?? '');
+            $usernameStr = Sanitizer::string($request->post['username'] ?? '');
+            $emailStr    = Sanitizer::email($request->post['email'] ?? '');
+            $roleId      = Sanitizer::string($request->post['role_id'] ?? 'user');
+
+            $passRaw  = $request->post['password'] ?? '';
+            $password = \is_scalar($passRaw) ? (string) $passRaw : '';
+
+            $confirmRaw      = $request->post['password_confirm'] ?? '';
+            $passwordConfirm = \is_scalar($confirmRaw) ? (string) $confirmRaw : '';
 
             // ID wird nicht mehr als Pflichtfeld beim POST erwartet (wichtig für NEUE Benutzer)
             if ($usernameStr === '' || $emailStr === '') {
@@ -63,7 +67,7 @@ final readonly class SaveUserAction implements ActionInterface
                 }
             }
 
-            $hash = $existingUser ? $existingUser->passwordHash : '';
+            $hash = $existingUser?->passwordHash ?? '';
 
             // Passwort-Logik
             if ($password !== '') {
@@ -76,7 +80,7 @@ final readonly class SaveUserAction implements ActionInterface
                     return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
                 }
                 $hash = \password_hash($password, \PASSWORD_DEFAULT);
-            } elseif (! $existingUser) {
+            } elseif ($existingUser === null) {
                 return JsonResponse::error('Bei neuen Benutzern muss ein Passwort vergeben werden.', 400);
             }
 
@@ -98,7 +102,7 @@ final readonly class SaveUserAction implements ActionInterface
                 new EmailAddress($emailStr),
                 $hash,
                 $roleId,
-                $existingUser ? $existingUser->createdAt : new \DateTimeImmutable(),
+                $existingUser?->createdAt ?? new \DateTimeImmutable(),
                 $existingUser instanceof User && $existingUser->wantsNewsletter,
                 $existingUser instanceof User && $existingUser->wantsNewsletterTranscript,
                 $existingUser instanceof User && $existingUser->wantsNotificationReport,

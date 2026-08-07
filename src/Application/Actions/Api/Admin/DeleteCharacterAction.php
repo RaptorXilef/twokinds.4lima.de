@@ -31,7 +31,9 @@ final readonly class DeleteCharacterAction implements ActionInterface
         }
 
         try {
-            $id = \trim((string) ($request->post['character_id'] ?? ''));
+            $idRaw = $request->post['character_id'] ?? '';
+            $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+
             if ($id === '') {
                 throw ValidationException::withMessage('Keine Charakter-ID zum Löschen angegeben.');
             }

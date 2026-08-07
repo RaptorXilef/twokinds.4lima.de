@@ -37,7 +37,7 @@ final readonly class CropSocialMediaAction implements ActionInterface
 
         try {
             $comicIdRaw = $request->post['comic_id'] ?? '';
-            $comicId    = \is_string($comicIdRaw) || \is_numeric($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
+            $comicId    = \is_scalar($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
 
             $xRaw = $request->post['x'] ?? 0;
             $x    = \is_numeric($xRaw) ? (int) $xRaw : 0;

@@ -11,7 +11,6 @@ use App\Application\DTO\SaveSingleComicRequest;
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
-use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Contracts\System\RemoteResourceProberInterface;
 use App\Contracts\Utils\ClockInterface;
@@ -28,7 +27,6 @@ final readonly class SaveSingleComicAction implements ActionInterface
     public function __construct(
         private ComicService $comicService,
         private MediaServiceInterface $mediaService,
-        private ConfigInterface $config,
         private AuthService $auth,
         private RemoteResourceProberInterface $prober,
         private ClockInterface $clock,
@@ -50,12 +48,12 @@ final readonly class SaveSingleComicAction implements ActionInterface
 
             // Dateiendungen auflösen (Dank curl_multi nun blitzschnell)
             // cURL Logik ersetzt durch das Interface
-            if ($originalUrl !== '' && ! \preg_match('/\.[a-z0-9]{3,4}$/i', $originalUrl)) {
+            if ($originalUrl !== '' && \preg_match('/\.[a-z0-9]{3,4}$/i', $originalUrl) !== 1) {
                 $originalUrl .= '.' . $this->prober->probeExtension($originalUrl);
             }
 
             // Die clevere Sketch-Erkennung
-            if ($sketchUrl !== '' && ! \preg_match('/\.[a-z0-9]{3,4}$/i', $sketchUrl)) {
+            if ($sketchUrl !== '' && \preg_match('/\.[a-z0-9]{3,4}$/i', $sketchUrl) !== 1) {
                 // Wenn es nicht schon auf _sketch endet, hängen wir es an
                 if (! \str_ends_with($sketchUrl, '_sketch')) {
                     $sketchUrl .= '_sketch';
@@ -65,14 +63,19 @@ final readonly class SaveSingleComicAction implements ActionInterface
 
             $charIds = [];
             foreach ($dto->characterIds as $cId) {
+                if (! \is_string($cId)) {
+                    continue;
+                }
+
                 try {
-                    $charIds[] = new CharacterId((string) $cId);
+                    $charIds[] = new CharacterId($cId);
                 } catch (\InvalidArgumentException) {
                 }
             }
 
-            $oldIdStr = \trim((string) ($request->post['old_comic_id'] ?? ''));
-            $newIdStr = $dto->id;
+            $oldIdStrRaw = $request->post['old_comic_id'] ?? '';
+            $oldIdStr    = \is_scalar($oldIdStrRaw) ? \trim((string) $oldIdStrRaw) : '';
+            $newIdStr    = $dto->id;
 
             // --- DEEP RENAMING LOGIK ---
             if ($oldIdStr !== '' && $oldIdStr !== $newIdStr) {
@@ -86,16 +89,28 @@ final readonly class SaveSingleComicAction implements ActionInterface
             $files       = $request->files;
             $hasNewImage = false;
 
-            $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
-            $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
+            $uploadHires   = $files['upload_hires'] ?? null;
+            $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK;
+            $tmpHires      = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null;
+
+            $uploadLowres   = $files['upload_lowres'] ?? null;
+            $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK;
+            $tmpLowres      = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null;
 
             if ($hiresUploaded || $lowresUploaded) {
                 $hasNewImage = true;
-                $tmpHires    = $hiresUploaded ? $files['upload_hires']['tmp_name'] : null;
-                $tmpLowres   = $lowresUploaded ? $files['upload_lowres']['tmp_name'] : null;
 
                 // Gesamte Datei-System und Skalierungslogik an Infrastruktur delegiert!
                 $this->mediaService->processAndStoreComicMedia($dto->id, $tmpHires, $tmpLowres);
+            }
+
+            $userIds = [];
+            foreach ($dto->userIds as $uid) {
+                if (! \is_string($uid)) {
+                    continue;
+                }
+
+                $userIds[] = $uid;
             }
 
             $comic = new ComicPage(
@@ -107,7 +122,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
                 characterIds: $charIds,
                 originalUrl: $originalUrl,
                 sketchUrl: $sketchUrl,
-                userIds: $dto->userIds,
+                userIds: $userIds,
                 imageUpdatedAt: $hasNewImage ? $this->clock->now()->getTimestamp() : null,
             );
 

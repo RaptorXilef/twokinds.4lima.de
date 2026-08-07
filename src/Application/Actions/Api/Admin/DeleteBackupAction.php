@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
@@ -26,7 +27,7 @@ final readonly class DeleteBackupAction implements ActionInterface
         }
 
         $filenameRaw = $request->post['filename'] ?? '';
-        $filename = \is_string($filenameRaw) ? $filenameRaw : '';
+        $filename    = \is_string($filenameRaw) ? $filenameRaw : '';
 
         if ($filename !== '') {
             $this->backupService->deleteBackup($filename);

@@ -11,7 +11,6 @@ use App\Application\DTO\SaveSingleCharacterRequest;
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
-use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Core\Entity\Character;
@@ -27,7 +26,6 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
     public function __construct(
         private CharacterService $characterService,
         private CharacterRepositoryInterface $charRepo,
-        private ConfigInterface $config,
         private MediaServiceInterface $mediaService,
         private AuthService $auth,
     ) {
@@ -55,9 +53,9 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             $existing = $this->charRepo->findById(new CharacterId($charIdStr));
 
             $picUrl    = $dto->picUrl;
-            $mainPic   = $existing ? $existing->mainPic : null;
-            $swatchPic = $existing ? $existing->swatchPic : null;
-            $refSheets = $existing ? $existing->refSheets : [];
+            $mainPic   = $existing?->mainPic;
+            $swatchPic = $existing?->swatchPic;
+            $refSheets = $existing?->refSheets ?? [];
 
             $warnings = [];
             $safeName = \pathinfo(Sanitizer::slugify($dto->name), \PATHINFO_FILENAME);
@@ -66,6 +64,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             }
 
             // Alles an die Infrastruktur delegieren!
+            /** @var array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} $processedMedia */
             $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);
             $warnings       = $processedMedia['warnings'];
 
@@ -75,7 +74,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             } elseif ($picUrl !== null && $picUrl !== '') {
                 $picUrl = \str_replace(' ', '_', $picUrl);
                 // Simple Endungs-Ergänzung falls nicht vorhanden
-                if (! \preg_match('/\.[a-z0-9]+$/i', $picUrl)) {
+                if (\preg_match('/\.[a-z0-9]+$/i', $picUrl) !== 1) {
                     $picUrl .= '.webp'; // Standard-Fallback annehmen
                 }
             } else {
@@ -86,29 +85,35 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             if ($processedMedia['main'] !== null) {
                 $mainPic = $processedMedia['main'];
             } elseif (isset($request->post['main_pic_url'])) {
-                $mainPicUrl = \trim((string) ($request->post['main_pic_url'] ?? ''));
-                $mainPic    = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
+                $mainPicUrlRaw = $request->post['main_pic_url'];
+                $mainPicUrl    = \is_string($mainPicUrlRaw) ? \trim($mainPicUrlRaw) : '';
+                $mainPic       = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
             }
 
             // Swatch
             if ($processedMedia['swatch'] !== null) {
                 $swatchPic = $processedMedia['swatch'];
             } elseif (isset($request->post['swatch_pic_url'])) {
-                $swatchPicUrl = \trim((string) ($request->post['swatch_pic_url'] ?? ''));
-                $swatchPic    = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
+                $swatchPicUrlRaw = $request->post['swatch_pic_url'];
+                $swatchPicUrl    = \is_string($swatchPicUrlRaw) ? \trim($swatchPicUrlRaw) : '';
+                $swatchPic       = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
             }
 
             // Manuelle URLs für Reference Sheets
             if (isset($request->post['ref_sheets_urls'])) {
-                $refSheetsUrlsRaw = \trim((string) ($request->post['ref_sheets_urls'] ?? ''));
+                $refSheetsUrlsRaw = $request->post['ref_sheets_urls'];
+                $refSheetsUrlsStr = \is_string($refSheetsUrlsRaw) ? \trim($refSheetsUrlsRaw) : '';
                 $refSheets        = [];
-                if ($refSheetsUrlsRaw !== '') {
-                    $refSheets = \array_values(\array_filter(\array_map(fn ($s): string => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsRaw))));
+                if ($refSheetsUrlsStr !== '') {
+                    $refSheets = \array_values(\array_filter(
+                        \array_map(fn ($s): string => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsStr)),
+                        fn ($v) => $v !== '',
+                    ));
                 }
             }
 
             // Neu hochgeladene Refs hinzufügen
-            if (! empty($processedMedia['refs'])) {
+            if (isset($processedMedia['refs']) && \is_array($processedMedia['refs']) && $processedMedia['refs'] !== []) {
                 $refSheets = \array_merge($refSheets, $processedMedia['refs']);
             }
 

@@ -19,7 +19,7 @@ function setupComicTest(mixed $test): object
     // Erlaubt den Zugriff auf die protected 'createMock' Methode
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class($mock(ComicRepositoryInterface::class), $mock(ComicRevisionRepositoryInterface::class), $mock(ClockInterface::class), $mock(SiteGeneratorInterface::class)) {
+    return new class ($mock(ComicRepositoryInterface::class), $mock(ComicRevisionRepositoryInterface::class), $mock(ClockInterface::class), $mock(SiteGeneratorInterface::class)) {
         public ComicService $service;
 
         public function __construct(
@@ -65,7 +65,6 @@ function setupComicTest(mixed $test): object
 
     // Act
     $app->service->saveComic($comic);
-
 })->covers(ComicService::class);
 
 \it('creates a revision when saving an existing comic', function (): void {
@@ -92,5 +91,4 @@ function setupComicTest(mixed $test): object
 
     // Act
     $app->service->saveComic($updatedComic);
-
 })->covers(ComicService::class);

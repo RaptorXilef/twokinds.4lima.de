@@ -37,11 +37,16 @@ final readonly class SaveRoleAction implements ActionInterface
 
             // Die Rechte kommen als JSON-String aus dem Frontend-Baum
             $permissionsRaw = $request->post['permissions'] ?? '[]';
-            $permissions    = \json_decode($permissionsRaw, true);
+            $permissionsStr = \is_string($permissionsRaw) ? $permissionsRaw : '[]';
+            $permissionsArr = \json_decode($permissionsStr, true);
 
-            if (! \is_array($permissions)) {
-                $permissions = [];
+            if (! \is_array($permissionsArr)) {
+                $permissionsArr = [];
             }
+
+            // Stellt sicher, dass das Array nur aus Strings besteht
+            /** @var array<int, string> $permissions */
+            $permissions = \array_filter($permissionsArr, \is_string(...));
 
             if ($id === '' || $name === '') {
                 return JsonResponse::error('ID und Name sind Pflichtfelder.', 400);
@@ -61,7 +66,7 @@ final readonly class SaveRoleAction implements ActionInterface
                 return JsonResponse::error('System-Rollen können nur von Haupt-Administratoren bearbeitet werden.', 403);
             }
 
-            $role = new Role($id, $name, $permissions);
+            $role = new Role($id, $name, \array_values($permissions));
             $this->roleRepo->save($role);
 
             return JsonResponse::success(['message' => "Rolle '{$name}' erfolgreich gespeichert."]);

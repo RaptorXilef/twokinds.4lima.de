@@ -40,8 +40,11 @@ final readonly class UpdateReportStatusAction implements ActionInterface
         }
 
         try {
-            $id     = \trim((string) ($request->post['report_id'] ?? ''));
-            $status = \trim((string) ($request->post['status'] ?? ''));
+            $idRaw = $request->post['report_id'] ?? '';
+            $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+
+            $statusRaw = $request->post['status'] ?? '';
+            $status    = \is_scalar($statusRaw) ? \trim((string) $statusRaw) : '';
 
             // Präzise Rechteprüfung je nach Aktion
             if ($status === 'spam' && ! $this->auth->hasPermission('reports.delete')) {
@@ -67,8 +70,8 @@ final readonly class UpdateReportStatusAction implements ActionInterface
 
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
                     if ($user instanceof User && $user->wantsNotificationReport) {
-                        $comicIdVal = $report->comicId?->value;
-                        $pageUrl    = \in_array($comicIdVal, [null, '', '0'], true)
+                        $comicIdVal = $report->comicId?->value ?? '';
+                        $pageUrl    = \in_array($comicIdVal, ['', '0'], true)
                             ? \rtrim($this->config->getBaseUrl(), '/')
                             : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;
 
@@ -78,7 +81,7 @@ final readonly class UpdateReportStatusAction implements ActionInterface
                             'report_resolved',
                             [
                                 'username' => $user->username->value,
-                                'comicId'  => $comicIdVal ?: 'Allgemeine Webseite',
+                                'comicId'  => $comicIdVal !== '' ? $comicIdVal : 'Allgemeine Webseite',
                                 'pageUrl'  => $pageUrl,
                             ],
                         );

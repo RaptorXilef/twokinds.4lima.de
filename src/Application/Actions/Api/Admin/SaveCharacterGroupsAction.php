@@ -31,8 +31,13 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
         }
 
         try {
-            $jsonData    = $request->post['groups_data'] ?? '[]';
+            $jsonDataRaw = $request->post['groups_data'] ?? '[]';
+            $jsonData    = \is_string($jsonDataRaw) ? $jsonDataRaw : '[]';
             $inputGroups = \json_decode($jsonData, true, 512, \JSON_THROW_ON_ERROR);
+
+            if (! \is_array($inputGroups)) {
+                $inputGroups = [];
+            }
 
             $existingGroups = $this->groupRepo->findAll();
             $existingNames  = \array_map(fn (CharacterGroup $g): string => $g->name, $existingGroups);
@@ -42,18 +47,28 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
 
             // 1. Alle reinkommenden Gruppen speichern/updaten
             foreach ($inputGroups as $groupData) {
-                $name = \trim($groupData['name'] ?? '');
+                if (! \is_array($groupData)) {
+                    continue;
+                }
+
+                $name = \is_string($groupData['name'] ?? null) ? \trim($groupData['name']) : '';
                 if ($name === '') {
                     continue;
                 }
 
                 $newNames[] = $name;
-                $manualSort = (bool) ($groupData['manual_sort'] ?? false);
+                $manualSort = ! empty($groupData['manual_sort']);
 
                 $charIds = [];
                 // Eindeutige Zuweisung, falls ein Charakter versehentlich doppelt reingezogen wurde
-                $uniqueChars = \array_unique($groupData['characters'] ?? []);
+                $charsRaw    = $groupData['characters'] ?? [];
+                $uniqueChars = \is_array($charsRaw) ? \array_unique($charsRaw) : [];
+
                 foreach ($uniqueChars as $cid) {
+                    if (! \is_string($cid)) {
+                        continue;
+                    }
+
                     try {
                         $charIds[] = new CharacterId($cid);
                     } catch (\InvalidArgumentException) {

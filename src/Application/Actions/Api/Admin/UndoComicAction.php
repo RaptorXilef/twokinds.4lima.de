@@ -30,7 +30,9 @@ final readonly class UndoComicAction implements ActionInterface
         }
 
         try {
-            $idStr = \trim((string) ($request->post['comic_id'] ?? ''));
+            $idStrRaw = $request->post['comic_id'] ?? '';
+            $idStr    = \is_scalar($idStrRaw) ? \trim((string) $idStrRaw) : '';
+
             if ($idStr === '') {
                 throw new \InvalidArgumentException('Keine Comic-ID angegeben.');
             }

@@ -29,7 +29,7 @@ final readonly class DeleteComicMediaAction implements ActionInterface
         }
 
         $idRaw = $request->post['comic_id'] ?? '';
-        $idStr = \is_string($idRaw) || \is_numeric($idRaw) ? (string) $idRaw : '';
+        $idStr = \is_scalar($idRaw) ? (string) $idRaw : '';
         $id    = \basename($idStr);
 
         if ($id === '') {

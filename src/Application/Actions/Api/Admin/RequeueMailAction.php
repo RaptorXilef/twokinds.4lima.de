@@ -37,22 +37,26 @@ final readonly class RequeueMailAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $id = \trim((string) ($request->post['id'] ?? ''));
+        $idRaw = $request->post['id'] ?? '';
+        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+
         if ($id === '') {
             return JsonResponse::error('Keine ID übergeben.', 400);
         }
 
         $log = $this->logRepo->findById($id);
-        if (! $log) {
+        if ($log === null) {
             return JsonResponse::error('E-Mail nicht im Verlauf gefunden.', 404);
         }
 
-        $data     = \is_string($log['data']) ? $this->jsonHelper->decode($log['data']) : $log['data'];
-        $template = $log['template'];
+        $dataRaw  = $log['data'] ?? [];
+        $data     = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
+        $template = \is_string($log['template'] ?? null) ? $log['template'] : '';
 
         // === Dynamische Tokens für Sicherheits-Mails erneuern ===
         if (\in_array($template, ['verify_account', 'forgot_password', 'verify_new_email'], true)) {
-            $tokenData = $this->magicLinkService->createToken($log['recipient']);
+            $recipient = \is_string($log['recipient'] ?? null) ? $log['recipient'] : '';
+            $tokenData = $this->magicLinkService->createToken($recipient);
             $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
 
             if ($template === 'verify_account') {
@@ -68,8 +72,8 @@ final readonly class RequeueMailAction implements ActionInterface
         // Packe sie mit extrem hoher Priorität (100) als neuen Job in die Queue
         $job = new MailJob(
             \uniqid('mq_'),
-            $log['recipient'],
-            $log['subject'],
+            \is_string($log['recipient'] ?? null) ? $log['recipient'] : '',
+            \is_string($log['subject'] ?? null) ? $log['subject'] : '',
             $template,
             $data,
             0,

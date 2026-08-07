@@ -27,12 +27,18 @@ final readonly class RestoreBackupAction implements ActionInterface
         }
 
         try {
-            $filename = $request->post['filename'] ?? '';
-            $mode     = (int) ($request->post['mode'] ?? 1);
-            $table    = ! empty($request->post['table']) && $request->post['table'] !== 'all' ? $request->post['table'] : null;
+            $filenameRaw = $request->post['filename'] ?? '';
+            $filename    = \is_string($filenameRaw) ? $filenameRaw : '';
+
+            $modeRaw = $request->post['mode'] ?? 1;
+            $mode    = \is_numeric($modeRaw) ? (int) $modeRaw : 1;
+
+            $tableRaw = $request->post['table'] ?? null;
+            $table    = \is_string($tableRaw) && $tableRaw !== 'all' && $tableRaw !== '' ? $tableRaw : null;
 
             // Neues optionales Passwort abfangen
-            $password = $request->post['password'] ?? null;
+            $passRaw  = $request->post['password'] ?? null;
+            $password = \is_string($passRaw) && $passRaw !== '' ? $passRaw : null;
 
             if ($filename === '' || ! \in_array($mode, [1, 2, 3], true)) {
                 return JsonResponse::error('Ungültige Parameter.', 400);

@@ -14,7 +14,7 @@ function setupReportTest(mixed $test): object
     // Erlaubt den Zugriff auf die protected 'createMock' Methode
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class($mock(ReportRepositoryInterface::class), $mock(ClockInterface::class)) {
+    return new class ($mock(ReportRepositoryInterface::class), $mock(ClockInterface::class)) {
         public ReportService $service;
 
         public function __construct(

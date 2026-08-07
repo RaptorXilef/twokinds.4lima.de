@@ -9,7 +9,6 @@ use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
-use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Contracts\System\SiteGeneratorInterface;
@@ -26,7 +25,6 @@ final readonly class UploadComicMediaAction implements ActionInterface
         private ComicRepositoryInterface $comicRepo,
         private MediaServiceInterface $mediaService,
         private SiteGeneratorInterface $siteGenerator,
-        private ConfigInterface $config,
         private AuthService $auth,
         private ClockInterface $clock,
     ) {
@@ -39,17 +37,19 @@ final readonly class UploadComicMediaAction implements ActionInterface
         }
 
         try {
-            $comicIdStr = \trim((string) ($request->post['comic_id'] ?? ''));
+            $comicIdRaw = $request->post['comic_id'] ?? '';
+            $comicIdStr = \is_scalar($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
+
             if ($comicIdStr === '') {
                 return JsonResponse::error('Keine Comic-ID übermittelt.', 400);
             }
 
             $comicId = new ComicId($comicIdStr);
             $comic   = $this->comicRepo->findById($comicId);
-            $force   = (bool) ($request->post['force'] ?? false);
+            $force   = ! empty($request->post['force']);
 
             // Wenn Comic nicht existiert UND kein force-Flag gesetzt ist, brich ab und frag nach
-            if (! $comic && ! $force) {
+            if ($comic === null && ! $force) {
                 return JsonResponse::sendPayload([
                     'success' => false,
                     'error'   => 'COMIC_NOT_FOUND',
@@ -57,21 +57,24 @@ final readonly class UploadComicMediaAction implements ActionInterface
                 ], 404);
             }
 
-            $files          = $request->files;
-            $hiresUploaded  = isset($files['upload_hires']) && $files['upload_hires']['error'] === \UPLOAD_ERR_OK;
-            $lowresUploaded = isset($files['upload_lowres']) && $files['upload_lowres']['error'] === \UPLOAD_ERR_OK;
+            $files = $request->files;
+
+            $uploadHires   = $files['upload_hires'] ?? null;
+            $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK;
+            $tmpHires      = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null;
+
+            $uploadLowres   = $files['upload_lowres'] ?? null;
+            $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK;
+            $tmpLowres      = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null;
 
             if (! $hiresUploaded && ! $lowresUploaded) {
                 return JsonResponse::error('Keine gültigen Bilder hochgeladen.', 400);
             }
 
-            $tmpHires  = $hiresUploaded ? $files['upload_hires']['tmp_name'] : null;
-            $tmpLowres = $lowresUploaded ? $files['upload_lowres']['tmp_name'] : null;
-
             // Gesamte Datei-System und Skalierungslogik an Infrastruktur delegiert!
             $this->mediaService->processAndStoreComicMedia($comicIdStr, $tmpHires, $tmpLowres);
 
-            if ($comic) {
+            if ($comic !== null) {
                 $updatedComic = new ComicPage(
                     id: $comic->id,
                     type: $comic->type,
@@ -81,6 +84,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
                     characterIds: $comic->characterIds,
                     originalUrl: $comic->originalUrl,
                     sketchUrl: $comic->sketchUrl,
+                    userIds: $comic->userIds,
                     imageUpdatedAt: $this->clock->now()->getTimestamp(),
                 );
                 $this->comicRepo->save($updatedComic);

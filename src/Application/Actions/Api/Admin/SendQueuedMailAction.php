@@ -32,20 +32,27 @@ final readonly class SendQueuedMailAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $id = \trim((string) ($request->post['id'] ?? ''));
+        $idRaw = $request->post['id'] ?? '';
+        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+
         if ($id === '') {
             return JsonResponse::error('Keine ID übergeben.', 400);
         }
 
         $mail = $this->queueRepo->findById($id);
-        if (! $mail) {
+        if ($mail === null) {
             return JsonResponse::error('E-Mail nicht in der Warteschlange gefunden.', 404);
         }
 
-        $data = \is_string($mail['data']) ? $this->jsonHelper->decode($mail['data']) : $mail['data'];
+        $dataRaw = $mail['data'] ?? [];
+        $data    = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
+
+        $recipient = \is_string($mail['recipient'] ?? null) ? $mail['recipient'] : '';
+        $subject   = \is_string($mail['subject'] ?? null) ? $mail['subject'] : '';
+        $template  = \is_string($mail['template'] ?? null) ? $mail['template'] : '';
 
         // Versendet die Mail direkt und loggt sie in mail_logs (Da wir SmtpMailService nutzen)
-        $result = $this->mailService->sendTemplate($mail['recipient'], $mail['subject'], $mail['template'], $data);
+        $result = $this->mailService->sendTemplate($recipient, $subject, $template, $data);
 
         if ($result === true) {
             // Nach erfolgreichem Versand aus der Queue entfernen

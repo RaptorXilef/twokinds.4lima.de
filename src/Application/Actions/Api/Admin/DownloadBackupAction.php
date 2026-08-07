@@ -37,7 +37,6 @@ final readonly class DownloadBackupAction implements ActionInterface
             return JsonResponse::error('Keine Datei angegeben.', 400);
         }
 
-        // Delegiert!
         $content = $this->backupService->getBackupContent($filename);
 
         if ($content === null) {

@@ -14,7 +14,7 @@ function setupMagicLinkTest(mixed $test): object
 {
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class($mock(ClockInterface::class), $mock(ConfigInterface::class), $mock(MagicLinkRepositoryInterface::class)) {
+    return new class ($mock(ClockInterface::class), $mock(ConfigInterface::class), $mock(MagicLinkRepositoryInterface::class)) {
         public MagicLinkService $service;
 
         public function __construct(

@@ -7,8 +7,9 @@ namespace App\Core\Service;
 final class PermissionCompiler
 {
     /**
-     * @param  array<int|string, mixed> $structure
-     * @param  array<int, string>       $groupPermissions
+     * @param array<int|string, mixed> $structure
+     * @param array<int, string>       $groupPermissions
+     *
      * @return array<string, bool>
      */
     public function compile(array $structure, array $groupPermissions): array
@@ -48,11 +49,13 @@ final class PermissionCompiler
                 $isAllowed = $parentAllowed;
             }
 
-            if (isset($node['children']) && \is_array($node['children'])) {
-                /** @var array<int|string, mixed> $children */
-                $children = $node['children'];
-                $this->walk($children, $groupPerms, $isAllowed, $result);
+            if (! isset($node['children']) || ! \is_array($node['children'])) {
+                continue;
             }
+
+            /** @var array<int|string, mixed> $children */
+            $children = $node['children'];
+            $this->walk($children, $groupPerms, $isAllowed, $result);
         }
     }
 }

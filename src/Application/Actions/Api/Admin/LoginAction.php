@@ -23,7 +23,7 @@ final readonly class LoginAction implements ActionInterface
     {
         $username    = Sanitizer::string($request->post['username'] ?? '');
         $passwordRaw = $request->post['password'] ?? '';
-        $password    = \is_string($passwordRaw) || \is_numeric($passwordRaw) ? (string) $passwordRaw : '';
+        $password    = \is_scalar($passwordRaw) ? (string) $passwordRaw : '';
         $ip          = $request->getIp();
 
         if ($username === '' || $password === '') {

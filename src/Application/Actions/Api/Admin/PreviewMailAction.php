@@ -33,7 +33,7 @@ final readonly class PreviewMailAction implements ActionInterface
         }
 
         $idRaw = $request->get['id'] ?? '';
-        $id    = \is_string($idRaw) || \is_numeric($idRaw) ? \trim((string) $idRaw) : '';
+        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
         if ($id === '') {
             return JsonResponse::error('Keine Mail-ID angegeben.', 400);

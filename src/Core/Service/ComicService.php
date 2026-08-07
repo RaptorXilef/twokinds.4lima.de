@@ -100,7 +100,7 @@ final readonly class ComicService
         }
 
         /** @var array<string, mixed> $validData */
-        $validData = $revisionData;
+        $validData     = $revisionData;
         $restoredComic = $this->hydrateRevisionData($id, $validData);
 
         // MAGIC: Wir rufen saveComic() auf statt das Repository!
@@ -137,7 +137,7 @@ final readonly class ComicService
         $id    = new ComicId($idRaw);
 
         /** @var array<string, mixed> $validData */
-        $validData = $revisionData;
+        $validData     = $revisionData;
         $restoredComic = $this->hydrateRevisionData($id, $validData);
 
         // Wir legen ihn wieder regulär an
@@ -156,11 +156,13 @@ final readonly class ComicService
         $rawCharIds = $revisionData['character_ids'] ?? [];
         if (\is_array($rawCharIds)) {
             foreach ($rawCharIds as $cid) {
-                if (\is_string($cid)) {
-                    try {
-                        $charIds[] = new CharacterId($cid);
-                    } catch (\InvalidArgumentException) {
-                    }
+                if (! \is_string($cid)) {
+                    continue;
+                }
+
+                try {
+                    $charIds[] = new CharacterId($cid);
+                } catch (\InvalidArgumentException) {
                 }
             }
         }
@@ -169,9 +171,11 @@ final readonly class ComicService
         $rawUserIds = $revisionData['user_ids'] ?? [];
         if (\is_array($rawUserIds)) {
             foreach ($rawUserIds as $uid) {
-                if (\is_string($uid)) {
-                    $userIds[] = $uid;
+                if (! \is_string($uid)) {
+                    continue;
                 }
+
+                $userIds[] = $uid;
             }
         }
 

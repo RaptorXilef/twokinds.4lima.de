@@ -61,11 +61,13 @@ final readonly class DashboardAction implements ViewActionInterface
         $groups     = $this->groupRepo->findAll();
 
         // Wirkliche Kapitel aus der Datenbank laden
+        /** @var array<int, Chapter> $dbChapters */
         $dbChapters = $this->chapterRepo->findAll();
 
         // (Wir behalten das $existingChapters Array für das Datalist-Dropdown bei Comics)
         $existingChapters = \array_map(fn (Chapter $c): string => $c->id, $dbChapters);
-        $roles            = $this->roleRepo->loadAll();
+
+        $roles = $this->roleRepo->loadAll();
 
         $canManageUsers = $this->auth->hasPermission('system.users.manage');
         $canManageRoles = $this->auth->hasPermission('system.roles.manage');

@@ -28,12 +28,13 @@ final readonly class UploadMediaAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        if (! isset($request->files['files']) || ! \is_array($request->files['files']['name'])) {
+        $files = $request->files['files'] ?? null;
+        if (! \is_array($files) || ! isset($files['name']) || ! \is_array($files['name'])) {
             return JsonResponse::error('Keine Dateien hochgeladen.', 400);
         }
 
         // Infrastruktur erledigt den kompletten Upload, Ordner-Check und Skalierung!
-        $processedCount = $this->mediaService->processMassProfileUpload($request->files['files']);
+        $processedCount = $this->mediaService->processMassProfileUpload($files);
 
         return JsonResponse::success(['message' => "{$processedCount} Bild(er) erfolgreich verarbeitet und hochgeladen!"]);
     }
