@@ -40,12 +40,13 @@ final readonly class UploadAvatarAction implements ActionInterface
                 return JsonResponse::error('Benutzer nicht gefunden.', 404);
             }
 
-            if (! isset($request->files['avatar_file']) || $request->files['avatar_file']['error'] !== \UPLOAD_ERR_OK) {
+            $file = $request->files['avatar_file'] ?? null;
+            if (! \is_array($file) || ! isset($file['error']) || $file['error'] !== \UPLOAD_ERR_OK) {
                 return JsonResponse::error('Keine Datei oder fehlerhafter Upload.', 400);
             }
 
             // Gesamte GD/Verzeichnis Logik delegiert!
-            $newFilename = $this->mediaService->processAvatarUpload($userId, $user->avatarUrl, $request->files['avatar_file']);
+            $newFilename = $this->mediaService->processAvatarUpload($userId, $user->avatarUrl, $file);
 
             $updatedUser = new User(
                 $user->id,

@@ -32,8 +32,11 @@ final readonly class ResetPasswordAction implements ActionInterface
             return JsonResponse::error('Zu viele Anfragen. Bitte warten.', 429);
         }
 
-        $token    = $request->post['token'] ?? '';
-        $password = (string) ($request->post['password'] ?? '');
+        $tokenRaw = $request->post['token'] ?? '';
+        $token    = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
+
+        $passRaw  = $request->post['password'] ?? '';
+        $password = \is_scalar($passRaw) ? (string) $passRaw : '';
 
         if ($token === '' || $password === '') {
             $this->rateLimiter->recordFailedAttempt($ip);
@@ -49,14 +52,14 @@ final readonly class ResetPasswordAction implements ActionInterface
 
         // Konsumiert den Token
         $email = $this->magicLinkService->verifyAny($token);
-        if (! $email) {
+        if ($email === null) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Der Link ist ungültig oder abgelaufen.', 400);
         }
 
         $user = $this->userRepository->findByEmail($email);
-        if (! $user) {
+        if ($user === null) {
             return JsonResponse::error('Benutzer nicht gefunden.', 400);
         }
 

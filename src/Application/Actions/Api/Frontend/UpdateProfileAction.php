@@ -45,11 +45,12 @@ final readonly class UpdateProfileAction implements ActionInterface
         }
 
         $user = $this->userRepository->findById($userId);
-        if (! $user) {
+        if ($user === null) {
             return JsonResponse::error('Benutzer nicht gefunden.', 404);
         }
 
-        $actionType = $request->post['update_type'] ?? '';
+        $actionTypeRaw = $request->post['update_type'] ?? '';
+        $actionType    = \is_scalar($actionTypeRaw) ? (string) $actionTypeRaw : '';
 
         // Aktion: Newsletter
         if ($actionType === 'newsletter') {
@@ -71,17 +72,23 @@ final readonly class UpdateProfileAction implements ActionInterface
 
             $lowerName  = \strtolower($newName);
             $restricted = [];
-            if ($bd = $this->config->get('backdoor')) {
-                $restricted[] = \strtolower($bd['user'] ?? '');
+
+            $bd = $this->config->get('backdoor');
+            if (\is_array($bd)) {
+                $bdUser       = \is_string($bd['user'] ?? null) ? $bd['user'] : '';
+                $restricted[] = \strtolower($bdUser);
             }
-            if ($sa = $this->config->get('superadmin')) {
-                $restricted[] = \strtolower($sa['user'] ?? '');
+
+            $sa = $this->config->get('superadmin');
+            if (\is_array($sa)) {
+                $saUser       = \is_string($sa['user'] ?? null) ? $sa['user'] : '';
+                $restricted[] = \strtolower($saUser);
             }
 
             if (\in_array($lowerName, $restricted, true)) {
                 return JsonResponse::error('Dieser Benutzername ist reserviert.', 400);
             }
-            if ($this->userRepository->findByUsername($newName)) {
+            if ($this->userRepository->findByUsername($newName) !== null) {
                 return JsonResponse::error('Dieser Benutzername ist leider schon vergeben.', 400);
             }
 
@@ -94,9 +101,14 @@ final readonly class UpdateProfileAction implements ActionInterface
 
         // Aktion: Passwort ändern
         if ($actionType === 'password') {
-            $oldPass        = (string) ($request->post['old_password'] ?? '');
-            $newPass        = (string) ($request->post['new_password'] ?? '');
-            $newPassConfirm = (string) ($request->post['new_password_confirm'] ?? '');
+            $oldPassRaw = $request->post['old_password'] ?? '';
+            $oldPass    = \is_scalar($oldPassRaw) ? (string) $oldPassRaw : '';
+
+            $newPassRaw = $request->post['new_password'] ?? '';
+            $newPass    = \is_scalar($newPassRaw) ? (string) $newPassRaw : '';
+
+            $newPassConfirmRaw = $request->post['new_password_confirm'] ?? '';
+            $newPassConfirm    = \is_scalar($newPassConfirmRaw) ? (string) $newPassConfirmRaw : '';
 
             if (! \password_verify($oldPass, $user->passwordHash)) {
                 return JsonResponse::error('Das alte Passwort ist nicht korrekt.', 400);
@@ -127,7 +139,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             if ($newEmailStr === $user->email->value) {
                 return JsonResponse::error('Das ist bereits deine aktuelle E-Mail-Adresse.', 400);
             }
-            if ($this->userRepository->findByEmail($newEmailStr)) {
+            if ($this->userRepository->findByEmail($newEmailStr) !== null) {
                 return JsonResponse::error('Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.', 400);
             }
 
@@ -151,12 +163,19 @@ final readonly class UpdateProfileAction implements ActionInterface
             $socialLinks    = [];
             if (\is_array($socialLinksRaw)) {
                 foreach ($socialLinksRaw as $link) {
-                    $cleanLink = \filter_var(\trim($link), \FILTER_SANITIZE_URL);
-                    if (! \filter_var($cleanLink, \FILTER_VALIDATE_URL) || \count($socialLinks) >= 5) {
+                    if (! \is_scalar($link)) {
+                        continue;
+                    }
+                    $cleanLink = \filter_var(\trim((string) $link), \FILTER_SANITIZE_URL);
+                    if (\filter_var($cleanLink, \FILTER_VALIDATE_URL) === false || \count($socialLinks) >= 5) {
                         continue;
                     }
 
-                    $socialLinks[] = $cleanLink;
+                    // Wir wissen jetzt sicher, dass es ein bool(false) oder ein string ist.
+                    // Da wir !== false abfragen, MUSS es ein string sein!
+                    if (\is_string($cleanLink)) {
+                        $socialLinks[] = $cleanLink;
+                    }
                 }
             }
 

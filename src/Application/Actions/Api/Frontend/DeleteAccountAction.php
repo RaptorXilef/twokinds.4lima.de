@@ -38,8 +38,10 @@ final readonly class DeleteAccountAction implements ActionInterface
             return JsonResponse::error('System-Accounts können nicht gelöscht werden.', 403);
         }
 
-        $password = (string) ($request->post['password'] ?? '');
-        $user     = $this->userRepo->findById($userId);
+        $passwordRaw = $request->post['password'] ?? '';
+        $password    = \is_scalar($passwordRaw) ? (string) $passwordRaw : '';
+
+        $user = $this->userRepo->findById($userId);
 
         if (! $user instanceof User || ! \password_verify($password, $user->passwordHash)) {
             return JsonResponse::error('Das eingegebene Passwort ist nicht korrekt.', 400);

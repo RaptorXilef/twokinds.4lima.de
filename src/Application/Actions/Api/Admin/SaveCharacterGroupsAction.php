@@ -61,14 +61,23 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
 
                 $charIds = [];
                 // Eindeutige Zuweisung, falls ein Charakter versehentlich doppelt reingezogen wurde
-                $charsRaw    = $groupData['characters'] ?? [];
-                $uniqueChars = \is_array($charsRaw) ? \array_unique($charsRaw) : [];
+                $charsRaw = $groupData['characters'] ?? [];
+
+                // Wir müssen garantieren, dass es ein Array von Strings ist, bevor wir unique aufrufen
+                $stringChars = [];
+                if (\is_array($charsRaw)) {
+                    foreach ($charsRaw as $cr) {
+                        if (! \is_string($cr)) {
+                            continue;
+                        }
+
+                        $stringChars[] = $cr;
+                    }
+                }
+
+                $uniqueChars = \array_unique($stringChars);
 
                 foreach ($uniqueChars as $cid) {
-                    if (! \is_string($cid)) {
-                        continue;
-                    }
-
                     try {
                         $charIds[] = new CharacterId($cid);
                     } catch (\InvalidArgumentException) {

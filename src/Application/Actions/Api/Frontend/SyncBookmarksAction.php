@@ -37,26 +37,33 @@ final readonly class SyncBookmarksAction implements ActionInterface
 
         // Lokale Lesezeichen aus dem Browser (als JSON-Array gesendet)
         $localIdsRaw = $request->post['local_ids'] ?? '[]';
-        $localIds    = \json_decode((string) $localIdsRaw, true) ?? [];
-        if (! \is_array($localIds)) {
-            $localIds = [];
+        $localIdsStr = \is_scalar($localIdsRaw) ? (string) $localIdsRaw : '[]';
+
+        $localIdsArr = \json_decode($localIdsStr, true);
+        if (! \is_array($localIdsArr)) {
+            $localIdsArr = [];
         }
 
         // SECURITY FIX: Rigorose Bereinigung (Sanitization) des User-Inputs
         $sanitizedLocalIds = [];
-        foreach ($localIds as $dirtyId) {
-            $dirtyId = \trim((string) $dirtyId);
-            // Akzeptiere NUR exakt 8 Ziffern mit evtl. einem Buchstaben (z.B. 20251024 oder 20251024a)
-            if (! \preg_match('/^\d{8}[a-z]?$/i', $dirtyId)) {
+        foreach ($localIdsArr as $dirtyId) {
+            if (! \is_scalar($dirtyId)) {
                 continue;
             }
 
-            $sanitizedLocalIds[] = $dirtyId;
+            // Akzeptiere NUR exakt 8 Ziffern mit evtl. einem Buchstaben (z.B. 20251024 oder 20251024a)
+            $cleanId = \trim((string) $dirtyId);
+            if (\preg_match('/^\d{8}[a-z]?$/i', $cleanId) !== 1) {
+                continue;
+            }
+
+            $sanitizedLocalIds[] = $cleanId;
         }
         $localIds = $sanitizedLocalIds;
 
         // Was sollen wir tun? (check, merge, db_wins, local_wins)
-        $resolution = $request->post['resolution'] ?? 'check';
+        $resRaw     = $request->post['resolution'] ?? 'check';
+        $resolution = \is_scalar($resRaw) ? (string) $resRaw : 'check';
 
         // Cloud-Daten abrufen
         $dbBookmarks = $this->bookmarkRepo->findByUser($userId);

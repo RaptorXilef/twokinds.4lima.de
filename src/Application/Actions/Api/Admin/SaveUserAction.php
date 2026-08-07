@@ -67,7 +67,7 @@ final readonly class SaveUserAction implements ActionInterface
                 }
             }
 
-            $hash = $existingUser?->passwordHash ?? '';
+            $hash = $existingUser->passwordHash ?? '';
 
             // Passwort-Logik
             if ($password !== '') {
@@ -102,7 +102,7 @@ final readonly class SaveUserAction implements ActionInterface
                 new EmailAddress($emailStr),
                 $hash,
                 $roleId,
-                $existingUser?->createdAt ?? new \DateTimeImmutable(),
+                $existingUser->createdAt ?? new \DateTimeImmutable(),
                 $existingUser instanceof User && $existingUser->wantsNewsletter,
                 $existingUser instanceof User && $existingUser->wantsNewsletterTranscript,
                 $existingUser instanceof User && $existingUser->wantsNotificationReport,

@@ -36,19 +36,21 @@ final readonly class ResendVerificationAction implements ActionInterface
 
         // Lese die E-Mail-Config aus und baue die ausführliche Meldung
         $mailConfig = $this->config->getMailSettings();
-        $fromEmail  = $mailConfig['from'] ?? 'no-reply@twokinds.4lima.de';
+        $fromEmail  = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
 
         $successMsg = 'Falls ein unbestätigtes Konto existiert, wurde eine neue E-Mail an dich versendet.<br><br>' .
             '&bull; Der Link ist <strong>15 Minuten</strong> gültig.<br>' .
             '&bull; Bitte prüfe auch deinen <strong>SPAM-Ordner</strong>!<br>' .
             '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
 
-        // Honeypot
-        if (! empty($request->post['middle_name'])) {
+        $honeypot = $request->post['middle_name'] ?? '';
+        if ($honeypot !== '') {
             return JsonResponse::success(['message' => $successMsg]);
         }
 
-        $email = \trim((string) ($request->post['email'] ?? ''));
+        $emailRaw = $request->post['email'] ?? '';
+        $email    = \is_scalar($emailRaw) ? \trim((string) $emailRaw) : '';
+
         if ($email === '') {
             $this->rateLimiter->recordFailedAttempt($ip);
 

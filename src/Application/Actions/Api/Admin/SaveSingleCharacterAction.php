@@ -55,7 +55,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             $picUrl    = $dto->picUrl;
             $mainPic   = $existing?->mainPic;
             $swatchPic = $existing?->swatchPic;
-            $refSheets = $existing?->refSheets ?? [];
+            $refSheets = $existing->refSheets ?? [];
 
             $warnings = [];
             $safeName = \pathinfo(Sanitizer::slugify($dto->name), \PATHINFO_FILENAME);

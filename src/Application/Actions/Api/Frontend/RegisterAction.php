@@ -43,7 +43,7 @@ final readonly class RegisterAction implements ActionInterface
 
         // Lese die E-Mail-Config aus und baue die ausführliche Meldung
         $mailConfig = $this->config->getMailSettings();
-        $fromEmail  = $mailConfig['from'] ?? 'no-reply@twokinds.4lima.de';
+        $fromEmail  = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
 
         $successMsg = 'Fast geschafft! Ich habe dir einen Bestätigungslink gesendet.<br><br>' .
             '&bull; Du hast <strong>15 Minuten</strong> Zeit, um auf den Link in der E-Mail zu klicken.<br>' .
@@ -51,15 +51,20 @@ final readonly class RegisterAction implements ActionInterface
             '&bull; Der Absender der E-Mail ist: <strong>' . \htmlspecialchars($fromEmail) . '</strong>';
 
         // 2. Honeypot Check (Bot-Trap)
-        if (! empty($request->post['middle_name'])) {
+        $honeypot = $request->post['middle_name'] ?? '';
+        if ($honeypot !== '') {
             // Fake Success for Bots
             return JsonResponse::success(['message' => $successMsg, 'redirect' => 'login']);
         }
 
-        $username        = Sanitizer::string($request->post['username'] ?? '');
-        $email           = Sanitizer::email($request->post['email'] ?? '');
-        $password        = (string) ($request->post['password'] ?? ''); // Passwörter NIE bereinigen!
-        $passwordConfirm = (string) ($request->post['password_confirm'] ?? '');
+        $username = Sanitizer::string($request->post['username'] ?? '');
+        $email    = Sanitizer::email($request->post['email'] ?? '');
+
+        $passRaw  = $request->post['password'] ?? ''; // Passwörter NIE bereinigen!
+        $password = \is_scalar($passRaw) ? (string) $passRaw : '';
+
+        $confirmRaw      = $request->post['password_confirm'] ?? '';
+        $passwordConfirm = \is_scalar($confirmRaw) ? (string) $confirmRaw : '';
 
         if ($username === '' || $email === '' || $password === '' || $passwordConfirm === '') {
             $this->rateLimiter->recordFailedAttempt($ip);
@@ -74,7 +79,7 @@ final readonly class RegisterAction implements ActionInterface
             return JsonResponse::error('Die Passwörter stimmen nicht überein.', 400);
         }
 
-        if (! \filter_var($email, \FILTER_VALIDATE_EMAIL)) {
+        if (\filter_var($email, \FILTER_VALIDATE_EMAIL) === false) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Ungültige E-Mail-Adresse.', 400);
@@ -83,11 +88,17 @@ final readonly class RegisterAction implements ActionInterface
         // Admin-Namen vor Registrierung schützen!
         $lowerUsername = \strtolower($username);
         $restricted    = [];
-        if ($bd = $this->config->get('backdoor')) {
-            $restricted[] = \strtolower($bd['user'] ?? '');
+
+        $bd = $this->config->get('backdoor');
+        if (\is_array($bd)) {
+            $bdUser       = \is_string($bd['user'] ?? null) ? $bd['user'] : '';
+            $restricted[] = \strtolower($bdUser);
         }
-        if ($sa = $this->config->get('superadmin')) {
-            $restricted[] = \strtolower($sa['user'] ?? '');
+
+        $sa = $this->config->get('superadmin');
+        if (\is_array($sa)) {
+            $saUser       = \is_string($sa['user'] ?? null) ? $sa['user'] : '';
+            $restricted[] = \strtolower($saUser);
         }
 
         if (\in_array($lowerUsername, $restricted, true)) {
@@ -102,23 +113,24 @@ final readonly class RegisterAction implements ActionInterface
             return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
         }
 
-        if ($this->userRepository->findByUsername($username)) {
+        if ($this->userRepository->findByUsername($username) !== null) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
         }
 
-        if ($this->userRepository->findByEmail($email)) {
+        if ($this->userRepository->findByEmail($email) !== null) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Diese E-Mail-Adresse wird bereits verwendet.', 400);
         }
-
         // Admin-Namen vor Registrierung schützen! ENDE
 
         // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
-        $domain = \substr(\strrchr($email, '@'), 1);
-        if (! \checkdnsrr($domain, 'MX') && ! \checkdnsrr($domain, 'A')) {
+        $domainStr = \strrchr($email, '@');
+        $domain    = \is_string($domainStr) ? \substr($domainStr, 1) : '';
+
+        if ($domain === '' || (! \checkdnsrr($domain, 'MX') && ! \checkdnsrr($domain, 'A'))) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Die E-Mail-Domain scheint keine E-Mails empfangen zu können.', 400);

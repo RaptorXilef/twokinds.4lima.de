@@ -70,7 +70,7 @@ final readonly class UpdateReportStatusAction implements ActionInterface
 
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
                     if ($user instanceof User && $user->wantsNotificationReport) {
-                        $comicIdVal = $report->comicId?->value ?? '';
+                        $comicIdVal = $report->comicId->value ?? '';
                         $pageUrl    = \in_array($comicIdVal, ['', '0'], true)
                             ? \rtrim($this->config->getBaseUrl(), '/')
                             : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;

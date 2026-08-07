@@ -22,7 +22,7 @@ final readonly class SubmitReportAction implements ActionInterface
     public function __construct(
         private ReportService $reportService,
         private MediaServiceInterface $mediaService,
-        private AuthService $auth,           // für Session-Check
+        private AuthService $auth, // für Session-Check
         private SessionManager $sessionManager, // für ID
     ) {
     }
@@ -34,9 +34,11 @@ final readonly class SubmitReportAction implements ActionInterface
 
             // --- Screenshot Verarbeitung (Max 1500px, WEBP) ---
             $screenshotUrl = null;
-            if (isset($request->files['report_screenshot']) && $request->files['report_screenshot']['error'] === \UPLOAD_ERR_OK) {
+            $file          = $request->files['report_screenshot'] ?? null;
+
+            if (\is_array($file) && isset($file['error']) && $file['error'] === \UPLOAD_ERR_OK) {
                 // Logik an Infrastruktur abgegeben
-                $screenshotUrl = $this->mediaService->saveReportScreenshot($request->files['report_screenshot']);
+                $screenshotUrl = $this->mediaService->saveReportScreenshot($file);
             }
 
             // NEU: Wenn eingeloggt, ID auslesen
@@ -44,7 +46,7 @@ final readonly class SubmitReportAction implements ActionInterface
 
             $report = $this->reportService->submitReport(
                 $dto->comicId,
-                $userId, // NEU: An Service übergeben!
+                $userId, // An Service übergeben!
                 $dto->ipAddress,
                 $dto->submitterName,
                 $dto->wantsCredit,

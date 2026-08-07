@@ -34,15 +34,18 @@ final readonly class ToggleBookmarkAction implements ActionInterface
             return JsonResponse::error('System-Accounts unterstützen keine Cloud-Lesezeichen.', 403);
         }
 
-        $comicId = \trim((string) ($request->post['comic_id'] ?? ''));
-        $action  = \trim((string) ($request->post['bookmark_action'] ?? '')); // 'add' oder 'remove'
+        $comicIdRaw = $request->post['comic_id'] ?? '';
+        $comicId    = \is_scalar($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
+
+        $actionRaw = $request->post['bookmark_action'] ?? '';
+        $action    = \is_scalar($actionRaw) ? \trim((string) $actionRaw) : ''; // 'add' oder 'remove'
 
         // SECURITY FIX: Prüfe die Comic-ID strikt auf das Format
-        if (! \preg_match('/^\d{8}[a-z]?$/i', $comicId) || ! \in_array($action, ['add', 'remove'], true)) {
-            return JsonResponse::error('Ungültige Daten manipuliert.', 400);
+        if (\preg_match('/^\d{8}[a-z]?$/i', $comicId) !== 1) {
+            return JsonResponse::error('Ungültige Comic-ID manipuliert.', 400);
         }
 
-        if (! \in_array($action, ['add', 'remove'], true)) {
+        if ($action !== 'add' && $action !== 'remove') {
             return JsonResponse::error('Ungültige Daten.', 400);
         }
 
