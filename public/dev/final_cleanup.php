@@ -63,9 +63,11 @@ foreach ($foldersToCheck as $folder) {
     $files = \array_diff(\scandir($folder), ['.', '..']);
     foreach ($files as $file) {
         $slug = \slugify($file);
-        if ($file !== $slug) {
-            \exactRename($folder, $file, $slug);
+        if ($file === $slug) {
+            continue;
         }
+
+        \exactRename($folder, $file, $slug);
     }
 }
 
@@ -78,10 +80,12 @@ $unusedFiles = [
 ];
 
 foreach ($unusedFiles as $f) {
-    if (\is_file($f)) {
-        \unlink($f);
-        echo "<span style='color:#6a9955;'>Gelöscht:</span> " . \basename($f) . '<br>';
+    if (! \is_file($f)) {
+        continue;
     }
+
+    \unlink($f);
+    echo "<span style='color:#6a9955;'>Gelöscht:</span> " . \basename($f) . '<br>';
 }
 
 function delTree(string $dir): void

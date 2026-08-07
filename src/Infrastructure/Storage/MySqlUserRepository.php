@@ -103,7 +103,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $column = $transcriptOnly ? 'wants_newsletter_transcript' : 'wants_newsletter';
 
         // Da wir dynamische Spaltennamen nutzen (die sicher von uns kommen), ist das absolut SQL-Injection-sicher
-        $stmt   = $this->pdo->query('SELECT * FROM `' . Table::USERS . "` WHERE {$column} = 1");
+        $stmt = $this->pdo->query('SELECT * FROM `' . Table::USERS . "` WHERE {$column} = 1");
 
         $users = [];
         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {

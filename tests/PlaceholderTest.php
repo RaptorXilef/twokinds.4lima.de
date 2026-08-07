@@ -3,9 +3,10 @@
 /**
  * Platzhalter-Test, um sicherzustellen, dass PHPUnit korrekt konfiguriert ist.
  *
+ * @since 1.0.0
+ *
  * @file tests/PlaceholderTest.php
  * @version 1.0.0
- * @since 1.0.0
  */
 
 declare(strict_types=1);

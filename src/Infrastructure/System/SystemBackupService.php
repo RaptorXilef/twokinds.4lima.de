@@ -18,11 +18,13 @@ final readonly class SystemBackupService implements BackupServiceInterface
         private JsonHelperInterface $jsonHelper,
     ) {
         $this->backupDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/var/backups';
-        if (! \is_dir($this->backupDir)) {
-            @\mkdir($this->backupDir, 0o777, true);
-            // Ordner vor direktem Web-Zugriff schützen
-            @\file_put_contents($this->backupDir . '/.htaccess', "Order allow,deny\nDeny from all\n");
+        if (\is_dir($this->backupDir)) {
+            return;
         }
+
+        @\mkdir($this->backupDir, 0o777, true);
+        // Ordner vor direktem Web-Zugriff schützen
+        @\file_put_contents($this->backupDir . '/.htaccess', "Order allow,deny\nDeny from all\n");
     }
 
     public function createBackup(?string $tableName = null): string
@@ -260,9 +262,11 @@ final readonly class SystemBackupService implements BackupServiceInterface
     public function deleteBackup(string $filename): void
     {
         $filepath = $this->backupDir . '/' . \basename($filename);
-        if (\file_exists($filepath)) {
-            \unlink($filepath);
+        if (! \file_exists($filepath)) {
+            return;
         }
+
+        \unlink($filepath);
     }
 
     public function getAllTables(): array
@@ -325,10 +329,12 @@ final readonly class SystemBackupService implements BackupServiceInterface
                 if ($part === '') {
                     continue;
                 }
-                if (! @\ftp_chdir($connId, $part)) {
-                    @\ftp_mkdir($connId, $part);
-                    @\ftp_chdir($connId, $part);
+                if (@\ftp_chdir($connId, $part)) {
+                    continue;
                 }
+
+                @\ftp_mkdir($connId, $part);
+                @\ftp_chdir($connId, $part);
             }
 
             // Upload
@@ -357,12 +363,16 @@ final readonly class SystemBackupService implements BackupServiceInterface
         $files     = \array_diff(\scandir($this->backupDir), ['.', '..', '.htaccess']);
 
         foreach ($files as $file) {
-            if (\str_ends_with($file, '.zip') || \str_ends_with($file, '.json')) {
-                $path = $this->backupDir . '/' . $file;
-                if (\filemtime($path) < $threshold) {
-                    @\unlink($path);
-                }
+            if (! \str_ends_with($file, '.zip') && ! \str_ends_with($file, '.json')) {
+                continue;
             }
+
+            $path = $this->backupDir . '/' . $file;
+            if (\filemtime($path) >= $threshold) {
+                continue;
+            }
+
+            @\unlink($path);
         }
     }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Frontend;
 
-use App\Core\Entity\Bookmark;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
@@ -13,6 +12,7 @@ use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\Bookmark;
 
 #[Route('GET', '/user/{id}')]
 final readonly class UserDetailAction implements ActionInterface
@@ -44,9 +44,11 @@ final readonly class UserDetailAction implements ActionInterface
         $bookmarks  = [];
 
         foreach ($allComics as $comic) {
-            if (\in_array($user->id, $comic->userIds, true)) {
-                $userComics[] = $comic;
+            if (! \in_array($user->id, $comic->userIds, true)) {
+                continue;
             }
+
+            $userComics[] = $comic;
         }
 
         if ($user->publicBookmarks) {
@@ -54,9 +56,11 @@ final readonly class UserDetailAction implements ActionInterface
             $bmComicIds = \array_map(fn (Bookmark $b): string => $b->comicId, $bms);
 
             foreach ($allComics as $comic) {
-                if (\in_array($comic->id->value, $bmComicIds, true)) {
-                    $bookmarks[] = $comic;
+                if (! \in_array($comic->id->value, $bmComicIds, true)) {
+                    continue;
                 }
+
+                $bookmarks[] = $comic;
             }
         }
 

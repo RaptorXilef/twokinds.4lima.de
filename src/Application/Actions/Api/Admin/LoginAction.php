@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Actions\Api\Admin;
 
 use App\Application\Attribute\Route;
-
-use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -37,7 +35,7 @@ final readonly class LoginAction implements ActionInterface
                 $label = $this->auth->getUsername();
 
                 // Dynamische Weiterleitung: Admin/Backdoor ins Dashboard, User zu den Lesezeichen
-                $target = ($role === 'admin' || $label === 'Systembetreuer' || $label === 'System-Inhaber') ? 'admin' : 'lesezeichen';
+                $target = $role === 'admin' || $label === 'Systembetreuer' || $label === 'System-Inhaber' ? 'admin' : 'lesezeichen';
 
                 return JsonResponse::success([
                     'message'  => 'Erfolgreich eingeloggt.',
@@ -46,7 +44,6 @@ final readonly class LoginAction implements ActionInterface
             }
 
             return JsonResponse::error('Ungültige Zugangsdaten.', 401);
-
         } catch (\DomainException $e) {
             // Fängt die "Konto nicht bestätigt" Exception aus dem AuthService!
             return JsonResponse::error($e->getMessage(), 401);

@@ -160,9 +160,11 @@ final readonly class DashboardAction implements ViewActionInterface
         if (\is_dir($imageDir)) {
             $files = \scandir($imageDir);
             foreach ($files as $file) {
-                if ($file !== '.' && $file !== '..' && \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file)) {
-                    $availableImages[] = $file;
+                if ($file === '.' || $file === '..' || ! \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file)) {
+                    continue;
                 }
+
+                $availableImages[] = $file;
             }
         }
 

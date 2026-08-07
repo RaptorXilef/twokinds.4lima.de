@@ -49,9 +49,11 @@ final readonly class CurlRemoteResourceProber implements RemoteResourceProberInt
                     break 2;
                 }
             }
-            if ($active) {
-                \curl_multi_select($multiHandle, 0.05);
+            if (! $active) {
+                continue;
             }
+
+            \curl_multi_select($multiHandle, 0.05);
         } while ($active && $status === \CURLM_OK);
 
         foreach ($curlHandles as $ch) {

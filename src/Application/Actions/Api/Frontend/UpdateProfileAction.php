@@ -152,9 +152,11 @@ final readonly class UpdateProfileAction implements ActionInterface
             if (\is_array($socialLinksRaw)) {
                 foreach ($socialLinksRaw as $link) {
                     $cleanLink = \filter_var(\trim($link), \FILTER_SANITIZE_URL);
-                    if (\filter_var($cleanLink, \FILTER_VALIDATE_URL) && \count($socialLinks) < 5) {
-                        $socialLinks[] = $cleanLink;
+                    if (! \filter_var($cleanLink, \FILTER_VALIDATE_URL) || \count($socialLinks) >= 5) {
+                        continue;
                     }
+
+                    $socialLinks[] = $cleanLink;
                 }
             }
 

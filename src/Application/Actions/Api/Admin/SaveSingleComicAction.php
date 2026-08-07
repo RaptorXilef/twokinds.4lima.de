@@ -114,8 +114,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
             $this->comicService->saveComic($comic);
 
             return JsonResponse::success(['message' => "Comic {$dto->id} erfolgreich gespeichert."]);
-
-        } catch (ValidationException|\InvalidArgumentException $e) {
+        } catch (ValidationException | \InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (\Throwable $e) {
             return JsonResponse::error('Ein interner Fehler ist aufgetreten: ' . $e->getMessage(), 500);

@@ -109,9 +109,11 @@ $settings['permissions'] = $flatPerms;
 
 foreach (\glob($appRoot . '/config/*.default.php') as $defaultFile) {
     $loaded = require $defaultFile;
-    if (\is_array($loaded)) {
-        $settings = \array_replace_recursive($settings, $loaded);
+    if (! \is_array($loaded)) {
+        continue;
     }
+
+    $settings = \array_replace_recursive($settings, $loaded);
 }
 
 // D. Harte System-Configs laden (Überschreibt JSON & Defaults - Höchste Priorität!)
@@ -125,12 +127,16 @@ $hardConfigs = [
 ];
 
 foreach ($hardConfigs as $file) {
-    if (\file_exists($file)) {
-        $loaded = require $file;
-        if (\is_array($loaded)) {
-            $settings = \array_replace_recursive($settings, $loaded);
-        }
+    if (! \file_exists($file)) {
+        continue;
     }
+
+    $loaded = require $file;
+    if (! \is_array($loaded)) {
+        continue;
+    }
+
+    $settings = \array_replace_recursive($settings, $loaded);
 }
 
 // Dev-Admin Default anlegen falls nicht da

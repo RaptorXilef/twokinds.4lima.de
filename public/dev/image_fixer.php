@@ -40,11 +40,15 @@ function forceMove(string $src, string $dest): void
         \mkdir(\dirname($dest), 0o755, true);
     }
     // Trick gegen Windows-Locks: Kopieren und altes löschen
-    if ($src !== $dest) {
-        if (\copy($src, $dest)) {
-            @\unlink($src);
-        }
+    if ($src === $dest) {
+        return;
     }
+
+    if (! \copy($src, $dest)) {
+        return;
+    }
+
+    @\unlink($src);
 }
 
 function delTree(string $dir): void

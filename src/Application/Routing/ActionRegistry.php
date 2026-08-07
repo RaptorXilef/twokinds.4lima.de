@@ -47,20 +47,24 @@ final class ActionRegistry
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
 
         foreach ($iterator as $file) {
-            if ($file->isFile() && $file->getExtension() === 'php') {
-                $relativePath = \str_replace($dir . \DIRECTORY_SEPARATOR, '', $file->getPathname());
-                $classSuffix  = \str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $relativePath);
-                $className    = 'App\\Application\\Actions\\' . $classSuffix;
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
 
-                if (\class_exists($className)) {
-                    $reflection   = new \ReflectionClass($className);
-                    $requiresAuth = $reflection->getAttributes(RequiresAuth::class) !== [];
+            $relativePath = \str_replace($dir . \DIRECTORY_SEPARATOR, '', $file->getPathname());
+            $classSuffix  = \str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $relativePath);
+            $className    = 'App\\Application\\Actions\\' . $classSuffix;
 
-                    foreach ($reflection->getAttributes(Route::class) as $attribute) {
-                        $route = $attribute->newInstance();
-                        $this->registerRoute($route->method, $route->path, $className, $requiresAuth);
-                    }
-                }
+            if (! \class_exists($className)) {
+                continue;
+            }
+
+            $reflection   = new \ReflectionClass($className);
+            $requiresAuth = $reflection->getAttributes(RequiresAuth::class) !== [];
+
+            foreach ($reflection->getAttributes(Route::class) as $attribute) {
+                $route = $attribute->newInstance();
+                $this->registerRoute($route->method, $route->path, $className, $requiresAuth);
             }
         }
     }

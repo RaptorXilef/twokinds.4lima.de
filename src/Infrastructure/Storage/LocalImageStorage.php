@@ -64,10 +64,12 @@ final readonly class LocalImageStorage implements ImageStorageInterface
         foreach ($folders as $folder) {
             foreach (['webp', 'jpg'] as $ext) {
                 $file = "$targetDir/$folder/$comicId.$ext";
-                if (\file_exists($file)) {
-                    @\unlink($file);
-                    ++$deleted;
+                if (! \file_exists($file)) {
+                    continue;
                 }
+
+                @\unlink($file);
+                ++$deleted;
             }
         }
 
@@ -106,9 +108,11 @@ final readonly class LocalImageStorage implements ImageStorageInterface
         $files  = \array_diff(\scandir($dir), ['.', '..']);
         $result = [];
         foreach ($files as $file) {
-            if (\is_file($dir . '/' . $file)) {
-                $result[] = ['filename' => $file, 'url' => "/assets/images/characters/{$folder}/{$file}"];
+            if (! \is_file($dir . '/' . $file)) {
+                continue;
             }
+
+            $result[] = ['filename' => $file, 'url' => "/assets/images/characters/{$folder}/{$file}"];
         }
 
         return $result;

@@ -18,13 +18,15 @@ $configFiles = [
 
 $dbConfig = null;
 foreach ($configFiles as $file) {
-    if (\file_exists($file)) {
-        $cfg = require $file;
-        if (isset($cfg['database'])) {
-            $dbConfig = $cfg['database'];
+    if (! \file_exists($file)) {
+        continue;
+    }
 
-            break;
-        }
+    $cfg = require $file;
+    if (isset($cfg['database'])) {
+        $dbConfig = $cfg['database'];
+
+        break;
     }
 }
 
@@ -78,13 +80,15 @@ function slugify(string $filename, bool $ltrimIcon = false, bool $rtrimSwatch = 
 // Hilfsfunktion zum sicheren Verschieben
 function safeMove(string $oldPath, string $newPath): void
 {
-    if (\file_exists($oldPath)) {
-        $dir = \dirname($newPath);
-        if (! \is_dir($dir)) {
-            \mkdir($dir, 0o755, true);
-        }
-        \rename($oldPath, $newPath);
+    if (! \file_exists($oldPath)) {
+        return;
     }
+
+    $dir = \dirname($newPath);
+    if (! \is_dir($dir)) {
+        \mkdir($dir, 0o755, true);
+    }
+    \rename($oldPath, $newPath);
 }
 
 // --- 1. NEUE ORDNERSTRUKTUR ANLEGEN ---
@@ -105,9 +109,11 @@ $newDirs = [
     "$imgDir/theme/nav",
 ];
 foreach ($newDirs as $dir) {
-    if (! \is_dir($dir)) {
-        \mkdir($dir, 0o755, true);
+    if (\is_dir($dir)) {
+        continue;
     }
+
+    \mkdir($dir, 0o755, true);
 }
 
 // --- 2. DATENBANK CHARAKTERE MIGRATION ---

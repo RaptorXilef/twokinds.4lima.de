@@ -8,6 +8,7 @@ trait EntityHydratorTrait
 {
     /**
      * Extrahiert ein Objekt (Entity) automatisch in ein Array für die Datenbank (snake_case).
+     *
      * @param array $overrides Manuelle Werte für Spalten, die vom Standard abweichen (z.B. komplexe JSON Arrays).
      */
     protected function extractEntity(object $entity, array $overrides = []): array
@@ -50,9 +51,11 @@ trait EntityHydratorTrait
 
         // Füge Overrides hinzu, die an keinem Property hängen
         foreach ($overrides as $key => $val) {
-            if (! \array_key_exists($key, $data)) {
-                $data[$key] = $val;
+            if (\array_key_exists($key, $data)) {
+                continue;
             }
+
+            $data[$key] = $val;
         }
 
         return $data;
@@ -60,10 +63,13 @@ trait EntityHydratorTrait
 
     /**
      * Baut aus einem Datenbank-Row (snake_case) vollautomatisch dein Objekt zusammen.
-     * @template T of object
-     * @param  class-string<T> $className
-     * @param  array           $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
+     *
+     * @param class-string<T> $className
+     * @param array           $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
+     *
      * @return T
+     *
+     * @template T of object
      */
     protected function hydrateEntity(string $className, array $row, array $overrides = []): object
     {
@@ -116,7 +122,7 @@ trait EntityHydratorTrait
                 continue;
             }
 
-            if (in_array($typeName, [\DateTimeImmutable::class, \DateTime::class, \DateTimeInterface::class], true)) {
+            if (\in_array($typeName, [\DateTimeImmutable::class, \DateTime::class, \DateTimeInterface::class], true)) {
                 $args[] = new \DateTimeImmutable($rawValue);
             } elseif ($typeName === 'array') {
                 $args[] = \json_decode((string) $rawValue, true) ?? [];

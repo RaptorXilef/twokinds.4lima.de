@@ -57,7 +57,6 @@ final readonly class SubmitReportAction implements ActionInterface
             );
 
             return JsonResponse::success(['message' => 'Vielen Dank! Deine Meldung wurde erfolgreich übermittelt.']);
-
         } catch (ValidationException $e) {
             if ($e->getMessage() === 'HONEYPOT_TRIGGERED') {
                 // Den Bot im Glauben lassen, es hätte funktioniert
@@ -65,10 +64,8 @@ final readonly class SubmitReportAction implements ActionInterface
             }
 
             return JsonResponse::error($e->getMessage(), 400);
-
         } catch (RateLimitExceededException $e) {
             return JsonResponse::error($e->getMessage(), 429);
-
         } catch (\Throwable $e) {
             // Log-Logik greift automatisch über den GlobalExceptionHandler, wir geben nur 500 zurück
             return JsonResponse::error('Ein interner Serverfehler ist aufgetreten: ' . $e->getMessage(), 500);

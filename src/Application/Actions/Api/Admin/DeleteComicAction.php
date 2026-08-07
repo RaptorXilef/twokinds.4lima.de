@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Exception\ValidationException;
 use App\Application\Http\ServerRequest;
@@ -41,8 +39,7 @@ final readonly class DeleteComicAction implements ActionInterface
             $this->comicService->deleteComic(new ComicId($id));
 
             return JsonResponse::success(['message' => "Comic $id wurde erfolgreich gelöscht."]);
-
-        } catch (ValidationException|\InvalidArgumentException $e) {
+        } catch (ValidationException | \InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (\Throwable $e) {
             return JsonResponse::error('Fehler beim Löschen: ' . $e->getMessage(), 500);

@@ -72,7 +72,7 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         $recipient  = \str_replace(["\r", "\n"], '', $recipient);
 
         // Port 465 bedeutet meist reines SSL direkt beim Aufbau
-        $protocol = ($port === 465 || $encryption === 'ssl') ? 'ssl://' : '';
+        $protocol = $port === 465 || $encryption === 'ssl' ? 'ssl://' : '';
         $socket   = @\fsockopen($protocol . $host, $port, $errno, $errstr, 15);
 
         if (! $socket) {

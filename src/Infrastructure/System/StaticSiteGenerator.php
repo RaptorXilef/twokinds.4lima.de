@@ -35,10 +35,12 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
     // PERF: Dieser Destruktor feuert GANZ am Ende, NACHDEM der Browser längst seine Antwort hat!
     public function __destruct()
     {
-        if ($this->needsGeneration) {
-            $this->doGenerateSitemap();
-            $this->doGenerateRss();
+        if (! $this->needsGeneration) {
+            return;
         }
+
+        $this->doGenerateSitemap();
+        $this->doGenerateRss();
     }
 
     private function doGenerateSitemap(): void

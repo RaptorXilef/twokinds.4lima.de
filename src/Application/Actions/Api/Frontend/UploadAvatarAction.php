@@ -68,7 +68,6 @@ final readonly class UploadAvatarAction implements ActionInterface
                 'message'        => 'Profilbild erfolgreich aktualisiert!',
                 'new_avatar_url' => $this->config->getBaseUrl() . '/assets/images/avatars/' . $newFilename,
             ]);
-
         } catch (\InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (\Throwable $e) {

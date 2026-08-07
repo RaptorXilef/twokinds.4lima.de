@@ -47,26 +47,26 @@ final class PdoFactory
             $mysqlErrorCode = $e->errorInfo[1] ?? null;
 
             // 1049 = Unknown database (Datenbank existiert noch nicht)
-            if ($mysqlErrorCode === 1049) {
-                // Datenbank existiert nicht, versuche sie anzulegen
-                $dsnWithoutDb = "mysql:host={$db['host']}{$portStr};charset={$db['charset']}";
-
-                try {
-                    $pdo = new \PDO($dsnWithoutDb, $db['user'], $db['pass'], [
-                        \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
-                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-                        \PDO::ATTR_EMULATE_PREPARES   => false,
-                        \PDO::ATTR_TIMEOUT            => 2,
-                    ]);
-
-                    $sql = "CREATE DATABASE IF NOT EXISTS `{$db['dbname']}` CHARACTER SET {$db['charset']} COLLATE {$db['charset']}_unicode_ci";
-                    $pdo->exec($sql);
-                    $pdo->exec("USE `{$db['dbname']}`");
-                } catch (\PDOException $e2) {
-                    throw new \RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage(), $e->getCode(), $e);
-                }
-            } else {
+            if ($mysqlErrorCode !== 1049) {
                 throw new \RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage(), $e->getCode(), $e);
+            }
+
+            // Datenbank existiert nicht, versuche sie anzulegen
+            $dsnWithoutDb = "mysql:host={$db['host']}{$portStr};charset={$db['charset']}";
+
+            try {
+                $pdo = new \PDO($dsnWithoutDb, $db['user'], $db['pass'], [
+                    \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    \PDO::ATTR_EMULATE_PREPARES   => false,
+                    \PDO::ATTR_TIMEOUT            => 2,
+                ]);
+
+                $sql = "CREATE DATABASE IF NOT EXISTS `{$db['dbname']}` CHARACTER SET {$db['charset']} COLLATE {$db['charset']}_unicode_ci";
+                $pdo->exec($sql);
+                $pdo->exec("USE `{$db['dbname']}`");
+            } catch (\PDOException $e2) {
+                throw new \RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage(), $e->getCode(), $e);
             }
         }
 

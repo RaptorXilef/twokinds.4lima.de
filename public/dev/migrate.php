@@ -139,7 +139,6 @@ try {
 
     if (isset($comicData['comics'])) {
         foreach ($comicData['comics'] as $comicId => $comic) {
-
             // Verknüpfte Charaktere als JSON formatieren
             $charIdsJson = '[]';
             if (isset($comic['charaktere']) && \is_array($comic['charaktere'])) {
@@ -168,7 +167,6 @@ try {
     $pdo->commit();
     echo "<h2 style='color:green;'>🎉 Migration komplett abgeschlossen!</h2>";
     echo '<p>Alle Daten sind nun sicher in der MySQL Datenbank. Du kannst die Datei <code>migrate.php</code> und den Ordner <code>migration_data</code> jetzt löschen.</p>';
-
 } catch (\Exception $e) {
     // Bei einem Fehler machen wir alles rückgängig, damit die DB nicht halb-befüllt bleibt
     $pdo->rollBack();

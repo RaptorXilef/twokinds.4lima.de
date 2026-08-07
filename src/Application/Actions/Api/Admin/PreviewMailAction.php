@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
@@ -22,7 +23,8 @@ final readonly class PreviewMailAction implements ActionInterface
         private MailLogInterface $mailLogRepo,
         private ConfigInterface $config,
         private AuthService $auth,
-    ) {}
+    ) {
+    }
 
     public function execute(ServerRequest $request): mixed
     {
@@ -47,15 +49,15 @@ final readonly class PreviewMailAction implements ActionInterface
             return JsonResponse::error('E-Mail nicht gefunden.', 404);
         }
 
-        $template = $mailData['template'];
+        $template   = $mailData['template'];
         $payloadRaw = $mailData['data'] ?? '{}';
-        $payload = \is_string($payloadRaw) ? \json_decode($payloadRaw, true) : $payloadRaw;
+        $payload    = \is_string($payloadRaw) ? \json_decode($payloadRaw, true) : $payloadRaw;
 
         if (! \is_array($payload)) {
             $payload = [];
         }
 
-        $root = \rtrim((string) $this->config->get('root_path'), '/\\');
+        $root     = \rtrim((string) $this->config->get('root_path'), '/\\');
         $fullPath = $root . "/templates/emails/{$template}.phtml";
 
         if (! \file_exists($fullPath)) {

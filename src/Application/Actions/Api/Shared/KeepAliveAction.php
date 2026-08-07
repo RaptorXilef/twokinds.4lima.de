@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Actions\Api\Shared;
 
 use App\Application\Attribute\Route;
-
-use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;

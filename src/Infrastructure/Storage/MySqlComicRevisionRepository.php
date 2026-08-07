@@ -48,26 +48,28 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         // 2. Rolling History Limit durchsetzen (Alte Snapshots löschen)
         $limit = (int) $this->config->get('comic_revision_limit', 10);
 
-        if ($limit > 0) {
-            // MySQL Workaround: Man kann nicht DELETE und SELECT auf dieselbe Tabelle ohne Subquery-Alias machen
-            $stmtCleanup = $this->pdo->prepare('
-                DELETE FROM `' . Table::COMIC_REVISIONS . '`
-                WHERE `comic_id` = :cid
-                AND `id` NOT IN (
-                    SELECT id FROM (
-                        SELECT id FROM `' . Table::COMIC_REVISIONS . '`
-                        WHERE `comic_id` = :cid2
-                        ORDER BY `created_at` DESC
-                        LIMIT :limit
-                    ) tmp
-                )
-            ');
-
-            $stmtCleanup->bindValue(':cid', $comicIdStr);
-            $stmtCleanup->bindValue(':cid2', $comicIdStr);
-            $stmtCleanup->bindValue(':limit', $limit, \PDO::PARAM_INT);
-            $stmtCleanup->execute();
+        if ($limit <= 0) {
+            return;
         }
+
+        // MySQL Workaround: Man kann nicht DELETE und SELECT auf dieselbe Tabelle ohne Subquery-Alias machen
+        $stmtCleanup = $this->pdo->prepare('
+			DELETE FROM `' . Table::COMIC_REVISIONS . '`
+			WHERE `comic_id` = :cid
+			AND `id` NOT IN (
+				SELECT id FROM (
+					SELECT id FROM `' . Table::COMIC_REVISIONS . '`
+					WHERE `comic_id` = :cid2
+					ORDER BY `created_at` DESC
+					LIMIT :limit
+				) tmp
+			)
+		');
+
+        $stmtCleanup->bindValue(':cid', $comicIdStr);
+        $stmtCleanup->bindValue(':cid2', $comicIdStr);
+        $stmtCleanup->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmtCleanup->execute();
     }
 
     public function popLatestRevision(ComicId $id): ?array

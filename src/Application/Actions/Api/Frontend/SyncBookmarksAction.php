@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Actions\Api\Frontend;
 
 use App\Application\Attribute\Route;
-
-use App\Application\Attribute\ActionRoute;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -49,9 +47,11 @@ final readonly class SyncBookmarksAction implements ActionInterface
         foreach ($localIds as $dirtyId) {
             $dirtyId = \trim((string) $dirtyId);
             // Akzeptiere NUR exakt 8 Ziffern mit evtl. einem Buchstaben (z.B. 20251024 oder 20251024a)
-            if (\preg_match('/^\d{8}[a-z]?$/i', $dirtyId)) {
-                $sanitizedLocalIds[] = $dirtyId;
+            if (! \preg_match('/^\d{8}[a-z]?$/i', $dirtyId)) {
+                continue;
             }
+
+            $sanitizedLocalIds[] = $dirtyId;
         }
         $localIds = $sanitizedLocalIds;
 

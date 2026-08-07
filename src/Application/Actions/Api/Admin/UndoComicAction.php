@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Application\Attribute\Route;
 use App\Application\Attribute\RequiresAuth;
-
-use App\Application\Attribute\ActionRoute;
+use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
@@ -40,7 +38,7 @@ final readonly class UndoComicAction implements ActionInterface
             $this->comicService->restoreLatestRevision(new ComicId($idStr));
 
             return JsonResponse::success(['message' => "Der Comic {$idStr} wurde auf die vorherige Version zurückgesetzt."]);
-        } catch (\DomainException|\InvalidArgumentException $e) {
+        } catch (\DomainException | \InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (\Throwable $e) {
             return JsonResponse::error('Fehler beim Rückgängigmachen: ' . $e->getMessage(), 500);

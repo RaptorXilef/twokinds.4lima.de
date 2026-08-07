@@ -141,8 +141,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 'message'      => $msg,
                 'character_id' => $charIdStr,
             ]);
-
-        } catch (ValidationException|\InvalidArgumentException $e) {
+        } catch (ValidationException | \InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
         } catch (\Throwable $e) {
             return JsonResponse::error('Ein interner Fehler ist aufgetreten: ' . $e->getMessage(), 500);

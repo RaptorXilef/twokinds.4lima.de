@@ -38,8 +38,10 @@ final readonly class FileRouteCache implements RouteCacheInterface
     public function clearOld(): void
     {
         $oldCache = $this->config->getStoragePath('cache/routes.php');
-        if (\file_exists($oldCache)) {
-            @\unlink($oldCache);
+        if (! \file_exists($oldCache)) {
+            return;
         }
+
+        @\unlink($oldCache);
     }
 }

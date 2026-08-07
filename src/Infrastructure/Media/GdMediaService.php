@@ -37,7 +37,7 @@ final readonly class GdMediaService implements MediaServiceInterface
             return \copy($sourcePath, $targetPath);
         }
 
-        $ratio     = $width > $maxWidth ? ($maxWidth / $width) : 1;
+        $ratio     = $width > $maxWidth ? $maxWidth / $width : 1;
         $newWidth  = (int) \round($width * $ratio);
         $newHeight = (int) \round($height * $ratio);
 
@@ -142,9 +142,11 @@ final readonly class GdMediaService implements MediaServiceInterface
             $oldFile = "$targetDir/$folder/$oldId.webp";
             $newFile = "$targetDir/$folder/$newId.webp";
 
-            if (\file_exists($oldFile)) {
-                @\rename($oldFile, $newFile);
+            if (! \file_exists($oldFile)) {
+                continue;
             }
+
+            @\rename($oldFile, $newFile);
         }
     }
 
@@ -188,7 +190,6 @@ final readonly class GdMediaService implements MediaServiceInterface
         $cropHeight = \min($cropHeight, $srcH - $cropY);
 
         if ($cropWidth <= 0 || $cropHeight <= 0) {
-
             return false;
         }
 
@@ -201,7 +202,6 @@ final readonly class GdMediaService implements MediaServiceInterface
         ]);
 
         if (! $croppedImage) {
-
             return false;
         }
 
@@ -278,9 +278,11 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         foreach (['hires', 'lowres', 'thumbnails', 'social'] as $sub) {
             $path = "$targetDir/$sub";
-            if (! \is_dir($path)) {
-                @\mkdir($path, 0o755, true);
+            if (\is_dir($path)) {
+                continue;
             }
+
+            @\mkdir($path, 0o755, true);
         }
 
         $baseProcessPath = '';
@@ -301,12 +303,14 @@ final readonly class GdMediaService implements MediaServiceInterface
             $baseProcessPath = $lowresPath;
         }
 
-        if ($baseProcessPath !== '') {
-            $this->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$comicId}.webp", 200);
-
-            $socialPath = "$targetDir/social/{$comicId}.jpg";
-            $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
+        if ($baseProcessPath === '') {
+            return;
         }
+
+        $this->generateScaledImage($baseProcessPath, "$targetDir/thumbnails/{$comicId}.webp", 200);
+
+        $socialPath = "$targetDir/social/{$comicId}.jpg";
+        $this->autoGenerateSocialMediaJpg($baseProcessPath, $socialPath);
     }
 
     public function processMassProfileUpload(array $files): int
@@ -320,18 +324,22 @@ final readonly class GdMediaService implements MediaServiceInterface
         $count          = \count($files['name'] ?? []);
 
         for ($i = 0; $i < $count; ++$i) {
-            if ($files['error'][$i] === \UPLOAD_ERR_OK) {
-                $tmpName      = $files['tmp_name'][$i];
-                $originalName = $files['name'][$i];
-
-                $slugifiedName  = $this->slugify($originalName);
-                $nameWithoutExt = \pathinfo($slugifiedName, \PATHINFO_FILENAME);
-                $targetPath     = $targetDir . '/' . $nameWithoutExt . '.webp';
-
-                if ($this->generateScaledImage($tmpName, $targetPath, 1000)) {
-                    ++$processedCount;
-                }
+            if ($files['error'][$i] !== \UPLOAD_ERR_OK) {
+                continue;
             }
+
+            $tmpName      = $files['tmp_name'][$i];
+            $originalName = $files['name'][$i];
+
+            $slugifiedName  = $this->slugify($originalName);
+            $nameWithoutExt = \pathinfo($slugifiedName, \PATHINFO_FILENAME);
+            $targetPath     = $targetDir . '/' . $nameWithoutExt . '.webp';
+
+            if (! $this->generateScaledImage($tmpName, $targetPath, 1000)) {
+                continue;
+            }
+
+            ++$processedCount;
         }
 
         return $processedCount;
@@ -343,9 +351,11 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         foreach (['profiles', 'portraits', 'palettes', 'refsheets'] as $sub) {
             $dir = $baseTargetDir . '/' . $sub;
-            if (! \is_dir($dir)) {
-                @\mkdir($dir, 0o755, true);
+            if (\is_dir($dir)) {
+                continue;
             }
+
+            @\mkdir($dir, 0o755, true);
         }
 
         $result = ['profile' => null, 'main' => null, 'swatch' => null, 'refs' => [], 'warnings' => []];
@@ -390,12 +400,16 @@ final readonly class GdMediaService implements MediaServiceInterface
         if (isset($files['ref_sheets']) && \is_array($files['ref_sheets']['name'])) {
             $refFiles = $files['ref_sheets'];
             for ($i = 0, $c = \count($refFiles['name']); $i < $c; ++$i) {
-                if ($refFiles['error'][$i] === \UPLOAD_ERR_OK) {
-                    $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
-                    if ($this->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
-                        $result['refs'][] = $fileName;
-                    }
+                if ($refFiles['error'][$i] !== \UPLOAD_ERR_OK) {
+                    continue;
                 }
+
+                $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
+                if (! $this->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
+                    continue;
+                }
+
+                $result['refs'][] = $fileName;
             }
         }
 

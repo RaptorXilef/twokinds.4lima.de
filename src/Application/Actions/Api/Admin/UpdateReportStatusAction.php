@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Actions\Api\Admin;
 
-use App\Core\Entity\Report;
 use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
 use App\Application\Contracts\ActionInterface;
@@ -14,6 +13,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\Report;
 use App\Core\Entity\User;
 use App\Core\Service\AuthService;
 use App\Core\Service\ReportService;
@@ -68,7 +68,7 @@ final readonly class UpdateReportStatusAction implements ActionInterface
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
                     if ($user instanceof User && $user->wantsNotificationReport) {
                         $comicIdVal = $report->comicId?->value;
-                        $pageUrl    = in_array($comicIdVal, [null, '', '0'], true)
+                        $pageUrl    = \in_array($comicIdVal, [null, '', '0'], true)
                             ? \rtrim($this->config->getBaseUrl(), '/')
                             : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;
 

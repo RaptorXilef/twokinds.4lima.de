@@ -71,7 +71,6 @@ final readonly class CropSocialMediaAction implements ActionInterface
             }
 
             return JsonResponse::error('Fehler beim Generieren des Bildes (GD Error).', 500);
-
         } catch (\Throwable $e) {
             // Fängt alle fatalen PHP-Fehler (z.B. OOM) als sauberes JSON ab
             return JsonResponse::error('Server-Fehler: ' . $e->getMessage(), 500);

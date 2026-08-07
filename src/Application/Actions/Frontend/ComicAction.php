@@ -65,8 +65,8 @@ final readonly class ComicAction implements ActionInterface
         $latest = $allComics[0];
         $first  = $allComics[\count($allComics) - 1];
 
-        $prev = ($currentIndex < \count($allComics) - 1) ? $allComics[$currentIndex + 1] : null;
-        $next = ($currentIndex > 0) ? $allComics[$currentIndex - 1] : null;
+        $prev = $currentIndex < \count($allComics) - 1 ? $allComics[$currentIndex + 1] : null;
+        $next = $currentIndex > 0 ? $allComics[$currentIndex - 1] : null;
 
         // --- Datum aus ID extrahieren (ignoriert Buchstaben am Ende) ---
         $dateStr     = \substr($comic->id->value, 0, 8);
@@ -87,9 +87,11 @@ final readonly class ComicAction implements ActionInterface
         $comicUsers = [];
         foreach ($comic->userIds as $uid) {
             $u = $this->userRepo->findById($uid);
-            if ($u) {
-                $comicUsers[] = $u;
+            if (! $u) {
+                continue;
             }
+
+            $comicUsers[] = $u;
         }
 
         return $this->renderer->render('pages/frontend/comic', [

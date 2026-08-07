@@ -17,7 +17,7 @@ final readonly class CharacterService
     public function __construct(
         private CharacterRepositoryInterface $characterRepo,
         private CharacterGroupRepositoryInterface $groupRepo,
-        private SiteGeneratorInterface $siteGenerator
+        private SiteGeneratorInterface $siteGenerator,
     ) {
     }
 
@@ -43,9 +43,11 @@ final readonly class CharacterService
             );
 
             // Nur speichern, wenn sich etwas geändert hat
-            if (\count($updatedIds) !== \count($group->characterIds)) {
-                $this->groupRepo->save(new CharacterGroup($group->name, $updatedIds));
+            if (\count($updatedIds) === \count($group->characterIds)) {
+                continue;
             }
+
+            $this->groupRepo->save(new CharacterGroup($group->name, $updatedIds));
         }
 
         // Sitemap sofort aktualisieren

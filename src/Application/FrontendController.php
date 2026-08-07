@@ -114,8 +114,10 @@ final readonly class FrontendController
             return $this->actionFactory->create(Error404Action::class)->execute($req);
         });
 
-        if ($response instanceof ResponseInterface) {
-            $response->send();
+        if (! $response instanceof ResponseInterface) {
+            return;
         }
+
+        $response->send();
     }
 }

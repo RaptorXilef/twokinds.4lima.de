@@ -32,7 +32,6 @@ final readonly class CsrfMiddleware implements MiddlewareInterface
             $stored   = $this->sessionManager->getCsrfToken();
 
             if ($stored === '' || ! \hash_equals($stored, $provided)) {
-
                 // UX-Rettung: Wir speichern die eingegebenen Formulardaten zwischen,
                 // bevor wir die Anfrage ablehnen.
                 $postData = $request->post;

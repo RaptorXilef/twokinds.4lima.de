@@ -18,8 +18,9 @@ final class JsonHelper implements JsonHelperInterface
      * Dekodiert einen JSON- oder JSONC-String in ein assoziatives PHP-Array.
      * Schützt vor Code-Injections und filtert Kommentare vor dem Parsing heraus.
      *
-     * @param  string $json Der rohe JSON-String.
-     * @return array  Assoziatives Daten-Array.
+     * @param string $json Der rohe JSON-String.
+     *
+     * @return array Assoziatives Daten-Array.
      */
     public function decode(string $json): array
     {
@@ -52,8 +53,9 @@ final class JsonHelper implements JsonHelperInterface
     /**
      * Liest eine JSON/JSONC-Datei vom Datenträger ein.
      *
-     * @param  string $path Vollständiger Dateipfad.
-     * @return array  Assoziatives Daten-Array.
+     * @param string $path Vollständiger Dateipfad.
+     *
+     * @return array Assoziatives Daten-Array.
      */
     public function read(string $path): array
     {
