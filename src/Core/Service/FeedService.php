@@ -69,8 +69,9 @@ final readonly class FeedService
             }
 
             $node = \dom_import_simplexml($item);
-            $no   = $node->ownerDocument;
-            $node->appendChild($no->createElement('description', \htmlspecialchars($descContent)));
+            if ($node !== false && $node->ownerDocument !== null) {
+                $node->appendChild($node->ownerDocument->createElement('description', \htmlspecialchars($descContent)));
+            }
 
             $timestamp = $comic->imageUpdatedAt ?? $this->clock->now()->getTimestamp();
             $dt        = (new \DateTimeImmutable())->setTimestamp($timestamp);
@@ -84,6 +85,12 @@ final readonly class FeedService
         $dom->formatOutput       = true;
         $dom->loadXML($xml->asXML());
 
-        return $dom->saveXML();
+        $xmlString = $xml->asXML();
+        if ($xmlString !== false) {
+            $dom->loadXML($xmlString);
+        }
+        $result = $dom->saveXML();
+
+        return $result !== false ? $result : '';
     }
 }

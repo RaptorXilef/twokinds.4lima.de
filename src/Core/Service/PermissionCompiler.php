@@ -29,7 +29,12 @@ final class PermissionCompiler
     private function walk(array $nodes, array $groupPerms, bool $parentAllowed, array &$result): void
     {
         foreach ($nodes as $node) {
-            $key = $node['key'] ?? null;
+            if (! \is_array($node)) {
+                continue;
+            }
+
+            $key = \is_string($node['key'] ?? null) ? $node['key'] : null;
+
             if ($key !== null) {
                 $explicitAllow = \in_array($key, $groupPerms, true) || \in_array('*', $groupPerms, true);
                 $explicitDeny  = \in_array('-' . $key, $groupPerms, true);
@@ -42,11 +47,9 @@ final class PermissionCompiler
                 $isAllowed = $parentAllowed;
             }
 
-            if (! isset($node['children'])) {
-                continue;
+            if (isset($node['children']) && \is_array($node['children'])) {
+                $this->walk($node['children'], $groupPerms, $isAllowed, $result);
             }
-
-            $this->walk($node['children'], $groupPerms, $isAllowed, $result);
         }
     }
 }

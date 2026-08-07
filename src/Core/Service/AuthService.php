@@ -30,8 +30,8 @@ final readonly class AuthService
 
         // 1. Backdoor / Dev-Admin prüfen
         $backdoor = $this->config->get('backdoor');
-        if (\is_array($backdoor) && $identifier === ($backdoor['user'] ?? '') && \password_verify($password, $backdoor['pass'] ?? '')) {
-            $this->setupSession('sys_backdoor', 'admin', $backdoor['label'] ?? 'System-Inhaber');
+        if (\is_array($backdoor) && $identifier === ($backdoor['user'] ?? '') && \password_verify($password, (string) ($backdoor['pass'] ?? ''))) {
+            $this->setupSession('sys_backdoor', 'admin', (string) ($backdoor['label'] ?? 'System-Inhaber'));
             $this->rateLimiter->clearAttempts($ip);
 
             return true;
@@ -40,10 +40,10 @@ final readonly class AuthService
         // HIER IST SYSTEMBETREUER!
         $superCfg = $this->config->get('superadmin');
         if (\is_array($superCfg) && $identifier === ($superCfg['user'] ?? '')) {
-            $storedPass = $superCfg['pass'] ?? '';
+            $storedPass = (string) ($superCfg['pass'] ?? '');
             // Prüft entweder auf den Klartext (altes KGA-Design) oder Hash
             if ($password === $storedPass || \password_verify($password, $storedPass)) {
-                $this->setupSession('sys_superadmin', 'admin', $superCfg['label'] ?? 'Systembetreuer');
+                $this->setupSession('sys_superadmin', 'admin', (string) ($superCfg['label'] ?? 'Systembetreuer'));
                 $this->rateLimiter->clearAttempts($ip);
 
                 return true;
@@ -125,8 +125,11 @@ final readonly class AuthService
             return false;
         }
 
+        $backdoor      = $this->config->get('backdoor');
+        $backdoorLabel = \is_array($backdoor) ? (string) ($backdoor['label'] ?? '') : '';
+
         return $this->sessionManager->getUserId() !== ''
-            || $this->sessionManager->getAdminUser() === ($this->config->get('backdoor')['label'] ?? '');
+            || $this->sessionManager->getAdminUser() === $backdoorLabel;
     }
 
     public function hasPermission(string $permission): bool
@@ -160,8 +163,10 @@ final readonly class AuthService
         $rolePerms = isset($roles[$roleId]) ? $roles[$roleId]->permissions : [];
 
         $structure = $this->config->get('structure', []);
-        $compiler  = new PermissionCompiler();
-
+        if (! \is_array($structure)) {
+            $structure = [];
+        }
+        $compiler = new PermissionCompiler();
         $this->sessionManager->setPermissions($compiler->compile($structure, $rolePerms));
     }
 

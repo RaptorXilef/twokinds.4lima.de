@@ -50,7 +50,7 @@ final readonly class ReportService
         // 2. Report Entity aufbauen (Validierung passiert automatisch in den VOs und der Entity)
         $report = new Report(
             id: new ReportId(\uniqid('report_', true)),
-            comicId: $comicIdStr !== null ? new ComicId($comicIdStr) : null, // Check ob null
+            comicId: $comicIdStr !== null && $comicIdStr !== '' ? new ComicId($comicIdStr) : null, // Check ob null
             userId: $userId,
             date: $now,
             status: 'open',

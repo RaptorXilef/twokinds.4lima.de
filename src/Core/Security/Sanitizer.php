@@ -14,7 +14,9 @@ final class Sanitizer
      */
     public static function string(mixed $input): string
     {
-        return \trim(\strip_tags((string) $input));
+        $str = \is_scalar($input) || $input instanceof \Stringable ? (string) $input : '';
+
+        return \trim(\strip_tags($str));
     }
 
     /**
@@ -22,7 +24,8 @@ final class Sanitizer
      */
     public static function email(mixed $input): string
     {
-        $sanitized = \filter_var(\trim((string) $input), \FILTER_SANITIZE_EMAIL);
+        $str       = \is_scalar($input) || $input instanceof \Stringable ? (string) $input : '';
+        $sanitized = \filter_var(\trim($str), \FILTER_SANITIZE_EMAIL);
 
         return $sanitized !== false ? $sanitized : '';
     }
@@ -32,8 +35,7 @@ final class Sanitizer
      */
     public static function html(mixed $input): string
     {
-        $inputStr = (string) $input;
-
+        $inputStr = \is_scalar($input) || $input instanceof \Stringable ? (string) $input : '';
         if (\trim($inputStr) === '') {
             return '';
         }
@@ -64,9 +66,12 @@ final class Sanitizer
         $name = \mb_strtolower($name, 'UTF-8');
         $name = \str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $name);
 
-        $name = \preg_replace('/[^a-z0-9]+/', '-', $name);
-        $name = \trim(\preg_replace('/-+/', '-', (string) $name), '-');
+        $replaced = \preg_replace('/[^a-z0-9]+/', '-', $name);
+        $name     = \is_string($replaced) ? $replaced : '';
 
-        return $name . $ext;
+        $replaced2 = \preg_replace('/-+/', '-', $name);
+        $name      = \is_string($replaced2) ? $replaced2 : '';
+
+        return \trim($name, '-') . $ext;
     }
 }

@@ -14,7 +14,7 @@ final readonly class EmailAddress implements \Stringable
         if ($value === '') {
             throw new \InvalidArgumentException('E-Mail-Adresse darf nicht leer sein.');
         }
-        if (! \filter_var($value, \FILTER_VALIDATE_EMAIL)) {
+        if (\filter_var($value, \FILTER_VALIDATE_EMAIL) === false) {
             throw new \InvalidArgumentException("Ungültiges E-Mail-Format: {$value}");
         }
         $this->value = \strtolower($value);

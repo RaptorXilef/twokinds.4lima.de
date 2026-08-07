@@ -25,7 +25,7 @@ final readonly class Username implements \Stringable
         // Das 'u' am Ende steht für UTF-8-Sicherheit.
         // \p{Latin} erlaubt z.B. a-z, ä, ö, ü, é, è, å, ø
         // Es blockiert z.B. Kyrillisch, Chinesisch, Arabisch, Emojis und unsichtbare Steuerzeichen.
-        if (! \preg_match('/^[\p{Latin}0-9 \-_.]+$/u', $val)) {
+        if (\preg_match('/^[\p{Latin}0-9 \-_.]+$/u', $val) !== 1) {
             throw new \InvalidArgumentException('Der Benutzername enthält ungültige Zeichen. Erlaubt sind nur Buchstaben, Zahlen, Leerzeichen, Binde- und Unterstriche sowie Punkte.');
         }
 

@@ -28,7 +28,8 @@ final readonly class MagicLinkService
         $code  = \strtoupper(\substr(\bin2hex(\random_bytes(4)), 0, 6));
 
         $links    = $this->repository->loadAll();
-        $duration = (int) $this->config->get('magic_link_duration', 15); // 15 Min Gültig
+        $durationRaw = $this->config->get('magic_link_duration', 15);
+        $duration = \is_numeric($durationRaw) ? (int) $durationRaw : 15; // 15 Min Gültig
 
         $links[$token] = new MagicLink(
             $token,
