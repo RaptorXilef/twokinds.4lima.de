@@ -33,7 +33,8 @@ final class PermissionCompiler
                 continue;
             }
 
-            $key = \is_string($node['key'] ?? null) ? $node['key'] : null;
+            /** @var string|null $key */
+            $key = isset($node['key']) && \is_string($node['key']) ? $node['key'] : null;
 
             if ($key !== null) {
                 $explicitAllow = \in_array($key, $groupPerms, true) || \in_array('*', $groupPerms, true);
@@ -48,7 +49,9 @@ final class PermissionCompiler
             }
 
             if (isset($node['children']) && \is_array($node['children'])) {
-                $this->walk($node['children'], $groupPerms, $isAllowed, $result);
+                /** @var array<int|string, mixed> $children */
+                $children = $node['children'];
+                $this->walk($children, $groupPerms, $isAllowed, $result);
             }
         }
     }

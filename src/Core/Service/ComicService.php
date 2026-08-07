@@ -99,26 +99,7 @@ final readonly class ComicService
             throw new \DomainException('Keine vorherige Version (Snapshot) für diesen Comic gefunden.');
         }
 
-        $charIds = [];
-        foreach ($revisionData['character_ids'] ?? [] as $cid) {
-            try {
-                $charIds[] = new CharacterId($cid);
-            } catch (\InvalidArgumentException) {
-            }
-        }
-
-        $restoredComic = new ComicPage(
-            id: $id,
-            type: $revisionData['type'] ?? 'Comicseite',
-            name: $revisionData['name'] ?? '',
-            transcript: $revisionData['transcript'] ?? null,
-            chapterId: $revisionData['chapter_id'] ?? null,
-            characterIds: $charIds,
-            originalUrl: $revisionData['original_url'] ?? '',
-            sketchUrl: $revisionData['sketch_url'] ?? '',
-            userIds: $revisionData['user_ids'] ?? [],
-            imageUpdatedAt: $revisionData['image_updated_at'] ?? null,
-        );
+        $restoredComic = $this->hydrateRevisionData($id, $revisionData);
 
         // MAGIC: Wir rufen saveComic() auf statt das Repository!
         // Dadurch wird der JETZIGE Zustand gesichert, bevor das Backup geladen wird.
@@ -150,33 +131,56 @@ final readonly class ComicService
             throw new \DomainException('Kein gelöschter Comic im Papierkorb gefunden.');
         }
 
-        $id = new ComicId($revisionData['comic_id']);
+        $idRaw = \is_string($revisionData['comic_id'] ?? null) ? $revisionData['comic_id'] : '';
+        $id    = new ComicId($idRaw);
 
-        $charIds = [];
-        foreach ($revisionData['character_ids'] ?? [] as $cid) {
-            try {
-                $charIds[] = new CharacterId($cid);
-            } catch (\InvalidArgumentException) {
-            }
-        }
+        $restoredComic = $this->hydrateRevisionData($id, $revisionData);
 
-        $restoredComic = new ComicPage(
-            id: $id,
-            type: $revisionData['type'] ?? 'Comicseite',
-            name: $revisionData['name'] ?? '',
-            transcript: $revisionData['transcript'] ?? null,
-            chapterId: $revisionData['chapter_id'] ?? null,
-            characterIds: $charIds,
-            originalUrl: $revisionData['original_url'] ?? '',
-            sketchUrl: $revisionData['sketch_url'] ?? '',
-            userIds: $revisionData['user_ids'] ?? [],
-            imageUpdatedAt: $revisionData['image_updated_at'] ?? null,
-        );
-
-        // Wir legen ihn wieder regulär an
         $this->comicRepository->save($restoredComic);
         $this->siteGenerator->generateAll();
 
         return ['id' => $id->value];
+    }
+
+    /**
+     * @param array<string, mixed> $revisionData
+     */
+    private function hydrateRevisionData(ComicId $id, array $revisionData): ComicPage
+    {
+        $charIds    = [];
+        $rawCharIds = $revisionData['character_ids'] ?? [];
+        if (\is_array($rawCharIds)) {
+            foreach ($rawCharIds as $cid) {
+                if (\is_string($cid)) {
+                    try {
+                        $charIds[] = new CharacterId($cid);
+                    } catch (\InvalidArgumentException) {
+                    }
+                }
+            }
+        }
+
+        $userIds    = [];
+        $rawUserIds = $revisionData['user_ids'] ?? [];
+        if (\is_array($rawUserIds)) {
+            foreach ($rawUserIds as $uid) {
+                if (\is_string($uid)) {
+                    $userIds[] = $uid;
+                }
+            }
+        }
+
+        return new ComicPage(
+            id: $id,
+            type: \is_string($revisionData['type'] ?? null) ? $revisionData['type'] : 'Comicseite',
+            name: \is_string($revisionData['name'] ?? null) ? $revisionData['name'] : '',
+            transcript: \is_string($revisionData['transcript'] ?? null) ? $revisionData['transcript'] : null,
+            chapterId: \is_string($revisionData['chapter_id'] ?? null) ? $revisionData['chapter_id'] : null,
+            characterIds: $charIds,
+            originalUrl: \is_string($revisionData['original_url'] ?? null) ? $revisionData['original_url'] : '',
+            sketchUrl: \is_string($revisionData['sketch_url'] ?? null) ? $revisionData['sketch_url'] : '',
+            userIds: $userIds,
+            imageUpdatedAt: \is_int($revisionData['image_updated_at'] ?? null) ? $revisionData['image_updated_at'] : null,
+        );
     }
 }

@@ -27,9 +27,15 @@ final readonly class MagicLinkService
         $token = \bin2hex(\random_bytes(32));
         $code  = \strtoupper(\substr(\bin2hex(\random_bytes(4)), 0, 6));
 
-        $links    = $this->repository->loadAll();
+        $links       = $this->repository->loadAll();
         $durationRaw = $this->config->get('magic_link_duration', 15);
-        $duration = \is_numeric($durationRaw) ? (int) $durationRaw : 15; // 15 Min Gültig
+
+        $duration = 15; // 15 Min Gültig
+        if (\is_int($durationRaw)) {
+            $duration = $durationRaw;
+        } elseif (\is_string($durationRaw) && \is_numeric($durationRaw)) {
+            $duration = (int) $durationRaw;
+        }
 
         $links[$token] = new MagicLink(
             $token,
@@ -45,11 +51,13 @@ final readonly class MagicLinkService
 
     public function peekToken(string $token): ?string
     {
+        /** @var array<string, MagicLink> $links */
         $links = $this->repository->loadAll();
         $now   = $this->clock->now();
 
-        if (isset($links[$token]) && ! $links[$token]->isExpired($now)) {
-            return $links[$token]->email->value;
+        $magicLink = $links[$token] ?? null;
+        if ($magicLink instanceof MagicLink && ! $magicLink->isExpired($now)) {
+            return $magicLink->email->value;
         }
 
         return null;
@@ -57,12 +65,17 @@ final readonly class MagicLinkService
 
     public function verifyAny(string $input): ?string
     {
+        /** @var array<string, MagicLink> $links */
         $links      = $this->repository->loadAll();
         $now        = $this->clock->now();
         $trimmed    = \trim($input);
         $foundEmail = null;
 
         foreach ($links as $token => $magicLink) {
+            if (! $magicLink instanceof MagicLink) {
+                continue;
+            }
+
             if ($magicLink->isExpired($now)) {
                 unset($links[$token]);
 
