@@ -83,6 +83,7 @@
     "chk:stan-create-baseline": "phpstan analyse --generate-baseline",
     "// ------": "",
     "chk:stan": "phpstan analyse --memory-limit=2G",
+    "chk:stan:core": "phpstan analyse src/Core --memory-limit=2G",
     "chk:cs": "phpcs",
     "chk:style": "php-cs-fixer fix --dry-run --diff --no-interaction",
     "chk:md": "phpmd analyze src --format text --ruleset phpmd.xml.dist",

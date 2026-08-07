@@ -11,24 +11,18 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 function setupReportTest(mixed $test): object
 {
-    return new class($test) {
-        public MockObject&ReportRepositoryInterface $reportRepo;
+    // Erlaubt den Zugriff auf die protected 'createMock' Methode
+    $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-        public MockObject&ClockInterface $clock;
-
+    return new class($mock(ReportRepositoryInterface::class), $mock(ClockInterface::class)) {
         public ReportService $service;
 
-        public function __construct(mixed $test)
-        {
-            // Mocks initialisieren
-            $this->reportRepo = $test->createMock(ReportRepositoryInterface::class);
-            $this->clock      = $test->createMock(ClockInterface::class);
-
+        public function __construct(
+            public MockObject&ReportRepositoryInterface $reportRepo,
+            public MockObject&ClockInterface $clock,
+        ) {
             // Service mit gemockten Abhängigkeiten instanziieren
-            $this->service = new ReportService(
-                $this->reportRepo,
-                $this->clock,
-            );
+            $this->service = new ReportService($this->reportRepo, $this->clock);
         }
     };
 }

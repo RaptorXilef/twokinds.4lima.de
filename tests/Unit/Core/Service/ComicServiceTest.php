@@ -16,24 +16,18 @@ use PHPUnit\Framework\MockObject\MockObject;
  */
 function setupComicTest(mixed $test): object
 {
-    return new class($test) {
-        public MockObject&ComicRepositoryInterface $comicRepo;
+    // Erlaubt den Zugriff auf die protected 'createMock' Methode
+    $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-        public MockObject&ComicRevisionRepositoryInterface $revisionRepo;
-
-        public MockObject&ClockInterface $clock;
-
-        public MockObject&SiteGeneratorInterface $siteGen;
-
+    return new class($mock(ComicRepositoryInterface::class), $mock(ComicRevisionRepositoryInterface::class), $mock(ClockInterface::class), $mock(SiteGeneratorInterface::class)) {
         public ComicService $service;
 
-        public function __construct(mixed $test)
-        {
-            $this->comicRepo    = $test->createMock(ComicRepositoryInterface::class);
-            $this->revisionRepo = $test->createMock(ComicRevisionRepositoryInterface::class);
-            $this->clock        = $test->createMock(ClockInterface::class);
-            $this->siteGen      = $test->createMock(SiteGeneratorInterface::class);
-
+        public function __construct(
+            public MockObject&ComicRepositoryInterface $comicRepo,
+            public MockObject&ComicRevisionRepositoryInterface $revisionRepo,
+            public MockObject&ClockInterface $clock,
+            public MockObject&SiteGeneratorInterface $siteGen,
+        ) {
             $this->service = new ComicService(
                 $this->comicRepo,
                 $this->revisionRepo,

@@ -16,7 +16,7 @@ parameters:
     # Level 5 prüft Typen, erlaubt aber noch etwas Flexibilität.
     # Level 9 wäre "Maximaler Schmerz" (nur für neue Projekte empfohlen).
     # TODO: Vor release auf "max" setzen ohne "
-    level: 0
+    level: 6
     # Erstmal 0 um Architekturbrüche zu finden, danach wieder 6
 
     # Welche Ordner sollen analysiert werden?
@@ -69,7 +69,7 @@ parameters:
 
         # Wir ignorieren die strict-rules empty() Meldungen, da sie für die Architektur irrelevant sind
         # TODO Später auskommentieren, wenn Architekturupdate abgeschlossen ist
-        - '#Construct empty\(\) is not allowed#'
+        # - '#Construct empty\(\) is not allowed#'
 
     # =========================================================================
     # ARCHITEKTUR: VERBOTENE KLASSEN
