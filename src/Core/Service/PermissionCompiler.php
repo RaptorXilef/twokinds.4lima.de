@@ -7,8 +7,8 @@ namespace App\Core\Service;
 final class PermissionCompiler
 {
     /**
-     * @param  array<string, mixed> $structure
-     * @param  array<int, string>   $groupPermissions
+     * @param  array<int|string, mixed> $structure
+     * @param  array<int, string>       $groupPermissions
      * @return array<string, bool>
      */
     public function compile(array $structure, array $groupPermissions): array
@@ -22,9 +22,9 @@ final class PermissionCompiler
     }
 
     /**
-     * @param array<string, mixed> $nodes
-     * @param array<int, string>   $groupPerms
-     * @param array<string, bool>  &$result
+     * @param array<int|string, mixed> $nodes
+     * @param array<int, string>       $groupPerms
+     * @param array<string, bool>      &$result
      */
     private function walk(array $nodes, array $groupPerms, bool $parentAllowed, array &$result): void
     {

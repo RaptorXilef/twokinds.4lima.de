@@ -28,25 +28,38 @@ final readonly class AuthService
             throw new \RuntimeException('Zu viele fehlgeschlagene Login-Versuche. Ihre IP-Adresse wurde für 15 Minuten gesperrt.');
         }
 
+        // ! Wichtig!
+        /** @Developer TODO Vor dem nutzen auf dem Produktivserver deaktivieren! */
         // 1. Backdoor / Dev-Admin prüfen
         $backdoor = $this->config->get('backdoor');
-        if (\is_array($backdoor) && $identifier === ($backdoor['user'] ?? '') && \password_verify($password, (string) ($backdoor['pass'] ?? ''))) {
-            $this->setupSession('sys_backdoor', 'admin', (string) ($backdoor['label'] ?? 'System-Inhaber'));
-            $this->rateLimiter->clearAttempts($ip);
+        if (\is_array($backdoor)) {
+            $bdUser  = \is_string($backdoor['user'] ?? null) ? $backdoor['user'] : '';
+            $bdPass  = \is_string($backdoor['pass'] ?? null) ? $backdoor['pass'] : '';
+            $bdLabel = \is_string($backdoor['label'] ?? null) ? $backdoor['label'] : 'System-Inhaber';
 
-            return true;
+            if ($identifier === $bdUser && $bdUser !== '' && \password_verify($password, $bdPass)) {
+                $this->setupSession('sys_backdoor', 'admin', $bdLabel);
+                $this->rateLimiter->clearAttempts($ip);
+
+                return true;
+            }
         }
 
         // HIER IST SYSTEMBETREUER!
         $superCfg = $this->config->get('superadmin');
-        if (\is_array($superCfg) && $identifier === ($superCfg['user'] ?? '')) {
-            $storedPass = (string) ($superCfg['pass'] ?? '');
-            // Prüft entweder auf den Klartext (altes KGA-Design) oder Hash
-            if ($password === $storedPass || \password_verify($password, $storedPass)) {
-                $this->setupSession('sys_superadmin', 'admin', (string) ($superCfg['label'] ?? 'Systembetreuer'));
-                $this->rateLimiter->clearAttempts($ip);
+        if (\is_array($superCfg)) {
+            $saUser  = \is_string($superCfg['user'] ?? null) ? $superCfg['user'] : '';
+            $saPass  = \is_string($superCfg['pass'] ?? null) ? $superCfg['pass'] : '';
+            $saLabel = \is_string($superCfg['label'] ?? null) ? $superCfg['label'] : 'Systembetreuer';
 
-                return true;
+            if ($identifier === $saUser && $saUser !== '') {
+                // Prüft entweder auf den Klartext (altes KGA-Design) oder Hash
+                if ($password === $saPass || \password_verify($password, $saPass)) {
+                    $this->setupSession('sys_superadmin', 'admin', $saLabel);
+                    $this->rateLimiter->clearAttempts($ip);
+
+                    return true;
+                }
             }
         }
 
@@ -126,7 +139,7 @@ final readonly class AuthService
         }
 
         $backdoor      = $this->config->get('backdoor');
-        $backdoorLabel = \is_array($backdoor) ? (string) ($backdoor['label'] ?? '') : '';
+        $backdoorLabel = \is_array($backdoor) && \is_string($backdoor['label'] ?? null) ? $backdoor['label'] : '';
 
         return $this->sessionManager->getUserId() !== ''
             || $this->sessionManager->getAdminUser() === $backdoorLabel;

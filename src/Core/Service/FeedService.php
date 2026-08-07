@@ -69,7 +69,7 @@ final readonly class FeedService
             }
 
             $node = \dom_import_simplexml($item);
-            if ($node !== false && $node->ownerDocument !== null) {
+            if ($node instanceof \DOMElement && $node->ownerDocument !== null) {
                 $node->appendChild($node->ownerDocument->createElement('description', \htmlspecialchars($descContent)));
             }
 
@@ -83,14 +83,13 @@ final readonly class FeedService
         $dom                     = new \DOMDocument('1.0');
         $dom->preserveWhiteSpace = false;
         $dom->formatOutput       = true;
-        $dom->loadXML($xml->asXML());
 
         $xmlString = $xml->asXML();
-        if ($xmlString !== false) {
+        if (\is_string($xmlString) && $xmlString !== '') {
             $dom->loadXML($xmlString);
         }
         $result = $dom->saveXML();
 
-        return $result !== false ? $result : '';
+        return \is_string($result) ? $result : '';
     }
 }

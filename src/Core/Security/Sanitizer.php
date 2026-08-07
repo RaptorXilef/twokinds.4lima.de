@@ -14,7 +14,7 @@ final class Sanitizer
      */
     public static function string(mixed $input): string
     {
-        $str = \is_scalar($input) || $input instanceof \Stringable ? (string) $input : '';
+        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof \Stringable ? (string) $input : '');
 
         return \trim(\strip_tags($str));
     }
@@ -24,7 +24,7 @@ final class Sanitizer
      */
     public static function email(mixed $input): string
     {
-        $str       = \is_scalar($input) || $input instanceof \Stringable ? (string) $input : '';
+        $str       = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof \Stringable ? (string) $input : '');
         $sanitized = \filter_var(\trim($str), \FILTER_SANITIZE_EMAIL);
 
         return $sanitized !== false ? $sanitized : '';
@@ -35,7 +35,7 @@ final class Sanitizer
      */
     public static function html(mixed $input): string
     {
-        $inputStr = \is_scalar($input) || $input instanceof \Stringable ? (string) $input : '';
+        $inputStr = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof \Stringable ? (string) $input : '');
         if (\trim($inputStr) === '') {
             return '';
         }
