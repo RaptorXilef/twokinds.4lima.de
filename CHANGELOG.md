@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.15.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.15.0...v6.15.1) (2026-08-07)
+
+### 🐛 Bug Fixes
+
+* **core:** Resolve PermissionCompiler inheritance bug and fix tests ([34611dc](https://github.com/RaptorXilef/twokinds.4lima.de/commit/34611dc0d84a36a55bf28cffc0d2a27316bd1987))
+
+### 🧪 Tests
+
+* **core:** Add unit tests for AuthService and PermissionCompiler ([20654e7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/20654e799a341bfeed1a19fd778734a9d81b8740))
+* **core:** Add unit tests for CharacterService and MagicLinkService ([8790960](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8790960f6792686cff04daf3b0ba19d4a78621e7))
+* **core:** Add unit tests for ValueObjects and fix flaky test assertions ([960bb81](https://github.com/RaptorXilef/twokinds.4lima.de/commit/960bb816ab289383d5eb6b97e1c11fed9c53d73d))
+* **core:** Fix flaky Username value object test by using unstrippable invalid characters ([9f556b5](https://github.com/RaptorXilef/twokinds.4lima.de/commit/9f556b587548807111d22f91a2d3dc9e911eafa7))
+
 ## [6.15.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.14.1...v6.15.0) (2026-08-07)
 
 ### 🚀 Features
