@@ -46,7 +46,9 @@ final readonly class UploadComicMediaAction implements ActionInterface
 
             $comicId = new ComicId($comicIdStr);
             $comic   = $this->comicRepo->findById($comicId);
-            $force   = ! empty($request->post['force']);
+
+            $fRaw  = $request->post['force'] ?? false;
+            $force = $fRaw === true || $fRaw === 1 || $fRaw === '1' || $fRaw === 'true' || $fRaw === 'on';
 
             // Wenn Comic nicht existiert UND kein force-Flag gesetzt ist, brich ab und frag nach
             if ($comic === null && ! $force) {

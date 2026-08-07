@@ -20,13 +20,15 @@ final readonly class GetTranscriptAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $idStr = \trim((string) ($request->get['id'] ?? ''));
-        if ($idStr === '' || ! \preg_match('/^\d{8}[a-z]?$/i', $idStr)) {
+        $idRaw = $request->get['id'] ?? '';
+        $idStr = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+
+        if ($idStr === '' || \preg_match('/^\d{8}[a-z]?$/i', $idStr) !== 1) {
             return JsonResponse::error('Ungültige oder fehlende Comic-ID.', 400);
         }
 
         $comic = $this->comicRepo->findById(new ComicId($idStr));
-        if (! $comic) {
+        if ($comic === null) {
             return JsonResponse::error('Comic nicht gefunden.', 404);
         }
 

@@ -26,7 +26,8 @@ final readonly class CharacterDetailAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $idOrName = \urldecode($request->input['id'] ?? '');
+        $idRaw    = $request->input['id'] ?? '';
+        $idOrName = \urldecode(\is_scalar($idRaw) ? (string) $idRaw : '');
 
         if ($idOrName === '') {
             return new RedirectResponse('/charaktere');
@@ -35,7 +36,7 @@ final readonly class CharacterDetailAction implements ViewActionInterface
         $character = null;
 
         // 1. Ist es eine moderne ID (char_XXXX)?
-        if (\preg_match('/^char_\d+$/', $idOrName)) {
+        if (\preg_match('/^char_\d+$/', $idOrName) === 1) {
             try {
                 $character = $this->charRepo->findById(new CharacterId($idOrName));
             } catch (\InvalidArgumentException) {

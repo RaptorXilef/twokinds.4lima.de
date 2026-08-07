@@ -54,10 +54,16 @@ final readonly class UpdateProfileAction implements ActionInterface
 
         // Aktion: Newsletter
         if ($actionType === 'newsletter') {
-            $wantsNews  = ! empty($request->post['wants_newsletter']);
-            $wantsTrans = ! empty($request->post['wants_newsletter_transcript']);
-            $wantsRep   = ! empty($request->post['wants_notification_report']);
-            $updated    = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans, $wantsRep);
+            $wnRaw     = $request->post['wants_newsletter'] ?? false;
+            $wantsNews = $wnRaw === true || $wnRaw === 1 || $wnRaw === '1' || $wnRaw === 'true' || $wnRaw === 'on';
+
+            $wtRaw      = $request->post['wants_newsletter_transcript'] ?? false;
+            $wantsTrans = $wtRaw === true || $wtRaw === 1 || $wtRaw === '1' || $wtRaw === 'true' || $wtRaw === 'on';
+
+            $wrRaw    = $request->post['wants_notification_report'] ?? false;
+            $wantsRep = $wrRaw === true || $wrRaw === 1 || $wrRaw === '1' || $wrRaw === 'true' || $wrRaw === 'on';
+
+            $updated = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans, $wantsRep);
             $this->userRepository->save($updated);
 
             return JsonResponse::success(['message' => 'Benachrichtigungs-Einstellungen aktualisiert!']);
@@ -171,15 +177,17 @@ final readonly class UpdateProfileAction implements ActionInterface
                         continue;
                     }
 
-                    // Wir wissen jetzt sicher, dass es ein bool(false) oder ein string ist.
-                    // Da wir !== false abfragen, MUSS es ein string sein!
-                    if (\is_string($cleanLink)) {
-                        $socialLinks[] = $cleanLink;
+                    // Wir wissen jetzt sicher, dass es ein string ist.
+                    if (!\is_string($cleanLink)) {
+                        continue;
                     }
+
+                    $socialLinks[] = $cleanLink;
                 }
             }
 
-            $publicBookmarks = ! empty($request->post['public_bookmarks']);
+            $pbRaw           = $request->post['public_bookmarks'] ?? false;
+            $publicBookmarks = $pbRaw === true || $pbRaw === 1 || $pbRaw === '1' || $pbRaw === 'true' || $pbRaw === 'on';
 
             $updated = new User(
                 $user->id,

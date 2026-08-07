@@ -19,8 +19,9 @@ final readonly class ResetPasswordAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $token = $request->get['token'] ?? '';
-        $email = $this->magicLinkService->peekToken($token);
+        $tokenRaw = $request->get['token'] ?? '';
+        $token    = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
+        $email    = $this->magicLinkService->peekToken($token);
 
         return $this->renderer->render('pages/frontend/reset_password', [
             'pageTitle'    => 'Neues Passwort festlegen',

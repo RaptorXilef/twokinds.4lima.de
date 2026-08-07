@@ -30,14 +30,16 @@ final readonly class GetComicAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $idStr = \trim((string) ($request->get['id'] ?? ''));
+        $idRaw = $request->get['id'] ?? '';
+        $idStr = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+
         if ($idStr === '') {
             return JsonResponse::error('Keine Comic-ID angegeben.', 400);
         }
 
         try {
             $comic = $this->comicRepo->findById(new ComicId($idStr));
-            if (! $comic) {
+            if ($comic === null) {
                 return JsonResponse::error('Comic nicht gefunden.', 404);
             }
 
@@ -51,7 +53,7 @@ final readonly class GetComicAction implements ActionInterface
                 'transcript'  => $comic->transcript ?? '',
                 'chapterId'   => $comic->chapterId ?? '',
                 'characters'  => $charIds,
-                'users'       => $comic->userIds ?? [],
+                'users'       => $comic->userIds, // Keine ?? [] mehr nötig, da array<int, string> garantiert
                 'originalUrl' => $comic->originalUrl,
                 'sketchUrl'   => $comic->sketchUrl,
             ];

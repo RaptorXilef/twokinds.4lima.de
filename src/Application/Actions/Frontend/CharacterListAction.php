@@ -37,21 +37,21 @@ final readonly class CharacterListAction implements ViewActionInterface
         ];
 
         foreach ($characters as $c) {
-            if ($c->gender) {
+            if ($c->gender !== null && $c->gender !== '') {
                 $filterData['gender'][$c->gender] = true;
             }
-            if ($c->age) {
+            if ($c->age !== null && $c->age !== '') {
                 $filterData['age'][$c->age] = true;
             }
-            if ($c->species) {
+            if ($c->species !== null && $c->species !== '') {
                 $filterData['species'][$c->species] = true;
             }
-            if ($c->subspecies) {
+            if ($c->subspecies !== null && $c->subspecies !== '') {
                 $filterData['subspecies'][$c->subspecies] = true;
             }
 
             // Komma-separierte Listen (Ränge, Sprachen) aufteilen
-            if ($c->rank) {
+            if ($c->rank !== null && $c->rank !== '') {
                 foreach (\array_map(trim(...), \explode(',', $c->rank)) as $r) {
                     if ($r === '') {
                         continue;
@@ -60,7 +60,7 @@ final readonly class CharacterListAction implements ViewActionInterface
                     $filterData['rank'][$r] = true;
                 }
             }
-            if (! $c->languages) {
+            if ($c->languages === null || $c->languages === '') {
                 continue;
             }
 

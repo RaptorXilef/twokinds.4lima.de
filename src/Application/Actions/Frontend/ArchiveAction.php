@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\Entity\Chapter;
 
 #[Route('GET', '/archiv')]
 final readonly class ArchiveAction implements ViewActionInterface
@@ -23,7 +24,9 @@ final readonly class ArchiveAction implements ViewActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $comics   = $this->comicRepository->findAll();
+        $comics = $this->comicRepository->findAll();
+
+        /** @var array<int, Chapter> $chapters */
         $chapters = $this->chapterRepository->findAll();
 
         // Comics nach Kapitel gruppieren

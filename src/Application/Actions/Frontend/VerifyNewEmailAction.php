@@ -34,16 +34,17 @@ final readonly class VerifyNewEmailAction implements ViewActionInterface
             return new RedirectResponse('/login');
         }
 
-        $token       = $request->get['token'] ?? '';
+        $tokenRaw    = $request->get['token'] ?? '';
+        $token       = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
         $newEmailStr = $this->magicLinkService->verifyAny($token);
 
-        if (! $newEmailStr) {
+        if ($newEmailStr === null) {
             $this->sessionManager->addFlash('error', 'Der Bestätigungslink ist ungültig oder abgelaufen.');
 
             return new RedirectResponse('/profil');
         }
 
-        if ($this->userRepository->findByEmail($newEmailStr)) {
+        if ($this->userRepository->findByEmail($newEmailStr) !== null) {
             $this->sessionManager->addFlash('error', 'Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.');
 
             return new RedirectResponse('/profil');
@@ -52,7 +53,7 @@ final readonly class VerifyNewEmailAction implements ViewActionInterface
         $userId = $this->sessionManager->getUserId();
         $user   = $this->userRepository->findById($userId);
 
-        if ($user) {
+        if ($user !== null) {
             $updatedUser = new User(
                 $user->id,
                 $user->username,

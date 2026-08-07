@@ -57,13 +57,16 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
                 }
 
                 $newNames[] = $name;
-                $manualSort = ! empty($groupData['manual_sort']);
+
+                $msRaw      = $groupData['manual_sort'] ?? false;
+                $manualSort = $msRaw === true || $msRaw === 1 || $msRaw === '1' || $msRaw === 'true' || $msRaw === 'on';
 
                 $charIds = [];
                 // Eindeutige Zuweisung, falls ein Charakter versehentlich doppelt reingezogen wurde
                 $charsRaw = $groupData['characters'] ?? [];
 
                 // Wir müssen garantieren, dass es ein Array von Strings ist, bevor wir unique aufrufen
+                /** @var array<int, string> $stringChars */
                 $stringChars = [];
                 if (\is_array($charsRaw)) {
                     foreach ($charsRaw as $cr) {

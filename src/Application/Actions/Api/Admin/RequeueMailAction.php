@@ -49,7 +49,8 @@ final readonly class RequeueMailAction implements ActionInterface
             return JsonResponse::error('E-Mail nicht im Verlauf gefunden.', 404);
         }
 
-        $dataRaw  = $log['data'] ?? [];
+        $dataRaw = $log['data'] ?? [];
+        /** @var array<string, mixed> $data */
         $data     = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
         $template = \is_string($log['template'] ?? null) ? $log['template'] : '';
 

@@ -56,7 +56,7 @@ final readonly class ComicAction implements ActionInterface
             $currentIndex = 0;
         }
 
-        if (! $comic) {
+        if ($comic === null) {
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Comic nicht gefunden.'], 404);
         }
 
@@ -71,7 +71,7 @@ final readonly class ComicAction implements ActionInterface
         // --- Datum aus ID extrahieren (ignoriert Buchstaben am Ende) ---
         $dateStr     = \substr($comic->id->value, 0, 8);
         $dateObj     = \DateTimeImmutable::createFromFormat('Ymd', $dateStr);
-        $displayDate = $dateObj ? $dateObj->format('d.m.Y') : $dateStr;
+        $displayDate = $dateObj !== false ? $dateObj->format('d.m.Y') : $dateStr;
 
         // --- Dynamischer Browser-Tab-Titel ---
         $pageTitle = $comic->name !== '' ? $comic->name : "Seite vom {$displayDate}";
@@ -87,7 +87,7 @@ final readonly class ComicAction implements ActionInterface
         $comicUsers = [];
         foreach ($comic->userIds as $uid) {
             $u = $this->userRepo->findById($uid);
-            if (! $u) {
+            if ($u === null) {
                 continue;
             }
 

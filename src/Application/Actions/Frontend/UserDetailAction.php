@@ -27,14 +27,16 @@ final readonly class UserDetailAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $id = \trim($request->input['id'] ?? '');
+        $idRaw = $request->input['id'] ?? '';
+        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+
         if ($id === '') {
             return new RedirectResponse('/');
         }
 
         // Wir suchen jetzt nach der fixen ID, nicht mehr nach dem Namen!
         $user = $this->userRepo->findById($id);
-        if (! $user) {
+        if ($user === null) {
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Benutzer nicht gefunden'], 404);
         }
 
