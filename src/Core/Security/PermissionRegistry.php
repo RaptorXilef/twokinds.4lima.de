@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Core\Security;
 
+/**
+ * ! Rechte
+ * ! Permissions
+ * ! Rechtesystem
+ */
+
 final class PermissionRegistry
 {
     public static function getStructure(): array

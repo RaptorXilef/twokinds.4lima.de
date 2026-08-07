@@ -125,6 +125,11 @@ function setupAuthTest(mixed $test): object
     $app = \setupAuthTest($this);
     $app->rateLimiter->method('isBlocked')->willReturn(false);
 
+    // FIX: Config muss ein Array für 'structure' zurückgeben
+    $app->config->method('get')->willReturnCallback(function ($key, $default = null) {
+        return $key === 'structure' ? [] : $default;
+    });
+
     $user = new User(
         'usr_3',
         new Username('validuser'),

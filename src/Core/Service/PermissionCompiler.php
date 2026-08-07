@@ -9,7 +9,8 @@ final class PermissionCompiler
     public function compile(array $structure, array $groupPermissions): array
     {
         $flat = [];
-        $this->walk($structure, $groupPermissions, true, $flat);
+        // Wir starten mit false (Default Deny)
+        $this->walk($structure, $groupPermissions, false, $flat);
 
         return $flat;
     }
@@ -21,8 +22,11 @@ final class PermissionCompiler
             if ($key !== null) {
                 $explicitAllow = \in_array($key, $groupPerms, true) || \in_array('*', $groupPerms, true);
                 $explicitDeny  = \in_array('-' . $key, $groupPerms, true);
-                $isAllowed     = $parentAllowed && $explicitAllow && ! $explicitDeny;
-                $result[$key]  = $isAllowed;
+
+                // LOGIK-FIX: Erlaubt, wenn der Parent erlaubt ist ODER es explizit erlaubt wurde,
+                // ABER NICHT, wenn es durch ein '-' explizit verboten wurde.
+                $isAllowed    = ($parentAllowed || $explicitAllow) && ! $explicitDeny;
+                $result[$key] = $isAllowed;
             } else {
                 $isAllowed = $parentAllowed;
             }
@@ -30,6 +34,7 @@ final class PermissionCompiler
             if (! isset($node['children'])) {
                 continue;
             }
+
             $this->walk($node['children'], $groupPerms, $isAllowed, $result);
         }
     }
