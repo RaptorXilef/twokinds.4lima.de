@@ -83,7 +83,6 @@
     "chk:stan-create-baseline": "phpstan analyse --generate-baseline",
     "// ------": "",
     "chk:stan": "phpstan analyse --memory-limit=2G",
-    "chk:stan:core": "phpstan analyse src/Core --level max --memory-limit=2G",
     "chk:cs": "phpcs",
     "chk:style": "php-cs-fixer fix --dry-run --diff --no-interaction",
     "chk:md": "phpmd analyze src --format text --ruleset phpmd.xml.dist",
@@ -91,6 +90,11 @@
     "chk:arch": "deptrac analyse --config-file=deptrac.yaml",
     "chk:arch:uncovered": "deptrac analyse --config-file=deptrac.yaml --report-uncovered",
     "chk:modern": "rector process --dry-run",
+
+    "// --- PHASE 1.1: PHPStan ANALYSIS PRO SCHICHT (CHECKING) ---": "Read-Only Qualitätsprüfungen",
+    "chk:stan:core": "phpstan analyse src/Core --level max --memory-limit=2G",
+    "chk:stan:application": "phpstan analyse src/Application --level max --memory-limit=2G",
+    "chk:stan:infrastructure": "phpstan analyse src/Infrastructure --level max --memory-limit=2G",
 
     "// --- PHASE 2: TESTING ---": "Automatisierte Tests",
     "test": "pest --parallel",

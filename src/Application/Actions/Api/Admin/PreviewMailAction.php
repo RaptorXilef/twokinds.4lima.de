@@ -32,7 +32,9 @@ final readonly class PreviewMailAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $id = \trim((string) ($request->get['id'] ?? ''));
+        $idRaw = $request->get['id'] ?? '';
+        $id    = \is_string($idRaw) || \is_numeric($idRaw) ? \trim((string) $idRaw) : '';
+
         if ($id === '') {
             return JsonResponse::error('Keine Mail-ID angegeben.', 400);
         }
@@ -41,15 +43,15 @@ final readonly class PreviewMailAction implements ActionInterface
         $mailData = $this->mailQueueRepo->findById($id);
 
         // Falls nicht in der Queue, im Log suchen
-        if (! $mailData) {
+        if ($mailData === null) {
             $mailData = $this->mailLogRepo->findById($id);
         }
 
-        if (! $mailData) {
+        if ($mailData === null) {
             return JsonResponse::error('E-Mail nicht gefunden.', 404);
         }
 
-        $template   = $mailData['template'];
+        $template   = \is_string($mailData['template'] ?? null) ? $mailData['template'] : '';
         $payloadRaw = $mailData['data'] ?? '{}';
         $payload    = \is_string($payloadRaw) ? \json_decode($payloadRaw, true) : $payloadRaw;
 
@@ -57,10 +59,13 @@ final readonly class PreviewMailAction implements ActionInterface
             $payload = [];
         }
 
-        $root     = \rtrim((string) $this->config->get('root_path'), '/\\');
+        $rootPath = $this->config->get('root_path');
+        $rootStr  = \is_string($rootPath) ? $rootPath : '';
+        $root     = \rtrim($rootStr, '/\\');
+
         $fullPath = $root . "/templates/emails/{$template}.phtml";
 
-        if (! \file_exists($fullPath)) {
+        if (! \file_exists($fullPath) || $template === '') {
             return JsonResponse::error("Template '{$template}' existiert nicht auf dem Server.", 404);
         }
 

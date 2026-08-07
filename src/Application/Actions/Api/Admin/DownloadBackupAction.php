@@ -29,7 +29,10 @@ final readonly class DownloadBackupAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $filename = \basename($request->get['file'] ?? '');
+        $filenameRaw = $request->get['file'] ?? '';
+        $filenameStr = \is_string($filenameRaw) ? $filenameRaw : '';
+        $filename    = \basename($filenameStr);
+
         if ($filename === '') {
             return JsonResponse::error('Keine Datei angegeben.', 400);
         }

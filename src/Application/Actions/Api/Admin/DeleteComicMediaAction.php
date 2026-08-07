@@ -28,7 +28,10 @@ final readonly class DeleteComicMediaAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $id = \basename((string) ($request->post['comic_id'] ?? ''));
+        $idRaw = $request->post['comic_id'] ?? '';
+        $idStr = \is_string($idRaw) || \is_numeric($idRaw) ? (string) $idRaw : '';
+        $id    = \basename($idStr);
+
         if ($id === '') {
             return JsonResponse::error('Keine ID übergeben.', 400);
         }

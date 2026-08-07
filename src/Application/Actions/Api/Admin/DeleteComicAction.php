@@ -31,7 +31,9 @@ final readonly class DeleteComicAction implements ActionInterface
         }
 
         try {
-            $id = \trim((string) ($request->post['comic_id'] ?? ''));
+            $idRaw = $request->post['comic_id'] ?? '';
+            $id = \is_string($idRaw) || \is_numeric($idRaw) ? \trim((string) $idRaw) : '';
+
             if ($id === '') {
                 throw ValidationException::withMessage('Keine Comic-ID zum Löschen angegeben.');
             }

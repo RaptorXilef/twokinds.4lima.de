@@ -28,7 +28,9 @@ final readonly class DeleteMediaAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $filename = \basename((string) ($request->post['filename'] ?? ''));
+        $filenameRaw = $request->post['filename'] ?? '';
+        $filenameStr = \is_string($filenameRaw) ? $filenameRaw : '';
+        $filename    = \basename($filenameStr);
 
         if ($filename !== '' && $this->imageStorage->deleteCharacterMedia('profiles', $filename)) {
             return JsonResponse::success(['message' => 'Datei gelöscht.']);

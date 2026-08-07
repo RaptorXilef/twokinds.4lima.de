@@ -36,17 +36,29 @@ final readonly class CropSocialMediaAction implements ActionInterface
         \error_reporting(0);
 
         try {
-            $comicId = \trim((string) ($request->post['comic_id'] ?? ''));
-            $x       = (int) ($request->post['x'] ?? 0);
-            $y       = (int) ($request->post['y'] ?? 0);
-            $w       = (int) ($request->post['width'] ?? 0);
-            $h       = (int) ($request->post['height'] ?? 0);
+            $comicIdRaw = $request->post['comic_id'] ?? '';
+            $comicId    = \is_string($comicIdRaw) || \is_numeric($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
+
+            $xRaw = $request->post['x'] ?? 0;
+            $x    = \is_numeric($xRaw) ? (int) $xRaw : 0;
+
+            $yRaw = $request->post['y'] ?? 0;
+            $y    = \is_numeric($yRaw) ? (int) $yRaw : 0;
+
+            $wRaw = $request->post['width'] ?? 0;
+            $w    = \is_numeric($wRaw) ? (int) $wRaw : 0;
+
+            $hRaw = $request->post['height'] ?? 0;
+            $h    = \is_numeric($hRaw) ? (int) $hRaw : 0;
 
             if ($comicId === '' || $w <= 0 || $h <= 0) {
                 return JsonResponse::error('Ungültige Schnitt-Parameter.', 400);
             }
 
-            $targetDir  = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
+            $rootPath  = $this->config->get('root_path');
+            $rootStr   = \is_string($rootPath) ? $rootPath : '';
+            $targetDir = \rtrim($rootStr, '/\\') . '/public/assets/images/comics';
+
             $sourcePath = "$targetDir/hires/$comicId.webp";
             // WICHTIG: JPG für maximale Kompatibilität!
             $targetPath = "$targetDir/social/$comicId.jpg";

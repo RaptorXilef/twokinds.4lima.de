@@ -22,6 +22,7 @@ use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\Chapter;
 use App\Core\Security\PermissionRegistry;
 use App\Core\Service\AuthService;
 
@@ -63,7 +64,7 @@ final readonly class DashboardAction implements ViewActionInterface
         $dbChapters = $this->chapterRepo->findAll();
 
         // (Wir behalten das $existingChapters Array für das Datalist-Dropdown bei Comics)
-        $existingChapters = \array_map(fn ($c) => $c->id, $dbChapters);
+        $existingChapters = \array_map(fn (Chapter $c): string => $c->id, $dbChapters);
         $roles            = $this->roleRepo->loadAll();
 
         $canManageUsers = $this->auth->hasPermission('system.users.manage');
@@ -86,11 +87,14 @@ final readonly class DashboardAction implements ViewActionInterface
             'system_manage' => $this->auth->hasPermission('system.manage'),
         ];
 
+        $rootPath = $this->config->get('root_path');
+        $rootStr  = \is_string($rootPath) ? $rootPath : '';
+
         // --- AJAX HYDRATION MODUS ---
         // Wenn JS einen spezifischen Tab anfordert, rendern wir NUR diesen Tab!
-        if ($ajaxTab) {
+        if ($ajaxTab !== null && \is_string($ajaxTab)) {
             $data = [
-                'appRoot'          => \rtrim((string) $this->config->get('root_path'), '/\\'),
+                'appRoot'          => \rtrim($rootStr, '/\\'),
                 'baseUrl'          => \rtrim($this->config->getBaseUrl(), '/'),
                 'canManageRoles'   => $canManageRoles,
                 'canManageUsers'   => $canManageUsers,
@@ -136,7 +140,7 @@ final readonly class DashboardAction implements ViewActionInterface
                 $htmlContent = $this->renderer->render('partials/admin/_section_media', $data)->html;
             } elseif ($ajaxTab === 'backup') {
                 $htmlContent = $this->renderer->render('partials/admin/_section_backup', $data)->html;
-            } elseif ($ajaxTab === 'mails') { // TAB-RENDERER FÜR E-MAILS
+            } elseif ($ajaxTab === 'mails') {
                 $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
                 $data['mailLogs']  = $this->mailLogRepo->loadLogs();
                 $htmlContent       = $this->renderer->render('partials/admin/_section_mails', $data)->html;
@@ -154,17 +158,19 @@ final readonly class DashboardAction implements ViewActionInterface
         }
         $assignedIds = \array_unique($assignedIds);
 
+        // TODO ggf. Konstante für Pfad definieren
         // Bilder-Scan für Charakter-Modal (Geht superschnell)
-        $imageDir        = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
+        $imageDir        = \rtrim($rootStr, '/\\') . '/public/assets/images/characters/profiles';
         $availableImages = [];
         if (\is_dir($imageDir)) {
             $files = \scandir($imageDir);
-            foreach ($files as $file) {
-                if ($file === '.' || $file === '..' || ! \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file)) {
-                    continue;
+            if (\is_array($files)) {
+                foreach ($files as $file) {
+                    if ($file === '.' || $file === '..' || \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file) !== 1) {
+                        continue;
+                    }
+                    $availableImages[] = $file;
                 }
-
-                $availableImages[] = $file;
             }
         }
 

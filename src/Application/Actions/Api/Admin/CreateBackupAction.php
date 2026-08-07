@@ -27,8 +27,10 @@ final readonly class CreateBackupAction implements ActionInterface
         }
 
         try {
-            $table = ! empty($request->post['table']) && $request->post['table'] !== 'all' ? $request->post['table'] : null;
-            $file  = $this->backupService->createBackup($table);
+            $tableNameRaw = $request->post['table'] ?? null;
+            $table        = \is_string($tableNameRaw) && $tableNameRaw !== 'all' && $tableNameRaw !== '' ? $tableNameRaw : null;
+
+            $file = $this->backupService->createBackup($table);
 
             return JsonResponse::success(['message' => "Backup erfolgreich erstellt: $file"]);
         } catch (\Throwable $e) {

@@ -93,14 +93,15 @@ final readonly class ComicService
 
     public function restoreLatestRevision(ComicId $id): void
     {
-        /** @var array<string, mixed>|null $revisionData */
         $revisionData = $this->revisionRepository->popLatestRevision($id);
 
-        if ($revisionData === null) {
+        if (! \is_array($revisionData)) {
             throw new \DomainException('Keine vorherige Version (Snapshot) für diesen Comic gefunden.');
         }
 
-        $restoredComic = $this->hydrateRevisionData($id, $revisionData);
+        /** @var array<string, mixed> $validData */
+        $validData = $revisionData;
+        $restoredComic = $this->hydrateRevisionData($id, $validData);
 
         // MAGIC: Wir rufen saveComic() auf statt das Repository!
         // Dadurch wird der JETZIGE Zustand gesichert, bevor das Backup geladen wird.
@@ -126,17 +127,18 @@ final readonly class ComicService
      */
     public function restoreDeletedComic(): array
     {
-        /** @var array<string, mixed>|null $revisionData */
         $revisionData = $this->revisionRepository->popLatestDeletedRevision();
 
-        if ($revisionData === null) {
+        if (! \is_array($revisionData)) {
             throw new \DomainException('Kein gelöschter Comic im Papierkorb gefunden.');
         }
 
         $idRaw = \is_string($revisionData['comic_id'] ?? null) ? $revisionData['comic_id'] : '';
         $id    = new ComicId($idRaw);
 
-        $restoredComic = $this->hydrateRevisionData($id, $revisionData);
+        /** @var array<string, mixed> $validData */
+        $validData = $revisionData;
+        $restoredComic = $this->hydrateRevisionData($id, $validData);
 
         // Wir legen ihn wieder regulär an
         $this->comicRepository->save($restoredComic);

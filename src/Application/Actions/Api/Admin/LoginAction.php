@@ -21,9 +21,10 @@ final readonly class LoginAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $username = Sanitizer::string($request->post['username'] ?? '');
-        $password = (string) ($request->post['password'] ?? '');
-        $ip       = $request->getIp();
+        $username    = Sanitizer::string($request->post['username'] ?? '');
+        $passwordRaw = $request->post['password'] ?? '';
+        $password    = \is_string($passwordRaw) || \is_numeric($passwordRaw) ? (string) $passwordRaw : '';
+        $ip          = $request->getIp();
 
         if ($username === '' || $password === '') {
             return JsonResponse::error('Bitte Benutzername und Passwort eingeben.', 400);

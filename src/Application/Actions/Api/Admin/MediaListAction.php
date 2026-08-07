@@ -28,8 +28,9 @@ final readonly class MediaListAction implements ActionInterface
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
-        $folder = $request->get['folder'] ?? 'profiles';
-        // Ersetze alles darunter durch:
+        $folderRaw = $request->get['folder'] ?? 'profiles';
+        $folder    = \is_string($folderRaw) ? $folderRaw : 'profiles';
+
         $result = $this->imageStorage->listCharacterMediaFiles($folder);
 
         return JsonResponse::success(['files' => $result]);
