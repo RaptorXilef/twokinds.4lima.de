@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.5/phpunit.xsd"
-    bootstrap="vendor/autoload.php"
-    colors="true"
-    cacheDirectory=".cache/phpunit"
-    executionOrder="depends,defects"
-    requireCoverageMetadata="true"
-    beStrictAboutOutputDuringTests="true"
-    beStrictAboutChangesToGlobalState="true"
-    beStrictAboutTestsThatDoNotTestAnything="true"
-    failOnEmptyTestSuite="true"
-    failOnRisky="true"
-    failOnWarning="true"
-    failOnNotice="true"
-    displayDetailsOnTestsThatTriggerDeprecations="true"
-    displayDetailsOnTestsThatTriggerErrors="true"
-    displayDetailsOnTestsThatTriggerNotices="true"
-    displayDetailsOnTestsThatTriggerWarnings="true">
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".cache/phpunit"
+         executionOrder="depends,defects"
+         requireCoverageMetadata="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutChangesToGlobalState="true"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         failOnEmptyTestSuite="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         failOnNotice="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerErrors="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         displayDetailsOnTestsThatTriggerWarnings="true">
 
     <testsuites>
         <testsuite name="Unit">
@@ -27,17 +27,20 @@
         </testsuite>
     </testsuites>
 
-    <source>
+    <source restrictNotices="true" restrictWarnings="true" ignoreIndirectDeprecations="true">
         <include>
             <directory>./src</directory>
         </include>
+        <exclude>
+            <!-- Bootstrap und Configs von der Coverage ausschließen -->
+            <directory>./src/Bootstrap</directory>
+        </exclude>
     </source>
 
     <coverage>
         <report>
             <clover outputFile=".cache/phpunit/clover.xml" />
-            <html outputDirectory=".build/reports/phpunit-html" lowUpperBound="50"
-                highLowerBound="90" />
+            <html outputDirectory=".build/reports/phpunit-html" lowUpperBound="50" highLowerBound="90" />
         </report>
     </coverage>
 
