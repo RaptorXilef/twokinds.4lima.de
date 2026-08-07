@@ -6,6 +6,9 @@ namespace App\Core\Entity;
 
 final readonly class MailLogEntry
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __construct(
         public string $id,
         public \DateTimeImmutable $timestamp,

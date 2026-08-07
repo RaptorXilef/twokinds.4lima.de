@@ -10,10 +10,14 @@ use App\Core\ValueObject\ComicId;
 final readonly class ComicPage
 {
     /**
-     * @var CharacterId[]
+     * @var array<int, CharacterId>
      */
     public array $characterIds;
 
+    /**
+     * @param array<int, CharacterId> $characterIds
+     * @param array<int, string>      $userIds
+     */
     public function __construct(
         public ComicId $id,
         public string $type,

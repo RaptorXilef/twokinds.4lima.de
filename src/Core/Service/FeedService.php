@@ -60,7 +60,7 @@ final readonly class FeedService
             $item->addChild('guid', $link);
 
             // Bild-Timestamp für Cache-Busting anhängen
-            $cb     = $comic->imageUpdatedAt ? '?c=' . $comic->imageUpdatedAt : '';
+            $cb     = $comic->imageUpdatedAt !== null ? '?c=' . $comic->imageUpdatedAt : '';
             $imgSrc = "{$lowResUrl}/{$comic->id->value}.webp{$cb}";
 
             $descContent = "<p><img src=\"{$imgSrc}\" alt=\"{$titleText}\" style=\"max-width: 100%; height: auto;\" /></p>";

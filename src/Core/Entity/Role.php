@@ -6,6 +6,9 @@ namespace App\Core\Entity;
 
 final readonly class Role
 {
+    /**
+     * @param array<int, string> $permissions
+     */
     public function __construct(
         public string $id,
         public string $name,

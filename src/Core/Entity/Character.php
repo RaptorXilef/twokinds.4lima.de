@@ -8,6 +8,9 @@ use App\Core\ValueObject\CharacterId;
 
 final readonly class Character
 {
+    /**
+     * @param array<int, string> $refSheets
+     */
     public function __construct(
         public CharacterId $id,
         public string $name,

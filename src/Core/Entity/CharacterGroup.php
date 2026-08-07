@@ -9,10 +9,13 @@ use App\Core\ValueObject\CharacterId;
 final readonly class CharacterGroup
 {
     /**
-     * @var CharacterId[]
+     * @var array<int, CharacterId>
      */
     public array $characterIds;
 
+    /**
+     * @param array<int, CharacterId> $characterIds
+     */
     public function __construct(
         public string $name,
         array $characterIds,

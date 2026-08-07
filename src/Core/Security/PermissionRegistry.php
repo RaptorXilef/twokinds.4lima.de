@@ -9,9 +9,11 @@ namespace App\Core\Security;
  * ! Permissions
  * ! Rechtesystem
  */
-
 final class PermissionRegistry
 {
+    /**
+     * @return array<string, mixed>
+     */
     public static function getStructure(): array
     {
         return [

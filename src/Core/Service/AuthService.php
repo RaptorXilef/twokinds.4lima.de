@@ -52,7 +52,7 @@ final readonly class AuthService
 
         // 2. Regulären User suchen (via Username ODER E-Mail)
         $user = $this->userRepository->findByEmail($identifier);
-        if (! $user) {
+        if ($user === null) {
             $user = $this->userRepository->findByUsername($identifier);
         }
 
@@ -101,7 +101,7 @@ final readonly class AuthService
         }
 
         $user = $this->userRepository->findById($userId);
-        if (! $user) {
+        if ($user === null) {
             $this->logout();
 
             throw new \RuntimeException('Session abgelaufen oder Benutzer gelöscht.');
@@ -150,7 +150,8 @@ final readonly class AuthService
             return true;
         }
 
-        return $this->sessionManager->getPermissions()[$permission] ?? false;
+        // Strikter Boolean-Return, falls das Array mixed zurückgibt
+        return ($this->sessionManager->getPermissions()[$permission] ?? false) === true;
     }
 
     public function refreshSessionPermissions(string $roleId): void

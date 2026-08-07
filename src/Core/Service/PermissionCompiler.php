@@ -6,6 +6,11 @@ namespace App\Core\Service;
 
 final class PermissionCompiler
 {
+    /**
+     * @param  array<string, mixed> $structure
+     * @param  array<int, string>   $groupPermissions
+     * @return array<string, bool>
+     */
     public function compile(array $structure, array $groupPermissions): array
     {
         $flat = [];
@@ -15,6 +20,11 @@ final class PermissionCompiler
         return $flat;
     }
 
+    /**
+     * @param array<string, mixed> $nodes
+     * @param array<int, string>   $groupPerms
+     * @param array<string, bool>  &$result
+     */
     private function walk(array $nodes, array $groupPerms, bool $parentAllowed, array &$result): void
     {
         foreach ($nodes as $node) {

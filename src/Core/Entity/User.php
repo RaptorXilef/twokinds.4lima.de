@@ -9,6 +9,9 @@ use App\Core\ValueObject\Username;
 
 final readonly class User
 {
+    /**
+     * @param array<int, string> $socialLinks
+     */
     public function __construct(
         public string $id,
         public Username $username, // VO statt string

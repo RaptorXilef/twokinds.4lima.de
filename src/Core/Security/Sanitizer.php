@@ -22,7 +22,9 @@ final class Sanitizer
      */
     public static function email(mixed $input): string
     {
-        return \filter_var(\trim((string) $input), \FILTER_SANITIZE_EMAIL) ?: '';
+        $sanitized = \filter_var(\trim((string) $input), \FILTER_SANITIZE_EMAIL);
+
+        return $sanitized !== false ? $sanitized : '';
     }
 
     /**

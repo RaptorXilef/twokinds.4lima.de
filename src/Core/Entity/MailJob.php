@@ -6,6 +6,9 @@ namespace App\Core\Entity;
 
 final readonly class MailJob
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __construct(
         public string $id,
         public string $recipient,

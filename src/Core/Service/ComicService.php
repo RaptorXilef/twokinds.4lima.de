@@ -82,7 +82,7 @@ final readonly class ComicService
     public function deleteComic(ComicId $id): void
     {
         $existing = $this->comicRepository->findById($id);
-        if ($existing) {
+        if ($existing !== null) {
             // VOR dem Löschen ein letztes Backup für den Papierkorb anlegen!
             $this->revisionRepository->createSnapshot($existing);
         }
@@ -139,6 +139,9 @@ final readonly class ComicService
         $this->comicRepository->renameComicId($oldId, $newId);
     }
 
+    /**
+     * @return array{id: string}
+     */
     public function restoreDeletedComic(): array
     {
         $revisionData = $this->revisionRepository->popLatestDeletedRevision();

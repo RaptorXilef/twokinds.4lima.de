@@ -19,6 +19,9 @@ final readonly class MagicLinkService
     ) {
     }
 
+    /**
+     * @return array{token: string, code: string}
+     */
     public function createToken(string $email): array
     {
         $token = \bin2hex(\random_bytes(32));
