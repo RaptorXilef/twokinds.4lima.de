@@ -1,5 +1,22 @@
 # Changelog
 
+## [6.14.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.14.0...v6.14.1) (2026-08-07)
+
+### 🐛 Bug Fixes
+
+* **infrastructure:** handle NULL values for strict types in Hydrator ([fa896b4](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fa896b4508c6fffb7d6f6647fecf138a824a95d7))
+
+### ⚙️ Refactoring
+
+* **global:** apply automated Rector code quality fixes ([a6a78ff](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a6a78ffe22120de0d7eb510a63e7e4e95d2b0312))
+* **infrastructure:** apply Hydrator and Table constants to all remaining repositories ([675b90d](https://github.com/RaptorXilef/twokinds.4lima.de/commit/675b90d954a510aabb2300578e94298e6e54f4c1))
+* **infrastructure:** introduce DataMapper and Table constants ([871a6df](https://github.com/RaptorXilef/twokinds.4lima.de/commit/871a6df16bd63b04327aead113b143f94c882eb2))
+* **infrastructure:** upgrade Hydrator and apply to more repositories ([a995a21](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a995a21a31219fa4e8875fa7ccb6c3b7af3d373a))
+
+### 💎 Styling
+
+* **code-style:** apply PHP CS Fixer formatting rules ([e4f77fd](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e4f77fd97c89ee5e94c4abed164fab7f3c2688e1))
+
 ## [6.14.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.13.5...v6.14.0) (2026-08-06)
 
 ### 🚀 Features
