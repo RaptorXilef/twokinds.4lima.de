@@ -13,3 +13,6 @@
 
 # refactor: move legacy core and business logic to .old-5.0.0-alpha.23
 154bc2014780a36624d7abf09eba274aea50223f
+
+# fix(bootstrap): Remove redundant checks and dead catch blocks
+f4ab48a5a10b914a1c1b926a79b43ba252814d5d
