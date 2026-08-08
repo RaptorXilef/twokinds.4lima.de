@@ -10,8 +10,6 @@ use App\Contracts\Utils\ClockInterface;
 /**
  * Kapselt alle Zugriffe auf den globalen $_SESSION State.
  * Verhindert direkte Array-Mutationen in den Actions (Leaky Abstractions).
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
  */
 final readonly class SessionManager implements AuthSessionInterface
 {
@@ -186,17 +184,24 @@ final readonly class SessionManager implements AuthSessionInterface
         if (\ini_get('session.use_cookies') === '1') {
             $p = \session_get_cookie_params();
 
-            // PHPStan Strict Check für das Cookie-Array (Samesite kann fehlen)
             $cookieParams = [
                 'expires'  => $this->clock->now()->getTimestamp() - 42000,
-                'path'     => $p['path'],
-                'domain'   => $p['domain'],
-                'secure'   => $p['secure'],
-                'httponly' => $p['httponly'],
-                'samesite' => $p['samesite'],
+                'path'     => (string) $p['path'],
+                'domain'   => (string) $p['domain'],
+                'secure'   => (bool) $p['secure'],
+                'httponly' => (bool) $p['httponly'],
             ];
 
-            \setcookie(\session_name(), '', $cookieParams);
+            if (isset($p['samesite'])) {
+                $cookieParams['samesite'] = (string) $p['samesite'];
+            } else {
+                $cookieParams['samesite'] = 'Lax';
+            }
+
+            $sessionName = \session_name();
+            $name        = \is_string($sessionName) && $sessionName !== '' ? $sessionName : 'PHPSESSID';
+
+            \setcookie($name, '', $cookieParams);
         }
         \session_destroy();
 
@@ -225,7 +230,7 @@ final readonly class SessionManager implements AuthSessionInterface
     }
 
     /**
-     * @param array<string, bool> $perms
+     * @param array<mixed> $perms
      */
     public function setPermissions(array $perms): void
     {
@@ -301,6 +306,13 @@ final readonly class SessionManager implements AuthSessionInterface
      */
     public function addFlash(string $type, string $message): void
     {
+        if (! isset($_SESSION['flashes']) || ! \is_array($_SESSION['flashes'])) {
+            $_SESSION['flashes'] = [];
+        }
+        if (! isset($_SESSION['flashes'][$type]) || ! \is_array($_SESSION['flashes'][$type])) {
+            $_SESSION['flashes'][$type] = [];
+        }
+
         $_SESSION['flashes'][$type][] = $message;
     }
 

@@ -23,8 +23,8 @@ final readonly class CsrfMiddleware implements MiddlewareInterface
         $method = $request->getMethod();
 
         if (\in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
-            $headerRaw   = $request->getHeader('X-CSRF-Token');
-            $headerToken = \is_string($headerRaw) ? $headerRaw : '';
+            // getHeader() liefert laut Typisierung immer string.
+            $headerToken = $request->getHeader('X-CSRF-Token');
 
             $postRaw   = $request->post['csrf_token'] ?? '';
             $postToken = \is_string($postRaw) ? $postRaw : '';

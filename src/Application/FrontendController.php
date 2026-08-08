@@ -60,13 +60,11 @@ final readonly class FrontendController
             $matched = $this->actionFactory->getRegistry()->match('GET', '/404');
         }
 
-        if ($matched !== null) {
-            $className = \is_string($matched['class']) ? $matched['class'] : Error404Action::class;
-
-            /** @var array<string, string> $params */
-            $params       = \is_array($matched['params'] ?? null) ? $matched['params'] : [];
+        if (\is_array($matched)) {
+            $className    = \is_string($matched['class']) ? $matched['class'] : Error404Action::class;
+            $params       = \is_array($matched['params']) ? $matched['params'] : [];
             $request      = $request->withInput(\array_merge($request->input, $params));
-            $requiresAuth = ! empty($matched['requiresAuth']);
+            $requiresAuth = ($matched['requiresAuth'] ?? false) === true;
         } else {
             $className    = Error404Action::class;
             $requiresAuth = false;
@@ -134,10 +132,8 @@ final readonly class FrontendController
             return new HtmlResponse('404 Not Found', 404);
         });
 
-        if (!($response instanceof ResponseInterface)) {
-            return;
+        if ($response instanceof ResponseInterface) {
+            $response->send();
         }
-
-        $response->send();
     }
 }
