@@ -43,13 +43,15 @@ final readonly class Config implements ConfigInterface
             return [];
         }
 
-        /** @var array<string, mixed> $mail */
-        return $mail;
+        /** @var array<string, mixed> $mailArray */
+        $mailArray = $mail;
+
+        return $mailArray;
     }
 
     public function isTestMode(): bool
     {
-        return (bool) $this->get('test_mode', true);
+        return $this->get('test_mode', true) === true;
     }
 
     public function getBaseUrl(): string

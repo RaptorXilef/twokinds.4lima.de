@@ -31,7 +31,14 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return \is_array($row) ? $this->hydrateEntity(Character::class, $row) : null;
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $this->hydrateEntity(Character::class, $validRow);
     }
 
     public function findAll(): array
@@ -53,7 +60,10 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
                 continue;
             }
 
-            $characters[] = $this->hydrateEntity(Character::class, $r);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $r;
+
+            $characters[] = $this->hydrateEntity(Character::class, $validRow);
         }
 
         return $characters;

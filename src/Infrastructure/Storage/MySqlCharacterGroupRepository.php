@@ -36,7 +36,14 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
         $stmt->execute([$name]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return \is_array($row) ? $this->mapToEntity($row) : null;
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $this->mapToEntity($validRow);
     }
 
     public function findAll(): array
@@ -59,7 +66,10 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
                 continue;
             }
 
-            $groups[] = $this->mapToEntity($row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $groups[] = $this->mapToEntity($validRow);
         }
 
         return $groups;

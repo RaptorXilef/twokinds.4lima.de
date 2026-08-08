@@ -84,14 +84,20 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             return null; // Kein Snapshot vorhanden
         }
 
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
         // Snapshot löschen, damit man mehrfach zurückgehen kann (Strg+Z, Strg+Z...)
         $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
-        $delStmt->execute([$row['id'] ?? 0]);
+        $delStmt->execute([$validRow['id'] ?? 0]);
 
-        $dataJson = \is_string($row['revision_data'] ?? null) ? $row['revision_data'] : '{}';
+        $dataJson = \is_string($validRow['revision_data'] ?? null) ? $validRow['revision_data'] : '{}';
         $data = \json_decode($dataJson, true);
 
-        return \is_array($data) ? $data : null;
+        /** @var array<string, mixed> $validData */
+        $validData = \is_array($data) ? $data : [];
+
+        return empty($validData) ? null : $validData;
     }
 
     public function popLatestDeletedRevision(): ?array
@@ -116,20 +122,23 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             return null;
         }
 
-        $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
-        $delStmt->execute([$row['id'] ?? 0]);
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
 
-        $dataJson = \is_string($row['revision_data'] ?? null) ? $row['revision_data'] : '{}';
+        $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
+        $delStmt->execute([$validRow['id'] ?? 0]);
+
+        $dataJson = \is_string($validRow['revision_data'] ?? null) ? $validRow['revision_data'] : '{}';
         $dataRaw = \json_decode($dataJson, true);
 
         if (!\is_array($dataRaw)) {
             $dataRaw = [];
         }
 
-        /** @var array<string, mixed> $dataRaw */
+        /** @var array<string, mixed> $data */
         $data = $dataRaw;
 
-        $data['comic_id'] = \is_string($row['comic_id'] ?? null) ? $row['comic_id'] : '';
+        $data['comic_id'] = \is_string($validRow['comic_id'] ?? null) ? $validRow['comic_id'] : '';
 
         return $data;
     }

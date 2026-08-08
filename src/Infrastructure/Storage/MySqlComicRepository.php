@@ -44,7 +44,10 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
             return null;
         }
 
-        return $this->mapToEntity($row);
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $this->mapToEntity($validRow);
     }
 
     public function findAll(): array
@@ -66,7 +69,10 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
                 continue;
             }
 
-            $comics[] = $this->mapToEntity($row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $comics[] = $this->mapToEntity($validRow);
         }
 
         return $comics;

@@ -46,6 +46,7 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             $token = \is_string($r['token'] ?? null) ? $r['token'] : '';
             $emailStr = \is_string($r['email'] ?? null) ? $r['email'] : '';
             $codeStr = \is_string($r['code'] ?? null) ? $r['code'] : '';
+
             if ($token === '') {
                 continue;
             }
@@ -72,8 +73,9 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
             $this->pdo->exec('DELETE FROM `' . Table::MAGIC_LINKS . '`');
 
             foreach ($links as $token => $link) {
+                $tokenStr = \is_scalar($token) ? (string) $token : '';
                 $data = [
-                    'token' => (string) $token,
+                    'token' => $tokenStr,
                     'email' => $link->email->value,
                     'code' => $link->code,
                     'expires' => $link->expires->format('Y-m-d H:i:s'),

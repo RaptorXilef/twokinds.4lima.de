@@ -38,7 +38,14 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return \is_array($row) ? $this->hydrateEntity(Report::class, $row) : null;
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $this->hydrateEntity(Report::class, $validRow);
     }
 
     public function findAll(): array
@@ -60,7 +67,10 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
                 continue;
             }
 
-            $reports[] = $this->hydrateEntity(Report::class, $row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $reports[] = $this->hydrateEntity(Report::class, $validRow);
         }
 
         return $reports;
@@ -83,7 +93,10 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
                 continue;
             }
 
-            $reports[] = $this->hydrateEntity(Report::class, $row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $reports[] = $this->hydrateEntity(Report::class, $validRow);
         }
 
         return $reports;

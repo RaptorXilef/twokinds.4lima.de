@@ -17,6 +17,9 @@ final readonly class MySqlRoleRepository implements RoleRepositoryInterface
 
     public function __construct(
         private PDO $pdo,
+        /**
+         * @phpstan-ignore-next-line
+         */
         private JsonHelperInterface $jsonHelper, // Wird für die DI Container Kompatibilität beibehalten, aber intern nicht mehr zwingend benötigt
     ) {
     }
@@ -40,7 +43,10 @@ final readonly class MySqlRoleRepository implements RoleRepositoryInterface
                 continue;
             }
 
-            $role = $this->hydrateEntity(Role::class, $row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $role = $this->hydrateEntity(Role::class, $validRow);
             $roles[$role->id] = $role;
         }
 

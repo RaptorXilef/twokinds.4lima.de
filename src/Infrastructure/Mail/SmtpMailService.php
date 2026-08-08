@@ -75,12 +75,24 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
      */
     private function dispatch(string $recipient, string $subject, string $body, array $smtpConfig): bool|string
     {
-        $host = \is_scalar($smtpConfig['host'] ?? '') ? (string) $smtpConfig['host'] : '';
-        $port = \is_scalar($smtpConfig['port'] ?? 465) ? (int) $smtpConfig['port'] : 465;
-        $encryption = \strtolower(\is_scalar($smtpConfig['encryption'] ?? '') ? (string) $smtpConfig['encryption'] : '');
-        $user = \str_replace(["\r", "\n"], '', \is_scalar($smtpConfig['user'] ?? '') ? (string) $smtpConfig['user'] : '');
-        $pass = \str_replace(["\r", "\n"], '', \is_scalar($smtpConfig['pass'] ?? '') ? (string) $smtpConfig['pass'] : '');
-        $from = \str_replace(["\r", "\n"], '', \is_scalar($smtpConfig['from'] ?? '') ? (string) $smtpConfig['from'] : '');
+        $hostRaw = $smtpConfig['host'] ?? '';
+        $host = \is_scalar($hostRaw) ? (string) $hostRaw : '';
+
+        $portRaw = $smtpConfig['port'] ?? 465;
+        $port = \is_scalar($portRaw) ? (int) $portRaw : 465;
+
+        $encryptionRaw = $smtpConfig['encryption'] ?? '';
+        $encryption = \strtolower(\is_scalar($encryptionRaw) ? (string) $encryptionRaw : '');
+
+        $userRaw = $smtpConfig['user'] ?? '';
+        $user = \str_replace(["\r", "\n"], '', \is_scalar($userRaw) ? (string) $userRaw : '');
+
+        $passRaw = $smtpConfig['pass'] ?? '';
+        $pass = \str_replace(["\r", "\n"], '', \is_scalar($passRaw) ? (string) $passRaw : '');
+
+        $fromRaw = $smtpConfig['from'] ?? '';
+        $from = \str_replace(["\r", "\n"], '', \is_scalar($fromRaw) ? (string) $fromRaw : '');
+
         $recipient = \str_replace(["\r", "\n"], '', $recipient);
 
         // Port 465 bedeutet meist reines SSL direkt beim Aufbau
@@ -118,7 +130,7 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
 
             // Kryptografie aktivieren (Schützt PHP vor alten SSL Versionen, nutzt TLS 1.2)
             $cryptoMethod = \STREAM_CRYPTO_METHOD_TLS_CLIENT | \STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
-            if (!\stream_socket_enable_crypto($socket, true, $cryptoMethod)) {
+            if (\stream_socket_enable_crypto($socket, true, $cryptoMethod) === false) {
                 return 'Konnte Verschlüsselung (STARTTLS) nicht aktivieren';
             }
 
@@ -218,8 +230,23 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         }
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
 
-        return \is_array($rows) ? $rows : [];
+        /** @var array<int, array<string, mixed>> $validRows */
+        $validRows = [];
+        foreach ($rows as $r) {
+            if (!\is_array($r)) {
+                continue;
+            }
+
+            /** @var array<string, mixed> $validR */
+            $validR = $r;
+            $validRows[] = $validR;
+        }
+
+        return $validRows;
     }
 
     public function saveLogs(array $logs, bool $forceSql = false): void
@@ -234,8 +261,16 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
     {
         $stmt = $this->pdo->prepare('SELECT * FROM `mail_logs` WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
+
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return \is_array($row) ? $row : null;
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $validRow;
     }
 }

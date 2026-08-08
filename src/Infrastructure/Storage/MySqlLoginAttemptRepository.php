@@ -26,13 +26,16 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (\is_array($row)) {
-            $ipAddress = \is_string($row['ip_address'] ?? null) ? $row['ip_address'] : '';
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $ipAddress = \is_string($validRow['ip_address'] ?? null) ? $validRow['ip_address'] : '';
             // Falls der IP string kaputt war, greift der Konstruktor-Schutz unserer Entität. Wir fangen das ab.
             if ($ipAddress === '' || $ipAddress === 'unknown') {
-                $row['ip_address'] = '0.0.0.0';
+                $validRow['ip_address'] = '0.0.0.0';
             }
 
-            return $this->hydrateEntity(LoginAttempt::class, $row);
+            return $this->hydrateEntity(LoginAttempt::class, $validRow);
         }
 
         return null;

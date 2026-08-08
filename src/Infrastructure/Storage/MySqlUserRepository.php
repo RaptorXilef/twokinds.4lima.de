@@ -24,7 +24,14 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return \is_array($row) ? $this->hydrateEntity(User::class, $row) : null;
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $this->hydrateEntity(User::class, $validRow);
     }
 
     public function findByEmail(string $email): ?User
@@ -33,7 +40,14 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt->execute([$email]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return \is_array($row) ? $this->hydrateEntity(User::class, $row) : null;
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $this->hydrateEntity(User::class, $validRow);
     }
 
     public function findByUsername(string $username): ?User
@@ -42,7 +56,14 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return \is_array($row) ? $this->hydrateEntity(User::class, $row) : null;
+        if (!\is_array($row)) {
+            return null;
+        }
+
+        /** @var array<string, mixed> $validRow */
+        $validRow = $row;
+
+        return $this->hydrateEntity(User::class, $validRow);
     }
 
     public function findAll(): array
@@ -64,7 +85,10 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
                 continue;
             }
 
-            $users[] = $this->hydrateEntity(User::class, $row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $users[] = $this->hydrateEntity(User::class, $validRow);
         }
 
         return $users;
@@ -133,7 +157,10 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
                 continue;
             }
 
-            $users[] = $this->hydrateEntity(User::class, $row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $users[] = $this->hydrateEntity(User::class, $validRow);
         }
 
         return $users;

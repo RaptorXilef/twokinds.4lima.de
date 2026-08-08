@@ -44,7 +44,10 @@ final readonly class MySqlChapterRepository implements ChapterRepositoryInterfac
                 continue;
             }
 
-            $chapters[] = $this->hydrateEntity(Chapter::class, $r);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $r;
+
+            $chapters[] = $this->hydrateEntity(Chapter::class, $validRow);
         }
 
         return $chapters;

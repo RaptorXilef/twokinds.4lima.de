@@ -35,7 +35,10 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
                 continue;
             }
 
-            $bookmarks[] = $this->hydrateEntity(Bookmark::class, $row);
+            /** @var array<string, mixed> $validRow */
+            $validRow = $row;
+
+            $bookmarks[] = $this->hydrateEntity(Bookmark::class, $validRow);
         }
 
         return $bookmarks;

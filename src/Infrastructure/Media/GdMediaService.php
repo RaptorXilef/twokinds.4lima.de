@@ -32,9 +32,9 @@ final readonly class GdMediaService implements MediaServiceInterface
             return false;
         }
 
-        $width = (int) $info[0];
-        $height = (int) $info[1];
-        $type = (int) $info[2];
+        $width = $info[0];
+        $height = $info[1];
+        $type = $info[2];
 
         if ($width < 1 || $height < 1) {
             return false;
@@ -85,9 +85,9 @@ final readonly class GdMediaService implements MediaServiceInterface
             return false;
         }
 
-        $width = (int) $info[0];
-        $height = (int) $info[1];
-        $type = (int) $info[2];
+        $width = $info[0];
+        $height = $info[1];
+        $type = $info[2];
 
         if ($width < 1 || $height < 1) {
             return false;
@@ -210,9 +210,9 @@ final readonly class GdMediaService implements MediaServiceInterface
             return false;
         }
 
-        $srcW = (int) $info[0];
-        $srcH = (int) $info[1];
-        $type = (int) $info[2];
+        $srcW = $info[0];
+        $srcH = $info[1];
+        $type = $info[2];
 
         $sourceImage = $this->createImageFromFile($sourcePath, $type);
         if ($sourceImage === false) {
@@ -378,17 +378,24 @@ final readonly class GdMediaService implements MediaServiceInterface
         $processedCount = 0;
 
         $names = $files['name'] ?? [];
-        $count = \is_array($names) ? \count($names) : 0;
+        $errors = $files['error'] ?? [];
+        $tmpNames = $files['tmp_name'] ?? [];
+
+        if (!\is_array($names) || !\is_array($errors) || !\is_array($tmpNames)) {
+            return 0;
+        }
+
+        $count = \count($names);
 
         for ($i = 0; $i < $count; ++$i) {
-            if (!isset($files['error'][$i])) {
+            if (!isset($errors[$i])) {
                 continue;
             }
-            if ($files['error'][$i] !== \UPLOAD_ERR_OK) {
+            if ($errors[$i] !== \UPLOAD_ERR_OK) {
                 continue;
             }
-            $tmpName = \is_string($files['tmp_name'][$i] ?? null) ? $files['tmp_name'][$i] : '';
-            $originalName = \is_scalar($files['name'][$i] ?? null) ? (string) $files['name'][$i] : '';
+            $tmpName = \is_string($tmpNames[$i] ?? null) ? $tmpNames[$i] : '';
+            $originalName = \is_scalar($names[$i] ?? null) ? (string) $names[$i] : '';
             if ($tmpName === '') {
                 continue;
             }
@@ -430,8 +437,9 @@ final readonly class GdMediaService implements MediaServiceInterface
         // Profilbild
         if (isset($files['profile_image']) && \is_array($files['profile_image'])) {
             $pImg = $files['profile_image'];
-            if (($pImg['error'] ?? \UPLOAD_ERR_NO_FILE) !== \UPLOAD_ERR_NO_FILE) {
-                if (($pImg['error'] ?? \UPLOAD_ERR_NO_FILE) === \UPLOAD_ERR_OK) {
+            $err = $pImg['error'] ?? \UPLOAD_ERR_NO_FILE;
+            if ($err !== \UPLOAD_ERR_NO_FILE) {
+                if ($err === \UPLOAD_ERR_OK) {
                     $tmpName = \is_string($pImg['tmp_name'] ?? null) ? $pImg['tmp_name'] : '';
                     if ($tmpName !== '') {
                         $fileName = $safeName . '-profile.webp';
@@ -442,7 +450,7 @@ final readonly class GdMediaService implements MediaServiceInterface
                         }
                     }
                 } else {
-                    $result['warnings'][] = 'Profilbild: PHP Upload-Fehler (Code: ' . (int) ($pImg['error'] ?? 0) . ')';
+                    $result['warnings'][] = 'Profilbild: PHP Upload-Fehler (Code: ' . (int) $err . ')';
                 }
             }
         }
@@ -481,16 +489,19 @@ final readonly class GdMediaService implements MediaServiceInterface
         if (isset($files['ref_sheets']) && \is_array($files['ref_sheets'])) {
             $refFiles = $files['ref_sheets'];
             $names = $refFiles['name'] ?? [];
-            if (\is_array($names)) {
+            $errors = $refFiles['error'] ?? [];
+            $tmpNames = $refFiles['tmp_name'] ?? [];
+
+            if (\is_array($names) && \is_array($errors) && \is_array($tmpNames)) {
                 $count = \count($names);
                 for ($i = 0; $i < $count; ++$i) {
-                    if (!isset($refFiles['error'][$i])) {
+                    if (!isset($errors[$i])) {
                         continue;
                     }
-                    if ($refFiles['error'][$i] !== \UPLOAD_ERR_OK) {
+                    if ($errors[$i] !== \UPLOAD_ERR_OK) {
                         continue;
                     }
-                    $tmpName = \is_string($refFiles['tmp_name'][$i] ?? null) ? $refFiles['tmp_name'][$i] : '';
+                    $tmpName = \is_string($tmpNames[$i] ?? null) ? $tmpNames[$i] : '';
                     if ($tmpName === '') {
                         continue;
                     }
