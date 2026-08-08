@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.16.1](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.0...v6.16.1) (2026-08-08)
+
+### 🐛 Bug Fixes
+
+* **app:** Resolve final PHPStan Level 10 strict type redundancy errors ([fc61810](https://github.com/RaptorXilef/twokinds.4lima.de/commit/fc618107d5a3f99d50ab681b2b11ba10b5f2899a))
+* **app:** Resolve final redundant checks and contravariance in Application layer ([4e30061](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4e30061bf60d44b603df8ed13d2a1ea9f9add673))
+* **app:** Resolve initial PHPStan Level 10 strict type errors in Application layer ([43ad2f5](https://github.com/RaptorXilef/twokinds.4lima.de/commit/43ad2f559b887bf9a09de2694c7595b809935886))
+* **app:** Resolve initial PHPStan Level 9 strict type errors in Application layer ([5ae95dd](https://github.com/RaptorXilef/twokinds.4lima.de/commit/5ae95dd3b01460d0de955efd90a5f29d7efc80e0))
+* **app:** Resolve remaining PHPStan Level 10 errors across Application layer ([f47fc03](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f47fc03702210131e44c8da9f9e5805bd2db8377))
+* **app:** Resolve remaining PHPStan Level 10 errors across Application layer ([dcaa3bf](https://github.com/RaptorXilef/twokinds.4lima.de/commit/dcaa3bf50d6481f897017001d87a131fa3084994))
+* **app:** Resolve remaining PHPStan Level 10 errors across Application layer ([c85931f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/c85931f6d7b48ad01280828cd2eecd04ff341b6d))
+* **app:** Resolve remaining PHPStan Level 10 strict type errors in Application Actions ([f253456](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f253456cdc08d473d8b958855e4383310f6afddf))
+* **app:** Resolve remaining PHPStan Level 10 strict type errors in Application API Actions ([14f854f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/14f854fd339f9aa868f9f9fd1ffbfc67fe14a00a))
+* **app:** Resolve remaining PHPStan Max and Intelephense errors ([d1d1ed6](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d1d1ed61119b68fab0abf1db469f03b2709dde27))
+
+### ⚙️ Refactoring
+
+* **app:** Consolidate action interfaces to remove structural duplication ([3288d00](https://github.com/RaptorXilef/twokinds.4lima.de/commit/3288d00ea46772d60aea268f0ea932af2101ea90))
+
 ## [6.16.0](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.15.1...v6.16.0) (2026-08-07)
 
 ### 🚀 Features
