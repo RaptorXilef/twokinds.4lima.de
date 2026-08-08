@@ -12,7 +12,10 @@ use App\Contracts\System\RouteCacheInterface;
 final class ActionRegistry
 {
     /**
-     * @var array<string, mixed>
+     * @var array{
+     *   exact: array<string, array<string, array{class: string, auth: bool}>>,
+     *   dynamic: array<string, array<string, array{class: string, auth: bool}>>
+     * }
      */
     private array $routes = ['exact' => [], 'dynamic' => []];
 
@@ -30,7 +33,9 @@ final class ActionRegistry
         if ($this->config->get('admin_dev_mode', false) !== true) {
             $cached = $this->cache->load();
             if (\is_array($cached)) {
-                $this->routes = $cached;
+                /** @var array{exact: array<string, array<string, array{class: string, auth: bool}>>, dynamic: array<string, array<string, array{class: string, auth: bool}>>} $cachedArr */
+                $cachedArr    = $cached;
+                $this->routes = $cachedArr;
 
                 return;
             }
@@ -52,11 +57,17 @@ final class ActionRegistry
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
 
         foreach ($iterator as $file) {
+            /** @var \SplFileInfo $file */
             if (! $file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
 
-            $relativePath = \str_replace($dir . \DIRECTORY_SEPARATOR, '', $file->getPathname());
+            $pathName = $file->getPathname();
+            if (! \is_string($pathName)) {
+                continue;
+            }
+
+            $relativePath = \str_replace($dir . \DIRECTORY_SEPARATOR, '', $pathName);
             $classSuffix  = \str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $relativePath);
             $className    = 'App\\Application\\Actions\\' . $classSuffix;
 
@@ -92,13 +103,15 @@ final class ActionRegistry
     public function match(string $method, string $path): ?array
     {
         // Exact Match
-        if (isset($this->routes['exact'][$method][$path]) && \is_array($this->routes['exact'][$method][$path])) {
+        if (isset($this->routes['exact'][$method]) && \is_array($this->routes['exact'][$method]) && isset($this->routes['exact'][$method][$path])) {
             $r = $this->routes['exact'][$method][$path];
 
-            $class = \is_string($r['class'] ?? null) ? $r['class'] : '';
-            $auth  = ! empty($r['auth']);
+            if (\is_array($r)) {
+                $class = \is_string($r['class'] ?? null) ? $r['class'] : '';
+                $auth  = ! empty($r['auth']);
 
-            return ['class' => $class, 'params' => [], 'requiresAuth' => $auth];
+                return ['class' => $class, 'params' => [], 'requiresAuth' => $auth];
+            }
         }
 
         $dynamics = $this->routes['dynamic'][$method] ?? [];

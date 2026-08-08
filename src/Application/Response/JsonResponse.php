@@ -9,11 +9,12 @@ use App\Application\Contracts\ResponseInterface;
 /**
  * Standardisierte JSON-Antwort.
  * Kapselt die JSON-Codierung und HTTP-Statuscodes ab, ohne den PHP-Prozess hart zu beenden.
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
  */
 final readonly class JsonResponse implements ResponseInterface
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __construct(
         public array $data,
         public int $statusCode = 200,
@@ -47,7 +48,9 @@ final readonly class JsonResponse implements ResponseInterface
         exit;
     }
 
-    // TODO DOCBLOCK
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function sendPayload(array $data, int $statusCode = 200): self
     {
         return new self($data, $statusCode);
@@ -55,6 +58,8 @@ final readonly class JsonResponse implements ResponseInterface
 
     /**
      * Sendet eine Erfolgsantwort (200 OK) und mischt das 'success' => true Flag bei.
+     *
+     * @param array<string, mixed> $data
      */
     public static function success(array $data = []): self
     {

@@ -47,8 +47,11 @@ final readonly class SessionManager implements AuthSessionInterface
         $isAuthenticated = (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== '')
                         || (isset($_SESSION['admin_user']) && $_SESSION['admin_user'] !== '');
 
+        $lastActivity    = $_SESSION['last_activity'] ?? 0;
+        $lastActivityInt = \is_numeric($lastActivity) ? (int) $lastActivity : 0;
+
         // Idle Timeout: User war zu lange inaktiv
-        if ($now - (int) $_SESSION['last_activity'] > self::IDLE_TIMEOUT) {
+        if ($now - $lastActivityInt > self::IDLE_TIMEOUT) {
             // Wir zerstören die Session nach 30 Min NUR, wenn sensible Admin-Daten drin liegen!
             // Gast-Sessions (für das CSRF Token auf der Loginseite) lassen wir am Leben.
             if ($isAuthenticated) {
@@ -60,8 +63,11 @@ final readonly class SessionManager implements AuthSessionInterface
             return;
         }
 
+        $sessionCreated    = $_SESSION['session_created'] ?? 0;
+        $sessionCreatedInt = \is_numeric($sessionCreated) ? (int) $sessionCreated : 0;
+
         // Absolute Timeout: Session existiert insgesamt zu lange
-        if ($now - (int) $_SESSION['session_created'] > self::MAX_LIFETIME) {
+        if ($now - $sessionCreatedInt > self::MAX_LIFETIME) {
             $this->destroy();
             $_SESSION['session_created'] = $now;
             $_SESSION['last_activity']   = $now;
@@ -183,17 +189,12 @@ final readonly class SessionManager implements AuthSessionInterface
             // PHPStan Strict Check für das Cookie-Array (Samesite kann fehlen)
             $cookieParams = [
                 'expires'  => $this->clock->now()->getTimestamp() - 42000,
-                'path'     => (string) $p['path'],
-                'domain'   => (string) $p['domain'],
-                'secure'   => (bool) $p['secure'],
-                'httponly' => (bool) $p['httponly'],
+                'path'     => $p['path'],
+                'domain'   => $p['domain'],
+                'secure'   => $p['secure'],
+                'httponly' => $p['httponly'],
+                'samesite' => $p['samesite'],
             ];
-
-            if (isset($p['samesite'])) {
-                $cookieParams['samesite'] = (string) $p['samesite'];
-            } else {
-                $cookieParams['samesite'] = 'Lax';
-            }
 
             \setcookie(\session_name(), '', $cookieParams);
         }
@@ -274,11 +275,11 @@ final readonly class SessionManager implements AuthSessionInterface
 
     public function initCsrfToken(): string
     {
-        if (! isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] === '') {
+        if (! isset($_SESSION['csrf_token']) || ! \is_string($_SESSION['csrf_token']) || $_SESSION['csrf_token'] === '') {
             $_SESSION['csrf_token'] = \bin2hex(\random_bytes(32));
         }
 
-        return (string) $_SESSION['csrf_token'];
+        return $_SESSION['csrf_token'];
     }
 
     public function getCsrfToken(): string

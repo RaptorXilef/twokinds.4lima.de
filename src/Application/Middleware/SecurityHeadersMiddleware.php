@@ -11,8 +11,6 @@ use App\Application\Session\SessionManager;
 /**
  * Global Security Headers.
  * Implementiert Zero-Trust CSP, HSTS und Permissions-Policies zum Schutz vor XSS und Clickjacking.
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
  */
 final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
 {
@@ -40,8 +38,12 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             \header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
 
             // Host für lokale Whitelist prüfen
-            $nonce   = $this->sessionManager->getCsrfToken() ?? \bin2hex(\random_bytes(16));
-            $host    = $request->server['HTTP_HOST'] ?? '';
+            $csrf  = $this->sessionManager->getCsrfToken();
+            $nonce = $csrf !== '' ? $csrf : \bin2hex(\random_bytes(16));
+
+            $hostRaw = $request->server['HTTP_HOST'] ?? '';
+            $host    = \is_string($hostRaw) ? $hostRaw : '';
+
             $isLocal = \str_ends_with($host, '.local')
                 || $host === 'localhost'
                 || $host === '127.0.0.1'

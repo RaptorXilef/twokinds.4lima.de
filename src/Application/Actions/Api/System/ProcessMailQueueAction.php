@@ -26,9 +26,11 @@ final readonly class ProcessMailQueueAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $tokenRaw          = $request->get['token'] ?? '';
-        $providedToken     = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
-        $expectedCronToken = (string) $this->config->get('cron_secret', '');
+        $tokenRaw      = $request->get['token'] ?? '';
+        $providedToken = \is_string($tokenRaw) ? $tokenRaw : (\is_scalar($tokenRaw) ? (string) $tokenRaw : '');
+
+        $cronRaw           = $this->config->get('cron_secret', '');
+        $expectedCronToken = \is_string($cronRaw) ? $cronRaw : (\is_scalar($cronRaw) ? (string) $cronRaw : '');
 
         // 1. Sicherheits-Check
         if ($expectedCronToken === '' || $providedToken !== $expectedCronToken) {

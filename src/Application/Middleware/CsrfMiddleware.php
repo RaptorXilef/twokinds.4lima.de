@@ -9,11 +9,6 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
 
-/**
- * TODO DOCBLOCK
- *
- * SPDX-License-Identifier: LicenseRef-Proprietary
- */
 final readonly class CsrfMiddleware implements MiddlewareInterface
 {
     public function __construct(
@@ -25,10 +20,16 @@ final readonly class CsrfMiddleware implements MiddlewareInterface
     public function process(ServerRequest $request, callable $next): mixed
     {
         // CSRF greift nur bei POST-Requests!
-        $method = $request->getMethod() ?? 'GET';
+        $method = $request->getMethod();
 
         if (\in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
-            $provided = $request->getHeader('X-CSRF-Token') ?: ($request->post['csrf_token'] ?? '');
+            $headerRaw   = $request->getHeader('X-CSRF-Token');
+            $headerToken = \is_string($headerRaw) ? $headerRaw : '';
+
+            $postRaw   = $request->post['csrf_token'] ?? '';
+            $postToken = \is_string($postRaw) ? $postRaw : '';
+
+            $provided = $headerToken !== '' ? $headerToken : $postToken;
             $stored   = $this->sessionManager->getCsrfToken();
 
             if ($stored === '' || ! \hash_equals($stored, $provided)) {

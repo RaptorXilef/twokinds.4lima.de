@@ -8,6 +8,7 @@ use App\Application\Actions\Api\Admin\LoginAction;
 use App\Application\Actions\Api\System\CronBackupAction;
 use App\Application\Actions\Api\System\ProcessMailQueueAction;
 use App\Application\Actions\Frontend\Error404Action;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Contracts\ResponseInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Middleware\AuthMiddleware;
@@ -31,15 +32,18 @@ final readonly class FrontendController
 
     public function handleRequest(ServerRequest $request): void
     {
-        $path     = \parse_url($request->getPath(), \PHP_URL_PATH) ?? '/';
-        $basePath = \parse_url($this->config->getBaseUrl(), \PHP_URL_PATH) ?? '/';
+        $pathRaw = \parse_url($request->getPath(), \PHP_URL_PATH);
+        $path    = \is_string($pathRaw) ? $pathRaw : '/';
+
+        $basePathRaw = \parse_url($this->config->getBaseUrl(), \PHP_URL_PATH);
+        $basePath    = \is_string($basePathRaw) ? $basePathRaw : '/';
 
         $relativePath = '/';
 
-        if (\str_starts_with((string) $path, $basePath)) {
-            $relativePath = '/' . \ltrim(\substr((string) $path, \strlen($basePath)), '/');
+        if (\str_starts_with($path, $basePath)) {
+            $relativePath = '/' . \ltrim(\substr($path, \strlen($basePath)), '/');
         } else {
-            $relativePath = '/' . \ltrim((string) $path, '/');
+            $relativePath = '/' . \ltrim($path, '/');
         }
 
         if (\str_ends_with($relativePath, '.php')) {
@@ -54,14 +58,22 @@ final readonly class FrontendController
 
         if ($matched === null) {
             $matched = $this->actionFactory->getRegistry()->match('GET', '/404');
-            // 404 Action kümmert sich um den Status-Code, kein nacktes http_response_code(404) mehr!
         }
 
-        $className = $matched['class'];
-        $request   = $request->withInput(\array_merge($request->input, $matched['params']));
+        if ($matched !== null) {
+            $className = \is_string($matched['class']) ? $matched['class'] : Error404Action::class;
 
-        $maintenanceMode  = (bool) $this->config->get('maintenance_mode', false);
-        $maintenanceAdmin = (bool) $this->config->get('maintenance_mode_admin', false);
+            /** @var array<string, string> $params */
+            $params       = \is_array($matched['params'] ?? null) ? $matched['params'] : [];
+            $request      = $request->withInput(\array_merge($request->input, $params));
+            $requiresAuth = ! empty($matched['requiresAuth']);
+        } else {
+            $className    = Error404Action::class;
+            $requiresAuth = false;
+        }
+
+        $maintenanceMode  = $this->config->get('maintenance_mode', false) === true;
+        $maintenanceAdmin = $this->config->get('maintenance_mode_admin', false) === true;
 
         $isAdminAction = \str_starts_with($className, 'App\\Application\\Actions\\Admin\\')
             || \str_starts_with($className, 'App\\Application\\Actions\\Api\\Admin\\');
@@ -89,7 +101,11 @@ final readonly class FrontendController
             }
 
             \ob_start();
-            require_once \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/maintenance.php';
+
+            $rootPathRaw = $this->config->get('root_path');
+            $rootPath    = \is_string($rootPathRaw) ? $rootPathRaw : '';
+            require_once \rtrim($rootPath, '/\\') . '/public/maintenance.php';
+
             $html = \ob_get_clean();
 
             (new HtmlResponse((string) $html, 503))->send();
@@ -100,24 +116,26 @@ final readonly class FrontendController
         $pipeline = new MiddlewarePipeline();
         $pipeline->add($this->securityHeaders);
 
-        // MAGIC: Die Middleware wird vollautomatisch geladen, wenn die Klasse das Attribut #[RequiresAuth] hat!
-        if ($matched['requiresAuth']) {
+        if ($requiresAuth) {
             $pipeline->add(new AuthMiddleware($this->sessionManager, $this->config));
         }
 
         $response = $pipeline->process($request, function (ServerRequest $req) use ($className): mixed {
             $action = $this->actionFactory->create($className);
-            if ($action !== null) {
+            if ($action instanceof ActionInterface) {
                 return $action->execute($req);
             }
 
-            return $this->actionFactory->create(Error404Action::class)->execute($req);
+            $fallback = $this->actionFactory->create(Error404Action::class);
+            if ($fallback instanceof ActionInterface) {
+                return $fallback->execute($req);
+            }
+
+            return new HtmlResponse('404 Not Found', 404);
         });
 
-        if (! $response instanceof ResponseInterface) {
-            return;
+        if ($response instanceof ResponseInterface) {
+            $response->send();
         }
-
-        $response->send();
     }
 }

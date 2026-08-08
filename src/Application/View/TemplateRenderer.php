@@ -30,7 +30,7 @@ final readonly class TemplateRenderer
     public function render(string $templatePath, array $data = [], int $statusCode = 200): HtmlResponse
     {
         $rootPath = $this->config->get('root_path');
-        $appRoot  = \rtrim(\is_string($rootPath) ? $rootPath : '', '/\\');
+        $appRoot  = \is_string($rootPath) ? \rtrim($rootPath, '/\\') : '';
 
         $systemVars = [
             'appRoot'         => $appRoot,

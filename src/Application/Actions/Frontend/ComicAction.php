@@ -30,7 +30,8 @@ final readonly class ComicAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $requestedId = $request->input['id'] ?? null;
+        $requestedIdRaw = $request->input['id'] ?? null;
+        $requestedId    = \is_scalar($requestedIdRaw) ? (string) $requestedIdRaw : null;
 
         // Hole alle Comics (werden vom Repo standardmäßig DESC sortiert)
         $allComics = $this->comicRepo->findAll();
@@ -42,7 +43,7 @@ final readonly class ComicAction implements ActionInterface
         $comic        = null;
         $currentIndex = -1;
 
-        if ($requestedId) {
+        if ($requestedId !== null && $requestedId !== '') {
             foreach ($allComics as $index => $c) {
                 if ($c->id->value === $requestedId) {
                     $comic        = $c;
