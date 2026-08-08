@@ -10,6 +10,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\BackupServiceInterface;
+use Throwable;
 
 #[Route('GET', '/api/cron_backup')]
 final readonly class CronBackupAction implements ActionInterface
@@ -20,7 +21,7 @@ final readonly class CronBackupAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $token  = $request->get['token'] ?? '';
+        $token = $request->get['token'] ?? '';
         $secret = $this->config->get('cron_secret', '');
 
         if ($secret === '' || $token !== $secret) {
@@ -31,7 +32,7 @@ final readonly class CronBackupAction implements ActionInterface
             $filename = $this->backupService->createBackup();
 
             return JsonResponse::success(['message' => "Automatisches Backup erstellt: $filename"]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
     }

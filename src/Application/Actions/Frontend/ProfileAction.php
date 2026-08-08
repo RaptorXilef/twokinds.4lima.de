@@ -28,12 +28,12 @@ final readonly class ProfileAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->isLoggedIn()) {
+        if (!$this->auth->isLoggedIn()) {
             return new RedirectResponse('/login');
         }
 
         $userId = $this->sessionManager->getUserId();
-        $user   = $this->userRepository->findById($userId);
+        $user = $this->userRepository->findById($userId);
 
         // Verhindert Zugriff auf Profil-Seite für System-Accounts (RaptorXilef/Systembetreuer)
         if (\str_starts_with($userId, 'sys_')) {

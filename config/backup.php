@@ -16,15 +16,15 @@ return [
 
     'backup' => [
         'retention_days' => 365, // Tage bis Backup automatisch gelöscht wird
-        'zip_password'   => '',
-        'ftp'            => [
+        'zip_password' => '',
+        'ftp' => [
             'enabled' => false,
-            'host'    => '',
-            'port'    => 21,
-            'user'    => '',
-            'pass'    => '',
-            'path'    => '/backups/',
-            'ssl'     => true,
+            'host' => '',
+            'port' => 21,
+            'user' => '',
+            'pass' => '',
+            'path' => '/backups/',
+            'ssl' => true,
         ],
     ],
 

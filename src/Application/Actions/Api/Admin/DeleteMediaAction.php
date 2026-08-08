@@ -24,13 +24,13 @@ final readonly class DeleteMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('media.delete')) {
+        if (!$this->auth->hasPermission('media.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $filenameRaw = $request->post['filename'] ?? '';
         $filenameStr = \is_string($filenameRaw) ? $filenameRaw : '';
-        $filename    = \basename($filenameStr);
+        $filename = \basename($filenameStr);
 
         if ($filename !== '' && $this->imageStorage->deleteCharacterMedia('profiles', $filename)) {
             return JsonResponse::success(['message' => 'Datei gelöscht.']);

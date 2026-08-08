@@ -29,7 +29,7 @@ final readonly class UserDetailAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         $idRaw = $request->input['id'] ?? '';
-        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+        $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
         if ($id === '') {
             return new RedirectResponse('/');
@@ -37,17 +37,17 @@ final readonly class UserDetailAction implements ActionInterface
 
         // Wir suchen jetzt nach der fixen ID, nicht mehr nach dem Namen!
         $user = $this->userRepo->findById($id);
-        if (! $user instanceof User) {
+        if (!$user instanceof User) {
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Benutzer nicht gefunden'], 404);
         }
 
         $allComics = $this->comicRepo->findAll();
 
         $userComics = [];
-        $bookmarks  = [];
+        $bookmarks = [];
 
         foreach ($allComics as $comic) {
-            if (! \in_array($user->id, $comic->userIds, true)) {
+            if (!\in_array($user->id, $comic->userIds, true)) {
                 continue;
             }
 
@@ -55,11 +55,11 @@ final readonly class UserDetailAction implements ActionInterface
         }
 
         if ($user->publicBookmarks) {
-            $bms        = $this->bookmarkRepo->findByUser($user->id);
+            $bms = $this->bookmarkRepo->findByUser($user->id);
             $bmComicIds = \array_map(fn (Bookmark $b): string => $b->comicId, $bms);
 
             foreach ($allComics as $comic) {
-                if (! \in_array($comic->id->value, $bmComicIds, true)) {
+                if (!\in_array($comic->id->value, $bmComicIds, true)) {
                     continue;
                 }
 
@@ -72,10 +72,10 @@ final readonly class UserDetailAction implements ActionInterface
 
         // Wir rufen das neue Template "user_detail" auf
         return $this->renderer->render('pages/frontend/user_detail', [
-            'pageTitle'  => 'Profil von ' . $user->username->value,
+            'pageTitle' => 'Profil von ' . $user->username->value,
             'publicUser' => $user,
             'userComics' => $userComics,
-            'bookmarks'  => $bookmarks,
+            'bookmarks' => $bookmarks,
         ]);
     }
 }

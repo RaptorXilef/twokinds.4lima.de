@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Security;
 
+use Stringable;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
@@ -14,7 +15,7 @@ final class Sanitizer
      */
     public static function string(mixed $input): string
     {
-        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof \Stringable ? (string) $input : '');
+        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : '');
 
         return \trim(\strip_tags($str));
     }
@@ -24,7 +25,7 @@ final class Sanitizer
      */
     public static function email(mixed $input): string
     {
-        $str       = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof \Stringable ? (string) $input : '');
+        $str = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : '');
         $sanitized = \filter_var(\trim($str), \FILTER_SANITIZE_EMAIL);
 
         return $sanitized !== false ? $sanitized : '';
@@ -35,7 +36,7 @@ final class Sanitizer
      */
     public static function html(mixed $input): string
     {
-        $inputStr = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof \Stringable ? (string) $input : '');
+        $inputStr = \is_string($input) ? $input : (\is_scalar($input) || $input instanceof Stringable ? (string) $input : '');
         if (\trim($inputStr) === '') {
             return '';
         }
@@ -61,16 +62,16 @@ final class Sanitizer
     {
         $info = \pathinfo($filename);
         $name = $info['filename'];
-        $ext  = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
+        $ext = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
 
         $name = \mb_strtolower($name, 'UTF-8');
         $name = \str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $name);
 
         $replaced = \preg_replace('/[^a-z0-9]+/', '-', $name);
-        $name     = \is_string($replaced) ? $replaced : '';
+        $name = \is_string($replaced) ? $replaced : '';
 
         $replaced2 = \preg_replace('/-+/', '-', $name);
-        $name      = \is_string($replaced2) ? $replaced2 : '';
+        $name = \is_string($replaced2) ? $replaced2 : '';
 
         return \trim($name, '-') . $ext;
     }

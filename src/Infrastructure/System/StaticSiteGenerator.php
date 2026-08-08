@@ -9,6 +9,8 @@ use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\System\SiteGeneratorInterface;
+use DateTimeImmutable;
+use XMLWriter;
 
 final class StaticSiteGenerator implements SiteGeneratorInterface
 {
@@ -35,7 +37,7 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
     // PERF: Dieser Destruktor feuert GANZ am Ende, NACHDEM der Browser längst seine Antwort hat!
     public function __destruct()
     {
-        if (! $this->needsGeneration) {
+        if (!$this->needsGeneration) {
             return;
         }
 
@@ -45,10 +47,10 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
 
     private function doGenerateSitemap(): void
     {
-        $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
+        $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
         $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
 
-        $xml = new \XMLWriter();
+        $xml = new XMLWriter();
         $xml->openMemory();
         $xml->setIndent(true);
         $xml->startDocument('1.0', 'UTF-8');
@@ -83,11 +85,11 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         foreach ($comics as $comic) {
             // Datum für <lastmod> aus der ID generieren (YYYYMMDD)
             $dateStr = \substr($comic->id->value, 0, 8);
-            $lastMod = \DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new \DateTimeImmutable();
+            $lastMod = DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new DateTimeImmutable();
 
             // Wenn ein Bild hochgeladen wurde, nutzen wir dieses Datum als letzes Update
             if ($comic->imageUpdatedAt !== null) {
-                $lastMod = (new \DateTimeImmutable())->setTimestamp($comic->imageUpdatedAt);
+                $lastMod = (new DateTimeImmutable())->setTimestamp($comic->imageUpdatedAt);
             }
 
             $this->addSitemapUrl(
@@ -107,10 +109,10 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
 
     private function doGenerateRss(): void
     {
-        $baseUrl   = $this->config->getBaseUrl();
+        $baseUrl = $this->config->getBaseUrl();
         $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
 
-        $xml = new \XMLWriter();
+        $xml = new XMLWriter();
         $xml->openMemory();
         $xml->setIndent(true);
         $xml->startDocument('1.0', 'UTF-8');
@@ -126,7 +128,7 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         $xml->writeElement('description', $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'));
         $xml->writeElement('language', 'de-de');
 
-        $xml->writeElement('lastBuildDate', (new \DateTimeImmutable())->format(\DATE_RFC2822));
+        $xml->writeElement('lastBuildDate', (new DateTimeImmutable())->format(\DATE_RFC2822));
         $xml->writeElement('generator', 'Twokinds Admin Panel Generator');
 
         // Atom Self-Link
@@ -156,7 +158,7 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         \usort($feedComics, fn ($a, $b): int => \strcmp($b->id->value, $a->id->value));
 
         // Max Items aus der Config ziehen (Default 25, falls Eintrag fehlt)
-        $maxItems   = (int) $this->config->get('rss_max_items', 25);
+        $maxItems = (int) $this->config->get('rss_max_items', 25);
         $feedComics = \array_slice($feedComics, 0, $maxItems);
 
         foreach ($feedComics as $comic) {
@@ -172,7 +174,7 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
 
             // Exakter Nachbau deines alten HTML-Formats für die Feed-Reader
             $imgSrc = $baseUrl . '/assets/images/comics/lowres/' . $comic->id->value . '.webp';
-            $desc   = '<p><img src="' . $imgSrc . '" alt="' . \htmlspecialchars($title, \ENT_QUOTES) . '" style="max-width: 100%; height: auto;" /></p>';
+            $desc = '<p><img src="' . $imgSrc . '" alt="' . \htmlspecialchars($title, \ENT_QUOTES) . '" style="max-width: 100%; height: auto;" /></p>';
 
             if ($comic->transcript !== '') {
                 // Das Transkript wird vom Editor bereits in <p> Tags geliefert
@@ -185,7 +187,7 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
 
             // Datum aus ID (erste 8 Zeichen) extrahieren
             $dateStr = \substr($comic->id->value, 0, 8);
-            $pubDate = \DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new \DateTimeImmutable();
+            $pubDate = DateTimeImmutable::createFromFormat('Ymd', $dateStr) ?: new DateTimeImmutable();
             $xml->writeElement('pubDate', $pubDate->format(\DATE_RFC2822));
 
             $xml->endElement(); // item
@@ -198,7 +200,7 @@ final class StaticSiteGenerator implements SiteGeneratorInterface
         \file_put_contents($publicDir . '/rss.xml', $xml->outputMemory());
     }
 
-    private function addSitemapUrl(\XMLWriter $xml, string $loc, string $priority, string $changefreq, ?string $lastmod = null): void
+    private function addSitemapUrl(XMLWriter $xml, string $loc, string $priority, string $changefreq, ?string $lastmod = null): void
     {
         $xml->startElement('url');
         $xml->writeElement('loc', $loc);

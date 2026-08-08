@@ -8,6 +8,10 @@ use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\RouteCacheInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use ReflectionClass;
+use SplFileInfo;
 
 final class ActionRegistry
 {
@@ -34,7 +38,7 @@ final class ActionRegistry
             $cached = $this->cache->load();
             if (\is_array($cached)) {
                 /** @var array{exact: array<string, array<string, array{class: string, auth: bool}>>, dynamic: array<string, array<string, array{class: string, auth: bool}>>} $cachedArr */
-                $cachedArr    = $cached;
+                $cachedArr = $cached;
                 $this->routes = $cachedArr;
 
                 return;
@@ -42,7 +46,7 @@ final class ActionRegistry
         }
 
         $rootPath = $this->config->get('root_path');
-        $baseDir  = \rtrim(\is_string($rootPath) ? $rootPath : '', '/\\') . '/src/Application/Actions';
+        $baseDir = \rtrim(\is_string($rootPath) ? $rootPath : '', '/\\') . '/src/Application/Actions';
 
         $this->scanDirectoryRecursively($baseDir);
 
@@ -51,31 +55,33 @@ final class ActionRegistry
 
     private function scanDirectoryRecursively(string $dir): void
     {
-        if (! \is_dir($dir)) {
+        if (!\is_dir($dir)) {
             return;
         }
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
 
         foreach ($iterator as $file) {
-            /** @var \SplFileInfo $file */
-            if (! $file->isFile() || $file->getExtension() !== 'php') {
+            /** @var SplFileInfo $file */
+            if (!$file->isFile()) {
                 continue;
             }
-
+            if ($file->getExtension() !== 'php') {
+                continue;
+            }
             $pathName = $file->getPathname();
-            if (! \is_string($pathName)) {
+            if (!\is_string($pathName)) {
                 continue;
             }
 
             $relativePath = \str_replace($dir . \DIRECTORY_SEPARATOR, '', $pathName);
-            $classSuffix  = \str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $relativePath);
-            $className    = 'App\\Application\\Actions\\' . $classSuffix;
+            $classSuffix = \str_replace(['/', '\\', '.php'], ['\\', '\\', ''], $relativePath);
+            $className = 'App\\Application\\Actions\\' . $classSuffix;
 
-            if (! \class_exists($className)) {
+            if (!\class_exists($className)) {
                 continue;
             }
 
-            $reflection   = new \ReflectionClass($className);
+            $reflection = new ReflectionClass($className);
             $requiresAuth = $reflection->getAttributes(RequiresAuth::class) !== [];
 
             foreach ($reflection->getAttributes(Route::class) as $attribute) {
@@ -89,8 +95,8 @@ final class ActionRegistry
     {
         if (\str_contains($path, '{')) {
             // Wandelt "/comic/{id}" in "#^/comic/(?P<id>[^/]+)$#" um
-            $replaced                                               = \preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<\1>[^/]+)', $path);
-            $regex                                                  = \is_string($replaced) ? $replaced : '';
+            $replaced = \preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<\1>[^/]+)', $path);
+            $regex = \is_string($replaced) ? $replaced : '';
             $this->routes['dynamic'][$method]['#^' . $regex . '$#'] = ['class' => $className, 'auth' => $requiresAuth];
         } else {
             $this->routes['exact'][$method][$path] = ['class' => $className, 'auth' => $requiresAuth];
@@ -107,7 +113,7 @@ final class ActionRegistry
             $r = $this->routes['exact'][$method][$path];
 
             $class = \is_string($r['class']) ? $r['class'] : '';
-            $auth  = ($r['auth'] ?? false) === true;
+            $auth = ($r['auth'] ?? false) === true;
 
             return ['class' => $class, 'params' => [], 'requiresAuth' => $auth];
         }
@@ -120,7 +126,7 @@ final class ActionRegistry
                     $params = [];
                     foreach ($matches as $k => $v) {
                         // $v ist von preg_match garantiert ein String, daher prüfen wir nur $k
-                        if (! \is_string($k)) {
+                        if (!\is_string($k)) {
                             continue;
                         }
 
@@ -129,7 +135,7 @@ final class ActionRegistry
 
                     // $r ist durch den DocBlock oben als Array bekannt
                     $class = isset($r['class']) && \is_string($r['class']) ? $r['class'] : '';
-                    $auth  = isset($r['auth']) && $r['auth'];
+                    $auth = isset($r['auth']) && $r['auth'];
 
                     return ['class' => $class, 'params' => $params, 'requiresAuth' => $auth];
                 }

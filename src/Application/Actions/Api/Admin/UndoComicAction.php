@@ -12,6 +12,9 @@ use App\Application\Response\JsonResponse;
 use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
 use App\Core\ValueObject\ComicId;
+use DomainException;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/undo_comic')]
 #[RequiresAuth]
@@ -25,24 +28,24 @@ final readonly class UndoComicAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.delete')) {
+        if (!$this->auth->hasPermission('comics.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
             $idStrRaw = $request->post['comic_id'] ?? '';
-            $idStr    = \is_scalar($idStrRaw) ? \trim((string) $idStrRaw) : '';
+            $idStr = \is_scalar($idStrRaw) ? \trim((string) $idStrRaw) : '';
 
             if ($idStr === '') {
-                throw new \InvalidArgumentException('Keine Comic-ID angegeben.');
+                throw new InvalidArgumentException('Keine Comic-ID angegeben.');
             }
 
             $this->comicService->restoreLatestRevision(new ComicId($idStr));
 
             return JsonResponse::success(['message' => "Der Comic {$idStr} wurde auf die vorherige Version zurückgesetzt."]);
-        } catch (\DomainException | \InvalidArgumentException $e) {
+        } catch (DomainException|InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Rückgängigmachen: ' . $e->getMessage(), 500);
         }
     }

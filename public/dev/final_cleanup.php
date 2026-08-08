@@ -16,7 +16,7 @@ function slugify(string $filename): string
 {
     $info = \pathinfo($filename);
     $name = $info['filename'];
-    $ext  = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
+    $ext = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
 
     // Umlaute umwandeln
     $name = \mb_strtolower($name, 'UTF-8');
@@ -34,8 +34,8 @@ function exactRename(string $dir, string $oldName, string $newName): void
         return;
     }
 
-    $oldPath  = $dir . '/' . $oldName;
-    $newPath  = $dir . '/' . $newName;
+    $oldPath = $dir . '/' . $oldName;
+    $newPath = $dir . '/' . $newName;
     $tempPath = $dir . '/temp_' . \uniqid() . '.tmp';
 
     // Rename via temp file to bypass Windows case-insensitivity locks
@@ -56,7 +56,7 @@ $foldersToCheck = [
 ];
 
 foreach ($foldersToCheck as $folder) {
-    if (! \is_dir($folder)) {
+    if (!\is_dir($folder)) {
         continue;
     }
     echo '<h3>Prüfe Ordner: ' . \basename($folder) . '</h3>';
@@ -80,7 +80,7 @@ $unusedFiles = [
 ];
 
 foreach ($unusedFiles as $f) {
-    if (! \is_file($f)) {
+    if (!\is_file($f)) {
         continue;
     }
 
@@ -90,7 +90,7 @@ foreach ($unusedFiles as $f) {
 
 function delTree(string $dir): void
 {
-    if (! \is_dir($dir)) {
+    if (!\is_dir($dir)) {
         return;
     }
     $files = \array_diff(\scandir($dir), ['.', '..']);

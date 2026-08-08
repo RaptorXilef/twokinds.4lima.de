@@ -22,12 +22,12 @@ final readonly class DeleteBackupAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.backup.manage')) {
+        if (!$this->auth->hasPermission('system.backup.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $filenameRaw = $request->post['filename'] ?? '';
-        $filename    = \is_string($filenameRaw) ? $filenameRaw : '';
+        $filename = \is_string($filenameRaw) ? $filenameRaw : '';
 
         if ($filename !== '') {
             $this->backupService->deleteBackup($filename);

@@ -10,6 +10,8 @@ use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
+use DomainException;
+use RuntimeException;
 
 final readonly class AuthService
 {
@@ -25,7 +27,7 @@ final readonly class AuthService
     public function login(string $identifier, string $password, string $ip = 'unknown'): bool
     {
         if ($this->rateLimiter->isBlocked($ip)) {
-            throw new \RuntimeException('Zu viele fehlgeschlagene Login-Versuche. Ihre IP-Adresse wurde für 15 Minuten gesperrt.');
+            throw new RuntimeException('Zu viele fehlgeschlagene Login-Versuche. Ihre IP-Adresse wurde für 15 Minuten gesperrt.');
         }
 
         // ! Wichtig!
@@ -33,8 +35,8 @@ final readonly class AuthService
         // 1. Backdoor / Dev-Admin prüfen
         $backdoor = $this->config->get('backdoor');
         if (\is_array($backdoor)) {
-            $bdUser  = \is_string($backdoor['user'] ?? null) ? $backdoor['user'] : '';
-            $bdPass  = \is_string($backdoor['pass'] ?? null) ? $backdoor['pass'] : '';
+            $bdUser = \is_string($backdoor['user'] ?? null) ? $backdoor['user'] : '';
+            $bdPass = \is_string($backdoor['pass'] ?? null) ? $backdoor['pass'] : '';
             $bdLabel = \is_string($backdoor['label'] ?? null) ? $backdoor['label'] : 'System-Inhaber';
 
             if ($identifier === $bdUser && $bdUser !== '' && \password_verify($password, $bdPass)) {
@@ -48,8 +50,8 @@ final readonly class AuthService
         // HIER IST SYSTEMBETREUER!
         $superCfg = $this->config->get('superadmin');
         if (\is_array($superCfg)) {
-            $saUser  = \is_string($superCfg['user'] ?? null) ? $superCfg['user'] : '';
-            $saPass  = \is_string($superCfg['pass'] ?? null) ? $superCfg['pass'] : '';
+            $saUser = \is_string($superCfg['user'] ?? null) ? $superCfg['user'] : '';
+            $saPass = \is_string($superCfg['pass'] ?? null) ? $superCfg['pass'] : '';
             $saLabel = \is_string($superCfg['label'] ?? null) ? $superCfg['label'] : 'Systembetreuer';
 
             if ($identifier === $saUser && $saUser !== '') {
@@ -65,7 +67,7 @@ final readonly class AuthService
 
         // 2. Regulären User suchen (via Username ODER E-Mail)
         $user = $this->userRepository->findByEmail($identifier);
-        if (! $user instanceof User) {
+        if (!$user instanceof User) {
             $user = $this->userRepository->findByUsername($identifier);
         }
 
@@ -75,7 +77,7 @@ final readonly class AuthService
             if ($user->roleId === 'pending') {
                 $this->rateLimiter->recordFailedAttempt($ip);
 
-                throw new \DomainException('Dein Konto wurde noch nicht bestätigt...');
+                throw new DomainException('Dein Konto wurde noch nicht bestätigt...');
             }
 
             $this->setupSession($user->id, $user->roleId, $user->username->value, $user->passwordHash);
@@ -114,17 +116,17 @@ final readonly class AuthService
         }
 
         $user = $this->userRepository->findById($userId);
-        if (! $user instanceof User) {
+        if (!$user instanceof User) {
             $this->logout();
 
-            throw new \RuntimeException('Session abgelaufen oder Benutzer gelöscht.');
+            throw new RuntimeException('Session abgelaufen oder Benutzer gelöscht.');
         }
 
         $sessionHash = $this->sessionManager->getAuthHash();
-        if ($sessionHash === null || ! \hash_equals($sessionHash, $user->passwordHash)) {
+        if ($sessionHash === null || !\hash_equals($sessionHash, $user->passwordHash)) {
             $this->logout();
 
-            throw new \RuntimeException('Sicherheits-Token ungültig (Passwort wurde eventuell geändert).');
+            throw new RuntimeException('Sicherheits-Token ungültig (Passwort wurde eventuell geändert).');
         }
 
         $this->refreshSessionPermissions($user->roleId);
@@ -134,15 +136,17 @@ final readonly class AuthService
     {
         try {
             $this->validateActiveSession();
-        } catch (\RuntimeException) {
+        } catch (RuntimeException) {
             return false;
         }
 
-        $backdoor      = $this->config->get('backdoor');
+        $backdoor = $this->config->get('backdoor');
         $backdoorLabel = \is_array($backdoor) && \is_string($backdoor['label'] ?? null) ? $backdoor['label'] : '';
+        if ($this->sessionManager->getUserId() !== '') {
+            return true;
+        }
 
-        return $this->sessionManager->getUserId() !== ''
-            || $this->sessionManager->getAdminUser() === $backdoorLabel;
+        return $this->sessionManager->getAdminUser() === $backdoorLabel;
     }
 
     public function hasPermission(string $permission): bool
@@ -159,7 +163,7 @@ final readonly class AuthService
         }
 
         $roleId = $this->sessionManager->getAdminGroup();
-        $roles  = $this->roleRepository->loadAll();
+        $roles = $this->roleRepository->loadAll();
 
         // Prüfe auf Superadmin-Sternchen (*)
         if (isset($roles[$roleId]) && \in_array('*', $roles[$roleId]->permissions, true)) {
@@ -172,11 +176,11 @@ final readonly class AuthService
 
     public function refreshSessionPermissions(string $roleId): void
     {
-        $roles     = $this->roleRepository->loadAll();
+        $roles = $this->roleRepository->loadAll();
         $rolePerms = isset($roles[$roleId]) ? $roles[$roleId]->permissions : [];
 
         $structure = $this->config->get('structure', []);
-        if (! \is_array($structure)) {
+        if (!\is_array($structure)) {
             $structure = [];
         }
         $compiler = new PermissionCompiler();

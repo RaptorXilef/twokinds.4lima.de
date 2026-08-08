@@ -6,6 +6,8 @@ namespace App\Infrastructure\System;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\AssetHelperInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 final class LocalAssetHelper implements AssetHelperInterface
 {
@@ -19,8 +21,8 @@ final class LocalAssetHelper implements AssetHelperInterface
     public function url(string $assetPath): string
     {
         $assetPath = \ltrim($assetPath, '/');
-        $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
-        $fullUrl   = $baseUrl . '/' . $assetPath;
+        $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
+        $fullUrl = $baseUrl . '/' . $assetPath;
 
         // 1. RAM-Cache prüfen (Verhindert mehrfache Festplatten-Aufrufe)
         if (isset($this->mtimeCache[$assetPath])) {
@@ -30,7 +32,7 @@ final class LocalAssetHelper implements AssetHelperInterface
         }
 
         // 2. Physischen Pfad ermitteln
-        $publicDir    = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
+        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
         $physicalPath = $publicDir . '/' . $assetPath;
 
         // Wichtig: Stat-Cache leeren, damit Änderungen per FTP an JS/CSS sofort erkannt werden!
@@ -38,7 +40,7 @@ final class LocalAssetHelper implements AssetHelperInterface
 
         // 3. Datei prüfen und Zeitstempel lesen
         if (\file_exists($physicalPath)) {
-            $mtime                        = (string) \filemtime($physicalPath);
+            $mtime = (string) \filemtime($physicalPath);
             $this->mtimeCache[$assetPath] = $mtime;
 
             return $fullUrl . '?v=' . $mtime;
@@ -54,21 +56,23 @@ final class LocalAssetHelper implements AssetHelperInterface
     public function getImportMap(string $baseDir = 'assets/js'): string
     {
         $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
-        $scanDir   = $publicDir . '/' . \ltrim($baseDir, '/');
-        $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
-        $map       = ['imports' => []];
+        $scanDir = $publicDir . '/' . \ltrim($baseDir, '/');
+        $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
+        $map = ['imports' => []];
 
-        if (! \is_dir($scanDir)) {
+        if (!\is_dir($scanDir)) {
             return '{"imports":{}}';
         }
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($scanDir));
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($scanDir));
 
         foreach ($iterator as $file) {
-            if (! $file->isFile() || $file->getExtension() !== 'js') {
+            if (!$file->isFile()) {
                 continue;
             }
-
+            if ($file->getExtension() !== 'js') {
+                continue;
+            }
             $physicalPath = $file->getPathname();
             \clearstatcache(true, $physicalPath);
             $mtime = (string) $file->getMTime();

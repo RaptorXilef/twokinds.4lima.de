@@ -16,7 +16,7 @@ function slugify(string $filename, bool $rtrimSwatch = false): string
 {
     $info = \pathinfo($filename);
     $name = $info['filename'];
-    $ext  = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
+    $ext = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
 
     $name = \mb_strtolower($name, 'UTF-8');
     $name = \str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $name);
@@ -33,10 +33,10 @@ function slugify(string $filename, bool $rtrimSwatch = false): string
 
 function forceMove(string $src, string $dest): void
 {
-    if (! \file_exists($src)) {
+    if (!\file_exists($src)) {
         return;
     }
-    if (! \is_dir(\dirname($dest))) {
+    if (!\is_dir(\dirname($dest))) {
         \mkdir(\dirname($dest), 0o755, true);
     }
     // Trick gegen Windows-Locks: Kopieren und altes löschen
@@ -44,7 +44,7 @@ function forceMove(string $src, string $dest): void
         return;
     }
 
-    if (! \copy($src, $dest)) {
+    if (!\copy($src, $dest)) {
         return;
     }
 
@@ -53,7 +53,7 @@ function forceMove(string $src, string $dest): void
 
 function delTree(string $dir): void
 {
-    if (! \is_dir($dir)) {
+    if (!\is_dir($dir)) {
         return;
     }
     $files = \array_diff(\scandir($dir), ['.', '..']);
@@ -67,7 +67,10 @@ function delTree(string $dir): void
 echo '<p>Verarbeite Profiles...</p>';
 if (\is_dir("$imgDir/characters/profiles")) {
     foreach (\scandir("$imgDir/characters/profiles") as $f) {
-        if ($f === '.' || $f === '..') {
+        if ($f === '.') {
+            continue;
+        }
+        if ($f === '..') {
             continue;
         }
         \forceMove("$imgDir/characters/profiles/$f", "$imgDir/characters/profiles/" . \slugify($f));
@@ -78,7 +81,10 @@ if (\is_dir("$imgDir/characters/profiles")) {
 echo '<p>Verarbeite Portraits (Ehemals Main)...</p>';
 if (\is_dir("$imgDir/characters/main")) {
     foreach (\scandir("$imgDir/characters/main") as $f) {
-        if ($f === '.' || $f === '..') {
+        if ($f === '.') {
+            continue;
+        }
+        if ($f === '..') {
             continue;
         }
         \forceMove("$imgDir/characters/main/$f", "$imgDir/characters/portraits/" . \slugify($f));
@@ -89,7 +95,10 @@ if (\is_dir("$imgDir/characters/main")) {
 echo '<p>Verarbeite Palettes (Ehemals Swatches)...</p>';
 if (\is_dir("$imgDir/characters/swatches")) {
     foreach (\scandir("$imgDir/characters/swatches") as $f) {
-        if ($f === '.' || $f === '..') {
+        if ($f === '.') {
+            continue;
+        }
+        if ($f === '..') {
             continue;
         }
         \forceMove("$imgDir/characters/swatches/$f", "$imgDir/characters/palettes/" . \slugify($f, true));
@@ -100,7 +109,10 @@ if (\is_dir("$imgDir/characters/swatches")) {
 echo '<p>Verarbeite Refsheets...</p>';
 if (\is_dir("$imgDir/characters/refsheets")) {
     foreach (\scandir("$imgDir/characters/refsheets") as $f) {
-        if ($f === '.' || $f === '..') {
+        if ($f === '.') {
+            continue;
+        }
+        if ($f === '..') {
             continue;
         }
         \forceMove("$imgDir/characters/refsheets/$f", "$imgDir/characters/refsheets/" . \slugify($f));

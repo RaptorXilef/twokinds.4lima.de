@@ -18,6 +18,8 @@ use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Core\ValueObject\CharacterId;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/save_single_character')]
 #[RequiresAuth]
@@ -33,7 +35,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('characters.edit')) {
+        if (!$this->auth->hasPermission('characters.edit')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -52,8 +54,8 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             // Existierenden Charakter holen, um alte Bildpfade zu erhalten
             $existing = $this->charRepo->findById(new CharacterId($charIdStr));
 
-            $picUrl    = $dto->picUrl;
-            $mainPic   = $existing?->mainPic;
+            $picUrl = $dto->picUrl;
+            $mainPic = $existing?->mainPic;
             $swatchPic = $existing?->swatchPic;
             $refSheets = $existing->refSheets ?? [];
 
@@ -66,7 +68,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             // Alles an die Infrastruktur delegieren!
             /** @var array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>} $processedMedia */
             $processedMedia = $this->mediaService->processCharacterImages($safeName, $request->files);
-            $warnings       = $processedMedia['warnings'];
+            $warnings = $processedMedia['warnings'];
 
             // Profilbild zuweisen
             if ($processedMedia['profile'] !== null) {
@@ -86,8 +88,8 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 $mainPic = $processedMedia['main'];
             } elseif (isset($request->post['main_pic_url'])) {
                 $mainPicUrlRaw = $request->post['main_pic_url'];
-                $mainPicUrl    = \is_string($mainPicUrlRaw) ? \trim($mainPicUrlRaw) : '';
-                $mainPic       = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
+                $mainPicUrl = \is_string($mainPicUrlRaw) ? \trim($mainPicUrlRaw) : '';
+                $mainPic = $mainPicUrl !== '' ? \str_replace(' ', '_', $mainPicUrl) : null;
             }
 
             // Swatch
@@ -95,15 +97,15 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 $swatchPic = $processedMedia['swatch'];
             } elseif (isset($request->post['swatch_pic_url'])) {
                 $swatchPicUrlRaw = $request->post['swatch_pic_url'];
-                $swatchPicUrl    = \is_string($swatchPicUrlRaw) ? \trim($swatchPicUrlRaw) : '';
-                $swatchPic       = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
+                $swatchPicUrl = \is_string($swatchPicUrlRaw) ? \trim($swatchPicUrlRaw) : '';
+                $swatchPic = $swatchPicUrl !== '' ? \str_replace(' ', '_', $swatchPicUrl) : null;
             }
 
             // Manuelle URLs für Reference Sheets
             if (isset($request->post['ref_sheets_urls'])) {
                 $refSheetsUrlsRaw = $request->post['ref_sheets_urls'];
                 $refSheetsUrlsStr = \is_string($refSheetsUrlsRaw) ? \trim($refSheetsUrlsRaw) : '';
-                $refSheets        = [];
+                $refSheets = [];
                 if ($refSheetsUrlsStr !== '') {
                     $refSheets = \array_values(\array_filter(
                         \array_map(fn ($s): string => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsStr)),
@@ -143,12 +145,12 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
             }
 
             return JsonResponse::success([
-                'message'      => $msg,
+                'message' => $msg,
                 'character_id' => $charIdStr,
             ]);
-        } catch (ValidationException | \InvalidArgumentException $e) {
+        } catch (ValidationException|InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Ein interner Fehler ist aufgetreten: ' . $e->getMessage(), 500);
         }
     }

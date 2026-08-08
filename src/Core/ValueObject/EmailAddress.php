@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\ValueObject;
 
-final readonly class EmailAddress implements \Stringable
+use InvalidArgumentException;
+use Stringable;
+
+final readonly class EmailAddress implements Stringable
 {
     public string $value;
 
@@ -12,10 +15,10 @@ final readonly class EmailAddress implements \Stringable
     {
         $value = \trim($value);
         if ($value === '') {
-            throw new \InvalidArgumentException('E-Mail-Adresse darf nicht leer sein.');
+            throw new InvalidArgumentException('E-Mail-Adresse darf nicht leer sein.');
         }
         if (\filter_var($value, \FILTER_VALIDATE_EMAIL) === false) {
-            throw new \InvalidArgumentException("Ungültiges E-Mail-Format: {$value}");
+            throw new InvalidArgumentException("Ungültiges E-Mail-Format: {$value}");
         }
         $this->value = \strtolower($value);
     }

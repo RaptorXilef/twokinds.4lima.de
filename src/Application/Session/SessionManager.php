@@ -34,9 +34,9 @@ final readonly class SessionManager implements AuthSessionInterface
     {
         $now = $this->clock->now()->getTimestamp();
 
-        if (! isset($_SESSION['session_created'])) {
+        if (!isset($_SESSION['session_created'])) {
             $_SESSION['session_created'] = $now;
-            $_SESSION['last_activity']   = $now;
+            $_SESSION['last_activity'] = $now;
 
             return;
         }
@@ -45,7 +45,7 @@ final readonly class SessionManager implements AuthSessionInterface
         $isAuthenticated = (isset($_SESSION['user_id']) && $_SESSION['user_id'] !== '')
                         || (isset($_SESSION['admin_user']) && $_SESSION['admin_user'] !== '');
 
-        $lastActivity    = $_SESSION['last_activity'] ?? 0;
+        $lastActivity = $_SESSION['last_activity'] ?? 0;
         $lastActivityInt = \is_numeric($lastActivity) ? (int) $lastActivity : 0;
 
         // Idle Timeout: User war zu lange inaktiv
@@ -56,19 +56,19 @@ final readonly class SessionManager implements AuthSessionInterface
                 $this->destroy();
             }
             $_SESSION['session_created'] = $now;
-            $_SESSION['last_activity']   = $now;
+            $_SESSION['last_activity'] = $now;
 
             return;
         }
 
-        $sessionCreated    = $_SESSION['session_created'] ?? 0;
+        $sessionCreated = $_SESSION['session_created'] ?? 0;
         $sessionCreatedInt = \is_numeric($sessionCreated) ? (int) $sessionCreated : 0;
 
         // Absolute Timeout: Session existiert insgesamt zu lange
         if ($now - $sessionCreatedInt > self::MAX_LIFETIME) {
             $this->destroy();
             $_SESSION['session_created'] = $now;
-            $_SESSION['last_activity']   = $now;
+            $_SESSION['last_activity'] = $now;
 
             return;
         }
@@ -107,7 +107,7 @@ final readonly class SessionManager implements AuthSessionInterface
     public function setEditState(string $email, string $token): void
     {
         $_SESSION['verified_email'] = $email;
-        $_SESSION['edit_token']     = $token;
+        $_SESSION['edit_token'] = $token;
     }
 
     public function getVerifiedEmail(): ?string
@@ -187,17 +187,17 @@ final readonly class SessionManager implements AuthSessionInterface
             $p = \session_get_cookie_params();
 
             $cookieParams = [
-                'expires'  => $this->clock->now()->getTimestamp() - 42000,
-                'path'     => $p['path'],
-                'domain'   => $p['domain'],
-                'secure'   => $p['secure'],
+                'expires' => $this->clock->now()->getTimestamp() - 42000,
+                'path' => $p['path'],
+                'domain' => $p['domain'],
+                'secure' => $p['secure'],
                 'httponly' => $p['httponly'],
                 'samesite' => $p['samesite'],
             ];
 
             // session_name gibt in PHP 8 einen non-falsy-string zurück
             $sessionName = \session_name();
-            $name        = \is_string($sessionName) ? $sessionName : 'PHPSESSID';
+            $name = \is_string($sessionName) ? $sessionName : 'PHPSESSID';
 
             \setcookie($name, '', $cookieParams);
         }
@@ -212,8 +212,8 @@ final readonly class SessionManager implements AuthSessionInterface
 
     public function setAuthSession(string $userId, string $groupId, string $label, ?string $hash = null): void
     {
-        $_SESSION['user_id']     = $userId;
-        $_SESSION['admin_user']  = $label;
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['admin_user'] = $label;
         $_SESSION['admin_group'] = $groupId;
         if ($hash === null) {
             return;
@@ -278,7 +278,7 @@ final readonly class SessionManager implements AuthSessionInterface
 
     public function initCsrfToken(): string
     {
-        if (! isset($_SESSION['csrf_token']) || ! \is_string($_SESSION['csrf_token']) || $_SESSION['csrf_token'] === '') {
+        if (!isset($_SESSION['csrf_token']) || !\is_string($_SESSION['csrf_token']) || $_SESSION['csrf_token'] === '') {
             $_SESSION['csrf_token'] = \bin2hex(\random_bytes(32));
         }
 
@@ -304,10 +304,10 @@ final readonly class SessionManager implements AuthSessionInterface
      */
     public function addFlash(string $type, string $message): void
     {
-        if (! isset($_SESSION['flashes']) || ! \is_array($_SESSION['flashes'])) {
+        if (!isset($_SESSION['flashes']) || !\is_array($_SESSION['flashes'])) {
             $_SESSION['flashes'] = [];
         }
-        if (! isset($_SESSION['flashes'][$type]) || ! \is_array($_SESSION['flashes'][$type])) {
+        if (!isset($_SESSION['flashes'][$type]) || !\is_array($_SESSION['flashes'][$type])) {
             $_SESSION['flashes'][$type] = [];
         }
 

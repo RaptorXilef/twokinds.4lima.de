@@ -23,7 +23,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
         ServerRequest $request,
         callable $next,
     ): mixed {
-        if (! \headers_sent()) {
+        if (!\headers_sent()) {
             // Verhindert das Caching der HTML-Seite durch den Browser. Zwingend nötig für korrekte
             // CSRF-Tokens und damit der Browser immer die neusten ?v= Datei-Versionen für CSS/JS lädt!
             \header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -38,11 +38,11 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             \header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
 
             // Host für lokale Whitelist prüfen
-            $csrf  = $this->sessionManager->getCsrfToken();
+            $csrf = $this->sessionManager->getCsrfToken();
             $nonce = $csrf !== '' ? $csrf : \bin2hex(\random_bytes(16));
 
             $hostRaw = $request->server['HTTP_HOST'] ?? '';
-            $host    = \is_string($hostRaw) ? $hostRaw : '';
+            $host = \is_string($hostRaw) ? $hostRaw : '';
 
             $isLocal = \str_ends_with($host, '.local')
                 || $host === 'localhost'
@@ -56,7 +56,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
                     'https://cdnjs.cloudflare.com',
                 ],
                 'upgrade-insecure-requests' => [],
-                'script-src'                => [
+                'script-src' => [
                     "'self'",
                     "'nonce-{$nonce}'",
                     'https://cdn.jsdelivr.net',
@@ -143,7 +143,7 @@ final readonly class SecurityHeadersMiddleware implements MiddlewareInterface
             \header('Content-Security-Policy: ' . \trim($cspHeader));
 
             // HSTS nur erzwingen, wenn wir NICHT in der lokalen Entwicklung sind
-            if (! $isLocal) {
+            if (!$isLocal) {
                 \header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
             }
         }

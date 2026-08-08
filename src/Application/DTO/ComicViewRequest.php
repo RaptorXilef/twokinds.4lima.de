@@ -17,7 +17,7 @@ final readonly class ComicViewRequest
     {
         // Wir unterstützen ?id=20251222 oder saubere URLs (wenn der Front-Controller sie in $_GET['id'] mappt)
         $idRaw = $request->get['id'] ?? '';
-        $id    = \is_string($idRaw) ? \trim($idRaw) : '';
+        $id = \is_string($idRaw) ? \trim($idRaw) : '';
 
         if ($id === '') {
             throw ValidationException::withMessage('Keine Comic-ID angegeben.');

@@ -30,23 +30,23 @@ final readonly class TemplateRenderer
     public function render(string $templatePath, array $data = [], int $statusCode = 200): HtmlResponse
     {
         $rootPath = $this->config->get('root_path');
-        $appRoot  = \is_string($rootPath) ? \rtrim($rootPath, '/\\') : '';
+        $appRoot = \is_string($rootPath) ? \rtrim($rootPath, '/\\') : '';
 
         $systemVars = [
-            'appRoot'         => $appRoot,
-            'config'          => $this->config,
-            'imageStorage'    => $this->imageStorage,
-            'jsonHelper'      => $this->jsonHelper,
-            'settings'        => $this->getGlobalSettings(),
-            'asset'           => $this->assetHelper, // (Steht als $asset im Template bereit)
-            'isLoggedIn'      => $this->sessionManager->getUserId() !== '', // Auth-Status direkt in jedes Template injizieren!
+            'appRoot' => $appRoot,
+            'config' => $this->config,
+            'imageStorage' => $this->imageStorage,
+            'jsonHelper' => $this->jsonHelper,
+            'settings' => $this->getGlobalSettings(),
+            'asset' => $this->assetHelper, // (Steht als $asset im Template bereit)
+            'isLoggedIn' => $this->sessionManager->getUserId() !== '', // Auth-Status direkt in jedes Template injizieren!
             'currentUserName' => $this->sessionManager->getAdminUser(),
             'currentUserRole' => $this->sessionManager->getAdminGroup(),
             // Darf dieser User die Lesezeichen-Cloud nutzen? (Eingeloggt + Keine System-ID)
-            'canUseCloudSync' => $this->sessionManager->getUserId() !== '' && ! \str_starts_with($this->sessionManager->getUserId(), 'sys_'),
+            'canUseCloudSync' => $this->sessionManager->getUserId() !== '' && !\str_starts_with($this->sessionManager->getUserId(), 'sys_'),
         ];
 
-        if (! isset($data['flashes'])) {
+        if (!isset($data['flashes'])) {
             // Lade alle Flashes automatisch in die View-Daten!
             // Nutzt vorhandene Flashes oder holt sie aus der Session
             $data['flashes'] = $this->sessionManager->getFlashes();
@@ -71,33 +71,33 @@ final readonly class TemplateRenderer
     private function getGlobalSettings(): array
     {
         $siteTitle = $this->config->get('site_title', 'Twokinds auf Deutsch');
-        $siteDesc  = $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.');
+        $siteDesc = $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.');
 
         // Variablen für das Impressum!
-        $emailUser   = $this->config->get('email_user', '');
+        $emailUser = $this->config->get('email_user', '');
         $emailDomain = $this->config->get('email_domain', '');
 
         // Social Links für den Header
-        $patreon  = $this->config->get('social_patreon', '');
+        $patreon = $this->config->get('social_patreon', '');
         $inkbunny = $this->config->get('social_inkbunny', '');
-        $paypal   = $this->config->get('social_paypal', '');
-        $github   = $this->config->get('social_github', '');
+        $paypal = $this->config->get('social_paypal', '');
+        $github = $this->config->get('social_github', '');
         $twokinds = $this->config->get('social_twokinds', '');
-        $gaId     = $this->config->get('google_analytics_id', '');
+        $gaId = $this->config->get('google_analytics_id', '');
 
         return [
-            'base_url'            => $this->config->getBaseUrl(),
-            'site_title'          => \is_string($siteTitle) ? $siteTitle : 'Twokinds auf Deutsch',
-            'site_description'    => \is_string($siteDesc) ? $siteDesc : 'Die deutsche Übersetzung des Webcomics Twokinds.',
-            'app_version'         => $this->systemInfo->getCurrentVersion(),
+            'base_url' => $this->config->getBaseUrl(),
+            'site_title' => \is_string($siteTitle) ? $siteTitle : 'Twokinds auf Deutsch',
+            'site_description' => \is_string($siteDesc) ? $siteDesc : 'Die deutsche Übersetzung des Webcomics Twokinds.',
+            'app_version' => $this->systemInfo->getCurrentVersion(),
             'google_analytics_id' => \is_string($gaId) ? $gaId : '',
-            'email_user'          => \is_string($emailUser) ? $emailUser : '',
-            'email_domain'        => \is_string($emailDomain) ? $emailDomain : '',
-            'social_patreon'      => \is_string($patreon) ? $patreon : '',
-            'social_inkbunny'     => \is_string($inkbunny) ? $inkbunny : '',
-            'social_paypal'       => \is_string($paypal) ? $paypal : '',
-            'social_github'       => \is_string($github) ? $github : '',
-            'social_twokinds'     => \is_string($twokinds) ? $twokinds : '',
+            'email_user' => \is_string($emailUser) ? $emailUser : '',
+            'email_domain' => \is_string($emailDomain) ? $emailDomain : '',
+            'social_patreon' => \is_string($patreon) ? $patreon : '',
+            'social_inkbunny' => \is_string($inkbunny) ? $inkbunny : '',
+            'social_paypal' => \is_string($paypal) ? $paypal : '',
+            'social_github' => \is_string($github) ? $github : '',
+            'social_twokinds' => \is_string($twokinds) ? $twokinds : '',
         ];
     }
 }

@@ -7,6 +7,8 @@ namespace App\Infrastructure\Logging;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\ErrorLoggerInterface;
 use App\Infrastructure\Storage\SafeJsonWriterTrait;
+use RuntimeException;
+use Throwable;
 
 /**
  * Logger-Infrastruktur für Systemfehler.
@@ -27,18 +29,18 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
      * Schreibt ein Throwable (Exception/Error) formatiert in die system_error.log.
      * Erstellt den Ordner, falls er nicht existiert.
      *
-     * @param \Throwable $throwable Der aufgetretene Fehler samt Stacktrace.
+     * @param Throwable $throwable Der aufgetretene Fehler samt Stacktrace.
      */
-    public function logThrowable(\Throwable $throwable): void
+    public function logThrowable(Throwable $throwable): void
     {
         // Fix: Explizit den gleichen Ordner nutzen wie app.php (storage/logs)
         $logDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/logs';
 
-        if (! \is_dir($logDir)) {
+        if (!\is_dir($logDir)) {
             @\mkdir($logDir, 0o755, true);
         }
 
-        $logFile   = $logDir . '/system_error.log';
+        $logFile = $logDir . '/system_error.log';
         $timestamp = \defined('APP_REQUEST_TIME_STR') ? APP_REQUEST_TIME_STR : \date('Y-m-d H:i:s');
 
         $message = \sprintf(
@@ -59,7 +61,7 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
         );
 
         if ($result === false) {
-            throw new \RuntimeException('Kritischer Schreibfehler: system_error.log voll oder keine Rechte.');
+            throw new RuntimeException('Kritischer Schreibfehler: system_error.log voll oder keine Rechte.');
         }
     }
 }

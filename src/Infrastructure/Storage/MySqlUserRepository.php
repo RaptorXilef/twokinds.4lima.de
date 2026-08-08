@@ -7,13 +7,14 @@ namespace App\Infrastructure\Storage;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
 use App\Infrastructure\Database\Table;
+use PDO;
 
 final readonly class MySqlUserRepository implements UserRepositoryInterface
 {
     use DynamicSqlTrait;
     use EntityHydratorTrait;
 
-    public function __construct(private \PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
     }
 
@@ -21,7 +22,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
     {
         $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::USERS . '` WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ? $this->hydrateEntity(User::class, $row) : null;
     }
@@ -30,7 +31,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
     {
         $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::USERS . '` WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ? $this->hydrateEntity(User::class, $row) : null;
     }
@@ -39,7 +40,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
     {
         $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::USERS . '` WHERE username = ? LIMIT 1');
         $stmt->execute([$username]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ? $this->hydrateEntity(User::class, $row) : null;
     }
@@ -49,7 +50,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::USERS . '` ORDER BY created_at DESC');
 
         $users = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $users[] = $this->hydrateEntity(User::class, $row);
         }
 
@@ -106,7 +107,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::USERS . "` WHERE {$column} = 1");
 
         $users = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $users[] = $this->hydrateEntity(User::class, $row);
         }
 

@@ -28,12 +28,12 @@ final readonly class SendQueuedMailAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.manage') && ! $this->auth->hasPermission('admin.access')) {
+        if (!$this->auth->hasPermission('system.manage') && !$this->auth->hasPermission('admin.access')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $idRaw = $request->post['id'] ?? '';
-        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+        $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
         if ($id === '') {
             return JsonResponse::error('Keine ID übergeben.', 400);
@@ -45,11 +45,11 @@ final readonly class SendQueuedMailAction implements ActionInterface
         }
 
         $dataRaw = $mail['data'] ?? [];
-        $data    = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
+        $data = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
 
         $recipient = \is_string($mail['recipient'] ?? null) ? $mail['recipient'] : '';
-        $subject   = \is_string($mail['subject'] ?? null) ? $mail['subject'] : '';
-        $template  = \is_string($mail['template'] ?? null) ? $mail['template'] : '';
+        $subject = \is_string($mail['subject'] ?? null) ? $mail['subject'] : '';
+        $template = \is_string($mail['template'] ?? null) ? $mail['template'] : '';
 
         // Versendet die Mail direkt und loggt sie in mail_logs (Da wir SmtpMailService nutzen)
         $result = $this->mailService->sendTemplate($recipient, $subject, $template, $data);

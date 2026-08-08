@@ -12,7 +12,7 @@ use App\Core\ValueObject\IpAddress;
 
 final readonly class RateLimiter implements RateLimiterInterface
 {
-    private const int MAX_ATTEMPTS    = 5;
+    private const int MAX_ATTEMPTS = 5;
     private const int LOCKOUT_MINUTES = 15;
 
     public function __construct(
@@ -24,11 +24,11 @@ final readonly class RateLimiter implements RateLimiterInterface
     public function isBlocked(string $ip): bool
     {
         $attempt = $this->repository->findByIp($ip);
-        if (! $attempt) {
+        if (!$attempt) {
             return false;
         }
 
-        $now         = $this->clock->now();
+        $now = $this->clock->now();
         $diffMinutes = ($now->getTimestamp() - $attempt->lastAttempt->getTimestamp()) / 60;
 
         if ($diffMinutes > self::LOCKOUT_MINUTES) {
@@ -44,7 +44,7 @@ final readonly class RateLimiter implements RateLimiterInterface
     {
         $this->repository->deleteOlderThan(self::LOCKOUT_MINUTES);
 
-        $attempt  = $this->repository->findByIp($ip);
+        $attempt = $this->repository->findByIp($ip);
         $attempts = $attempt ? $attempt->attempts + 1 : 1;
 
         $safeIp = $ip === 'unknown' || $ip === '' ? '0.0.0.0' : $ip;

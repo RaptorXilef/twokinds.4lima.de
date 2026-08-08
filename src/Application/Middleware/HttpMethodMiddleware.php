@@ -23,7 +23,7 @@ final readonly class HttpMethodMiddleware implements MiddlewareInterface
     public function process(ServerRequest $request, callable $next): mixed
     {
         $method = $request->getMethod();
-        if (! \in_array($method, $this->allowedMethods, true)) {
+        if (!\in_array($method, $this->allowedMethods, true)) {
             return JsonResponse::error('Methode nicht erlaubt.', 405);
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Entity;
 
 use App\Core\ValueObject\EmailAddress;
+use DateTimeImmutable;
 
 final readonly class MagicLink
 {
@@ -12,11 +13,11 @@ final readonly class MagicLink
         public string $token,
         public EmailAddress $email,
         public string $code,
-        public \DateTimeImmutable $expires,
+        public DateTimeImmutable $expires,
     ) {
     }
 
-    public function isExpired(\DateTimeImmutable $now): bool
+    public function isExpired(DateTimeImmutable $now): bool
     {
         return $this->expires < $now;
     }

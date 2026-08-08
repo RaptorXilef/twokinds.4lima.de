@@ -19,7 +19,16 @@
         <exclude-pattern>tests/Pest.php</exclude-pattern>
     </rule>
 
-    <rule ref="PSR12" />
+    <rule ref="PSR12">
+        <!-- Erlaubt "new class()" ohne Leerzeichen -->
+        <exclude name="PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword" />
+
+        <!-- Erlaubt "ExceptionA|ExceptionB" im Catch-Block ohne Leerzeichen -->
+        <exclude name="PSR12.Operators.OperatorSpacing.NoSpaceBefore" />
+        <exclude name="PSR12.Operators.OperatorSpacing.NoSpaceAfter" />
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.TypeHints.DNFTypeHintFormat" />
 
     <rule ref="Universal.Arrays.DuplicateArrayKey" />
     <rule ref="Universal.CodeAnalysis.ConstructorDestructorReturn" />
@@ -61,7 +70,8 @@
 
     <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
         <properties>
-            <property name="allowFullyQualifiedGlobalClasses" value="true" />
+            <!--<property name="allowFullyQualifiedGlobalClasses" value="true" />-->
+            <property name="allowFullyQualifiedGlobalClasses" value="false" />
             <property name="allowFullyQualifiedGlobalFunctions" value="true" />
             <property name="allowFullyQualifiedGlobalConstants" value="true" />
             <property name="searchAnnotations" value="true" />
@@ -115,8 +125,10 @@
     <!-- DIE REGEL FÜR DIE ZEILENLÄNGE -->
     <rule ref="Generic.Files.LineLength">
         <properties>
+            <!-- <property name="lineLimit" value="120" />
+            <property name="absoluteLineLimit" value="120" /> -->
             <property name="lineLimit" value="120" />
-            <property name="absoluteLineLimit" value="120" />
+            <property name="absoluteLineLimit" value="0" />
         </properties>
     </rule>
 </ruleset>

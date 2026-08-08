@@ -11,6 +11,8 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
+use DomainException;
+use Throwable;
 
 #[Route('POST', '/api/restore_deleted_comic')]
 #[RequiresAuth]
@@ -24,7 +26,7 @@ final readonly class RestoreDeletedComicAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.delete')) {
+        if (!$this->auth->hasPermission('comics.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -34,9 +36,9 @@ final readonly class RestoreDeletedComicAction implements ActionInterface
             return JsonResponse::success([
                 'message' => "Der gelöschte Comic '{$restored['id']}' wurde erfolgreich wiederhergestellt!",
             ]);
-        } catch (\DomainException $e) {
+        } catch (DomainException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
     }

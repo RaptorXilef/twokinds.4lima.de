@@ -6,6 +6,9 @@ namespace App\Infrastructure\Media;
 
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
+use GdImage;
+use InvalidArgumentException;
+use RuntimeException;
 
 final readonly class GdMediaService implements MediaServiceInterface
 {
@@ -20,12 +23,12 @@ final readonly class GdMediaService implements MediaServiceInterface
      */
     public function generateScaledImage(string $sourcePath, string $targetPath, int $maxWidth): bool
     {
-        if (! \file_exists($sourcePath)) {
+        if (!\file_exists($sourcePath)) {
             return false;
         }
 
         $info = \getimagesize($sourcePath);
-        if (! $info) {
+        if (!$info) {
             return false;
         }
 
@@ -37,12 +40,12 @@ final readonly class GdMediaService implements MediaServiceInterface
             return \copy($sourcePath, $targetPath);
         }
 
-        $ratio     = $width > $maxWidth ? $maxWidth / $width : 1;
-        $newWidth  = (int) \round($width * $ratio);
+        $ratio = $width > $maxWidth ? $maxWidth / $width : 1;
+        $newWidth = (int) \round($width * $ratio);
         $newHeight = (int) \round($height * $ratio);
 
         $image = $this->createImageFromFile($sourcePath, $type);
-        if (! $image) {
+        if (!$image) {
             return false;
         }
 
@@ -61,19 +64,19 @@ final readonly class GdMediaService implements MediaServiceInterface
      */
     public function generateSquareCrop(string $sourcePath, string $targetPath, int $size): bool
     {
-        if (! \file_exists($sourcePath)) {
+        if (!\file_exists($sourcePath)) {
             return false;
         }
 
         $info = \getimagesize($sourcePath);
-        if (! $info) {
+        if (!$info) {
             return false;
         }
 
         [$width, $height, $type] = $info;
 
         $image = $this->createImageFromFile($sourcePath, $type);
-        if (! $image) {
+        if (!$image) {
             return false;
         }
 
@@ -82,8 +85,8 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         // Quadratischen Ausschnitt aus der Mitte berechnen
         $minSize = \min($width, $height);
-        $srcX    = (int) \round(($width - $minSize) / 2);
-        $srcY    = (int) \round(($height - $minSize) / 2);
+        $srcX = (int) \round(($width - $minSize) / 2);
+        $srcY = (int) \round(($height - $minSize) / 2);
 
         \imagecopyresampled($targetImage, $image, 0, 0, $srcX, $srcY, $size, $size, $minSize, $minSize);
 
@@ -95,7 +98,7 @@ final readonly class GdMediaService implements MediaServiceInterface
     /**
      * Setzt den Hintergrund basierend auf der Config (Transparent oder Hex-Farbe)
      */
-    private function applyBackground(\GdImage $targetImage, int $width, int $height): void
+    private function applyBackground(GdImage $targetImage, int $width, int $height): void
     {
         $bgColor = $this->config->get('image_background_color', 'transparent');
 
@@ -119,14 +122,14 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
     }
 
-    private function createImageFromFile(string $path, int $type): \GdImage|false
+    private function createImageFromFile(string $path, int $type): GdImage|false
     {
         return match ($type) {
             \IMAGETYPE_JPEG => @\imagecreatefromjpeg($path),
-            \IMAGETYPE_PNG  => @\imagecreatefrompng($path),
+            \IMAGETYPE_PNG => @\imagecreatefrompng($path),
             \IMAGETYPE_WEBP => @\imagecreatefromwebp($path),
-            \IMAGETYPE_GIF  => @\imagecreatefromgif($path),
-            default         => false,
+            \IMAGETYPE_GIF => @\imagecreatefromgif($path),
+            default => false,
         };
     }
 
@@ -136,13 +139,13 @@ final readonly class GdMediaService implements MediaServiceInterface
     public function renameComicMedia(string $oldId, string $newId): void
     {
         $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
-        $folders   = ['hires', 'lowres', 'thumbnails', 'social'];
+        $folders = ['hires', 'lowres', 'thumbnails', 'social'];
 
         foreach ($folders as $folder) {
             $oldFile = "$targetDir/$folder/$oldId.webp";
             $newFile = "$targetDir/$folder/$newId.webp";
 
-            if (! \file_exists($oldFile)) {
+            if (!\file_exists($oldFile)) {
                 continue;
             }
 
@@ -165,12 +168,12 @@ final readonly class GdMediaService implements MediaServiceInterface
     ): bool {
         // Ordnererstellung in die Infrastruktur verlagert
         $dir = \dirname($targetPath);
-        if (! \is_dir($dir)) {
+        if (!\is_dir($dir)) {
             @\mkdir($dir, 0o755, true);
         }
 
         $info = @\getimagesize($sourcePath);
-        if (! $info) {
+        if (!$info) {
             return false;
         }
 
@@ -179,14 +182,14 @@ final readonly class GdMediaService implements MediaServiceInterface
         $type = $info[2];
 
         $sourceImage = $this->createImageFromFile($sourcePath, $type);
-        if (! $sourceImage) {
+        if (!$sourceImage) {
             return false;
         }
 
         // SICHERHEIT: Koordinaten zwingend in die Bildgrenzen pressen (Verhindert GD Absturz!)
-        $cropX      = \max(0, \min($cropX, $srcW - 1));
-        $cropY      = \max(0, \min($cropY, $srcH - 1));
-        $cropWidth  = \min($cropWidth, $srcW - $cropX);
+        $cropX = \max(0, \min($cropX, $srcW - 1));
+        $cropY = \max(0, \min($cropY, $srcH - 1));
+        $cropWidth = \min($cropWidth, $srcW - $cropX);
         $cropHeight = \min($cropHeight, $srcH - $cropY);
 
         if ($cropWidth <= 0 || $cropHeight <= 0) {
@@ -195,18 +198,18 @@ final readonly class GdMediaService implements MediaServiceInterface
 
         // @ unterdrückt irrelevante GD Warnings, die das JSON zerstören könnten
         $croppedImage = @\imagecrop($sourceImage, [
-            'x'      => $cropX,
-            'y'      => $cropY,
-            'width'  => $cropWidth,
+            'x' => $cropX,
+            'y' => $cropY,
+            'width' => $cropWidth,
             'height' => $cropHeight,
         ]);
 
-        if (! $croppedImage) {
+        if (!$croppedImage) {
             return false;
         }
 
         $finalImage = \imagecreatetruecolor($finalWidth, $finalHeight);
-        $white      = \imagecolorallocate($finalImage, 255, 255, 255);
+        $white = \imagecolorallocate($finalImage, 255, 255, 255);
         \imagefill($finalImage, 0, 0, $white);
 
         @\imagecopyresampled(
@@ -222,27 +225,24 @@ final readonly class GdMediaService implements MediaServiceInterface
             $cropHeight,
         );
 
-        $ext     = \strtolower(\pathinfo($targetPath, \PATHINFO_EXTENSION));
-        $success = false;
+        $ext = \strtolower(\pathinfo($targetPath, \PATHINFO_EXTENSION));
 
         if ($ext === 'jpg' || $ext === 'jpeg') {
-            $success = \imagejpeg($finalImage, $targetPath, 90);
-        } else {
-            $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
-            $success = \imagewebp($finalImage, $targetPath, $quality);
+            return \imagejpeg($finalImage, $targetPath, 90);
         }
+        $quality = $this->config->get('webp_lossless', false) ? 100 : (int) $this->config->get('webp_quality_thumb', 80);
 
-        return $success;
+        return \imagewebp($finalImage, $targetPath, $quality);
     }
 
     public function autoGenerateSocialMediaJpg(string $sourcePath, string $targetPath): void
     {
         $img = @\imagecreatefromstring(\file_get_contents($sourcePath));
-        if (! $img) {
+        if (!$img) {
             return;
         }
 
-        $width  = \imagesx($img);
+        $width = \imagesx($img);
         $height = \imagesy($img);
 
         $targetRatio = 1200 / 630;
@@ -286,7 +286,7 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $baseProcessPath = '';
-        $hiresPath       = "$targetDir/hires/{$comicId}.webp";
+        $hiresPath = "$targetDir/hires/{$comicId}.webp";
 
         if ($tmpHires !== null && $tmpHires !== '') {
             $this->generateScaledImage($tmpHires, $hiresPath, 4000);
@@ -316,26 +316,26 @@ final readonly class GdMediaService implements MediaServiceInterface
     public function processMassProfileUpload(array $files): int
     {
         $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/profiles';
-        if (! \is_dir($targetDir)) {
+        if (!\is_dir($targetDir)) {
             @\mkdir($targetDir, 0o755, true);
         }
 
         $processedCount = 0;
-        $count          = \count($files['name'] ?? []);
+        $count = \count($files['name'] ?? []);
 
         for ($i = 0; $i < $count; ++$i) {
             if ($files['error'][$i] !== \UPLOAD_ERR_OK) {
                 continue;
             }
 
-            $tmpName      = $files['tmp_name'][$i];
+            $tmpName = $files['tmp_name'][$i];
             $originalName = $files['name'][$i];
 
-            $slugifiedName  = $this->slugify($originalName);
+            $slugifiedName = $this->slugify($originalName);
             $nameWithoutExt = \pathinfo($slugifiedName, \PATHINFO_FILENAME);
-            $targetPath     = $targetDir . '/' . $nameWithoutExt . '.webp';
+            $targetPath = $targetDir . '/' . $nameWithoutExt . '.webp';
 
-            if (! $this->generateScaledImage($tmpName, $targetPath, 1000)) {
+            if (!$this->generateScaledImage($tmpName, $targetPath, 1000)) {
                 continue;
             }
 
@@ -405,7 +405,7 @@ final readonly class GdMediaService implements MediaServiceInterface
                 }
 
                 $fileName = $safeName . '-ref-' . \uniqid() . '.webp';
-                if (! $this->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
+                if (!$this->generateScaledImage($refFiles['tmp_name'][$i], $baseTargetDir . '/refsheets/' . $fileName, 3000)) {
                     continue;
                 }
 
@@ -419,29 +419,29 @@ final readonly class GdMediaService implements MediaServiceInterface
     public function processAvatarUpload(string $userId, ?string $oldAvatarUrl, array $file): string
     {
         $tmpFile = $file['tmp_name'] ?? '';
-        $info    = @\getimagesize($tmpFile);
+        $info = @\getimagesize($tmpFile);
 
-        if (! $info) {
-            throw new \InvalidArgumentException('Die hochgeladene Datei ist kein gültiges Bild.');
+        if (!$info) {
+            throw new InvalidArgumentException('Die hochgeladene Datei ist kein gültiges Bild.');
         }
 
         $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/avatars';
-        if (! \is_dir($targetDir)) {
+        if (!\is_dir($targetDir)) {
             @\mkdir($targetDir, 0o755, true);
         }
 
         $srcImage = match ($info[2]) {
             \IMAGETYPE_JPEG => @\imagecreatefromjpeg($tmpFile),
-            \IMAGETYPE_PNG  => @\imagecreatefrompng($tmpFile),
+            \IMAGETYPE_PNG => @\imagecreatefrompng($tmpFile),
             \IMAGETYPE_WEBP => @\imagecreatefromwebp($tmpFile),
-            default         => false,
+            default => false,
         };
 
-        if (! $srcImage) {
-            throw new \InvalidArgumentException('Nicht unterstütztes Bildformat.');
+        if (!$srcImage) {
+            throw new InvalidArgumentException('Nicht unterstütztes Bildformat.');
         }
 
-        $finalSize   = 400;
+        $finalSize = 400;
         $targetImage = \imagecreatetruecolor($finalSize, $finalSize);
         \imagealphablending($targetImage, false);
         \imagesavealpha($targetImage, true);
@@ -455,10 +455,10 @@ final readonly class GdMediaService implements MediaServiceInterface
         }
 
         $newFilename = $userId . '_' . \time() . '.webp';
-        $success     = \imagewebp($targetImage, $targetDir . '/' . $newFilename, 75);
+        $success = \imagewebp($targetImage, $targetDir . '/' . $newFilename, 75);
 
-        if (! $success) {
-            throw new \RuntimeException('Fehler beim Konvertieren und Speichern des Bildes.');
+        if (!$success) {
+            throw new RuntimeException('Fehler beim Konvertieren und Speichern des Bildes.');
         }
 
         return $newFilename;
@@ -467,7 +467,7 @@ final readonly class GdMediaService implements MediaServiceInterface
     public function saveReportScreenshot(array $file): ?string
     {
         $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/reports';
-        if (! \is_dir($targetDir)) {
+        if (!\is_dir($targetDir)) {
             @\mkdir($targetDir, 0o777, true);
         }
 
@@ -484,7 +484,7 @@ final readonly class GdMediaService implements MediaServiceInterface
     {
         $info = \pathinfo($filename);
         $name = $info['filename'];
-        $ext  = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
+        $ext = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
 
         $name = \mb_strtolower($name, 'UTF-8');
         $name = \str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $name);

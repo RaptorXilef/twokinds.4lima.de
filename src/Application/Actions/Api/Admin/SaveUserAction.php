@@ -15,6 +15,9 @@ use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
 use App\Core\ValueObject\EmailAddress;
 use App\Core\ValueObject\Username;
+use DateTimeImmutable;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/save_user')]
 #[RequiresAuth]
@@ -28,20 +31,20 @@ final readonly class SaveUserAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.users.manage')) {
+        if (!$this->auth->hasPermission('system.users.manage')) {
             return JsonResponse::error('Zugriff verweigert. Fehlende Berechtigung: system.users.manage', 403);
         }
 
         try {
-            $id          = Sanitizer::string($request->post['user_id'] ?? '');
+            $id = Sanitizer::string($request->post['user_id'] ?? '');
             $usernameStr = Sanitizer::string($request->post['username'] ?? '');
-            $emailStr    = Sanitizer::email($request->post['email'] ?? '');
-            $roleId      = Sanitizer::string($request->post['role_id'] ?? 'user');
+            $emailStr = Sanitizer::email($request->post['email'] ?? '');
+            $roleId = Sanitizer::string($request->post['role_id'] ?? 'user');
 
-            $passRaw  = $request->post['password'] ?? '';
+            $passRaw = $request->post['password'] ?? '';
             $password = \is_scalar($passRaw) ? (string) $passRaw : '';
 
-            $confirmRaw      = $request->post['password_confirm'] ?? '';
+            $confirmRaw = $request->post['password_confirm'] ?? '';
             $passwordConfirm = \is_scalar($confirmRaw) ? (string) $confirmRaw : '';
 
             // ID wird nicht mehr als Pflichtfeld beim POST erwartet (wichtig für NEUE Benutzer)
@@ -55,10 +58,10 @@ final readonly class SaveUserAction implements ActionInterface
             }
 
             $isConfigAdmin = \str_starts_with($this->auth->getUserId(), 'sys_');
-            $existingUser  = $this->userRepo->findById($id);
+            $existingUser = $this->userRepo->findById($id);
 
             // Admin-Schutz: Verhindere, dass normale Admins andere Administratoren bearbeiten/degradieren
-            if ($existingUser instanceof User && $existingUser->roleId === 'admin' && ! $isConfigAdmin) {
+            if ($existingUser instanceof User && $existingUser->roleId === 'admin' && !$isConfigAdmin) {
                 if ($this->auth->getUserId() !== $id) {
                     return JsonResponse::error('Du darfst keine anderen Administratoren bearbeiten. Dies obliegt dem Systembetreuer.', 403);
                 }
@@ -80,7 +83,7 @@ final readonly class SaveUserAction implements ActionInterface
                     return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
                 }
                 $hash = \password_hash($password, \PASSWORD_DEFAULT);
-            } elseif (! $existingUser instanceof User) {
+            } elseif (!$existingUser instanceof User) {
                 return JsonResponse::error('Bei neuen Benutzern muss ein Passwort vergeben werden.', 400);
             }
 
@@ -102,7 +105,7 @@ final readonly class SaveUserAction implements ActionInterface
                 new EmailAddress($emailStr),
                 $hash,
                 $roleId,
-                $existingUser->createdAt ?? new \DateTimeImmutable(),
+                $existingUser->createdAt ?? new DateTimeImmutable(),
                 $existingUser instanceof User && $existingUser->wantsNewsletter,
                 $existingUser instanceof User && $existingUser->wantsNewsletterTranscript,
                 $existingUser instanceof User && $existingUser->wantsNotificationReport,
@@ -114,9 +117,9 @@ final readonly class SaveUserAction implements ActionInterface
             return JsonResponse::success([
                 'message' => "Benutzer '{$usernameStr}' erfolgreich gespeichert.",
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Speichern: ' . $e->getMessage(), 500);
         }
     }

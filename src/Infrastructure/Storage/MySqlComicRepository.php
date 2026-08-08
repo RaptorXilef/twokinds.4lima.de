@@ -9,13 +9,15 @@ use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
 use App\Infrastructure\Database\Table;
+use Exception;
+use PDO;
 
 final readonly class MySqlComicRepository implements ComicRepositoryInterface
 {
     use DynamicSqlTrait;
     use EntityHydratorTrait;
 
-    public function __construct(private \PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
     }
 
@@ -36,9 +38,9 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
     {
         $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::COMICS . '` WHERE id = ? LIMIT 1');
         $stmt->execute([$id->value]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (! $row) {
+        if (!$row) {
             return null;
         }
 
@@ -48,7 +50,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
     public function findAll(): array
     {
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::COMICS . '` ORDER BY id DESC');
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return \array_map($this->mapToEntity(...), $rows);
     }
@@ -63,7 +65,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
     {
         // Da die Property 'characterIds' CharacterId-Objekte erwartet, parsen wir sie manuell und geben sie als Override mit.
         $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
-        $charIds    = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
+        $charIds = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
 
         return $this->hydrateEntity(ComicPage::class, $row, [
             'characterIds' => $charIds,
@@ -85,7 +87,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
             $stmt3->execute([$newId->value, $oldId->value]);
 
             $this->pdo->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->pdo->rollBack();
 
             throw clone $e;

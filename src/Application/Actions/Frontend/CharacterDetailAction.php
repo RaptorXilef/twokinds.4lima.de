@@ -13,6 +13,7 @@ use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Entity\Character;
 use App\Core\ValueObject\CharacterId;
+use InvalidArgumentException;
 
 #[Route('GET', '/charaktere/{id}')]
 final readonly class CharacterDetailAction implements ActionInterface
@@ -26,7 +27,7 @@ final readonly class CharacterDetailAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $idRaw    = $request->input['id'] ?? '';
+        $idRaw = $request->input['id'] ?? '';
         $idOrName = \urldecode(\is_scalar($idRaw) ? (string) $idRaw : '');
 
         if ($idOrName === '') {
@@ -39,7 +40,7 @@ final readonly class CharacterDetailAction implements ActionInterface
         if (\preg_match('/^char_\d+$/', $idOrName) === 1) {
             try {
                 $character = $this->charRepo->findById(new CharacterId($idOrName));
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
             }
         } else {
             // 2. Es ist ein alter Name (Legacy Slug)!
@@ -68,12 +69,12 @@ final readonly class CharacterDetailAction implements ActionInterface
             }
         }
 
-        if (! $character instanceof Character) {
+        if (!$character instanceof Character) {
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Charakter nicht gefunden'], 404);
         }
 
         // Alle Comics holen und nach Auftritten filtern
-        $allComics       = $this->comicRepo->findAll();
+        $allComics = $this->comicRepo->findAll();
         $characterComics = [];
 
         foreach ($allComics as $comic) {
@@ -90,9 +91,9 @@ final readonly class CharacterDetailAction implements ActionInterface
         \usort($characterComics, fn ($a, $b): int => $a->id->value <=> $b->id->value);
 
         return $this->renderer->render('pages/frontend/character_detail', [
-            'character'       => $character,
+            'character' => $character,
             'characterComics' => $characterComics,
-            'pageTitle'       => $character->name,
+            'pageTitle' => $character->name,
             'siteDescription' => 'Alle Informationen und Comic-Auftritte von ' . $character->name,
         ]);
     }

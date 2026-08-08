@@ -8,13 +8,15 @@ use App\Contracts\Storage\ReportRepositoryInterface;
 use App\Core\Entity\Report;
 use App\Core\ValueObject\ReportId;
 use App\Infrastructure\Database\Table;
+use DateTimeImmutable;
+use PDO;
 
 final readonly class MySqlReportRepository implements ReportRepositoryInterface
 {
     use DynamicSqlTrait;
     use EntityHydratorTrait;
 
-    public function __construct(private \PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
     }
 
@@ -34,7 +36,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
     {
         $stmt = $this->pdo->prepare('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `' . Table::REPORTS . '` r LEFT JOIN `' . Table::USERS . '` u ON r.user_id = u.id WHERE r.id = ? LIMIT 1');
         $stmt->execute([$id->value]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ? $this->hydrateEntity(Report::class, $row) : null;
     }
@@ -43,7 +45,7 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
     {
         $stmt = $this->pdo->query('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `' . Table::REPORTS . '` r LEFT JOIN `' . Table::USERS . '` u ON r.user_id = u.id ORDER BY r.date DESC');
 
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return \array_map(fn (array $row): object => $this->hydrateEntity(Report::class, $row), $rows);
     }
@@ -53,12 +55,12 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         $stmt = $this->pdo->prepare('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `' . Table::REPORTS . '` r LEFT JOIN `' . Table::USERS . '` u ON r.user_id = u.id WHERE r.status = ? ORDER BY r.date DESC');
         $stmt->execute([$status]);
 
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return \array_map(fn (array $row): object => $this->hydrateEntity(Report::class, $row), $rows);
     }
 
-    public function countRecentByIpHash(string $ipHash, \DateTimeImmutable $since): int
+    public function countRecentByIpHash(string $ipHash, DateTimeImmutable $since): int
     {
         $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM `' . Table::REPORTS . '` WHERE ip_hash = ? AND date >= ?');
         $stmt->execute([$ipHash, $since->format('Y-m-d H:i:s')]);

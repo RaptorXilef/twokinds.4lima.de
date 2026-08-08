@@ -26,10 +26,10 @@ final readonly class ProcessMailQueueAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        $tokenRaw      = $request->get['token'] ?? '';
+        $tokenRaw = $request->get['token'] ?? '';
         $providedToken = \is_string($tokenRaw) ? $tokenRaw : (\is_scalar($tokenRaw) ? (string) $tokenRaw : '');
 
-        $cronRaw           = $this->config->get('cron_secret', '');
+        $cronRaw = $this->config->get('cron_secret', '');
         $expectedCronToken = \is_string($cronRaw) ? $cronRaw : (\is_scalar($cronRaw) ? (string) $cronRaw : '');
 
         // 1. Sicherheits-Check
@@ -39,7 +39,7 @@ final readonly class ProcessMailQueueAction implements ActionInterface
 
         // 2. Mails versenden (inklusive Newsletter)
         $limit = 50;
-        $sent  = $this->mailService->processQueue($limit, []);
+        $sent = $this->mailService->processQueue($limit, []);
 
         // 3. Garbage Collection: Abgelaufene Magic Links löschen
         $deletedLinks = $this->magicLinkRepository->deleteExpired();
@@ -48,11 +48,11 @@ final readonly class ProcessMailQueueAction implements ActionInterface
         $deletedUsers = $this->userRepository->deleteUnverifiedAccounts(60);
 
         return JsonResponse::success([
-            'status'                   => 'processed',
-            'sent_count'               => $sent,
-            'deleted_links'            => $deletedLinks,
+            'status' => 'processed',
+            'sent_count' => $sent,
+            'deleted_links' => $deletedLinks,
             'deleted_unverified_users' => $deletedUsers,
-            'mode'                     => 'cron',
+            'mode' => 'cron',
         ]);
     }
 }

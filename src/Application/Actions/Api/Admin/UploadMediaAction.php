@@ -24,12 +24,12 @@ final readonly class UploadMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('media.upload')) {
+        if (!$this->auth->hasPermission('media.upload')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $files = $request->files['files'] ?? null;
-        if (! \is_array($files) || ! isset($files['name']) || ! \is_array($files['name'])) {
+        if (!\is_array($files) || !isset($files['name']) || !\is_array($files['name'])) {
             return JsonResponse::error('Keine Dateien hochgeladen.', 400);
         }
 

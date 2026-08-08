@@ -53,7 +53,7 @@ final readonly class ServerRequest
 
     public function getHeader(string $name): string
     {
-        $key    = 'HTTP_' . \strtoupper(\str_replace('-', '_', $name));
+        $key = 'HTTP_' . \strtoupper(\str_replace('-', '_', $name));
         $header = $this->server[$key] ?? '';
 
         return \is_string($header) ? $header : '';

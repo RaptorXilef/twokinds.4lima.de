@@ -16,6 +16,7 @@ use App\Contracts\Utils\ClockInterface;
 use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
 use App\Core\ValueObject\ComicId;
+use Throwable;
 
 #[Route('POST', '/api/upload_comic_media')]
 #[RequiresAuth]
@@ -32,7 +33,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.edit')) {
+        if (!$this->auth->hasPermission('comics.edit')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -45,31 +46,31 @@ final readonly class UploadComicMediaAction implements ActionInterface
             }
 
             $comicId = new ComicId($comicIdStr);
-            $comic   = $this->comicRepo->findById($comicId);
+            $comic = $this->comicRepo->findById($comicId);
 
-            $fRaw  = $request->post['force'] ?? false;
+            $fRaw = $request->post['force'] ?? false;
             $force = \in_array($fRaw, [true, 1, '1', 'true', 'on'], true);
 
             // Wenn Comic nicht existiert UND kein force-Flag gesetzt ist, brich ab und frag nach
-            if (! $comic instanceof ComicPage && ! $force) {
+            if (!$comic instanceof ComicPage && !$force) {
                 return JsonResponse::sendPayload([
                     'success' => false,
-                    'error'   => 'COMIC_NOT_FOUND',
+                    'error' => 'COMIC_NOT_FOUND',
                     'message' => "Comic {$comicIdStr} existiert nicht.",
                 ], 404);
             }
 
             $files = $request->files;
 
-            $uploadHires   = $files['upload_hires'] ?? null;
+            $uploadHires = $files['upload_hires'] ?? null;
             $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK;
-            $tmpHires      = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null;
+            $tmpHires = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null;
 
-            $uploadLowres   = $files['upload_lowres'] ?? null;
+            $uploadLowres = $files['upload_lowres'] ?? null;
             $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK;
-            $tmpLowres      = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null;
+            $tmpLowres = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null;
 
-            if (! $hiresUploaded && ! $lowresUploaded) {
+            if (!$hiresUploaded && !$lowresUploaded) {
                 return JsonResponse::error('Keine gültigen Bilder hochgeladen.', 400);
             }
 
@@ -94,7 +95,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
             }
 
             return JsonResponse::success(['message' => "Medien für {$comicIdStr} erfolgreich verarbeitet!"]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
     }

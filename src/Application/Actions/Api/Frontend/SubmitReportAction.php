@@ -15,6 +15,7 @@ use App\Contracts\System\MediaServiceInterface;
 use App\Core\Exception\RateLimitExceededException;
 use App\Core\Service\AuthService;
 use App\Core\Service\ReportService;
+use Throwable;
 
 #[Route('POST', '/api/submit_report')]
 final readonly class SubmitReportAction implements ActionInterface
@@ -34,7 +35,7 @@ final readonly class SubmitReportAction implements ActionInterface
 
             // --- Screenshot Verarbeitung (Max 1500px, WEBP) ---
             $screenshotUrl = null;
-            $file          = $request->files['report_screenshot'] ?? null;
+            $file = $request->files['report_screenshot'] ?? null;
 
             if (\is_array($file) && isset($file['error']) && $file['error'] === \UPLOAD_ERR_OK) {
                 // Logik an Infrastruktur abgegeben
@@ -68,7 +69,7 @@ final readonly class SubmitReportAction implements ActionInterface
             return JsonResponse::error($e->getMessage(), 400);
         } catch (RateLimitExceededException $e) {
             return JsonResponse::error($e->getMessage(), 429);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Log-Logik greift automatisch über den GlobalExceptionHandler, wir geben nur 500 zurück
             return JsonResponse::error('Ein interner Serverfehler ist aufgetreten: ' . $e->getMessage(), 500);
         }

@@ -8,13 +8,15 @@ use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Core\Entity\MailJob;
 use App\Infrastructure\Database\Table;
+use PDO;
+use Throwable;
 
 final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInterface
 {
     use DynamicSqlTrait;
     use EntityHydratorTrait;
 
-    public function __construct(private \PDO $pdo, private JsonHelperInterface $jsonHelper)
+    public function __construct(private PDO $pdo, private JsonHelperInterface $jsonHelper)
     {
     }
 
@@ -33,38 +35,38 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
 
     public function processBatch(int $limit, callable $processor, array $allowedTemplates = []): int
     {
-        $sentCount    = 0;
+        $sentCount = 0;
         $lockAcquired = $this->pdo->query("SELECT GET_LOCK('tk_mail_queue', 2)")->fetchColumn();
-        if (! $lockAcquired) {
+        if (!$lockAcquired) {
             return 0;
         }
 
         $templateFilterSql = '';
-        $params            = [];
+        $params = [];
 
         // Newsletter herausfiltern oder gezielt zulassen
         if ($allowedTemplates !== []) {
-            $inQuery           = \implode(',', \array_fill(0, \count($allowedTemplates), '?'));
+            $inQuery = \implode(',', \array_fill(0, \count($allowedTemplates), '?'));
             $templateFilterSql = " AND template IN ($inQuery)";
-            $params            = $allowedTemplates;
+            $params = $allowedTemplates;
         }
 
         try {
-            $updateSql  = 'UPDATE `' . Table::MAIL_QUEUE . "` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
+            $updateSql = 'UPDATE `' . Table::MAIL_QUEUE . "` SET attempts = attempts + 100 WHERE attempts < 3 {$templateFilterSql} ORDER BY priority DESC, created_at ASC LIMIT {$limit}";
             $stmtUpdate = $this->pdo->prepare($updateSql);
             $stmtUpdate->execute($params);
 
-            $selectSql  = 'SELECT * FROM `' . Table::MAIL_QUEUE . "` WHERE attempts >= 100 {$templateFilterSql} ORDER BY priority DESC, created_at ASC";
+            $selectSql = 'SELECT * FROM `' . Table::MAIL_QUEUE . "` WHERE attempts >= 100 {$templateFilterSql} ORDER BY priority DESC, created_at ASC";
             $stmtSelect = $this->pdo->prepare($selectSql);
             $stmtSelect->execute($params);
-            $items = $stmtSelect->fetchAll(\PDO::FETCH_ASSOC);
+            $items = $stmtSelect->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($items as $item) {
                 try {
                     $processor($item['recipient'], $item['subject'], $item['template'], $this->jsonHelper->decode((string) $item['data']));
                     $this->delete($item['id']);
                     ++$sentCount;
-                } catch (\Throwable $t) {
+                } catch (Throwable $t) {
                     \error_log("MailQueue Error [ID {$item['id']}]: " . $t->getMessage());
                     $origAttempts = $item['attempts'] - 100 + 1;
                     if ($origAttempts >= 3) {
@@ -89,14 +91,14 @@ final readonly class MySqlMailQueueRepository implements MailQueueRepositoryInte
     {
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::MAIL_QUEUE . '` ORDER BY created_at DESC');
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findById(string $id): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::MAIL_QUEUE . '` WHERE id = ? LIMIT 1');
         $stmt->execute([$id]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ?: null;
     }

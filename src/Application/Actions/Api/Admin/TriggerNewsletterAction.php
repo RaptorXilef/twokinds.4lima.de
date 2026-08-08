@@ -27,22 +27,22 @@ final readonly class TriggerNewsletterAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.edit')) {
+        if (!$this->auth->hasPermission('comics.edit')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         // Parameter aus dem Admin-Frontend abgreifen
         $typeRaw = $request->post['type'] ?? 'full'; // 'full' oder 'transcript'
-        $type    = \is_string($typeRaw) ? $typeRaw : 'full';
+        $type = \is_string($typeRaw) ? $typeRaw : 'full';
 
         $comicNameRaw = $request->post['comic_name'] ?? 'TwoKinds';
-        $comicName    = \is_scalar($comicNameRaw) ? \trim((string) $comicNameRaw) : 'TwoKinds';
+        $comicName = \is_scalar($comicNameRaw) ? \trim((string) $comicNameRaw) : 'TwoKinds';
 
         $pageNumberRaw = $request->post['page_number'] ?? '';
-        $pageNumber    = \is_scalar($pageNumberRaw) ? \trim((string) $pageNumberRaw) : '';
+        $pageNumber = \is_scalar($pageNumberRaw) ? \trim((string) $pageNumberRaw) : '';
 
         $pageUrlRaw = $request->post['page_url'] ?? '';
-        $pageUrl    = \is_scalar($pageUrlRaw) ? \trim((string) $pageUrlRaw) : '';
+        $pageUrl = \is_scalar($pageUrlRaw) ? \trim((string) $pageUrlRaw) : '';
 
         if ($pageUrl === '' || $pageNumber === '') {
             return JsonResponse::error('Seiten-URL und Seitenzahl müssen angegeben werden.', 400);
@@ -58,17 +58,17 @@ final readonly class TriggerNewsletterAction implements ActionInterface
         }
 
         $template = $isTranscript ? 'newsletter_transcript' : 'newsletter_full';
-        $subject  = $isTranscript
+        $subject = $isTranscript
             ? "Neues Transkript verfügbar: {$comicName} - Seite {$pageNumber}"
             : "Neue Comic-Seite: {$comicName} - Seite {$pageNumber}";
 
         $count = 0;
         foreach ($subscribers as $user) {
             $this->mailService->sendTemplate($user->email->value, $subject, $template, [
-                'username'   => $user->username->value,
-                'comicName'  => $comicName,
+                'username' => $user->username->value,
+                'comicName' => $comicName,
                 'pageNumber' => $pageNumber,
-                'pageUrl'    => $pageUrl,
+                'pageUrl' => $pageUrl,
             ]);
             ++$count;
         }

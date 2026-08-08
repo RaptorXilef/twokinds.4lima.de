@@ -24,12 +24,12 @@ final readonly class MediaListAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('media.upload') && ! $this->auth->hasPermission('media.delete') && ! $this->auth->hasPermission('characters.edit')) {
+        if (!$this->auth->hasPermission('media.upload') && !$this->auth->hasPermission('media.delete') && !$this->auth->hasPermission('characters.edit')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $folderRaw = $request->get['folder'] ?? 'profiles';
-        $folder    = \is_string($folderRaw) ? $folderRaw : 'profiles';
+        $folder = \is_string($folderRaw) ? $folderRaw : 'profiles';
 
         $result = $this->imageStorage->listCharacterMediaFiles($folder);
 

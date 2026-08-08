@@ -14,7 +14,7 @@ function setupFeedTest(mixed $test): object
 {
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class ($mock(ComicRepositoryInterface::class), $mock(ConfigInterface::class), $mock(ClockInterface::class)) {
+    return new class($mock(ComicRepositoryInterface::class), $mock(ConfigInterface::class), $mock(ClockInterface::class)) {
         public FeedService $service;
 
         public function __construct(

@@ -24,7 +24,7 @@ final readonly class ToggleBookmarkAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->isLoggedIn()) {
+        if (!$this->auth->isLoggedIn()) {
             return JsonResponse::error('Nicht eingeloggt.', 401);
         }
 
@@ -35,10 +35,10 @@ final readonly class ToggleBookmarkAction implements ActionInterface
         }
 
         $comicIdRaw = $request->post['comic_id'] ?? '';
-        $comicId    = \is_scalar($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
+        $comicId = \is_scalar($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
 
         $actionRaw = $request->post['bookmark_action'] ?? '';
-        $action    = \is_scalar($actionRaw) ? \trim((string) $actionRaw) : ''; // 'add' oder 'remove'
+        $action = \is_scalar($actionRaw) ? \trim((string) $actionRaw) : ''; // 'add' oder 'remove'
 
         // SECURITY FIX: Prüfe die Comic-ID strikt auf das Format
         if (\preg_match('/^\d{8}[a-z]?$/i', $comicId) !== 1) {

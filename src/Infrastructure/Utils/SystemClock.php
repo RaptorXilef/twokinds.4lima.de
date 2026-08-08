@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Utils;
 
 use App\Contracts\Utils\ClockInterface;
+use DateTimeImmutable;
 
 /**
  * TODO DOCBLOCK
@@ -13,13 +14,13 @@ use App\Contracts\Utils\ClockInterface;
  */
 final class SystemClock implements ClockInterface
 {
-    public function now(): \DateTimeImmutable
+    public function now(): DateTimeImmutable
     {
-        return new \DateTimeImmutable();
+        return new DateTimeImmutable();
     }
 
     public function nowAsString(): string
     {
-        return (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        return (new DateTimeImmutable())->format('Y-m-d H:i:s');
     }
 }

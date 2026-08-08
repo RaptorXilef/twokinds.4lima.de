@@ -11,6 +11,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\System\BackupServiceInterface;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/create_backup')]
 #[RequiresAuth]
@@ -22,18 +23,18 @@ final readonly class CreateBackupAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.backup.manage')) {
+        if (!$this->auth->hasPermission('system.backup.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
             $tableNameRaw = $request->post['table'] ?? null;
-            $table        = \is_string($tableNameRaw) && $tableNameRaw !== 'all' && $tableNameRaw !== '' ? $tableNameRaw : null;
+            $table = \is_string($tableNameRaw) && $tableNameRaw !== 'all' && $tableNameRaw !== '' ? $tableNameRaw : null;
 
             $file = $this->backupService->createBackup($table);
 
             return JsonResponse::success(['message' => "Backup erfolgreich erstellt: $file"]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
     }

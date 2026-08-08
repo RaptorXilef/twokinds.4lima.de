@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 require_once \dirname(__DIR__, 2) . '/vendor/autoload.php';
 $container = require \dirname(__DIR__, 2) . '/src/Bootstrap/app.php';
-$pdo       = $container->get(\PDO::class);
+$pdo = $container->get(\PDO::class);
 
 echo "<pre>Führe Datenbank-Update aus...\n\n";
 

@@ -36,7 +36,7 @@ final readonly class ForgotPasswordAction implements ActionInterface
 
         // Lese die E-Mail-Config aus und baue die ausführliche Meldung
         $mailConfig = $this->config->getMailSettings();
-        $fromEmail  = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
+        $fromEmail = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
 
         $successMsg = 'Falls diese E-Mail existiert, habe ich dir einen Reset-Link gesendet.<br><br>' .
             '&bull; Der Link ist <strong>15 Minuten</strong> gültig.<br>' .
@@ -49,7 +49,7 @@ final readonly class ForgotPasswordAction implements ActionInterface
         }
 
         $emailRaw = $request->post['email'] ?? '';
-        $email    = \is_scalar($emailRaw) ? \trim((string) $emailRaw) : '';
+        $email = \is_scalar($emailRaw) ? \trim((string) $emailRaw) : '';
 
         if ($email === '') {
             $this->rateLimiter->recordFailedAttempt($ip);
@@ -60,7 +60,7 @@ final readonly class ForgotPasswordAction implements ActionInterface
         $user = $this->userRepository->findByEmail($email);
         if ($user instanceof User) {
             $tokenData = $this->magicLinkService->createToken($email);
-            $resetUrl  = \rtrim($this->config->getBaseUrl(), '/') . '/passwort-reset?token=' . $tokenData['token'];
+            $resetUrl = \rtrim($this->config->getBaseUrl(), '/') . '/passwort-reset?token=' . $tokenData['token'];
 
             $this->mailService->sendTemplate($user->email->value, 'Passwort zurücksetzen', 'forgot_password', [
                 'resetUrl' => $resetUrl,

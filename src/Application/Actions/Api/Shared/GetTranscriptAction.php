@@ -29,7 +29,7 @@ final readonly class GetTranscriptAction implements ActionInterface
         }
 
         $comic = $this->comicRepo->findById(new ComicId($idStr));
-        if (! $comic instanceof ComicPage) {
+        if (!$comic instanceof ComicPage) {
             return JsonResponse::error('Comic nicht gefunden.', 404);
         }
 

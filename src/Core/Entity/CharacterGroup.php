@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Entity;
 
 use App\Core\ValueObject\CharacterId;
+use InvalidArgumentException;
 
 final readonly class CharacterGroup
 {
@@ -24,8 +25,8 @@ final readonly class CharacterGroup
     ) {
         // Strikte Typisierung für das Array erzwingen
         foreach ($characterIds as $charId) {
-            if (! $charId instanceof CharacterId) {
-                throw new \InvalidArgumentException('Das characterIds Array darf nur Instanzen von CharacterId enthalten.');
+            if (!$charId instanceof CharacterId) {
+                throw new InvalidArgumentException('Das characterIds Array darf nur Instanzen von CharacterId enthalten.');
             }
         }
         $this->characterIds = \array_values($characterIds);

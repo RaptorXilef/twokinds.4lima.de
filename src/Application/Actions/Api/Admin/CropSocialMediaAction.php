@@ -12,6 +12,7 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/crop_social_media')]
 #[RequiresAuth]
@@ -26,7 +27,7 @@ final readonly class CropSocialMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.edit')) {
+        if (!$this->auth->hasPermission('comics.edit')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -37,33 +38,33 @@ final readonly class CropSocialMediaAction implements ActionInterface
 
         try {
             $comicIdRaw = $request->post['comic_id'] ?? '';
-            $comicId    = \is_scalar($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
+            $comicId = \is_scalar($comicIdRaw) ? \trim((string) $comicIdRaw) : '';
 
             $xRaw = $request->post['x'] ?? 0;
-            $x    = \is_numeric($xRaw) ? (int) $xRaw : 0;
+            $x = \is_numeric($xRaw) ? (int) $xRaw : 0;
 
             $yRaw = $request->post['y'] ?? 0;
-            $y    = \is_numeric($yRaw) ? (int) $yRaw : 0;
+            $y = \is_numeric($yRaw) ? (int) $yRaw : 0;
 
             $wRaw = $request->post['width'] ?? 0;
-            $w    = \is_numeric($wRaw) ? (int) $wRaw : 0;
+            $w = \is_numeric($wRaw) ? (int) $wRaw : 0;
 
             $hRaw = $request->post['height'] ?? 0;
-            $h    = \is_numeric($hRaw) ? (int) $hRaw : 0;
+            $h = \is_numeric($hRaw) ? (int) $hRaw : 0;
 
             if ($comicId === '' || $w <= 0 || $h <= 0) {
                 return JsonResponse::error('Ungültige Schnitt-Parameter.', 400);
             }
 
-            $rootPath  = $this->config->get('root_path');
-            $rootStr   = \is_string($rootPath) ? $rootPath : '';
+            $rootPath = $this->config->get('root_path');
+            $rootStr = \is_string($rootPath) ? $rootPath : '';
             $targetDir = \rtrim($rootStr, '/\\') . '/public/assets/images/comics';
 
             $sourcePath = "$targetDir/hires/$comicId.webp";
             // WICHTIG: JPG für maximale Kompatibilität!
             $targetPath = "$targetDir/social/$comicId.jpg";
 
-            if (! \file_exists($sourcePath)) {
+            if (!\file_exists($sourcePath)) {
                 return JsonResponse::error('Hires-Quellbild für den Zuschnitt nicht gefunden.', 404);
             }
 
@@ -83,7 +84,7 @@ final readonly class CropSocialMediaAction implements ActionInterface
             }
 
             return JsonResponse::error('Fehler beim Generieren des Bildes (GD Error).', 500);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Fängt alle fatalen PHP-Fehler (z.B. OOM) als sauberes JSON ab
             return JsonResponse::error('Server-Fehler: ' . $e->getMessage(), 500);
         }

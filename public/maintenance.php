@@ -10,24 +10,24 @@ declare(strict_types=1);
 
 // 1. Sichere Base-URL Ermittlung (ohne Abhängigkeit von der Datenbank oder komplexen Configs)
 $scriptPath = \str_replace('\\', '/', \dirname((string) $_SERVER['SCRIPT_NAME']));
-$rootPath   = \rtrim($scriptPath, '/public');
-$baseUrl    = \rtrim($rootPath, '/') . '/';
+$rootPath = \rtrim($scriptPath, '/public');
+$baseUrl = \rtrim($rootPath, '/') . '/';
 
 // 2. Klären, ob wir im Admin-Wartungsmodus sind (falls die Config existiert)
 $isAdminMaintenance = false;
-$configFile         = __DIR__ . '/../config/config.php';
+$configFile = __DIR__ . '/../config/config.php';
 if (\file_exists($configFile)) {
-    $settings           = require $configFile;
-    $isAdminMaintenance = ! empty($settings['maintenance_mode_admin']);
+    $settings = require $configFile;
+    $isAdminMaintenance = !empty($settings['maintenance_mode_admin']);
 }
 
 // 3. Fallback Logo-Pfad (Prüft, ob ein spezifisches Logo da ist)
-$logoPath       = $baseUrl . 'appleicon.png'; // Fallback auf den TK-Button, den du im SCSS referenziert hast
+$logoPath = $baseUrl . 'appleicon.png'; // Fallback auf den TK-Button, den du im SCSS referenziert hast
 $localLogoCheck = __DIR__ . '/appleicon.png'; // führenden / nicht vergessen!
-$hasLogo        = \file_exists($localLogoCheck);
+$hasLogo = \file_exists($localLogoCheck);
 
 // 4. HTTP-Statuscode setzen, damit Suchmaschinen wissen, dass die Seite nur temporär offline ist
-if (! \headers_sent()) {
+if (!\headers_sent()) {
     \http_response_code(503);
     \header('Retry-After: 3600'); // Suchmaschinen sollen in 1 Stunde wiederkommen
 }

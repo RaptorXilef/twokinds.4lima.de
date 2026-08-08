@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Entity;
 
+use DateTimeImmutable;
+
 final readonly class MailJob
 {
     /**
@@ -17,7 +19,7 @@ final readonly class MailJob
         public array $data,
         public int $attempts,
         public int $priority,
-        public \DateTimeImmutable $createdAt,
+        public DateTimeImmutable $createdAt,
     ) {
     }
 }

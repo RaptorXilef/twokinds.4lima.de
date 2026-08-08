@@ -13,6 +13,7 @@ use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Core\Entity\Chapter;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/save_chapter')]
 #[RequiresAuth]
@@ -26,14 +27,14 @@ final readonly class SaveChapterAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('chapters.edit')) {
+        if (!$this->auth->hasPermission('chapters.edit')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
-            $id    = Sanitizer::string($request->post['chapter_id'] ?? '');
+            $id = Sanitizer::string($request->post['chapter_id'] ?? '');
             $title = Sanitizer::string($request->post['title'] ?? '');
-            $desc  = Sanitizer::html($request->post['description'] ?? ''); // HTML erlaubt
+            $desc = Sanitizer::html($request->post['description'] ?? ''); // HTML erlaubt
 
             if ($id === '' || $title === '') {
                 return JsonResponse::error('Kapitel-ID und Titel sind Pflichtfelder.', 400);
@@ -42,7 +43,7 @@ final readonly class SaveChapterAction implements ActionInterface
             $this->chapterRepo->save(new Chapter($id, $title, $desc));
 
             return JsonResponse::success(['message' => "Kapitel '{$id}' erfolgreich gespeichert."]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Speichern: ' . $e->getMessage(), 500);
         }
     }

@@ -6,6 +6,7 @@ namespace App\Core\Entity;
 
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
+use InvalidArgumentException;
 
 final readonly class ComicPage
 {
@@ -16,7 +17,7 @@ final readonly class ComicPage
 
     /**
      * @param array<int, CharacterId> $characterIds
-     * @param array<int, string>      $userIds
+     * @param array<int, string> $userIds
      */
     public function __construct(
         public ComicId $id,
@@ -31,8 +32,8 @@ final readonly class ComicPage
         public ?int $imageUpdatedAt = null, // Ersetzt die image_cache.json
     ) {
         foreach ($characterIds as $charId) {
-            if (! $charId instanceof CharacterId) {
-                throw new \InvalidArgumentException('Das characterIds Array darf nur Instanzen von CharacterId enthalten.');
+            if (!$charId instanceof CharacterId) {
+                throw new InvalidArgumentException('Das characterIds Array darf nur Instanzen von CharacterId enthalten.');
             }
         }
         $this->characterIds = \array_values($characterIds);

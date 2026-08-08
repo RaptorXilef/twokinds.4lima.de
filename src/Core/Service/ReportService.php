@@ -14,7 +14,7 @@ use App\Core\ValueObject\ReportId;
 
 final readonly class ReportService
 {
-    private const int RATE_LIMIT_COUNT          = 5;
+    private const int RATE_LIMIT_COUNT = 5;
     private const int RATE_LIMIT_WINDOW_SECONDS = 600;
 
     public function __construct(
@@ -36,11 +36,11 @@ final readonly class ReportService
         string $transcriptOriginal,
         string $debugInfo,
     ): Report {
-        $now    = $this->clock->now();
+        $now = $this->clock->now();
         $ipHash = \hash('sha256', $ipAddress);
 
         // 1. High-Performance Rate-Limiting via MySQL
-        $since         = $now->modify('-' . self::RATE_LIMIT_WINDOW_SECONDS . ' seconds');
+        $since = $now->modify('-' . self::RATE_LIMIT_WINDOW_SECONDS . ' seconds');
         $recentReports = $this->reportRepository->countRecentByIpHash($ipHash, $since);
 
         if ($recentReports >= self::RATE_LIMIT_COUNT) {
@@ -75,7 +75,7 @@ final readonly class ReportService
     {
         $report = $this->reportRepository->findById($id);
 
-        if (! $report instanceof Report) {
+        if (!$report instanceof Report) {
             throw new EntityNotFoundException("Report mit der ID {$id->value} nicht gefunden.");
         }
 

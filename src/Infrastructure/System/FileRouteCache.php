@@ -26,9 +26,9 @@ final readonly class FileRouteCache implements RouteCacheInterface
     public function save(array $routes): void
     {
         $cacheFile = $this->config->getStoragePath('cache/routes_v2.php');
-        $cacheDir  = \dirname($cacheFile);
+        $cacheDir = \dirname($cacheFile);
 
-        if (! \is_dir($cacheDir)) {
+        if (!\is_dir($cacheDir)) {
             @\mkdir($cacheDir, 0o755, true);
         }
 
@@ -38,7 +38,7 @@ final readonly class FileRouteCache implements RouteCacheInterface
     public function clearOld(): void
     {
         $oldCache = $this->config->getStoragePath('cache/routes.php');
-        if (! \file_exists($oldCache)) {
+        if (!\file_exists($oldCache)) {
             return;
         }
 

@@ -19,7 +19,7 @@ use App\Core\Security\Sanitizer;
 })->covers(Sanitizer::class);
 
 \it('sanitizes HTML securely via HtmlSanitizer', function (): void {
-    $input     = '<a href="javascript:alert(1)">Link</a> <img src="x" onerror="alert(1)">';
+    $input = '<a href="javascript:alert(1)">Link</a> <img src="x" onerror="alert(1)">';
     $sanitized = Sanitizer::html($input);
 
     // JS-Links und OnError-Attribute müssen weg sein!

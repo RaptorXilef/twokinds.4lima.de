@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\ValueObject;
 
-final readonly class ComicId implements \Stringable
+use InvalidArgumentException;
+use Stringable;
+
+final readonly class ComicId implements Stringable
 {
     public string $value;
 
@@ -13,7 +16,7 @@ final readonly class ComicId implements \Stringable
         $value = \trim($value);
         // NEU: Erlaubt 8 Ziffern PLUS optional einen Buchstaben (a-z) am Ende
         if (\preg_match('/^\d{8}[a-z]?$/i', $value) !== 1) {
-            throw new \InvalidArgumentException("Ungültiges Comic-ID Format. Erwartet YYYYMMDD (mit optionalem Suffix a-z), erhalten: {$value}");
+            throw new InvalidArgumentException("Ungültiges Comic-ID Format. Erwartet YYYYMMDD (mit optionalem Suffix a-z), erhalten: {$value}");
         }
 
         $this->value = \strtolower($value); // Aus großem 'A' ein kleines 'a' machen

@@ -91,6 +91,8 @@
     "chk:arch:uncovered": "deptrac analyse --config-file=deptrac.yaml --report-uncovered",
     "chk:modern": "rector process --dry-run",
 
+    "//chk:style:s": "phpcs tests/Unit/Core/Service/ -s",
+
     "// --- PHASE 1.1: PHPStan ANALYSIS PRO SCHICHT (CHECKING) ---": "Read-Only Qualitätsprüfungen",
     "chk:stan:core": "phpstan analyse src/Core --level max --memory-limit=2G",
     "chk:stan:application": "phpstan analyse src/Application --level max --memory-limit=2G",

@@ -11,6 +11,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\ChapterRepositoryInterface;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/delete_chapter')]
 #[RequiresAuth]
@@ -24,13 +25,13 @@ final readonly class DeleteChapterAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('chapters.delete')) {
+        if (!$this->auth->hasPermission('chapters.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
             $idRaw = $request->post['chapter_id'] ?? '';
-            $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+            $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
             if ($id === '') {
                 return JsonResponse::error('Keine ID übermittelt.', 400);
@@ -39,7 +40,7 @@ final readonly class DeleteChapterAction implements ActionInterface
             $this->chapterRepo->delete($id);
 
             return JsonResponse::success(['message' => "Kapitel '{$id}' erfolgreich gelöscht."]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Löschen: ' . $e->getMessage(), 500);
         }
     }

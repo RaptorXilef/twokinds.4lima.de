@@ -11,11 +11,12 @@ use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
 use App\Infrastructure\Database\Table;
+use PDO;
 
 final readonly class MySqlComicRevisionRepository implements ComicRevisionRepositoryInterface
 {
     public function __construct(
-        private \PDO $pdo,
+        private PDO $pdo,
         private ClockInterface $clock,
         private ConfigInterface $config,
     ) {
@@ -26,14 +27,14 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         $comicIdStr = $oldState->id->value;
 
         $snapshotData = [
-            'type'             => $oldState->type,
-            'name'             => $oldState->name,
-            'transcript'       => $oldState->transcript,
-            'chapter_id'       => $oldState->chapterId,
-            'character_ids'    => \array_map(fn (CharacterId $id): string => $id->value, $oldState->characterIds),
-            'user_ids'         => $oldState->userIds,
-            'original_url'     => $oldState->originalUrl,
-            'sketch_url'       => $oldState->sketchUrl,
+            'type' => $oldState->type,
+            'name' => $oldState->name,
+            'transcript' => $oldState->transcript,
+            'chapter_id' => $oldState->chapterId,
+            'character_ids' => \array_map(fn (CharacterId $id): string => $id->value, $oldState->characterIds),
+            'user_ids' => $oldState->userIds,
+            'original_url' => $oldState->originalUrl,
+            'sketch_url' => $oldState->sketchUrl,
             'image_updated_at' => $oldState->imageUpdatedAt,
         ];
 
@@ -68,7 +69,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
 
         $stmtCleanup->bindValue(':cid', $comicIdStr);
         $stmtCleanup->bindValue(':cid2', $comicIdStr);
-        $stmtCleanup->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmtCleanup->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmtCleanup->execute();
     }
 
@@ -78,7 +79,7 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         $stmt->execute([$id->value]);
         $row = $stmt->fetch();
 
-        if (! $row) {
+        if (!$row) {
             return null; // Kein Snapshot vorhanden
         }
 
@@ -102,14 +103,14 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         ');
         $row = $stmt->fetch();
 
-        if (! $row) {
+        if (!$row) {
             return null;
         }
 
         $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
         $delStmt->execute([$row['id']]);
 
-        $data             = \json_decode($row['revision_data'], true);
+        $data = \json_decode($row['revision_data'], true);
         $data['comic_id'] = $row['comic_id'];
 
         return $data;

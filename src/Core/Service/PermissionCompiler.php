@@ -8,7 +8,7 @@ final class PermissionCompiler
 {
     /**
      * @param array<int|string, mixed> $structure
-     * @param array<int, string>       $groupPermissions
+     * @param array<int, string> $groupPermissions
      *
      * @return array<string, bool>
      */
@@ -24,13 +24,13 @@ final class PermissionCompiler
 
     /**
      * @param array<int|string, mixed> $nodes
-     * @param array<int, string>       $groupPerms
-     * @param array<string, bool>      &$result
+     * @param array<int, string> $groupPerms
+     * @param array<string, bool> &$result
      */
     private function walk(array $nodes, array $groupPerms, bool $parentAllowed, array &$result): void
     {
         foreach ($nodes as $node) {
-            if (! \is_array($node)) {
+            if (!\is_array($node)) {
                 continue;
             }
 
@@ -38,17 +38,19 @@ final class PermissionCompiler
 
             if ($key !== null) {
                 $explicitAllow = \in_array($key, $groupPerms, true) || \in_array('*', $groupPerms, true);
-                $explicitDeny  = \in_array('-' . $key, $groupPerms, true);
+                $explicitDeny = \in_array('-' . $key, $groupPerms, true);
 
                 // LOGIK-FIX: Erlaubt, wenn der Parent erlaubt ist ODER es explizit erlaubt wurde,
                 // ABER NICHT, wenn es durch ein '-' explizit verboten wurde.
-                $isAllowed    = ($parentAllowed || $explicitAllow) && ! $explicitDeny;
+                $isAllowed = ($parentAllowed || $explicitAllow) && !$explicitDeny;
                 $result[$key] = $isAllowed;
             } else {
                 $isAllowed = $parentAllowed;
             }
-
-            if (! isset($node['children']) || ! \is_array($node['children'])) {
+            if (!isset($node['children'])) {
+                continue;
+            }
+            if (!\is_array($node['children'])) {
                 continue;
             }
 

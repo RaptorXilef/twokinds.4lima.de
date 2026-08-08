@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Config;
 
 use App\Contracts\Config\ConfigInterface;
+use RuntimeException;
 
 final readonly class Config implements ConfigInterface
 {
@@ -21,8 +22,8 @@ final readonly class Config implements ConfigInterface
      *
      * (Der wichtigste universelle Getter)
      *
-     * @param string $key     Der exakte Array-Schlüssel.
-     * @param mixed  $default Fallback bei Nichtexistenz.
+     * @param string $key Der exakte Array-Schlüssel.
+     * @param mixed $default Fallback bei Nichtexistenz.
      *
      * @return mixed Der gespeicherte Wert.
      */
@@ -44,20 +45,20 @@ final readonly class Config implements ConfigInterface
     public function getBaseUrl(): string
     {
         $configured = $this->get('base_url');
-        if (! empty($configured)) {
+        if (!empty($configured)) {
             return \rtrim((string) $configured, '/') . '/';
         }
 
         if ($this->get('is_local_env', false)) {
             $protocol = $this->get('server_protocol', 'http://');
-            $host     = $this->get('server_host', 'localhost');
-            $path     = \rtrim(\dirname($this->get('server_script', '')), '/\\');
-            $path     = \str_replace('/api', '', $path);
+            $host = $this->get('server_host', 'localhost');
+            $path = \rtrim(\dirname($this->get('server_script', '')), '/\\');
+            $path = \str_replace('/api', '', $path);
 
             return $protocol . $host . $path . '/';
         }
 
-        throw new \RuntimeException('Sicherheits-Abbruch: "base_url" ist in der config/config.php nicht gesetzt! Host-Header-Fallback ist deaktiviert.');
+        throw new RuntimeException('Sicherheits-Abbruch: "base_url" ist in der config/config.php nicht gesetzt! Host-Header-Fallback ist deaktiviert.');
     }
 
     public function getStoragePath(string $fileName): string

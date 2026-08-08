@@ -13,6 +13,8 @@ use App\Application\Response\JsonResponse;
 use App\Core\Service\AuthService;
 use App\Core\Service\CharacterService;
 use App\Core\ValueObject\CharacterId;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/delete_character')]
 #[RequiresAuth]
@@ -26,13 +28,13 @@ final readonly class DeleteCharacterAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('characters.delete')) {
+        if (!$this->auth->hasPermission('characters.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
             $idRaw = $request->post['character_id'] ?? '';
-            $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+            $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
             if ($id === '') {
                 throw ValidationException::withMessage('Keine Charakter-ID zum Löschen angegeben.');
@@ -41,9 +43,9 @@ final readonly class DeleteCharacterAction implements ActionInterface
             $this->characterService->deleteCharacter(new CharacterId($id));
 
             return JsonResponse::success(['message' => 'Charakter wurde erfolgreich gelöscht und aus allen Gruppen entfernt.']);
-        } catch (ValidationException | \InvalidArgumentException $e) {
+        } catch (ValidationException|InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Löschen: ' . $e->getMessage(), 500);
         }
     }

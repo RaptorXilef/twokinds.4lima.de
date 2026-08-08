@@ -16,7 +16,7 @@ function setupCharacterTest(mixed $test): object
 {
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class ($mock(CharacterRepositoryInterface::class), $mock(CharacterGroupRepositoryInterface::class), $mock(SiteGeneratorInterface::class)) {
+    return new class($mock(CharacterRepositoryInterface::class), $mock(CharacterGroupRepositoryInterface::class), $mock(SiteGeneratorInterface::class)) {
         public CharacterService $service;
 
         public function __construct(
@@ -32,7 +32,7 @@ function setupCharacterTest(mixed $test): object
 \it('saves a character and triggers site generation', function (): void {
     $app = \setupCharacterTest($this);
 
-    $charId    = new CharacterId('char_1234');
+    $charId = new CharacterId('char_1234');
     $character = new Character($charId, 'TestChar', null, null);
 
     $app->charRepo->expects($this->once())
@@ -49,7 +49,7 @@ function setupCharacterTest(mixed $test): object
     $app = \setupCharacterTest($this);
 
     $charIdToDelete = new CharacterId('char_0001');
-    $otherCharId    = new CharacterId('char_0002');
+    $otherCharId = new CharacterId('char_0002');
 
     $group1 = new CharacterGroup('Group1', [$charIdToDelete, $otherCharId]);
     $group2 = new CharacterGroup('Group2', [$otherCharId]); // Betrifft diesen Charakter nicht
@@ -99,7 +99,7 @@ function setupCharacterTest(mixed $test): object
     $app = \setupCharacterTest($this);
 
     $charId = new CharacterId('char_1111');
-    $group  = new CharacterGroup('Heroes', [$charId]);
+    $group = new CharacterGroup('Heroes', [$charId]);
 
     $app->charRepo->expects($this->once())
         ->method('findById')

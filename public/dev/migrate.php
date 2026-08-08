@@ -16,11 +16,11 @@ $baseDir = \dirname(__DIR__);
 // $configFile = $baseDir . '/config/storage.php';
 $configFile = $baseDir . '/config/config.local.php';
 
-if (! \file_exists($configFile)) {
+if (!\file_exists($configFile)) {
     exit("<b style='color:red;'>Fehler:</b> storage.php nicht gefunden (Erwartet in: {$configFile}).");
 }
 $config = require $configFile;
-$db     = $config['database'];
+$db = $config['database'];
 
 try {
     $pdo = new \PDO(
@@ -36,13 +36,13 @@ try {
 
 // 2. Pfade zu den JSON-Dateien
 $paths = [
-    'chapters'   => __DIR__ . '/migration_data/archive_chapters.json',
+    'chapters' => __DIR__ . '/migration_data/archive_chapters.json',
     'characters' => __DIR__ . '/migration_data/charaktere.json',
-    'comics'     => __DIR__ . '/migration_data/comic_var.json',
+    'comics' => __DIR__ . '/migration_data/comic_var.json',
 ];
 
 foreach ($paths as $path) {
-    if (! \file_exists($path)) {
+    if (!\file_exists($path)) {
         exit("<b style='color:red;'>Fehler:</b> Die Datei <code>{$path}</code> wurde nicht gefunden!");
     }
 }
@@ -55,7 +55,7 @@ try {
     // A) KAPITEL MIGRATION
     // ==========================================
     $chaptersData = \json_decode(\file_get_contents($paths['chapters']), true);
-    $stmtChapter  = $pdo->prepare('
+    $stmtChapter = $pdo->prepare('
         INSERT INTO `chapters` (`id`, `title`, `description`)
         VALUES (:id, :title, :description)
         ON DUPLICATE KEY UPDATE `title` = :title, `description` = :description
@@ -68,8 +68,8 @@ try {
             continue;
         }
         $stmtChapter->execute([
-            ':id'          => (string) $chapter['chapterId'],
-            ':title'       => $chapter['title'],
+            ':id' => (string) $chapter['chapterId'],
+            ':title' => $chapter['title'],
             ':description' => $chapter['description'] ?? '',
         ]);
         ++$chapterCount;
@@ -90,9 +90,9 @@ try {
     if (isset($charData['characters'])) {
         foreach ($charData['characters'] as $charId => $char) {
             $stmtChar->execute([
-                ':id'          => $charId,
-                ':name'        => $char['name'],
-                ':pic_url'     => $char['pic_url'] ?? null,
+                ':id' => $charId,
+                ':name' => $char['name'],
+                ':pic_url' => $char['pic_url'] ?? null,
                 ':description' => $char['description'] ?? null,
             ]);
             ++$charCount;
@@ -113,7 +113,7 @@ try {
     if (isset($charData['groups'])) {
         foreach ($charData['groups'] as $groupName => $idsArray) {
             $stmtGroup->execute([
-                ':name'          => $groupName,
+                ':name' => $groupName,
                 ':character_ids' => \json_encode(\array_values($idsArray)),
             ]);
             ++$groupCount;
@@ -149,14 +149,14 @@ try {
             $chapterId = isset($comic['chapter']) && $comic['chapter'] !== '' ? (string) $comic['chapter'] : null;
 
             $stmtComic->execute([
-                ':id'            => $comicId,
-                ':type'          => $comic['type'] ?? 'Comicseite',
-                ':name'          => $comic['name'] ?? '',
-                ':transcript'    => $comic['transcript'] ?? '',
-                ':chapter_id'    => $chapterId,
+                ':id' => $comicId,
+                ':type' => $comic['type'] ?? 'Comicseite',
+                ':name' => $comic['name'] ?? '',
+                ':transcript' => $comic['transcript'] ?? '',
+                ':chapter_id' => $chapterId,
                 ':character_ids' => $charIdsJson,
-                ':original_url'  => $comic['url_originalbild'] ?? '',
-                ':sketch_url'    => $comic['url_originalsketch'] ?? '',
+                ':original_url' => $comic['url_originalbild'] ?? '',
+                ':sketch_url' => $comic['url_originalsketch'] ?? '',
             ]);
             ++$comicCount;
         }

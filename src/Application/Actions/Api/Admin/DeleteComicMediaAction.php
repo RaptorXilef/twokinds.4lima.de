@@ -24,13 +24,13 @@ final readonly class DeleteComicMediaAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('media.delete') && ! $this->auth->hasPermission('comics.delete')) {
+        if (!$this->auth->hasPermission('media.delete') && !$this->auth->hasPermission('comics.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $idRaw = $request->post['comic_id'] ?? '';
         $idStr = \is_scalar($idRaw) ? (string) $idRaw : '';
-        $id    = \basename($idStr);
+        $id = \basename($idStr);
 
         if ($id === '') {
             return JsonResponse::error('Keine ID übergeben.', 400);

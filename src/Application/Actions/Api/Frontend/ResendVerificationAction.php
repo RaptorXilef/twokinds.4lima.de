@@ -36,7 +36,7 @@ final readonly class ResendVerificationAction implements ActionInterface
 
         // Lese die E-Mail-Config aus und baue die ausführliche Meldung
         $mailConfig = $this->config->getMailSettings();
-        $fromEmail  = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
+        $fromEmail = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
 
         $successMsg = 'Falls ein unbestätigtes Konto existiert, wurde eine neue E-Mail an dich versendet.<br><br>' .
             '&bull; Der Link ist <strong>15 Minuten</strong> gültig.<br>' .
@@ -49,7 +49,7 @@ final readonly class ResendVerificationAction implements ActionInterface
         }
 
         $emailRaw = $request->post['email'] ?? '';
-        $email    = \is_scalar($emailRaw) ? \trim((string) $emailRaw) : '';
+        $email = \is_scalar($emailRaw) ? \trim((string) $emailRaw) : '';
 
         if ($email === '') {
             $this->rateLimiter->recordFailedAttempt($ip);
@@ -66,7 +66,7 @@ final readonly class ResendVerificationAction implements ActionInterface
 
             $this->mailService->sendTemplate($user->email->value, 'Bitte bestätige dein Konto', 'verify_account', [
                 'verifyUrl' => $verifyUrl,
-                'username'  => $user->username->value,
+                'username' => $user->username->value,
             ]);
 
             // Sofortiger Versand

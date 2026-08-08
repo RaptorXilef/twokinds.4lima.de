@@ -8,13 +8,14 @@ use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Core\Entity\Character;
 use App\Core\ValueObject\CharacterId;
 use App\Infrastructure\Database\Table;
+use PDO;
 
 final readonly class MySqlCharacterRepository implements CharacterRepositoryInterface
 {
     use DynamicSqlTrait;
     use EntityHydratorTrait;
 
-    public function __construct(private \PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
     }
 
@@ -28,7 +29,7 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
     {
         $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::CHARACTERS . '` WHERE id = ? LIMIT 1');
         $stmt->execute([$id->value]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row ? $this->hydrateEntity(Character::class, $row) : null;
     }
@@ -36,7 +37,7 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
     public function findAll(): array
     {
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::CHARACTERS . '` ORDER BY name ASC');
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return \array_map(fn (array $r): object => $this->hydrateEntity(Character::class, $r), $rows);
     }

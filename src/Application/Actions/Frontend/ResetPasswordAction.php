@@ -20,13 +20,13 @@ final readonly class ResetPasswordAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         $tokenRaw = $request->get['token'] ?? '';
-        $token    = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
-        $email    = $this->magicLinkService->peekToken($token);
+        $token = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
+        $email = $this->magicLinkService->peekToken($token);
 
         return $this->renderer->render('pages/frontend/reset_password', [
-            'pageTitle'    => 'Neues Passwort festlegen',
+            'pageTitle' => 'Neues Passwort festlegen',
             'isValidToken' => $email !== null,
-            'token'        => $token,
+            'token' => $token,
         ]);
     }
 }

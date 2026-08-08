@@ -17,7 +17,7 @@ function setupAuthTest(mixed $test): object
 {
     $mock = \Closure::bind(fn (string $c) => $test->createMock($c), $test, $test::class);
 
-    return new class ($mock(ConfigInterface::class), $mock(RoleRepositoryInterface::class), $mock(RateLimiterInterface::class), $mock(AuthSessionInterface::class), $mock(UserRepositoryInterface::class)) {
+    return new class($mock(ConfigInterface::class), $mock(RoleRepositoryInterface::class), $mock(RateLimiterInterface::class), $mock(AuthSessionInterface::class), $mock(UserRepositoryInterface::class)) {
         public AuthService $service;
 
         public function __construct(

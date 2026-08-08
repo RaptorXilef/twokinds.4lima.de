@@ -37,10 +37,10 @@ final readonly class SaveSingleComicRequest
             throw ValidationException::withMessage('Ungültige oder fehlende Comic-ID.');
         }
 
-        $type       = Sanitizer::string($post['type'] ?? 'Comicseite');
-        $name       = Sanitizer::string($post['name'] ?? '');
+        $type = Sanitizer::string($post['type'] ?? 'Comicseite');
+        $name = Sanitizer::string($post['name'] ?? '');
         $transcript = Sanitizer::html($post['transcript'] ?? ''); // HTML erlaubt!
-        $chapterId  = Sanitizer::string($post['chapter_id'] ?? '');
+        $chapterId = Sanitizer::string($post['chapter_id'] ?? '');
 
         // Checkboxen oder Multi-Selects senden Arrays
         $characterIdsRaw = $post['character_ids'] ?? [];
@@ -56,13 +56,13 @@ final readonly class SaveSingleComicRequest
 
         // Flexible URL-Behandlung für Originalbilder
         $originalUrl = Sanitizer::string($post['url_originalbild'] ?? '');
-        if ($originalUrl !== '' && ! \str_starts_with($originalUrl, 'http')) {
+        if ($originalUrl !== '' && !\str_starts_with($originalUrl, 'http')) {
             $originalUrl = 'https://cdn.twokinds.keenspot.com/comics/' . $originalUrl; // TODO ggf. URL in Config auslagern
         }
 
         // Flexible URL-Behandlung für Skizzen
         $sketchUrl = Sanitizer::string($post['url_originalsketch'] ?? '');
-        if ($sketchUrl !== '' && ! \str_starts_with($sketchUrl, 'http')) {
+        if ($sketchUrl !== '' && !\str_starts_with($sketchUrl, 'http')) {
             $sketchUrl = 'https://twokindscomic.com/images/' . $sketchUrl; // TODO ggf. URL in Config auslagern
         }
 

@@ -16,6 +16,7 @@ use App\Contracts\System\JsonHelperInterface;
 use App\Core\Entity\MailJob;
 use App\Core\Service\AuthService;
 use App\Core\Service\MagicLinkService;
+use DateTimeImmutable;
 
 #[Route('POST', '/api/requeue_mail')]
 #[RequiresAuth]
@@ -33,12 +34,12 @@ final readonly class RequeueMailAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.manage') && ! $this->auth->hasPermission('admin.access')) {
+        if (!$this->auth->hasPermission('system.manage') && !$this->auth->hasPermission('admin.access')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $idRaw = $request->post['id'] ?? '';
-        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+        $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
         if ($id === '') {
             return JsonResponse::error('Keine ID übergeben.', 400);
@@ -51,14 +52,14 @@ final readonly class RequeueMailAction implements ActionInterface
 
         $dataRaw = $log['data'] ?? [];
         /** @var array<string, mixed> $data */
-        $data     = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
+        $data = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
         $template = \is_string($log['template'] ?? null) ? $log['template'] : '';
 
         // === Dynamische Tokens für Sicherheits-Mails erneuern ===
         if (\in_array($template, ['verify_account', 'forgot_password', 'verify_new_email'], true)) {
             $recipient = \is_string($log['recipient'] ?? null) ? $log['recipient'] : '';
             $tokenData = $this->magicLinkService->createToken($recipient);
-            $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
+            $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
 
             if ($template === 'verify_account') {
                 $data['verifyUrl'] = $baseUrl . '/verifizieren?token=' . $tokenData['token'];
@@ -79,7 +80,7 @@ final readonly class RequeueMailAction implements ActionInterface
             $data,
             0,
             100,
-            new \DateTimeImmutable(),
+            new DateTimeImmutable(),
         );
 
         $this->queueRepo->enqueue($job);

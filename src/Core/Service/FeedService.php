@@ -7,6 +7,10 @@ namespace App\Core\Service;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Utils\ClockInterface;
+use DateTimeImmutable;
+use DOMDocument;
+use DOMElement;
+use SimpleXMLElement;
 
 final readonly class FeedService
 {
@@ -22,11 +26,11 @@ final readonly class FeedService
      */
     public function generateRssXml(int $limit = 50): string
     {
-        $comics    = $this->comicRepo->findAll(); // Sortierung DESC passiert im Repo
-        $baseUrl   = \rtrim($this->config->getBaseUrl(), '/');
+        $comics = $this->comicRepo->findAll(); // Sortierung DESC passiert im Repo
+        $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
         $lowResUrl = $baseUrl . '/assets/images/comics/lowres';
 
-        $xml     = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"></rss>');
+        $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"></rss>');
         $channel = $xml->addChild('channel');
 
         $channel->addChild('title', 'Twokinds auf Deutsch');
@@ -51,7 +55,7 @@ final readonly class FeedService
                 continue;
             }
 
-            $item      = $channel->addChild('item');
+            $item = $channel->addChild('item');
             $titleText = $comic->name !== '' ? $comic->name : "Seite {$comic->id->value}";
             $item->addChild('title', \htmlspecialchars($titleText));
 
@@ -60,7 +64,7 @@ final readonly class FeedService
             $item->addChild('guid', $link);
 
             // Bild-Timestamp für Cache-Busting anhängen
-            $cb     = $comic->imageUpdatedAt !== null ? '?c=' . $comic->imageUpdatedAt : '';
+            $cb = $comic->imageUpdatedAt !== null ? '?c=' . $comic->imageUpdatedAt : '';
             $imgSrc = "{$lowResUrl}/{$comic->id->value}.webp{$cb}";
 
             $descContent = "<p><img src=\"{$imgSrc}\" alt=\"{$titleText}\" style=\"max-width: 100%; height: auto;\" /></p>";
@@ -69,20 +73,20 @@ final readonly class FeedService
             }
 
             $node = \dom_import_simplexml($item);
-            if ($node instanceof \DOMElement && $node->ownerDocument instanceof \DOMDocument) {
+            if ($node instanceof DOMElement && $node->ownerDocument instanceof DOMDocument) {
                 $node->appendChild($node->ownerDocument->createElement('description', \htmlspecialchars($descContent)));
             }
 
             $timestamp = $comic->imageUpdatedAt ?? $this->clock->now()->getTimestamp();
-            $dt        = (new \DateTimeImmutable())->setTimestamp($timestamp);
+            $dt = (new DateTimeImmutable())->setTimestamp($timestamp);
             $item->addChild('pubDate', $dt->format('r'));
 
             ++$count;
         }
 
-        $dom                     = new \DOMDocument('1.0');
+        $dom = new DOMDocument('1.0');
         $dom->preserveWhiteSpace = false;
-        $dom->formatOutput       = true;
+        $dom->formatOutput = true;
 
         $xmlString = $xml->asXML();
         if (\is_string($xmlString) && $xmlString !== '') {

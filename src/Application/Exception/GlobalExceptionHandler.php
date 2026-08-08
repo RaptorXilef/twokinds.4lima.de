@@ -7,6 +7,8 @@ namespace App\Application\Exception;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\ErrorLoggerInterface;
+use ErrorException;
+use Throwable;
 
 /**
  * Zentraler Exception Handler für die Anwendung.
@@ -40,16 +42,16 @@ final readonly class GlobalExceptionHandler
                 return false;
             }
 
-            throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+            throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
         });
     }
 
     /**
      * Zentraler Auffangkorb für alle Exceptions und fatalen Fehler.
      *
-     * @param \Throwable $exception Die geworfene Ausnahme.
+     * @param Throwable $exception Die geworfene Ausnahme.
      */
-    public function handleException(\Throwable $exception): void
+    public function handleException(Throwable $exception): void
     {
         // 1. Fehler revisionssicher loggen
         $this->logger->logThrowable($exception);
@@ -58,7 +60,7 @@ final readonly class GlobalExceptionHandler
         $isDev = $this->config->get('admin_dev_mode', false) === true;
 
         $scriptNameRaw = $_SERVER['SCRIPT_NAME'] ?? '';
-        $scriptName    = \is_string($scriptNameRaw) ? $scriptNameRaw : '';
+        $scriptName = \is_string($scriptNameRaw) ? $scriptNameRaw : '';
 
         $acceptRaw = $_SERVER['HTTP_ACCEPT'] ?? '';
         $acceptStr = \is_string($acceptRaw) ? $acceptRaw : '';
@@ -83,23 +85,23 @@ final readonly class GlobalExceptionHandler
     /**
      * Rendert eine formatierte HTML-Fehlerseite für Endnutzer oder Entwickler.
      *
-     * @param \Throwable $exception Die aufgetretene Ausnahme.
-     * @param bool       $isDev     Gibt an, ob der Stacktrace (Dev-Mode) angezeigt werden darf.
+     * @param Throwable $exception Die aufgetretene Ausnahme.
+     * @param bool $isDev Gibt an, ob der Stacktrace (Dev-Mode) angezeigt werden darf.
      */
-    private function renderErrorPage(\Throwable $exception, bool $isDev): void
+    private function renderErrorPage(Throwable $exception, bool $isDev): void
     {
-        if (! \headers_sent()) {
+        if (!\headers_sent()) {
             @\http_response_code(500);
         }
 
-        $titleRaw  = $this->config->get('site_title', 'Twokinds auf Deutsch');
+        $titleRaw = $this->config->get('site_title', 'Twokinds auf Deutsch');
         $siteTitle = \is_string($titleRaw) ? $titleRaw : 'Twokinds auf Deutsch';
 
-        $errorTitle   = 'Ups! Etwas ist schiefgelaufen';
+        $errorTitle = 'Ups! Etwas ist schiefgelaufen';
         $errorMessage = 'Das System hat einen unerwarteten Fehler festgestellt. Keine Sorge, die Administratoren wurden automatisch benachrichtigt um das Problem zu beheben.';
 
         if ($isDev) {
-            $errorTitle   = \sprintf('Dev-Mode: %s', $exception::class);
+            $errorTitle = \sprintf('Dev-Mode: %s', $exception::class);
             $errorMessage = \sprintf(
                 "<strong>Fehler:</strong> %s<br><br><strong>Datei:</strong> %s:%d<br><br><strong>Stacktrace:</strong><pre style='background:#f4f4f4; padding:10px; overflow-x:auto; font-size:12px;'>%s</pre>",
                 \htmlspecialchars($exception->getMessage()),

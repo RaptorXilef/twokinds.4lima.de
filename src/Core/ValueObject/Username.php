@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\ValueObject;
 
-final readonly class Username implements \Stringable
+use InvalidArgumentException;
+use Stringable;
+
+final readonly class Username implements Stringable
 {
     public string $value;
 
@@ -15,10 +18,10 @@ final readonly class Username implements \Stringable
 
         // 2. Längen-Check
         if (\strlen($val) < 3) {
-            throw new \InvalidArgumentException('Der Benutzername muss mindestens 3 Zeichen lang sein.');
+            throw new InvalidArgumentException('Der Benutzername muss mindestens 3 Zeichen lang sein.');
         }
         if (\strlen($val) > 50) {
-            throw new \InvalidArgumentException('Der Benutzername darf maximal 50 Zeichen lang sein.');
+            throw new InvalidArgumentException('Der Benutzername darf maximal 50 Zeichen lang sein.');
         }
 
         // 3. SECURITY FIX: Erlaube nur lateinische Zeichen (inkl. europäischer Umlaute/Akzente), Zahlen und wenige Sonderzeichen.
@@ -26,7 +29,7 @@ final readonly class Username implements \Stringable
         // \p{Latin} erlaubt z.B. a-z, ä, ö, ü, é, è, å, ø
         // Es blockiert z.B. Kyrillisch, Chinesisch, Arabisch, Emojis und unsichtbare Steuerzeichen.
         if (\preg_match('/^[\p{Latin}0-9 \-_.]+$/u', $val) !== 1) {
-            throw new \InvalidArgumentException('Der Benutzername enthält ungültige Zeichen. Erlaubt sind nur Buchstaben, Zahlen, Leerzeichen, Binde- und Unterstriche sowie Punkte.');
+            throw new InvalidArgumentException('Der Benutzername enthält ungültige Zeichen. Erlaubt sind nur Buchstaben, Zahlen, Leerzeichen, Binde- und Unterstriche sowie Punkte.');
         }
 
         $this->value = $val;

@@ -30,7 +30,7 @@ final readonly class ArchiveAction implements ActionInterface
         $chapters = $this->chapterRepository->findAll();
 
         // Comics nach Kapitel gruppieren
-        $groupedComics    = [];
+        $groupedComics = [];
         $unassignedComics = [];
 
         // 1. Comics sauber trennen
@@ -73,9 +73,9 @@ final readonly class ArchiveAction implements ActionInterface
         }
 
         return $this->renderer->render('pages/frontend/archive', [
-            'groupedComics'   => $groupedComics,
-            'chapterDetails'  => $chapterDetails,
-            'pageTitle'       => 'Archiv',
+            'groupedComics' => $groupedComics,
+            'chapterDetails' => $chapterDetails,
+            'pageTitle' => 'Archiv',
             'siteDescription' => 'Das vollständige Archiv der deutschen Übersetzung.',
         ]);
     }

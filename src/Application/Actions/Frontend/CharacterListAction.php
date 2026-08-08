@@ -24,16 +24,16 @@ final readonly class CharacterListAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         $characters = $this->charRepo->findAll();
-        $groups     = $this->groupRepo->findAll();
+        $groups = $this->groupRepo->findAll();
 
         // Dynamische Filter-Optionen generieren
         $filterData = [
-            'gender'     => [],
-            'age'        => [],
-            'rank'       => [],
-            'species'    => [],
+            'gender' => [],
+            'age' => [],
+            'rank' => [],
+            'species' => [],
             'subspecies' => [],
-            'languages'  => [],
+            'languages' => [],
         ];
 
         foreach ($characters as $c) {
@@ -60,7 +60,10 @@ final readonly class CharacterListAction implements ActionInterface
                     $filterData['rank'][$r] = true;
                 }
             }
-            if ($c->languages === null || $c->languages === '') {
+            if ($c->languages === null) {
+                continue;
+            }
+            if ($c->languages === '') {
                 continue;
             }
 
@@ -81,10 +84,10 @@ final readonly class CharacterListAction implements ActionInterface
         }
 
         return $this->renderer->render('pages/frontend/character_list', [
-            'characters'      => $characters,
-            'groups'          => $groups,
-            'filterData'      => $filterData, // Neue Variable ans Template übergeben
-            'pageTitle'       => 'Charaktere',
+            'characters' => $characters,
+            'groups' => $groups,
+            'filterData' => $filterData, // Neue Variable ans Template übergeben
+            'pageTitle' => 'Charaktere',
             'siteDescription' => 'Lerne die Hauptcharaktere von TwoKinds kennen.',
         ]);
     }

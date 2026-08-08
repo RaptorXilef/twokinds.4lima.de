@@ -13,6 +13,8 @@ use App\Application\Response\JsonResponse;
 use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
 use App\Core\ValueObject\ComicId;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/delete_comic')]
 #[RequiresAuth]
@@ -26,13 +28,13 @@ final readonly class DeleteComicAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.delete')) {
+        if (!$this->auth->hasPermission('comics.delete')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
             $idRaw = $request->post['comic_id'] ?? '';
-            $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+            $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
             if ($id === '') {
                 throw ValidationException::withMessage('Keine Comic-ID zum Löschen angegeben.');
@@ -41,9 +43,9 @@ final readonly class DeleteComicAction implements ActionInterface
             $this->comicService->deleteComic(new ComicId($id));
 
             return JsonResponse::success(['message' => "Comic $id wurde erfolgreich gelöscht."]);
-        } catch (ValidationException | \InvalidArgumentException $e) {
+        } catch (ValidationException|InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Löschen: ' . $e->getMessage(), 500);
         }
     }

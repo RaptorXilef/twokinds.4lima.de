@@ -29,7 +29,7 @@ final readonly class DeleteAccountAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->isLoggedIn()) {
+        if (!$this->auth->isLoggedIn()) {
             return JsonResponse::error('Nicht eingeloggt.', 401);
         }
 
@@ -39,11 +39,11 @@ final readonly class DeleteAccountAction implements ActionInterface
         }
 
         $passwordRaw = $request->post['password'] ?? '';
-        $password    = \is_scalar($passwordRaw) ? (string) $passwordRaw : '';
+        $password = \is_scalar($passwordRaw) ? (string) $passwordRaw : '';
 
         $user = $this->userRepo->findById($userId);
 
-        if (! $user instanceof User || ! \password_verify($password, $user->passwordHash)) {
+        if (!$user instanceof User || !\password_verify($password, $user->passwordHash)) {
             return JsonResponse::error('Das eingegebene Passwort ist nicht korrekt.', 400);
         }
 
@@ -57,7 +57,7 @@ final readonly class DeleteAccountAction implements ActionInterface
         $this->sessionManager->destroy();
 
         return JsonResponse::success([
-            'message'  => 'Dein Konto und deine Lesezeichen wurden erfolgreich gelöscht.',
+            'message' => 'Dein Konto und deine Lesezeichen wurden erfolgreich gelöscht.',
             'redirect' => '',
         ]);
     }

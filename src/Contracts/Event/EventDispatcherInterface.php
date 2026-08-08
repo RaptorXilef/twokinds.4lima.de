@@ -22,8 +22,8 @@ interface EventDispatcherInterface
     /**
      * Registriert einen neuen Listener für ein spezifisches Event.
      *
-     * @param string   $eventClass Der vollqualifizierte Klassenname des Events.
-     * @param callable $listener   Die Funktion/Klasse, die aufgerufen werden soll.
+     * @param string $eventClass Der vollqualifizierte Klassenname des Events.
+     * @param callable $listener Die Funktion/Klasse, die aufgerufen werden soll.
      */
     public function addListener(string $eventClass, callable $listener): void;
 }

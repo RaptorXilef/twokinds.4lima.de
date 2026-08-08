@@ -30,7 +30,7 @@ final readonly class SaveSingleCharacterRequest
     {
         $data = $request->post;
 
-        if (! isset($data['name']) || $data['name'] === '') {
+        if (!isset($data['name']) || $data['name'] === '') {
             throw new ValidationException('Der Name des Charakters darf nicht leer sein.');
         }
 

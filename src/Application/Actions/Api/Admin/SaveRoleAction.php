@@ -13,6 +13,7 @@ use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Core\Entity\Role;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/save_role')]
 #[RequiresAuth]
@@ -27,12 +28,12 @@ final readonly class SaveRoleAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         // Sicherheits-Check: Nur wer das Recht hat, darf Rollen bearbeiten
-        if (! $this->auth->hasPermission('system.roles.manage')) {
+        if (!$this->auth->hasPermission('system.roles.manage')) {
             return JsonResponse::error('Zugriff verweigert. Fehlende Berechtigung: system.roles.manage', 403);
         }
 
         try {
-            $id   = Sanitizer::string($request->post['role_id'] ?? '');
+            $id = Sanitizer::string($request->post['role_id'] ?? '');
             $name = Sanitizer::string($request->post['name'] ?? '');
 
             // Die Rechte kommen als JSON-String aus dem Frontend-Baum
@@ -40,7 +41,7 @@ final readonly class SaveRoleAction implements ActionInterface
             $permissionsStr = \is_string($permissionsRaw) ? $permissionsRaw : '[]';
             $permissionsArr = \json_decode($permissionsStr, true);
 
-            if (! \is_array($permissionsArr)) {
+            if (!\is_array($permissionsArr)) {
                 $permissionsArr = [];
             }
 
@@ -53,7 +54,7 @@ final readonly class SaveRoleAction implements ActionInterface
             }
 
             // ADMIN-SCHUTZ:
-            if ($id === 'admin' && ! \str_starts_with($this->auth->getUserId(), 'sys_')) {
+            if ($id === 'admin' && !\str_starts_with($this->auth->getUserId(), 'sys_')) {
                 return JsonResponse::error('Nur der System-Eigentümer (dev_admin) darf die Admin-Rolle bearbeiten!', 403);
             }
 
@@ -70,7 +71,7 @@ final readonly class SaveRoleAction implements ActionInterface
             $this->roleRepo->save($role);
 
             return JsonResponse::success(['message' => "Rolle '{$name}' erfolgreich gespeichert."]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Speichern: ' . $e->getMessage(), 500);
         }
     }

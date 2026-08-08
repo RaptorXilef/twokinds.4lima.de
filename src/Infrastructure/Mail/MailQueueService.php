@@ -7,6 +7,8 @@ namespace App\Infrastructure\Mail;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Storage\MailQueueRepositoryInterface;
 use App\Core\Entity\MailJob;
+use DateTimeImmutable;
+use Exception;
 
 final readonly class MailQueueService implements MailServiceInterface
 {
@@ -34,7 +36,7 @@ final readonly class MailQueueService implements MailServiceInterface
             $data,
             0,
             $priority, // Prio übergeben
-            new \DateTimeImmutable(),
+            new DateTimeImmutable(),
         );
         $this->repository->enqueue($job);
 
@@ -46,7 +48,7 @@ final readonly class MailQueueService implements MailServiceInterface
         return $this->repository->processBatch($limit, function (string $rec, string $sub, string $tpl, array $dat): void {
             $result = $this->realMailService->sendTemplate($rec, $sub, $tpl, $dat);
             if ($result !== true) {
-                throw new \Exception((string) $result);
+                throw new Exception((string) $result);
             }
         }, $allowedTemplates);
     }

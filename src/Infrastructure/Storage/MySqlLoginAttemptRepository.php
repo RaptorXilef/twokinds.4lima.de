@@ -7,6 +7,7 @@ namespace App\Infrastructure\Storage;
 use App\Contracts\Storage\LoginAttemptRepositoryInterface;
 use App\Core\Entity\LoginAttempt;
 use App\Infrastructure\Database\Table;
+use PDO;
 
 final readonly class MySqlLoginAttemptRepository implements LoginAttemptRepositoryInterface
 {
@@ -14,7 +15,7 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
     use EntityHydratorTrait;
 
     public function __construct(
-        private \PDO $pdo,
+        private PDO $pdo,
     ) {
     }
 
@@ -22,7 +23,7 @@ final readonly class MySqlLoginAttemptRepository implements LoginAttemptReposito
     {
         $stmt = $this->pdo->prepare('SELECT ip_address, attempts, last_attempt FROM `' . Table::LOGIN_ATTEMPTS . '` WHERE ip_address = ?');
         $stmt->execute([$ip]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row) {
             // Falls der IP string kaputt war, greift der Konstruktor-Schutz unserer Entität. Wir fangen das ab.

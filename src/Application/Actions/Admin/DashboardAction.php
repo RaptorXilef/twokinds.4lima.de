@@ -50,7 +50,7 @@ final readonly class DashboardAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         // ABSOLUTER SICHERHEITS-CHECK: Hat der Nutzer überhaupt etwas im Dashboard verloren?
-        if (! $this->auth->hasPermission('dashboard.view') && ! $this->auth->hasPermission('admin.access') && $this->sessionManager->getAdminGroup() !== 'admin') {
+        if (!$this->auth->hasPermission('dashboard.view') && !$this->auth->hasPermission('admin.access') && $this->sessionManager->getAdminGroup() !== 'admin') {
             return new RedirectResponse($this->config->getBaseUrl() . '/403');
         }
 
@@ -58,7 +58,7 @@ final readonly class DashboardAction implements ActionInterface
 
         // Basis-Daten, die sehr schnell laden und global (z.B. für Modale) gebraucht werden
         $characters = $this->charRepo->findAll();
-        $groups     = $this->groupRepo->findAll();
+        $groups = $this->groupRepo->findAll();
 
         // Wirkliche Kapitel aus der Datenbank laden
         /** @var array<int, Chapter> $dbChapters */
@@ -74,55 +74,55 @@ final readonly class DashboardAction implements ActionInterface
 
         $perms = [
             'backup_manage' => $this->auth->hasPermission('system.backup.manage'),
-            'chap_del'      => $this->auth->hasPermission('chapters.delete'),
-            'chap_edit'     => $this->auth->hasPermission('chapters.edit'),
-            'char_del'      => $this->auth->hasPermission('characters.delete'),
-            'char_edit'     => $this->auth->hasPermission('characters.edit'),
-            'comic_del'     => $this->auth->hasPermission('comics.delete'),
-            'comic_edit'    => $this->auth->hasPermission('comics.edit'),
-            'group_manage'  => $this->auth->hasPermission('groups.manage'),
-            'media_del'     => $this->auth->hasPermission('media.delete'),
-            'media_up'      => $this->auth->hasPermission('media.upload'),
-            'rep_del'       => $this->auth->hasPermission('reports.delete'),
-            'rep_resolve'   => $this->auth->hasPermission('reports.resolve'),
-            'rep_view'      => $this->auth->hasPermission('reports.view'),
+            'chap_del' => $this->auth->hasPermission('chapters.delete'),
+            'chap_edit' => $this->auth->hasPermission('chapters.edit'),
+            'char_del' => $this->auth->hasPermission('characters.delete'),
+            'char_edit' => $this->auth->hasPermission('characters.edit'),
+            'comic_del' => $this->auth->hasPermission('comics.delete'),
+            'comic_edit' => $this->auth->hasPermission('comics.edit'),
+            'group_manage' => $this->auth->hasPermission('groups.manage'),
+            'media_del' => $this->auth->hasPermission('media.delete'),
+            'media_up' => $this->auth->hasPermission('media.upload'),
+            'rep_del' => $this->auth->hasPermission('reports.delete'),
+            'rep_resolve' => $this->auth->hasPermission('reports.resolve'),
+            'rep_view' => $this->auth->hasPermission('reports.view'),
             'system_manage' => $this->auth->hasPermission('system.manage'),
         ];
 
         $rootPath = $this->config->get('root_path');
-        $rootStr  = \is_string($rootPath) ? $rootPath : '';
+        $rootStr = \is_string($rootPath) ? $rootPath : '';
 
         // --- AJAX HYDRATION MODUS ---
         // Wenn JS einen spezifischen Tab anfordert, rendern wir NUR diesen Tab!
         if ($ajaxTab !== null && \is_string($ajaxTab)) {
             $data = [
-                'appRoot'          => \rtrim($rootStr, '/\\'),
-                'baseUrl'          => \rtrim($this->config->getBaseUrl(), '/'),
-                'canManageRoles'   => $canManageRoles,
-                'canManageUsers'   => $canManageUsers,
-                'characters'       => $characters,
-                'currentUserId'    => $this->sessionManager->getUserId(),
-                'dbChapters'       => $dbChapters,
+                'appRoot' => \rtrim($rootStr, '/\\'),
+                'baseUrl' => \rtrim($this->config->getBaseUrl(), '/'),
+                'canManageRoles' => $canManageRoles,
+                'canManageUsers' => $canManageUsers,
+                'characters' => $characters,
+                'currentUserId' => $this->sessionManager->getUserId(),
+                'dbChapters' => $dbChapters,
                 'existingChapters' => $existingChapters,
-                'groups'           => $groups,
-                'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
-                'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
-                'permissionsTree'  => PermissionRegistry::getStructure(),
-                'perms'            => $perms,
-                'roles'            => $roles,
+                'groups' => $groups,
+                'hiresMinHeight' => $this->config->get('hires_min_height', 1800),
+                'hiresMinWidth' => $this->config->get('hires_min_width', 1000),
+                'permissionsTree' => PermissionRegistry::getStructure(),
+                'perms' => $perms,
+                'roles' => $roles,
             ];
 
             $htmlContent = ''; // Leerer String als Basis
 
             if ($ajaxTab === 'comics') {
                 $data['comics'] = $this->comicRepo->findAll();
-                $htmlContent    = $this->renderer->render('partials/admin/_section_comics', $data)->html;
+                $htmlContent = $this->renderer->render('partials/admin/_section_comics', $data)->html;
             } elseif ($ajaxTab === 'reports') {
                 $data['allReports'] = $this->reportRepo->findAll();
-                $htmlContent        = $this->renderer->render('partials/admin/_section_reports', $data)->html;
+                $htmlContent = $this->renderer->render('partials/admin/_section_reports', $data)->html;
             } elseif ($ajaxTab === 'users') {
                 $data['users'] = $this->userRepo->findAll();
-                $htmlContent   = $this->renderer->render('partials/admin/_section_users', $data)->html;
+                $htmlContent = $this->renderer->render('partials/admin/_section_users', $data)->html;
             } elseif ($ajaxTab === 'upload') {
                 $htmlContent = $this->renderer->render('partials/admin/_section_upload', $data)->html;
             } elseif ($ajaxTab === 'archive') {
@@ -137,15 +137,15 @@ final readonly class DashboardAction implements ActionInterface
                     }
                 }
                 $data['assignedIds'] = \array_unique($assignedIds);
-                $htmlContent         = $this->renderer->render('partials/admin/_section_groups', $data)->html;
+                $htmlContent = $this->renderer->render('partials/admin/_section_groups', $data)->html;
             } elseif ($ajaxTab === 'media') {
                 $htmlContent = $this->renderer->render('partials/admin/_section_media', $data)->html;
             } elseif ($ajaxTab === 'backup') {
                 $htmlContent = $this->renderer->render('partials/admin/_section_backup', $data)->html;
             } elseif ($ajaxTab === 'mails') {
                 $data['mailQueue'] = $this->mailQueueRepo->findAllQueue();
-                $data['mailLogs']  = $this->mailLogRepo->loadLogs();
-                $htmlContent       = $this->renderer->render('partials/admin/_section_mails', $data)->html;
+                $data['mailLogs'] = $this->mailLogRepo->loadLogs();
+                $htmlContent = $this->renderer->render('partials/admin/_section_mails', $data)->html;
             }
 
             return JsonResponse::success(['html' => $htmlContent]);
@@ -162,13 +162,19 @@ final readonly class DashboardAction implements ActionInterface
 
         // TODO ggf. Konstante für Pfad definieren
         // Bilder-Scan für Charakter-Modal (Geht superschnell)
-        $imageDir        = \rtrim($rootStr, '/\\') . '/public/assets/images/characters/profiles';
+        $imageDir = \rtrim($rootStr, '/\\') . '/public/assets/images/characters/profiles';
         $availableImages = [];
         if (\is_dir($imageDir)) {
             $files = \scandir($imageDir);
             if (\is_array($files)) {
                 foreach ($files as $file) {
-                    if ($file === '.' || $file === '..' || \preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file) !== 1) {
+                    if ($file === '.') {
+                        continue;
+                    }
+                    if ($file === '..') {
+                        continue;
+                    }
+                    if (\preg_match('/\.(webp|png|jpg|jpeg|gif)$/i', $file) !== 1) {
                         continue;
                     }
                     $availableImages[] = $file;
@@ -177,29 +183,29 @@ final readonly class DashboardAction implements ActionInterface
         }
 
         return $this->renderer->render('pages/admin/dashboard', [
-            'pageTitle'        => 'Admin Dashboard',
-            'adminUser'        => $this->sessionManager->getAdminUser(),
-            'currentUserId'    => $this->sessionManager->getUserId(),
-            'dbChapters'       => $dbChapters,
-            'characters'       => $characters,
-            'groups'           => $groups,
-            'assignedIds'      => $assignedIds,
-            'existingRanks'    => [],
+            'pageTitle' => 'Admin Dashboard',
+            'adminUser' => $this->sessionManager->getAdminUser(),
+            'currentUserId' => $this->sessionManager->getUserId(),
+            'dbChapters' => $dbChapters,
+            'characters' => $characters,
+            'groups' => $groups,
+            'assignedIds' => $assignedIds,
+            'existingRanks' => [],
             'existingChapters' => $existingChapters,
-            'availableImages'  => $availableImages,
-            'roles'            => $roles,
-            'permissionsTree'  => PermissionRegistry::getStructure(),
-            'canManageUsers'   => $canManageUsers,
-            'canManageRoles'   => $canManageRoles,
-            'perms'            => $perms,
-            'hiresMinWidth'    => $this->config->get('hires_min_width', 1000),
-            'hiresMinHeight'   => $this->config->get('hires_min_height', 1800),
-            'allUsers'         => $this->userRepo->findAll(),
+            'availableImages' => $availableImages,
+            'roles' => $roles,
+            'permissionsTree' => PermissionRegistry::getStructure(),
+            'canManageUsers' => $canManageUsers,
+            'canManageRoles' => $canManageRoles,
+            'perms' => $perms,
+            'hiresMinWidth' => $this->config->get('hires_min_width', 1000),
+            'hiresMinHeight' => $this->config->get('hires_min_height', 1800),
+            'allUsers' => $this->userRepo->findAll(),
 
             // WICHTIG: Die schweren Datenarrays bleiben LEER! Das spart 11.5 Sekunden Ladezeit.
-            'comics'      => [],
-            'allReports'  => [],
-            'users'       => [],
+            'comics' => [],
+            'allReports' => [],
+            'users' => [],
             'openReports' => [],
         ]);
     }

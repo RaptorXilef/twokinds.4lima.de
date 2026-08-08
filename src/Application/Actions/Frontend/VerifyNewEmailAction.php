@@ -28,14 +28,14 @@ final readonly class VerifyNewEmailAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->isLoggedIn()) {
+        if (!$this->auth->isLoggedIn()) {
             $this->sessionManager->addFlash('error', 'Bitte logge dich zuerst ein, um deine E-Mail-Adresse zu ändern. Öffne den Link anschließend erneut im selben Browser.');
 
             return new RedirectResponse('/login');
         }
 
-        $tokenRaw    = $request->get['token'] ?? '';
-        $token       = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
+        $tokenRaw = $request->get['token'] ?? '';
+        $token = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
         $newEmailStr = $this->magicLinkService->verifyAny($token);
 
         if ($newEmailStr === null) {
@@ -51,7 +51,7 @@ final readonly class VerifyNewEmailAction implements ActionInterface
         }
 
         $userId = $this->sessionManager->getUserId();
-        $user   = $this->userRepository->findById($userId);
+        $user = $this->userRepository->findById($userId);
 
         if ($user instanceof User) {
             $updatedUser = new User(

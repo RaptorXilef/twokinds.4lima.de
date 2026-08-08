@@ -12,6 +12,7 @@ use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\RoleRepositoryInterface;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/delete_role')]
 #[RequiresAuth]
@@ -25,7 +26,7 @@ final readonly class DeleteRoleAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.roles.manage')) {
+        if (!$this->auth->hasPermission('system.roles.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -43,7 +44,7 @@ final readonly class DeleteRoleAction implements ActionInterface
             $this->roleRepo->delete($id);
 
             return JsonResponse::success(['message' => 'Rolle erfolgreich gelöscht.']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Löschen: ' . $e->getMessage(), 500);
         }
     }

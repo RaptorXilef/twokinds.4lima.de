@@ -29,24 +29,24 @@ final readonly class BookmarksAction implements ActionInterface
     {
         $allComics = $this->comicRepo->findAll();
 
-        $isLoggedIn     = $this->auth->isLoggedIn();
+        $isLoggedIn = $this->auth->isLoggedIn();
         $cloudBookmarks = [];
 
         if ($isLoggedIn) {
             $userId = $this->sessionManager->getUserId();
             // Nur echte User-Accounts fragen die Datenbank!
-            if (! \str_starts_with($userId, 'sys_')) {
+            if (!\str_starts_with($userId, 'sys_')) {
                 // Hole nur die Lesezeichen dieses Nutzers
                 $cloudBookmarks = $this->bookmarkRepo->findByUser($userId);
             }
         }
 
         return $this->renderer->render('pages/frontend/bookmarks', [
-            'pageTitle'       => 'Meine Lesezeichen',
+            'pageTitle' => 'Meine Lesezeichen',
             'siteDescription' => 'Deine gespeicherten TwoKinds Lesezeichen auf einen Blick.',
-            'comics'          => $allComics,
-            'isLoggedIn'      => $isLoggedIn,
-            'cloudBookmarks'  => $cloudBookmarks,
+            'comics' => $allComics,
+            'isLoggedIn' => $isLoggedIn,
+            'cloudBookmarks' => $cloudBookmarks,
         ]);
     }
 }

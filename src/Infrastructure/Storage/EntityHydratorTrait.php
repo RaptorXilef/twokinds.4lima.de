@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Storage;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
+use Stringable;
+
 trait EntityHydratorTrait
 {
     /**
@@ -13,11 +21,11 @@ trait EntityHydratorTrait
      */
     protected function extractEntity(object $entity, array $overrides = []): array
     {
-        $reflection = new \ReflectionClass($entity);
-        $data       = [];
+        $reflection = new ReflectionClass($entity);
+        $data = [];
 
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if (! $property->isInitialized($entity)) {
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isInitialized($entity)) {
                 continue;
             }
 
@@ -33,9 +41,9 @@ trait EntityHydratorTrait
 
             $value = $property->getValue($entity);
 
-            if ($value instanceof \DateTimeInterface) {
+            if ($value instanceof DateTimeInterface) {
                 $data[$dbColumn] = $value->format('Y-m-d H:i:s');
-            } elseif ($value instanceof \Stringable) {
+            } elseif ($value instanceof Stringable) {
                 $data[$dbColumn] = (string) $value;
             } elseif (\is_bool($value)) {
                 $data[$dbColumn] = (int) $value;
@@ -65,7 +73,7 @@ trait EntityHydratorTrait
      * Baut aus einem Datenbank-Row (snake_case) vollautomatisch dein Objekt zusammen.
      *
      * @param class-string<T> $className
-     * @param array           $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
+     * @param array $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
      *
      * @return T
      *
@@ -73,7 +81,7 @@ trait EntityHydratorTrait
      */
     protected function hydrateEntity(string $className, array $row, array $overrides = []): object
     {
-        $reflection  = new \ReflectionClass($className);
+        $reflection = new ReflectionClass($className);
         $constructor = $reflection->getConstructor();
 
         if ($constructor === null) {
@@ -93,11 +101,11 @@ trait EntityHydratorTrait
                 continue;
             }
 
-            $type     = $parameter->getType();
-            $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : null;
+            $type = $parameter->getType();
+            $typeName = $type instanceof ReflectionNamedType ? $type->getName() : null;
 
             // Wenn der Wert in der DB nicht existiert und wir einen Default haben
-            if (! \array_key_exists($dbColumn, $row)) {
+            if (!\array_key_exists($dbColumn, $row)) {
                 if ($parameter->isDefaultValueAvailable()) {
                     $args[] = $parameter->getDefaultValue();
 
@@ -113,7 +121,7 @@ trait EntityHydratorTrait
             // NULL Handling: Wenn die DB NULL liefert, das Feld aber einen Default-Wert (z.B. []) hat
             // und strikt KEIN null erlaubt, verwenden wir den Default-Wert.
             if ($rawValue === null) {
-                if ($type !== null && ! $type->allowsNull() && $parameter->isDefaultValueAvailable()) {
+                if ($type !== null && !$type->allowsNull() && $parameter->isDefaultValueAvailable()) {
                     $args[] = $parameter->getDefaultValue();
                 } else {
                     $args[] = null;
@@ -122,8 +130,8 @@ trait EntityHydratorTrait
                 continue;
             }
 
-            if (\in_array($typeName, [\DateTimeImmutable::class, \DateTime::class, \DateTimeInterface::class], true)) {
-                $args[] = new \DateTimeImmutable($rawValue);
+            if (\in_array($typeName, [DateTimeImmutable::class, DateTime::class, DateTimeInterface::class], true)) {
+                $args[] = new DateTimeImmutable($rawValue);
             } elseif ($typeName === 'array') {
                 $args[] = \json_decode((string) $rawValue, true) ?? [];
             } elseif ($typeName === 'bool') {

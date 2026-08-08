@@ -28,12 +28,12 @@ final readonly class PreviewMailAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.manage') && ! $this->auth->hasPermission('admin.access')) {
+        if (!$this->auth->hasPermission('system.manage') && !$this->auth->hasPermission('admin.access')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $idRaw = $request->get['id'] ?? '';
-        $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+        $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
         if ($id === '') {
             return JsonResponse::error('Keine Mail-ID angegeben.', 400);
@@ -51,21 +51,21 @@ final readonly class PreviewMailAction implements ActionInterface
             return JsonResponse::error('E-Mail nicht gefunden.', 404);
         }
 
-        $template   = \is_string($mailData['template'] ?? null) ? $mailData['template'] : '';
+        $template = \is_string($mailData['template'] ?? null) ? $mailData['template'] : '';
         $payloadRaw = $mailData['data'] ?? '{}';
-        $payload    = \is_string($payloadRaw) ? \json_decode($payloadRaw, true) : $payloadRaw;
+        $payload = \is_string($payloadRaw) ? \json_decode($payloadRaw, true) : $payloadRaw;
 
-        if (! \is_array($payload)) {
+        if (!\is_array($payload)) {
             $payload = [];
         }
 
         $rootPath = $this->config->get('root_path');
-        $rootStr  = \is_string($rootPath) ? $rootPath : '';
-        $root     = \rtrim($rootStr, '/\\');
+        $rootStr = \is_string($rootPath) ? $rootPath : '';
+        $root = \rtrim($rootStr, '/\\');
 
         $fullPath = $root . "/templates/emails/{$template}.phtml";
 
-        if (! \file_exists($fullPath) || $template === '') {
+        if (!\file_exists($fullPath) || $template === '') {
             return JsonResponse::error("Template '{$template}' existiert nicht auf dem Server.", 404);
         }
 

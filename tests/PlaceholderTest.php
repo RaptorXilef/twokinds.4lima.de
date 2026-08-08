@@ -29,6 +29,6 @@ final class PlaceholderTest extends TestCase
      */
     public function testEnvironmentWorks(): void
     {
-        self::assertTrue(true);
+        $this->assertTrue(true);
     }
 }

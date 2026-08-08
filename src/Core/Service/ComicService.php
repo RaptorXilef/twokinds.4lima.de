@@ -12,6 +12,8 @@ use App\Core\Entity\ComicPage;
 use App\Core\Exception\EntityNotFoundException;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
+use DomainException;
+use InvalidArgumentException;
 
 final readonly class ComicService
 {
@@ -57,7 +59,7 @@ final readonly class ComicService
     {
         $comic = $this->comicRepository->findById($id);
 
-        if (! $comic instanceof ComicPage) {
+        if (!$comic instanceof ComicPage) {
             throw new EntityNotFoundException("Comic mit der ID {$id->value} nicht gefunden.");
         }
 
@@ -95,12 +97,12 @@ final readonly class ComicService
     {
         $revisionData = $this->revisionRepository->popLatestRevision($id);
 
-        if (! \is_array($revisionData)) {
-            throw new \DomainException('Keine vorherige Version (Snapshot) für diesen Comic gefunden.');
+        if (!\is_array($revisionData)) {
+            throw new DomainException('Keine vorherige Version (Snapshot) für diesen Comic gefunden.');
         }
 
         /** @var array<string, mixed> $validData */
-        $validData     = $revisionData;
+        $validData = $revisionData;
         $restoredComic = $this->hydrateRevisionData($id, $validData);
 
         // MAGIC: Wir rufen saveComic() auf statt das Repository!
@@ -116,7 +118,7 @@ final readonly class ComicService
         }
 
         if ($this->comicRepository->findById($newId) instanceof ComicPage) {
-            throw new \DomainException("Die neue Comic-ID {$newId->value} existiert bereits und kann nicht überschrieben werden!");
+            throw new DomainException("Die neue Comic-ID {$newId->value} existiert bereits und kann nicht überschrieben werden!");
         }
 
         $this->comicRepository->renameComicId($oldId, $newId);
@@ -129,15 +131,15 @@ final readonly class ComicService
     {
         $revisionData = $this->revisionRepository->popLatestDeletedRevision();
 
-        if (! \is_array($revisionData)) {
-            throw new \DomainException('Kein gelöschter Comic im Papierkorb gefunden.');
+        if (!\is_array($revisionData)) {
+            throw new DomainException('Kein gelöschter Comic im Papierkorb gefunden.');
         }
 
         $idRaw = \is_string($revisionData['comic_id'] ?? null) ? $revisionData['comic_id'] : '';
-        $id    = new ComicId($idRaw);
+        $id = new ComicId($idRaw);
 
         /** @var array<string, mixed> $validData */
-        $validData     = $revisionData;
+        $validData = $revisionData;
         $restoredComic = $this->hydrateRevisionData($id, $validData);
 
         // Wir legen ihn wieder regulär an
@@ -152,26 +154,26 @@ final readonly class ComicService
      */
     private function hydrateRevisionData(ComicId $id, array $revisionData): ComicPage
     {
-        $charIds    = [];
+        $charIds = [];
         $rawCharIds = $revisionData['character_ids'] ?? [];
         if (\is_array($rawCharIds)) {
             foreach ($rawCharIds as $cid) {
-                if (! \is_string($cid)) {
+                if (!\is_string($cid)) {
                     continue;
                 }
 
                 try {
                     $charIds[] = new CharacterId($cid);
-                } catch (\InvalidArgumentException) {
+                } catch (InvalidArgumentException) {
                 }
             }
         }
 
-        $userIds    = [];
+        $userIds = [];
         $rawUserIds = $revisionData['user_ids'] ?? [];
         if (\is_array($rawUserIds)) {
             foreach ($rawUserIds as $uid) {
-                if (! \is_string($uid)) {
+                if (!\is_string($uid)) {
                     continue;
                 }
 

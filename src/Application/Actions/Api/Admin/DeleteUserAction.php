@@ -14,6 +14,7 @@ use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\User;
 use App\Core\Security\Sanitizer;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/delete_user')]
 #[RequiresAuth]
@@ -28,7 +29,7 @@ final readonly class DeleteUserAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.users.manage')) {
+        if (!$this->auth->hasPermission('system.users.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -44,7 +45,7 @@ final readonly class DeleteUserAction implements ActionInterface
             }
 
             $userToDelete = $this->userRepo->findById($id);
-            if ($userToDelete instanceof User && $userToDelete->roleId === 'admin' && ! \str_starts_with($this->auth->getUserId(), 'sys_')) {
+            if ($userToDelete instanceof User && $userToDelete->roleId === 'admin' && !\str_starts_with($this->auth->getUserId(), 'sys_')) {
                 return JsonResponse::error('Nur der Systembetreuer darf Administratoren löschen.', 403);
             }
 
@@ -55,7 +56,7 @@ final readonly class DeleteUserAction implements ActionInterface
             $this->userRepo->delete($id);
 
             return JsonResponse::success(['message' => 'Benutzer erfolgreich gelöscht.']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Löschen: ' . $e->getMessage(), 500);
         }
     }

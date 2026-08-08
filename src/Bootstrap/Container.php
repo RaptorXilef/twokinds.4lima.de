@@ -9,6 +9,10 @@ use App\Bootstrap\Providers\InfrastructureServiceProvider;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
 use App\Infrastructure\Config\Config;
+use Closure;
+use ReflectionClass;
+use ReflectionNamedType;
+use RuntimeException;
 
 /**
  * Dependency Injection (DI) Container der Anwendung.
@@ -29,7 +33,7 @@ use App\Infrastructure\Config\Config;
 class Container implements ContainerInterface
 {
     /**
-     * @var array<string, \Closure>
+     * @var array<string, Closure>
      */
     private array $services = [];
 
@@ -50,13 +54,13 @@ class Container implements ContainerInterface
     private function setup(): void
     {
         // Basis-Instanzen hart registrieren
-        $this->instances[self::class]      = $this; // Verhindert, dass der Container geklont wird!
+        $this->instances[self::class] = $this; // Verhindert, dass der Container geklont wird!
         $this->instances[Container::class] = $this;
 
         $this->instances[ContainerInterface::class] = $this; // Interface binden
 
         // Konfiguration (Wird direkt als Instanz übergeben, da sie schon existiert)
-        $this->instances[Config::class]          = $this->config;
+        $this->instances[Config::class] = $this->config;
         $this->instances[ConfigInterface::class] = $this->config;
 
         // Provider registrieren
@@ -73,10 +77,10 @@ class Container implements ContainerInterface
     /**
      * Registriert einen Service im Container.
      *
-     * @param string   $id       Der Identifikator (Klassenname oder Interface).
-     * @param \Closure $resolver Die Factory-Funktion zur Erstellung der Instanz.
+     * @param string $id Der Identifikator (Klassenname oder Interface).
+     * @param Closure $resolver Die Factory-Funktion zur Erstellung der Instanz.
      */
-    public function bind(string $id, \Closure $resolver): void
+    public function bind(string $id, Closure $resolver): void
     {
         $this->services[$id] = $resolver;
     }
@@ -101,8 +105,8 @@ class Container implements ContainerInterface
         if (isset($this->services[$id])) {
             $instance = ($this->services[$id])();
 
-            if (! \is_object($instance)) {
-                throw new \RuntimeException("Container Error: Service '{$id}' lieferte kein Objekt zurück.");
+            if (!\is_object($instance)) {
+                throw new RuntimeException("Container Error: Service '{$id}' lieferte kein Objekt zurück.");
             }
 
             $this->instances[$id] = $instance;
@@ -118,7 +122,7 @@ class Container implements ContainerInterface
             return $this->instances[$id];
         }
 
-        throw new \RuntimeException("Container Error: Konnte Service oder Klasse '{$id}' nicht auflösen.");
+        throw new RuntimeException("Container Error: Konnte Service oder Klasse '{$id}' nicht auflösen.");
     }
 
     /**
@@ -128,10 +132,10 @@ class Container implements ContainerInterface
      */
     private function autowire(string $className): object
     {
-        $reflectionClass = new \ReflectionClass($className);
+        $reflectionClass = new ReflectionClass($className);
 
-        if (! $reflectionClass->isInstantiable()) {
-            throw new \RuntimeException("Container Autowiring Error: Klasse '{$className}' ist nicht instanziierbar (Interface oder Abstract).");
+        if (!$reflectionClass->isInstantiable()) {
+            throw new RuntimeException("Container Autowiring Error: Klasse '{$className}' ist nicht instanziierbar (Interface oder Abstract).");
         }
 
         $constructor = $reflectionClass->getConstructor();
@@ -141,21 +145,21 @@ class Container implements ContainerInterface
             return $reflectionClass->newInstance();
         }
 
-        $parameters   = $constructor->getParameters();
+        $parameters = $constructor->getParameters();
         $dependencies = [];
 
         foreach ($parameters as $parameter) {
             $type = $parameter->getType();
 
             // Primitiv-Typen (string, int) können nicht geraten werden
-            if (! $type instanceof \ReflectionNamedType || $type->isBuiltin()) {
+            if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
                 if ($parameter->isDefaultValueAvailable()) {
                     $dependencies[] = $parameter->getDefaultValue();
 
                     continue;
                 }
 
-                throw new \RuntimeException(\sprintf(
+                throw new RuntimeException(\sprintf(
                     "Container Autowiring Error: Kann Parameter '$%s' in Klasse '%s' nicht auflösen (Typ fehlt oder ist primitiv).",
                     $parameter->getName(),
                     $className,
@@ -164,7 +168,7 @@ class Container implements ContainerInterface
 
             // Hole die benötigte Instanz rekursiv aus dem Container
             $dependencyClass = $type->getName();
-            $dependencies[]  = $this->get($dependencyClass);
+            $dependencies[] = $this->get($dependencyClass);
         }
 
         return $reflectionClass->newInstanceArgs($dependencies);

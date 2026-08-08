@@ -6,6 +6,7 @@ namespace App\Core\Entity;
 
 use App\Core\ValueObject\EmailAddress;
 use App\Core\ValueObject\Username;
+use DateTimeImmutable;
 
 final readonly class User
 {
@@ -18,7 +19,7 @@ final readonly class User
         public EmailAddress $email, // VO statt string
         public string $passwordHash,
         public string $roleId,
-        public \DateTimeImmutable $createdAt,
+        public DateTimeImmutable $createdAt,
         public bool $wantsNewsletter = false,
         public bool $wantsNewsletterTranscript = false,
         public bool $wantsNotificationReport = false,

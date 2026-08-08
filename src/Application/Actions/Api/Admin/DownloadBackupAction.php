@@ -25,13 +25,13 @@ final readonly class DownloadBackupAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.backup.manage')) {
+        if (!$this->auth->hasPermission('system.backup.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         $filenameRaw = $request->get['file'] ?? '';
         $filenameStr = \is_string($filenameRaw) ? $filenameRaw : '';
-        $filename    = \basename($filenameStr);
+        $filename = \basename($filenameStr);
 
         if ($filename === '') {
             return JsonResponse::error('Keine Datei angegeben.', 400);

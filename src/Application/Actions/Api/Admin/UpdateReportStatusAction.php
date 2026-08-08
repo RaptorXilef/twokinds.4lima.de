@@ -18,6 +18,7 @@ use App\Core\Entity\User;
 use App\Core\Service\AuthService;
 use App\Core\Service\ReportService;
 use App\Core\ValueObject\ReportId;
+use Throwable;
 
 #[Route('POST', '/api/update_report_status')]
 #[RequiresAuth]
@@ -35,27 +36,27 @@ final readonly class UpdateReportStatusAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->isLoggedIn()) {
+        if (!$this->auth->isLoggedIn()) {
             return JsonResponse::error('Unautorisiert.', 401);
         }
 
         try {
             $idRaw = $request->post['report_id'] ?? '';
-            $id    = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
+            $id = \is_scalar($idRaw) ? \trim((string) $idRaw) : '';
 
             $statusRaw = $request->post['status'] ?? '';
-            $status    = \is_scalar($statusRaw) ? \trim((string) $statusRaw) : '';
+            $status = \is_scalar($statusRaw) ? \trim((string) $statusRaw) : '';
 
             // Präzise Rechteprüfung je nach Aktion
-            if ($status === 'spam' && ! $this->auth->hasPermission('reports.delete')) {
+            if ($status === 'spam' && !$this->auth->hasPermission('reports.delete')) {
                 return JsonResponse::error('Zugriff verweigert. Fehlendes Recht: reports.delete', 403);
             }
 
-            if (\in_array($status, ['open', 'closed'], true) && ! $this->auth->hasPermission('reports.resolve')) {
+            if (\in_array($status, ['open', 'closed'], true) && !$this->auth->hasPermission('reports.resolve')) {
                 return JsonResponse::error('Zugriff verweigert. Fehlendes Recht: reports.resolve', 403);
             }
 
-            if ($id === '' || ! \in_array($status, ['open', 'closed', 'spam'], true)) {
+            if ($id === '' || !\in_array($status, ['open', 'closed', 'spam'], true)) {
                 return JsonResponse::error('Ungültige Daten übermittelt.', 400);
             }
 
@@ -71,7 +72,7 @@ final readonly class UpdateReportStatusAction implements ActionInterface
                     // Nur senden, wenn User existiert und Benachrichtigungen wünscht
                     if ($user instanceof User && $user->wantsNotificationReport) {
                         $comicIdVal = $report->comicId->value ?? '';
-                        $pageUrl    = \in_array($comicIdVal, ['', '0'], true)
+                        $pageUrl = \in_array($comicIdVal, ['', '0'], true)
                             ? \rtrim($this->config->getBaseUrl(), '/')
                             : \rtrim($this->config->getBaseUrl(), '/') . '/comics/' . $comicIdVal;
 
@@ -81,8 +82,8 @@ final readonly class UpdateReportStatusAction implements ActionInterface
                             'report_resolved',
                             [
                                 'username' => $user->username->value,
-                                'comicId'  => $comicIdVal !== '' ? $comicIdVal : 'Allgemeine Webseite',
-                                'pageUrl'  => $pageUrl,
+                                'comicId' => $comicIdVal !== '' ? $comicIdVal : 'Allgemeine Webseite',
+                                'pageUrl' => $pageUrl,
                             ],
                         );
                     }
@@ -90,7 +91,7 @@ final readonly class UpdateReportStatusAction implements ActionInterface
             }
 
             return JsonResponse::success(['message' => 'Status erfolgreich aktualisiert.']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Aktualisieren: ' . $e->getMessage(), 500);
         }
     }

@@ -35,7 +35,7 @@ final readonly class UpdateProfileAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->isLoggedIn()) {
+        if (!$this->auth->isLoggedIn()) {
             return JsonResponse::error('Nicht eingeloggt.', 401);
         }
 
@@ -45,22 +45,22 @@ final readonly class UpdateProfileAction implements ActionInterface
         }
 
         $user = $this->userRepository->findById($userId);
-        if (! $user instanceof User) {
+        if (!$user instanceof User) {
             return JsonResponse::error('Benutzer nicht gefunden.', 404);
         }
 
         $actionTypeRaw = $request->post['update_type'] ?? '';
-        $actionType    = \is_scalar($actionTypeRaw) ? (string) $actionTypeRaw : '';
+        $actionType = \is_scalar($actionTypeRaw) ? (string) $actionTypeRaw : '';
 
         // Aktion: Newsletter
         if ($actionType === 'newsletter') {
-            $wnRaw     = $request->post['wants_newsletter'] ?? false;
+            $wnRaw = $request->post['wants_newsletter'] ?? false;
             $wantsNews = \in_array($wnRaw, [true, 1, '1', 'true', 'on'], true);
 
-            $wtRaw      = $request->post['wants_newsletter_transcript'] ?? false;
+            $wtRaw = $request->post['wants_newsletter_transcript'] ?? false;
             $wantsTrans = \in_array($wtRaw, [true, 1, '1', 'true', 'on'], true);
 
-            $wrRaw    = $request->post['wants_notification_report'] ?? false;
+            $wrRaw = $request->post['wants_notification_report'] ?? false;
             $wantsRep = \in_array($wrRaw, [true, 1, '1', 'true', 'on'], true);
 
             $updated = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans, $wantsRep);
@@ -76,18 +76,18 @@ final readonly class UpdateProfileAction implements ActionInterface
                 return JsonResponse::error('Der Name muss mindestens 3 Zeichen lang sein.', 400);
             }
 
-            $lowerName  = \strtolower($newName);
+            $lowerName = \strtolower($newName);
             $restricted = [];
 
             $bd = $this->config->get('backdoor');
             if (\is_array($bd)) {
-                $bdUser       = \is_string($bd['user'] ?? null) ? $bd['user'] : '';
+                $bdUser = \is_string($bd['user'] ?? null) ? $bd['user'] : '';
                 $restricted[] = \strtolower($bdUser);
             }
 
             $sa = $this->config->get('superadmin');
             if (\is_array($sa)) {
-                $saUser       = \is_string($sa['user'] ?? null) ? $sa['user'] : '';
+                $saUser = \is_string($sa['user'] ?? null) ? $sa['user'] : '';
                 $restricted[] = \strtolower($saUser);
             }
 
@@ -108,15 +108,15 @@ final readonly class UpdateProfileAction implements ActionInterface
         // Aktion: Passwort ändern
         if ($actionType === 'password') {
             $oldPassRaw = $request->post['old_password'] ?? '';
-            $oldPass    = \is_scalar($oldPassRaw) ? (string) $oldPassRaw : '';
+            $oldPass = \is_scalar($oldPassRaw) ? (string) $oldPassRaw : '';
 
             $newPassRaw = $request->post['new_password'] ?? '';
-            $newPass    = \is_scalar($newPassRaw) ? (string) $newPassRaw : '';
+            $newPass = \is_scalar($newPassRaw) ? (string) $newPassRaw : '';
 
             $newPassConfirmRaw = $request->post['new_password_confirm'] ?? '';
-            $newPassConfirm    = \is_scalar($newPassConfirmRaw) ? (string) $newPassConfirmRaw : '';
+            $newPassConfirm = \is_scalar($newPassConfirmRaw) ? (string) $newPassConfirmRaw : '';
 
-            if (! \password_verify($oldPass, $user->passwordHash)) {
+            if (!\password_verify($oldPass, $user->passwordHash)) {
                 return JsonResponse::error('Das alte Passwort ist nicht korrekt.', 400);
             }
             if ($newPass !== $newPassConfirm) {
@@ -154,7 +154,7 @@ final readonly class UpdateProfileAction implements ActionInterface
 
             $this->mailService->sendTemplate($newEmailStr, 'Neue E-Mail-Adresse bestätigen', 'verify_new_email', [
                 'verifyUrl' => $verifyUrl,
-                'username'  => $user->username->value,
+                'username' => $user->username->value,
             ]);
             $this->mailService->processQueue(5, ['verify_new_email']);
 
@@ -166,19 +166,22 @@ final readonly class UpdateProfileAction implements ActionInterface
 
             // Social Links verarbeiten (max 5)
             $socialLinksRaw = $request->post['social_links'] ?? [];
-            $socialLinks    = [];
+            $socialLinks = [];
             if (\is_array($socialLinksRaw)) {
                 foreach ($socialLinksRaw as $link) {
-                    if (! \is_scalar($link)) {
+                    if (!\is_scalar($link)) {
                         continue;
                     }
                     $cleanLink = \filter_var(\trim((string) $link), \FILTER_SANITIZE_URL);
-                    if (\filter_var($cleanLink, \FILTER_VALIDATE_URL) === false || \count($socialLinks) >= 5) {
+                    if (\filter_var($cleanLink, \FILTER_VALIDATE_URL) === false) {
+                        continue;
+                    }
+                    if (\count($socialLinks) >= 5) {
                         continue;
                     }
 
                     // Wir wissen jetzt sicher, dass es ein string ist.
-                    if (! \is_string($cleanLink)) {
+                    if (!\is_string($cleanLink)) {
                         continue;
                     }
 
@@ -186,7 +189,7 @@ final readonly class UpdateProfileAction implements ActionInterface
                 }
             }
 
-            $pbRaw           = $request->post['public_bookmarks'] ?? false;
+            $pbRaw = $request->post['public_bookmarks'] ?? false;
             $publicBookmarks = \in_array($pbRaw, [true, 1, '1', 'true', 'on'], true);
 
             $updated = new User(

@@ -26,13 +26,13 @@ final readonly class CsrfMiddleware implements MiddlewareInterface
             // getHeader() liefert laut Typisierung immer string.
             $headerToken = $request->getHeader('X-CSRF-Token');
 
-            $postRaw   = $request->post['csrf_token'] ?? '';
+            $postRaw = $request->post['csrf_token'] ?? '';
             $postToken = \is_string($postRaw) ? $postRaw : '';
 
             $provided = $headerToken !== '' ? $headerToken : $postToken;
-            $stored   = $this->sessionManager->getCsrfToken();
+            $stored = $this->sessionManager->getCsrfToken();
 
-            if ($stored === '' || ! \hash_equals($stored, $provided)) {
+            if ($stored === '' || !\hash_equals($stored, $provided)) {
                 // UX-Rettung: Wir speichern die eingegebenen Formulardaten zwischen,
                 // bevor wir die Anfrage ablehnen.
                 $postData = $request->post;

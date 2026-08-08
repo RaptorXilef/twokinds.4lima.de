@@ -33,9 +33,9 @@ final readonly class ResetPasswordAction implements ActionInterface
         }
 
         $tokenRaw = $request->post['token'] ?? '';
-        $token    = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
+        $token = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
 
-        $passRaw  = $request->post['password'] ?? '';
+        $passRaw = $request->post['password'] ?? '';
         $password = \is_scalar($passRaw) ? (string) $passRaw : '';
 
         if ($token === '' || $password === '') {
@@ -59,7 +59,7 @@ final readonly class ResetPasswordAction implements ActionInterface
         }
 
         $user = $this->userRepository->findByEmail($email);
-        if (! $user instanceof User) {
+        if (!$user instanceof User) {
             return JsonResponse::error('Benutzer nicht gefunden.', 400);
         }
 
@@ -80,7 +80,7 @@ final readonly class ResetPasswordAction implements ActionInterface
         $this->auth->login($user->username->value, $password, $ip);
 
         return JsonResponse::success([
-            'message'  => 'Passwort erfolgreich geändert! Du wirst eingeloggt...',
+            'message' => 'Passwort erfolgreich geändert! Du wirst eingeloggt...',
             'redirect' => 'lesezeichen',
         ]);
     }

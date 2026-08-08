@@ -14,6 +14,8 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Contracts\System\MediaServiceInterface;
 use App\Core\Entity\User;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/upload_avatar')]
 #[RequiresAuth]
@@ -36,12 +38,12 @@ final readonly class UploadAvatarAction implements ActionInterface
             }
 
             $user = $this->userRepository->findById($userId);
-            if (! $user instanceof User) {
+            if (!$user instanceof User) {
                 return JsonResponse::error('Benutzer nicht gefunden.', 404);
             }
 
             $file = $request->files['avatar_file'] ?? null;
-            if (! \is_array($file) || ! isset($file['error']) || $file['error'] !== \UPLOAD_ERR_OK) {
+            if (!\is_array($file) || !isset($file['error']) || $file['error'] !== \UPLOAD_ERR_OK) {
                 return JsonResponse::error('Keine Datei oder fehlerhafter Upload.', 400);
             }
 
@@ -66,12 +68,12 @@ final readonly class UploadAvatarAction implements ActionInterface
             $this->userRepository->save($updatedUser);
 
             return JsonResponse::success([
-                'message'        => 'Profilbild erfolgreich aktualisiert!',
+                'message' => 'Profilbild erfolgreich aktualisiert!',
                 'new_avatar_url' => $this->config->getBaseUrl() . '/assets/images/avatars/' . $newFilename,
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \error_log('Avatar Upload Fatal Error: ' . $e->getMessage());
 
             return JsonResponse::error('Interner Serverfehler: ' . $e->getMessage(), 500);

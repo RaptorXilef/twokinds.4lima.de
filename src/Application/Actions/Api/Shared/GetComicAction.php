@@ -14,6 +14,8 @@ use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('GET', '/api/get_comic')]
 #[RequiresAuth]
@@ -27,7 +29,7 @@ final readonly class GetComicAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.edit') && ! $this->auth->hasPermission('reports.resolve')) {
+        if (!$this->auth->hasPermission('comics.edit') && !$this->auth->hasPermission('reports.resolve')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -40,7 +42,7 @@ final readonly class GetComicAction implements ActionInterface
 
         try {
             $comic = $this->comicRepo->findById(new ComicId($idStr));
-            if (! $comic instanceof ComicPage) {
+            if (!$comic instanceof ComicPage) {
                 return JsonResponse::error('Comic nicht gefunden.', 404);
             }
 
@@ -48,21 +50,21 @@ final readonly class GetComicAction implements ActionInterface
             $charIds = \array_map(fn (CharacterId $id): string => $id->value, $comic->characterIds);
 
             $comicData = [
-                'id'          => $comic->id->value,
-                'type'        => $comic->type,
-                'name'        => $comic->name,
-                'transcript'  => $comic->transcript ?? '',
-                'chapterId'   => $comic->chapterId ?? '',
-                'characters'  => $charIds,
-                'users'       => $comic->userIds, // Keine ?? [] mehr nötig, da array<int, string> garantiert
+                'id' => $comic->id->value,
+                'type' => $comic->type,
+                'name' => $comic->name,
+                'transcript' => $comic->transcript ?? '',
+                'chapterId' => $comic->chapterId ?? '',
+                'characters' => $charIds,
+                'users' => $comic->userIds, // Keine ?? [] mehr nötig, da array<int, string> garantiert
                 'originalUrl' => $comic->originalUrl,
-                'sketchUrl'   => $comic->sketchUrl,
+                'sketchUrl' => $comic->sketchUrl,
             ];
 
             return JsonResponse::success(['comic' => $comicData]);
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
             return JsonResponse::error('Ungültige Comic-ID.', 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
     }

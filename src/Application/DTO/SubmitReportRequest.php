@@ -36,13 +36,13 @@ final readonly class SubmitReportRequest
 
         $comicIdRaw = $input['comic_id'] ?? '';
         $comicIdStr = \is_string($comicIdRaw) ? \trim($comicIdRaw) : '';
-        $comicId    = $comicIdStr !== '' ? $comicIdStr : null;
+        $comicId = $comicIdStr !== '' ? $comicIdStr : null;
 
-        $reportType  = Sanitizer::string($input['report_type'] ?? '');
+        $reportType = Sanitizer::string($input['report_type'] ?? '');
         $description = Sanitizer::string($input['report_description'] ?? '');
-        $suggestion  = Sanitizer::html($input['report_transcript_suggestion'] ?? '');
+        $suggestion = Sanitizer::html($input['report_transcript_suggestion'] ?? '');
 
-        $wcRaw       = $input['wants_credit'] ?? false;
+        $wcRaw = $input['wants_credit'] ?? false;
         $wantsCredit = \in_array($wcRaw, [true, 1, '1', 'true', 'on'], true);
 
         if ($reportType === '') {

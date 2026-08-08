@@ -18,6 +18,7 @@ use App\Core\Service\AuthService;
 use App\Core\Service\MagicLinkService;
 use App\Core\ValueObject\EmailAddress;
 use App\Core\ValueObject\Username;
+use DateTimeImmutable;
 
 #[Route('POST', '/api/frontend_register')]
 final readonly class RegisterAction implements ActionInterface
@@ -43,7 +44,7 @@ final readonly class RegisterAction implements ActionInterface
 
         // Lese die E-Mail-Config aus und baue die ausführliche Meldung
         $mailConfig = $this->config->getMailSettings();
-        $fromEmail  = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
+        $fromEmail = \is_string($mailConfig['from'] ?? null) ? $mailConfig['from'] : 'no-reply@twokinds.4lima.de';
 
         $successMsg = 'Fast geschafft! Ich habe dir einen Bestätigungslink gesendet.<br><br>' .
             '&bull; Du hast <strong>15 Minuten</strong> Zeit, um auf den Link in der E-Mail zu klicken.<br>' .
@@ -58,12 +59,12 @@ final readonly class RegisterAction implements ActionInterface
         }
 
         $username = Sanitizer::string($request->post['username'] ?? '');
-        $email    = Sanitizer::email($request->post['email'] ?? '');
+        $email = Sanitizer::email($request->post['email'] ?? '');
 
-        $passRaw  = $request->post['password'] ?? ''; // Passwörter NIE bereinigen!
+        $passRaw = $request->post['password'] ?? ''; // Passwörter NIE bereinigen!
         $password = \is_scalar($passRaw) ? (string) $passRaw : '';
 
-        $confirmRaw      = $request->post['password_confirm'] ?? '';
+        $confirmRaw = $request->post['password_confirm'] ?? '';
         $passwordConfirm = \is_scalar($confirmRaw) ? (string) $confirmRaw : '';
 
         if ($username === '' || $email === '' || $password === '' || $passwordConfirm === '') {
@@ -87,17 +88,17 @@ final readonly class RegisterAction implements ActionInterface
 
         // Admin-Namen vor Registrierung schützen!
         $lowerUsername = \strtolower($username);
-        $restricted    = [];
+        $restricted = [];
 
         $bd = $this->config->get('backdoor');
         if (\is_array($bd)) {
-            $bdUser       = \is_string($bd['user'] ?? null) ? $bd['user'] : '';
+            $bdUser = \is_string($bd['user'] ?? null) ? $bd['user'] : '';
             $restricted[] = \strtolower($bdUser);
         }
 
         $sa = $this->config->get('superadmin');
         if (\is_array($sa)) {
-            $saUser       = \is_string($sa['user'] ?? null) ? $sa['user'] : '';
+            $saUser = \is_string($sa['user'] ?? null) ? $sa['user'] : '';
             $restricted[] = \strtolower($saUser);
         }
 
@@ -128,16 +129,16 @@ final readonly class RegisterAction implements ActionInterface
 
         // 3. DNS MX Check (Stoppt Fake-Domains wie asdf123.xyz)
         $domainStr = \strrchr($email, '@');
-        $domain    = \is_string($domainStr) ? \substr($domainStr, 1) : '';
+        $domain = \is_string($domainStr) ? \substr($domainStr, 1) : '';
 
-        if ($domain === '' || (! \checkdnsrr($domain, 'MX') && ! \checkdnsrr($domain, 'A'))) {
+        if ($domain === '' || (!\checkdnsrr($domain, 'MX') && !\checkdnsrr($domain, 'A'))) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Die E-Mail-Domain scheint keine E-Mails empfangen zu können.', 400);
         }
 
         $newId = $this->auth->generateId('usr_');
-        $hash  = \password_hash($password, \PASSWORD_DEFAULT);
+        $hash = \password_hash($password, \PASSWORD_DEFAULT);
 
         // das "false" für den Newsletter
         $user = new User(
@@ -146,7 +147,7 @@ final readonly class RegisterAction implements ActionInterface
             new EmailAddress($email),
             $hash,
             'pending',
-            new \DateTimeImmutable(),
+            new DateTimeImmutable(),
             false,
             false,
             false,
@@ -160,14 +161,14 @@ final readonly class RegisterAction implements ActionInterface
 
         $this->mailService->sendTemplate($email, 'Bitte bestätige dein Konto', 'verify_account', [
             'verifyUrl' => $verifyUrl,
-            'username'  => $username,
+            'username' => $username,
         ]);
 
         // E-Mail sofort aus der Queue werfen!
         $this->mailService->processQueue(5, ['verify_account']);
 
         return JsonResponse::success([
-            'message'  => $successMsg,
+            'message' => $successMsg,
             'redirect' => 'login',
         ]);
     }

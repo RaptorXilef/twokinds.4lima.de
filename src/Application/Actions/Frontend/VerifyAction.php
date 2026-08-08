@@ -26,8 +26,8 @@ final readonly class VerifyAction implements ActionInterface
     public function execute(ServerRequest $request): mixed
     {
         $tokenRaw = $request->get['token'] ?? '';
-        $token    = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
-        $email    = $this->magicLinkService->verifyAny($token);
+        $token = \is_scalar($tokenRaw) ? (string) $tokenRaw : '';
+        $email = $this->magicLinkService->verifyAny($token);
 
         if ($email === null) {
             $this->sessionManager->addFlash('error', 'Der Bestätigungslink ist ungültig oder abgelaufen.');

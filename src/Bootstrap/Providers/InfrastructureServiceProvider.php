@@ -65,13 +65,14 @@ use App\Infrastructure\System\StaticSiteGenerator;
 use App\Infrastructure\System\SystemBackupService;
 use App\Infrastructure\System\SystemInfoService;
 use App\Infrastructure\Utils\SystemClock;
+use PDO;
 
 final class InfrastructureServiceProvider implements ServiceProviderInterface
 {
     public function register(ContainerInterface $container): void
     {
         // 1. Core / System (Datenbank, Uhrzeit, Logging)
-        $container->bind(\PDO::class, function () use ($container): \PDO {
+        $container->bind(PDO::class, function () use ($container): PDO {
             $config = $container->get(ConfigInterface::class);
             \assert($config instanceof ConfigInterface);
 
@@ -105,8 +106,8 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         });
 
         $container->bind(RoleRepositoryInterface::class, function () use ($container): MySqlRoleRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
             $jsonHelper = $container->get(JsonHelperInterface::class);
             \assert($jsonHelper instanceof JsonHelperInterface);
 
@@ -114,15 +115,15 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         });
 
         $container->bind(UserRepositoryInterface::class, function () use ($container): MySqlUserRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlUserRepository($pdo);
         });
 
         $container->bind(LoginAttemptRepositoryInterface::class, function () use ($container): MySqlLoginAttemptRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlLoginAttemptRepository($pdo);
         });
@@ -138,15 +139,15 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
         // 3. E-Mail
         $container->bind(MagicLinkRepositoryInterface::class, function () use ($container): MySqlMagicLinkRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlMagicLinkRepository($pdo);
         });
 
         $container->bind(MailQueueRepositoryInterface::class, function () use ($container): MySqlMailQueueRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
             $jsonHelper = $container->get(JsonHelperInterface::class);
             \assert($jsonHelper instanceof JsonHelperInterface);
 
@@ -155,8 +156,8 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
         // Mail Services (SMTP als interne Instanz, MailQueue als das Interface für den Rest der App)
         $container->bind('mail.smtp', function () use ($container): SmtpMailService {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
             $config = $container->get(ConfigInterface::class);
             \assert($config instanceof ConfigInterface);
 
@@ -184,23 +185,23 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
 
         // Bookmarks / Lesezeichen
         $container->bind(BookmarkRepositoryInterface::class, function () use ($container): MySqlBookmarkRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlBookmarkRepository($pdo);
         });
 
         // 4. Domain Repositories (TwoKinds MySQL Persistenz)
         $container->bind(ComicRepositoryInterface::class, function () use ($container): MySqlComicRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlComicRepository($pdo);
         });
 
         $container->bind(ComicRevisionRepositoryInterface::class, function () use ($container): MySqlComicRevisionRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
             $clock = $container->get(ClockInterface::class);
             \assert($clock instanceof ClockInterface);
             $config = $container->get(ConfigInterface::class);
@@ -210,37 +211,37 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
         });
 
         $container->bind(CharacterRepositoryInterface::class, function () use ($container): MySqlCharacterRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlCharacterRepository($pdo);
         });
 
         $container->bind(CharacterGroupRepositoryInterface::class, function () use ($container): MySqlCharacterGroupRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlCharacterGroupRepository($pdo);
         });
 
         $container->bind(ReportRepositoryInterface::class, function () use ($container): MySqlReportRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlReportRepository($pdo);
         });
 
         $container->bind(ChapterRepositoryInterface::class, function () use ($container): MySqlChapterRepository {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
 
             return new MySqlChapterRepository($pdo);
         });
 
         // Backup Service als Infrastruktur-Dienst gebunden
         $container->bind(BackupServiceInterface::class, function () use ($container): SystemBackupService {
-            $pdo = $container->get(\PDO::class);
-            \assert($pdo instanceof \PDO);
+            $pdo = $container->get(PDO::class);
+            \assert($pdo instanceof PDO);
             $config = $container->get(ConfigInterface::class);
             \assert($config instanceof ConfigInterface);
             $json = $container->get(JsonHelperInterface::class);

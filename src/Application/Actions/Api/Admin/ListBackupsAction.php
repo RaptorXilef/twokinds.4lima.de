@@ -22,13 +22,13 @@ final readonly class ListBackupsAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.backup.manage')) {
+        if (!$this->auth->hasPermission('system.backup.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         return JsonResponse::success([
             'backups' => $this->backupService->listBackups(),
-            'tables'  => $this->backupService->getAllTables(),
+            'tables' => $this->backupService->getAllTables(),
         ]);
     }
 }

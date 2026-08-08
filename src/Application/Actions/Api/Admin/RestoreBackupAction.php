@@ -11,6 +11,7 @@ use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\System\BackupServiceInterface;
 use App\Core\Service\AuthService;
+use Throwable;
 
 #[Route('POST', '/api/restore_backup')]
 #[RequiresAuth]
@@ -22,25 +23,25 @@ final readonly class RestoreBackupAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('system.backup.manage')) {
+        if (!$this->auth->hasPermission('system.backup.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
             $filenameRaw = $request->post['filename'] ?? '';
-            $filename    = \is_string($filenameRaw) ? $filenameRaw : '';
+            $filename = \is_string($filenameRaw) ? $filenameRaw : '';
 
             $modeRaw = $request->post['mode'] ?? 1;
-            $mode    = \is_numeric($modeRaw) ? (int) $modeRaw : 1;
+            $mode = \is_numeric($modeRaw) ? (int) $modeRaw : 1;
 
             $tableRaw = $request->post['table'] ?? null;
-            $table    = \is_string($tableRaw) && $tableRaw !== 'all' && $tableRaw !== '' ? $tableRaw : null;
+            $table = \is_string($tableRaw) && $tableRaw !== 'all' && $tableRaw !== '' ? $tableRaw : null;
 
             // Neues optionales Passwort abfangen
-            $passRaw  = $request->post['password'] ?? null;
+            $passRaw = $request->post['password'] ?? null;
             $password = \is_string($passRaw) && $passRaw !== '' ? $passRaw : null;
 
-            if ($filename === '' || ! \in_array($mode, [1, 2, 3], true)) {
+            if ($filename === '' || !\in_array($mode, [1, 2, 3], true)) {
                 return JsonResponse::error('Ungültige Parameter.', 400);
             }
 
@@ -54,7 +55,7 @@ final readonly class RestoreBackupAction implements ActionInterface
             return JsonResponse::success([
                 'message' => "Sicherheits-Backup angelegt ($safetyBackupFile) & Wiederherstellung war erfolgreich!",
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler: ' . $e->getMessage(), 500);
         }
     }

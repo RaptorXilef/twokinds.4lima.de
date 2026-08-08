@@ -7,6 +7,7 @@ namespace App\Application\Middleware;
 use App\Application\Contracts\MiddlewareInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
+use JsonException;
 
 /**
  * Liest sichere JSON-Bodys asynchroner Anfragen aus und mappt sie in den Request.
@@ -15,7 +16,7 @@ final readonly class JsonBodyParserMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequest $request, callable $next): mixed
     {
-        $method      = $request->getMethod();
+        $method = $request->getMethod();
         $contentType = $request->getContentType();
 
         if (\in_array($method, ['POST', 'PUT', 'PATCH'], true) && \str_contains($contentType, 'application/json')) {
@@ -26,9 +27,9 @@ final readonly class JsonBodyParserMiddleware implements MiddlewareInterface
                     if (\is_array($decoded)) {
                         /** @var array<string, mixed> $decodedArray */
                         $decodedArray = $decoded;
-                        $request      = $request->withInput($decodedArray);
+                        $request = $request->withInput($decodedArray);
                     }
-                } catch (\JsonException) {
+                } catch (JsonException) {
                     return JsonResponse::error('Bad Request: Ungültiges JSON-Format gesendet.', 400);
                 }
             }

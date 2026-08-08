@@ -43,7 +43,7 @@ interface MediaServiceInterface
      * Verarbeitet hochgeladene Bilder für einen einzelnen Charakter.
      * Gibt ein Array mit den neuen Dateinamen und eventuellen Warnungen zurück.
      *
-     * @param  array<string, mixed>                                                                                            $files
+     * @param array<string, mixed> $files
      *
      * @return array{profile: ?string, main: ?string, swatch: ?string, refs: array<int, string>, warnings: array<int, string>}
      */

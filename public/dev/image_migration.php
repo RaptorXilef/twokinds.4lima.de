@@ -10,7 +10,7 @@ declare(strict_types=1);
 echo "<div style='font-family: sans-serif; padding: 20px; background: #1e1e1e; color: #d4d4d4;'>";
 echo '<h1>🚀 Phase 1: Asset Reorganisation & DB Migration</h1>';
 
-$baseDir     = \dirname(__DIR__);
+$baseDir = \dirname(__DIR__);
 $configFiles = [
     $baseDir . '/config/config.local.php',
     $baseDir . '/config/storage.php',
@@ -18,7 +18,7 @@ $configFiles = [
 
 $dbConfig = null;
 foreach ($configFiles as $file) {
-    if (! \file_exists($file)) {
+    if (!\file_exists($file)) {
         continue;
     }
 
@@ -30,7 +30,7 @@ foreach ($configFiles as $file) {
     }
 }
 
-if (! $dbConfig) {
+if (!$dbConfig) {
     exit("<b style='color:red;'>Fehler:</b> Datenbank-Konfiguration nicht gefunden.");
 }
 
@@ -53,7 +53,7 @@ function slugify(string $filename, bool $ltrimIcon = false, bool $rtrimSwatch = 
 {
     $info = \pathinfo($filename);
     $name = $info['filename'];
-    $ext  = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
+    $ext = isset($info['extension']) ? '.' . \strtolower($info['extension']) : '';
 
     // Umlaute und Sonderfälle
     $name = \mb_strtolower($name, 'UTF-8');
@@ -80,12 +80,12 @@ function slugify(string $filename, bool $ltrimIcon = false, bool $rtrimSwatch = 
 // Hilfsfunktion zum sicheren Verschieben
 function safeMove(string $oldPath, string $newPath): void
 {
-    if (! \file_exists($oldPath)) {
+    if (!\file_exists($oldPath)) {
         return;
     }
 
     $dir = \dirname($newPath);
-    if (! \is_dir($dir)) {
+    if (!\is_dir($dir)) {
         \mkdir($dir, 0o755, true);
     }
     \rename($oldPath, $newPath);
@@ -121,32 +121,32 @@ echo '<h3>🔄 Verarbeite Charaktere (Datenbank & Dateien)</h3>';
 $pdo->beginTransaction();
 
 try {
-    $stmt  = $pdo->query('SELECT id, pic_url, main_pic, swatch_pic, ref_sheets FROM characters');
+    $stmt = $pdo->query('SELECT id, pic_url, main_pic, swatch_pic, ref_sheets FROM characters');
     $chars = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
     $updateStmt = $pdo->prepare('UPDATE characters SET pic_url = ?, main_pic = ?, swatch_pic = ?, ref_sheets = ? WHERE id = ?');
 
     $count = 0;
     foreach ($chars as $char) {
-        $newPicUrl    = null;
-        $newMainPic   = null;
+        $newPicUrl = null;
+        $newMainPic = null;
         $newSwatchPic = null;
         $newRefSheets = [];
 
         // Profilbild
-        if (! empty($char['pic_url'])) {
+        if (!empty($char['pic_url'])) {
             $newPicUrl = \slugify($char['pic_url']);
             \safeMove("$imgDir/characters/profiles/{$char['pic_url']}", "$imgDir/characters/profiles/$newPicUrl");
         }
 
         // Main / Portraits
-        if (! empty($char['main_pic'])) {
+        if (!empty($char['main_pic'])) {
             $newMainPic = \slugify($char['main_pic']);
             \safeMove("$imgDir/characters/main/{$char['main_pic']}", "$imgDir/characters/portraits/$newMainPic");
         }
 
         // Swatches / Palettes
-        if (! empty($char['swatch_pic'])) {
+        if (!empty($char['swatch_pic'])) {
             $newSwatchPic = \slugify($char['swatch_pic'], false, true);
             \safeMove("$imgDir/characters/swatches/{$char['swatch_pic']}", "$imgDir/characters/palettes/$newSwatchPic");
         }

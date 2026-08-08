@@ -33,10 +33,10 @@ final readonly class FrontendController
     public function handleRequest(ServerRequest $request): void
     {
         $pathRaw = \parse_url($request->getPath(), \PHP_URL_PATH);
-        $path    = \is_string($pathRaw) ? $pathRaw : '/';
+        $path = \is_string($pathRaw) ? $pathRaw : '/';
 
         $basePathRaw = \parse_url($this->config->getBaseUrl(), \PHP_URL_PATH);
-        $basePath    = \is_string($basePathRaw) ? $basePathRaw : '/';
+        $basePath = \is_string($basePathRaw) ? $basePathRaw : '/';
 
         $relativePath = '/';
 
@@ -53,7 +53,7 @@ final readonly class FrontendController
             $relativePath = '/';
         }
 
-        $method  = $request->getMethod();
+        $method = $request->getMethod();
         $matched = $this->actionFactory->getRegistry()->match($method, $relativePath);
 
         if ($matched === null) {
@@ -61,16 +61,16 @@ final readonly class FrontendController
         }
 
         if (\is_array($matched)) {
-            $className    = \is_string($matched['class']) ? $matched['class'] : Error404Action::class;
-            $params       = \is_array($matched['params']) ? $matched['params'] : [];
-            $request      = $request->withInput(\array_merge($request->input, $params));
+            $className = \is_string($matched['class']) ? $matched['class'] : Error404Action::class;
+            $params = \is_array($matched['params']) ? $matched['params'] : [];
+            $request = $request->withInput(\array_merge($request->input, $params));
             $requiresAuth = ($matched['requiresAuth'] ?? false) === true;
         } else {
-            $className    = Error404Action::class;
+            $className = Error404Action::class;
             $requiresAuth = false;
         }
 
-        $maintenanceMode  = $this->config->get('maintenance_mode', false) === true;
+        $maintenanceMode = $this->config->get('maintenance_mode', false) === true;
         $maintenanceAdmin = $this->config->get('maintenance_mode_admin', false) === true;
 
         $isAdminAction = \str_starts_with($className, 'App\\Application\\Actions\\Admin\\')
@@ -91,7 +91,7 @@ final readonly class FrontendController
             $isLocked = true;
         }
 
-        if ($isLocked && ! \in_array($className, $safeDuringMaintenance, true)) {
+        if ($isLocked && !\in_array($className, $safeDuringMaintenance, true)) {
             if (\str_starts_with($className, 'App\\Application\\Actions\\Api\\')) {
                 JsonResponse::error('System wird gewartet.', 503)->send();
 
@@ -101,7 +101,7 @@ final readonly class FrontendController
             \ob_start();
 
             $rootPathRaw = $this->config->get('root_path');
-            $rootPath    = \is_string($rootPathRaw) ? $rootPathRaw : '';
+            $rootPath = \is_string($rootPathRaw) ? $rootPathRaw : '';
             require_once \rtrim($rootPath, '/\\') . '/public/maintenance.php';
 
             $html = \ob_get_clean();
@@ -132,7 +132,7 @@ final readonly class FrontendController
             return new HtmlResponse('404 Not Found', 404);
         });
 
-        if (! $response instanceof ResponseInterface) {
+        if (!$response instanceof ResponseInterface) {
             return;
         }
 

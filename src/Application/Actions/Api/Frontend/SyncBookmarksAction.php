@@ -25,7 +25,7 @@ final readonly class SyncBookmarksAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->isLoggedIn()) {
+        if (!$this->auth->isLoggedIn()) {
             return JsonResponse::error('Nicht eingeloggt.', 401);
         }
 
@@ -40,14 +40,14 @@ final readonly class SyncBookmarksAction implements ActionInterface
         $localIdsStr = \is_scalar($localIdsRaw) ? (string) $localIdsRaw : '[]';
 
         $localIdsArr = \json_decode($localIdsStr, true);
-        if (! \is_array($localIdsArr)) {
+        if (!\is_array($localIdsArr)) {
             $localIdsArr = [];
         }
 
         // SECURITY FIX: Rigorose Bereinigung (Sanitization) des User-Inputs
         $sanitizedLocalIds = [];
         foreach ($localIdsArr as $dirtyId) {
-            if (! \is_scalar($dirtyId)) {
+            if (!\is_scalar($dirtyId)) {
                 continue;
             }
 
@@ -62,23 +62,23 @@ final readonly class SyncBookmarksAction implements ActionInterface
         $localIds = $sanitizedLocalIds;
 
         // Was sollen wir tun? (check, merge, db_wins, local_wins)
-        $resRaw     = $request->post['resolution'] ?? 'check';
+        $resRaw = $request->post['resolution'] ?? 'check';
         $resolution = \is_scalar($resRaw) ? (string) $resRaw : 'check';
 
         // Cloud-Daten abrufen
         $dbBookmarks = $this->bookmarkRepo->findByUser($userId);
-        $dbIds       = \array_map(fn (Bookmark $b): string => $b->comicId, $dbBookmarks);
+        $dbIds = \array_map(fn (Bookmark $b): string => $b->comicId, $dbBookmarks);
 
         // Sortieren zum einfachen Vergleichen
         $sortedLocal = $localIds;
-        $sortedDb    = $dbIds;
+        $sortedDb = $dbIds;
         \sort($sortedLocal);
         \sort($sortedDb);
 
         // Wenn beide Listen exakt gleich sind, ist alles okay (kein Sync nötig)
         if ($sortedLocal === $sortedDb) {
             return JsonResponse::success([
-                'status'    => 'synced',
+                'status' => 'synced',
                 'final_ids' => $dbIds,
             ]);
         }
@@ -86,8 +86,8 @@ final readonly class SyncBookmarksAction implements ActionInterface
         // Wenn wir nur prüfen sollen ("check") und es Unterschiede gibt: Konflikt melden!
         if ($resolution === 'check') {
             return JsonResponse::success([
-                'status'    => 'conflict',
-                'db_ids'    => $dbIds,
+                'status' => 'conflict',
+                'db_ids' => $dbIds,
                 'local_ids' => $localIds,
             ]);
         }
@@ -110,7 +110,7 @@ final readonly class SyncBookmarksAction implements ActionInterface
 
         // Dem Browser die finale Liste zum Überschreiben seines LocalStorage schicken
         return JsonResponse::success([
-            'status'    => 'resolved',
+            'status' => 'resolved',
             'final_ids' => $finalIds,
         ]);
     }

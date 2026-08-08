@@ -6,6 +6,7 @@ namespace App\Contracts\Storage;
 
 use App\Core\Entity\Report;
 use App\Core\ValueObject\ReportId;
+use DateTimeImmutable;
 
 interface ReportRepositoryInterface
 {
@@ -23,5 +24,5 @@ interface ReportRepositoryInterface
      */
     public function findByStatus(string $status): array;
 
-    public function countRecentByIpHash(string $ipHash, \DateTimeImmutable $since): int;
+    public function countRecentByIpHash(string $ipHash, DateTimeImmutable $since): int;
 }

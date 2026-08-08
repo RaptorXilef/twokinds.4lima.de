@@ -7,13 +7,15 @@ namespace App\Infrastructure\Storage;
 use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Core\Entity\Bookmark;
 use App\Infrastructure\Database\Table;
+use Exception;
+use PDO;
 
 final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterface
 {
     use DynamicSqlTrait;
     use EntityHydratorTrait;
 
-    public function __construct(private \PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
     }
 
@@ -23,7 +25,7 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
         $stmt->execute([$userId]);
 
         $bookmarks = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $bookmarks[] = $this->hydrateEntity(Bookmark::class, $row);
         }
 
@@ -33,7 +35,7 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
     public function add(string $userId, string $comicId): void
     {
         $data = [
-            'user_id'  => $userId,
+            'user_id' => $userId,
             'comic_id' => $comicId,
             'added_at' => \date('Y-m-d H:i:s'),
         ];
@@ -58,8 +60,8 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
 
             // Dann die neuen sauber einfügen
             $stmtInsert = $this->pdo->prepare('INSERT INTO `' . Table::USER_BOOKMARKS . '` (user_id, comic_id, added_at) VALUES (?, ?, ?)');
-            $now        = \date('Y-m-d H:i:s');
-            $uniqueIds  = \array_unique($comicIds);
+            $now = \date('Y-m-d H:i:s');
+            $uniqueIds = \array_unique($comicIds);
 
             // Duplikate vermeiden
             foreach ($uniqueIds as $cid) {
@@ -67,7 +69,7 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
             }
 
             $this->pdo->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->pdo->rollBack();
 
             throw $e;

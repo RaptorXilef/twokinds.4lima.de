@@ -25,9 +25,9 @@ final readonly class MagicLinkService
     public function createToken(string $email): array
     {
         $token = \bin2hex(\random_bytes(32));
-        $code  = \strtoupper(\substr(\bin2hex(\random_bytes(4)), 0, 6));
+        $code = \strtoupper(\substr(\bin2hex(\random_bytes(4)), 0, 6));
 
-        $links       = $this->repository->loadAll();
+        $links = $this->repository->loadAll();
         $durationRaw = $this->config->get('magic_link_duration', 15);
 
         $duration = 15; // 15 Min Gültig
@@ -53,10 +53,10 @@ final readonly class MagicLinkService
     {
         /** @var array<string, MagicLink> $links */
         $links = $this->repository->loadAll();
-        $now   = $this->clock->now();
+        $now = $this->clock->now();
 
         $magicLink = $links[$token] ?? null;
-        if ($magicLink instanceof MagicLink && ! $magicLink->isExpired($now)) {
+        if ($magicLink instanceof MagicLink && !$magicLink->isExpired($now)) {
             return $magicLink->email->value;
         }
 
@@ -66,13 +66,13 @@ final readonly class MagicLinkService
     public function verifyAny(string $input): ?string
     {
         /** @var array<string, MagicLink> $links */
-        $links      = $this->repository->loadAll();
-        $now        = $this->clock->now();
-        $trimmed    = \trim($input);
+        $links = $this->repository->loadAll();
+        $now = $this->clock->now();
+        $trimmed = \trim($input);
         $foundEmail = null;
 
         foreach ($links as $token => $magicLink) {
-            if (! $magicLink instanceof MagicLink) {
+            if (!$magicLink instanceof MagicLink) {
                 continue;
             }
 
@@ -82,7 +82,7 @@ final readonly class MagicLinkService
                 continue;
             }
 
-            $strToken         = (string) $token;
+            $strToken = (string) $token;
             $isLongTokenMatch = \strlen($strToken) === \strlen($trimmed)
                                 && \hash_equals(\strtolower($strToken), \strtolower($trimmed));
 

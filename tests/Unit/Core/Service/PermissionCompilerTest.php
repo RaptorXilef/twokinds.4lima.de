@@ -8,9 +8,9 @@ function getCompilerTestStructure(): array
 {
     return [
         'comics' => [
-            'key'      => 'comics.manage',
+            'key' => 'comics.manage',
             'children' => [
-                'edit'   => ['key' => 'comics.edit'],
+                'edit' => ['key' => 'comics.edit'],
                 'delete' => ['key' => 'comics.delete'],
             ],
         ],
@@ -22,7 +22,7 @@ function getCompilerTestStructure(): array
 
 \it('denies everything if no permissions are given', function (): void {
     $compiler = new PermissionCompiler();
-    $result   = $compiler->compile(\getCompilerTestStructure(), []);
+    $result = $compiler->compile(\getCompilerTestStructure(), []);
 
     \expect($result['comics.manage'])->toBeFalse()
         ->and($result['comics.edit'])->toBeFalse()
@@ -31,7 +31,7 @@ function getCompilerTestStructure(): array
 
 \it('allows everything if wildcard is present', function (): void {
     $compiler = new PermissionCompiler();
-    $result   = $compiler->compile(\getCompilerTestStructure(), ['*']);
+    $result = $compiler->compile(\getCompilerTestStructure(), ['*']);
 
     \expect($result['comics.manage'])->toBeTrue()
         ->and($result['comics.edit'])->toBeTrue()
@@ -41,7 +41,7 @@ function getCompilerTestStructure(): array
 \it('inherits parent permissions to children automatically', function (): void {
     // Wenn 'comics.manage' erlaubt ist, müssen 'edit' und 'delete' auch true sein
     $compiler = new PermissionCompiler();
-    $result   = $compiler->compile(\getCompilerTestStructure(), ['comics.manage']);
+    $result = $compiler->compile(\getCompilerTestStructure(), ['comics.manage']);
 
     \expect($result['comics.manage'])->toBeTrue()
         ->and($result['comics.edit'])->toBeTrue()
@@ -52,7 +52,7 @@ function getCompilerTestStructure(): array
 \it('respects explicit deny rules on inherited children', function (): void {
     // Erlaubt das Verwalten von Comics, aber verbietet explizit das Löschen (Minus davor)
     $compiler = new PermissionCompiler();
-    $result   = $compiler->compile(\getCompilerTestStructure(), ['comics.manage', '-comics.delete']);
+    $result = $compiler->compile(\getCompilerTestStructure(), ['comics.manage', '-comics.delete']);
 
     \expect($result['comics.manage'])->toBeTrue()
         ->and($result['comics.edit'])->toBeTrue()

@@ -7,6 +7,7 @@ namespace App\Infrastructure\System;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\JsonHelperInterface;
 use App\Contracts\System\SystemInfoInterface;
+use Throwable;
 
 final readonly class SystemInfoService implements SystemInfoInterface
 {
@@ -24,7 +25,7 @@ final readonly class SystemInfoService implements SystemInfoInterface
             $data = $this->jsonHelper->read($path);
 
             return $data['version'] ?? '1.0.0';
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return '1.0.0'; // Fallback, falls Datei kurzzeitig nicht lesbar ist
         }
     }

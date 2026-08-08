@@ -7,13 +7,18 @@ namespace App\Infrastructure\System;
 use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\BackupServiceInterface;
 use App\Contracts\System\JsonHelperInterface;
+use Exception;
+use PDO;
+use RuntimeException;
+use Throwable;
+use ZipArchive;
 
 final readonly class SystemBackupService implements BackupServiceInterface
 {
     private string $backupDir;
 
     public function __construct(
-        private \PDO $pdo,
+        private PDO $pdo,
         private ConfigInterface $config,
         private JsonHelperInterface $jsonHelper,
     ) {
@@ -29,32 +34,32 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
     public function createBackup(?string $tableName = null): string
     {
-        $tables     = $tableName ? [$tableName] : $this->getAllTables();
+        $tables = $tableName ? [$tableName] : $this->getAllTables();
         $backupData = [
             'timestamp' => \date('Y-m-d H:i:s'),
-            'type'      => $tableName ? "table_{$tableName}" : 'full',
-            'tables'    => [],
+            'type' => $tableName ? "table_{$tableName}" : 'full',
+            'tables' => [],
         ];
 
         foreach ($tables as $table) {
-            $stmt                         = $this->pdo->query("SELECT * FROM `$table`");
-            $backupData['tables'][$table] = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $stmt = $this->pdo->query("SELECT * FROM `$table`");
+            $backupData['tables'][$table] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         // Wir nutzen kein PRETTY_PRINT mehr, um die Dateigröße im ZIP maximal klein zu halten
         $json = \json_encode($backupData, \JSON_UNESCAPED_UNICODE);
         if ($json === false) {
-            throw new \RuntimeException('JSON encode Fehler beim Backup.');
+            throw new RuntimeException('JSON encode Fehler beim Backup.');
         }
 
-        $type     = $backupData['type'];
+        $type = $backupData['type'];
         $filename = 'backup_' . \date('Ymd_His') . '_' . $type . '.zip';
         $filepath = $this->backupDir . '/' . $filename;
 
         // Phase 2: ZIP Kompression & Verschlüsselung
-        $zip = new \ZipArchive();
-        if ($zip->open($filepath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            throw new \RuntimeException("Konnte ZIP-Datei nicht erstellen: $filepath");
+        $zip = new ZipArchive();
+        if ($zip->open($filepath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            throw new RuntimeException("Konnte ZIP-Datei nicht erstellen: $filepath");
         }
 
         $zip->addFromString('data.json', $json);
@@ -65,10 +70,10 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
         // Passwortschutz anwenden, falls konfiguriert
         $backupCfg = (array) $this->config->get('backup', []);
-        $password  = (string) ($backupCfg['zip_password'] ?? '');
+        $password = (string) ($backupCfg['zip_password'] ?? '');
         if ($password !== '') {
             $zip->setPassword($password);
-            $zip->setEncryptionName('data.json', \ZipArchive::EM_AES_256);
+            $zip->setEncryptionName('data.json', ZipArchive::EM_AES_256);
         }
 
         $zip->close();
@@ -83,18 +88,18 @@ final readonly class SystemBackupService implements BackupServiceInterface
     public function restoreBackup(string $filename, int $mode, ?string $tableName = null, ?string $customPassword = null): void
     {
         $filepath = $this->backupDir . '/' . \basename($filename);
-        if (! \file_exists($filepath)) {
-            throw new \RuntimeException('Backup-Datei nicht gefunden.');
+        if (!\file_exists($filepath)) {
+            throw new RuntimeException('Backup-Datei nicht gefunden.');
         }
 
         if (\str_ends_with($filename, '.zip')) {
-            $zip = new \ZipArchive();
+            $zip = new ZipArchive();
             if ($zip->open($filepath) !== true) {
-                throw new \RuntimeException('Konnte ZIP-Backup nicht öffnen.');
+                throw new RuntimeException('Konnte ZIP-Backup nicht öffnen.');
             }
 
             // Nutze Formular-Passwort, ansonsten Fallback auf Config
-            $backupCfg      = (array) $this->config->get('backup', []);
+            $backupCfg = (array) $this->config->get('backup', []);
             $configPassword = (string) ($backupCfg['zip_password'] ?? '');
 
             if ($customPassword !== null && $customPassword !== '') {
@@ -108,7 +113,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
             $zip->close();
 
             if ($json === false) {
-                throw new \RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort? Bitte gib das korrekte Passwort für dieses alte Backup ein.');
+                throw new RuntimeException('Fehler beim Entschlüsseln. Falsches Passwort? Bitte gib das korrekte Passwort für dieses alte Backup ein.');
             }
             $data = $this->jsonHelper->decode($json);
         } else {
@@ -116,8 +121,8 @@ final readonly class SystemBackupService implements BackupServiceInterface
             $data = $this->jsonHelper->read($filepath);
         }
 
-        if (! isset($data['tables'])) {
-            throw new \RuntimeException('Ungültiges Backup-Format.');
+        if (!isset($data['tables'])) {
+            throw new RuntimeException('Ungültiges Backup-Format.');
         }
 
         // Lade alle existierenden Tabellen einmal vorab, um den SHOW TABLES Bug in PDO zu vermeiden
@@ -134,7 +139,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
                 }
 
                 // Sicherer Check ohne ? Placeholder bei SHOW Kommandos
-                if (! \in_array($table, $allExistingTables, true)) {
+                if (!\in_array($table, $allExistingTables, true)) {
                     continue;
                 }
 
@@ -154,13 +159,13 @@ final readonly class SystemBackupService implements BackupServiceInterface
                     $this->deleteMissingRecords($table, $rows, $primaryKeys);
                 }
 
-                $columns      = \array_keys($rows[0]);
-                $colNames     = \implode(', ', \array_map(fn (int|string $c): string => "`$c`", $columns));
+                $columns = \array_keys($rows[0]);
+                $colNames = \implode(', ', \array_map(fn (int|string $c): string => "`$c`", $columns));
                 $placeholders = \implode(', ', \array_map(fn (int|string $c): string => ":$c", $columns));
 
                 if ($mode === 3) {
                     // Nur fehlende ergänzen
-                    $sql  = "INSERT IGNORE INTO `$table` ($colNames) VALUES ($placeholders)";
+                    $sql = "INSERT IGNORE INTO `$table` ($colNames) VALUES ($placeholders)";
                     $stmt = $this->pdo->prepare($sql);
                     foreach ($rows as $row) {
                         $stmt->execute($row);
@@ -172,8 +177,8 @@ final readonly class SystemBackupService implements BackupServiceInterface
                         $updateCols[] = "`$c` = VALUES(`$c`)";
                     }
                     $updateSql = \implode(', ', $updateCols);
-                    $sql       = "INSERT INTO `$table` ($colNames) VALUES ($placeholders) ON DUPLICATE KEY UPDATE $updateSql";
-                    $stmt      = $this->pdo->prepare($sql);
+                    $sql = "INSERT INTO `$table` ($colNames) VALUES ($placeholders) ON DUPLICATE KEY UPDATE $updateSql";
+                    $stmt = $this->pdo->prepare($sql);
                     foreach ($rows as $row) {
                         $stmt->execute($row);
                     }
@@ -182,7 +187,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
             $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
             $this->pdo->commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->pdo->rollBack();
             $this->pdo->exec('SET FOREIGN_KEY_CHECKS=1');
 
@@ -193,7 +198,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function deleteMissingRecords(string $table, array $rows, array $primaryKeys): void
     {
         if (\count($primaryKeys) === 1) {
-            $pk      = $primaryKeys[0];
+            $pk = $primaryKeys[0];
             $keptIds = \array_map(fn (array $r): string => (string) $r[$pk], $rows);
 
             if ($keptIds === []) {
@@ -203,7 +208,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
             }
 
             $inStr = \str_repeat('?,', \count($keptIds) - 1) . '?';
-            $stmt  = $this->pdo->prepare("DELETE FROM `$table` WHERE `$pk` NOT IN ($inStr)");
+            $stmt = $this->pdo->prepare("DELETE FROM `$table` WHERE `$pk` NOT IN ($inStr)");
             $stmt->execute(\array_values($keptIds));
         } else {
             // Composite Key (Oder keine Keys) - Hier ist Truncate der sicherste Weg für eine 1:1 Kopie
@@ -213,11 +218,11 @@ final readonly class SystemBackupService implements BackupServiceInterface
 
     public function listBackups(): array
     {
-        if (! \is_dir($this->backupDir)) {
+        if (!\is_dir($this->backupDir)) {
             return [];
         }
 
-        $files   = \array_diff(\scandir($this->backupDir), ['.', '..', '.htaccess']);
+        $files = \array_diff(\scandir($this->backupDir), ['.', '..', '.htaccess']);
         $backups = [];
 
         foreach ($files as $file) {
@@ -226,30 +231,30 @@ final readonly class SystemBackupService implements BackupServiceInterface
             $date = \filemtime($path);
 
             if (\str_ends_with($file, '.zip')) {
-                $zip = new \ZipArchive();
+                $zip = new ZipArchive();
                 if ($zip->open($path) === true) {
                     // Liest NUR den unverschlüsselten Meta-Kommentar
                     $comment = $zip->getArchiveComment();
                     $zip->close();
 
-                    $meta      = $comment ? \json_decode($comment, true) : [];
+                    $meta = $comment ? \json_decode($comment, true) : [];
                     $backups[] = [
                         'filename' => $file,
-                        'size'     => $size,
-                        'date'     => $date,
-                        'type'     => $meta['type'] ?? 'Unbekannt',
-                        'tables'   => $meta['tables'] ?? [],
+                        'size' => $size,
+                        'date' => $date,
+                        'type' => $meta['type'] ?? 'Unbekannt',
+                        'tables' => $meta['tables'] ?? [],
                     ];
                 }
             } elseif (\str_ends_with($file, '.json')) {
                 // Legacy .json Dateien
-                $data      = $this->jsonHelper->read($path);
+                $data = $this->jsonHelper->read($path);
                 $backups[] = [
                     'filename' => $file,
-                    'size'     => $size,
-                    'date'     => $date,
-                    'type'     => $data['type'] ?? 'unknown',
-                    'tables'   => isset($data['tables']) ? \array_keys($data['tables']) : [],
+                    'size' => $size,
+                    'date' => $date,
+                    'type' => $data['type'] ?? 'unknown',
+                    'tables' => isset($data['tables']) ? \array_keys($data['tables']) : [],
                 ];
             }
         }
@@ -262,7 +267,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     public function deleteBackup(string $filename): void
     {
         $filepath = $this->backupDir . '/' . \basename($filename);
-        if (! \file_exists($filepath)) {
+        if (!\file_exists($filepath)) {
             return;
         }
 
@@ -273,14 +278,14 @@ final readonly class SystemBackupService implements BackupServiceInterface
     {
         $stmt = $this->pdo->query('SHOW TABLES');
 
-        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
     private function getPrimaryKeys(string $table): array
     {
         $stmt = $this->pdo->query("SHOW KEYS FROM `$table` WHERE Key_name = 'PRIMARY'");
 
-        return \array_map(fn (array $k) => $k['Column_name'], $stmt->fetchAll(\PDO::FETCH_ASSOC));
+        return \array_map(fn (array $k) => $k['Column_name'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
     // =========================================================================
@@ -290,7 +295,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function uploadToFtp(string $filepath, string $filename): void
     {
         $backupCfg = (array) $this->config->get('backup', []);
-        $ftpCfg    = $backupCfg['ftp'] ?? [];
+        $ftpCfg = $backupCfg['ftp'] ?? [];
 
         if (empty($ftpCfg['enabled']) || empty($ftpCfg['host'])) {
             return;
@@ -301,7 +306,7 @@ final readonly class SystemBackupService implements BackupServiceInterface
         $user = $ftpCfg['user'] ?? '';
         $pass = $ftpCfg['pass'] ?? '';
         $path = \rtrim($ftpCfg['path'] ?? '', '/\\') . '/';
-        $ssl  = ! empty($ftpCfg['ssl']);
+        $ssl = !empty($ftpCfg['ssl']);
 
         // Großzügiger Timeout (60 Sekunden), damit schlafende HDDs (z.B. FritzNAS) Zeit zum Aufwachen haben
         $timeout = 60;
@@ -309,12 +314,12 @@ final readonly class SystemBackupService implements BackupServiceInterface
         try {
             // Verbindungsaufbau (SSL/FTPS falls aktiviert)
             $connId = $ssl ? @\ftp_ssl_connect($host, $port, $timeout) : @\ftp_connect($host, $port, $timeout);
-            if (! $connId) {
-                throw new \RuntimeException("Verbindung fehlgeschlagen (Timeout nach {$timeout}s).");
+            if (!$connId) {
+                throw new RuntimeException("Verbindung fehlgeschlagen (Timeout nach {$timeout}s).");
             }
 
-            if (! @\ftp_login($connId, $user, $pass)) {
-                throw new \RuntimeException('Login fehlgeschlagen.');
+            if (!@\ftp_login($connId, $user, $pass)) {
+                throw new RuntimeException('Login fehlgeschlagen.');
             }
 
             // Sicherstellen, dass die Verbindung während großer Uploads oder Wartezeiten nicht abbricht
@@ -338,12 +343,12 @@ final readonly class SystemBackupService implements BackupServiceInterface
             }
 
             // Upload
-            if (! @\ftp_put($connId, $filename, $filepath, \FTP_BINARY)) {
-                throw new \RuntimeException('Upload verweigert.');
+            if (!@\ftp_put($connId, $filename, $filepath, \FTP_BINARY)) {
+                throw new RuntimeException('Upload verweigert.');
             }
 
             @\ftp_close($connId);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Wir lassen den Haupt-Cronjob nicht crashen, nur weil der FTP-Server zickt.
             // Stattdessen loggen wir es stillschweigend.
             \error_log('Off-Site Backup (FTP) fehlgeschlagen: ' . $e->getMessage());
@@ -353,17 +358,17 @@ final readonly class SystemBackupService implements BackupServiceInterface
     private function cleanupOldBackups(): void
     {
         $backupCfg = (array) $this->config->get('backup', []);
-        $days      = (int) ($backupCfg['retention_days'] ?? 365);
+        $days = (int) ($backupCfg['retention_days'] ?? 365);
 
         if ($days <= 0) {
             return; // 0 = Niemals löschen
         }
 
         $threshold = \time() - ($days * 86400); // 86400 Sekunden = 1 Tag
-        $files     = \array_diff(\scandir($this->backupDir), ['.', '..', '.htaccess']);
+        $files = \array_diff(\scandir($this->backupDir), ['.', '..', '.htaccess']);
 
         foreach ($files as $file) {
-            if (! \str_ends_with($file, '.zip') && ! \str_ends_with($file, '.json')) {
+            if (!\str_ends_with($file, '.zip') && !\str_ends_with($file, '.json')) {
                 continue;
             }
 

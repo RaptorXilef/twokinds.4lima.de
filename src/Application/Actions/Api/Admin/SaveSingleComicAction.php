@@ -19,6 +19,8 @@ use App\Core\Service\AuthService;
 use App\Core\Service\ComicService;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/save_single_comic')]
 #[RequiresAuth]
@@ -35,7 +37,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('comics.edit')) {
+        if (!$this->auth->hasPermission('comics.edit')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
@@ -44,7 +46,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
 
             // Auto-Detect für fehlende Dateiendungen bei Keenspot / Twokinds URLs
             $originalUrl = $dto->originalUrl;
-            $sketchUrl   = $dto->sketchUrl;
+            $sketchUrl = $dto->sketchUrl;
 
             // Dateiendungen auflösen (Dank curl_multi nun blitzschnell)
             // cURL Logik ersetzt durch das Interface
@@ -55,7 +57,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
             // Die clevere Sketch-Erkennung
             if ($sketchUrl !== '' && \preg_match('/\.[a-z0-9]{3,4}$/i', $sketchUrl) !== 1) {
                 // Wenn es nicht schon auf _sketch endet, hängen wir es an
-                if (! \str_ends_with($sketchUrl, '_sketch')) {
+                if (!\str_ends_with($sketchUrl, '_sketch')) {
                     $sketchUrl .= '_sketch';
                 }
                 $sketchUrl .= '.' . $this->prober->probeExtension($sketchUrl);
@@ -63,19 +65,19 @@ final readonly class SaveSingleComicAction implements ActionInterface
 
             $charIds = [];
             foreach ($dto->characterIds as $cId) {
-                if (! \is_string($cId)) {
+                if (!\is_string($cId)) {
                     continue;
                 }
 
                 try {
                     $charIds[] = new CharacterId($cId);
-                } catch (\InvalidArgumentException) {
+                } catch (InvalidArgumentException) {
                 }
             }
 
             $oldIdStrRaw = $request->post['old_comic_id'] ?? '';
-            $oldIdStr    = \is_scalar($oldIdStrRaw) ? \trim((string) $oldIdStrRaw) : '';
-            $newIdStr    = $dto->id;
+            $oldIdStr = \is_scalar($oldIdStrRaw) ? \trim((string) $oldIdStrRaw) : '';
+            $newIdStr = $dto->id;
 
             // --- DEEP RENAMING LOGIK ---
             if ($oldIdStr !== '' && $oldIdStr !== $newIdStr) {
@@ -86,16 +88,16 @@ final readonly class SaveSingleComicAction implements ActionInterface
             }
 
             // --- BILD UPLOAD LOGIK ---
-            $files       = $request->files;
+            $files = $request->files;
             $hasNewImage = false;
 
-            $uploadHires   = $files['upload_hires'] ?? null;
+            $uploadHires = $files['upload_hires'] ?? null;
             $hiresUploaded = \is_array($uploadHires) && isset($uploadHires['error']) && $uploadHires['error'] === \UPLOAD_ERR_OK;
-            $tmpHires      = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null;
+            $tmpHires = $hiresUploaded && isset($uploadHires['tmp_name']) && \is_string($uploadHires['tmp_name']) ? $uploadHires['tmp_name'] : null;
 
-            $uploadLowres   = $files['upload_lowres'] ?? null;
+            $uploadLowres = $files['upload_lowres'] ?? null;
             $lowresUploaded = \is_array($uploadLowres) && isset($uploadLowres['error']) && $uploadLowres['error'] === \UPLOAD_ERR_OK;
-            $tmpLowres      = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null;
+            $tmpLowres = $lowresUploaded && isset($uploadLowres['tmp_name']) && \is_string($uploadLowres['tmp_name']) ? $uploadLowres['tmp_name'] : null;
 
             if ($hiresUploaded || $lowresUploaded) {
                 $hasNewImage = true;
@@ -106,7 +108,7 @@ final readonly class SaveSingleComicAction implements ActionInterface
 
             $userIds = [];
             foreach ($dto->userIds as $uid) {
-                if (! \is_string($uid)) {
+                if (!\is_string($uid)) {
                     continue;
                 }
 
@@ -129,9 +131,9 @@ final readonly class SaveSingleComicAction implements ActionInterface
             $this->comicService->saveComic($comic);
 
             return JsonResponse::success(['message' => "Comic {$dto->id} erfolgreich gespeichert."]);
-        } catch (ValidationException | \InvalidArgumentException $e) {
+        } catch (ValidationException|InvalidArgumentException $e) {
             return JsonResponse::error($e->getMessage(), 400);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Ein interner Fehler ist aufgetreten: ' . $e->getMessage(), 500);
         }
     }

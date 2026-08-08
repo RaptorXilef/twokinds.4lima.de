@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Infrastructure\Database;
 
 use App\Contracts\Config\ConfigInterface;
+use PDO;
+use PDOException;
+use RuntimeException;
 
 /**
  * Factory zur Erstellung der zentralen PDO-Datenbankverbindung.
@@ -19,17 +22,17 @@ final class PdoFactory
      *
      * @param ConfigInterface $config Die Systemkonfiguration.
      *
-     * @return \PDO|null Die aktive Verbindung oder null, wenn MySQL deaktiviert ist oder fehlschlägt.
+     * @return PDO|null Die aktive Verbindung oder null, wenn MySQL deaktiviert ist oder fehlschlägt.
      */
-    public static function create(ConfigInterface $config): \PDO
+    public static function create(ConfigInterface $config): PDO
     {
         $db = $config->get('database', []);
 
-        if (! isset($db['enabled']) || $db['enabled'] === false) {
-            throw new \RuntimeException('Kritischer Fehler: Die Datenbank ist in der config/storage.php nicht aktiviert (enabled = false) oder nicht konfiguriert.');
+        if (!isset($db['enabled']) || $db['enabled'] === false) {
+            throw new RuntimeException('Kritischer Fehler: Die Datenbank ist in der config/storage.php nicht aktiviert (enabled = false) oder nicht konfiguriert.');
         }
 
-        $portStr   = empty($db['port']) ? '' : ";port={$db['port']}";
+        $portStr = empty($db['port']) ? '' : ";port={$db['port']}";
         $dsnWithDb = "mysql:host={$db['host']}{$portStr};dbname={$db['dbname']};charset={$db['charset']}";
 
         $pdo = null;
@@ -37,57 +40,57 @@ final class PdoFactory
         try {
             // ACHTUNG: Hier KEIN "return" mehr! Wir speichern die Verbindung nur in $pdo,
             // damit das Script danach die Tabellen-Prüfung ausführt.
-            $pdo = new \PDO($dsnWithDb, $db['user'], $db['pass'], [
-                \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-                \PDO::ATTR_EMULATE_PREPARES   => false,
-                \PDO::ATTR_TIMEOUT            => 2,
+            $pdo = new PDO($dsnWithDb, $db['user'], $db['pass'], [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_TIMEOUT => 2,
             ]);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             $mysqlErrorCode = $e->errorInfo[1] ?? null;
 
             // 1049 = Unknown database (Datenbank existiert noch nicht)
             if ($mysqlErrorCode !== 1049) {
-                throw new \RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage(), $e->getCode(), $e);
+                throw new RuntimeException('MySQL Verbindungsfehler: ' . $e->getMessage(), $e->getCode(), $e);
             }
 
             // Datenbank existiert nicht, versuche sie anzulegen
             $dsnWithoutDb = "mysql:host={$db['host']}{$portStr};charset={$db['charset']}";
 
             try {
-                $pdo = new \PDO($dsnWithoutDb, $db['user'], $db['pass'], [
-                    \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
-                    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
-                    \PDO::ATTR_EMULATE_PREPARES   => false,
-                    \PDO::ATTR_TIMEOUT            => 2,
+                $pdo = new PDO($dsnWithoutDb, $db['user'], $db['pass'], [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_TIMEOUT => 2,
                 ]);
 
                 $sql = "CREATE DATABASE IF NOT EXISTS `{$db['dbname']}` CHARACTER SET {$db['charset']} COLLATE {$db['charset']}_unicode_ci";
                 $pdo->exec($sql);
                 $pdo->exec("USE `{$db['dbname']}`");
-            } catch (\PDOException $e2) {
-                throw new \RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage(), $e->getCode(), $e);
+            } catch (PDOException $e2) {
+                throw new RuntimeException('MySQL Auto-Install Fehler (DB Create): ' . $e2->getMessage(), $e->getCode(), $e);
             }
         }
 
         // --- INTELLIGENTE SELBST-REPARATUR ---
-        $schema        = $config->get('db_schema', []);
+        $schema = $config->get('db_schema', []);
         $missingTables = false;
 
         try {
             // Lade eine Liste aller aktuell existierenden Tabellen
-            $stmt           = $pdo->query('SHOW TABLES');
-            $existingTables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+            $stmt = $pdo->query('SHOW TABLES');
+            $existingTables = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
             // Vergleiche sie mit dem Schema
             foreach (\array_keys($schema) as $requiredTable) {
-                if (! \in_array($requiredTable, $existingTables, true)) {
+                if (!\in_array($requiredTable, $existingTables, true)) {
                     $missingTables = true;
 
                     break; // Sobald eine fehlt, lösen wir die Reparatur aus
                 }
             }
-        } catch (\PDOException) {
+        } catch (PDOException) {
             // Falls SHOW TABLES fehlschlägt, gehen wir auf Nummer sicher
             $missingTables = true;
         }
@@ -96,8 +99,8 @@ final class PdoFactory
             foreach ($schema as $tableName => $sql) {
                 try {
                     $pdo->exec($sql); // CREATE TABLE IF NOT EXISTS ist sicher mehrfach auszuführen
-                } catch (\PDOException $ex) {
-                    throw new \RuntimeException("MySQL Auto-Install Fehler (Tabelle {$tableName} konnte nicht angelegt werden): " . $ex->getMessage(), $ex->getCode(), $ex);
+                } catch (PDOException $ex) {
+                    throw new RuntimeException("MySQL Auto-Install Fehler (Tabelle {$tableName} konnte nicht angelegt werden): " . $ex->getMessage(), $ex->getCode(), $ex);
                 }
             }
         }

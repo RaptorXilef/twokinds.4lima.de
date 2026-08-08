@@ -13,6 +13,8 @@ use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Core\Entity\CharacterGroup;
 use App\Core\Service\AuthService;
 use App\Core\ValueObject\CharacterId;
+use InvalidArgumentException;
+use Throwable;
 
 #[Route('POST', '/api/save_character_groups')]
 #[RequiresAuth]
@@ -26,28 +28,28 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
 
     public function execute(ServerRequest $request): mixed
     {
-        if (! $this->auth->hasPermission('groups.manage')) {
+        if (!$this->auth->hasPermission('groups.manage')) {
             return JsonResponse::error('Zugriff verweigert.', 403);
         }
 
         try {
             $jsonDataRaw = $request->post['groups_data'] ?? '[]';
-            $jsonData    = \is_string($jsonDataRaw) ? $jsonDataRaw : '[]';
+            $jsonData = \is_string($jsonDataRaw) ? $jsonDataRaw : '[]';
             $inputGroups = \json_decode($jsonData, true, 512, \JSON_THROW_ON_ERROR);
 
-            if (! \is_array($inputGroups)) {
+            if (!\is_array($inputGroups)) {
                 $inputGroups = [];
             }
 
             $existingGroups = $this->groupRepo->findAll();
-            $existingNames  = \array_map(fn (CharacterGroup $g): string => $g->name, $existingGroups);
-            $newNames       = [];
+            $existingNames = \array_map(fn (CharacterGroup $g): string => $g->name, $existingGroups);
+            $newNames = [];
 
             $sortOrder = 0; // Hochzählen für die Drag&Drop Reihenfolge
 
             // 1. Alle reinkommenden Gruppen speichern/updaten
             foreach ($inputGroups as $groupData) {
-                if (! \is_array($groupData)) {
+                if (!\is_array($groupData)) {
                     continue;
                 }
 
@@ -58,7 +60,7 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
 
                 $newNames[] = $name;
 
-                $msRaw      = $groupData['manual_sort'] ?? false;
+                $msRaw = $groupData['manual_sort'] ?? false;
                 $manualSort = \in_array($msRaw, [true, 1, '1', 'true', 'on'], true);
 
                 $charIds = [];
@@ -70,7 +72,7 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
                 $stringChars = [];
                 if (\is_array($charsRaw)) {
                     foreach ($charsRaw as $cr) {
-                        if (! \is_string($cr)) {
+                        if (!\is_string($cr)) {
                             continue;
                         }
 
@@ -83,7 +85,7 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
                 foreach ($uniqueChars as $cid) {
                     try {
                         $charIds[] = new CharacterId($cid);
-                    } catch (\InvalidArgumentException) {
+                    } catch (InvalidArgumentException) {
                     }
                 }
 
@@ -97,7 +99,7 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
             }
 
             return JsonResponse::success(['message' => 'Gruppen und Sortierungen erfolgreich gespeichert.']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return JsonResponse::error('Fehler beim Speichern der Gruppen: ' . $e->getMessage(), 500);
         }
     }
