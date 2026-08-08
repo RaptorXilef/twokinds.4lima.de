@@ -11,8 +11,15 @@ interface ComicRevisionRepositoryInterface
 {
     public function createSnapshot(ComicPage $oldState): void;
 
-    // Holt die letzte Revision und löscht sie aus dem Log
+    /**
+     * Holt die letzte Revision und löscht sie aus dem Log
+     *
+     * @return array<string, mixed>|null
+     */
     public function popLatestRevision(ComicId $id): ?array;
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function popLatestDeletedRevision(): ?array;
 }

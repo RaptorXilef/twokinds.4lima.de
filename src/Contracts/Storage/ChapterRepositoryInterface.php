@@ -10,6 +10,9 @@ interface ChapterRepositoryInterface
 {
     public function save(Chapter $chapter): void;
 
+    /**
+     * @return array<int, Chapter>
+     */
     public function findAll(): array;
 
     public function delete(string $id): void;

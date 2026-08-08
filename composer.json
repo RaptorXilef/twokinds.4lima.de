@@ -94,6 +94,8 @@
     "// --- PHASE 1.1: PHPStan ANALYSIS PRO SCHICHT (CHECKING) ---": "Read-Only Qualitätsprüfungen",
     "chk:stan:core": "phpstan analyse src/Core --level max --memory-limit=2G",
     "chk:stan:application": "phpstan analyse src/Application --level max --memory-limit=2G",
+    "chk:stan:contracts": "phpstan analyse src/Contracts --level max --memory-limit=2G",
+    "chk:stan:bootstrap": "phpstan analyse src/Bootstrap --level max --memory-limit=2G",
     "chk:stan:infrastructure": "phpstan analyse src/Infrastructure --level max --memory-limit=2G",
 
     "// --- PHASE 2: TESTING ---": "Automatisierte Tests",

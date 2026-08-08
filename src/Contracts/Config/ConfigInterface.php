@@ -12,6 +12,9 @@ interface ConfigInterface
 
     public function isTestMode(): bool;
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getMailSettings(): array;
 
     public function getStoragePath(string $fileName): string;

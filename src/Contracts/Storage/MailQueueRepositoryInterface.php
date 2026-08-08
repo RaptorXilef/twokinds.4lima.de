@@ -10,14 +10,26 @@ interface MailQueueRepositoryInterface
 {
     public function enqueue(MailJob $job): void;
 
-    // Array Parameter
+    /**
+     * @param array<int, string> $allowedTemplates Array Parameter
+     */
     public function processBatch(int $limit, callable $processor, array $allowedTemplates = []): int;
 
+    /**
+     * @param array<int, array<string, mixed>> $data
+     */
     public function import(array $data): void;
 
-    // Für das Dashboard und die E-Mail Vorschau
+    /**
+     * Für das Dashboard und die E-Mail Vorschau
+     *
+     * @return array<int, array<string, mixed>>
+     */
     public function findAllQueue(): array;
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function findById(string $id): ?array;
 
     public function delete(string $id): void;

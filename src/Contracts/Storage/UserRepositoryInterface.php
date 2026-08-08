@@ -14,6 +14,9 @@ interface UserRepositoryInterface
 
     public function findByUsername(string $username): ?User;
 
+    /**
+     * @return array<int, User>
+     */
     public function findAll(): array;
 
     public function save(User $user): void;
@@ -23,5 +26,8 @@ interface UserRepositoryInterface
     // Löscht unbestätigte Accounts, die älter als X Minuten sind
     public function deleteUnverifiedAccounts(int $olderThanMinutes): int;
 
+    /**
+     * @return array<int, User>
+     */
     public function findNewsletterSubscribers(bool $transcriptOnly = false): array;
 }

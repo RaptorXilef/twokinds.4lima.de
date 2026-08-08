@@ -17,5 +17,8 @@ interface BookmarkRepositoryInterface
 
     public function remove(string $userId, string $comicId): void;
 
+    /**
+     * @param array<int, string> $comicIds
+     */
     public function replaceUserBookmarks(string $userId, array $comicIds): void;
 }

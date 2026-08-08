@@ -10,8 +10,14 @@ interface AuthSessionInterface
 
     public function getAuthHash(): ?string;
 
+    /**
+     * @param array<string, bool> $perms
+     */
     public function setPermissions(array $perms): void;
 
+    /**
+     * @return array<string, bool>
+     */
     public function getPermissions(): array;
 
     public function getUserId(): string;
