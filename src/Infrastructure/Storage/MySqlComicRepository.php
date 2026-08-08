@@ -40,7 +40,7 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row) {
+        if (!\is_array($row)) {
             return null;
         }
 
@@ -50,9 +50,26 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
     public function findAll(): array
     {
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::COMICS . '` ORDER BY id DESC');
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($stmt === false) {
+            return [];
+        }
 
-        return \array_map($this->mapToEntity(...), $rows);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        /** @var array<int, ComicPage> $comics */
+        $comics = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
+            $comics[] = $this->mapToEntity($row);
+        }
+
+        return $comics;
     }
 
     public function delete(ComicId $id): void
@@ -61,11 +78,25 @@ final readonly class MySqlComicRepository implements ComicRepositoryInterface
         $stmt->execute([$id->value]);
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
     private function mapToEntity(array $row): ComicPage
     {
         // Da die Property 'characterIds' CharacterId-Objekte erwartet, parsen wir sie manuell und geben sie als Override mit.
-        $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
-        $charIds = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
+        $charIdsRawJson = \is_string($row['character_ids'] ?? '') ? $row['character_ids'] : '[]';
+        $charIdsRaw = \json_decode($charIdsRawJson, true);
+        $charIdsArr = \is_array($charIdsRaw) ? $charIdsRaw : [];
+
+        /** @var array<int, CharacterId> $charIds */
+        $charIds = [];
+        foreach ($charIdsArr as $idStr) {
+            if (!\is_string($idStr)) {
+                continue;
+            }
+
+            $charIds[] = new CharacterId($idStr);
+        }
 
         return $this->hydrateEntity(ComicPage::class, $row, [
             'characterIds' => $charIds,

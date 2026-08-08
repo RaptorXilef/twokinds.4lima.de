@@ -23,10 +23,23 @@ final readonly class MySqlRoleRepository implements RoleRepositoryInterface
 
     public function loadAll(): array
     {
+        /** @var array<string, Role> $roles */
         $roles = [];
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::ROLES . '` ORDER BY name ASC');
+        if ($stmt === false) {
+            return [];
+        }
 
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
             $role = $this->hydrateEntity(Role::class, $row);
             $roles[$role->id] = $role;
         }

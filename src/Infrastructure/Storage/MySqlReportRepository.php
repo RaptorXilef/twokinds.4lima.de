@@ -38,16 +38,32 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? $this->hydrateEntity(Report::class, $row) : null;
+        return \is_array($row) ? $this->hydrateEntity(Report::class, $row) : null;
     }
 
     public function findAll(): array
     {
         $stmt = $this->pdo->query('SELECT r.*, u.avatar_url as submitter_avatar_url FROM `' . Table::REPORTS . '` r LEFT JOIN `' . Table::USERS . '` u ON r.user_id = u.id ORDER BY r.date DESC');
+        if ($stmt === false) {
+            return [];
+        }
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
 
-        return \array_map(fn (array $row): object => $this->hydrateEntity(Report::class, $row), $rows);
+        /** @var array<int, Report> $reports */
+        $reports = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
+            $reports[] = $this->hydrateEntity(Report::class, $row);
+        }
+
+        return $reports;
     }
 
     public function findByStatus(string $status): array
@@ -56,8 +72,21 @@ final readonly class MySqlReportRepository implements ReportRepositoryInterface
         $stmt->execute([$status]);
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
 
-        return \array_map(fn (array $row): object => $this->hydrateEntity(Report::class, $row), $rows);
+        /** @var array<int, Report> $reports */
+        $reports = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
+            $reports[] = $this->hydrateEntity(Report::class, $row);
+        }
+
+        return $reports;
     }
 
     public function countRecentByIpHash(string $ipHash, DateTimeImmutable $since): int

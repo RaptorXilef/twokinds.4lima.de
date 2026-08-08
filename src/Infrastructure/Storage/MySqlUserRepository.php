@@ -24,7 +24,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? $this->hydrateEntity(User::class, $row) : null;
+        return \is_array($row) ? $this->hydrateEntity(User::class, $row) : null;
     }
 
     public function findByEmail(string $email): ?User
@@ -33,7 +33,7 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt->execute([$email]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? $this->hydrateEntity(User::class, $row) : null;
+        return \is_array($row) ? $this->hydrateEntity(User::class, $row) : null;
     }
 
     public function findByUsername(string $username): ?User
@@ -42,15 +42,28 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? $this->hydrateEntity(User::class, $row) : null;
+        return \is_array($row) ? $this->hydrateEntity(User::class, $row) : null;
     }
 
     public function findAll(): array
     {
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::USERS . '` ORDER BY created_at DESC');
+        if ($stmt === false) {
+            return [];
+        }
 
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        /** @var array<int, User> $users */
         $users = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
             $users[] = $this->hydrateEntity(User::class, $row);
         }
 
@@ -74,7 +87,6 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
             }
         }
 
-        // TODO Prüfen ob das besser gelöst werden kann, z.B. direkter Abruf aus SQLSCHEMA
         // 2. Kaskadierendes Löschen der User-ID aus ALLEN Comics (Die JSON Magie)
         $sql = 'UPDATE `' . Table::COMICS . "`
                 SET `user_ids` = JSON_REMOVE(`user_ids`, JSON_UNQUOTE(JSON_SEARCH(`user_ids`, 'one', ?)))
@@ -105,9 +117,22 @@ final readonly class MySqlUserRepository implements UserRepositoryInterface
 
         // Da wir dynamische Spaltennamen nutzen (die sicher von uns kommen), ist das absolut SQL-Injection-sicher
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::USERS . "` WHERE {$column} = 1");
+        if ($stmt === false) {
+            return [];
+        }
 
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        /** @var array<int, User> $users */
         $users = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
             $users[] = $this->hydrateEntity(User::class, $row);
         }
 

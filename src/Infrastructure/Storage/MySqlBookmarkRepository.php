@@ -24,8 +24,17 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
         $stmt = $this->pdo->prepare('SELECT * FROM `' . Table::USER_BOOKMARKS . '` WHERE user_id = ? ORDER BY added_at DESC');
         $stmt->execute([$userId]);
 
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
         $bookmarks = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
             $bookmarks[] = $this->hydrateEntity(Bookmark::class, $row);
         }
 
@@ -65,7 +74,11 @@ final readonly class MySqlBookmarkRepository implements BookmarkRepositoryInterf
 
             // Duplikate vermeiden
             foreach ($uniqueIds as $cid) {
-                $stmtInsert->execute([$userId, $cid, $now]);
+                if (!\is_scalar($cid)) {
+                    continue;
+                }
+
+                $stmtInsert->execute([$userId, (string) $cid, $now]);
             }
 
             $this->pdo->commit();

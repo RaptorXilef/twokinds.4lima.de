@@ -31,15 +31,32 @@ final readonly class MySqlCharacterRepository implements CharacterRepositoryInte
         $stmt->execute([$id->value]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? $this->hydrateEntity(Character::class, $row) : null;
+        return \is_array($row) ? $this->hydrateEntity(Character::class, $row) : null;
     }
 
     public function findAll(): array
     {
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::CHARACTERS . '` ORDER BY name ASC');
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($stmt === false) {
+            return [];
+        }
 
-        return \array_map(fn (array $r): object => $this->hydrateEntity(Character::class, $r), $rows);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        /** @var array<int, Character> $characters */
+        $characters = [];
+        foreach ($rows as $r) {
+            if (!\is_array($r)) {
+                continue;
+            }
+
+            $characters[] = $this->hydrateEntity(Character::class, $r);
+        }
+
+        return $characters;
     }
 
     public function delete(CharacterId $id): void

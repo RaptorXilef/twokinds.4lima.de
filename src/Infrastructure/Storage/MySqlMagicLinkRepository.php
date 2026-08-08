@@ -20,18 +20,43 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
 
     public function loadAll(): array
     {
+        /** @var array<string, MagicLink> $links */
         $links = [];
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::MAGIC_LINKS . '`');
 
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
-            $dt = \is_numeric($r['expires'])
-                ? (new DateTimeImmutable())->setTimestamp((int) $r['expires'])
-                : new DateTimeImmutable($r['expires']);
+        if ($stmt === false) {
+            return [];
+        }
 
-            $links[$r['token']] = new MagicLink(
-                $r['token'],
-                new EmailAddress($r['email']),
-                $r['code'],
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        foreach ($rows as $r) {
+            if (!\is_array($r)) {
+                continue;
+            }
+
+            $expiresRaw = $r['expires'] ?? 'now';
+            $dt = \is_numeric($expiresRaw)
+                ? (new DateTimeImmutable())->setTimestamp((int) $expiresRaw)
+                : new DateTimeImmutable((string) $expiresRaw);
+
+            $token = \is_string($r['token'] ?? null) ? $r['token'] : '';
+            $emailStr = \is_string($r['email'] ?? null) ? $r['email'] : '';
+            $codeStr = \is_string($r['code'] ?? null) ? $r['code'] : '';
+            if ($token === '') {
+                continue;
+            }
+            if ($emailStr === '') {
+                continue;
+            }
+
+            $links[$token] = new MagicLink(
+                $token,
+                new EmailAddress($emailStr),
+                $codeStr,
                 $dt,
             );
         }
@@ -48,7 +73,7 @@ final readonly class MySqlMagicLinkRepository implements MagicLinkRepositoryInte
 
             foreach ($links as $token => $link) {
                 $data = [
-                    'token' => $token,
+                    'token' => (string) $token,
                     'email' => $link->email->value,
                     'code' => $link->code,
                     'expires' => $link->expires->format('Y-m-d H:i:s'),

@@ -28,9 +28,26 @@ final readonly class MySqlChapterRepository implements ChapterRepositoryInterfac
     {
         // Sortiert numerische IDs korrekt (1, 2, 10) und Text-IDs ans Ende
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::CHAPTERS . '` ORDER BY CAST(id AS UNSIGNED) ASC, id ASC');
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($stmt === false) {
+            return [];
+        }
 
-        return \array_map(fn (array $r): Chapter => $this->hydrateEntity(Chapter::class, $r), $rows);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        /** @var array<int, Chapter> $chapters */
+        $chapters = [];
+        foreach ($rows as $r) {
+            if (!\is_array($r)) {
+                continue;
+            }
+
+            $chapters[] = $this->hydrateEntity(Chapter::class, $r);
+        }
+
+        return $chapters;
     }
 
     public function delete(string $id): void

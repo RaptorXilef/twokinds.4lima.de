@@ -47,7 +47,8 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
         ]);
 
         // 2. Rolling History Limit durchsetzen (Alte Snapshots löschen)
-        $limit = (int) $this->config->get('comic_revision_limit', 10);
+        $limitRaw = $this->config->get('comic_revision_limit', 10);
+        $limit = \is_scalar($limitRaw) ? (int) $limitRaw : 10;
 
         if ($limit <= 0) {
             return;
@@ -77,17 +78,20 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
     {
         $stmt = $this->pdo->prepare('SELECT `id`, `revision_data` FROM `' . Table::COMIC_REVISIONS . '` WHERE `comic_id` = ? ORDER BY `created_at` DESC LIMIT 1');
         $stmt->execute([$id->value]);
-        $row = $stmt->fetch();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$row) {
+        if (!\is_array($row)) {
             return null; // Kein Snapshot vorhanden
         }
 
         // Snapshot löschen, damit man mehrfach zurückgehen kann (Strg+Z, Strg+Z...)
         $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
-        $delStmt->execute([$row['id']]);
+        $delStmt->execute([$row['id'] ?? 0]);
 
-        return \json_decode($row['revision_data'], true);
+        $dataJson = \is_string($row['revision_data'] ?? null) ? $row['revision_data'] : '{}';
+        $data = \json_decode($dataJson, true);
+
+        return \is_array($data) ? $data : null;
     }
 
     public function popLatestDeletedRevision(): ?array
@@ -101,17 +105,31 @@ final readonly class MySqlComicRevisionRepository implements ComicRevisionReposi
             ORDER BY r.created_at DESC
             LIMIT 1
         ');
-        $row = $stmt->fetch();
 
-        if (!$row) {
+        if ($stmt === false) {
+            return null;
+        }
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!\is_array($row)) {
             return null;
         }
 
         $delStmt = $this->pdo->prepare('DELETE FROM `' . Table::COMIC_REVISIONS . '` WHERE `id` = ?');
-        $delStmt->execute([$row['id']]);
+        $delStmt->execute([$row['id'] ?? 0]);
 
-        $data = \json_decode($row['revision_data'], true);
-        $data['comic_id'] = $row['comic_id'];
+        $dataJson = \is_string($row['revision_data'] ?? null) ? $row['revision_data'] : '{}';
+        $dataRaw = \json_decode($dataJson, true);
+
+        if (!\is_array($dataRaw)) {
+            $dataRaw = [];
+        }
+
+        /** @var array<string, mixed> $dataRaw */
+        $data = $dataRaw;
+
+        $data['comic_id'] = \is_string($row['comic_id'] ?? null) ? $row['comic_id'] : '';
 
         return $data;
     }

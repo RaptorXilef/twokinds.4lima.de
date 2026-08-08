@@ -36,16 +36,33 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
         $stmt->execute([$name]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ? $this->mapToEntity($row) : null;
+        return \is_array($row) ? $this->mapToEntity($row) : null;
     }
 
     public function findAll(): array
     {
         // WICHTIG: Hier greift jetzt die neue Sortierung!
         $stmt = $this->pdo->query('SELECT * FROM `' . Table::CHARACTER_GROUPS . '` ORDER BY sort_order ASC, name ASC');
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($stmt === false) {
+            return [];
+        }
 
-        return \array_map($this->mapToEntity(...), $rows);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (!\is_array($rows)) {
+            return [];
+        }
+
+        /** @var array<int, CharacterGroup> $groups */
+        $groups = [];
+        foreach ($rows as $row) {
+            if (!\is_array($row)) {
+                continue;
+            }
+
+            $groups[] = $this->mapToEntity($row);
+        }
+
+        return $groups;
     }
 
     public function delete(string $name): void
@@ -54,10 +71,24 @@ final readonly class MySqlCharacterGroupRepository implements CharacterGroupRepo
         $stmt->execute([$name]);
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
     private function mapToEntity(array $row): CharacterGroup
     {
-        $charIdsRaw = \json_decode($row['character_ids'] ?? '[]', true) ?? [];
-        $charIds = \array_map(fn (string $id): CharacterId => new CharacterId($id), $charIdsRaw);
+        $charIdsRawJson = \is_string($row['character_ids'] ?? '') ? $row['character_ids'] : '[]';
+        $charIdsRaw = \json_decode($charIdsRawJson, true);
+        $charIdsArr = \is_array($charIdsRaw) ? $charIdsRaw : [];
+
+        /** @var array<int, CharacterId> $charIds */
+        $charIds = [];
+        foreach ($charIdsArr as $idStr) {
+            if (!\is_string($idStr)) {
+                continue;
+            }
+
+            $charIds[] = new CharacterId($idStr);
+        }
 
         return $this->hydrateEntity(CharacterGroup::class, $row, [
             'characterIds' => $charIds,
