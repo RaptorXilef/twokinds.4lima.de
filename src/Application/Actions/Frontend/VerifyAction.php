@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
@@ -14,7 +14,7 @@ use App\Core\Entity\User;
 use App\Core\Service\MagicLinkService;
 
 #[Route('GET', '/verifizieren')]
-final readonly class VerifyAction implements ViewActionInterface
+final readonly class VerifyAction implements ActionInterface
 {
     public function __construct(
         private MagicLinkService $magicLinkService,

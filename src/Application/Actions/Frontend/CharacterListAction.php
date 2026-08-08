@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 
 #[Route('GET', '/charaktere')]
-final readonly class CharacterListAction implements ViewActionInterface
+final readonly class CharacterListAction implements ActionInterface
 {
     public function __construct(
         private CharacterRepositoryInterface $charRepo,

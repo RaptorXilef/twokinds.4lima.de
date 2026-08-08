@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Session\SessionManager;
 use App\Application\View\TemplateRenderer;
@@ -14,7 +14,7 @@ use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Service\AuthService;
 
 #[Route('GET', '/lesezeichen')]
-final readonly class BookmarksAction implements ViewActionInterface
+final readonly class BookmarksAction implements ActionInterface
 {
     public function __construct(
         private TemplateRenderer $renderer,

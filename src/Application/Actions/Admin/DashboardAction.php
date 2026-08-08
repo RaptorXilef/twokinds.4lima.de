@@ -6,7 +6,7 @@ namespace App\Application\Actions\Admin;
 
 use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Application\Response\RedirectResponse;
@@ -28,7 +28,7 @@ use App\Core\Service\AuthService;
 
 #[Route('GET', '/admin')]
 #[RequiresAuth]
-final readonly class DashboardAction implements ViewActionInterface
+final readonly class DashboardAction implements ActionInterface
 {
     public function __construct(
         private TemplateRenderer $renderer,

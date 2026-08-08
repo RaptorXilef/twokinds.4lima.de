@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
@@ -16,7 +16,7 @@ use App\Core\Service\MagicLinkService;
 use App\Core\ValueObject\EmailAddress;
 
 #[Route('GET', '/email-bestaetigen')]
-final readonly class VerifyNewEmailAction implements ViewActionInterface
+final readonly class VerifyNewEmailAction implements ActionInterface
 {
     public function __construct(
         private MagicLinkService $magicLinkService,

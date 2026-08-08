@@ -6,7 +6,7 @@ namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\RequiresAuth;
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
@@ -16,7 +16,7 @@ use App\Core\Service\AuthService;
 
 #[Route('GET', '/profil')]
 #[RequiresAuth]
-final readonly class ProfileAction implements ViewActionInterface
+final readonly class ProfileAction implements ActionInterface
 {
     public function __construct(
         private TemplateRenderer $renderer,

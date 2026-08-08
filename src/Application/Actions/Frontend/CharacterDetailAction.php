@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
 use App\Application\View\TemplateRenderer;
@@ -15,7 +15,7 @@ use App\Core\Entity\Character;
 use App\Core\ValueObject\CharacterId;
 
 #[Route('GET', '/charaktere/{id}')]
-final readonly class CharacterDetailAction implements ViewActionInterface
+final readonly class CharacterDetailAction implements ActionInterface
 {
     public function __construct(
         private CharacterRepositoryInterface $charRepo,

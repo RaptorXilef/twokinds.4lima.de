@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Frontend;
 
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\View\TemplateRenderer;
 use App\Contracts\Storage\ChapterRepositoryInterface;
@@ -13,7 +13,7 @@ use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Core\Entity\Chapter;
 
 #[Route('GET', '/archiv')]
-final readonly class ArchiveAction implements ViewActionInterface
+final readonly class ArchiveAction implements ActionInterface
 {
     public function __construct(
         private ComicRepositoryInterface $comicRepository,

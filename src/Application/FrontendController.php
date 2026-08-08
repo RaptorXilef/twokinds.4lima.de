@@ -134,8 +134,10 @@ final readonly class FrontendController
             return new HtmlResponse('404 Not Found', 404);
         });
 
-        if ($response instanceof ResponseInterface) {
-            $response->send();
+        if (!($response instanceof ResponseInterface)) {
+            return;
         }
+
+        $response->send();
     }
 }

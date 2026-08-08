@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Actions\Admin;
 
 use App\Application\Attribute\Route;
-use App\Application\Contracts\ViewActionInterface;
+use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
@@ -13,7 +13,7 @@ use App\Application\View\TemplateRenderer;
 use App\Contracts\Config\ConfigInterface;
 
 #[Route('GET', '/admin/login')]
-final readonly class LoginAction implements ViewActionInterface
+final readonly class LoginAction implements ActionInterface
 {
     public function __construct(
         private TemplateRenderer $renderer,

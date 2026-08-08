@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Routing;
 
 use App\Application\Contracts\ActionInterface;
-use App\Application\Contracts\ViewActionInterface;
 use App\Contracts\DependencyInjection\ContainerInterface;
 
 final readonly class UniversalActionFactory
@@ -21,11 +20,11 @@ final readonly class UniversalActionFactory
         return $this->registry;
     }
 
-    public function create(string $className): ActionInterface|ViewActionInterface|null
+    public function create(string $className): ?ActionInterface
     {
         if (\class_exists($className)) {
             $instance = $this->container->get($className);
-            if ($instance instanceof ActionInterface || $instance instanceof ViewActionInterface) {
+            if ($instance instanceof ActionInterface) {
                 return $instance;
             }
         }
