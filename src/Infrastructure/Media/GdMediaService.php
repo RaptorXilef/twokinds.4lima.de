@@ -540,7 +540,7 @@ final readonly class GdMediaService implements MediaServiceInterface
             @\mkdir($targetDir, 0o755, true);
         }
 
-        $type = (int) $info[2];
+        $type = $info[2];
         $srcImage = match ($type) {
             \IMAGETYPE_JPEG => @\imagecreatefromjpeg($tmpFile),
             \IMAGETYPE_PNG => @\imagecreatefrompng($tmpFile),
@@ -565,7 +565,7 @@ final readonly class GdMediaService implements MediaServiceInterface
             \imagefilledrectangle($targetImage, 0, 0, $finalSize, $finalSize, $transparent);
         }
 
-        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, (int) $info[0], (int) $info[1]);
+        \imagecopyresampled($targetImage, $srcImage, 0, 0, 0, 0, $finalSize, $finalSize, $info[0], $info[1]);
 
         if ($oldAvatarUrl !== null && \file_exists($targetDir . '/' . $oldAvatarUrl)) {
             @\unlink($targetDir . '/' . $oldAvatarUrl);
