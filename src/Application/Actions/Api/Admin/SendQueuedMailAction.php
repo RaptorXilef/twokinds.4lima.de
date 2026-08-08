@@ -45,6 +45,8 @@ final readonly class SendQueuedMailAction implements ActionInterface
         }
 
         $dataRaw = $mail['data'] ?? [];
+
+        /** @var array<string, mixed> $data */
         $data = \is_string($dataRaw) ? $this->jsonHelper->decode($dataRaw) : (\is_array($dataRaw) ? $dataRaw : []);
 
         $recipient = \is_string($mail['recipient'] ?? null) ? $mail['recipient'] : '';

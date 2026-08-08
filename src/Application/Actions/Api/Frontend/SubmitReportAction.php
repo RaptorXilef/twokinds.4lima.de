@@ -39,6 +39,7 @@ final readonly class SubmitReportAction implements ActionInterface
 
             if (\is_array($file) && isset($file['error']) && $file['error'] === \UPLOAD_ERR_OK) {
                 // Logik an Infrastruktur abgegeben
+                /** @var array<string, mixed> $file */
                 $screenshotUrl = $this->mediaService->saveReportScreenshot($file);
             }
 

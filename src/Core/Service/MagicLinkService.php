@@ -51,13 +51,14 @@ final readonly class MagicLinkService
 
     public function peekToken(string $token): ?string
     {
-        /** @var array<string, MagicLink> $links */
         $links = $this->repository->loadAll();
         $now = $this->clock->now();
 
         $magicLink = $links[$token] ?? null;
         if ($magicLink instanceof MagicLink && !$magicLink->isExpired($now)) {
-            return $magicLink->email->value;
+            $email = $magicLink->email;
+
+            return $email instanceof EmailAddress ? $email->value : (string) $email;
         }
 
         return null;
@@ -65,7 +66,6 @@ final readonly class MagicLinkService
 
     public function verifyAny(string $input): ?string
     {
-        /** @var array<string, MagicLink> $links */
         $links = $this->repository->loadAll();
         $now = $this->clock->now();
         $trimmed = \trim($input);
@@ -86,11 +86,13 @@ final readonly class MagicLinkService
             $isLongTokenMatch = \strlen($strToken) === \strlen($trimmed)
                                 && \hash_equals(\strtolower($strToken), \strtolower($trimmed));
 
-            $isShortCodeMatch = \strlen($magicLink->code) === \strlen($trimmed)
-                                && \hash_equals(\strtoupper($magicLink->code), \strtoupper($trimmed));
+            $strCode = \is_string($magicLink->code) ? $magicLink->code : (string) $magicLink->code;
+            $isShortCodeMatch = \strlen($strCode) === \strlen($trimmed)
+                                && \hash_equals(\strtoupper($strCode), \strtoupper($trimmed));
 
             if ($isLongTokenMatch || $isShortCodeMatch) {
-                $foundEmail = $magicLink->email->value;
+                $email = $magicLink->email;
+                $foundEmail = $email instanceof EmailAddress ? $email->value : (string) $email;
                 unset($links[$token]);
 
                 break;

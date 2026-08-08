@@ -34,6 +34,7 @@ final readonly class UploadMediaAction implements ActionInterface
         }
 
         // Infrastruktur erledigt den kompletten Upload, Ordner-Check und Skalierung!
+        /** @var array<string, mixed> $files */
         $processedCount = $this->mediaService->processMassProfileUpload($files);
 
         return JsonResponse::success(['message' => "{$processedCount} Bild(er) erfolgreich verarbeitet und hochgeladen!"]);

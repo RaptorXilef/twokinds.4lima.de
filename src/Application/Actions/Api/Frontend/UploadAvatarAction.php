@@ -48,6 +48,7 @@ final readonly class UploadAvatarAction implements ActionInterface
             }
 
             // Gesamte GD/Verzeichnis Logik delegiert!
+            /** @var array<string, mixed> $file */
             $newFilename = $this->mediaService->processAvatarUpload($userId, $user->avatarUrl, $file);
 
             $updatedUser = new User(
