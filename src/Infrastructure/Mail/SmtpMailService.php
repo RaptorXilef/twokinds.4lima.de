@@ -19,6 +19,9 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function sendTemplate(string $recipient, string $subject, string $template, array $data): bool|string
     {
         if (\in_array(\trim($recipient), ['', '0'], true)) {
@@ -47,10 +50,14 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         return 0; // Wird vom MailQueueService übernommen
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function render(string $templatePath, array $data): string
     {
-        $root = $this->config->get('root_path');
-        $fullPath = $root . "/templates/emails/{$templatePath}.phtml";
+        $rootRaw = $this->config->get('root_path', '');
+        $root = \is_string($rootRaw) ? $rootRaw : '';
+        $fullPath = \rtrim($root, '/\\') . "/templates/emails/{$templatePath}.phtml";
 
         if (!\file_exists($fullPath)) {
             throw new RuntimeException("Mail-Template nicht gefunden: {$fullPath}");
@@ -63,29 +70,40 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         return (string) \ob_get_clean();
     }
 
+    /**
+     * @param array<string, mixed> $smtpConfig
+     */
     private function dispatch(string $recipient, string $subject, string $body, array $smtpConfig): bool|string
     {
-        $host = $smtpConfig['host'] ?? '';
-        $port = (int) ($smtpConfig['port'] ?? 465);
-        $encryption = \strtolower($smtpConfig['encryption'] ?? '');
-        $user = \str_replace(["\r", "\n"], '', $smtpConfig['user'] ?? '');
-        $pass = \str_replace(["\r", "\n"], '', $smtpConfig['pass'] ?? '');
-        $from = \str_replace(["\r", "\n"], '', $smtpConfig['from'] ?? '');
+        $host = \is_scalar($smtpConfig['host'] ?? '') ? (string) $smtpConfig['host'] : '';
+        $port = \is_scalar($smtpConfig['port'] ?? 465) ? (int) $smtpConfig['port'] : 465;
+        $encryption = \strtolower(\is_scalar($smtpConfig['encryption'] ?? '') ? (string) $smtpConfig['encryption'] : '');
+        $user = \str_replace(["\r", "\n"], '', \is_scalar($smtpConfig['user'] ?? '') ? (string) $smtpConfig['user'] : '');
+        $pass = \str_replace(["\r", "\n"], '', \is_scalar($smtpConfig['pass'] ?? '') ? (string) $smtpConfig['pass'] : '');
+        $from = \str_replace(["\r", "\n"], '', \is_scalar($smtpConfig['from'] ?? '') ? (string) $smtpConfig['from'] : '');
         $recipient = \str_replace(["\r", "\n"], '', $recipient);
 
         // Port 465 bedeutet meist reines SSL direkt beim Aufbau
         $protocol = $port === 465 || $encryption === 'ssl' ? 'ssl://' : '';
         $socket = @\fsockopen($protocol . $host, $port, $errno, $errstr, 15);
 
-        if (!$socket) {
+        if ($socket === false) {
             return "Verbindung fehlgeschlagen: $errstr ($errno)";
         }
+
         if (!$this->checkResponse($socket, '220')) {
             return 'Server meldet sich nicht (Timeout)';
         }
 
-        $smtpEhloHost = \parse_url($this->config->getBaseUrl())['host']
-            ?? ($this->config->get('server_host', 'localhost') ?? 'localhost');
+        $baseUrl = $this->config->getBaseUrl();
+        $parsed = \parse_url($baseUrl);
+        $parsedHost = \is_array($parsed) && isset($parsed['host']) && \is_string($parsed['host']) ? $parsed['host'] : null;
+
+        $fallbackHostRaw = $this->config->get('server_host', 'localhost');
+        $fallbackHost = \is_string($fallbackHostRaw) ? $fallbackHostRaw : 'localhost';
+
+        $smtpEhloHost = $parsedHost ?? $fallbackHost;
+
         \fwrite($socket, 'EHLO ' . $smtpEhloHost . "\r\n");
         if (!$this->checkResponse($socket, '250')) {
             return 'EHLO abgelehnt';
@@ -147,19 +165,25 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         return true;
     }
 
-    private function checkResponse(mixed $socket, string $expectedCode): bool
+    /**
+     * @param resource $socket
+     */
+    private function checkResponse($socket, string $expectedCode): bool
     {
         $response = $this->getServerResponse($socket);
 
         return \str_starts_with($response, $expectedCode);
     }
 
-    private function getServerResponse(mixed $socket): string
+    /**
+     * @param resource $socket
+     */
+    private function getServerResponse($socket): string
     {
         $response = '';
-        while ($str = \fgets($socket, 515)) {
+        while (($str = \fgets($socket, 515)) !== false) {
             $response .= $str;
-            if (\preg_match('/^\d{3} /', $str)) {
+            if (\preg_match('/^\d{3} /', $str) === 1) {
                 break;
             }
         }
@@ -167,12 +191,17 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         return $response;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function logEmail(string $recipient, string $subject, string $template, bool|string $status, array $data = []): void
     {
         $statusStr = $status === true ? 'Erfolg' : 'Fehler: ' . $status;
         $id = \uniqid('ml_');
         $now = \date('Y-m-d H:i:s');
-        $json = \json_encode($data, \JSON_UNESCAPED_UNICODE);
+
+        $jsonStr = \json_encode($data, \JSON_UNESCAPED_UNICODE);
+        $json = \is_string($jsonStr) ? $jsonStr : '{}';
 
         $stmt = $this->pdo->prepare('INSERT INTO `mail_logs` (id, timestamp, recipient, subject, template, status, data) VALUES (?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([$id, $now, $recipient, $subject, $template, $statusStr, $json]);
@@ -183,7 +212,14 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
 
     public function loadLogs(): array
     {
-        return $this->pdo->query('SELECT * FROM `mail_logs` ORDER BY timestamp DESC')->fetchAll(PDO::FETCH_ASSOC);
+        $stmt = $this->pdo->query('SELECT * FROM `mail_logs` ORDER BY timestamp DESC');
+        if ($stmt === false) {
+            return [];
+        }
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return \is_array($rows) ? $rows : [];
     }
 
     public function saveLogs(array $logs, bool $forceSql = false): void
@@ -200,6 +236,6 @@ final readonly class SmtpMailService implements MailLogInterface, MailServiceInt
         $stmt->execute([$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $row ?: null;
+        return \is_array($row) ? $row : null;
     }
 }

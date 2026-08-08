@@ -16,14 +16,16 @@ final readonly class LocalImageStorage implements ImageStorageInterface
     public function uploadImage(string $folder, string $id, array $file): bool
     {
         // Zielordner: z.B. /public/assets/images/comics/hires
-        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/' . \trim($folder, '/');
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $publicDir = \rtrim($rootStr, '/\\') . '/public/assets/images/' . \trim($folder, '/');
 
         if (!\is_dir($publicDir)) {
             @\mkdir($publicDir, 0o755, true);
         }
 
-        $tmpPath = $file['tmp_name'] ?? '';
-        $name = $file['name'] ?? '';
+        $tmpPath = \is_string($file['tmp_name'] ?? null) ? $file['tmp_name'] : '';
+        $name = \is_string($file['name'] ?? null) ? $file['name'] : '';
 
         if ($tmpPath === '' || $name === '') {
             return false;
@@ -43,7 +45,10 @@ final readonly class LocalImageStorage implements ImageStorageInterface
     {
         $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
         $folder = \trim($folder, '/');
-        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/' . $folder;
+
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $publicDir = \rtrim($rootStr, '/\\') . '/public/assets/images/' . $folder;
 
         // Wir suchen automatisch nach der korrekten Dateiendung
         foreach (['webp', 'png', 'jpg', 'jpeg', 'gif'] as $ext) {
@@ -57,7 +62,10 @@ final readonly class LocalImageStorage implements ImageStorageInterface
 
     public function deleteComicMedia(string $comicId): int
     {
-        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $targetDir = \rtrim($rootStr, '/\\') . '/public/assets/images/comics';
+
         $folders = ['hires', 'lowres', 'thumbnails', 'social'];
         $deleted = 0;
 
@@ -83,7 +91,10 @@ final readonly class LocalImageStorage implements ImageStorageInterface
             $folder = 'profiles';
         }
 
-        $targetDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/' . $folder;
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $targetDir = \rtrim($rootStr, '/\\') . '/public/assets/images/characters/' . $folder;
+
         $filePath = "$targetDir/$filename";
 
         if ($filename !== '' && \file_exists($filePath)) {
@@ -100,13 +111,22 @@ final readonly class LocalImageStorage implements ImageStorageInterface
             $folder = 'profiles';
         }
 
-        $dir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/characters/' . $folder;
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $dir = \rtrim($rootStr, '/\\') . '/public/assets/images/characters/' . $folder;
+
         if (!\is_dir($dir)) {
             return [];
         }
 
-        $files = \array_diff(\scandir($dir), ['.', '..']);
+        $scan = \scandir($dir);
+        if ($scan === false) {
+            return [];
+        }
+
+        $files = \array_diff($scan, ['.', '..']);
         $result = [];
+
         foreach ($files as $file) {
             if (!\is_file($dir . '/' . $file)) {
                 continue;
@@ -120,14 +140,22 @@ final readonly class LocalImageStorage implements ImageStorageInterface
 
     public function listComicMediaFiles(): array
     {
-        $baseDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public/assets/images/comics';
+        $rootRaw = $this->config->get('root_path', '');
+        $rootStr = \is_string($rootRaw) ? $rootRaw : '';
+        $baseDir = \rtrim($rootStr, '/\\') . '/public/assets/images/comics';
+
         $thumbDir = $baseDir . '/thumbnails';
 
         if (!\is_dir($thumbDir)) {
             return [];
         }
 
-        $files = \array_diff(\scandir($thumbDir), ['.', '..']);
+        $scan = \scandir($thumbDir);
+        if ($scan === false) {
+            return [];
+        }
+
+        $files = \array_diff($scan, ['.', '..']);
         $result = [];
 
         foreach ($files as $file) {
@@ -142,7 +170,7 @@ final readonly class LocalImageStorage implements ImageStorageInterface
             ];
         }
 
-        \usort($result, fn (array $a, array $b): int => \strcmp($b['id'], $a['id']));
+        \usort($result, fn (array $a, array $b): int => \strcmp((string) $b['id'], (string) $a['id']));
 
         return $result;
     }

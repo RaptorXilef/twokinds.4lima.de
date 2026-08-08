@@ -39,7 +39,12 @@ final readonly class Config implements ConfigInterface
     {
         $mail = $this->get('mail', []);
 
-        return \is_array($mail) ? $mail : [];
+        if (!\is_array($mail)) {
+            return [];
+        }
+
+        /** @var array<string, mixed> $mail */
+        return $mail;
     }
 
     public function isTestMode(): bool
