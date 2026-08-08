@@ -52,7 +52,12 @@ export class Api {
             });
             return await this.#handleResponse(response);
         } catch (error) {
-            console.error(`[API Error] POST /api/${endpoint} failed:`, error);
+            if (
+                error.name !== 'TypeError' &&
+                error.message !== 'NetworkError when attempting to fetch resource.'
+            ) {
+                console.error(`[API Error] POST /api/${endpoint} failed:`, error);
+            }
             return { success: false, error: 'Netzwerkfehler. Server nicht erreichbar.' };
         }
     }
@@ -65,11 +70,17 @@ export class Api {
      */
     async get(endpoint, params = '') {
         const query = params ? `?${params.toString()}` : '';
+
         try {
             const response = await fetch(`${this.baseUrl}/api/${endpoint}${query}`);
             return await this.#handleResponse(response);
         } catch (error) {
-            console.error(`[API Error] GET /api/${endpoint} failed:`, error);
+            if (
+                error.name !== 'TypeError' &&
+                error.message !== 'NetworkError when attempting to fetch resource.'
+            ) {
+                console.error(`[API Error] GET /api/${endpoint} failed:`, error);
+            }
             return { success: false, error: 'Netzwerkfehler. Server nicht erreichbar.' };
         }
     }
