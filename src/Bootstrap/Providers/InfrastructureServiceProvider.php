@@ -71,141 +71,238 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
     public function register(ContainerInterface $container): void
     {
         // 1. Core / System (Datenbank, Uhrzeit, Logging)
-        $container->bind(\PDO::class, fn (): \PDO => PdoFactory::create(
-            $container->get(ConfigInterface::class),
-        ));
+        $container->bind(\PDO::class, function () use ($container): \PDO {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+
+            return PdoFactory::create($config);
+        });
 
         $container->bind(ClockInterface::class, fn (): SystemClock => new SystemClock());
 
         $container->bind(JsonHelperInterface::class, fn (): JsonHelper => new JsonHelper());
 
-        $container->bind(ImageStorageInterface::class, fn (): LocalImageStorage => new LocalImageStorage(
-            $container->get(ConfigInterface::class),
-        ));
+        $container->bind(ImageStorageInterface::class, function () use ($container): LocalImageStorage {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
 
-        $container->bind(ErrorLoggerInterface::class, fn (): ErrorLogger => new ErrorLogger(
-            $container->get(ConfigInterface::class),
-        ));
+            return new LocalImageStorage($config);
+        });
+
+        $container->bind(ErrorLoggerInterface::class, function () use ($container): ErrorLogger {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+
+            return new ErrorLogger($config);
+        });
 
         // 2. Security & Session
-        $container->bind(AuthSessionInterface::class, fn (): object => clone $container->get(SessionManager::class));
+        $container->bind(AuthSessionInterface::class, function () use ($container): object {
+            $sessionManager = $container->get(SessionManager::class);
+            \assert(\is_object($sessionManager));
 
-        $container->bind(RoleRepositoryInterface::class, fn (): MySqlRoleRepository => new MySqlRoleRepository(
-            $container->get(\PDO::class),
-            $container->get(JsonHelperInterface::class),
-        ));
+            return clone $sessionManager;
+        });
 
-        $container->bind(UserRepositoryInterface::class, fn (): MySqlUserRepository => new MySqlUserRepository(
-            $container->get(\PDO::class),
-        ));
+        $container->bind(RoleRepositoryInterface::class, function () use ($container): MySqlRoleRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+            $jsonHelper = $container->get(JsonHelperInterface::class);
+            \assert($jsonHelper instanceof JsonHelperInterface);
 
-        $container->bind(LoginAttemptRepositoryInterface::class, fn (): MySqlLoginAttemptRepository => new MySqlLoginAttemptRepository(
-            $container->get(\PDO::class),
-        ));
+            return new MySqlRoleRepository($pdo, $jsonHelper);
+        });
 
-        $container->bind(RateLimiterInterface::class, fn (): RateLimiter => new RateLimiter(
-            $container->get(ClockInterface::class),
-            $container->get(LoginAttemptRepositoryInterface::class),
-        ));
+        $container->bind(UserRepositoryInterface::class, function () use ($container): MySqlUserRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+
+            return new MySqlUserRepository($pdo);
+        });
+
+        $container->bind(LoginAttemptRepositoryInterface::class, function () use ($container): MySqlLoginAttemptRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+
+            return new MySqlLoginAttemptRepository($pdo);
+        });
+
+        $container->bind(RateLimiterInterface::class, function () use ($container): RateLimiter {
+            $clock = $container->get(ClockInterface::class);
+            \assert($clock instanceof ClockInterface);
+            $repo = $container->get(LoginAttemptRepositoryInterface::class);
+            \assert($repo instanceof LoginAttemptRepositoryInterface);
+
+            return new RateLimiter($clock, $repo);
+        });
 
         // 3. E-Mail
-        $container->bind(MagicLinkRepositoryInterface::class, fn (): MySqlMagicLinkRepository => new MySqlMagicLinkRepository(
-            $container->get(\PDO::class),
-        ));
+        $container->bind(MagicLinkRepositoryInterface::class, function () use ($container): MySqlMagicLinkRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
 
-        $container->bind(MailQueueRepositoryInterface::class, fn (): MySqlMailQueueRepository => new MySqlMailQueueRepository(
-            $container->get(\PDO::class),
-            $container->get(JsonHelperInterface::class),
-        ));
+            return new MySqlMagicLinkRepository($pdo);
+        });
+
+        $container->bind(MailQueueRepositoryInterface::class, function () use ($container): MySqlMailQueueRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+            $jsonHelper = $container->get(JsonHelperInterface::class);
+            \assert($jsonHelper instanceof JsonHelperInterface);
+
+            return new MySqlMailQueueRepository($pdo, $jsonHelper);
+        });
 
         // Mail Services (SMTP als interne Instanz, MailQueue als das Interface für den Rest der App)
-        $container->bind('mail.smtp', fn (): SmtpMailService => new SmtpMailService(
-            $container->get(\PDO::class),
-            $container->get(ConfigInterface::class),
-        ));
+        $container->bind('mail.smtp', function () use ($container): SmtpMailService {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
 
-        $container->bind(MailLogInterface::class, fn (): mixed => $container->get('mail.smtp'));
+            return new SmtpMailService($pdo, $config);
+        });
 
-        $container->bind(MailServiceInterface::class, fn (): MailQueueService => new MailQueueService(
-            $container->get(MailQueueRepositoryInterface::class),
-            $container->get('mail.smtp'),
-        ));
+        $container->bind(MailLogInterface::class, function () use ($container): mixed {
+            return $container->get('mail.smtp');
+        });
+
+        $container->bind(MailServiceInterface::class, function () use ($container): MailQueueService {
+            $repo = $container->get(MailQueueRepositoryInterface::class);
+            \assert($repo instanceof MailQueueRepositoryInterface);
+            $smtp = $container->get('mail.smtp');
+            \assert($smtp instanceof MailServiceInterface);
+
+            return new MailQueueService($repo, $smtp);
+        });
 
         // Direkter Mailer für Sofort-Versand ohne Warteschlange
-        $container->bind(
-            DirectMailServiceInterface::class,
-            fn (): SmtpMailService => $container->get('mail.smtp'),
-        );
+        $container->bind(DirectMailServiceInterface::class, function () use ($container): SmtpMailService {
+            $smtp = $container->get('mail.smtp');
+            \assert($smtp instanceof SmtpMailService);
+
+            return $smtp;
+        });
 
         // Bookmarks / Lesezeichen
-        $container->bind(BookmarkRepositoryInterface::class, fn (): MySqlBookmarkRepository => new MySqlBookmarkRepository(
-            $container->get(\PDO::class),
-        ));
+        $container->bind(BookmarkRepositoryInterface::class, function () use ($container): MySqlBookmarkRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+
+            return new MySqlBookmarkRepository($pdo);
+        });
 
         // 4. Domain Repositories (TwoKinds MySQL Persistenz)
-        $container->bind(ComicRepositoryInterface::class, fn (): MySqlComicRepository => new MySqlComicRepository(
-            $container->get(\PDO::class),
-        ));
+        $container->bind(ComicRepositoryInterface::class, function () use ($container): MySqlComicRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
 
-        $container->bind(ComicRevisionRepositoryInterface::class, fn (): MySqlComicRevisionRepository => new MySqlComicRevisionRepository(
-            $container->get(\PDO::class),
-            $container->get(ClockInterface::class),
-            $container->get(ConfigInterface::class),
-        ));
+            return new MySqlComicRepository($pdo);
+        });
 
-        $container->bind(CharacterRepositoryInterface::class, fn (): MySqlCharacterRepository => new MySqlCharacterRepository(
-            $container->get(\PDO::class),
-        ));
+        $container->bind(ComicRevisionRepositoryInterface::class, function () use ($container): MySqlComicRevisionRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+            $clock = $container->get(ClockInterface::class);
+            \assert($clock instanceof ClockInterface);
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
 
-        $container->bind(CharacterGroupRepositoryInterface::class, fn (): MySqlCharacterGroupRepository => new MySqlCharacterGroupRepository(
-            $container->get(\PDO::class),
-        ));
+            return new MySqlComicRevisionRepository($pdo, $clock, $config);
+        });
 
-        $container->bind(ReportRepositoryInterface::class, fn (): MySqlReportRepository => new MySqlReportRepository(
-            $container->get(\PDO::class),
-        ));
+        $container->bind(CharacterRepositoryInterface::class, function () use ($container): MySqlCharacterRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
 
-        $container->bind(ChapterRepositoryInterface::class, fn (): MySqlChapterRepository => new MySqlChapterRepository(
-            $container->get(\PDO::class),
-        ));
+            return new MySqlCharacterRepository($pdo);
+        });
+
+        $container->bind(CharacterGroupRepositoryInterface::class, function () use ($container): MySqlCharacterGroupRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+
+            return new MySqlCharacterGroupRepository($pdo);
+        });
+
+        $container->bind(ReportRepositoryInterface::class, function () use ($container): MySqlReportRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+
+            return new MySqlReportRepository($pdo);
+        });
+
+        $container->bind(ChapterRepositoryInterface::class, function () use ($container): MySqlChapterRepository {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+
+            return new MySqlChapterRepository($pdo);
+        });
 
         // Backup Service als Infrastruktur-Dienst gebunden
-        $container->bind(BackupServiceInterface::class, fn (): SystemBackupService => new SystemBackupService(
-            $container->get(\PDO::class),
-            $container->get(ConfigInterface::class),
-            $container->get(JsonHelperInterface::class),
-        ));
+        $container->bind(BackupServiceInterface::class, function () use ($container): SystemBackupService {
+            $pdo = $container->get(\PDO::class);
+            \assert($pdo instanceof \PDO);
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+            $json = $container->get(JsonHelperInterface::class);
+            \assert($json instanceof JsonHelperInterface);
+
+            return new SystemBackupService($pdo, $config, $json);
+        });
 
         // Andere
-        $container->bind(MediaServiceInterface::class, fn (): GdMediaService => new GdMediaService(
-            $container->get(ConfigInterface::class),
-        ));
+        $container->bind(MediaServiceInterface::class, function () use ($container): GdMediaService {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+
+            return new GdMediaService($config);
+        });
 
         $container->bind(RemoteResourceProberInterface::class, fn (): CurlRemoteResourceProber => new CurlRemoteResourceProber());
 
-        $container->bind(SystemInfoInterface::class, fn (): SystemInfoService => new SystemInfoService(
-            $container->get(ConfigInterface::class),
-            $container->get(JsonHelperInterface::class),
-        ));
+        $container->bind(SystemInfoInterface::class, function () use ($container): SystemInfoService {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+            $json = $container->get(JsonHelperInterface::class);
+            \assert($json instanceof JsonHelperInterface);
 
-        $container->bind(AssetHelperInterface::class, fn (): LocalAssetHelper => new LocalAssetHelper(
-            $container->get(ConfigInterface::class),
-        ));
+            return new SystemInfoService($config, $json);
+        });
 
-        $container->bind(AnalyticsClientInterface::class, fn (): GoogleAnalyticsClient => new GoogleAnalyticsClient(
-            $container->get(ConfigInterface::class),
-        ));
+        $container->bind(AssetHelperInterface::class, function () use ($container): LocalAssetHelper {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
 
-        $container->bind(RouteCacheInterface::class, fn (): FileRouteCache => new FileRouteCache(
-            $container->get(ConfigInterface::class),
-        ));
+            return new LocalAssetHelper($config);
+        });
+
+        $container->bind(AnalyticsClientInterface::class, function () use ($container): GoogleAnalyticsClient {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+
+            return new GoogleAnalyticsClient($config);
+        });
+
+        $container->bind(RouteCacheInterface::class, function () use ($container): FileRouteCache {
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+
+            return new FileRouteCache($config);
+        });
 
         // Sitemap und RSS
-        $container->bind(SiteGeneratorInterface::class, fn (): StaticSiteGenerator => new StaticSiteGenerator(
-            $container->get(ComicRepositoryInterface::class),
-            $container->get(ChapterRepositoryInterface::class),
-            $container->get(ConfigInterface::class),
-            $container->get(CharacterRepositoryInterface::class),
-        ));
+        $container->bind(SiteGeneratorInterface::class, function () use ($container): StaticSiteGenerator {
+            $comicRepo = $container->get(ComicRepositoryInterface::class);
+            \assert($comicRepo instanceof ComicRepositoryInterface);
+            $chapterRepo = $container->get(ChapterRepositoryInterface::class);
+            \assert($chapterRepo instanceof ChapterRepositoryInterface);
+            $config = $container->get(ConfigInterface::class);
+            \assert($config instanceof ConfigInterface);
+            $charRepo = $container->get(CharacterRepositoryInterface::class);
+            \assert($charRepo instanceof CharacterRepositoryInterface);
+
+            return new StaticSiteGenerator($comicRepo, $chapterRepo, $config, $charRepo);
+        });
     }
 }

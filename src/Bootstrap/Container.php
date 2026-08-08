@@ -99,13 +99,20 @@ class Container implements ContainerInterface
 
         // 2. Haben wir ein explizites Binding (Closure aus den Providern)?
         if (isset($this->services[$id])) {
-            $this->instances[$id] = ($this->services[$id])();
+            $instance = ($this->services[$id])();
+
+            if (!\is_object($instance)) {
+                throw new \RuntimeException("Container Error: Service '{$id}' lieferte kein Objekt zurück.");
+            }
+
+            $this->instances[$id] = $instance;
 
             return $this->instances[$id];
         }
 
         // 3. AUTOWIRING: Versuche, die Klasse automatisch aufzulösen!
         if (\class_exists($id)) {
+            /** @var class-string $id */
             $this->instances[$id] = $this->autowire($id);
 
             return $this->instances[$id];
@@ -116,6 +123,8 @@ class Container implements ContainerInterface
 
     /**
      * Löst Abhängigkeiten einer Klasse automatisch über PHP Reflection auf.
+     *
+     * @param class-string $className
      */
     private function autowire(string $className): object
     {

@@ -31,7 +31,9 @@ if (\session_status() === \PHP_SESSION_NONE) {
     \date_default_timezone_set('Europe/Berlin');
 
     // Wir frieren die Zeit für den gesamten Request-Zyklus ein.
-    \define('APP_REQUEST_TIME', $_SERVER['REQUEST_TIME'] ?? \time());
+    $reqTimeRaw = $_SERVER['REQUEST_TIME'] ?? \time();
+    $reqTimeInt = \is_numeric($reqTimeRaw) ? (int) $reqTimeRaw : \time();
+    \define('APP_REQUEST_TIME', $reqTimeInt);
     \define('APP_REQUEST_TIME_STR', \date('Y-m-d H:i:s', APP_REQUEST_TIME));
 
     // Strict Mode erzwingen! Verhindert, dass Hacker eigene Session-IDs injizieren.
@@ -94,26 +96,36 @@ $settings['admin_ui']  = ['permissions_desc_on_top' => true];
 $flatPerms = [];
 $flatten   = function (array $nodes) use (&$flatten, &$flatPerms): void {
     foreach ($nodes as $node) {
-        if (isset($node['key'])) {
-            $flatPerms[$node['key']] = $node['label'] ?? $node['key'];
+        if (! \is_array($node)) {
+            continue;
         }
-        if (! isset($node['children'])) {
+        $key = $node['key'] ?? null;
+        if (\is_string($key)) {
+            $label           = $node['label'] ?? null;
+            $flatPerms[$key] = \is_string($label) ? $label : $key;
+        }
+        if (isset($node['children']) && \is_array($node['children'])) {
+            $flatten($node['children']);
+        }
+    }
+};
+
+$structure = $settings['structure'] ?? [];
+if (\is_array($structure)) {
+    $flatten($structure);
+}
+$settings['permissions'] = $flatPerms;
+
+$globResult = \glob($appRoot . '/config/*.default.php');
+if (\is_array($globResult)) {
+    foreach ($globResult as $defaultFile) {
+        $loaded = require $defaultFile;
+        if (! \is_array($loaded)) {
             continue;
         }
 
-        $flatten($node['children']);
+        $settings = \array_replace_recursive($settings, $loaded);
     }
-};
-$flatten($settings['structure']);
-$settings['permissions'] = $flatPerms;
-
-foreach (\glob($appRoot . '/config/*.default.php') as $defaultFile) {
-    $loaded = require $defaultFile;
-    if (! \is_array($loaded)) {
-        continue;
-    }
-
-    $settings = \array_replace_recursive($settings, $loaded);
 }
 
 // D. Harte System-Configs laden (Überschreibt JSON & Defaults - Höchste Priorität!)
@@ -163,8 +175,9 @@ $settings['backdoor'] = [
 ];
 
 $settings['root_path']       = $appRoot;
-$httpHost                    = $_SERVER['HTTP_HOST'] ?? '';
-$settings['server_host']     = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$httpHostRaw                 = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$httpHost                    = \is_string($httpHostRaw) ? $httpHostRaw : 'localhost';
+$settings['server_host']     = $httpHost;
 $settings['server_protocol'] = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://';
 $settings['server_script']   = $_SERVER['SCRIPT_NAME'] ?? '';
 $settings['is_local_env']    = \str_ends_with($httpHost, '.local')
@@ -173,18 +186,22 @@ $settings['is_local_env']    = \str_ends_with($httpHost, '.local')
     || \php_sapi_name() === 'cli';
 
 // CSRF Token für sichere Frontend-API-Calls generieren
-if (empty($_SESSION['csrf_token'])) {
+if (! isset($_SESSION['csrf_token']) || $_SESSION['csrf_token'] === '') {
     $_SESSION['csrf_token'] = \bin2hex(\random_bytes(32));
 }
 
 // --- EXCEPTIONS / FEHLERMELDUNGEN ---
+/** @var array<string, mixed> $settings */
 $configInstance = new Config($settings);
 
 // INITIALISIERE DEN CONTAINER ZUERST!
 $container = new Container($configInstance);
 
 // Aktiviere den Exception Handler aus dem Container!
-$exceptionHandler = new GlobalExceptionHandler($configInstance, $container->get(ErrorLoggerInterface::class));
+$logger = $container->get(ErrorLoggerInterface::class);
+\assert($logger instanceof ErrorLoggerInterface);
+
+$exceptionHandler = new GlobalExceptionHandler($configInstance, $logger);
 $exceptionHandler->register();
 
 return $container;
