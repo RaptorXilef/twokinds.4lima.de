@@ -101,7 +101,7 @@ class Container implements ContainerInterface
         if (isset($this->services[$id])) {
             $instance = ($this->services[$id])();
 
-            if (!\is_object($instance)) {
+            if (! \is_object($instance)) {
                 throw new \RuntimeException("Container Error: Service '{$id}' lieferte kein Objekt zurück.");
             }
 
@@ -128,11 +128,7 @@ class Container implements ContainerInterface
      */
     private function autowire(string $className): object
     {
-        try {
-            $reflectionClass = new \ReflectionClass($className);
-        } catch (\ReflectionException) {
-            throw new \RuntimeException("Container Autowiring Error: Klasse '{$className}' nicht gefunden.");
-        }
+        $reflectionClass = new \ReflectionClass($className);
 
         if (! $reflectionClass->isInstantiable()) {
             throw new \RuntimeException("Container Autowiring Error: Klasse '{$className}' ist nicht instanziierbar (Interface oder Abstract).");

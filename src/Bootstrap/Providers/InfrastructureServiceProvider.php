@@ -163,9 +163,7 @@ final class InfrastructureServiceProvider implements ServiceProviderInterface
             return new SmtpMailService($pdo, $config);
         });
 
-        $container->bind(MailLogInterface::class, function () use ($container): mixed {
-            return $container->get('mail.smtp');
-        });
+        $container->bind(MailLogInterface::class, fn (): mixed => $container->get('mail.smtp'));
 
         $container->bind(MailServiceInterface::class, function () use ($container): MailQueueService {
             $repo = $container->get(MailQueueRepositoryInterface::class);

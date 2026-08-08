@@ -104,16 +104,15 @@ $flatten   = function (array $nodes) use (&$flatten, &$flatPerms): void {
             $label           = $node['label'] ?? null;
             $flatPerms[$key] = \is_string($label) ? $label : $key;
         }
-        if (isset($node['children']) && \is_array($node['children'])) {
-            $flatten($node['children']);
+        if (!isset($node['children']) || !\is_array($node['children'])) {
+            continue;
         }
+
+        $flatten($node['children']);
     }
 };
 
-$structure = $settings['structure'] ?? [];
-if (\is_array($structure)) {
-    $flatten($structure);
-}
+$flatten($settings['structure']);
 $settings['permissions'] = $flatPerms;
 
 $globResult = \glob($appRoot . '/config/*.default.php');
