@@ -32,9 +32,14 @@ final readonly class Config implements ConfigInterface
         return $this->settings[$key] ?? $default;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getMailSettings(): array
     {
-        return (array) $this->get('mail', []);
+        $mail = $this->get('mail', []);
+
+        return \is_array($mail) ? $mail : [];
     }
 
     public function isTestMode(): bool
@@ -45,14 +50,21 @@ final readonly class Config implements ConfigInterface
     public function getBaseUrl(): string
     {
         $configured = $this->get('base_url');
-        if (!empty($configured)) {
-            return \rtrim((string) $configured, '/') . '/';
+        if (\is_string($configured) && $configured !== '') {
+            return \rtrim($configured, '/') . '/';
         }
 
-        if ($this->get('is_local_env', false)) {
-            $protocol = $this->get('server_protocol', 'http://');
-            $host = $this->get('server_host', 'localhost');
-            $path = \rtrim(\dirname($this->get('server_script', '')), '/\\');
+        if ($this->get('is_local_env', false) === true) {
+            $protocolRaw = $this->get('server_protocol', 'http://');
+            $protocol = \is_string($protocolRaw) ? $protocolRaw : 'http://';
+
+            $hostRaw = $this->get('server_host', 'localhost');
+            $host = \is_string($hostRaw) ? $hostRaw : 'localhost';
+
+            $scriptRaw = $this->get('server_script', '');
+            $script = \is_string($scriptRaw) ? $scriptRaw : '';
+
+            $path = \rtrim(\dirname($script), '/\\');
             $path = \str_replace('/api', '', $path);
 
             return $protocol . $host . $path . '/';
@@ -63,7 +75,12 @@ final readonly class Config implements ConfigInterface
 
     public function getStoragePath(string $fileName): string
     {
-        return \rtrim((string) $this->get('root_path'), '/\\') . '/' .
-               \ltrim((string) $this->get('storage_path_prefix'), '/\\') . $fileName;
+        $rootRaw = $this->get('root_path', '');
+        $root = \is_string($rootRaw) ? $rootRaw : '';
+
+        $prefixRaw = $this->get('storage_path_prefix', '');
+        $prefix = \is_string($prefixRaw) ? $prefixRaw : '';
+
+        return \rtrim($root, '/\\') . '/' . \ltrim($prefix, '/\\') . $fileName;
     }
 }

@@ -19,12 +19,16 @@ final readonly class SystemInfoService implements SystemInfoInterface
 
     public function getCurrentVersion(): string
     {
-        $path = \rtrim($this->config->get('root_path'), '/\\') . '/package.json';
+        $rootRaw = $this->config->get('root_path', '');
+        $root = \is_string($rootRaw) ? $rootRaw : '';
+        $path = \rtrim($root, '/\\') . '/package.json';
 
         try {
             $data = $this->jsonHelper->read($path);
 
-            return $data['version'] ?? '1.0.0';
+            $version = $data['version'] ?? '1.0.0';
+
+            return \is_string($version) ? $version : '1.0.0';
         } catch (Throwable) {
             return '1.0.0'; // Fallback, falls Datei kurzzeitig nicht lesbar ist
         }

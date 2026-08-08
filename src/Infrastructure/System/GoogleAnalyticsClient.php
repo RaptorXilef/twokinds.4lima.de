@@ -15,9 +15,14 @@ final readonly class GoogleAnalyticsClient implements AnalyticsClientInterface
 
     public function trackPageView(string $clientId, string $sessionId, string $pageLocation, string $pageTitle): void
     {
-        $gaCfg = $this->config->get('ga4_server_side', []);
-        $gaId = $gaCfg['measurement_id'] ?? '';
-        $apiSecret = $gaCfg['api_secret'] ?? '';
+        $gaCfgRaw = $this->config->get('ga4_server_side', []);
+        $gaCfg = \is_array($gaCfgRaw) ? $gaCfgRaw : [];
+
+        $gaIdRaw = $gaCfg['measurement_id'] ?? '';
+        $gaId = \is_scalar($gaIdRaw) ? (string) $gaIdRaw : '';
+
+        $apiSecretRaw = $gaCfg['api_secret'] ?? '';
+        $apiSecret = \is_scalar($apiSecretRaw) ? (string) $apiSecretRaw : '';
 
         if ($gaId === '' || $apiSecret === '') {
             return;
@@ -43,11 +48,16 @@ final readonly class GoogleAnalyticsClient implements AnalyticsClientInterface
             return;
         }
 
+        $jsonPayload = \json_encode($payload);
+        if (!\is_string($jsonPayload)) {
+            return;
+        }
+
         \curl_setopt_array($ch, [
             \CURLOPT_PROTOCOLS => \CURLPROTO_HTTPS,
             \CURLOPT_RETURNTRANSFER => true,
             \CURLOPT_POST => true,
-            \CURLOPT_POSTFIELDS => \json_encode($payload),
+            \CURLOPT_POSTFIELDS => $jsonPayload,
             \CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
             \CURLOPT_TIMEOUT_MS => 250,
         ]);

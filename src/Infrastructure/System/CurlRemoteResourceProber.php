@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\System;
 
 use App\Contracts\System\RemoteResourceProberInterface;
+use CurlHandle;
 
 final readonly class CurlRemoteResourceProber implements RemoteResourceProberInterface
 {
@@ -20,6 +21,10 @@ final readonly class CurlRemoteResourceProber implements RemoteResourceProberInt
 
         foreach ($extensions as $ext) {
             $ch = \curl_init($url . '.' . $ext);
+            if ($ch === false) {
+                continue;
+            }
+
             \curl_setopt_array($ch, [
                 \CURLOPT_NOBODY => true,
                 \CURLOPT_TIMEOUT => 2,
@@ -32,19 +37,27 @@ final readonly class CurlRemoteResourceProber implements RemoteResourceProberInt
             $curlHandles[$ext] = $ch;
         }
 
-        $active = null;
+        $active = 0;
         $foundExt = null;
 
         do {
             $status = \curl_multi_exec($multiHandle, $active);
-            while ($info = \curl_multi_info_read($multiHandle)) {
-                $ch = $info['handle'];
-                $code = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
-                $contentType = \curl_getinfo($ch, \CURLINFO_CONTENT_TYPE) ?: '';
+            while (($info = \curl_multi_info_read($multiHandle)) !== false) {
+                $ch = $info['handle'] ?? null;
+                if (!$ch instanceof CurlHandle) {
+                    continue;
+                }
 
-                if ($code === 200 && \str_starts_with((string) $contentType, 'image/')) {
-                    $url = \curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL);
-                    $foundExt = \strtolower(\pathinfo((string) $url, \PATHINFO_EXTENSION));
+                $codeRaw = \curl_getinfo($ch, \CURLINFO_HTTP_CODE);
+                $code = \is_int($codeRaw) ? $codeRaw : 0;
+
+                $contentTypeRaw = \curl_getinfo($ch, \CURLINFO_CONTENT_TYPE);
+                $contentType = \is_string($contentTypeRaw) ? $contentTypeRaw : '';
+
+                if ($code === 200 && \str_starts_with($contentType, 'image/')) {
+                    $effUrlRaw = \curl_getinfo($ch, \CURLINFO_EFFECTIVE_URL);
+                    $effUrl = \is_string($effUrlRaw) ? $effUrlRaw : '';
+                    $foundExt = \strtolower(\pathinfo($effUrl, \PATHINFO_EXTENSION));
 
                     break 2;
                 }
@@ -54,13 +67,13 @@ final readonly class CurlRemoteResourceProber implements RemoteResourceProberInt
             }
 
             \curl_multi_select($multiHandle, 0.05);
-        } while ($active && $status === \CURLM_OK);
+        } while ($active > 0 && $status === \CURLM_OK);
 
         foreach ($curlHandles as $ch) {
             \curl_multi_remove_handle($multiHandle, $ch);
         }
         \curl_multi_close($multiHandle);
 
-        return $foundExt ?: $fallback;
+        return $foundExt !== null && $foundExt !== '' ? $foundExt : $fallback;
     }
 }

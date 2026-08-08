@@ -33,8 +33,9 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
      */
     public function logThrowable(Throwable $throwable): void
     {
-        // Fix: Explizit den gleichen Ordner nutzen wie app.php (storage/logs)
-        $logDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/logs';
+        $rootRaw = $this->config->get('root_path', '');
+        $root = \is_string($rootRaw) ? $rootRaw : '';
+        $logDir = \rtrim($root, '/\\') . '/logs';
 
         if (!\is_dir($logDir)) {
             @\mkdir($logDir, 0o755, true);
@@ -45,7 +46,7 @@ final readonly class ErrorLogger implements ErrorLoggerInterface
 
         $message = \sprintf(
             "[%s] [%s] %s in %s:%d\nStack Trace:\n%s\n%s\n",
-            $timestamp,
+            \is_string($timestamp) ? $timestamp : '',
             $throwable::class,
             $throwable->getMessage(),
             $throwable->getFile(),

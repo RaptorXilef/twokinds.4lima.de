@@ -8,10 +8,15 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\System\AssetHelperInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 
 final class LocalAssetHelper implements AssetHelperInterface
 {
-    // Der extrem schnelle RAM-Cache für den aktuellen Request
+    /**
+     * Der extrem schnelle RAM-Cache für den aktuellen Request
+     *
+     * @var array<string, string>
+     */
     private array $mtimeCache = [];
 
     public function __construct(private readonly ConfigInterface $config)
@@ -32,7 +37,9 @@ final class LocalAssetHelper implements AssetHelperInterface
         }
 
         // 2. Physischen Pfad ermitteln
-        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
+        $rootRaw = $this->config->get('root_path', '');
+        $root = \is_string($rootRaw) ? $rootRaw : '';
+        $publicDir = \rtrim($root, '/\\') . '/public';
         $physicalPath = $publicDir . '/' . $assetPath;
 
         // Wichtig: Stat-Cache leeren, damit Änderungen per FTP an JS/CSS sofort erkannt werden!
@@ -52,10 +59,12 @@ final class LocalAssetHelper implements AssetHelperInterface
         return $fullUrl;
     }
 
-    // NEU: Durchsucht den JS-Ordner und erstellt die dynamische Mapping-Logik
+    // Durchsucht den JS-Ordner und erstellt die dynamische Mapping-Logik
     public function getImportMap(string $baseDir = 'assets/js'): string
     {
-        $publicDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/public';
+        $rootRaw = $this->config->get('root_path', '');
+        $root = \is_string($rootRaw) ? $rootRaw : '';
+        $publicDir = \rtrim($root, '/\\') . '/public';
         $scanDir = $publicDir . '/' . \ltrim($baseDir, '/');
         $baseUrl = \rtrim($this->config->getBaseUrl(), '/');
         $map = ['imports' => []];
@@ -67,12 +76,16 @@ final class LocalAssetHelper implements AssetHelperInterface
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($scanDir));
 
         foreach ($iterator as $file) {
+            if (!$file instanceof SplFileInfo) {
+                continue;
+            }
             if (!$file->isFile()) {
                 continue;
             }
             if ($file->getExtension() !== 'js') {
                 continue;
             }
+
             $physicalPath = $file->getPathname();
             \clearstatcache(true, $physicalPath);
             $mtime = (string) $file->getMTime();
@@ -88,6 +101,8 @@ final class LocalAssetHelper implements AssetHelperInterface
         }
 
         // Als sauberes JSON ausgeben
-        return \json_encode($map, \JSON_UNESCAPED_SLASHES);
+        $encoded = \json_encode($map, \JSON_UNESCAPED_SLASHES);
+
+        return \is_string($encoded) ? $encoded : '{"imports":{}}';
     }
 }

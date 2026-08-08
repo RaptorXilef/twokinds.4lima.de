@@ -17,7 +17,10 @@ final readonly class FileRouteCache implements RouteCacheInterface
     {
         $cacheFile = $this->config->getStoragePath('cache/routes_v2.php');
         if (\file_exists($cacheFile)) {
-            return require $cacheFile;
+            /** @var array{exact: array<string, array<string, array{class: string, auth: bool}>>, dynamic: array<string, array<string, array{class: string, auth: bool}>>} $routes */
+            $routes = require $cacheFile;
+
+            return $routes;
         }
 
         return null;

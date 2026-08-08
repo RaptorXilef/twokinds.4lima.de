@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Infrastructure\Database;
 
 /**
- * TODO mysql schema
- * TODO sql schema anpassen
+ * ! mysql schema
+ * ! sql schema
+ * ! myphp Datenbank
  */
 final class SchemaRegistry
 {
+    /**
+     * @return array<string, string>
+     */
     public static function getSchemas(): array
     {
         return [
