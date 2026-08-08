@@ -24,9 +24,13 @@ final readonly class TemplateRenderer
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function render(string $templatePath, array $data = [], int $statusCode = 200): HtmlResponse
     {
-        $appRoot = \rtrim((string) $this->config->get('root_path'), '/\\');
+        $rootPath = $this->config->get('root_path');
+        $appRoot  = \rtrim(\is_string($rootPath) ? $rootPath : '', '/\\');
 
         $systemVars = [
             'appRoot'         => $appRoot,
@@ -42,9 +46,11 @@ final readonly class TemplateRenderer
             'canUseCloudSync' => $this->sessionManager->getUserId() !== '' && ! \str_starts_with($this->sessionManager->getUserId(), 'sys_'),
         ];
 
-        // Lade alle Flashes automatisch in die View-Daten!
-        // Nutzt vorhandene Flashes oder holt sie aus der Session
-        $data['flashes'] ??= $this->sessionManager->getFlashes();
+        if (! isset($data['flashes'])) {
+            // Lade alle Flashes automatisch in die View-Daten!
+            // Nutzt vorhandene Flashes oder holt sie aus der Session
+            $data['flashes'] = $this->sessionManager->getFlashes();
+        }
 
         \extract($systemVars);
 
@@ -59,25 +65,39 @@ final readonly class TemplateRenderer
         return new HtmlResponse($html, $statusCode);
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getGlobalSettings(): array
     {
+        $siteTitle = $this->config->get('site_title', 'Twokinds auf Deutsch');
+        $siteDesc  = $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.');
+
+        // Variablen für das Impressum!
+        $emailUser   = $this->config->get('email_user', '');
+        $emailDomain = $this->config->get('email_domain', '');
+
+        // Social Links für den Header
+        $patreon  = $this->config->get('social_patreon', '');
+        $inkbunny = $this->config->get('social_inkbunny', '');
+        $paypal   = $this->config->get('social_paypal', '');
+        $github   = $this->config->get('social_github', '');
+        $twokinds = $this->config->get('social_twokinds', '');
+        $gaId     = $this->config->get('google_analytics_id', '');
+
         return [
             'base_url'            => $this->config->getBaseUrl(),
-            'site_title'          => $this->config->get('site_title', 'Twokinds auf Deutsch'),
-            'site_description'    => $this->config->get('site_description', 'Die deutsche Übersetzung des Webcomics Twokinds.'),
+            'site_title'          => \is_string($siteTitle) ? $siteTitle : 'Twokinds auf Deutsch',
+            'site_description'    => \is_string($siteDesc) ? $siteDesc : 'Die deutsche Übersetzung des Webcomics Twokinds.',
             'app_version'         => $this->systemInfo->getCurrentVersion(),
-            'google_analytics_id' => $this->config->get('google_analytics_id', ''),
-
-            // Diese Variablenn für das Impressum!
-            'email_user'   => $this->config->get('email_user', ''),
-            'email_domain' => $this->config->get('email_domain', ''),
-
-            // Social Links für den Header
-            'social_patreon'  => $this->config->get('social_patreon', ''),
-            'social_inkbunny' => $this->config->get('social_inkbunny', ''),
-            'social_paypal'   => $this->config->get('social_paypal', ''),
-            'social_github'   => $this->config->get('social_github', ''),
-            'social_twokinds' => $this->config->get('social_twokinds', ''),
+            'google_analytics_id' => \is_string($gaId) ? $gaId : '',
+            'email_user'          => \is_string($emailUser) ? $emailUser : '',
+            'email_domain'        => \is_string($emailDomain) ? $emailDomain : '',
+            'social_patreon'      => \is_string($patreon) ? $patreon : '',
+            'social_inkbunny'     => \is_string($inkbunny) ? $inkbunny : '',
+            'social_paypal'       => \is_string($paypal) ? $paypal : '',
+            'social_github'       => \is_string($github) ? $github : '',
+            'social_twokinds'     => \is_string($twokinds) ? $twokinds : '',
         ];
     }
 }

@@ -12,7 +12,7 @@ use App\Contracts\System\RouteCacheInterface;
 final class ActionRegistry
 {
     /**
-     * @var array{exact: array<string, array<string, array{class: string, auth: bool}>>, dynamic: array<string, array<string, array{class: string, auth: bool}>>}
+     * @var array<string, mixed>
      */
     private array $routes = ['exact' => [], 'dynamic' => []];
 
@@ -29,12 +29,8 @@ final class ActionRegistry
 
         if ($this->config->get('admin_dev_mode', false) !== true) {
             $cached = $this->cache->load();
-            if ($cached !== null) {
-                // PHPStan zwingt uns, die Struktur blind zu vertrauen oder umständlich zu prüfen.
-                // Da der Cache aus der eigenen App generiert wird, ist @var hier legitim.
-                /** @var array{exact: array<string, array<string, array{class: string, auth: bool}>>, dynamic: array<string, array<string, array{class: string, auth: bool}>>} $cachedArr */
-                $cachedArr    = $cached;
-                $this->routes = $cachedArr;
+            if (\is_array($cached)) {
+                $this->routes = $cached;
 
                 return;
             }
@@ -42,6 +38,7 @@ final class ActionRegistry
 
         $rootPath = $this->config->get('root_path');
         $baseDir  = \rtrim(\is_string($rootPath) ? $rootPath : '', '/\\') . '/src/Application/Actions';
+
         $this->scanDirectoryRecursively($baseDir);
 
         $this->cache->save($this->routes);
@@ -95,19 +92,28 @@ final class ActionRegistry
     public function match(string $method, string $path): ?array
     {
         // Exact Match
-        if (isset($this->routes['exact'][$method][$path])) {
+        if (isset($this->routes['exact'][$method][$path]) && \is_array($this->routes['exact'][$method][$path])) {
             $r = $this->routes['exact'][$method][$path];
 
-            return ['class' => $r['class'], 'params' => [], 'requiresAuth' => $r['auth']];
+            $class = \is_string($r['class'] ?? null) ? $r['class'] : '';
+            $auth  = ! empty($r['auth']);
+
+            return ['class' => $class, 'params' => [], 'requiresAuth' => $auth];
         }
 
-        // Dynamic Parameter Match (Regex)
-        foreach ($this->routes['dynamic'][$method] ?? [] as $regex => $r) {
-            if (\preg_match($regex, $path, $matches) === 1) {
-                /** @var array<string, string> $params */
-                $params = \array_filter($matches, \is_string(...), \ARRAY_FILTER_USE_KEY);
+        $dynamics = $this->routes['dynamic'][$method] ?? [];
+        if (\is_array($dynamics)) {
+            // Dynamic Parameter Match (Regex)
+            foreach ($dynamics as $regex => $r) {
+                if (\is_string($regex) && \preg_match($regex, $path, $matches) === 1) {
+                    /** @var array<string, string> $params */
+                    $params = \array_filter($matches, \is_string(...), \ARRAY_FILTER_USE_KEY);
 
-                return ['class' => $r['class'], 'params' => $params, 'requiresAuth' => $r['auth']];
+                    $class = \is_array($r) && \is_string($r['class'] ?? null) ? $r['class'] : '';
+                    $auth  = \is_array($r) && ! empty($r['auth']);
+
+                    return ['class' => $class, 'params' => $params, 'requiresAuth' => $auth];
+                }
             }
         }
 

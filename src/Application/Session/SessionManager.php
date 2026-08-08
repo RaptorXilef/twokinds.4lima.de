@@ -85,7 +85,14 @@ final readonly class SessionManager implements AuthSessionInterface
      */
     public function getFormData(): array
     {
-        return isset($_SESSION['form_data']) && \is_array($_SESSION['form_data']) ? $_SESSION['form_data'] : [];
+        if (isset($_SESSION['form_data']) && \is_array($_SESSION['form_data'])) {
+            /** @var array<string, mixed> $data */
+            $data = $_SESSION['form_data'];
+
+            return $data;
+        }
+
+        return [];
     }
 
     public function clearFormData(): void
@@ -127,7 +134,14 @@ final readonly class SessionManager implements AuthSessionInterface
      */
     public function getAdminFilters(): array
     {
-        return isset($_SESSION['admin_filters']) && \is_array($_SESSION['admin_filters']) ? $_SESSION['admin_filters'] : [];
+        if (isset($_SESSION['admin_filters']) && \is_array($_SESSION['admin_filters'])) {
+            /** @var array<string, mixed> $data */
+            $data = $_SESSION['admin_filters'];
+
+            return $data;
+        }
+
+        return [];
     }
 
     public function clearAdminFilters(): void
@@ -155,7 +169,6 @@ final readonly class SessionManager implements AuthSessionInterface
         $_SESSION['admin_user'] = $newName;
     }
 
-    // --- AUTH & SECURITY ---
     public function regenerate(): void
     {
         \session_regenerate_id(true);
@@ -166,14 +179,23 @@ final readonly class SessionManager implements AuthSessionInterface
         $_SESSION = [];
         if (\ini_get('session.use_cookies') === '1') {
             $p = \session_get_cookie_params();
-            \setcookie(\session_name(), '', [
+
+            // PHPStan Strict Check für das Cookie-Array (Samesite kann fehlen)
+            $cookieParams = [
                 'expires'  => $this->clock->now()->getTimestamp() - 42000,
                 'path'     => (string) $p['path'],
                 'domain'   => (string) $p['domain'],
                 'secure'   => (bool) $p['secure'],
                 'httponly' => (bool) $p['httponly'],
-                'samesite' => isset($p['samesite']) ? (string) $p['samesite'] : 'Lax',
-            ]);
+            ];
+
+            if (isset($p['samesite'])) {
+                $cookieParams['samesite'] = (string) $p['samesite'];
+            } else {
+                $cookieParams['samesite'] = 'Lax';
+            }
+
+            \setcookie(\session_name(), '', $cookieParams);
         }
         \session_destroy();
 
@@ -214,7 +236,14 @@ final readonly class SessionManager implements AuthSessionInterface
      */
     public function getPermissions(): array
     {
-        return isset($_SESSION['compiled_permissions']) && \is_array($_SESSION['compiled_permissions']) ? $_SESSION['compiled_permissions'] : [];
+        if (isset($_SESSION['compiled_permissions']) && \is_array($_SESSION['compiled_permissions'])) {
+            /** @var array<string, bool> $perms */
+            $perms = $_SESSION['compiled_permissions'];
+
+            return $perms;
+        }
+
+        return [];
     }
 
     public function getUserId(): string
@@ -281,9 +310,14 @@ final readonly class SessionManager implements AuthSessionInterface
      */
     public function getFlashes(): array
     {
-        $flashes = isset($_SESSION['flashes']) && \is_array($_SESSION['flashes']) ? $_SESSION['flashes'] : [];
-        unset($_SESSION['flashes']);
+        if (isset($_SESSION['flashes']) && \is_array($_SESSION['flashes'])) {
+            /** @var array<string, array<int, string>> $flashes */
+            $flashes = $_SESSION['flashes'];
+            unset($_SESSION['flashes']);
 
-        return $flashes;
+            return $flashes;
+        }
+
+        return [];
     }
 }
