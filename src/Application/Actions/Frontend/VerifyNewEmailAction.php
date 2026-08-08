@@ -44,7 +44,7 @@ final readonly class VerifyNewEmailAction implements ViewActionInterface
             return new RedirectResponse('/profil');
         }
 
-        if ($this->userRepository->findByEmail($newEmailStr) !== null) {
+        if ($this->userRepository->findByEmail($newEmailStr) instanceof User) {
             $this->sessionManager->addFlash('error', 'Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.');
 
             return new RedirectResponse('/profil');
@@ -53,7 +53,7 @@ final readonly class VerifyNewEmailAction implements ViewActionInterface
         $userId = $this->sessionManager->getUserId();
         $user   = $this->userRepository->findById($userId);
 
-        if ($user !== null) {
+        if ($user instanceof User) {
             $updatedUser = new User(
                 $user->id,
                 $user->username,

@@ -59,7 +59,7 @@ final readonly class SaveCharacterGroupsAction implements ActionInterface
                 $newNames[] = $name;
 
                 $msRaw      = $groupData['manual_sort'] ?? false;
-                $manualSort = $msRaw === true || $msRaw === 1 || $msRaw === '1' || $msRaw === 'true' || $msRaw === 'on';
+                $manualSort = \in_array($msRaw, [true, 1, '1', 'true', 'on'], true);
 
                 $charIds = [];
                 // Eindeutige Zuweisung, falls ein Charakter versehentlich doppelt reingezogen wurde

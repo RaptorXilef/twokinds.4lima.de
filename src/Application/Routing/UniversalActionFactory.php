@@ -24,7 +24,10 @@ final readonly class UniversalActionFactory
     public function create(string $className): ActionInterface|ViewActionInterface|null
     {
         if (\class_exists($className)) {
-            return $this->container->get($className);
+            $instance = $this->container->get($className);
+            if ($instance instanceof ActionInterface || $instance instanceof ViewActionInterface) {
+                return $instance;
+            }
         }
 
         return null;

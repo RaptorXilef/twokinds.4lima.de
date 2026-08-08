@@ -69,7 +69,7 @@ final readonly class FeedService
             }
 
             $node = \dom_import_simplexml($item);
-            if ($node instanceof \DOMElement && $node->ownerDocument !== null) {
+            if ($node instanceof \DOMElement && $node->ownerDocument instanceof \DOMDocument) {
                 $node->appendChild($node->ownerDocument->createElement('description', \htmlspecialchars($descContent)));
             }
 

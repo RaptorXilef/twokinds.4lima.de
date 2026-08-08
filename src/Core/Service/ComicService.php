@@ -82,7 +82,7 @@ final readonly class ComicService
     public function deleteComic(ComicId $id): void
     {
         $existing = $this->comicRepository->findById($id);
-        if ($existing !== null) {
+        if ($existing instanceof ComicPage) {
             // VOR dem Löschen ein letztes Backup für den Papierkorb anlegen!
             $this->revisionRepository->createSnapshot($existing);
         }

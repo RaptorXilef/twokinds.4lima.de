@@ -59,7 +59,7 @@ final readonly class ResetPasswordAction implements ActionInterface
         }
 
         $user = $this->userRepository->findByEmail($email);
-        if ($user === null) {
+        if (! $user instanceof User) {
             return JsonResponse::error('Benutzer nicht gefunden.', 400);
         }
 

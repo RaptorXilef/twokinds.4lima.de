@@ -113,13 +113,13 @@ final readonly class RegisterAction implements ActionInterface
             return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
         }
 
-        if ($this->userRepository->findByUsername($username) !== null) {
+        if ($this->userRepository->findByUsername($username) instanceof User) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Dieser Benutzername ist bereits vergeben.', 400);
         }
 
-        if ($this->userRepository->findByEmail($email) !== null) {
+        if ($this->userRepository->findByEmail($email) instanceof User) {
             $this->rateLimiter->recordFailedAttempt($ip);
 
             return JsonResponse::error('Diese E-Mail-Adresse wird bereits verwendet.', 400);

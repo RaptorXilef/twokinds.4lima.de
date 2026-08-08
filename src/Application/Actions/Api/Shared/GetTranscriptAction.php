@@ -9,6 +9,7 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\Entity\ComicPage;
 use App\Core\ValueObject\ComicId;
 
 #[Route('GET', '/api/get_transcript')]
@@ -28,7 +29,7 @@ final readonly class GetTranscriptAction implements ActionInterface
         }
 
         $comic = $this->comicRepo->findById(new ComicId($idStr));
-        if ($comic === null) {
+        if (! $comic instanceof ComicPage) {
             return JsonResponse::error('Comic nicht gefunden.', 404);
         }
 

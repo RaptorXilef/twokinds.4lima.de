@@ -80,7 +80,7 @@ final readonly class SaveUserAction implements ActionInterface
                     return JsonResponse::error('Das Passwort muss mindestens 8 Zeichen lang sein.', 400);
                 }
                 $hash = \password_hash($password, \PASSWORD_DEFAULT);
-            } elseif ($existingUser === null) {
+            } elseif (! $existingUser instanceof User) {
                 return JsonResponse::error('Bei neuen Benutzern muss ein Passwort vergeben werden.', 400);
             }
 

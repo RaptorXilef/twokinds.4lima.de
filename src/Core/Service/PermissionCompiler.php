@@ -34,7 +34,6 @@ final class PermissionCompiler
                 continue;
             }
 
-            /** @var string|null $key */
             $key = isset($node['key']) && \is_string($node['key']) ? $node['key'] : null;
 
             if ($key !== null) {

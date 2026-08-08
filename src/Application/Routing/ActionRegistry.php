@@ -11,6 +11,9 @@ use App\Contracts\System\RouteCacheInterface;
 
 final class ActionRegistry
 {
+    /**
+     * @var array{exact: array<string, array<string, array{class: string, auth: bool}>>, dynamic: array<string, array<string, array{class: string, auth: bool}>>}
+     */
     private array $routes = ['exact' => [], 'dynamic' => []];
 
     public function __construct(
@@ -24,16 +27,21 @@ final class ActionRegistry
     {
         $this->cache->clearOld();
 
-        if (! $this->config->get('admin_dev_mode', false)) {
+        if ($this->config->get('admin_dev_mode', false) !== true) {
             $cached = $this->cache->load();
             if ($cached !== null) {
-                $this->routes = $cached;
+                // PHPStan zwingt uns, die Struktur blind zu vertrauen oder umständlich zu prüfen.
+                // Da der Cache aus der eigenen App generiert wird, ist @var hier legitim.
+                /** @var array{exact: array<string, array<string, array{class: string, auth: bool}>>, dynamic: array<string, array<string, array{class: string, auth: bool}>>} $cachedArr */
+                $cachedArr    = $cached;
+                $this->routes = $cachedArr;
 
                 return;
             }
         }
 
-        $baseDir = \rtrim((string) $this->config->get('root_path'), '/\\') . '/src/Application/Actions';
+        $rootPath = $this->config->get('root_path');
+        $baseDir  = \rtrim(\is_string($rootPath) ? $rootPath : '', '/\\') . '/src/Application/Actions';
         $this->scanDirectoryRecursively($baseDir);
 
         $this->cache->save($this->routes);
@@ -73,13 +81,17 @@ final class ActionRegistry
     {
         if (\str_contains($path, '{')) {
             // Wandelt "/comic/{id}" in "#^/comic/(?P<id>[^/]+)$#" um
-            $regex                                                  = \preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<\1>[^/]+)', $path);
+            $replaced                                               = \preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<\1>[^/]+)', $path);
+            $regex                                                  = \is_string($replaced) ? $replaced : '';
             $this->routes['dynamic'][$method]['#^' . $regex . '$#'] = ['class' => $className, 'auth' => $requiresAuth];
         } else {
             $this->routes['exact'][$method][$path] = ['class' => $className, 'auth' => $requiresAuth];
         }
     }
 
+    /**
+     * @return array{class: string, params: array<string, string>, requiresAuth: bool}|null
+     */
     public function match(string $method, string $path): ?array
     {
         // Exact Match
@@ -91,7 +103,8 @@ final class ActionRegistry
 
         // Dynamic Parameter Match (Regex)
         foreach ($this->routes['dynamic'][$method] ?? [] as $regex => $r) {
-            if (\preg_match($regex, $path, $matches)) {
+            if (\preg_match($regex, $path, $matches) === 1) {
+                /** @var array<string, string> $params */
                 $params = \array_filter($matches, \is_string(...), \ARRAY_FILTER_USE_KEY);
 
                 return ['class' => $r['class'], 'params' => $params, 'requiresAuth' => $r['auth']];

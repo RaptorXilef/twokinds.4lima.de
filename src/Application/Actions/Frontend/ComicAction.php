@@ -12,6 +12,7 @@ use App\Contracts\Storage\CharacterGroupRepositoryInterface;
 use App\Contracts\Storage\CharacterRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 
 #[Route('GET', '/')]
 #[Route('GET', '/comic')]
@@ -87,7 +88,7 @@ final readonly class ComicAction implements ActionInterface
         $comicUsers = [];
         foreach ($comic->userIds as $uid) {
             $u = $this->userRepo->findById($uid);
-            if ($u === null) {
+            if (! $u instanceof User) {
                 continue;
             }
 

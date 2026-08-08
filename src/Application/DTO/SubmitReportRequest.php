@@ -28,17 +28,22 @@ final readonly class SubmitReportRequest
         // JSON-Payload auslesen (wurde von der JsonBodyParserMiddleware in $request->input gelegt)
         $input = $request->post === [] ? $request->input : $request->post;
 
-        if (! empty($input['report_honeypot'])) {
+        if (isset($input['report_honeypot']) && $input['report_honeypot'] !== '') {
             // Honeypot wurde ausgefüllt -> Bot-Verdacht!
             // Wir werfen eine spezielle Exception, die die Action als "Erfolg" tarnt, um den Bot auszutricksen.
             throw ValidationException::withMessage('HONEYPOT_TRIGGERED');
         }
 
-        $comicId     = \trim((string) ($input['comic_id'] ?? '')) ?: null; // Leer zu null
-        $reportType  = \trim((string) ($input['report_type'] ?? ''));
-        $description = \trim((string) ($input['report_description'] ?? ''));
-        $suggestion  = \trim((string) ($input['report_transcript_suggestion'] ?? ''));
-        $wantsCredit = ! empty($input['wants_credit']); // NEU: Checkbox als boolean
+        $comicIdRaw = $input['comic_id'] ?? '';
+        $comicIdStr = \is_string($comicIdRaw) ? \trim($comicIdRaw) : '';
+        $comicId    = $comicIdStr !== '' ? $comicIdStr : null;
+
+        $reportType  = Sanitizer::string($input['report_type'] ?? '');
+        $description = Sanitizer::string($input['report_description'] ?? '');
+        $suggestion  = Sanitizer::html($input['report_transcript_suggestion'] ?? '');
+
+        $wcRaw       = $input['wants_credit'] ?? false;
+        $wantsCredit = \in_array($wcRaw, [true, 1, '1', 'true', 'on'], true);
 
         if ($reportType === '') {
             throw ValidationException::withMessage('Bitte wähle eine Fehler-Kategorie aus.');
@@ -53,10 +58,10 @@ final readonly class SubmitReportRequest
         }
 
         return new self(
-            comicId: Sanitizer::string($comicId),
-            reportType: Sanitizer::string($reportType),
-            description: Sanitizer::string($description),
-            transcriptSuggestion: Sanitizer::html($suggestion), // HTML erlaubt!
+            comicId: $comicId !== null ? Sanitizer::string($comicId) : null,
+            reportType: $reportType,
+            description: $description,
+            transcriptSuggestion: $suggestion, // HTML erlaubt!
             transcriptOriginal: Sanitizer::html($input['report_transcript_original'] ?? ''),
             submitterName: Sanitizer::string($input['submitter'] ?? 'Anonym'),
             wantsCredit: $wantsCredit,

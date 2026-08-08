@@ -12,6 +12,7 @@ use App\Contracts\Config\ConfigInterface;
 use App\Contracts\Mail\MailServiceInterface;
 use App\Contracts\Security\RateLimiterInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
+use App\Core\Entity\User;
 use App\Core\Service\MagicLinkService;
 
 #[Route('POST', '/api/frontend_forgot_password')]
@@ -57,7 +58,7 @@ final readonly class ForgotPasswordAction implements ActionInterface
         }
 
         $user = $this->userRepository->findByEmail($email);
-        if ($user !== null) {
+        if ($user instanceof User) {
             $tokenData = $this->magicLinkService->createToken($email);
             $resetUrl  = \rtrim($this->config->getBaseUrl(), '/') . '/passwort-reset?token=' . $tokenData['token'];
 

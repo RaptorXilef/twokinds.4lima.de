@@ -44,7 +44,7 @@ function setupMagicLinkTest(mixed $test): object
 
     $app->repo->expects($this->once())
         ->method('saveAll')
-        ->with($this->callback(function (array $links) {
+        ->with($this->callback(function (array $links): bool {
             if (\count($links) !== 1) {
                 return false;
             }

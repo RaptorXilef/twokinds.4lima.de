@@ -10,6 +10,10 @@ use App\Core\Security\Sanitizer;
 
 final readonly class SaveSingleComicRequest
 {
+    /**
+     * @param array<int, string> $characterIds
+     * @param array<int, string> $userIds
+     */
     private function __construct(
         public string $id,
         public string $type,
@@ -29,7 +33,7 @@ final readonly class SaveSingleComicRequest
         $post = $request->post;
 
         $id = Sanitizer::string($post['comic_id'] ?? '');
-        if (! \preg_match('/^\d{8}$/', $id)) {
+        if (\preg_match('/^\d{8}$/', $id) !== 1) {
             throw ValidationException::withMessage('Ungültige oder fehlende Comic-ID.');
         }
 
@@ -39,12 +43,16 @@ final readonly class SaveSingleComicRequest
         $chapterId  = Sanitizer::string($post['chapter_id'] ?? '');
 
         // Checkboxen oder Multi-Selects senden Arrays
-        $characterIds = (array) ($post['character_ids'] ?? []);
+        $characterIdsRaw = $post['character_ids'] ?? [];
+        $characterIdsArr = \is_array($characterIdsRaw) ? $characterIdsRaw : [];
         // Char-IDs säubern
-        $characterIds = \array_map(Sanitizer::string(...), $characterIds);
+        /** @var array<int, string> $characterIds */
+        $characterIds = \array_map(Sanitizer::string(...), $characterIdsArr);
 
-        $userIds = (array) ($post['user_ids'] ?? []);
-        $userIds = \array_map(Sanitizer::string(...), $userIds);
+        $userIdsRaw = $post['user_ids'] ?? [];
+        $userIdsArr = \is_array($userIdsRaw) ? $userIdsRaw : [];
+        /** @var array<int, string> $userIds */
+        $userIds = \array_map(Sanitizer::string(...), $userIdsArr);
 
         // Flexible URL-Behandlung für Originalbilder
         $originalUrl = Sanitizer::string($post['url_originalbild'] ?? '');

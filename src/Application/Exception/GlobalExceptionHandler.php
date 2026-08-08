@@ -36,7 +36,7 @@ final readonly class GlobalExceptionHandler
 
         // Verwandelt auch klassische PHP-Warnungen/Fehler in Exceptions, damit sie geloggt werden
         \set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
-            if (! (\error_reporting() & $errno)) {
+            if ((\error_reporting() & $errno) === 0) {
                 return false;
             }
 
@@ -55,12 +55,20 @@ final readonly class GlobalExceptionHandler
         $this->logger->logThrowable($exception);
 
         // 2. Prüfen, ob wir im Dev-Modus sind (dann wollen wir die echten Fehler sehen!)
-        $isDev = (bool) $this->config->get('admin_dev_mode', false);
+        $isDev = $this->config->get('admin_dev_mode', false) === true;
 
-        // FIX: Nur ECHTE API-Calls (JSON Accept/Content-Type oder /api/ Route) als JSON beantworten, keine normalen HTML-Formulare!
-        $isApi = \str_contains($_SERVER['SCRIPT_NAME'] ?? '', '/api/')
-            || (isset($_SERVER['HTTP_ACCEPT']) && \str_contains($_SERVER['HTTP_ACCEPT'], 'application/json'))
-            || (isset($_SERVER['CONTENT_TYPE']) && \str_contains($_SERVER['CONTENT_TYPE'], 'application/json'));
+        $scriptNameRaw = $_SERVER['SCRIPT_NAME'] ?? '';
+        $scriptName    = \is_string($scriptNameRaw) ? $scriptNameRaw : '';
+
+        $acceptRaw = $_SERVER['HTTP_ACCEPT'] ?? '';
+        $acceptStr = \is_string($acceptRaw) ? $acceptRaw : '';
+
+        $contentRaw = $_SERVER['CONTENT_TYPE'] ?? '';
+        $contentStr = \is_string($contentRaw) ? $contentRaw : '';
+
+        $isApi = \str_contains($scriptName, '/api/')
+            || ($acceptStr !== '' && \str_contains($acceptStr, 'application/json'))
+            || ($contentStr !== '' && \str_contains($contentStr, 'application/json'));
 
         if ($isApi) {
             $msg = $isDev ? $exception->getMessage() : 'Ein interner Serverfehler ist aufgetreten.';
@@ -84,7 +92,9 @@ final readonly class GlobalExceptionHandler
             @\http_response_code(500);
         }
 
-        $siteTitle    = \htmlspecialchars((string) $this->config->get('site_title', 'Twokinds auf Deutsch'));
+        $titleRaw  = $this->config->get('site_title', 'Twokinds auf Deutsch');
+        $siteTitle = \is_string($titleRaw) ? $titleRaw : 'Twokinds auf Deutsch';
+
         $errorTitle   = 'Ups! Etwas ist schiefgelaufen';
         $errorMessage = 'Das System hat einen unerwarteten Fehler festgestellt. Keine Sorge, die Administratoren wurden automatisch benachrichtigt um das Problem zu beheben.';
 
@@ -99,13 +109,14 @@ final readonly class GlobalExceptionHandler
             );
         }
 
+        // TODO Inline CSS in SCSS auslagern oder SCSS nutzen!
         ?>
         <!DOCTYPE html>
         <html lang="de">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Systemfehler - <?php echo $siteTitle; ?></title>
+            <title>Systemfehler - <?php echo \htmlspecialchars($siteTitle); ?></title>
             <style>
                 body { background:#f8fafc; font-family:sans-serif; display:flex; justify-content:center; padding:40px 20px; }
                 .error-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 600px; width: 100%; border-top: 5px solid #e74c3c; }

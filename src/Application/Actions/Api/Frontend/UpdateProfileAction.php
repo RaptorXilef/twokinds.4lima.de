@@ -45,7 +45,7 @@ final readonly class UpdateProfileAction implements ActionInterface
         }
 
         $user = $this->userRepository->findById($userId);
-        if ($user === null) {
+        if (! $user instanceof User) {
             return JsonResponse::error('Benutzer nicht gefunden.', 404);
         }
 
@@ -55,13 +55,13 @@ final readonly class UpdateProfileAction implements ActionInterface
         // Aktion: Newsletter
         if ($actionType === 'newsletter') {
             $wnRaw     = $request->post['wants_newsletter'] ?? false;
-            $wantsNews = $wnRaw === true || $wnRaw === 1 || $wnRaw === '1' || $wnRaw === 'true' || $wnRaw === 'on';
+            $wantsNews = \in_array($wnRaw, [true, 1, '1', 'true', 'on'], true);
 
             $wtRaw      = $request->post['wants_newsletter_transcript'] ?? false;
-            $wantsTrans = $wtRaw === true || $wtRaw === 1 || $wtRaw === '1' || $wtRaw === 'true' || $wtRaw === 'on';
+            $wantsTrans = \in_array($wtRaw, [true, 1, '1', 'true', 'on'], true);
 
             $wrRaw    = $request->post['wants_notification_report'] ?? false;
-            $wantsRep = $wrRaw === true || $wrRaw === 1 || $wrRaw === '1' || $wrRaw === 'true' || $wrRaw === 'on';
+            $wantsRep = \in_array($wrRaw, [true, 1, '1', 'true', 'on'], true);
 
             $updated = new User($user->id, $user->username, $user->email, $user->passwordHash, $user->roleId, $user->createdAt, $wantsNews, $wantsTrans, $wantsRep);
             $this->userRepository->save($updated);
@@ -94,7 +94,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             if (\in_array($lowerName, $restricted, true)) {
                 return JsonResponse::error('Dieser Benutzername ist reserviert.', 400);
             }
-            if ($this->userRepository->findByUsername($newName) !== null) {
+            if ($this->userRepository->findByUsername($newName) instanceof User) {
                 return JsonResponse::error('Dieser Benutzername ist leider schon vergeben.', 400);
             }
 
@@ -145,7 +145,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             if ($newEmailStr === $user->email->value) {
                 return JsonResponse::error('Das ist bereits deine aktuelle E-Mail-Adresse.', 400);
             }
-            if ($this->userRepository->findByEmail($newEmailStr) !== null) {
+            if ($this->userRepository->findByEmail($newEmailStr) instanceof User) {
                 return JsonResponse::error('Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet.', 400);
             }
 
@@ -178,7 +178,7 @@ final readonly class UpdateProfileAction implements ActionInterface
                     }
 
                     // Wir wissen jetzt sicher, dass es ein string ist.
-                    if (!\is_string($cleanLink)) {
+                    if (! \is_string($cleanLink)) {
                         continue;
                     }
 
@@ -187,7 +187,7 @@ final readonly class UpdateProfileAction implements ActionInterface
             }
 
             $pbRaw           = $request->post['public_bookmarks'] ?? false;
-            $publicBookmarks = $pbRaw === true || $pbRaw === 1 || $pbRaw === '1' || $pbRaw === 'true' || $pbRaw === 'on';
+            $publicBookmarks = \in_array($pbRaw, [true, 1, '1', 'true', 'on'], true);
 
             $updated = new User(
                 $user->id,

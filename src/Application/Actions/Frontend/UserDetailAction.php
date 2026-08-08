@@ -13,6 +13,7 @@ use App\Contracts\Storage\BookmarkRepositoryInterface;
 use App\Contracts\Storage\ComicRepositoryInterface;
 use App\Contracts\Storage\UserRepositoryInterface;
 use App\Core\Entity\Bookmark;
+use App\Core\Entity\User;
 
 #[Route('GET', '/user/{id}')]
 final readonly class UserDetailAction implements ActionInterface
@@ -36,7 +37,7 @@ final readonly class UserDetailAction implements ActionInterface
 
         // Wir suchen jetzt nach der fixen ID, nicht mehr nach dem Namen!
         $user = $this->userRepo->findById($id);
-        if ($user === null) {
+        if (! $user instanceof User) {
             return $this->renderer->render('pages/frontend/404', ['pageTitle' => 'Benutzer nicht gefunden'], 404);
         }
 

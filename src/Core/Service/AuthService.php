@@ -65,7 +65,7 @@ final readonly class AuthService
 
         // 2. Regulären User suchen (via Username ODER E-Mail)
         $user = $this->userRepository->findByEmail($identifier);
-        if ($user === null) {
+        if (! $user instanceof User) {
             $user = $this->userRepository->findByUsername($identifier);
         }
 
@@ -114,7 +114,7 @@ final readonly class AuthService
         }
 
         $user = $this->userRepository->findById($userId);
-        if ($user === null) {
+        if (! $user instanceof User) {
             $this->logout();
 
             throw new \RuntimeException('Session abgelaufen oder Benutzer gelöscht.');

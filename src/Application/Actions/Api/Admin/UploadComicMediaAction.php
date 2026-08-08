@@ -48,10 +48,10 @@ final readonly class UploadComicMediaAction implements ActionInterface
             $comic   = $this->comicRepo->findById($comicId);
 
             $fRaw  = $request->post['force'] ?? false;
-            $force = $fRaw === true || $fRaw === 1 || $fRaw === '1' || $fRaw === 'true' || $fRaw === 'on';
+            $force = \in_array($fRaw, [true, 1, '1', 'true', 'on'], true);
 
             // Wenn Comic nicht existiert UND kein force-Flag gesetzt ist, brich ab und frag nach
-            if ($comic === null && ! $force) {
+            if (! $comic instanceof ComicPage && ! $force) {
                 return JsonResponse::sendPayload([
                     'success' => false,
                     'error'   => 'COMIC_NOT_FOUND',
@@ -76,7 +76,7 @@ final readonly class UploadComicMediaAction implements ActionInterface
             // Gesamte Datei-System und Skalierungslogik an Infrastruktur delegiert!
             $this->mediaService->processAndStoreComicMedia($comicIdStr, $tmpHires, $tmpLowres);
 
-            if ($comic !== null) {
+            if ($comic instanceof ComicPage) {
                 $updatedComic = new ComicPage(
                     id: $comic->id,
                     type: $comic->type,

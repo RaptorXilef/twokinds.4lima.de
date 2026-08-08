@@ -30,23 +30,23 @@ final readonly class SaveSingleCharacterRequest
     {
         $data = $request->post;
 
-        if (empty($data['name'])) {
+        if (! isset($data['name']) || $data['name'] === '') {
             throw new ValidationException('Der Name des Charakters darf nicht leer sein.');
         }
 
         return new self(
             id: Sanitizer::string($data['id'] ?? 'new'),
             name: Sanitizer::string($data['name']),
-            picUrl: Sanitizer::string($data['pic_url'] ?? '') ?: null,
-            description: Sanitizer::html($data['description'] ?? '') ?: null, // HTML erlaubt
-            fullName: Sanitizer::string($data['full_name'] ?? '') ?: null,
-            altNames: Sanitizer::string($data['alt_names'] ?? '') ?: null,
-            gender: Sanitizer::string($data['gender'] ?? '') ?: null,
-            age: Sanitizer::string($data['age'] ?? '') ?: null,
-            rank: Sanitizer::string($data['rank'] ?? '') ?: null,
-            species: Sanitizer::string($data['species'] ?? '') ?: null,
-            subspecies: Sanitizer::string($data['subspecies'] ?? '') ?: null,
-            languages: Sanitizer::string($data['languages'] ?? '') ?: null,
+            picUrl: isset($data['pic_url']) && $data['pic_url'] !== '' ? Sanitizer::string($data['pic_url']) : null,
+            description: isset($data['description']) && $data['description'] !== '' ? Sanitizer::html($data['description']) : null, // HTML erlaubt
+            fullName: isset($data['full_name']) && $data['full_name'] !== '' ? Sanitizer::string($data['full_name']) : null,
+            altNames: isset($data['alt_names']) && $data['alt_names'] !== '' ? Sanitizer::string($data['alt_names']) : null,
+            gender: isset($data['gender']) && $data['gender'] !== '' ? Sanitizer::string($data['gender']) : null,
+            age: isset($data['age']) && $data['age'] !== '' ? Sanitizer::string($data['age']) : null,
+            rank: isset($data['rank']) && $data['rank'] !== '' ? Sanitizer::string($data['rank']) : null,
+            species: isset($data['species']) && $data['species'] !== '' ? Sanitizer::string($data['species']) : null,
+            subspecies: isset($data['subspecies']) && $data['subspecies'] !== '' ? Sanitizer::string($data['subspecies']) : null,
+            languages: isset($data['languages']) && $data['languages'] !== '' ? Sanitizer::string($data['languages']) : null,
         );
     }
 }

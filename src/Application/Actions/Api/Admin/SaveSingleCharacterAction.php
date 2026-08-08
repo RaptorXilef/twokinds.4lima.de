@@ -107,7 +107,7 @@ final readonly class SaveSingleCharacterAction implements ActionInterface
                 if ($refSheetsUrlsStr !== '') {
                     $refSheets = \array_values(\array_filter(
                         \array_map(fn ($s): string => \str_replace(' ', '_', \trim($s)), \explode(',', $refSheetsUrlsStr)),
-                        fn ($v) => $v !== '',
+                        fn ($v): bool => $v !== '',
                     ));
                 }
             }

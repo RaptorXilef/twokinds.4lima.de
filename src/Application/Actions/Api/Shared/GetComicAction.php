@@ -10,6 +10,7 @@ use App\Application\Contracts\ActionInterface;
 use App\Application\Http\ServerRequest;
 use App\Application\Response\JsonResponse;
 use App\Contracts\Storage\ComicRepositoryInterface;
+use App\Core\Entity\ComicPage;
 use App\Core\Service\AuthService;
 use App\Core\ValueObject\CharacterId;
 use App\Core\ValueObject\ComicId;
@@ -39,7 +40,7 @@ final readonly class GetComicAction implements ActionInterface
 
         try {
             $comic = $this->comicRepo->findById(new ComicId($idStr));
-            if ($comic === null) {
+            if (! $comic instanceof ComicPage) {
                 return JsonResponse::error('Comic nicht gefunden.', 404);
             }
 

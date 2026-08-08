@@ -65,7 +65,7 @@ function setupCharacterTest(mixed $test): object
     // Group1 muss gespeichert werden, da char_0001 entfernt wird. Group2 bleibt unberührt.
     $app->groupRepo->expects($this->once())
         ->method('save')
-        ->with($this->callback(fn (CharacterGroup $savedGroup) => $savedGroup->name === 'Group1'
+        ->with($this->callback(fn (CharacterGroup $savedGroup): bool => $savedGroup->name === 'Group1'
                 && \count($savedGroup->characterIds) === 1
                 && $savedGroup->characterIds[0]->value === $otherCharId->value));
 
