@@ -116,17 +116,18 @@ final class ActionRegistry
         if (\is_array($dynamics)) {
             // Dynamic Parameter Match (Regex)
             foreach ($dynamics as $regex => $r) {
-                if (\preg_match($regex, $path, $matches) === 1) {
-                    // Sauberes Aufbauen von array<string, string> für Intelephense (P1131)
+                if (\is_string($regex) && \preg_match($regex, $path, $matches) === 1) {
                     $params = [];
                     foreach ($matches as $k => $v) {
-                        if (!\is_string($k) || !\is_string($v)) {
+                        // $v ist von preg_match garantiert ein String, daher prüfen wir nur $k
+                        if (! \is_string($k)) {
                             continue;
                         }
 
                         $params[$k] = $v;
                     }
 
+                    // $r ist durch den DocBlock oben als Array bekannt
                     $class = isset($r['class']) && \is_string($r['class']) ? $r['class'] : '';
                     $auth  = isset($r['auth']) && $r['auth'];
 

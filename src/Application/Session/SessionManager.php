@@ -228,7 +228,7 @@ final readonly class SessionManager implements AuthSessionInterface
     }
 
     /**
-     * @param array<string, bool> $perms
+     * @param array<mixed> $perms
      */
     public function setPermissions(array $perms): void
     {
