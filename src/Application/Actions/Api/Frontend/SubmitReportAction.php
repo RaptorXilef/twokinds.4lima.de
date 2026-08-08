@@ -38,9 +38,14 @@ final readonly class SubmitReportAction implements ActionInterface
             $file = $request->files['report_screenshot'] ?? null;
 
             if (\is_array($file) && isset($file['error']) && $file['error'] === \UPLOAD_ERR_OK) {
+                /** @var array<string, mixed> $validFile */
+                $validFile = [];
+                foreach ($file as $k => $v) {
+                    $validFile[(string) $k] = $v;
+                }
+
                 // Logik an Infrastruktur abgegeben
-                /** @var array<string, mixed> $file */
-                $screenshotUrl = $this->mediaService->saveReportScreenshot($file);
+                $screenshotUrl = $this->mediaService->saveReportScreenshot($validFile);
             }
 
             // NEU: Wenn eingeloggt, ID auslesen

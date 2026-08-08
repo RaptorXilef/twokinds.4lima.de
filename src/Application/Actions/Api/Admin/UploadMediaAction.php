@@ -33,9 +33,14 @@ final readonly class UploadMediaAction implements ActionInterface
             return JsonResponse::error('Keine Dateien hochgeladen.', 400);
         }
 
+        /** @var array<string, mixed> $validFiles */
+        $validFiles = [];
+        foreach ($files as $k => $v) {
+            $validFiles[(string) $k] = $v;
+        }
+
         // Infrastruktur erledigt den kompletten Upload, Ordner-Check und Skalierung!
-        /** @var array<string, mixed> $files */
-        $processedCount = $this->mediaService->processMassProfileUpload($files);
+        $processedCount = $this->mediaService->processMassProfileUpload($validFiles);
 
         return JsonResponse::success(['message' => "{$processedCount} Bild(er) erfolgreich verarbeitet und hochgeladen!"]);
     }

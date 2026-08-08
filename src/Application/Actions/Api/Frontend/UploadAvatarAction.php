@@ -47,9 +47,14 @@ final readonly class UploadAvatarAction implements ActionInterface
                 return JsonResponse::error('Keine Datei oder fehlerhafter Upload.', 400);
             }
 
+            /** @var array<string, mixed> $validFile */
+            $validFile = [];
+            foreach ($file as $k => $v) {
+                $validFile[(string) $k] = $v;
+            }
+
             // Gesamte GD/Verzeichnis Logik delegiert!
-            /** @var array<string, mixed> $file */
-            $newFilename = $this->mediaService->processAvatarUpload($userId, $user->avatarUrl, $file);
+            $newFilename = $this->mediaService->processAvatarUpload($userId, $user->avatarUrl, $validFile);
 
             $updatedUser = new User(
                 $user->id,

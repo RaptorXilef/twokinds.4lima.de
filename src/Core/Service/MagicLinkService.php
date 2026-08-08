@@ -55,10 +55,8 @@ final readonly class MagicLinkService
         $now = $this->clock->now();
 
         $magicLink = $links[$token] ?? null;
-        if ($magicLink instanceof MagicLink && !$magicLink->isExpired($now)) {
-            $email = $magicLink->email;
-
-            return $email instanceof EmailAddress ? $email->value : (string) $email;
+        if ($magicLink !== null && !$magicLink->isExpired($now)) {
+            return $magicLink->email->value;
         }
 
         return null;
@@ -72,10 +70,6 @@ final readonly class MagicLinkService
         $foundEmail = null;
 
         foreach ($links as $token => $magicLink) {
-            if (!$magicLink instanceof MagicLink) {
-                continue;
-            }
-
             if ($magicLink->isExpired($now)) {
                 unset($links[$token]);
 
@@ -86,13 +80,12 @@ final readonly class MagicLinkService
             $isLongTokenMatch = \strlen($strToken) === \strlen($trimmed)
                                 && \hash_equals(\strtolower($strToken), \strtolower($trimmed));
 
-            $strCode = \is_string($magicLink->code) ? $magicLink->code : (string) $magicLink->code;
+            $strCode = $magicLink->code;
             $isShortCodeMatch = \strlen($strCode) === \strlen($trimmed)
                                 && \hash_equals(\strtoupper($strCode), \strtoupper($trimmed));
 
             if ($isLongTokenMatch || $isShortCodeMatch) {
-                $email = $magicLink->email;
-                $foundEmail = $email instanceof EmailAddress ? $email->value : (string) $email;
+                $foundEmail = $magicLink->email->value;
                 unset($links[$token]);
 
                 break;
