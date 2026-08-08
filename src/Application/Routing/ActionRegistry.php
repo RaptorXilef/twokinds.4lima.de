@@ -103,7 +103,7 @@ final class ActionRegistry
     public function match(string $method, string $path): ?array
     {
         // Exact Match
-        if (isset($this->routes['exact'][$method][$path])) {
+        if (isset($this->routes['exact'][$method]) && \is_array($this->routes['exact'][$method]) && isset($this->routes['exact'][$method][$path])) {
             $r = $this->routes['exact'][$method][$path];
 
             $class = \is_string($r['class']) ? $r['class'] : '';
@@ -116,18 +116,19 @@ final class ActionRegistry
         if (\is_array($dynamics)) {
             // Dynamic Parameter Match (Regex)
             foreach ($dynamics as $regex => $r) {
-                if (\is_string($regex) && \preg_match($regex, $path, $matches) === 1) {
-
+                if (\preg_match($regex, $path, $matches) === 1) {
                     // Sauberes Aufbauen von array<string, string> für Intelephense (P1131)
                     $params = [];
                     foreach ($matches as $k => $v) {
-                        if (\is_string($k) && \is_string($v)) {
-                            $params[$k] = $v;
+                        if (!\is_string($k) || !\is_string($v)) {
+                            continue;
                         }
+
+                        $params[$k] = $v;
                     }
 
-                    $class = \is_array($r) && isset($r['class']) && \is_string($r['class']) ? $r['class'] : '';
-                    $auth  = \is_array($r) && isset($r['auth']) && $r['auth'] === true;
+                    $class = isset($r['class']) && \is_string($r['class']) ? $r['class'] : '';
+                    $auth  = isset($r['auth']) && $r['auth'];
 
                     return ['class' => $class, 'params' => $params, 'requiresAuth' => $auth];
                 }

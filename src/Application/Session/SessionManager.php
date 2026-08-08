@@ -182,24 +182,22 @@ final readonly class SessionManager implements AuthSessionInterface
     {
         $_SESSION = [];
         if (\ini_get('session.use_cookies') === '1') {
+            // PHPStan Level 9 versteht exakt die Signatur von session_get_cookie_params.
+            // Daher sind Casts und isset() hier komplett überflüssig!
             $p = \session_get_cookie_params();
 
             $cookieParams = [
                 'expires'  => $this->clock->now()->getTimestamp() - 42000,
-                'path'     => (string) $p['path'],
-                'domain'   => (string) $p['domain'],
-                'secure'   => (bool) $p['secure'],
-                'httponly' => (bool) $p['httponly'],
+                'path'     => $p['path'],
+                'domain'   => $p['domain'],
+                'secure'   => $p['secure'],
+                'httponly' => $p['httponly'],
+                'samesite' => $p['samesite'],
             ];
 
-            if (isset($p['samesite'])) {
-                $cookieParams['samesite'] = (string) $p['samesite'];
-            } else {
-                $cookieParams['samesite'] = 'Lax';
-            }
-
+            // session_name gibt in PHP 8 einen non-falsy-string zurück
             $sessionName = \session_name();
-            $name        = \is_string($sessionName) && $sessionName !== '' ? $sessionName : 'PHPSESSID';
+            $name        = \is_string($sessionName) ? $sessionName : 'PHPSESSID';
 
             \setcookie($name, '', $cookieParams);
         }
@@ -230,7 +228,7 @@ final readonly class SessionManager implements AuthSessionInterface
     }
 
     /**
-     * @param array<mixed> $perms
+     * @param array<string, bool> $perms
      */
     public function setPermissions(array $perms): void
     {
