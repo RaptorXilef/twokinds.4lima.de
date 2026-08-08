@@ -22,7 +22,7 @@ final class JsonHelper implements JsonHelperInterface
      *
      * @param string $json Der rohe JSON-String.
      *
-     * @return array Assoziatives Daten-Array.
+     * @return array<array-key, mixed> Assoziatives Daten-Array.
      */
     public function decode(string $json): array
     {
@@ -39,12 +39,15 @@ final class JsonHelper implements JsonHelperInterface
         $jsonWithoutComments = \preg_replace($pattern, '$1', $json);
 
         try {
-            return \json_decode(
+            /** @var array<array-key, mixed> $decoded */
+            $decoded = \json_decode(
                 (string) $jsonWithoutComments,
                 true,
                 512,
                 \JSON_THROW_ON_ERROR,
             );
+
+            return \is_array($decoded) ? $decoded : [];
         } catch (JsonException $e) {
             throw new RuntimeException('Kritischer Fehler: JSON-Datenstruktur ist korrupt (' .
                 $e->getMessage() .
@@ -57,7 +60,7 @@ final class JsonHelper implements JsonHelperInterface
      *
      * @param string $path Vollständiger Dateipfad.
      *
-     * @return array Assoziatives Daten-Array.
+     * @return array<array-key, mixed> Assoziatives Daten-Array.
      */
     public function read(string $path): array
     {

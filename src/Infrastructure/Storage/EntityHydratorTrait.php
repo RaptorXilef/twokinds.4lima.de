@@ -17,7 +17,9 @@ trait EntityHydratorTrait
     /**
      * Extrahiert ein Objekt (Entity) automatisch in ein Array für die Datenbank (snake_case).
      *
-     * @param array $overrides Manuelle Werte für Spalten, die vom Standard abweichen (z.B. komplexe JSON Arrays).
+     * @param array<string, mixed> $overrides Manuelle Werte für Spalten, die vom Standard abweichen (z.B. komplexe JSON Arrays).
+     *
+     * @return array<string, mixed>
      */
     protected function extractEntity(object $entity, array $overrides = []): array
     {
@@ -73,7 +75,8 @@ trait EntityHydratorTrait
      * Baut aus einem Datenbank-Row (snake_case) vollautomatisch dein Objekt zusammen.
      *
      * @param class-string<T> $className
-     * @param array $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
+     * @param array<string, mixed> $row
+     * @param array<string, mixed> $overrides Werte, die direkt in den Konstruktor gegeben werden sollen (camelCase keys).
      *
      * @return T
      *
@@ -131,16 +134,19 @@ trait EntityHydratorTrait
             }
 
             if (\in_array($typeName, [DateTimeImmutable::class, DateTime::class, DateTimeInterface::class], true)) {
-                $args[] = new DateTimeImmutable($rawValue);
+                $timeStr = \is_scalar($rawValue) ? (string) $rawValue : 'now';
+                $args[] = new DateTimeImmutable($timeStr);
             } elseif ($typeName === 'array') {
-                $args[] = \json_decode((string) $rawValue, true) ?? [];
+                $jsonStr = \is_scalar($rawValue) ? (string) $rawValue : '';
+                $args[] = \json_decode($jsonStr, true) ?? [];
             } elseif ($typeName === 'bool') {
                 $args[] = (bool) $rawValue;
             } elseif ($typeName === 'int') {
-                $args[] = (int) $rawValue;
+                $args[] = \is_scalar($rawValue) ? (int) $rawValue : 0;
             } elseif ($typeName !== null && \class_exists($typeName)) {
                 // ValueObjects (wie CharacterId, Username, EmailAddress) instanziieren
-                $args[] = new $typeName($rawValue);
+                $voStr = \is_scalar($rawValue) ? (string) $rawValue : '';
+                $args[] = new $typeName($voStr);
             } else {
                 $args[] = $rawValue;
             }

@@ -10,8 +10,8 @@ trait DynamicSqlTrait
      * Generiert und führt ein dynamisches UPSERT (Insert on Duplicate Key Update) aus.
      *
      * @param string $table Der Name der Tabelle.
-     * @param array $data Assoziatives Array mit Spaltennamen als Keys und den entsprechenden Werten.
-     * @param array $excludeUpdate Array mit Spaltennamen, die beim UPDATE ignoriert werden sollen (z.B. 'id', 'created_at').
+     * @param array<string, mixed> $data Assoziatives Array mit Spaltennamen als Keys und den entsprechenden Werten.
+     * @param array<int, string> $excludeUpdate Array mit Spaltennamen, die beim UPDATE ignoriert werden sollen (z.B. 'id', 'created_at').
      */
     protected function executeUpsert(string $table, array $data, array $excludeUpdate = ['id']): bool
     {
