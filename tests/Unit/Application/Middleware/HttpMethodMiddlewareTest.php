@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+namespace Tests\Unit\Application\Middleware;
+
 use App\Application\Http\ServerRequest;
 use App\Application\Middleware\HttpMethodMiddleware;
 use App\Application\Response\JsonResponse;
+use RuntimeException;
 
 \uses()->group('application', 'middleware');
 
@@ -30,8 +33,8 @@ use App\Application\Response\JsonResponse;
     $middleware = new HttpMethodMiddleware(['POST']);
     $request = new ServerRequest(server: ['REQUEST_METHOD' => 'GET']);
 
-    $next = function (): never {
-        $this->fail('The $next closure should not be called if the method is blocked.');
+    $next = function (ServerRequest $req): string {
+        throw new RuntimeException('The $next closure should not be called if the method is blocked.');
     };
 
     $result = $middleware->process($request, $next);

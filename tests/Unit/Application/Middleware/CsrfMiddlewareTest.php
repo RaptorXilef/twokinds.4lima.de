@@ -2,17 +2,21 @@
 
 declare(strict_types=1);
 
+namespace Tests\Unit\Application\Middleware;
+
 use App\Application\Http\ServerRequest;
 use App\Application\Middleware\CsrfMiddleware;
 use App\Application\Response\RedirectResponse;
 use App\Application\Session\SessionManager;
+use Closure;
 use PHPUnit\Framework\MockObject\MockObject;
+use RuntimeException;
 
 \uses()->group('application', 'middleware', 'security');
 
 function setupCsrfTest(mixed $test): object
 {
-    $mock = \Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
+    $mock = Closure::bind(fn (string $c): MockObject => $test->createMock($c), $test, $test::class);
 
     return new class($mock(SessionManager::class)) {
         public CsrfMiddleware $middleware;
@@ -26,7 +30,7 @@ function setupCsrfTest(mixed $test): object
 }
 
 \it('passes GET requests without checking CSRF token', function (): void {
-    $app = \setupCsrfTest($this);
+    $app = setupCsrfTest($this);
     $request = new ServerRequest(server: ['REQUEST_METHOD' => 'GET']);
 
     $app->sessionManager->expects($this->never())->method('getCsrfToken');
@@ -45,7 +49,7 @@ function setupCsrfTest(mixed $test): object
 })->covers(CsrfMiddleware::class);
 
 \it('passes POST request with valid CSRF token in POST body', function (): void {
-    $app = \setupCsrfTest($this);
+    $app = setupCsrfTest($this);
     $request = new ServerRequest(
         post: ['csrf_token' => 'valid_token_123'],
         server: ['REQUEST_METHOD' => 'POST'],
@@ -61,8 +65,7 @@ function setupCsrfTest(mixed $test): object
 })->covers(CsrfMiddleware::class);
 
 \it('passes POST request with valid CSRF token in HTTP Header', function (): void {
-    $app = \setupCsrfTest($this);
-    // Header keys mapped by the ServerRequest class follow 'HTTP_X_...' format.
+    $app = setupCsrfTest($this);
     $request = new ServerRequest(
         server: [
             'REQUEST_METHOD' => 'POST',
@@ -80,7 +83,7 @@ function setupCsrfTest(mixed $test): object
 })->covers(CsrfMiddleware::class);
 
 \it('blocks POST request with invalid CSRF token, saves form data and returns redirect', function (): void {
-    $app = \setupCsrfTest($this);
+    $app = setupCsrfTest($this);
     $request = new ServerRequest(
         post: ['csrf_token' => 'invalid_malicious_token', 'action' => 'save', 'username' => 'test_user'],
         server: ['REQUEST_METHOD' => 'POST'],
@@ -90,7 +93,6 @@ function setupCsrfTest(mixed $test): object
         ->method('getCsrfToken')
         ->willReturn('valid_token_123');
 
-    // Ensure 'csrf_token' and 'action' are unset before saving form data
     $app->sessionManager->expects($this->once())
         ->method('setFormData')
         ->with(['username' => 'test_user']);
@@ -99,8 +101,8 @@ function setupCsrfTest(mixed $test): object
         ->method('addFlash')
         ->with('error', $this->stringContains('Ihre Sitzung ist abgelaufen'));
 
-    $next = function (): never {
-        $this->fail('The $next closure should not be called on CSRF validation failure.');
+    $next = function (ServerRequest $req): string {
+        throw new RuntimeException('The $next closure should not be called on CSRF validation failure.');
     };
 
     $result = $app->middleware->process($request, $next);
