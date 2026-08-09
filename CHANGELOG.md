@@ -1,5 +1,38 @@
 # Changelog
 
+## [6.16.3](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.2...v6.16.3) (2026-08-09)
+
+### 🐛 Bug Fixes
+
+* **app:** Resolve QA warnings across Admin and Frontend APIs ([e840cd7](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e840cd72f86e9dfb3bd96b4b68cd6425168900d9)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **app:** Resolve QA warnings in Application layer middleware and core exceptions ([79b9cd1](https://github.com/RaptorXilef/twokinds.4lima.de/commit/79b9cd10780006f7432a4b84b0257912ac4efe02)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **app:** Resolve QA warnings in Application Routing, Session and Responses ([d3a7ced](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d3a7ced6a992388ad83a234bc79493edb97d7dd7)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **app:** Resolve remaining cyclomatic complexity and else-expressions in Actions ([ae65559](https://github.com/RaptorXilef/twokinds.4lima.de/commit/ae6555973e546883927626baeb8acfa53f7f538a)), closes [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **app:** Resolve remaining middleware and controller QA warnings ([8643173](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8643173950b8e4256a3aba33531c8bd4bad720fd)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **app:** Resolve remaining parameter and complexity warnings in Frontend APIs ([0660951](https://github.com/RaptorXilef/twokinds.4lima.de/commit/066095181c0580e35d9cb3fa73dda7ff6df0af06)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **app:** Resolve remaining PHPStan array shape and PHPMD warnings in Actions ([6ec9f88](https://github.com/RaptorXilef/twokinds.4lima.de/commit/6ec9f88175de6a8abc47727624231fd190cd43ba)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **app:** Resolve unused parameters and code smells in Frontend Actions ([afa39e3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/afa39e36a2806e696f9c01d726ed5e641aafa230)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **bootstrap:** Resolve coupling, side-effects, and strictly enforce types ([4a0d11f](https://github.com/RaptorXilef/twokinds.4lima.de/commit/4a0d11ffa2251c7b92fd84343bebf6c3e3eb60d0)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **bootstrap:** Resolve Dependency Injection and Script Side Effects QA warnings ([8965253](https://github.com/RaptorXilef/twokinds.4lima.de/commit/89652532a881a852dccc75031f424fa87ba00555)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **bootstrap:** Resolve remaining PHPStan array shape inference issues ([d65132e](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d65132e555e808361adcb24c2904971e0ad3e4ed)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **core:** Resolve Core layer QA issues and enforce Clean Architecture principles ([288b0a2](https://github.com/RaptorXilef/twokinds.4lima.de/commit/288b0a2c95a3358c4b04e0f1f3d8acd6fc42d5c5)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **infrastructure:** Apply Clean Code Stepdown Rule and resolve all QA warnings ([8abcbfc](https://github.com/RaptorXilef/twokinds.4lima.de/commit/8abcbfc24f35b6e2739cf775f4f0fa91bbbafb2e)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **infrastructure:** Apply Clean Code Stepdown Rule to GdMediaService and fix remaining QA issues ([1074084](https://github.com/RaptorXilef/twokinds.4lima.de/commit/107408455c62919dec7332d71b19de1318e48069)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **infrastructure:** Apply Stepdown Rule, remove error suppression, and resolve unused parameters ([38d7fbe](https://github.com/RaptorXilef/twokinds.4lima.de/commit/38d7fbed6720159ac342fbf8f78ea220a2cdccf7))
+* **infrastructure:** Correct signature mismatch in GdMediaService and adjust Cyclomatic Complexity ([a669a8a](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a669a8a5accd81282da4a7100a2d46b99965fdb9)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **infrastructure:** Quote PHPMD SuppressWarnings tags and fix strict array shapes ([a59ee7c](https://github.com/RaptorXilef/twokinds.4lima.de/commit/a59ee7ce37ffadfb1978b9b6182ae776b69a606d)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **infrastructure:** Resolve PHPStan strict type and signature errors ([f315b68](https://github.com/RaptorXilef/twokinds.4lima.de/commit/f315b68babbec588049e714c78b817911081da35)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **public:** Resolve final PHPStan Level 10 errors in entry points ([d8557cb](https://github.com/RaptorXilef/twokinds.4lima.de/commit/d8557cbaec264bb1d59f2d178cf5915644835f0d))
+
+### 📚 Dokumentation
+
+* **tests:** Explicitly exclude Pest testing framework directories from PHPStan Level 10 ([09e8451](https://github.com/RaptorXilef/twokinds.4lima.de/commit/09e845147fd701a052d51a93c62b8f66d33e368a))
+
+### 🧹 Chore / Maintenance
+
+* **qa:** Refactor infrastructure classes to resolve PHPMD and PHPCS warnings ([e975fc1](https://github.com/RaptorXilef/twokinds.4lima.de/commit/e975fc1291284213be6c5a142d9e6cf2d87e710d)), references [#110](https://github.com/RaptorXilef/twokinds.4lima.de/issues/110)
+* **qa:** Update PHPMD baseline and prepare code quality refactoring plan ([01195c3](https://github.com/RaptorXilef/twokinds.4lima.de/commit/01195c3c1971437561cbab5cc441d4667e08a2b9))
+
 ## [6.16.2](https://github.com/RaptorXilef/twokinds.4lima.de/compare/v6.16.1...v6.16.2) (2026-08-09)
 
 ### 🐛 Bug Fixes
